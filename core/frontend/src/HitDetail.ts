@@ -6,14 +6,14 @@
  * @module LocatingElements
  */
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { GeometryClass, LinePixels } from "@itwin/core-common";
+import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
+import { GraphicType } from "./common/render/GraphicType";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport, Viewport } from "./Viewport";
-import { GraphicType } from "./common/render/GraphicType";
 
 /**
  * @public
@@ -35,7 +35,7 @@ export enum SnapMode {
  */
 export enum SnapHeat {
   None = 0,
-  NotInRange = 1,   // "of interest", but out of range
+  NotInRange = 1, // "of interest", but out of range
   InRange = 2,
 }
 
@@ -175,55 +175,117 @@ export class HitDetail {
   private readonly _props: HitDetailProps;
 
   /** The point in world coordinates that was used as the initial locate point. */
-  public get testPoint(): Point3d { return this._props.testPoint; }
+  public get testPoint(): Point3d {
+    return this._props.testPoint;
+  }
   /** The viewport in which the locate operation was performed. */
-  public get viewport(): ScreenViewport { return this._props.viewport; }
+  public get viewport(): ScreenViewport {
+    return this._props.viewport;
+  }
   /** The procedure that requested the locate operation. */
-  public get hitSource(): HitSource { return this._props.hitSource; }
+  public get hitSource(): HitSource {
+    return this._props.hitSource;
+  }
   /** The approximate location in world coordinates on the geometry identified by this HitDetail. */
-  public get hitPoint(): Point3d { return this._props.hitPoint; }
+  public get hitPoint(): Point3d {
+    return this._props.hitPoint;
+  }
   /** The source of the geometry. This may be a persistent element Id, or a transient Id used for, e.g., pickable decorations. */
-  public get sourceId(): Id64String { return this._props.sourceId; }
+  public get sourceId(): Id64String {
+    return this._props.sourceId;
+  }
   /** The hit geometry priority/classification. */
-  public get priority(): HitPriority { return this._props.priority; }
+  public get priority(): HitPriority {
+    return this._props.priority;
+  }
   /** The xy distance to the hit in view coordinates. */
-  public get distXY(): number { return this._props.distXY; }
+  public get distXY(): number {
+    return this._props.distXY;
+  }
   /** The distance in view coordinates between the hit and the near plane. */
-  public get distFraction(): number { return this._props.distFraction; }
+  public get distFraction(): number {
+    return this._props.distFraction;
+  }
   /** The [SubCategory]($backend) to which the hit geometry belongs. */
-  public get subCategoryId(): Id64String | undefined { return this._props.subCategoryId; }
+  public get subCategoryId(): Id64String | undefined {
+    return this._props.subCategoryId;
+  }
   /** The class of the hit geometry. */
-  public get geometryClass(): GeometryClass | undefined { return this._props.geometryClass; }
+  public get geometryClass(): GeometryClass | undefined {
+    return this._props.geometryClass;
+  }
   /** The Id of the [[ModelState]] from which the hit originated. */
-  public get modelId(): string | undefined { return this._props.modelId; }
+  public get modelId(): string | undefined {
+    return this._props.modelId;
+  }
   /** The IModelConnection from which the hit originated.
    * This should almost always be left undefined, unless the hit is known to have originated from an iModel
    * other than the one associated with the viewport.
    * @internal
    */
-  public get sourceIModel(): IModelConnection | undefined { return this._props.sourceIModel; }
+  public get sourceIModel(): IModelConnection | undefined {
+    return this._props.sourceIModel;
+  }
   /** @internal */
-  public get transformFromSourceIModel(): Transform | undefined { return this._props.transformFromSourceIModel; }
+  public get transformFromSourceIModel(): Transform | undefined {
+    return this._props.transformFromSourceIModel;
+  }
   /** @internal chiefly for debugging */
-  public get tileId(): string | undefined { return this._props.tileId; }
+  public get tileId(): string | undefined {
+    return this._props.tileId;
+  }
   /** True if the hit originated from a reality model classifier.
    * @alpha
    */
-  public get isClassifier(): boolean | undefined { return this._props.isClassifier; }
+  public get isClassifier(): boolean | undefined {
+    return this._props.isClassifier;
+  }
   /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
    * @note Only [[SheetViewState]]s can have view attachments.
    * @beta
    */
-  public get viewAttachment(): ViewAttachmentHitInfo | undefined { return this._props.viewAttachment; }
+  public get viewAttachment(): ViewAttachmentHitInfo | undefined {
+    return this._props.viewAttachment;
+  }
 
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
   public constructor(props: HitDetailProps);
 
   /** @deprecated in 4.1. Use the overload that takes a [[HitDetailProps]]. */
-  public constructor(testPoint: Point3d, viewport: ScreenViewport, hitSource: HitSource, hitPoint: Point3d, sourceId: string, priority: HitPriority, distXY: number, distFraction: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean);
+  public constructor(
+    testPoint: Point3d,
+    viewport: ScreenViewport,
+    hitSource: HitSource,
+    hitPoint: Point3d,
+    sourceId: string,
+    priority: HitPriority,
+    distXY: number,
+    distFraction: number,
+    subCategoryId?: string,
+    geometryClass?: GeometryClass,
+    modelId?: string,
+    sourceIModel?: IModelConnection,
+    tileId?: string,
+    isClassifier?: boolean,
+  );
 
   /** @internal */
-  public constructor(arg0: Point3d | HitDetailProps, viewport?: ScreenViewport, hitSource?: HitSource, hitPoint?: Point3d, sourceId?: string, priority?: HitPriority, distXY?: number, distFraction?: number, subCategoryId?: string, geometryClass?: GeometryClass, modelId?: string, sourceIModel?: IModelConnection, tileId?: string, isClassifier?: boolean) {
+  public constructor(
+    arg0: Point3d | HitDetailProps,
+    viewport?: ScreenViewport,
+    hitSource?: HitSource,
+    hitPoint?: Point3d,
+    sourceId?: string,
+    priority?: HitPriority,
+    distXY?: number,
+    distFraction?: number,
+    subCategoryId?: string,
+    geometryClass?: GeometryClass,
+    modelId?: string,
+    sourceIModel?: IModelConnection,
+    tileId?: string,
+    isClassifier?: boolean,
+  ) {
     if (arg0 instanceof Point3d) {
       assert(undefined !== viewport && undefined !== hitSource && undefined !== hitPoint && undefined !== sourceId);
       assert(undefined !== priority && undefined !== distXY && undefined !== distFraction);
@@ -270,23 +332,33 @@ export class HitDetail {
   /** Get the type of HitDetail.
    * @returns HitDetailType.Hit if this is a HitDetail, HitDetailType.Snap if it is a SnapDetail
    */
-  public getHitType(): HitDetailType { return HitDetailType.Hit; }
+  public getHitType(): HitDetailType {
+    return HitDetailType.Hit;
+  }
 
   /** Get the *hit point* for this HitDetail. Returns the approximate point on the element that caused the hit when not a SnapDetail or IntersectDetail.
    * For a snap that is *hot*, the *exact* point on the Element for the snap mode is returned, otherwise the close point on the hit geometry is returned.
    */
-  public getPoint(): Point3d { return this.hitPoint; }
+  public getPoint(): Point3d {
+    return this.hitPoint;
+  }
 
   /** Determine if this HitPoint is from the same source as another HitDetail. */
-  public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId && this.iModel === otherHit.iModel); }
+  public isSameHit(otherHit?: HitDetail): boolean {
+    return (undefined !== otherHit && this.sourceId === otherHit.sourceId && this.iModel === otherHit.iModel);
+  }
   /** Return whether sourceId is for a persistent element and not a pickable decoration. */
-  public get isElementHit(): boolean { return !Id64.isInvalid(this.sourceId) && !Id64.isTransient(this.sourceId); }
+  public get isElementHit(): boolean {
+    return !Id64.isInvalid(this.sourceId) && !Id64.isTransient(this.sourceId);
+  }
   // return whether the sourceId is for a model (reality models etc.)
   public get isModelHit(): boolean {
     return this.modelId === this.sourceId;
   }
   // return whether the hit point is from map.
-  public get isMapHit(): boolean { return 0 !== this.viewport.mapLayerFromHit(this).length; }
+  public get isMapHit(): boolean {
+    return 0 !== this.viewport.mapLayerFromHit(this).length;
+  }
 
   /** Create a deep copy of this HitDetail */
   public clone(): HitDetail {
@@ -357,13 +429,21 @@ export class SnapDetail extends HitDetail {
   }
 
   /** Returns `HitDetailType.Snap` */
-  public override getHitType(): HitDetailType { return HitDetailType.Snap; }
+  public override getHitType(): HitDetailType {
+    return HitDetailType.Snap;
+  }
   /** Get the snap point if this SnapDetail is *hot*, the pick point otherwise. */
-  public override getPoint(): Point3d { return this.isHot ? this.snapPoint : super.getPoint(); }
+  public override getPoint(): Point3d {
+    return this.isHot ? this.snapPoint : super.getPoint();
+  }
   /** Return true if the pick point was closer than the snap aperture from the generated snap point. */
-  public get isHot(): boolean { return this.heat !== SnapHeat.None; }
+  public get isHot(): boolean {
+    return this.heat !== SnapHeat.None;
+  }
   /** Determine whether the [[adjustedPoint]] is different than the [[snapPoint]]. This happens, for example, when points are adjusted for grids, acs plane snap, and AccuDraw. */
-  public get isPointAdjusted(): boolean { return !this.adjustedPoint.isExactEqual(this.snapPoint); }
+  public get isPointAdjusted(): boolean {
+    return !this.adjustedPoint.isExactEqual(this.snapPoint);
+  }
   /** Change the snap point. */
   public setSnapPoint(point: Point3d, heat: SnapHeat) {
     this.snapPoint.setFrom(point);
@@ -425,7 +505,7 @@ export class SnapDetail extends HitDetail {
       if (ls.points.length > 2) {
         const loc = ls.closestPoint(this.snapPoint, false);
         const nSegments = ls.points.length - 1;
-        const uSegRange = (1.0 / nSegments);
+        const uSegRange = 1.0 / nSegments;
         let segmentNo = Math.floor(loc.fraction / uSegRange);
         if (segmentNo >= nSegments)
           segmentNo = nSegments - 1;
@@ -470,13 +550,20 @@ export class SnapDetail extends HitDetail {
 
   private static getSnapSpriteUrl(snapType: SnapMode): string {
     switch (snapType) {
-      case SnapMode.Nearest: return `${IModelApp.publicPath}sprites/SnapPointOn.png`;
-      case SnapMode.NearestKeypoint: return `${IModelApp.publicPath}sprites/SnapKeypoint.png`;
-      case SnapMode.MidPoint: return `${IModelApp.publicPath}sprites/SnapMidpoint.png`;
-      case SnapMode.Center: return `${IModelApp.publicPath}sprites/SnapCenter.png`;
-      case SnapMode.Origin: return `${IModelApp.publicPath}sprites/SnapOrigin.png`;
-      case SnapMode.Bisector: return `${IModelApp.publicPath}sprites/SnapBisector.png`;
-      case SnapMode.Intersection: return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
+      case SnapMode.Nearest:
+        return `${IModelApp.publicPath}sprites/SnapPointOn.png`;
+      case SnapMode.NearestKeypoint:
+        return `${IModelApp.publicPath}sprites/SnapKeypoint.png`;
+      case SnapMode.MidPoint:
+        return `${IModelApp.publicPath}sprites/SnapMidpoint.png`;
+      case SnapMode.Center:
+        return `${IModelApp.publicPath}sprites/SnapCenter.png`;
+      case SnapMode.Origin:
+        return `${IModelApp.publicPath}sprites/SnapOrigin.png`;
+      case SnapMode.Bisector:
+        return `${IModelApp.publicPath}sprites/SnapBisector.png`;
+      case SnapMode.Intersection:
+        return `${IModelApp.publicPath}sprites/SnapIntersection.png`;
     }
     return "";
   }
@@ -487,7 +574,13 @@ export class SnapDetail extends HitDetail {
  * @extensions
  */
 export class IntersectDetail extends SnapDetail {
-  public constructor(from: SnapDetail, heat: SnapHeat = SnapHeat.None, snapPoint: XYZProps, public readonly otherPrimitive: CurvePrimitive, public readonly otherId: string) {
+  public constructor(
+    from: SnapDetail,
+    heat: SnapHeat = SnapHeat.None,
+    snapPoint: XYZProps,
+    public readonly otherPrimitive: CurvePrimitive,
+    public readonly otherId: string,
+  ) {
     super(from, SnapMode.Intersection, heat, snapPoint);
     this.primitive = from.primitive;
     this.normal = from.normal; // Preserve normal from primary snap location for AccuDraw smart rotation...
@@ -525,13 +618,17 @@ export class IntersectDetail extends SnapDetail {
 export class HitList<T extends HitDetail> {
   public hits: T[] = [];
   public currHit = -1;
-  public get length(): number { return this.hits.length; }
+  public get length(): number {
+    return this.hits.length;
+  }
   public empty(): void {
     this.hits.length = 0;
     this.currHit = -1;
   }
 
-  public resetCurrentHit(): void { this.currHit = -1; }
+  public resetCurrentHit(): void {
+    this.currHit = -1;
+  }
 
   /** Get a hit from a particular index into a HitList
    * return the requested hit from the HitList or undefined
@@ -562,7 +659,9 @@ export class HitList<T extends HitDetail> {
     return this.getCurrentHit();
   }
 
-  public getCurrentHit(): T | undefined { return -1 === this.currHit ? undefined : this.getHit(this.currHit); }
+  public getCurrentHit(): T | undefined {
+    return -1 === this.currHit ? undefined : this.getHit(this.currHit);
+  }
 
   public setCurrentHit(hit: T): void {
     this.resetCurrentHit();
@@ -573,18 +672,20 @@ export class HitList<T extends HitDetail> {
   }
 
   /** remove the current hit from the list. */
-  public removeCurrentHit() { this.removeHit(this.currHit); }
+  public removeCurrentHit() {
+    this.removeHit(this.currHit);
+  }
 
   /** remove a hit in the list. */
   public removeHit(hitNum: number) {
-    if (hitNum < 0)                   // Support -1 == END
+    if (hitNum < 0) // Support -1 == END
       hitNum = this.length - 1;
 
     if (hitNum <= this.currHit)
       this.currHit = -1;
 
-    if (hitNum >= this.length)        // Locate calls GetNextHit, which increments currHit, until it goes beyond the end of size of the array.
-      return;                         // Then Reset call RemoteCurrentHit, which passes in currHit. When it is out of range, we do nothing.
+    if (hitNum >= this.length) // Locate calls GetNextHit, which increments currHit, until it goes beyond the end of size of the array.
+      return; // Then Reset call RemoteCurrentHit, which passes in currHit. When it is out of range, we do nothing.
 
     this.hits.splice(hitNum, 1);
   }

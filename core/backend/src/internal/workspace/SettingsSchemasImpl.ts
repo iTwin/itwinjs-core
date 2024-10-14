@@ -6,11 +6,11 @@
  * @module Workspace
  */
 
+import { assert, BeEvent, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
+import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { extname, join } from "path";
-import { assert, BeEvent, JSONSchemaType, JSONSchemaTypeName, Mutable } from "@itwin/core-bentley";
-import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { IModelJsFs } from "../../IModelJsFs";
 import { SettingGroupSchema, SettingSchema, SettingsSchemas } from "../../workspace/SettingsSchemas";
 import { _implementationProhibited } from "../Symbols";
@@ -48,7 +48,10 @@ class SettingsSchemasImpl implements SettingsSchemas {
   }
 
   /** @internal */
-  public getObjectProperties(propDef: Readonly<SettingSchema>, scope: string): { required?: string[], properties: { [name: string]: SettingSchema } } {
+  public getObjectProperties(
+    propDef: Readonly<SettingSchema>,
+    scope: string,
+  ): { required?: string[], properties: { [name: string]: SettingSchema } } {
     let required = propDef.required;
     let properties = propDef.properties;
 

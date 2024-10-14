@@ -14,9 +14,9 @@ exports.builder = (yargs) =>
         alias: "o",
         describe: "Directory of the output.",
         type: "array",
-        default: process.cwd()
+        default: process.cwd(),
       },
-    })
+    });
 
 exports.handler = async (argv) => {
   const rootDir = __dirname.split("tools")[0];
@@ -35,16 +35,16 @@ exports.handler = async (argv) => {
   }
 
   for (const destination of argv.out) {
-    const destRoot = path.resolve(rootDir, destination)
+    const destRoot = path.resolve(rootDir, destination);
     if (!fs.existsSync(destRoot)) {
-      console.log(`Cannot find the root directory of the destination: ${destRoot}`)
+      console.log(`Cannot find the root directory of the destination: ${destRoot}`);
       return;
     }
 
     // copy '.env' file
     fs.copyFile(envFile, path.resolve(destRoot, ".env"), (error) => {
       if (error) throw error;
-      console.log(`Copied '${envFile}' to '${destRoot}`)
-    })
+      console.log(`Copied '${envFile}' to '${destRoot}`);
+    });
   }
-}
+};

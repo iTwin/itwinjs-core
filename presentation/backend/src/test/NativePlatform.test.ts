@@ -2,15 +2,19 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+import { _nativeDb, IModelDb, IModelHost, IModelJsNative, IModelNative } from "@itwin/core-backend";
+import { BeEvent } from "@itwin/core-bentley";
+import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, VariableValueTypes } from "@itwin/presentation-common";
 import { expect } from "chai";
 import * as faker from "faker";
 import { join } from "path";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { _nativeDb, IModelDb, IModelHost, IModelJsNative, IModelNative } from "@itwin/core-backend";
-import { BeEvent } from "@itwin/core-bentley";
-import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, VariableValueTypes } from "@itwin/presentation-common";
-import { createDefaultNativePlatform, NativePlatformDefinition, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform";
+import {
+  createDefaultNativePlatform,
+  NativePlatformDefinition,
+  PresentationNativePlatformResponseError,
+} from "../presentation-backend/NativePlatform";
 
 describe("default NativePlatform", () => {
   let nativePlatform: NativePlatformDefinition;
@@ -84,14 +88,20 @@ describe("default NativePlatform", () => {
     it("throws on cancellation response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }), cancel: () => {} }));
+        .returns(() => ({
+          result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Canceled, message: "test" } }),
+          cancel: () => {},
+        }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test");
     });
 
     it("throws on error response", async () => {
       addonMock
         .setup((x) => x.handleRequest(moq.It.isAny(), ""))
-        .returns(() => ({ result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }), cancel: () => {} }));
+        .returns(() => ({
+          result: Promise.resolve({ error: { status: IModelJsNative.ECPresentationStatus.Error, message: "test" } }),
+          cancel: () => {},
+        }));
       await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationNativePlatformResponseError, "test");
     });
 

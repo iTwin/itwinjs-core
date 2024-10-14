@@ -17,8 +17,12 @@ import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 export class VignetteEffect extends AddEffectTool {
   public static override toolId = "VignetteEffect";
 
-  protected get effectName() { return "Vignette"; }
-  protected get textureCoordFromPosition() { return true; }
+  protected get effectName() {
+    return "Vignette";
+  }
+  protected get textureCoordFromPosition() {
+    return true;
+  }
 
   protected get source() {
     return {
@@ -81,8 +85,12 @@ export class VignetteEffect extends AddEffectTool {
  */
 export class VignetteConfig extends Tool {
   public static override toolId = "VignetteConfig";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 4; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 4;
+  }
 
   /** Size of the vignette in the form (width/2, height/2). e.g., to make the vignette start fading in halfway between the center and edges of
    * UV space, use (0.25, 0.25).

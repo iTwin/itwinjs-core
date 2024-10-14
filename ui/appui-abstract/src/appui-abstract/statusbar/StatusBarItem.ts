@@ -19,15 +19,15 @@ export enum StatusBarSection {
   /** area for tool assistance and messages */
   Message = 0,
   /** area for tool assistance and messages */
-  Left = 0,  // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
+  Left = 0, // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
   /** items specific to stage/task */
   Stage = 1,
   /** items specific to stage/task */
-  Center = 1,  // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
+  Center = 1, // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
   /** Select scope and selection info */
   Selection = 2,
   /** Select scope and selection info */
-  Right = 2,  // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
+  Right = 2, // eslint-disable-line @typescript-eslint/no-duplicate-enum-values
   /** items that only show based on context */
   Context = 3,
 }
@@ -145,17 +145,39 @@ export const isAbstractStatusBarCustomItem = (item: CommonStatusBarItem): item i
  */
 export class AbstractStatusBarItemUtilities {
   /** Creates a StatusBar item to perform an action */
-  public static createActionItem = (id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, tooltip: string | ConditionalStringValue, execute: () => void, overrides?: Partial<AbstractStatusBarCustomItem>): AbstractStatusBarActionItem => ({ // eslint-disable-line deprecation/deprecation
-    id, section, itemPriority,
-    icon, tooltip,
+  public static createActionItem = (
+    id: string,
+    section: StatusBarSection,
+    itemPriority: number,
+    icon: string | ConditionalStringValue,
+    tooltip: string | ConditionalStringValue,
+    execute: () => void,
+    overrides?: Partial<AbstractStatusBarCustomItem>,
+  ): AbstractStatusBarActionItem => ({ // eslint-disable-line deprecation/deprecation
+    id,
+    section,
+    itemPriority,
+    icon,
+    tooltip,
     execute,
     ...overrides,
   });
 
   /** Creates a StatusBar item to display a label */
-  public static createLabelItem = (id: string, section: StatusBarSection, itemPriority: number, icon: string | ConditionalStringValue, label: string | ConditionalStringValue, labelSide = StatusBarLabelSide.Right, overrides?: Partial<AbstractStatusBarLabelItem>): AbstractStatusBarLabelItem => ({ // eslint-disable-line deprecation/deprecation
-    id, section, itemPriority,
-    icon, label,
+  public static createLabelItem = (
+    id: string,
+    section: StatusBarSection,
+    itemPriority: number,
+    icon: string | ConditionalStringValue,
+    label: string | ConditionalStringValue,
+    labelSide = StatusBarLabelSide.Right,
+    overrides?: Partial<AbstractStatusBarLabelItem>,
+  ): AbstractStatusBarLabelItem => ({ // eslint-disable-line deprecation/deprecation
+    id,
+    section,
+    itemPriority,
+    icon,
+    label,
     labelSide,
     ...overrides,
   });

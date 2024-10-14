@@ -37,7 +37,9 @@ export class IModelNative {
 /** @internal Strictly to be called by IModelHost.startup. */
 export function loadNativePlatform(): void {
   if (undefined === nativePlatform) {
-    nativePlatform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
+    nativePlatform = ProcessDetector.isMobileAppBackend
+      ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative
+      : NativeLibrary.load();
     nativePlatform.logger = Logger;
     Logger.onLogLevelChanged.addListener(() => syncNativeLogLevels());
   }

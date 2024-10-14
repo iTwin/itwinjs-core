@@ -71,7 +71,9 @@ export class SequentialLogMatcher extends Logger {
     Logger._logTrace = this._originalLogTrace;
     return rc;
   }
-  public get length(): number { return this._rules.length; }
+  public get length(): number {
+    return this._rules.length;
+  }
 }
 
 export class LogMatchRule {

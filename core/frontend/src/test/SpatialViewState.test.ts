@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization } from "@itwin/core-common";
-import { SpatialViewState } from "../SpatialViewState";
-import type { IModelConnection } from "../IModelConnection";
+import { Range3d } from "@itwin/core-geometry";
+import { expect } from "chai";
+import { restore as sinonRestore, spy as sinonSpy } from "sinon";
 import { IModelApp } from "../IModelApp";
+import type { IModelConnection } from "../IModelConnection";
+import { SpatialViewState } from "../SpatialViewState";
 import { RealityModelTileTree, TileTreeLoadStatus, TileTreeReference } from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
-import { restore as sinonRestore, spy as sinonSpy } from "sinon";
 
 describe("SpatialViewState", () => {
   afterEach(() => {
@@ -73,10 +73,13 @@ describe("SpatialViewState", () => {
   describe("computeFitRange", () => {
     it("unions ranges of all tile trees", () => {
       expectFitRange(createView([new Range3d(0, 1, 2, 3, 4, 5)]), new Range3d(0, 1, 2, 3, 4, 5));
-      expectFitRange(createView([
-        new Range3d(0, 1, 2, 3, 4, 5),
-        new Range3d(-1, 2, 2, 2, 5, 7),
-      ]), new Range3d(-1, 1, 2, 3, 5, 7));
+      expectFitRange(
+        createView([
+          new Range3d(0, 1, 2, 3, 4, 5),
+          new Range3d(-1, 2, 2, 2, 5, 7),
+        ]),
+        new Range3d(-1, 1, 2, 3, 5, 7),
+      );
     });
 
     it("falls back to slightly-expanded project extents upon null range", () => {
@@ -105,7 +108,7 @@ describe("SpatialViewState", () => {
     it("does not include invisible context reality models when computing range", () => {
       const view = createView([new Range3d(-1, 2, 2, 2, 5, 7)]);
 
-      const state = view.displayStyle.attachRealityModel({tilesetUrl: "https://fake.com"});
+      const state = view.displayStyle.attachRealityModel({ tilesetUrl: "https://fake.com" });
 
       state.invisible = true;
       const unionFitRangeSpy = sinonSpy(RealityModelTileTree.Reference.prototype, "unionFitRange");

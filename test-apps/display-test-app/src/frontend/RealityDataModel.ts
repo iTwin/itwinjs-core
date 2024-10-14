@@ -11,14 +11,23 @@ import { attachGeoscienceTileset } from "@itwin/frontend-tiles";
  */
 export class AddSeequentRealityModel extends Tool {
   public static override toolId = "AddSeequentRealityModel";
-  public static override get minArgs() { return 5; }
-  public static override get maxArgs() { return 5; }
+  public static override get minArgs() {
+    return 5;
+  }
+  public static override get maxArgs() {
+    return 5;
+  }
 
   /** This method runs the tool, adding a reality model to the viewport
    * @param url the URL which points to the reality model tileset
    */
-  public override async run(endpointUrl: string, organizationId: string, workspaceId: string, geoscienceObjectId: string, accessToken: string): Promise<boolean> {
-
+  public override async run(
+    endpointUrl: string,
+    organizationId: string,
+    workspaceId: string,
+    geoscienceObjectId: string,
+    accessToken: string,
+  ): Promise<boolean> {
     const args = {
       endpointUrl,
       accessToken,

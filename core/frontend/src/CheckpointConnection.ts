@@ -8,8 +8,16 @@
 
 import { BentleyError, BentleyStatus, GuidString, Logger } from "@itwin/core-bentley";
 import {
-  IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
-  RpcRequest, RpcRequestEvent,
+  IModelConnectionProps,
+  IModelError,
+  IModelReadRpcInterface,
+  IModelRpcOpenProps,
+  IModelVersion,
+  RpcManager,
+  RpcNotFoundResponse,
+  RpcOperation,
+  RpcRequest,
+  RpcRequestEvent,
 } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
@@ -28,12 +36,18 @@ export class CheckpointConnection extends IModelConnection {
   private readonly _fromIpc: boolean;
 
   /** The Guid that identifies the iTwin that owns this iModel. */
-  public override get iTwinId(): GuidString { return super.iTwinId!; }
+  public override get iTwinId(): GuidString {
+    return super.iTwinId!;
+  }
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString { return super.iModelId!; }
+  public override get iModelId(): GuidString {
+    return super.iModelId!;
+  }
 
   /** Returns `true` if [[close]] has already been called. */
-  public get isClosed(): boolean { return this._isClosed ? true : false; }
+  public get isClosed(): boolean {
+    return this._isClosed ? true : false;
+  }
   protected _isClosed?: boolean;
 
   protected constructor(props: IModelConnectionProps, fromIpc: boolean) {
@@ -42,7 +56,9 @@ export class CheckpointConnection extends IModelConnection {
   }
 
   /** Type guard for instanceof [[CheckpointConnection]] */
-  public override isCheckpointConnection(): this is CheckpointConnection { return true; }
+  public override isCheckpointConnection(): this is CheckpointConnection {
+    return true;
+  }
 
   /**
    * Open a readonly IModelConnection to a Checkpoint of an iModel.
@@ -94,14 +110,26 @@ export class CheckpointConnection extends IModelConnection {
 
       const connectionTimeElapsed = Date.now() - startTime;
       if (connectionTimeElapsed > IModelConnection.connectionTimeout) {
-        Logger.logError(loggerCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`, iModelToken);
+        Logger.logError(
+          loggerCategory,
+          `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection.connectionTimeout} milliseconds)`,
+          iModelToken,
+        );
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
-      connectionRetryInterval = Math.min(connectionRetryIntervalRange.max, connectionRetryInterval * 2, IModelConnection.connectionTimeout - connectionTimeElapsed);
+      connectionRetryInterval = Math.min(
+        connectionRetryIntervalRange.max,
+        connectionRetryInterval * 2,
+        IModelConnection.connectionTimeout - connectionTimeElapsed,
+      );
       if (request.retryInterval !== connectionRetryInterval) {
         request.retryInterval = connectionRetryInterval;
-        Logger.logTrace(loggerCategory, `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`, iModelToken);
+        Logger.logTrace(
+          loggerCategory,
+          `Adjusted open connection retry interval to ${request.retryInterval} milliseconds in IModelConnection.open`,
+          iModelToken,
+        );
       }
     });
 
@@ -117,7 +145,12 @@ export class CheckpointConnection extends IModelConnection {
     return openResponse;
   }
 
-  private _reopenConnectionHandler = async (request: RpcRequest<RpcNotFoundResponse>, response: any, resubmit: () => void, reject: (reason?: any) => void) => {
+  private _reopenConnectionHandler = async (
+    request: RpcRequest<RpcNotFoundResponse>,
+    response: any,
+    resubmit: () => void,
+    reject: (reason?: any) => void,
+  ) => {
     if (!response.hasOwnProperty("isIModelNotFoundResponse"))
       reject();
 
@@ -132,7 +165,6 @@ export class CheckpointConnection extends IModelConnection {
       // The new/reopened connection may have a new rpcKey and/or changesetId, but the other IModelRpcTokenProps should be the same
       this._fileKey = openResponse.key;
       this.changeset = openResponse.changeset!;
-
     } catch (error) {
       reject(BentleyError.getErrorMessage(error));
     } finally {

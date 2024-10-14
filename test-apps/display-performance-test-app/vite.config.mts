@@ -2,22 +2,21 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
-import envCompatible from "vite-plugin-env-compatible";
 import browserslistToEsbuild from "browserslist-to-esbuild";
-import viteInspect from "vite-plugin-inspect";
+import { createRequire } from "module";
+import path from "path";
 import copy from "rollup-plugin-copy";
+import externalGlobals from "rollup-plugin-external-globals";
 import ignore from "rollup-plugin-ignore";
 import rollupVisualizer from "rollup-plugin-visualizer";
-import externalGlobals from "rollup-plugin-external-globals";
 import { webpackStats } from "rollup-plugin-webpack-stats";
+import { defineConfig, loadEnv, searchForWorkspaceRoot } from "vite";
+import envCompatible from "vite-plugin-env-compatible";
+import viteInspect from "vite-plugin-inspect";
 import * as packageJson from "./package.json";
-import path from "path";
-import { createRequire } from "module";
 const require = createRequire(import.meta.url);
 
-const mode =
-  process.env.NODE_ENV === "development" ? "development" : "production";
+const mode = process.env.NODE_ENV === "development" ? "development" : "production";
 
 // array of public directories static assets from dependencies to copy
 const assets = ["./public/*"]; // assets for test-app
@@ -89,19 +88,19 @@ export default defineConfig(() => {
         plugins: [
           ...(process.env.OUTPUT_STATS !== undefined
             ? [
-                rollupVisualizer({
-                  open: true,
-                  filename: "stats.html",
-                  template: "treemap",
-                  sourcemap: true,
-                }),
-                webpackStats(), // needs to be the last plugin
-              ]
+              rollupVisualizer({
+                open: true,
+                filename: "stats.html",
+                template: "treemap",
+                sourcemap: true,
+              }),
+              webpackStats(), // needs to be the last plugin
+            ]
             : []),
           externalGlobals({
             // allow global `window` object to access electron as external global
             electron: "window['electron']",
-          })
+          }),
         ],
       },
     },
@@ -136,10 +135,8 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         ...packageAliases,
-        "@itwin/core-electron/lib/cjs/ElectronFrontend":
-          "@itwin/core-electron/src/ElectronFrontend.ts",
-        "@itwin/core-mobile/lib/cjs/MobileFrontend":
-          "@itwin/core-mobile/src/MobileFrontend.ts",
+        "@itwin/core-electron/lib/cjs/ElectronFrontend": "@itwin/core-electron/src/ElectronFrontend.ts",
+        "@itwin/core-mobile/lib/cjs/MobileFrontend": "@itwin/core-mobile/src/MobileFrontend.ts",
         "../../package.json": "../package.json", // in core-frontend
       },
     },
@@ -151,8 +148,8 @@ export default defineConfig(() => {
         "@itwin/core-mobile/lib/cjs/MobileFrontend", // import from module error
       ],
       exclude: [
-        "@itwin/core-frontend", //prevents import not resolved errors
-        "@itwin/core-common", //prevents rpc errors
+        "@itwin/core-frontend", // prevents import not resolved errors
+        "@itwin/core-common", // prevents rpc errors
       ],
     },
   };

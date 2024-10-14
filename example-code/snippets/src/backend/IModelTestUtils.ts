@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { IModelHost, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
+import { OpenMode } from "@itwin/core-bentley";
+import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
+import { ITwinsAccessClient } from "@itwin/itwins-client";
 import { assert } from "chai";
 import * as path from "path";
-import { OpenMode } from "@itwin/core-bentley";
-import { ITwinsAccessClient } from "@itwin/itwins-client";
-import { IModelHost, IModelJsFs, IModelJsFsStats, KnownLocations, SnapshotDb, StandaloneDb } from "@itwin/core-backend";
-import { IModelReadRpcInterface, RpcManager } from "@itwin/core-common";
 
 RpcManager.initializeInterface(IModelReadRpcInterface);
 
@@ -16,7 +16,6 @@ export interface IModelTestUtilsOpenOptions {
 }
 
 export class KnownTestLocations {
-
   /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */
   public static get assetsDir(): string {
     // Assume that we are running in nodejs
@@ -28,7 +27,6 @@ export class KnownTestLocations {
     // Assume that we are running in nodejs
     return path.join(__dirname, "output");
   }
-
 }
 
 export class IModelTestUtils {
@@ -55,7 +53,7 @@ export class IModelTestUtils {
       IModelJsFs.mkdirSync(destPath);
 
     const srcName = path.join(KnownTestLocations.assetsDir, filename);
-    const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename : filename));
+    const dbName = path.join(destPath, opts.copyFilename ? opts.copyFilename : filename);
     const srcStat = IModelTestUtils.getStat(srcName);
     const destStat = IModelTestUtils.getStat(dbName);
     if (!srcStat || !destStat || srcStat.mtimeMs !== destStat.mtimeMs)

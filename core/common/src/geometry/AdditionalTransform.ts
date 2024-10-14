@@ -72,7 +72,13 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
   /** Creates a JSON from the Helmert Transform definition
    * @public */
   public toJSON(): Helmert2DWithZOffsetProps {
-    return { translationX: this.translationX, translationY: this.translationY, translationZ: this.translationZ, rotDeg: this.rotDeg, scale: this.scale };
+    return {
+      translationX: this.translationX,
+      translationY: this.translationY,
+      translationZ: this.translationZ,
+      rotDeg: this.rotDeg,
+      scale: this.scale,
+    };
   }
 
   /** Compares two Helmert2DWithZOffset objects applying a minuscule tolerance.
@@ -100,9 +106,8 @@ export interface AdditionalTransformProps {
  *  geographic CRS. The transformation is applied after the latitude/longitude have been projected thus the process
  *  is applied to the result Cartesian coordinates of the projection process.
  *  @public
-*/
+ */
 export class AdditionalTransform implements AdditionalTransformProps {
-
   /** The properties of a 2D Helmert transform with Z offset if one is defined. */
   public readonly helmert2DWithZOffset?: Helmert2DWithZOffset;
 
@@ -135,4 +140,3 @@ export class AdditionalTransform implements AdditionalTransformProps {
     return true;
   }
 }
-

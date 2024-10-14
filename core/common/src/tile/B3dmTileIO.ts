@@ -20,7 +20,9 @@ export class B3dmHeader extends TileHeader {
   public readonly batchTableBinaryLength: number;
   public readonly featureTableJson: any;
   public readonly batchTableJson: any;
-  public get isValid(): boolean { return TileFormat.B3dm === this.format; }
+  public get isValid(): boolean {
+    return TileFormat.B3dm === this.format;
+  }
 
   public constructor(stream: ByteStream) {
     super(stream);

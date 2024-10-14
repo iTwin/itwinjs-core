@@ -14,7 +14,7 @@ import { BGFBWriter } from "./BGFBWriter";
  * @public
  */
 export class BentleyGeometryFlatBuffer {
-  private constructor() { }
+  private constructor() {}
   /**
    * Serialize bytes to a flatbuffer.
    * @public

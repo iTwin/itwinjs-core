@@ -3,22 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { base64StringToUint8Array } from "@itwin/core-bentley";
+import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { MapCartoRectangle } from "@itwin/core-frontend";
+import { expect } from "chai";
 import * as sinon from "sinon";
 import { DefaultOgcSymbology, OgcApiFeaturesProvider } from "../../OgcApiFeatures/OgcApiFeaturesProvider";
-import { ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
-import { expect } from "chai";
 import { CountriesDataset } from "./CountriesDataset";
-import { MapCartoRectangle } from "@itwin/core-frontend";
-import { base64StringToUint8Array } from "@itwin/core-bentley";
 
-function stubFetchMetadata(sandbox: sinon.SinonSandbox, urlContent: { [url: string]: string }  ) {
-
+function stubFetchMetadata(sandbox: sinon.SinonSandbox, urlContent: { [url: string]: string }) {
   return sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchMetadata").callsFake(async function _(url: unknown): Promise<any> {
     return Promise.resolve(JSON.parse(urlContent[url as string]));
   });
 }
 
-const getTestSettings = (url: string, subLayers = [{id: "public.countries", name:"public.countries" }]) => {
+const getTestSettings = (url: string, subLayers = [{ id: "public.countries", name: "public.countries" }]) => {
   return ImageMapLayerSettings.fromJSON({
     name: "test",
     url,
@@ -32,9 +31,11 @@ describe("OgcApiFeaturesProvider", () => {
 
   beforeEach(async () => {
     // need to be mocked otherwise tests hangs
-    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
-      (listener as any)();
-    });
+    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(
+      function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
+        (listener as any)();
+      },
+    );
   });
 
   afterEach(async () => {
@@ -42,7 +43,6 @@ describe("OgcApiFeaturesProvider", () => {
   });
 
   it("should initialize with valid collection metadata", async () => {
-
     const settings = getTestSettings(CountriesDataset.collectionUrl, undefined);
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
@@ -64,7 +64,8 @@ describe("OgcApiFeaturesProvider", () => {
 
     // Check CartoRange is initialized
     const datasetBbox = CountriesDataset.collection.extent.spatial.bbox[0];
-    expect(provider.cartoRange?.distanceToRange(MapCartoRectangle.fromDegrees(datasetBbox[0], datasetBbox[1], datasetBbox[2], datasetBbox[3]))).to.be.lessThan(0.000001);
+    expect(provider.cartoRange?.distanceToRange(MapCartoRectangle.fromDegrees(datasetBbox[0], datasetBbox[1], datasetBbox[2], datasetBbox[3]))).to.be
+      .lessThan(0.000001);
 
     // FetchAllItems should have been called
     expect(fetchAllItemsStub.called).to.be.true;
@@ -90,11 +91,14 @@ describe("OgcApiFeaturesProvider", () => {
   });
 
   it("should initialize when a specific collection URL is passed and multiple subLayer ids are specified", async () => {
-    const settings = getTestSettings(CountriesDataset.collectionUrl, [{id: "public.countries", name:"public.countries" }, {id: "public.countries2", name:"public.countries2" }]);
+    const settings = getTestSettings(CountriesDataset.collectionUrl, [{ id: "public.countries", name: "public.countries" }, {
+      id: "public.countries2",
+      name: "public.countries2",
+    }]);
     const urlContent: { [key: string]: string } = {};
     urlContent[CountriesDataset.collectionUrl] = JSON.stringify(CountriesDataset.collection);
     urlContent[CountriesDataset.queryablesUrl] = JSON.stringify(CountriesDataset.queryables);
-    stubFetchMetadata(sandbox,  urlContent);
+    stubFetchMetadata(sandbox, urlContent);
     const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
     });
@@ -110,13 +114,13 @@ describe("OgcApiFeaturesProvider", () => {
     const urlContent: { [key: string]: string } = {};
     urlContent[CountriesDataset.collectionUrl] = JSON.stringify(CountriesDataset.collection);
     urlContent[CountriesDataset.queryablesUrl] = JSON.stringify(CountriesDataset.queryables);
-    stubFetchMetadata(sandbox,  urlContent);
+    stubFetchMetadata(sandbox, urlContent);
     sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
     });
 
     // Now test with an invalid sublayer Id
-    const settings = getTestSettings(CountriesDataset.collectionUrl, [{id: "bad", name:"bad" }]);
+    const settings = getTestSettings(CountriesDataset.collectionUrl, [{ id: "bad", name: "bad" }]);
     const provider = new OgcApiFeaturesProvider(settings);
 
     // Initialize should not throw since subLayer.Id != collection Id
@@ -124,8 +128,7 @@ describe("OgcApiFeaturesProvider", () => {
   });
 
   it("should initialize with layer url  set to items url", async () => {
-
-    const stubMetadata = stubFetchMetadata(sandbox,  CountriesDataset.urlsContent);
+    const stubMetadata = stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
     const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
       return false;
@@ -145,7 +148,6 @@ describe("OgcApiFeaturesProvider", () => {
   });
 
   it("should initialize with layer url set to collections url", async () => {
-
     const stubMetadata = stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
     const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
@@ -168,18 +170,16 @@ describe("OgcApiFeaturesProvider", () => {
   });
 
   it("should not initialize with layer url set to a collection url but invalid sub-layer", async () => {
-
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
     // Now test with an invalid sublayer Id
-    const settings = getTestSettings(CountriesDataset.collectionUrl, [{id: "bad", name:"bad" }]);
+    const settings = getTestSettings(CountriesDataset.collectionUrl, [{ id: "bad", name: "bad" }]);
     const provider = new OgcApiFeaturesProvider(settings);
 
     await expect(provider.initialize()).to.be.rejectedWith(Error, `Collection metadata and sub-layers id mismatch`);
   });
 
   it("should initialize with layer url set to a collection url but no sub-layers", async () => {
-
     const stubMetadata = stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
     const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
@@ -200,7 +200,6 @@ describe("OgcApiFeaturesProvider", () => {
   });
 
   it("should initialize with layer url set to a collection url and single valid sub-layer", async () => {
-
     const stubMetadata = stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
     const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
@@ -221,7 +220,6 @@ describe("OgcApiFeaturesProvider", () => {
   });
 
   it("should initialize with layer url set to landingPage url", async () => {
-
     const stubMetadata = stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
     const fetchAllItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
@@ -242,22 +240,24 @@ describe("OgcApiFeaturesProvider", () => {
     expect(stubMetadata.getCall(3).args[0]).to.equals(CountriesDataset.queryablesUrl);
   });
 
-  it("should fetch all items and follow next page links on initialize" , async () => {
+  it("should fetch all items and follow next page links on initialize", async () => {
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
-    const tileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _(url: string, _timeoutMs?: number ) {
-      const obj = {
-        headers: { "content-type": "application/json" },
-        json: async () => {
-          if (url.includes("offset"))
-            return undefined ;
-          else
-            return CountriesDataset.singleItem;
-        },
-        status: 200,
-      } as unknown;   // By using unknown type, I can define parts of Response I really need
-      return (obj as Response);
-    });
+    const tileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(
+      async function _(url: string, _timeoutMs?: number) {
+        const obj = {
+          headers: { "content-type": "application/json" },
+          json: async () => {
+            if (url.includes("offset"))
+              return undefined;
+            else
+              return CountriesDataset.singleItem;
+          },
+          status: 200,
+        } as unknown; // By using unknown type, I can define parts of Response I really need
+        return (obj as Response);
+      },
+    );
 
     // Now test with an invalid sublayer Id
     const settings = getTestSettings(CountriesDataset.collectionUrl);
@@ -268,7 +268,7 @@ describe("OgcApiFeaturesProvider", () => {
     expect(tileRequestStub.getCall(1).args[0]).to.equals(CountriesDataset.singleItem.links[2].href);
   });
 
-  it("should not make tile request in static mode" , async () => {
+  it("should not make tile request in static mode", async () => {
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
     sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
@@ -278,19 +278,21 @@ describe("OgcApiFeaturesProvider", () => {
       return true;
     });
     sandbox.stub(OgcApiFeaturesProvider.prototype, "staticMode").get(() => true);
-    const tileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _(url: string, _timeoutMs?: number ) {
-      const obj = {
-        headers: { "content-type": "application/json" },
-        json: async () => {
-          if (url.includes("offset"))
-            return undefined ;
-          else
-            return CountriesDataset.singleItem;
-        },
-        status: 200,
-      } as unknown;   // By using unknown type, I can define parts of Response I really need
-      return (obj as Response);
-    });
+    const tileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(
+      async function _(url: string, _timeoutMs?: number) {
+        const obj = {
+          headers: { "content-type": "application/json" },
+          json: async () => {
+            if (url.includes("offset"))
+              return undefined;
+            else
+              return CountriesDataset.singleItem;
+          },
+          status: 200,
+        } as unknown; // By using unknown type, I can define parts of Response I really need
+        return (obj as Response);
+      },
+    );
 
     sandbox.stub(HTMLCanvasElement.prototype, "getContext").callsFake(function _(_contextId: any, _options?: any) {
       return {} as RenderingContext;
@@ -308,7 +310,7 @@ describe("OgcApiFeaturesProvider", () => {
     expect(tileRequestStub.called).to.be.false;
   });
 
-  it("should not make request while loading tile in static mode" , async () => {
+  it("should not make request while loading tile in static mode", async () => {
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
     sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchAllItems").callsFake(async function _() {
@@ -318,19 +320,21 @@ describe("OgcApiFeaturesProvider", () => {
       return true;
     });
     sandbox.stub(OgcApiFeaturesProvider.prototype, "staticMode").get(() => true);
-    const tileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _(url: string, _timeoutMs?: number ) {
-      const obj = {
-        headers: { "content-type": "application/json" },
-        json: async () => {
-          if (url.includes("offset"))
-            return undefined ;
-          else
-            return CountriesDataset.singleItem;
-        },
-        status: 200,
-      } as unknown;   // By using unknown type, I can define parts of Response I really need
-      return (obj as Response);
-    });
+    const tileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(
+      async function _(url: string, _timeoutMs?: number) {
+        const obj = {
+          headers: { "content-type": "application/json" },
+          json: async () => {
+            if (url.includes("offset"))
+              return undefined;
+            else
+              return CountriesDataset.singleItem;
+          },
+          status: 200,
+        } as unknown; // By using unknown type, I can define parts of Response I really need
+        return (obj as Response);
+      },
+    );
 
     sandbox.stub(HTMLCanvasElement.prototype, "getContext").callsFake(function _(_contextId: any, _options?: any) {
       return {} as RenderingContext;
@@ -350,7 +354,7 @@ describe("OgcApiFeaturesProvider", () => {
     expect(indexStaticData.called).to.be.true;
   });
 
-  it("should not make request while loading tile in non-static mode" , async () => {
+  it("should not make request while loading tile in non-static mode", async () => {
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
     // By returning false we force the non-static mode
@@ -358,9 +362,11 @@ describe("OgcApiFeaturesProvider", () => {
       return false;
     });
 
-    const fetchItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchItems").callsFake(async function _(_url: unknown, _timeoutMs?: unknown ) {
-      return CountriesDataset.singleItem;
-    });
+    const fetchItemsStub = sandbox.stub(OgcApiFeaturesProvider.prototype as any, "fetchItems").callsFake(
+      async function _(_url: unknown, _timeoutMs?: unknown) {
+        return CountriesDataset.singleItem;
+      },
+    );
 
     sandbox.stub(HTMLCanvasElement.prototype, "getContext").callsFake(function _(_contextId: any, _options?: any) {
       return {} as RenderingContext;
@@ -383,7 +389,7 @@ describe("OgcApiFeaturesProvider", () => {
     expect(fetchItemsStub.getCall(0).args[0]).to.includes("collections/public.countries/items?bbox");
   });
 
-  it("should handle exceptions from makeTileRequest" , async () => {
+  it("should handle exceptions from makeTileRequest", async () => {
     stubFetchMetadata(sandbox, CountriesDataset.urlsContent);
 
     const makeTileRequestStub = sandbox.stub(OgcApiFeaturesProvider.prototype, "makeTileRequest").callsFake(async function _() {
@@ -400,14 +406,14 @@ describe("OgcApiFeaturesProvider", () => {
     expect(makeTileRequestStub.getCalls().length).to.equals(2);
   });
 
-  it("should create image source from data url" , async () => {
+  it("should create image source from data url", async () => {
     // Now test with an invalid sublayer Ida
     const settings = getTestSettings(CountriesDataset.collectionUrl);
     const provider = new OgcApiFeaturesProvider(settings);
-    const base64Png = "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAAiSURBVDhPY2RgYPgPxGQDJihNNhg1YNQAEBg1YOANYGAAAE1AAR90Oy6aAAAAAElFTkSuQmCC";
+    const base64Png =
+      "iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsEAAA7BAbiRa+0AAAAiSURBVDhPY2RgYPgPxGQDJihNNhg1YNQAEBg1YOANYGAAAE1AAR90Oy6aAAAAAElFTkSuQmCC";
     const sampleDataUrl = `data:image/png;base64,${base64Png}`;
     const imageSource: ImageSource = (provider as any).createImageSourceFromDataURL(sampleDataUrl, ImageSourceFormat.Png);
     expect(imageSource.data).to.eql(base64StringToUint8Array(base64Png));
   });
-
 });

@@ -2,11 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import {
-  ChangeFlag, ChangeFlags, MutableChangeFlags, Viewport,
-} from "@itwin/core-frontend";
+import { ChangeFlag, ChangeFlags, MutableChangeFlags, Viewport } from "@itwin/core-frontend";
+import { expect } from "chai";
 
 /** Aspects of a Viewport that can become invalidated when its state changes. */
 export enum ViewportState {

@@ -141,7 +141,10 @@ export type ElementPropertiesPropertyValueType = "primitive" | "array" | "struct
  * Definition of a property value.
  * @public
  */
-export type ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | ElementPropertiesArrayPropertyItem | ElementPropertiesStructPropertyItem;
+export type ElementPropertiesPropertyItem =
+  | ElementPropertiesPrimitivePropertyItem
+  | ElementPropertiesArrayPropertyItem
+  | ElementPropertiesStructPropertyItem;
 
 /**
  * Definition of a property item, including a property category.

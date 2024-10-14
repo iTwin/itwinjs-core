@@ -2,10 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttributeClass, EntityClass, Enumeration, EnumerationArrayProperty, EnumerationProperty, KindOfQuantity, Mixin, NavigationProperty, PropertyCategory, RelationshipClass, Schema, SchemaContext, StructArrayProperty, StructClass, StructProperty } from "@itwin/ecschema-metadata";
+import {
+  CustomAttributeClass,
+  EntityClass,
+  Enumeration,
+  EnumerationArrayProperty,
+  EnumerationProperty,
+  KindOfQuantity,
+  Mixin,
+  NavigationProperty,
+  PropertyCategory,
+  RelationshipClass,
+  Schema,
+  SchemaContext,
+  StructArrayProperty,
+  StructClass,
+  StructProperty,
+} from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
 import { BisTestHelper } from "../../TestUtils/BisTestHelper";
-import { expect } from "chai";
 import "chai-as-promised";
 
 /* eslint-disable @typescript-eslint/naming-convention */

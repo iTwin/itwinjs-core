@@ -24,7 +24,6 @@ describe("MapSubLayerSettings", () => {
       for (let i = 0; i < expected.children.length; i++)
         expect(expected.children[i]).to.equal(output.children![i]);
     }
-
   };
 
   it("round-trips through JSON", () => {
@@ -57,9 +56,19 @@ const testMapLayer0 = { name: "TestName", url: "www.bentley.com", formatId: "WMS
 const testMapLayer1 = { name: "TestName", url: "www.bentley.com", formatId: "WMTS", transparency: .5, transparentBackground: false, visible: true };
 const testMapLayer2 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], visible: true };
 const testMapLayer3 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], visible: true };
-const testMapLayer4 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], isBase: true, visible: false };
+const testMapLayer4 = {
+  name: "TestName",
+  url: "www.bentley.com",
+  formatId: "WMS",
+  subLayers: [testMapSubLayer0, testMapSubLayer1],
+  isBase: true,
+  visible: false,
+};
 const testMapLayer6 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: false };
-const legacyMapLayer = BaseMapLayerSettings.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } });
+const legacyMapLayer = BaseMapLayerSettings.fromBackgroundMapProps({
+  providerName: "BingProvider",
+  providerData: { mapType: BackgroundMapType.Hybrid },
+});
 
 describe("ImageMapLayerSettings", () => {
   const expectMatches = (output: ImageMapLayerProps, expected: ImageMapLayerProps) => {
@@ -85,7 +94,6 @@ describe("ImageMapLayerSettings", () => {
 
   it("round-trips through JSON", () => {
     const roundTrip = (input: ImageMapLayerProps, expected: ImageMapLayerProps | "input") => {
-
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as ImageMapLayerProps;
 
@@ -117,14 +125,27 @@ describe("ImageMapLayerSettings", () => {
 
     // Turn off visibility
     clone(testMapLayer0, { visible: false }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: false });
-    clone(testMapLayer3, { visible: false }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], visible: false });
+    clone(testMapLayer3, { visible: false }, {
+      name: "TestName",
+      url: "www.bentley.com",
+      formatId: "WMS",
+      subLayers: [testMapSubLayer0, testMapSubLayer1],
+      visible: false,
+    });
 
     // turn on visibility
     clone(testMapLayer6, { visible: true }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: true });
 
     // Set transparency
     clone(testMapLayer0, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", transparency: .5, visible: true });
-    clone(testMapLayer3, { transparency: .5 }, { name: "TestName", url: "www.bentley.com", formatId: "WMS", subLayers: [testMapSubLayer0, testMapSubLayer1], transparency: .5, visible: true });
+    clone(testMapLayer3, { transparency: .5 }, {
+      name: "TestName",
+      url: "www.bentley.com",
+      formatId: "WMS",
+      subLayers: [testMapSubLayer0, testMapSubLayer1],
+      transparency: .5,
+      visible: true,
+    });
 
     // Test settings not part of ImageMapLayerProps
     const settings1 = ImageMapLayerSettings.fromJSON(testMapLayer0);

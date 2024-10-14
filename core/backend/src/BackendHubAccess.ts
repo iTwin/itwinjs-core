@@ -8,16 +8,26 @@
 
 import { AccessToken, GuidString, Id64String, IModelHubStatus } from "@itwin/core-bentley";
 import {
-  BriefcaseId, ChangesetFileProps, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexAndId, ChangesetIndexOrId, ChangesetProps, ChangesetRange,
-  LockState as CommonLockState, IModelError, IModelVersion,
-  LocalDirName, LocalFileName,
+  BriefcaseId,
+  ChangesetFileProps,
+  ChangesetIdWithIndex,
+  ChangesetIndex,
+  ChangesetIndexAndId,
+  ChangesetIndexOrId,
+  ChangesetProps,
+  ChangesetRange,
+  IModelError,
+  IModelVersion,
+  LocalDirName,
+  LocalFileName,
+  LockState as CommonLockState,
 } from "@itwin/core-common";
 import { CheckpointProps, DownloadRequest, ProgressFunction } from "./CheckpointManager";
 import type { TokenArg } from "./IModelDb";
 
 /** Exception thrown if lock cannot be acquired.
  * @beta
-*/
+ */
 export class LockConflict extends IModelError {
   public constructor(
     /** Id of Briefcase holding lock */
@@ -209,8 +219,8 @@ export interface BackendHubAccess {
   getChangesetFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetProps>;
 
   /** Acquire a new briefcaseId for the supplied iModelId
-     * @note usually there should only be one briefcase per iModel per user.
-     */
+   * @note usually there should only be one briefcase per iModel per user.
+   */
   acquireNewBriefcaseId: (arg: AcquireNewBriefcaseIdArg) => Promise<BriefcaseId>;
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;

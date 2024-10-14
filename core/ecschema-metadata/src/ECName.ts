@@ -20,7 +20,7 @@ function isDigit(character: string): boolean {
 
 function isValidAlphaNumericCharacter(c: string): boolean {
   assert(1 === c.length);
-  return (((c >= "0" && c <= "9") || (c >= "A" && c <= "Z") || (c >= "a" && c <= "z") || c === "_"));
+  return ((c >= "0" && c <= "9") || (c >= "A" && c <= "Z") || (c >= "a" && c <= "z") || c === "_");
 }
 
 /** The name of an item in a [[Schema]], encoded to meet restrictions on the characters usable in such names.

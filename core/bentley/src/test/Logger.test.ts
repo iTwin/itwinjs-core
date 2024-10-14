@@ -5,8 +5,8 @@
 import { assert, describe, expect, it } from "vitest";
 import { BentleyError, LoggingMetaData } from "../BentleyError";
 import { using } from "../Disposable";
-import { Logger, LogLevel, PerfLogger } from "../Logger";
 import { staticLoggerMetadata } from "../internal/staticLoggerMetadata";
+import { Logger, LogLevel, PerfLogger } from "../Logger";
 import { BeDuration } from "../Time";
 
 let outerr: any[];
@@ -70,7 +70,6 @@ function clearOutlets() {
 type FunctionReturningAny = () => any;
 
 describe("Logger", () => {
-
   it("log without initializing", () => {
     // logging messages in the components must not cause failures if the app hasn't initialized logging.
     Logger.logError("test", "An error occurred");
@@ -129,12 +128,12 @@ describe("Logger", () => {
   });
 
   it("levels", () => {
-
     Logger.initialize(
       (c, m, d) => outerr = [c, m, d],
       (c, m, d) => outwarn = [c, m, d],
       (c, m, d) => outinfo = [c, m, d],
-      (c, m, d) => outtrace = [c, m, d]);
+      (c, m, d) => outtrace = [c, m, d],
+    );
 
     const c1msg: [string, string, FunctionReturningAny | undefined] = ["c1", "message1", () => "metaData1"];
     const c2msg: [string, string, FunctionReturningAny | undefined] = ["c2", "message2", undefined];
@@ -213,7 +212,8 @@ describe("Logger", () => {
       undefined,
       (c, m, d) => outwarn = [c, m, d],
       (c, m, d) => outinfo = [c, m, d],
-      (c, m, d) => outtrace = [c, m, d]);
+      (c, m, d) => outtrace = [c, m, d],
+    );
 
     Logger.setLevel("c1", LogLevel.Warning);
     Logger.logError.apply(null, c1msg);
@@ -229,7 +229,8 @@ describe("Logger", () => {
       (c, m, d) => outerr = [c, m, d],
       (c, m, d) => outwarn = [c, m, d],
       (c, m, d) => outinfo = [c, m, d],
-      (c, m, d) => outtrace = [c, m, d]);
+      (c, m, d) => outtrace = [c, m, d],
+    );
 
     Logger.setLevelDefault(LogLevel.Info);
     Logger.setLevel("c1", LogLevel.Warning);
@@ -239,9 +240,9 @@ describe("Logger", () => {
     Logger.logInfo.apply(null, c4msg);
     checkOutlets([], [], c4msg, []); // ... but it should come out at the default Info level, even though we never turned on c4, since Info is the default level that applies to all categories.
     Logger.logWarning.apply(null, c1msg);
-    checkOutlets([], c1msg, [], []);  // c1 should still come out at the warning level
+    checkOutlets([], c1msg, [], []); // c1 should still come out at the warning level
     Logger.logInfo.apply(null, c1msg);
-    checkOutlets([], [], [], []);  // ... but not at the Info level, even though that's the default level, because c1 has a specific level setting
+    checkOutlets([], [], [], []); // ... but not at the Info level, even though that's the default level, because c1 has a specific level setting
 
     // ... now turn c4 off.
     Logger.setLevel("c4", LogLevel.None);
@@ -257,7 +258,8 @@ describe("Logger", () => {
       (c, m, d) => outerr = [c, m, d],
       (c, m, d) => outwarn = [c, m, d],
       (c, m, d) => outinfo = [c, m, d],
-      (c, m, d) => outtrace = [c, m, d]);
+      (c, m, d) => outtrace = [c, m, d],
+    );
 
     Logger.setLevel("g1", LogLevel.Trace);
     Logger.setLevel("g2", LogLevel.Error);
@@ -273,7 +275,8 @@ describe("Logger", () => {
       (c, m, d) => outerr = [c, m, d],
       (c, m, d) => outwarn = [c, m, d],
       (c, m, d) => outinfo = [c, m, d],
-      (c, m, d) => outtrace = [c, m, d]);
+      (c, m, d) => outtrace = [c, m, d],
+    );
     Logger.setLevel("g1", LogLevel.Trace);
     Logger.setLevel("g1.p1", LogLevel.Error);
     Logger.logWarning("g1.p1.c1", "unexpected");
@@ -289,7 +292,8 @@ describe("Logger", () => {
       (c, m, d) => outerr = [c, m, d],
       (c, m, d) => outwarn = [c, m, d],
       (c, m, d) => outinfo = [c, m, d],
-      (c, m, d) => outtrace = [c, m, d]);
+      (c, m, d) => outtrace = [c, m, d],
+    );
 
     const c1msg: [string, string, FunctionReturningAny | undefined] = ["c1", "message1", () => "metaData1"];
     const c2msg: [string, string, FunctionReturningAny | undefined] = ["c2", "message2", undefined];
@@ -345,7 +349,8 @@ describe("Logger", () => {
       (c, m, d) => outerr = [c, m, d],
       (c, m, d) => outwarn = [c, m, d],
       (c, m, d) => outinfo = [c, m, d],
-      (c, m, d) => outtrace = [c, m, d]);
+      (c, m, d) => outtrace = [c, m, d],
+    );
 
     callLoggerConfigLevels({ categoryLevels: { stuff: 0 } }, true);
     callLoggerConfigLevels({ xcategoryLevels: [{ category: "c1", logLevel: "Error" }] }, true);
@@ -358,12 +363,12 @@ describe("Logger", () => {
   });
 
   it("turn on logging for a few categories", () => {
-
     Logger.initialize(
       (c, m, d) => outerr = [c, m, d],
       (c, m, d) => outwarn = [c, m, d],
       (c, m, d) => outinfo = [c, m, d],
-      (c, m, d) => outtrace = [c, m, d]);
+      (c, m, d) => outtrace = [c, m, d],
+    );
 
     const c1msg: [string, string, FunctionReturningAny | undefined] = ["c1", "message1", () => "metaData1"];
     const c2msg: [string, string, FunctionReturningAny | undefined] = ["c2", "message2", undefined];
@@ -404,24 +409,23 @@ describe("Logger", () => {
   it("Performance logger", async () => {
     const perfMessages = new Array<string>();
     const perfData = new Array<any>();
-    Logger.initialize(undefined, undefined,
-      (category, message, metadata?: LoggingMetaData) => {
-        if (category === "Performance") {
-          perfMessages.push(message);
+    Logger.initialize(undefined, undefined, (category, message, metadata?: LoggingMetaData) => {
+      if (category === "Performance") {
+        perfMessages.push(message);
 
-          const data = metadata ? BentleyError.getMetaData(metadata) : {};
-          perfData.push(data);
-        }
-      }, undefined);
+        const data = metadata ? BentleyError.getMetaData(metadata) : {};
+        perfData.push(data);
+      }
+    }, undefined);
 
-    await using(new PerfLogger("mytestroutine"), async (_r) => {
+    using(new PerfLogger("mytestroutine"), async (_r) => {
       await BeDuration.wait(10);
     });
     assert.isEmpty(perfMessages);
 
     Logger.setLevel("Performance", LogLevel.Info);
 
-    await using(new PerfLogger("mytestroutine2"), async (_r) => {
+    using(new PerfLogger("mytestroutine2"), async (_r) => {
       await BeDuration.wait(10);
     });
 
@@ -457,7 +461,8 @@ describe("Logger", () => {
       (c, m, d) => outerr = [c, m, BentleyError.getMetaData(d)],
       (c, m, d) => outwarn = [c, m, BentleyError.getMetaData(d)],
       (c, m, d) => outinfo = [c, m, BentleyError.getMetaData(d)],
-      (c, m, d) => outtrace = [c, m, BentleyError.getMetaData(d)]);
+      (c, m, d) => outtrace = [c, m, BentleyError.getMetaData(d)],
+    );
     Logger.setLevel("testcat", LogLevel.Error);
 
     clearOutlets();
@@ -475,7 +480,5 @@ describe("Logger", () => {
     clearOutlets();
     expect(() => Logger.logException("testcat", null)).to.not.throw("null exception");
     checkOutlets(["testcat", "Error: err is null.", { ExceptionType: "Error" }], [], [], []);
-
   });
-
 });

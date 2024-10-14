@@ -3,8 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { assert, BeDuration, Id64, Id64Arg, Id64String, StopWatch, using } from "@itwin/core-bentley";
 import { BlankConnection, IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
 import { InstanceKey, KeySet, NodeKey, SelectionScope, StandardNodeTypes } from "@itwin/presentation-common";
@@ -18,6 +16,8 @@ import {
   waitForPendingAsyncs,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { createStorage, CustomSelectable, SelectionStorage } from "@itwin/unified-selection";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { Presentation } from "../../presentation-frontend/Presentation";
 import { PresentationManager } from "../../presentation-frontend/PresentationManager";
 import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
@@ -39,7 +39,10 @@ describe("SelectionManager", () => {
   } as IModelConnection;
 
   const scopesManager = {
-    getSelectionScopes: sinon.stub<Parameters<SelectionScopesManager["getSelectionScopes"]>, ReturnType<SelectionScopesManager["getSelectionScopes"]>>(),
+    getSelectionScopes: sinon.stub<
+      Parameters<SelectionScopesManager["getSelectionScopes"]>,
+      ReturnType<SelectionScopesManager["getSelectionScopes"]>
+    >(),
     computeSelection: sinon.stub<Parameters<SelectionScopesManager["computeSelection"]>, ReturnType<SelectionScopesManager["computeSelection"]>>(),
   };
 
@@ -972,7 +975,7 @@ describe("SelectionManager", () => {
       it("custom selectable once", async () => {
         const instanceKeys = [createTestECInstanceKey({ id: "0x1" }), createTestECInstanceKey({ id: "0x2" })];
         const loadInstanceKeys = sinon.fake<Parameters<CustomSelectable["loadInstanceKeys"]>, ReturnType<CustomSelectable["loadInstanceKeys"]>>(() =>
-          createAsyncGenerator(instanceKeys),
+          createAsyncGenerator(instanceKeys)
         );
         storage.addToSelection({
           iModelKey: imodel.key,
@@ -1133,8 +1136,16 @@ describe("SelectionManager", () => {
       const selectable2instanceKeys = [createTestECInstanceKey({ id: "0x5" }), createTestECInstanceKey({ id: "0x6" })];
 
       it("converts add event selectables", async () => {
-        const selectable1: CustomSelectable = { identifier: "custom-1", loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys), data: {} };
-        const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
+        const selectable1: CustomSelectable = {
+          identifier: "custom-1",
+          loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys),
+          data: {},
+        };
+        const selectable2: CustomSelectable = {
+          identifier: "custom-2",
+          loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys),
+          data: {},
+        };
 
         storage.addToSelection({
           iModelKey: imodel.key,
@@ -1173,8 +1184,16 @@ describe("SelectionManager", () => {
       });
 
       it("converts replace event selectables", async () => {
-        const selectable1: CustomSelectable = { identifier: "custom-1", loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys), data: {} };
-        const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
+        const selectable1: CustomSelectable = {
+          identifier: "custom-1",
+          loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys),
+          data: {},
+        };
+        const selectable2: CustomSelectable = {
+          identifier: "custom-2",
+          loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys),
+          data: {},
+        };
 
         storage.replaceSelection({
           iModelKey: imodel.key,
@@ -1213,8 +1232,16 @@ describe("SelectionManager", () => {
       });
 
       it("converts remove event selectables", async () => {
-        const selectable1: CustomSelectable = { identifier: "custom-1", loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys), data: {} };
-        const selectable2: CustomSelectable = { identifier: "custom-2", loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys), data: {} };
+        const selectable1: CustomSelectable = {
+          identifier: "custom-1",
+          loadInstanceKeys: () => createAsyncGenerator(selectable1instanceKeys),
+          data: {},
+        };
+        const selectable2: CustomSelectable = {
+          identifier: "custom-2",
+          loadInstanceKeys: () => createAsyncGenerator(selectable2instanceKeys),
+          data: {},
+        };
 
         storage.addToSelection({
           iModelKey: imodel.key,
@@ -1266,7 +1293,7 @@ describe("SelectionManager", () => {
 });
 
 function createAsyncGenerator<T extends object>(values: T[], delay?: Promise<void>): AsyncGenerator<T> {
-  return (async function* () {
+  return (async function*() {
     await delay;
     for (const value of values) {
       yield value;

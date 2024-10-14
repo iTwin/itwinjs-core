@@ -25,13 +25,27 @@ class CustomRealityDataSource implements RealityDataSource {
     this._baseUrl = url.origin;
   }
 
-  public get isContextShare() { return false; }
-  public get realityData() { return undefined; }
-  public get realityDataId() { return undefined; }
-  public get realityDataType() { return "ThreeDTile"; }
-  public async getServiceUrl() { return Promise.resolve(this._tilesetUrl); }
-  public async getSpatialLocationAndExtents() { return Promise.resolve(undefined); }
-  public async getPublisherProductInfo() { return Promise.resolve(undefined); }
+  public get isContextShare() {
+    return false;
+  }
+  public get realityData() {
+    return undefined;
+  }
+  public get realityDataId() {
+    return undefined;
+  }
+  public get realityDataType() {
+    return "ThreeDTile";
+  }
+  public async getServiceUrl() {
+    return Promise.resolve(this._tilesetUrl);
+  }
+  public async getSpatialLocationAndExtents() {
+    return Promise.resolve(undefined);
+  }
+  public async getPublisherProductInfo() {
+    return Promise.resolve(undefined);
+  }
 
   public async getRootDocument(): Promise<any> {
     const response = await fetch(`${this._tilesetUrl}?key=${this._apiKey}`);
@@ -64,8 +78,12 @@ export function registerRealityDataSourceProvider(apiKey: string): void {
 
 export class AttachCustomRealityDataTool extends Tool {
   public static override toolId = "AttachCustomRealityData";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(url: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;

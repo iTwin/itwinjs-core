@@ -6,7 +6,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 export class EarthquakeSince1970Dataset {
-
   public static Earthquakes1970LayerCapabilities: any = {
     currentVersion: 10.91,
     id: 0,
@@ -18,7 +17,8 @@ export class EarthquakeSince1970Dataset {
     maxScale: 0,
     canScaleSymbols: false,
     geometryType: "esriGeometryPoint",
-    description: "Data represented by this map is not updated on a regular basis.  This is a sample service hosted by ESRI, powered by ArcGIS Server. ESRI reserves the right to change or remove this service at any time and without notice.\n",
+    description:
+      "Data represented by this map is not updated on a regular basis.  This is a sample service hosted by ESRI, powered by ArcGIS Server. ESRI reserves the right to change or remove this service at any time and without notice.\n",
     copyrightText: "",
     editFieldsInfo: null,
     ownershipBasedAccessControlForFeatures: null,
@@ -78,7 +78,8 @@ export class EarthquakeSince1970Dataset {
             symbol: {
               type: "esriPMS",
               url: "1a5ce93c9ddd121f21789ff08f50b383",
-              imageData: "iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAYAAADphp8SAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAQ1JREFUOI2d071KA1EQhuF3QzBkJ4XESmwtUouFhaIXIAhqayUEQawkVoLBwh8UsRR7L0Cwt/UevAMJ22RnYAsZC5eFRLM5m6+bYc4z05w6ATGjFcekZTP1aUiaErvzrsqWCDozFEWNM8hWgVPgcibIjCX3rJeXPVWeRPiqDLlzBcR52QIugONKkFl7xT05GGt3zXiMYz6DIffkAYjG5925BvaDIFV2gc0JO/ZU22siyUcpNBgwB9xOuvQ3yR2wUQo1m5wAy+UQ66rsiPD6LzQcsgCcT0HyNG7cs7co4vsPVKvRB+bDoKxjxiHwPAKZ0XHnKAwp0lflRQQtIHfuxy8MyCL51ykeirBdERnJD80TUfp6vTFHAAAAAElFTkSuQmCC",
+              imageData:
+                "iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAYAAADphp8SAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAQ1JREFUOI2d071KA1EQhuF3QzBkJ4XESmwtUouFhaIXIAhqayUEQawkVoLBwh8UsRR7L0Cwt/UevAMJ22RnYAsZC5eFRLM5m6+bYc4z05w6ATGjFcekZTP1aUiaErvzrsqWCDozFEWNM8hWgVPgcibIjCX3rJeXPVWeRPiqDLlzBcR52QIugONKkFl7xT05GGt3zXiMYz6DIffkAYjG5925BvaDIFV2gc0JO/ZU22siyUcpNBgwB9xOuvQ3yR2wUQo1m5wAy+UQ66rsiPD6LzQcsgCcT0HyNG7cs7co4vsPVKvRB+bDoKxjxiHwPAKZ0XHnKAwp0lflRQQtIHfuxy8MyCL51ykeirBdERnJD80TUfp6vTFHAAAAAElFTkSuQmCC",
               contentType: "image/png",
               width: 13,
               height: 11,
@@ -94,7 +95,8 @@ export class EarthquakeSince1970Dataset {
             symbol: {
               type: "esriPMS",
               url: "065667453660362eb9259f9b624cb128",
-              imageData: "iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAYAAADphp8SAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAARxJREFUOI2d0z1Lw1AUxvF/QrE06SB1EleHzuLgoOgHEARfNkMGoQjiJHUSLA6+oIijZEtTQXAS3F39Dn4DkSz2Xgwix6E10GjTmz7bOZz7O2e5JQyiH6g6W3TzZkqjkO49jnzyrEJWXB81NmR9lQ8hmcfmADgZC9JtZoSk2S+bKuTW9XkrDInNKYLTL6vYHAN7hSDdqc2JxF6m3dARN47HqzEkEl8DVnZe4AzYNIJUxDqwPGTHhopqC64Xv+RC7wETwMWwS3uJL4GlXKhSYR+YzYdYVB3W3G0e/4U+2kwBRyOQXqR8LkHyZDX4/gPZFi1g0ggiqesKO0AwAOmIusCuGZKmpULuXB+VQgJX2QsNMv37ddKHrsdqQWQgP4w0TSILuEHdAAAAAElFTkSuQmCC",
+              imageData:
+                "iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAYAAADphp8SAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAARxJREFUOI2d0z1Lw1AUxvF/QrE06SB1EleHzuLgoOgHEARfNkMGoQjiJHUSLA6+oIijZEtTQXAS3F39Dn4DkSz2Xgwix6E10GjTmz7bOZz7O2e5JQyiH6g6W3TzZkqjkO49jnzyrEJWXB81NmR9lQ8hmcfmADgZC9JtZoSk2S+bKuTW9XkrDInNKYLTL6vYHAN7hSDdqc2JxF6m3dARN47HqzEkEl8DVnZe4AzYNIJUxDqwPGTHhopqC64Xv+RC7wETwMWwS3uJL4GlXKhSYR+YzYdYVB3W3G0e/4U+2kwBRyOQXqR8LkHyZDX4/gPZFi1g0ggiqesKO0AwAOmIusCuGZKmpULuXB+VQgJX2QsNMv37ddKHrsdqQWQgP4w0TSILuEHdAAAAAElFTkSuQmCC",
               contentType: "image/png",
               width: 13,
               height: 11,
@@ -110,7 +112,8 @@ export class EarthquakeSince1970Dataset {
             symbol: {
               type: "esriPMS",
               url: "68fc02d60d18137f1c9a2bf2e58fdffb",
-              imageData: "iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAYAAADphp8SAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAASJJREFUOI2d079Lw0AYxvFvjtJi0kHqJK4OncXBQdG9QsAYcXESRBBdpE6CxcEfKOIo7o4iB3Z29X9w7CaSxd7BYey5xEKjTZM+2/vy3ud9lyuRI7pB1W3TzZopjUK6Ia6NeVE+K55EjQ05ceUIzDyCQ+B0LEhvMmONaSZlU/nceZL3wpA1nAFuUlYRnAB7hSAd1uZsHG2l2ju6wa3b5i03ZOPoBnDS87bMObCeC1IBa/RYHrIjUH5twZPRayb0cUCZDpfDLgVARFfAUiY00WEfmM2EYFH5+J5E/gt9bjCF4RgxggEQlQuLeXbg+w8kvmghmMzBAKauA7Z55H4A0iF1G7ObD0nSo6V8HjyJ6kM25jp9YY5M/36d/kPvidWCyEB+ACGWUwzkvHSJAAAAAElFTkSuQmCC",
+              imageData:
+                "iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAYAAADphp8SAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAASJJREFUOI2d079Lw0AYxvFvjtJi0kHqJK4OncXBQdG9QsAYcXESRBBdpE6CxcEfKOIo7o4iB3Z29X9w7CaSxd7BYey5xEKjTZM+2/vy3ud9lyuRI7pB1W3TzZopjUK6Ia6NeVE+K55EjQ05ceUIzDyCQ+B0LEhvMmONaSZlU/nceZL3wpA1nAFuUlYRnAB7hSAd1uZsHG2l2ju6wa3b5i03ZOPoBnDS87bMObCeC1IBa/RYHrIjUH5twZPRayb0cUCZDpfDLgVARFfAUiY00WEfmM2EYFH5+J5E/gt9bjCF4RgxggEQlQuLeXbg+w8kvmghmMzBAKauA7Z55H4A0iF1G7ObD0nSo6V8HjyJ6kM25jp9YY5M/36d/kPvidWCyEB+ACGWUwzkvHSJAAAAAElFTkSuQmCC",
               contentType: "image/png",
               width: 13,
               height: 11,
@@ -126,7 +129,8 @@ export class EarthquakeSince1970Dataset {
             symbol: {
               type: "esriPMS",
               url: "21b2e5d7cac48771fdbbbd9f804f664f",
-              imageData: "iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAYAAADphp8SAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAQRJREFUOI2d071KA1EQBtATCQazKWStxNYitVhYKPoAgqC2VoIIYiWxEgwW/qCIpdj7AIK9re/gG4hsY3ZhC7kWhkiiSTb5uhnmnpnmlhVIRq1Ka9BMeRjSohp4SVmLSMeGSpXKsTxfxBHOxoIy5kKeN9plI+U+4n1kKHCOarus4RQHI0FZHC+EJNnpae9l3FV5KwyFJLlFqXc+cIHtQlDKJlb77NhK43gpSpLXgdAHk7jqdylIkmusDISmOMT8QIjllI2Ip3+hT2ZwMgT5SaVyGfL8ucTXH2iCJqYLQXlez9jFQxeUUQ/sF0J+00x5jEg7UOCm98ICmdX+Op2HEesjIl35BslJQhl9PQgOAAAAAElFTkSuQmCC",
+              imageData:
+                "iVBORw0KGgoAAAANSUhEUgAAABIAAAAPCAYAAADphp8SAAAAAXNSR0IB2cksfwAAAAlwSFlzAAAOxAAADsQBlSsOGwAAAQRJREFUOI2d071KA1EQBtATCQazKWStxNYitVhYKPoAgqC2VoIIYiWxEgwW/qCIpdj7AIK9re/gG4hsY3ZhC7kWhkiiSTb5uhnmnpnmlhVIRq1Ka9BMeRjSohp4SVmLSMeGSpXKsTxfxBHOxoIy5kKeN9plI+U+4n1kKHCOarus4RQHI0FZHC+EJNnpae9l3FV5KwyFJLlFqXc+cIHtQlDKJlb77NhK43gpSpLXgdAHk7jqdylIkmusDISmOMT8QIjllI2Ip3+hT2ZwMgT5SaVyGfL8ucTXH2iCJqYLQXlez9jFQxeUUQ/sF0J+00x5jEg7UOCm98ICmdX+Op2HEesjIl35BslJQhl9PQgOAAAAAElFTkSuQmCC",
               contentType: "image/png",
               width: 13,
               height: 11,
@@ -540,6 +544,5 @@ export class EarthquakeSince1970Dataset {
     tileMaxRecordCount: 8000,
     standardMaxRecordCountNoGeometry: 32000,
     maxRecordCountFactor: 1,
-
   };
 }

@@ -23,7 +23,12 @@ export namespace XmlSerializationUtils {
    * @param schema The Schema object being serialized.
    * @beta
    */
-  export async function writeCustomAttribute(fullName: string, customAttribute: CustomAttribute, schemaDoc: Document, schema: Schema): Promise<Element> {
+  export async function writeCustomAttribute(
+    fullName: string,
+    customAttribute: CustomAttribute,
+    schemaDoc: Document,
+    schema: Schema,
+  ): Promise<Element> {
     const caClass = await schema.lookupItem(fullName) as CustomAttributeClass;
     if (!caClass)
       throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `The class '${fullName}' could not be found in the current schema context.`);
@@ -76,7 +81,12 @@ export namespace XmlSerializationUtils {
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
    * @beta
    */
-  export async function writeArrayProperty(propertyClass: ArrayProperty, propertyValue: any[], arrayElement: Element, schemaDoc: Document): Promise<void> {
+  export async function writeArrayProperty(
+    propertyClass: ArrayProperty,
+    propertyValue: any[],
+    arrayElement: Element,
+    schemaDoc: Document,
+  ): Promise<void> {
     if (propertyClass.isPrimitive()) {
       const typeString = primitiveTypeToString(propertyClass.primitiveType);
       for (const value of propertyValue) {
@@ -103,7 +113,12 @@ export namespace XmlSerializationUtils {
    * @param schemaDoc The Xml Document object holding the serialized EC Schema.
    * @beta
    */
-  export async function writeStructProperty(propertyClass: StructProperty, propertyValue: any, structElement: Element, schemaDoc: Document): Promise<void> {
+  export async function writeStructProperty(
+    propertyClass: StructProperty,
+    propertyValue: any,
+    structElement: Element,
+    schemaDoc: Document,
+  ): Promise<void> {
     const structClass = propertyClass.structClass;
     if (!structClass.properties)
       return;
@@ -119,15 +134,25 @@ export namespace XmlSerializationUtils {
    * @param propertyElement The XML Element that will contain the serialized property instance.
    * @beta
    */
-  export async function writePrimitiveProperty(propertyClass: PrimitiveOrEnumPropertyBase, propertyValue: any, propertyElement: Element): Promise<void> {
+  export async function writePrimitiveProperty(
+    propertyClass: PrimitiveOrEnumPropertyBase,
+    propertyValue: any,
+    propertyElement: Element,
+  ): Promise<void> {
     let primitiveType: PrimitiveType;
     if (propertyClass.isEnumeration()) {
       const enumeration = await (propertyClass as EnumerationProperty).enumeration;
       if (!enumeration)
-        throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `The enumeration on property class '${propertyClass.fullName}' could not be found in the current schema context.`);
+        throw new ECObjectsError(
+          ECObjectsStatus.ClassNotFound,
+          `The enumeration on property class '${propertyClass.fullName}' could not be found in the current schema context.`,
+        );
 
       if (enumeration.type === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The enumeration on property class '${propertyClass.fullName}' has an invalid primitive type.`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidType,
+          `The enumeration on property class '${propertyClass.fullName}' has an invalid primitive type.`,
+        );
 
       primitiveType = enumeration.type;
     } else
@@ -182,7 +207,10 @@ export namespace XmlSerializationUtils {
 
     const attributeSchema = nameParts[0].toUpperCase() === schema.name.toUpperCase() ? schema : await schema.getReference(nameParts[0]);
     if (!attributeSchema)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to resolve the namespace for CustomAttribute '${caName}' because the referenced schema '${nameParts[0]}' could not be located.`);
+      throw new ECObjectsError(
+        ECObjectsStatus.UnableToLocateSchema,
+        `Unable to resolve the namespace for CustomAttribute '${caName}' because the referenced schema '${nameParts[0]}' could not be located.`,
+      );
 
     return [nameParts[1], `${nameParts[0]}.${attributeSchema.schemaKey.version.toString()}`];
   }

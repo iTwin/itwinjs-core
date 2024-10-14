@@ -131,8 +131,7 @@ describe("Snippets", () => {
     const pointB = myRay.fractionToPoint(fractionA);
     emit(" The ray point at fractionA is ", fractionA);
     const vectorBtoA = Vector3d.createStartEnd(pointB, pointA);
-    emit(" Since it is the closest ray point to pointA, ray.direction and vectorBtoA are perpendicular",
-      vectorBtoA.angleTo(myRay.direction).degrees);
+    emit(" Since it is the closest ray point to pointA, ray.direction and vectorBtoA are perpendicular", vectorBtoA.angleTo(myRay.direction).degrees);
     emit(" and the distance from pointA to the ray is ", pointA.distance(pointB));
   });
 
@@ -160,11 +159,19 @@ describe("Snippets", () => {
     if (fractionOnRayForIntersection === undefined) {
       emit(" oops -- myRay is parallel to myPlane");
     } else {
-      emit("  The intersection of ", myRay, " with ", myPlane, " is point ", intersectionPoint, " which is at fraction ",
-        fractionOnRayForIntersection, "along the ray");
+      emit(
+        "  The intersection of ",
+        myRay,
+        " with ",
+        myPlane,
+        " is point ",
+        intersectionPoint,
+        " which is at fraction ",
+        fractionOnRayForIntersection,
+        "along the ray",
+      );
       emit("The altitude of the intersection point from the plane is 0: ", myPlane.altitude(intersectionPoint));
-      emit("  And the intersection point matches the ray at that fraction ",
-        myRay.fractionToPoint(fractionOnRayForIntersection));
+      emit("  And the intersection point matches the ray at that fraction ", myRay.fractionToPoint(fractionOnRayForIntersection));
     }
 
     const inPlaneVector = myRay.direction.crossProduct(myPlane.getNormalRef());
@@ -173,5 +180,4 @@ describe("Snippets", () => {
     const fractionOnParallelRay = parallelRay.intersectionWithPlane(myPlane);
     emit("   so the fractionOnParallelRay is undefined", fractionOnParallelRay);
   });
-
 });

@@ -3,9 +3,9 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { LabelDefinition } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { describeContentTestSuite, getFieldLabels } from "./Utils";
 
 describeContentTestSuite("Element properties", ({ getDefaultSuiteIModel }) => {

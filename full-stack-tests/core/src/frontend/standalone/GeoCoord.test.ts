@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { GeoCoordinatesResponseProps, GeoCoordStatus, IModelCoordinatesResponseProps } from "@itwin/core-common";
 import { GeoConverter, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Geometry, Point3d, XYZProps } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
 
 // spell-checker: disable
@@ -164,33 +164,35 @@ describe("GeoCoord", () => {
   });
 
   it("should get proper result from Geographic CRS conversion", async () => {
-
     const japanConverter = iModel.geoServices.getConverter({
       horizontalCRS: {
-        id:"JGD2K.CS-I-MOCK",
-        description : "Mock GCS",
-        source : "Test",
-        deprecated : false,
-        datumId : "JGD2000",
+        id: "JGD2K.CS-I-MOCK",
+        description: "Mock GCS",
+        source: "Test",
+        deprecated: false,
+        datumId: "JGD2000",
         unit: "Meter",
-        projection : {
+        projection: {
           method: "TransverseMercator",
           centralMeridian: 129.5,
           latitudeOfOrigin: 33.0,
           scaleFactor: 0.9999,
           falseEasting: 0.0,
-          falseNorthing: 0.0},
+          falseNorthing: 0.0,
+        },
       },
-      verticalCRS : {
-        id : "GEOID"}});
+      verticalCRS: {
+        id: "GEOID",
+      },
+    });
 
     const testPoint: XYZProps[] = [];
-    testPoint.push({x: 170370.718, y: 11572.405, z: 0.0});
+    testPoint.push({ x: 170370.718, y: 11572.405, z: 0.0 });
 
     expect(japanConverter !== undefined).to.be.true;
     const response = await japanConverter!.getGeoCoordinatesFromIModelCoordinates(testPoint);
 
-    const expectedPt = Point3d.fromJSON({x: 282707.7064282134, y: -3640811.0118976748, z: -73.01288342685298});
+    const expectedPt = Point3d.fromJSON({ x: 282707.7064282134, y: -3640811.0118976748, z: -73.01288342685298 });
     const outPt = Point3d.fromJSON(response.geoCoords[0].p);
 
     expect(Geometry.isSamePoint3dXY(expectedPt, outPt)).to.be.true;

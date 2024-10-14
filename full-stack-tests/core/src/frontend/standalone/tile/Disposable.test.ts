@@ -2,16 +2,42 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { ByteStream, IDisposable } from "@itwin/core-bentley";
-import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
-  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
-  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
+  ColorByName,
+  ColorDef,
+  ColorIndex,
+  FeatureIndex,
+  FillFlags,
+  ImageBuffer,
+  ImageBufferFormat,
+  QParams3d,
+  QPoint3dList,
+  RenderTexture,
+} from "@itwin/core-common";
+import {
+  Decorations,
+  GraphicList,
+  GraphicType,
+  ImdlReader,
+  IModelApp,
+  IModelConnection,
+  OffScreenViewport,
+  PlanarClassifierMap,
+  PlanarClassifierTarget,
+  PlanarClipMaskState,
+  RenderMemory,
+  RenderPlanarClassifier,
+  RenderTextureDrape,
+  SceneContext,
+  ScreenViewport,
+  SnapshotConnection,
+  TextureDrapeMap,
   TileTreeReference,
 } from "@itwin/core-frontend";
 import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
 import { Arc3d, Point3d, Range3d } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import { TestUtility } from "../../TestUtility";
 import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
@@ -19,7 +45,7 @@ import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
-const itemsChecked: object[] = [];  // Private helper array for storing what objects have already been checked for disposal in isDisposed()
+const itemsChecked: object[] = []; // Private helper array for storing what objects have already been checked for disposal in isDisposed()
 
 /**
  * Class holding a RenderTarget that provides getters for all of a Target's typically private members, as well as members that may be set to undefined when disposing.
@@ -32,15 +58,33 @@ class ExposedTarget {
     this.target = target;
   }
 
-  public get decorations(): Decorations | undefined { return (this.target as any)._decorations; }
-  public get dynamics(): GraphicList | undefined { return (this.target as any)._dynamics; }
-  public get worldDecorations(): WorldDecorations | undefined { return (this.target as any)._worldDecorations; }
-  public get clipMask(): TextureHandle | undefined { return (this.target as any)._clipMask; }
-  public get environmentMap(): TextureHandle | undefined { return (this.target as any)._environmentMap; }
-  public get diffuseMap(): TextureHandle | undefined { return (this.target as any)._diffuseMap; }
-  public get batchesClone(): Batch[] { return (this.target as any)._batches.slice(); }
-  public get planarClassifiers(): PlanarClassifierMap | undefined { return (this.target as any)._planarClassifiers; }
-  public get textureDrapes(): TextureDrapeMap | undefined { return (this.target as any)._textureDrapes; }
+  public get decorations(): Decorations | undefined {
+    return (this.target as any)._decorations;
+  }
+  public get dynamics(): GraphicList | undefined {
+    return (this.target as any)._dynamics;
+  }
+  public get worldDecorations(): WorldDecorations | undefined {
+    return (this.target as any)._worldDecorations;
+  }
+  public get clipMask(): TextureHandle | undefined {
+    return (this.target as any)._clipMask;
+  }
+  public get environmentMap(): TextureHandle | undefined {
+    return (this.target as any)._environmentMap;
+  }
+  public get diffuseMap(): TextureHandle | undefined {
+    return (this.target as any)._diffuseMap;
+  }
+  public get batchesClone(): Batch[] {
+    return (this.target as any)._batches.slice();
+  }
+  public get planarClassifiers(): PlanarClassifierMap | undefined {
+    return (this.target as any)._planarClassifiers;
+  }
+  public get textureDrapes(): TextureDrapeMap | undefined {
+    return (this.target as any)._textureDrapes;
+  }
 
   public changePlanarClassifiers(map: PlanarClassifierMap | undefined) {
     // The real implementation takes sole ownership of the map. Tests like to reuse same map. So clone it.
@@ -100,29 +144,29 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
   if (disposable === undefined || disposable === null)
     return true;
 
-  if (itemsChecked.indexOf(disposable) === -1)  // We want to check matching references (skipping primitive types here is okay, since they can't be disposable)
+  if (itemsChecked.indexOf(disposable) === -1) // We want to check matching references (skipping primitive types here is okay, since they can't be disposable)
     itemsChecked.push(disposable);
   else
     return true;
 
-  if (Array.isArray(disposable)) {  // Array
+  if (Array.isArray(disposable)) { // Array
     itemsChecked.push(disposable);
     for (const elem of disposable)
       if (!disposedCheck(elem))
         return false;
-
   } else if (disposable.dispose !== undefined) { // Low-level WebGL resource disposable
     expect(typeof (disposable.dispose)).to.equal("function");
     expect(typeof (disposable.isDisposed)).to.equal("boolean");
     return disposable.isDisposed;
-  } else if (typeof disposable === "object") {  // High-level rendering object disposable
+  } else if (typeof disposable === "object") { // High-level rendering object disposable
     for (const prop in disposable) {
       if (disposable.hasOwnProperty(prop) && typeof disposable[prop] === "object") {
         if (ignoredAttribs !== undefined && ignoredAttribs.indexOf(prop) !== -1)
           continue;
-        if (Array.isArray(disposable[prop]) || disposable[prop].dispose !== undefined)
+        if (Array.isArray(disposable[prop]) || disposable[prop].dispose !== undefined) {
           if (!disposedCheck(disposable[prop]))
             return false;
+        }
       }
     }
   }
@@ -198,7 +242,7 @@ describe("Disposal of WebGL Resources", () => {
     const colors = new ColorIndex();
     colors.initUniform(ColorByName.tan);
 
-    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10 ,0)];
+    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10, 0)];
     const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
     for (const point of points)
       qpoints.add(point);
@@ -259,7 +303,7 @@ describe("Disposal of WebGL Resources", () => {
       expect(vp instanceof ScreenViewport || vp instanceof OffScreenViewport).to.be.true;
       expect(vp.isDisposed).to.be.false;
 
-      const target = (vp.target as any);
+      const target = vp.target as any;
       let fbo = target._fbo as FrameBuffer;
       expect(fbo).to.be.undefined;
       let blitGeom = target._blitGeom;
@@ -294,9 +338,11 @@ describe("Disposal of WebGL Resources", () => {
 
   class Classifier extends RenderPlanarClassifier {
     public disposed = false;
-    public constructor() { super(); }
-    public collectGraphics(_context: SceneContext, _target: PlanarClassifierTarget): void { }
-    public setSource(_classifierTreeRef?: TileTreeReference, _planarClipMask?: PlanarClipMaskState): void { }
+    public constructor() {
+      super();
+    }
+    public collectGraphics(_context: SceneContext, _target: PlanarClassifierTarget): void {}
+    public setSource(_classifierTreeRef?: TileTreeReference, _planarClipMask?: PlanarClipMaskState): void {}
     public dispose(): void {
       expect(this.disposed).to.be.false;
       this.disposed = true;
@@ -305,9 +351,11 @@ describe("Disposal of WebGL Resources", () => {
 
   class Drape extends RenderTextureDrape {
     public disposed = false;
-    public constructor() { super(); }
-    public collectGraphics(_context: SceneContext): void { }
-    public collectStatistics(_stats: RenderMemory.Statistics): void { }
+    public constructor() {
+      super();
+    }
+    public collectGraphics(_context: SceneContext): void {}
+    public collectStatistics(_stats: RenderMemory.Statistics): void {}
     public dispose(): void {
       expect(this.disposed).to.be.false;
       this.disposed = true;
@@ -402,18 +450,24 @@ describe("Disposal of WebGL Resources", () => {
 
   it("should manage lifetimes of planar classifiers", async () => {
     const map = new Map<string, Classifier>();
-    await testClassifiersOrDrapes<Classifier>(map, "planarClassifiers",
+    await testClassifiersOrDrapes<Classifier>(
+      map,
+      "planarClassifiers",
       () => new Classifier(),
       (target, id) => target.target.getPlanarClassifier(id) as Classifier,
-      (target, newMap) => target.changePlanarClassifiers(newMap));
+      (target, newMap) => target.changePlanarClassifiers(newMap),
+    );
   });
 
   it("should manage lifetimes of texture drapes", async () => {
     const map = new Map<string, Drape>();
-    await testClassifiersOrDrapes<Drape>(map, "textureDrapes",
+    await testClassifiersOrDrapes<Drape>(
+      map,
+      "textureDrapes",
       () => new Drape(),
       (target, id) => target.target.getTextureDrape(id) as Drape,
-      (target, newMap) => target.changeTextureDrapes(newMap));
+      (target, newMap) => target.changeTextureDrapes(newMap),
+    );
   });
 
   // NB: This rather wacky test disposes of IModelApp.renderSystem. Therefore it must be run last of all of these tests, or subsequent tests expecting
@@ -445,7 +499,11 @@ describe("Disposal of WebGL Resources", () => {
     // eslint-disable-next-line deprecation/deprecation
     let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1), imodel0, textureParams);
     const graphicBuilder = target.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
-    graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
+    graphicBuilder.addArc(
+      Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d,
+      false,
+      false,
+    );
     const graphic = graphicBuilder.finish();
 
     // Pre-disposal
@@ -481,12 +539,12 @@ describe("Disposal of WebGL Resources", () => {
       assert.isTrue(isDisposed(target));
     assert.isFalse(isDisposed(texture));
     if (batches.length > 0 && !allOverridesSharedWithTarget(target, batches))
-      assert.isFalse(isDisposed(batches));  // we did not call getOverrides on any graphics
+      assert.isFalse(isDisposed(batches)); // we did not call getOverrides on any graphics
     else
       assert.isTrue(isDisposed(batches));
 
     // Post-disposal of target (only owned resource checks)
-    assert.isTrue(isDisposed(target, ["_batches", "_scene"]));   // This test claims _batches and _scene are the only disposable target members that are NOT fully owned
+    assert.isTrue(isDisposed(target, ["_batches", "_scene"])); // This test claims _batches and _scene are the only disposable target members that are NOT fully owned
     assert.isTrue(isDisposed(exposedTarget.decorations));
     assert.isTrue(isDisposed(target.compositor));
     assert.isTrue(isDisposed(dynamics));

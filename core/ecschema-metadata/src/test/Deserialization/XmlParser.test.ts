@@ -5,17 +5,30 @@
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
+import { SchemaContext } from "../../Context";
 import { CAProviderTuple } from "../../Deserialization/AbstractParser";
 import {
-  ConstantProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, EnumeratorProps, InvertedUnitProps, MixinProps,
-  NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, SchemaItemFormatProps,
-  SchemaProps, SchemaReferenceProps, StructArrayPropertyProps,
+  ConstantProps,
+  EntityClassProps,
+  EnumerationPropertyProps,
+  EnumerationProps,
+  EnumeratorProps,
+  InvertedUnitProps,
+  MixinProps,
+  NavigationPropertyProps,
+  PhenomenonProps,
+  PrimitiveArrayPropertyProps,
+  PrimitivePropertyProps,
+  PropertyCategoryProps,
+  SchemaItemFormatProps,
+  SchemaProps,
+  SchemaReferenceProps,
+  StructArrayPropertyProps,
 } from "../../Deserialization/JsonProps";
 import { XmlParser } from "../../Deserialization/XmlParser";
-import { SchemaContext } from "../../Context";
+import { ECObjectsError } from "../../Exception";
 import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { Schema } from "../../Metadata/Schema";
-import { ECObjectsError } from "../../Exception";
 import { createSchemaJsonWithItems, createSchemaXmlWithItems } from "../TestUtils/DeserializationHelpers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -28,10 +41,18 @@ describe("XmlParser", () => {
     it("should throw for an invalid typeName", () => {
       const itemsXml = `<ECEntityClass typeName="01a"/>`;
       parser = new XmlParser(createSchemaXmlWithItems(itemsXml));
-      assert.throws(() => parser.findItem("01a"), ECObjectsError, `A SchemaItem in TestSchema has an invalid 'typeName' attribute. '01a' is not a valid ECName.`);
+      assert.throws(
+        () => parser.findItem("01a"),
+        ECObjectsError,
+        `A SchemaItem in TestSchema has an invalid 'typeName' attribute. '01a' is not a valid ECName.`,
+      );
 
       parser = new XmlParser(createSchemaXmlWithItems(itemsXml));
-      assert.throws(() => [...parser.getItems()], ECObjectsError, `A SchemaItem in TestSchema has an invalid 'typeName' attribute. '01a' is not a valid ECName.`);
+      assert.throws(
+        () => [...parser.getItems()],
+        ECObjectsError,
+        `A SchemaItem in TestSchema has an invalid 'typeName' attribute. '01a' is not a valid ECName.`,
+      );
     });
 
     it("should throw for missing typeName", () => {
@@ -48,10 +69,18 @@ describe("XmlParser", () => {
       const itemsXml = `<ECIntruder typeName="Muhuhahaha"></ECIntruder>`;
 
       parser = new XmlParser(createSchemaXmlWithItems(itemsXml));
-      assert.throws(() => parser.findItem("Muhuhahaha"), ECObjectsError, `A SchemaItem in TestSchema has an invalid type. 'ECIntruder' is not a valid SchemaItem type.`);
+      assert.throws(
+        () => parser.findItem("Muhuhahaha"),
+        ECObjectsError,
+        `A SchemaItem in TestSchema has an invalid type. 'ECIntruder' is not a valid SchemaItem type.`,
+      );
 
       parser = new XmlParser(createSchemaXmlWithItems(itemsXml));
-      assert.throws(() => [...parser.getItems()], ECObjectsError, `A SchemaItem in TestSchema has an invalid type. 'ECIntruder' is not a valid SchemaItem type.`);
+      assert.throws(
+        () => [...parser.getItems()],
+        ECObjectsError,
+        `A SchemaItem in TestSchema has an invalid type. 'ECIntruder' is not a valid SchemaItem type.`,
+      );
     });
 
     it("should differentiate a Mixin from an ECEntityClass", () => {
@@ -127,12 +156,21 @@ describe("XmlParser", () => {
         throw new Error("Expected finding CustomAttributeClass to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseCustomAttributeClass(itemElement), ECObjectsError, `The CustomAttributeClass TestSchema.${itemName} is missing the required 'appliesTo' attribute.`);
+      assert.throws(
+        () => parser.parseCustomAttributeClass(itemElement),
+        ECObjectsError,
+        `The CustomAttributeClass TestSchema.${itemName} is missing the required 'appliesTo' attribute.`,
+      );
     });
   });
 
   describe("parseEntityClass", () => {
-    function testParseEntityClass(itemXml: string, itemName: string, expectedReferenceSchema: SchemaReferenceProps[], expectedEntityProps: EntityClassProps): void {
+    function testParseEntityClass(
+      itemXml: string,
+      itemName: string,
+      expectedReferenceSchema: SchemaReferenceProps[],
+      expectedEntityProps: EntityClassProps,
+    ): void {
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem(itemName);
       if (findResult === undefined)
@@ -229,7 +267,6 @@ describe("XmlParser", () => {
       } as EntityClassProps;
 
       testParseEntityClass(itemXml, "Entity", expectedReferenceSchema, expectedProps);
-
     });
 
     it("item has invalid alias:className base", async () => {
@@ -332,7 +369,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseEnumeration(itemElement), ECObjectsError, `The Enumeration TestSchema.${itemName} is missing the required 'backingTypeName' attribute.`);
+      assert.throws(
+        () => parser.parseEnumeration(itemElement),
+        ECObjectsError,
+        `The Enumeration TestSchema.${itemName} is missing the required 'backingTypeName' attribute.`,
+      );
     });
 
     it("should throw for invalid backingTypeName", () => {
@@ -348,7 +389,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseEnumeration(itemElement), ECObjectsError, `The Enumeration TestSchema.${itemName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+      assert.throws(
+        () => parser.parseEnumeration(itemElement),
+        ECObjectsError,
+        `The Enumeration TestSchema.${itemName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`,
+      );
     });
 
     it("missing isStrict attribute results in isStrict set to true", () => {
@@ -381,7 +426,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseEnumeration(itemElement), ECObjectsError, `The Enumeration TestSchema.${itemName} has an invalid 'isStrict' attribute. It should either be "true" or "false".`);
+      assert.throws(
+        () => parser.parseEnumeration(itemElement),
+        ECObjectsError,
+        `The Enumeration TestSchema.${itemName} has an invalid 'isStrict' attribute. It should either be "true" or "false".`,
+      );
     });
 
     it("should throw for enumerator with missing name", () => {
@@ -397,7 +446,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseEnumeration(itemElement), ECObjectsError, `The Enumeration TestSchema.${itemName} has an enumerator that is missing the required attribute 'name'.`);
+      assert.throws(
+        () => parser.parseEnumeration(itemElement),
+        ECObjectsError,
+        `The Enumeration TestSchema.${itemName} has an enumerator that is missing the required attribute 'name'.`,
+      );
     });
 
     it("should throw for enumerator with missing value", () => {
@@ -413,7 +466,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseEnumeration(itemElement), ECObjectsError, `The Enumeration TestSchema.${itemName} has an enumerator that is missing the required attribute 'value'.`);
+      assert.throws(
+        () => parser.parseEnumeration(itemElement),
+        ECObjectsError,
+        `The Enumeration TestSchema.${itemName} has an enumerator that is missing the required attribute 'value'.`,
+      );
     });
 
     it("should throw for int enumeration with non-numeric values", () => {
@@ -429,7 +486,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Enumeration to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseEnumeration(itemElement), ECObjectsError, `The Enumeration TestSchema.${itemName} of type "int" has an enumerator with a non-integer value.`);
+      assert.throws(
+        () => parser.parseEnumeration(itemElement),
+        ECObjectsError,
+        `The Enumeration TestSchema.${itemName} of type "int" has an enumerator with a non-integer value.`,
+      );
     });
   });
 
@@ -508,13 +569,17 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Format to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseFormat(itemElement), ECObjectsError, `The Format TestSchema.${itemName} is missing the required 'type' attribute.`);
+      assert.throws(
+        () => parser.parseFormat(itemElement),
+        ECObjectsError,
+        `The Format TestSchema.${itemName} is missing the required 'type' attribute.`,
+      );
     });
 
-    it("should throw for invalid precision attribute", () => { });
-    it("should throw for invalid roundFactor attribute", () => { });
-    it("should throw for invalid minWidth attribute", () => { });
-    it("should throw for invalid stationOffsetSize attribute", () => { });
+    it("should throw for invalid precision attribute", () => {});
+    it("should throw for invalid roundFactor attribute", () => {});
+    it("should throw for invalid minWidth attribute", () => {});
+    it("should throw for invalid stationOffsetSize attribute", () => {});
 
     it("should throw for composite with missing Unit tags", () => {
       const itemXml = `
@@ -529,10 +594,14 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Format to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseFormat(itemElement), ECObjectsError, `The Format TestSchema.${itemName} has an invalid 'Composite' element. It should have 1-4 Unit elements.`);
+      assert.throws(
+        () => parser.parseFormat(itemElement),
+        ECObjectsError,
+        `The Format TestSchema.${itemName} has an invalid 'Composite' element. It should have 1-4 Unit elements.`,
+      );
     });
 
-    it("should throw for invalid composite includeZero attribute", () => { });
+    it("should throw for invalid composite includeZero attribute", () => {});
   });
 
   describe("parseInvertedUnit", () => {
@@ -564,7 +633,11 @@ describe("XmlParser", () => {
       if (findResult === undefined)
         throw new Error("Expected finding InvertedUnit to be successful");
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseInvertedUnit(itemElement), ECObjectsError, `The InvertedUnit TestSchema.${itemName} is missing the required 'invertsUnit' attribute.`);
+      assert.throws(
+        () => parser.parseInvertedUnit(itemElement),
+        ECObjectsError,
+        `The InvertedUnit TestSchema.${itemName} is missing the required 'invertsUnit' attribute.`,
+      );
     });
 
     it("should throw for missing unitSystem attribute", () => {
@@ -575,7 +648,11 @@ describe("XmlParser", () => {
       if (findResult === undefined)
         throw new Error("Expected finding InvertedUnit to be successful");
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseInvertedUnit(itemElement), ECObjectsError, `The InvertedUnit TestSchema.${itemName} is missing the required 'unitSystem' attribute.`);
+      assert.throws(
+        () => parser.parseInvertedUnit(itemElement),
+        ECObjectsError,
+        `The InvertedUnit TestSchema.${itemName} is missing the required 'unitSystem' attribute.`,
+      );
     });
   });
 
@@ -625,14 +702,14 @@ describe("XmlParser", () => {
           name: "Formats",
           version: "1.0.0",
         } as SchemaReferenceProps,
-
       ];
 
       const expectedProps = {
         persistenceUnit: "Units.RAD",
         presentationUnits: [
           "Formats.DoubleUnitFormat(6)[Formats.YRD|yard(s)][Units.FT|u:feet]",
-          "Formats.QuadUnitFormat(6)[Formats.MILE|mile(s)][Units.YRD|yard(s)][Formats.FT|feet][Formats.IN|inch(es)]"],
+          "Formats.QuadUnitFormat(6)[Formats.MILE|mile(s)][Units.YRD|yard(s)][Formats.FT|feet][Formats.IN|inch(es)]",
+        ],
         relativeError: 0.01,
         label: undefined,
         description: undefined,
@@ -653,7 +730,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding KindOfQuantity to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseKindOfQuantity(itemElement), ECObjectsError, `The KindOfQuantity TestSchema.${itemName} is missing the required 'persistenceUnit' attribute.`);
+      assert.throws(
+        () => parser.parseKindOfQuantity(itemElement),
+        ECObjectsError,
+        `The KindOfQuantity TestSchema.${itemName} is missing the required 'persistenceUnit' attribute.`,
+      );
     });
 
     it("should throw for missing relativeError attribute", () => {
@@ -665,7 +746,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding KindOfQuantity to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseKindOfQuantity(itemElement), ECObjectsError, `The KindOfQuantity TestSchema.${itemName} is missing the required 'relativeError' attribute.`);
+      assert.throws(
+        () => parser.parseKindOfQuantity(itemElement),
+        ECObjectsError,
+        `The KindOfQuantity TestSchema.${itemName} is missing the required 'relativeError' attribute.`,
+      );
     });
 
     it("should throw for invalid relativeError attribute", () => {
@@ -677,7 +762,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding KindOfQuantity to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseKindOfQuantity(itemElement), ECObjectsError, `The KindOfQuantity TestSchema.${itemName} has an invalid 'relativeError' attribute. It should be a numeric value.`);
+      assert.throws(
+        () => parser.parseKindOfQuantity(itemElement),
+        ECObjectsError,
+        `The KindOfQuantity TestSchema.${itemName} has an invalid 'relativeError' attribute. It should be a numeric value.`,
+      );
     });
   });
 
@@ -740,7 +829,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Mixin to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseMixin(itemElement), ECObjectsError, `The Mixin TestSchema.${itemName} is missing the required 'AppliesToEntityClass' tag.`);
+      assert.throws(
+        () => parser.parseMixin(itemElement),
+        ECObjectsError,
+        `The Mixin TestSchema.${itemName} is missing the required 'AppliesToEntityClass' tag.`,
+      );
     });
 
     it("should throw for multiple base classes", () => {
@@ -761,7 +854,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Mixin to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseMixin(itemElement), ECObjectsError, `The Mixin TestSchema.${itemName} has more than one base class which is not allowed.`);
+      assert.throws(
+        () => parser.parseMixin(itemElement),
+        ECObjectsError,
+        `The Mixin TestSchema.${itemName} has more than one base class which is not allowed.`,
+      );
     });
   });
 
@@ -795,7 +892,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Phenomenon to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parsePhenomenon(itemElement), ECObjectsError, `The Phenomenon TestSchema.${itemName} is missing the required 'definition' attribute.`);
+      assert.throws(
+        () => parser.parsePhenomenon(itemElement),
+        ECObjectsError,
+        `The Phenomenon TestSchema.${itemName} is missing the required 'definition' attribute.`,
+      );
     });
   });
 
@@ -832,7 +933,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Constant to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseConstant(itemElement), ECObjectsError, `The Constant TestSchema.${itemName} is missing the required 'phenomenon' attribute.`);
+      assert.throws(
+        () => parser.parseConstant(itemElement),
+        ECObjectsError,
+        `The Constant TestSchema.${itemName} is missing the required 'phenomenon' attribute.`,
+      );
     });
 
     it("should throw for missing definition attribute", () => {
@@ -844,11 +949,16 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Constant to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseConstant(itemElement), ECObjectsError, `The Constant TestSchema.${itemName} is missing the required 'definition' attribute.`);
+      assert.throws(
+        () => parser.parseConstant(itemElement),
+        ECObjectsError,
+        `The Constant TestSchema.${itemName} is missing the required 'definition' attribute.`,
+      );
     });
 
     it("should throw for invalid numerator attribute", () => {
-      const itemXml = `<Constant typeName="TestConstant" phenomenon="LENGTH_RATIO" definition="ONE" numerator="threepointonefour" displayLabel="Pi"/>`;
+      const itemXml =
+        `<Constant typeName="TestConstant" phenomenon="LENGTH_RATIO" definition="ONE" numerator="threepointonefour" displayLabel="Pi"/>`;
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestConstant");
@@ -856,11 +966,16 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Constant to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseConstant(itemElement), ECObjectsError, `The Constant TestSchema.${itemName} has an invalid 'numerator' attribute. It should be a numeric value.`);
+      assert.throws(
+        () => parser.parseConstant(itemElement),
+        ECObjectsError,
+        `The Constant TestSchema.${itemName} has an invalid 'numerator' attribute. It should be a numeric value.`,
+      );
     });
 
     it("should throw for invalid denominator attribute", () => {
-      const itemXml = `<Constant typeName="TestConstant" phenomenon="LENGTH_RATIO" definition="ONE" denominator="threepointonefour" displayLabel="PiInverse"/>`;
+      const itemXml =
+        `<Constant typeName="TestConstant" phenomenon="LENGTH_RATIO" definition="ONE" denominator="threepointonefour" displayLabel="PiInverse"/>`;
 
       parser = new XmlParser(createSchemaXmlWithItems(itemXml));
       const findResult = parser.findItem("TestConstant");
@@ -868,7 +983,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding Constant to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parseConstant(itemElement), ECObjectsError, `The Constant TestSchema.${itemName} has an invalid 'denominator' attribute. It should be a numeric value.`);
+      assert.throws(
+        () => parser.parseConstant(itemElement),
+        ECObjectsError,
+        `The Constant TestSchema.${itemName} has an invalid 'denominator' attribute. It should be a numeric value.`,
+      );
     });
   });
 
@@ -965,7 +1084,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass with PrimitiveProperty to be successful");
 
       const [, , parentElement] = findResult;
-      assert.throws(() => Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass")), ECObjectsError, `An ECProperty in TestSchema.TestEntityClass is missing the required 'propertyName' attribute.`);
+      assert.throws(
+        () => Array.from(parser.getProperties(parentElement, "TestSchema.TestEntityClass")),
+        ECObjectsError,
+        `An ECProperty in TestSchema.TestEntityClass is missing the required 'propertyName' attribute.`,
+      );
     });
 
     it("should throw for missing typeName", () => {
@@ -985,7 +1108,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propEelement] = propertiesResult[0];
-      assert.throws(() => parser.parsePrimitiveProperty(propEelement), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.${propName} is missing the required 'typeName' attribute.`);
+      assert.throws(
+        () => parser.parsePrimitiveProperty(propEelement),
+        ECObjectsError,
+        `The ECProperty TestSchema.TestEntityClass.${propName} is missing the required 'typeName' attribute.`,
+      );
     });
 
     it("should throw for invalid priority attribute", () => {
@@ -1005,7 +1132,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.throws(() => parser.parsePrimitiveProperty(propElement), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'priority' attribute. It should be a numeric value.`);
+      assert.throws(
+        () => parser.parsePrimitiveProperty(propElement),
+        ECObjectsError,
+        `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'priority' attribute. It should be a numeric value.`,
+      );
     });
 
     it("should throw for invalid isReadOnly attribute", () => {
@@ -1025,7 +1156,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.throws(() => parser.parsePrimitiveProperty(propElement), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'readOnly' attribute. It should be either "true" or "false".`);
+      assert.throws(
+        () => parser.parsePrimitiveProperty(propElement),
+        ECObjectsError,
+        `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'readOnly' attribute. It should be either "true" or "false".`,
+      );
     });
 
     it("should throw for invalid inherited attribute", () => {
@@ -1045,8 +1180,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.throws(() => parser.parsePrimitiveProperty(propElement), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'inherited' attribute. It should be either "true" or "false".`);
-
+      assert.throws(
+        () => parser.parsePrimitiveProperty(propElement),
+        ECObjectsError,
+        `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'inherited' attribute. It should be either "true" or "false".`,
+      );
     });
 
     it("should throw for invalid minimumLength attribute", () => {
@@ -1066,7 +1204,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.throws(() => parser.parsePrimitiveProperty(propElement), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'minimumLength' attribute. It should be a numeric value.`);
+      assert.throws(
+        () => parser.parsePrimitiveProperty(propElement),
+        ECObjectsError,
+        `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'minimumLength' attribute. It should be a numeric value.`,
+      );
     });
 
     it("should throw for invalid maximumLength attribute", () => {
@@ -1086,7 +1228,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.throws(() => parser.parsePrimitiveProperty(propElement), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'maximumLength' attribute. It should be a numeric value.`);
+      assert.throws(
+        () => parser.parsePrimitiveProperty(propElement),
+        ECObjectsError,
+        `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'maximumLength' attribute. It should be a numeric value.`,
+      );
     });
 
     it("should throw for invalid minimumValue attribute", () => {
@@ -1106,7 +1252,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.throws(() => parser.parsePrimitiveProperty(propElement), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'minimumValue' attribute. It should be a numeric value.`);
+      assert.throws(
+        () => parser.parsePrimitiveProperty(propElement),
+        ECObjectsError,
+        `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'minimumValue' attribute. It should be a numeric value.`,
+      );
     });
 
     it("should throw for invalid maximumValue attribute", () => {
@@ -1126,7 +1276,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass PrimitiveProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.throws(() => parser.parsePrimitiveProperty(propElement), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'maximumValue' attribute. It should be a numeric value.`);
+      assert.throws(
+        () => parser.parsePrimitiveProperty(propElement),
+        ECObjectsError,
+        `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'maximumValue' attribute. It should be a numeric value.`,
+      );
     });
   });
 
@@ -1266,7 +1420,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass ArrayProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.throws(() => parser.parsePrimitiveArrayProperty(propElement), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'minOccurs' attribute. It should be a numeric value.`);
+      assert.throws(
+        () => parser.parsePrimitiveArrayProperty(propElement),
+        ECObjectsError,
+        `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'minOccurs' attribute. It should be a numeric value.`,
+      );
     });
 
     it("should throw for invalid maxOccurs attribute", () => {
@@ -1286,7 +1444,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass ArrayProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.throws(() => parser.parsePrimitiveArrayProperty(propElement), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'maxOccurs' attribute. It should be a numeric value.`);
+      assert.throws(
+        () => parser.parsePrimitiveArrayProperty(propElement),
+        ECObjectsError,
+        `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'maxOccurs' attribute. It should be a numeric value.`,
+      );
     });
 
     it("it should accept 'unbounded' as valid maxOccurs attribute", () => {
@@ -1306,7 +1468,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass ArrayProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.doesNotThrow(() => parser.parsePrimitiveArrayProperty(propElement), ECObjectsError, `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'maxOccurs' attribute. It should be a numeric value.`);
+      assert.doesNotThrow(
+        () => parser.parsePrimitiveArrayProperty(propElement),
+        ECObjectsError,
+        `The ECProperty TestSchema.TestEntityClass.${propName} has an invalid 'maxOccurs' attribute. It should be a numeric value.`,
+      );
       const actualProps = parser.parsePrimitiveArrayProperty(propElement);
       assert.strictEqual(actualProps.maxOccurs, INT_MAX);
     });
@@ -1366,7 +1532,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass NavigationProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.throws(() => parser.parseNavigationProperty(propElement), ECObjectsError, `The ECNavigationProperty TestSchema.TestEntityClass.${propName} is missing the required 'relationshipName' property.`);
+      assert.throws(
+        () => parser.parseNavigationProperty(propElement),
+        ECObjectsError,
+        `The ECNavigationProperty TestSchema.TestEntityClass.${propName} is missing the required 'relationshipName' property.`,
+      );
     });
 
     it("should throw for missing direction attribute", () => {
@@ -1386,7 +1556,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding EntityClass NavigationProperty to be successful");
 
       const [propName, , propElement] = propertiesResult[0];
-      assert.throws(() => parser.parseNavigationProperty(propElement), ECObjectsError, `The ECNavigationProperty TestSchema.TestEntityClass.${propName} is missing the required 'direction' property.`);
+      assert.throws(
+        () => parser.parseNavigationProperty(propElement),
+        ECObjectsError,
+        `The ECNavigationProperty TestSchema.TestEntityClass.${propName} is missing the required 'direction' property.`,
+      );
     });
   });
 
@@ -1420,7 +1594,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding PropertyCategory to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parsePropertyCategory(itemElement), ECObjectsError, `The PropertyCategory TestSchema.${itemName} is missing the required 'priority' attribute.`);
+      assert.throws(
+        () => parser.parsePropertyCategory(itemElement),
+        ECObjectsError,
+        `The PropertyCategory TestSchema.${itemName} is missing the required 'priority' attribute.`,
+      );
     });
 
     it("should throw for invalid priority attribute", () => {
@@ -1432,7 +1610,11 @@ describe("XmlParser", () => {
         throw new Error("Expected finding PropertyCategory to be successful");
 
       const [itemName, , itemElement] = findResult;
-      assert.throws(() => parser.parsePropertyCategory(itemElement), ECObjectsError, `The PropertyCategory TestSchema.${itemName} has an invalid 'priority' attribute. It should be a numeric value.`);
+      assert.throws(
+        () => parser.parsePropertyCategory(itemElement),
+        ECObjectsError,
+        `The PropertyCategory TestSchema.${itemName} has an invalid 'priority' attribute. It should be a numeric value.`,
+      );
     });
   });
 
@@ -1497,7 +1679,11 @@ describe("XmlParser", () => {
       const findResult = parser.findItem("TestRelationshipClass");
       assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
       const [itemName, , itemElement] = findResult!;
-      assert.throws(() => parser.parseRelationshipClass(itemElement), ECObjectsError, `The RelationshipClass TestSchema.${itemName} is missing the required 'strength' attribute.`);
+      assert.throws(
+        () => parser.parseRelationshipClass(itemElement),
+        ECObjectsError,
+        `The RelationshipClass TestSchema.${itemName} is missing the required 'strength' attribute.`,
+      );
     });
 
     it("Should set to 'Forward' for missing strengthDirection attribute", () => {
@@ -1532,7 +1718,11 @@ describe("XmlParser", () => {
       const findResult = parser.findItem("TestRelationshipClass");
       assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
       const [itemName, , itemElement] = findResult!;
-      assert.throws(() => parser.parseRelationshipClass(itemElement), ECObjectsError, `The RelationshipClass TestSchema.${itemName} is missing the required Source constraint tag.`);
+      assert.throws(
+        () => parser.parseRelationshipClass(itemElement),
+        ECObjectsError,
+        `The RelationshipClass TestSchema.${itemName} is missing the required Source constraint tag.`,
+      );
     });
 
     it("should throw for missing Target constraint tag", () => {
@@ -1547,7 +1737,11 @@ describe("XmlParser", () => {
       const findResult = parser.findItem("TestRelationshipClass");
       assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
       const [itemName, , itemElement] = findResult!;
-      assert.throws(() => parser.parseRelationshipClass(itemElement), ECObjectsError, `The RelationshipClass TestSchema.${itemName} is missing the required Target constraint tag.`);
+      assert.throws(
+        () => parser.parseRelationshipClass(itemElement),
+        ECObjectsError,
+        `The RelationshipClass TestSchema.${itemName} is missing the required Target constraint tag.`,
+      );
     });
 
     describe("parseRelationshipConstraintProps", () => {
@@ -1566,7 +1760,11 @@ describe("XmlParser", () => {
         const findResult = parser.findItem("TestRelationshipClass");
         assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
         const [itemName, , itemElement] = findResult!;
-        assert.throws(() => parser.parseRelationshipClass(itemElement), ECObjectsError, `The Source Constraint of TestSchema.${itemName} is missing the required 'multiplicity' attribute.`);
+        assert.throws(
+          () => parser.parseRelationshipClass(itemElement),
+          ECObjectsError,
+          `The Source Constraint of TestSchema.${itemName} is missing the required 'multiplicity' attribute.`,
+        );
       });
 
       it("should throw for missing roleLabel attribute", () => {
@@ -1584,7 +1782,11 @@ describe("XmlParser", () => {
         const findResult = parser.findItem("TestRelationshipClass");
         assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
         const [itemName, , itemElement] = findResult!;
-        assert.throws(() => parser.parseRelationshipClass(itemElement), ECObjectsError, `The Target Constraint of TestSchema.${itemName} is missing the required 'roleLabel' attribute.`);
+        assert.throws(
+          () => parser.parseRelationshipClass(itemElement),
+          ECObjectsError,
+          `The Target Constraint of TestSchema.${itemName} is missing the required 'roleLabel' attribute.`,
+        );
       });
 
       it("should throw for missing polymorphic attribute", () => {
@@ -1602,7 +1804,11 @@ describe("XmlParser", () => {
         const findResult = parser.findItem("TestRelationshipClass");
         assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
         const [itemName, , itemElement] = findResult!;
-        assert.throws(() => parser.parseRelationshipClass(itemElement), ECObjectsError, `The Source Constraint of TestSchema.${itemName} is missing the required 'polymorphic' attribute.`);
+        assert.throws(
+          () => parser.parseRelationshipClass(itemElement),
+          ECObjectsError,
+          `The Source Constraint of TestSchema.${itemName} is missing the required 'polymorphic' attribute.`,
+        );
       });
 
       it("should throw for invalid polymorphic attribute", () => {
@@ -1620,7 +1826,11 @@ describe("XmlParser", () => {
         const findResult = parser.findItem("TestRelationshipClass");
         assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
         const [itemName, , itemElement] = findResult!;
-        assert.throws(() => parser.parseRelationshipClass(itemElement), ECObjectsError, `The Target Constraint of TestSchema.${itemName} has an invalid 'polymorphic' attribute. It should either be "true" or "false".`);
+        assert.throws(
+          () => parser.parseRelationshipClass(itemElement),
+          ECObjectsError,
+          `The Target Constraint of TestSchema.${itemName} has an invalid 'polymorphic' attribute. It should either be "true" or "false".`,
+        );
       });
 
       it("should throw for missing constraint Class tags", () => {
@@ -1637,7 +1847,11 @@ describe("XmlParser", () => {
         const findResult = parser.findItem("TestRelationshipClass");
         assert.isDefined(findResult, "Expected finding TestRelationshipClass to be successful");
         const [itemName, , itemElement] = findResult!;
-        assert.throws(() => parser.parseRelationshipClass(itemElement), ECObjectsError, `The Source Constraint of TestSchema.${itemName} is missing the required Class tags.`);
+        assert.throws(
+          () => parser.parseRelationshipClass(itemElement),
+          ECObjectsError,
+          `The Source Constraint of TestSchema.${itemName} is missing the required Class tags.`,
+        );
       });
     });
   });
@@ -1970,7 +2184,10 @@ describe("XmlParser", () => {
           const providers = getCAProviders(itemXml);
 
           // Call Provider
-          expect(() => providers[0][1](testClass!)).to.throw(ECObjectsError, "Property 'TestProperty' has an invalid property value. An boolean value was expected.");
+          expect(() => providers[0][1](testClass!)).to.throw(
+            ECObjectsError,
+            "Property 'TestProperty' has an invalid property value. An boolean value was expected.",
+          );
         });
       });
       describe("Integer Parsing Tests", () => {
@@ -2048,7 +2265,10 @@ describe("XmlParser", () => {
           const providers = getCAProviders(itemXml);
 
           // Call Provider
-          expect(() => providers[0][1](testClass!)).to.throw(ECObjectsError, "Property 'TestProperty' has an invalid property value. An integer value was expected.");
+          expect(() => providers[0][1](testClass!)).to.throw(
+            ECObjectsError,
+            "Property 'TestProperty' has an invalid property value. An integer value was expected.",
+          );
         });
         it("With float value, throws.", async () => {
           const itemXml = `
@@ -2072,7 +2292,10 @@ describe("XmlParser", () => {
           const providers = getCAProviders(itemXml);
 
           // Call Provider
-          expect(() => providers[0][1](testClass!)).to.throw(ECObjectsError, "Property 'TestProperty' has an invalid property value. An integer value was expected.");
+          expect(() => providers[0][1](testClass!)).to.throw(
+            ECObjectsError,
+            "Property 'TestProperty' has an invalid property value. An integer value was expected.",
+          );
         });
       });
 
@@ -2151,7 +2374,10 @@ describe("XmlParser", () => {
           const providers = getCAProviders(itemXml);
 
           // Call Provider
-          expect(() => providers[0][1](testClass!)).to.throw(ECObjectsError, "Property 'TestProperty' has an invalid property value. A double value was expected.");
+          expect(() => providers[0][1](testClass!)).to.throw(
+            ECObjectsError,
+            "Property 'TestProperty' has an invalid property value. A double value was expected.",
+          );
         });
       });
 
@@ -2231,7 +2457,10 @@ describe("XmlParser", () => {
           const providers = getCAProviders(itemXml);
 
           // Call Provider
-          expect(() => providers[0][1](testClass!)).to.throw(ECObjectsError, "Property 'TestProperty' has an invalid property value. A date in milliseconds was expected.");
+          expect(() => providers[0][1](testClass!)).to.throw(
+            ECObjectsError,
+            "Property 'TestProperty' has an invalid property value. A date in milliseconds was expected.",
+          );
         });
       });
 
@@ -2311,7 +2540,10 @@ describe("XmlParser", () => {
           const providers = getCAProviders(itemXml);
 
           // Call Provider
-          expect(() => providers[0][1](testClass!)).to.throw(ECObjectsError, "Property 'TestProperty' has an invalid property value. A Point 2D value was expected.");
+          expect(() => providers[0][1](testClass!)).to.throw(
+            ECObjectsError,
+            "Property 'TestProperty' has an invalid property value. A Point 2D value was expected.",
+          );
         });
       });
 
@@ -2392,7 +2624,10 @@ describe("XmlParser", () => {
           const providers = getCAProviders(itemXml);
 
           // Call Provider
-          expect(() => providers[0][1](testClass!)).to.throw(ECObjectsError, "Property 'TestProperty' has an invalid property value. A Point 3D value was expected.");
+          expect(() => providers[0][1](testClass!)).to.throw(
+            ECObjectsError,
+            "Property 'TestProperty' has an invalid property value. A Point 3D value was expected.",
+          );
         });
       });
 
@@ -2750,7 +2985,10 @@ describe("XmlParser", () => {
           const providers = getCAProviders(itemXml);
           sinon.stub(testClass!.schema, "lookupItemSync").withArgs("TestSchema.TestStringEnumeration").returns(undefined);
 
-          expect(() => providers[0][1](testClass!)).to.throw(ECObjectsError, `The Enumeration class 'TestSchema.TestStringEnumeration' could not be found.`);
+          expect(() => providers[0][1](testClass!)).to.throw(
+            ECObjectsError,
+            `The Enumeration class 'TestSchema.TestStringEnumeration' could not be found.`,
+          );
         });
       });
     });

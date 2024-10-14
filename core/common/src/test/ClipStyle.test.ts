@@ -3,11 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import {
-  ClipStyle,
-  ClipStyleProps,
-  CutStyle,
-} from "../ClipStyle";
+import { ClipStyle, ClipStyleProps, CutStyle } from "../ClipStyle";
 import { DisplayStyleSettings, DisplayStyleSettingsProps } from "../DisplayStyleSettings";
 
 describe("ClipStyle", () => {
@@ -27,7 +23,7 @@ describe("ClipStyle", () => {
     roundTrip({}, undefined);
     roundTrip({ produceCutGeometry: false }, undefined);
     roundTrip({ cutStyle: undefined, produceCutGeometry: false }, undefined);
-    roundTrip(ClipStyle.create({produceCutGeometry: false, colorizeIntersection: false, cutStyle: CutStyle.defaults}).toJSON(), undefined);
+    roundTrip(ClipStyle.create({ produceCutGeometry: false, colorizeIntersection: false, cutStyle: CutStyle.defaults }).toJSON(), undefined);
     roundTrip({
       cutStyle: CutStyle.defaults.toJSON(),
       produceCutGeometry: false,
@@ -43,7 +39,7 @@ describe("ClipStyle", () => {
     roundTrip({ insideColor: undefined, outsideColor: undefined }, undefined);
 
     roundTrip({ colorizeIntersection: undefined, intersectionStyle: undefined }, undefined);
-    roundTrip({ colorizeIntersection: true, intersectionStyle: { color:{ r: 255, g: 0, b: 0 }, width: 5 }}, "input");
+    roundTrip({ colorizeIntersection: true, intersectionStyle: { color: { r: 255, g: 0, b: 0 }, width: 5 } }, "input");
   });
 
   it("should serialize to DisplayStyleSettings", () => {
@@ -62,7 +58,7 @@ describe("ClipStyle", () => {
       outsideColor: { r: 100, g: 255, b: 1 },
       cutStyle: { appearance: { transparency: 0.5 } },
       colorizeIntersection: true,
-      intersectionStyle: { color:{ r: 0, g: 100, b: 200 }, width: 3 },
+      intersectionStyle: { color: { r: 0, g: 100, b: 200 }, width: 3 },
     };
     details.clipStyle = ClipStyle.fromJSON(styleProps);
     expect(details.clipStyle.matchesDefaults).to.be.false;
@@ -85,7 +81,7 @@ describe("ClipStyle", () => {
       outsideColor: { r: 100, g: 255, b: 1 },
       cutStyle: { appearance: { transparency: 0.5 } },
       colorizeIntersection: true,
-      intersectionStyle: { color:{ r: 0, g: 100, b: 200 }, width: 3 },
+      intersectionStyle: { color: { r: 0, g: 100, b: 200 }, width: 3 },
     };
 
     details.clipStyle = ClipStyle.fromJSON(styleProps);

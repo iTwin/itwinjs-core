@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { Map4d } from "@itwin/core-geometry";
 import { FrustumPlanes } from "@itwin/core-common";
+import { Map4d } from "@itwin/core-geometry";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { SceneContext } from "../ViewContext";
@@ -32,8 +32,12 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
     this._collector = collector;
   }
 
-  public override get frustumPlanes(): FrustumPlanes { return this._planes; }
-  public override get worldToViewMap(): Map4d { return this._worldToViewMap; }
+  public override get frustumPlanes(): FrustumPlanes {
+    return this._planes;
+  }
+  public override get worldToViewMap(): Map4d {
+    return this._worldToViewMap;
+  }
   public override drawGraphicsWithType(_graphicType: TileGraphicType, graphics: GraphicBranch) {
     this._collector.addGraphic(this.context.createBranch(graphics, this.location));
   }
@@ -46,7 +50,13 @@ export class GraphicsCollectorDrawArgs extends TileDrawArgs {
     }
   }
 
-  public static create(context: SceneContext, collector: GraphicsCollector, ref: TileTreeReference, planes: FrustumPlanes, worldToViewMap: Map4d): TileDrawArgs | undefined {
+  public static create(
+    context: SceneContext,
+    collector: GraphicsCollector,
+    ref: TileTreeReference,
+    planes: FrustumPlanes,
+    worldToViewMap: Map4d,
+  ): TileDrawArgs | undefined {
     const args = ref.createDrawArgs(context);
     if (undefined === args)
       return undefined;

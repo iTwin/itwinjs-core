@@ -13,7 +13,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("StrokeOptions", () => {
-
   it("HelloWorld", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

@@ -7,9 +7,9 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
+import { Base64EncodedString } from "./Base64EncodedString";
 import { DefinitionElementProps } from "./ElementProps";
 import { ImageSourceFormat } from "./Image";
-import { Base64EncodedString } from "./Base64EncodedString";
 
 /** Properties that define a [Texture]($backend) element.
  * @public

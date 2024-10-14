@@ -78,8 +78,12 @@ class TileRequestDecoration {
  */
 export class ToggleTileRequestDecorationTool extends Tool {
   public static override toolId = "ToggleTileRequestDecoration";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;

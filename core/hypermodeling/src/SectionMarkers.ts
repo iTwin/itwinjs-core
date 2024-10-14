@@ -7,13 +7,23 @@
  */
 
 import { assert, BeEvent, Id64String } from "@itwin/core-bentley";
-import { Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { IModelReadRpcInterface } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, IModelApp, InputSource, Marker, MarkerImage, MarkerSet, ScreenViewport, ViewClipTool,
+  BeButton,
+  BeButtonEvent,
+  Cluster,
+  DecorateContext,
+  IModelApp,
+  InputSource,
+  Marker,
+  MarkerImage,
+  MarkerSet,
+  ScreenViewport,
+  ViewClipTool,
 } from "@itwin/core-frontend";
-import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
+import { Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { HyperModeling } from "./HyperModeling";
+import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 
 const markerSize = Point2d.create(40, 40);
 
@@ -55,7 +65,9 @@ export class SectionMarker extends Marker {
   }
 
   /** @internal */
-  public get isHilited(): boolean { return this._isHilited; }
+  public get isHilited(): boolean {
+    return this._isHilited;
+  }
 
   /** Returns true if this is the "active" section marker. At most one marker is active at a given time.
    * @see [[HyperModelingDecorator.activeMarker]].
@@ -88,7 +100,10 @@ export class SectionMarker extends Marker {
   public override onMouseEnter(ev: BeButtonEvent) {
     // Lazily load the tooltip.
     if (undefined === this.title) {
-      IModelReadRpcInterface.getClientForRouting(this.state.iModel.routingContext.token).getToolTipMessage(this.state.iModel.getRpcProps(), this.state.id).then((tooltipMsg) => {
+      IModelReadRpcInterface.getClientForRouting(this.state.iModel.routingContext.token).getToolTipMessage(
+        this.state.iModel.getRpcProps(),
+        this.state.id,
+      ).then((tooltipMsg) => {
         this.title = IModelApp.formatElementToolTip(tooltipMsg);
       }).catch((_) => {
         this.title = this.description;
@@ -159,7 +174,9 @@ export class SectionMarkerCluster extends Marker {
     ctx.stroke();
   }
 
-  public override onMouseButton(_ev: BeButtonEvent): boolean { return true; } // Don't allow clicks to be sent to active tool...
+  public override onMouseButton(_ev: BeButtonEvent): boolean {
+    return true;
+  } // Don't allow clicks to be sent to active tool...
 }
 
 /** A [MarkerSet]($frontend) containing [[SectionMarker]]s identifying [SectionDrawingLocation]($backend)s within a spatial view.

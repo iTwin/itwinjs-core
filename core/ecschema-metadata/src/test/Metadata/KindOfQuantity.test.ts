@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { DecimalPrecision } from "@itwin/core-quantity";
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { ECObjectsError } from "../../Exception";
@@ -11,7 +12,6 @@ import { KindOfQuantity } from "../../Metadata/KindOfQuantity";
 import { OverrideFormat } from "../../Metadata/OverrideFormat";
 import { Schema } from "../../Metadata/Schema";
 import { Unit } from "../../Metadata/Unit";
-import { DecimalPrecision } from "@itwin/core-quantity";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
@@ -98,7 +98,6 @@ describe("KindOfQuantity", () => {
       expect(testKoq!.persistenceUnit!.fullName).eq(testUnit!.key.fullName); // Formats.IN === Formats.IN
     });
     it("sync - should successfully deserialize without presentationUnits", () => {
-
     });
 
     // should throw for presentationUnit with non-existent format
@@ -111,10 +110,17 @@ describe("KindOfQuantity", () => {
       ],
     };
     it("async - should throw for presentationUnit having a non-existent format", async () => {
-      await expect(Schema.fromJson(createSchemaJson(presentationUnitsNonExistentFormat), context)).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
+      await expect(Schema.fromJson(createSchemaJson(presentationUnitsNonExistentFormat), context)).to.be.rejectedWith(
+        ECObjectsError,
+        `Unable to locate SchemaItem TestSchema.NonexistentFormat.`,
+      );
     });
     it("sync - should throw for presentationUnit having a non-existent format", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(presentationUnitsNonExistentFormat), context), ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
+      assert.throws(
+        () => Schema.fromJsonSync(createSchemaJson(presentationUnitsNonExistentFormat), context),
+        ECObjectsError,
+        `Unable to locate SchemaItem TestSchema.NonexistentFormat.`,
+      );
     });
 
     // should throw for persistenceUnit with non-existent format
@@ -127,10 +133,17 @@ describe("KindOfQuantity", () => {
       ],
     };
     it("async - should throw for persistenceUnit having a non-existent format", async () => {
-      await expect(Schema.fromJson(createSchemaJson(persistenceUnitNonExistentFormat), context)).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
+      await expect(Schema.fromJson(createSchemaJson(persistenceUnitNonExistentFormat), context)).to.be.rejectedWith(
+        ECObjectsError,
+        `Unable to locate SchemaItem TestSchema.NonexistentFormat.`,
+      );
     });
     it("sync - should throw for persistenceUnit having a non-existent format", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(persistenceUnitNonExistentFormat), context), ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
+      assert.throws(
+        () => Schema.fromJsonSync(createSchemaJson(persistenceUnitNonExistentFormat), context),
+        ECObjectsError,
+        `Unable to locate SchemaItem TestSchema.NonexistentFormat.`,
+      );
     });
 
     // should deserialize for persistenceUnit with InvertedUnit
@@ -188,7 +201,11 @@ describe("KindOfQuantity", () => {
       assert.isDefined(defaultFormat);
       assert.isTrue(OverrideFormat.isOverrideFormat(defaultFormat));
 
-      assert.notEqual(defaultFormat, await schema.lookupItem<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(
+        defaultFormat,
+        await schema.lookupItem<Format>((defaultFormat as OverrideFormat).parent.key.fullName),
+        "The format in the KOQ should be different than the one in the schema",
+      );
 
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
@@ -198,18 +215,30 @@ describe("KindOfQuantity", () => {
         type: "Decimal",
         precision: 2,
       };
-      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(2)", ...expectedJson});
+      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal({
+        name: "Formats.DefaultReal(2)",
+        ...expectedJson,
+      });
 
       expect(testKoq!.presentationFormats[0].precision).eq(DecimalPrecision.Two);
-      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[0] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(2)", ...expectedJson});
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[0] as OverrideFormat).getFormatProps()))).to.be.deep.equal({
+        name: "Formats.DefaultReal(2)",
+        ...expectedJson,
+      });
 
       expect(testKoq!.presentationFormats[1].precision).eq(DecimalPrecision.Three);
       expectedJson.precision = 3;
-      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[1] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(3)", ...expectedJson});
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[1] as OverrideFormat).getFormatProps()))).to.be.deep.equal({
+        name: "Formats.DefaultReal(3)",
+        ...expectedJson,
+      });
 
       expect(testKoq!.presentationFormats[2].precision).eq(DecimalPrecision.Four);
       expectedJson.precision = 4;
-      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[2] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(4)", ...expectedJson});
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[2] as OverrideFormat).getFormatProps()))).to.be.deep.equal({
+        name: "Formats.DefaultReal(4)",
+        ...expectedJson,
+      });
 
       expect(testKoq!.presentationFormats[0].name).eq("Formats.DefaultReal(2)");
       expect(testKoq!.presentationFormats[0].fullName).eq("Formats.DefaultReal(2)");
@@ -228,7 +257,11 @@ describe("KindOfQuantity", () => {
       assert.isDefined(defaultFormat);
       assert.isTrue(OverrideFormat.isOverrideFormat(defaultFormat));
 
-      assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.fullName), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(
+        defaultFormat,
+        schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.fullName),
+        "The format in the KOQ should be different than the one in the schema",
+      );
 
       expect(defaultFormat!.precision).eq(DecimalPrecision.Two);
 
@@ -238,18 +271,30 @@ describe("KindOfQuantity", () => {
         type: "Decimal",
         precision: 2,
       };
-      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(2)", ...expectedJson});
+      expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal({
+        name: "Formats.DefaultReal(2)",
+        ...expectedJson,
+      });
 
       expect(testKoq!.presentationFormats[0].precision).eq(DecimalPrecision.Two);
-      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[0] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(2)", ...expectedJson});
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[0] as OverrideFormat).getFormatProps()))).to.be.deep.equal({
+        name: "Formats.DefaultReal(2)",
+        ...expectedJson,
+      });
 
       expect(testKoq!.presentationFormats[1].precision).eq(DecimalPrecision.Three);
       expectedJson.precision = 3;
-      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[1] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(3)", ...expectedJson});
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[1] as OverrideFormat).getFormatProps()))).to.be.deep.equal({
+        name: "Formats.DefaultReal(3)",
+        ...expectedJson,
+      });
 
       expect(testKoq!.presentationFormats[2].precision).eq(DecimalPrecision.Four);
       expectedJson.precision = 4;
-      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[2] as OverrideFormat).getFormatProps()))).to.be.deep.equal({name: "Formats.DefaultReal(4)", ...expectedJson});
+      expect(JSON.parse(JSON.stringify((testKoq!.presentationFormats[2] as OverrideFormat).getFormatProps()))).to.be.deep.equal({
+        name: "Formats.DefaultReal(4)",
+        ...expectedJson,
+      });
 
       expect(testKoq!.presentationFormats[0].name).eq("Formats.DefaultReal(2)");
       expect(testKoq!.presentationFormats[0].fullName).eq("Formats.DefaultReal(2)");
@@ -310,7 +355,11 @@ describe("KindOfQuantity", () => {
       const defaultFormat = testKoq!.defaultPresentationFormat;
       assert.isDefined(defaultFormat);
 
-      assert.notEqual(defaultFormat, schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.key.fullName), "The format in the KOQ should be different than the one in the schema");
+      assert.notEqual(
+        defaultFormat,
+        schema.lookupItemSync<Format>((defaultFormat as OverrideFormat).parent.key.fullName),
+        "The format in the KOQ should be different than the one in the schema",
+      );
 
       assert.isDefined(defaultFormat!.units);
       expect(defaultFormat!.units!.length).to.eq(1);
@@ -395,7 +444,6 @@ describe("KindOfQuantity", () => {
         },
       };
       expect(JSON.parse(JSON.stringify((defaultFormat as OverrideFormat)?.getFormatProps()))).to.be.deep.equal(expectedJson);
-
     });
     const nullOrEmptyUnitLabelOverride = {
       ...baseJson,
@@ -405,15 +453,18 @@ describe("KindOfQuantity", () => {
     };
 
     const expectedOutputJson = {
-      schemaItemType:"Format",
-      name:"Formats.QuadUnitFormat[Formats.MILE][Formats.YRD|][Formats.FT|'][Formats.IN|in]",
-      parent:"Formats.QuadUnitFormat",
-      type:"Decimal",
-      precision:6,
+      schemaItemType: "Format",
+      name: "Formats.QuadUnitFormat[Formats.MILE][Formats.YRD|][Formats.FT|'][Formats.IN|in]",
+      parent: "Formats.QuadUnitFormat",
+      type: "Decimal",
+      precision: 6,
       composite: {
         spacer: "-",
         includeZero: false,
-        units: [{ name: "Formats.MILE"},{ name: "Formats.YRD", label: "" },{ name: "Formats.FT", label: "'" },{ name: "Formats.IN", label: "in" }],
+        units: [{ name: "Formats.MILE" }, { name: "Formats.YRD", label: "" }, { name: "Formats.FT", label: "'" }, {
+          name: "Formats.IN",
+          label: "in",
+        }],
       },
     };
     it("async - null or empty unit label override", async () => {
@@ -491,8 +542,16 @@ describe("KindOfQuantity", () => {
     // testInvalidFormatStrings("should throw for invalid override string with an empty string for unit", "Formats.DefaultReal[|label]", "Unable to locate SchemaItem .");
     testInvalidFormatStrings("should throw for invalid override string with an invalid precision", "Formats.DefaultReal(banana)", "");
     testInvalidFormatStrings("should throw for invalid override string without any overrides but still has commas", "Formats.DefaultReal(,,,,,)", "");
-    testInvalidFormatStrings("should throw for invalid override string with 5 unit overrides", "Formats.DefaultReal[Formats.MILE|m][Formats.YRD|yard][Formats.FT|feet][Formats.IN|in][Formats.MILLIINCH|milli]", "");
-    testInvalidFormatStrings("should throw for presentationUnit having a non-existent unit as an override", "Formats.DefaultReal[Formats.NonexistentUnit]", "Unable to locate SchemaItem Formats.NonexistentUnit.");
+    testInvalidFormatStrings(
+      "should throw for invalid override string with 5 unit overrides",
+      "Formats.DefaultReal[Formats.MILE|m][Formats.YRD|yard][Formats.FT|feet][Formats.IN|in][Formats.MILLIINCH|milli]",
+      "",
+    );
+    testInvalidFormatStrings(
+      "should throw for presentationUnit having a non-existent unit as an override",
+      "Formats.DefaultReal[Formats.NonexistentUnit]",
+      "Unable to locate SchemaItem Formats.NonexistentUnit.",
+    );
   });
 
   describe("toJSON", () => {

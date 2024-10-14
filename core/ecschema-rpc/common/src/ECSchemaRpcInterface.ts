@@ -48,5 +48,4 @@ export abstract class ECSchemaRpcInterface extends RpcInterface { // eslint-disa
   public async getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps> {
     return this.forward.apply(this, [arguments]) as Promise<SchemaProps>;
   }
-
 }

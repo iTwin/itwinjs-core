@@ -7,21 +7,21 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
 import { QParams2d, QParams3d } from "@itwin/core-common";
+import { Point3d } from "@itwin/core-geometry";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { System } from "./System";
 
 /** Describes a connection between a BufferHandle and an arbitrary number of attributes associated with that BufferHandle. */
-interface BufferHandleLinkage {  // eslint-disable-line @typescript-eslint/no-unsafe-declaration-merging
+interface BufferHandleLinkage { // eslint-disable-line @typescript-eslint/no-unsafe-declaration-merging
   buffer: BufferHandle;
   params: BufferParameters[]; // If empty, means no vertex attrib details are necessary (index buffer probably)
 }
 
 /** Provides convenience methods for creating a BufferHandleLinkage interface. */
-class BufferHandleLinkage {  // eslint-disable-line @typescript-eslint/no-unsafe-declaration-merging
-  private constructor() { }
+class BufferHandleLinkage { // eslint-disable-line @typescript-eslint/no-unsafe-declaration-merging
+  private constructor() {}
   public static create(buffer: BufferHandle, params: BufferParameters[]): BufferHandleLinkage {
     return { buffer, params };
   }
@@ -60,12 +60,28 @@ export interface BufferParameters {
  * @internal
  */
 export namespace BufferParameters {
-  export function create(glAttribLoc: number, glSize: number, glType: number, glNormalized: boolean, glStride: number, glOffset: number, glInstanced: boolean): BufferParameters {
+  export function create(
+    glAttribLoc: number,
+    glSize: number,
+    glType: number,
+    glNormalized: boolean,
+    glStride: number,
+    glOffset: number,
+    glInstanced: boolean,
+  ): BufferParameters {
     return { glAttribLoc, glSize, glType, glNormalized, glStride, glOffset, glInstanced };
   }
 
   export function clone(params: BufferParameters): BufferParameters {
-    return BufferParameters.create(params.glAttribLoc, params.glSize, params.glType, params.glNormalized, params.glStride, params.glOffset, params.glInstanced);
+    return BufferParameters.create(
+      params.glAttribLoc,
+      params.glSize,
+      params.glType,
+      params.glNormalized,
+      params.glStride,
+      params.glOffset,
+      params.glInstanced,
+    );
   }
 }
 
@@ -154,7 +170,9 @@ export class VAOHandle implements WebGLDisposable {
     assert(!this.isDisposed);
   }
 
-  public get isDisposed(): boolean { return this._arrayObject === undefined; }
+  public get isDisposed(): boolean {
+    return this._arrayObject === undefined;
+  }
 
   /** Frees the WebGL vertex array object */
   public dispose(): void {
@@ -202,8 +220,12 @@ export class BufferHandle implements WebGLDisposable {
     assert(!this.isDisposed);
   }
 
-  public get isDisposed(): boolean { return this._glBuffer === undefined; }
-  public get bytesUsed(): number { return this._bytesUsed; }
+  public get isDisposed(): boolean {
+    return this._glBuffer === undefined;
+  }
+  public get bytesUsed(): number {
+    return this._bytesUsed;
+  }
 
   /** Frees the WebGL buffer */
   public dispose(): void {
@@ -222,7 +244,9 @@ export class BufferHandle implements WebGLDisposable {
   }
 
   /** Sets the specified target to be bound to no buffer */
-  public unbind(): void { System.instance.context.bindBuffer(this._target, null); }
+  public unbind(): void {
+    System.instance.context.bindBuffer(this._target, null);
+  }
 
   /** Binds this buffer to the target specified at construction and sets the buffer's data store. */
   public bindData(data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): void {
@@ -233,7 +257,11 @@ export class BufferHandle implements WebGLDisposable {
   }
 
   /** Creates a BufferHandle and binds its data */
-  public static createBuffer(target: GL.Buffer.Target, data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
+  public static createBuffer(
+    target: GL.Buffer.Target,
+    data: BufferSource,
+    usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw,
+  ): BufferHandle | undefined {
     const handle = new BufferHandle(target);
     if (handle.isDisposed) {
       return undefined;
@@ -247,7 +275,9 @@ export class BufferHandle implements WebGLDisposable {
     return BufferHandle.createBuffer(GL.Buffer.Target.ArrayBuffer, data, usage);
   }
 
-  public isBound(binding: GL.Buffer.Binding) { return System.instance.context.getParameter(binding) === this._glBuffer; }
+  public isBound(binding: GL.Buffer.Binding) {
+    return System.instance.context.getParameter(binding) === this._glBuffer;
+  }
 }
 
 function setScale(index: number, value: number, array: Float32Array) {

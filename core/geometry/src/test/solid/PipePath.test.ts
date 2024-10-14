@@ -4,21 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Angle } from "../../geometry3d/Angle";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Arc3d } from "../../curve/Arc3d";
-import { Checker } from "../Checker";
 import { CurveFactory } from "../../curve/CurveFactory";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
-import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Transform } from "../../geometry3d/Transform";
-import { TorusPipe } from "../../solid/TorusPipe";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Matrix3d } from "../../geometry3d/Matrix3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Transform } from "../../geometry3d/Transform";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { TorusPipe } from "../../solid/TorusPipe";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("PipePath", () => {
   it("TorusPipeAlongArc", () => {
@@ -30,7 +30,12 @@ describe("PipePath", () => {
       let x0 = 0;
 
       for (const sweepDegrees of [45, 190, -105]) {
-        const arc = Arc3d.create(Point3d.create(1, 0, 0), Vector3d.create(0, 2, 0), Vector3d.create(-2, 0, 0), AngleSweep.createStartSweepDegrees(startDegrees, sweepDegrees));
+        const arc = Arc3d.create(
+          Point3d.create(1, 0, 0),
+          Vector3d.create(0, 2, 0),
+          Vector3d.create(-2, 0, 0),
+          AngleSweep.createStartSweepDegrees(startDegrees, sweepDegrees),
+        );
         const pipe = TorusPipe.createAlongArc(arc, minorRadius, false);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, pipe, x0, y0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y0);
@@ -60,9 +65,9 @@ describe("PipePath", () => {
 
     // test invalid inputs
     let pipeBad = TorusPipe.createDgnTorusPipe(center, Vector3d.createZero(), vectorY, majorRadius, minorRadius, sweep, capped);
-    ck.testDefined(pipeBad, "Zero vectorX nevertheless yields defined TorusPipe");  // default vec is used!
+    ck.testDefined(pipeBad, "Zero vectorX nevertheless yields defined TorusPipe"); // default vec is used!
     pipeBad = TorusPipe.createDgnTorusPipe(center, vectorX, Vector3d.createZero(), majorRadius, minorRadius, sweep, capped);
-    ck.testDefined(pipeBad, "Zero vectorY nevertheless yields defined TorusPipe");  // default vec is used!
+    ck.testDefined(pipeBad, "Zero vectorY nevertheless yields defined TorusPipe"); // default vec is used!
     pipeBad = TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, 0, minorRadius, sweep, capped);
     ck.testUndefined(pipeBad, "Zero majorRadius yields undefined TorusPipe");
     pipeBad = TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, majorRadius, 0, sweep, capped);
@@ -105,9 +110,11 @@ describe("PipePath", () => {
           const pipeScaledRadii = TorusPipe.createDgnTorusPipe(center, xAxis, yAxis, majorRadius * scale.x, minorRadius * scale.y, sweep, capped);
           if (!ck.testDefined(pipeScaledRadii))
             continue;
-          if (!ck.testCoordinate(1, pipeScaledRadii.cloneVectorX().magnitude(), "TorusPipe.cloneVectorX returns unit vector") ||
+          if (
+            !ck.testCoordinate(1, pipeScaledRadii.cloneVectorX().magnitude(), "TorusPipe.cloneVectorX returns unit vector") ||
             !ck.testCoordinate(1, pipeScaledRadii.cloneVectorY().magnitude(), "TorusPipe.cloneVectorY returns unit vector") ||
-            !ck.testCoordinate(1, pipeScaledRadii.cloneVectorZ().magnitude(), "TorusPipe.cloneVectorZ returns unit vector"))
+            !ck.testCoordinate(1, pipeScaledRadii.cloneVectorZ().magnitude(), "TorusPipe.cloneVectorZ returns unit vector")
+          )
             continue;
           let builder = PolyfaceBuilder.create(options);
           builder.addTorusPipe(pipeScaledRadii, 20, 20);
@@ -119,14 +126,19 @@ describe("PipePath", () => {
           // localToWorld (getConstructiveFrame), and so does v.v. See IModelJsonWriter.handleTorusPipe and IModelJsonReader.parseTorusPipe.
           // This discrepancy can be seen in output: the pre-conversion mesh exhibits non-uniform scale, but not the post-conversion pipe.
           const scaleInLocalCoords = Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createScale(scale.x, scale.x, scale.y));
-          const scaleInWorldCoords = pipe0.cloneLocalToWorld().multiplyTransformTransform(scaleInLocalCoords.multiplyTransformTransform(pipe0.cloneLocalToWorld().inverse()!));
+          const scaleInWorldCoords = pipe0.cloneLocalToWorld().multiplyTransformTransform(
+            scaleInLocalCoords.multiplyTransformTransform(pipe0.cloneLocalToWorld().inverse()!),
+          );
           const pipeCloneScaled = pipe0.cloneTransformed(scaleInWorldCoords);
           if (!ck.testDefined(pipeCloneScaled))
             continue;
           builder = PolyfaceBuilder.create(options);
           builder.addTorusPipe(pipeCloneScaled, 20, 20);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipeCloneScaled, builder.claimPolyface()], x0, y0, z0);
-          ck.testTrue(pipeScaledRadii.isAlmostEqual(pipeCloneScaled), "TorusPipe with scaled radii is equivalent to TorusPipe cloned with scale transform");
+          ck.testTrue(
+            pipeScaledRadii.isAlmostEqual(pipeCloneScaled),
+            "TorusPipe with scaled radii is equivalent to TorusPipe cloned with scale transform",
+          );
 
           // Clone radii-scaled TorusPipe with inverse of scale transform, and compare with original.
           const unScaleInWorldCoords = scaleInWorldCoords.inverse()!;
@@ -136,7 +148,10 @@ describe("PipePath", () => {
           builder = PolyfaceBuilder.create(options);
           builder.addTorusPipe(pipeCloneUnScaled0, 20, 20);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipeCloneUnScaled0, builder.claimPolyface()], x0, y0, z0);
-          ck.testTrue(pipe0.isAlmostEqual(pipeCloneUnScaled0), "TorusPipe with scaled radii cloned with reciprocal scale transform is equivalent to original");
+          ck.testTrue(
+            pipe0.isAlmostEqual(pipeCloneUnScaled0),
+            "TorusPipe with scaled radii cloned with reciprocal scale transform is equivalent to original",
+          );
 
           // Clone scale-transformed TorusPipe with inverse of scale transform, and compare with original.
           const pipeCloneUnScaled1 = pipeCloneScaled.cloneTransformed(unScaleInWorldCoords);
@@ -145,7 +160,10 @@ describe("PipePath", () => {
           builder = PolyfaceBuilder.create(options);
           builder.addTorusPipe(pipeCloneUnScaled1, 20, 20);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, [pipeCloneUnScaled1, builder.claimPolyface()], x0, y0, z0);
-          ck.testTrue(pipe0.isAlmostEqual(pipeCloneUnScaled1), "TorusPipe cloned with scale transform then cloned with inverse is equivalent to original");
+          ck.testTrue(
+            pipe0.isAlmostEqual(pipeCloneUnScaled1),
+            "TorusPipe cloned with scale transform then cloned with inverse is equivalent to original",
+          );
         }
         y0 += 10;
       }

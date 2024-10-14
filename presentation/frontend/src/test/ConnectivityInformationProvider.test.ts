@@ -3,12 +3,12 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { BeDuration } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { NativeApp } from "@itwin/core-frontend";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { ConnectivityInformationProvider } from "../presentation-frontend/ConnectivityInformationProvider";
 import { Presentation } from "../presentation-frontend/Presentation";
 
@@ -16,7 +16,9 @@ describe("ConnectivityInformationProvider", () => {
   let nativeAppCheckInternetConnectivityStub: sinon.SinonStub<[], PromiseLike<InternetConnectivityStatus>>;
 
   beforeEach(() => {
-    nativeAppCheckInternetConnectivityStub = sinon.stub(NativeApp, "checkInternetConnectivity").returns(Promise.resolve(InternetConnectivityStatus.Offline));
+    nativeAppCheckInternetConnectivityStub = sinon.stub(NativeApp, "checkInternetConnectivity").returns(
+      Promise.resolve(InternetConnectivityStatus.Offline),
+    );
   });
 
   afterEach(() => {

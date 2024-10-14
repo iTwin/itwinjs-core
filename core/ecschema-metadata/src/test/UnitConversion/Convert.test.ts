@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { almostEqual } from "@itwin/core-quantity";
+import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { expect } from "chai";
 import { SchemaContext } from "../../Context";
-import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { UnitConverter } from "../../UnitConversion/UnitConverter";
-import { almostEqual } from "@itwin/core-quantity";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 
 interface TestData {
   from: string;

@@ -8,8 +8,8 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, Frustum, FrustumPlanes, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { GraphicsCollectorDrawArgs, MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
 import { ViewState3d } from "../../ViewState";
@@ -37,10 +37,23 @@ export class BackgroundMapDrape extends TextureDrape {
   private _mapTree: MapTileTreeReference;
   private _drapedTree: TileTreeReference;
   private static _postProjectionMatrix = Matrix4d.createRowValues(
-    0, 1, 0, 0,
-    0, 0, -1, 0,
-    1, 0, 0, 0,
-    0, 0, 0, 1);
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    -1,
+    0,
+    1,
+    0,
+    0,
+    0,
+    0,
+    0,
+    0,
+    1,
+  );
   private _debugFrustum?: Frustum;
   private _debugFrustumGraphic?: RenderGraphic = undefined;
   private readonly _symbologyOverrides = new FeatureSymbology.Overrides();
@@ -53,7 +66,9 @@ export class BackgroundMapDrape extends TextureDrape {
     this._mapTree = mapTree;
   }
 
-  public override get isDisposed(): boolean { return super.isDisposed && undefined === this._fbo; }
+  public override get isDisposed(): boolean {
+    return super.isDisposed && undefined === this._fbo;
+  }
 
   public override dispose() {
     super.dispose();
@@ -81,7 +96,7 @@ export class BackgroundMapDrape extends TextureDrape {
     if (undefined === tileTree || !this._mapTree.initializeLayers(context))
       return;
 
-    const requiredWidth = 2 * Math.max(context.target.viewRect.width, context.target.viewRect.height);     // TBD - Size to textured area.
+    const requiredWidth = 2 * Math.max(context.target.viewRect.width, context.target.viewRect.height); // TBD - Size to textured area.
     const requiredHeight = requiredWidth;
 
     if (requiredWidth !== this._width || requiredHeight !== this._height)
@@ -97,7 +112,16 @@ export class BackgroundMapDrape extends TextureDrape {
 
     const targetTiles = targetTree.selectTiles(args);
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, { tiles: targetTiles, location: args.location }, [this._mapTree], viewState, this._width, this._height, Range3d.createNull());
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(
+      this._plane,
+      context,
+      { tiles: targetTiles, location: args.location },
+      [this._mapTree],
+      viewState,
+      this._width,
+      this._height,
+      Range3d.createNull(),
+    );
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
@@ -105,7 +129,13 @@ export class BackgroundMapDrape extends TextureDrape {
     this._debugFrustum = projection.debugFrustum;
     this._projectionMatrix = projection.projectionMatrix;
 
-    const drawArgs = GraphicsCollectorDrawArgs.create(context, this, this._mapTree, FrustumPlanes.fromFrustum(this._frustum), projection.worldToViewMap);
+    const drawArgs = GraphicsCollectorDrawArgs.create(
+      context,
+      this,
+      this._mapTree,
+      FrustumPlanes.fromFrustum(this._frustum),
+      projection.worldToViewMap,
+    );
     if (undefined !== drawArgs)
       tileTree.draw(drawArgs);
 
@@ -130,13 +160,23 @@ export class BackgroundMapDrape extends TextureDrape {
       return;
 
     if (undefined === this._fbo) {
-      const colorTextureHandle = TextureHandle.createForAttachment(this._width, this._height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+      const colorTextureHandle = TextureHandle.createForAttachment(
+        this._width,
+        this._height,
+        GL.Texture.Format.Rgba,
+        GL.Texture.DataType.UnsignedByte,
+      );
       if (undefined === colorTextureHandle) {
         assert(false, "Failed to create planar texture");
         return;
       }
 
-      this._texture = new Texture({ ownership: "external", type: RenderTexture.Type.TileSection, handle: colorTextureHandle, transparency: TextureTransparency.Opaque });
+      this._texture = new Texture({
+        ownership: "external",
+        type: RenderTexture.Type.TileSection,
+        handle: colorTextureHandle,
+        transparency: TextureTransparency.Opaque,
+      });
       this._fbo = FrameBuffer.create([colorTextureHandle]);
     }
     if (undefined === this._fbo) {
@@ -175,12 +215,12 @@ export class BackgroundMapDrape extends TextureDrape {
     system.frameBufferStack.execute(this._fbo, true, false, () => {
       gl.clearColor(0, 0, 0, 0);
       gl.clear(GL.BufferBit.Color);
-      target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification);    // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
+      target.techniques.execute(target, renderCommands.getCommands(RenderPass.OpaqueGeneral), RenderPass.PlanarClassification); // Draw these with RenderPass.PlanarClassification (rather than Opaque...) so that the pick ordering is avoided.
     });
 
     target.uniforms.branch.pop();
 
-    batchState.reset();   // Reset the batch Ids...
+    batchState.reset(); // Reset the batch Ids...
     target.changeRenderPlan(prevPlan);
 
     system.applyRenderState(prevState);

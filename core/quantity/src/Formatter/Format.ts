@@ -10,10 +10,24 @@ import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
 import {
-  DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
-  getTraitString, parseFormatTrait, parseFormatType, parsePrecision, parseRatioType, parseScientificType, parseShowSignOption,
-  RatioType, ScientificType, scientificTypeToString,
-  ShowSignOption, showSignOptionToString,
+  DecimalPrecision,
+  FormatTraits,
+  formatTraitsToArray,
+  FormatType,
+  formatTypeToString,
+  FractionalPrecision,
+  getTraitString,
+  parseFormatTrait,
+  parseFormatType,
+  parsePrecision,
+  parseRatioType,
+  parseScientificType,
+  parseShowSignOption,
+  RatioType,
+  ScientificType,
+  scientificTypeToString,
+  ShowSignOption,
+  showSignOptionToString,
 } from "./FormatEnums";
 import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
@@ -50,70 +64,156 @@ export class BaseFormat {
     this._name = name;
   }
 
-  public get name(): string { return this._name; }
+  public get name(): string {
+    return this._name;
+  }
 
-  public get roundFactor(): number { return this._roundFactor; }
-  public set roundFactor(roundFactor: number) { this._roundFactor = roundFactor; }
+  public get roundFactor(): number {
+    return this._roundFactor;
+  }
+  public set roundFactor(roundFactor: number) {
+    this._roundFactor = roundFactor;
+  }
 
-  public get type(): FormatType { return this._type; }
-  public set type(formatType: FormatType) { this._type = formatType; }
+  public get type(): FormatType {
+    return this._type;
+  }
+  public set type(formatType: FormatType) {
+    this._type = formatType;
+  }
 
-  public get precision(): DecimalPrecision | FractionalPrecision { return this._precision; }
-  public set precision(precision: DecimalPrecision | FractionalPrecision) { this._precision = precision; }
+  public get precision(): DecimalPrecision | FractionalPrecision {
+    return this._precision;
+  }
+  public set precision(precision: DecimalPrecision | FractionalPrecision) {
+    this._precision = precision;
+  }
 
-  public get minWidth(): number | undefined { return this._minWidth; }
-  public set minWidth(minWidth: number | undefined) { this._minWidth = minWidth; }
+  public get minWidth(): number | undefined {
+    return this._minWidth;
+  }
+  public set minWidth(minWidth: number | undefined) {
+    this._minWidth = minWidth;
+  }
 
-  public get scientificType(): ScientificType | undefined { return this._scientificType; }
-  public set scientificType(scientificType: ScientificType | undefined) { this._scientificType = scientificType; }
+  public get scientificType(): ScientificType | undefined {
+    return this._scientificType;
+  }
+  public set scientificType(scientificType: ScientificType | undefined) {
+    this._scientificType = scientificType;
+  }
 
-  public get ratioType(): RatioType | undefined { return this._ratioType; }
-  public set ratioType(ratioType: RatioType | undefined) { this._ratioType = ratioType; }
+  public get ratioType(): RatioType | undefined {
+    return this._ratioType;
+  }
+  public set ratioType(ratioType: RatioType | undefined) {
+    this._ratioType = ratioType;
+  }
 
-  public get showSignOption(): ShowSignOption { return this._showSignOption; }
-  public set showSignOption(showSignOption: ShowSignOption) { this._showSignOption = showSignOption; }
+  public get showSignOption(): ShowSignOption {
+    return this._showSignOption;
+  }
+  public set showSignOption(showSignOption: ShowSignOption) {
+    this._showSignOption = showSignOption;
+  }
 
-  public get decimalSeparator(): string { return this._decimalSeparator; }
-  public set decimalSeparator(decimalSeparator: string) { this._decimalSeparator = decimalSeparator; }
+  public get decimalSeparator(): string {
+    return this._decimalSeparator;
+  }
+  public set decimalSeparator(decimalSeparator: string) {
+    this._decimalSeparator = decimalSeparator;
+  }
 
-  public get thousandSeparator(): string { return this._thousandSeparator; }
-  public set thousandSeparator(thousandSeparator: string) { this._thousandSeparator = thousandSeparator; }
+  public get thousandSeparator(): string {
+    return this._thousandSeparator;
+  }
+  public set thousandSeparator(thousandSeparator: string) {
+    this._thousandSeparator = thousandSeparator;
+  }
 
-  public get uomSeparator(): string { return this._uomSeparator; }
-  public set uomSeparator(uomSeparator: string) { this._uomSeparator = uomSeparator; }
+  public get uomSeparator(): string {
+    return this._uomSeparator;
+  }
+  public set uomSeparator(uomSeparator: string) {
+    this._uomSeparator = uomSeparator;
+  }
 
-  public get stationSeparator(): string { return this._stationSeparator; }
-  public set stationSeparator(stationSeparator: string) { this._stationSeparator = stationSeparator; }
+  public get stationSeparator(): string {
+    return this._stationSeparator;
+  }
+  public set stationSeparator(stationSeparator: string) {
+    this._stationSeparator = stationSeparator;
+  }
 
-  public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
-  public set stationOffsetSize(stationOffsetSize: number | undefined) { stationOffsetSize = this._stationOffsetSize = stationOffsetSize; }
+  public get stationOffsetSize(): number | undefined {
+    return this._stationOffsetSize;
+  }
+  public set stationOffsetSize(stationOffsetSize: number | undefined) {
+    stationOffsetSize = this._stationOffsetSize = stationOffsetSize;
+  }
 
-  public get allowMathematicOperations(): boolean { return this._allowMathematicOperations; }
-  public set allowMathematicOperations(allowMathematicOperations: boolean) { this._allowMathematicOperations = allowMathematicOperations; }
+  public get allowMathematicOperations(): boolean {
+    return this._allowMathematicOperations;
+  }
+  public set allowMathematicOperations(allowMathematicOperations: boolean) {
+    this._allowMathematicOperations = allowMathematicOperations;
+  }
 
-  public get formatTraits(): FormatTraits { return this._formatTraits; }
-  public set formatTraits(formatTraits: FormatTraits) { this._formatTraits = formatTraits; }
+  public get formatTraits(): FormatTraits {
+    return this._formatTraits;
+  }
+  public set formatTraits(formatTraits: FormatTraits) {
+    this._formatTraits = formatTraits;
+  }
 
-  public get spacer(): string | undefined { return this._spacer; }
-  public set spacer(spacer: string | undefined) { this._spacer = spacer ?? this._spacer; }
-  public get spacerOrDefault(): string { return this._spacer ?? " "; }
+  public get spacer(): string | undefined {
+    return this._spacer;
+  }
+  public set spacer(spacer: string | undefined) {
+    this._spacer = spacer ?? this._spacer;
+  }
+  public get spacerOrDefault(): string {
+    return this._spacer ?? " ";
+  }
 
-  public get includeZero(): boolean | undefined { return this._includeZero; }
-  public set includeZero(includeZero: boolean | undefined) { this._includeZero = includeZero ?? this._includeZero; }
+  public get includeZero(): boolean | undefined {
+    return this._includeZero;
+  }
+  public set includeZero(includeZero: boolean | undefined) {
+    this._includeZero = includeZero ?? this._includeZero;
+  }
 
   // default "north" is applied by the formatter (quarter rotation counter clockwise from east, the value depends on the units used)
-  public get azimuthBase(): number | undefined { return this._azimuthBase; }
-  public set azimuthBase(azimuthBase: number | undefined) { this._azimuthBase = azimuthBase; }
+  public get azimuthBase(): number | undefined {
+    return this._azimuthBase;
+  }
+  public set azimuthBase(azimuthBase: number | undefined) {
+    this._azimuthBase = azimuthBase;
+  }
 
-  public get azimuthBaseUnit(): UnitProps | undefined { return this._azimuthBaseUnit; }
-  public set azimuthBaseUnit(azimuthBaseUnit: UnitProps | undefined) { this._azimuthBaseUnit = azimuthBaseUnit; }
+  public get azimuthBaseUnit(): UnitProps | undefined {
+    return this._azimuthBaseUnit;
+  }
+  public set azimuthBaseUnit(azimuthBaseUnit: UnitProps | undefined) {
+    this._azimuthBaseUnit = azimuthBaseUnit;
+  }
 
-  public get azimuthCounterClockwise(): boolean | undefined { return this._azimuthCounterClockwise; }
-  public set azimuthCounterClockwise(azimuthCounterClockwise: boolean | undefined) { this._azimuthCounterClockwise = azimuthCounterClockwise; }
-  public get azimuthClockwiseOrDefault(): boolean { return !this._azimuthCounterClockwise; }
+  public get azimuthCounterClockwise(): boolean | undefined {
+    return this._azimuthCounterClockwise;
+  }
+  public set azimuthCounterClockwise(azimuthCounterClockwise: boolean | undefined) {
+    this._azimuthCounterClockwise = azimuthCounterClockwise;
+  }
+  public get azimuthClockwiseOrDefault(): boolean {
+    return !this._azimuthCounterClockwise;
+  }
 
-  public get revolutionUnit(): UnitProps | undefined { return this._revolutionUnit; }
-  public set revolutionUnit(revolutionUnit: UnitProps | undefined) { this._revolutionUnit = revolutionUnit; }
+  public get revolutionUnit(): UnitProps | undefined {
+    return this._revolutionUnit;
+  }
+  public set revolutionUnit(revolutionUnit: UnitProps | undefined) {
+    this._revolutionUnit = revolutionUnit;
+  }
 
   /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid FormatType. Throws exception if not valid. */
   public parseFormatTraits(formatTraitsFromJson: string | string[]) {
@@ -140,35 +240,53 @@ export class BaseFormat {
     }
     if (this.type === FormatType.Scientific) {
       if (undefined === formatProps.scientificType) // if format type is scientific and scientific type is undefined, throw
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Scientific' type therefore the attribute 'scientificType' is required.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} is 'Scientific' type therefore the attribute 'scientificType' is required.`,
+        );
 
       this._scientificType = parseScientificType(formatProps.scientificType, this.name);
     }
 
-    if (this.type === FormatType.Ratio){
+    if (this.type === FormatType.Ratio) {
       if (undefined === formatProps.ratioType)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Ratio' type therefore the attribute 'ratioType' is required.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} is 'Ratio' type therefore the attribute 'ratioType' is required.`,
+        );
 
       this._ratioType = parseRatioType(formatProps.ratioType, this.name);
     }
 
     if (undefined !== formatProps.roundFactor) { // optional; default is 0.0
       if (typeof (formatProps.roundFactor) !== "number")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'roundFactor' attribute. It should be of type 'number'.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'roundFactor' attribute. It should be of type 'number'.`,
+        );
       if (formatProps.roundFactor !== this.roundFactor) // if roundFactor isn't default value of 0.0, reassign roundFactor variable
         this._roundFactor = formatProps.roundFactor;
     }
 
     if (undefined !== formatProps.minWidth) { // optional
       if (!Number.isInteger(formatProps.minWidth) || formatProps.minWidth < 0) // must be a positive int
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'minWidth' attribute. It should be a positive integer.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'minWidth' attribute. It should be a positive integer.`,
+        );
       this._minWidth = formatProps.minWidth;
     }
     if (FormatType.Station === this.type) {
       if (undefined === formatProps.stationOffsetSize)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Station' type therefore the attribute 'stationOffsetSize' is required.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} is 'Station' type therefore the attribute 'stationOffsetSize' is required.`,
+        );
       if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize < 0) // must be a positive int > 0
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`,
+        );
       this._stationOffsetSize = formatProps.stationOffsetSize;
     }
 
@@ -178,56 +296,92 @@ export class BaseFormat {
 
     if (undefined !== formatProps.formatTraits && formatProps.formatTraits.length !== 0) { // FormatTraits is optional
       if (!Array.isArray(formatProps.formatTraits) && typeof (formatProps.formatTraits) !== "string") // must be either an array of strings or a string
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'formatTraits' attribute. It should be of type 'string' or 'string[]'.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'formatTraits' attribute. It should be of type 'string' or 'string[]'.`,
+        );
       this.parseFormatTraits(formatProps.formatTraits); // check that all of the options for formatTraits are valid. If now, throw
     }
 
     if (undefined !== formatProps.decimalSeparator) { // optional
       if (typeof (formatProps.decimalSeparator) !== "string") // not a string or not a one character string
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It should be of type 'string'.`,
+        );
       if (formatProps.decimalSeparator.length > 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It should be an empty or one character string.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'decimalSeparator' attribute. It should be an empty or one character string.`,
+        );
       this._decimalSeparator = formatProps.decimalSeparator;
     }
 
     if (undefined !== formatProps.thousandSeparator) { // optional
       if (typeof (formatProps.thousandSeparator) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It should be of type 'string'.`,
+        );
       if (formatProps.thousandSeparator.length > 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It should be an empty or one character string.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'thousandSeparator' attribute. It should be an empty or one character string.`,
+        );
       this._thousandSeparator = formatProps.thousandSeparator;
     }
 
     if (undefined !== formatProps.uomSeparator) { // optional; default is " "
       if (typeof (formatProps.uomSeparator) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'uomSeparator' attribute. It should be of type 'string'.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'uomSeparator' attribute. It should be of type 'string'.`,
+        );
       if (formatProps.uomSeparator.length < 0 || formatProps.uomSeparator.length > 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'uomSeparator' attribute. It should be an empty or one character string.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'uomSeparator' attribute. It should be an empty or one character string.`,
+        );
       this._uomSeparator = formatProps.uomSeparator;
     }
 
     if (undefined !== formatProps.stationSeparator) { // optional; default is "+"
       if (typeof (formatProps.stationSeparator) !== "string")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be of type 'string'.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be of type 'string'.`,
+        );
       if (formatProps.stationSeparator.length > 1)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be an empty or one character string.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'stationSeparator' attribute. It should be an empty or one character string.`,
+        );
       this._stationSeparator = formatProps.stationSeparator;
     }
 
     if (undefined !== formatProps.azimuthBase) { // optional; default is a quarter rotation (90 degrees) which represents north
       if (typeof (formatProps.azimuthBase) !== "number")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBase' attribute. It should be of type 'number'.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'azimuthBase' attribute. It should be of type 'number'.`,
+        );
       this._azimuthBase = formatProps.azimuthBase;
     }
 
     if (undefined !== formatProps.azimuthCounterClockwise) { // optional; default is false
       if (typeof (formatProps.azimuthCounterClockwise) !== "boolean")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthCounterClockwise' attribute. It should be of type 'boolean'.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'azimuthCounterClockwise' attribute. It should be of type 'boolean'.`,
+        );
       this._azimuthCounterClockwise = formatProps.azimuthCounterClockwise;
     }
     if (undefined !== formatProps.allowMathematicOperations) { // optional; default is false
       if (typeof (formatProps.allowMathematicOperations) !== "boolean")
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'allowMathematicOperations' attribute. It should be of type 'boolean'.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an invalid 'allowMathematicOperations' attribute. It should be of type 'boolean'.`,
+        );
       this._allowMathematicOperations = formatProps.allowMathematicOperations;
     }
   }
@@ -238,7 +392,7 @@ export class BaseFormat {
  */
 export class Format extends BaseFormat {
   protected _units?: Array<[UnitProps, string | undefined]>;
-  protected _customProps?: any;  // used by custom formatters and parsers
+  protected _customProps?: any; // used by custom formatters and parsers
 
   /** Constructor
    *  @param name     The name of a format specification. TODO: make optional or remove
@@ -247,9 +401,15 @@ export class Format extends BaseFormat {
     super(name);
   }
 
-  public get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
-  public get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
-  public get customProps(): any { return this._customProps; }
+  public get units(): Array<[UnitProps, string | undefined]> | undefined {
+    return this._units;
+  }
+  public get hasUnits(): boolean {
+    return this._units !== undefined && this._units.length > 0;
+  }
+  public get customProps(): any {
+    return this._customProps;
+  }
 
   public static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits) {
     if (!formatProps.formatTraits)
@@ -260,7 +420,7 @@ export class Format extends BaseFormat {
   }
 
   private async createUnit(unitsProvider: UnitsProvider, name: string, label?: string): Promise<void> {
-    if (name === undefined || typeof (name) !== "string" || (label !== undefined && typeof (label) !== "string")) // throws if name is undefined or name isn't a string or if label is defined and isn't a string
+    if (name === undefined || typeof name !== "string" || (label !== undefined && typeof label !== "string")) // throws if name is undefined or name isn't a string or if label is defined and isn't a string
       throw new QuantityError(QuantityStatus.InvalidJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
     for (const unit of this.units!) {
       const unitObj = unit[0].name;
@@ -345,19 +505,31 @@ export class Format extends BaseFormat {
       this._units = new Array<[UnitProps, string | undefined]>();
       if (jsonObj.composite.includeZero !== undefined) {
         if (typeof (jsonObj.composite.includeZero) !== "boolean") // includeZero must be a boolean IF it is defined
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`);
+          throw new QuantityError(
+            QuantityStatus.InvalidJson,
+            `The Format ${this.name} has a Composite with an invalid 'includeZero' attribute. It should be of type 'boolean'.`,
+          );
         this._includeZero = jsonObj.composite.includeZero;
       }
-      if (jsonObj.composite.spacer !== undefined) {  // spacer must be a string IF it is defined
+      if (jsonObj.composite.spacer !== undefined) { // spacer must be a string IF it is defined
         if (typeof (jsonObj.composite.spacer) !== "string")
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`);
+          throw new QuantityError(
+            QuantityStatus.InvalidJson,
+            `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It must be of type 'string'.`,
+          );
         if (jsonObj.composite.spacer.length > 1)
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
+          throw new QuantityError(
+            QuantityStatus.InvalidJson,
+            `The Format ${this.name} has a Composite with an invalid 'spacer' attribute. It should be an empty or one character string.`,
+          );
         this._spacer = jsonObj.composite.spacer;
       }
       if (jsonObj.composite.units !== undefined) { // if composite is defined, it must be an array with 1-4 units
         if (!Array.isArray(jsonObj.composite.units)) { // must be an array
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`);
+          throw new QuantityError(
+            QuantityStatus.InvalidJson,
+            `The Format ${this.name} has a Composite with an invalid 'units' attribute. It must be of type 'array'`,
+          );
         }
         if (jsonObj.composite.units.length > 0 && jsonObj.composite.units.length <= 4) { // Composite requires 1-4 units
           try {
@@ -376,35 +548,53 @@ export class Format extends BaseFormat {
         throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has a Composite with no valid 'units'`);
     }
 
-    if(this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
+    if (this.type === FormatType.Azimuth || this.type === FormatType.Bearing) {
       // these units cannot be loaded from loadFormatProperties() because they require an async call, and the method signature is already public
 
       if (undefined !== jsonObj.azimuthBaseUnit) {
         if (typeof (jsonObj.azimuthBaseUnit) !== "string")
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'azimuthBaseUnit' attribute. It should be of type 'string'.`);
+          throw new QuantityError(
+            QuantityStatus.InvalidJson,
+            `The Format ${this.name} has an invalid 'azimuthBaseUnit' attribute. It should be of type 'string'.`,
+          );
 
         const baseUnit: UnitProps = await unitsProvider.findUnitByName(jsonObj.azimuthBaseUnit);
         if (!baseUnit || !baseUnit.isValid)
-          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.azimuthBaseUnit}' for azimuthBaseUnit in Format '${this.name}'.`);
+          throw new QuantityError(
+            QuantityStatus.InvalidJson,
+            `Invalid unit name '${jsonObj.azimuthBaseUnit}' for azimuthBaseUnit in Format '${this.name}'.`,
+          );
 
         this._azimuthBaseUnit = baseUnit;
       }
 
       if (undefined !== jsonObj.revolutionUnit) {
         if (typeof (jsonObj.revolutionUnit) !== "string")
-          throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an invalid 'revolutionUnit' attribute. It should be of type 'string'.`);
+          throw new QuantityError(
+            QuantityStatus.InvalidJson,
+            `The Format ${this.name} has an invalid 'revolutionUnit' attribute. It should be of type 'string'.`,
+          );
 
         const revolutionUnit: UnitProps = await unitsProvider.findUnitByName(jsonObj.revolutionUnit);
         if (!revolutionUnit || !revolutionUnit.isValid)
-          throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${jsonObj.revolutionUnit}' for revolutionUnit in Format '${this.name}'.`);
+          throw new QuantityError(
+            QuantityStatus.InvalidJson,
+            `Invalid unit name '${jsonObj.revolutionUnit}' for revolutionUnit in Format '${this.name}'.`,
+          );
 
         this._revolutionUnit = revolutionUnit;
       }
 
       if (this._revolutionUnit === undefined)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.`,
+        );
       if (this._azimuthBase !== undefined && this._azimuthBaseUnit === undefined)
-        throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.`);
+        throw new QuantityError(
+          QuantityStatus.InvalidJson,
+          `The Format ${this.name} has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.`,
+        );
     }
   }
 

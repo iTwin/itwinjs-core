@@ -5,10 +5,20 @@
 
 import {
   BriefcaseConnection,
-  FeatureSymbology, HitDetail, IModelApp, IModelConnection, TiledGraphicsProvider, TileTree, TileTreeReference, Tool, ViewCreator3d, Viewport, ViewState,
+  FeatureSymbology,
+  HitDetail,
+  IModelApp,
+  IModelConnection,
+  TiledGraphicsProvider,
+  TileTree,
+  TileTreeReference,
+  Tool,
+  ViewCreator3d,
+  Viewport,
+  ViewState,
 } from "@itwin/core-frontend";
-import { DisplayTestApp } from "./App";
 import { Transform } from "@itwin/core-geometry";
+import { DisplayTestApp } from "./App";
 
 class Reference extends TileTreeReference {
   private readonly _ref: TileTreeReference;
@@ -21,13 +31,25 @@ class Reference extends TileTreeReference {
     this._provider = provider;
   }
 
-  public override get castsShadows() { return this._ref.castsShadows; }
-  public override get treeOwner() { return this._ref.treeOwner; }
-  public override async getToolTip(hit: HitDetail) { return this._ref.getToolTip(hit); }
-  public override canSupplyToolTip(hit: HitDetail) { return this._ref.canSupplyToolTip(hit); }
-  public override async getToolTipPromise(hit: HitDetail) { return this._ref.getToolTipPromise(hit); }
+  public override get castsShadows() {
+    return this._ref.castsShadows;
+  }
+  public override get treeOwner() {
+    return this._ref.treeOwner;
+  }
+  public override async getToolTip(hit: HitDetail) {
+    return this._ref.getToolTip(hit);
+  }
+  public override canSupplyToolTip(hit: HitDetail) {
+    return this._ref.canSupplyToolTip(hit);
+  }
+  public override async getToolTipPromise(hit: HitDetail) {
+    return this._ref.getToolTipPromise(hit);
+  }
 
-  protected override getSymbologyOverrides() { return this._provider.ovrs; }
+  protected override getSymbologyOverrides() {
+    return this._provider.ovrs;
+  }
 
   protected override computeTransform(tree: TileTree): Transform {
     return this._transform ?? (this._transform = this._provider.computeTransform(tree));
@@ -45,7 +67,9 @@ class Provider implements TiledGraphicsProvider {
   public readonly toViewport: Transform;
   private readonly _refs: Reference[];
 
-  public get iModel() { return this.view.iModel; }
+  public get iModel() {
+    return this.view.iModel;
+  }
 
   private constructor(view: ViewState, vp: Viewport, transform: Transform) {
     this.view = view;
@@ -81,7 +105,9 @@ class Provider implements TiledGraphicsProvider {
   }
 }
 
-function computeTransformFromSecondaryIModel(args: { primary: IModelConnection, secondary: IModelConnection, tileTreeToWorld?: Transform }): Transform {
+function computeTransformFromSecondaryIModel(
+  args: { primary: IModelConnection, secondary: IModelConnection, tileTreeToWorld?: Transform },
+): Transform {
   const { primary, secondary } = args;
   const tileTreeToWorld = args.tileTreeToWorld ?? Transform.createIdentity();
 
@@ -113,7 +139,7 @@ export async function toggleExternalTiledGraphicsProvider(vp: Viewport): Promise
 
   let iModel;
   try {
-    iModel = await BriefcaseConnection.openFile( { fileName, key: fileName });
+    iModel = await BriefcaseConnection.openFile({ fileName, key: fileName });
     const provider = await Provider.create(iModel, vp);
     providersByViewport.set(vp, provider);
     vp.addTiledGraphicsProvider(provider);

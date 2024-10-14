@@ -7,16 +7,16 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { GraphicType } from "./common/render/GraphicType";
+import { CanvasDecoration } from "./render/CanvasDecoration";
 import { RenderGraphicOwner } from "./render/RenderGraphic";
 import { ViewportDecorator } from "./Viewport";
-import { CanvasDecoration } from "./render/CanvasDecoration";
-import { GraphicType } from "./common/render/GraphicType";
 
 /** @internal */
 export type CachedDecoration =
-  { type: "graphic", graphicType: GraphicType, graphicOwner: RenderGraphicOwner } |
-  { type: "canvas", canvasDecoration: CanvasDecoration, atFront: boolean } |
-  { type: "html", htmlElement: HTMLElement };
+  | { type: "graphic", graphicType: GraphicType, graphicOwner: RenderGraphicOwner }
+  | { type: "canvas", canvasDecoration: CanvasDecoration, atFront: boolean }
+  | { type: "html", htmlElement: HTMLElement };
 
 function disposeCachedDecorations(decorations: CachedDecoration[]): void {
   for (const dec of decorations)

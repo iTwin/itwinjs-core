@@ -4,13 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64Set } from "@itwin/core-bentley";
-import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, ViewFlagOverrides,
+  BatchType,
+  FeatureAppearance,
+  FeatureAppearanceProvider,
+  FeatureAppearanceSource,
+  GeometryClass,
+  ViewFlagOverrides,
 } from "@itwin/core-common";
 import {
-  formatAnimationBranchId, RenderClipVolume, SceneContext, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
+  formatAnimationBranchId,
+  RenderClipVolume,
+  SceneContext,
+  TileDrawArgs,
+  TileGraphicType,
+  TileTree,
+  TileTreeOwner,
+  TileTreeReference,
 } from "@itwin/core-frontend";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { BatchedModels } from "./BatchedModels";
 import { ModelGroup, ModelGroupInfo } from "./ModelGroup";
 
@@ -65,10 +77,13 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
 
   public getFeatureAppearance(
     source: FeatureAppearanceSource,
-    elemLo: number, elemHi: number,
-    subcatLo: number, subcatHi: number,
+    elemLo: number,
+    elemHi: number,
+    subcatLo: number,
+    subcatHi: number,
     geomClass: GeometryClass,
-    modelLo: number, modelHi: number,
+    modelLo: number,
+    modelHi: number,
     type: BatchType,
     animationNodeId: number,
   ): FeatureAppearance | undefined {

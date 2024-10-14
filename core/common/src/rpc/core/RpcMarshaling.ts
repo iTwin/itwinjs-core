@@ -6,8 +6,8 @@
  * @module RpcInterface
  */
 
-import { BentleyStatus, IModelError } from "../../IModelError";
 import { BackendReadable } from "../../BackendTypes";
+import { BentleyStatus, IModelError } from "../../IModelError";
 import { RpcProtocol } from "./RpcProtocol";
 
 // cspell:ignore unmarshal
@@ -52,7 +52,7 @@ export namespace RpcSerializedValue {
 
 /** @internal */
 export class RpcMarshaling {
-  private constructor() { }
+  private constructor() {}
 
   /** Serializes a value. */
   public static serialize(protocol: RpcProtocol | undefined, value: any): RpcSerializedValue {
@@ -111,7 +111,7 @@ class WireFormat {
 
   /** JSON.parse reviver callback. */
   public static unmarshal(_key: string, value: any) {
-    if (typeof (value) === "object" && value !== null && value.hasOwnProperty("isBinary") && value.isBinary) {
+    if (typeof value === "object" && value !== null && value.hasOwnProperty("isBinary") && value.isBinary) {
       return WireFormat.unmarshalBinary(value);
     }
 
@@ -130,7 +130,7 @@ class WireFormat {
         const end = cursor + value.byteLength;
         let chunk = chunkThreshold;
 
-        for (; ;) {
+        for (;;) {
           if (cursor >= end) {
             break;
           }

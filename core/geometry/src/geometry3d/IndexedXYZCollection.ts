@@ -32,7 +32,9 @@ class PointsIterator implements Iterator<Point3d>, Iterable<Point3d> {
     };
   }
 
-  public [Symbol.iterator](): Iterator<Point3d> { return this; }
+  public [Symbol.iterator](): Iterator<Point3d> {
+    return this;
+  }
 }
 /**
  * abstract base class for read-only access to XYZ data with indexed reference.
@@ -106,8 +108,8 @@ export abstract class IndexedXYZCollection {
     const y0 = this.getYAtUncheckedPointIndex(origin);
     const z0 = this.getZAtUncheckedPointIndex(origin);
     return (this.getXAtUncheckedPointIndex(indexA) - x0) * (this.getXAtUncheckedPointIndex(indexB) - x0) +
-           (this.getYAtUncheckedPointIndex(indexA) - y0) * (this.getYAtUncheckedPointIndex(indexB) - y0) +
-           (this.getZAtUncheckedPointIndex(indexA) - z0) * (this.getZAtUncheckedPointIndex(indexB) - z0);
+      (this.getYAtUncheckedPointIndex(indexA) - y0) * (this.getYAtUncheckedPointIndex(indexB) - y0) +
+      (this.getZAtUncheckedPointIndex(indexA) - z0) * (this.getZAtUncheckedPointIndex(indexB) - z0);
   }
   /**
    * Return the dot product of the vectors from the point at `origin` to the point at `indexA` and to `targetB`.
@@ -123,8 +125,8 @@ export abstract class IndexedXYZCollection {
     const y0 = this.getYAtUncheckedPointIndex(origin);
     const z0 = this.getZAtUncheckedPointIndex(origin);
     return (this.getXAtUncheckedPointIndex(indexA) - x0) * (targetB.x - x0) +
-           (this.getYAtUncheckedPointIndex(indexA) - y0) * (targetB.y - y0) +
-           (this.getZAtUncheckedPointIndex(indexA) - z0) * (targetB.z - z0);
+      (this.getYAtUncheckedPointIndex(indexA) - y0) * (targetB.y - y0) +
+      (this.getZAtUncheckedPointIndex(indexA) - z0) * (targetB.z - z0);
   }
   /**
    * Return the cross product of the vectors from `origin` to points at `indexA` and `indexB`
@@ -149,12 +151,15 @@ export abstract class IndexedXYZCollection {
     const x0 = this.getXAtUncheckedPointIndex(origin);
     const y0 = this.getYAtUncheckedPointIndex(origin);
     const z0 = this.getZAtUncheckedPointIndex(origin);
-    return Vector3d.createCrossProduct(this.getXAtUncheckedPointIndex(indexA) - x0,
-                                       this.getYAtUncheckedPointIndex(indexA) - y0,
-                                       this.getZAtUncheckedPointIndex(indexA) - z0,
-                                       targetB.x - x0,
-                                       targetB.y - y0,
-                                       targetB.z - z0, result);
+    return Vector3d.createCrossProduct(
+      this.getXAtUncheckedPointIndex(indexA) - x0,
+      this.getYAtUncheckedPointIndex(indexA) - y0,
+      this.getZAtUncheckedPointIndex(indexA) - z0,
+      targetB.x - x0,
+      targetB.y - y0,
+      targetB.z - z0,
+      result,
+    );
   }
   /**
    * Return the cross product of vectors from `origin` to points at `indexA` and `indexB`
@@ -196,7 +201,8 @@ export abstract class IndexedXYZCollection {
     return Geometry.hypotenuseSquaredXYZ(
       target.x - this.getXAtUncheckedPointIndex(index0),
       target.y - this.getYAtUncheckedPointIndex(index0),
-      target.z - this.getZAtUncheckedPointIndex(index0));
+      target.z - this.getZAtUncheckedPointIndex(index0),
+    );
   }
   /**
    * Return distance between indicated points.
@@ -253,7 +259,7 @@ export abstract class IndexedXYZCollection {
    * @param scales array of scales. For best results, scales should have same length as the instance.
    * @param result optional pre-allocated object to fill and return
    * @return s = sum(p_i * s_i), where i ranges from 0 to min(this.length, scales.length).
-  */
+   */
   public linearCombination(scales: number[], result?: Point3d | Vector3d): XYZ {
     const n = Math.min(this.length, scales.length);
     const sum = (result instanceof Vector3d) ? Vector3d.createZero(result) : Point3d.createZero(result);
@@ -276,9 +282,12 @@ export abstract class IndexedXYZCollection {
   public interpolateIndexIndex(index0: number, fraction: number, index1: number, result?: Point3d): Point3d | undefined {
     if (index0 < 0 || index0 >= this.length || index1 < 0 || index1 >= this.length)
       return undefined;
-    return Point3d.create(Geometry.interpolate(this.getXAtUncheckedPointIndex(index0), fraction, this.getXAtUncheckedPointIndex(index1)),
-                          Geometry.interpolate(this.getYAtUncheckedPointIndex(index0), fraction, this.getYAtUncheckedPointIndex(index1)),
-                          Geometry.interpolate(this.getZAtUncheckedPointIndex(index0), fraction, this.getZAtUncheckedPointIndex(index1)), result);
+    return Point3d.create(
+      Geometry.interpolate(this.getXAtUncheckedPointIndex(index0), fraction, this.getXAtUncheckedPointIndex(index1)),
+      Geometry.interpolate(this.getYAtUncheckedPointIndex(index0), fraction, this.getYAtUncheckedPointIndex(index1)),
+      Geometry.interpolate(this.getZAtUncheckedPointIndex(index0), fraction, this.getZAtUncheckedPointIndex(index1)),
+      result,
+    );
   }
 
   /** access x of indexed point */

@@ -2,11 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ECVersion, KindOfQuantity, KindOfQuantityProps, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 import { expect } from "chai";
-import {
-  ECVersion,
-  KindOfQuantity, KindOfQuantityProps, SchemaContext, SchemaItemKey, SchemaKey,
-} from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
 
@@ -51,8 +48,8 @@ describe("KindOfQuantities tests", () => {
   });
 
   it("try creating KindOfQuantity in unknown schema, throws error", async () => {
-    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
-    await expect(testEditor.kindOfQuantities.create(badKey, "testInvertedUnit", unitKey)).to.be.eventually.rejected.then(function (error) {
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1, 0, 0));
+    await expect(testEditor.kindOfQuantities.create(badKey, "testInvertedUnit", unitKey)).to.be.eventually.rejected.then(function(error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
@@ -61,7 +58,7 @@ describe("KindOfQuantities tests", () => {
 
   it("try creating KindOfQuantity with existing name, throws error", async () => {
     await testEditor.kindOfQuantities.create(testKey, "testKoq", unitKey);
-    await expect(testEditor.kindOfQuantities.create(testKey, "testKoq", unitKey)).to.be.eventually.rejected.then(function (error) {
+    await expect(testEditor.kindOfQuantities.create(testKey, "testKoq", unitKey)).to.be.eventually.rejected.then(function(error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `KindOfQuantity testSchema.testKoq already exists in the schema ${testKey.name}.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);

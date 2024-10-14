@@ -71,7 +71,7 @@ export class ContourStyle {
   }
 
   private constructor(props?: Partial<ContourStyleProperties>) {
-    this.color = props?.color ?? RgbColor.fromJSON({r: 0, g: 0, b: 0});
+    this.color = props?.color ?? RgbColor.fromJSON({ r: 0, g: 0, b: 0 });
     this.pixelWidth = props?.pixelWidth ?? 1;
     this.pattern = props?.pattern ?? LinePixels.Solid;
   }
@@ -90,7 +90,7 @@ export class ContourStyle {
   public toJSON(): ContourStyleProps {
     const props: ContourStyleProps = {};
 
-    if (!this.color.equals(RgbColor.fromJSON({r: 0, g: 0, b: 0})))
+    if (!this.color.equals(RgbColor.fromJSON({ r: 0, g: 0, b: 0 })))
       props.color = this.color.toJSON();
 
     if (1 !== this.pixelWidth)
@@ -165,17 +165,20 @@ export class Contour {
   public static readonly defaults = new Contour({});
 
   public equals(other: Contour): boolean {
-    if (!this.majorStyle.equals(other.majorStyle) || !this.minorStyle.equals(other.minorStyle) || this.minorInterval !== other.minorInterval  || this.majorIntervalCount !== other.majorIntervalCount || this.showGeometry !== other.showGeometry) {
+    if (
+      !this.majorStyle.equals(other.majorStyle) || !this.minorStyle.equals(other.minorStyle) || this.minorInterval !== other.minorInterval ||
+      this.majorIntervalCount !== other.majorIntervalCount || this.showGeometry !== other.showGeometry
+    ) {
       return false;
     }
     return true;
   }
 
   /** Performs ordered comparison of two contours.
-     * @param lhs First contour to compare
-     * @param rhs Second contour to compare
-     * @returns 0 if lhs is equivalent to rhs, a negative number if lhs compares less than rhs, or a positive number if lhs compares greater than rhs.
-     */
+   * @param lhs First contour to compare
+   * @param rhs Second contour to compare
+   * @returns 0 if lhs is equivalent to rhs, a negative number if lhs compares less than rhs, or a positive number if lhs compares greater than rhs.
+   */
   public static compare(lhs: Contour, rhs: Contour): number {
     return ContourStyle.compare(lhs.majorStyle, rhs.majorStyle)
       || ContourStyle.compare(lhs.minorStyle, rhs.minorStyle)

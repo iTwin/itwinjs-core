@@ -76,7 +76,7 @@ export class RulesetsFactory {
     field: Field,
     record: Item,
     computeDisplayValue?: ComputeDisplayValueCallback,
-  ): Promise<{ ruleset: Ruleset; description: string }> {
+  ): Promise<{ ruleset: Ruleset, description: string }> {
     const info = this.createSimilarInstancesRulesetInfo(field, record);
     const description = await createDescriptionAsync(record, info.relatedClass, field, info.propertyValue, computeDisplayValue);
     return { ruleset: info.ruleset, description };
@@ -101,7 +101,7 @@ interface PrimitiveValueDef {
 export type PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined;
 
 // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
-type Point = { x: number; y: number; z?: number };
+type Point = { x: number, y: number, z?: number };
 
 const toString = (displayValue: string | undefined): string => {
   if (!displayValue) {
@@ -261,7 +261,7 @@ const createSingleClassSpecification = (classInfo: Readonly<ClassInfo>): SingleS
 const createRelatedInstanceSpec = (
   pathFromSelectToPropertyClass: RelationshipPath,
   index: number,
-): { spec: RelatedInstanceSpecification; class: ClassInfo } => ({
+): { spec: RelatedInstanceSpecification, class: ClassInfo } => ({
   spec: {
     relationshipPath: pathFromSelectToPropertyClass.map((step) => ({
       relationship: createSingleClassSpecification(step.relationshipInfo),
@@ -284,7 +284,7 @@ const createPathFromSelectToPropertyClass = (field: PropertiesField): Relationsh
   return RelationshipPath.reverse(pathFromPropertyToSelectClass);
 };
 
-const createRelatedInstanceSpecInfo = (field: PropertiesField): { spec: RelatedInstanceSpecification; class: ClassInfo } | undefined => {
+const createRelatedInstanceSpecInfo = (field: PropertiesField): { spec: RelatedInstanceSpecification, class: ClassInfo } | undefined => {
   const path = createPathFromSelectToPropertyClass(field);
   return path.length ? createRelatedInstanceSpec(path, 0) : undefined;
 };

@@ -73,9 +73,15 @@ export abstract class ReusableObjectCache<T> {
  * @internal
  */
 export class GrowableXYZArrayCache extends ReusableObjectCache<GrowableXYZArray> {
-  protected clearForCache(data: GrowableXYZArray): void { data.length = 0; }
-  protected createForCache(): GrowableXYZArray { return new GrowableXYZArray(10); }
-  public constructor() { super(); }
+  protected clearForCache(data: GrowableXYZArray): void {
+    data.length = 0;
+  }
+  protected createForCache(): GrowableXYZArray {
+    return new GrowableXYZArray(10);
+  }
+  public constructor() {
+    super();
+  }
   /**
    * Grab an array from the cache and immediately fill from a source
    * @param source
@@ -84,6 +90,5 @@ export class GrowableXYZArrayCache extends ReusableObjectCache<GrowableXYZArray>
     const dest = this.grabFromCache();
     dest.pushFrom(source);
     return dest;
-
   }
 }

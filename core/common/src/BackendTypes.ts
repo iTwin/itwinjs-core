@@ -6,8 +6,8 @@
  * @module Utils
  */
 
-import type { Readable, Writable } from "stream"; // Must be "import type" to avoid webpack polyfill errors
 import type { Buffer } from "buffer"; // Must be "import type" to avoid webpack polyfill errors
+import type { Readable, Writable } from "stream"; // Must be "import type" to avoid webpack polyfill errors
 
 /*
 IMPORTANT:

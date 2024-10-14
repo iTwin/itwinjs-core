@@ -7,21 +7,21 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, QParams3d } from "@itwin/core-common";
+import { Point3d } from "@itwin/core-geometry";
 import { PointStringParams } from "../../common/internal/render/PointStringParams";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderMemory } from "../RenderMemory";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
 import { LUTGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { VertexLUT } from "./VertexLUT";
-import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
 export class PointStringGeometry extends LUTGeometry implements RenderGeometry {
@@ -36,9 +36,19 @@ export class PointStringGeometry extends LUTGeometry implements RenderGeometry {
   public readonly indices: BufferHandle;
   public readonly numIndices: number;
 
-  public get lutBuffers() { return this.buffers; }
+  public get lutBuffers() {
+    return this.buffers;
+  }
 
-  private constructor(indices: BufferHandle, numIndices: number, lut: VertexLUT, qparams: QParams3d, weight: number, hasFeatures: boolean, viOrigin: Point3d | undefined) {
+  private constructor(
+    indices: BufferHandle,
+    numIndices: number,
+    lut: VertexLUT,
+    qparams: QParams3d,
+    weight: number,
+    hasFeatures: boolean,
+    viOrigin: Point3d | undefined,
+  ) {
     super(viOrigin);
     this.isInstanceable = undefined === viOrigin;
     this.buffers = BuffersContainer.create();
@@ -53,13 +63,25 @@ export class PointStringGeometry extends LUTGeometry implements RenderGeometry {
     this._hasFeatures = hasFeatures;
   }
 
-  protected _wantWoWReversal(_target: Target): boolean { return true; }
+  protected _wantWoWReversal(_target: Target): boolean {
+    return true;
+  }
 
-  public get techniqueId(): TechniqueId { return TechniqueId.PointString; }
-  public override getPass(): Pass { return "opaque-linear"; }
-  public override get hasFeatures() { return this._hasFeatures; }
-  public get renderOrder(): RenderOrder { return RenderOrder.PlanarLinear; }
-  protected override _getLineWeight(_params: ShaderProgramParams): number { return this.weight; }
+  public get techniqueId(): TechniqueId {
+    return TechniqueId.PointString;
+  }
+  public override getPass(): Pass {
+    return "opaque-linear";
+  }
+  public override get hasFeatures() {
+    return this._hasFeatures;
+  }
+  public get renderOrder(): RenderOrder {
+    return RenderOrder.PlanarLinear;
+  }
+  protected override _getLineWeight(_params: ShaderProgramParams): number {
+    return this.weight;
+  }
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const gl = System.instance;

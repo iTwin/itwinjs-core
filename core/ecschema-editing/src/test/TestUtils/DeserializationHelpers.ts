@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DOMParser } from "@xmldom/xmldom";
 import { ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser } from "@itwin/ecschema-metadata";
+import { DOMParser } from "@xmldom/xmldom";
 
 export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): any {
   return {
@@ -22,7 +22,10 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
   private readonly _parser: (schemaContent: any, context: SchemaContext) => Schema;
   private readonly _asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<SchemaInfo>;
 
-  constructor(parser: (schemaContent: any, context: SchemaContext) => Schema, asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<SchemaInfo>) {
+  constructor(
+    parser: (schemaContent: any, context: SchemaContext) => Schema,
+    asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<SchemaInfo>,
+  ) {
     this._schemaList = new Map();
     this._parser = parser;
     this._asyncParser = asyncParser;
@@ -50,7 +53,6 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
   }
 
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-
     if (this._schemaList.has(schemaKey.name)) {
       const schemaBody = this._schemaList.get(schemaKey.name);
       const schema = this._parser(schemaBody, context);

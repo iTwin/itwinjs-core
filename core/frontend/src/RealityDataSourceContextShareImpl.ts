@@ -5,11 +5,11 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { request } from "./request/Request";
 import { AccessToken, assert, GuidString, Logger } from "@itwin/core-bentley";
 import { RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
+import { request } from "./request/Request";
 
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
 import { OPCFormatInterpreter, ThreeDTileFormatInterpreter } from "./tile/internal";
@@ -19,8 +19,8 @@ import { OPCFormatInterpreter, ThreeDTileFormatInterpreter } from "./tile/intern
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
  * There is a one to one relationship between a reality data and the instances of present class.
-* @internal
-*/
+ * @internal
+ */
 export class RealityDataSourceContextShareImpl implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -62,7 +62,7 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
   }
   /**
    * Returns Reality Data if available
-  */
+   */
   public get realityData(): RealityData | undefined {
     return this._rd;
   }
@@ -85,7 +85,9 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
       const token = await IModelApp.getAccessToken();
       if (token && this.realityDataId) {
         if (undefined === IModelApp.realityDataAccess)
-          throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
+          throw new Error(
+            "Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.",
+          );
         this._rd = await IModelApp.realityDataAccess.getRealityData(token, iTwinId, this.realityDataId);
         // A reality data that has not root document set should not be considered.
         const rootDocument: string = this._rd.rootDocument ?? "";
@@ -129,7 +131,9 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
       const rdSourceKey = this.key;
       // we need to resolve tilesetURl from realityDataId and iTwinId
       if (undefined === IModelApp.realityDataAccess)
-        throw new Error("Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.");
+        throw new Error(
+          "Missing an implementation of RealityDataAccess on IModelApp, it is required to access reality data. Please provide an implementation to the IModelApp.startup using IModelAppOptions.realityDataAccess.",
+        );
       try {
         const resolvedITwinId = iTwinId ? iTwinId : rdSourceKey.iTwinId;
 
@@ -246,4 +250,3 @@ export class RealityDataSourceContextShareImpl implements RealityDataSource {
     return publisherInfo;
   }
 }
-

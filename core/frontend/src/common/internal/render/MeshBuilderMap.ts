@@ -7,17 +7,17 @@
  */
 
 import { compareBooleans, compareNumbers, Dictionary, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import { Feature, FeatureTable } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { DisplayParams } from "./DisplayParams";
-import { MeshPrimitiveType } from "./MeshPrimitive";
 import { GeometryList } from "./GeometryList";
 import { Geometry } from "./GeometryPrimitives";
+import { MeshBuilder, MeshEdgeCreationOptions } from "./MeshBuilder";
+import { MeshPrimitiveType } from "./MeshPrimitive";
+import { Mesh, MeshList } from "./MeshPrimitives";
 import { PolyfacePrimitive } from "./Polyface";
 import { GeometryOptions, ToleranceRatio } from "./Primitives";
 import { StrokesPrimitive } from "./Strokes";
-import { MeshBuilder, MeshEdgeCreationOptions } from "./MeshBuilder";
-import { Mesh, MeshList } from "./MeshPrimitives";
 
 /** @internal */
 export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> {
@@ -31,7 +31,13 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   private readonly _isVolumeClassifier: boolean;
   private _keyOrder = 0;
 
-  constructor(tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: { isVolumeClassifier?: boolean, modelId?: Id64String } | undefined) {
+  constructor(
+    tolerance: number,
+    range: Range3d,
+    is2d: boolean,
+    options: GeometryOptions,
+    pickable: { isVolumeClassifier?: boolean, modelId?: Id64String } | undefined,
+  ) {
     super((lhs: MeshBuilderMap.Key, rhs: MeshBuilderMap.Key) => lhs.compare(rhs));
     this.tolerance = tolerance;
     this.vertexTolerance = tolerance * ToleranceRatio.vertex;
@@ -45,7 +51,14 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
       this.features = new FeatureTable(2048 * 1024, pickable.modelId);
   }
 
-  public static createFromGeometries(geometries: GeometryList, tolerance: number, range: Range3d, is2d: boolean, options: GeometryOptions, pickable: { isVolumeClassifier?: boolean, modelId?: Id64String } | undefined): MeshBuilderMap {
+  public static createFromGeometries(
+    geometries: GeometryList,
+    tolerance: number,
+    range: Range3d,
+    is2d: boolean,
+    options: GeometryOptions,
+    pickable: { isVolumeClassifier?: boolean, modelId?: Id64String } | undefined,
+  ): MeshBuilderMap {
     const map = new MeshBuilderMap(tolerance, range, is2d, options, pickable);
 
     for (const geom of geometries)
@@ -79,9 +92,10 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public loadPolyfacePrimitiveList(geom: Geometry): void {
     const polyfaces = geom.getPolyfaces(this.tolerance);
 
-    if (polyfaces !== undefined)
+    if (polyfaces !== undefined) {
       for (const polyface of polyfaces)
         this.loadIndexedPolyface(polyface, geom.feature);
+    }
   }
 
   /**
@@ -98,8 +112,14 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
       return;
 
     const builder = this.getBuilder(displayParams, MeshPrimitiveType.Mesh, normalCount > 0, isPlanar);
-    const edgeOptions = new MeshEdgeCreationOptions(polyface.displayEdges && this.options.wantEdges ? MeshEdgeCreationOptions.Type.DefaultEdges : MeshEdgeCreationOptions.Type.NoEdges);
-    builder.addFromPolyface(indexedPolyface, { edgeOptions, includeParams: isTextured, fillColor: fillColor.tbgr, mappedTexture: textureMapping }, feature);
+    const edgeOptions = new MeshEdgeCreationOptions(
+      polyface.displayEdges && this.options.wantEdges ? MeshEdgeCreationOptions.Type.DefaultEdges : MeshEdgeCreationOptions.Type.NoEdges,
+    );
+    builder.addFromPolyface(
+      indexedPolyface,
+      { edgeOptions, includeParams: isTextured, fillColor: fillColor.tbgr, mappedTexture: textureMapping },
+      feature,
+    );
   }
 
   /**
@@ -109,9 +129,10 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
   public loadStrokePrimitiveList(geom: Geometry): void {
     const strokes = geom.getStrokes(this.tolerance);
 
-    if (undefined !== strokes)
+    if (undefined !== strokes) {
       for (const stroke of strokes)
         this.loadStrokesPrimitive(stroke, geom.feature);
+    }
   }
 
   /**
@@ -208,6 +229,8 @@ export namespace MeshBuilderMap { // eslint-disable-line no-redeclare
       return diff;
     }
 
-    public equals(rhs: Key): boolean { return 0 === this.compare(rhs); }
+    public equals(rhs: Key): boolean {
+      return 0 === this.compare(rhs);
+    }
   }
 }

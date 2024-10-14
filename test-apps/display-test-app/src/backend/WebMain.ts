@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as express from "express";
-import * as fs from "fs";
-import * as https from "https";
-import * as enableWs from "express-ws";
+import { LocalhostIpcHost } from "@itwin/core-backend";
 import { Logger } from "@itwin/core-bentley";
 import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager } from "@itwin/core-common";
-import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
-import { LocalhostIpcHost } from "@itwin/core-backend";
+import * as express from "express";
+import * as enableWs from "express-ws";
+import * as fs from "fs";
+import * as https from "https";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
+import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
 
 /* eslint-disable no-console */
 
 // function called when we start the backend webserver
-const dtaWebMain = (async () => {
+const dtaWebMain = async () => {
   // Initialize our backend
   await initializeDtaBackend();
 
@@ -31,7 +31,7 @@ const dtaWebMain = (async () => {
         key: fs.readFileSync(serverConfig.keyFile),
         cert: fs.readFileSync(serverConfig.certFile),
       };
-    } catch (_err) { }
+    } catch (_err) {}
   }
 
   if (serverConfig === undefined)
@@ -75,7 +75,7 @@ const dtaWebMain = (async () => {
   } else {
     DtaRpcInterface.backendServer = https.createServer(serverOptions, app).listen(app.get("port"), announce);
   }
-});
+};
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 dtaWebMain();

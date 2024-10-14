@@ -14,7 +14,7 @@ module.exports = [{
   mode: "production",
   entry: globSync(
     path.resolve(frontendLib, "esm/test/worker/test-worker.js"),
-    { windowsPathsNoEscape: true }
+    { windowsPathsNoEscape: true },
   ),
   output: {
     path: path.resolve(frontendLib, "test"),
@@ -27,7 +27,7 @@ module.exports = [{
         test: /\.js$/,
         use: "source-map-loader",
         sideEffects: false,
-        enforce: "pre"
+        enforce: "pre",
       },
       {
         test: /@itwin/,
@@ -38,7 +38,7 @@ module.exports = [{
         // Enable side effects for core-geometry.
         // Otherwise, Path and Loop which both extend CurveChain get defined before CurveChain is defined.
         sideEffects: true,
-      }
+      },
     ],
   },
   stats: "errors-only",
@@ -46,4 +46,3 @@ module.exports = [{
     nodeEnv: "production",
   },
 }];
-

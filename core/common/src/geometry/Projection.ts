@@ -17,56 +17,56 @@ import { Geometry } from "@itwin/core-geometry";
  *  @extensions
  */
 export type ProjectionMethod =
-  "None" |
-  "TransverseMercator" |
-  "SouthOrientedTransverseMercator" |
-  "TransverseMercatorWisconsin" |
-  "TransverseMercatorMinnesota" |
-  "TransverseMercatorAffine" |
-  "MercatorStandardParallel" |
-  "Mercator" |
-  "UniversalTransverseMercator" |
-  "LambertConformalConicTwoParallels" |
-  "LambertConformalConicBelgium" |
-  "LambertConformalConicAffine" |
-  "LambertConformalConicWisconsin" |
-  "LambertConformalConicMinnesota" |
-  "LambertConformalConicMichigan" |
-  "LambertConformalConicOneParallel" |
-  "AlbersEqualArea" |
-  "NewZealandNationalGrid" |
-  "ObliqueMercator1" |
-  "ObliqueMercator2" |
-  "TransverseMercatorOSTN97" |
-  "TransverseMercatorOSTN02" |
-  "TransverseMercatorOSTN15" |
-  "Krovak" |
-  "KrovakModified" |
-  "ObliqueCylindricalSwiss" |
-  "TransverseMercatorDenmarkSystem34" |
-  "TransverseMercatorDenmarkSystem3499" |
-  "TransverseMercatorDenmarkSystem3401" |
-  "Cassini" |
-  "Sinusoidal" |
-  "VanDerGrinten" |
-  "Bonne" |
-  "Mollweide" |
-  "EckertIV" |
-  "EckertVI" |
-  "GoodeHomolosine" |
-  "Robinson" |
-  "PlateCarree" |
-  "MillerCylindrical" |
-  "WinkelTripel" |
-  "AzimuthalEqualArea" |
-  "ObliqueStereographic" |
-  "RectifiedSkewOrthomorphicCentered" |
-  "RectifiedSkewOrthomorphicOrigin" |
-  "ObliqueCylindricalHungary" |
-  "Orthographic" |
-  "AmericanPolyconic" |
-  "LambertEquidistantAzimuthal" |
-  "ObliqueMercatorMinnesota";
+  | "None"
+  | "TransverseMercator"
+  | "SouthOrientedTransverseMercator"
+  | "TransverseMercatorWisconsin"
+  | "TransverseMercatorMinnesota"
+  | "TransverseMercatorAffine"
+  | "MercatorStandardParallel"
+  | "Mercator"
+  | "UniversalTransverseMercator"
+  | "LambertConformalConicTwoParallels"
+  | "LambertConformalConicBelgium"
+  | "LambertConformalConicAffine"
+  | "LambertConformalConicWisconsin"
+  | "LambertConformalConicMinnesota"
+  | "LambertConformalConicMichigan"
+  | "LambertConformalConicOneParallel"
+  | "AlbersEqualArea"
+  | "NewZealandNationalGrid"
+  | "ObliqueMercator1"
+  | "ObliqueMercator2"
+  | "TransverseMercatorOSTN97"
+  | "TransverseMercatorOSTN02"
+  | "TransverseMercatorOSTN15"
+  | "Krovak"
+  | "KrovakModified"
+  | "ObliqueCylindricalSwiss"
+  | "TransverseMercatorDenmarkSystem34"
+  | "TransverseMercatorDenmarkSystem3499"
+  | "TransverseMercatorDenmarkSystem3401"
+  | "Cassini"
+  | "Sinusoidal"
+  | "VanDerGrinten"
+  | "Bonne"
+  | "Mollweide"
+  | "EckertIV"
+  | "EckertVI"
+  | "GoodeHomolosine"
+  | "Robinson"
+  | "PlateCarree"
+  | "MillerCylindrical"
+  | "WinkelTripel"
+  | "AzimuthalEqualArea"
+  | "ObliqueStereographic"
+  | "RectifiedSkewOrthomorphicCentered"
+  | "RectifiedSkewOrthomorphicOrigin"
+  | "ObliqueCylindricalHungary"
+  | "Orthographic"
+  | "AmericanPolyconic"
+  | "LambertEquidistantAzimuthal"
+  | "ObliqueMercatorMinnesota";
 
 /** The equations are:
  *  X1 = a1*X + a2*Y + TranslationX
@@ -361,16 +361,19 @@ export class Projection implements ProjectionProps {
    * but a minuscule tolerance is applied to number compares.
    *  @public */
   public equals(other: Projection): boolean {
-    if (this.method !== other.method ||
+    if (
+      this.method !== other.method ||
       this.zoneNumber !== other.zoneNumber ||
       this.hemisphere !== other.hemisphere ||
-      this.danishSystem34Region !== other.danishSystem34Region)
+      this.danishSystem34Region !== other.danishSystem34Region
+    )
       return false;
 
     // Note that even though falseEasting, falseNorthing, elevationAboveGeoid and geoidSeparation are expressed
     // in the units of the projection which can be foot or US survey foot, they are still within the same order
     // of size that Geometry.smallMetricDistance can be used effectively.
-    if (!Geometry.isAlmostEqualOptional(this.falseEasting, other.falseEasting, Geometry.smallMetricDistance) ||
+    if (
+      !Geometry.isAlmostEqualOptional(this.falseEasting, other.falseEasting, Geometry.smallMetricDistance) ||
       !Geometry.isAlmostEqualOptional(this.falseNorthing, other.falseNorthing, Geometry.smallMetricDistance) ||
       !Geometry.isAlmostEqualOptional(this.centralMeridian, other.centralMeridian, Geometry.smallAngleDegrees) ||
       !Geometry.isAlmostEqualOptional(this.latitudeOfOrigin, other.latitudeOfOrigin, Geometry.smallAngleDegrees) ||
@@ -387,7 +390,8 @@ export class Projection implements ProjectionProps {
       !Geometry.isAlmostEqualOptional(this.point1Latitude, other.point1Latitude, Geometry.smallAngleDegrees) ||
       !Geometry.isAlmostEqualOptional(this.point2Longitude, other.point2Longitude, Geometry.smallAngleDegrees) ||
       !Geometry.isAlmostEqualOptional(this.point2Latitude, other.point2Latitude, Geometry.smallAngleDegrees) ||
-      !Geometry.isAlmostEqualOptional(this.azimuth, other.azimuth, Geometry.smallAngleDegrees))
+      !Geometry.isAlmostEqualOptional(this.azimuth, other.azimuth, Geometry.smallAngleDegrees)
+    )
       return false;
 
     if (this.affine && other.affine) {
@@ -419,7 +423,9 @@ export class Carto2DDegrees implements Carto2DDegreesProps {
   /** Latitude value in degrees. Must be between -90 and +90 included */
   private _latitude!: number;
   /** Returns or sets the latitude in degrees. When setting the provided number must be between or equal from -90 to 90. */
-  public get latitude() { return this._latitude; }
+  public get latitude() {
+    return this._latitude;
+  }
   public set latitude(newLatitude: number) {
     if ((newLatitude <= 90.0) && (newLatitude >= -90.0))
       this._latitude = newLatitude;
@@ -454,4 +460,3 @@ export class Carto2DDegrees implements Carto2DDegreesProps {
       Math.abs(this.longitude - other.longitude) < Geometry.smallAngleDegrees);
   }
 }
-

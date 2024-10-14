@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { assert, expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
-import { StubSchemaXmlFileLocater } from "../StubSchemaXmlFileLocater";
 import { SchemaXml } from "../SchemaXml";
+import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
 import { SchemaXmlStringLocater } from "../SchemaXmlStringLocater";
+import { StubSchemaXmlFileLocater } from "../StubSchemaXmlFileLocater";
 
 describe("Concurrent XML schema deserialization", () => {
   const assetDir: string = path.join(__dirname, "assets");
@@ -67,12 +67,21 @@ describe("Concurrent XML schema deserialization", () => {
   function copySchemasToAssetsDir() {
     // Copy Schemas that we need for testing
     fs.copyFileSync(getSchemaPathFromPackage("aec-units-schema", "AecUnits.ecschema.xml"), path.join(schemaFolder, "AecUnits.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("bis-custom-attributes-schema", "BisCustomAttributes.ecschema.xml"), path.join(schemaFolder, "BisCustomAttributes.ecschema.xml"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("bis-custom-attributes-schema", "BisCustomAttributes.ecschema.xml"),
+      path.join(schemaFolder, "BisCustomAttributes.ecschema.xml"),
+    );
     fs.copyFileSync(getSchemaPathFromPackage("ecdb-map-schema", "ECDbMap.ecschema.xml"), path.join(schemaFolder, "ECDbMap.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("ecdb-schema-policies-schema", "ECDbSchemaPolicies.ecschema.xml"), path.join(schemaFolder, "ECDbSchemaPolicies.ecschema.xml"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("ecdb-schema-policies-schema", "ECDbSchemaPolicies.ecschema.xml"),
+      path.join(schemaFolder, "ECDbSchemaPolicies.ecschema.xml"),
+    );
     fs.copyFileSync(getSchemaPathFromPackage("formats-schema", "Formats.ecschema.xml"), path.join(schemaFolder, "Formats.ecschema.xml"));
     fs.copyFileSync(getSchemaPathFromPackage("units-schema", "Units.ecschema.xml"), path.join(schemaFolder, "Units.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("core-custom-attributes-schema", "CoreCustomAttributes.ecschema.xml"), path.join(schemaFolder, "CoreCustomAttributes.ecschema.xml"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("core-custom-attributes-schema", "CoreCustomAttributes.ecschema.xml"),
+      path.join(schemaFolder, "CoreCustomAttributes.ecschema.xml"),
+    );
     fs.copyFileSync(getSchemaPathFromPackage("bis-core-schema", "BisCore.ecschema.xml"), path.join(schemaFolder, "BisCore.ecschema.xml"));
   }
 

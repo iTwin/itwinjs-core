@@ -7,16 +7,33 @@
  */
 
 import { assert, BentleyError, BeTimePoint, ByteStream } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import {
-  ColorDef, computeChildTileProps, computeChildTileRanges, computeTileChordTolerance, ElementAlignedBox3d, LinePixels, TileFormat, TileProps,
+  ColorDef,
+  computeChildTileProps,
+  computeChildTileRanges,
+  computeTileChordTolerance,
+  ElementAlignedBox3d,
+  LinePixels,
+  TileFormat,
+  TileProps,
 } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import {
-  addRangeGraphic, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
-  TileRequestChannel, TileTreeLoadStatus, TileVisibility,
+  addRangeGraphic,
+  IModelTileTree,
+  Tile,
+  TileBoundingBoxes,
+  TileContent,
+  TileDrawArgs,
+  TileLoadStatus,
+  TileParams,
+  TileRequest,
+  TileRequestChannel,
+  TileTreeLoadStatus,
+  TileVisibility,
 } from "./internal";
 
 /** Parameters used to construct an [[IModelTile]].
@@ -78,12 +95,22 @@ export class IModelTile extends Tile {
     }
   }
 
-  public get iModelTree(): IModelTileTree { return this.tree as IModelTileTree; }
-  public get iModelChildren(): IModelTile[] | undefined { return this.children as IModelTile[] | undefined; }
-  public get emptySubRangeMask(): number { return this._emptySubRangeMask ?? 0; }
+  public get iModelTree(): IModelTileTree {
+    return this.tree as IModelTileTree;
+  }
+  public get iModelChildren(): IModelTile[] | undefined {
+    return this.children as IModelTile[] | undefined;
+  }
+  public get emptySubRangeMask(): number {
+    return this._emptySubRangeMask ?? 0;
+  }
 
-  public get sizeMultiplier(): number | undefined { return this._sizeMultiplier; }
-  public get hasSizeMultiplier() { return undefined !== this.sizeMultiplier; }
+  public get sizeMultiplier(): number | undefined {
+    return this._sizeMultiplier;
+  }
+  public get hasSizeMultiplier() {
+    return undefined !== this.sizeMultiplier;
+  }
   public override get maximumSize(): number {
     return super.maximumSize * (this.sizeMultiplier ?? 1.0);
   }
@@ -195,9 +222,10 @@ export class IModelTile extends Tile {
 
     // this node has been used recently. Keep it, but potentially unload its grandchildren.
     const children = this.iModelChildren;
-    if (undefined !== children)
+    if (undefined !== children) {
       for (const child of children)
         child.pruneChildren(olderThan);
+    }
   }
 
   public selectTiles(selected: Tile[], args: TileDrawArgs, numSkipped: number): SelectParent {

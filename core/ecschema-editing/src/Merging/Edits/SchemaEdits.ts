@@ -54,9 +54,9 @@ export interface SkipEdit {
  * @alpha
  */
 export type AnySchemaEdits =
-  SkipEdit |
-  RenameSchemaItemEdit |
-  RenamePropertyEdit;
+  | SkipEdit
+  | RenameSchemaItemEdit
+  | RenamePropertyEdit;
 
 abstract class Editor {
   private readonly _edits: Array<AnySchemaEdits>;
@@ -79,7 +79,6 @@ abstract class Editor {
 }
 
 class PropertyEditor extends Editor {
-
   public rename(schemaName: string, className: string, propertyName: string, newName: string) {
     this.add({
       type: SchemaEditType.RenameProperty,

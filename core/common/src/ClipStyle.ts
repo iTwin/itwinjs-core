@@ -7,11 +7,11 @@
  */
 
 import { assert, JsonUtils } from "@itwin/core-bentley";
-import { ViewFlagOverrides } from "./ViewFlags";
-import { RgbColor, RgbColorProps } from "./RgbColor";
-import { HiddenLine } from "./HiddenLine";
-import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 import { ColorDef } from "./ColorDef";
+import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
+import { HiddenLine } from "./HiddenLine";
+import { RgbColor, RgbColorProps } from "./RgbColor";
+import { ViewFlagOverrides } from "./ViewFlags";
 
 /** Wire format describing a [[CutStyle]] applied to section-cut geometry produced at intersections with a view's [ClipVector]($core-geometry).
  * @see [[ClipStyleProps.cutStyle]].
@@ -53,7 +53,10 @@ export class CutStyle {
 
   /** Create a CutStyle from its components. */
   public static create(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance): CutStyle {
-    if ((viewflags && JsonUtils.isNonEmptyObject(viewflags)) || (hiddenLine && !hiddenLine.matchesDefaults) || (appearance && !appearance.matchesDefaults))
+    if (
+      (viewflags && JsonUtils.isNonEmptyObject(viewflags)) || (hiddenLine && !hiddenLine.matchesDefaults) ||
+      (appearance && !appearance.matchesDefaults)
+    )
       return new CutStyle(viewflags, hiddenLine, appearance);
 
     return this.defaults;
@@ -94,7 +97,8 @@ export class CutStyle {
     if (this === CutStyle.defaults)
       return true;
 
-    return !JsonUtils.isNonEmptyObject(this.viewflags) && (!this.hiddenLine || this.hiddenLine.matchesDefaults) && (!this.appearance || this.appearance.matchesDefaults);
+    return !JsonUtils.isNonEmptyObject(this.viewflags) && (!this.hiddenLine || this.hiddenLine.matchesDefaults) &&
+      (!this.appearance || this.appearance.matchesDefaults);
   }
 }
 
@@ -242,7 +246,14 @@ export class ClipStyle {
   /** The default style, which overrides none of the view's settings. */
   public static readonly defaults = new ClipStyle(false, false, CutStyle.defaults, undefined, undefined, undefined);
 
-  private constructor(produceCutGeometry: boolean, colorizeIntersection: boolean, cutStyle: CutStyle, inside: RgbColor | undefined, outside: RgbColor | undefined, intersectionStyle: ClipIntersectionStyle | undefined) {
+  private constructor(
+    produceCutGeometry: boolean,
+    colorizeIntersection: boolean,
+    cutStyle: CutStyle,
+    inside: RgbColor | undefined,
+    outside: RgbColor | undefined,
+    intersectionStyle: ClipIntersectionStyle | undefined,
+  ) {
     this.produceCutGeometry = produceCutGeometry;
     this.colorizeIntersection = colorizeIntersection;
     this.cutStyle = cutStyle;
@@ -258,8 +269,12 @@ export class ClipStyle {
   public static create(style: ClipStyleCreateArgs): ClipStyle;
 
   /** @internal */
-  public static create(styleOrProduceCutGeometry: ClipStyleCreateArgs | boolean, cutStyle?: CutStyle, insideColor?: RgbColor, outsideColor?: RgbColor): ClipStyle {
-
+  public static create(
+    styleOrProduceCutGeometry: ClipStyleCreateArgs | boolean,
+    cutStyle?: CutStyle,
+    insideColor?: RgbColor,
+    outsideColor?: RgbColor,
+  ): ClipStyle {
     if (typeof styleOrProduceCutGeometry === "boolean") {
       cutStyle = cutStyle === undefined ? CutStyle.defaults : cutStyle;
 
@@ -271,14 +286,17 @@ export class ClipStyle {
     }
 
     const style = styleOrProduceCutGeometry;
-    if (!style.produceCutGeometry && !style.colorizeIntersection && (!style.cutStyle || style.cutStyle.matchesDefaults) && !style.insideColor && !style.outsideColor && !style.intersectionStyle)
+    if (
+      !style.produceCutGeometry && !style.colorizeIntersection && (!style.cutStyle || style.cutStyle.matchesDefaults) && !style.insideColor &&
+      !style.outsideColor && !style.intersectionStyle
+    )
       return this.defaults;
 
     const produceCutGeometry = style.produceCutGeometry ? true : false;
     const colorizeIntersection = style.colorizeIntersection ? true : false;
     cutStyle = style.cutStyle === undefined ? CutStyle.defaults : style.cutStyle;
 
-    return new ClipStyle(produceCutGeometry, colorizeIntersection, cutStyle, style.insideColor, style.outsideColor,  style.intersectionStyle);
+    return new ClipStyle(produceCutGeometry, colorizeIntersection, cutStyle, style.insideColor, style.outsideColor, style.intersectionStyle);
   }
 
   public static fromJSON(props?: ClipStyleProps): ClipStyle {
@@ -290,7 +308,7 @@ export class ClipStyle {
       const outsideColor = props.outsideColor ? RgbColor.fromJSON(props.outsideColor) : undefined;
       const intersectionStyle = props.intersectionStyle ? ClipIntersectionStyle.fromJSON(props.intersectionStyle) : undefined;
 
-      return this.create({produceCutGeometry, colorizeIntersection, cutStyle, insideColor, outsideColor, intersectionStyle});
+      return this.create({ produceCutGeometry, colorizeIntersection, cutStyle, insideColor, outsideColor, intersectionStyle });
     }
 
     return this.defaults;
@@ -331,6 +349,7 @@ export class ClipStyle {
     if (this === ClipStyle.defaults)
       return true;
 
-    return !this.produceCutGeometry && !this.colorizeIntersection && !this.insideColor && !this.outsideColor && this.cutStyle.matchesDefaults && !this.intersectionStyle;
+    return !this.produceCutGeometry && !this.colorizeIntersection && !this.insideColor && !this.outsideColor && this.cutStyle.matchesDefaults &&
+      !this.intersectionStyle;
   }
 }

@@ -4,16 +4,30 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, BeTimePoint, ByteStream, Logger } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
 import { ColorDef, Tileset3dSchema } from "@itwin/core-common";
 import {
-  GraphicBranch, GraphicBuilder,  IModelApp, RealityTileLoader, RenderSystem, Tile, TileBoundingBoxes, TileContent,
-  TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTreeLoadStatus, TileUser, TileVisibility, Viewport,
+  GraphicBranch,
+  GraphicBuilder,
+  IModelApp,
+  RealityTileLoader,
+  RenderSystem,
+  Tile,
+  TileBoundingBoxes,
+  TileContent,
+  TileDrawArgs,
+  TileParams,
+  TileRequest,
+  TileRequestChannel,
+  TileTreeLoadStatus,
+  TileUser,
+  TileVisibility,
+  Viewport,
 } from "@itwin/core-frontend";
-import { loggerCategory } from "./LoggerCategory";
+import { Transform } from "@itwin/core-geometry";
 import { BatchedTileTree } from "./BatchedTileTree";
 import { frontendTilesOptions } from "./FrontendTiles";
 import { IndexedDBCache, LocalCache, PassThroughCache } from "./IndexedDBCache";
+import { loggerCategory } from "./LoggerCategory";
 
 /** @internal */
 export interface BatchedTileParams extends TileParams {
@@ -61,7 +75,6 @@ export class BatchedTile extends Tile {
     this.transformToRoot.multiplyRange(this.range, this.range);
     if (this._contentRange)
       this.transformToRoot.multiplyRange(this._contentRange, this._contentRange);
-
   }
 
   private get _batchedChildren(): BatchedTile[] | undefined {
@@ -149,7 +162,7 @@ export class BatchedTile extends Tile {
   public override async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TileContent> {
     assert(data instanceof Uint8Array);
     if (!(data instanceof Uint8Array))
-      return { };
+      return {};
 
     try {
       const modelGroups = this.batchedTree.modelGroups;

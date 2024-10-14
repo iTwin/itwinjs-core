@@ -7,27 +7,25 @@
  */
 
 import { assert, Id64, JsonUtils } from "@itwin/core-bentley";
+import { ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping } from "@itwin/core-common";
 import { ClipVector, Point2d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import {
-  ColorDef, Gradient, ImageSource, RenderMaterial, RenderTexture, TextureMapping,
-} from "@itwin/core-common";
-import { AuxChannelTable } from "../common/internal/render/AuxChannelTable";
-import { createSurfaceMaterial } from "../common/internal/render/SurfaceParams";
 import { ImdlModel as Imdl } from "../common/imdl/ImdlModel";
 import { ImdlColorDef, ImdlNamedTexture, ImdlTextureMapping } from "../common/imdl/ImdlSchema";
 import { convertFeatureTable, edgeParamsFromImdl, toMaterialParams, toVertexTable } from "../common/imdl/ParseImdlDocument";
+import { AuxChannelTable } from "../common/internal/render/AuxChannelTable";
+import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
+import { createSurfaceMaterial } from "../common/internal/render/SurfaceParams";
 import { VertexIndices } from "../common/internal/render/VertexIndices";
-import type { RenderGraphic } from "../render/RenderGraphic";
-import { GraphicBranch } from "../render/GraphicBranch";
-import type { RenderSystem } from "../render/RenderSystem";
+import { _implementationProhibited, _textures } from "../common/internal/Symbols";
+import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
+import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
 import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import type { IModelConnection } from "../IModelConnection";
-import { GraphicDescription } from "../common/render/GraphicDescriptionBuilder";
-import { GraphicDescriptionImpl, isGraphicDescription } from "../common/internal/render/GraphicDescriptionBuilderImpl";
-import { GraphicDescriptionContext } from "../common/render/GraphicDescriptionContext";
-import { _implementationProhibited, _textures } from "../common/internal/Symbols";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
+import { GraphicBranch } from "../render/GraphicBranch";
 import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch } from "../render/GraphicTemplate";
+import type { RenderGraphic } from "../render/RenderGraphic";
+import type { RenderSystem } from "../render/RenderSystem";
 
 /** Options provided to [[decodeImdlContent]].
  * @internal
@@ -99,10 +97,12 @@ async function loadNamedTextures(options: ImdlDecodeOptions): Promise<Map<string
       result.set(name, texture);
       continue;
     } else if (namedTexture) {
-      promises.push(loadNamedTexture(name, namedTexture, options).then((tx) => {
-        if (tx)
-          result.set(name, tx);
-      }));
+      promises.push(
+        loadNamedTexture(name, namedTexture, options).then((tx) => {
+          if (tx)
+            result.set(name, tx);
+        }),
+      );
     }
   }
 
@@ -121,13 +121,18 @@ interface GraphicsOptions {
   patterns: Map<string, RenderGeometry[]>;
 }
 
-function constantLodParamPropsFromJson(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined): TextureMapping.ConstantLodParamProps | undefined {
+function constantLodParamPropsFromJson(
+  propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined,
+): TextureMapping.ConstantLodParamProps | undefined {
   if (undefined === propsJson)
     return undefined;
 
   const constantLodPops: TextureMapping.ConstantLodParamProps = {
     repetitions: JsonUtils.asDouble(propsJson.repetitions, 1.0),
-    offset: { x: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[0]) : 0.0, y: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[1]) : 0.0 },
+    offset: {
+      x: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[0]) : 0.0,
+      y: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[1]) : 0.0,
+    },
     minDistClamp: JsonUtils.asDouble(propsJson.minDistClamp, 1.0),
     maxDistClamp: JsonUtils.asDouble(propsJson.maxDistClamp, 4096.0 * 1024.0 * 1024.0),
   };
@@ -236,7 +241,7 @@ function getModifiers(primitive: Imdl.Primitive): { viOrigin?: Point3d, instance
         viOrigin: Point3d.fromJSON(mod.origin),
       };
     default:
-      return { };
+      return {};
   }
 }
 
@@ -414,9 +419,12 @@ export async function decodeImdlGraphics(options: ImdlDecodeOptions): Promise<Re
   }
 
   switch (graphics.length) {
-    case 0: return undefined;
-    case 1: return graphics[0];
-    default: return system.createGraphicList(graphics);
+    case 0:
+      return undefined;
+    case 1:
+      return graphics[0];
+    default:
+      return system.createGraphicList(graphics);
   }
 }
 
@@ -473,7 +481,11 @@ function remapGraphicDescription(descr: GraphicDescriptionImpl, context: Graphic
 }
 
 /** @internal */
-export function createGraphicTemplateFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): GraphicTemplate {
+export function createGraphicTemplateFromDescription(
+  descr: GraphicDescription,
+  context: GraphicDescriptionContext,
+  system: RenderSystem,
+): GraphicTemplate {
   if (!isGraphicDescription(descr)) {
     throw new Error("Invalid GraphicDescription");
   }
@@ -523,7 +535,11 @@ export function createGraphicTemplateFromDescription(descr: GraphicDescription, 
 }
 
 /** @internal */
-export function createGraphicFromDescription(descr: GraphicDescription, context: GraphicDescriptionContext, system: RenderSystem): RenderGraphic | undefined {
+export function createGraphicFromDescription(
+  descr: GraphicDescription,
+  context: GraphicDescriptionContext,
+  system: RenderSystem,
+): RenderGraphic | undefined {
   const template = createGraphicTemplateFromDescription(descr, context, system);
   return system.createGraphicFromTemplate({ template });
 }

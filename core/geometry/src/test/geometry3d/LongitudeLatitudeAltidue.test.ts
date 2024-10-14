@@ -10,7 +10,11 @@ describe("LongitudeLatitudeNumber", () => {
   it("create", () => {
     const ck = new Checker();
     const createAsDegrees = LongitudeLatitudeNumber.createDegrees(10, 40, 5);
-    const createAsRadians = LongitudeLatitudeNumber.createRadians(createAsDegrees.longitudeRadians, createAsDegrees.latitudeRadians, createAsDegrees.altitude);
+    const createAsRadians = LongitudeLatitudeNumber.createRadians(
+      createAsDegrees.longitudeRadians,
+      createAsDegrees.latitudeRadians,
+      createAsDegrees.altitude,
+    );
     // "create" clones its angles . . .
     const createAsAngles = LongitudeLatitudeNumber.create(createAsDegrees.longitudeRef, createAsDegrees.latitudeRef, createAsDegrees.altitude);
     ck.testTrue(createAsDegrees.isAlmostEqual(createAsRadians), "asDegrees vs asRadians");
@@ -47,5 +51,4 @@ describe("LongitudeLatitudeNumber", () => {
     ck.testTrue(b.isAlmostEqual(d));
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

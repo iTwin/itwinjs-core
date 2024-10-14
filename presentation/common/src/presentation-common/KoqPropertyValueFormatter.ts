@@ -80,7 +80,10 @@ export class KoqPropertyValueFormatter {
   ) {
     this._unitsProvider = new SchemaUnitProvider(_schemaContext);
     this._defaultFormats = defaultFormats
-      ? Object.entries(defaultFormats).reduce((acc, [phenomenon, unitSystemFormats]) => ({ ...acc, [phenomenon.toUpperCase()]: unitSystemFormats }), {})
+      ? Object.entries(defaultFormats).reduce(
+        (acc, [phenomenon, unitSystemFormats]) => ({ ...acc, [phenomenon.toUpperCase()]: unitSystemFormats }),
+        {},
+      )
       : /* istanbul ignore next */ undefined;
   }
 
@@ -171,14 +174,18 @@ async function getKoqFormatProps(
   // use one of the formats in default formats map if there is one for matching phenomena and requested unit
   // system combination
   if (defaultFormats && unitSystem) {
-    const actualPersistenceUnit = persistenceUnit instanceof InvertedUnit ? /* istanbul ignore next */ await persistenceUnit.invertsUnit : persistenceUnit;
+    const actualPersistenceUnit = persistenceUnit instanceof InvertedUnit
+      ? /* istanbul ignore next */ await persistenceUnit.invertsUnit
+      : persistenceUnit;
     const phenomenon = await actualPersistenceUnit?.phenomenon;
     // istanbul ignore else
     if (phenomenon && defaultFormats[phenomenon.name.toUpperCase()]) {
       const defaultPhenomenonFormats = defaultFormats[phenomenon.name.toUpperCase()];
-      for (const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats)
-        ? /* istanbul ignore next */ defaultPhenomenonFormats
-        : [defaultPhenomenonFormats]) {
+      for (
+        const defaultUnitSystemFormat of Array.isArray(defaultPhenomenonFormats)
+          ? /* istanbul ignore next */ defaultPhenomenonFormats
+          : [defaultPhenomenonFormats]
+      ) {
         if (defaultUnitSystemFormat.unitSystems.includes(unitSystem)) {
           return defaultUnitSystemFormat.format;
         }

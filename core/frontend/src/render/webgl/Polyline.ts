@@ -7,22 +7,22 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, PolylineTypeFlags, QParams3d, RenderMode } from "@itwin/core-common";
+import { Point3d } from "@itwin/core-geometry";
 import { PolylineParams } from "../../common/internal/render/PolylineParams";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderMemory } from "../RenderMemory";
+import { BuffersContainer } from "./AttributeBuffers";
 import { LUTGeometry, PolylineBuffers } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
 import { ShaderProgramParams } from "./DrawCommand";
-import { LineCode } from "./LineCode";
 import { GL } from "./GL";
-import { BuffersContainer } from "./AttributeBuffers";
+import { LineCode } from "./LineCode";
 import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
 import { VertexLUT } from "./VertexLUT";
-import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
 export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
@@ -39,7 +39,9 @@ export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
   public numIndices: number;
   private _buffers: PolylineBuffers;
 
-  public get lutBuffers() { return this._buffers.buffers; }
+  public get lutBuffers() {
+    return this._buffers.buffers;
+  }
 
   private constructor(lut: VertexLUT, buffers: PolylineBuffers, params: PolylineParams, viOrigin: Point3d | undefined) {
     super(viOrigin);
@@ -55,7 +57,9 @@ export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
     this._buffers = buffers;
   }
 
-  public get isDisposed(): boolean { return this._buffers.isDisposed && this.lut.isDisposed; }
+  public get isDisposed(): boolean {
+    return this._buffers.isDisposed && this.lut.isDisposed;
+  }
 
   public dispose() {
     if (!this.noDispose) {
@@ -69,9 +73,15 @@ export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
     stats.addVertexTable(this.lut.bytesUsed);
   }
 
-  public get isAnyEdge(): boolean { return PolylineTypeFlags.Normal !== this.type; }
-  public get isNormalEdge(): boolean { return PolylineTypeFlags.Edge === this.type; }
-  public get isOutlineEdge(): boolean { return PolylineTypeFlags.Outline === this.type; }
+  public get isAnyEdge(): boolean {
+    return PolylineTypeFlags.Normal !== this.type;
+  }
+  public get isNormalEdge(): boolean {
+    return PolylineTypeFlags.Edge === this.type;
+  }
+  public get isOutlineEdge(): boolean {
+    return PolylineTypeFlags.Outline === this.type;
+  }
 
   public get renderOrder(): RenderOrder {
     if (this.isAnyEdge)
@@ -80,9 +90,13 @@ export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
       return this.isPlanar ? RenderOrder.PlanarLinear : RenderOrder.Linear;
   }
 
-  protected _wantWoWReversal(_target: Target): boolean { return true; }
+  protected _wantWoWReversal(_target: Target): boolean {
+    return true;
+  }
 
-  public override get polylineBuffers(): PolylineBuffers | undefined { return this._buffers; }
+  public override get polylineBuffers(): PolylineBuffers | undefined {
+    return this._buffers;
+  }
 
   private _computeEdgePass(target: Target, colorInfo: ColorInfo): Pass {
     const vf = target.currentViewFlags;
@@ -109,13 +123,27 @@ export class PolylineGeometry extends LUTGeometry implements RenderGeometry {
     return isTranslucent ? "translucent" : "opaque-linear";
   }
 
-  public get techniqueId(): TechniqueId { return TechniqueId.Polyline; }
-  public get isPlanar(): boolean { return this._isPlanar; }
-  public override get isEdge(): boolean { return this.isAnyEdge; }
-  public override get qOrigin(): Float32Array { return this.lut.qOrigin; }
-  public override get qScale(): Float32Array { return this.lut.qScale; }
-  public get numRgbaPerVertex(): number { return this.lut.numRgbaPerVertex; }
-  public override get hasFeatures() { return this._hasFeatures; }
+  public get techniqueId(): TechniqueId {
+    return TechniqueId.Polyline;
+  }
+  public get isPlanar(): boolean {
+    return this._isPlanar;
+  }
+  public override get isEdge(): boolean {
+    return this.isAnyEdge;
+  }
+  public override get qOrigin(): Float32Array {
+    return this.lut.qOrigin;
+  }
+  public override get qScale(): Float32Array {
+    return this.lut.qScale;
+  }
+  public get numRgbaPerVertex(): number {
+    return this.lut.numRgbaPerVertex;
+  }
+  public override get hasFeatures() {
+    return this._hasFeatures;
+  }
 
   protected override _getLineWeight(params: ShaderProgramParams): number {
     return this.isEdge ? params.target.computeEdgeWeight(params.renderPass, this.lineWeight) : this.lineWeight;

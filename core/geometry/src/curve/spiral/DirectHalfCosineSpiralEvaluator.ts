@@ -7,8 +7,8 @@
  * @module Curve
  */
 import { Geometry } from "../../Geometry";
-import { XYCurveEvaluator } from "./XYCurveEvaluator";
 import { SimpleNewton } from "../../numerics/Newton";
+import { XYCurveEvaluator } from "./XYCurveEvaluator";
 /**
  * @internal
  */
@@ -38,7 +38,9 @@ export class DirectHalfCosineSpiralEvaluator extends XYCurveEvaluator {
     this.updateConstants();
   }
   /** return a deep copy of the evaluator */
-  public clone(): DirectHalfCosineSpiralEvaluator { return new DirectHalfCosineSpiralEvaluator(this.nominalLength1, this.nominalRadius1); }
+  public clone(): DirectHalfCosineSpiralEvaluator {
+    return new DirectHalfCosineSpiralEvaluator(this.nominalLength1, this.nominalRadius1);
+  }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof DirectHalfCosineSpiralEvaluator) {
@@ -49,14 +51,18 @@ export class DirectHalfCosineSpiralEvaluator extends XYCurveEvaluator {
     return false;
   }
   /** Evaluate X at fractional position. */
-  public fractionToX(fraction: number): number { return fraction * this.nominalLength1; }
+  public fractionToX(fraction: number): number {
+    return fraction * this.nominalLength1;
+  }
   /** Evaluate Y at fractional position. */
   public fractionToY(fraction: number): number {
     const theta = fraction * Math.PI;
     return this._c * (this._c2 * fraction * fraction - this._c1 * (1.0 - Math.cos(theta)));
   }
   /** Evaluate derivative of X with respect to fraction at fractional position. */
-  public fractionToDX(_fraction: number): number { return this.nominalLength1; }
+  public fractionToDX(_fraction: number): number {
+    return this.nominalLength1;
+  }
 
   /** Evaluate derivative of Y with respect to fraction at fractional position. */
 
@@ -66,7 +72,9 @@ export class DirectHalfCosineSpiralEvaluator extends XYCurveEvaluator {
     return this._c * (2.0 * this._c2 * fraction - this._c1 * pi * Math.sin(theta));
   }
   /** Evaluate second derivative of X with respect to fraction at fractional position. */
-  public fractionToDDX(_fraction: number): number { return 0.0; }
+  public fractionToDDX(_fraction: number): number {
+    return 0.0;
+  }
 
   /** Evaluate third derivative of Y with respect to fraction at fractional position. */
 
@@ -76,7 +84,9 @@ export class DirectHalfCosineSpiralEvaluator extends XYCurveEvaluator {
     return this._c * (2.0 * this._c2 - this._c1 * pi * pi * Math.cos(theta));
   }
   /** Evaluate second derivative of X with respect to fraction at fractional position. */
-  public fractionToD3X(_fraction: number): number { return 0.0; }
+  public fractionToD3X(_fraction: number): number {
+    return 0.0;
+  }
 
   /** Evaluate third derivative of Y with respect to fraction at fractional position. */
 
@@ -90,17 +100,13 @@ export class DirectHalfCosineSpiralEvaluator extends XYCurveEvaluator {
 
   public override fractionToTangentMagnitude(fraction: number): number {
     return Geometry.hypotenuseXY(this.fractionToDX(fraction), this.fractionToDY(fraction));
-
   }
   /** Invert the fractionToX function for given X. */
   public xToFraction(x: number): number | undefined {
     const fraction0 = x / this.nominalLength1;
-    const fraction1 = SimpleNewton.runNewton1D(fraction0,
-      (f: number) => (this.fractionToX(f) - x),
-      (f: number) => this.fractionToDX(f));
+    const fraction1 = SimpleNewton.runNewton1D(fraction0, (f: number) => (this.fractionToX(f) - x), (f: number) => this.fractionToDX(f));
     if (fraction1 === undefined)
       return undefined;
     return fraction1;
-
   }
 }

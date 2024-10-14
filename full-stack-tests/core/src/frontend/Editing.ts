@@ -30,7 +30,12 @@ export function makeLineSegment(p1?: Point3d, p2?: Point3d): LineSegment3d {
   return LineSegment3d.create(p1 || new Point3d(0, 0, 0), p2 || new Point3d(1, 1, 0));
 }
 
-export async function insertLineElement(imodel: BriefcaseConnection, model: Id64String, category: Id64String, line?: LineSegment3d): Promise<Id64String> {
+export async function insertLineElement(
+  imodel: BriefcaseConnection,
+  model: Id64String,
+  category: Id64String,
+  line?: LineSegment3d,
+): Promise<Id64String> {
   await startCommand(imodel);
 
   line = line ?? makeLineSegment();
@@ -42,11 +47,21 @@ export async function insertLineElement(imodel: BriefcaseConnection, model: Id64
   if (!builder.appendGeometry(line))
     return Id64.invalid;
 
-  const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
+  const elemProps: PhysicalElementProps = {
+    classFullName: "Generic:PhysicalObject",
+    model,
+    category,
+    code: Code.createEmpty(),
+    placement: { origin, angles },
+    geom: builder.geometryStream,
+  };
   return basicManipulationIpc.insertGeometricElement(elemProps);
 }
 
-export async function insertLineStringElement(imodel: BriefcaseConnection, lineString: { model: Id64String, category: Id64String, points: Point3d[], color?: ColorDef }): Promise<Id64String> {
+export async function insertLineStringElement(
+  imodel: BriefcaseConnection,
+  lineString: { model: Id64String, category: Id64String, points: Point3d[], color?: ColorDef },
+): Promise<Id64String> {
   await startCommand(imodel);
   const builder = new GeometryStreamBuilder();
   const origin = lineString.points[0] ?? new Point3d();

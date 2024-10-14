@@ -7,19 +7,17 @@
  */
 
 import { disposeArray, Id64String, IDisposable } from "@itwin/core-bentley";
-import {
-  FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, RenderSchedule, ViewFlagOverrides, ViewFlags,
-} from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
+import { FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, RenderSchedule, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
 import { FeatureSymbology } from "./FeatureSymbology";
 import { RenderClipVolume } from "./RenderClipVolume";
 import { RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
-import { Range3d, Transform } from "@itwin/core-geometry";
-import { AnimationNodeId } from "../common/internal/render/AnimationNodeId";
 
 /** Carries information in a GraphicBranchOptions about a GraphicBranch produced by drawing one view into the context of another.
  * @internal
@@ -182,7 +180,13 @@ export function formatAnimationBranchId(modelId: Id64String, branchId: number): 
   return `${modelId}_Node_${branchId.toString()}`;
 }
 
-function addAnimationBranch(modelId: Id64String, timeline: RenderSchedule.Timeline, branchId: number, branches: Map<string, AnimationBranchState>, time: number): void {
+function addAnimationBranch(
+  modelId: Id64String,
+  timeline: RenderSchedule.Timeline,
+  branchId: number,
+  branches: Map<string, AnimationBranchState>,
+  time: number,
+): void {
   const clipVector = timeline.getClipVector(time);
   const clip = clipVector ? IModelApp.renderSystem.createClipVolume(clipVector) : undefined;
   if (clip)

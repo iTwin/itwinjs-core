@@ -41,7 +41,7 @@ function validatePackage() {
     }
     const currentPkgVer = require(path.join(currentPkgDir, "package.json")).version;
     if (semver.eq(currentPkgVer, requiredPkgVer, false)) {
-      console.log(`Already installed: @bentley/imodeljs-${os}-${platform}@${requiredPkgVer}`)
+      console.log(`Already installed: @bentley/imodeljs-${os}-${platform}@${requiredPkgVer}`);
       return true;
     }
     console.log(`Removing: @bentley/imodeljs-${os}-${platform}@${currentPkgVer}`);
@@ -55,8 +55,8 @@ function validatePackage() {
 // Install the package if required
 if (!validatePackage()) {
   const installCmd = `npm`;
-  const args = [ `install`, `--no-save`, `--prefix`, `${targetPkgDir}`, `@bentley/imodeljs-${os}-${platform}@${requiredPkgVer}` ];
-  console.log(`${installCmd} ${args.join(' ')}`);
+  const args = [`install`, `--no-save`, `--prefix`, `${targetPkgDir}`, `@bentley/imodeljs-${os}-${platform}@${requiredPkgVer}`];
+  console.log(`${installCmd} ${args.join(" ")}`);
   execFile(installCmd, args, (error, stdout, stderr) => {
     if (error)
       throw error;

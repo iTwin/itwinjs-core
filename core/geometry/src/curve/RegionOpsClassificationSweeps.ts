@@ -48,13 +48,21 @@ import { UnionRegion } from "./UnionRegion";
  */
 abstract class RegionOpsFaceToFaceSearchCallbacks {
   /** Announce a representative node on the outer face of a component */
-  public startComponent(_node: HalfEdge): boolean { return true; }
+  public startComponent(_node: HalfEdge): boolean {
+    return true;
+  }
   /** Announce return to outer face */
-  public finishComponent(_node: HalfEdge): boolean { return true; }
+  public finishComponent(_node: HalfEdge): boolean {
+    return true;
+  }
   /** Announce face entry */
-  public enterFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean { return true; }
+  public enterFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean {
+    return true;
+  }
   /** Announce face exit */
-  public leaveFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean { return true; }
+  public leaveFace(_facePathStack: HalfEdge[], _newFaceNode: HalfEdge): boolean {
+    return true;
+  }
 }
 /** Function signature to test if a pair of boolean states is to be accepted by area booleans (during face-to-face sweeps)
  * @internal
@@ -99,7 +107,10 @@ class RegionOpsBinaryBooleanSweepCallbacks extends RegionOpsFaceToFaceSearchCall
     this._faceSelectFunction = acceptFaceFunction;
   }
   /** Mark this face as exterior */
-  public override startComponent(node: HalfEdge): boolean { node.setMaskAroundFace(this._exteriorMask); return true; }
+  public override startComponent(node: HalfEdge): boolean {
+    node.setMaskAroundFace(this._exteriorMask);
+    return true;
+  }
   /**
    * * If necessary, toggle a term state.
    * * if indicated, mark this face exterior.
@@ -135,9 +146,14 @@ export class RegionOpsFaceToFaceSearch {
    * @param seed first node to visit.
    * @param faceHasBeenVisited mask marking faces that have been seen.
    * @param nodeHasBeenVisited mask marking node-to-node step around face.
-   *
    */
-  public static faceToFaceSearchFromOuterLoop(_graph: HalfEdgeGraph, seed: HalfEdge, faceHasBeenVisited: HalfEdgeMask, nodeHasBeenVisited: HalfEdgeMask, callbacks: RegionOpsFaceToFaceSearchCallbacks) {
+  public static faceToFaceSearchFromOuterLoop(
+    _graph: HalfEdgeGraph,
+    seed: HalfEdge,
+    faceHasBeenVisited: HalfEdgeMask,
+    nodeHasBeenVisited: HalfEdgeMask,
+    callbacks: RegionOpsFaceToFaceSearchCallbacks,
+  ) {
     if (seed.isMaskSet(faceHasBeenVisited))
       return;
     if (!callbacks.startComponent(seed))
@@ -159,7 +175,7 @@ export class RegionOpsFaceToFaceSearch {
         mate.setMaskAroundFace(faceHasBeenVisited);
         entryNode = mate;
         if (callbacks.enterFace(facePathStack, mate)) {
-          for (; ;) {
+          for (;;) {
             mate = faceNode.edgeMate;
             if (!mate.isMaskSet(faceHasBeenVisited)) {
               mate.setMaskAroundFace(faceHasBeenVisited);
@@ -205,7 +221,12 @@ export class RegionOpsFaceToFaceSearch {
    *   * sort edges around vertices
    *   * add regularization edges so holes are connected to their parent.
    */
-  public static doPolygonBoolean(loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, faceSelectFunction: (inA: boolean, inB: boolean) => boolean, graphCheckPoint?: GraphCheckPointFunction): HalfEdgeGraph | undefined {
+  public static doPolygonBoolean(
+    loopsA: MultiLineStringDataVariant,
+    loopsB: MultiLineStringDataVariant,
+    faceSelectFunction: (inA: boolean, inB: boolean) => boolean,
+    graphCheckPoint?: GraphCheckPointFunction,
+  ): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
     const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
     const seedA = RegionOps.addLoopsWithEdgeTagToGraph(graph, loopsA, baseMask, 1);
@@ -328,7 +349,9 @@ class RegionGroupMember {
     this.parentGroup = parentGroup;
     this.sweepState = 0;
   }
-  public clearState() { this.sweepState = 0; }
+  public clearState() {
+    this.sweepState = 0;
+  }
 }
 /**
  * A `RegionGroup` is
@@ -397,7 +420,6 @@ export class RegionGroup {
       }
     } else if (allowLineSegment && data instanceof LineSegment3d) {
       this.members.push(new RegionGroupMember(data, this));
-
     }
   }
   // update the "in" count _numIn according to old and new states (parity counts) for some member region.
@@ -479,15 +501,19 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const rangeAB = rangeA.union(rangeB);
     const areaTol = RegionOps.computeXYAreaTolerance(rangeAB);
     let margin = 0.1;
-    this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(rangeAB.corners(), RegionBooleanContext._bridgeDirection, this._workSegment);
+    this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(
+      rangeAB.corners(),
+      RegionBooleanContext._bridgeDirection,
+      this._workSegment,
+    );
     if (this._workSegment)
-      margin *= this._workSegment.point0Ref.distanceXY(this._workSegment.point1Ref);  // how much further to extend each bridge ray
+      margin *= this._workSegment.point0Ref.distanceXY(this._workSegment.point1Ref); // how much further to extend each bridge ray
 
     const maxPoints: Point3d[] = [];
     const findExtremePointsInLoop = (region: Loop) => {
       const area = RegionOps.computeXYArea(region);
       if (area === undefined || Math.abs(area) < areaTol)
-        return;   // avoid bridging trivial faces
+        return; // avoid bridging trivial faces
       this._workSegment = PlaneAltitudeRangeContext.findExtremePointsInDirection(region, RegionBooleanContext._bridgeDirection, this._workSegment);
       if (this._workSegment)
         maxPoints.push(this._workSegment.point1Ref);
@@ -557,7 +583,8 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
    */
   public runClassificationSweep(
     binaryOp: RegionBinaryOpType,
-    announceFaceFunction?: AnnounceClassifiedFace) {
+    announceFaceFunction?: AnnounceClassifiedFace,
+  ) {
     this._announceFaceFunction = announceFaceFunction;
     this.binaryOp = binaryOp;
     this.graph.clearMask(HalfEdgeMask.EXTERIOR);
@@ -624,7 +651,7 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
   private recordTransitionAcrossEdge(node: HalfEdge, delta: number): RegionGroupMember | undefined {
     const updateRegionGroupMemberState = (member: RegionGroupMember): RegionGroupMember => {
       if (member.parentGroup.groupOpType === RegionGroupOpType.NonBounding)
-        return member;  // no transition across a bridge edge
+        return member; // no transition across a bridge edge
       if (delta !== 0) {
         const oldSweepState = member.sweepState;
         member.sweepState += delta;
@@ -691,7 +718,6 @@ function areaUnderPartialCurveXY(detail: CurveLocationDetail | undefined, xyStar
   }
   let areaToChord = 0.0;
   if (detail && detail.curve && detail.hasFraction1) {
-
     if (detail.curve instanceof LineSegment3d) {
       // ah .. nothing to do for a line segment
     } else if (detail.curve instanceof Arc3d) {
@@ -705,7 +731,7 @@ function faceAreaFromCurvedEdgeData(faceSeed: HalfEdge): number {
   let area = 0.0;
   let edge = faceSeed;
   do {
-    area += (edge.sortData as number) * areaUnderPartialCurveXY((edge.edgeTag as CurveLocationDetail), edge, edge.faceSuccessor, faceSeed);
+    area += (edge.sortData as number) * areaUnderPartialCurveXY(edge.edgeTag as CurveLocationDetail, edge, edge.faceSuccessor, faceSeed);
   } while ((edge = edge.faceSuccessor) !== faceSeed);
   return area;
 }

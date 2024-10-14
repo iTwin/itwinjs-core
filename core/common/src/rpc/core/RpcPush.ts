@@ -64,8 +64,12 @@ export class RpcPushChannel<T> {
   private _subscribers: RpcPushSubscription<T>[] = [];
   public readonly name: string;
   public readonly service: RpcPushService;
-  public get id() { return RpcPushChannel.formatId(this.name, this.service); }
-  public get enabled() { return RpcPushChannel.enabled; }
+  public get id() {
+    return RpcPushChannel.formatId(this.name, this.service);
+  }
+  public get enabled() {
+    return RpcPushChannel.enabled;
+  }
 
   public subscribe(): RpcPushSubscription<T> {
     const subscription = new RpcPushSubscription(this);

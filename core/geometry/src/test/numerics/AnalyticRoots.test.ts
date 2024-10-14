@@ -13,7 +13,15 @@ import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { NumberArray } from "../../geometry3d/PointHelpers";
 import { Point4d } from "../../geometry4d/Point4d";
-import { AnalyticRoots, BilinearPolynomial, Degree2PowerPolynomial, Degree3PowerPolynomial, PowerPolynomial, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
+import {
+  AnalyticRoots,
+  BilinearPolynomial,
+  Degree2PowerPolynomial,
+  Degree3PowerPolynomial,
+  PowerPolynomial,
+  SmallSystem,
+  TrigPolynomial,
+} from "../../numerics/Polynomials";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
@@ -44,7 +52,6 @@ describe("AnalyticRoots.SolveLinear", () => {
   });
 });
 describe("AnalyticRoots.SolveQuadric", () => {
-
   it("SolveQuadric.DoubleRoot", () => {
     const ck = new Checker();
     for (let i = 3; i < 8; i += 2) {
@@ -73,7 +80,7 @@ describe("AnalyticRoots.SolveQuadric", () => {
 
   it("SolveQuadric.TwoSolutions", () => {
     const ck = new Checker();
-    for (const root0 of [1, - 3, 100]) {
+    for (const root0 of [1, -3, 100]) {
       for (const root1 of [5.4, 2.3]) {
         const quadric = Degree2PowerPolynomial.fromRootsAndC2(root0, root1);
         const roots = new GrowableFloat64Array();
@@ -120,25 +127,50 @@ describe("AnalyticRoots.SolveQuadric", () => {
   it("SmallSystemFailures", () => {
     const ck = new Checker();
     ck.testUndefined(SmallSystem.linearSystem3d(
-      1, 2, 3,
-      1, 2, 5,
-      1, 2, 0,
-      1, 2, 3));
+      1,
+      2,
+      3,
+      1,
+      2,
+      5,
+      1,
+      2,
+      0,
+      1,
+      2,
+      3,
+    ));
     const result = Vector2d.create();
     ck.testFalse(SmallSystem.linearSystem2d(
-      1, 2,
-      1, 2,
-      1, 2, result));
+      1,
+      2,
+      1,
+      2,
+      1,
+      2,
+      result,
+    ));
 
     ck.testUndefined(SmallSystem.lineSegment3dHXYTransverseIntersectionUnbounded(
-      Point4d.create(0, 0, 0, 1), Point4d.create(1, 0, 0, 1),
-      Point4d.create(1, 0, 0, 1), Point4d.create(2, 0, 0, 1)));
+      Point4d.create(0, 0, 0, 1),
+      Point4d.create(1, 0, 0, 1),
+      Point4d.create(1, 0, 0, 1),
+      Point4d.create(2, 0, 0, 1),
+    ));
     ck.testFalse(SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(
-      Point3d.create(0, 0, 0), Point3d.create(1, 0, 0),
-      Point3d.create(1, 0, 0), Point3d.create(2, 0, 0), result));
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(2, 0, 0),
+      result,
+    ));
     ck.testFalse(SmallSystem.lineSegment2dXYTransverseIntersectionUnbounded(
-      Point2d.create(0, 0), Point2d.create(1, 0),
-      Point2d.create(1, 0), Point2d.create(2, 0), result));
+      Point2d.create(0, 0),
+      Point2d.create(1, 0),
+      Point2d.create(1, 0),
+      Point2d.create(2, 0),
+      result,
+    ));
     ck.checkpoint("SmallSystemFailures");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -151,7 +183,11 @@ describe("AnalyticRoots.SolveQuadric", () => {
     const r = SmallSystem.lineSegment3dClosestPointUnbounded(pointA, pointB, pointC);
     if (ck.testDefined(r)) {
       const pointD = pointA.interpolate(r, pointB);
-      ck.testPerpendicular(Vector3d.createStartEnd(pointA, pointB), Vector3d.createStartEnd(pointC, pointD), "Closest approach vector is perpendicular");
+      ck.testPerpendicular(
+        Vector3d.createStartEnd(pointA, pointB),
+        Vector3d.createStartEnd(pointC, pointD),
+        "Closest approach vector is perpendicular",
+      );
     }
     ck.checkpoint("lineSegment3dClosestPointUnbounded");
     expect(ck.getNumErrors()).toBe(0);
@@ -159,16 +195,22 @@ describe("AnalyticRoots.SolveQuadric", () => {
 
   it("BilinearSystemXY", () => {
     const ck = new Checker();
-    for (const p of [
-      new BilinearPolynomial(0, 1, 0, 0),
-      new BilinearPolynomial(0, 1, 0, 1),
-      new BilinearPolynomial(1, 2, 0.2, 3),
-      BilinearPolynomial.createUnitSquareValues(1, 0, 0, 1)]) {
-      for (const q of [
-        new BilinearPolynomial(0, 0, 1, 0),
-        new BilinearPolynomial(0, 0, 2, 1),
-        new BilinearPolynomial(-1, 0.2, 3, -0.5),
-        BilinearPolynomial.createUnitSquareValues(0, 1, 1.1, 0.5)]) {
+    for (
+      const p of [
+        new BilinearPolynomial(0, 1, 0, 0),
+        new BilinearPolynomial(0, 1, 0, 1),
+        new BilinearPolynomial(1, 2, 0.2, 3),
+        BilinearPolynomial.createUnitSquareValues(1, 0, 0, 1),
+      ]
+    ) {
+      for (
+        const q of [
+          new BilinearPolynomial(0, 0, 1, 0),
+          new BilinearPolynomial(0, 0, 2, 1),
+          new BilinearPolynomial(-1, 0.2, 3, -0.5),
+          BilinearPolynomial.createUnitSquareValues(0, 1, 1.1, 0.5),
+        ]
+      ) {
         for (const uv0 of [Point2d.create(0.1, 0.4), Point2d.create(1, 2)]) {
           const pValue = p.evaluate(uv0.x, uv0.y);
           const qValue = q.evaluate(uv0.x, uv0.y);
@@ -196,8 +238,11 @@ describe("AnalyticRoots.SolveQuadric", () => {
   });
   it("RowElimination", () => {
     const ck = new Checker();
-    for (const rowA of [
-      new Float64Array([4, 3, 4, 5, 6])]) {
+    for (
+      const rowA of [
+        new Float64Array([4, 3, 4, 5, 6]),
+      ]
+    ) {
       for (const rowB of [new Float64Array([1, 2, 1, 3, 2])]) {
         const rowB1 = rowB.slice();
         SmallSystem.eliminateFromPivot(rowA, 0, rowB1, -1.0);
@@ -212,7 +257,6 @@ describe("AnalyticRoots.SolveQuadric", () => {
     }
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 // Cubic and Quartic tests (taken from t_analyticRoots.cpp) --------------------------------
 
@@ -262,21 +306,19 @@ function newtonStep4(coffs: Float64Array, u: number) {
   const f = coffs[0] + u * (coffs[1] + u * (coffs[2] + u * (coffs[3] + u * coffs[4])));
   const df = coffs[1] + u * (2.0 * coffs[2] + u * (3.0 * coffs[3] + u * 4.0 * coffs[4]));
   return f / df;
-
 }
 
 // check solutions of (x-a) (x^2 + b^2)
 describe("AnalyticRoots.SolveCubic", () => {
-
   it("SolveCubic.Cubic1", () => {
     const ck = new Checker();
     const b = 100.0;
     for (let a = 0.0; a < 1000; a = 10.0 * (a + 1.0)) {
       const coffs = new Float64Array(4);
       coffs[3] = 1.0;
-      coffs[2] = - a;
+      coffs[2] = -a;
       coffs[1] = b * b;
-      coffs[0] = - b * b * a;
+      coffs[0] = -b * b * a;
       const target: number[] = [a];
       const actual = new GrowableFloat64Array();
       AnalyticRoots.appendCubicRoots(coffs, actual);
@@ -310,9 +352,9 @@ describe("AnalyticRoots.SolveCubic", () => {
 
         const coffs = new Float64Array(4);
         coffs[3] = 1.0;
-        coffs[2] = - NumberArray.preciseSum([u0, u1, u2]);
+        coffs[2] = -NumberArray.preciseSum([u0, u1, u2]);
         coffs[1] = NumberArray.preciseSum([u0 * u1, u1 * u2, u0 * u2]);
-        coffs[0] = - u0 * u1 * u2;
+        coffs[0] = -u0 * u1 * u2;
 
         const target = [u0, u1, u2];
         target.sort(compare);
@@ -329,9 +371,19 @@ describe("AnalyticRoots.SolveCubic", () => {
             // Check::True (eMax < 1.0e-14 * DoubleOps::MaxAbs (target), "root error");
             GeometryCoreTestIO.consoleLog("Cubic root variances.  These may be expected behavior under extreme origin conditions");
             GeometryCoreTestIO.consoleLog(`   (known roots ${target[0]} ${target[1]} ${target[2]})  (eMax ${eMax}) (eSafe ${eSafe}`);
-            GeometryCoreTestIO.consoleLog(`   (computed roots ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)}`);
-            GeometryCoreTestIO.consoleLog(`   (correction by newton from computed root  ${newtonStep(coffs, actual.atUncheckedIndex(0))} ${newtonStep(coffs, actual.atUncheckedIndex(1))} ${newtonStep(coffs, actual.atUncheckedIndex(2))}`);
-            GeometryCoreTestIO.consoleLog(`   (correction by newton from known root  ${newtonStep(coffs, target[0])} ${newtonStep(coffs, target[1])} ${newtonStep(coffs, target[2])}`);
+            GeometryCoreTestIO.consoleLog(
+              `   (computed roots ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)}`,
+            );
+            GeometryCoreTestIO.consoleLog(
+              `   (correction by newton from computed root  ${newtonStep(coffs, actual.atUncheckedIndex(0))} ${
+                newtonStep(coffs, actual.atUncheckedIndex(1))
+              } ${newtonStep(coffs, actual.atUncheckedIndex(2))}`,
+            );
+            GeometryCoreTestIO.consoleLog(
+              `   (correction by newton from known root  ${newtonStep(coffs, target[0])} ${newtonStep(coffs, target[1])} ${
+                newtonStep(coffs, target[2])
+              }`,
+            );
           }
         }
 
@@ -409,7 +461,7 @@ describe("AnalyticRoots.SolveCubic", () => {
 function checkQuartic(u0: number, u1: number, u2: number, u3: number, tolerance: number, ck: Checker) {
   const coffs = new Float64Array(5);
   coffs[4] = 1.0;
-  coffs[3] = - NumberArray.preciseSum([u0, u1, u2, u3]);
+  coffs[3] = -NumberArray.preciseSum([u0, u1, u2, u3]);
   const xx: number[] = [];
   xx[0] = u0 * u1;
   xx[1] = u0 * u2;
@@ -435,21 +487,30 @@ function checkQuartic(u0: number, u1: number, u2: number, u3: number, tolerance:
   const ok: boolean = ck.testTrue(eMax < tolerance, "quartic root tolerance", eMax, tolerance);
   // Accurate when compared to multiple of 1.0e-8... any higher negative power likely to fail
   if (Checker.noisy.quarticRoots) {
-    GeometryCoreTestIO.consoleLog(`   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)} ${actual.atUncheckedIndex(3)})`);
+    GeometryCoreTestIO.consoleLog(
+      `   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)} ${actual.atUncheckedIndex(3)})`,
+    );
     GeometryCoreTestIO.consoleLog(`   (target ${target[0]} ${target[1]} ${target[2]} ${target[3]})`);
-
   }
 
   // Additional testing based on NewtonStep
   for (let step = 0; (step < 10) && (eMax > 1.0e-14); step++) {
     if (!ok || printAll) {
-      GeometryCoreTestIO.consoleLog(`   (actualDX   ${newtonStep4(coffs, actual.atUncheckedIndex(0))} ${newtonStep4(coffs, actual.atUncheckedIndex(1))} ${newtonStep4(coffs, actual.atUncheckedIndex(2))} ${newtonStep4(coffs, actual.atUncheckedIndex(3))} `);
+      GeometryCoreTestIO.consoleLog(
+        `   (actualDX   ${newtonStep4(coffs, actual.atUncheckedIndex(0))} ${newtonStep4(coffs, actual.atUncheckedIndex(1))} ${
+          newtonStep4(coffs, actual.atUncheckedIndex(2))
+        } ${newtonStep4(coffs, actual.atUncheckedIndex(3))} `,
+      );
       for (let k = 0; k < actual.length; k++) {
         actual.reassign(k, actual.atUncheckedIndex(k) - newtonStep4(coffs, actual.atUncheckedIndex(k)));
       }
       eMax = matchRoots(target, actual) / uMax;
       if (!ok || printAll) {
-        GeometryCoreTestIO.consoleLog(`   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)} ${actual.atUncheckedIndex(3)}   (eMax ${eMax}) `);
+        GeometryCoreTestIO.consoleLog(
+          `   (actual ${actual.atUncheckedIndex(0)} ${actual.atUncheckedIndex(1)} ${actual.atUncheckedIndex(2)} ${
+            actual.atUncheckedIndex(3)
+          }   (eMax ${eMax}) `,
+        );
       }
     }
   }
@@ -527,7 +588,6 @@ describe("AnalyticRoots.CheckQuartic", () => {
       ck.testTrue(testRoots4(coff, roots), "Verify quartic roots");
     }
     expect(ck.getNumErrors()).toBe(0);
-
   });
 });
 // cspell:word bezroot
@@ -593,13 +653,14 @@ describe("AnalyticRoots", () => {
         for (const x2 of [0, 0.5, 0.10]) {
           if (noisy)
             GeometryCoreTestIO.consoleLog("*****************");
-          const x3 = - (x0 + x1 + x2);
+          const x3 = -(x0 + x1 + x2);
           const quarticCoffs = new Float64Array([
             x0 * x1 * x2 * x3,
             -(x0 * x1 * x2 + x0 * x1 * x3 + x0 * x2 * x3 + x1 * x2 * x3),
             x0 * x1 + x0 * x2 + x0 * x3 + x1 * x2 + x1 * x3 + x2 * x3,
-            - (x0 + x1 + x2 + x3),
-            1.0]);
+            -(x0 + x1 + x2 + x3),
+            1.0,
+          ]);
           const quarticRoots0 = new GrowableFloat64Array(4);
           AnalyticRoots.appendQuarticRoots(quarticCoffs, quarticRoots0);
           if (noisy) {
@@ -620,7 +681,6 @@ describe("AnalyticRoots", () => {
       }
     }
   });
-
 });
 describe("Geometry", () => {
   it("Curvature", () => {
@@ -629,10 +689,20 @@ describe("Geometry", () => {
     const arc = Arc3d.createXY(Point3d.create(1, 2, 3), 2.123, AngleSweep.create360());
     for (const fraction of [0.0, 0.25]) {
       const derivatives = arc.fractionToPointAnd2Derivatives(fraction);
-      const curvature = Geometry.curvatureMagnitude(derivatives.vectorU.x, derivatives.vectorU.y, derivatives.vectorU.z,
-        derivatives.vectorV.x, derivatives.vectorV.y, derivatives.vectorV.z);
+      const curvature = Geometry.curvatureMagnitude(
+        derivatives.vectorU.x,
+        derivatives.vectorU.y,
+        derivatives.vectorU.z,
+        derivatives.vectorV.x,
+        derivatives.vectorV.y,
+        derivatives.vectorV.z,
+      );
       ck.testCoordinate(1.0 / r, curvature, "circle curvature");
-      ck.testExactNumber(0, Geometry.curvatureMagnitude(derivatives.vectorU.x, derivatives.vectorU.y, derivatives.vectorU.z, 0, 0, 0), "line curvature");
+      ck.testExactNumber(
+        0,
+        Geometry.curvatureMagnitude(derivatives.vectorU.x, derivatives.vectorU.y, derivatives.vectorU.z, 0, 0, 0),
+        "line curvature",
+      );
     }
     ck.testExactNumber(0, Geometry.curvatureMagnitude(0, 0, 0, 1, 2, 3), "curvature with no first derivative");
     expect(ck.getNumErrors()).toBe(0);
@@ -668,13 +738,12 @@ describe("Geometry", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 it("NickelsA", () => {
   const ck = new Checker();
   for (const b of [0, 0.3, -0.3, 5, -5]) {
     for (const a of [1, -1]) {
-      for (const c of [1, 0, - 1]) {
+      for (const c of [1, 0, -1]) {
         for (const d of [0, 0.2, -0.2, 0.8, -0.8, 1.0, -1.0, 2.0, -2.0]) {
           const cubic = new Degree3PowerPolynomial(d, c, b, a);
           const roots = new GrowableFloat64Array();
@@ -712,7 +781,7 @@ it("NickelsThreeRootCases", () => {
           const a = s;
           const b = -s * (r0 + r1 + r2);
           const c = s * (r0 * r1 + r1 * r2 + r0 * r2);
-          const d = - s * r0 * r1 * r2;
+          const d = -s * r0 * r1 * r2;
           const roots = new GrowableFloat64Array();
           AnalyticRoots.appendCubicRoots([d, c, b, a], roots);
           ck.testTrue(findRoot(r0, roots), a, b, c, d);

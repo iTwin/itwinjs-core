@@ -12,17 +12,20 @@ import { Transform } from "../../geometry3d/Transform";
 import { Checker } from "../Checker";
 
 /** Exercise two planes expected to be parallel. */
-function testParallelPair(ck: Checker,
+function testParallelPair(
+  ck: Checker,
   plane0: Plane3dByOriginAndUnitNormal,
   planeA: Plane3dByOriginAndUnitNormal,
   // expected altitude of planeA origin above plane0 origin.
-  a: number) {
+  a: number,
+) {
   ck.testParallel(plane0.getNormalRef(), planeA.getNormalRef());
   ck.testCoordinate(a, plane0.altitude(planeA.getOriginRef()), "expected altitude");
   const f = 0.5;
   const planeB = Plane3dByOriginAndUnitNormal.create(
     plane0.getOriginRef().interpolate(f, planeA.getOriginRef()),
-    plane0.getNormalRef());
+    plane0.getNormalRef(),
+  );
   const planeB1 = planeB!.clone();
   ck.testCoordinate(planeB1.altitude(plane0.getOriginRef()), -f * a);
 
@@ -31,7 +34,7 @@ function testParallelPair(ck: Checker,
   ck.testTrue(planeB1.isAlmostEqual(planeB1FromJSON), " clone, json round trip");
 
   const triad = Matrix3d.createRigidHeadsUp(plane0.getNormalRef());
-  const pointC = plane0.getOriginRef().plus(triad.multiplyXYZ(2, 4.1, a));  // this should be on planeA but not at its origin.
+  const pointC = plane0.getOriginRef().plus(triad.multiplyXYZ(2, 4.1, a)); // this should be on planeA but not at its origin.
   ck.testCoordinate(0, planeA.altitude(pointC));
   const pointC0 = plane0.projectPointToPlane(pointC);
   ck.testCoordinate(0, plane0.altitude(pointC0));
@@ -40,7 +43,6 @@ function testParallelPair(ck: Checker,
   ck.testCoordinate(0, plane0.velocity(triad.multiplyXY(3, 4)), "in plane vector has zero velocity");
   const v = 23.4;
   ck.testCoordinate(v, plane0.velocity(triad.multiplyXYZ(3, 4, v)), "in plane vector has zero velocity");
-
 }
 
 describe("Plane3dByOriginAndUnitNormal", () => {
@@ -104,9 +106,19 @@ describe("Plane3dByOriginAndUnitNormal", () => {
     ck.testUndefined(failPlane, "plane with null normal");
     const plane = Plane3dByOriginAndUnitNormal.createXYPlane();
     const plane1 = plane.cloneTransformed(Transform.createRowValues(
-      1, 0, 0, 1,
-      0, 1, 0, 3,
-      0, 0, 0, 1));
+      1,
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      3,
+      0,
+      0,
+      0,
+      1,
+    ));
     ck.testUndefined(plane1, "singular transform of plane");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -131,5 +143,4 @@ describe("Plane3dByOriginAndUnitNormal", () => {
     ck.testTrue(planeP.isAlmostEqual(planeB), "createXYAngle into result");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

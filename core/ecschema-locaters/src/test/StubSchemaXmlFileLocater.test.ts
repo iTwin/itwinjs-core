@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as EC from "@itwin/ecschema-metadata";
 import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import * as EC from "@itwin/ecschema-metadata";
 import { FileSchemaKey } from "../SchemaFileLocater";
 import { StubSchemaXmlFileLocater } from "../StubSchemaXmlFileLocater";
 
@@ -95,7 +95,10 @@ describe("StubSchemaXmlFileLocater tests:", () => {
 
   it("getSchema, reference does not exist, throws.", async () => {
     const schemaKey = new EC.SchemaKey("RefDoesNotExist", 1, 1, 1);
-    await expect(locater.getSchema(schemaKey, EC.SchemaMatchType.Exact, context)).to.be.rejectedWith(EC.ECObjectsError, "Unable to locate referenced schema: DoesNotExist.3.3.3");
+    await expect(locater.getSchema(schemaKey, EC.SchemaMatchType.Exact, context)).to.be.rejectedWith(
+      EC.ECObjectsError,
+      "Unable to locate referenced schema: DoesNotExist.3.3.3",
+    );
   });
 
   it("getSchema, references set", async () => {
@@ -181,22 +184,35 @@ describe("StubSchemaXmlFileLocater tests:", () => {
   });
   it("getSchemaKey, invalid schemaName attribute, throws", () => {
     const schemaXml = `<ECSchema schemaNameBad="SchemaA" version="1.1.1"> </ECSchema>`;
-    expect(() => locater.getSchemaKey(schemaXml)).to.throw(EC.ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+    expect(() => locater.getSchemaKey(schemaXml)).to.throw(
+      EC.ECObjectsError,
+      `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`,
+    );
   });
   it("getSchemaKey, invalid schemaName, throws", () => {
     const schemaXml = `<ECSchema version="1.1.1" schemaName=""> </ECSchema>`;
-    expect(() => locater.getSchemaKey(schemaXml)).to.throw(EC.ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+    expect(() => locater.getSchemaKey(schemaXml)).to.throw(
+      EC.ECObjectsError,
+      `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`,
+    );
   });
   it("getSchemaKey, invalid version attribute, throws", () => {
     const schemaXml = `<ECSchema schemaName="SchemaA" versionBad="1.1.1"> </ECSchema>`;
-    expect(() => locater.getSchemaKey(schemaXml)).to.throw(EC.ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+    expect(() => locater.getSchemaKey(schemaXml)).to.throw(
+      EC.ECObjectsError,
+      `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`,
+    );
   });
   it("getSchemaKey, invalid version, throws", () => {
     const schemaXml = `<ECSchema schemaName="SchemaA" version=""> </ECSchema>`;
-    expect(() => locater.getSchemaKey(schemaXml)).to.throw(EC.ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+    expect(() => locater.getSchemaKey(schemaXml)).to.throw(
+      EC.ECObjectsError,
+      `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`,
+    );
   });
   it("getSchemaKey, ECv2 schema, valid version set", () => {
-    const schemaXml = `<ECSchema schemaName="ECv2Schema" version="1.1" nameSpacePrefix="v2" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.2.0"> </ECSchema>`;
+    const schemaXml =
+      `<ECSchema schemaName="ECv2Schema" version="1.1" nameSpacePrefix="v2" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.2.0"> </ECSchema>`;
     const key = locater.getSchemaKey(schemaXml);
     expect(key).to.deep.equal(new EC.SchemaKey("ECv2Schema", new EC.ECVersion(1, 0, 1)));
   });

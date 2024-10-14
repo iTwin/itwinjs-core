@@ -2,15 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as path from "path";
 import { Guid, Id64, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import { ColorDef, ElementAlignedBox3d, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
+import { BriefcaseConnection, GeometricModelState, IModelApp, MockRender, RenderGraphic, TileTree, ViewCreator3d } from "@itwin/core-frontend";
 import { Point3d, Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
+import * as path from "path";
 import {
-  BriefcaseConnection, GeometricModelState, IModelApp, MockRender, RenderGraphic, TileTree, ViewCreator3d,
-} from "@itwin/core-frontend";
-import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineStringElement, makeModelCode, transformElements } from "../Editing";
+  addAllowedChannel,
+  coreFullStackTestIpc,
+  deleteElements,
+  initializeEditTools,
+  insertLineStringElement,
+  makeModelCode,
+  transformElements,
+} from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 class System extends MockRender.System {
@@ -60,7 +66,10 @@ for (const watchForChanges of [false, true]) {
       // Populate the iModel with some initial geometry.
       rwConn = await BriefcaseConnection.openStandalone(filePath, OpenMode.ReadWrite);
       await addAllowedChannel(rwConn, "shared");
-      modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(rwConn.key, (await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue())));
+      modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(
+        rwConn.key,
+        await makeModelCode(rwConn, rwConn.models.repositoryModelId, Guid.createValue()),
+      );
       const dictId = await rwConn.models.getDictionaryModel();
       categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(rwConn.key, dictId, Guid.createValue(), { color: 0 });
 
@@ -70,17 +79,24 @@ for (const watchForChanges of [false, true]) {
       projCenter.z = Math.round(projCenter.z);
 
       const point = projCenter.clone();
-      elemId = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.green, points: [point, new Point3d(point.x, point.y + 2, point.z)] });
+      elemId = await insertLineStringElement(rwConn, {
+        model: modelId,
+        category: categoryId,
+        color: ColorDef.green,
+        points: [point, new Point3d(point.x, point.y + 2, point.z)],
+      });
       expect(Id64.isValid(elemId)).to.be.true;
       await rwConn.saveChanges();
 
       // Open a second, read-only connection that will monitor for changes made via the read-write connection.
-      roConn = watchForChanges ? (await BriefcaseConnection.openFile({
-        fileName: filePath,
-        key: Guid.createValue(),
-        readonly: true,
-        watchForChanges: true,
-      })) : rwConn;
+      roConn = watchForChanges ?
+        (await BriefcaseConnection.openFile({
+          fileName: filePath,
+          key: Guid.createValue(),
+          readonly: true,
+          watchForChanges: true,
+        })) :
+        rwConn;
     });
 
     afterEach(async () => {
@@ -158,7 +174,12 @@ for (const watchForChanges of [false, true]) {
 
       prevGuid = model.geometryGuid;
       prevTree = newTree;
-      const elemId2 = await insertLineStringElement(rwConn, { model: modelId, category: categoryId, color: ColorDef.red, points: [projCenter.clone(), projCenter.plus({ x: 2, y: 0, z: 0 })] });
+      const elemId2 = await insertLineStringElement(rwConn, {
+        model: modelId,
+        category: categoryId,
+        color: ColorDef.red,
+        points: [projCenter.clone(), projCenter.plus({ x: 2, y: 0, z: 0 })],
+      });
       await expectModelChanges(async () => rwConn.saveChanges());
 
       expect(model.geometryGuid).not.to.equal(prevGuid);

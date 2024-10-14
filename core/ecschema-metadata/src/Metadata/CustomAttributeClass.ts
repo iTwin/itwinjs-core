@@ -8,7 +8,11 @@
 
 import { CustomAttributeClassProps } from "../Deserialization/JsonProps";
 import {
-  containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseCustomAttributeContainerType, SchemaItemType,
+  containerTypeToString,
+  CustomAttributeContainerType,
+  ECClassModifier,
+  parseCustomAttributeContainerType,
+  SchemaItemType,
 } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECClass } from "./Class";
@@ -24,14 +28,17 @@ export class CustomAttributeClass extends ECClass {
 
   /**
    * @deprecated in 4.8 use [[appliesTo]]
-   * */
+   */
   public get containerType(): CustomAttributeContainerType {
     return this.appliesTo;
   }
 
   public get appliesTo(): CustomAttributeContainerType {
     if (undefined === this._appliesTo)
-      throw new ECObjectsError(ECObjectsStatus.InvalidContainerType, `The CustomAttributeClass ${this.name} does not have a CustomAttributeContainerType.`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidContainerType,
+        `The CustomAttributeClass ${this.name} does not have a CustomAttributeContainerType.`,
+      );
     return this._appliesTo;
   }
 

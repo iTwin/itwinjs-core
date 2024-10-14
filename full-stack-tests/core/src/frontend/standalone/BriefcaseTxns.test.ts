@@ -2,12 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { BriefcaseConnection, TxnEntityChanges, TxnEntityChangeType } from "@itwin/core-frontend";
+import { Transform } from "@itwin/core-geometry";
 import { expect } from "chai";
 import * as path from "path";
-import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
-import { BriefcaseConnection, TxnEntityChanges, TxnEntityChangeType } from "@itwin/core-frontend";
-import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
+import {
+  addAllowedChannel,
+  coreFullStackTestIpc,
+  deleteElements,
+  initializeEditTools,
+  insertLineElement,
+  makeModelCode,
+  transformElements,
+} from "../Editing";
 import { TestUtility } from "../TestUtility";
 
 describe("BriefcaseTxns", () => {
@@ -33,7 +41,15 @@ describe("BriefcaseTxns", () => {
 
     afterEach(async () => rwConn.close());
 
-    type TxnEventName = "onElementsChanged" | "onModelsChanged" | "onModelGeometryChanged" | "onCommit" | "onCommitted" | "onChangesApplied" | "onReplayExternalTxns" | "onReplayedExternalTxns";
+    type TxnEventName =
+      | "onElementsChanged"
+      | "onModelsChanged"
+      | "onModelGeometryChanged"
+      | "onCommit"
+      | "onCommitted"
+      | "onChangesApplied"
+      | "onReplayExternalTxns"
+      | "onReplayedExternalTxns";
     type TxnEvent = TxnEventName | "beforeUndo" | "beforeRedo" | "afterUndo" | "afterRedo";
     type ExpectEvents = (expected: TxnEvent[]) => Promise<void>;
 
@@ -43,7 +59,14 @@ describe("BriefcaseTxns", () => {
       iModel.txns.onAfterUndoRedo.addListener((isUndo) => received.push(isUndo ? "afterUndo" : "afterRedo"));
 
       const txnEventNames: TxnEventName[] = [
-        "onElementsChanged", "onModelsChanged", "onModelGeometryChanged", "onCommit", "onCommitted", "onChangesApplied", "onReplayExternalTxns", "onReplayedExternalTxns",
+        "onElementsChanged",
+        "onModelsChanged",
+        "onModelGeometryChanged",
+        "onCommit",
+        "onCommitted",
+        "onChangesApplied",
+        "onReplayExternalTxns",
+        "onReplayedExternalTxns",
       ];
 
       for (const event of txnEventNames)
@@ -131,27 +154,49 @@ describe("BriefcaseTxns", () => {
 
         await rwConn.txns.reverseAll();
         await expectUndo([
-          "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
-          "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
-          "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
-          "onElementsChanged", "onModelsChanged", "onChangesApplied",
-          "onElementsChanged", "onChangesApplied",
+          "onElementsChanged",
+          "onChangesApplied",
+          "onModelGeometryChanged",
+          "onElementsChanged",
+          "onChangesApplied",
+          "onModelGeometryChanged",
+          "onElementsChanged",
+          "onChangesApplied",
+          "onModelGeometryChanged",
+          "onElementsChanged",
+          "onModelsChanged",
+          "onChangesApplied",
+          "onElementsChanged",
+          "onChangesApplied",
         ]);
 
         await rwConn.txns.reinstateTxn();
         await expectRedo([
-          "onElementsChanged", "onChangesApplied",
-          "onElementsChanged", "onModelsChanged", "onChangesApplied",
-          "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
-          "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
-          "onElementsChanged", "onChangesApplied", "onModelGeometryChanged",
+          "onElementsChanged",
+          "onChangesApplied",
+          "onElementsChanged",
+          "onModelsChanged",
+          "onChangesApplied",
+          "onElementsChanged",
+          "onChangesApplied",
+          "onModelGeometryChanged",
+          "onElementsChanged",
+          "onChangesApplied",
+          "onModelGeometryChanged",
+          "onElementsChanged",
+          "onChangesApplied",
+          "onModelGeometryChanged",
         ]);
       });
 
       it("receives events including entity Id and class name", async () => {
         type Change = [className: string, type: TxnEntityChangeType];
 
-        async function expectChangedEntities(func: () => Promise<void>, terminalEvent: "onAfterUndoRedo" | "onCommitted", expectedChanges: Change[]): Promise<void> {
+        async function expectChangedEntities(
+          func: () => Promise<void>,
+          terminalEvent: "onAfterUndoRedo" | "onCommitted",
+          expectedChanges: Change[],
+        ): Promise<void> {
           const received: Change[] = [];
           function receive(changes: TxnEntityChanges): void {
             received.push(...Array.from(changes).map((change) => [change.metadata.classFullName, change.type] as Change));
@@ -202,12 +247,20 @@ describe("BriefcaseTxns", () => {
         ];
 
         await expectChangedEntities(async () => rwConn.saveChanges(), "onCommitted", expected);
-        await expectChangedEntities(async () => {
-          await rwConn.txns.reverseSingleTxn();
-        }, "onAfterUndoRedo", expected.map((x) => [x[0], "deleted"]));
-        await expectChangedEntities(async () => {
-          await rwConn.txns.reinstateTxn();
-        }, "onAfterUndoRedo", expected);
+        await expectChangedEntities(
+          async () => {
+            await rwConn.txns.reverseSingleTxn();
+          },
+          "onAfterUndoRedo",
+          expected.map((x) => [x[0], "deleted"]),
+        );
+        await expectChangedEntities(
+          async () => {
+            await rwConn.txns.reinstateTxn();
+          },
+          "onAfterUndoRedo",
+          expected,
+        );
       });
     });
 

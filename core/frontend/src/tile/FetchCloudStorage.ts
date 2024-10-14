@@ -2,7 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { FrontendConfigDownloadInput, FrontendConfigUploadInput, FrontendStorage, FrontendUploadInMultiplePartsInput, FrontendUrlDownloadInput, FrontendUrlUploadInput, ObjectReference } from "@itwin/object-storage-core/lib/frontend";
+import type {
+  FrontendConfigDownloadInput,
+  FrontendConfigUploadInput,
+  FrontendStorage,
+  FrontendUploadInMultiplePartsInput,
+  FrontendUrlDownloadInput,
+  FrontendUrlUploadInput,
+  ObjectReference,
+} from "@itwin/object-storage-core/lib/frontend";
 
 /** @internal */
 export class FetchCloudStorage implements FrontendStorage {

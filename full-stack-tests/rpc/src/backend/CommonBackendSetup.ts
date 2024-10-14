@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, ProcessDetector } from "@itwin/core-bentley";
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { IModelHost } from "@itwin/core-backend";
+import { Logger, ProcessDetector } from "@itwin/core-bentley";
 import { IModelReadRpcInterface, RpcConfiguration } from "@itwin/core-common";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { join } from "path";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { rpcInterfaces } from "../common/TestRpcInterface";
 import { resetOp8Initializer, TestRpcImpl2 } from "./TestRpcImpl";
-import { join } from "path";
 
 export async function commonSetup(): Promise<void> {
   RpcConfiguration.developmentMode = true;

@@ -13,7 +13,9 @@ import { DevTools, DevToolsStatsFormatter } from "../DevTools";
  * @internal
  */
 export class DevToolsRpcImpl extends RpcInterface implements DevToolsRpcInterface { // eslint-disable-line deprecation/deprecation
-  public static register() { RpcManager.registerImpl(DevToolsRpcInterface, DevToolsRpcImpl); }
+  public static register() {
+    RpcManager.registerImpl(DevToolsRpcInterface, DevToolsRpcImpl);
+  }
 
   // Returns true if the backend received the ping
   public async ping(_tokenProps: IModelRpcProps): Promise<boolean> {

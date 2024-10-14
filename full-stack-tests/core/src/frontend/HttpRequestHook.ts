@@ -323,7 +323,7 @@ export interface IHttpHandler {
 }
 class HttpHandler implements IHttpHandler {
   public static handlers: HttpHandler[] = [];
-  constructor(private _urlRegEx: RegExp | string) { }
+  constructor(private _urlRegEx: RegExp | string) {}
   public before?: (input: Request) => Response | undefined | null;
   public after?: (input: Response) => Response;
   public canHandle(url: string): boolean {
@@ -348,7 +348,6 @@ class HttpHandler implements IHttpHandler {
     this.handlers.push(handler);
     return handler;
   }
-
 }
 export class HttpRequestHook {
   public static install() {

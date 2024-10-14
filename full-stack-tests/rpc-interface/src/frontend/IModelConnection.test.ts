@@ -2,15 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Buffer } from "buffer";
-import * as chai from "chai";
 import { AccessToken, BentleyStatus, CompressedId64Set, Id64, Id64Set } from "@itwin/core-bentley";
-import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  EcefLocation, GeoCoordStatus, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation, MassPropertiesPerCandidateRequestProps, MassPropertiesRequestProps, ModelQueryParams,
+  EcefLocation,
+  GeoCoordStatus,
+  IModelReadRpcInterface,
+  IModelVersion,
+  MassPropertiesOperation,
+  MassPropertiesPerCandidateRequestProps,
+  MassPropertiesRequestProps,
+  ModelQueryParams,
 } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@itwin/core-frontend";
+import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { Buffer } from "buffer";
+import * as chai from "chai";
 import { TestContext } from "./setup/TestContext";
 
 /* eslint-disable deprecation/deprecation */
@@ -27,7 +34,7 @@ describe("IModel Connection", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
-  before(async function () {
+  before(async function() {
     testContext = await TestContext.instance();
 
     if (!testContext.settings.runiModelReadRpcTests)
@@ -63,7 +70,7 @@ describe.skip("IModel Connection with client credentials", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
-  before(async function () {
+  before(async function() {
     testContext = await TestContext.instance();
 
     // If client credentials are not supplied or imodel read rpc tests are disabled skip test suite
@@ -78,7 +85,11 @@ describe.skip("IModel Connection with client credentials", () => {
     const iModelId = testContext.iModelWithChangesets!.iModelId;
     const changeSetId = (await testContext.iModelWithChangesets!.getConnection()).changeset.id;
 
-    const iModel = await CheckpointConnection.openRemote(iTwinId, iModelId, undefined === changeSetId ? IModelVersion.latest() : IModelVersion.asOfChangeSet(changeSetId));
+    const iModel = await CheckpointConnection.openRemote(
+      iTwinId,
+      iModelId,
+      undefined === changeSetId ? IModelVersion.latest() : IModelVersion.asOfChangeSet(changeSetId),
+    );
 
     expect(iModel).to.exist.and.be.not.empty;
 
@@ -93,7 +104,7 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
-  before(async function () {
+  before(async function() {
     testContext = await TestContext.instance();
 
     if (!testContext.settings.runiModelReadRpcTests) {
@@ -278,14 +289,17 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     ranges = await iModel.models.queryModelRanges(idSet);
     expect(ranges).to.not.be.undefined;
     expect(ranges.length).to.be.gte(1);
-
   });
 
   it("queryModelRanges should properly handle models that aren't geometric", async () => {
     // the below clause is created specifically for the test iModel, if that iModel were to be changed and it contained models that were geometricModels
     // but not PhysicalModels then the test may fail.
     let ranges;
-    let modelProps = await iModel.models.queryProps({ limit: 10, from: "BisCore.Model", where: "ec_classname(ECClassId) <> 'BisCore:PhysicalModel'" });
+    let modelProps = await iModel.models.queryProps({
+      limit: 10,
+      from: "BisCore.Model",
+      where: "ec_classname(ECClassId) <> 'BisCore:PhysicalModel'",
+    });
     let idSet: Id64Set = new Set<string>();
     for (const modelProp of modelProps) {
       idSet.add(modelProp.id!.toString());
@@ -360,7 +374,7 @@ describe("Snapping", () => {
   let accessToken: AccessToken;
   let testContext: TestContext;
 
-  before(async function () {
+  before(async function() {
     testContext = await TestContext.instance();
 
     if (!testContext.settings.runiModelReadRpcTests)

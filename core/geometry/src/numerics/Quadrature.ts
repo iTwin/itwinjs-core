@@ -40,9 +40,21 @@ export class Quadrature {
   public static readonly gaussW4Interval01 = new Float64Array([0.17392742256872692, 0.3260725774312731, 0.3260725774312731, 0.17392742256872692]);
 
   /** x value for 5 point gauss rule in 0..1 interval */
-  public static readonly gaussX5Interval01 = new Float64Array([0.04691007703066802, 0.23076534494715845, 0.5, 0.7692346550528415, 0.9530899229693319]);
+  public static readonly gaussX5Interval01 = new Float64Array([
+    0.04691007703066802,
+    0.23076534494715845,
+    0.5,
+    0.7692346550528415,
+    0.9530899229693319,
+  ]);
   /** weight for 5 point gauss rule in 0..1 interval */
-  public static readonly gaussW5Interval01 = new Float64Array([0.11846344252809454, 0.23931433524968324, 0.28444444444444444, 0.23931433524968324, 0.11846344252809454]);
+  public static readonly gaussW5Interval01 = new Float64Array([
+    0.11846344252809454,
+    0.23931433524968324,
+    0.28444444444444444,
+    0.23931433524968324,
+    0.11846344252809454,
+  ]);
 
   /**
    * Given points and weights in a reference interval (usually 0 to 1):
@@ -133,16 +145,17 @@ const w2 = h * (18.0 - r) / 36.0;
 xMapped[0] = x0 - a2; xMapped[1] = x0 - a1; xMapped[2] = x0 + a1; xMapped[3] = x0 + a2;
 wMapped[0] = w2; wMapped[1] = w1; wMapped[2] = w1; wMapped[3] = w2;
 return 4;
-*/
+    */
   }
   /** Sum function values with given weights and x values. */
   public static sum1(
     xx: Float64Array,
     ww: Float64Array,
     n: number,
-    f: (x: number) => number): number {
+    f: (x: number) => number,
+  ): number {
     let sum = 0;
-    for (let i = 0; i < n; i++)sum += ww[i] * f(xx[i]);
+    for (let i = 0; i < n; i++) sum += ww[i] * f(xx[i]);
     return sum;
   }
   /**
@@ -161,7 +174,7 @@ return 4;
     let sum = 0;
     for (let i = 1; i <= numInterval; i++) {
       const xA = Geometry.interpolate(x0, (i - 1) * df, x1);
-      const xB = i === numInterval ? x1 : Geometry.interpolate(x0, (i) * df, x1);
+      const xB = i === numInterval ? x1 : Geometry.interpolate(x0, i * df, x1);
       const n = mapper.mapXAndW(xA, xB);
       for (let k = 0; k < n; k++) {
         sum += mapper.gaussW[k] * f(mapper.gaussX[k]);
@@ -192,20 +205,29 @@ export class GaussMapper {
    * @param numGauss requested number of gauss points.
    */
   public constructor(numGaussPoints: number) {
-    const maxGauss = 7;  // (As of Nov 2 2018, 7 is a fluffy over-allocation-- the quadrature class only handles up to 5.)
+    const maxGauss = 7; // (As of Nov 2 2018, 7 is a fluffy over-allocation-- the quadrature class only handles up to 5.)
     this.gaussX = new Float64Array(maxGauss);
     this.gaussW = new Float64Array(maxGauss);
     // This sets the number of gauss points.  This integrates exactly for polynomials of (degree 2*numGauss - 1).
     if (numGaussPoints > 5 || numGaussPoints < 1)
       numGaussPoints = 5;
     switch (numGaussPoints) {
-      case 1: this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss1(xA, xB, xMapped, wMapped); break;
-      case 2: this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss2(xA, xB, xMapped, wMapped); break;
-      case 3: this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss3(xA, xB, xMapped, wMapped); break;
-      case 4: this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss4(xA, xB, xMapped, wMapped); break;
-      default: this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss5(xA, xB, xMapped, wMapped); break;
+      case 1:
+        this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss1(xA, xB, xMapped, wMapped);
+        break;
+      case 2:
+        this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss2(xA, xB, xMapped, wMapped);
+        break;
+      case 3:
+        this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss3(xA, xB, xMapped, wMapped);
+        break;
+      case 4:
+        this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss4(xA, xB, xMapped, wMapped);
+        break;
+      default:
+        this.mapXAndWFunction = (xA, xB, xMapped, wMapped) => Quadrature.setupGauss5(xA, xB, xMapped, wMapped);
+        break;
     }
-
   }
 }
 // someday .... http://www.holoborodko.com/pavel/numerical-methods/numerical-integration/overlapped-newton-cotes-quadratures/

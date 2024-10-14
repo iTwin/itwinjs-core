@@ -4,10 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { RpcConfiguration } from "@itwin/core-common";
-import {
-  GpuMemoryLimit,
-  IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin,
-} from "@itwin/core-frontend";
+import { GpuMemoryLimit, IModelApp, IModelConnection, RenderDiagnostics, RenderSystem, TileAdmin } from "@itwin/core-frontend";
 import { initializeFrontendTiles } from "@itwin/frontend-tiles";
 import { WebGLExtensionName } from "@itwin/webgl-compatibility";
 import { DtaBooleanConfiguration, DtaConfiguration, DtaNumberConfiguration, DtaStringConfiguration, getConfig } from "../common/DtaConfiguration";
@@ -133,8 +130,8 @@ function setConfigurationResults(): [renderSystemOptions: RenderSystem.Options, 
   if (true === configuration.noImdlWorker)
     tileAdminProps.decodeImdlInWorker = false;
 
-  tileAdminProps.enableExternalTextures = (configuration.enableExternalTextures !== false);
-  tileAdminProps.enableFrontendScheduleScripts = (configuration.enableFrontendScheduleScripts !== false);
+  tileAdminProps.enableExternalTextures = configuration.enableExternalTextures !== false;
+  tileAdminProps.enableFrontendScheduleScripts = configuration.enableFrontendScheduleScripts !== false;
   tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
   tileAdminProps.tileExpirationTime = configuration.tileExpirationSeconds;
   tileAdminProps.maximumLevelsToSkip = configuration.maxTilesToSkip;
@@ -314,12 +311,19 @@ async function initView(iModel: IModelConnection | undefined) {
   // open the specified view
   showStatus("opening View", configuration.viewName);
 
-  const fileSelector = undefined !== configuration.standalonePath ? {
-    directory: configuration.standalonePath,
-    input: document.getElementById("browserFileSelector") as HTMLInputElement,
-  } : undefined;
+  const fileSelector = undefined !== configuration.standalonePath ?
+    {
+      directory: configuration.standalonePath,
+      input: document.getElementById("browserFileSelector") as HTMLInputElement,
+    } :
+    undefined;
 
-  DisplayTestApp.surface = new Surface(document.getElementById("app-surface")!, document.getElementById("toolBar")!, fileSelector, configuration.openReadWrite ?? false);
+  DisplayTestApp.surface = new Surface(
+    document.getElementById("app-surface")!,
+    document.getElementById("toolBar")!,
+    fileSelector,
+    configuration.openReadWrite ?? false,
+  );
 
   // We need layout to complete so that the div we want to stick our viewport into has non-zero dimensions.
   // Consistently reproducible for some folks, not others...

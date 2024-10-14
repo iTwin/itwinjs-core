@@ -7,7 +7,21 @@
  */
 
 import {
-  AxisOrder, ClipPlane, ConvexClipPlaneSet, Geometry, GrowableXYZArray, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Transform, Vector3d, XYAndZ,
+  AxisOrder,
+  ClipPlane,
+  ConvexClipPlaneSet,
+  Geometry,
+  GrowableXYZArray,
+  LowAndHighXY,
+  LowAndHighXYZ,
+  Map4d,
+  Matrix3d,
+  Plane3dByOriginAndUnitNormal,
+  Point3d,
+  Range3d,
+  Transform,
+  Vector3d,
+  XYAndZ,
 } from "@itwin/core-geometry";
 
 /** The 8 corners of the [Normalized Plane Coordinate]($docs/learning/glossary.md#npc) cube.
@@ -90,7 +104,9 @@ export class Frustum {
   }
 
   /** Get a corner Point from this Frustum. */
-  public getCorner(i: number) { return this.points[i]; }
+  public getCorner(i: number) {
+    return this.points[i];
+  }
   /** Get the point at the center of this Frustum (halfway between RightTopFront and LeftBottomRear. */
   public getCenter(): Point3d {
     return this.getCorner(Npc.RightTopFront).interpolate(0.5, this.getCorner(Npc.LeftBottomRear));
@@ -139,7 +155,9 @@ export class Frustum {
   }
 
   /** Set the points of this Frustum to be copies of the points in another Frustum. */
-  public setFrom(other: Frustum) { this.setFromCorners(other.points); }
+  public setFrom(other: Frustum) {
+    this.setFromCorners(other.points);
+  }
   /** Set the points of this frustum from array of corner points in NPC order. */
   public setFromCorners(corners: Point3d[]) {
     for (let i = 0; i < 8; ++i)
@@ -208,7 +226,7 @@ export class Frustum {
     const fraction = this.getFraction();
 
     if (Math.abs(fraction - 1) < 1E-8)
-      return undefined;     // Parallel.
+      return undefined; // Parallel.
 
     const org = this.getCorner(Npc.LeftBottomRear);
     const zVec = org.vectorTo(this.getCorner(Npc.LeftBottomFront));
@@ -246,12 +264,36 @@ export class Frustum {
   public initFromRange(range: LowAndHighXYZ | LowAndHighXY): void {
     const getZ = (arg: any): number => arg.z !== undefined ? arg.z : 0;
     const pts = this.points;
-    pts[0].x = pts[2].x = pts[4].x = pts[6].x = range.low.x;
-    pts[1].x = pts[3].x = pts[5].x = pts[7].x = range.high.x;
-    pts[0].y = pts[1].y = pts[4].y = pts[5].y = range.low.y;
-    pts[2].y = pts[3].y = pts[6].y = pts[7].y = range.high.y;
-    pts[0].z = pts[1].z = pts[2].z = pts[3].z = getZ(range.low);
-    pts[4].z = pts[5].z = pts[6].z = pts[7].z = getZ(range.high);
+    pts[0].x =
+      pts[2].x =
+      pts[4].x =
+      pts[6].x =
+        range.low.x;
+    pts[1].x =
+      pts[3].x =
+      pts[5].x =
+      pts[7].x =
+        range.high.x;
+    pts[0].y =
+      pts[1].y =
+      pts[4].y =
+      pts[5].y =
+        range.low.y;
+    pts[2].y =
+      pts[3].y =
+      pts[6].y =
+      pts[7].y =
+        range.high.y;
+    pts[0].z =
+      pts[1].z =
+      pts[2].z =
+      pts[3].z =
+        getZ(range.low);
+    pts[4].z =
+      pts[5].z =
+      pts[6].z =
+      pts[7].z =
+        getZ(range.high);
   }
 
   /** Create a new Frustum from a Range3d */
@@ -303,12 +345,16 @@ export class Frustum {
     if (clipBack) {
       Vector3d.createCrossProductToPoints(this.points[1], this.points[2], this.points[0], scratchNormal);
       if (scratchNormal.normalizeInPlace())
-        convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance));
+        convexSet.addPlaneToConvexSet(
+          ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[0]) - expandPlaneDistance),
+        );
     }
     if (clipFront) {
       Vector3d.createCrossProductToPoints(this.points[6], this.points[5], this.points[4], scratchNormal);
       if (scratchNormal.normalizeInPlace())
-        convexSet.addPlaneToConvexSet(ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[4]) - expandPlaneDistance));
+        convexSet.addPlaneToConvexSet(
+          ClipPlane.createNormalAndDistance(scratchNormal, scratchNormal.dotProduct(this.points[4]) - expandPlaneDistance),
+        );
     }
     return convexSet;
   }

@@ -65,7 +65,7 @@ describe("Setting", () => {
 
     it("should return false for different types", () => {
       expect(Setting.areEqual("1", 1)).to.be.false;
-      expect(Setting.areEqual([], { })).to.be.false;
+      expect(Setting.areEqual([], {})).to.be.false;
       expect(Setting.areEqual(false, undefined)).to.be.false;
       expect(Setting.areEqual("", false)).to.be.false;
       expect(Setting.areEqual([8, 9], { 0: 8, 1: 9 })).to.be.false;

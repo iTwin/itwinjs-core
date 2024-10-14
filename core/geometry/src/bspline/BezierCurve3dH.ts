@@ -27,7 +27,9 @@ import { BezierCurveBase } from "./BezierCurveBase";
  */
 export class BezierCurve3dH extends BezierCurveBase {
   /** test if `other` is also a BezierCurve3dH. */
-  public isSameGeometryClass(other: any): boolean { return other instanceof BezierCurve3dH; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof BezierCurve3dH;
+  }
   /**
    * Apply (multiply by) an affine transform
    * @param transform
@@ -95,7 +97,6 @@ export class BezierCurve3dH extends BezierCurveBase {
   /** Create a curve with given points.
    * * If input is `Point2d[]`, the points are promoted with `z=0` and `w=1`
    * * If input is `Point3d[]`, the points are promoted with w=1`
-   *
    */
   public static create(data: Point3d[] | Point4d[] | Point2d[]): BezierCurve3dH | undefined {
     if (data.length < 1)
@@ -221,9 +222,12 @@ export class BezierCurve3dH extends BezierCurveBase {
    * @param detail pre-allocated detail to record (evolving) closest point.
    * @returns true if an updated occurred, false if either (a) no perpendicular projections or (b) perpendiculars were not closer.
    */
-  public updateClosestPointByTruePerpendicular(spacePoint: Point3d, detail: CurveLocationDetail,
+  public updateClosestPointByTruePerpendicular(
+    spacePoint: Point3d,
+    detail: CurveLocationDetail,
     testAt0: boolean = false,
-    testAt1: boolean = false): boolean {
+    testAt1: boolean = false,
+  ): boolean {
     let numUpdates = 0;
     let roots: number[] | undefined;
     if (this.isUnitWeight()) {
@@ -234,9 +238,36 @@ export class BezierCurve3dH extends BezierCurveBase {
       // closestPoint condition is:
       //   (spacePoint - curvePoint) DOT curveTangent = 0;
       // Each product (x,y,z) of the DOT is the product of two bezier polynomials
-      BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 0, -spacePoint.x, 0);
-      BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 1, -spacePoint.y, 1);
-      BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(bezier.coffs, this._polygon.packedData, 4, this.order, 1.0, 2, -spacePoint.z, 2);
+      BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(
+        bezier.coffs,
+        this._polygon.packedData,
+        4,
+        this.order,
+        1.0,
+        0,
+        -spacePoint.x,
+        0,
+      );
+      BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(
+        bezier.coffs,
+        this._polygon.packedData,
+        4,
+        this.order,
+        1.0,
+        1,
+        -spacePoint.y,
+        1,
+      );
+      BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(
+        bezier.coffs,
+        this._polygon.packedData,
+        4,
+        this.order,
+        1.0,
+        2,
+        -spacePoint.z,
+        2,
+      );
       roots = bezier.roots(0.0, true);
     } else {
       // This bezier has weights.
@@ -255,10 +286,18 @@ export class BezierCurve3dH extends BezierCurveBase {
       for (let i = 0; i < 3; i++) {
         // x representing loop pass:   (w * spacePoint.x - curve.x(s)) * (curveDelta.x(s) * curve.w(s) - curve.x(s) * curveDelta.w(s))
         // (and p.w is always 1)
-        for (let k = 0; k < workA.length; k++)workA[k] = 0;
-        for (let k = 0; k < workB.length; k++)workB[k] = 0;
-        BezierPolynomialAlgebra.scaledComponentSum(workA, packedData, 4, orderA, 3, spacePoint.at(i), // w * spacePoint.x
-          i, -1.0); // curve.x(s) * 1.0
+        for (let k = 0; k < workA.length; k++) workA[k] = 0;
+        for (let k = 0; k < workB.length; k++) workB[k] = 0;
+        BezierPolynomialAlgebra.scaledComponentSum(
+          workA,
+          packedData,
+          4,
+          orderA,
+          3,
+          spacePoint.at(i), // w * spacePoint.x
+          i,
+          -1.0,
+        ); // curve.x(s) * 1.0
         BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, 1.0, 3, 0.0, i);
         BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(workB, packedData, 4, orderA, -1.0, i, 0.0, 3);
         BezierPolynomialAlgebra.accumulateProduct(bezier.coffs, workA, workB);
@@ -273,16 +312,16 @@ export class BezierCurve3dH extends BezierCurveBase {
       }
     }
     if (testAt0)
-      numUpdates += this.updateDetailAtFraction (detail, 0.0, spacePoint) ? 1 : 0;
+      numUpdates += this.updateDetailAtFraction(detail, 0.0, spacePoint) ? 1 : 0;
     if (testAt1)
-      numUpdates += this.updateDetailAtFraction (detail, 1.0, spacePoint) ? 1 : 0;
+      numUpdates += this.updateDetailAtFraction(detail, 1.0, spacePoint) ? 1 : 0;
     return numUpdates > 0;
   }
-  private updateDetailAtFraction(detail: CurveLocationDetail, fraction: number, spacePoint: Point3d): boolean{
+  private updateDetailAtFraction(detail: CurveLocationDetail, fraction: number, spacePoint: Point3d): boolean {
     const xyz = this.fractionToPoint(fraction);
     const a = xyz.distance(spacePoint);
-    return detail.updateIfCloserCurveFractionPointDistance (this, fraction, xyz, a);
-      }
+    return detail.updateIfCloserCurveFractionPointDistance(this, fraction, xyz, a);
+  }
   /** Extend `rangeToExtend`, using candidate extrema at
    * * both end points
    * * any internal extrema in x,y,z
@@ -309,16 +348,24 @@ export class BezierCurve3dH extends BezierCurveBase {
         bezier.zero();
         BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(
           bezier.coffs,
-          data, 4, order,
+          data,
+          4,
+          order,
           1.0,
-          axisIndex, 0.0,
-          3);
+          axisIndex,
+          0.0,
+          3,
+        );
         BezierPolynomialAlgebra.accumulateScaledShiftedComponentTimesComponentDelta(
           bezier.coffs,
-          data, 4, order,
+          data,
+          4,
+          order,
           -1.0,
-          3, 0.0,
-          axisIndex);
+          3,
+          0.0,
+          axisIndex,
+        );
         const roots = bezier.roots(0.0, true);
         if (roots) {
           for (const r of roots) {
@@ -329,8 +376,8 @@ export class BezierCurve3dH extends BezierCurveBase {
       }
     } else {
       this.allocateAndZeroBezierWorkData(order * 2 - 2, order, order);
-      const componentCoffs = this._workCoffsA!;   // to hold transformed copy of x,y,z in turn.
-      const weightCoffs = this._workCoffsB!;    // to hold weights
+      const componentCoffs = this._workCoffsA!; // to hold transformed copy of x,y,z in turn.
+      const weightCoffs = this._workCoffsB!; // to hold weights
       const bezier = this._workBezier!;
 
       this.getPolePoint3d(0, this._workPoint0);
@@ -338,7 +385,7 @@ export class BezierCurve3dH extends BezierCurveBase {
       this.getPolePoint3d(order - 1, this._workPoint0);
       rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
 
-      const data = this._polygon.packedData;      // Example:
+      const data = this._polygon.packedData; // Example:
       // For x component ...
       //     coefficients of (weighted x) are at axisIndex=0
       //     deweighted polynomial is (x(s)/w(s))

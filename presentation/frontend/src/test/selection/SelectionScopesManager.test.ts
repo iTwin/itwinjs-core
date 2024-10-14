@@ -3,13 +3,13 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as moq from "typemoq";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { DEFAULT_KEYS_BATCH_SIZE, ElementSelectionScopeProps, KeySet, RpcRequestsHandler } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomId, createRandomSelectionScope } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import * as moq from "typemoq";
 import { SelectionScopesManager, SelectionScopesManagerProps } from "../../presentation-frontend/selection/SelectionScopesManager";
 
 describe("SelectionScopesManager", () => {
@@ -103,7 +103,7 @@ describe("SelectionScopesManager", () => {
             moq.It.is((options) => {
               return options.elementIds.length === 1 && options.elementIds[0] === ids[0] && options.scope.id === scope.id;
             }),
-          ),
+          )
         )
         .returns(async () => result.toJSON())
         .verifiable();
@@ -123,7 +123,7 @@ describe("SelectionScopesManager", () => {
             moq.It.is((options) => {
               return options.elementIds.length === 1 && options.elementIds[0] === ids[0] && options.scope.id === scope.id;
             }),
-          ),
+          )
         )
         .returns(async () => result.toJSON())
         .verifiable();
@@ -151,7 +151,7 @@ describe("SelectionScopesManager", () => {
                 (options.scope as ElementSelectionScopeProps).ancestorLevel === scope.ancestorLevel
               );
             }),
-          ),
+          )
         )
         .returns(async () => result.toJSON())
         .verifiable();
@@ -175,7 +175,7 @@ describe("SelectionScopesManager", () => {
             moq.It.is((options) => {
               return options.elementIds.length === DEFAULT_KEYS_BATCH_SIZE && options.scope.id === scope.id;
             }),
-          ),
+          )
         )
         .returns(async () => result1.toJSON())
         .verifiable();
@@ -185,7 +185,7 @@ describe("SelectionScopesManager", () => {
             moq.It.is((options) => {
               return options.elementIds.length === 1 && options.scope.id === scope.id;
             }),
-          ),
+          )
         )
         .returns(async () => result2.toJSON())
         .verifiable();
@@ -206,7 +206,7 @@ describe("SelectionScopesManager", () => {
             moq.It.is((options) => {
               return options.elementIds.length === 1 && options.elementIds[0] === id && options.scope.id === scope.id;
             }),
-          ),
+          )
         )
         .returns(async () => result.toJSON())
         .verifiable();
@@ -226,7 +226,7 @@ describe("SelectionScopesManager", () => {
             moq.It.is((options) => {
               return options.elementIds.length === 1 && options.elementIds[0] === id && options.scope.id === scope.id;
             }),
-          ),
+          )
         )
         .returns(async () => result.toJSON())
         .verifiable();

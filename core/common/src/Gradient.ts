@@ -128,7 +128,7 @@ export namespace Gradient {
 
     private static _fixedSchemeKeys = [
       // NB: these color values are ordered as rbg.  Note how the components are applied below.
-      [[0.0, 0, 255, 0], [0.25, 0, 255, 255], [0.5, 0, 0, 255], [0.75, 255, 0, 255], [1.0, 255, 0, 0]],  // Blue Red.
+      [[0.0, 0, 255, 0], [0.25, 0, 255, 255], [0.5, 0, 0, 255], [0.75, 255, 0, 255], [1.0, 255, 0, 0]], // Blue Red.
       [[0.0, 255, 0, 0], [0.25, 255, 0, 255], [0.5, 0, 0, 255], [0.75, 0, 255, 255], [1.0, 0, 255, 0]], // Red blue.
       [[0.0, 0, 0, 0], [1.0, 255, 255, 255]], // Monochrome.
       [[0.0, 152, 148, 188], [0.5, 204, 160, 204], [1.0, 152, 72, 128]], // Based off of the topographic gradients in Point Clouds.
@@ -184,32 +184,36 @@ export namespace Gradient {
         return 0; // Same pointer
       if (lhs.mode !== rhs.mode)
         return lhs.mode - rhs.mode;
-      if (lhs.flags !== rhs.flags)
+      if (lhs.flags !== rhs.flags) {
         if (lhs.flags === undefined)
           return -1;
         else if (rhs.flags === undefined)
           return 1;
         else
           return lhs.flags - rhs.flags;
-      if (lhs.tint !== rhs.tint)
+      }
+      if (lhs.tint !== rhs.tint) {
         if (lhs.tint === undefined)
           return -1;
         else if (rhs.tint === undefined)
           return 1;
         else
           return lhs.tint - rhs.tint;
-      if (lhs.shift !== rhs.shift)
+      }
+      if (lhs.shift !== rhs.shift) {
         if (lhs.shift === undefined)
           return -1;
         else if (rhs.shift === undefined)
           return 1;
         else
           return lhs.shift - rhs.shift;
-      if ((lhs.angle === undefined) !== (rhs.angle === undefined))
+      }
+      if ((lhs.angle === undefined) !== (rhs.angle === undefined)) {
         if (lhs.angle === undefined)
           return -1;
         else
           return 1;
+      }
       if (lhs.angle && !lhs.angle.isAlmostEqualNoPeriodShift(rhs.angle!))
         return lhs.angle.radians - rhs.angle!.radians;
       if (lhs.keys.length !== rhs.keys.length)
@@ -220,7 +224,7 @@ export namespace Gradient {
         if (!lhs.keys[i].color.equals(rhs.keys[i].color))
           return lhs.keys[i].color.tbgr - rhs.keys[i].color.tbgr;
       }
-      if (lhs.thematicSettings !== rhs.thematicSettings)
+      if (lhs.thematicSettings !== rhs.thematicSettings) {
         if (undefined === lhs.thematicSettings)
           return -1;
         else if (undefined === rhs.thematicSettings)
@@ -230,6 +234,7 @@ export namespace Gradient {
           if (0 !== thematicCompareResult)
             return thematicCompareResult;
         }
+      }
       return 0;
     }
 
@@ -265,7 +270,7 @@ export namespace Gradient {
       if (this.keys.length <= 2) {
         w0 = 1.0 - value;
         w1 = value;
-      } else {  // locate value in map, blend corresponding colors
+      } else { // locate value in map, blend corresponding colors
         while (idx < (this.keys.length - 2) && value > this.keys[idx + 1].value)
           idx++;
 
@@ -296,7 +301,9 @@ export namespace Gradient {
     }
 
     /** Returns true if the [[Gradient.Flags.Outline]] flag is set. */
-    public get isOutlined(): boolean { return 0 !== (this.flags & Flags.Outline); }
+    public get isOutlined(): boolean {
+      return 0 !== (this.flags & Flags.Outline);
+    }
 
     /** This function (for internal use only) provides the WebGL renderer with a thematic image that its shaders
      * can use properly with various thematic rendering techniques.
@@ -326,7 +333,7 @@ export namespace Gradient {
       switch (settings.mode) {
         case ThematicGradientMode.Smooth: {
           for (let j = 0; j < dimension; j++) {
-            const f = (1 - j / (dimension));
+            const f = 1 - j / dimension;
             addColor(this.mapColor(f));
           }
           break;
@@ -344,7 +351,7 @@ export namespace Gradient {
             //                  We really want these values: 0   .25  .5   .75   1
             // This preserves an exact color mapping of a n-step gradient when stepCount also equals n.
             // stepCount must be at least two for this.  The thematic API enforces stepCount of at least 2.
-            const f = (1 - j / (dimension - 1));
+            const f = 1 - j / (dimension - 1);
             addColor(this.mapColor(f));
           }
           break;

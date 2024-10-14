@@ -101,7 +101,9 @@ export class Checker {
   public getNumErrors(): number {
     return this._savedErrors + this._numErrors;
   }
-  public getNumOK(): number { return this._numOK + this._savedOK; }
+  public getNumOK(): number {
+    return this._numOK + this._savedOK;
+  }
 
   // ===================================================================================
   // Tests
@@ -138,8 +140,11 @@ export class Checker {
     const dataA1 = transformAToB.multiplyPoint3d(dataA);
     if (Geometry.isSamePoint3d(dataA1, dataB))
       return this.announceOK();
-    this.announceError("expect same transformed Point3d",
-      `${prettyPrint(transformAToB)} * ${prettyPrint(dataA)} ==> ${prettyPrint(dataA1)} =?= ${prettyPrint(dataB)}`, params);
+    this.announceError(
+      "expect same transformed Point3d",
+      `${prettyPrint(transformAToB)} * ${prettyPrint(dataA)} ==> ${prettyPrint(dataA1)} =?= ${prettyPrint(dataB)}`,
+      params,
+    );
     return false;
   }
   public testPoint3dArray(dataA: Point3d[], dataB: Point3d[], ...params: any[]): boolean {
@@ -152,7 +157,12 @@ export class Checker {
     return this.announceOK();
   }
   /** Test if number arrays match with tolerance. */
-  public testNumberArrayWithTol(dataA: number[] | GrowableFloat64Array | Float64Array | undefined, dataB: number[] | GrowableFloat64Array | Float64Array | undefined, tol: number = Geometry.smallMetricDistance, ...params: any[]): boolean {
+  public testNumberArrayWithTol(
+    dataA: number[] | GrowableFloat64Array | Float64Array | undefined,
+    dataB: number[] | GrowableFloat64Array | Float64Array | undefined,
+    tol: number = Geometry.smallMetricDistance,
+    ...params: any[]
+  ): boolean {
     const numA = dataA === undefined ? 0 : dataA.length;
     const numB = dataB === undefined ? 0 : dataB.length;
     if (numA !== numB)
@@ -351,8 +361,10 @@ export class Checker {
     return this.announceError("expect same Matrix3d", dataA, dataB, params);
   }
   public testTransform(dataA: Transform, dataB: Transform, ...params: any[]): boolean {
-    if (dataA.matrix.maxDiff(dataB.matrix) < Geometry.smallMetricDistance
-      && dataA.origin.maxDiff(dataB.origin) < Geometry.smallMetricDistance)
+    if (
+      dataA.matrix.maxDiff(dataB.matrix) < Geometry.smallMetricDistance
+      && dataA.origin.maxDiff(dataB.origin) < Geometry.smallMetricDistance
+    )
       return this.announceOK();
     return this.announceError("expect same Transform", dataA, dataB, params);
   }
@@ -538,8 +550,12 @@ export class Checker {
   private static _cache: GeometryQuery[] = [];
   private static _transform: Transform = Transform.createIdentity();
 
-  public static setTransform(transform: Transform) { Checker._transform = transform; }
-  public static getTransform(): Transform { return Checker._transform; }
+  public static setTransform(transform: Transform) {
+    Checker._transform = transform;
+  }
+  public static getTransform(): Transform {
+    return Checker._transform;
+  }
 
   public static saveTransformed(g: GeometryQuery, maxCoordinate: number = 1.0e12) {
     const range = g.range();

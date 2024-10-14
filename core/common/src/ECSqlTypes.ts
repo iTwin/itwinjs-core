@@ -118,7 +118,6 @@ export enum ECSqlSystemProperty {
  * @public
  */
 export class ECJsNames {
-
   /** Formats the specified ECProperty name according to the iTwin.js formatting rules.
    *
    *  See [ECSQL Row Format]($docs/learning/ECSQLRowFormat) which describes the formatting rules.
@@ -229,5 +228,7 @@ export class ECJsNames {
     }
   }
 
-  private static lowerFirstChar(name: string): string { return name[0].toLowerCase() + name.substring(1); }
+  private static lowerFirstChar(name: string): string {
+    return name[0].toLowerCase() + name.substring(1);
+  }
 }

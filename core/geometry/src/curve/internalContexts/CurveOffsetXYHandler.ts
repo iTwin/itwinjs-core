@@ -34,12 +34,10 @@ export class CurveOffsetXYHandler implements IStrokeHandler {
     this._offsetDistance = offsetDistance;
     this._fitOptions = new InterpolationCurve3dOptions();
     const startTangent = cp.fractionToPointAndUnitTangent(0.0, this._r0).direction.clone();
-    const endTangent = cp.fractionToPointAndUnitTangent(1.0, this._r0).direction.negate();  // points into curve
+    const endTangent = cp.fractionToPointAndUnitTangent(1.0, this._r0).direction.negate(); // points into curve
     this._fitOptions.startTangent = startTangent;
     this._fitOptions.endTangent = endTangent;
-    if (this._fitOptions.closed = (
-      cp.startPoint(this._p0).isAlmostEqual(cp.endPoint(this._p1)) && startTangent.isParallelTo(endTangent, true)
-    ))
+    if (this._fitOptions.closed = cp.startPoint(this._p0).isAlmostEqual(cp.endPoint(this._p1)) && startTangent.isParallelTo(endTangent, true))
       this._fitOptions.isChordLenKnots = 1;
   }
   private pushOffsetPoint(xyz: Point3d, tangent: Vector3d) {
@@ -49,12 +47,15 @@ export class CurveOffsetXYHandler implements IStrokeHandler {
   public needPrimaryGeometryForStrokes() {
     return true;
   }
-  public startParentCurvePrimitive(_cp: CurvePrimitive) { }
-  public startCurvePrimitive(_cp: CurvePrimitive) { }
-  public endCurvePrimitive(_cp: CurvePrimitive) { }
-  public endParentCurvePrimitive(_cp: CurvePrimitive) { }
+  public startParentCurvePrimitive(_cp: CurvePrimitive) {}
+  public startCurvePrimitive(_cp: CurvePrimitive) {}
+  public endCurvePrimitive(_cp: CurvePrimitive) {}
+  public endParentCurvePrimitive(_cp: CurvePrimitive) {}
   public announceIntervalForUniformStepStrokes(
-    cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number,
+    cp: CurvePrimitive,
+    numStrokes: number,
+    fraction0: number,
+    fraction1: number,
   ): void {
     // announce both start and end; adjacent duplicates will be filtered by c2 cubic fit logic
     for (let i = 0; i <= numStrokes; ++i) {
@@ -64,7 +65,12 @@ export class CurveOffsetXYHandler implements IStrokeHandler {
     }
   }
   public announceSegmentInterval(
-    _cp: CurvePrimitive, point0: Point3d, point1: Point3d, numStrokes: number, _fraction0: number, _fraction1: number,
+    _cp: CurvePrimitive,
+    point0: Point3d,
+    point1: Point3d,
+    numStrokes: number,
+    _fraction0: number,
+    _fraction1: number,
   ): void {
     if (numStrokes > 0) {
       const tangent = Vector3d.createStartEnd(point0, point1, this._v1);

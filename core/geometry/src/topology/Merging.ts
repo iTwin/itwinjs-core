@@ -12,6 +12,7 @@ import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
+import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Range3d } from "../geometry3d/Range";
 import { ClusterableArray } from "../numerics/ClusterableArray";
@@ -20,7 +21,6 @@ import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
 import { HalfEdgePriorityQueueWithPartnerArray } from "./HalfEdgePriorityQueue";
 import { RegularizationContext } from "./RegularizeFace";
 import { Triangulator } from "./Triangulation";
-import { MultiLineStringDataVariant } from "../geometry3d/IndexedXYZCollection";
 
 export class GraphSplitData {
   public numUpEdge = 0;
@@ -55,7 +55,6 @@ export type AnnounceVertexNeighborhoodSortData = (data: VertexNeighborhoodSortDa
  * @internal
  */
 export class HalfEdgeGraphOps {
-
   /** Compare function for sorting with primary y compare, secondary  x compare. */
   public static compareNodesYXUp(a: HalfEdge, b: HalfEdge) {
     // Check y's
@@ -108,17 +107,21 @@ export class HalfEdgeGraphOps {
 
     // Push the endpoints of each segment onto arr[] in the form {(x, y, theta), Node}
     for (const segment of segments) {
-
       const node0 = returnGraph.createEdgeXYZXYZ(
-        segment.point0Ref.x, segment.point0Ref.y, segment.point0Ref.z,
+        segment.point0Ref.x,
+        segment.point0Ref.y,
+        segment.point0Ref.z,
         idxCounter,
-        segment.point1Ref.x, segment.point1Ref.y, segment.point1Ref.z,
-        idxCounter + 1);
+        segment.point1Ref.x,
+        segment.point1Ref.y,
+        segment.point1Ref.z,
+        idxCounter + 1,
+      );
 
       const node1 = node0.edgeMate;
       idxCounter += 2;
 
-      node0.setMaskAroundFace(mask);   // Original given coordinates must be part of boundary
+      node0.setMaskAroundFace(mask); // Original given coordinates must be part of boundary
       result.push(node0);
       result.push(node1);
     }
@@ -174,7 +177,11 @@ export class HalfEdgeGraphOps {
    * @param barrier edges with this mask (on either side) will not be marked. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
    * @return number of edges masked (half the number of HalfEdges masked)
    */
-  public static markRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, mark: HalfEdgeMask, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): number {
+  public static markRemovableEdgesToExpandConvexFaces(
+    graph: HalfEdgeGraph,
+    mark: HalfEdgeMask,
+    barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE,
+  ): number {
     if (HalfEdgeMask.NULL_MASK === mark)
       return 0;
     const visit = graph.grabMask(true);
@@ -184,7 +191,10 @@ export class HalfEdgeGraphOps {
         if (!node.isMaskSet(barrier) && !node.edgeMate.isMaskSet(barrier)) {
           // tol based on areas of *original* faces on each side of the edge to be removed
           const signedAreaTol = Geometry.smallMetricDistanceSquared * (node.signedFaceArea() + node.edgeMate.signedFaceArea());
-          if (this.isSectorConvexAfterEdgeRemoval(node, mark, barrier, signedAreaTol) && this.isSectorConvexAfterEdgeRemoval(node.edgeMate, mark, barrier, signedAreaTol)) {
+          if (
+            this.isSectorConvexAfterEdgeRemoval(node, mark, barrier, signedAreaTol) &&
+            this.isSectorConvexAfterEdgeRemoval(node.edgeMate, mark, barrier, signedAreaTol)
+          ) {
             node.setMaskAroundEdge(mark);
             ++numMarked;
           }
@@ -203,7 +213,10 @@ export class HalfEdgeGraphOps {
    * @param barrier edges with this mask (on either side) will not be collected. Defaults to HalfEdgeMask.BOUNDARY_EDGE.
    * @return one HalfEdge per removable edge
    */
-  public static collectRemovableEdgesToExpandConvexFaces(graph: HalfEdgeGraph, barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE): HalfEdge[] | undefined {
+  public static collectRemovableEdgesToExpandConvexFaces(
+    graph: HalfEdgeGraph,
+    barrier: HalfEdgeMask = HalfEdgeMask.BOUNDARY_EDGE,
+  ): HalfEdge[] | undefined {
     const removable: HalfEdge[] = [];
     const mark = graph.grabMask(true);
     if (0 < this.markRemovableEdgesToExpandConvexFaces(graph, mark, barrier)) {
@@ -281,7 +294,9 @@ export class HalfEdgeGraphMerge {
   /**
    * public property setter for a function to be called with sorted edge data around a vertex.
    */
-  public static set announceVertexNeighborhoodFunction(func: AnnounceVertexNeighborhoodSortData | undefined) { this._announceVertexNeighborhoodFunction = func; }
+  public static set announceVertexNeighborhoodFunction(func: AnnounceVertexNeighborhoodSortData | undefined) {
+    this._announceVertexNeighborhoodFunction = func;
+  }
   private static doAnnounceVertexNeighborhood(clusters: ClusterableArray, order: Uint32Array, allNodes: HalfEdge[], k0: number, k1: number) {
     if (this._announceVertexNeighborhoodFunction) {
       const sortData: VertexNeighborhoodSortData[] = [];
@@ -295,7 +310,6 @@ export class HalfEdgeGraphMerge {
       }
       this._announceVertexNeighborhoodFunction(sortData);
     }
-
   }
   // assumptions about cluster array:
   //   * data order is: x,y,theta,nodeIndex
@@ -344,7 +358,8 @@ export class HalfEdgeGraphMerge {
   }
   /** Whether the HalfEdge is part of a null face, as marked by [[clusterAndMergeXYTheta]]. */
   public static isNullFace(node: HalfEdge): boolean {
-    return node.isMaskSet(HalfEdgeMask.NULL_FACE) && node.faceSuccessor.isMaskSet(HalfEdgeMask.NULL_FACE) && node === node.faceSuccessor.faceSuccessor;
+    return node.isMaskSet(HalfEdgeMask.NULL_FACE) && node.faceSuccessor.isMaskSet(HalfEdgeMask.NULL_FACE) &&
+      node === node.faceSuccessor.faceSuccessor;
   }
   /** Simplest merge algorithm:
    * * collect array of (x,y,theta) at all nodes
@@ -358,12 +373,12 @@ export class HalfEdgeGraphMerge {
     const allNodes = graph.allHalfEdges;
     const numNodes = allNodes.length;
     graph.clearMask(HalfEdgeMask.NULL_FACE);
-    const clusters = new ClusterableArray(2, 2, numNodes);  // data order: x,y,theta,nodeIndex.  But theta is not set in first round.
+    const clusters = new ClusterableArray(2, 2, numNodes); // data order: x,y,theta,nodeIndex.  But theta is not set in first round.
     for (let i = 0; i < numNodes; i++) {
       const nodeA = allNodes[i];
       const xA = nodeA.x;
       const yA = nodeA.y;
-      HalfEdge.pinch(nodeA, nodeA.vertexSuccessor);  // pull it out of its current vertex loop.
+      HalfEdge.pinch(nodeA, nodeA.vertexSuccessor); // pull it out of its current vertex loop.
       clusters.addDirect(xA, yA, 0.0, i);
     }
     const clusterTol = Geometry.smallMetricDistance;
@@ -462,7 +477,7 @@ export class HalfEdgeGraphMerge {
                 if (nodeA1.isEqualXY(nodeB1)) {
                   const cA = this.curvatureSortKey(nodeA);
                   const cB = this.curvatureSortKey(nodeB);
-                  if (Geometry.isSameCoordinate(cA, cB, clusterTol)) {  // rule out banana
+                  if (Geometry.isSameCoordinate(cA, cB, clusterTol)) { // rule out banana
                     HalfEdge.pinch(nodeA1, nodeB1);
                     nodeA.setMask(HalfEdgeMask.NULL_FACE);
                     nodeB1.setMask(HalfEdgeMask.NULL_FACE);
@@ -483,7 +498,6 @@ export class HalfEdgeGraphMerge {
   private static buildVerticalSweepPriorityQueue(graph: HalfEdgeGraph): HalfEdgePriorityQueueWithPartnerArray {
     const sweepHeap = new HalfEdgePriorityQueueWithPartnerArray();
     for (const p of graph.allHalfEdges) {
-
       if (HalfEdgeGraphOps.compareNodesYXUp(p, p.faceSuccessor) < 0) {
         sweepHeap.priorityQueue.push(p);
       }
@@ -495,7 +509,13 @@ export class HalfEdgeGraphMerge {
       return nodeFraction;
     return fraction;
   }
-  private static computeIntersectionFractionsOnEdges(nodeA0: HalfEdge, nodeB0: HalfEdge, fractions: Vector2d, pointA: Point2d, pointB: Point2d): boolean {
+  private static computeIntersectionFractionsOnEdges(
+    nodeA0: HalfEdge,
+    nodeB0: HalfEdge,
+    fractions: Vector2d,
+    pointA: Point2d,
+    pointB: Point2d,
+  ): boolean {
     const nodeA1 = nodeA0.faceSuccessor;
     const ax0 = nodeA0.x;
     const ay0 = nodeA0.y;
@@ -507,8 +527,7 @@ export class HalfEdgeGraphMerge {
     const vx = nodeB1.x - bx0;
     const vy = nodeB1.y - by0;
     // cspell:word lineSegmentXYUVTransverseIntersectionUnbounded
-    if (SmallSystem.lineSegmentXYUVTransverseIntersectionUnbounded(ax0, ay0, ux, uy,
-      bx0, by0, vx, vy, fractions)) {
+    if (SmallSystem.lineSegmentXYUVTransverseIntersectionUnbounded(ax0, ay0, ux, uy, bx0, by0, vx, vy, fractions)) {
       pointA.x = ax0 + fractions.x * ux;
       pointA.y = ay0 + fractions.x * uy;
       pointB.x = bx0 + fractions.y * vx;
@@ -556,12 +575,12 @@ export class HalfEdgeGraphMerge {
           if (this.computeIntersectionFractionsOnEdges(nodeA0, nodeB0, fractions, pointA, pointB)) {
             if (fractions.x > smallFraction && fractions.x < largeFraction) {
               const nodeC0 = graph.splitEdgeAtFraction(nodeA0, fractions.x);
-              sweepHeap.priorityQueue.push(nodeC0);  // The upper portion will be reviewed as a nodeA0 later !!!
+              sweepHeap.priorityQueue.push(nodeC0); // The upper portion will be reviewed as a nodeA0 later !!!
               data.numSplit++;
             }
             if (fractions.y > smallFraction && fractions.y < largeFraction) {
               const nodeD0 = graph.splitEdgeAtFraction(nodeB0, fractions.y);
-              sweepHeap.priorityQueue.push(nodeD0);  // The upper portion will be reviewed as a nodeA0 later !!!
+              sweepHeap.priorityQueue.push(nodeD0); // The upper portion will be reviewed as a nodeA0 later !!!
               data.numSplit++;
             }
             // existing nodeA0 and its shortened edge remain for further intersections
@@ -596,7 +615,11 @@ export class HalfEdgeGraphMerge {
    * * Graph gets full splitEdges, regularize (optional), and triangulate.
    * @returns graph, or undefined if bad data.
    */
-  public static formGraphFromChains(chains: MultiLineStringDataVariant, regularize: boolean = true, mask: HalfEdgeMask = HalfEdgeMask.PRIMARY_EDGE): HalfEdgeGraph | undefined {
+  public static formGraphFromChains(
+    chains: MultiLineStringDataVariant,
+    regularize: boolean = true,
+    mask: HalfEdgeMask = HalfEdgeMask.PRIMARY_EDGE,
+  ): HalfEdgeGraph | undefined {
     if (chains.length < 1)
       return undefined;
     const graph = new HalfEdgeGraph();
@@ -612,5 +635,4 @@ export class HalfEdgeGraphMerge {
     }
     return graph;
   }
-
 }

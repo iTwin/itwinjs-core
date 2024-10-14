@@ -21,7 +21,7 @@ export interface UiSyncEventArgs {
  * @deprecated in 4.2.x Use [[UiSyncEvent]] from @itwin/appui-react.
  */
 // eslint-disable-next-line deprecation/deprecation
-export class UiSyncEvent extends BeUiEvent<UiSyncEventArgs> { }
+export class UiSyncEvent extends BeUiEvent<UiSyncEventArgs> {}
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
@@ -93,8 +93,10 @@ export class UiEventDispatcher {
     }
 
     this.syncEventIds.add(eventId.toLowerCase());
-    if (!this._syncEventTimerId) {  // if there is not a timer active, create one
-      this._syncEventTimerId = window.setTimeout(() => { this.checkForAdditionalIds(); }, this._timeoutPeriod);
+    if (!this._syncEventTimerId) { // if there is not a timer active, create one
+      this._syncEventTimerId = window.setTimeout(() => {
+        this.checkForAdditionalIds();
+      }, this._timeoutPeriod);
     } else {
       this._eventIdAdded = true;
     }
@@ -109,8 +111,10 @@ export class UiEventDispatcher {
 
     eventIds.forEach((id) => this.syncEventIds.add(id.toLowerCase()));
     // istanbul ignore else
-    if (!this._syncEventTimerId) {  // if there is not a timer active, create one
-      this._syncEventTimerId = window.setTimeout(() => { this.checkForAdditionalIds(); }, this._timeoutPeriod);
+    if (!this._syncEventTimerId) { // if there is not a timer active, create one
+      this._syncEventTimerId = window.setTimeout(() => {
+        this.checkForAdditionalIds();
+      }, this._timeoutPeriod);
     } else {
       this._eventIdAdded = true;
     }
@@ -145,7 +149,9 @@ export class UiEventDispatcher {
     this._eventIdAdded = false;
     // if events have been added before the initial timer expired wait half that time to see if events are still being added.
     // istanbul ignore next
-    this._syncEventTimerId = window.setTimeout(() => { this.checkForAdditionalIds(); }, this._secondaryTimeoutPeriod);
+    this._syncEventTimerId = window.setTimeout(() => {
+      this.checkForAdditionalIds();
+    }, this._secondaryTimeoutPeriod);
   }
 
   /** Checks to see if an eventId of interest is contained in the set of eventIds */

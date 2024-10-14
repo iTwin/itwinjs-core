@@ -37,16 +37,23 @@ export class Mixin extends ECClass {
   }
 
   /**
-   *
    * @param name
    * @param relationship
    * @param direction
    */
-  protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
+  protected async createNavigationProperty(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): Promise<NavigationProperty> {
     return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
   }
 
-  protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
+  protected createNavigationPropertySync(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): NavigationProperty {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
@@ -102,13 +109,12 @@ export class Mixin extends ECClass {
     const entityClassSchemaItemKey = this.schema.getSchemaItemKey(mixinProps.appliesTo);
     if (!entityClassSchemaItemKey)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
-    this._appliesTo = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(entityClassSchemaItemKey,
-      async () => {
-        const appliesTo = await this.schema.lookupItem<EntityClass>(entityClassSchemaItemKey);
-        if (undefined === appliesTo)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
-        return appliesTo;
-      });
+    this._appliesTo = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(entityClassSchemaItemKey, async () => {
+      const appliesTo = await this.schema.lookupItem<EntityClass>(entityClassSchemaItemKey);
+      if (undefined === appliesTo)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
+      return appliesTo;
+    });
   }
 
   public override async fromJSON(mixinProps: MixinProps) {
@@ -132,7 +138,15 @@ export class Mixin extends ECClass {
  */
 export abstract class MutableMixin extends Mixin {
   public abstract override setAppliesTo(entityClass: LazyLoadedEntityClass): void;
-  public abstract override createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
-  public abstract override createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
+  public abstract override createNavigationProperty(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): Promise<NavigationProperty>;
+  public abstract override createNavigationPropertySync(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): NavigationProperty;
   public abstract override setDisplayLabel(displayLabel: string): void;
 }

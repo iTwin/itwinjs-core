@@ -84,7 +84,7 @@ export abstract class IndexedXYCollection {
   public getXAtUncheckedPointIndex(pointIndex: number): number {
     const pt = this.getPoint2dAtCheckedPointIndex(pointIndex, IndexedXYCollection._workPoint);
     if (undefined === IndexedXYCollection._workPoint)
-      IndexedXYCollection._workPoint = pt;  // allocate the cache
+      IndexedXYCollection._workPoint = pt; // allocate the cache
     return pt ? pt.x : 0.0;
   }
 
@@ -94,7 +94,7 @@ export abstract class IndexedXYCollection {
   public getYAtUncheckedPointIndex(pointIndex: number): number {
     const pt = this.getPoint2dAtCheckedPointIndex(pointIndex, IndexedXYCollection._workPoint);
     if (undefined === IndexedXYCollection._workPoint)
-      IndexedXYCollection._workPoint = pt;  // allocate the cache
+      IndexedXYCollection._workPoint = pt; // allocate the cache
     return pt ? pt.y : 0.0;
   }
 

@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as nock from "nock";
-import * as path from "path";
 import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
 import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
+import { OpenMode } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
+import * as nock from "nock";
+import * as path from "path";
 import { AzuriteUsers, TestRpcInterface } from "../common/RpcInterfaces";
 import { AzuriteTest } from "./AzuriteTest";
-import { OpenMode } from "@itwin/core-bentley";
 
 const viewContainer = "views-itwin1";
 const storageType = "azure" as const;

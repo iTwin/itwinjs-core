@@ -6,13 +6,13 @@
  * @module iModelHub
  */
 
+import { AccessToken, BentleyError, GetMetaDataFunction, Logger } from "@itwin/core-bentley";
 import { Buffer } from "node:buffer";
 import * as fs from "node:fs";
 import * as https from "node:https";
 import * as path from "node:path";
-import { AccessToken, BentleyError, GetMetaDataFunction, Logger } from "@itwin/core-bentley";
-import { ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
 import { MobileHost } from "./MobileHost";
+import { ProgressCallback, ProgressInfo, request, RequestOptions } from "./Request";
 
 const loggerCategory: string = "mobile.filehandler";
 
@@ -22,16 +22,16 @@ const defined = (argumentName: string, argument?: any, allowEmpty: boolean = fal
 };
 
 /** Interface to cancel a request
-  * @beta
-  */
+ * @beta
+ */
 export interface CancelRequest {
   /** Returns true if cancel request was acknowledged */
   cancel: () => boolean;
 }
 
 /** Error thrown when user cancelled operation
-  * @internal
-  */
+ * @internal
+ */
 export class UserCancelledError extends BentleyError {
   public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);
@@ -40,8 +40,8 @@ export class UserCancelledError extends BentleyError {
 }
 
 /** Error thrown fail to download file. ErrorNumber will correspond to HTTP error code.
-  * @internal
-  */
+ * @internal
+ */
 export class DownloadFailed extends BentleyError {
   public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);
@@ -50,8 +50,8 @@ export class DownloadFailed extends BentleyError {
 }
 
 /** Error thrown when sas-url provided for download has expired
-  * @internal
-  */
+ * @internal
+ */
 export class SasUrlExpired extends BentleyError {
   public constructor(errorNumber: number, message: string, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);
@@ -123,7 +123,14 @@ export class MobileFileHandler {
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
-  public async downloadFile(_accessToken: AccessToken, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  public async downloadFile(
+    _accessToken: AccessToken,
+    downloadUrl: string,
+    downloadToPathname: string,
+    fileSize?: number,
+    progressCallback?: ProgressCallback,
+    cancelRequest?: CancelRequest,
+  ): Promise<void> {
     // strip search and hash parameters from download Url for logging purpose
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(downloadUrl);
     Logger.logInfo(loggerCategory, `Downloading file from ${safeToLogUrl}`);
@@ -162,7 +169,13 @@ export class MobileFileHandler {
     return Buffer.from(blockId.toString(16).padStart(5, "0")).toString("base64");
   }
 
-  private async uploadChunk(_accessToken: AccessToken, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: ProgressCallback) {
+  private async uploadChunk(
+    _accessToken: AccessToken,
+    uploadUrlString: string,
+    fileDescriptor: number,
+    blockId: number,
+    callback?: ProgressCallback,
+  ) {
     const chunkSize = 4 * 1024 * 1024;
     let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
@@ -195,7 +208,12 @@ export class MobileFileHandler {
    * @param progressCallback Callback for tracking progress.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if one of the arguments is undefined or empty.
    */
-  public async uploadFile(accessToken: AccessToken, uploadUrlString: string, uploadFromPathname: string, progressCallback?: ProgressCallback): Promise<void> {
+  public async uploadFile(
+    accessToken: AccessToken,
+    uploadUrlString: string,
+    uploadFromPathname: string,
+    progressCallback?: ProgressCallback,
+  ): Promise<void> {
     const safeToLogUrl = MobileFileHandler.getSafeUrlForLogging(uploadUrlString);
     Logger.logTrace(loggerCategory, `Uploading file to ${safeToLogUrl}`);
     defined("uploadUrlString", uploadUrlString);
@@ -206,7 +224,7 @@ export class MobileFileHandler {
     const chunkSize = 4 * 1024 * 1024;
 
     try {
-      let blockList = '<?xml version=\"1.0\" encoding=\"utf-8\"?><BlockList>';
+      let blockList = '<?xml version="1.0" encoding="utf-8"?><BlockList>';
       let i = 0;
       const callback: ProgressCallback = (progress: ProgressInfo) => {
         const uploaded = i * chunkSize + progress.loaded;

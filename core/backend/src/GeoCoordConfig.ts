@@ -9,9 +9,9 @@
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelHost } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
 import { Settings } from "./workspace/Settings";
 import { WorkspaceDbCloudProps } from "./workspace/Workspace";
-import { IModelNative } from "./internal/NativePlatform";
 
 const loggerCat = "GeoCoord";
 
@@ -56,14 +56,17 @@ export class GeoCoordConfig {
       if (!IModelNative.platform.addGcsWorkspaceDb(gcsDbName, cloudContainer, dbProps.priority))
         return; // already had this db
 
-      Logger.logInfo(loggerCat, `loaded gcsDb "${gcsDbName}", from "${dbProps.baseUri}/${dbProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`);
+      Logger.logInfo(
+        loggerCat,
+        `loaded gcsDb "${gcsDbName}", from "${dbProps.baseUri}/${dbProps.containerId}" size=${gcsDbProps.totalBlocks}, local=${gcsDbProps.localBlocks}`,
+      );
 
       if (true === dbProps.prefetch)
         this.prefetches.push(CloudSqlite.startCloudPrefetch(cloudContainer, gcsDbName));
-
     } catch (e: any) {
       let msg = `Cannot load GCS workspace (${e.errorNumber}): ${BentleyError.getErrorMessage(e)}`;
-      msg += `,container=${dbProps.baseUri}/${dbProps.containerId}, storage=${dbProps.storageType}, public=${dbProps.isPublic}, cacheDir=${IModelHost.cacheDir}`;
+      msg +=
+        `,container=${dbProps.baseUri}/${dbProps.containerId}, storage=${dbProps.storageType}, public=${dbProps.isPublic}, cacheDir=${IModelHost.cacheDir}`;
       Logger.logError(loggerCat, msg);
     }
   }

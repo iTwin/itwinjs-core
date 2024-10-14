@@ -6,7 +6,7 @@
  * @module OrbitGT
  */
 
-//package orbitgt.system.runtime;
+// package orbitgt.system.runtime;
 
 type int8 = number;
 type int16 = number;
@@ -19,5 +19,5 @@ type float64 = number;
  */
 /** @internal */
 export interface iComparator<T> {
-    compare(value1: T, value2: T): int32;
+  compare(value1: T, value2: T): int32;
 }

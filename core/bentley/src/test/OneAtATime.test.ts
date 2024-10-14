@@ -16,7 +16,6 @@ import { BeDuration } from "../Time";
 
 // chai.use(chaiAsPromised);
 describe("OneAtATime test", () => {
-
   it.skip("OneAtATime", async () => {
     let calls = 0;
     const operation = new OneAtATimeAction(async (a: number, b: string) => {

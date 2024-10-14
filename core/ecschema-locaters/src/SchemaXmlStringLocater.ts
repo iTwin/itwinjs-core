@@ -6,10 +6,20 @@
  * @module Locaters
  */
 
-import { DOMParser } from "@xmldom/xmldom";
 import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
+  ECObjectsError,
+  ECObjectsStatus,
+  ECVersion,
+  ISchemaLocater,
+  Schema,
+  SchemaContext,
+  SchemaInfo,
+  SchemaKey,
+  SchemaMatchType,
+  SchemaReadHelper,
+  XmlParser,
 } from "@itwin/ecschema-metadata";
+import { DOMParser } from "@xmldom/xmldom";
 import { SchemaStringLocater, StringSchemaKey } from "./SchemaStringLocater";
 
 /**
@@ -18,7 +28,6 @@ import { SchemaStringLocater, StringSchemaKey } from "./SchemaStringLocater";
  * @beta
  */
 export class SchemaXmlStringLocater extends SchemaStringLocater implements ISchemaLocater {
-
   /**
    * Constructs a SchemaKey based on the information in the Schema XML.
    * @param schemaXml The Schema XML as a string.
@@ -53,12 +62,12 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
   }
 
   /**
-    * Gets the schema info which matches the provided SchemaKey.  The schema info may be returned before the schema is fully loaded.
-    * The fully loaded schema can be gotten later from the context using the getCachedSchema method.
-    * @param schemaKey The SchemaKey describing the schema to get from the cache.
-    * @param matchType The match type to use when locating the schema
-    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
-    */
+   * Gets the schema info which matches the provided SchemaKey.  The schema info may be returned before the schema is fully loaded.
+   * The fully loaded schema can be gotten later from the context using the getCachedSchema method.
+   * @param schemaKey The SchemaKey describing the schema to get from the cache.
+   * @param matchType The match type to use when locating the schema
+   * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
+   */
   public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
     // Grab all schema strings that match the schema key
     const candidates: StringSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType);
@@ -121,5 +130,4 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
 
     return new ECVersion(+read, 0, +minor);
   }
-
 }

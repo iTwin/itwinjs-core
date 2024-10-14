@@ -7,8 +7,8 @@
  * @module Solid
  */
 
-import { AnyCurve } from "../curve/CurveTypes";
 import { CurveCollection } from "../curve/CurveCollection";
+import { AnyCurve } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
@@ -76,13 +76,21 @@ export class LinearSweep extends SolidPrimitive {
     return LinearSweep.create(contour, Vector3d.create(0, 0, zSweep), capped);
   }
   /** get a reference to the swept curves */
-  public getCurvesRef(): CurveCollection { return this._contour.curves; }
+  public getCurvesRef(): CurveCollection {
+    return this._contour.curves;
+  }
   /** Get a reference to the `SweepContour` carrying the plane of the curves */
-  public getSweepContourRef(): SweepContour { return this._contour; }
+  public getSweepContourRef(): SweepContour {
+    return this._contour;
+  }
   /** return a clone of the sweep vector */
-  public cloneSweepVector(): Vector3d { return this._direction.clone(); }
+  public cloneSweepVector(): Vector3d {
+    return this._direction.clone();
+  }
   /** Test if `other` is also an instance of `LinearSweep` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof LinearSweep; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof LinearSweep;
+  }
   /** Return a deep clone */
   public clone(): LinearSweep {
     return new LinearSweep(this._contour.clone(), this._direction.clone(), this.capped);

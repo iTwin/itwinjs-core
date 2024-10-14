@@ -7,12 +7,12 @@
  */
 
 import { ThematicDisplayMode, ThematicGradientMode } from "@itwin/core-common";
+import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
+import { addEyeSpace } from "./Common";
 import { addRenderPass } from "./RenderPass";
 import { addInstancedRtcMatrix, addProjectionMatrix } from "./Vertex";
-import { TextureUnit } from "../RenderFlags";
-import { addEyeSpace } from "./Common";
 
 const getSensorFloat = `
 vec4 getSensor(int index) {
@@ -296,7 +296,8 @@ export function addThematicDisplay(builder: ProgramBuilder, isForPointClouds = f
       if (params.target.wantThematicSensors) {
         if (params.target.uniforms.thematic.wantGlobalSensorTexture)
           params.target.uniforms.thematic.bindNumSensors(uniform);
-        else // we are batching separate sensor textures per-tile; use the number of sensors from the batch
+        // we are batching separate sensor textures per-tile; use the number of sensors from the batch
+        else
           params.target.uniforms.batch.bindNumThematicSensors(uniform);
       } else {
         uniform.setUniform1i(0);

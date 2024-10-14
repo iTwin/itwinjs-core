@@ -6,9 +6,53 @@
  * @module Differencing
  */
 
-import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
-import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaOtherTypes, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
+import {
+  classModifierToString,
+  ECClass,
+  ECClassModifier,
+  EntityClass,
+  Enumeration,
+  KindOfQuantity,
+  LazyLoadedSchemaItem,
+  Mixin,
+  parseClassModifier,
+  primitiveTypeToString,
+  Property,
+  propertyTypeToString,
+  Schema,
+  SchemaItem,
+  SchemaItemKey,
+  SchemaItemType,
+} from "@itwin/ecschema-metadata";
 import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
+import {
+  AnyClassItemDifference,
+  AnySchemaDifference,
+  AnySchemaItemDifference,
+  ClassPropertyDifference,
+  ConstantDifference,
+  CustomAttributeClassDifference,
+  CustomAttributeDifference,
+  EntityClassDifference,
+  EntityClassMixinDifference,
+  EnumerationDifference,
+  EnumeratorDifference,
+  FormatDifference,
+  InvertedUnitDifference,
+  KindOfQuantityDifference,
+  MixinClassDifference,
+  PhenomenonDifference,
+  PropertyCategoryDifference,
+  RelationshipClassDifference,
+  RelationshipConstraintClassDifference,
+  RelationshipConstraintDifference,
+  SchemaDifference,
+  SchemaOtherTypes,
+  SchemaReferenceDifference,
+  StructClassDifference,
+  UnitDifference,
+  UnitSystemDifference,
+} from "./SchemaDifference";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
 
 /**
@@ -34,7 +78,6 @@ export async function validateDifferences(differences: AnySchemaDifference[], ta
  * validates the given SchemaDifferences if the violate against some EC Rules.
  */
 class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
-
   public readonly conflicts: Array<SchemaDifferenceConflict>;
   private readonly _sourceSchema: Schema;
   private readonly _targetSchema: Schema;
@@ -370,7 +413,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       if ("kindOfQuantity" in entry.difference) {
         const sourceKoQ = await sourceProperty.kindOfQuantity;
         const targetKoQ = await targetProperty.kindOfQuantity;
-        if(!targetKoQ) {
+        if (!targetKoQ) {
           return this.addConflict({
             code: ConflictCode.ConflictingPropertyKindOfQuantity,
             schemaType: targetClass.schemaItemType,
@@ -382,7 +425,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
           });
         }
 
-        if(!sourceKoQ) {
+        if (!sourceKoQ) {
           return this.addConflict({
             code: ConflictCode.ConflictingPropertyKindOfQuantity,
             schemaType: targetClass.schemaItemType,
@@ -475,11 +518,11 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     // First check for name which must be same in any case...
     if (ecClass.name === baseClassKey.name) {
       // ... then check if the class is in the same schema as the expected base class...
-      if(ecClass.schema.name === baseClassKey.schemaName)
+      if (ecClass.schema.name === baseClassKey.schemaName)
         return true;
       // ... if not, whether it's in the source schema, but then we expect the baseclass
       // to be in the target schema.
-      if(ecClass.schema.name === this._sourceSchema.name && baseClassKey.schemaName === this._targetSchema.name)
+      if (ecClass.schema.name === this._sourceSchema.name && baseClassKey.schemaName === this._targetSchema.name)
         return true;
     }
     return this.derivedFrom(await ecClass.baseClass, baseClassKey);

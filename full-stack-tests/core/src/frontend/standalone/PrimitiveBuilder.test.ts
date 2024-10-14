@@ -2,25 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
-import {
-  GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection,
-  SpatialViewState, StandardViewId,
-} from "@itwin/core-frontend";
-import { PrimitiveBuilder } from "@itwin/core-frontend/lib/cjs/internal/render/PrimitiveBuilder";
+import { GraphicType, IModelApp, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId } from "@itwin/core-frontend";
 import { DisplayParams } from "@itwin/core-frontend/lib/cjs/common/internal/render/DisplayParams";
-import { _accumulator } from "@itwin/core-frontend/lib/cjs/common/internal/Symbols";
 import { Geometry } from "@itwin/core-frontend/lib/cjs/common/internal/render/GeometryPrimitives";
+import { _accumulator } from "@itwin/core-frontend/lib/cjs/common/internal/Symbols";
+import { PrimitiveBuilder } from "@itwin/core-frontend/lib/cjs/internal/render/PrimitiveBuilder";
 import { Branch } from "@itwin/core-frontend/lib/cjs/webgl";
 import { Arc3d, IndexedPolyface, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
 
 describe("PrimitiveBuilder", () => {
   let imodel: IModelConnection;
   let viewport: ScreenViewport;
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  before(async () => { // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend();
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
 

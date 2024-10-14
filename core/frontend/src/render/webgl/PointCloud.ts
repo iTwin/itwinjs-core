@@ -10,17 +10,17 @@
 import { assert, dispose } from "@itwin/core-bentley";
 import { FeatureIndexType } from "@itwin/core-common";
 import { PointCloudArgs } from "../../common/internal/render/PointCloudPrimitive";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderMemory } from "../RenderMemory";
+import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle3d } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
-import { BufferHandle, BufferParameters, BuffersContainer, QBufferHandle3d } from "./AttributeBuffers";
 import { Pass, RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
-import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
 export class PointCloudGeometry extends CachedGeometry implements RenderGeometry {
@@ -36,10 +36,18 @@ export class PointCloudGeometry extends CachedGeometry implements RenderGeometry
   public readonly voxelSize: number;
   public readonly colorIsBgr: boolean;
 
-  public get isDisposed(): boolean { return this.buffers.isDisposed && this._vertices.isDisposed; }
-  public override get asPointCloud(): PointCloudGeometry | undefined { return this; }
-  public override get supportsThematicDisplay() { return true; }
-  public get overrideColorMix() { return .5; }     // This could be a setting from either the mesh or the override if required.
+  public get isDisposed(): boolean {
+    return this.buffers.isDisposed && this._vertices.isDisposed;
+  }
+  public override get asPointCloud(): PointCloudGeometry | undefined {
+    return this;
+  }
+  public override get supportsThematicDisplay() {
+    return true;
+  }
+  public get overrideColorMix() {
+    return .5;
+  } // This could be a setting from either the mesh or the override if required.
 
   public dispose() {
     if (!this.noDispose) {
@@ -54,7 +62,9 @@ export class PointCloudGeometry extends CachedGeometry implements RenderGeometry
     this._vertices = QBufferHandle3d.create(pointCloud.qparams, pointCloud.positions) as QBufferHandle3d;
     const attrPos = AttributeMap.findAttribute("a_pos", TechniqueId.PointCloud, false);
     assert(undefined !== attrPos);
-    const vertexDataType = (pointCloud.positions instanceof Float32Array) ? GL.DataType.Float : ((pointCloud.positions instanceof Uint8Array) ? GL.DataType.UnsignedByte : GL.DataType.UnsignedShort);
+    const vertexDataType = (pointCloud.positions instanceof Float32Array)
+      ? GL.DataType.Float
+      : ((pointCloud.positions instanceof Uint8Array) ? GL.DataType.UnsignedByte : GL.DataType.UnsignedShort);
     this.buffers.addBuffer(this._vertices, [BufferParameters.create(attrPos.location, 3, vertexDataType, false, 0, 0, false)]);
     this._vertexCount = pointCloud.positions.length / 3;
     this._hasFeatures = FeatureIndexType.Empty !== pointCloud.features.type;
@@ -74,19 +84,35 @@ export class PointCloudGeometry extends CachedGeometry implements RenderGeometry
     stats.addPointCloud(bytesUsed);
   }
 
-  protected _wantWoWReversal(_target: Target): boolean { return false; }
+  protected _wantWoWReversal(_target: Target): boolean {
+    return false;
+  }
 
-  public get techniqueId(): TechniqueId { return TechniqueId.PointCloud; }
+  public get techniqueId(): TechniqueId {
+    return TechniqueId.PointCloud;
+  }
   public override getPass(target: Target): Pass {
     // Point clouds don't cast shadows.
     return target.isDrawingShadowMap ? "none" : "point-clouds";
   }
-  public get renderOrder(): RenderOrder { return RenderOrder.Linear; }
-  public get qOrigin(): Float32Array { return this._vertices.origin; }
-  public get qScale(): Float32Array { return this._vertices.scale; }
-  public get colors(): BufferHandle | undefined { return this._colorHandle; }
-  public override get hasFeatures() { return this._hasFeatures; }
-  public override get hasBakedLighting() { return true; }
+  public get renderOrder(): RenderOrder {
+    return RenderOrder.Linear;
+  }
+  public get qOrigin(): Float32Array {
+    return this._vertices.origin;
+  }
+  public get qScale(): Float32Array {
+    return this._vertices.scale;
+  }
+  public get colors(): BufferHandle | undefined {
+    return this._colorHandle;
+  }
+  public override get hasFeatures() {
+    return this._hasFeatures;
+  }
+  public override get hasBakedLighting() {
+    return true;
+  }
 
   public draw(): void {
     this.buffers.bind();
@@ -97,6 +123,6 @@ export class PointCloudGeometry extends CachedGeometry implements RenderGeometry
   // ###TODO delete this.
   public override getLineWeight(_params: ShaderProgramParams): number {
     // If line weight < 0 it is real size in meters (voxel size).
-    return (this.voxelSize > 0) ? - this.voxelSize : 1;
+    return (this.voxelSize > 0) ? -this.voxelSize : 1;
   }
 }

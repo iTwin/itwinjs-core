@@ -29,17 +29,21 @@ function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Po
     const rangeQ = Range3d.createArray(points);
     const rangeQRoundTrip = Range3d.create();
     rangeQRoundTrip.extendInverseTransformedArray(transformedPoints, frame);
-    ck.testRange3d(rangeQ, rangeQRoundTrip, prettyPrint(frame),
+    ck.testRange3d(
+      rangeQ,
+      rangeQRoundTrip,
+      prettyPrint(frame),
       prettyPrint(points.slice(0, 3)),
       prettyPrint(
-        transformedPoints.slice(0, 3)));
+        transformedPoints.slice(0, 3),
+      ),
+    );
     // const gPoints = GrowableXYZArray.create(points);
     const hPoints = GrowableXYZArray.create(transformedPoints);
     const gRangeRoundTrip = Range3d.createInverseTransformedArray(frame, hPoints);
     const gRangeInverse = Range3d.createTransformedArray(inverseFrame, hPoints);
     ck.testRange3d(rangeQ, gRangeRoundTrip);
     ck.testRange3d(rangeQ, gRangeInverse);
-
   }
   const rangeA1 = Range3d.create();
   const rangeB = Range3d.create();
@@ -90,13 +94,13 @@ function exerciseWithTransformedPoints(ck: Checker, frame: Transform, points: Po
   }
   const r01 = Range1d.createXX(0, 1);
   for (const f of [-0.25, 0.0011, 0.4, 0.998, 1.03, 9]) {
-    ck.testBoolean(r01.containsX(f),
-      rangeA.containsPoint(rangeA.diagonalFractionToPoint(f)), "points along diagonal");
+    ck.testBoolean(r01.containsX(f), rangeA.containsPoint(rangeA.diagonalFractionToPoint(f)), "points along diagonal");
   }
   const diagonal = rangeA.diagonal();
   ck.testCoordinate(
     rangeA.diagonal().magnitude(),
-    rangeA.fractionToPoint(0, 0, 0).distance(rangeA.fractionToPoint(1, 1, 1)));
+    rangeA.fractionToPoint(0, 0, 0).distance(rangeA.fractionToPoint(1, 1, 1)),
+  );
 
   ck.testCoordinate(rangeA.xLength(), diagonal.x);
   ck.testCoordinate(rangeA.yLength(), diagonal.y);
@@ -134,7 +138,8 @@ function exerciseWithPoints(ck: Checker, points: Point3d[]) {
   for (let i = 0; i < points.length;) {
     if (i + 3 < points.length) {
       range6.extendRange(
-        Range3d.create(points[i], points[i + 1], points[i + 2]));
+        Range3d.create(points[i], points[i + 1], points[i + 2]),
+      );
       i += 3;
     } else {
       range6.extendRange(Range3d.createXYZ(points[i].x, points[i].y, points[i].z));
@@ -144,7 +149,6 @@ function exerciseWithPoints(ck: Checker, points: Point3d[]) {
 
   ck.testFalse(RangeBase.isExtremePoint3d(range6.low), "Live range low is not extreme");
   ck.testFalse(RangeBase.isExtremePoint3d(range6.high), "live range high is not extreme");
-
 }
 describe("Range3d", () => {
   it("HelloWorld", () => {
@@ -164,7 +168,6 @@ describe("Range3d", () => {
       }
       const rangeA = Range3d.createTransformedArray(frames[i], lattice2);
       ck.testRange3d(rangeA, rangeAB, "multistage transform");
-
     }
 
     const rangeQ = Range3d.createNull();
@@ -227,11 +230,11 @@ describe("Range3d", () => {
       Point3d.create(1, 2, 3),
       Point3d.create(4, 2, 9),
       Point3d.create(2, 8, 3),
-      Point3d.create(-1, 4, -2)];
+      Point3d.create(-1, 4, -2),
+    ];
     for (const frame of frames) {
       const rangeA = Range3d.createTransformedArray(frame, points);
-      const rangeB = Range3d.createTransformed(frame,
-        points[0], points[1], points[2], points[3]);
+      const rangeB = Range3d.createTransformed(frame, points[0], points[1], points[2], points[3]);
       ck.testRange3d(rangeA, rangeB);
     }
 
@@ -250,10 +253,11 @@ describe("Range3d", () => {
     for (const xyz of lattice1) {
       const d = range.distanceToPoint(xyz);
       ck.testBoolean(range.containsPoint(xyz), d === 0.0, "distanceToRange agrees with containment");
-      ck.testCoordinate(d,
-        Geometry.hypotenuseXYZ(rangeX.distanceToX(xyz.x),
-          rangeY.distanceToX(xyz.y),
-          rangeZ.distanceToX(xyz.z)), "distance to range 3d, 1d");
+      ck.testCoordinate(
+        d,
+        Geometry.hypotenuseXYZ(rangeX.distanceToX(xyz.x), rangeY.distanceToX(xyz.y), rangeZ.distanceToX(xyz.z)),
+        "distance to range 3d, 1d",
+      );
     }
 
     ck.checkpoint("Range3d.Distance");
@@ -283,7 +287,8 @@ describe("Range3d", () => {
     Range1d.createX(10),
     Range1d.createX(15),
     Range1d.createX(20),
-    Range1d.createX(30)];
+    Range1d.createX(30),
+  ];
 
   it("ScalarQueries", () => {
     const ck = new Checker();
@@ -304,10 +309,13 @@ describe("Range3d", () => {
 
         ck.testTrue(r2.containsPoint(r2.diagonalFractionToPoint(0.2)), "diagonal point in");
         ck.testTrue(r3.containsPoint(r3.diagonalFractionToPoint(0.2)), "diagonal point in");
-        const a = 3.2;      // greater than 1 expands in all directions
-        const r1A = r1.clone(); r1A.scaleAboutCenterInPlace(a);
-        const r2A = r2.clone(); r2A.scaleAboutCenterInPlace(a);
-        const r3A = r3.clone(); r3A.scaleAboutCenterInPlace(a);
+        const a = 3.2; // greater than 1 expands in all directions
+        const r1A = r1.clone();
+        r1A.scaleAboutCenterInPlace(a);
+        const r2A = r2.clone();
+        r2A.scaleAboutCenterInPlace(a);
+        const r3A = r3.clone();
+        r3A.scaleAboutCenterInPlace(a);
         const bx = 0.99;
         const by = 0.95;
         const bz = 0.92;
@@ -356,7 +364,10 @@ describe("Range3d", () => {
       ck.testTrue(rangeQ.containsRange(rangeB), "extend acts as union");
 
       ck.testBoolean(
-        intervalA.containsRange(rangeB), rangeAB.isAlmostEqual(rangeB), "contained range matches operand");
+        intervalA.containsRange(rangeB),
+        rangeAB.isAlmostEqual(rangeB),
+        "contained range matches operand",
+      );
       ck.testCoordinate(d1, d2, "distance between ranges is symmetric");
       if (rangeAB.isNull)
         ck.testLT(0, d1, "Empty intersection must have nonzero distance");
@@ -372,7 +383,6 @@ describe("Range3d", () => {
       const rangeN = Range1d.createFrom(rangeB);
       ck.testTrue(rangeM.isAlmostEqual(rangeB), "setFrom");
       ck.testTrue(rangeN.isAlmostEqual(rangeB), "createFrom");
-
     }
     ck.checkpoint("Range3d.Containment1d");
     expect(ck.getNumErrors()).toBe(0);
@@ -381,13 +391,23 @@ describe("Range3d", () => {
   it("DiagonalContainment3d", () => {
     const ck = new Checker();
     const rangeA = Range3d.createXYZXYZ(
-      intervalA.low, intervalA.low, intervalA.low,
-      intervalA.high, intervalA.high, intervalA.high);
+      intervalA.low,
+      intervalA.low,
+      intervalA.low,
+      intervalA.high,
+      intervalA.high,
+      intervalA.high,
+    );
     // GeometryCoreTestIO.consoleLog("rangeA:", JSON.stringify(rangeA));
     for (const intervalB of intervalBArray) {
       const rangeB = Range3d.createXYZXYZOrCorrectToNull(
-        intervalB.low, intervalB.low, intervalB.low,
-        intervalB.high, intervalB.high, intervalB.high);
+        intervalB.low,
+        intervalB.low,
+        intervalB.low,
+        intervalB.high,
+        intervalB.high,
+        intervalB.high,
+      );
       const rangeAB = rangeA.intersect(rangeB);
 
       const rangeQ = rangeAB.clone();
@@ -398,7 +418,10 @@ describe("Range3d", () => {
       const d2 = rangeB.distanceToRange(rangeA);
       ck.testCoordinate(d1, d2, "distance between ranges is symmetric");
       ck.testBoolean(
-        rangeA.containsRange(rangeB), rangeAB.isAlmostEqual(rangeB), "contained range matches operand");
+        rangeA.containsRange(rangeB),
+        rangeAB.isAlmostEqual(rangeB),
+        "contained range matches operand",
+      );
       if (rangeAB.isNull)
         ck.testLT(0, d1, "Empty intersection must have nonzero distance");
       else
@@ -422,13 +445,19 @@ describe("Range3d", () => {
   it("DiagonalContainment2d", () => {
     const ck = new Checker();
     const rangeA = Range2d.createXYXY(
-      intervalA.low, intervalA.low,
-      intervalA.high, intervalA.high);
+      intervalA.low,
+      intervalA.low,
+      intervalA.high,
+      intervalA.high,
+    );
     // GeometryCoreTestIO.consoleLog("rangeA:", JSON.stringify(rangeA));
     for (const intervalB of intervalBArray) {
       const rangeB = Range2d.createXYXYOrCorrectToNull(
-        intervalB.low, intervalB.low,
-        intervalB.high, intervalB.high);
+        intervalB.low,
+        intervalB.low,
+        intervalB.high,
+        intervalB.high,
+      );
       const rangeAB = rangeA.intersect(rangeB);
       const rangeQ = rangeAB.clone();
       rangeQ.extendRange(rangeB);
@@ -440,7 +469,10 @@ describe("Range3d", () => {
       d1 = rangeA.distanceToRange(rangeB);
       d2 = rangeB.distanceToRange(rangeA);
       ck.testBoolean(
-        rangeA.containsRange(rangeB), rangeAB.isAlmostEqual(rangeB), "contained range matches operand");
+        rangeA.containsRange(rangeB),
+        rangeAB.isAlmostEqual(rangeB),
+        "contained range matches operand",
+      );
 
       if (rangeAB.isNull)
         ck.testLT(0, d1, "Empty intersection must have nonzero distance");
@@ -480,7 +512,8 @@ describe("Range3d", () => {
       AngleSweep.createStartEndDegrees(degreesA, degreesB + 180),
       AngleSweep.createStartEndDegrees(degreesA, degreesA + 360),
       AngleSweep.createStartEndDegrees(degreesA, degreesC),
-      AngleSweep.createStartEndDegrees(degreesA, degreesA - 360)];
+      AngleSweep.createStartEndDegrees(degreesA, degreesA - 360),
+    ];
 
     for (let theta0 = 0; theta0 < 360; theta0 += 35) {
       sweeps.push(AngleSweep.createStartSweepDegrees(theta0, 40));
@@ -516,7 +549,7 @@ describe("Range3d", () => {
   it("MiscRange1d", () => {
     const ck = new Checker();
     const dataA = [4, 5, -1];
-    const dataB = [-10, 20, 30];  // ALL are outside range of A
+    const dataB = [-10, 20, 30]; // ALL are outside range of A
     const rangeA = Range1d.createArray(dataA);
     const rangeAB = rangeA.clone();
     ck.testFalse(rangeA.isSinglePoint, "A not single point");
@@ -628,7 +661,7 @@ describe("Range3d", () => {
       rangeA.worldToLocal(xyzA, xyzB);
       rangeA.localToWorld(xyzB, xyzC);
       localPoints.push(xyzB.clone());
-      localPointsB.push(worldPoint.clone());  // to be transformed as full array
+      localPointsB.push(worldPoint.clone()); // to be transformed as full array
     }
 
     rangeA.worldToLocalArrayInPlace(localPointsB);

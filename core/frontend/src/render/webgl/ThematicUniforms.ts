@@ -8,18 +8,23 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import {
-  Gradient, RenderTexture, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ThematicGradientTransparencyMode,
+  Gradient,
+  RenderTexture,
+  ThematicDisplay,
+  ThematicDisplayMode,
+  ThematicGradientMode,
+  ThematicGradientTransparencyMode,
 } from "@itwin/core-common";
+import { Angle, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { WebGLDisposable } from "./Disposable";
-import { UniformHandle } from "./UniformHandle";
+import { FloatRgba } from "./FloatRGBA";
 import { TextureUnit } from "./RenderFlags";
 import { desync, sync } from "./Sync";
+import { System } from "./System";
+import { Target } from "./Target";
 import { TextureHandle } from "./Texture";
 import { ThematicSensors } from "./ThematicSensors";
-import { Angle, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { Target } from "./Target";
-import { System } from "./System";
-import { FloatRgba } from "./FloatRGBA";
+import { UniformHandle } from "./UniformHandle";
 
 /** Maintains state for uniforms related to thematic display.
  * @internal
@@ -40,7 +45,9 @@ export class ThematicUniforms implements WebGLDisposable {
 
   public syncKey = 0;
 
-  private get _distanceCutoff(): number { return this._fragSettings[1]; }
+  private get _distanceCutoff(): number {
+    return this._fragSettings[1];
+  }
 
   public get thematicDisplay(): ThematicDisplay | undefined {
     return this._thematicDisplay;
@@ -122,7 +129,10 @@ export class ThematicUniforms implements WebGLDisposable {
 
     this._colorMix = this.thematicDisplay.gradientSettings.colorMix;
 
-    this._updateAxis(this.thematicDisplay.axis, (ThematicDisplayMode.Slope === this.thematicDisplay.displayMode) ? target.uniforms.frustum.viewMatrix : undefined);
+    this._updateAxis(
+      this.thematicDisplay.axis,
+      (ThematicDisplayMode.Slope === this.thematicDisplay.displayMode) ? target.uniforms.frustum.viewMatrix : undefined,
+    );
 
     if (ThematicDisplayMode.HillShade === this.thematicDisplay.displayMode)
       this._updateSunDirection(this.thematicDisplay.sunDirection, target.uniforms.frustum.viewMatrix);

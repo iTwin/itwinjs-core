@@ -3,20 +3,36 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
 import { BeDuration, BeEvent, Guid, Id64, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, DomainOptions, EntityIdAndClassId, EntityIdAndClassIdIterable, GeometryStreamBuilder, IModel, IModelError, SubCategoryAppearance, TxnAction, UpgradeOptions,
+  Code,
+  ColorByName,
+  DomainOptions,
+  EntityIdAndClassId,
+  EntityIdAndClassIdIterable,
+  GeometryStreamBuilder,
+  IModel,
+  IModelError,
+  SubCategoryAppearance,
+  TxnAction,
+  UpgradeOptions,
 } from "@itwin/core-common";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import {
   _nativeDb,
   ChangeInstanceKey,
   ChannelControl,
-  IModelJsFs, PhysicalModel, setMaxEntitiesPerEvent, SpatialCategory, StandaloneDb, TxnChangedEntities, TxnManager,
+  IModelJsFs,
+  PhysicalModel,
+  setMaxEntitiesPerEvent,
+  SpatialCategory,
+  StandaloneDb,
+  TxnChangedEntities,
+  TxnManager,
 } from "../../core-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 /// cspell:ignore accum
 
@@ -158,7 +174,7 @@ describe("TxnManager", () => {
     let element = elements.getElement<TestPhysicalObject>(elementId);
     assert.equal(element.intProperty, 100, "int property should be 100");
 
-    assert.isTrue(txns.isUndoPossible);  // we have an undoable Txn, but nothing undone.
+    assert.isTrue(txns.isUndoPossible); // we have an undoable Txn, but nothing undone.
     assert.equal(change1Msg, txns.getUndoString());
     assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
 

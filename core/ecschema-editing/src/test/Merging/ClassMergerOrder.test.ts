@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { EntityClass, Mixin, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
-import { expect } from "chai";
 
 describe("Class items merging order tests", () => {
   let context: SchemaContext;
@@ -111,8 +111,8 @@ describe("Class items merging order tests", () => {
     const mergedItem = await mergedSchema.getItem<EntityClass>("testClass");
     const classMixins = mergedItem?.mixins;
     if (classMixins) {
-      expect((classMixins[0]).fullName).to.deep.equal("TargetSchema.mixinA");
-      expect((classMixins[1]).fullName).to.deep.equal("TargetSchema.mixinB");
+      expect(classMixins[0].fullName).to.deep.equal("TargetSchema.mixinA");
+      expect(classMixins[1].fullName).to.deep.equal("TargetSchema.mixinB");
     }
     expect(classMixins?.length).be.equal(2);
   });
@@ -284,7 +284,6 @@ describe("Class items merging order tests", () => {
               typeName: "int",
             },
           ],
-
         },
         bracketSlot: {
           schemaItemType: "StructClass",

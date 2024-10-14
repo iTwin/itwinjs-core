@@ -2,10 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { XAndY } from "@itwin/core-geometry";
 import {
-  IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, ToolTipOptions,
+  IModelApp,
+  MessageBoxIconType,
+  MessageBoxType,
+  MessageBoxValue,
+  NotificationManager,
+  NotifyMessageDetails,
+  ToolTipOptions,
 } from "@itwin/core-frontend";
+import { XAndY } from "@itwin/core-geometry";
 import { Surface } from "./Surface";
 import { showError, showStatus } from "./Utils";
 import { Window, WindowProps } from "./Window";
@@ -19,8 +25,12 @@ export interface NotificationsWindowProps extends WindowProps {
 export class NotificationsWindow extends Window {
   private readonly _maxMessages: number;
 
-  public override get isCloseable() { return false; }
-  public get windowId() { return "notifications"; }
+  public override get isCloseable() {
+    return false;
+  }
+  public get windowId() {
+    return "notifications";
+  }
 
   public constructor(surface: Surface, props: NotificationsWindowProps) {
     super(surface, props);
@@ -51,7 +61,9 @@ export class NotificationsWindow extends Window {
 export class Notifications extends NotificationManager {
   private _tooltipDiv?: HTMLDivElement;
 
-  public override outputPrompt(prompt: string) { showStatus(prompt); }
+  public override outputPrompt(prompt: string) {
+    showStatus(prompt);
+  }
 
   /** Output a message and/or alert to the user. */
   public override outputMessage(message: NotifyMessageDetails) {
@@ -91,7 +103,9 @@ export class Notifications extends NotificationManager {
     return promise;
   }
 
-  public override get isToolTipSupported() { return true; }
+  public override get isToolTipSupported() {
+    return true;
+  }
   public override get isToolTipOpen() {
     return undefined !== this._tooltipDiv;
   }

@@ -3,12 +3,42 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ConvexClipPlaneSet, CurvePrimitive, Geometry, GrowableXYZArray, LineString3d, Loop, Matrix3d, Point3d, Polyface, PolyfaceClip, PolyfaceQuery, Range3d, SweepLineStringToFacetsOptions, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, LinePixels } from "@itwin/core-common";
 import {
-  BeButtonEvent, CollectTileStatus, DecorateContext, DisclosedTileTreeSet, EventHandled, GeometryTileTreeReference, GraphicType, HitDetail, IModelApp,
-  LocateFilterStatus, LocateResponse, PrimitiveTool, Tile, TileGeometryCollector, TileUser, Viewport,
+  BeButtonEvent,
+  CollectTileStatus,
+  DecorateContext,
+  DisclosedTileTreeSet,
+  EventHandled,
+  GeometryTileTreeReference,
+  GraphicType,
+  HitDetail,
+  IModelApp,
+  LocateFilterStatus,
+  LocateResponse,
+  PrimitiveTool,
+  Tile,
+  TileGeometryCollector,
+  TileUser,
+  Viewport,
 } from "@itwin/core-frontend";
+import {
+  ConvexClipPlaneSet,
+  CurvePrimitive,
+  Geometry,
+  GrowableXYZArray,
+  LineString3d,
+  Loop,
+  Matrix3d,
+  Point3d,
+  Polyface,
+  PolyfaceClip,
+  PolyfaceQuery,
+  Range3d,
+  SweepLineStringToFacetsOptions,
+  Transform,
+  Vector3d,
+} from "@itwin/core-geometry";
 
 /** A TileGeometryCollector that restricts collection to tiles that overlap a line string. */
 class DrapeLineStringCollector extends TileGeometryCollector {
@@ -31,7 +61,12 @@ class DrapeLineStringCollector extends TileGeometryCollector {
       clipper.transformInPlace(this._options.transform);
 
     for (let i = 0; i < this._points.length - 1 && !inside; i++)
-      inside = clipper.announceClippedSegmentIntervals(0, 1, this._points.getPoint3dAtUncheckedPointIndex(i), this._points.getPoint3dAtUncheckedPointIndex(i + 1));
+      inside = clipper.announceClippedSegmentIntervals(
+        0,
+        1,
+        this._points.getPoint3dAtUncheckedPointIndex(i),
+        this._points.getPoint3dAtUncheckedPointIndex(i + 1),
+      );
 
     return inside;
   }
@@ -49,7 +84,9 @@ class TerrainDraper implements TileUser {
     IModelApp.tileAdmin.forgetUser(this);
   }
 
-  public get iModel() { return this.viewport.iModel; }
+  public get iModel() {
+    return this.viewport.iModel;
+  }
 
   public onRequestStateChanged() {
     this.viewport.invalidateDecorations();
@@ -59,14 +96,20 @@ class TerrainDraper implements TileUser {
     trees.disclose(this.treeRef);
   }
 
-  public drapeLinear(outStrings: CurvePrimitive[], outMeshes: Polyface[], inPoints: GrowableXYZArray, tolerance: number, maxDistance = 1.0E5): "loading" | "complete" {
+  public drapeLinear(
+    outStrings: CurvePrimitive[],
+    outMeshes: Polyface[],
+    inPoints: GrowableXYZArray,
+    tolerance: number,
+    maxDistance = 1.0E5,
+  ): "loading" | "complete" {
     const tree = this.treeRef.treeOwner.load();
     if (!tree)
       return "loading";
 
     const range = Range3d.createNull();
     range.extendArray(inPoints);
-    range.extendZOnly(-maxDistance);  // Expand - but not so much that we get opposite side of globe.
+    range.extendZOnly(-maxDistance); // Expand - but not so much that we get opposite side of globe.
     range.extendZOnly(maxDistance);
 
     // when current point is near start point, create a polygon to drape
@@ -181,12 +224,14 @@ export class TerrainDrapeTool extends PrimitiveTool {
 
   private setupAndPromptForNextAction(): void {
     this.initLocateElements(undefined === this._draper);
-    IModelApp.locateManager.options.allowDecorations = true;    // So we can select "contextual" reality models.
+    IModelApp.locateManager.options.allowDecorations = true; // So we can select "contextual" reality models.
     this.showPrompt();
   }
 
   private showPrompt(): void {
-    IModelApp.notifications.outputPromptByKey(`SVTTools:tools.TerrainDrape.Prompts.${undefined === this._draper ? "SelectDrapeRealityModel" : "EnterDrapePoint"}`);
+    IModelApp.notifications.outputPromptByKey(
+      `SVTTools:tools.TerrainDrape.Prompts.${undefined === this._draper ? "SelectDrapeRealityModel" : "EnterDrapePoint"}`,
+    );
   }
 
   private getGeometryTreeRef(vp: Viewport, modelId: string): GeometryTileTreeReference | undefined {

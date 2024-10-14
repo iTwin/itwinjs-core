@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // import { ServiceAuthorizationClient, ServiceAuthorizationClientConfiguration } from "@itwin/service-authorization";
-import { AccessToken } from "@itwin/core-bentley";
 import { executeBackendCallback, registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { AccessToken } from "@itwin/core-bentley";
 
 const getEnvCallbackName = "getEnv";
 const getClientAccessTokenCallbackName = "getClientAccessToken";

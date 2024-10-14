@@ -65,7 +65,11 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
           const compressedPointsB = PolylineOps.compressByPerpendicularDistance(compressedPointsA, this._options.colinearPointTolerance);
           if (i0 === 0 && i1 === numOriginal) {
             // points is the entire curve, and the curve is closed.   Maybe the first and last segments are colinear.
-            PolylineCompressionContext.compressColinearWrapInPlace(compressedPointsB, this._options.duplicatePointTolerance, this._options.colinearPointTolerance);
+            PolylineCompressionContext.compressColinearWrapInPlace(
+              compressedPointsB,
+              this._options.duplicatePointTolerance,
+              this._options.colinearPointTolerance,
+            );
           }
           if (compressedPointsB.length < 2) {
             // Collapsed to a point?  Make a single point linestring
@@ -90,7 +94,7 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
             break;
         }
         // i0 has already advanced
-        g.children[numAccept++] = basePrimitive;    // which has been extended 0 or more times.
+        g.children[numAccept++] = basePrimitive; // which has been extended 0 or more times.
       } else {
         g.children[numAccept++] = basePrimitive;
         i0++;
@@ -99,8 +103,12 @@ export class ConsolidateAdjacentCurvePrimitivesContext extends NullGeometryHandl
     g.children.length = numAccept;
   }
 
-  public override handlePath(g: Path): any { return this.handleCurveChain(g); }
-  public override handleLoop(g: Loop): any { return this.handleCurveChain(g); }
+  public override handlePath(g: Path): any {
+    return this.handleCurveChain(g);
+  }
+  public override handleLoop(g: Loop): any {
+    return this.handleCurveChain(g);
+  }
   public override handleParityRegion(g: ParityRegion): any {
     for (const child of g.children)
       child.dispatchToGeometryHandler(this);

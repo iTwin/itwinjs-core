@@ -194,14 +194,30 @@ export class PlanarClipMaskSettings {
   }
 
   /** Create a new PlanarClipMaskSettings. */
-  public static create(args: ModelPlanarClipMaskArgs | ElementPlanarClipMaskArgs | SubCategoryPlanarClipMaskArgs | PriorityPlanarClipMaskArgs): PlanarClipMaskSettings {
+  public static create(
+    args: ModelPlanarClipMaskArgs | ElementPlanarClipMaskArgs | SubCategoryPlanarClipMaskArgs | PriorityPlanarClipMaskArgs,
+  ): PlanarClipMaskSettings {
     const modelIds = args.modelIds ? CompressedId64Set.sortAndCompress(args.modelIds) : undefined;
     if (undefined !== args.priority)
       return new PlanarClipMaskSettings(PlanarClipMaskMode.Priority, args.transparency, undefined, undefined, args.priority, args.invert);
     else if (undefined !== args.subCategoryIds)
-      return new PlanarClipMaskSettings(PlanarClipMaskMode.IncludeSubCategories, args.transparency, modelIds, CompressedId64Set.sortAndCompress(args.subCategoryIds), undefined, args.invert);
+      return new PlanarClipMaskSettings(
+        PlanarClipMaskMode.IncludeSubCategories,
+        args.transparency,
+        modelIds,
+        CompressedId64Set.sortAndCompress(args.subCategoryIds),
+        undefined,
+        args.invert,
+      );
     else if (undefined !== args.elementIds)
-      return new PlanarClipMaskSettings(args.exclude ? PlanarClipMaskMode.ExcludeElements : PlanarClipMaskMode.IncludeElements, args.transparency, modelIds, CompressedId64Set.sortAndCompress(args.elementIds), undefined, args.invert);
+      return new PlanarClipMaskSettings(
+        args.exclude ? PlanarClipMaskMode.ExcludeElements : PlanarClipMaskMode.IncludeElements,
+        args.transparency,
+        modelIds,
+        CompressedId64Set.sortAndCompress(args.elementIds),
+        undefined,
+        args.invert,
+      );
     else
       return new PlanarClipMaskSettings(PlanarClipMaskMode.Models, args.transparency, modelIds, undefined, undefined, args.invert);
   }
@@ -255,7 +271,14 @@ export class PlanarClipMaskSettings {
     });
   }
 
-  private constructor(mode: PlanarClipMaskMode, transparency?: number, modelIds?: CompressedId64Set, subCategoryOrElementIds?: CompressedId64Set, priority?: number, invert?: boolean) {
+  private constructor(
+    mode: PlanarClipMaskMode,
+    transparency?: number,
+    modelIds?: CompressedId64Set,
+    subCategoryOrElementIds?: CompressedId64Set,
+    priority?: number,
+    invert?: boolean,
+  ) {
     this.mode = mode;
     this._modelIds = modelIds;
     this._subCategoryOrElementIds = subCategoryOrElementIds;

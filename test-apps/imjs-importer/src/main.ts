@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
 import { IModelHost } from "@itwin/core-backend";
+import * as path from "path";
 import { ImportIMJS } from "./ImportIMJS";
 
 /* eslint-disable no-console */
 
 IModelHost.startup().then(async () => {
   console.log("start ..");
-  for (const directoryTail of [
-    "TaggedGeometryData",
-    /*
+  for (
+    const directoryTail of [
+      "TaggedGeometryData",
+      /*
     "AlternatingConvexClipTree",
     "Angle",
     "Arc3d",
@@ -67,7 +68,8 @@ IModelHost.startup().then(async () => {
     "ViewWidget",
     "XYPointBuckets",
     */
-  ]) {
+    ]
+  ) {
     console.log(`input from${directoryTail}`);
     const importer = ImportIMJS.create(path.join("d:", "bfiles", "importIMJS", `${directoryTail}.bim`), "testSubject");
 
@@ -83,7 +85,8 @@ IModelHost.startup().then(async () => {
       for (const group of modelGroups) {
         if (group.modelNames.length > 0) {
           console.log({
-            groupName: group.groupName, numModel: group.modelNames.length,
+            groupName: group.groupName,
+            numModel: group.modelNames.length,
             range: Math.floor(0.999999 + group.range.maxAbs()),
           });
         }
@@ -92,4 +95,4 @@ IModelHost.startup().then(async () => {
   }
   await IModelHost.shutdown();
   console.log("goodbye");
-}).catch(() => { });
+}).catch(() => {});

@@ -48,7 +48,7 @@ export class GeometryCoreTestIO {
   public static consoleTime(label?: string): void {
     if (!this.enableConsole)
       return;
-    console.time(label);  // eslint-disable-line no-console
+    console.time(label); // eslint-disable-line no-console
   }
   /** Wrapper for console.timeEnd */
   public static consoleTimeEnd(label?: string): void {
@@ -74,7 +74,7 @@ export class GeometryCoreTestIO {
 
     const path = this.makeOutputDir(directoryName);
     let fullPath = `${path}/${fileName}`;
-    if (fileName.search(`\\.imjs$`) === -1)   // tricky: escape the escape char for the regex
+    if (fileName.search(`\\.imjs$`) === -1) // tricky: escape the escape char for the regex
       fullPath = `${fullPath}.imjs`;
 
     this.consoleLog(`saveGeometry:: ${fullPath}`);
@@ -410,7 +410,11 @@ export class GeometryCoreTestIO {
    * @param dz z shift
    */
   public static captureRangeEdges(
-    collection: GeometryQuery[], range?: Range2d | Range3d | Range2d[] | Range3d[], dx: number = 0, dy: number = 0, dz: number = 0,
+    collection: GeometryQuery[],
+    range?: Range2d | Range3d | Range2d[] | Range3d[],
+    dx: number = 0,
+    dy: number = 0,
+    dz: number = 0,
   ) {
     if (Array.isArray(range)) {
       for (const r of range)
@@ -435,13 +439,19 @@ export class GeometryCoreTestIO {
         const rx = momentData1.radiusOfGyration.x;
         const ry = momentData1.radiusOfGyration.y;
         const rz = momentData1.radiusOfGyration.z;
-        this.captureGeometry(collection,
+        this.captureGeometry(
+          collection,
           LineString3d.create([
             momentData1.origin,
             momentData1.origin.plusScaled(unitX, 2.0 * rz),
             momentData1.origin.plusScaled(unitY, rz),
             momentData1.origin,
-            momentData1.origin.plusScaled(unitZ, 3.0 * rz)]), dx, dy, dz);
+            momentData1.origin.plusScaled(unitZ, 3.0 * rz),
+          ]),
+          dx,
+          dy,
+          dz,
+        );
         this.captureGeometry(
           collection,
           Arc3d.create(momentData1.origin, unitX.scale(rz), unitY.scale(rz), AngleSweep.createStartEndDegrees(0, 355)),
@@ -499,11 +509,28 @@ export class GeometryCoreTestIO {
     }
   }
   /** Draw the scaled columns and origin to depict e.g., a Frenet frame. */
-  public static captureTransformAsFrame(collection: GeometryQuery[], frame: Transform, radius: number, axisLength: number = 1, x?: number, y?: number, z?: number): void {
+  public static captureTransformAsFrame(
+    collection: GeometryQuery[],
+    frame: Transform,
+    radius: number,
+    axisLength: number = 1,
+    x?: number,
+    y?: number,
+    z?: number,
+  ): void {
     const origin = Arc3d.createCenterNormalRadius(frame.getOrigin(), frame.matrix.columnZ(), radius);
-    const xAxis = LineSegment3d.create(frame.getOrigin(), frame.getOrigin().plusScaled(frame.matrix.columnX().normalizeWithDefault(0, 0, 0), axisLength));
-    const yAxis = LineSegment3d.create(frame.getOrigin(), frame.getOrigin().plusScaled(frame.matrix.columnY().normalizeWithDefault(0, 0, 0), axisLength));
-    const zAxis = LineSegment3d.create(frame.getOrigin(), frame.getOrigin().plusScaled(frame.matrix.columnZ().normalizeWithDefault(0, 0, 0), axisLength));
+    const xAxis = LineSegment3d.create(
+      frame.getOrigin(),
+      frame.getOrigin().plusScaled(frame.matrix.columnX().normalizeWithDefault(0, 0, 0), axisLength),
+    );
+    const yAxis = LineSegment3d.create(
+      frame.getOrigin(),
+      frame.getOrigin().plusScaled(frame.matrix.columnY().normalizeWithDefault(0, 0, 0), axisLength),
+    );
+    const zAxis = LineSegment3d.create(
+      frame.getOrigin(),
+      frame.getOrigin().plusScaled(frame.matrix.columnZ().normalizeWithDefault(0, 0, 0), axisLength),
+    );
     this.captureGeometry(collection, [origin, xAxis, yAxis, zAxis], x, y, z);
   }
 

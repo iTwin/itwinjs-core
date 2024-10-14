@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ECClass, ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 import { ECClasses } from "../Editing/ECClasses";
 import type { SchemaMergeContext } from "./SchemaMerger";
-import { ECClass, ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
 
 /**
  * Convenience-method around updateSchemaItemKey that returns the full name instead of a SchemaItemKey.
@@ -69,7 +69,7 @@ export async function getClassEditor(context: SchemaMergeContext, ecClass: ECCla
     ? ecClass.schemaItemType
     : (await context.editor.schemaContext.getSchemaItem<ECClass>(ecClass))?.schemaItemType;
 
-  switch(schemaItemType) {
+  switch (schemaItemType) {
     case SchemaItemType.EntityClass:
       return context.editor.entities;
     case SchemaItemType.Mixin:

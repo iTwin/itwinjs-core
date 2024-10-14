@@ -100,7 +100,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
       const normals = geometry.ensureEmptySurfaceNormals();
       if (derivatives && normals) {
         const vectorU = Vector3d.create();
-        const vectorV = Vector3d.create();  // v direction (forwward along sweep) for surface of rotation.
+        const vectorV = Vector3d.create(); // v direction (forwward along sweep) for surface of rotation.
         const xyz = Point3d.create();
         const n = points.length;
         for (let i = 0; i < n; i++) {
@@ -111,7 +111,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
           else
             axis.direction.crossProduct(vectorU, vectorV);
           geometry.packedDerivatives.getVector3dAtCheckedVectorIndex(i, vectorU); // reuse vector U as curve derivative
-          vectorU.crossProduct(vectorV, vectorV);  // reuse vector V as normal!
+          vectorU.crossProduct(vectorV, vectorV); // reuse vector V as normal!
           vectorV.normalizeInPlace();
           normals.push(vectorV);
         }

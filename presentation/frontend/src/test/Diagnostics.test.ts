@@ -2,9 +2,9 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+import { ClientDiagnostics } from "@itwin/presentation-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ClientDiagnostics } from "@itwin/presentation-common";
 import { consoleDiagnosticsHandler, createCombinedDiagnosticsHandler } from "../presentation-frontend/Diagnostics";
 
 describe("consoleDiagnosticsHandler", () => {

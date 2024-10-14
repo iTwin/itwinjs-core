@@ -3,11 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { BeDuration, BeTimePoint } from "@itwin/core-bentley";
 import {
-  DisclosedTileTreeSet, IModelApp, IModelConnection, IModelTileTree, SnapshotConnection, Tile, TileLoadStatus, TileTree, TileUsageMarker, Viewport,
+  DisclosedTileTreeSet,
+  IModelApp,
+  IModelConnection,
+  IModelTileTree,
+  SnapshotConnection,
+  Tile,
+  TileLoadStatus,
+  TileTree,
+  TileUsageMarker,
+  Viewport,
 } from "@itwin/core-frontend";
+import { expect } from "chai";
 import { TestUtility } from "../../TestUtility";
 import { createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports } from "../../TestViewport";
 

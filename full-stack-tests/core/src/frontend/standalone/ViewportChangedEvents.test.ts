@@ -2,17 +2,36 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
-import { ClipVector, Transform } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, FeatureAppearance, ModelClipGroup, ModelClipGroups, MonochromeMode, PlanProjectionSettings, SubCategoryOverride, ThematicDisplay, ViewFlags,
+  AmbientOcclusion,
+  AnalysisStyle,
+  ClipStyle,
+  ColorDef,
+  FeatureAppearance,
+  ModelClipGroup,
+  ModelClipGroups,
+  MonochromeMode,
+  PlanProjectionSettings,
+  SubCategoryOverride,
+  ThematicDisplay,
+  ViewFlags,
 } from "@itwin/core-common";
 import {
-  ChangeFlag, FeatureSymbology, PerModelCategoryVisibility, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, Viewport, ViewState,
+  ChangeFlag,
+  FeatureSymbology,
+  PerModelCategoryVisibility,
+  ScreenViewport,
+  SnapshotConnection,
+  SpatialViewState,
+  StandardViewId,
+  Viewport,
+  ViewState,
 } from "@itwin/core-frontend";
-import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
+import { ClipVector, Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
+import { ViewportChangedHandler, ViewportState } from "../ViewportChangedHandler";
 
 describe("Viewport changed events", async () => {
   // test.bim:
@@ -160,7 +179,11 @@ describe("Viewport changed events", async () => {
       });
 
       // Change ClipStyle
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.clipStyle = ClipStyle.fromJSON({ cutStyle: { appearance: { weight: 12 } } }));
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.RenderPlan,
+        () => vp.clipStyle = ClipStyle.fromJSON({ cutStyle: { appearance: { weight: 12 } } }),
+      );
 
       // Modify view flags through Viewport's displayStyle property.
       vp.saveViewUndo();
@@ -174,7 +197,11 @@ describe("Viewport changed events", async () => {
 
       // Override subcategories directly on display style without going through Viewport API => produces event
       const ovr = SubCategoryOverride.fromJSON({ color: ColorDef.green.tbgr });
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.displayStyle.overrideSubCategory("0x123", ovr));
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.RenderPlan,
+        () => vp.displayStyle.overrideSubCategory("0x123", ovr),
+      );
 
       // Override by replacing display style on Viewport
       vp.saveViewUndo();
@@ -194,7 +221,11 @@ describe("Viewport changed events", async () => {
 
       // Apply different override to same subcategory
       vp.saveViewUndo();
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })));
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.RenderPlan,
+        () => vp.overrideSubCategory("0x123", SubCategoryOverride.fromJSON({ color: ColorDef.red.tbgr })),
+      );
     });
   });
 
@@ -205,7 +236,8 @@ describe("Viewport changed events", async () => {
     ViewportChangedHandler.test(vp, (mon) => {
       const expectNoChange = (func: () => void) => mon.expect(ChangeFlag.None, undefined, func);
       const expectChange = (func: () => void) => mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, func);
-      const expectOverrideChange = (func: () => void) => mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, func);
+      const expectOverrideChange = (func: () => void) =>
+        mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.RenderPlan, func);
 
       expectNoChange(() => view.displayStyle = view.displayStyle);
       expectOverrideChange(() => view.displayStyle = view.displayStyle.clone());
@@ -234,20 +266,34 @@ describe("Viewport changed events", async () => {
 
       expectNoChange(() => settings.analysisFraction = settings.analysisFraction);
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.AnalysisFraction, () => settings.analysisFraction = 0.123456);
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.AnalysisFraction | ViewportState.RenderPlan, () => settings.analysisStyle = AnalysisStyle.fromJSON({ displacement: { channelName: "source" } }));
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.AnalysisFraction | ViewportState.RenderPlan,
+        () => settings.analysisStyle = AnalysisStyle.fromJSON({ displacement: { channelName: "source" } }),
+      );
 
       mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint, () => settings.timePoint = 43);
       expectNoChange(() => settings.timePoint = 43);
 
       // eslint-disable-next-line deprecation/deprecation
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = [{ modelId: "0x123", elementTimelines: [] }]);
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.TimePoint | ViewportState.Scene,
+        () => settings.scheduleScriptProps = [{ modelId: "0x123", elementTimelines: [] }],
+      );
       // eslint-disable-next-line deprecation/deprecation
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.scheduleScriptProps = undefined);
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.TimePoint | ViewportState.Scene,
+        () => settings.scheduleScriptProps = undefined,
+      );
       // If assignment to scheduleScriptProps produces no net change, no event.
       // eslint-disable-next-line deprecation/deprecation
       expectNoChange(() => settings.scheduleScriptProps = undefined);
 
-      expectChange(() => settings.hiddenLineSettings = settings.hiddenLineSettings.override({ transThreshold: 1.0 - settings.hiddenLineSettings.transThreshold }));
+      expectChange(() =>
+        settings.hiddenLineSettings = settings.hiddenLineSettings.override({ transThreshold: 1.0 - settings.hiddenLineSettings.transThreshold })
+      );
       expectNoChange(() => settings.hiddenLineSettings = settings.hiddenLineSettings.override({}));
 
       expectNoChange(() => settings.lights = settings.lights.clone());
@@ -275,9 +321,17 @@ describe("Viewport changed events", async () => {
     ViewportChangedHandler.test(vp, (mon) => {
       const settings = vp.view.displayStyle.settings;
 
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => settings.applyOverrides({ viewflags: { backgroundMap: !settings.viewFlags.backgroundMap } }));
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => settings.applyOverrides({ viewflags: { backgroundMap: !settings.viewFlags.backgroundMap } }),
+      );
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.RenderPlan, () => settings.applyOverrides({ backgroundColor: 0xabcdef }));
-      mon.expect(ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider, ViewportState.TimePoint | ViewportState.Scene, () => settings.applyOverrides({ scheduleScript: [{ modelId: "0x321", elementTimelines: [] }] }));
+      mon.expect(
+        ChangeFlag.DisplayStyle | ChangeFlag.FeatureOverrideProvider,
+        ViewportState.TimePoint | ViewportState.Scene,
+        () => settings.applyOverrides({ scheduleScript: [{ modelId: "0x321", elementTimelines: [] }] }),
+      );
     });
   });
 
@@ -293,7 +347,11 @@ describe("Viewport changed events", async () => {
       vf = vf.with("backgroundMap", !vf.backgroundMap);
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.viewFlags = vf);
 
-      mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.backgroundMapSettings = vp.backgroundMapSettings.clone({ groundBias: 123 }));
+      mon.expect(
+        ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => vp.backgroundMapSettings = vp.backgroundMapSettings.clone({ groundBias: 123 }),
+      );
       mon.expect(ChangeFlag.DisplayStyle, ViewportState.Controller, () => vp.changeBackgroundMapProps({ groundBias: 456 }));
     });
   });
@@ -360,11 +418,19 @@ describe("Viewport changed events", async () => {
       // Switching to a different 2d view of a different model should produce model-changed event
       // Note: new view also has different categories enabled.
       const view35 = await testImodel.views.load(id64(0x35)); // views model 0x1e
-      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view35));
+      mon.expect(
+        ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState,
+        ViewportState.Controller,
+        () => changeView(vp, view35),
+      );
 
       // Switch back to previous view.
       // Note: changeView(vp, ) clears undo stack so cannot/needn't test undo/redo here.
-      mon.expect(ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view20.clone()));
+      mon.expect(
+        ChangeFlag.ViewedModels | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle | ChangeFlag.ViewState,
+        ViewportState.Controller,
+        () => changeView(vp, view20.clone()),
+      );
     });
   });
 
@@ -453,7 +519,11 @@ describe("Viewport changed events", async () => {
 
       // Switching to a different view with different category selector produces event
       const view17 = await testImodel.views.load(id64(0x17));
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.DisplayStyle | ChangeFlag.ViewedCategories, ViewportState.Controller, () => changeView(vp, view17));
+      mon.expect(
+        ChangeFlag.ViewState | ChangeFlag.DisplayStyle | ChangeFlag.ViewedCategories,
+        ViewportState.Controller,
+        () => changeView(vp, view17),
+      );
 
       // Changing category selector, then switching to a view with same categories enabled produces no event.
       mon.expect(ChangeFlag.ViewedCategories, undefined, () => {
@@ -461,7 +531,11 @@ describe("Viewport changed events", async () => {
         vp.changeCategoryDisplay(view13.categorySelector.categories, true);
       });
 
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view13));
+      mon.expect(
+        ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => changeView(vp, view13),
+      );
     });
   });
 
@@ -529,7 +603,11 @@ describe("Viewport changed events", async () => {
 
       const modelIdList = ["0x1", "0x2", "0x3"];
       const catIdList = ["0xa", "0xb"];
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show));
+      mon.expect(
+        ChangeFlag.ViewedCategoriesPerModel,
+        undefined,
+        () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Show),
+      );
       for (const modelId of modelIdList)
         for (const catId of catIdList)
           expect(vis.getOverride(modelId, catId)).to.equal(PerModelCategoryVisibility.Override.Show);
@@ -539,7 +617,11 @@ describe("Viewport changed events", async () => {
 
       modelIdList.shift(); // remove "0x1"
       catIdList.shift(); // remove "0xa"
-      mon.expect(ChangeFlag.ViewedCategoriesPerModel, undefined, () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Hide));
+      mon.expect(
+        ChangeFlag.ViewedCategoriesPerModel,
+        undefined,
+        () => vis.setOverride(modelIdList, catIdList, PerModelCategoryVisibility.Override.Hide),
+      );
       expect(vis.getOverride("0x1", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
       expect(vis.getOverride("0x1", "0xb")).to.equal(PerModelCategoryVisibility.Override.Show);
       expect(vis.getOverride("0x2", "0xa")).to.equal(PerModelCategoryVisibility.Override.Show);
@@ -601,10 +683,18 @@ describe("Viewport changed events", async () => {
       mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view2d20.clone()));
 
       // 2d => 2d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view2d2e.clone()));
+      mon.expect(
+        ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => changeView(vp, view2d2e.clone()),
+      );
 
       // 2d => 3d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view3d15.clone()));
+      mon.expect(
+        ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => changeView(vp, view3d15.clone()),
+      );
 
       // No effective change
       mon.expect(ChangeFlag.ViewState, ViewportState.Controller, () => changeView(vp, view3d15.clone()));
@@ -613,7 +703,11 @@ describe("Viewport changed events", async () => {
       mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories, ViewportState.Controller, () => changeView(vp, view3d17.clone()));
 
       // 3d => 2d
-      mon.expect(ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle, ViewportState.Controller, () => changeView(vp, view2d20.clone()));
+      mon.expect(
+        ChangeFlag.ViewState | ChangeFlag.ViewedCategories | ChangeFlag.ViewedModels | ChangeFlag.DisplayStyle,
+        ViewportState.Controller,
+        () => changeView(vp, view2d20.clone()),
+      );
 
       // Pass the exact same ViewState reference => no "ViewState changed" event.
       mon.expect(ChangeFlag.None, undefined, () => changeView(vp, vp.view));
@@ -645,22 +739,27 @@ describe("Viewport changed events", async () => {
     ViewportChangedHandler.test(vp, (mon) => {
       const expectChange = (state: ViewportState, func: () => void) => mon.expect(ChangeFlag.None, state, func);
 
-      expectChange(ViewportState.RenderPlan, () => view.details.clipVector = ClipVector.fromJSON([{
-        shape: {
-          points: [
-            [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 0, 0],
-          ],
-        },
-      }]));
+      expectChange(ViewportState.RenderPlan, () =>
+        view.details.clipVector = ClipVector.fromJSON([{
+          shape: {
+            points: [
+              [0, 0, 0],
+              [1, 0, 0],
+              [1, 1, 0],
+              [0, 0, 0],
+            ],
+          },
+        }]));
 
       expectChange(ViewportState.Scene, () => view.details.modelClipGroups = new ModelClipGroups([ModelClipGroup.fromJSON({ models: ["0x123"] })]));
-      expectChange(ViewportState.Scene, () => view.modelDisplayTransformProvider = {
-        getModelDisplayTransform: () => {
-          return {
-            transform: Transform.createIdentity(),
-          };
-        },
-      });
+      expectChange(ViewportState.Scene, () =>
+        view.modelDisplayTransformProvider = {
+          getModelDisplayTransform: () => {
+            return {
+              transform: Transform.createIdentity(),
+            };
+          },
+        });
     });
   });
 

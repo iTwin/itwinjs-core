@@ -3,13 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Transform } from "@itwin/core-geometry";
-import { GeoJSONGeometryReader } from "../GeoJSON/GeoJSONGeometryReader";
-import * as Geojson from "geojson";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
+import {
+  FeatureAttributeDrivenSymbology,
+  FeatureGeometryRenderer,
+  GraphicPrimitive,
+  GraphicsGeometryRenderer,
+  MapLayerFeature,
+  MapLayerFeatureAttribute,
+  MapLayerFeatureInfo,
+  MapSubLayerFeatureInfo,
+} from "@itwin/core-frontend";
+import { Transform } from "@itwin/core-geometry";
+import * as Geojson from "geojson";
 import { FeatureInfoReader } from "../Feature/FeatureInfoReader";
-import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicPrimitive, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo } from "@itwin/core-frontend";
+import { GeoJSONGeometryReader } from "../GeoJSON/GeoJSONGeometryReader";
 
 /** @internal */
 export type OgcFeaturePropertyType = "string" | "number" | "integer" | "datetime" | "geometry" | "boolean";
@@ -23,7 +32,7 @@ export interface ReadOgcApiFeaturesInfoOptions {
 }
 
 /** @internal */
-export class OgcApiFeaturesReader extends FeatureInfoReader  {
+export class OgcApiFeaturesReader extends FeatureInfoReader {
   public transform: Transform | undefined;
 
   public constructor() {
@@ -34,7 +43,7 @@ export class OgcApiFeaturesReader extends FeatureInfoReader  {
     if (attrSymbology && feature) {
       const symbolFields = attrSymbology.rendererFields;
       if (symbolFields && symbolFields.length > 0 && feature.properties) {
-        const featureAttr: {[key: string]: any} = {};
+        const featureAttr: { [key: string]: any } = {};
         for (const [attrKey, attrValue] of Object.entries(feature.properties))
           if (symbolFields.includes(attrKey)) {
             featureAttr[attrKey] = attrValue;
@@ -47,7 +56,6 @@ export class OgcApiFeaturesReader extends FeatureInfoReader  {
   public async readAndRender(data: Geojson.FeatureCollection, renderer: FeatureGeometryRenderer) {
     const responseObj = data;
     if (responseObj.type === "FeatureCollection") {
-
       const geomReader = new GeoJSONGeometryReader(renderer);
 
       for (const feature of responseObj.features) {
@@ -97,7 +105,7 @@ export class OgcApiFeaturesReader extends FeatureInfoReader  {
 
     const getRecordInfo = (fieldName: string, value: any): MapLayerFeatureAttribute => {
       let typename = StandardTypeNames.String;
-      const propertyValue: PrimitiveValue = {valueFormat: PropertyValueFormat.Primitive};
+      const propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
 
       if (value === null) {
         value = undefined;
@@ -129,10 +137,10 @@ export class OgcApiFeaturesReader extends FeatureInfoReader  {
         propertyValue.displayValue = strValue;
       }
 
-      return {value: propertyValue, property: { name: fieldName, displayLabel: fieldName, typename }};
+      return { value: propertyValue, property: { name: fieldName, displayLabel: fieldName, typename } };
     };
 
-    let geomReader: GeoJSONGeometryReader|undefined;
+    let geomReader: GeoJSONGeometryReader | undefined;
     if (opts.geomRenderer) {
       geomReader = new GeoJSONGeometryReader(opts.geomRenderer);
     }
@@ -146,7 +154,7 @@ export class OgcApiFeaturesReader extends FeatureInfoReader  {
 
     // Read all features attributes / geometries
     for (const responseFeature of opts.collection.features) {
-      const feature: MapLayerFeature = {attributes: []};
+      const feature: MapLayerFeature = { attributes: [] };
 
       if (responseFeature.properties) {
         for (const [key, value] of Object.entries(responseFeature.properties))
@@ -157,7 +165,7 @@ export class OgcApiFeaturesReader extends FeatureInfoReader  {
         await geomReader.readGeometry(responseFeature.geometry as any);
         const graphics = opts.geomRenderer.moveGraphics();
         feature.geometries = graphics.map((graphic: GraphicPrimitive) => {
-          return {graphic};
+          return { graphic };
         });
       }
       subLayerInfo.features.push(feature);
@@ -169,5 +177,4 @@ export class OgcApiFeaturesReader extends FeatureInfoReader  {
 
     featureInfos.push(layerInfo);
   }
-
 }

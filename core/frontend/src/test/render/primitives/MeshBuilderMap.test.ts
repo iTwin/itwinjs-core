@@ -2,26 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
-import { IModelApp } from "../../../IModelApp";
-import { IModelConnection } from "../../../IModelConnection";
-import { MockRender } from "../../../render/MockRender";
-import { SpatialViewState } from "../../../SpatialViewState";
-import { ScreenViewport } from "../../../Viewport";
-import { StandardViewId } from "../../../StandardView";
-import { createBlankConnection } from "../../createBlankConnection";
-import { FakeDisplayParams } from "./Fake";
-import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
-import { GraphicType } from "../../../common/render/GraphicType";
-import { ToleranceRatio } from "../../../common/internal/render/Primitives";
-import { MeshBuilderMap } from "../../../common/internal/render/MeshBuilderMap";
-import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
+import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
 import { GeometryList } from "../../../common/internal/render/GeometryList";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
+import { MeshBuilderMap } from "../../../common/internal/render/MeshBuilderMap";
 import { MeshPrimitiveType } from "../../../common/internal/render/MeshPrimitive";
+import { ToleranceRatio } from "../../../common/internal/render/Primitives";
 import { _accumulator } from "../../../common/internal/Symbols";
+import { GraphicType } from "../../../common/render/GraphicType";
+import { IModelApp } from "../../../IModelApp";
+import { IModelConnection } from "../../../IModelConnection";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
+import { MockRender } from "../../../render/MockRender";
+import { SpatialViewState } from "../../../SpatialViewState";
+import { StandardViewId } from "../../../StandardView";
+import { ScreenViewport } from "../../../Viewport";
+import { createBlankConnection } from "../../createBlankConnection";
+import { FakeDisplayParams } from "./Fake";
 
 describe("MeshBuilderMap Tests", () => {
   let imodel: IModelConnection;
@@ -33,7 +33,7 @@ describe("MeshBuilderMap Tests", () => {
   viewDiv.style.width = viewDiv.style.height = "1000px";
   document.body.appendChild(viewDiv);
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  before(async () => { // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
     imodel = createBlankConnection();
     spatialView = SpatialViewState.createBlank(imodel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });

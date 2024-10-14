@@ -4,18 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
 
-import { assert } from "chai";
-import * as fs from "fs";
-import * as path from "path";
 import { Guid, Id64Array, Id64String, Logger, OpenMode } from "@itwin/core-bentley";
 import {
-  CodeScopeSpec, CodeSpec, ColorByName, DomainOptions, GeometryStreamBuilder, IModel, RelatedElementProps, RelationshipProps, SubCategoryAppearance,
+  CodeScopeSpec,
+  CodeSpec,
+  ColorByName,
+  DomainOptions,
+  GeometryStreamBuilder,
+  IModel,
+  RelatedElementProps,
+  RelationshipProps,
+  SubCategoryAppearance,
   UpgradeOptions,
 } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { assert } from "chai";
+import * as fs from "fs";
+import * as path from "path";
 import { _nativeDb, ChannelControl, ElementDrivesElementProps, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { IModelNative } from "../../internal/NativePlatform";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
 export function copyFile(newName: string, pathToCopy: string): string {
   const newPath = path.join(path.dirname(pathToCopy), newName);
@@ -106,8 +114,12 @@ class TestHelper {
     this.db.elements.updateElement(ed2.toJSON());
   }
 
-  public fmtElem(elId: Id64String) { return this.db.elements.getElement(elId).code.value; }
-  public fmtRel(props: RelationshipProps) { return `${props.classFullName} ${this.fmtElem(props.sourceId)}  -->  ${this.fmtElem(props.targetId)}`; }
+  public fmtElem(elId: Id64String) {
+    return this.db.elements.getElement(elId).code.value;
+  }
+  public fmtRel(props: RelationshipProps) {
+    return `${props.classFullName} ${this.fmtElem(props.sourceId)}  -->  ${this.fmtElem(props.targetId)}`;
+  }
 
   public resetDependencyResults() {
     this.dres = new DependencyCallbackResults();
@@ -165,7 +177,12 @@ describe("ElementDependencyGraph", () => {
     imodel.channels.addAllowedChannel(ChannelControl.sharedChannelName);
     const physicalModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "EDGTestModel");
     const codeSpecId = imodel.codeSpecs.insert(CodeSpec.create(imodel, "EDGTestCodeSpec", CodeScopeSpec.Type.Model));
-    const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "EDGTestSpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+    const spatialCategoryId = SpatialCategory.insert(
+      imodel,
+      IModel.dictionaryId,
+      "EDGTestSpatialCategory",
+      new SubCategoryAppearance({ color: ColorByName.darkRed }),
+    );
     dbInfo = { physicalModelId, codeSpecId, spatialCategoryId, seedFileName: testFileName };
     imodel.saveChanges("");
     imodel[_nativeDb].deleteAllTxns();
@@ -328,7 +345,11 @@ describe("ElementDependencyGraph", () => {
     helper.db.saveChanges(); // get the elements into the iModel
 
     const ede_material_materialDepthRange = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, material, materialDepthRange);
-    const ede_boreholeSource_groundGeneration = TestElementDrivesElement.create<TestElementDrivesElement>(helper.db, boreholeSource, groundGeneration);
+    const ede_boreholeSource_groundGeneration = TestElementDrivesElement.create<TestElementDrivesElement>(
+      helper.db,
+      boreholeSource,
+      groundGeneration,
+    );
     for (const ede of [ede_material_materialDepthRange, ede_boreholeSource_groundGeneration]) {
       ede.insert();
     }
@@ -473,5 +494,4 @@ describe("ElementDependencyGraph", () => {
 
     helper.terminate();
   });
-
 });

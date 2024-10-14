@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Enumeration, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import * as Rules from "../../../Validation/ECRules";
+import { expect } from "chai";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
+import * as Rules from "../../../Validation/ECRules";
 
 /* eslint-disable deprecation/deprecation */
 

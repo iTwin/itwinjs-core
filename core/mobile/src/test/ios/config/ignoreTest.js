@@ -28,5 +28,5 @@ module.exports = [
   "read view thumbnail",
   "should be able to create a snapshot IModel",
   "should create elements exercising the LinearReferencing domain",
-  "Create Table, Insert, Select with ECDb"
+  "Create Table, Insert, Select with ECDb",
 ];

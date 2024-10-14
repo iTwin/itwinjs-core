@@ -67,7 +67,12 @@ describe("PlanProjectionSettings", () => {
     clone({}, { elevation: 1, transparency: 0.2 }, { elevation: 1, transparency: 0.2, overlay: false, enforceDisplayPriority: false });
     clone({ elevation: 1, transparency: 0.2 }, {}, { elevation: 1, transparency: 0.2, overlay: false, enforceDisplayPriority: false });
     clone({ elevation: 1, overlay: true }, { transparency: 0.2 }, { elevation: 1, transparency: 0.2, overlay: true, enforceDisplayPriority: false });
-    clone({ elevation: 1 }, { elevation: -1, transparency: 0.75 }, { elevation: -1, transparency: 0.75, overlay: false, enforceDisplayPriority: false });
+    clone({ elevation: 1 }, { elevation: -1, transparency: 0.75 }, {
+      elevation: -1,
+      transparency: 0.75,
+      overlay: false,
+      enforceDisplayPriority: false,
+    });
 
     clone({}, undefined, { enforceDisplayPriority: false, overlay: false });
     clone({ enforceDisplayPriority: true }, undefined, { enforceDisplayPriority: true, overlay: false });

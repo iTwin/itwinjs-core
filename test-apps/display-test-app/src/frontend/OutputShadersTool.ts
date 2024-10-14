@@ -321,13 +321,22 @@ async function outputShaders(dsf: DebugShaderFile[], usedFlag: string, typeFlag:
 
 export class OutputShadersTool extends Tool {
   public static override toolId = "OutputShaders";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public override async run(compile: boolean, usedFlag: string, typeFlag: string, langFlag: string, outputDir: string): Promise<boolean> {
     if (compile) {
       const compiled = IModelApp.renderSystem.debugControl?.compileAllShaders();
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error, `${compiled ? "No" : "Some"} compilation errors occurred.`));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(
+          compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error,
+          `${compiled ? "No" : "Some"} compilation errors occurred.`,
+        ),
+      );
     }
     const dsf = IModelApp.renderSystem.debugControl?.debugShaderFiles;
     if (undefined !== dsf && dsf.length > 0)

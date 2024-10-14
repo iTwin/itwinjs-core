@@ -75,7 +75,6 @@ export class PolylineOps {
    * @param source input points
    * @param maxDistance omit points if this close to edge between points before and after
    * @param numPass max number of times to run the filter.  numPass=2 is observed to behave well.
-   *
    */
   public static compressByPerpendicularDistance(source: Point3d[], maxDistance: number, numPass: number = 2): Point3d[] {
     const dest = GrowableXYZArray.create(source);
@@ -104,7 +103,13 @@ export class PolylineOps {
    * @param pointQ
    * @param tolerance
    */
-  private static isDanglerConfiguration(points: Point3d[], indexA: number, indexB: number, pointQ: Point3d, squaredDistanceTolerance: number): boolean {
+  private static isDanglerConfiguration(
+    points: Point3d[],
+    indexA: number,
+    indexB: number,
+    pointQ: Point3d,
+    squaredDistanceTolerance: number,
+  ): boolean {
     if (indexA < 0 || indexA >= points.length)
       return false;
     const pointA = points[indexA];
@@ -138,17 +143,18 @@ export class PolylineOps {
     return distanceSquared < squaredDistanceTolerance;
   }
   /**
-     * Return a simplified subset of given points, omitting points on "danglers" that depart and return on a single path.
-     * @param source input points
-     * @param closed if true, an edge returning to point 0 is implied even if final point does not match.
-     * @param tolerance tolerance for near-zero distance.
-     */
+   * Return a simplified subset of given points, omitting points on "danglers" that depart and return on a single path.
+   * @param source input points
+   * @param closed if true, an edge returning to point 0 is implied even if final point does not match.
+   * @param tolerance tolerance for near-zero distance.
+   */
   public static compressDanglers(source: Point3d[], closed: boolean = false, tolerance: number = Geometry.smallMetricDistance): Point3d[] {
     let n = source.length;
     const squaredDistanceTolerance = tolerance * tolerance;
-    if (closed)
+    if (closed) {
       while (n > 1 && source[n - 1].distanceSquared(source[0]) <= squaredDistanceTolerance)
         n--;
+    }
     const dest = [];
     dest.push(source[0].clone());
     for (let i = 1; i < n; i++) {
@@ -228,8 +234,11 @@ export class PolylineOps {
    * @param centerline points to reside in output planes
    * @param wrapIfPhysicallyClosed if true and the first and last centerline points are the same, then the first and last output planes are averaged and equated (cloned).
    */
-  public static createBisectorPlanesForDistinctPoints(centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed: boolean = false): Plane3dByOriginAndUnitNormal[] | undefined {
-    const packedPoints = PolylineOps.compressShortEdges(centerline, 2.0 * Geometry.smallMetricDistance);  // double the tolerance to ensure normalized vectors exist.
+  public static createBisectorPlanesForDistinctPoints(
+    centerline: IndexedXYZCollection | Point3d[],
+    wrapIfPhysicallyClosed: boolean = false,
+  ): Plane3dByOriginAndUnitNormal[] | undefined {
+    const packedPoints = PolylineOps.compressShortEdges(centerline, 2.0 * Geometry.smallMetricDistance); // double the tolerance to ensure normalized vectors exist.
     if (packedPoints.length < 2)
       return undefined;
     const bisectorPlanes: Plane3dByOriginAndUnitNormal[] = [];
@@ -331,7 +340,16 @@ export class PolylineOps {
       for (let indexB = 0; indexB < numSegmentB; indexB++) {
         this._workSegmentB = fillSegment(pointsB, indexB, this._workSegmentB);
         convertExtend(extendSegB, extendB, indexB, numSegmentB);
-        if (undefined !== (this._workLocalDetailPair = LineSegment3d.closestApproach(this._workSegmentA, extendSegA, this._workSegmentB, extendSegB, this._workLocalDetailPair))) {
+        if (
+          undefined !==
+            (this._workLocalDetailPair = LineSegment3d.closestApproach(
+              this._workSegmentA,
+              extendSegA,
+              this._workSegmentB,
+              extendSegB,
+              this._workLocalDetailPair,
+            ))
+        ) {
           const d = this._workLocalDetailPair.detailA.a;
           if (d < dMin) {
             const childDetailA = result?.detailA.childDetail; // save and reuse

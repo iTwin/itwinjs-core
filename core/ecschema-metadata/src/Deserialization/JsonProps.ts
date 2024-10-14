@@ -11,7 +11,12 @@ import { FormatProps } from "@itwin/core-quantity";
 /**
  * @beta
  */
-export type AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps;
+export type AnyPropertyProps =
+  | PrimitivePropertyProps
+  | StructPropertyProps
+  | PrimitiveArrayPropertyProps
+  | StructArrayPropertyProps
+  | NavigationPropertyProps;
 /**
  * @beta
  */
@@ -19,7 +24,17 @@ export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClass
 /**
  * @beta
  */
-export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | SchemaItemUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps | SchemaItemOverrideFormatProps;
+export type AnySchemaItemProps =
+  | AnyClassProps
+  | EnumerationProps
+  | KindOfQuantityProps
+  | PropertyCategoryProps
+  | SchemaItemUnitProps
+  | InvertedUnitProps
+  | ConstantProps
+  | PhenomenonProps
+  | SchemaItemFormatProps
+  | SchemaItemOverrideFormatProps;
 
 /**
  * @beta
@@ -65,7 +80,7 @@ export interface SchemaReferenceProps {
 export interface SchemaItemProps {
   // NEEDSWORK: Still need to clarify how single-item deserialization works...
   readonly $schema?: string;
-  readonly schema?: string;  // conditionally required
+  readonly schema?: string; // conditionally required
   readonly schemaVersion?: string;
   readonly name?: string;
   readonly schemaItemType?: string;

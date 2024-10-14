@@ -5,15 +5,15 @@
 "use strict";
 
 /** Generates pseudo localization files from the en localization JSON files.
-*/
+ */
 function pseudoLocalizeObject(objIn) {
   let objOut = {};
   for (let prop in objIn) {
     if (objIn.hasOwnProperty(prop)) {
       if (typeof objIn[prop] === "string") {
-        objOut[prop] = pseudoLocalize(objIn[prop])
+        objOut[prop] = pseudoLocalize(objIn[prop]);
       } else if (typeof objIn[prop] === "object") {
-        objOut[prop] = pseudoLocalizeObject(objIn[prop])
+        objOut[prop] = pseudoLocalizeObject(objIn[prop]);
       }
     }
   }
@@ -54,11 +54,11 @@ function pseudoLocalize(inputString) {
     let nextChar = ((iChar + 1) < inputString.length) ? inputString.charAt(iChar + 1) : 0;
 
     // handle the {{ and }} delimiters for placeholders - don't want to do anything to characters in between.
-    if (('{' === thisChar) && ('{' === nextChar)) {
+    if (("{" === thisChar) && ("{" === nextChar)) {
       inReplace++;
       iChar++;
       outString = outString.concat("{{");
-    } else if (('}' === thisChar) && ('}' === nextChar) && (inReplace > 0)) {
+    } else if (("}" === thisChar) && ("}" === nextChar) && (inReplace > 0)) {
       inReplace--;
       iChar++;
       outString = outString.concat("}}");
@@ -91,7 +91,7 @@ const outDir = (argv.out === undefined) ? paths.appLocalesPseudolocalize : argv.
 try {
   fs.mkdirpSync(outDir);
 } catch (e) {
-  console.log(e);// do nothing
+  console.log(e); // do nothing
 }
 
 for (const inputFileName of inputFileNames) {

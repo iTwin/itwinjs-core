@@ -15,16 +15,18 @@ function simpleSpawn(cmd, args, cwd, env = {}) {
     const child = spawn(cmd, args, {
       cwd: cwd,
       env: { FORCE_COLOR: "1", ...env, ...process.env },
-      stdio: "pipe"
+      stdio: "pipe",
     });
 
     child.stdout.on("data", (data) => {
       process.stdout.write(data);
-    })
+    });
     child.stderr.on("data", (data) => {
       process.stderr.write(data);
-    })
-    child.on("error", function (data) { console.log(chalk.red(data)); });
+    });
+    child.on("error", function(data) {
+      console.log(chalk.red(data));
+    });
     child.on("close", (code) => resolve(code));
     simpleSpawn.children.push(child);
   });
@@ -37,7 +39,7 @@ function simpleSpawnSync(cmd, args, cwd, env = {}) {
   const child = spawn.sync(cmd, args, {
     cwd: cwd,
     env: { FORCE_COLOR: "1", ...env, ...process.env },
-    stdio: "inherit"
+    stdio: "inherit",
   });
 
   if (child.status !== 0) {
@@ -46,15 +48,17 @@ function simpleSpawnSync(cmd, args, cwd, env = {}) {
 }
 
 simpleSpawn.children = [];
-simpleSpawn.killAll = async function () {
+simpleSpawn.killAll = async function() {
   const promises = [];
   simpleSpawn.children.forEach((proc) => {
-    promises.push(new Promise((resolve) => {
-      kill(proc.pid, undefined, resolve);
-    }));
+    promises.push(
+      new Promise((resolve) => {
+        kill(proc.pid, undefined, resolve);
+      }),
+    );
   });
   await Promise.all(promises);
-}
+};
 
 function handleInterrupts(callback) {
   if (!callback) {
@@ -68,12 +72,12 @@ function handleInterrupts(callback) {
     require("readline")
       .createInterface({
         input: process.stdin,
-        output: process.stdout
+        output: process.stdout,
       });
   }
 
-  ["SIGINT", "SIGTERM"].forEach(function (sig) {
-    process.on(sig, function () {
+  ["SIGINT", "SIGTERM"].forEach(function(sig) {
+    process.on(sig, function() {
       callback();
     });
   });
@@ -82,5 +86,5 @@ function handleInterrupts(callback) {
 module.exports = {
   spawn: simpleSpawn,
   spawnSync: simpleSpawnSync,
-  handleInterrupts
+  handleInterrupts,
 };

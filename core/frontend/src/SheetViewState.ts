@@ -7,34 +7,63 @@
  */
 
 import { assert, CompressedId64Set, dispose, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Angle, ClipShape, ClipVector, Constant, Matrix3d, Point2d, Point3d, PolyfaceBuilder, Range2d, Range3d, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ColorDef, Feature, FeatureTable, Frustum, Gradient, GraphicParams, HiddenLine, HydrateViewStateRequestProps, HydrateViewStateResponseProps, PackedFeatureTable, Placement2d, SheetProps,
-  TextureTransparency, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+  AxisAlignedBox3d,
+  ColorDef,
+  Feature,
+  FeatureTable,
+  Frustum,
+  Gradient,
+  GraphicParams,
+  HiddenLine,
+  HydrateViewStateRequestProps,
+  HydrateViewStateResponseProps,
+  PackedFeatureTable,
+  Placement2d,
+  SheetProps,
+  TextureTransparency,
+  ViewAttachmentProps,
+  ViewDefinition2dProps,
+  ViewFlagOverrides,
+  ViewStateProps,
 } from "@itwin/core-common";
+import {
+  Angle,
+  ClipShape,
+  ClipVector,
+  Constant,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  PolyfaceBuilder,
+  Range2d,
+  Range3d,
+  StrokeOptions,
+  Transform,
+} from "@itwin/core-geometry";
 import { CategorySelectorState } from "./CategorySelectorState";
+import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./common/ImageUtil";
+import { GraphicType } from "./common/render/GraphicType";
+import { ViewRect } from "./common/ViewRect";
+import { CoordSystem } from "./CoordSystem";
 import { DisplayStyle2dState } from "./DisplayStyleState";
-import { IModelConnection } from "./IModelConnection";
-import { GraphicBuilder } from "./render/GraphicBuilder";
-import { RenderGraphic } from "./render/RenderGraphic";
-import { GraphicBranch } from "./render/GraphicBranch";
+import { DrawingViewState } from "./DrawingViewState";
 import { Frustum2d } from "./Frustum2d";
-import { Scene } from "./render/Scene";
+import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
 import { Decorations } from "./render/Decorations";
+import { FeatureSymbology } from "./render/FeatureSymbology";
+import { GraphicBranch } from "./render/GraphicBranch";
+import { GraphicBuilder } from "./render/GraphicBuilder";
 import { MockRender } from "./render/MockRender";
 import { RenderClipVolume } from "./render/RenderClipVolume";
+import { RenderGraphic } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
-import { FeatureSymbology } from "./render/FeatureSymbology";
+import { Scene } from "./render/Scene";
+import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { DecorateContext, SceneContext } from "./ViewContext";
-import { IModelApp } from "./IModelApp";
-import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";
 import { AttachToViewportArgs, ComputeDisplayTransformArgs, ViewState, ViewState2d } from "./ViewState";
-import { DrawingViewState } from "./DrawingViewState";
-import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
-import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./common/ImageUtil";
-import { ViewRect } from "./common/ViewRect";
-import { GraphicType } from "./common/render/GraphicType";
 
 // cSpell:ignore ovrs
 
@@ -60,7 +89,8 @@ class SheetBorder {
       Point3d.create(0, 0),
       Point3d.create(width, 0),
       Point3d.create(width, height),
-      Point3d.create(0, height)];
+      Point3d.create(0, height),
+    ];
     if (context) {
       context.viewport.worldToViewArray(rect);
     }
@@ -133,7 +163,9 @@ interface ViewAttachmentInfo extends ViewAttachmentProps {
 class ViewAttachmentsInfo {
   private _attachments: Id64Array | ViewAttachmentInfo[];
 
-  public get attachments() { return this._attachments; }
+  public get attachments() {
+    return this._attachments;
+  }
 
   private constructor(attachments: Id64Array | ViewAttachmentInfo[]) {
     this._attachments = attachments;
@@ -347,14 +379,23 @@ export class SheetViewState extends ViewState2d {
     return this._attachmentsInfo.toJSON();
   }
 
-  public static override get className() { return "SheetViewDefinition"; }
+  public static override get className() {
+    return "SheetViewDefinition";
+  }
 
   public static override createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
     const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
 
     // use "new this" so subclasses are correct
-    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
+    return new this(
+      viewStateData.viewDefinitionProps as ViewDefinition2dProps,
+      iModel,
+      cat,
+      displayStyleState,
+      viewStateData.sheetProps!,
+      viewStateData.sheetAttachments!,
+    );
   }
 
   public override toProps(): ViewStateProps {
@@ -397,11 +438,22 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public override isDrawingView(): this is DrawingViewState { return false; }
+  public override isDrawingView(): this is DrawingViewState {
+    return false;
+  }
   /** @internal */
-  public override isSheetView(): this is SheetViewState { return true; }
+  public override isSheetView(): this is SheetViewState {
+    return true;
+  }
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
+  public constructor(
+    props: ViewDefinition2dProps,
+    iModel: IModelConnection,
+    categories: CategorySelectorState,
+    displayStyle: DisplayStyle2dState,
+    sheetProps: SheetProps,
+    attachments: Id64Array,
+  ) {
     super(props, iModel, categories, displayStyle);
     if (categories instanceof SheetViewState) {
       // we are coming from clone...

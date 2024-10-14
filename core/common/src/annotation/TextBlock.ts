@@ -92,7 +92,7 @@ export abstract class TextBlockComponent {
 
   /** Reset any [[styleOverrides]] applied to this component's [[TextStyle]]. */
   public clearStyleOverrides(): void {
-    this.styleOverrides = { };
+    this.styleOverrides = {};
   }
 
   /** Apply the [[TextStyle]] specified by `styleName` to this component, optionally preserving [[styleOverrides]] and/or preventing propagation to sub-components. */
@@ -164,9 +164,12 @@ export namespace Run { // eslint-disable-line @typescript-eslint/no-redeclare
    */
   export function fromJSON(props: RunProps): Run {
     switch (props.type) {
-      case "text": return TextRun.create(props);
-      case "fraction": return FractionRun.create(props);
-      case "linebreak": return LineBreakRun.create(props);
+      case "text":
+        return TextRun.create(props);
+      case "fraction":
+        return FractionRun.create(props);
+      case "linebreak":
+        return LineBreakRun.create(props);
     }
   }
 }

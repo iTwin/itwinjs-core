@@ -7,8 +7,9 @@
  */
 
 import { BeTimePoint } from "@itwin/core-bentley";
-import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { FeatureAppearanceProvider, FrustumPlanes, HiddenLine, ViewFlagOverrides } from "@itwin/core-common";
+import { ClipVector, Geometry, Map4d, Matrix4d, Point3d, Point4d, Range1d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { CoordSystem } from "../CoordSystem";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -17,7 +18,6 @@ import { RenderPlanarClassifier } from "../render/RenderPlanarClassifier";
 import { RenderTextureDrape } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { ViewingSpace } from "../ViewingSpace";
-import { CoordSystem } from "../CoordSystem";
 import { Tile, TileGraphicType, TileTree } from "./internal";
 
 const scratchRange = new Range3d();
@@ -116,9 +116,13 @@ export class TileDrawArgs {
   /** For perspective views, the view-Z of the near plane. */
   private readonly _nearFrontCenter?: Point3d;
   /** Overrides applied to the view's [ViewFlags]($common) when drawing the tiles. */
-  public get viewFlagOverrides(): ViewFlagOverrides { return this.graphics.viewFlagOverrides; }
+  public get viewFlagOverrides(): ViewFlagOverrides {
+    return this.graphics.viewFlagOverrides;
+  }
   /** If defined, replaces the view's own symbology overrides when drawing the tiles. */
-  public get symbologyOverrides(): FeatureSymbology.Overrides | undefined { return this.graphics.symbologyOverrides; }
+  public get symbologyOverrides(): FeatureSymbology.Overrides | undefined {
+    return this.graphics.symbologyOverrides;
+  }
   /** If defined, tiles will be culled if they do not intersect this clip. */
   public intersectionClip?: ClipVector;
   /** If defined, a bounding range in tile tree coordinates outside of which tiles should not be selected. */
@@ -195,10 +199,10 @@ export class TileDrawArgs {
       if (viewZ.dotProduct(toFront) < radius) {
         center = this._nearFrontCenter;
       } else {
-      // Find point on sphere closest to eye.
+        // Find point on sphere closest to eye.
         const toEye = center.unitVectorTo(this.context.viewport.view.camera.eye);
 
-        if (toEye) {  // Only if tile is not already behind the eye.
+        if (toEye) { // Only if tile is not already behind the eye.
           toEye.scaleInPlace(radius);
           center.addInPlace(toEye);
         }
@@ -207,7 +211,9 @@ export class TileDrawArgs {
 
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
-    return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
+    return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(
+      this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2),
+    );
   }
 
   /** Compute this size of a sphere on screen in pixels */
@@ -218,7 +224,9 @@ export class TileDrawArgs {
 
     const viewPt = this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
     const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
-    const pixelSizeAtPt = this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
+    const pixelSizeAtPt = this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(
+      this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2),
+    );
     return 0 !== pixelSizeAtPt ? radius / pixelSizeAtPt : 1.0e-3;
   }
 
@@ -252,14 +260,14 @@ export class TileDrawArgs {
     let maxS = 0;
     let maxR = 0;
     if (scale[0] > scale[1])
-      maxS = (scale[0] > scale[2] ? 0 : 2);
+      maxS = scale[0] > scale[2] ? 0 : 2;
     else
-      maxS = (scale[1] > scale[2] ? 1 : 2);
+      maxS = scale[1] > scale[2] ? 1 : 2;
 
     if (rangeDiag.x > rangeDiag.y)
-      maxR = (rangeDiag.x > rangeDiag.z ? 0 : 2);
+      maxR = rangeDiag.x > rangeDiag.z ? 0 : 2;
     else
-      maxR = (rangeDiag.y > rangeDiag.z ? 1 : 2);
+      maxR = rangeDiag.y > rangeDiag.z ? 1 : 2;
 
     return maxS !== maxR ? scale[maxS] : 1;
   }
@@ -310,10 +318,14 @@ export class TileDrawArgs {
    * @see [[Viewport.tileSizeModifier]].
    * @public
    */
-  public get tileSizeModifier(): number { return this.context.viewport.tileSizeModifier; }
+  public get tileSizeModifier(): number {
+    return this.context.viewport.tileSizeModifier;
+  }
 
   /** @internal */
-  public getTileCenter(tile: Tile): Point3d { return this.location.multiplyPoint3d(tile.center); }
+  public getTileCenter(tile: Tile): Point3d {
+    return this.location.multiplyPoint3d(tile.center);
+  }
 
   /** @internal */
   public getTileRadius(tile: Tile): number {
@@ -351,7 +363,7 @@ export class TileDrawArgs {
     return this._produceGraphicBranch(this.graphics);
   }
   /** @internal */
-  public get secondaryClassifiers(): Map<number, RenderPlanarClassifier>| undefined {
+  public get secondaryClassifiers(): Map<number, RenderPlanarClassifier> | undefined {
     return undefined;
   }
 
@@ -423,8 +435,10 @@ export class TileDrawArgs {
   /** Invoked by [[TileTree.selectTiles]]. This exists chiefly for [[SolarShadowMap]].
    * @internal
    */
-  public processSelectedTiles(_tiles: Tile[]): void { }
+  public processSelectedTiles(_tiles: Tile[]): void {}
 
   /* @internal */
-  public get maxRealityTreeSelectionCount(): number | undefined { return undefined; }
+  public get maxRealityTreeSelectionCount(): number | undefined {
+    return undefined;
+  }
 }

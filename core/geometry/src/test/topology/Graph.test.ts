@@ -9,19 +9,19 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Transform } from "../../geometry3d/Transform";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask, NodeFunction } from "../../topology/Graph";
 import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeMaskValidation, HalfEdgePointerInspector } from "../../topology/HalfEdgeGraphValidation";
-import { HalfEdgeGraphMerge } from "../../topology/Merging";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { NodeXYZUV } from "../../topology/HalfEdgeNodeXYZUV";
 import { HalfEdgePositionDetail, HalfEdgeTopo } from "../../topology/HalfEdgePositionDetail";
 import { InsertAndRetriangulateContext } from "../../topology/InsertAndRetriangulateContext";
+import { HalfEdgeGraphMerge } from "../../topology/Merging";
+import { Checker } from "../Checker";
 import { OutputManager } from "../clipping/ClipPlanes.test";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function logGraph(graph: HalfEdgeGraph, title: any): void {
   GeometryCoreTestIO.consoleLog(` == begin == ${title}`);
@@ -33,7 +33,10 @@ function logGraph(graph: HalfEdgeGraph, title: any): void {
 
 export class GraphChecker {
   public static captureAnnotatedGraph(
-    data: GeometryQuery[], graph: HalfEdgeGraph | undefined, dx: number = 0, dy: number = 0,
+    data: GeometryQuery[],
+    graph: HalfEdgeGraph | undefined,
+    dx: number = 0,
+    dy: number = 0,
   ): void {
     if (graph === undefined)
       return;
@@ -136,7 +139,6 @@ export class GraphChecker {
     }
     GeometryCoreTestIO.consoleLog(`**VERTEX LOOPS ${vertices.length}`);
     GeometryCoreTestIO.consoleLog(vData);
-
   }
   /**
    * Test different mask methods.
@@ -170,18 +172,26 @@ export class GraphChecker {
       const numNodesAroundVertex = node.countEdgesAroundVertex();
       const numNodesAroundFace = node.countEdgesAroundFace();
       ck.testExactNumber(
-        numNodesAroundVertex, node.countMaskAroundVertex(mask1, false), "count unmasked around vertex",
+        numNodesAroundVertex,
+        node.countMaskAroundVertex(mask1, false),
+        "count unmasked around vertex",
       );
       ck.testExactNumber(
-        numNodesAroundFace, node.countMaskAroundFace(mask1, false), "count unmasked around face",
+        numNodesAroundFace,
+        node.countMaskAroundFace(mask1, false),
+        "count unmasked around face",
       );
       node.setMaskAroundVertex(mask1);
       ck.testExactNumber(
-        numNodesAroundFace - 1, node.countMaskAroundFace(mask1, false), "count unmasked around face after vertex set",
+        numNodesAroundFace - 1,
+        node.countMaskAroundFace(mask1, false),
+        "count unmasked around face after vertex set",
       );
       const nodesAroundVertex = node.collectAroundVertex();
       ck.testExactNumber(
-        numNodesAroundVertex, nodesAroundVertex.length, "count nodes == collected array length",
+        numNodesAroundVertex,
+        nodesAroundVertex.length,
+        "count nodes == collected array length",
       );
       const masksAroundVertex = node.countMaskAroundVertex(mask1);
       ck.testExactNumber(nodesAroundVertex.length, masksAroundVertex);
@@ -286,7 +296,8 @@ export class GraphChecker {
         result.nearZeroFaces.push(face);
       else if (area > 0.0)
         result.positiveFaces.push(face);
-      else /* strict negative */
+      /* strict negative */
+      else
         result.negativeFaces.push(face);
       result.absAreaSum += Math.abs(area);
       result.zeroAreaTolerance = 1.0e-12 * result.absAreaSum;
@@ -294,7 +305,8 @@ export class GraphChecker {
     return result;
   }
   public static verifySignedFaceCounts(
-    ck: Checker, graph: HalfEdgeGraph,
+    ck: Checker,
+    graph: HalfEdgeGraph,
     numPositive: number | undefined,
     numNegative: number | undefined,
     numNearZero: number | undefined,
@@ -362,7 +374,9 @@ describe("VUGraph", () => {
     GeometryCoreTestIO.saveGeometry(geometry, "Graph", "GridFixup");
 
     const componentsB = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(
-      graph, undefined, HalfEdgeMask.EXTERIOR,
+      graph,
+      undefined,
+      HalfEdgeMask.EXTERIOR,
     );
     ck.testTrue(
       HalfEdgeMaskValidation.isMaskConsistentAroundAllFaces(graph, HalfEdgeMask.EXTERIOR),

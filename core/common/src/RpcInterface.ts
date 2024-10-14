@@ -5,17 +5,17 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
+import { BeDuration } from "@itwin/core-bentley";
+import { BentleyStatus, IModelError, NoContentError } from "./IModelError";
+import { InterceptedRpcRequest, IpcSession } from "./ipc/IpcSession";
 import { RpcConfiguration, RpcConfigurationSupplier } from "./rpc/core/RpcConfiguration";
+import { RpcRequestEvent, RpcRequestStatus } from "./rpc/core/RpcConstants";
+import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
+import { RpcSerializedValue } from "./rpc/core/RpcMarshaling";
+import { RpcManagedStatus } from "./rpc/core/RpcProtocol";
 import { CURRENT_REQUEST } from "./rpc/core/RpcRegistry";
 import { aggregateLoad, RpcRequest } from "./rpc/core/RpcRequest";
 import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
-import { InterceptedRpcRequest, IpcSession } from "./ipc/IpcSession";
-import { RpcSerializedValue } from "./rpc/core/RpcMarshaling";
-import { RpcManagedStatus } from "./rpc/core/RpcProtocol";
-import { BentleyStatus, IModelError, NoContentError } from "./IModelError";
-import { RpcRequestEvent, RpcRequestStatus } from "./rpc/core/RpcConstants";
-import { BeDuration } from "@itwin/core-bentley";
-import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -24,13 +24,17 @@ import { RpcNotFoundResponse } from "./rpc/core/RpcControl";
  * These properties are used to identify RPC requests and responses.
  * @beta
  */
-export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> { prototype: T, interfaceName: string, interfaceVersion: string }
+export interface RpcInterfaceDefinition<T extends RpcInterface = RpcInterface> {
+  prototype: T;
+  interfaceName: string;
+  interfaceVersion: string;
+}
 
 /**
  * A class that implements the operations of an RPC interface.
  * @beta
  */
-export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new () => T;
+export type RpcInterfaceImplementation<T extends RpcInterface = RpcInterface> = new() => T;
 
 interface SemverType {
   major: number;
@@ -44,13 +48,16 @@ interface SemverType {
  * @public
  */
 export abstract class RpcInterface {
-
   private static findDiff(backend: SemverType, frontend: SemverType) {
-    return backend.major !== frontend.major ? "major" :
-      backend.minor !== frontend.minor ? "minor" :
-        backend.patch !== frontend.patch ? "patch" :
-          backend.prerelease !== frontend.prerelease ? "prerelease" :
-            "same";
+    return backend.major !== frontend.major ?
+      "major" :
+      backend.minor !== frontend.minor ?
+      "minor" :
+      backend.patch !== frontend.patch ?
+      "patch" :
+      backend.prerelease !== frontend.prerelease ?
+      "prerelease" :
+      "same";
   }
 
   private static parseVer(version: string): SemverType {
@@ -106,7 +113,7 @@ export abstract class RpcInterface {
 
   /** Obtains the implementation result for an RPC operation. */
   public async forward<T = any>(parameters: IArguments): Promise<T> {
-    const parametersCompat = (arguments.length === 1 && typeof (parameters) === "object") ? parameters : arguments;
+    const parametersCompat = (arguments.length === 1 && typeof parameters === "object") ? parameters : arguments;
     const parametersArray = Array.isArray(parametersCompat) ? parametersCompat : Array.prototype.slice.call(parametersCompat);
     const operationName = parametersArray.pop();
 
@@ -128,9 +135,15 @@ export abstract class RpcInterface {
 RpcInterface.prototype.configurationSupplier = undefined;
 
 class InterceptedRequest extends RpcRequest {
-  protected override async load(): Promise<RpcSerializedValue> { throw new Error(); }
-  protected override async send(): Promise<number> { throw new Error(); }
-  protected override setHeader(_name: string, _value: string): void { throw new Error(); }
+  protected override async load(): Promise<RpcSerializedValue> {
+    throw new Error();
+  }
+  protected override async send(): Promise<number> {
+    throw new Error();
+  }
+  protected override setHeader(_name: string, _value: string): void {
+    throw new Error();
+  }
 }
 
 async function intercept(session: IpcSession, client: RpcInterface, operation: string, parameters: any[]) {
@@ -163,7 +176,7 @@ async function intercept(session: IpcSession, client: RpcInterface, operation: s
 
     aggregateLoad.lastResponse = new Date().getTime();
 
-    if (typeof (response) === "object" && response.hasOwnProperty("iTwinRpcCoreResponse") && response.hasOwnProperty("managedStatus")) {
+    if (typeof response === "object" && response.hasOwnProperty("iTwinRpcCoreResponse") && response.hasOwnProperty("managedStatus")) {
       const status: RpcManagedStatus = response;
 
       if (status.managedStatus === "pending") {

@@ -8,14 +8,14 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelError } from "../../IModelError";
+import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "../../RpcInterface";
+import { RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcConfiguration } from "./RpcConfiguration";
+import { RpcControlChannel } from "./RpcControl";
+import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 import { RpcPendingQueue } from "./RpcPendingQueue";
 import { initializeRpcRequest } from "./RpcRequest";
 import { RpcRoutingToken } from "./RpcRoutingToken";
-import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "../../RpcInterface";
-import { RpcInterfaceEndpoints } from "../../RpcManager";
-import { RpcControlChannel } from "./RpcControl";
-import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -46,7 +46,13 @@ export class RpcRegistry {
 
   public static get instance() {
     if (!RpcRegistry._instance) {
-      const globalObj: any = typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {};
+      const globalObj: any = typeof global !== "undefined"
+        ? global
+        : typeof self !== "undefined"
+        ? self
+        : typeof window !== "undefined"
+        ? window
+        : {};
       if (!globalObj[REGISTRY])
         globalObj[REGISTRY] = new RpcRegistry();
 
@@ -106,7 +112,10 @@ export class RpcRegistry {
     return this.getImplForInterface(definition) as T;
   }
 
-  public registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, implementation: RpcInterfaceImplementation<TImplementation>) {
+  public registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(
+    definition: RpcInterfaceDefinition<TDefinition>,
+    implementation: RpcInterfaceImplementation<TImplementation>,
+  ) {
     this.unregisterImpl(definition);
     this.implementationClasses.set(definition.interfaceName, implementation);
   }
@@ -121,7 +130,10 @@ export class RpcRegistry {
     }
   }
 
-  public supplyImplInstance<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, instance: TImplementation): void {
+  public supplyImplInstance<TDefinition extends RpcInterface, TImplementation extends TDefinition>(
+    definition: RpcInterfaceDefinition<TDefinition>,
+    instance: TImplementation,
+  ): void {
     this.suppliedImplementations.set(definition.interfaceName, instance);
   }
 
@@ -161,7 +173,9 @@ export class RpcRegistry {
     return () => ++i;
   })();
 
-  private instantiateImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>): TImplementation {
+  private instantiateImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(
+    definition: RpcInterfaceDefinition<TDefinition>,
+  ): TImplementation {
     this.checkInitialized(definition);
 
     const registeredImplementation = this.implementationClasses.get(definition.interfaceName) as RpcInterfaceImplementation<TImplementation>;
@@ -210,7 +224,7 @@ export class RpcRegistry {
   private interceptOperation(proxy: RpcInterface, operation: string) {
     const clientFunction = (proxy as any)[operation];
     // eslint-disable-next-line prefer-arrow/prefer-arrow-functions
-    (proxy as any)[operation] = function () {
+    (proxy as any)[operation] = function() {
       const args = Array.from(arguments);
       args.push(operation);
       return clientFunction.apply(proxy, args);
@@ -223,7 +237,7 @@ export class RpcRegistry {
   }
 
   private configureOperations<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>) {
-    const proto = (definition.prototype as any);
+    const proto = definition.prototype as any;
 
     Object.getOwnPropertyNames(proto).forEach((operationName) => {
       if (operationName === "constructor" || operationName === "configurationSupplier")

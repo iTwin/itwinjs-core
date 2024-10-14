@@ -120,15 +120,17 @@ export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, N
  * Options for requests that retrieve content.
  * @public
  */
-export type GetContentRequestOptions = ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> &
-  ClientDiagnosticsAttribute;
+export type GetContentRequestOptions =
+  & ContentRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>
+  & ClientDiagnosticsAttribute;
 
 /**
  * Options for requests that retrieve distinct values.
  * @public
  */
-export type GetDistinctValuesRequestOptions = DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable> &
-  ClientDiagnosticsAttribute;
+export type GetDistinctValuesRequestOptions =
+  & DistinctValuesRequestOptions<IModelConnection, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>
+  & ClientDiagnosticsAttribute;
 
 /**
  * Properties used to configure [[PresentationManager]]
@@ -236,8 +238,8 @@ export class PresentationManager implements IDisposable {
       this._explicitActiveUnitSystem = props.activeUnitSystem;
     }
 
-    this._requestsHandler =
-      props?.rpcRequestsHandler ?? new RpcRequestsHandler(props ? { clientId: props.clientId, timeout: props.requestTimeout } : undefined);
+    this._requestsHandler = props?.rpcRequestsHandler ??
+      new RpcRequestsHandler(props ? { clientId: props.clientId, timeout: props.requestTimeout } : undefined);
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
     this._rulesets = RulesetManagerImpl.create();
     this._localizationHelper = new FrontendLocalizationHelper(props?.activeLocale);
@@ -348,7 +350,9 @@ export class PresentationManager implements IDisposable {
     return this._rulesetVars.get(rulesetId)!;
   }
 
-  private toRpcTokenOptions<TOptions extends { imodel: IModelConnection; locale?: string; unitSystem?: UnitSystemKey; rulesetVariables?: RulesetVariable[] }>(
+  private toRpcTokenOptions<
+    TOptions extends { imodel: IModelConnection, locale?: string, unitSystem?: UnitSystemKey, rulesetVariables?: RulesetVariable[] },
+  >(
     requestOptions: TOptions,
   ) {
     // 1. put default `locale` and `unitSystem`
@@ -369,7 +373,9 @@ export class PresentationManager implements IDisposable {
     };
   }
 
-  private async addRulesetAndVariablesToOptions<TOptions extends { rulesetOrId: Ruleset | string; rulesetVariables?: RulesetVariable[] }>(options: TOptions) {
+  private async addRulesetAndVariablesToOptions<TOptions extends { rulesetOrId: Ruleset | string, rulesetVariables?: RulesetVariable[] }>(
+    options: TOptions,
+  ) {
     const { rulesetOrId, rulesetVariables } = options;
     let foundRulesetOrId: Ruleset | string;
     if (typeof rulesetOrId === "object") {
@@ -401,7 +407,7 @@ export class PresentationManager implements IDisposable {
   /** Returns an iterator that polls nodes asynchronously. */
   public async getNodesIterator(
     requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ total: number; items: AsyncIterableIterator<Node> }> {
+  ): Promise<{ total: number, items: AsyncIterableIterator<Node> }> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
@@ -442,7 +448,7 @@ export class PresentationManager implements IDisposable {
    * Retrieves total nodes count and a single page of nodes.
    * @deprecated in 4.5. Use [[getNodesIterator]] instead.
    */
-  public async getNodesAndCount(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{ count: number; nodes: Node[] }> {
+  public async getNodesAndCount(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{ count: number, nodes: Node[] }> {
     const result = await this.getNodesIterator(requestOptions);
     return {
       count: result.total,
@@ -497,7 +503,9 @@ export class PresentationManager implements IDisposable {
    * its related instances for loading related and navigation properties.
    * @public
    */
-  public async getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<SelectClassInfo[]> {
+  public async getContentSources(
+    requestOptions: ContentSourcesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute,
+  ): Promise<SelectClassInfo[]> {
     this.startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions(requestOptions);
     const result = await this._requestsHandler.getContentSources(rpcOptions);
@@ -537,7 +545,7 @@ export class PresentationManager implements IDisposable {
 
   private async getContentIteratorInternal(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
+  ): Promise<{ descriptor: Descriptor, total: number, items: AsyncIterableIterator<Item> } | undefined> {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const firstPageSize = options.batchSize ?? requestOptions.paging?.size;
     const rpcOptions = this.toRpcTokenOptions({
@@ -605,7 +613,7 @@ export class PresentationManager implements IDisposable {
   /** Retrieves a content descriptor, item count and async generator for the items themselves. */
   public async getContentIterator(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined> {
+  ): Promise<{ descriptor: Descriptor, total: number, items: AsyncIterableIterator<Item> } | undefined> {
     this.startIModelInitialization(requestOptions.imodel);
     const response = await this.getContentIteratorInternal(requestOptions);
     if (!response) {
@@ -631,7 +639,7 @@ export class PresentationManager implements IDisposable {
    */
   public async getContentAndSize(
     requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ content: Content; size: number } | undefined> {
+  ): Promise<{ content: Content, size: number } | undefined> {
     const response = await this.getContentIterator(requestOptions);
     if (!response) {
       return undefined;
@@ -648,7 +656,7 @@ export class PresentationManager implements IDisposable {
   /** Returns an iterator that asynchronously polls distinct values of specific field from the content. */
   public async getDistinctValuesIterator(
     requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions,
-  ): Promise<{ total: number; items: AsyncIterableIterator<DisplayValueGroup> }> {
+  ): Promise<{ total: number, items: AsyncIterableIterator<DisplayValueGroup> }> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
@@ -717,8 +725,11 @@ export class PresentationManager implements IDisposable {
    * @public
    */
   public async getContentInstanceKeys(
-    requestOptions: ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
-  ): Promise<{ total: number; items: () => AsyncGenerator<InstanceKey> }> {
+    requestOptions:
+      & ContentInstanceKeysRequestOptions<IModelConnection, KeySet, RulesetVariable>
+      & ClientDiagnosticsAttribute
+      & MultipleValuesRequestOptions,
+  ): Promise<{ total: number, items: () => AsyncGenerator<InstanceKey> }> {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = {
@@ -764,7 +775,7 @@ export class PresentationManager implements IDisposable {
   /** Retrieves display label definition of specific items. */
   public async getDisplayLabelDefinitionsIterator(
     requestOptions: DisplayLabelsRequestOptions<IModelConnection, InstanceKey> & ClientDiagnosticsAttribute & MultipleValuesRequestOptions,
-  ): Promise<{ total: number; items: AsyncIterableIterator<LabelDefinition> }> {
+  ): Promise<{ total: number, items: AsyncIterableIterator<LabelDefinition> }> {
     this.startIModelInitialization(requestOptions.imodel);
     const rpcOptions = this.toRpcTokenOptions({ ...requestOptions });
     const generator = new StreamedResponseGenerator({
@@ -809,8 +820,7 @@ const stripTransientElementKeys = (keys: KeySet) => {
     // the callback is not going to be called with EntityProps as KeySet converts them
     // to InstanceKeys, but we want to keep the EntityProps case for correctness
     // istanbul ignore next
-    const isTransient =
-      (Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME) ||
+    const isTransient = (Key.isInstanceKey(key) && key.className === TRANSIENT_ELEMENT_CLASSNAME) ||
       (Key.isEntityProps(key) && key.classFullName === TRANSIENT_ELEMENT_CLASSNAME);
     return !isTransient;
   });

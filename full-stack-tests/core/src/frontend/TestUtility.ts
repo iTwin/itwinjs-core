@@ -2,18 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { AccessToken, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
-import { ITwin } from "@itwin/itwins-client";
 import { AuthorizationClient } from "@itwin/core-common";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { IModelApp, IModelAppOptions, LocalhostIpcApp, MockRender, NativeApp } from "@itwin/core-frontend";
-import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
+import { ITwin } from "@itwin/itwins-client";
+import {
+  getAccessTokenFromBackend,
+  TestBrowserAuthorizationClientConfiguration,
+  TestUserCredentials,
+} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { assert } from "chai";
+import { setBackendAccessToken } from "../certa/certaCommon";
 import { IModelHubUserMgr } from "../common/IModelHubUserMgr";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { ITwinPlatformAbstraction, ITwinPlatformCloudEnv } from "./hub/ITwinPlatformEnv";
-import { setBackendAccessToken } from "../certa/certaCommon";
 
 export class TestUtility {
   public static testITwinName = "iModelJsIntegrationTest";
@@ -74,7 +78,6 @@ export class TestUtility {
       const accessToken = await setBackendAccessToken(user);
       if ("" === accessToken)
         throw new Error("no access token");
-
     } else {
       authorizationClient = new IModelHubUserMgr(user);
       IModelApp.authorizationClient = authorizationClient;
@@ -128,7 +131,9 @@ export class TestUtility {
   }
 
   public static systemFactory: MockRender.SystemFactory = () => TestUtility.createDefaultRenderSystem();
-  private static createDefaultRenderSystem() { return new MockRender.System(); }
+  private static createDefaultRenderSystem() {
+    return new MockRender.System();
+  }
 
   /** Helper around the different startup workflows for different app types.
    * If running in an Electron render process (via ProcessDetector.isElectronAppFrontend), the ElectronApp.startup is called.

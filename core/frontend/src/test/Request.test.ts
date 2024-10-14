@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import sinon from "sinon";
-import { HttpResponseError, request, RequestBasicCredentials } from "../request/Request";
 import { assert, expect, use } from "chai";
 import chaiAsPromised from "chai-as-promised";
+import sinon from "sinon";
+import { HttpResponseError, request, RequestBasicCredentials } from "../request/Request";
 
 use(chaiAsPromised);
 

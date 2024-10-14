@@ -10,7 +10,7 @@ import { Compiler } from "webpack";
 export class WatchBackendPlugin {
   private _prevTimestamp = Date.now();
 
-  constructor(private _backendOutputPath: string) { }
+  constructor(private _backendOutputPath: string) {}
 
   public apply(compiler: Compiler) {
     compiler.hooks.emit.tap("WatchBackendPlugin", (compilation: any) => {

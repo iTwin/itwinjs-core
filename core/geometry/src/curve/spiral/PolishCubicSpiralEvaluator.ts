@@ -55,7 +55,9 @@ export class PolishCubicEvaluator extends CubicEvaluator {
     super.scaleInPlace(scaleFactor);
   }
   /** return a deep copy of the evaluator */
-  public clone(): PolishCubicEvaluator { return new PolishCubicEvaluator(this.nominalLength1, this.nominalRadius1, this.axisLength, this.cubicM); }
+  public clone(): PolishCubicEvaluator {
+    return new PolishCubicEvaluator(this.nominalLength1, this.nominalRadius1, this.axisLength, this.cubicM);
+  }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof PolishCubicEvaluator) {
@@ -106,15 +108,17 @@ export class PolishCubicEvaluator extends CubicEvaluator {
     // 1/72==> 9/72 = 1/8
     // 1/208==>13/208=1/16
     // 1/2176==>17/2176= 1/128
-    const ds = (1.0 + ax4 * (0.5 + ax4 * (-1.0 / 8.0 + ax4 * (1.0 / 16.0 - 5.0 * ax4 / 128.0))));
+    const ds = 1.0 + ax4 * (0.5 + ax4 * (-1.0 / 8.0 + ax4 * (1.0 / 16.0 - 5.0 * ax4 / 128.0)));
     return ds;
   }
 
   /** Invert the xToApproximateDistance function. */
   public static approximateDistanceAlongToX(s: number, radius1: number, length1: number): number | undefined {
-    const root = SimpleNewton.runNewton1D(s,
+    const root = SimpleNewton.runNewton1D(
+      s,
       (x: number) => (this.xToApproximateDistance(x, radius1, length1) - s),
-      (x: number) => this.xToApproximateDistanceDerivative(x, radius1, length1));
+      (x: number) => this.xToApproximateDistanceDerivative(x, radius1, length1),
+    );
     return root;
   }
 }

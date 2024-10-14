@@ -2,14 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { CompressedId64Set } from "@itwin/core-bentley";
 import {
-  Atmosphere, AuthorizationClient, BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, GroundPlane, PlanarClipMaskMode,
-  PlanarClipMaskSettings, SkyGradient, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
+  Atmosphere,
+  AuthorizationClient,
+  BackgroundMapType,
+  ColorByName,
+  DisplayStyle3dProps,
+  DisplayStyle3dSettingsProps,
+  GroundPlane,
+  PlanarClipMaskMode,
+  PlanarClipMaskSettings,
+  SkyGradient,
+  SpatialClassifierInsideDisplay,
+  SpatialClassifierOutsideDisplay,
+  ThematicDisplayMode,
 } from "@itwin/core-common";
 import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Vector3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { AzuriteUsers, TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "../TestUtility";
 
@@ -28,7 +39,9 @@ describe("DisplayStyle", () => {
   let userToken = ""; // changes to simulate different levels of ViewStore authorization
   let azuriteUsers: AzuriteUsers; // valid users (sent from backend)
   const authorizationClient: AuthorizationClient = {
-    getAccessToken: async () => { return userToken; },
+    getAccessToken: async () => {
+      return userToken;
+    },
   };
 
   before(async () => {
@@ -58,15 +71,21 @@ describe("DisplayStyle", () => {
 
     // bad token should be unauthorized
     userToken = "bad guy";
-    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
+    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() }))
+      .rejectedWith("unauthorized");
 
     // valid readonly token should fail too
     userToken = azuriteUsers.readOnly;
-    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() })).rejectedWith("unauthorized");
+    await expect(imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() }))
+      .rejectedWith("unauthorized");
 
     // should save correctly with valid readwrite token
     userToken = azuriteUsers.readWrite;
-    const id = await imodel.views.viewStoreWriter.addDisplayStyle({ name: "test", className: style1.classFullName, settings: style1.settings.toJSON() });
+    const id = await imodel.views.viewStoreWriter.addDisplayStyle({
+      name: "test",
+      className: style1.classFullName,
+      settings: style1.settings.toJSON(),
+    });
     expect(id).equal("@1");
 
     userToken = azuriteUsers.readOnly;
@@ -186,7 +205,13 @@ describe("DisplayStyle", () => {
         providerData: { mapType: BackgroundMapType.Street },
         applyTerrain: true,
         terrainSettings: { exaggeration: 0.5, heightOriginMode: 1 },
-        planarClipMask: { mode: PlanarClipMaskMode.IncludeSubCategories, modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]), transparency: .5, subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]), priority: 0 },
+        planarClipMask: {
+          mode: PlanarClipMaskMode.IncludeSubCategories,
+          modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]),
+          transparency: .5,
+          subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]),
+          priority: 0,
+        },
       },
     });
 
@@ -215,8 +240,7 @@ describe("DisplayStyle", () => {
           name: "bing",
           isActive: true,
         }],
-      },
-      {
+      }, {
         tilesetUrl: "google.com",
         name: "google",
         description: "a popular search engine",
@@ -232,8 +256,7 @@ describe("DisplayStyle", () => {
           name: "google",
           isActive: true,
         }],
-      },
-      ],
+      }],
     });
 
     test({
@@ -285,7 +308,13 @@ describe("DisplayStyle", () => {
         tilesetUrl: "google.com",
         name: "google",
         description: "a popular search engine",
-        planarClipMask: { mode: PlanarClipMaskMode.IncludeSubCategories, modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]), transparency: .5, subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]), priority: 1024 },
+        planarClipMask: {
+          mode: PlanarClipMaskMode.IncludeSubCategories,
+          modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]),
+          transparency: .5,
+          subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]),
+          priority: 1024,
+        },
         classifiers: [{
           modelId: "0x123",
           expand: 0.5,
@@ -314,7 +343,11 @@ describe("DisplayStyle", () => {
     // Also, while we have one constructed, test creation with reality model and script.
     const newStyle = new DisplayStyle3dState(style.toJSON(), imodel);
     userToken = azuriteUsers.readWrite;
-    const s2 = await imodel.views.viewStoreWriter.addDisplayStyle({ name: "newStyle", className: newStyle.classFullName, settings: newStyle.settings.toJSON() });
+    const s2 = await imodel.views.viewStoreWriter.addDisplayStyle({
+      name: "newStyle",
+      className: newStyle.classFullName,
+      settings: newStyle.settings.toJSON(),
+    });
     expect(s2).not.to.be.undefined;
 
     await newStyle.load();

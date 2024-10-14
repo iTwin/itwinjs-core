@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64Arg } from "@itwin/core-bentley";
-import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@itwin/frontend-devtools";
 import { IModelConnection, Viewport, ViewState } from "@itwin/core-frontend";
+import { createButton, createTextBox, deserializeViewState, serializeViewState } from "@itwin/frontend-devtools";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
+import { DisplayTransformProvider } from "./DisplayTransform";
 import { Provider } from "./FeatureOverrides";
 import { NamedViewStatePropsString, NamedVSPSList } from "./NamedViews";
 import { ToolBarDropDown } from "./ToolBar";
-import { DisplayTransformProvider } from "./DisplayTransform";
 
 export interface ApplySavedView {
   applySavedView(view: ViewState): Promise<void>;
@@ -48,9 +48,15 @@ export class SavedViewPicker extends ToolBarDropDown {
     parent.appendChild(this._element);
   }
 
-  public get isOpen() { return "none" !== this._element.style.display; }
-  protected _open() { this._element.style.display = "block"; }
-  protected _close() { this._element.style.display = "none"; }
+  public get isOpen() {
+    return "none" !== this._element.style.display;
+  }
+  protected _open() {
+    this._element.style.display = "block";
+  }
+  protected _close() {
+    this._element.style.display = "none";
+  }
 
   public override get onViewChanged(): Promise<void> | undefined {
     if (this._imodel !== this._vp.iModel) {
@@ -174,7 +180,11 @@ export class SavedViewPicker extends ToolBarDropDown {
       textBox.textbox.style.color = viewExists ? "red" : "";
     };
 
-    newButton.disabled = recallButton.disabled = updateButton.disabled = deleteButton.disabled = true;
+    newButton.disabled =
+      recallButton.disabled =
+      updateButton.disabled =
+      deleteButton.disabled =
+        true;
   }
 
   private async recallView(): Promise<void> {

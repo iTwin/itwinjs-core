@@ -20,21 +20,21 @@ module.exports = {
       {
         test: /\.js$/,
         use: "source-map-loader",
-        enforce: "pre"
+        enforce: "pre",
       },
       {
         test: /growl\.js$/,
-        use: 'null-loader'
+        use: "null-loader",
       },
       {
         test: /xunit\.js$/,
-        use: 'null-loader'
+        use: "null-loader",
       },
       {
         test: /bunyan/,
-        use: 'null-loader'
-      }
-    ]
+        use: "null-loader",
+      },
+    ],
   },
   externals: {
     "@bentley/imodeljs-electronaddon": "throw new Error('should never happen')",
@@ -44,9 +44,9 @@ module.exports = {
     "./IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "../IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "fs": "IModelJsFs",
-    "fs-extra": "IModelJsFs"
+    "fs-extra": "IModelJsFs",
   },
   stats: {
-    warnings: false
-  }
-}
+    warnings: false,
+  },
+};

@@ -8,12 +8,12 @@
 
 import { assert } from "@itwin/core-bentley";
 import { AnalysisStyleDisplacement, AnalysisStyleThematic, ThematicGradientSettings } from "@itwin/core-common";
+import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../../common/internal/render/AuxChannelTable";
 import { DrawParams } from "../DrawCommand";
 import { TextureUnit } from "../RenderFlags";
 import { VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { octDecodeNormal } from "./Surface";
 import { unquantizePosition } from "./Vertex";
-import { AuxChannel, AuxDisplacementChannel, AuxParamChannel } from "../../../common/internal/render/AuxChannelTable";
 
 const initialize = `
   g_anim_step = vec2(1.0) / u_animLUTParams.xy;
@@ -133,9 +133,10 @@ const scratchAnimParams = [
 
 function getAnimParams(size: 2 | 3, initialValue?: number): Float32Array {
   const array = scratchAnimParams[size]!;
-  if (undefined !== initialValue)
+  if (undefined !== initialValue) {
     for (let i = 0; i < array.length; i++)
       array[i] = initialValue;
+  }
 
   return array;
 }
@@ -232,9 +233,10 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
     prog.addGraphicUniform("u_qAnimDispScale", (uniform, params) => {
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
-      if (undefined !== disp)
+      if (undefined !== disp) {
         for (let i = 0; i < 3; i++)
           animParams[i] = disp.channel.qScale[i] * disp.displacement.scale;
+      }
 
       uniform.setUniform3fv(animParams);
     });
@@ -243,9 +245,10 @@ export function addAnimation(vert: VertexShaderBuilder, isSurface: boolean): voi
     prog.addGraphicUniform("u_qAnimDispOrigin", (uniform, params) => {
       const animParams = getAnimParams(3, 0.0);
       const disp = getDisplacementChannel(params);
-      if (undefined !== disp)
+      if (undefined !== disp) {
         for (let i = 0; i < 3; i++)
           animParams[i] = disp.channel.qOrigin[i] * disp.displacement.scale;
+      }
 
       uniform.setUniform3fv(animParams);
     });

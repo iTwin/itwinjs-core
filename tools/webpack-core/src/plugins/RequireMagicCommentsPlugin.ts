@@ -49,13 +49,19 @@ interface MagicCommentHandlerConfig {
  * Will result in webpack treating `require(/* foo *﻿/"bar")` as if it had been `require("bar?foo")`.
  */
 export class RequireMagicCommentsPlugin {
-  constructor(private _configs: MagicCommentHandlerConfig[]) { }
+  constructor(private _configs: MagicCommentHandlerConfig[]) {}
 
   public apply(compiler: Compiler) {
     compiler.hooks.normalModuleFactory.tap("RequireMagicCommentsPlugin", (nmf) => {
       nmf.hooks.parser.for("javascript/auto").tap("RequireMagicCommentsPlugin", (parser: any) => {
-        parser.hooks.call.for("require").tap("RequireMagicCommentsPlugin", this.handleCommonJs(parser, CommonJsRequireDependency, RequireHeaderDependency));
-        parser.hooks.call.for("require.resolve").tap("RequireMagicCommentsPlugin", this.handleCommonJs(parser, RequireResolveDependency, RequireResolveHeaderDependency));
+        parser.hooks.call.for("require").tap(
+          "RequireMagicCommentsPlugin",
+          this.handleCommonJs(parser, CommonJsRequireDependency, RequireHeaderDependency),
+        );
+        parser.hooks.call.for("require.resolve").tap(
+          "RequireMagicCommentsPlugin",
+          this.handleCommonJs(parser, RequireResolveDependency, RequireResolveHeaderDependency),
+        );
       });
     });
   }
@@ -95,7 +101,11 @@ export class RequireMagicCommentsPlugin {
             logger.log(`Converting require.resolve => require for "${param.string}" at ${getSourcePosition(parser.state.current, expr.loc)}`);
           }
           request = handler(request, comment.value);
-          logger.log(`Handler for /*${comment.value}*/ - transformed "${param.string}" => "${request}" at ${getSourcePosition(parser.state.current, expr.loc)}`);
+          logger.log(
+            `Handler for /*${comment.value}*/ - transformed "${param.string}" => "${request}" at ${
+              getSourcePosition(parser.state.current, expr.loc)
+            }`,
+          );
         }
       }
 

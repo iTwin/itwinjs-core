@@ -23,7 +23,6 @@ export class ArcGisGeometryReaderJSON {
   public async readGeometry(geometry: any) {
     if (this._ringsOrPaths) {
       await this.readRingsAndPaths(geometry, this._renderer, this._fill, this._relativeCoords);
-
     } else if (this._points) {
       await this.readPoints(geometry, this._renderer, this._relativeCoords);
     }

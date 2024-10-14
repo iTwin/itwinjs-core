@@ -29,7 +29,7 @@ export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, 
  * @see [[isInstanceOf]] to determine if an arbitrary value is an instance of class `T`.
  * @public
  */
-export type Constructor<T> = new (...args: any[]) => T;
+export type Constructor<T> = new(...args: any[]) => T;
 
 /** Returns true if `obj` is an object of class `T`.
  * @see [[asInstanceOf]] to cast `obj` to class `T`.
@@ -91,7 +91,7 @@ export type AsyncFunction = (...args: any[]) => Promise<unknown>;
 /** The members of `T` that are async functions (functions that return a promise), and no other properties
  * @public
  */
-export type PickAsyncMethods<T> = { [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never; };
+export type PickAsyncMethods<T> = { [P in keyof T]: T[P] extends AsyncFunction ? T[P] : never };
 
 /** Extracts the names of all function properties of `T` that return a Promise.
  * @public
@@ -111,7 +111,7 @@ export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any
 /** The members of `T` that are functions and no other properties
  * @public
  */
-export type PickMethods<T> = { [P in keyof T]: T[P] extends Function ? T[P] : never; };
+export type PickMethods<T> = { [P in keyof T]: T[P] extends Function ? T[P] : never };
 
 /** The members of `T` that are functions that do not return a Promise
  * @public

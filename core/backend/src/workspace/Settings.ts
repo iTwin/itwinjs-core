@@ -8,8 +8,8 @@
 
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { WorkspaceDb } from "./Workspace";
 import { _implementationProhibited } from "../internal/Symbols";
+import { WorkspaceDb } from "./Workspace";
 
 /** The value of a single named parameter within a [[Workspace.settings]] that configures some aspect of the applications run-time behavior.
  * Settings are stored in a [[SettingsDictionary]]. A setting is described by its [[SettingSchema]].
@@ -261,7 +261,7 @@ export interface Settings {
   getSetting<T extends Setting>(settingName: SettingName, defaultValue?: T): T | undefined;
 
   /** Obtain an iterator over all of the values in the [[dictionaries]] for the [[Setting]] identified by `settingName`, ordered by [[SettingsPriority]]. */
-  getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary}>;
+  getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary }>;
 
   /** Obtain an iterator over all of the values in the [[dictionaries]] for the [[Setting]] identified by `settingName`, ordered by [[SettingsPriority]]. */
   getSettingValues<T extends Setting>(settingName: SettingName): Iterable<T>;

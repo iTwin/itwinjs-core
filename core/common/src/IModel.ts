@@ -8,8 +8,22 @@
 
 import { assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64String, IModelStatus, Mutable, OpenMode } from "@itwin/core-bentley";
 import {
-  Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, TransformProps, Vector3d, XYAndZ, XYZProps,
-  YawPitchRollAngles, YawPitchRollProps,
+  Angle,
+  AxisIndex,
+  AxisOrder,
+  Constant,
+  Geometry,
+  Matrix3d,
+  Point3d,
+  Range3d,
+  Range3dProps,
+  Transform,
+  TransformProps,
+  Vector3d,
+  XYAndZ,
+  XYZProps,
+  YawPitchRollAngles,
+  YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { ChangesetIdWithIndex } from "./ChangesetProps";
 import { Cartographic, CartographicProps } from "./geometry/Cartographic";
@@ -144,7 +158,7 @@ export interface OpenSqliteArgs {
    * Specify timeout after which SQLite stop retrying to acquire lock to database file and throw SQLITE_BUSY error.
    * Timeout is specified in milliseconds.
    * For more information https://www.sqlite.org/c3ref/busy_timeout.html.
-   * */
+   */
   readonly busyTimeout?: number;
 }
 
@@ -248,14 +262,20 @@ export class EcefLocation implements EcefLocationProps {
   private readonly _transform: Transform = Transform.createIdentity();
 
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform { return this._transform; }
+  public getTransform(): Transform {
+    return this._transform;
+  }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
     this.origin = Point3d.fromJSON(props.origin).freeze();
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation).freeze();
     if (props.cartographicOrigin)
-      this.cartographicOrigin = Cartographic.fromRadians({ longitude: props.cartographicOrigin.longitude, latitude: props.cartographicOrigin.latitude, height: props.cartographicOrigin.height }).freeze();
+      this.cartographicOrigin = Cartographic.fromRadians({
+        longitude: props.cartographicOrigin.longitude,
+        latitude: props.cartographicOrigin.latitude,
+        height: props.cartographicOrigin.height,
+      }).freeze();
     if (props.xVector && props.yVector) {
       this.xVector = Vector3d.fromJSON(props.xVector).freeze();
       this.yVector = Vector3d.fromJSON(props.yVector).freeze();
@@ -486,7 +506,7 @@ export abstract class IModel implements IModelProps {
    * cartographic projection used and a linear transformation should then be calculated at the exact origin of the data
    * it must position.
    * @see [GeoLocation of iModels]($docs/learning/GeoLocation.md)
-  */
+   */
   public get ecefLocation(): EcefLocation | undefined {
     return this._ecefLocation;
   }
@@ -535,7 +555,7 @@ export abstract class IModel implements IModelProps {
       globalOrigin: this.globalOrigin.toJSON(),
       ecefLocation: this.ecefLocation,
       geographicCoordinateSystem: this.geographicCoordinateSystem,
-      ... this._getRpcProps(),
+      ...this._getRpcProps(),
     };
   }
 
@@ -549,15 +569,21 @@ export abstract class IModel implements IModelProps {
    */
   protected _fileKey: string;
   /** Get the key that was used to open this iModel. This is the value used for Rpc and Ipc communications. */
-  public get key(): string { return this._fileKey; }
+  public get key(): string {
+    return this._fileKey;
+  }
 
   /** @internal */
   protected _iTwinId?: GuidString;
   /** The Guid that identifies the iTwin that owns this iModel. */
-  public get iTwinId(): GuidString | undefined { return this._iTwinId; }
+  public get iTwinId(): GuidString | undefined {
+    return this._iTwinId;
+  }
 
   /** The Guid that identifies this iModel. */
-  public get iModelId(): GuidString | undefined { return this._iModelId; }
+  public get iModelId(): GuidString | undefined {
+    return this._iModelId;
+  }
 
   /** @public */
   public get changeset(): ChangesetIdWithIndex {
@@ -573,7 +599,9 @@ export abstract class IModel implements IModelProps {
 
   protected _openMode = OpenMode.Readonly;
   /** The [[OpenMode]] used for this IModel. */
-  public get openMode(): OpenMode { return this._openMode; }
+  public get openMode(): OpenMode {
+    return this._openMode;
+  }
 
   /** Return a token for RPC operations.
    * @throws IModelError if the iModel is not open.
@@ -628,7 +656,9 @@ export abstract class IModel implements IModelProps {
   }
 
   /** True if this iModel has an [EcefLocation]($docs/learning/glossary#ecefLocation). */
-  public get isGeoLocated() { return undefined !== this._ecefLocation; }
+  public get isGeoLocated() {
+    return undefined !== this._ecefLocation;
+  }
 
   /** Get the Transform from this iModel's Spatial coordinates to ECEF coordinates using its [[IModel.ecefLocation]].
    * @throws IModelError if [[isGeoLocated]] is false.
@@ -645,7 +675,9 @@ export abstract class IModel implements IModelProps {
    * @returns A Point3d in ECEF coordinates
    * @throws IModelError if [[isGeoLocated]] is false.
    */
-  public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyPoint3d(spatial, result); }
+  public spatialToEcef(spatial: XYAndZ, result?: Point3d): Point3d {
+    return this.getEcefTransform().multiplyPoint3d(spatial, result);
+  }
 
   /** Convert a point in ECEF coordinates to a point in this iModel's Spatial coordinates using its [[ecefLocation]].
    * @param ecef A point in ECEF coordinates
@@ -654,7 +686,9 @@ export abstract class IModel implements IModelProps {
    * @throws IModelError if [[isGeoLocated]] is false.
    * @note The resultant point will only be meaningful if the ECEF coordinate is close on the earth to the iModel.
    */
-  public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d { return this.getEcefTransform().multiplyInversePoint3d(ecef, result)!; }
+  public ecefToSpatial(ecef: XYAndZ, result?: Point3d): Point3d {
+    return this.getEcefTransform().multiplyInversePoint3d(ecef, result)!;
+  }
 
   /** Convert a point in this iModel's Spatial coordinates to a [[Cartographic]] using its [[IModel.ecefLocation]].
    * @param spatial A point in the iModel's spatial coordinates
@@ -662,7 +696,9 @@ export abstract class IModel implements IModelProps {
    * @returns A Cartographic location
    * @throws IModelError if [[isGeoLocated]] is false.
    */
-  public spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic { return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!; }
+  public spatialToCartographicFromEcef(spatial: XYAndZ, result?: Cartographic): Cartographic {
+    return Cartographic.fromEcef(this.spatialToEcef(spatial), result)!;
+  }
 
   /** Convert a [[Cartographic]] to a point in this iModel's Spatial coordinates using its [[IModel.ecefLocation]].
    * @param cartographic A cartographic location
@@ -671,5 +707,7 @@ export abstract class IModel implements IModelProps {
    * @throws IModelError if [[isGeoLocated]] is false.
    * @note The resultant point will only be meaningful if the ECEF coordinate is close on the earth to the iModel.
    */
-  public cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d) { return this.ecefToSpatial(cartographic.toEcef(result), result); }
+  public cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d) {
+    return this.ecefToSpatial(cartographic.toEcef(result), result);
+  }
 }

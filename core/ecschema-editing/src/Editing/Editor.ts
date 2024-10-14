@@ -6,26 +6,37 @@
  * @module Editing
  */
 
-import * as Rules from "../Validation/ECRules";
-import { CustomAttribute, ECObjectsError, ECObjectsStatus, Schema, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { MutableSchema } from "./Mutable/MutableSchema";
 import { assert } from "@itwin/core-bentley";
+import {
+  CustomAttribute,
+  ECObjectsError,
+  ECObjectsStatus,
+  Schema,
+  SchemaContext,
+  SchemaItem,
+  SchemaItemKey,
+  SchemaItemType,
+  SchemaKey,
+  SchemaMatchType,
+} from "@itwin/ecschema-metadata";
+import { AnyDiagnostic } from "../Validation/Diagnostic";
+import * as Rules from "../Validation/ECRules";
 import { Constants } from "./Constants";
 import { CustomAttributes } from "./CustomAttributes";
 import { Entities } from "./Entities";
 import { Enumerations } from "./Enumerations";
+import { CustomAttributeId, ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
 import { Formats } from "./Formats";
 import { InvertedUnits } from "./InvertedUnits";
 import { KindOfQuantities } from "./KindOfQuantities";
 import { Mixins } from "./Mixins";
+import { MutableSchema } from "./Mutable/MutableSchema";
 import { Phenomena } from "./Phenomena";
 import { PropertyCategories } from "./PropertyCategories";
 import { RelationshipClasses } from "./RelationshipClasses";
 import { Structs } from "./Structs";
 import { Units } from "./Units";
 import { UnitSystems } from "./UnitSystems";
-import { CustomAttributeId, ECEditingStatus, SchemaEditingError, SchemaId, SchemaItemId } from "./Exception";
-import { AnyDiagnostic } from "../Validation/Diagnostic";
 
 /**
  * A class that allows you to edit and create schemas, classes, and items from the SchemaContext level.
@@ -58,7 +69,9 @@ export class SchemaContextEditor {
   }
 
   /** Allows you to get schema classes and items through regular SchemaContext methods. */
-  public get schemaContext(): SchemaContext { return this._schemaContext; }
+  public get schemaContext(): SchemaContext {
+    return this._schemaContext;
+  }
 
   public async finish(): Promise<SchemaContext> {
     return this._schemaContext;
@@ -68,7 +81,7 @@ export class SchemaContextEditor {
    * Helper method for retrieving a schema, previously added, from the SchemaContext.
    * @param schemaKey The SchemaKey identifying the schema.
    * @internal
-  */
+   */
   public async getSchema(schemaKey: SchemaKey): Promise<MutableSchema> {
     const schema = await this.schemaContext.getCachedSchema<MutableSchema>(schemaKey, SchemaMatchType.Latest);
     if (schema === undefined)
@@ -180,7 +193,11 @@ export class SchemaContextEditor {
   }
 
   /** @internal */
-  public async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: Schema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType: SchemaItemType): Promise<T> {
+  public async lookupSchemaItem<T extends SchemaItem>(
+    schemaOrKey: Schema | SchemaKey,
+    schemaItemKey: SchemaItemKey,
+    schemaItemType: SchemaItemType,
+  ): Promise<T> {
     const schema = Schema.isSchema(schemaOrKey)
       ? schemaOrKey
       : await this.getSchema(schemaOrKey);
@@ -272,17 +289,25 @@ export class SchemaContextEditor {
           continue;
 
         if (currentSchema.alias.toLowerCase() === alias.toLowerCase())
-          throw new SchemaEditingError(ECEditingStatus.SchemaAliasAlreadyExists, new SchemaId(schemaKey), undefined, undefined, `Schema ${currentSchema.name} already uses the alias '${alias}'.`);
+          throw new SchemaEditingError(
+            ECEditingStatus.SchemaAliasAlreadyExists,
+            new SchemaId(schemaKey),
+            undefined,
+            undefined,
+            `Schema ${currentSchema.name} already uses the alias '${alias}'.`,
+          );
       }
       schema.setAlias(alias);
-    } catch(e: any) {
+    } catch (e: any) {
       if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
-        throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey),
-          new SchemaEditingError(ECEditingStatus.InvalidSchemaAlias, new SchemaId(schemaKey)));
+        throw new SchemaEditingError(
+          ECEditingStatus.SetSchemaAlias,
+          new SchemaId(schemaKey),
+          new SchemaEditingError(ECEditingStatus.InvalidSchemaAlias, new SchemaId(schemaKey)),
+        );
       }
 
-      throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias,  new SchemaId(schemaKey), e);
+      throw new SchemaEditingError(ECEditingStatus.SetSchemaAlias, new SchemaId(schemaKey), e);
     }
   }
 }
-

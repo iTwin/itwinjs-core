@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { assert, Guid, Id64 } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import {
@@ -18,7 +17,7 @@ import {
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { collect, getFieldByLabel } from "../../Utils";
+import { expect } from "chai";
 import {
   buildTestIModelConnection,
   insertDocumentPartition,
@@ -26,6 +25,7 @@ import {
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
 } from "../../IModelSetupUtils";
+import { collect, getFieldByLabel } from "../../Utils";
 import { describeContentTestSuite } from "./Utils";
 
 describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
@@ -238,7 +238,8 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
         id: Id64.invalid,
       },
     ]);
-    const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys: consolidatedKeys, displayType: "" }))!;
+    const descriptor =
+      (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset, keys: consolidatedKeys, displayType: "" }))!;
     const field = getFieldByLabel(descriptor.fields, "User Label");
 
     await validatePagedDistinctValuesResponse(imodel, ruleset, consolidatedKeys, descriptor, field.getFieldDescriptor(), [
@@ -279,7 +280,7 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
     ]);
   });
 
-  it("gets distinct content values based on hierarchy level descriptor", async function () {
+  it("gets distinct content values based on hierarchy level descriptor", async function() {
     // create an imodel with Model -> Elements relationship
     const testIModel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
       const categoryKey = insertSpatialCategory({ db, codeValue: "Category" });
@@ -331,7 +332,9 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
         },
       ],
     };
-    const rootNodes = await Presentation.presentation.getNodesIterator({ imodel: testIModel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
+    const rootNodes = await Presentation.presentation.getNodesIterator({ imodel: testIModel, rulesetOrId: ruleset }).then(async (x) =>
+      collect(x.items)
+    );
     expect(rootNodes.length).to.eq(2);
     const descriptor = await Presentation.presentation.getNodesDescriptor({ imodel: testIModel, rulesetOrId: ruleset, parentKey: rootNodes[0].key });
     assert(!!descriptor);
@@ -359,27 +362,41 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
 
     const userLabelField = getFieldByLabel(descriptor.fields, "User Label");
     // user labels are different for every child element, expect 2 unique values
-    await validatePagedDistinctValuesResponse(testIModel, descriptor.ruleset!, new KeySet([rootNodes[0].key]), {}, userLabelField.getFieldDescriptor(), [
-      {
-        displayValue: "Element A1",
-        groupedRawValues: ["Element A1"],
-      },
-      {
-        displayValue: "Element A2",
-        groupedRawValues: ["Element A2"],
-      },
-    ]);
+    await validatePagedDistinctValuesResponse(
+      testIModel,
+      descriptor.ruleset!,
+      new KeySet([rootNodes[0].key]),
+      {},
+      userLabelField.getFieldDescriptor(),
+      [
+        {
+          displayValue: "Element A1",
+          groupedRawValues: ["Element A1"],
+        },
+        {
+          displayValue: "Element A2",
+          groupedRawValues: ["Element A2"],
+        },
+      ],
+    );
 
     // user label is the same for every child element, expect only 1 unique value
-    await validatePagedDistinctValuesResponse(testIModel, descriptor.ruleset!, new KeySet([rootNodes[1].key]), {}, userLabelField.getFieldDescriptor(), [
-      {
-        displayValue: "Element B",
-        groupedRawValues: ["Element B"],
-      },
-    ]);
+    await validatePagedDistinctValuesResponse(
+      testIModel,
+      descriptor.ruleset!,
+      new KeySet([rootNodes[1].key]),
+      {},
+      userLabelField.getFieldDescriptor(),
+      [
+        {
+          displayValue: "Element B",
+          groupedRawValues: ["Element B"],
+        },
+      ],
+    );
   });
 
-  it("filters distinct content values using descriptor's instance filter", async function () {
+  it("filters distinct content values using descriptor's instance filter", async function() {
     const testIModel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
       insertDocumentPartition(db, "A", "A");
       insertDocumentPartition(db, "B1", "B");
@@ -423,7 +440,7 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
     ]);
   });
 
-  it("filters distinct content values using descriptor's fields filter", async function () {
+  it("filters distinct content values using descriptor's fields filter", async function() {
     const testIModel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
       insertDocumentPartition(db, "A", "A");
       insertDocumentPartition(db, "B1", "B");

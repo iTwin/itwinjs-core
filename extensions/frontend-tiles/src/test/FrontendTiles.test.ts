@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { frontendTilesOptions, FrontendTilesOptions, initializeFrontendTiles } from "../FrontendTiles";
+import { FrontendTilesOptions, frontendTilesOptions, initializeFrontendTiles } from "../FrontendTiles";
 
 describe("FrontendTiles", () => {
   it("should initialize frontend tiles with default values", () => {

@@ -29,7 +29,9 @@ export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;
   private _request: RequestInit = {};
   private _pathSuffix: string = "";
-  private get _headers() { return this._request.headers as { [key: string]: string }; }
+  private get _headers() {
+    return this._request.headers as { [key: string]: string };
+  }
 
   /** The maximum size permitted for an encoded component in a URL.
    * Note that some backends limit the total cumulative request size. Our current node backends accept requests with a max size of 16 kb.
@@ -98,7 +100,7 @@ export class WebAppRpcRequest extends RpcRequest {
       try {
         resolve(await this.performFetch());
       } catch (reason) {
-        reject(new ServerError(-1, typeof (reason) === "string" ? reason : "Server connection error."));
+        reject(new ServerError(-1, typeof reason === "string" ? reason : "Server connection error."));
       }
     });
   }
@@ -170,7 +172,7 @@ export class WebAppRpcRequest extends RpcRequest {
           return;
 
         this._loading = false;
-        reject(new ServerError(this.metadata.status, typeof (reason) === "string" ? reason : "Unknown server response error."));
+        reject(new ServerError(this.metadata.status, typeof reason === "string" ? reason : "Unknown server response error."));
       }
     });
   }
@@ -189,7 +191,7 @@ export class WebAppRpcRequest extends RpcRequest {
     const requestClass = this.supplyRequest();
     const fetchFunction = this.supplyFetch();
 
-    const path = new URL(this.path, typeof (location) !== "undefined" ? location.origin : undefined);
+    const path = new URL(this.path, typeof location !== "undefined" ? location.origin : undefined);
     if (this._pathSuffix) {
       const params = new URLSearchParams();
       params.set("parameters", this._pathSuffix);
@@ -267,7 +269,13 @@ export class WebAppRpcRequest extends RpcRequest {
 
   /** @internal */
   public static backend = {
-    sendResponse: async (_protocol: WebAppRpcProtocol, _request: SerializedRpcRequest, _fulfillment: RpcRequestFulfillment, _req: HttpServerRequest, _res: HttpServerResponse): Promise<void> => {
+    sendResponse: async (
+      _protocol: WebAppRpcProtocol,
+      _request: SerializedRpcRequest,
+      _fulfillment: RpcRequestFulfillment,
+      _req: HttpServerRequest,
+      _res: HttpServerResponse,
+    ): Promise<void> => {
       throw new IModelError(BentleyStatus.ERROR, "Not bound.");
     },
     parseRequest: async (_protocol: WebAppRpcProtocol, _req: HttpServerRequest): Promise<SerializedRpcRequest> => {

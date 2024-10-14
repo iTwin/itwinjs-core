@@ -13,12 +13,12 @@ module.exports = [
         "error",
         {
           "releaseTags": [
-            "public"
+            "public",
           ],
-          "outputApiFile": false
-        }
-      ]
-    }
+          "outputApiFile": false,
+        },
+      ],
+    },
   },
   ...eslintBaseConfig,
 ];

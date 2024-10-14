@@ -10,12 +10,12 @@ type TestCaseName = "rectangle" | "triangles" | "lineString" | "lineStrings" | "
 
 function changeVersionInPlace(bytes: Uint8Array, versionMajor?: number, versionMinor?: number): void {
   if (undefined !== versionMinor) {
-    bytes[4] = (versionMinor & 0x00ff);
+    bytes[4] = versionMinor & 0x00ff;
     bytes[5] = (versionMinor & 0xff00) >> 8;
   }
 
   if (undefined !== versionMajor) {
-    bytes[6] = (versionMajor & 0x00ff);
+    bytes[6] = versionMajor & 0x00ff;
     bytes[7] = (versionMajor & 0xff00) >> 8;
   }
 }
@@ -64,14 +64,14 @@ export function changeMajorVersion(src: TileTestData, versionMajor: number): Til
 function changeHeaderLengthInPlace(bytes: Uint8Array, data: TileTestData, numPaddingBytes: number): void {
   // header length is 32-bit little-endian integer beginning at index 8.
   const headerLength = data.headerLength + numPaddingBytes;
-  bytes[8] = (headerLength & 0xff);
+  bytes[8] = headerLength & 0xff;
   bytes[9] = (headerLength & 0xff00) >>> 8;
   bytes[10] = (headerLength & 0xff0000) >>> 0x10;
   bytes[11] = (headerLength & 0xff000000) >>> 0x18;
 
   // tile length is 32-bit little-endian integer beginning at index 80
   const tileLength = ((bytes[80] | (bytes[81] << 8) | (bytes[82] << 0x10) | (bytes[83] << 0x18)) >>> 0) + numPaddingBytes;
-  bytes[80] = (tileLength & 0xff);
+  bytes[80] = tileLength & 0xff;
   bytes[81] = (tileLength & 0xff00) >>> 8;
   bytes[82] = (tileLength & 0xff0000) >>> 0x10;
   bytes[83] = (tileLength & 0xff000000) >>> 0x18;

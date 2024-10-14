@@ -3,12 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DrawingViewState, IModelApp, Tool } from "@itwin/core-frontend";
 import { Id64 } from "@itwin/core-bentley";
+import {
+  CategorySelectorProps,
+  Code,
+  ColorDef,
+  DisplayStyleProps,
+  IModel,
+  Npc,
+  QueryRowFormat,
+  SectionDrawingViewProps,
+  ViewDefinition2dProps,
+  ViewStateProps,
+} from "@itwin/core-common";
+import { DrawingViewState, IModelApp, Tool } from "@itwin/core-frontend";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { CreateSectionDrawingViewArgs } from "../common/DtaIpcInterface";
 import { dtaIpc } from "./App";
-import { Range3d, Transform } from "@itwin/core-geometry";
-import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, Npc, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewStateProps } from "@itwin/core-common";
 
 /** Creates a section drawing model that references a copy of the active viewport's spatial view,
  * then changes the viewport to render a (non-persistent) drawing view displaying the drawing model along
@@ -16,8 +27,12 @@ import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, Npc, 
  */
 export class CreateSectionDrawingTool extends Tool {
   public static override toolId = "CreateSectionDrawing";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     return this.run(args[0]);
@@ -70,7 +85,11 @@ export class CreateSectionDrawingTool extends Tool {
 
     // Enable all 2d categories.
     const categories = [];
-    for await (const row of spatialView.iModel.createQueryReader("SELECT ECInstanceId from BisCore.DrawingCategory", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (
+      const row of spatialView.iModel.createQueryReader("SELECT ECInstanceId from BisCore.DrawingCategory", undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })
+    ) {
       categories.push(row.id);
     }
 
@@ -124,4 +143,3 @@ export class CreateSectionDrawingTool extends Tool {
     return true;
   }
 }
-

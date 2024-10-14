@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64Set, Id64String } from "@itwin/core-bentley";
-import { ClipVector, Transform } from "@itwin/core-geometry";
 import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
-import { ModelDisplayTransform,  RenderClipVolume } from "@itwin/core-frontend";
+import { ModelDisplayTransform, RenderClipVolume } from "@itwin/core-frontend";
+import { ClipVector, Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { groupModels, ModelGroupingContext } from "../ModelGroup";
 import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms";
 
@@ -64,7 +64,12 @@ class GroupingContext implements ModelGroupingContext {
   }
 }
 
-function expectGrouping(expected: Array<Id64String[]>, args: GroupingContextArgs, modelIds: Id64String[], expectedNodeIds?: Array<number[] | undefined>): void {
+function expectGrouping(
+  expected: Array<Id64String[]>,
+  args: GroupingContextArgs,
+  modelIds: Id64String[],
+  expectedNodeIds?: Array<number[] | undefined>,
+): void {
   const modelIdSet = new Set(modelIds);
   const context = new GroupingContext(args, modelIdSet);
   const groups = groupModels(context, modelIdSet);
@@ -88,7 +93,7 @@ describe("groupModels", () => {
 
   it("groups all models together if all settings match", () => {
     const clip = ClipVector.createEmpty();
-    const args: GroupingContextArgs = { };
+    const args: GroupingContextArgs = {};
     for (const modelId of ["0x1", "0x2", "0x3"]) {
       args[modelId] = {
         clip,
@@ -102,7 +107,8 @@ describe("groupModels", () => {
 
   it("produces one group per unique plan projection settings", () => {
     expectGrouping(
-      [["0x1"], ["0x2"], ["0x3"], ["0x4"]], {
+      [["0x1"], ["0x2"], ["0x3"], ["0x4"]],
+      {
         "0x1": { projection: PlanProjectionSettings.fromJSON({ elevation: 1 }) },
         "0x2": { projection: PlanProjectionSettings.fromJSON({ elevation: 2 }) },
         "0x3": { projection: PlanProjectionSettings.fromJSON({ elevation: 3 }) },
@@ -111,7 +117,8 @@ describe("groupModels", () => {
     );
 
     expectGrouping(
-      [["0x1", "0x3"], ["0x2", "0x4"], ["0x5"]], {
+      [["0x1", "0x3"], ["0x2", "0x4"], ["0x5"]],
+      {
         "0x1": { projection: PlanProjectionSettings.fromJSON({ elevation: 1 }) },
         "0x2": { projection: PlanProjectionSettings.fromJSON({ elevation: 2 }) },
         "0x3": { projection: PlanProjectionSettings.fromJSON({ elevation: 1 }) },
@@ -123,9 +130,10 @@ describe("groupModels", () => {
 
   it("groups plan projection models that resolve to the same elevation", () => {
     expectGrouping(
-      [["0x1"], ["0x2", "0x3"], ["0x4", "0x5"]], {
-        "0x1": { projection: PlanProjectionSettings.fromJSON({ overlay: true, elevation: 1 })},
-        "0x2": { projection: PlanProjectionSettings.fromJSON({ overlay: true, elevation: 2 })},
+      [["0x1"], ["0x2", "0x3"], ["0x4", "0x5"]],
+      {
+        "0x1": { projection: PlanProjectionSettings.fromJSON({ overlay: true, elevation: 1 }) },
+        "0x2": { projection: PlanProjectionSettings.fromJSON({ overlay: true, elevation: 2 }) },
         "0x3": { projection: PlanProjectionSettings.fromJSON({ overlay: true }), elevation: 2 },
         "0x4": { projection: PlanProjectionSettings.fromJSON({ overlay: true }), elevation: 4 },
         "0x5": { projection: PlanProjectionSettings.fromJSON({ overlay: true, elevation: 4 }), elevation: 1 },
@@ -136,7 +144,8 @@ describe("groupModels", () => {
 
   it("produces one group per unique display transform", () => {
     expectGrouping(
-      [["0x1"], ["0x2"], ["0x3"], ["0x4"]], {
+      [["0x1"], ["0x2"], ["0x3"], ["0x4"]],
+      {
         "0x1": { transform: { transform: Transform.createTranslationXYZ(1) } },
         "0x2": { transform: { transform: Transform.createTranslationXYZ(2) } },
         "0x3": { transform: { transform: Transform.createTranslationXYZ(3) } },
@@ -145,7 +154,8 @@ describe("groupModels", () => {
     );
 
     expectGrouping(
-      [["0x1", "0x3"], ["0x2", "0x4"], ["0x5"]], {
+      [["0x1", "0x3"], ["0x2", "0x4"], ["0x5"]],
+      {
         "0x1": { transform: { transform: Transform.createTranslationXYZ(1) } },
         "0x2": { transform: { transform: Transform.createTranslationXYZ(2) } },
         "0x3": { transform: { transform: Transform.createTranslationXYZ(1) } },
@@ -162,7 +172,8 @@ describe("groupModels", () => {
     const c3 = ClipVector.createEmpty();
 
     expectGrouping(
-      [["0x1"], ["0x2"], ["0x3"], ["0x4"]], {
+      [["0x1"], ["0x2"], ["0x3"], ["0x4"]],
+      {
         "0x1": { clip: c1 },
         "0x2": { clip: c2 },
         "0x3": { clip: c3 },
@@ -171,7 +182,8 @@ describe("groupModels", () => {
     );
 
     expectGrouping(
-      [["0x1", "0x3"], ["0x2", "0x4"], ["0x5"]], {
+      [["0x1", "0x3"], ["0x2", "0x4"], ["0x5"]],
+      {
         "0x1": { clip: c1 },
         "0x2": { clip: c2 },
         "0x3": { clip: c1 },
@@ -217,27 +229,47 @@ describe("groupModels", () => {
   });
 
   it("produces a single-model group for every model that has a timeline", () => {
-    expectGrouping([["0x1"]], {
-      "0x1": { nodeIds: [1, 2, 3, 4] },
-    }, ["0x1"], [[1, 2, 3, 4]]);
+    expectGrouping(
+      [["0x1"]],
+      {
+        "0x1": { nodeIds: [1, 2, 3, 4] },
+      },
+      ["0x1"],
+      [[1, 2, 3, 4]],
+    );
 
-    expectGrouping([["0x1"], ["0x2"]], {
-      "0x1": { nodeIds: [1, 2] },
-      "0x2": { nodeIds: [3, 4] },
-    }, ["0x1", "0x2"], [[1, 2], [3, 4]]);
+    expectGrouping(
+      [["0x1"], ["0x2"]],
+      {
+        "0x1": { nodeIds: [1, 2] },
+        "0x2": { nodeIds: [3, 4] },
+      },
+      ["0x1", "0x2"],
+      [[1, 2], [3, 4]],
+    );
 
-    expectGrouping([["0x1", "0x3"], ["0x2"]], {
-      "0x1": { },
-      "0x2": { nodeIds: [3, 4]},
-      "0x3": { },
-    }, ["0x1", "0x2", "0x3"], [undefined, [3, 4]]);
+    expectGrouping(
+      [["0x1", "0x3"], ["0x2"]],
+      {
+        "0x1": {},
+        "0x2": { nodeIds: [3, 4] },
+        "0x3": {},
+      },
+      ["0x1", "0x2", "0x3"],
+      [undefined, [3, 4]],
+    );
 
-    expectGrouping([["0x1"], ["0x2"], ["0x3", "0x4"], ["0x5"]], {
-      "0x1": { nodeIds: [1, 2]},
-      "0x2": { nodeIds: [3, 4]},
-      "0x3": { },
-      "0x4": { },
-      "0x5": { transform: { transform: Transform.createTranslationXYZ(5) } },
-    }, ["0x1", "0x2", "0x3", "0x4", "0x5"], [[1, 2], [3, 4], undefined, undefined]);
+    expectGrouping(
+      [["0x1"], ["0x2"], ["0x3", "0x4"], ["0x5"]],
+      {
+        "0x1": { nodeIds: [1, 2] },
+        "0x2": { nodeIds: [3, 4] },
+        "0x3": {},
+        "0x4": {},
+        "0x5": { transform: { transform: Transform.createTranslationXYZ(5) } },
+      },
+      ["0x1", "0x2", "0x3", "0x4", "0x5"],
+      [[1, 2], [3, 4], undefined, undefined],
+    );
   });
 });

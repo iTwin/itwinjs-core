@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import { assert } from "chai";
 import { IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
@@ -12,7 +12,9 @@ import { SequentialLogMatcher } from "../SequentialLogMatcher";
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
   const rows: any[] = [];
-  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
+  for await (
+    const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })
+  ) {
     rows.push(queryRow.toRow());
   }
   return rows;
@@ -40,15 +42,72 @@ describe("Common table expression support in ECSQL", () => {
                         JOIN base_classes  ON aId = cbc.TargetECInstanceId
                 ORDER BY 1
             )
-        SELECT p.Name prop from base_classes join meta.ECPropertyDef p on p.Class.id = aId GROUP BY p.Name` ;
+        SELECT p.Name prop from base_classes join meta.ECPropertyDef p on p.Class.id = aId GROUP BY p.Name`;
     const rows = await executeQuery(imodel1, query, ["Element"]);
-    const expected = ["Angle", "BaseModel", "BBoxHigh", "BBoxLow", "Border", "BorderTemplate", "Category", "CategorySelector", "CodeScope", "CodeSpec", "CodeValue", "Data", "Description", "DisplayStyle", "DrawingModel", "Enabled", "Extents", "EyePoint", "FederationGuid", "Flags", "FocusDistance", "Format", "GeometryStream", "Height", "InSpatialIndex", "IsCameraOn", "IsPrivate", "JsonProperties", "LastMod", "LensAngle", "Model", "ModelSelector", "Name", "Origin", "PaletteName", "Parent", "Pitch", "Properties", "Rank", "Recipe", "RepositoryGuid", "Roll", "Rotation", "RotationAngle", "Scale", "SheetTemplate", "Type", "TypeDefinition", "Url", "UserLabel", "View", "ViewAttachment", "Width", "Yaw"];
+    const expected = [
+      "Angle",
+      "BaseModel",
+      "BBoxHigh",
+      "BBoxLow",
+      "Border",
+      "BorderTemplate",
+      "Category",
+      "CategorySelector",
+      "CodeScope",
+      "CodeSpec",
+      "CodeValue",
+      "Data",
+      "Description",
+      "DisplayStyle",
+      "DrawingModel",
+      "Enabled",
+      "Extents",
+      "EyePoint",
+      "FederationGuid",
+      "Flags",
+      "FocusDistance",
+      "Format",
+      "GeometryStream",
+      "Height",
+      "InSpatialIndex",
+      "IsCameraOn",
+      "IsPrivate",
+      "JsonProperties",
+      "LastMod",
+      "LensAngle",
+      "Model",
+      "ModelSelector",
+      "Name",
+      "Origin",
+      "PaletteName",
+      "Parent",
+      "Pitch",
+      "Properties",
+      "Rank",
+      "Recipe",
+      "RepositoryGuid",
+      "Roll",
+      "Rotation",
+      "RotationAngle",
+      "Scale",
+      "SheetTemplate",
+      "Type",
+      "TypeDefinition",
+      "Url",
+      "UserLabel",
+      "View",
+      "ViewAttachment",
+      "Width",
+      "Yaw",
+    ];
     const actual = rows.map((r) => r.prop);
     assert.sameOrderedMembers(actual, expected);
   });
 
   it("generate mandelbrot set", async () => {
-    const rows = await executeQuery(imodel1, `
+    const rows = await executeQuery(
+      imodel1,
+      `
       WITH RECURSIVE
         [xaxis]([x]) AS(
           VALUES (- 2.0)
@@ -100,10 +159,10 @@ describe("Common table expression support in ECSQL", () => {
         )
       SELECT GROUP_CONCAT (RTRIM ([t]), CHAR (0xa)) mandelbrot_set
       FROM   [a];
-    `);
+    `,
+    );
 
-    const expected =
-      "                                    ....#\n" +
+    const expected = "                                    ....#\n" +
       "                                   ..#*..\n" +
       "                                 ..+####+.\n" +
       "                            .......+####....   +\n" +
@@ -130,29 +189,37 @@ describe("Common table expression support in ECSQL", () => {
 
   it("basic cte test", async () => {
     let rows = [];
-    rows = await executeQuery(imodel1, `
+    rows = await executeQuery(
+      imodel1,
+      `
       WITH RECURSIVE
         cnt (x,y) AS (
             SELECT 100, 200
             UNION ALL
             SELECT x+1, 200 FROM cnt WHERE x<210
         )
-      SELECT * from cnt`);
+      SELECT * from cnt`,
+    );
     assert(rows.length === 111);
 
-    rows = await executeQuery(imodel1, `
+    rows = await executeQuery(
+      imodel1,
+      `
       WITH RECURSIVE
         cnt (x,y) AS (
             SELECT 100, 200
         )
-      SELECT * from cnt`);
+      SELECT * from cnt`,
+    );
 
     let slm = new SequentialLogMatcher();
     // these two are generated by sqlite
     slm.append().error().category("ECDb").message(/BE_SQLITE_ERROR duplicate WITH table name/gm);
     assert(rows.length === 1);
     try {
-      rows = await executeQuery(imodel1, `
+      rows = await executeQuery(
+        imodel1,
+        `
         WITH
           cte_1 (a,b,c) AS (
             SELECT 100, 400, 300
@@ -160,7 +227,8 @@ describe("Common table expression support in ECSQL", () => {
           cte_1 (a,b,c) AS (
             SELECT 100, 400, 300
           )
-        SELECT * from cte_1`);
+        SELECT * from cte_1`,
+      );
       assert(false);
     } catch {
       assert(true); // should fail as cte_1 is used for two ct expression.
@@ -170,12 +238,15 @@ describe("Common table expression support in ECSQL", () => {
     // these two are generated by ECSQL. Its not clear why this message is logged twice.
     slm.append().error().category("ECDb").message(/Common table 'cte_1' has 3 values for columns 2/gm);
     try {
-      rows = await executeQuery(imodel1, `
+      rows = await executeQuery(
+        imodel1,
+        `
         WITH
         cte_1 (a,b,c) AS (
           SELECT 100, 400
         )
-        SELECT * from cte_1`);
+        SELECT * from cte_1`,
+      );
       assert(false);
     } catch {
       assert(true); // number are to ct expression does not match select

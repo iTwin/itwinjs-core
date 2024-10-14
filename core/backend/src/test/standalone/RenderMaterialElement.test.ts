@@ -3,10 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { ImageSourceFormat, IModel, NormalMapFlags, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialAssetProps, RenderMaterialProps, TextureMapProps } from "@itwin/core-common";
-import { ChannelControl, IModelElementCloneContext, RenderMaterialElement, RenderMaterialElementParams, SnapshotDb, Texture } from "../../core-backend";
+import {
+  ImageSourceFormat,
+  IModel,
+  NormalMapFlags,
+  NormalMapProps,
+  RenderMaterialAssetMapsProps,
+  RenderMaterialAssetProps,
+  RenderMaterialProps,
+  TextureMapProps,
+} from "@itwin/core-common";
+import { assert, expect } from "chai";
+import {
+  ChannelControl,
+  IModelElementCloneContext,
+  RenderMaterialElement,
+  RenderMaterialElementParams,
+  SnapshotDb,
+  Texture,
+} from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
@@ -29,7 +45,16 @@ function removeUndefined(assetProps: RenderMaterialAssetProps): RenderMaterialAs
 }
 
 function defaultBooleans(assetProps: RenderMaterialAssetProps): RenderMaterialAssetProps {
-  const boolKeys = ["HasBaseColor", "HasDiffuse", "HasFinish", "HasReflect", "HasReflectColor", "HasSpecular", "HasSpecularColor", "HasTransmit"] as const;
+  const boolKeys = [
+    "HasBaseColor",
+    "HasDiffuse",
+    "HasFinish",
+    "HasReflect",
+    "HasReflectColor",
+    "HasSpecular",
+    "HasSpecularColor",
+    "HasTransmit",
+  ] as const;
   for (const boolKey of boolKeys)
     if (undefined === assetProps[boolKey])
       assetProps[boolKey] = false;
@@ -73,11 +98,137 @@ describe("RenderMaterialElement", () => {
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
     const pngData = new Uint8Array([
-      137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
-      74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252,
-      97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65,
-      84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
-      0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+      137,
+      80,
+      78,
+      71,
+      13,
+      10,
+      26,
+      10,
+      0,
+      0,
+      0,
+      13,
+      73,
+      72,
+      68,
+      82,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0,
+      0,
+      3,
+      8,
+      2,
+      0,
+      0,
+      0,
+      217,
+      74,
+      34,
+      232,
+      0,
+      0,
+      0,
+      1,
+      115,
+      82,
+      71,
+      66,
+      0,
+      174,
+      206,
+      28,
+      233,
+      0,
+      0,
+      0,
+      4,
+      103,
+      65,
+      77,
+      65,
+      0,
+      0,
+      177,
+      143,
+      11,
+      252,
+      97,
+      5,
+      0,
+      0,
+      0,
+      9,
+      112,
+      72,
+      89,
+      115,
+      0,
+      0,
+      14,
+      195,
+      0,
+      0,
+      14,
+      195,
+      1,
+      199,
+      111,
+      168,
+      100,
+      0,
+      0,
+      0,
+      24,
+      73,
+      68,
+      65,
+      84,
+      24,
+      87,
+      99,
+      248,
+      15,
+      4,
+      12,
+      12,
+      64,
+      4,
+      198,
+      64,
+      46,
+      132,
+      5,
+      162,
+      254,
+      51,
+      0,
+      0,
+      195,
+      90,
+      10,
+      246,
+      127,
+      175,
+      154,
+      145,
+      0,
+      0,
+      0,
+      0,
+      73,
+      69,
+      78,
+      68,
+      174,
+      66,
+      96,
+      130,
     ]);
 
     const name = `texture${++textureNumber}`;
@@ -126,10 +277,10 @@ describe("RenderMaterialElement", () => {
         GlowColor: { TextureId: 6 },
         Reflect: { TextureId: 7 },
         Specular: { TextureId: 8 },
-        TranslucencyColor: { OtherProp2: "test"}, // Should be unchanged, still present.
+        TranslucencyColor: { OtherProp2: "test" }, // Should be unchanged, still present.
         TransparentColor: { TextureId: 10, OtherProp: 1 }, // OtherProp should be unchanged, still present.
-        Displacement: { TextureId: "0x1"},
-        OtherProperty: { OtherProperty: "test"}, // Should be unchanged.
+        Displacement: { TextureId: "0x1" },
+        OtherProperty: { OtherProperty: "test" }, // Should be unchanged.
       } as any;
       /* eslint-enable @typescript-eslint/naming-convention */
       const material = test({});
@@ -162,7 +313,7 @@ describe("RenderMaterialElement", () => {
       expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.TransparentColor?.TextureId).to.equal("0xa");
       expect((props.jsonProperties?.materialAssets?.renderMaterial?.Map!.TransparentColor as any).OtherProp).to.equal(1);
       expect(props.jsonProperties?.materialAssets?.renderMaterial?.Map!.Displacement?.TextureId).to.equal("0x1");
-      expect(((props.jsonProperties?.materialAssets?.renderMaterial?.Map as any).OtherProperty).OtherProperty).to.equal("test");
+      expect((props.jsonProperties?.materialAssets?.renderMaterial?.Map as any).OtherProperty.OtherProperty).to.equal("test");
     });
 
     it("with custom values", () => {
@@ -179,14 +330,22 @@ describe("RenderMaterialElement", () => {
 
       /* eslint-disable @typescript-eslint/naming-convention */
       test(params, {
-        HasBaseColor: true, color: params.color,
-        HasSpecularColor: true, specular_color: params.specularColor,
-        HasFinish: true, finish: params.finish,
-        HasTransmit: true, transmit: params.transmit,
-        HasDiffuse: true, diffuse: params.diffuse,
-        HasSpecular: true, specular: params.specular,
-        HasReflect: true, reflect: params.reflect,
-        HasReflectColor: true, reflect_color: params.reflectColor,
+        HasBaseColor: true,
+        color: params.color,
+        HasSpecularColor: true,
+        specular_color: params.specularColor,
+        HasFinish: true,
+        finish: params.finish,
+        HasTransmit: true,
+        transmit: params.transmit,
+        HasDiffuse: true,
+        diffuse: params.diffuse,
+        HasSpecular: true,
+        specular: params.specular,
+        HasReflect: true,
+        reflect: params.reflect,
+        HasReflectColor: true,
+        reflect_color: params.reflectColor,
       });
     });
 
@@ -433,12 +592,12 @@ describe("RenderMaterialElement", () => {
         NoTextureId: { OtherProp: 1 },
       });
 
-      jsonProps.materialAssets.renderMaterial.Map = {Pattern: undefined};
+      jsonProps.materialAssets.renderMaterial.Map = { Pattern: undefined };
       // eslint-disable-next-line @typescript-eslint/dot-notation
       RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
       // keep the sourceMap the same in targetProps
       expect(targetProps.jsonProperties?.materialAssets?.renderMaterial?.Map).to.have.property("Pattern").that.is.undefined;
-      jsonProps.materialAssets.renderMaterial.Map = {Pattern: null as any};
+      jsonProps.materialAssets.renderMaterial.Map = { Pattern: null as any };
       // eslint-disable-next-line @typescript-eslint/dot-notation
       RenderMaterialElement["onCloned"](context, sourceProps, targetProps);
       // keep the sourceMap the same in targetProps

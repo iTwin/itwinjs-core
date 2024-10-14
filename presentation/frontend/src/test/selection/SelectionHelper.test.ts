@@ -3,8 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { createRandomBaseNodeKey, createRandomECInstanceKey, createRandomECInstancesNodeKey } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
 import { SelectionHelper } from "../../presentation-frontend";
 
 describe("SelectionHelper", () => {

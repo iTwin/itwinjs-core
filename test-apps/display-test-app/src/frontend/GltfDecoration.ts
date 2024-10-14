@@ -3,13 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Angle, AxisIndex, Matrix3d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import {
-  DecorateContext, GraphicBranch, GraphicType, IModelApp, IModelConnection, readGltfTemplate, RenderGraphic, RenderInstances, RenderInstancesParamsBuilder, Tool,
-} from "@itwin/core-frontend";
-import { parseArgs } from "@itwin/frontend-devtools";
 import { Id64String } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, RgbColor } from "@itwin/core-common";
+import {
+  DecorateContext,
+  GraphicBranch,
+  GraphicType,
+  IModelApp,
+  IModelConnection,
+  readGltfTemplate,
+  RenderGraphic,
+  RenderInstances,
+  RenderInstancesParamsBuilder,
+  Tool,
+} from "@itwin/core-frontend";
+import { Angle, AxisIndex, Matrix3d, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { parseArgs } from "@itwin/frontend-devtools";
 
 class GltfDecoration {
   private readonly _graphic: RenderGraphic;
@@ -66,7 +75,14 @@ function createTransform(maxExtent: number, wantScale: boolean, wantRotate: bool
   return translation.multiplyTransformTransform(scale).multiplyTransformTransform(rotation);
 }
 
-function createInstances(numInstances: number, iModel: IModelConnection, modelId: Id64String, wantScale: boolean, wantColor: boolean, wantRotate: boolean): RenderInstances | undefined {
+function createInstances(
+  numInstances: number,
+  iModel: IModelConnection,
+  modelId: Id64String,
+  wantScale: boolean,
+  wantColor: boolean,
+  wantRotate: boolean,
+): RenderInstances | undefined {
   if (numInstances <= 1) {
     return undefined;
   }
@@ -102,8 +118,12 @@ function createInstances(numInstances: number, iModel: IModelConnection, modelId
  */
 export class GltfDecorationTool extends Tool {
   public static override toolId = "AddGltfDecoration";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 6; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 6;
+  }
 
   private _url?: string;
   private _numInstances = 1;

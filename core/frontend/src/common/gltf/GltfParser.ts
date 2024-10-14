@@ -7,18 +7,30 @@
  */
 
 import { ByteStream, JsonUtils, Logger, utf8ToString } from "@itwin/core-bentley";
-import { Matrix3d, Point3d, Point4d, Transform } from "@itwin/core-geometry";
 import { GlbHeader, ImageSource, TileFormat } from "@itwin/core-common";
+import { Matrix3d, Point3d, Point4d, Transform } from "@itwin/core-geometry";
 import type { DracoLoader, DracoMesh } from "@loaders.gl/draco";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl } from "../ImageUtil";
 import { TextureImageSource } from "../render/TextureParams";
-import {
-  getImageSourceFormatForMimeType, imageBitmapFromImageSource, imageElementFromImageSource, tryImageElementFromUrl,
-} from "../ImageUtil";
-import {
-  DracoMeshCompression, getGltfNodeMeshIds, GltfAccessor, GltfBuffer, GltfBufferViewProps, GltfDictionary, gltfDictionaryIterator, GltfDocument, GltfId, GltfImage, GltfMesh, GltfMeshMode, GltfMeshPrimitive, GltfNode, traverseGltfNodes,
-} from "./GltfSchema";
 import { Gltf } from "./GltfModel";
+import {
+  DracoMeshCompression,
+  getGltfNodeMeshIds,
+  GltfAccessor,
+  GltfBuffer,
+  GltfBufferViewProps,
+  GltfDictionary,
+  gltfDictionaryIterator,
+  GltfDocument,
+  GltfId,
+  GltfImage,
+  GltfMesh,
+  GltfMeshMode,
+  GltfMeshPrimitive,
+  GltfNode,
+  traverseGltfNodes,
+} from "./GltfSchema";
 
 /** @internal */
 export interface ParseGltfLogger {
@@ -176,7 +188,7 @@ class GltfParser {
     this._isCanceled = options.isCanceled;
     this._imageFromImageSource = options.imageFromImageSource;
 
-    const emptyDict = { };
+    const emptyDict = {};
     const doc = options.document;
     this._buffers = doc.buffers ?? emptyDict;
     this._images = doc.images ?? emptyDict;
@@ -239,19 +251,35 @@ class GltfParser {
     if (node.matrix) {
       const origin = Point3d.create(node.matrix[12], node.matrix[13], node.matrix[14]);
       const matrix = Matrix3d.createRowValues(
-        node.matrix[0], node.matrix[4], node.matrix[8],
-        node.matrix[1], node.matrix[5], node.matrix[9],
-        node.matrix[2], node.matrix[6], node.matrix[10],
+        node.matrix[0],
+        node.matrix[4],
+        node.matrix[8],
+        node.matrix[1],
+        node.matrix[5],
+        node.matrix[9],
+        node.matrix[2],
+        node.matrix[6],
+        node.matrix[10],
       );
 
       toParent = Transform.createOriginAndMatrix(origin, matrix);
     } else if (node.rotation || node.scale || node.translation) {
       // SPEC: To compose the local transformation matrix, TRS properties MUST be converted to matrices and postmultiplied in the T * R * S order;
       // first the scale is applied to the vertices, then the rotation, and then the translation.
-      const scale = Transform.createRefs(undefined, node.scale ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2]) : Matrix3d.identity);
-      const rot = Transform.createRefs(undefined, node.rotation ? Matrix3d.createFromQuaternion(Point4d.create(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3])) : Matrix3d.identity);
+      const scale = Transform.createRefs(
+        undefined,
+        node.scale ? Matrix3d.createScale(node.scale[0], node.scale[1], node.scale[2]) : Matrix3d.identity,
+      );
+      const rot = Transform.createRefs(
+        undefined,
+        node.rotation
+          ? Matrix3d.createFromQuaternion(Point4d.create(node.rotation[0], node.rotation[1], node.rotation[2], node.rotation[3]))
+          : Matrix3d.identity,
+      );
       rot.matrix.transposeInPlace(); // See comment on Matrix3d.createFromQuaternion
-      const trans = Transform.createTranslation(node.translation ? new Point3d(node.translation[0], node.translation[1], node.translation[2]) : Point3d.createZero());
+      const trans = Transform.createTranslation(
+        node.translation ? new Point3d(node.translation[0], node.translation[1], node.translation[2]) : Point3d.createZero(),
+      );
 
       toParent = scale.multiplyTransformTransform(rot);
       trans.multiplyTransformTransform(toParent, toParent);
@@ -311,10 +339,11 @@ class GltfParser {
     for (const node of this.traverseNodes(this._sceneNodes)) {
       for (const meshId of getGltfNodeMeshIds(node)) {
         const mesh = this._meshes[meshId];
-        if (mesh?.primitives)
+        if (mesh?.primitives) {
           for (const primitive of mesh.primitives)
             if (primitive.extensions?.KHR_draco_mesh_compression)
               dracoMeshes.push(primitive.extensions.KHR_draco_mesh_compression);
+        }
       }
     }
 
@@ -387,7 +416,10 @@ class GltfParser {
     if (image.resolvedImage)
       return;
 
-    interface BufferViewSource { bufferView?: GltfId, mimeType?: string }
+    interface BufferViewSource {
+      bufferView?: GltfId;
+      mimeType?: string;
+    }
     const bvSrc: BufferViewSource | undefined = undefined !== image.bufferView ? image : image.extensions?.KHR_binary_glTF;
     if (undefined !== bvSrc?.bufferView) {
       const format = undefined !== bvSrc.mimeType ? getImageSourceFormatForMimeType(bvSrc.mimeType) : undefined;
@@ -427,7 +459,7 @@ class GltfParser {
 
     const offset = bv.byteOffset ?? 0;
     buf = buf.subarray(offset, offset + bv.byteLength);
-    const mesh = await loader.parse(buf, { }); // NB: `options` argument declared optional but will produce exception if not supplied.
+    const mesh = await loader.parse(buf, {}); // NB: `options` argument declared optional but will produce exception if not supplied.
     if (mesh)
       this._dracoMeshes.set(ext, mesh);
   }

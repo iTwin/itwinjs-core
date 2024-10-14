@@ -6,7 +6,6 @@ import { Id64String } from "@itwin/core-bentley";
 import { DrawingViewState, IModelApp, IModelConnection, ScreenViewport, SpatialViewState, ViewState } from "@itwin/core-frontend";
 
 export class RobotWorldApp {
-
   private static _iModel: IModelConnection;
 
   // __PUBLISH_EXTRACT_START__ IModelConnection.Views.getSpatialViewList
@@ -75,5 +74,4 @@ export class RobotWorldApp {
     IModelApp.viewManager.addViewport(viewPort);
   }
   // __PUBLISH_EXTRACT_END__
-
 }

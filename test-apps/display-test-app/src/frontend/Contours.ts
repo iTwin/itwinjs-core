@@ -4,18 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, CompressedId64Set, dispose, IDisposable } from "@itwin/core-bentley";
+import { ColorDef, Contour, ContourDisplay, ContourDisplayProps, ContourGroupProps, LinePixels, RgbColor } from "@itwin/core-common";
+import { Viewport, ViewState3d } from "@itwin/core-frontend";
 import {
   CheckBox,
   ColorInput,
-  ColorInputProps, ComboBox, ComboBoxEntry, ComboBoxProps, createButton, createCheckBox, createColorInput, createComboBox, createLabeledNumericInput,
-  createSlider, createTextBox, LabeledNumericInput, Slider,
+  ColorInputProps,
+  ComboBox,
+  ComboBoxEntry,
+  ComboBoxProps,
+  createButton,
+  createCheckBox,
+  createColorInput,
+  createComboBox,
+  createLabeledNumericInput,
+  createSlider,
+  createTextBox,
+  LabeledNumericInput,
+  Slider,
   SliderProps,
   TextBox,
   TextBoxProps,
   updateSliderValue,
 } from "@itwin/frontend-devtools";
-import { ColorDef, Contour, ContourDisplay, ContourDisplayProps, ContourGroupProps, LinePixels, RgbColor } from "@itwin/core-common";
-import { Viewport, ViewState3d } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
 // size of widget or panel
@@ -181,21 +192,27 @@ export class ContoursSettings implements IDisposable {
     buttonDiv.style.textAlign = "center";
     createButton({
       value: "Add",
-      handler: () => { this.addContourDef(); },
+      handler: () => {
+        this.addContourDef();
+      },
       parent: buttonDiv,
       inline: true,
       tooltip: "Add a new contour grouping",
     });
     createButton({
       value: "Apply",
-      handler: () => { this.applyContourDef(); },
+      handler: () => {
+        this.applyContourDef();
+      },
       parent: buttonDiv,
       inline: true,
       tooltip: "Apply contour settings for this definition",
     });
     createButton({
       value: "Delete",
-      handler: () => { this.deleteContourDef(); },
+      handler: () => {
+        this.deleteContourDef();
+      },
       parent: buttonDiv,
       inline: true,
       tooltip: "Delete contour settings for this definition",
@@ -217,7 +234,7 @@ export class ContoursSettings implements IDisposable {
   }
 
   private getContourDisplayProps(view: ViewState3d): ContourDisplayProps {
-    const contours =  view.displayStyle.settings.contours;
+    const contours = view.displayStyle.settings.contours;
     return contours.toJSON();
   }
 
@@ -232,7 +249,7 @@ export class ContoursSettings implements IDisposable {
     return {
       subCategories: CompressedId64Set.sortAndCompress(this._subCatTextBox.textbox.value.split(",")),
       name: this._nameTextBox.textbox.value,
-      contourDef:{
+      contourDef: {
         majorStyle: {
           color: majorColor ? RgbColor.fromColorDef(majorColor) : undefined,
           pixelWidth: this.tryParseFloat(this._majorWidth.slider.value),
@@ -266,7 +283,7 @@ export class ContoursSettings implements IDisposable {
     const subCats = groups[index].subCategories;
     this._subCatTextBox.textbox.value = (subCats ? [...subCats] : []).join(",") ?? "";
     this._nameTextBox.textbox.value = groups[index].name;
-    const curContourDef =  groups[index].contourDef ?? Contour.fromJSON({});
+    const curContourDef = groups[index].contourDef ?? Contour.fromJSON({});
     this._majorColor.input.value = curContourDef.majorStyle.color.toHexString();
     this._minorColor.input.value = curContourDef.minorStyle.color.toHexString();
     updateSliderValue(this._majorWidth, curContourDef.majorStyle.pixelWidth.toString());
@@ -357,7 +374,7 @@ export class ContoursSettings implements IDisposable {
     return numericIn;
   }
 
-  private addColor(parent: HTMLElement, major: boolean): ColorInput{
+  private addColor(parent: HTMLElement, major: boolean): ColorInput {
     const div = document.createElement("div");
 
     const props: ColorInputProps = {
@@ -380,10 +397,16 @@ export class ContoursSettings implements IDisposable {
 
   private addWidth(parent1: HTMLElement, major: boolean): Slider {
     const props: SliderProps = {
-      name: " Width ", id: major ? "major_width" : "minor_width", parent: parent1,
-      min: "1.0", max: "8.5", step: "0.5",
+      name: " Width ",
+      id: major ? "major_width" : "minor_width",
+      parent: parent1,
+      min: "1.0",
+      max: "8.5",
+      step: "0.5",
       value: "1.5",
-      readout: "right", verticalAlign: false, textAlign: false,
+      readout: "right",
+      verticalAlign: false,
+      textAlign: false,
       handler: () => {},
     };
     const widthSlider = createSlider(props);
@@ -448,7 +471,13 @@ export class ContoursPanel extends ToolBarDropDown {
     return Promise.resolve();
   }
 
-  protected _open(): void { this._settings = new ContoursSettings(this._vp, this._parent); }
-  protected _close(): void { this._settings = dispose(this._settings); }
-  public get isOpen(): boolean { return undefined !== this._settings; }
+  protected _open(): void {
+    this._settings = new ContoursSettings(this._vp, this._parent);
+  }
+  protected _close(): void {
+    this._settings = dispose(this._settings);
+  }
+  public get isOpen(): boolean {
+    return undefined !== this._settings;
+  }
 }

@@ -17,7 +17,13 @@ import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
 import {
-  EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property, StructArrayProperty, StructProperty,
+  EnumerationArrayProperty,
+  EnumerationProperty,
+  PrimitiveArrayProperty,
+  PrimitiveProperty,
+  Property,
+  StructArrayProperty,
+  StructProperty,
 } from "./Property";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
@@ -33,11 +39,21 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Property[];
 
-  public get modifier() { return this._modifier; }
-  public get baseClass(): LazyLoadedECClass | undefined { return this._baseClass; }
-  public set baseClass(baseClass: LazyLoadedECClass | undefined) { this._baseClass = baseClass; }
-  public get properties(): IterableIterator<Property> | undefined { return this._properties?.values(); }
-  public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+  public get modifier() {
+    return this._modifier;
+  }
+  public get baseClass(): LazyLoadedECClass | undefined {
+    return this._baseClass;
+  }
+  public set baseClass(baseClass: LazyLoadedECClass | undefined) {
+    this._baseClass = baseClass;
+  }
+  public get properties(): IterableIterator<Property> | undefined {
+    return this._properties?.values();
+  }
+  public get customAttributes(): CustomAttributeSet | undefined {
+    return this._customAttributes;
+  }
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name);
@@ -171,7 +187,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
-    if (typeof (propType) === "number")
+    if (typeof propType === "number")
       return this.addProperty(new PrimitiveProperty(this, name, propType));
 
     return this.addProperty(new EnumerationProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType)));
@@ -190,7 +206,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
-    if (typeof (propType) === "number")
+    if (typeof propType === "number")
       return this.addProperty(new PrimitiveProperty(this, name, propType));
 
     return this.addProperty(new EnumerationProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType)));
@@ -208,7 +224,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = await this.loadPrimitiveType(primitiveType, this.schema);
-    if (typeof (propType) === "number")
+    if (typeof propType === "number")
       return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
     return this.addProperty(new EnumerationArrayProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType)));
@@ -226,14 +242,13 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${this.name}.`);
 
     const propType = this.loadPrimitiveTypeSync(primitiveType, this.schema);
-    if (typeof (propType) === "number")
+    if (typeof propType === "number")
       return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
     return this.addProperty(new EnumerationArrayProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType)));
   }
 
   /**
-   *
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
    */
@@ -245,7 +260,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
   /**
-   *
    * @param name The name of property to create.
    * @param structType The struct type of property to create.
    */
@@ -257,7 +271,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
   /**
-   *
    * @param name
    * @param type
    */
@@ -269,7 +282,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
   /**
-   *
    * @param name
    * @param type
    */
@@ -282,7 +294,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   protected async loadStructType(structType: string | StructClass | undefined, schema: Schema): Promise<StructClass> {
     let correctType: StructClass | undefined;
-    if (typeof (structType) === "string") {
+    if (typeof structType === "string") {
       correctType = await schema.lookupItem<StructClass>(structType);
     } else
       correctType = structType;
@@ -295,7 +307,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   protected loadStructTypeSync(structType: string | StructClass | undefined, schema: Schema): StructClass {
     let correctType: StructClass | undefined;
-    if (typeof (structType) === "string") {
+    if (typeof structType === "string") {
       correctType = schema.lookupItemSync<StructClass>(structType);
     } else
       correctType = structType;
@@ -306,22 +318,31 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return correctType;
   }
 
-  protected async loadPrimitiveType(primitiveType: string | PrimitiveType | Enumeration | undefined, schema: Schema): Promise<PrimitiveType | Enumeration> {
+  protected async loadPrimitiveType(
+    primitiveType: string | PrimitiveType | Enumeration | undefined,
+    schema: Schema,
+  ): Promise<PrimitiveType | Enumeration> {
     if (primitiveType === undefined)
       return PrimitiveType.Integer;
 
-    if (typeof (primitiveType) === "string") {
-      let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
+    if (typeof primitiveType === "string") {
+      let resolvedType: PrimitiveType | Enumeration | undefined = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
         resolvedType = await schema.lookupItem<Enumeration>(primitiveType);
       }
 
       if (resolvedType === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidType,
+          `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`,
+        );
 
       // If resolvedType is a SchemaItem, make sure it is an Enumeration- if not, throw an error
-      if (typeof (resolvedType) !== "number" && resolvedType.schemaItemType !== SchemaItemType.Enumeration)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+      if (typeof resolvedType !== "number" && resolvedType.schemaItemType !== SchemaItemType.Enumeration)
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidType,
+          `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`,
+        );
 
       return resolvedType;
     }
@@ -333,14 +354,17 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (primitiveType === undefined)
       return PrimitiveType.Integer;
 
-    if (typeof (primitiveType) === "string") {
-      let resolvedType: (PrimitiveType | Enumeration | undefined) = parsePrimitiveType(primitiveType);
+    if (typeof primitiveType === "string") {
+      let resolvedType: PrimitiveType | Enumeration | undefined = parsePrimitiveType(primitiveType);
       if (!resolvedType) {
         resolvedType = schema.lookupItemSync<Enumeration>(primitiveType);
       }
 
       if (resolvedType === undefined)
-        throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidType,
+          `The provided primitive type, ${primitiveType}, is not a valid PrimitiveType or Enumeration.`,
+        );
 
       return resolvedType;
     }
@@ -418,13 +442,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       const ecClassSchemaItemKey = this.schema.getSchemaItemKey(classProps.baseClass);
       if (!ecClassSchemaItemKey)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
-      this._baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
-        async () => {
-          const baseClass = await this.schema.lookupItem<ECClass>(ecClassSchemaItemKey);
-          if (undefined === baseClass)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
-          return baseClass;
-        });
+      this._baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey, async () => {
+        const baseClass = await this.schema.lookupItem<ECClass>(ecClassSchemaItemKey);
+        if (undefined === baseClass)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
+        return baseClass;
+      });
     }
   }
 
@@ -447,8 +470,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = async (ecClass: AnyClass) => {
       if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-        for (let i = (ecClass).mixins.length - 1; i >= 0; i--) {
-          baseClasses.push(await (ecClass).mixins[i]);
+        for (let i = ecClass.mixins.length - 1; i >= 0; i--) {
+          baseClasses.push(await ecClass.mixins[i]);
         }
       }
 
@@ -486,7 +509,12 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
   }
 
-  protected static mergeProperties(target: Property[], existingValues: Map<string, number>, propertiesToMerge: Property[], overwriteExisting: boolean) {
+  protected static mergeProperties(
+    target: Property[],
+    existingValues: Map<string, number>,
+    propertiesToMerge: Property[],
+    overwriteExisting: boolean,
+  ) {
     for (const property of propertiesToMerge) {
       const upperCaseName = property.name.toUpperCase();
       const existing = existingValues.get(upperCaseName);
@@ -636,7 +664,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public async is(targetClass: ECClass): Promise<boolean>;
   public async is(targetClass: ECClass | string, schemaName?: string): Promise<boolean> {
     if (schemaName !== undefined) {
-      assert(typeof (targetClass) === "string", "Expected targetClass of type string because schemaName was specified");
+      assert(typeof targetClass === "string", "Expected targetClass of type string because schemaName was specified");
 
       const key = new SchemaItemKey(targetClass, new SchemaKey(schemaName));
       if (SchemaItem.equalByKey(this, key))
@@ -649,7 +677,10 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       if (SchemaItem.equalByKey(this, targetClass))
         return true;
 
-      return this.traverseBaseClasses((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
+      return this.traverseBaseClasses(
+        (thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey),
+        targetClass,
+      );
     }
   }
 
@@ -661,7 +692,10 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (SchemaItem.equalByKey(this, targetClass))
       return true;
 
-    return this.traverseBaseClassesSync((thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey), targetClass);
+    return this.traverseBaseClassesSync(
+      (thisSchemaItem, thatSchemaItemOrKey) => SchemaItem.equalByKey(thisSchemaItem, thatSchemaItemOrKey),
+      targetClass,
+    );
   }
 
   /**
@@ -671,7 +705,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (!SchemaItem.isSchemaItem(object))
       return false;
 
-    return object.schemaItemType === SchemaItemType.EntityClass || object.schemaItemType === SchemaItemType.Mixin || object.schemaItemType === SchemaItemType.RelationshipClass ||
+    return object.schemaItemType === SchemaItemType.EntityClass || object.schemaItemType === SchemaItemType.Mixin ||
+      object.schemaItemType === SchemaItemType.RelationshipClass ||
       object.schemaItemType === SchemaItemType.StructClass || object.schemaItemType === SchemaItemType.CustomAttributeClass;
   }
 

@@ -6,11 +6,24 @@
  * @module ElementGeometry
  */
 
-import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { Range2d } from "@itwin/core-geometry";
-import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
+import {
+  BaselineShift,
+  FontId,
+  FractionRun,
+  LineLayoutResult,
+  Paragraph,
+  Run,
+  RunLayoutResult,
+  TextBlock,
+  TextBlockLayoutResult,
+  TextRun,
+  TextStyleSettings,
+  TextStyleSettingsProps,
+} from "@itwin/core-common";
+import { Range2d } from "@itwin/core-geometry";
 import * as LineBreaker from "linebreak";
+import { IModelDb } from "./IModelDb";
 
 /** @internal */
 export interface TextLayoutRanges {
@@ -100,7 +113,7 @@ export interface ComputeGraphemeOffsetsArgs extends LayoutTextBlockArgs {
   runLayoutResult: RunLayoutResult;
   /** An array of starting character indexes for each grapheme. Each entry represents the index of the first character in a grapheme. */
   graphemeCharIndexes: number[];
-};
+}
 
 /**
  * Computes the range from the start of a [RunLayoutResult]($common) to the trailing edge of each grapheme.
@@ -158,7 +171,12 @@ class LayoutContext {
   private readonly _fontIds = new Map<string, FontId>();
   public readonly blockSettings: TextStyleSettings;
 
-  public constructor(block: TextBlock, private readonly _computeTextRange: ComputeRangesForTextLayout, private readonly _findTextStyle: FindTextStyle, private readonly _findFontId: FindFontId) {
+  public constructor(
+    block: TextBlock,
+    private readonly _computeTextRange: ComputeRangesForTextLayout,
+    private readonly _findTextStyle: FindTextStyle,
+    private readonly _findFontId: FindFontId,
+  ) {
     const settings = this.findTextStyle(block.styleName);
     this.blockSettings = applyBlockSettings(settings, block.styleOverrides);
   }
@@ -345,7 +363,18 @@ export class RunLayout {
       }
     }
 
-    return new RunLayout({ source, charOffset, numChars, range, justificationRange, denominatorRange, numeratorRange, offsetFromLine, style, fontId });
+    return new RunLayout({
+      source,
+      charOffset,
+      numChars,
+      range,
+      justificationRange,
+      denominatorRange,
+      numeratorRange,
+      offsetFromLine,
+      style,
+      fontId,
+    });
   }
 
   /** Compute a string representation, primarily for debugging purposes. */
@@ -357,7 +386,7 @@ export class RunLayout {
     return this.source.type === "text";
   }
 
-  private cloneForWrap(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number}): RunLayout {
+  private cloneForWrap(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number }): RunLayout {
     assert(this.canWrap());
 
     return new RunLayout({
@@ -437,8 +466,12 @@ export class LineLayout {
     return `${runs.join("")}`;
   }
 
-  public get runs(): ReadonlyArray<RunLayout> { return this._runs; }
-  public get isEmpty() { return this._runs.length === 0; }
+  public get runs(): ReadonlyArray<RunLayout> {
+    return this._runs;
+  }
+  public get isEmpty() {
+    return this._runs.length === 0;
+  }
   public get back(): RunLayout {
     assert(!this.isEmpty);
     return this._runs[this._runs.length - 1];

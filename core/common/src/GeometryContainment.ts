@@ -7,8 +7,8 @@
  */
 
 import { BentleyStatus, Id64Array } from "@itwin/core-bentley";
-import { ViewFlagProps } from "./ViewFlags";
 import { ClipPlaneContainment, ClipVectorProps } from "@itwin/core-geometry";
+import { ViewFlagProps } from "./ViewFlags";
 
 /** Information required to request clip containment status for elements from the front end to the back end.
  * @public

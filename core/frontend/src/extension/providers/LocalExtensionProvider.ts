@@ -2,11 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type {
-  ExtensionManifest,
-  ExtensionProvider,
-  ResolveFunc,
-} from "../Extension";
+import type { ExtensionManifest, ExtensionProvider, ResolveFunc } from "../Extension";
 
 /**
  * Required props for a local extension provider
@@ -26,7 +22,7 @@ export interface LocalExtensionProviderProps {
  * @alpha
  */
 export class LocalExtensionProvider implements ExtensionProvider {
-  constructor(private readonly _props: LocalExtensionProviderProps) { }
+  constructor(private readonly _props: LocalExtensionProviderProps) {}
 
   /** returns the manifest (package.json) of a local extension */
   public async getManifest(): Promise<ExtensionManifest> {

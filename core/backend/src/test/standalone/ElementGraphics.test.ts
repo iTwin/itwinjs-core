@@ -3,10 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { assert } from "@itwin/core-bentley";
-import { CurrentImdlVersion, DynamicGraphicsRequest3dProps, ElementGeometry, ElementGeometryDataEntry, ElementGraphicsRequestProps, GeometryStreamIterator } from "@itwin/core-common";
 import { ElementGraphicsStatus } from "@bentley/imodeljs-native";
+import { assert } from "@itwin/core-bentley";
+import {
+  CurrentImdlVersion,
+  DynamicGraphicsRequest3dProps,
+  ElementGeometry,
+  ElementGeometryDataEntry,
+  ElementGraphicsRequestProps,
+  GeometryStreamIterator,
+} from "@itwin/core-common";
+import { expect } from "chai";
 import { _nativeDb, GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -14,7 +21,10 @@ describe("ElementGraphics", () => {
   let imodel: SnapshotDb;
 
   before(() => {
-    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("ElementGraphics", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel = IModelTestUtils.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("ElementGraphics", "mirukuru.ibim"),
+      IModelTestUtils.resolveAssetFile("mirukuru.ibim"),
+    );
   });
 
   after(() => {

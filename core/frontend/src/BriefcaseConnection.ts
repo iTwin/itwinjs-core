@@ -8,8 +8,14 @@
 
 import { assert, BeEvent, CompressedId64Set, Guid, GuidString, Id64String, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, getPullChangesIpcChannel, IModelConnectionProps, IModelError,
-  PullChangesOptions as IpcAppPullChangesOptions, OpenBriefcaseProps, StandaloneOpenOptions,
+  ChangesetIndex,
+  ChangesetIndexAndId,
+  getPullChangesIpcChannel,
+  IModelConnectionProps,
+  IModelError,
+  OpenBriefcaseProps,
+  PullChangesOptions as IpcAppPullChangesOptions,
+  StandaloneOpenOptions,
 } from "@itwin/core-common";
 import { BriefcaseTxns } from "./BriefcaseTxns";
 import { GraphicalEditingScope } from "./GraphicalEditingScope";
@@ -264,13 +270,19 @@ export class BriefcaseConnection extends IModelConnection {
   public readonly txns: BriefcaseTxns;
 
   /** @internal */
-  public override isBriefcaseConnection(): this is BriefcaseConnection { return true; }
+  public override isBriefcaseConnection(): this is BriefcaseConnection {
+    return true;
+  }
 
   /** The Guid that identifies the iTwin that owns this iModel. */
-  public override get iTwinId(): GuidString { return super.iTwinId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+  public override get iTwinId(): GuidString {
+    return super.iTwinId!;
+  } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   /** The Guid that identifies this iModel. */
-  public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
+  public override get iModelId(): GuidString {
+    return super.iModelId!;
+  } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
   protected constructor(props: IModelConnectionProps, openMode: OpenMode) {
     super(props);
@@ -278,7 +290,9 @@ export class BriefcaseConnection extends IModelConnection {
     this.txns = new BriefcaseTxns(this);
     this._modelsMonitor = new ModelChangeMonitor(this);
     if (OpenMode.ReadWrite === this._openMode)
-      this.txns.onAfterUndoRedo.addListener(async () => { await IModelApp.toolAdmin.restartPrimitiveTool(); });
+      this.txns.onAfterUndoRedo.addListener(async () => {
+        await IModelApp.toolAdmin.restartPrimitiveTool();
+      });
   }
 
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
@@ -292,7 +306,11 @@ export class BriefcaseConnection extends IModelConnection {
   /** Open a BriefcaseConnection to a [StandaloneDb]($backend)
    * @note StandaloneDbs, by definition, may not push or pull changes. Attempting to do so will throw exceptions.
    */
-  public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection> {
+  public static async openStandalone(
+    filePath: string,
+    openMode: OpenMode = OpenMode.ReadWrite,
+    opts?: StandaloneOpenOptions,
+  ): Promise<BriefcaseConnection> {
     const openResponse = await IpcApp.appFunctionIpc.openStandalone(filePath, openMode, opts);
     const connection = new this(openResponse, openMode);
     IModelConnection.onOpen.raiseEvent(connection);
@@ -300,7 +318,9 @@ export class BriefcaseConnection extends IModelConnection {
   }
 
   /** Returns `true` if [[close]] has already been called. */
-  public get isClosed(): boolean { return this._isClosed === true; }
+  public get isClosed(): boolean {
+    return this._isClosed === true;
+  }
 
   /**
    * Close this BriefcaseConnection.

@@ -137,7 +137,7 @@ export class ViewDetails {
   public get clipVector(): ClipVector | undefined {
     if (undefined === this._clipVector) {
       const clip = this._json.clip;
-      this._clipVector = (undefined !== clip ? ClipVector.fromJSON(clip) : ClipVector.createEmpty());
+      this._clipVector = undefined !== clip ? ClipVector.fromJSON(clip) : ClipVector.createEmpty();
     }
 
     return this._clipVector.isValid ? this._clipVector : undefined;

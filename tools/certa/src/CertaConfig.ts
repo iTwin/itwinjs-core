@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import * as path from "path";
-import * as lodash from "lodash";
 import { parse } from "jsonc-parser";
+import * as lodash from "lodash";
+import * as path from "path";
 
 /** Defines mocha options common to all test runners. */
 export interface CertaMochaOpts {
@@ -55,7 +55,6 @@ export interface PartialCertaConfig {
 
 /** Certa configuration options. */
 export interface CertaConfig {
-
   /** The absolute path to a JavaScript file containing all mocha tests to be run. */
   readonly testBundle: string;
 

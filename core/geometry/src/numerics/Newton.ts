@@ -7,8 +7,8 @@
  * @module Numerics
  */
 
-import { Geometry } from "../Geometry";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { Geometry } from "../Geometry";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -383,7 +383,7 @@ export class SimpleNewton {
         tolerance = absoluteTolerance + Math.abs(x) * relTol;
         if (Math.abs(dx) < tolerance) {
           numConverged++;
-          if (dx === 0.0 || numConverged > 1)   // bypass convergence count on true 0 dx
+          if (dx === 0.0 || numConverged > 1) // bypass convergence count on true 0 dx
             return x;
         } else {
           numConverged = 0;
@@ -423,9 +423,15 @@ export class CurveCurveIntersectionXYRRToRRD extends NewtonEvaluatorRRtoRRD {
     this._curveP.fractionToPointAndDerivative(fractionU, this._rayP);
     this._curveQ.fractionToPointAndDerivative(fractionV, this._rayQ);
     this.currentF.setOriginAndVectorsXYZ(
-      this._rayP.origin.x - this._rayQ.origin.x, this._rayP.origin.y - this._rayQ.origin.y, 0.0,
-      this._rayP.direction.x, this._rayP.direction.y, 0.0,
-      -this._rayQ.direction.x, -this._rayQ.direction.y, 0.0,
+      this._rayP.origin.x - this._rayQ.origin.x,
+      this._rayP.origin.y - this._rayQ.origin.y,
+      0.0,
+      this._rayP.direction.x,
+      this._rayP.direction.y,
+      0.0,
+      -this._rayQ.direction.x,
+      -this._rayQ.direction.y,
+      0.0,
     );
     return true;
   }

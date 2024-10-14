@@ -7,19 +7,17 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint2d, QPoint3dList } from "@itwin/core-common";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
-import {
-  ColorDef, ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint2d, QPoint3dList,
-} from "@itwin/core-common";
-import { AuxChannelTable } from "./AuxChannelTable";
-import { computeDimensions, VertexTable } from "./VertexTable";
-import { createSurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
-import { MeshParams } from "./MeshParams";
-import { Point3dList } from "./MeshPrimitive";
-import { VertexIndices } from "./VertexIndices";
-import { createEdgeParams } from "./EdgeParams";
 import { MeshArgs } from "../../../render/MeshArgs";
 import { PolylineArgs } from "../../../render/PolylineArgs";
+import { AuxChannelTable } from "./AuxChannelTable";
+import { createEdgeParams } from "./EdgeParams";
+import { MeshParams } from "./MeshParams";
+import { Point3dList } from "./MeshPrimitive";
+import { createSurfaceMaterial, SurfaceParams, SurfaceType } from "./SurfaceParams";
+import { VertexIndices } from "./VertexIndices";
+import { computeDimensions, VertexTable } from "./VertexTable";
 
 /** @internal */
 export function createMeshParams(args: MeshArgs, maxDimension: number, enableIndexedEdges: boolean): MeshParams {
@@ -59,7 +57,9 @@ export abstract class VertexTableBuilder {
   public abstract get numRgbaPerVertex(): number;
   public abstract get qparams(): QParams3d;
   public abstract get usesUnquantizedPositions(): boolean;
-  public get uvParams(): QParams2d | undefined { return undefined; }
+  public get uvParams(): QParams2d | undefined {
+    return undefined;
+  }
   public abstract appendVertex(vertIndex: number): void;
 
   public appendColorTable(colorIndex: ColorIndex) {
@@ -188,9 +188,15 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
       assert(undefined !== this.args.points);
     }
 
-    public get numVertices() { return this.args.points.length; }
-    public get numRgbaPerVertex() { return 3; }
-    public get usesUnquantizedPositions() { return false; }
+    public get numVertices() {
+      return this.args.points.length;
+    }
+    public get numRgbaPerVertex() {
+      return 3;
+    }
+    public get usesUnquantizedPositions() {
+      return false;
+    }
     public get qparams() {
       return this._qpoints.params;
     }
@@ -246,9 +252,10 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
         const uvRange = Range2d.createNull();
         const fpts = args.textureMapping.uvParams;
         const pt2d = new Point2d();
-        if (undefined !== fpts && fpts.length > 0)
+        if (undefined !== fpts && fpts.length > 0) {
           for (let i = 0; i < args.points.length; i++)
             uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
+        }
 
         uvParams = QParams2d.fromRange(uvRange);
       }
@@ -274,8 +281,12 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
       assert(undefined !== args.textureMapping);
     }
 
-    public override get numRgbaPerVertex() { return 4; }
-    public override get uvParams() { return this._qparams; }
+    public override get numRgbaPerVertex() {
+      return 4;
+    }
+    public override get uvParams() {
+      return this._qparams;
+    }
 
     public override appendVertex(vertIndex: number) {
       this.appendPosition(vertIndex);
@@ -284,7 +295,9 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
       this.appendUVParams(vertIndex);
     }
 
-    protected appendNormal(_vertIndex: number): void { this.advance(2); } // no normal for unlit meshes
+    protected appendNormal(_vertIndex: number): void {
+      this.advance(2);
+    } // no normal for unlit meshes
 
     protected appendUVParams(vertIndex: number) {
       this._qpoint.init(this.args.textureMapping!.uvParams[vertIndex], this._qparams);
@@ -300,7 +313,9 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
       assert(undefined !== args.normals);
     }
 
-    protected override appendNormal(vertIndex: number) { this.append16(this.args.normals![vertIndex].value); }
+    protected override appendNormal(vertIndex: number) {
+      this.append16(this.args.normals![vertIndex].value);
+    }
   }
 
   /** 16 bytes. The last 2 bytes are unused; the 2 immediately preceding it hold the oct-encoded normal value. */
@@ -310,7 +325,9 @@ namespace Quantized { // eslint-disable-line @typescript-eslint/no-redeclare
       assert(undefined !== args.normals);
     }
 
-    public override get numRgbaPerVertex() { return 4; }
+    public override get numRgbaPerVertex() {
+      return 4;
+    }
 
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);
@@ -353,10 +370,18 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
       this._points = args.points;
     }
 
-    public get numVertices() { return this._points.length; }
-    public get numRgbaPerVertex() { return 5; }
-    public get usesUnquantizedPositions() { return true; }
-    public get qparams() { return this._qparams3d; }
+    public get numVertices() {
+      return this._points.length;
+    }
+    public get numRgbaPerVertex() {
+      return 5;
+    }
+    public get usesUnquantizedPositions() {
+      return true;
+    }
+    public get qparams() {
+      return this._qparams3d;
+    }
 
     public appendVertex(vertIndex: number): void {
       this.appendTransposePosAndFeatureNdx(vertIndex);
@@ -377,9 +402,9 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
       // transpose position xyz vals into [0].xyz - [3].xyz, and add feature index at .w
       // this is to order things to let shader code access much more efficiently
       const pt = this._points[vertIndex];
-      const x = this.convertFloat32 (pt.x);
-      const y = this.convertFloat32 (pt.y);
-      const z = this.convertFloat32 (pt.z);
+      const x = this.convertFloat32(pt.x);
+      const y = this.convertFloat32(pt.y);
+      const z = this.convertFloat32(pt.z);
       const featID = (this.args.features.featureIDs) ? this.args.features.featureIDs[vertIndex] : 0;
       this.append8(x & 0x000000ff);
       this.append8(y & 0x000000ff);
@@ -447,9 +472,10 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
         const uvRange = Range2d.createNull();
         const fpts = args.textureMapping.uvParams;
         const pt2d = new Point2d();
-        if (undefined !== fpts && fpts.length > 0)
+        if (undefined !== fpts && fpts.length > 0) {
           for (let i = 0; i < args.points.length; i++)
             uvRange.extendPoint(Point2d.create(fpts[i].x, fpts[i].y, pt2d));
+        }
 
         uvParams = QParams2d.fromRange(uvRange);
       }
@@ -473,7 +499,9 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
       assert(undefined !== args.textureMapping);
     }
 
-    public override get uvParams() { return this._qparams; }
+    public override get uvParams() {
+      return this._qparams;
+    }
 
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);
@@ -483,7 +511,7 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
       this.append16(this._qpoint.y);
     }
 
-    protected override appendColorIndex() { }
+    protected override appendColorIndex() {}
   }
 
   // u: 10
@@ -496,7 +524,9 @@ namespace Unquantized { // eslint-disable-line @typescript-eslint/no-redeclare
       assert(undefined !== args.normals);
     }
 
-    public override get numRgbaPerVertex() { return 6; }
+    public override get numRgbaPerVertex() {
+      return 6;
+    }
 
     public override appendVertex(vertIndex: number) {
       super.appendVertex(vertIndex);

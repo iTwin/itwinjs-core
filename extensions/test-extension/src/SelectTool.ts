@@ -5,21 +5,20 @@
 /** @packageDocumentation
  * @module SelectionSet
  */
-import {
-  BeButtonEvent, CoordinateLockOverrides, EventHandled, LocateResponse, PrimitiveTool, ExtensionHost
-} from "@itwin/core-extension";
+import { BeButtonEvent, CoordinateLockOverrides, EventHandled, ExtensionHost, LocateResponse, PrimitiveTool } from "@itwin/core-extension";
 
 /** Minimalistic extension tool for a user to pick a set of elements of interest
  */
 export class ExtensionSelectTool extends PrimitiveTool {
-
   public static override toolId = "TestExtension.Select";
   public static override iconSpec = "icon-cursor";
   public static override hidden = false;
   public static override namespace = "ExampleTools";
 
-  public override requireWriteableTarget(): boolean { return false; }
-  public override autoLockTarget(): void { }
+  public override requireWriteableTarget(): boolean {
+    return false;
+  }
+  public override autoLockTarget(): void {}
 
   protected provideToolAssistance(): void {
     // ### TODO: Tool assistance...supply the implementation!
@@ -42,13 +41,19 @@ export class ExtensionSelectTool extends PrimitiveTool {
     return EventHandled.Yes;
   }
 
-  public override async onUnsuspend(): Promise<void> { this.provideToolAssistance(); }
-  public override async onRestartTool(): Promise<void> { this.exitTool(); }
+  public override async onUnsuspend(): Promise<void> {
+    this.provideToolAssistance();
+  }
+  public override async onRestartTool(): Promise<void> {
+    this.exitTool();
+  }
 
   public override async onPostInstall(): Promise<void> {
     super.onPostInstall();
     this.initTool();
   }
 
-  public static async startTool(): Promise<boolean> { return new ExtensionSelectTool().run(); }
+  public static async startTool(): Promise<boolean> {
+    return new ExtensionSelectTool().run();
+  }
 }

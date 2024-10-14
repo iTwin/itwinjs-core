@@ -8,8 +8,8 @@
 
 import { Constant, ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
-import { MutableConstant } from "./Mutable/MutableConstant";
 import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { MutableConstant } from "./Mutable/MutableConstant";
 import { SchemaItems } from "./SchemaItems";
 
 /**
@@ -21,11 +21,24 @@ export class Constants extends SchemaItems {
     super(SchemaItemType.Constant, schemaEditor);
   }
 
-  public async create(schemaKey: SchemaKey, name: string, phenomenon: SchemaItemKey, definition: string, displayLabel?: string, numerator?: number, denominator?: number): Promise<SchemaItemKey> {
+  public async create(
+    schemaKey: SchemaKey,
+    name: string,
+    phenomenon: SchemaItemKey,
+    definition: string,
+    displayLabel?: string,
+    numerator?: number,
+    denominator?: number,
+  ): Promise<SchemaItemKey> {
     try {
-      const newConstant = await this.createSchemaItem<Constant>(schemaKey, this.schemaItemType, (schema) => schema.createConstant.bind(schema), name) as MutableConstant;
+      const newConstant = await this.createSchemaItem<Constant>(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createConstant.bind(schema),
+        name,
+      ) as MutableConstant;
 
-      const newPhenomenon = (await this.getSchemaItem<Phenomenon>(phenomenon, SchemaItemType.Phenomenon));
+      const newPhenomenon = await this.getSchemaItem<Phenomenon>(phenomenon, SchemaItemType.Phenomenon);
       newConstant.setPhenomenon(new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(newPhenomenon.key, async () => newPhenomenon));
 
       newConstant.setDefinition(definition);
@@ -52,10 +65,19 @@ export class Constants extends SchemaItems {
    */
   public async createFromProps(schemaKey: SchemaKey, constantProps: ConstantProps): Promise<SchemaItemKey> {
     try {
-      const newConstant = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createConstant.bind(schema), constantProps);
+      const newConstant = await this.createSchemaItemFromProps(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createConstant.bind(schema),
+        constantProps,
+      );
       return newConstant.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, constantProps.name!, schemaKey), e);
+      throw new SchemaEditingError(
+        ECEditingStatus.CreateSchemaItemFromProps,
+        new SchemaItemId(this.schemaItemType, constantProps.name!, schemaKey),
+        e,
+      );
     }
   }
 }

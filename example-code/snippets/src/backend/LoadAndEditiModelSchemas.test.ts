@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelTestUtils } from "./IModelTestUtils";
-import { ECClassModifier, PrimitiveType, SchemaLoader } from "@itwin/ecschema-metadata";
-import { SchemaXml } from "@itwin/ecschema-locaters";
-import { SchemaContextEditor } from "@itwin/ecschema-editing";
 import { StandaloneDb } from "@itwin/core-backend";
 import { Guid } from "@itwin/core-bentley";
+import { SchemaContextEditor } from "@itwin/ecschema-editing";
+import { SchemaXml } from "@itwin/ecschema-locaters";
+import { ECClassModifier, PrimitiveType, SchemaLoader } from "@itwin/ecschema-metadata";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 describe("SchemaLoadAndEdit", () => {
   let iModelDb: StandaloneDb;
@@ -36,12 +36,17 @@ describe("SchemaLoadAndEdit", () => {
     // __PUBLISH_EXTRACT_END__
 
     // __PUBLISH_EXTRACT_START__ IModelSchemas.editSchemas
-    const schemaKey = await editor.createSchema("PipingSchema", "PS", 1,0,42);
+    const schemaKey = await editor.createSchema("PipingSchema", "PS", 1, 0, 42);
 
     const bisSchema = loader.getSchema("BisCore");
     await editor.addSchemaReference(schemaKey, bisSchema);
 
-    const elementKey = await editor.entities.createElement(schemaKey, "Pipe", ECClassModifier.None, bisSchema.getSchemaItemKey("BisCore.PhysicalElement"));
+    const elementKey = await editor.entities.createElement(
+      schemaKey,
+      "Pipe",
+      ECClassModifier.None,
+      bisSchema.getSchemaItemKey("BisCore.PhysicalElement"),
+    );
 
     await editor.entities.createProperty(elementKey, "Diameter", PrimitiveType.Double, "cgk");
 
@@ -55,6 +60,5 @@ describe("SchemaLoadAndEdit", () => {
     const schemaXml = await SchemaXml.writeString(pipingSchema);
     await iModelDb.importSchemaStrings([schemaXml]);
     // __PUBLISH_EXTRACT_END__
-
   });
 });

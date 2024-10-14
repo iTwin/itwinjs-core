@@ -31,7 +31,9 @@ export class DeepCompare {
   /** relative tolerance for declaring numeric values equal. */
   public numberRelTol: number;
   /** Construct comparison object with relative tolerance. */
-  public constructor(numberRelTol = 1.0e-12) { this.numberRelTol = numberRelTol; }
+  public constructor(numberRelTol = 1.0e-12) {
+    this.numberRelTol = numberRelTol;
+  }
 
   /** Test if a and b are within tolerance.
    * * If not, push error message to errorTracker.
@@ -146,7 +148,14 @@ export class DeepCompare {
     if (tolerance !== undefined)
       this.numberRelTol = tolerance;
     this.errorTracker.length = 0;
-    this.typeCounts.numbers = this.typeCounts.arrays = this.typeCounts.functions = this.typeCounts.objects = this.typeCounts.strings = this.typeCounts.booleans = this.typeCounts.undefined = 0;
+    this.typeCounts.numbers =
+      this.typeCounts.arrays =
+      this.typeCounts.functions =
+      this.typeCounts.objects =
+      this.typeCounts.strings =
+      this.typeCounts.booleans =
+      this.typeCounts.undefined =
+        0;
     this.propertyCounts = {};
     return this.compareInternal(a, b);
   }

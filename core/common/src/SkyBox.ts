@@ -270,7 +270,10 @@ export class SkyBox {
           break;
         case SkyBoxImageType.Cube: {
           const tx = props.image.textures;
-          if (tx && undefined !== tx.top && undefined !== tx.bottom && undefined !== tx.right && undefined !== tx.left && undefined !== tx.front && undefined !== tx.back)
+          if (
+            tx && undefined !== tx.top && undefined !== tx.bottom && undefined !== tx.right && undefined !== tx.left && undefined !== tx.front &&
+            undefined !== tx.back
+          )
             return new SkyCube(tx, gradient);
 
           break;

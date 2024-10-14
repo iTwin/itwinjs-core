@@ -3,12 +3,14 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Guid, using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
+import { UnitSystemKey } from "@itwin/core-quantity";
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
 import { Content, ContentSpecificationTypes, DisplayValue, FormatsMap, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { PresentationManager, PresentationManagerProps } from "@itwin/presentation-frontend";
-import { collect, getFieldByLabel } from "../../Utils";
+import { expect } from "chai";
 import {
   buildTestIModelConnection,
   importSchema,
@@ -17,9 +19,7 @@ import {
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
 } from "../../IModelSetupUtils";
-import { UnitSystemKey } from "@itwin/core-quantity";
-import { SchemaContext } from "@itwin/ecschema-metadata";
-import { ECSchemaRpcLocater } from "@itwin/ecschema-rpcinterface-common";
+import { collect, getFieldByLabel } from "../../Utils";
 import { describeContentTestSuite, getDisplayValue } from "./Utils";
 
 describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }) => {
@@ -107,7 +107,7 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
   });
 
   describe("of properties in different places of content", () => {
-    it("formats direct properties", async function () {
+    it("formats direct properties", async function() {
       let elementKey!: InstanceKey;
       const imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
         const schema = importSchema(
@@ -139,7 +139,7 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
       expect(displayValue).to.eq("123.5 m");
     });
 
-    it("formats related properties", async function () {
+    it("formats related properties", async function() {
       let elementKey!: InstanceKey;
       const imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
         const schema = importSchema(
@@ -175,11 +175,14 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
         });
       });
       const content = await getContent(imodel, elementKey);
-      const displayValue = getDisplayValue(content, [getFieldByLabel(content.descriptor.fields, "A"), getFieldByLabel(content.descriptor.fields, "Prop")]);
+      const displayValue = getDisplayValue(content, [
+        getFieldByLabel(content.descriptor.fields, "A"),
+        getFieldByLabel(content.descriptor.fields, "Prop"),
+      ]);
       expect(displayValue).to.eq("123.5 m");
     });
 
-    it("formats array item properties", async function () {
+    it("formats array item properties", async function() {
       let elementKey!: InstanceKey;
       const imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
         const schema = importSchema(
@@ -211,7 +214,7 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
       expect(displayValue).to.deep.eq(["123.5 m", "456.8 m"]);
     });
 
-    it("formats struct member properties", async function () {
+    it("formats struct member properties", async function() {
       let elementKey!: InstanceKey;
       const imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
         const schema = importSchema(
@@ -251,7 +254,7 @@ describeContentTestSuite("Property value formatting", ({ getDefaultSuiteIModel }
       expect(displayValue).to.eq("123.5 m");
     });
 
-    it("formats struct array member properties", async function () {
+    it("formats struct array member properties", async function() {
       let elementKey!: InstanceKey;
       const imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
         const schema = importSchema(

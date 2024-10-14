@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { DifferenceType, getSchemaDifferences, SchemaDifferenceResult, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
+import { DifferenceType, getSchemaDifferences, SchemaDifferenceResult, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 
 import sourceJson from "./sourceSchema.json";
 import targetJson from "./targetSchema.json";
@@ -34,7 +34,6 @@ function expectPartiallyEquals(actual: any, expected: any, message?: string) {
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Schema Differences", () => {
-
   const customAttributeSchemaJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "CustomAttributeSchema",
@@ -94,7 +93,8 @@ describe("Schema Differences", () => {
     const targetSchema = await Schema.fromJson(targetJson, targetContext);
 
     differenceResult = await getSchemaDifferences(targetSchema, sourceSchema);
-    expect(differenceResult.conflicts, `This test suite should not have conflicts.\n${JSON.stringify(differenceResult.conflicts, null, 2)}`).to.be.undefined;
+    expect(differenceResult.conflicts, `This test suite should not have conflicts.\n${JSON.stringify(differenceResult.conflicts, null, 2)}`).to.be
+      .undefined;
     expect(differenceResult.differences).has.a.lengthOf(27, "Unexpected count of differences.");
   });
 
@@ -152,7 +152,8 @@ describe("Schema Differences", () => {
           name: "EmptySchema",
           version: "01.00.01",
         },
-      }, {
+      },
+      {
         changeType: "add",
         schemaType: SchemaOtherTypes.SchemaReference,
         difference: {
@@ -280,8 +281,7 @@ describe("Schema Differences", () => {
           customAttributes: [{
             className: "CustomAttributeSchema.MissingCA",
           }],
-        },
-        {
+        }, {
           name: "IntegerProperty",
           type: "PrimitiveArrayProperty",
           typeName: "int",
@@ -330,26 +330,32 @@ describe("Schema Differences", () => {
   });
 
   it("should return changed source relationship constraint properties", () => {
-    expectPartiallyEquals(findEntry({ changeType: "modify", schemaType: "RelationshipConstraint", itemName: "RelationshipEntity", path: "$source" }), {
-      changeType: "modify",
-      schemaType: "RelationshipConstraint",
-      itemName: "RelationshipEntity",
-      path: "$source",
-      difference: {
-        roleLabel: "New Source RoleLabel",
-        abstractConstraint: "SourceSchema.RelationshipSourceEntity",
+    expectPartiallyEquals(
+      findEntry({ changeType: "modify", schemaType: "RelationshipConstraint", itemName: "RelationshipEntity", path: "$source" }),
+      {
+        changeType: "modify",
+        schemaType: "RelationshipConstraint",
+        itemName: "RelationshipEntity",
+        path: "$source",
+        difference: {
+          roleLabel: "New Source RoleLabel",
+          abstractConstraint: "SourceSchema.RelationshipSourceEntity",
+        },
       },
-    });
+    );
   });
 
   it("should return changed source relationship constraint with added constraint classes", () => {
-    expectPartiallyEquals(findEntry({ changeType: "add", schemaType: "RelationshipConstraintClass", itemName: "RelationshipEntity", path: "$source" }), {
-      changeType: "add",
-      schemaType: "RelationshipConstraintClass",
-      itemName: "RelationshipEntity",
-      difference: [
-        "SourceSchema.RelationshipSourceEntity",
-      ],
-    });
+    expectPartiallyEquals(
+      findEntry({ changeType: "add", schemaType: "RelationshipConstraintClass", itemName: "RelationshipEntity", path: "$source" }),
+      {
+        changeType: "add",
+        schemaType: "RelationshipConstraintClass",
+        itemName: "RelationshipEntity",
+        difference: [
+          "SourceSchema.RelationshipSourceEntity",
+        ],
+      },
+    );
   });
 });

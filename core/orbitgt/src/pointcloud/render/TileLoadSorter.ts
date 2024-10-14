@@ -9,7 +9,7 @@
 // NOTE: this class has been translated from Java.
 // Do not modify this file, changes will be overwritten.
 
-//package orbitgt.pointcloud.render;
+// package orbitgt.pointcloud.render;
 
 type int8 = number;
 type int16 = number;
@@ -34,8 +34,7 @@ export interface IProjectToViewForSort {
  *
  * @internal
  */
-export class TileLoadSorter implements iComparator<TileIndex>
-{
+export class TileLoadSorter implements iComparator<TileIndex> {
   /** @ignore */
   public static readonly _CLASSNAME_: string = "orbitgt.pointcloud.render.TileLoadSorter"; // the full name of the original java class
   // the interface implementation markers:
@@ -99,7 +98,7 @@ export class TileLoadSorter implements iComparator<TileIndex>
     let tileCenter: Coordinate = this.getTilePosition(tile, 0, 0, 0);
     if (tileCenter == null) return 0.0;
     /* Get the angle from the camera boresight (screen center) (the smaller the better) (radians) */
-    let angleFromScreenCenter: float64 = Coordinate.getAngleRad(tileCenter, new Coordinate(0.0, 0.0, 1.0)/*forward*/);
+    let angleFromScreenCenter: float64 = Coordinate.getAngleRad(tileCenter, new Coordinate(0.0, 0.0, 1.0) /*forward*/);
     /* Get the radius of the tile in the view (camera) space */
     let tileRadius: float64 = this.getTileRadius(tile, tileCenter);
     /* Get the angular extent of the tile (the bigger the better) (radians) */
@@ -112,10 +111,10 @@ export class TileLoadSorter implements iComparator<TileIndex>
   // Comparator interface method
   public compare(tile1: TileIndex, tile2: TileIndex): int32 {
     /* Load higher level tiles first (added on 21/03/2017 by LER) */
-    let dLevel: int32 = (tile1.level - tile2.level);
+    let dLevel: int32 = tile1.level - tile2.level;
     if (dLevel != 0) return (-dLevel);
     /* Compare the scores inside the level */
-    let d: float64 = (this.getScore(tile1) - this.getScore(tile2)); // new scoring method on 02/02/2017 by LER
+    let d: float64 = this.getScore(tile1) - this.getScore(tile2); // new scoring method on 02/02/2017 by LER
     return (d > 0.0) ? 1 : (d < 0.0) ? -1 : 0;
   }
 }

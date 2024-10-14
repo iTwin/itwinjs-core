@@ -54,16 +54,16 @@ export class UVSurfaceOps {
   }
 
   /** Return the range of sampled points at specified offset from the surface.
- * * point counts in each direction may be set in the optional `options` structure, with angle ranges from the ellipsoid.
- * * Default evaluation is at 5 degree intervals.
- */
+   * * point counts in each direction may be set in the optional `options` structure, with angle ranges from the ellipsoid.
+   * * Default evaluation is at 5 degree intervals.
+   */
   public static sampledRangeOfOffsetEllipsoidPatch(patch: EllipsoidPatch, offsetDistance: number | undefined, options?: StrokeOptions): Range3d {
     const numU = StrokeOptions.applyAngleTol(options, 2, patch.latitudeSweep.sweepRadians, Angle.degreesToRadians(5.0));
     const numV = StrokeOptions.applyAngleTol(options, 2, patch.longitudeSweep.sweepRadians, Angle.degreesToRadians(5.0));
     return this.sampledRangeOfOffsetPatch(patch, offsetDistance, numU, numV);
   }
 
-  private constructor() { }  // private constructor -- no instances.
+  private constructor() {} // private constructor -- no instances.
   /**
    * * evaluate `numEdge+1` points at surface uv parameters interpolated between (u0,v0) and (u1,v1)
    * * accumulate the xyz in a linestring.
@@ -88,8 +88,8 @@ export class UVSurfaceOps {
     v1: number,
     numEdge: number,
     saveUV: boolean = false,
-    saveFraction: boolean = false): LineString3d {
-
+    saveFraction: boolean = false,
+  ): LineString3d {
     const ls = LineString3d.create();
     const xyz = Point3d.create();
     let fraction, u, v;

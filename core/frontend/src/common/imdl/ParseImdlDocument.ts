@@ -7,29 +7,63 @@
  */
 
 import { assert, ByteStream, Id64, Id64Set, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
-import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
-  BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
-  PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, RenderFeatureTable, RenderMaterial, RenderSchedule, RenderTexture, RgbColor, TextureMapping, TileFormat,
-  TileHeader, TileReadStatus,
+  BatchType,
+  ColorDef,
+  FeatureTableHeader,
+  FillFlags,
+  GltfV2ChunkTypes,
+  GltfVersions,
+  Gradient,
+  ImdlFlags,
+  ImdlHeader,
+  LinePixels,
+  MultiModelPackedFeatureTable,
+  PackedFeatureTable,
+  PolylineTypeFlags,
+  QParams2d,
+  QParams3d,
+  RenderFeatureTable,
+  RenderMaterial,
+  RenderSchedule,
+  RenderTexture,
+  RgbColor,
+  TextureMapping,
+  TileFormat,
+  TileHeader,
+  TileReadStatus,
 } from "@itwin/core-common";
-import { ImdlModel as Imdl } from "./ImdlModel";
-import {
-  AnyImdlPrimitive, ImdlAreaPattern, ImdlColorDef, ImdlCompactEdges, ImdlDisplayParams, ImdlDocument, ImdlIndexedEdges, ImdlMesh, ImdlMeshEdges,
-  ImdlMeshPrimitive, ImdlNamedTexture, ImdlPolyline, ImdlSegmentEdges, ImdlSilhouetteEdges, ImdlTextureMapping,
-} from "./ImdlSchema";
-import { MeshPrimitiveType } from "../internal/render/MeshPrimitive";
-import { isValidSurfaceType, SurfaceMaterial } from "../internal/render/SurfaceParams";
-import { DisplayParams } from "../internal/render/DisplayParams";
-import { AuxChannelTable, AuxChannelTableProps } from "../internal/render/AuxChannelTable";
-import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../internal/render/VertexTableSplitter";
+import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import { AnimationNodeId } from "../internal/render/AnimationNodeId";
+import { AuxChannelTable, AuxChannelTableProps } from "../internal/render/AuxChannelTable";
+import { DisplayParams } from "../internal/render/DisplayParams";
 import { EdgeParams } from "../internal/render/EdgeParams";
 import { MeshParams } from "../internal/render/MeshParams";
-import { VertexTable } from "../internal/render/VertexTable";
-import { MaterialParams } from "../render/MaterialParams";
+import { MeshPrimitiveType } from "../internal/render/MeshPrimitive";
+import { isValidSurfaceType, SurfaceMaterial } from "../internal/render/SurfaceParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
+import { VertexTable } from "../internal/render/VertexTable";
+import { ComputeAnimationNodeId, splitMeshParams, splitPointStringParams, splitPolylineParams } from "../internal/render/VertexTableSplitter";
+import { MaterialParams } from "../render/MaterialParams";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
+import { ImdlModel as Imdl } from "./ImdlModel";
+import {
+  AnyImdlPrimitive,
+  ImdlAreaPattern,
+  ImdlColorDef,
+  ImdlCompactEdges,
+  ImdlDisplayParams,
+  ImdlDocument,
+  ImdlIndexedEdges,
+  ImdlMesh,
+  ImdlMeshEdges,
+  ImdlMeshPrimitive,
+  ImdlNamedTexture,
+  ImdlPolyline,
+  ImdlSegmentEdges,
+  ImdlSilhouetteEdges,
+  ImdlTextureMapping,
+} from "./ImdlSchema";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -64,7 +98,9 @@ class GltfHeader extends TileHeader {
   public readonly scenePosition: number = 0;
   public readonly sceneStrLength: number = 0;
   public readonly binaryPosition: number = 0;
-  public get isValid(): boolean { return TileFormat.Gltf === this.format; }
+  public get isValid(): boolean {
+    return TileFormat.Gltf === this.format;
+  }
 
   public constructor(stream: ByteStream) {
     super(stream);
@@ -137,8 +173,10 @@ abstract class Texture extends RenderTexture {
 
   public abstract toImdl(): string | Gradient.SymbProps;
 
-  public override dispose() { }
-  public override get bytesUsed() { return 0; }
+  public override dispose() {}
+  public override get bytesUsed() {
+    return 0;
+  }
 }
 
 class NamedTexture extends Texture {
@@ -237,23 +275,31 @@ function fromVertexTable(table: VertexTable): Imdl.VertexTable {
 export function edgeParamsFromImdl(imdl: Imdl.EdgeParams): EdgeParams {
   return {
     ...imdl,
-    segments: imdl.segments ? {
-      ...imdl.segments,
-      indices: new VertexIndices(imdl.segments.indices),
-    } : undefined,
-    silhouettes: imdl.silhouettes ? {
-      ...imdl.silhouettes,
-      indices: new VertexIndices(imdl.silhouettes.indices),
-    } : undefined,
-    polylines: imdl.polylines ? {
-      ...imdl.polylines,
-      indices: new VertexIndices(imdl.polylines.indices),
-      prevIndices: new VertexIndices(imdl.polylines.prevIndices),
-    } : undefined,
-    indexed: imdl.indexed ? {
-      indices: new VertexIndices(imdl.indexed.indices),
-      edges: imdl.indexed.edges,
-    } : undefined,
+    segments: imdl.segments ?
+      {
+        ...imdl.segments,
+        indices: new VertexIndices(imdl.segments.indices),
+      } :
+      undefined,
+    silhouettes: imdl.silhouettes ?
+      {
+        ...imdl.silhouettes,
+        indices: new VertexIndices(imdl.silhouettes.indices),
+      } :
+      undefined,
+    polylines: imdl.polylines ?
+      {
+        ...imdl.polylines,
+        indices: new VertexIndices(imdl.polylines.indices),
+        prevIndices: new VertexIndices(imdl.polylines.prevIndices),
+      } :
+      undefined,
+    indexed: imdl.indexed ?
+      {
+        indices: new VertexIndices(imdl.indexed.indices),
+        edges: imdl.indexed.edges,
+      } :
+      undefined,
   };
 }
 
@@ -261,23 +307,31 @@ export function edgeParamsFromImdl(imdl: Imdl.EdgeParams): EdgeParams {
 export function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
   return {
     ...params,
-    segments: params.segments ? {
-      ...params.segments,
-      indices: params.segments.indices.data,
-    } : undefined,
-    silhouettes: params.silhouettes ? {
-      ...params.silhouettes,
-      indices: params.silhouettes.indices.data,
-    } : undefined,
-    polylines: params.polylines ? {
-      ...params.polylines,
-      indices: params.polylines.indices.data,
-      prevIndices: params.polylines.prevIndices.data,
-    } : undefined,
-    indexed: params.indexed ? {
-      indices: params.indexed.indices.data,
-      edges: params.indexed.edges,
-    } : undefined,
+    segments: params.segments ?
+      {
+        ...params.segments,
+        indices: params.segments.indices.data,
+      } :
+      undefined,
+    silhouettes: params.silhouettes ?
+      {
+        ...params.silhouettes,
+        indices: params.silhouettes.indices.data,
+      } :
+      undefined,
+    polylines: params.polylines ?
+      {
+        ...params.polylines,
+        indices: params.polylines.indices.data,
+        prevIndices: params.polylines.prevIndices.data,
+      } :
+      undefined,
+    indexed: params.indexed ?
+      {
+        indices: params.indexed.indices.data,
+        edges: params.indexed.edges,
+      } :
+      undefined,
   };
 }
 
@@ -304,11 +358,13 @@ class Parser {
     if (!featureTable)
       return TileReadStatus.InvalidFeatureTable;
 
-    const rtcCenter = this._document.rtcCenter ? {
-      x: this._document.rtcCenter[0] ?? 0,
-      y: this._document.rtcCenter[1] ?? 0,
-      z: this._document.rtcCenter[2] ?? 0,
-    } : undefined;
+    const rtcCenter = this._document.rtcCenter ?
+      {
+        x: this._document.rtcCenter[0] ?? 0,
+        y: this._document.rtcCenter[1] ?? 0,
+        z: this._document.rtcCenter[2] ?? 0,
+      } :
+      undefined;
 
     const primitiveNodes = this.parseNodes(featureTable);
     const nodes = this.groupPrimitiveNodes(primitiveNodes, featureTable);
@@ -437,7 +493,9 @@ class Parser {
     if (!docPrimitives)
       return;
 
-    const primitives = docPrimitives.map((x) => this.parseNodePrimitive(x)).filter<Imdl.NodePrimitive>((x): x is Imdl.NodePrimitive => x !== undefined);
+    const primitives = docPrimitives.map((x) => this.parseNodePrimitive(x)).filter<Imdl.NodePrimitive>((x): x is Imdl.NodePrimitive =>
+      x !== undefined
+    );
     if (primitives.length === 0)
       return;
 
@@ -446,7 +504,7 @@ class Parser {
       nodeId = nodeId ?? AnimationNodeId.Untransformed;
       let node = nodesById.get(nodeId);
       if (!node) {
-        node =  {
+        node = {
           animationNodeId: nodeId,
           animationId: `${this._options.batchModelId}_Node_${nodeId}`,
           primitives: [],
@@ -474,7 +532,12 @@ class Parser {
     this.splitPrimitives(primitives, featureTable, computeNodeId, getNode);
   }
 
-  private splitPrimitives(primitives: Imdl.NodePrimitive[], featureTable: RenderFeatureTable, computeNodeId: ComputeAnimationNodeId, getPrimitivesNode: (nodeId: number | undefined) => Imdl.PrimitivesNode): void {
+  private splitPrimitives(
+    primitives: Imdl.NodePrimitive[],
+    featureTable: RenderFeatureTable,
+    computeNodeId: ComputeAnimationNodeId,
+    getPrimitivesNode: (nodeId: number | undefined) => Imdl.PrimitivesNode,
+  ): void {
     const splitArgs = {
       maxDimension: this._options.maxVertexTableSize,
       computeNodeId,
@@ -507,11 +570,15 @@ class Parser {
               ...primitive.params.surface,
               indices: new VertexIndices(primitive.params.surface.indices),
               material: convertMaterial(mesh.surface.material),
-              textureMapping: texMap ? {
-                alwaysDisplayed: texMap.alwaysDisplayed,
-                // The texture type doesn't actually matter here.
-                texture: typeof texMap.texture === "string" ? new NamedTexture(texMap.texture, RenderTexture.Type.Normal) : new GradientTexture(texMap.texture),
-              } : undefined,
+              textureMapping: texMap ?
+                {
+                  alwaysDisplayed: texMap.alwaysDisplayed,
+                  // The texture type doesn't actually matter here.
+                  texture: typeof texMap.texture === "string"
+                    ? new NamedTexture(texMap.texture, RenderTexture.Type.Normal)
+                    : new GradientTexture(texMap.texture),
+                } :
+                undefined,
             },
             edges: primitive.params.edges ? edgeParamsFromImdl(primitive.params.edges) : undefined,
             isPlanar: primitive.params.isPlanar,
@@ -544,10 +611,12 @@ class Parser {
                   ...p.surface,
                   indices: p.surface.indices.data,
                   material,
-                  textureMapping: p.surface.textureMapping?.texture instanceof Texture ? {
-                    texture: p.surface.textureMapping.texture.toImdl(),
-                    alwaysDisplayed: p.surface.textureMapping.alwaysDisplayed,
-                  } : undefined,
+                  textureMapping: p.surface.textureMapping?.texture instanceof Texture ?
+                    {
+                      texture: p.surface.textureMapping.texture.toImdl(),
+                      alwaysDisplayed: p.surface.textureMapping.alwaysDisplayed,
+                    } :
+                    undefined,
                 },
                 edges: p.edges ? edgeParamsToImdl(p.edges) : undefined,
                 isPlanar: p.isPlanar,
@@ -735,7 +804,7 @@ class Parser {
     if (!indexed && imdl.compact)
       indexed = this.parseCompactEdges(imdl.compact, new VertexIndices(indices));
 
-    if (!segments && !silhouettes && !indexed &&!polylines)
+    if (!segments && !silhouettes && !indexed && !polylines)
       return undefined;
 
     return {
@@ -971,7 +1040,9 @@ class Parser {
     if (undefined === rangeMin || undefined === rangeMax)
       return undefined;
 
-    const qparams = QParams3d.fromRange(Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2])));
+    const qparams = QParams3d.fromRange(
+      Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2])),
+    );
 
     const uniformColor = undefined !== json.uniformColor ? ColorDef.fromJSON(json.uniformColor) : undefined;
     let uvParams: QParams2d | undefined;
@@ -1099,19 +1170,25 @@ class Parser {
   }
 
   private parseNamedTexture(namedTex: ImdlNamedTexture, name: string): RenderTexture | undefined {
-    const textureType = JsonUtils.asBool(namedTex.isGlyph) ? RenderTexture.Type.Glyph :
+    const textureType = JsonUtils.asBool(namedTex.isGlyph) ?
+      RenderTexture.Type.Glyph :
       (JsonUtils.asBool(namedTex.isTileSection) ? RenderTexture.Type.TileSection : RenderTexture.Type.Normal);
 
     return new NamedTexture(name, textureType);
   }
 
-  private parseConstantLodProps(propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined): TextureMapping.ConstantLodParamProps | undefined {
+  private parseConstantLodProps(
+    propsJson: { repetitions?: number, offset?: number[], minDistClamp?: number, maxDistClamp?: number } | undefined,
+  ): TextureMapping.ConstantLodParamProps | undefined {
     if (undefined === propsJson)
       return undefined;
 
     return {
       repetitions: JsonUtils.asDouble(propsJson.repetitions, 1.0),
-      offset: { x: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[0]) : 0.0, y: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[1]) : 0.0 },
+      offset: {
+        x: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[0]) : 0.0,
+        y: propsJson.offset ? JsonUtils.asDouble(propsJson.offset[1]) : 0.0,
+      },
       minDistClamp: JsonUtils.asDouble(propsJson.minDistClamp, 1.0),
       maxDistClamp: JsonUtils.asDouble(propsJson.maxDistClamp, 4096.0 * 1024.0 * 1024.0),
     };
@@ -1217,7 +1294,13 @@ export function toMaterialParams(mat: Imdl.SurfaceMaterialParams): MaterialParam
 /** @internal */
 export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchModelId: Id64String): RenderFeatureTable {
   const table = imdlFeatureTable.multiModel
-    ? MultiModelPackedFeatureTable.create(imdlFeatureTable.data, batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary, imdlFeatureTable.numSubCategories)
+    ? MultiModelPackedFeatureTable.create(
+      imdlFeatureTable.data,
+      batchModelId,
+      imdlFeatureTable.numFeatures,
+      BatchType.Primary,
+      imdlFeatureTable.numSubCategories,
+    )
     : new PackedFeatureTable(imdlFeatureTable.data, batchModelId, imdlFeatureTable.numFeatures, BatchType.Primary);
 
   table.animationNodeIds = imdlFeatureTable.animationNodeIds;
@@ -1258,13 +1341,13 @@ export function parseImdlDocument(options: ParseImdlDocumentArgs): Imdl.Document
       scene: JsonUtils.asString(sceneValue.scene),
       scenes: JsonUtils.asArray(sceneValue.scenes),
       animationNodes: JsonUtils.asObject(sceneValue.animationNodes),
-      bufferViews: JsonUtils.asObject(sceneValue.bufferViews) ?? { },
+      bufferViews: JsonUtils.asObject(sceneValue.bufferViews) ?? {},
       meshes: JsonUtils.asObject(sceneValue.meshes),
-      nodes: JsonUtils.asObject(sceneValue.nodes) ?? { },
-      materials: JsonUtils.asObject(sceneValue.materials) ?? { },
-      renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials) ?? { },
-      namedTextures: JsonUtils.asObject(sceneValue.namedTextures) ?? { },
-      patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols) ?? { },
+      nodes: JsonUtils.asObject(sceneValue.nodes) ?? {},
+      materials: JsonUtils.asObject(sceneValue.materials) ?? {},
+      renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials) ?? {},
+      namedTextures: JsonUtils.asObject(sceneValue.namedTextures) ?? {},
+      patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols) ?? {},
       rtcCenter: JsonUtils.asArray(sceneValue.rtcCenter),
     };
 

@@ -4,4 +4,3 @@
 *--------------------------------------------------------------------------------------------*/
 
 export type { DecorationGeometryProps, SnapRequestProps, SnapResponseProps } from "./Snapping";
-

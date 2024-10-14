@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { testBlankViewport } from "./openBlankViewport";
-import { FeatureSymbology, IModelApp, Viewport, ViewState } from "../core-frontend";
 import { EmptyLocalization } from "@itwin/core-common";
+import { expect } from "chai";
+import { FeatureSymbology, IModelApp, Viewport, ViewState } from "../core-frontend";
+import { testBlankViewport } from "./openBlankViewport";
 
 describe("FeatureSymbology.Overrides", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

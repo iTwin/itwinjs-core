@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/naming-convention */
-import * as path from "path";
 import { WebPreferences } from "electron";
+import * as path from "path";
+import { CertaConfig } from "../../CertaConfig";
 import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { relaunchInElectron } from "../../utils/SpawnUtils";
-import { CertaConfig } from "../../CertaConfig";
 
 export class ElectronTestRunner {
   public static readonly supportsCoverage = false;
@@ -75,7 +75,8 @@ export class ElectronTestRunner {
 
     rendererWindow.webContents.once("did-finish-load", async () => {
       const initScriptPath = require.resolve("./initElectronTests.js");
-      const startTests = async () => rendererWindow.webContents.executeJavaScript(`
+      const startTests = async () =>
+        rendererWindow.webContents.executeJavaScript(`
         var _CERTA_CONFIG = ${JSON.stringify(config)};
         require(${JSON.stringify(initScriptPath)});
         startCertaTests(${JSON.stringify(config.testBundle)});`);

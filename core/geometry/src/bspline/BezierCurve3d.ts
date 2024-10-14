@@ -29,7 +29,9 @@ import { BezierCurveBase } from "./BezierCurveBase";
  */
 export class BezierCurve3d extends BezierCurveBase {
   /** test if `other` is also a BezierCurve3d. */
-  public isSameGeometryClass(other: any): boolean { return other instanceof BezierCurve3d; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof BezierCurve3d;
+  }
   /** apply the transform to the control points. */
   public tryTransformInPlace(transform: Transform): boolean {
     const data = this._workData0;
@@ -75,7 +77,6 @@ export class BezierCurve3d extends BezierCurveBase {
   /** Create a curve with given points.
    * * If input is `Point2d[]`, the points are promoted with `z=0` and `w=1`
    * * If input is `Point3d[]`, the points are promoted with w=1`
-   *
    */
   public static create(data: Point3d[] | Point2d[]): BezierCurve3d | undefined {
     if (data.length < 1)
@@ -122,7 +123,15 @@ export class BezierCurve3d extends BezierCurveBase {
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
     this._polygon.evaluate(fraction, this._workData0);
     this._polygon.evaluateDerivative(fraction, this._workData1);
-    return Ray3d.createXYZUVW(this._workData0[0], this._workData0[1], this._workData0[2], this._workData1[0], this._workData1[1], this._workData1[2], result);
+    return Ray3d.createXYZUVW(
+      this._workData0[0],
+      this._workData0[1],
+      this._workData0[2],
+      this._workData1[0],
+      this._workData1[1],
+      this._workData1[2],
+      result,
+    );
   }
   /** Construct a plane with
    * * origin at the fractional position along the arc
@@ -180,7 +189,7 @@ export class BezierCurve3d extends BezierCurveBase {
     } else {
       this.allocateAndZeroBezierWorkData(order - 1, order, 0);
       const bezier = this._workBezier!;
-      const componentCoffs = this._workCoffsA!;   // to hold transformed copy of x,y,z in turn.
+      const componentCoffs = this._workCoffsA!; // to hold transformed copy of x,y,z in turn.
 
       this.getPolePoint3d(0, this._workPoint0);
       rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
@@ -200,7 +209,6 @@ export class BezierCurve3d extends BezierCurveBase {
           }
         }
       }
-
     }
   }
 }

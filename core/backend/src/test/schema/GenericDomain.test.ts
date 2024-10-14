@@ -2,21 +2,45 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { DbResult, Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  CategoryProps, Code, DefinitionElementProps, ElementProps, GeometricElement3dProps, IModel, PhysicalElementProps, PhysicalTypeProps,
+  CategoryProps,
+  Code,
+  DefinitionElementProps,
+  ElementProps,
+  GeometricElement3dProps,
+  IModel,
+  PhysicalElementProps,
+  PhysicalTypeProps,
   TypeDefinitionElementProps,
 } from "@itwin/core-common";
+import { assert } from "chai";
 import {
-  DefinitionModel, DocumentListModel, ECSqlStatement, GenericDocument, GenericGraphicalModel3d, GenericGraphicalType2d, GenericPhysicalMaterial,
-  GenericPhysicalType, GenericSchema, Graphic3d, Group, GroupModel, IModelDb, IModelJsFs, PhysicalElementIsOfPhysicalMaterial,
-  PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalTypeIsOfPhysicalMaterial, SnapshotDb, SpatialCategory,
+  DefinitionModel,
+  DocumentListModel,
+  ECSqlStatement,
+  GenericDocument,
+  GenericGraphicalModel3d,
+  GenericGraphicalType2d,
+  GenericPhysicalMaterial,
+  GenericPhysicalType,
+  GenericSchema,
+  Graphic3d,
+  Group,
+  GroupModel,
+  IModelDb,
+  IModelJsFs,
+  PhysicalElementIsOfPhysicalMaterial,
+  PhysicalElementIsOfType,
+  PhysicalModel,
+  PhysicalObject,
+  PhysicalTypeIsOfPhysicalMaterial,
+  SnapshotDb,
+  SpatialCategory,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Generic Domain", () => {
-
   function count(iModelDb: IModelDb, classFullName: string): number {
     return iModelDb.withPreparedStatement(`SELECT COUNT(*) FROM ${classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;

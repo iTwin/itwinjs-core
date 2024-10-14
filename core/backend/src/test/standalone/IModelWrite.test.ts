@@ -5,8 +5,17 @@
 
 import { AccessToken, DbResult, GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  ChangesetIdWithIndex, Code, ColorDef,
-  GeometricElement2dProps, GeometryStreamProps, IModel, LockState, QueryRowFormat, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance,
+  ChangesetIdWithIndex,
+  Code,
+  ColorDef,
+  GeometricElement2dProps,
+  GeometryStreamProps,
+  IModel,
+  LockState,
+  QueryRowFormat,
+  RequestNewBriefcaseProps,
+  SchemaState,
+  SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 import * as chai from "chai";
@@ -15,25 +24,38 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as fs from "fs";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { HubWrappers, KnownTestLocations } from "../";
 import { DrawingCategory } from "../../Category";
-import { ECSqlStatement } from "../../ECSqlStatement";
-import { HubMock } from "../../HubMock";
 import {
   _nativeDb,
   BriefcaseDb,
   BriefcaseManager,
   ChannelControl,
-  CodeService, DefinitionModel, DictionaryModel, DocumentListModel, Drawing, DrawingGraphic, OpenBriefcaseArgs, SpatialCategory, Subject,
+  CodeService,
+  DefinitionModel,
+  DictionaryModel,
+  DocumentListModel,
+  Drawing,
+  DrawingGraphic,
+  OpenBriefcaseArgs,
+  SpatialCategory,
+  Subject,
 } from "../../core-backend";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
+import { ECSqlStatement } from "../../ECSqlStatement";
+import { HubMock } from "../../HubMock";
 import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
+import { HubWrappers, KnownTestLocations } from "../";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 
 chai.use(chaiAsPromised);
 
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
-  const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
+  const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(
+    rwIModel,
+    IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"),
+    true,
+    parent,
+  );
 
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
@@ -71,7 +93,6 @@ describe("IModelWriteTest", () => {
       let didThrow = false;
       try {
         await BriefcaseDb.open(args);
-
       } catch (e: any) {
         assert.strictEqual(e.errorNumber, DbResult.BE_SQLITE_BUSY, "Expect error 'Db is busy'");
         didThrow = true;
@@ -86,10 +107,26 @@ describe("IModelWriteTest", () => {
     // lock db so another connection cannot write to it.
     db.saveFileProperty({ name: "test", namespace: "test" }, "");
 
-    assert.isAtMost(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(0) }), seconds(1), "open should fail with busy error instantly");
-    assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(1) }), seconds(1), "open should fail with atleast 1 sec delay due to retry");
-    assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(2) }), seconds(2), "open should fail with atleast 2 sec delay due to retry");
-    assert.isAtLeast(await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(3) }), seconds(3), "open should fail with atleast 3 sec delay due to retry");
+    assert.isAtMost(
+      await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(0) }),
+      seconds(1),
+      "open should fail with busy error instantly",
+    );
+    assert.isAtLeast(
+      await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(1) }),
+      seconds(1),
+      "open should fail with atleast 1 sec delay due to retry",
+    );
+    assert.isAtLeast(
+      await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(2) }),
+      seconds(2),
+      "open should fail with atleast 2 sec delay due to retry",
+    );
+    assert.isAtLeast(
+      await tryOpen({ fileName: briefcaseProps.fileName, busyTimeout: seconds(3) }),
+      seconds(3),
+      "open should fail with atleast 3 sec delay due to retry",
+    );
 
     db.abandonChanges();
     db.close();
@@ -106,7 +143,7 @@ describe("IModelWriteTest", () => {
 
     let nClosed = 0;
     const fsWatcher = {
-      callback: () => { },
+      callback: () => {},
       close: () => ++nClosed,
     };
     const watchStub: any = (_filename: fs.PathLike, _opts: fs.WatchOptions, fn: () => void) => {
@@ -157,7 +194,7 @@ describe("IModelWriteTest", () => {
 
     let nClosed = 0;
     const fsWatcher = {
-      callback: () => { },
+      callback: () => {},
       close: () => ++nClosed,
     };
     const watchStub: any = (_filename: fs.PathLike, _opts: fs.WatchOptions, fn: () => void) => {
@@ -241,7 +278,7 @@ describe("IModelWriteTest", () => {
     // Writer that pulls + watcher.
     let nClosed = 0;
     const fsWatcher = {
-      callback: () => { },
+      callback: () => {},
       close: () => ++nClosed,
     };
     const watchStub: any = (_filename: fs.PathLike, _opts: fs.WatchOptions, fn: () => void) => {
@@ -431,7 +468,12 @@ describe("IModelWriteTest", () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(
+        rwIModel,
+        IModel.dictionaryId,
+        "MyDrawingCategory",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+      );
 
     const insertElements = (imodel: BriefcaseDb, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
       for (let m = 0; m < noOfElements; ++m) {
@@ -483,9 +525,9 @@ describe("IModelWriteTest", () => {
     CodeService.createForIModel = async () => {
       throw new CodeService.Error("MissingCode", 0x10000 + 1, " ");
     };
-    const briefcaseDb = await BriefcaseDb.open({ fileName: briefcaseProps.fileName});
+    const briefcaseDb = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     briefcaseDb.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    let firstNonRootElement = {id:undefined, codeValue: "test"};
+    let firstNonRootElement = { id: undefined, codeValue: "test" };
     briefcaseDb.withPreparedStatement("SELECT * from Bis.Element LIMIT 1 OFFSET 1", (stmt: ECSqlStatement) => {
       if (stmt.step() === DbResult.BE_SQLITE_ROW) {
         firstNonRootElement = stmt.getRow();
@@ -493,11 +535,17 @@ describe("IModelWriteTest", () => {
     });
     // make change to the briefcaseDb that does not affect code, e.g., save file property
     // expect no error from verifyCode
-    expect(() => briefcaseDb.saveFileProperty({ name: "codeServiceProp", namespace: "codeService", id: 1, subId: 1 }, "codeService test")).to.not.throw();
+    expect(() => briefcaseDb.saveFileProperty({ name: "codeServiceProp", namespace: "codeService", id: 1, subId: 1 }, "codeService test")).to.not
+      .throw();
     // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
     // expect error from verifyCode
-    let newProps = { id: firstNonRootElement.id, code: {...Code.createEmpty(), value:firstNonRootElement.codeValue}, classFullName: undefined, model: undefined };
-    await briefcaseDb.locks.acquireLocks({exclusive: firstNonRootElement.id});
+    let newProps = {
+      id: firstNonRootElement.id,
+      code: { ...Code.createEmpty(), value: firstNonRootElement.codeValue },
+      classFullName: undefined,
+      model: undefined,
+    };
+    await briefcaseDb.locks.acquireLocks({ exclusive: firstNonRootElement.id });
     expect(() => briefcaseDb.elements.updateElement(newProps)).to.throw(CodeService.Error);
     // make change to the briefcaseDb that will invoke verifyCode with a null(empty) code, e.g., update an element with a null(empty) code
     // expect no error from verifyCode
@@ -508,12 +556,17 @@ describe("IModelWriteTest", () => {
     CodeService.createForIModel = async () => {
       throw new CodeService.Error("NoCodeIndex", 0x10000 + 1, " ");
     };
-    const briefcaseDb2 = await BriefcaseDb.open({ fileName: briefcaseProps.fileName});
+    const briefcaseDb2 = await BriefcaseDb.open({ fileName: briefcaseProps.fileName });
     briefcaseDb2.channels.addAllowedChannel(ChannelControl.sharedChannelName);
-    await briefcaseDb2.locks.acquireLocks({exclusive: firstNonRootElement.id});
+    await briefcaseDb2.locks.acquireLocks({ exclusive: firstNonRootElement.id });
     // expect no error from verifyCode for empty code
     expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
-    newProps = { id: firstNonRootElement.id, code: {...Code.createEmpty(), value:firstNonRootElement.codeValue}, classFullName: undefined, model: undefined };
+    newProps = {
+      id: firstNonRootElement.id,
+      code: { ...Code.createEmpty(), value: firstNonRootElement.codeValue },
+      classFullName: undefined,
+      model: undefined,
+    };
     // make change to the briefcaseDb that affects code that will invoke verifyCode, e.g., update an element with a non-null code
     // expect no error from verifyCode
     expect(() => briefcaseDb2.elements.updateElement(newProps)).to.not.throw();
@@ -569,7 +622,12 @@ describe("IModelWriteTest", () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(
+        rwIModel,
+        IModel.dictionaryId,
+        "MyDrawingCategory",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+      );
 
     const insertElements = (imodel: BriefcaseDb, className: string = "Test2dElement", noOfElements: number = 10, userProp: (n: number) => object) => {
       for (let m = 0; m < noOfElements; ++m) {
@@ -624,7 +682,11 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.length, 10);
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
     rows = [];
-    for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (
+      const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })
+    ) {
       rows.push(queryRow.toRow());
     }
     assert.equal(rows.length, 10);
@@ -641,7 +703,11 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 10);
       rows = [];
-      for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (
+        const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, {
+          rowFormat: QueryRowFormat.UseJsPropertyNames,
+        })
+      ) {
         rows.push(queryRow.toRow());
       }
       assert.equal(rows.length, 10);
@@ -698,14 +764,16 @@ describe("IModelWriteTest", () => {
     await rwIModel.locks.acquireLocks({ shared: drawingModelId });
     insertElements(rwIModel, "Test2dElement", 10, (n: number) => {
       return {
-        s: `s-${n}`, v: `v-${n}`,
+        s: `s-${n}`,
+        v: `v-${n}`,
       };
     });
 
     // create some element and push those changes
     insertElements(rwIModel, "Test2dElement2nd", 10, (n: number) => {
       return {
-        t: `t-${n}`, r: `r-${n}`,
+        t: `t-${n}`,
+        r: `r-${n}`,
       };
     });
     assert.equal(6279, rwIModel[_nativeDb].getChangesetSize());
@@ -731,7 +799,11 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
     assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
     rows = [];
-    for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (
+      const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })
+    ) {
       rows.push(queryRow.toRow());
     }
     assert.equal(rows.length, 30);
@@ -748,7 +820,11 @@ describe("IModelWriteTest", () => {
     assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
     assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
     rows = [];
-    for await (const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (
+      const queryRow of rwIModel.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })
+    ) {
       rows.push(queryRow.toRow());
     }
     assert.equal(rows.length, 10);
@@ -770,7 +846,11 @@ describe("IModelWriteTest", () => {
       assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
       rows = [];
       // Following fail without native side fix where we clear concurrent query cache on schema changeset apply
-      for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (
+        const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement", undefined, {
+          rowFormat: QueryRowFormat.UseJsPropertyNames,
+        })
+      ) {
         rows.push(queryRow.toRow());
       }
       assert.equal(rows.length, 30);
@@ -814,7 +894,11 @@ describe("IModelWriteTest", () => {
         }
       }
       rows = [];
-      for await (const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+      for await (
+        const queryRow of rwIModel2.createQueryReader("SELECT * FROM TestDomain.Test2dElement2nd", undefined, {
+          rowFormat: QueryRowFormat.UseJsPropertyNames,
+        })
+      ) {
         rows.push(queryRow.toRow());
       }
       assert.equal(rows.length, 10);
@@ -973,7 +1057,5 @@ describe("IModelWriteTest", () => {
     expect(serverLocks.getLockCount(LockState.Shared)).equal(0);
     expect(serverLocks.getLockCount(LockState.Exclusive)).equal(0);
     iModel.close();
-
   });
-
 });

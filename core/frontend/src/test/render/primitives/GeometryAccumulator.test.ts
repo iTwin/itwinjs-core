@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, GraphicParams } from "@itwin/core-common";
-import { IModelApp } from "../../../IModelApp";
-import { IModelConnection } from "../../../IModelConnection";
-import { RenderGraphic } from "../../../render/RenderGraphic";
-import { StandardViewId } from "../../../StandardView";
-import { SpatialViewState } from "../../../SpatialViewState";
-import { Branch } from "../../../render/webgl/Graphic";
-import { createBlankConnection } from "../../createBlankConnection";
-import { FakeGeometry } from "./Fake";
+import { LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import { GraphicType } from "../../../common";
-import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
-import { GeometryAccumulator } from "../../../common/internal/render/GeometryAccumulator";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
+import { GeometryAccumulator } from "../../../common/internal/render/GeometryAccumulator";
 import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
 import { _accumulator } from "../../../common/internal/Symbols";
+import { IModelApp } from "../../../IModelApp";
+import { IModelConnection } from "../../../IModelConnection";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
+import { RenderGraphic } from "../../../render/RenderGraphic";
+import { Branch } from "../../../render/webgl/Graphic";
+import { SpatialViewState } from "../../../SpatialViewState";
+import { StandardViewId } from "../../../StandardView";
+import { createBlankConnection } from "../../createBlankConnection";
+import { FakeGeometry } from "./Fake";
 
 describe("GeometryAccumulator tests", () => {
   let iModel: IModelConnection;

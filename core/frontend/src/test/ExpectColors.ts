@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { ColorDef } from "@itwin/core-common";
-import { ScreenViewport } from "../Viewport";
+import { expect } from "chai";
 import { ViewRect } from "../common/ViewRect";
+import { ScreenViewport } from "../Viewport";
 
 /** A viewport-color-checking function for tests. Tests for the presence of a list of expected colors in the entire viewport or specified ViewRect.
  * @internal

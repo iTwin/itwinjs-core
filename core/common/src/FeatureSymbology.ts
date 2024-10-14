@@ -7,8 +7,8 @@
  */
 
 import { assert, Id64, Id64String } from "@itwin/core-bentley";
-import { BatchType, Feature } from "./FeatureTable";
 import { ColorDef } from "./ColorDef";
+import { BatchType, Feature } from "./FeatureTable";
 import { GeometryClass } from "./GeometryParams";
 import { LinePixels } from "./LinePixels";
 import { RgbColor, RgbColorProps } from "./RgbColor";
@@ -223,10 +223,18 @@ export class FeatureAppearance {
     return this.equals(FeatureAppearance.defaults);
   }
 
-  public get overridesRgb(): boolean { return undefined !== this.rgb; }
-  public get overridesTransparency(): boolean { return undefined !== this.transparency; }
-  public get overridesLinePixels(): boolean { return undefined !== this.linePixels; }
-  public get overridesWeight(): boolean { return undefined !== this.weight; }
+  public get overridesRgb(): boolean {
+    return undefined !== this.rgb;
+  }
+  public get overridesTransparency(): boolean {
+    return undefined !== this.transparency;
+  }
+  public get overridesLinePixels(): boolean {
+    return undefined !== this.linePixels;
+  }
+  public get overridesWeight(): boolean {
+    return undefined !== this.weight;
+  }
 
   /** Get the color that will be applied to linear geometry, or undefined if not overridden.
    * This is the same as [[rgb]] if [[lineRgb]] is `undefined`.
@@ -248,7 +256,9 @@ export class FeatureAppearance {
       || undefined !== this.getLineRgb() || undefined !== this.getLineTransparency();
   }
 
-  public get overridesNonLocatable(): boolean { return undefined !== this.nonLocatable; }
+  public get overridesNonLocatable(): boolean {
+    return undefined !== this.nonLocatable;
+  }
 
   public get isFullyTransparent(): boolean {
     const surf = this.transparency ?? 0;
@@ -257,7 +267,9 @@ export class FeatureAppearance {
   }
 
   /** Returns true if any aspect of the appearance is overridden (i.e., if any member is not undefined). */
-  public get anyOverridden(): boolean { return this.overridesSymbology || this.overridesNonLocatable; }
+  public get anyOverridden(): boolean {
+    return this.overridesSymbology || this.overridesNonLocatable;
+  }
 
   public equals(other: FeatureAppearance): boolean {
     if (this === other)
@@ -376,7 +388,9 @@ export class FeatureAppearance {
     this.lineRgb = typeof props.lineRgb === "object" ? RgbColor.fromJSON(props.lineRgb) : (false === props.lineRgb ? false : undefined);
 
     this.transparency = transparencyFromJSON(props.transparency);
-    this.lineTransparency = typeof props.lineTransparency === "number" ? transparencyFromJSON(props.lineTransparency) : (false === props.lineTransparency ? false : undefined);
+    this.lineTransparency = typeof props.lineTransparency === "number"
+      ? transparencyFromJSON(props.lineTransparency)
+      : (false === props.lineTransparency ? false : undefined);
 
     this.weight = props.weight;
     this.linePixels = props.linePixels;
@@ -416,7 +430,17 @@ export interface FeatureAppearanceSource {
    * @returns The desired appearance overrides, or `undefined` to indicate the feature should not be displayed.
    * @see [Id64.isValidUint32Pair]($core-bentley) to determine if the components of an [Id64String]($core-bentley) represent a valid Id.
    */
-  getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+  getAppearance(
+    elemLo: number,
+    elemHi: number,
+    subcatLo: number,
+    subcatHi: number,
+    geomClass: GeometryClass,
+    modelLo: number,
+    modelHi: number,
+    type: BatchType,
+    animationNodeId: number,
+  ): FeatureAppearance | undefined;
 }
 
 /** Common options for [[FeatureOverrides.override]].
@@ -599,19 +623,27 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   }
 
   /** Overrides applied to features for which no other overrides are defined */
-  public get defaultOverrides(): FeatureAppearance { return this._defaultOverrides; }
+  public get defaultOverrides(): FeatureAppearance {
+    return this._defaultOverrides;
+  }
   /** Whether or not line weights are applied. If false, all lines are drawn with a weight of 1. */
-  public get lineWeights(): boolean { return this._lineWeights; }
+  public get lineWeights(): boolean {
+    return this._lineWeights;
+  }
 
   /** A set of elements that are always invisible.
    * @note If an element is present in both `alwaysDrawn` and [[neverDrawn]], it will not be displayed - `neverDrawn` takes precedence.
    */
-  public get neverDrawn() { return this._neverDrawn; }
+  public get neverDrawn() {
+    return this._neverDrawn;
+  }
   /** A set of elements that are unconditionally displayed.
    * @see [[isAlwaysDrawnExclusive]] to specify that *only* elements in this set will be displayed.
    * @note If an element is present in both `alwaysDrawn` and [[neverDrawn]], it will not be displayed - `neverDrawn` takes precedence.
    */
-  public get alwaysDrawn() { return this._alwaysDrawn; }
+  public get alwaysDrawn() {
+    return this._alwaysDrawn;
+  }
 
   /** @internal */
   protected isNeverDrawn(elemIdLo: number, elemIdHi: number, animationNodeId: number): boolean {
@@ -621,9 +653,13 @@ export class FeatureOverrides implements FeatureAppearanceSource {
       return this.neverDrawnAnimationNodes.has(animationNodeId);
   }
   /** @internal */
-  protected isAlwaysDrawn(idLo: number, idHi: number): boolean { return this._alwaysDrawn.has(idLo, idHi); }
+  protected isAlwaysDrawn(idLo: number, idHi: number): boolean {
+    return this._alwaysDrawn.has(idLo, idHi);
+  }
   /** Returns true if the [SubCategory]($backend) specified by Id is in the set of visible subcategories. @internal */
-  public isSubCategoryVisible(idLo: number, idHi: number): boolean { return this._visibleSubCategories.has(idLo, idHi); }
+  public isSubCategoryVisible(idLo: number, idHi: number): boolean {
+    return this._visibleSubCategories.has(idLo, idHi);
+  }
   /** @internal */
   public isSubCategoryVisibleInModel(subcatLo: number, subcatHi: number, modelLo: number, modelHi: number): boolean {
     if (this.ignoreSubCategory)
@@ -670,18 +706,30 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   }
 
   /** @internal */
-  protected getSubCategoryOverrides(idLo: number, idHi: number): FeatureAppearance | undefined { return this._subCategoryOverrides.get(idLo, idHi); }
+  protected getSubCategoryOverrides(idLo: number, idHi: number): FeatureAppearance | undefined {
+    return this._subCategoryOverrides.get(idLo, idHi);
+  }
 
   /** Add a [SubCategory]($backend) to the set of visible subcategories. */
-  public setVisibleSubCategory(id: Id64String): void { this._visibleSubCategories.addId(id); }
+  public setVisibleSubCategory(id: Id64String): void {
+    this._visibleSubCategories.addId(id);
+  }
   /** Specify the Id of an element that should never be drawn. */
-  public setNeverDrawn(id: Id64String): void { this._neverDrawn.addId(id); }
+  public setNeverDrawn(id: Id64String): void {
+    this._neverDrawn.addId(id);
+  }
   /** Specify the Id of an element that should always be drawn. */
-  public setAlwaysDrawn(id: Id64String): void { this._alwaysDrawn.addId(id); }
+  public setAlwaysDrawn(id: Id64String): void {
+    this._alwaysDrawn.addId(id);
+  }
   /** Specify the Id of a animation node that should never be drawn. */
-  public setAnimationNodeNeverDrawn(id: number): void { this.neverDrawnAnimationNodes.add(id); }
+  public setAnimationNodeNeverDrawn(id: number): void {
+    this.neverDrawnAnimationNodes.add(id);
+  }
   /** Specify the Ids of elements that should never be drawn. */
-  public setNeverDrawnSet(ids: Iterable<Id64String>) { copyIdSetToUint32Set(this._neverDrawn, ids); }
+  public setNeverDrawnSet(ids: Iterable<Id64String>) {
+    copyIdSetToUint32Set(this._neverDrawn, ids);
+  }
   /** Specify the Ids of elements that should always be drawn. */
   public setAlwaysDrawnSet(ids: Iterable<Id64String>, exclusive: boolean, ignoreSubCategory = true) {
     copyIdSetToUint32Set(this._alwaysDrawn, ids);
@@ -690,13 +738,23 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   }
 
   /** Returns the feature's appearance overrides, or undefined if the feature is not visible. */
-  public getFeatureAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary, animationNodeId = 0): FeatureAppearance | undefined {
+  public getFeatureAppearance(
+    feature: Feature,
+    modelId: Id64String,
+    type: BatchType = BatchType.Primary,
+    animationNodeId = 0,
+  ): FeatureAppearance | undefined {
     return this.getAppearance(
-      Id64.getLowerUint32(feature.elementId), Id64.getUpperUint32(feature.elementId),
-      Id64.getLowerUint32(feature.subCategoryId), Id64.getUpperUint32(feature.subCategoryId),
+      Id64.getLowerUint32(feature.elementId),
+      Id64.getUpperUint32(feature.elementId),
+      Id64.getLowerUint32(feature.subCategoryId),
+      Id64.getUpperUint32(feature.subCategoryId),
       feature.geometryClass,
-      Id64.getLowerUint32(modelId), Id64.getUpperUint32(modelId),
-      type, animationNodeId);
+      Id64.getLowerUint32(modelId),
+      Id64.getUpperUint32(modelId),
+      type,
+      animationNodeId,
+    );
   }
 
   private static readonly _weight1Appearance = FeatureAppearance.fromJSON({ weight: 1 });
@@ -705,7 +763,17 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    * Takes Id64s as pairs of unsigned 32-bit integers for efficiency, because that is how they are stored by the PackedFeatureTable associated with each batch of graphics.
    * @see [[getFeatureAppearance]] for an equivalent function that accepts [Id64String]($core-bentley)s instead of integer pairs.
    */
-  public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
+  public getAppearance(
+    elemLo: number,
+    elemHi: number,
+    subcatLo: number,
+    subcatHi: number,
+    geomClass: GeometryClass,
+    modelLo: number,
+    modelHi: number,
+    type: BatchType,
+    animationNodeId: number,
+  ): FeatureAppearance | undefined {
     if (BatchType.VolumeClassifier === type || BatchType.PlanarClassifier === type)
       return this.getClassifierAppearance(elemLo, elemHi, subcatLo, subcatHi, modelLo, modelHi, animationNodeId);
 
@@ -755,7 +823,15 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   /** Classifiers behave totally differently...in particular they are never invisible unless fully-transparent.
    * @internal
    */
-  protected getClassifierAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, modelLo: number, modelHi: number, animationNodeId: number): FeatureAppearance | undefined {
+  protected getClassifierAppearance(
+    elemLo: number,
+    elemHi: number,
+    subcatLo: number,
+    subcatHi: number,
+    modelLo: number,
+    modelHi: number,
+    animationNodeId: number,
+  ): FeatureAppearance | undefined {
     let app = FeatureAppearance.defaults;
     const modelApp = this.getModelOverrides(modelLo, modelHi);
     if (undefined !== modelApp)
@@ -783,10 +859,14 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    */
   public isClassVisible(geomClass: GeometryClass): boolean {
     switch (geomClass) {
-      case GeometryClass.Construction: return this._constructions;
-      case GeometryClass.Dimension: return this._dimensions;
-      case GeometryClass.Pattern: return this._patterns;
-      default: return true;
+      case GeometryClass.Construction:
+        return this._constructions;
+      case GeometryClass.Dimension:
+        return this._dimensions;
+      case GeometryClass.Pattern:
+        return this._patterns;
+      default:
+        return true;
     }
   }
 
@@ -911,13 +991,21 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   }
 
   /** Returns true if geometry belonging to the specified subcategory will be drawn. */
-  public isSubCategoryIdVisible(id: Id64String): boolean { return this.isSubCategoryVisible(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+  public isSubCategoryIdVisible(id: Id64String): boolean {
+    return this.isSubCategoryVisible(Id64.getLowerUint32(id), Id64.getUpperUint32(id));
+  }
   /** Returns the overrides applied to geometry belonging to the specified model, if any such are defined. */
-  public getModelOverridesById(id: Id64String): FeatureAppearance | undefined { return this.getModelOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+  public getModelOverridesById(id: Id64String): FeatureAppearance | undefined {
+    return this.getModelOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id));
+  }
   /** Returns the overrides applied to geometry belonging to the specified element, if any such are defined. */
-  public getElementOverridesById(id: Id64String): FeatureAppearance | undefined { return this.getElementOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id), 0); }
+  public getElementOverridesById(id: Id64String): FeatureAppearance | undefined {
+    return this.getElementOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id), 0);
+  }
   /** Returns the overrides applied to geometry belonging to the specified subcategory, if any such are defined. */
-  public getSubCategoryOverridesById(id: Id64String): FeatureAppearance | undefined { return this.getSubCategoryOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+  public getSubCategoryOverridesById(id: Id64String): FeatureAppearance | undefined {
+    return this.getSubCategoryOverrides(Id64.getLowerUint32(id), Id64.getUpperUint32(id));
+  }
 
   /** Returns true if the specified Feature will be drawn. */
   public isFeatureVisible(feature: Feature): boolean {
@@ -964,7 +1052,18 @@ export interface FeatureAppearanceProvider {
    * @see [[FeatureAppearanceSource.getAppearance]] to forward the request to the source.
    * @see [Id64.isValidUint32Pair]($core-bentley) to determine if the components of an [Id64String]($core-bentley) represent a valid Id.
    */
-  getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
+  getFeatureAppearance(
+    source: FeatureAppearanceSource,
+    elemLo: number,
+    elemHi: number,
+    subcatLo: number,
+    subcatHi: number,
+    geomClass: GeometryClass,
+    modelLo: number,
+    modelHi: number,
+    type: BatchType,
+    animationNodeId: number,
+  ): FeatureAppearance | undefined;
 }
 
 /** @public */
@@ -972,7 +1071,17 @@ export namespace FeatureAppearanceProvider {
   /** Produce a FeatureAppearanceSource for which `getAppearance()` returns the appearance specified in `source`, potentially modified by `provider`. */
   function wrap(source: FeatureAppearanceSource, provider: FeatureAppearanceProvider): FeatureAppearanceSource {
     return {
-      getAppearance: (elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) => {
+      getAppearance: (
+        elemLo: number,
+        elemHi: number,
+        subcatLo: number,
+        subcatHi: number,
+        geomClass: GeometryClass,
+        modelLo: number,
+        modelHi: number,
+        type: BatchType,
+        animationNodeId: number,
+      ) => {
         return provider.getFeatureAppearance(source, elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
       },
     };
@@ -984,7 +1093,18 @@ export namespace FeatureAppearanceProvider {
    */
   export function supplement(supplementAppearance: (appearance: FeatureAppearance) => FeatureAppearance): FeatureAppearanceProvider {
     return {
-      getFeatureAppearance: (source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) => {
+      getFeatureAppearance: (
+        source: FeatureAppearanceSource,
+        elemLo: number,
+        elemHi: number,
+        subcatLo: number,
+        subcatHi: number,
+        geomClass: GeometryClass,
+        modelLo: number,
+        modelHi: number,
+        type: BatchType,
+        animationNodeId: number,
+      ) => {
         const app = source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
         return app ? supplementAppearance(app) : app;
       },
@@ -1000,8 +1120,30 @@ export namespace FeatureAppearanceProvider {
       return first;
 
     return {
-      getFeatureAppearance: (source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) => {
-        return second.getFeatureAppearance(wrap(source, first), elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+      getFeatureAppearance: (
+        source: FeatureAppearanceSource,
+        elemLo: number,
+        elemHi: number,
+        subcatLo: number,
+        subcatHi: number,
+        geomClass: GeometryClass,
+        modelLo: number,
+        modelHi: number,
+        type: BatchType,
+        animationNodeId: number,
+      ) => {
+        return second.getFeatureAppearance(
+          wrap(source, first),
+          elemLo,
+          elemHi,
+          subcatLo,
+          subcatHi,
+          geomClass,
+          modelLo,
+          modelHi,
+          type,
+          animationNodeId,
+        );
       },
     };
   }

@@ -6,11 +6,11 @@
  * @module Editing
  */
 
-import { Format, InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { FormatType } from "@itwin/core-quantity";
+import { Format, InvertedUnit, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemType, SchemaKey, Unit } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
-import { MutableFormat } from "./Mutable/MutableFormat";
 import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { MutableFormat } from "./Mutable/MutableFormat";
 import { SchemaItems } from "./SchemaItems";
 
 /**
@@ -22,19 +22,33 @@ export class Formats extends SchemaItems {
     super(SchemaItemType.Format, schemaEditor);
   }
 
-  public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemKey> {
+  public async create(
+    schemaKey: SchemaKey,
+    name: string,
+    formatType: FormatType,
+    displayLabel?: string,
+    units?: SchemaItemKey[],
+  ): Promise<SchemaItemKey> {
     try {
-      const newFormat = await this.createSchemaItem<Format>(schemaKey, this.schemaItemType, (schema) => schema.createFormat.bind(schema), name) as MutableFormat;
+      const newFormat = await this.createSchemaItem<Format>(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createFormat.bind(schema),
+        name,
+      ) as MutableFormat;
 
       if (units !== undefined) {
         for (const unit of units) {
-          const unitItem =  await this.schemaEditor.schemaContext.getSchemaItem<Unit | InvertedUnit>(unit);
+          const unitItem = await this.schemaEditor.schemaContext.getSchemaItem<Unit | InvertedUnit>(unit);
           if (!unitItem) {
             throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFoundInContext, new SchemaItemId(SchemaItemType.Unit, unit));
           }
 
           if (unitItem.schemaItemType !== SchemaItemType.Unit && unitItem.schemaItemType !== SchemaItemType.InvertedUnit)
-            throw new SchemaEditingError(ECEditingStatus.InvalidFormatUnitsSpecified, new SchemaItemId((unitItem as SchemaItem).schemaItemType, (unitItem as SchemaItem).key));
+            throw new SchemaEditingError(
+              ECEditingStatus.InvalidFormatUnitsSpecified,
+              new SchemaItemId((unitItem as SchemaItem).schemaItemType, (unitItem as SchemaItem).key),
+            );
 
           newFormat.addUnit(unitItem);
         }
@@ -58,7 +72,12 @@ export class Formats extends SchemaItems {
    */
   public async createFromProps(schemaKey: SchemaKey, formatProps: SchemaItemFormatProps): Promise<SchemaItemKey> {
     try {
-      const newFormat = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createFormat.bind(schema), formatProps);
+      const newFormat = await this.createSchemaItemFromProps(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createFormat.bind(schema),
+        formatProps,
+      );
       return newFormat.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, formatProps.name!, schemaKey), e);

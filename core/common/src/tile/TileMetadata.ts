@@ -7,7 +7,15 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareStrings, compareStringsOrUndefined, Id64, Id64String,
+  assert,
+  ByteStream,
+  compareBooleans,
+  compareBooleansOrUndefined,
+  compareNumbers,
+  compareStrings,
+  compareStringsOrUndefined,
+  Id64,
+  Id64String,
 } from "@itwin/core-bentley";
 import { Range3d, Vector3d } from "@itwin/core-geometry";
 import { BatchType } from "../FeatureTable";
@@ -181,7 +189,12 @@ class Parser {
       this.reject("Invalid content Id");
     }
 
-    if (Object.keys(parsedContentId).some((key) => parsedContentId.hasOwnProperty(key) && typeof parsedContentId[key as keyof ContentIdSpec] === "number" && !Number.isFinite(parsedContentId[key as keyof ContentIdSpec])))
+    if (
+      Object.keys(parsedContentId).some((key) =>
+        parsedContentId.hasOwnProperty(key) && typeof parsedContentId[key as keyof ContentIdSpec] === "number" &&
+        !Number.isFinite(parsedContentId[key as keyof ContentIdSpec])
+      )
+    )
       throw new Error("Invalid content Id");
 
     let treeId: IModelTileTreeId;
@@ -397,10 +410,14 @@ function edgeOptionsToString(options: EdgeOptions | false) {
     return "E:0_";
 
   switch (options.type) {
-    case "non-indexed": return options.smooth ? "E:3_" : "";
-    case "indexed": return options.smooth ? "E:4_" : "E:2_";
-    case "compact": return options.smooth ? "E:6_" : "E:5_";
-    default: throw new Error("Invalid tree Id");
+    case "non-indexed":
+      return options.smooth ? "E:3_" : "";
+    case "indexed":
+      return options.smooth ? "E:4_" : "E:2_";
+    case "compact":
+      return options.smooth ? "E:6_" : "E:5_";
+    default:
+      throw new Error("Invalid tree Id");
   }
 }
 
@@ -411,7 +428,7 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
   // to that optionally configured by the app.
   let majorVersion = maxMajorVersion;
   if (undefined !== formatVersion)
-    majorVersion = Math.min((formatVersion >>> 0x10), majorVersion);
+    majorVersion = Math.min(formatVersion >>> 0x10, majorVersion);
 
   // Version number less than 1 is invalid - ignore
   majorVersion = Math.max(majorVersion, 1);
@@ -432,7 +449,7 @@ export enum TreeFlags {
   EnforceDisplayPriority = 1 << 1, // For 3d plan projection models, group graphics into layers based on subcategory.
   OptimizeBRepProcessing = 1 << 2, // Use an optimized pipeline for producing facets from BRep entities.
   UseLargerTiles = 1 << 3, // Produce tiles of larger size in screen pixels.
-  ExpandProjectExtents = 1 << 4 // If UseProjectExtents, round them up/down to nearest powers of ten.
+  ExpandProjectExtents = 1 << 4, // If UseProjectExtents, round them up/down to nearest powers of ten.
 }
 
 /** Describes a tile tree used to draw the contents of a model, possibly with embedded animation.
@@ -657,7 +674,9 @@ class ContentIdV1Provider extends ContentIdProvider {
     super(majorVersion, ContentFlags.None);
   }
 
-  protected get _separator() { return "/"; }
+  protected get _separator() {
+    return "/";
+  }
   protected computeId(depth: number, i: number, j: number, k: number, mult: number): string {
     return this.join(depth, i, j, k, mult);
   }
@@ -676,7 +695,9 @@ class ContentIdV2Provider extends ContentIdProvider {
     this._prefix = this._separator + majorVersion.toString(16) + this._separator + flags.toString(16) + this._separator;
   }
 
-  protected get _separator() { return "_"; }
+  protected get _separator() {
+    return "_";
+  }
   protected computeId(depth: number, i: number, j: number, k: number, mult: number): string {
     return this._prefix + this.join(depth, i, j, k, mult);
   }
@@ -704,7 +725,9 @@ class ContentIdV4Provider extends ContentIdProvider {
     this._prefix = this._separator + flags.toString(16) + this._separator;
   }
 
-  protected get _separator() { return "-"; }
+  protected get _separator() {
+    return "-";
+  }
   protected computeId(depth: number, i: number, j: number, k: number, mult: number): string {
     return this._prefix + this.join(depth, i, j, k, mult);
   }
@@ -764,7 +787,11 @@ export function computeChildTileRanges(tile: TileMetadata, root: TileTreeMetadat
 /** Given a description of the parent tile, obtain the properties of its child tiles, and the number of empty children.
  * @internal
  */
-export function computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvider, root: TileTreeMetadata): { children: TileProps[], numEmpty: number } {
+export function computeChildTileProps(
+  parent: TileMetadata,
+  idProvider: ContentIdProvider,
+  root: TileTreeMetadata,
+): { children: TileProps[], numEmpty: number } {
   let numEmpty = 0;
   const children: TileProps[] = [];
 
@@ -852,7 +879,13 @@ export interface TileContentDescription extends TileContentMetadata {
  * @internal
  * @deprecated in 4.0. Use decodeTileContentDescription. I think tile agents (or their tests) are using this function.
  */
-export function readTileContentDescription(stream: ByteStream, sizeMultiplier: number | undefined, is2d: boolean, options: TileOptions, isVolumeClassifier: boolean): TileContentDescription {
+export function readTileContentDescription(
+  stream: ByteStream,
+  sizeMultiplier: number | undefined,
+  is2d: boolean,
+  options: TileOptions,
+  isVolumeClassifier: boolean,
+): TileContentDescription {
   return decodeTileContentDescription({ stream, sizeMultiplier, is2d, options, isVolumeClassifier });
 }
 
@@ -893,7 +926,7 @@ export function decodeTileContentDescription(args: DecodeTileContentDescriptionA
     // Determine subdivision based on header data.
     const completeTile = 0 === (header.flags & ImdlFlags.Incomplete);
     const emptyTile = completeTile && 0 === header.numElementsIncluded && 0 === header.numElementsExcluded;
-    isLeaf = (emptyTile || isVolumeClassifier); // Current classifier algorithm supports only a single tile.
+    isLeaf = emptyTile || isVolumeClassifier; // Current classifier algorithm supports only a single tile.
     if (!isLeaf) {
       // Non-spatial (2d) models are of arbitrary scale and contain geometry like line work and especially text which
       // can be adversely affected by quantization issues when zooming in closely.

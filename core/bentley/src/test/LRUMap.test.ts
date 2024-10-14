@@ -6,7 +6,6 @@ import { assert, describe, it } from "vitest";
 import { LRUMap } from "../core-bentley";
 
 describe("LRUMap", () => {
-
   it("get and set", () => {
     const c = new LRUMap(4);
     assert.equal(c.size, 0);
@@ -314,5 +313,4 @@ describe("LRUMap", () => {
       { key: "bob", value: 48 },
     ]);
   });
-
 });

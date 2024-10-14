@@ -2,16 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { ProcessDetector } from "@itwin/core-bentley";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { NativeApp } from "@itwin/core-frontend";
-import { usingOfflineScope } from "../HttpRequestHook";
+import { assert } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { ProcessDetector } from "@itwin/core-bentley";
+import { usingOfflineScope } from "../HttpRequestHook";
 import { TestUtility } from "../TestUtility";
 
 if (ProcessDetector.isElectronAppFrontend) {
-
   describe("NativeApp startup", () => {
     before(async () => {
       await TestUtility.startFrontend();
@@ -106,5 +105,4 @@ if (ProcessDetector.isElectronAppFrontend) {
       await NativeApp.closeStorage(test1, true);
     });
   });
-
 }

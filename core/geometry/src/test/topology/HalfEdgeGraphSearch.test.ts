@@ -55,7 +55,9 @@ describe("HalfEdgeGraphSearch", () => {
     node11.setMaskAroundFace(HalfEdgeMask.BOUNDARY_EDGE);
 
     const connectedComponents = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(
-      graph, new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE), HalfEdgeMask.EXTERIOR,
+      graph,
+      new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE),
+      HalfEdgeMask.EXTERIOR,
     );
     ck.testExactNumber(connectedComponents.length, 2);
     ck.testExactNumber(connectedComponents[0].length, 3);
@@ -212,7 +214,7 @@ describe("HalfEdgeGraphSearch", () => {
      * (boundary edge should have exterior mask on its outer half edge). This will cover
      * the last break in function HalfEdgeGraphSearch.collectExtendedBoundaryLoopFromSeed.
      * Without that break code would trap in an infinite loop.
-    */
+     */
     // node7.setMask(HalfEdgeMask.EXTERIOR);
     const node8 = graph.addEdgeXY(3, 1, 1, 1);
     const node9 = node8.faceSuccessor;

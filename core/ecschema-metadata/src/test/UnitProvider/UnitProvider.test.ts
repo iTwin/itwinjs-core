@@ -2,24 +2,32 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { UnitProps } from "@itwin/core-quantity";
+import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { expect } from "chai";
-import { Schema, SchemaContext, SchemaInfo } from "../../ecschema-metadata";
-import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
-import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
-import { UNIT_EXTRA_DATA } from "./UnitData";
-import { UnitProps } from "@itwin/core-quantity";
 import { ISchemaLocater } from "../../Context";
 import { SchemaMatchType } from "../../ECObjects";
+import { Schema, SchemaContext, SchemaInfo } from "../../ecschema-metadata";
 import { SchemaKey } from "../../SchemaKey";
+import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
+import { UNIT_EXTRA_DATA } from "./UnitData";
 
 class TestSchemaLocater implements ISchemaLocater {
-  public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined> {
+  public async getSchema<T extends Schema>(
+    schemaKey: Readonly<SchemaKey>,
+    matchType: SchemaMatchType,
+    context?: SchemaContext,
+  ): Promise<T | undefined> {
     return this.getSchemaSync(schemaKey, matchType, context) as T;
   }
 
-  public async getSchemaInfo(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context?: SchemaContext | undefined): Promise<SchemaInfo | undefined> {
+  public async getSchemaInfo(
+    schemaKey: Readonly<SchemaKey>,
+    matchType: SchemaMatchType,
+    context?: SchemaContext | undefined,
+  ): Promise<SchemaInfo | undefined> {
     return this.getSchema(schemaKey, matchType, context);
   }
   public getSchemaSync<T extends Schema>(schemaKey: Readonly<SchemaKey>, _matchType: SchemaMatchType, context?: SchemaContext): T | undefined {
@@ -41,7 +49,6 @@ describe("Unit Provider tests", () => {
   let provider: SchemaUnitProvider;
 
   describe("Initialized with SchemaContext", () => {
-
     before(() => {
       context = new SchemaContext();
 

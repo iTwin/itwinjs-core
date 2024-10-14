@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { LogLevel } from "@itwin/core-bentley";
 import { IModelReadRpcInterface } from "@itwin/core-common";
-import { TestUserCredentials } from "@itwin/oidc-signin-tool";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
+import { TestUserCredentials } from "@itwin/oidc-signin-tool";
 
 export interface Backend {
   version: string;
@@ -44,13 +44,17 @@ export class Settings {
   public users: TestUserCredentials[] = [];
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  public get Backend(): Backend { return this._backend; }
-  public get user(): TestUserCredentials { return this.users[0]; }
+  public get Backend(): Backend {
+    return this._backend;
+  }
+  public get user(): TestUserCredentials {
+    return this.users[0];
+  }
 
   public iModel: IModelData = {} as IModelData;
 
   constructor(env: NodeJS.ProcessEnv) {
-    const isFrontend = (typeof (process) === "undefined");
+    const isFrontend = typeof process === "undefined";
     if (!isFrontend && undefined === env.TF_BUILD) {
       const path = require("path"); // eslint-disable-line @typescript-eslint/no-var-requires
       const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires

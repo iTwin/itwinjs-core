@@ -68,7 +68,9 @@ export namespace AmbientOcclusion {
 
     public static defaults = new Settings({});
 
-    public static fromJSON(json?: Props): Settings { return undefined !== json ? new Settings(json) : this.defaults; }
+    public static fromJSON(json?: Props): Settings {
+      return undefined !== json ? new Settings(json) : this.defaults;
+    }
 
     public toJSON(): Props {
       return {

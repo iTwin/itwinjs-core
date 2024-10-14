@@ -6,28 +6,30 @@
 
 const chalk = require("chalk");
 exports.command = "build";
-exports.describe = chalk.bold(`Runs a production webpack build. This means bundling JavaScript and copying "external" modules to the output directory.`);
+exports.describe = chalk.bold(
+  `Runs a production webpack build. This means bundling JavaScript and copying "external" modules to the output directory.`,
+);
 exports.builder = (yargs) =>
   yargs.strict(true)
     .options({
       "source": {
         alias: "s",
         type: "string",
-        describe: "The main entrypoint for webpack."
+        describe: "The main entrypoint for webpack.",
       },
       "outDir": {
         alias: "o",
         type: "string",
-        describe: "The directory where bundle should be emitted."
+        describe: "The directory where bundle should be emitted.",
       },
       "sourceMap": {
         type: "boolean",
-        describe: "Create sourcemaps for bundle."
+        describe: "Create sourcemaps for bundle.",
       },
       "profile": {
         type: "boolean",
-        describe: "Enable webpack profiling and output stats files for analyzing bundle."
-      }
+        describe: "Enable webpack profiling and output stats files for analyzing bundle.",
+      },
     })
     .demandOption(["source", "outDir"]);
 

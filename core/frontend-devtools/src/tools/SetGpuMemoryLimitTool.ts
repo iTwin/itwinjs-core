@@ -14,8 +14,12 @@ import { GpuMemoryLimit, IModelApp, Tool } from "@itwin/core-frontend";
  */
 export class SetGpuMemoryLimitTool extends Tool {
   public static override toolId = "SetGpuMemoryLimit";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(limit?: GpuMemoryLimit): Promise<boolean> {
     if (undefined !== limit) {

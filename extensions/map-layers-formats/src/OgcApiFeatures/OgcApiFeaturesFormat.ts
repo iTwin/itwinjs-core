@@ -3,21 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ImageMapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
-import { appendQueryParams, ImageryMapLayerFormat, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerSourceValidation, setBasicAuthorization, ValidateSourceArgs } from "@itwin/core-frontend";
+import {
+  appendQueryParams,
+  ImageryMapLayerFormat,
+  MapLayerImageryProvider,
+  MapLayerSourceStatus,
+  MapLayerSourceValidation,
+  setBasicAuthorization,
+  ValidateSourceArgs,
+} from "@itwin/core-frontend";
 import { OgcApiFeaturesProvider } from "./OgcApiFeaturesProvider";
 
 /** @internal */
 export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "OgcApiFeatures";
-  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new OgcApiFeaturesProvider(settings); }
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
+    return new OgcApiFeaturesProvider(settings);
+  }
 
   public static override async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
-
-    const {source} = args;
+    const { source } = args;
     const { userName, password } = source;
     let status = MapLayerSourceStatus.InvalidUrl;
     try {
-
       let headers: Headers | undefined;
       if (userName && password) {
         headers = new Headers();
@@ -76,7 +84,7 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
         status = MapLayerSourceStatus.Valid;
       } else if (Array.isArray(json.links)) {
         // This might be the main landing page
-        const collectionsLink = json.links.find((link: any)=> link.rel.includes("data") && link.type === "application/json");
+        const collectionsLink = json.links.find((link: any) => link.rel.includes("data") && link.type === "application/json");
         let collectionsUrl = appendQueryParams(collectionsLink.href, source.savedQueryParams);
         collectionsUrl = appendQueryParams(collectionsUrl, source.unsavedQueryParams);
         response = await fetch(collectionsUrl, opts);
@@ -85,17 +93,15 @@ export class OgcApiFeaturesMapLayerFormat extends ImageryMapLayerFormat {
           subLayers = createCollectionsList(json);
           status = MapLayerSourceStatus.Valid;
         }
-
       }
 
       return { status, subLayers };
-
     } catch (err: any) {
       status = MapLayerSourceStatus.InvalidUrl;
       if (err?.status === 401) {
-        status = ((userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
+        status = (userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth;
       }
-      return { status};
+      return { status };
     }
   }
 }

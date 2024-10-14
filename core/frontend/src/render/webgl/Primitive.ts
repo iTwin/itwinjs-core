@@ -7,6 +7,7 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
 import { RenderMemory } from "../RenderMemory";
 import { PrimitiveVisibility } from "../RenderTarget";
 import { CachedGeometry, LUTGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
@@ -19,7 +20,6 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
-import { Range3d } from "@itwin/core-geometry";
 
 /** @internal */
 export class Primitive extends Graphic {
@@ -62,8 +62,12 @@ export class Primitive extends Graphic {
     return new this(geom);
   }
 
-  public get isDisposed(): boolean { return this.cachedGeometry.isDisposed; }
-  public get isPickable() { return false; }
+  public get isDisposed(): boolean {
+    return this.cachedGeometry.isDisposed;
+  }
+  public get isPickable() {
+    return false;
+  }
 
   public dispose() {
     dispose(this.cachedGeometry);
@@ -95,9 +99,13 @@ export class Primitive extends Graphic {
     return this.cachedGeometry.getPass(target);
   }
 
-  public get hasFeatures(): boolean { return this.cachedGeometry.hasFeatures; }
+  public get hasFeatures(): boolean {
+    return this.cachedGeometry.hasFeatures;
+  }
 
-  public addCommands(commands: RenderCommands): void { commands.addPrimitive(this); }
+  public addCommands(commands: RenderCommands): void {
+    commands.addPrimitive(this);
+  }
 
   public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     // Edges do not contribute to hilite pass.
@@ -106,18 +114,34 @@ export class Primitive extends Graphic {
       commands.getCommands(pass).push(new PrimitiveCommand(this));
   }
 
-  public get hasAnimation(): boolean { return this.cachedGeometry.hasAnimation; }
-  public get isInstanced(): boolean { return this.cachedGeometry.isInstanced; }
-  public get isLit(): boolean { return this.cachedGeometry.isLitSurface; }
-  public get isEdge(): boolean { return this.cachedGeometry.isEdge; }
-  public get renderOrder(): RenderOrder { return this.cachedGeometry.renderOrder; }
-  public get hasMaterialAtlas(): boolean { return this.cachedGeometry.hasMaterialAtlas; }
+  public get hasAnimation(): boolean {
+    return this.cachedGeometry.hasAnimation;
+  }
+  public get isInstanced(): boolean {
+    return this.cachedGeometry.isInstanced;
+  }
+  public get isLit(): boolean {
+    return this.cachedGeometry.isLitSurface;
+  }
+  public get isEdge(): boolean {
+    return this.cachedGeometry.isEdge;
+  }
+  public get renderOrder(): RenderOrder {
+    return this.cachedGeometry.renderOrder;
+  }
+  public get hasMaterialAtlas(): boolean {
+    return this.cachedGeometry.hasMaterialAtlas;
+  }
 
-  public override toPrimitive(): Primitive { return this; }
+  public override toPrimitive(): Primitive {
+    return this;
+  }
 
   private static _drawParams?: DrawParams;
 
-  public static freeParams(): void { Primitive._drawParams = undefined; }
+  public static freeParams(): void {
+    Primitive._drawParams = undefined;
+  }
 
   public draw(shader: ShaderProgramExecutor): void {
     // ###TODO: local to world should be pushed before we're invoked...we shouldn't need to pass (or copy) it
@@ -129,12 +153,16 @@ export class Primitive extends Graphic {
     shader.draw(drawParams);
   }
 
-  public get techniqueId(): TechniqueId { return this.cachedGeometry.techniqueId; }
+  public get techniqueId(): TechniqueId {
+    return this.cachedGeometry.techniqueId;
+  }
 }
 
 /** @internal */
 export class SkyCubePrimitive extends Primitive {
-  public constructor(cachedGeom: CachedGeometry) { super(cachedGeom); }
+  public constructor(cachedGeom: CachedGeometry) {
+    super(cachedGeom);
+  }
 
   public override draw(shader: ShaderProgramExecutor): void {
     // Alter viewport to maintain square aspect ratio of skybox images even as viewRect resizes

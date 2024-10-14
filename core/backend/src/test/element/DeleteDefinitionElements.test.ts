@@ -3,14 +3,28 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Id64, Id64Set } from "@itwin/core-bentley";
+import { GeometryPartProps, IModel } from "@itwin/core-common";
+import { Point3d } from "@itwin/core-geometry";
 import { assert } from "chai";
 import * as path from "path";
-import { Id64, Id64Set } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
-import { GeometryPartProps, IModel } from "@itwin/core-common";
 import {
-  CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart, IModelJsFs, InformationPartitionElement,
-  ModelSelector, OrthographicViewDefinition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
+  CategorySelector,
+  DisplayStyle2d,
+  DisplayStyle3d,
+  DrawingCategory,
+  DrawingViewDefinition,
+  GeometryPart,
+  IModelJsFs,
+  InformationPartitionElement,
+  ModelSelector,
+  OrthographicViewDefinition,
+  RenderMaterialElement,
+  SnapshotDb,
+  SpatialCategory,
+  SubCategory,
+  Subject,
+  Texture,
 } from "../../core-backend";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -38,12 +52,16 @@ describe("DeleteDefinitionElements", () => {
     const definitionModelId = iModelDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(iModelDb, subjectId, "Definition"))!;
     const spatialCategoryId = iModelDb.elements.queryElementIdByCode(SpatialCategory.createCode(iModelDb, definitionModelId, "SpatialCategory"))!;
     const subCategoryId = iModelDb.elements.queryElementIdByCode(SubCategory.createCode(iModelDb, spatialCategoryId, "SubCategory"))!;
-    const spatialCategorySelectorId = iModelDb.elements.queryElementIdByCode(CategorySelector.createCode(iModelDb, definitionModelId, "SpatialCategories"))!;
+    const spatialCategorySelectorId = iModelDb.elements.queryElementIdByCode(
+      CategorySelector.createCode(iModelDb, definitionModelId, "SpatialCategories"),
+    )!;
     const modelSelectorId = iModelDb.elements.queryElementIdByCode(ModelSelector.createCode(iModelDb, definitionModelId, "SpatialModels"))!;
     const displayStyle3dId = iModelDb.elements.queryElementIdByCode(DisplayStyle3d.createCode(iModelDb, definitionModelId, "DisplayStyle3d"))!;
     const viewId = iModelDb.elements.queryElementIdByCode(OrthographicViewDefinition.createCode(iModelDb, definitionModelId, "Orthographic View"))!;
     const drawingCategoryId = iModelDb.elements.queryElementIdByCode(DrawingCategory.createCode(iModelDb, definitionModelId, "DrawingCategory"))!;
-    const drawingCategorySelectorId = iModelDb.elements.queryElementIdByCode(CategorySelector.createCode(iModelDb, definitionModelId, "DrawingCategories"))!;
+    const drawingCategorySelectorId = iModelDb.elements.queryElementIdByCode(
+      CategorySelector.createCode(iModelDb, definitionModelId, "DrawingCategories"),
+    )!;
     const displayStyle2dId = iModelDb.elements.queryElementIdByCode(DisplayStyle2d.createCode(iModelDb, definitionModelId, "DisplayStyle2d"))!;
     const drawingViewId = iModelDb.elements.queryElementIdByCode(DrawingViewDefinition.createCode(iModelDb, definitionModelId, "Drawing View"))!;
     const geometryPartId = iModelDb.elements.queryElementIdByCode(GeometryPart.createCode(iModelDb, definitionModelId, "GeometryPart"))!;

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { SchemaContext } from "../../Context";
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
+import { SchemaContext } from "../../Context";
 import { UnitConverter } from "../../UnitConversion/UnitConverter";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 
 describe("Testing when unit conversion should throw", () => {
   const context = new SchemaContext();

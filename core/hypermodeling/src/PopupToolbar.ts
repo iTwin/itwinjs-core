@@ -6,9 +6,9 @@
  * @module HyperModeling
  */
 
-import { XAndY } from "@itwin/core-geometry";
 import type { AbstractToolbarProps } from "@itwin/appui-abstract";
 import { IModelApp } from "@itwin/core-frontend";
+import { XAndY } from "@itwin/core-geometry";
 
 /** @internal */
 export interface PopupToolbarProvider {

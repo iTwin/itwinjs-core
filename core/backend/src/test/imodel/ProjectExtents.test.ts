@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { GeometricElement3dProps, Placement3d } from "@itwin/core-common";
+import { expect } from "chai";
 import { GeometricElement3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../index";
 
@@ -13,7 +13,10 @@ describe("computeProjectExtents", () => {
   let imodel: SnapshotDb;
 
   before(() => {
-    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel = IModelTestUtils.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("IModel", "test.bim"),
+      IModelTestUtils.resolveAssetFile("test.bim"),
+    );
   });
 
   after(() => {

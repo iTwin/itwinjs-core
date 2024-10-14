@@ -6,18 +6,18 @@
  * @module Rendering
  */
 
-import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { assert } from "@itwin/core-bentley";
 import { Gradient, PackedFeatureTable, QPoint3dList, RenderTexture } from "@itwin/core-common";
-import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
-import { RenderGraphic } from "../../render/RenderGraphic";
-import { RenderSystem } from "../../render/RenderSystem";
-import { GeometryOptions } from "../../common/internal/render/Primitives";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { GeometryAccumulator } from "../../common/internal/render/GeometryAccumulator";
 import { MeshList } from "../../common/internal/render/MeshPrimitives";
-import { GraphicBranch } from "../../render/GraphicBranch";
-import { assert } from "@itwin/core-bentley";
+import { GeometryOptions } from "../../common/internal/render/Primitives";
 import { _accumulator, _implementationProhibited } from "../../common/internal/Symbols";
+import { GraphicBranch } from "../../render/GraphicBranch";
+import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
 import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch } from "../../render/GraphicTemplate";
+import { RenderGraphic } from "../../render/RenderGraphic";
+import { RenderSystem } from "../../render/RenderSystem";
 import { RenderGeometry } from "./RenderGeometry";
 
 /** @internal */
@@ -69,7 +69,12 @@ export class PrimitiveBuilder extends GraphicBuilder {
    * Populate a list of Graphic objects from the accumulated Geometry objects.
    * removed ViewContext
    */
-  public saveToGraphicList(graphics: RenderGraphic[], options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): MeshList | undefined {
+  public saveToGraphicList(
+    graphics: RenderGraphic[],
+    options: GeometryOptions,
+    tolerance: number,
+    pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined,
+  ): MeshList | undefined {
     const meshes = this[_accumulator].toMeshes(options, tolerance, pickable);
     if (0 === meshes.length)
       return undefined;
@@ -130,7 +135,12 @@ export class PrimitiveBuilder extends GraphicBuilder {
     return meshes;
   }
 
-  private saveToTemplate(options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined, noDispose: boolean): GraphicTemplate | undefined {
+  private saveToTemplate(
+    options: GeometryOptions,
+    tolerance: number,
+    pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined,
+    noDispose: boolean,
+  ): GraphicTemplate | undefined {
     const meshes = this[_accumulator].toMeshes(options, tolerance, pickable);
     if (0 === meshes.length)
       return undefined;
@@ -147,7 +157,7 @@ export class PrimitiveBuilder extends GraphicBuilder {
 
     for (const mesh of meshes) {
       const verts = mesh.points;
-      if (!transformOrigin){
+      if (!transformOrigin) {
         if (verts instanceof QPoint3dList) {
           transformOrigin = verts.params.origin.clone();
           verts.params.origin.setZero();

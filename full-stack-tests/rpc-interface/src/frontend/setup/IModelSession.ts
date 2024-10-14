@@ -2,17 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
-import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
-import { IModelData } from "../../common/Settings";
-import { IModelVersion } from "@itwin/core-common";
 import { AccessToken } from "@itwin/core-bentley";
-import { IModelsClient } from "@itwin/imodels-client-management";
+import { IModelVersion } from "@itwin/core-common";
+import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
 import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
+import { IModelsClient } from "@itwin/imodels-client-management";
+import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
+import { expect } from "chai";
+import { IModelData } from "../../common/Settings";
 
 export class IModelSession {
-
   public iTwinId: string;
   public iModelId: string;
   public changesetId?: string;
@@ -38,7 +37,7 @@ export class IModelSession {
         throw new Error(`The iModel has no iTwin name, so it cannot get the iTwin.`);
 
       const client = new ITwinsAccessClient();
-      const iTwinListResponse: ITwinsAPIResponse<ITwin[]> = await client.queryAsync(requestContext, ITwinSubClass.Project , {
+      const iTwinListResponse: ITwinsAPIResponse<ITwin[]> = await client.queryAsync(requestContext, ITwinSubClass.Project, {
         displayName: iModelData.iTwinName,
       });
       const iTwinList = iTwinListResponse.data;
@@ -55,7 +54,7 @@ export class IModelSession {
       iTwinId = iModelData.iTwinId!;
 
     if (iModelData.useName) {
-      const imodelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+      const imodelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
       const imodels = imodelClient.iModels.getRepresentationList({
         authorization: AccessTokenAdapter.toAuthorizationCallback(await IModelApp.getAccessToken()),
         urlParams: {
@@ -72,7 +71,9 @@ export class IModelSession {
     } else
       imodelId = iModelData.id!;
 
-    console.log(`Using iModel { name:${iModelData.name}, id:${iModelData.id}, iTwinId:${iModelData.iTwinId}, changesetId:${iModelData.changeSetId} }`); // eslint-disable-line no-console
+    console.log(
+      `Using iModel { name:${iModelData.name}, id:${iModelData.id}, iTwinId:${iModelData.iTwinId}, changesetId:${iModelData.changeSetId} }`,
+    ); // eslint-disable-line no-console
 
     return new IModelSession(iTwinId, imodelId, iModelData.changeSetId);
   }

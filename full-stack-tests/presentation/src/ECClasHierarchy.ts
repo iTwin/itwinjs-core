@@ -102,7 +102,8 @@ export class ECClassHierarchy {
     };
   }
   public async getClassInfo(schemaName: string, className: string): Promise<ECClassHierarchyInfo> {
-    const classQuery = `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
+    const classQuery =
+      `SELECT c.ECInstanceId FROM meta.ECClassDef c JOIN meta.ECSchemaDef s ON s.ECInstanceId = c.Schema.Id WHERE c.Name = ? AND s.Name = ?`;
     const result = await this._imodel
       .createQueryReader(classQuery, QueryBinder.from([className, schemaName]), { rowFormat: QueryRowFormat.UseJsPropertyNames })
       .toArray();

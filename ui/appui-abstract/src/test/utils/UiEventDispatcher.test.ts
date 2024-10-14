@@ -147,5 +147,4 @@ describe("UiEventDispatcher", () => {
     expect(callbackHasExpectedEventIds).to.be.true;
     eventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
-
 });

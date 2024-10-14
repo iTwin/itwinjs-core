@@ -55,13 +55,13 @@ export class PascalCoefficients {
       result[i] = pascalRow[i];
     // multiply by increasing powers of u ...
     let p = u;
-    for (let i = 1; i < order; i++ , p *= u) {
+    for (let i = 1; i < order; i++, p *= u) {
       result[i] *= p;
     }
     // multiply by powers of (1-u), working from right
     const v = 1.0 - u;
     p = v;
-    for (let i = order - 2; i >= 0; i-- , p *= v) {
+    for (let i = order - 2; i >= 0; i--, p *= v) {
       result[i] *= p;
     }
     return result;
@@ -84,7 +84,7 @@ export class PascalCoefficients {
     for (let k = order - 2; k > 0; k--) {
       result[k] = f * (result[k - 1] - result[k]);
     }
-    result[0] = - f * result[0];
+    result[0] = -f * result[0];
     return result;
   }
 }

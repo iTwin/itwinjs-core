@@ -11,9 +11,9 @@ import { LUTGeometry } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
 import { ShaderProgramParams } from "./DrawCommand";
 import { FloatRgba } from "./FloatRGBA";
+import { MeshData } from "./MeshData";
 import { Pass } from "./RenderFlags";
 import { Target } from "./Target";
-import { MeshData } from "./MeshData";
 
 /** Defines one aspect of the geometry of a mesh (surface or edges)
  * @internal
@@ -22,23 +22,53 @@ export abstract class MeshGeometry extends LUTGeometry {
   public readonly mesh: MeshData;
   protected readonly _numIndices: number;
 
-  public override get asMesh() { return this; }
-  protected override _getLineWeight(params: ShaderProgramParams): number { return this.computeEdgeWeight(params); }
+  public override get asMesh() {
+    return this;
+  }
+  protected override _getLineWeight(params: ShaderProgramParams): number {
+    return this.computeEdgeWeight(params);
+  }
 
   // Convenience accessors...
-  public get edgeWidth() { return this.mesh.edgeWidth; }
-  public get edgeLineCode() { return this.mesh.edgeLineCode; }
-  public override get hasFeatures() { return this.mesh.hasFeatures; }
-  public get surfaceType() { return this.mesh.type; }
-  public get fillFlags() { return this.mesh.fillFlags; }
-  public get isPlanar() { return this.mesh.isPlanar; }
-  public get colorInfo(): ColorInfo { return this.mesh.lut.colorInfo; }
-  public get uniformColor(): FloatRgba | undefined { return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined; }
-  public get texture() { return this.mesh.texture; }
-  public get normalMap() { return this.mesh.normalMap; }
-  public override get hasBakedLighting() { return this.mesh.hasBakedLighting; }
-  public get lut() { return this.mesh.lut; }
-  public get hasScalarAnimation() { return this.mesh.lut.hasScalarAnimation; }
+  public get edgeWidth() {
+    return this.mesh.edgeWidth;
+  }
+  public get edgeLineCode() {
+    return this.mesh.edgeLineCode;
+  }
+  public override get hasFeatures() {
+    return this.mesh.hasFeatures;
+  }
+  public get surfaceType() {
+    return this.mesh.type;
+  }
+  public get fillFlags() {
+    return this.mesh.fillFlags;
+  }
+  public get isPlanar() {
+    return this.mesh.isPlanar;
+  }
+  public get colorInfo(): ColorInfo {
+    return this.mesh.lut.colorInfo;
+  }
+  public get uniformColor(): FloatRgba | undefined {
+    return this.colorInfo.isUniform ? this.colorInfo.uniform : undefined;
+  }
+  public get texture() {
+    return this.mesh.texture;
+  }
+  public get normalMap() {
+    return this.mesh.normalMap;
+  }
+  public override get hasBakedLighting() {
+    return this.mesh.hasBakedLighting;
+  }
+  public get lut() {
+    return this.mesh.lut;
+  }
+  public get hasScalarAnimation() {
+    return this.mesh.lut.hasScalarAnimation;
+  }
 
   protected constructor(mesh: MeshData, numIndices: number) {
     super(mesh.viewIndependentOrigin);

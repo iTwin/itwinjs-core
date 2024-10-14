@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ClipStyle } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
 import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { TestUtility } from "../../TestUtility";
 
 function countTileTrees(view: ViewState): number {
@@ -28,7 +28,7 @@ describe("Section-cut tile tree", () => {
 
   before(async () => {
     await TestUtility.startFrontend();
-    const imodels = await Promise.all([ SnapshotConnection.openFile("mirukuru.ibim"), SnapshotConnection.openFile("planprojection.bim") ]);
+    const imodels = await Promise.all([SnapshotConnection.openFile("mirukuru.ibim"), SnapshotConnection.openFile("planprojection.bim")]);
     testCases.push({ imodel: imodels[0], viewId: "0x24" });
     testCases.push({ imodel: imodels[1], viewId: "0x29" });
   });

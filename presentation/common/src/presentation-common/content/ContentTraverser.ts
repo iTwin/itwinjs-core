@@ -7,6 +7,7 @@
  */
 
 import { assert, IDisposable, using } from "@itwin/core-bentley";
+import { LabelDefinition } from "../LabelDefinition";
 import { CategoryDescription } from "./Category";
 import { Content } from "./Content";
 import { Descriptor } from "./Descriptor";
@@ -22,7 +23,6 @@ import {
   ValuesArray as PresentationValuesArray,
   ValuesMap as PresentationValuesMap,
 } from "./Value";
-import { LabelDefinition } from "../LabelDefinition";
 
 const NESTED_CONTENT_LABEL_SYMBOL = Symbol();
 
@@ -717,7 +717,7 @@ function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: 
     return { emptyNestedItem: true, convertedItem: item };
   }
 
-  const nextFieldValues: { raw: ValuesArray; display: DisplayValuesArray } = { raw: [], display: [] };
+  const nextFieldValues: { raw: ValuesArray, display: DisplayValuesArray } = { raw: [], display: [] };
   value.forEach((ncv) => {
     const nextRawValue = ncv.values[nextField.name];
     const nextDisplayValue = ncv.displayValues[nextField.name];

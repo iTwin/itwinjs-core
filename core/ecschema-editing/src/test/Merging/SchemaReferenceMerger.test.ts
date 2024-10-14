@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 describe("Schema reference merging tests", () => {
-
   const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",

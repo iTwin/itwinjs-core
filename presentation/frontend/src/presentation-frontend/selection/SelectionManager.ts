@@ -6,10 +6,19 @@
  * @module UnifiedSelection
  */
 
-import { defer, EMPTY, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
 import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@itwin/core-bentley";
 import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
-import { AsyncTasksTracker, BaseNodeKey, InstanceKey, Key, Keys, KeySet, NodeKey, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
+import {
+  AsyncTasksTracker,
+  BaseNodeKey,
+  InstanceKey,
+  Key,
+  Keys,
+  KeySet,
+  NodeKey,
+  SelectionScope,
+  SelectionScopeProps,
+} from "@itwin/presentation-common";
 import {
   createStorage,
   CustomSelectable,
@@ -19,6 +28,7 @@ import {
   StorageSelectionChangeEventArgs,
   StorageSelectionChangeType,
 } from "@itwin/unified-selection";
+import { defer, EMPTY, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
 import { Presentation } from "../Presentation";
 import { HiliteSet, HiliteSetProvider } from "./HiliteSetProvider";
 import { ISelectionProvider } from "./ISelectionProvider";
@@ -45,7 +55,7 @@ export interface SelectionManagerProps {
  */
 export class SelectionManager implements ISelectionProvider {
   private _selectionStorage: SelectionStorage;
-  private _imodelToolSelectionSyncHandlers = new Map<IModelConnection, { requestorsCount: number; handler: ToolSelectionSyncHandler }>();
+  private _imodelToolSelectionSyncHandlers = new Map<IModelConnection, { requestorsCount: number, handler: ToolSelectionSyncHandler }>();
   private _hiliteSetProviders = new Map<IModelConnection, HiliteSetProvider>();
   private _ownsStorage: boolean;
 
@@ -473,7 +483,7 @@ export class ToolSelectionSyncHandler implements IDisposable {
     }
 
     const parsedIds = parseIds(ids);
-    await using(this._asyncsTracker.trackAsyncTask(), async (_r) => {
+    using(this._asyncsTracker.trackAsyncTask(), async (_r) => {
       switch (ev.type) {
         case SelectionSetEventType.Add:
           await changer.add(parsedIds.transient, parsedIds.persistent, selectionLevel);
@@ -489,7 +499,7 @@ export class ToolSelectionSyncHandler implements IDisposable {
   };
 }
 
-const parseIds = (ids: Id64Arg): { persistent: Id64Arg; transient: Id64Arg } => {
+const parseIds = (ids: Id64Arg): { persistent: Id64Arg, transient: Id64Arg } => {
   let allPersistent = true;
   let allTransient = true;
   for (const id of Id64.iterable(ids)) {

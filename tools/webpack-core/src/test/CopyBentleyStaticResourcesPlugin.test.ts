@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
+import { expect } from "chai";
+import * as fs from "fs-extra";
 import { Volume } from "memfs";
 import * as path from "path";
-import * as fs from "fs-extra";
+import { CopyBentleyStaticResourcesPlugin } from "../plugins/CopyBentleyStaticResourcesPlugin";
 import { resetPaths, setApplicationDir } from "../utils/paths";
 import { clearCache, clearFileSystem, fsFromJson, getTestConfig, runWebpack } from "./TestUtils";
-import { CopyBentleyStaticResourcesPlugin } from "../plugins/CopyBentleyStaticResourcesPlugin";
-import { expect } from "chai";
 
 describe("CopyBentleyStaticResourcesPlugin", () => {
   let testConfig: any;
@@ -22,7 +22,8 @@ describe("CopyBentleyStaticResourcesPlugin", () => {
     });
     // memfs (vol) doesn't work if plugins being tested grab files from actual file system
     fsFromJson({
-      "lib/test/assets/copy-bentley-static-resources-plugin-test/node_modules/@bentley/resource/lib/assets/staticResourcePlugin.js": `console.log("Fake resource");`,
+      "lib/test/assets/copy-bentley-static-resources-plugin-test/node_modules/@bentley/resource/lib/assets/staticResourcePlugin.js":
+        `console.log("Fake resource");`,
     });
   });
 

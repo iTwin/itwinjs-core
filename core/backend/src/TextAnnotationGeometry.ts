@@ -6,11 +6,11 @@
  * @module ElementGeometry
  */
 
-import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
-import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
-import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
+import { ColorDef, TextAnnotation, TextBlockGeometryProps, TextBlockGeometryPropsEntry, TextString, TextStyleColor } from "@itwin/core-common";
+import { LineSegment3d, Point3d, Range2d, Transform, Vector2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
+import { ComputeRangesForTextLayout, FindFontId, FindTextStyle, layoutTextBlock, RunLayout, TextBlockLayout } from "./TextAnnotationLayout";
 
 interface GeometryContext {
   curColor?: TextStyleColor;
@@ -61,7 +61,7 @@ function processTextRun(run: RunLayout, transform: Transform, context: GeometryC
   ts.transformInPlace(transform);
 
   setColor(run.style.color, context);
-  context.entries.push({ text: ts});
+  context.entries.push({ text: ts });
 }
 
 function createFractionTextString(text: string, run: RunLayout, origin: Point3d, transform: Transform): TextString {
@@ -121,7 +121,7 @@ function processFractionRun(run: RunLayout, transform: Transform, context: Geome
   });
 
   if (source.denominator.length > 0) {
-    context.entries.push({ text: createFractionTextString(source.denominator, run,denominatorOffset, transform) });
+    context.entries.push({ text: createFractionTextString(source.denominator, run, denominatorOffset, transform) });
   }
 }
 

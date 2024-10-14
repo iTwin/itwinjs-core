@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { expect } from "chai";
 import { EntityChanges, Metadata, TxnEntityChangeIterable, TxnEntityChangeType } from "../TxnEntityChanges";
-import { NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 
 describe("TxnEntityMetadata", () => {
   describe("is", () => {
@@ -43,7 +43,9 @@ describe("TxnEntityChanges", () => {
   it("populates metadata from args", () => {
     function populate(met: NotifyEntitiesChangedMetadata[]): Metadata[] {
       const args: NotifyEntitiesChangedArgs = {
-        insertedMeta: [], updatedMeta: [], deletedMeta: [],
+        insertedMeta: [],
+        updatedMeta: [],
+        deletedMeta: [],
         meta: met,
       };
 
@@ -128,7 +130,10 @@ describe("TxnEntityChanges", () => {
 
   it("iterates", () => {
     let changes = new EntityChanges({
-      insertedMeta: [], updatedMeta: [], deletedMeta: [], meta: [],
+      insertedMeta: [],
+      updatedMeta: [],
+      deletedMeta: [],
+      meta: [],
     });
 
     expectEntities(changes, []);
@@ -189,7 +194,7 @@ describe("TxnEntityChanges", () => {
       ],
     });
 
-    expectEntities(changes.filter({ }), [
+    expectEntities(changes.filter({}), [
       [1, "a", "inserted"],
       [2, "b", "inserted"],
       [3, "c", "inserted"],
@@ -233,7 +238,7 @@ describe("TxnEntityChanges", () => {
       [9, "b", "updated"],
     ]);
 
-    expectEntities(changes.filter({ includeMetadata: (meta) => meta.is("a"), includeTypes: ["inserted", "deleted" ]}), [
+    expectEntities(changes.filter({ includeMetadata: (meta) => meta.is("a"), includeTypes: ["inserted", "deleted"] }), [
       [1, "a", "inserted"],
       [2, "b", "inserted"],
       [3, "c", "inserted"],

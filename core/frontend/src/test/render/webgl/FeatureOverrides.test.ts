@@ -2,22 +2,32 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { BeEvent } from "@itwin/core-bentley";
+import {
+  ColorByName,
+  ColorDef,
+  EmptyLocalization,
+  Feature,
+  FeatureAppearance,
+  FeatureTable,
+  PackedFeatureTable,
+  RenderMode,
+  RgbColor,
+} from "@itwin/core-common";
 import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
-import { ColorByName, ColorDef, EmptyLocalization, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable, RenderMode, RgbColor } from "@itwin/core-common";
+import { expect } from "chai";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags";
+import { GraphicType } from "../../../common/render/GraphicType";
 import { ViewRect } from "../../../common/ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
 import { GraphicBranch } from "../../../render/GraphicBranch";
+import { Batch, Branch } from "../../../render/webgl/Graphic";
 import { Target } from "../../../render/webgl/Target";
 import { Texture2DDataUpdater } from "../../../render/webgl/Texture";
-import { Batch, Branch } from "../../../render/webgl/Graphic";
-import { readUniqueColors, testBlankViewport } from "../../openBlankViewport";
-import { OvrFlags } from "../../../common/internal/render/OvrFlags";
-import { Decorator } from "../../../ViewManager";
 import { DecorateContext } from "../../../ViewContext";
-import { GraphicType } from "../../../common/render/GraphicType";
+import { Decorator } from "../../../ViewManager";
+import { readUniqueColors, testBlankViewport } from "../../openBlankViewport";
 
 describe("FeatureOverrides", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -343,7 +353,9 @@ describe("FeatureOverrides", () => {
           expect(target.hilites).to.equal(vp.iModel.hilited);
           expect(b1.perTargetData.data.length).to.equal(1);
 
-          const expected = new Set<string>(expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : []);
+          const expected = new Set<string>(
+            expectedHilitedElements ? (typeof expectedHilitedElements === "string" ? [expectedHilitedElements] : expectedHilitedElements) : [],
+          );
           if (expected.size > 0) {
             expect(b1.perTargetData.data.length).to.equal(1);
             expect(b2.perTargetData.data.length).to.equal(1);
@@ -505,7 +517,11 @@ describe("FeatureOverrides", () => {
     it("is the same as surfaces by default", () => {
       expectColors(FeatureAppearance.fromRgb(ColorDef.white), [ColorDef.white]);
       expectColors(FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)), [ColorDef.white.withTransparency(127)]);
-      expectColors(FeatureAppearance.fromTransparency(0.5), [lineColor.withTransparency(127), pointColor.withTransparency(127), shapeColor.withTransparency(127)]);
+      expectColors(FeatureAppearance.fromTransparency(0.5), [
+        lineColor.withTransparency(127),
+        pointColor.withTransparency(127),
+        shapeColor.withTransparency(127),
+      ]);
     });
 
     it("optionally ignores surface overrides", () => {

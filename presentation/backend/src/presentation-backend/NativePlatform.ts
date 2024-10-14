@@ -128,7 +128,7 @@ function getPresentationStatusFromNativeResponseStatus(nativeResponseStatus: IMo
 }
 
 /** @internal */
-export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): new () => NativePlatformDefinition => {
+export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): new() => NativePlatformDefinition => {
   // note the implementation is constructed here to make PresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NativePlatformDefinition {

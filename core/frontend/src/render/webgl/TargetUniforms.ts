@@ -8,22 +8,22 @@
 
 import { Matrix4d, Vector3d } from "@itwin/core-geometry";
 import { RenderPlan } from "../RenderPlan";
+import { AtmosphereUniforms } from "./AtmosphereUniforms";
 import { BatchUniforms } from "./BatchUniforms";
 import { BranchUniforms } from "./BranchUniforms";
+import { ContourUniforms } from "./ContourUniforms";
 import { FrustumUniforms, FrustumUniformType } from "./FrustumUniforms";
-import { UniformHandle } from "./UniformHandle";
 import { HiliteUniforms } from "./HiliteUniforms";
 import { LightingUniforms } from "./LightingUniforms";
 import { Matrix4 } from "./Matrix";
+import { RealityModelUniforms } from "./RealityModelUniforms";
 import { ShadowUniforms } from "./ShadowUniforms";
 import { StyleUniforms } from "./StyleUniforms";
 import { desync, sync, SyncObserver, SyncToken } from "./Sync";
 import { Target } from "./Target";
 import { ThematicUniforms } from "./ThematicUniforms";
+import { UniformHandle } from "./UniformHandle";
 import { ViewRectUniforms } from "./ViewRectUniforms";
-import { RealityModelUniforms } from "./RealityModelUniforms";
-import { AtmosphereUniforms } from "./AtmosphereUniforms";
-import { ContourUniforms } from "./ContourUniforms";
 
 class PixelWidthFactor {
   /** The pixel width factor depends on both the frustum and the view rect. It also depends on the frustum scale associated with the current Branch. */

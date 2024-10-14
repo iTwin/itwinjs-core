@@ -5,12 +5,10 @@
 
 import { comparePossiblyUndefined, compareStrings, CompressedId64Set, Logger } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
-import {
-  IModelConnection, TileTree, TileTreeOwner, TileTreeSupplier,
-} from "@itwin/core-frontend";
-import { loggerCategory } from "./LoggerCategory";
+import { IModelConnection, TileTree, TileTreeOwner, TileTreeSupplier } from "@itwin/core-frontend";
 import { BatchedTilesetReader, BatchedTilesetSpec } from "./BatchedTilesetReader";
 import { BatchedTileTree } from "./BatchedTileTree";
+import { loggerCategory } from "./LoggerCategory";
 
 /** @internal */
 export interface BatchedTileTreeId {

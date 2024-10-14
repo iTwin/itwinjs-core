@@ -7,14 +7,14 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ClipIntersectionStyle, RgbColor } from "@itwin/core-common";
+import { ClipPlaneContainment, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
 import { RenderClipVolume } from "../RenderClipVolume";
-import { FloatRgba } from "./FloatRGBA";
-import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture";
 import { ClipVolume } from "./ClipVolume";
+import { FloatRgba } from "./FloatRGBA";
 import { GL } from "./GL";
+import { Texture2DData, Texture2DHandle, TextureHandle } from "./Texture";
 
 interface Clip {
   readonly numRows: number;
@@ -28,8 +28,14 @@ const emptyClip = {
 };
 
 const scratchRangeCorners = [
-  new Point3d(), new Point3d(), new Point3d(), new Point3d(),
-  new Point3d(), new Point3d(), new Point3d(), new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
+  new Point3d(),
 ];
 
 function getRangeCorners(r: Range3d): Point3d[] {
@@ -106,7 +112,10 @@ export class ClipStack {
     return this._texture ? this._texture.bytesUsed : 0;
   }
 
-  public setViewClip(clip: ClipVector | undefined, style: { insideColor?: RgbColor, outsideColor?: RgbColor, colorizeIntersection?: boolean, intersectionStyle?: ClipIntersectionStyle }): void {
+  public setViewClip(
+    clip: ClipVector | undefined,
+    style: { insideColor?: RgbColor, outsideColor?: RgbColor, colorizeIntersection?: boolean, intersectionStyle?: ClipIntersectionStyle },
+  ): void {
     assert(this._stack.length === 1);
 
     this.updateColor(style.insideColor, this._insideColor);
@@ -160,7 +169,7 @@ export class ClipStack {
   public pop(): void {
     assert(this._stack.length > 0);
     const clip = this._stack.pop();
-    this._numRowsInUse -= (clip ? clip.numRows : 0);
+    this._numRowsInUse -= clip ? clip.numRows : 0;
   }
 
   public get hasClip(): boolean {
@@ -256,7 +265,14 @@ export class ClipStack {
     if (this._texture)
       this._texture.replaceTextureData(this._gpuBuffer);
     else
-      this._texture = Texture2DHandle.createForData(1, this._numTotalRows, this._gpuBuffer, false, GL.Texture.WrapMode.ClampToEdge, GL.Texture.Format.Rgba);
+      this._texture = Texture2DHandle.createForData(
+        1,
+        this._numTotalRows,
+        this._gpuBuffer,
+        false,
+        GL.Texture.WrapMode.ClampToEdge,
+        GL.Texture.Format.Rgba,
+      );
 
     assert(this._texture!.height === this._numTotalRows);
   }
@@ -271,7 +287,11 @@ export class ClipStack {
       rgba.setRgbColor(rgb);
   }
 
-  protected updateIntersectionStyle(colorizeIntersection: boolean | undefined, style: ClipIntersectionStyle | undefined, _thisStyle: FloatRgba): void {
+  protected updateIntersectionStyle(
+    colorizeIntersection: boolean | undefined,
+    style: ClipIntersectionStyle | undefined,
+    _thisStyle: FloatRgba,
+  ): void {
     this._colorizeIntersection = colorizeIntersection === true ? true : false;
 
     if (style !== undefined) {

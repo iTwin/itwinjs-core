@@ -7,7 +7,13 @@
  */
 
 import {
-  IModelConnectionProps, IModelNotFoundResponse, IModelRpcProps, RpcInterface, RpcManager, SnapshotIModelRpcInterface, SnapshotOpenOptions,
+  IModelConnectionProps,
+  IModelNotFoundResponse,
+  IModelRpcProps,
+  RpcInterface,
+  RpcManager,
+  SnapshotIModelRpcInterface,
+  SnapshotOpenOptions,
 } from "@itwin/core-common";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -18,7 +24,9 @@ import { IModelHost } from "../IModelHost";
  * @internal
  */
 export class SnapshotIModelRpcImpl extends RpcInterface implements SnapshotIModelRpcInterface { // eslint-disable-line deprecation/deprecation
-  public static register() { RpcManager.registerImpl(SnapshotIModelRpcInterface, SnapshotIModelRpcImpl); }
+  public static register() {
+    RpcManager.registerImpl(SnapshotIModelRpcInterface, SnapshotIModelRpcImpl);
+  }
 
   /** Ask the backend to open a snapshot iModel from a file name that is resolved by the backend. */
   public async openFile(filePath: string, opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {

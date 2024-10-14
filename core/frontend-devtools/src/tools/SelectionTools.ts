@@ -18,8 +18,12 @@ import { parseArgs } from "./parseArgs";
  */
 export class SelectElementsByIdTool extends Tool {
   public static override toolId = "SelectElementsById";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return undefined; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return undefined;
+  }
 
   public override async run(ids?: Id64Arg): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -39,8 +43,12 @@ export class SelectElementsByIdTool extends Tool {
  */
 export class DumpSelectionSetTool extends Tool {
   public static override toolId = "DumpSelectionSet";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   private _format: "json" | "compressed" | "list" = "list";
   private _copy?: boolean;

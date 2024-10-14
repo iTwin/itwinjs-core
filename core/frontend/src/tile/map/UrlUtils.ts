@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 /** Append custom parameters for settings to provided URL object.
-   *  Make sure custom parameters do no override query parameters already part of the URL (lower case comparison)
-   * @internal
-   */
-export function appendQueryParams(url: string, queryParams?: {[key: string]: string}) {
+ *  Make sure custom parameters do no override query parameters already part of the URL (lower case comparison)
+ * @internal
+ */
+export function appendQueryParams(url: string, queryParams?: { [key: string]: string }) {
   if (!queryParams)
     return url;
 
@@ -18,8 +18,8 @@ export function appendQueryParams(url: string, queryParams?: {[key: string]: str
     currentParams.push(key.toLowerCase());
   });
 
-  const urlParamsFromIndexArray = (indexArray?: {[key: string]: string}, result?: URLSearchParams): URLSearchParams  => {
-    const urlParams = (result ? result : new URLSearchParams());
+  const urlParamsFromIndexArray = (indexArray?: { [key: string]: string }, result?: URLSearchParams): URLSearchParams => {
+    const urlParams = result ? result : new URLSearchParams();
     if (!indexArray)
       return urlParams;
     Object.keys(indexArray).forEach((key) => {
@@ -41,7 +41,7 @@ export function appendQueryParams(url: string, queryParams?: {[key: string]: str
     }
     return separator;
   };
-  if ( params.size > 0) {
+  if (params.size > 0) {
     url = `${url}${getSeparator(url)}${params.toString()}`;
   }
 

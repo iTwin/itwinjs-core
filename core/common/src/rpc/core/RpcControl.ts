@@ -92,7 +92,9 @@ export class RpcControlChannel {
   private _channelInterface = class extends RpcInterface {
     public static readonly interfaceVersion = "CONTROL";
     public static readonly interfaceName = "";
-    public async describeEndpoints(): Promise<RpcInterfaceEndpoints[]> { return this.forward(arguments); }
+    public async describeEndpoints(): Promise<RpcInterfaceEndpoints[]> {
+      return this.forward(arguments);
+    }
   };
 
   private _channelImpl = class extends RpcInterface {
@@ -103,7 +105,12 @@ export class RpcControlChannel {
         if (!RpcRegistry.instance.isRpcInterfaceInitialized(definition))
           return;
 
-        const description: RpcInterfaceEndpoints = { interfaceName: definition.interfaceName, interfaceVersion: definition.interfaceVersion, operationNames: [], compatible: true };
+        const description: RpcInterfaceEndpoints = {
+          interfaceName: definition.interfaceName,
+          interfaceVersion: definition.interfaceVersion,
+          operationNames: [],
+          compatible: true,
+        };
         RpcOperation.forEach(definition, (operation) => description.operationNames.push(operation.operationName));
         endpoints.push(description);
       });

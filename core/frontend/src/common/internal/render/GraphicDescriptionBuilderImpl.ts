@@ -6,27 +6,30 @@
  * @module Rendering
  */
 
-import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
-import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel";
-import {
-  ComputeGraphicDescriptionChordToleranceArgs, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions,
-} from "../../render/GraphicDescriptionBuilder";
-import { GraphicType } from "../../render/GraphicType";
-import { GraphicAssembler } from "../../render/GraphicAssembler";
-import { Gradient, PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
-import { BatchOptions } from "../../render/BatchOptions";
 import { assert, Id64String, TransientIdSequence } from "@itwin/core-bentley";
-import { Mesh } from "./MeshPrimitives";
-import { createPointStringParams } from "./PointStringParams";
-import { VertexTable } from "./VertexTable";
-import { createPolylineParams } from "./PolylineParams";
-import { createMeshParams } from "./VertexTableBuilder";
-import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
-import { _accumulator, _implementationProhibited } from "../Symbols";
-import { WorkerGraphicDescriptionContextImpl, WorkerMaterial, WorkerTexture } from "./GraphicDescriptionContextImpl";
-import { GraphicDescriptionContext } from "../../render/GraphicDescriptionContext";
+import { Gradient, PackedFeatureTable, QPoint3dList } from "@itwin/core-common";
+import { Point3d, Range3d, Range3dProps, Transform, XYAndZ } from "@itwin/core-geometry";
 import { MeshArgs } from "../../../render/MeshArgs";
 import { PolylineArgs } from "../../../render/PolylineArgs";
+import { addPrimitiveTransferables, ImdlModel } from "../../imdl/ImdlModel";
+import { edgeParamsToImdl } from "../../imdl/ParseImdlDocument";
+import { BatchOptions } from "../../render/BatchOptions";
+import { GraphicAssembler } from "../../render/GraphicAssembler";
+import {
+  ComputeGraphicDescriptionChordToleranceArgs,
+  GraphicDescription,
+  GraphicDescriptionBuilder,
+  GraphicDescriptionBuilderOptions,
+} from "../../render/GraphicDescriptionBuilder";
+import { GraphicDescriptionContext } from "../../render/GraphicDescriptionContext";
+import { GraphicType } from "../../render/GraphicType";
+import { _accumulator, _implementationProhibited } from "../Symbols";
+import { WorkerGraphicDescriptionContextImpl, WorkerMaterial, WorkerTexture } from "./GraphicDescriptionContextImpl";
+import { Mesh } from "./MeshPrimitives";
+import { createPointStringParams } from "./PointStringParams";
+import { createPolylineParams } from "./PolylineParams";
+import { VertexTable } from "./VertexTable";
+import { createMeshParams } from "./VertexTableBuilder";
 
 export type BatchDescription = Omit<BatchOptions, "tileId"> & {
   featureTable: ImdlModel.FeatureTable;
@@ -284,4 +287,3 @@ export function collectGraphicDescriptionTransferables(xfers: Set<Transferable>,
     addPrimitiveTransferables(xfers, primitive);
   }
 }
-

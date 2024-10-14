@@ -7,8 +7,8 @@
  */
 
 import { assert, Logger, ObservableSet } from "@itwin/core-bentley";
-import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
+import { Geometry, Matrix4d, Point2d, Point3d, Range1d, Range1dProps, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import { imageElementFromUrl } from "./common/ImageUtil";
 import { ViewRect } from "./common/ViewRect";
@@ -121,7 +121,9 @@ export class Marker implements CanvasDecoration {
   public htmlElement?: HTMLElement;
 
   /** Return true to display [[image]], if present. */
-  public get wantImage() { return true; }
+  public get wantImage() {
+    return true;
+  }
 
   /** Implement this function to draw onto the CanvasRenderingContext2D when this Marker is displayed. The [0,0] point will be the center of the Marker. */
   public drawFunc?(ctx: CanvasRenderingContext2D): void;
@@ -134,7 +136,9 @@ export class Marker implements CanvasDecoration {
   }
 
   /** Called when the mouse pointer leaves this Marker. */
-  public onMouseLeave() { this._isHilited = false; }
+  public onMouseLeave() {
+    this._isHilited = false;
+  }
 
   /** Called when the mouse pointer moves over this Marker */
   public onMouseMove(ev: BeButtonEvent): void {
@@ -145,7 +149,9 @@ export class Marker implements CanvasDecoration {
   public onMouseButton?(_ev: BeButtonEvent): boolean;
 
   /** Determine whether the point is within this Marker.  */
-  public pick(pt: XAndY): boolean { return this.rect.containsPoint(pt); }
+  public pick(pt: XAndY): boolean {
+    return this.rect.containsPoint(pt);
+  }
 
   /** Establish a range of scale factors to increases and decrease the size of this Marker based on its distance from the camera.
    * @param range The minimum and maximum scale factors to be applied to the size of this Marker based on its distance from the camera. `range.Low` is the scale factor
@@ -228,9 +234,7 @@ export class Marker implements CanvasDecoration {
    */
   public setImage(image: MarkerImage | Promise<MarkerImage>) {
     if (image instanceof Promise) {
-      image.then((resolvedImage) =>
-        this.image = resolvedImage,
-      ).catch((err: Event) => {
+      image.then((resolvedImage) => this.image = resolvedImage).catch((err: Event) => {
         const target = err.target as any;
         const msg = `Could not load image ${target && target.src ? target.src : "unknown"}`;
         Logger.logError(`${FrontendLoggerCategory.Package}.markers`, msg);
@@ -241,7 +245,9 @@ export class Marker implements CanvasDecoration {
   }
 
   /** Set the image for this Marker from a URL. */
-  public setImageUrl(url: string) { this.setImage(imageElementFromUrl(url)); }
+  public setImageUrl(url: string) {
+    this.setImage(imageElementFromUrl(url));
+  }
 
   /** Set the position (in pixels) for this Marker in the supplied Viewport, based on its worldLocation.
    * @param markerSet The MarkerSet if this Marker is included in a set.
@@ -269,7 +275,7 @@ export class Marker implements CanvasDecoration {
       let scale = 1.0;
       if (vp.isCameraOn) {
         const range = this._scaleFactorRange;
-        const minScaleViewW = (undefined !== markerSet ? markerSet.getMinScaleViewW(vp) : getMinScaleViewW(vp));
+        const minScaleViewW = undefined !== markerSet ? markerSet.getMinScaleViewW(vp) : getMinScaleViewW(vp);
         if (minScaleViewW > 0.0)
           scale = Geometry.clamp(range.high - (pt4.w / minScaleViewW) * range.length(), .4, 2.0);
         else
@@ -368,7 +374,9 @@ export abstract class MarkerSet<T extends Marker> {
   /** The minimum number of Markers that must overlap before they are clustered. Otherwise they are each drawn individually. Default is 1 (always create a cluster.) */
   public minimumClusterSize = 1;
   /** The set of Markers in this MarkerSet. Add your [[Marker]]s into this. */
-  public get markers(): Set<T> { return this._markers; }
+  public get markers(): Set<T> {
+    return this._markers;
+  }
   /** The radius (in pixels) representing the distance between the screen X,Y positions of two Markers to be clustered. When less than or equal to 0 (the default), the radius is calculated based on the first visible marker imageSize/size. */
   protected clusterRadius = 0;
 
@@ -384,7 +392,9 @@ export abstract class MarkerSet<T extends Marker> {
   }
 
   /** The ScreenViewport of this MarkerSet. */
-  public get viewport(): ScreenViewport | undefined { return this._viewport; }
+  public get viewport(): ScreenViewport | undefined {
+    return this._viewport;
+  }
 
   /** Change the ScreenViewport for this MarkerSet.
    * After this call, the markers from this MarkerSet will only appear in the supplied ScreenViewport.

@@ -68,12 +68,12 @@ export class XyzRotation implements XyzRotationProps {
  *  @extensions
  */
 export type GeodeticTransformMethod =
-  "None" |
-  "Geocentric" |
-  "PositionalVector" |
-  "GridFiles" |
-  "MultipleRegression" |
-  "Undefined";
+  | "None"
+  | "Geocentric"
+  | "PositionalVector"
+  | "GridFiles"
+  | "MultipleRegression"
+  | "Undefined";
 
 /** This interface represents a geocentric (three parameters) geodetic transformation.
  *  @public
@@ -173,10 +173,12 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
   /** Compares two Positional Vector Transforms. It applies a minuscule tolerance to number compares.
    *  @public */
   public equals(other: PositionalVectorTransform): boolean {
-    if (Math.abs(this.delta.x - other.delta.x) > Geometry.smallMetricDistance ||
+    if (
+      Math.abs(this.delta.x - other.delta.x) > Geometry.smallMetricDistance ||
       Math.abs(this.delta.y - other.delta.y) > Geometry.smallMetricDistance ||
       Math.abs(this.delta.z - other.delta.z) > Geometry.smallMetricDistance ||
-      Math.abs(this.scalePPM - other.scalePPM) > Geometry.smallFraction)
+      Math.abs(this.scalePPM - other.scalePPM) > Geometry.smallFraction
+    )
       return false;
 
     return this.rotation.equals(other.rotation);
@@ -188,16 +190,16 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
  *  @extensions
  */
 export type GridFileFormat =
-  "NONE" |
-  "NTv1" |
-  "NTv2" |
-  "NADCON" |
-  "FRENCH" |
-  "JAPAN" |
-  "ATS77" |
-  "GEOCN" |
-  "OSTN02" |
-  "OSTN15";
+  | "NONE"
+  | "NTv1"
+  | "NTv2"
+  | "NADCON"
+  | "FRENCH"
+  | "JAPAN"
+  | "ATS77"
+  | "GEOCN"
+  | "OSTN02"
+  | "OSTN15";
 
 /** type to indicate the grid file application direction.
  *  @public
@@ -353,17 +355,17 @@ export interface GeodeticTransformProps {
   /** The complete definition of the source geodetic ellipsoid referred to by ellipsoidId.
    *  The source ellipsoid identifier enables obtaining the shape of the Earth mathematical model
    *  for the purpose of performing the transformation.
-  */
+   */
   sourceEllipsoid?: GeodeticEllipsoidProps;
   /** The complete definition of the target geodetic ellipsoid referred to by ellipsoidId.
    *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
-   *  for the purpose of performing the transformation.*/
+   *  for the purpose of performing the transformation. */
   targetEllipsoid?: GeodeticEllipsoidProps;
   /** The id of the source datum. */
   sourceDatumId?: string;
   /** The id of the target datum. This id is useful to seach within a geodetic transform path for
    *  a shortcut to another included datum.
-  */
+   */
   targetDatumId?: string;
   /** When method is Geocentric this property contains the geocentric parameters */
   geocentric?: GeocentricTransformProps;
@@ -386,13 +388,13 @@ export class GeodeticTransform implements GeodeticTransformProps {
   public readonly sourceEllipsoid?: GeodeticEllipsoid;
   /** The complete definition of the target geodetic ellipsoid referred to by ellipsoidId.
    *  The target ellipsoid identifier enables obtaining the shape of the Earth mathematical model
-   *  for the purpose of performing the transformation.*/
+   *  for the purpose of performing the transformation. */
   public readonly targetEllipsoid?: GeodeticEllipsoid;
   /** The id of the source datum. */
   public readonly sourceDatumId?: string;
   /** The id of the target datum. This id is useful to seach within a geodetic transform path for
    *  a shortcut to another included datum.
-  */
+   */
   public readonly targetDatumId?: string;
   /** When method is Geocentric this property contains the geocentric parameters */
   public readonly geocentric?: GeocentricTransform;
@@ -687,7 +689,7 @@ export class GeodeticDatum implements GeodeticDatumProps {
     data.id = this.id;
     data.description = this.description;
     /* We prefer to use the default undef instead of false value for deprecated value in Json */
-    data.deprecated = (this.deprecated === false ? undefined : true);
+    data.deprecated = this.deprecated === false ? undefined : true;
     data.source = this.source;
     data.epsg = this.epsg;
     data.ellipsoidId = this.ellipsoidId;
@@ -709,12 +711,14 @@ export class GeodeticDatum implements GeodeticDatumProps {
    * It takes into account descriptive properties not only mathematical definition properties.
    *  @public */
   public equals(other: GeodeticDatum): boolean {
-    if (this.id !== other.id ||
+    if (
+      this.id !== other.id ||
       this.description !== other.description ||
       this.deprecated !== other.deprecated ||
       this.source !== other.source ||
       this.epsg !== other.epsg ||
-      this.ellipsoidId !== other.ellipsoidId)
+      this.ellipsoidId !== other.ellipsoidId
+    )
       return false;
 
     if ((this.ellipsoid === undefined) !== (other.ellipsoid === undefined))
@@ -749,4 +753,3 @@ export class GeodeticDatum implements GeodeticDatumProps {
     return true;
   }
 }
-

@@ -11,13 +11,17 @@ import { Checker } from "../Checker";
 
 // import { prettyPrint } from "./testFunctions";
 /**
- *
  * @param numRange number of ranges
  * @param firstLow low value of first range
  * @param rangeSize function which returns the size for range i
  * @param gapSize function which returns the size for gap i
  */
-function constructRangesByStepFunction(numRange: number, firstLow: number, rangeSize: (i: number) => number, gapSize: (i: number) => number): Range1d[] {
+function constructRangesByStepFunction(
+  numRange: number,
+  firstLow: number,
+  rangeSize: (i: number) => number,
+  gapSize: (i: number) => number,
+): Range1d[] {
   let a = firstLow;
   let b = firstLow;
   const ranges = [];
@@ -38,7 +42,12 @@ function constructRangesByStepFunction(numRange: number, firstLow: number, range
  * @param interiorFraction (optional) internal interpolation fraction to be used in each interval
  * @param rightDelta (optional) (signed) shift from data[last] to last output point.   Positive is to the right!!!
  */
-function constructGapPoints(data: GrowableFloat64Array, leftDelta: undefined | number, interiorFraction: undefined | number, rightDelta: undefined | number): GrowableFloat64Array {
+function constructGapPoints(
+  data: GrowableFloat64Array,
+  leftDelta: undefined | number,
+  interiorFraction: undefined | number,
+  rightDelta: undefined | number,
+): GrowableFloat64Array {
   const result = new GrowableFloat64Array();
   if (data.length > 0) {
     let a = data.atUncheckedIndex(0);
@@ -200,7 +209,6 @@ function range1dSamples(numRange: number, omega: number = 3.0, alpha: number = 0
 }
 
 describe("Range1dArray", () => {
-
   it("compareRange1dLexicalLowHigh", () => {
     const ck = new Checker();
     ck.testExactNumber(-1, compareRange1dLexicalLowHigh(Range1d.createXX(0, 1), Range1d.createXX(0, 2)));
@@ -210,7 +218,6 @@ describe("Range1dArray", () => {
     ck.testExactNumber(1, compareRange1dLexicalLowHigh(Range1d.createXX(2, 3), Range1d.createXX(0, 2)));
     ck.testExactNumber(0, compareRange1dLexicalLowHigh(Range1d.createXX(2, 3), Range1d.createXX(2, 3)));
     expect(ck.getNumErrors()).toBe(0);
-
   });
 
   it("UnionParitySimplification", () => {
@@ -285,10 +292,12 @@ describe("Range1dArray", () => {
 
   it("UnionParitySimplificationA", () => {
     const ck = new Checker();
-    for (const allRanges of [
-      range1dSamples(3, 2.0, 0.5),
-      range1dSamples(20, 2.94, 0.34234),
-    ]) {
+    for (
+      const allRanges of [
+        range1dSamples(3, 2.0, 0.5),
+        range1dSamples(20, 2.94, 0.34234),
+      ]
+    ) {
       testUnionSimplify(ck, allRanges);
       testParitySimplify(ck, allRanges);
     }
@@ -367,9 +376,36 @@ describe("Range1dArray", () => {
       //  --------------------       ---------------------
       const forwardRangesForUnion = constructRangesByStepFunction(n, 1, (_i: number) => 3, (_i: number) => -1);
 
-      const originalMidpoints = Range1dArray.appendFractionalPoints(forwardRangesForUnion, undefined, 0.5, true, undefined, false, undefined, []) as number[];
-      const originalOutsidePoints = Range1dArray.appendFractionalPoints(forwardRangesForUnion, -0.5, undefined, true, undefined, false, 1.5, []) as number[];
-      const originalGapPoints = Range1dArray.appendFractionalPoints(forwardRangesForUnion, undefined, undefined, true, 0.5, false, undefined, []) as number[];
+      const originalMidpoints = Range1dArray.appendFractionalPoints(
+        forwardRangesForUnion,
+        undefined,
+        0.5,
+        true,
+        undefined,
+        false,
+        undefined,
+        [],
+      ) as number[];
+      const originalOutsidePoints = Range1dArray.appendFractionalPoints(
+        forwardRangesForUnion,
+        -0.5,
+        undefined,
+        true,
+        undefined,
+        false,
+        1.5,
+        [],
+      ) as number[];
+      const originalGapPoints = Range1dArray.appendFractionalPoints(
+        forwardRangesForUnion,
+        undefined,
+        undefined,
+        true,
+        0.5,
+        false,
+        undefined,
+        [],
+      ) as number[];
 
       const forwardRange = Range1dArray.firstLowToLastHigh(forwardRangesForUnion);
       Range1dArray.simplifySortUnion(forwardRangesForUnion, true);
@@ -421,9 +457,7 @@ describe("Range1dArray", () => {
       const forwardForParityB = constructRangesByStepFunction(n, 1, (_i: number) => 3, (_i: number) => 0);
       Range1dArray.simplifySortParity(forwardForParityB, true);
       ck.testExactNumber(1, forwardForParityB.length, "simplifySortParity(true) with abutting intervals compresses to single interval.");
-
     }
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

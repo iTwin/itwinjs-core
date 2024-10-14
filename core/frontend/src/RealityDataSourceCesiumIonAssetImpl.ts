@@ -5,19 +5,19 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { request } from "./request/Request";
 import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { IModelError, RealityData, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
-import { CesiumIonAssetProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumAssetUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
+import { request } from "./request/Request";
+import { CesiumIonAssetProvider, getCesiumAccessTokenAndEndpointUrl, getCesiumAssetUrl, getCesiumOSMBuildingsUrl } from "./tile/internal";
 
 /** This class provides access to the reality data provider services.
  * It encapsulates access to a reality data weiter it be from local access, http or ProjectWise Context Share.
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
  * There is a one to one relationship between a reality data and the instances of present class.
-* @internal
-*/
+ * @internal
+ */
 export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -57,7 +57,7 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
 
   /**
    * Returns Reality Data if available
-  */
+   */
   public get realityData(): RealityData | undefined {
     return undefined;
   }
@@ -171,4 +171,3 @@ export class RealityDataSourceCesiumIonAssetImpl implements RealityDataSource {
     return publisherInfo;
   }
 }
-

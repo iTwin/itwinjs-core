@@ -103,7 +103,9 @@ export class SweepContour {
     return undefined;
   }
   /** Return (Reference to) the curves */
-  public getCurves(): CurveCollection { return this.curves; }
+  public getCurves(): CurveCollection {
+    return this.curves;
+  }
   /**
    * Apply `transform` to the curves, axis.
    * * The local to world frame is reconstructed for the transformed curves.
@@ -137,7 +139,7 @@ export class SweepContour {
   }
   /** Test for near equality of curves, frame, and axis. */
   public isAlmostEqual(other: any): boolean {
-    if (! (other instanceof SweepContour))
+    if (!(other instanceof SweepContour))
       return false;
     if (!this.curves.isAlmostEqual(other.curves))
       return false;
@@ -220,14 +222,19 @@ export class SweepContour {
    * @param options how to stroke the contour
    * @returns clipper defined by faceting then sweeping the contour region
    */
-  public sweepToUnionOfConvexClipPlaneSets(sweepVector?: Vector3d, cap0: boolean = false, cap1: boolean = false, options?: StrokeOptions): UnionOfConvexClipPlaneSets | undefined {
+  public sweepToUnionOfConvexClipPlaneSets(
+    sweepVector?: Vector3d,
+    cap0: boolean = false,
+    cap1: boolean = false,
+    options?: StrokeOptions,
+  ): UnionOfConvexClipPlaneSets | undefined {
     if (!options)
       options = StrokeOptions.createForFacets();
     if (!sweepVector) {
       cap0 = cap1 = false;
       sweepVector = this.localToWorld.matrix.columnZ();
     }
-    options.maximizeConvexFacets = true;  // produce fewer ConvexClipPlaneSets
+    options.maximizeConvexFacets = true; // produce fewer ConvexClipPlaneSets
     // It's a trip around the barn, but it's easy to make a polyface and scan it . . .
     this.buildFacets(options);
     const facets = this._facets;

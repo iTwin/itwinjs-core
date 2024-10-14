@@ -7,8 +7,8 @@
  */
 
 import { BeDuration, Id64String } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d } from "@itwin/core-common";
+import { Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../IModelConnection";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { TileLoadPriority } from "./internal";

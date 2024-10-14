@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Geometry } from "../../Geometry";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { UnionOfConvexClipPlaneSets } from "../UnionOfConvexClipPlaneSets";
-import { ConvexClipPlaneSet } from "../ConvexClipPlaneSet";
-import { ClipPlane } from "../ClipPlane";
 import { IndexedXYZCollection } from "../../geometry3d/IndexedXYZCollection";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { ClipPlane } from "../ClipPlane";
+import { ConvexClipPlaneSet } from "../ConvexClipPlaneSet";
+import { UnionOfConvexClipPlaneSets } from "../UnionOfConvexClipPlaneSets";
 /**
  * Class for building clip sets for offset regions.
  * @internal
@@ -32,7 +32,10 @@ export class LineStringOffsetClipperContext {
    * @param closed indicates that first and last points are identical and need wrap logic.
    */
   public static createUnit(
-    points: IndexedXYZCollection, index0: number, closed: boolean, xyOnly: boolean = true,
+    points: IndexedXYZCollection,
+    index0: number,
+    closed: boolean,
+    xyOnly: boolean = true,
   ): Vector3d | undefined {
     // pick two indices of active points, allowing for wrap if needed:
     // normally use index0 and index0 + 1
@@ -42,13 +45,16 @@ export class LineStringOffsetClipperContext {
     const last = points.length - 1;
     if (closed) {
       if (index0 < 0) {
-        k0 = last - 1; k1 = last;
+        k0 = last - 1;
+        k1 = last;
       } else if (index0 >= last) {
-        k0 = 0; k1 = 1;
+        k0 = 0;
+        k1 = 1;
       }
     } else {
       if (index0 === 0) {
-        k0 = 0; k1 = 1;
+        k0 = 0;
+        k1 = 1;
       } else if (k1 > last) {
         k0 = last - 1;
         k1 = last;
@@ -63,12 +69,21 @@ export class LineStringOffsetClipperContext {
     return undefined;
   }
   private static createDirectedPlane(
-    basePoint: Point3d, vector: Vector3d, shift: number, normalScale: number, interior: boolean = false,
+    basePoint: Point3d,
+    vector: Vector3d,
+    shift: number,
+    normalScale: number,
+    interior: boolean = false,
   ): ClipPlane | undefined {
     return ClipPlane.createNormalAndPointXYZXYZ(
-      vector.x * normalScale, vector.y * normalScale, vector.z * normalScale,
-      basePoint.x + shift * vector.x, basePoint.y + shift * vector.y, basePoint.z + shift * vector.z,
-      interior, interior,
+      vector.x * normalScale,
+      vector.y * normalScale,
+      vector.z * normalScale,
+      basePoint.x + shift * vector.x,
+      basePoint.y + shift * vector.y,
+      basePoint.z + shift * vector.z,
+      interior,
+      interior,
     );
   }
   /**
@@ -173,8 +188,13 @@ export class LineStringOffsetClipperContext {
         const unitVectorA = this.createUnit(points, i - 1, closed);
         const unitVectorB = this.createUnit(points, i, closed);
         const unitVectorC = this.createUnit(points, i + 1, closed);
-        const clipSet = context.createOffsetFromSegment(points.getPoint3dAtUncheckedPointIndex(i),
-          points.getPoint3dAtUncheckedPointIndex(i + 1), unitVectorA, unitVectorB, unitVectorC);
+        const clipSet = context.createOffsetFromSegment(
+          points.getPoint3dAtUncheckedPointIndex(i),
+          points.getPoint3dAtUncheckedPointIndex(i + 1),
+          unitVectorA,
+          unitVectorB,
+          unitVectorC,
+        );
         clipSet?.addZClipPlanes(false, z0, z1);
         if (clipSet)
           result.addConvexSet(clipSet);

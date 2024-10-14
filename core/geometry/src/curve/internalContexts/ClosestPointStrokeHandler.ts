@@ -96,7 +96,14 @@ export class ClosestPointStrokeHandler extends NewtonRtoRStrokeHandler implement
       this._closestPoint.curve = this._parentCurvePrimitive;
   }
 
-  public announceSegmentInterval(cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number): void {
+  public announceSegmentInterval(
+    cp: CurvePrimitive,
+    point0: Point3d,
+    point1: Point3d,
+    _numStrokes: number,
+    fraction0: number,
+    fraction1: number,
+  ): void {
     let localFraction = this._spacePoint.fractionOfProjectionToLine(point0, point1, 0.0);
     // only consider extending the segment if the immediate caller says we are at endpoints ...
     if (!this._extend)

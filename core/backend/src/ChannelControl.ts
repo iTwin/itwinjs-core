@@ -72,4 +72,3 @@ export namespace ChannelControl {
   /** the name of the special "shared" channel holding information that is editable by any application. */
   export const sharedChannelName = "shared";
 }
-

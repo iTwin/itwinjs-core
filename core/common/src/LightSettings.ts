@@ -131,7 +131,8 @@ export class SolarLight {
   }
 
   public equals(rhs: SolarLight): boolean {
-    return this.intensity === rhs.intensity && this.alwaysEnabled === rhs.alwaysEnabled && this.direction.isExactEqual(rhs.direction) && this.timePoint === rhs.timePoint;
+    return this.intensity === rhs.intensity && this.alwaysEnabled === rhs.alwaysEnabled && this.direction.isExactEqual(rhs.direction) &&
+      this.timePoint === rhs.timePoint;
   }
 }
 
@@ -363,8 +364,10 @@ export class FresnelSettings {
 
   /** Create a copy of these settings, modified to match any properties explicitly specified by `changedProps`. */
   public clone(changedProps?: FresnelSettingsProps): FresnelSettings {
-    if ((undefined === changedProps?.intensity || changedProps.intensity === this.intensity)
-      && (undefined === changedProps?.invert || changedProps.invert === this.invert))
+    if (
+      (undefined === changedProps?.intensity || changedProps.intensity === this.intensity)
+      && (undefined === changedProps?.invert || changedProps.invert === this.invert)
+    )
       return this;
 
     const intensity = changedProps?.intensity ?? this.intensity;
@@ -434,8 +437,15 @@ export class LightSettings {
   public readonly numCels: number;
   public readonly fresnel: FresnelSettings;
 
-  private constructor(solar: SolarLight, ambient: AmbientLight, hemisphere: HemisphereLights, portraitIntensity: number, specularIntensity: number, numCels: number,
-    fresnel: FresnelSettings) {
+  private constructor(
+    solar: SolarLight,
+    ambient: AmbientLight,
+    hemisphere: HemisphereLights,
+    portraitIntensity: number,
+    specularIntensity: number,
+    numCels: number,
+    fresnel: FresnelSettings,
+  ) {
     this.solar = solar;
     this.ambient = ambient;
     this.hemisphere = hemisphere;
@@ -519,6 +529,7 @@ export class LightSettings {
       return true;
 
     return this.portraitIntensity === rhs.portraitIntensity && this.specularIntensity === rhs.specularIntensity && this.numCels === rhs.numCels
-      && this.ambient.equals(rhs.ambient) && this.solar.equals(rhs.solar) && this.hemisphere.equals(rhs.hemisphere) && this.fresnel.equals(rhs.fresnel);
+      && this.ambient.equals(rhs.ambient) && this.solar.equals(rhs.solar) && this.hemisphere.equals(rhs.hemisphere) &&
+      this.fresnel.equals(rhs.fresnel);
   }
 }

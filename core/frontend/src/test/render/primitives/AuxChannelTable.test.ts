@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { AuxChannel, AuxChannelData, AuxChannelDataType, Geometry, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
-import { MockRender } from "../../../render/MockRender";
+import { AuxChannel, AuxChannelData, AuxChannelDataType, Geometry, Vector3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { AuxChannelTable } from "../../../common/internal/render/AuxChannelTable";
+import { MockRender } from "../../../render/MockRender";
 
 describe("AuxChannelTable", () => {
   class System extends MockRender.System {

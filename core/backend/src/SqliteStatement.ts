@@ -6,9 +6,9 @@
  * @module SQLite
  */
 
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, BentleyError, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
 import { ECJsNames, IModelError } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelNative } from "./internal/NativePlatform";
 
 // spell:ignore julianday
@@ -60,12 +60,18 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
   private _db: IModelJsNative.AnyDb | undefined;
 
-  public constructor(private _sql: string) { }
-  public get stmt(): IModelJsNative.SqliteStatement { return this._stmt!; }
-  public get sql() { return this._sql; }
+  public constructor(private _sql: string) {}
+  public get stmt(): IModelJsNative.SqliteStatement {
+    return this._stmt!;
+  }
+  public get sql() {
+    return this._sql;
+  }
 
   /** Check if this statement has been prepared successfully or not */
-  public get isPrepared(): boolean { return undefined !== this._stmt; }
+  public get isPrepared(): boolean {
+    return undefined !== this._stmt;
+  }
 
   /** Prepare this statement prior to first use.
    * @param db The DgnDb or ECDb to prepare the statement against
@@ -125,9 +131,14 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
 
   public throwSqlError(rc: DbResult) {
     throw new SqliteStatement.DbError(
-      rc === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY ? "ValueIsInUse" :
-        rc === DbResult.BE_SQLITE_CONSTRAINT_UNIQUE ? "DuplicateValue" :
-          "SqlLogicError", rc, `SQL error: ${this._db!.getLastError()}`);
+      rc === DbResult.BE_SQLITE_CONSTRAINT_FOREIGNKEY ?
+        "ValueIsInUse" :
+        rc === DbResult.BE_SQLITE_CONSTRAINT_UNIQUE ?
+        "DuplicateValue" :
+        "SqlLogicError",
+      rc,
+      `SQL error: ${this._db!.getLastError()}`,
+    );
   }
 
   public stepForWrite(): void {
@@ -157,14 +168,14 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     let stat: DbResult;
     if (value === undefined || value === null) {
       stat = this.stmt.bindNull(parameter);
-    } else if (typeof (value) === "number") {
+    } else if (typeof value === "number") {
       if (Number.isInteger(value))
         stat = this.stmt.bindInteger(parameter, value);
       else
         stat = this.stmt.bindDouble(parameter, value);
-    } else if (typeof (value) === "boolean") {
+    } else if (typeof value === "boolean") {
       stat = this.stmt.bindInteger(parameter, value ? 1 : 0);
-    } else if (typeof (value) === "string") {
+    } else if (typeof value === "string") {
       stat = this.stmt.bindString(parameter, value);
     } else if (!!value.id) {
       stat = this.stmt.bindId(parameter, value.id);
@@ -380,8 +391,8 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     return this.isValueNull(colIndex) ? undefined : this.getValueBlob(colIndex);
   }
   /** Get a value as a double
-  * @param colIndex Index of SQL column in query result (0-based)
-  */
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
   public getValueDouble(colIndex: number): number {
     return this.stmt.getValueDouble(colIndex);
   }
@@ -392,8 +403,8 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     return this.isValueNull(colIndex) ? undefined : this.getValueDouble(colIndex);
   }
   /** Get a value as a integer
-  * @param colIndex Index of SQL column in query result (0-based)
-  */
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
   public getValueInteger(colIndex: number): number {
     return this.stmt.getValueInteger(colIndex);
   }
@@ -404,8 +415,8 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     return this.isValueNull(colIndex) ? undefined : this.getValueInteger(colIndex);
   }
   /** Get a value as a string
-  * @param colIndex Index of SQL column in query result (0-based)
-  */
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
   public getValueString(colIndex: number): string {
     return this.stmt.getValueString(colIndex);
   }
@@ -416,14 +427,14 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     return this.isValueNull(colIndex) ? undefined : this.getValueString(colIndex);
   }
   /** Get a value as an Id
-  * @param colIndex Index of SQL column in query result (0-based)
-  */
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
   public getValueId(colIndex: number): Id64String {
     return this.stmt.getValueId(colIndex);
   }
   /** Get a value as a Guid
-  * @param colIndex Index of SQL column in query result (0-based)
-  */
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
   public getValueGuid(colIndex: number): GuidString {
     return this.stmt.getValueGuid(colIndex);
   }
@@ -443,7 +454,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   /** Get the value as a "props" JSON string, then parse it and return the object
    * @param colIndex Index of SQL column in query result (0-based)
    * @internal
-  */
+   */
   public getProps<T>(colIndex: number): T {
     return JSON.parse(this.getValueString(colIndex));
   }
@@ -451,7 +462,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * If the column is null, return undefined.
    * @param colIndex Index of SQL column in query result (0-based)
    * @internal
-  */
+   */
   public getPropsMaybe<T>(colIndex: number): T | undefined {
     return this.isValueNull(colIndex) ? undefined : this.getProps(colIndex);
   }
@@ -525,7 +536,9 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   }
 
   /** The iterator that will step through the results of this statement. */
-  public [Symbol.iterator](): IterableIterator<any> { return this; }
+  public [Symbol.iterator](): IterableIterator<any> {
+    return this;
+  }
 }
 
 /** Data type of a value in in an SQLite SQL query result.
@@ -561,13 +574,19 @@ export class SqliteValue {
   }
 
   /** Indicates whether the value is NULL or not. */
-  public get isNull(): boolean { return this._stmt.isValueNull(this._colIndex); }
+  public get isNull(): boolean {
+    return this._stmt.isValueNull(this._colIndex);
+  }
 
   /** Gets the data type of the value. */
-  public get type(): SqliteValueType { return this._stmt.getColumnType(this._colIndex); }
+  public get type(): SqliteValueType {
+    return this._stmt.getColumnType(this._colIndex);
+  }
 
   /** Gets the name of the column of the value. */
-  public get columnName(): string { return this._stmt.getColumnName(this._colIndex); }
+  public get columnName(): string {
+    return this._stmt.getColumnName(this._colIndex);
+  }
 
   /** Gets the SqlValue as JavaScript value.
    *
@@ -597,17 +616,29 @@ export class SqliteValue {
   }
 
   /** Get the value as Blob */
-  public getBlob(): Uint8Array { return this._stmt.getValueBlob(this._colIndex); }
+  public getBlob(): Uint8Array {
+    return this._stmt.getValueBlob(this._colIndex);
+  }
   /** Get the value as a double value */
-  public getDouble(): number { return this._stmt.getValueDouble(this._colIndex); }
+  public getDouble(): number {
+    return this._stmt.getValueDouble(this._colIndex);
+  }
   /** Get the value as a integer value */
-  public getInteger(): number { return this._stmt.getValueInteger(this._colIndex); }
+  public getInteger(): number {
+    return this._stmt.getValueInteger(this._colIndex);
+  }
   /** Get the value as a string value */
-  public getString(): string { return this._stmt.getValueString(this._colIndex); }
+  public getString(): string {
+    return this._stmt.getValueString(this._colIndex);
+  }
   /** Get the value as an Id value */
-  public getId(): Id64String { return this._stmt.getValueId(this._colIndex); }
+  public getId(): Id64String {
+    return this._stmt.getValueId(this._colIndex);
+  }
   /** Get the value as a Guid value */
-  public getGuid(): GuidString { return this._stmt.getValueGuid(this._colIndex); }
+  public getGuid(): GuidString {
+    return this._stmt.getValueGuid(this._colIndex);
+  }
 }
 
 interface Statement {
@@ -630,7 +661,9 @@ export class StatementCache<Stmt extends Statement> {
     this._cache = new LRUMap<string, Stmt>(maxCount);
   }
 
-  public get size() { return this._cache.size; }
+  public get size() {
+    return this._cache.size;
+  }
   public addOrDispose(stmt: Stmt): void {
     assert(stmt.isPrepared);
 
@@ -672,7 +705,7 @@ export namespace SqliteStatement {
   }
 
   export type ErrorId =
-    "DuplicateValue" |
-    "SqlLogicError" |
-    "ValueIsInUse";
+    | "DuplicateValue"
+    | "SqlLogicError"
+    | "ValueIsInUse";
 }

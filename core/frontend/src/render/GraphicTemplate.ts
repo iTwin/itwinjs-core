@@ -6,12 +6,12 @@
  * @module Rendering
  */
 
+import { RenderFeatureTable, ViewFlagOverrides } from "@itwin/core-common";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { _batch, _branch, _implementationProhibited, _nodes } from "../common/internal/Symbols";
-import { RenderGeometry } from "../internal/render/RenderGeometry";
-import { RenderFeatureTable, ViewFlagOverrides } from "@itwin/core-common";
-import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
 import { BatchOptions } from "../common/render/BatchOptions";
+import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
+import { RenderGeometry } from "../internal/render/RenderGeometry";
 
 /** @internal */
 export interface GraphicTemplateNode {

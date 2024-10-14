@@ -96,8 +96,7 @@ export class ToolbarItemsManager {
   }
 
   /** Remove Toolbar items based on id */
-  public remove(itemIdOrItemIds: ToolbarItemId | ReadonlyArray<ToolbarItemId
-  >) {
+  public remove(itemIdOrItemIds: ToolbarItemId | ReadonlyArray<ToolbarItemId>) {
     const items = this._items.filter((item) => {
       return isInstance(itemIdOrItemIds) ? item.id !== itemIdOrItemIds : !itemIdOrItemIds.find((itemId) => itemId === item.id);
     });
@@ -114,7 +113,7 @@ export class ToolbarItemsManager {
       for (const [, entry] of Object.entries(item)) {
         if (entry instanceof ConditionalBooleanValue) {
           entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
-        } else /* istanbul ignore else */ if (entry instanceof ConditionalStringValue) {
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
           entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
         }
       }
@@ -132,7 +131,10 @@ export class ToolbarItemsManager {
     return [...eventIds.values()];
   }
 
-  private static refreshChildItems(parentItem: GroupButton, eventIds: Set<string>): { childrenUpdated: boolean, childItems: ReadonlyArray<ActionButton | GroupButton> } {
+  private static refreshChildItems(
+    parentItem: GroupButton,
+    eventIds: Set<string>,
+  ): { childrenUpdated: boolean, childItems: ReadonlyArray<ActionButton | GroupButton> } {
     const updatedItems: Array<ActionButton | GroupButton> = [];
     let itemsUpdated = false;
 
@@ -153,7 +155,7 @@ export class ToolbarItemsManager {
           // istanbul ignore else
           if (ConditionalBooleanValue.refreshValue(entry, eventIds))
             itemsUpdated = true;
-        } else /* istanbul ignore else */ if (entry instanceof ConditionalStringValue) {
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
           // istanbul ignore else
           if (ConditionalStringValue.refreshValue(entry, eventIds))
             itemsUpdated = true;
@@ -165,7 +167,10 @@ export class ToolbarItemsManager {
     return { childrenUpdated: itemsUpdated, childItems: updatedItems };
   }
 
-  private internalRefreshAffectedItems(items: readonly CommonToolbarItem[], eventIds: Set<string>): { itemsUpdated: boolean, updatedItems: CommonToolbarItem[] } {
+  private internalRefreshAffectedItems(
+    items: readonly CommonToolbarItem[],
+    eventIds: Set<string>,
+  ): { itemsUpdated: boolean, updatedItems: CommonToolbarItem[] } {
     // istanbul ignore next
     if (0 === eventIds.size)
       return { itemsUpdated: false, updatedItems: [] };
@@ -190,7 +195,7 @@ export class ToolbarItemsManager {
           // istanbul ignore else
           if (ConditionalBooleanValue.refreshValue(entry, eventIds))
             updateRequired = true;
-        } else /* istanbul ignore else */ if (entry instanceof ConditionalStringValue) {
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
           // istanbul ignore else
           if (ConditionalStringValue.refreshValue(entry, eventIds))
             updateRequired = true;
@@ -253,7 +258,7 @@ export class ToolbarItemsManager {
         updatedItem.items = ToolbarItemsManager.refreshActiveToolIdInChildItems(updatedItem, toolId);
       }
 
-      updatedItem.isActive = (updatedItem.id === toolId);
+      updatedItem.isActive = updatedItem.id === toolId;
       newChildren.push(updatedItem);
     }
     return newChildren;
@@ -272,11 +277,10 @@ export class ToolbarItemsManager {
         updatedItem.items = ToolbarItemsManager.refreshActiveToolIdInChildItems(updatedItem, toolId);
       }
 
-      updatedItem.isActive = (updatedItem.id === toolId);
+      updatedItem.isActive = updatedItem.id === toolId;
       newItems.push(updatedItem);
     }
 
     this.items = newItems;
   }
-
 }

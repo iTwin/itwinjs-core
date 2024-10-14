@@ -88,7 +88,9 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createStringTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createStringTypeDescription(), true, 1, [
+        property,
+      ]);
       const record = new Item(
         [],
         faker.random.word(),
@@ -129,7 +131,9 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createBooleanTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createBooleanTypeDescription(), true, 1, [
+        property,
+      ]);
       const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: true }, { ["MyProperty"]: "True" }, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
@@ -162,7 +166,9 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createBooleanTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createBooleanTypeDescription(), true, 1, [
+        property,
+      ]);
       const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: false }, { ["MyProperty"]: "False" }, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
@@ -195,7 +201,9 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createIntTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createIntTypeDescription(), true, 1, [
+        property,
+      ]);
       const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: 123 }, { ["MyProperty"]: "123" }, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
@@ -228,7 +236,9 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createDoubleTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createDoubleTypeDescription(), true, 1, [
+        property,
+      ]);
       const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: 123.456 }, { ["MyProperty"]: "123.46" }, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
@@ -261,7 +271,9 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createDateTimeTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createDateTimeTypeDescription(), true, 1, [
+        property,
+      ]);
       const record = new Item(
         [],
         faker.random.word(),
@@ -302,7 +314,9 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createPoint2dTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createPoint2dTypeDescription(), true, 1, [
+        property,
+      ]);
       const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: { x: 1, y: 2 } }, { ["MyProperty"]: "1, 2" }, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
@@ -335,7 +349,9 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createPoint2dTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createPoint2dTypeDescription(), true, 1, [
+        property,
+      ]);
       const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: { x: 0, y: 0 } }, { ["MyProperty"]: "0, 0" }, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
@@ -368,7 +384,9 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createPoint3dTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createPoint3dTypeDescription(), true, 1, [
+        property,
+      ]);
       const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: { x: 1, y: 2, z: 3 } }, { ["MyProperty"]: "1, 2, 3" }, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
@@ -379,7 +397,8 @@ describe("RulesetsFactory", () => {
               specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"], arePolymorphic: true },
               relatedInstances: [],
-              instanceFilter: `CompareDoubles(this.MyProperty.x, 1) = 0 AND CompareDoubles(this.MyProperty.y, 2) = 0 AND CompareDoubles(this.MyProperty.z, 3) = 0`,
+              instanceFilter:
+                `CompareDoubles(this.MyProperty.x, 1) = 0 AND CompareDoubles(this.MyProperty.y, 2) = 0 AND CompareDoubles(this.MyProperty.z, 3) = 0`,
             },
           ],
         },
@@ -401,7 +420,9 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createPoint3dTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createPoint3dTypeDescription(), true, 1, [
+        property,
+      ]);
       const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: { x: 1, y: 2, z: 0 } }, { ["MyProperty"]: "1, 2, 0" }, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
@@ -412,7 +433,8 @@ describe("RulesetsFactory", () => {
               specType: ContentSpecificationTypes.ContentInstancesOfSpecificClasses,
               classes: { schemaName: "MySchema", classNames: ["MyClass"], arePolymorphic: true },
               relatedInstances: [],
-              instanceFilter: `CompareDoubles(this.MyProperty.x, 1) = 0 AND CompareDoubles(this.MyProperty.y, 2) = 0 AND CompareDoubles(this.MyProperty.z, 0) = 0`,
+              instanceFilter:
+                `CompareDoubles(this.MyProperty.x, 1) = 0 AND CompareDoubles(this.MyProperty.y, 2) = 0 AND CompareDoubles(this.MyProperty.z, 0) = 0`,
             },
           ],
         },
@@ -434,7 +456,9 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createStringTypeDescription(), true, 1, [property]);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createStringTypeDescription(), true, 1, [
+        property,
+      ]);
       const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: undefined }, { ["MyProperty"]: "" }, []);
       const result = await factory.createSimilarInstancesRuleset(field, record);
       const expectedRules: Rule[] = [
@@ -467,9 +491,17 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createNavigationPropertyTypeDescription(), true, 1, [
-        property,
-      ]);
+      const field = new PropertiesField(
+        createTestCategoryDescription(),
+        "MyProperty",
+        "My Property",
+        createNavigationPropertyTypeDescription(),
+        true,
+        1,
+        [
+          property,
+        ],
+      );
       const record = new Item(
         [],
         faker.random.word(),
@@ -529,9 +561,17 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), faker.random.word(), "Related Property", createStringTypeDescription(), true, 1, [
-        property,
-      ]);
+      const field = new PropertiesField(
+        createTestCategoryDescription(),
+        faker.random.word(),
+        "Related Property",
+        createStringTypeDescription(),
+        true,
+        1,
+        [
+          property,
+        ],
+      );
       const parentField = new NestedContentField(
         createTestCategoryDescription(),
         faker.random.word(),
@@ -626,9 +666,17 @@ describe("RulesetsFactory", () => {
           name: "RelatedProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), faker.random.word(), "Related Property", createStringTypeDescription(), true, 1, [
-        property,
-      ]);
+      const field = new PropertiesField(
+        createTestCategoryDescription(),
+        faker.random.word(),
+        "Related Property",
+        createStringTypeDescription(),
+        true,
+        1,
+        [
+          property,
+        ],
+      );
       const parentField = new NestedContentField(
         createTestCategoryDescription(),
         faker.random.word(),
@@ -740,9 +788,17 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), faker.random.word(), "Related Property", createStringTypeDescription(), true, 1, [
-        property,
-      ]);
+      const field = new PropertiesField(
+        createTestCategoryDescription(),
+        faker.random.word(),
+        "Related Property",
+        createStringTypeDescription(),
+        true,
+        1,
+        [
+          property,
+        ],
+      );
       const parentField = new NestedContentField(
         createTestCategoryDescription(),
         faker.random.word(),
@@ -823,8 +879,18 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createStringTypeDescription(), true, 1, [property]);
-      const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: "test value" }, { ["MyProperty"]: "test display value" }, []);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createStringTypeDescription(), true, 1, [
+        property,
+      ]);
+      const record = new Item(
+        [],
+        faker.random.word(),
+        "",
+        recordClass,
+        { ["MyProperty"]: "test value" },
+        { ["MyProperty"]: "test display value" },
+        [],
+      );
       const callback = sinon.fake(async () => "TEST");
       const result = await factory.createSimilarInstancesRuleset(field, record, callback);
       expect(callback).to.be.calledOnceWithExactly(field.type.typeName, "test value", "test display value");
@@ -844,8 +910,18 @@ describe("RulesetsFactory", () => {
           name: "MyProperty",
         },
       };
-      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createStringTypeDescription(), true, 1, [property]);
-      const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: "test value" }, { ["MyProperty"]: "test display value" }, []);
+      const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createStringTypeDescription(), true, 1, [
+        property,
+      ]);
+      const record = new Item(
+        [],
+        faker.random.word(),
+        "",
+        recordClass,
+        { ["MyProperty"]: "test value" },
+        { ["MyProperty"]: "test display value" },
+        [],
+      );
       const result = await factory.createSimilarInstancesRuleset(field, record);
       expect(result.description).to.eq(`[My Class].[My Property] = test display value`);
     });
@@ -865,9 +941,17 @@ describe("RulesetsFactory", () => {
               name: "MyProperty",
             },
           };
-          const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", faker.random.word(), createBooleanTypeDescription(), true, 1, [
-            property,
-          ]);
+          const field = new PropertiesField(
+            createTestCategoryDescription(),
+            "MyProperty",
+            faker.random.word(),
+            createBooleanTypeDescription(),
+            true,
+            1,
+            [
+              property,
+            ],
+          );
           const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: invalidValue }, { ["MyProperty"]: "" }, []);
           await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
             "Can only create 'similar instances' ruleset for primitive values",
@@ -881,9 +965,27 @@ describe("RulesetsFactory", () => {
           name: "MySchema:MyClass",
           label: "My Class",
         };
-        const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", faker.random.word(), createBooleanTypeDescription(), true, 1, []);
-        const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: "test value" }, { ["MyProperty"]: "test display value" }, []);
-        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Invalid properties' field with no properties");
+        const field = new PropertiesField(
+          createTestCategoryDescription(),
+          "MyProperty",
+          faker.random.word(),
+          createBooleanTypeDescription(),
+          true,
+          1,
+          [],
+        );
+        const record = new Item(
+          [],
+          faker.random.word(),
+          "",
+          recordClass,
+          { ["MyProperty"]: "test value" },
+          { ["MyProperty"]: "test display value" },
+          [],
+        );
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
+          "Invalid properties' field with no properties",
+        );
       });
 
       it("throws when nested content record contains invalid value", async () => {
@@ -918,9 +1020,17 @@ describe("RulesetsFactory", () => {
             name: "MyProperty",
           },
         };
-        const field = new PropertiesField(createTestCategoryDescription(), faker.random.word(), faker.random.word(), createStringTypeDescription(), true, 1, [
-          property,
-        ]);
+        const field = new PropertiesField(
+          createTestCategoryDescription(),
+          faker.random.word(),
+          faker.random.word(),
+          createStringTypeDescription(),
+          true,
+          1,
+          [
+            property,
+          ],
+        );
         const parentField = new NestedContentField(
           createTestCategoryDescription(),
           faker.random.word(),
@@ -958,9 +1068,21 @@ describe("RulesetsFactory", () => {
             name: "MyProperty",
           },
         };
-        const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createPoint2dTypeDescription(), true, 1, [property]);
-        const record = new Item([], faker.random.word(), "", recordClass, { ["MyProperty"]: "should be {x,y} object" }, { ["MyProperty"]: "1, 2" }, []);
-        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith("Expecting point values to be supplied as objects");
+        const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", "My Property", createPoint2dTypeDescription(), true, 1, [
+          property,
+        ]);
+        const record = new Item(
+          [],
+          faker.random.word(),
+          "",
+          recordClass,
+          { ["MyProperty"]: "should be {x,y} object" },
+          { ["MyProperty"]: "1, 2" },
+          [],
+        );
+        await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
+          "Expecting point values to be supplied as objects",
+        );
       });
     });
 
@@ -986,7 +1108,9 @@ describe("RulesetsFactory", () => {
           typeName: faker.random.word(),
           memberType: createStringTypeDescription(),
         };
-        const field = new PropertiesField(createTestCategoryDescription(), faker.random.word(), faker.random.word(), typeDescription, true, 1, [property]);
+        const field = new PropertiesField(createTestCategoryDescription(), faker.random.word(), faker.random.word(), typeDescription, true, 1, [
+          property,
+        ]);
         const values = {
           [field.name]: ["some value 1", "some value 2"],
         };
@@ -1018,7 +1142,9 @@ describe("RulesetsFactory", () => {
             },
           ],
         };
-        const field = new PropertiesField(createTestCategoryDescription(), faker.random.word(), faker.random.word(), typeDescription, true, 1, [property]);
+        const field = new PropertiesField(createTestCategoryDescription(), faker.random.word(), faker.random.word(), typeDescription, true, 1, [
+          property,
+        ]);
         const values = {
           [field.name]: {
             [typeDescription.members[0].name]: "some value",
@@ -1047,10 +1173,20 @@ describe("RulesetsFactory", () => {
             name: "MyProperty",
           },
         };
-        const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", faker.random.word(), createStringTypeDescription(), true, 1, [
-          property,
+        const field = new PropertiesField(
+          createTestCategoryDescription(),
+          "MyProperty",
+          faker.random.word(),
+          createStringTypeDescription(),
+          true,
+          1,
+          [
+            property,
+          ],
+        );
+        const record = new Item([], faker.random.word(), "", undefined, { ["MyProperty"]: "test value" }, { ["MyProperty"]: "test value" }, [
+          "MyProperty",
         ]);
-        const record = new Item([], faker.random.word(), "", undefined, { ["MyProperty"]: "test value" }, { ["MyProperty"]: "test value" }, ["MyProperty"]);
         await expect(factory.createSimilarInstancesRuleset(field, record)).to.eventually.be.rejectedWith(
           "Can't create 'similar instances' ruleset for merged values",
         );
@@ -1068,14 +1204,22 @@ describe("RulesetsFactory", () => {
             name: "MyProperty",
           },
         };
-        const field = new PropertiesField(createTestCategoryDescription(), "MyProperty", faker.random.word(), createStringTypeDescription(), true, 1, [
-          property,
-        ]);
+        const field = new PropertiesField(
+          createTestCategoryDescription(),
+          "MyProperty",
+          faker.random.word(),
+          createStringTypeDescription(),
+          true,
+          1,
+          [
+            property,
+          ],
+        );
         const record = new Item(
           [],
           faker.random.word(),
           "",
-          undefined /* this `undefined` means that record is based on multiple different classes */,
+          undefined, /* this `undefined` means that record is based on multiple different classes */
           { ["MyProperty"]: "test value" },
           { ["MyProperty"]: "test display value" },
           [],
@@ -1117,9 +1261,17 @@ describe("RulesetsFactory", () => {
             name: "MyProperty",
           },
         };
-        const field = new PropertiesField(createTestCategoryDescription(), faker.random.word(), faker.random.word(), createStringTypeDescription(), true, 1, [
-          property,
-        ]);
+        const field = new PropertiesField(
+          createTestCategoryDescription(),
+          faker.random.word(),
+          faker.random.word(),
+          createStringTypeDescription(),
+          true,
+          1,
+          [
+            property,
+          ],
+        );
         const parentField = new NestedContentField(
           createTestCategoryDescription(),
           faker.random.word(),
@@ -1197,9 +1349,17 @@ describe("RulesetsFactory", () => {
             name: "MyProperty",
           },
         };
-        const field = new PropertiesField(createTestCategoryDescription(), faker.random.word(), faker.random.word(), createStringTypeDescription(), true, 1, [
-          property,
-        ]);
+        const field = new PropertiesField(
+          createTestCategoryDescription(),
+          faker.random.word(),
+          faker.random.word(),
+          createStringTypeDescription(),
+          true,
+          1,
+          [
+            property,
+          ],
+        );
         const parentField = new NestedContentField(
           createTestCategoryDescription(),
           faker.random.word(),

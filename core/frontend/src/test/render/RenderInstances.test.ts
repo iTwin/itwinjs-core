@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
-import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
 import { Id64 } from "@itwin/core-bentley";
-import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
-import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
-import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
-import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/InstancedGeometry";
-import { IModelApp } from "../../IModelApp";
 import { ColorDef, EmptyLocalization, Feature, LinePixels, ModelFeature, RenderMode } from "@itwin/core-common";
+import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { GraphicType } from "../../common";
-import { Color, openBlankViewport, readColorCounts, readUniqueColors, readUniqueFeatures } from "../openBlankViewport";
-import { GraphicBranch, readGltfTemplate, StandardViewId } from "../../core-frontend";
+import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
 import { _featureTable } from "../../common/internal/Symbols";
+import { InstancedGraphicParams, InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
+import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
+import { GraphicBranch, readGltfTemplate, StandardViewId } from "../../core-frontend";
+import { IModelApp } from "../../IModelApp";
+import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
+import { InstanceBuffers, InstanceBuffersData } from "../../render/webgl/InstancedGeometry";
+import { Color, openBlankViewport, readColorCounts, readUniqueColors, readUniqueFeatures } from "../openBlankViewport";
 
 describe("RenderInstancesParamsBuilder", () => {
   it("throws if no instances supplied", () => {
@@ -238,7 +238,7 @@ describe("RenderInstances", () => {
     instancesBuilder.add({
       feature: "0x6",
       transform: Transform.createTranslationXYZ(0, -1, 0),
-      symbology: { color: {r: 0, g: 0, b: 255 } },
+      symbology: { color: { r: 0, g: 0, b: 255 } },
     });
     const instances = IModelApp.renderSystem.createRenderInstances(instancesBuilder.finish())!;
     expect(instances[_featureTable]!.numFeatures).to.equal(4);
@@ -331,7 +331,7 @@ describe("RenderInstances", () => {
     const background = colors.get(Color.fromColorDef(ColorDef.black))!;
     const red = colors.get(Color.fromColorDef(ColorDef.red))!;
     const blue = colors.get(Color.fromColorDef(ColorDef.blue))!;
-    const green= colors.get(Color.fromColorDef(ColorDef.green))!;
+    const green = colors.get(Color.fromColorDef(ColorDef.green))!;
     const white = colors.get(Color.fromColorDef(ColorDef.white))!;
 
     // dashed - fewer pixels

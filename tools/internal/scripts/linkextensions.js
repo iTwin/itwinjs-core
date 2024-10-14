@@ -19,7 +19,7 @@ exports.builder = (yargs) =>
         alias: "t",
         describe: "Directory of the test-app.",
         type: "array",
-        default: process.cwd()
+        default: process.cwd(),
       },
     })
     .demandOption(["extension", "testApp"]);
@@ -27,27 +27,26 @@ exports.builder = (yargs) =>
 exports.handler = async (argv) => {
   const rootDir = __dirname.split("tools")[0];
 
-  //go through every testApp specified in the arguments
+  // go through every testApp specified in the arguments
   for (let testApp of argv.testApp) {
-
-    //get path to test-app directories
-    const destRoot = path.resolve(rootDir, "test-apps", testApp)
+    // get path to test-app directories
+    const destRoot = path.resolve(rootDir, "test-apps", testApp);
     if (!fs.existsSync(destRoot)) {
-      console.log(`Cannot find the root directory of the destination: ${destRoot}`)
+      console.log(`Cannot find the root directory of the destination: ${destRoot}`);
       return;
     }
 
-    //check if './build/imjs_extensions' exists
+    // check if './build/imjs_extensions' exists
     const extensionDirectory = path.join(destRoot, "build", "imjs_extensions");
     if (!fs.existsSync(extensionDirectory)) {
       fs.mkdirSync(extensionDirectory);
     }
 
-    //symlink extensions
+    // symlink extensions
     for (let extension of argv.extension) {
       const buildDir = path.resolve(rootDir, "extensions", extension, "lib", "extension");
       if (!fs.existsSync(buildDir)) {
-        console.log(`Cannot find the target path: ${buildDir}`)
+        console.log(`Cannot find the target path: ${buildDir}`);
       }
       const outDir = path.resolve(extensionDirectory, extension);
       if (fs.existsSync(outDir)) {
@@ -57,4 +56,4 @@ exports.handler = async (argv) => {
       fs.symlinkSync(buildDir, outDir, "junction");
     }
   }
-}
+};

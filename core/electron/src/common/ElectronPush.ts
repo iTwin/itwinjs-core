@@ -13,7 +13,9 @@ export class ElectronPushTransport extends RpcPushTransport {
   private _ipc: FrontendIpcTransport;
   private _last: number = -1;
 
-  public get last() { return this._last; }
+  public get last() {
+    return this._last;
+  }
 
   public constructor(ipc: FrontendIpcTransport) {
     super();

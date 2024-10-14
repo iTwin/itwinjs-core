@@ -6,7 +6,7 @@
  * @module OrbitGT
  */
 
-//package orbitgt.pointcloud.render;
+// package orbitgt.pointcloud.render;
 
 type int8 = number;
 type int16 = number;
@@ -25,30 +25,30 @@ import { Level } from "./Level";
  */
 /** @internal */
 export abstract class AViewRequest {
-	/**
-	 * Make a new request.
-	 */
-	public constructor() {
-	}
+  /**
+   * Make a new request.
+   */
+  public constructor() {
+  }
 
-	/**
-	 * Get the frame time.
-	 * @return the frame time.
-	 */
-	public abstract getFrameTime(): float64;
+  /**
+   * Get the frame time.
+   * @return the frame time.
+   */
+  public abstract getFrameTime(): float64;
 
-	/**
-	 * Check if bounds are visible.
-	 * @param bounds the bounds (in model space).
-	 * @return true if visible.
-	 */
-	public abstract isVisibleBox(bounds: Bounds): boolean;
+  /**
+   * Check if bounds are visible.
+   * @param bounds the bounds (in model space).
+   * @return true if visible.
+   */
+  public abstract isVisibleBox(bounds: Bounds): boolean;
 
-	/**
-	 * Should a tile be split?
- * @param level the level of the tile.
- * @param tile the tile index.
-	 * @return true if the tile should be split into its children.
-	 */
-	public abstract shouldSplit(level: Level, tile: TileIndex): boolean;
+  /**
+   * Should a tile be split?
+   * @param level the level of the tile.
+   * @param tile the tile index.
+   * @return true if the tile should be split into its children.
+   */
+  public abstract shouldSplit(level: Level, tile: TileIndex): boolean;
 }

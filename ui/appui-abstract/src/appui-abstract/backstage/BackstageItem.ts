@@ -103,8 +103,13 @@ export const isStageLauncher = (item: BackstageItem): item is BackstageStageLaun
 export class BackstageItemUtilities {
   /** Creates a stage launcher backstage item */
   public static createStageLauncher = (
-    frontstageId: string, groupPriority: number, itemPriority: number, label: string | ConditionalStringValue,
-    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageStageLauncher>, // eslint-disable-line deprecation/deprecation
+    frontstageId: string,
+    groupPriority: number,
+    itemPriority: number,
+    label: string | ConditionalStringValue,
+    subtitle?: string | ConditionalStringValue,
+    icon?: string | ConditionalStringValue,
+    overrides?: Partial<BackstageStageLauncher>, // eslint-disable-line deprecation/deprecation
   ): BackstageStageLauncher => ({ // eslint-disable-line deprecation/deprecation
     groupPriority,
     icon,
@@ -119,8 +124,14 @@ export class BackstageItemUtilities {
 
   /** Creates an action backstage item */
   public static createActionItem = (
-    itemId: string, groupPriority: number, itemPriority: number, execute: () => void, label: string | ConditionalStringValue,
-    subtitle?: string | ConditionalStringValue, icon?: string | ConditionalStringValue, overrides?: Partial<BackstageActionItem>, // eslint-disable-line deprecation/deprecation
+    itemId: string,
+    groupPriority: number,
+    itemPriority: number,
+    execute: () => void,
+    label: string | ConditionalStringValue,
+    subtitle?: string | ConditionalStringValue,
+    icon?: string | ConditionalStringValue,
+    overrides?: Partial<BackstageActionItem>, // eslint-disable-line deprecation/deprecation
   ): BackstageActionItem => ({ // eslint-disable-line deprecation/deprecation
     execute,
     groupPriority,

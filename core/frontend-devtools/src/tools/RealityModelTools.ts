@@ -18,8 +18,12 @@ import { parseToggle } from "./parseToggle";
  */
 export class AttachRealityModelTool extends Tool {
   public static override toolId = "AttachRealityModelTool";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, attaching a specified reality model.
    * @param data a [[ContextRealityModelProps]] JSON representation
@@ -52,8 +56,12 @@ export class AttachRealityModelTool extends Tool {
  * @beta */
 export class SaveRealityModelTool extends Tool {
   public static override toolId = "SaveRealityModelTool";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, saving a reality model's JSON representation to the system clipboard.
    * @param name the name of the reality model to copy; if undefined, copy the last found reality model
@@ -65,7 +73,9 @@ export class SaveRealityModelTool extends Tool {
     vp.displayStyle.forEachRealityModel((realityModel) => {
       if (name === undefined || realityModel.name === name) {
         copyStringToClipboard(JSON.stringify(realityModel.toJSON()));
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model ${realityModel.name} copied to clipboard`));
+        IModelApp.notifications.outputMessage(
+          new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model ${realityModel.name} copied to clipboard`),
+        );
       }
     });
 
@@ -105,8 +115,12 @@ function appearanceChangedString(index: number) {
  */
 export class SetRealityModelTransparencyTool extends Tool {
   public static override toolId = "SetRealityModelTransparencyTool";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public override async run(transparency: number, index: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -116,7 +130,9 @@ export class SetRealityModelTransparencyTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { transparency }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to transparency: ${transparency}`));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to transparency: ${transparency}`),
+      );
 
     return true;
   }
@@ -130,8 +146,12 @@ export class SetRealityModelTransparencyTool extends Tool {
  */
 export class SetRealityModelLocateTool extends Tool {
   public static override toolId = "SetRealityModelLocateTool";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public override async run(locate: boolean, index: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -142,7 +162,9 @@ export class SetRealityModelLocateTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { nonLocatable }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to locate: ${locate}`));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to locate: ${locate}`),
+      );
 
     return true;
   }
@@ -158,8 +180,12 @@ export class SetRealityModelLocateTool extends Tool {
  */
 export class SetRealityModelEmphasizedTool extends Tool {
   public static override toolId = "SetRealityModelEmphasizedTool";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public override async run(emphasized: true | undefined, index: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -169,7 +195,9 @@ export class SetRealityModelEmphasizedTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { emphasized }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to emphasized: ${emphasized}`));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to emphasized: ${emphasized}`),
+      );
 
     return true;
   }
@@ -185,8 +213,12 @@ export class SetRealityModelEmphasizedTool extends Tool {
  */
 export class DetachRealityModelTool extends Tool {
   public static override toolId = "ViewportDetachRealityModel";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(index: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -216,8 +248,12 @@ export class DetachRealityModelTool extends Tool {
  */
 export class SetRealityModelColorTool extends Tool {
   public static override toolId = "SetRealityModelColorTool";
-  public static override get minArgs() { return 3; }
-  public static override get maxArgs() { return 4; }
+  public static override get minArgs() {
+    return 3;
+  }
+  public static override get maxArgs() {
+    return 4;
+  }
 
   public override async run(rgb: RgbColorProps, index: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -227,7 +263,9 @@ export class SetRealityModelColorTool extends Tool {
     const changed = changeRealityModelAppearanceOverrides(vp, { rgb }, index);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to RGB color: (${rgb.r}, ${rgb.g}, ${rgb.b})`),
+      );
 
     return true;
   }
@@ -242,8 +280,12 @@ export class SetRealityModelColorTool extends Tool {
  */
 export class ClearRealityModelAppearanceOverrides extends Tool {
   public static override toolId = "ClearRealityModelAppearanceOverrides";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(index: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -268,8 +310,12 @@ export class ClearRealityModelAppearanceOverrides extends Tool {
  */
 export class AttachCesiumAssetTool extends Tool {
   public static override toolId = "AttachCesiumAssetTool";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public override async run(assetId: number, requestKey: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -304,8 +350,12 @@ export class AttachCesiumAssetTool extends Tool {
  */
 export class ToggleOSMBuildingDisplay extends Tool {
   public static override toolId = "SetBuildingDisplay";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public override async run(onOff?: boolean, transparency?: number): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -315,7 +365,9 @@ export class ToggleOSMBuildingDisplay extends Tool {
     if (onOff === undefined)
       onOff = undefined === vp.displayStyle.getOSMBuildingRealityModel(); // Toggle current state.
 
-    const appearanceOverrides = (transparency !== undefined && transparency > 0 && transparency < 1) ? FeatureAppearance.fromJSON({ transparency }) : undefined;
+    const appearanceOverrides = (transparency !== undefined && transparency > 0 && transparency < 1)
+      ? FeatureAppearance.fromJSON({ transparency })
+      : undefined;
 
     vp.displayStyle.setOSMBuildingDisplay({ onOff, appearanceOverrides });
     return true;

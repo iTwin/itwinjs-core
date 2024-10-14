@@ -3,7 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, CompressedId64Set, Id64String, Logger } from "@itwin/core-bentley";
-import { HydrateViewStateRequestProps, HydrateViewStateResponseProps, ModelProps, SubCategoryResultRow, ViewAttachmentProps, ViewStateLoadProps } from "@itwin/core-common";
+import {
+  HydrateViewStateRequestProps,
+  HydrateViewStateResponseProps,
+  ModelProps,
+  SubCategoryResultRow,
+  ViewAttachmentProps,
+  ViewStateLoadProps,
+} from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelDb } from "./IModelDb";
 
@@ -49,7 +56,11 @@ export class ViewStateHydrator {
     try {
       modelProps = this._imodel.models.getModelJson({ id: baseModelId });
     } catch (err) {
-      Logger.logError(BackendLoggerCategory.ViewStateHydrator, `Error getting modelProps for baseModelId: ${baseModelId}`, () => ({error: BentleyError.getErrorProps(err)}));
+      Logger.logError(
+        BackendLoggerCategory.ViewStateHydrator,
+        `Error getting modelProps for baseModelId: ${baseModelId}`,
+        () => ({ error: BentleyError.getErrorProps(err) }),
+      );
     }
     response.baseModelProps = modelProps;
   }
@@ -77,15 +88,19 @@ export class ViewStateHydrator {
     try {
       const props = this._imodel.elements.getElementProps(acsId);
       response.acsElementProps = props;
-    } catch { }
+    } catch {}
   }
 
-  private async handleSheetViewAttachmentIds(response: HydrateViewStateResponseProps, sheetViewAttachmentIds: CompressedId64Set, viewStateLoadProps?: ViewStateLoadProps) {
+  private async handleSheetViewAttachmentIds(
+    response: HydrateViewStateResponseProps,
+    sheetViewAttachmentIds: CompressedId64Set,
+    viewStateLoadProps?: ViewStateLoadProps,
+  ) {
     const decompressedIds = CompressedId64Set.decompressSet(sheetViewAttachmentIds);
     const attachmentProps: ViewAttachmentProps[] = [];
     for (const id of decompressedIds) {
       try {
-        attachmentProps.push(this._imodel.elements.getElementJson({ id }) );
+        attachmentProps.push(this._imodel.elements.getElementJson({ id }));
       } catch (error) {
       }
     }
@@ -109,5 +124,4 @@ export class ViewStateHydrator {
 
     return;
   }
-
 }

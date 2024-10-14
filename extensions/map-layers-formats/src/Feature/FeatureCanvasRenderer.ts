@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Transform } from "@itwin/core-geometry";
 import { FeatureGeometryBaseRenderer, FeatureSymbolizedRenderer, FeatureSymbologyRenderer } from "@itwin/core-frontend";
+import { Transform } from "@itwin/core-geometry";
 import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
 
 /** @internal */
@@ -12,10 +12,12 @@ export class FeatureCanvasRenderer extends FeatureGeometryBaseRenderer implement
   private _context: CanvasRenderingContext2D;
   private _symbol: ArcGisSymbologyCanvasRenderer;
 
-  public  get symbolRenderer(): FeatureSymbologyRenderer {
+  public get symbolRenderer(): FeatureSymbologyRenderer {
     return this._symbol;
   }
-  public override hasSymbologyRenderer(): this is FeatureSymbolizedRenderer {return true;}
+  public override hasSymbologyRenderer(): this is FeatureSymbolizedRenderer {
+    return true;
+  }
 
   constructor(context: CanvasRenderingContext2D, symbol: ArcGisSymbologyCanvasRenderer, world2PixelTransform?: Transform) {
     super(world2PixelTransform);

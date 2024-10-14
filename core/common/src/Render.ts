@@ -59,7 +59,9 @@ export class MeshPolyline {
       indices.push(index);
   }
 
-  public clear() { this.indices.length = 0; }
+  public clear() {
+    this.indices.length = 0;
+  }
 }
 
 /** @internal */
@@ -100,7 +102,7 @@ export class MeshEdges {
   public silhouette: MeshEdge[] = [];
   public polylines: MeshPolylineList = new MeshPolylineList();
   public silhouetteNormals: OctEncodedNormalPair[] = [];
-  public constructor() { }
+  public constructor() {}
 }
 
 /** @internal */
@@ -115,9 +117,15 @@ export class EdgeArgs {
     return this.isValid;
   }
 
-  public clear(): void { this.edges = undefined; }
-  public get isValid(): boolean { return 0 < this.numEdges; }
-  public get numEdges() { return undefined !== this.edges ? this.edges.length : 0; }
+  public clear(): void {
+    this.edges = undefined;
+  }
+  public get isValid(): boolean {
+    return 0 < this.numEdges;
+  }
+  public get numEdges() {
+    return undefined !== this.edges ? this.edges.length : 0;
+  }
 }
 
 /** @internal */
@@ -144,14 +152,22 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
 export class PolylineEdgeArgs {
   public lines?: PolylineIndices[];
 
-  public constructor(lines?: PolylineIndices[]) { this.init(lines); }
+  public constructor(lines?: PolylineIndices[]) {
+    this.init(lines);
+  }
 
   public init(lines?: PolylineIndices[]): boolean {
     this.lines = undefined !== lines && 0 < lines.length ? lines : undefined;
     return this.isValid;
   }
 
-  public get numLines() { return undefined !== this.lines ? this.lines.length : 0; }
-  public get isValid() { return this.numLines > 0; }
-  public clear() { this.lines = undefined; }
+  public get numLines() {
+    return undefined !== this.lines ? this.lines.length : 0;
+  }
+  public get isValid() {
+    return this.numLines > 0;
+  }
+  public clear() {
+    this.lines = undefined;
+  }
 }

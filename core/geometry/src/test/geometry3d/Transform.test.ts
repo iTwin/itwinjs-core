@@ -110,12 +110,14 @@ describe("Transform.CreateOriginAndMatrix", () => {
   it("Transform.CreateOriginAndMatrix", () => {
     const ck = new Checker();
     const matrixArray = Sample.createMatrix3dArray();
-    for (const origin of [
-      Point3d.create(0, 0, 0),
-      Point3d.create(2, 0, 0),
-      Point3d.create(0, 3, 0),
-      Point3d.create(0, 0, -2),
-    ]) {
+    for (
+      const origin of [
+        Point3d.create(0, 0, 0),
+        Point3d.create(2, 0, 0),
+        Point3d.create(0, 3, 0),
+        Point3d.create(0, 0, -2),
+      ]
+    ) {
       for (const matrixA of matrixArray) {
         const transformA = Transform.createOriginAndMatrix(origin, matrixA);
         const originA = transformA.getOrigin();
@@ -272,9 +274,18 @@ describe("Transform.CloneRigid", () => {
   it("Transform.CloneRigid", () => {
     const ck = new Checker();
     const singularTransformA = Transform.createRowValues(
-      1, 2, 4, 0,
-      2, 4, 3, 1,
-      3, 6, -10, 1,
+      1,
+      2,
+      4,
+      0,
+      2,
+      4,
+      3,
+      1,
+      3,
+      6,
+      -10,
+      1,
     ); // columns X and Y (or 0 and 1) are dependent so matrix part is singular
     const points = [Point3d.create(1, 2, 3), Point3d.create(3, 2, 9)];
     ck.testFalse(singularTransformA.multiplyInversePoint3dArrayInPlace(points));
@@ -320,7 +331,6 @@ describe("Transform.CreateRigidFromOriginAndColumns", () => {
       ck.testPerpendicular(vectorU, transform0.matrix.columnY());
       ck.testLE(0.0, transform0.matrix.dotColumnX(vectorU));
       ck.testLE(0.0, transform0.matrix.dotColumnY(vectorV));
-
     }
     ck.testUndefined(Transform.createRigidFromOriginAndColumns(origin, vectorU, vectorU, AxisOrder.XYZ));
     expect(ck.getNumErrors()).toBe(0);
@@ -358,7 +368,7 @@ describe("Transform.createFlattenAlongVectorToPlane", () => {
     const spacePoints = Sample.point3d;
     for (const planeOrigin of spacePoints) {
       for (const planeNormal of [Vector3d.create(0, 0, 1), Vector3d.create(2, 3, -1)]) {
-        for (const sweepDirection of ([Vector3d.create(0, 0, 1), Vector3d.create(-2, 3, 1)])) {
+        for (const sweepDirection of [Vector3d.create(0, 0, 1), Vector3d.create(-2, 3, 1)]) {
           const transform = Transform.createFlattenAlongVectorToPlane(sweepDirection, planeOrigin, planeNormal);
           if (ck.testDefined(transform, "expect good transform")) {
             for (const pointA of spacePoints) {

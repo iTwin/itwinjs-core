@@ -2,12 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Code, IModel, ModelSelectorProps } from "@itwin/core-common";
 import {
-  DrawingModelState, GeometricModelState, IModelConnection, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
+  DrawingModelState,
+  GeometricModelState,
+  IModelConnection,
+  ModelSelectorState,
+  SheetModelState,
+  SnapshotConnection,
+  SpatialModelState,
 } from "@itwin/core-frontend";
+import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
 
 describe("ModelState", () => {

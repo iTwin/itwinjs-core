@@ -5,7 +5,16 @@
 
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import { ArcGisGeometryReaderJSON, FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
+import {
+  ArcGisGeometryReaderJSON,
+  FeatureAttributeDrivenSymbology,
+  FeatureGeometryRenderer,
+  GraphicsGeometryRenderer,
+  MapLayerFeature,
+  MapLayerFeatureAttribute,
+  MapLayerFeatureInfo,
+  MapSubLayerFeatureInfo,
+} from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisFieldType, ArcGisResponseData } from "./ArcGisFeatureResponse";
@@ -16,14 +25,13 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
 
   public constructor(settings: ImageMapLayerSettings, layerMetadata: any) {
     super(settings, layerMetadata);
-
   }
 
   private applySymbologyAttributes(attrSymbology: FeatureAttributeDrivenSymbology, feature: any) {
     if (attrSymbology && feature) {
       const symbolFields = attrSymbology.rendererFields;
       if (symbolFields && symbolFields.length > 0 && feature.attributes) {
-        const featureAttr: {[key: string]: any} = {};
+        const featureAttr: { [key: string]: any } = {};
         for (const [attrKey, attrValue] of Object.entries(feature.attributes))
           if (symbolFields.includes(attrKey)) {
             featureAttr[attrKey] = attrValue;
@@ -80,7 +88,7 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
     };
 
     const getRecordInfo = (fieldName: string, value: any): MapLayerFeatureAttribute => {
-      const propertyValue: PrimitiveValue = {valueFormat: PropertyValueFormat.Primitive};
+      const propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
 
       if (value === null) {
         value = undefined;
@@ -111,10 +119,10 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
       const typename = getStandardTypeName(fieldType);
       propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
 
-      return {value: propertyValue, property: { name: fieldName, displayLabel: fieldName, typename }};
+      return { value: propertyValue, property: { name: fieldName, displayLabel: fieldName, typename } };
     };
 
-    let geomReader: ArcGisGeometryReaderJSON|undefined;
+    let geomReader: ArcGisGeometryReaderJSON | undefined;
     if (renderer && responseObj?.geometryType) {
       geomReader = new ArcGisGeometryReaderJSON(responseObj.geometryType, renderer);
     }
@@ -128,7 +136,7 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
 
     // Read all features attributes / geometries
     for (const responseFeature of responseObj.features) {
-      const feature: MapLayerFeature = {attributes: []};
+      const feature: MapLayerFeature = { attributes: [] };
 
       for (const [key, value] of Object.entries(responseFeature.attributes))
         feature.attributes?.push(getRecordInfo(key, value));
@@ -137,7 +145,7 @@ export class ArcGisJsonFeatureReader extends ArcGisBaseFeatureReader {
         await geomReader.readGeometry(responseFeature.geometry);
         const graphics = renderer.moveGraphics();
         feature.geometries = graphics.map((graphic) => {
-          return {graphic};
+          return { graphic };
         });
       }
       subLayerInfo.features.push(feature);

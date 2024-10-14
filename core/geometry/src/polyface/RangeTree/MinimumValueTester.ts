@@ -13,7 +13,7 @@
  * * When comparing a potential minimum value to an undefined value, the number is always accepted as the new minimum.
  * @internal
  */
-export class MinimumValueTester<T>{
+export class MinimumValueTester<T> {
   public itemAtMinValue: T | undefined;
   public minValue: number | undefined;
   public triggerForSavingToArray: number | undefined;

@@ -33,7 +33,9 @@ export class Tweens {
   private _tweens: any = {};
   private _tweensAddedDuringUpdate: any = {};
   private _nextId = 0;
-  public nextId() { return this._nextId++; }
+  public nextId() {
+    return this._nextId++;
+  }
 
   public getAll() {
     return Object.keys(this._tweens).map((tweenId) => this._tweens[tweenId]);
@@ -167,9 +169,15 @@ export class Tween {
     this._id = _group.nextId();
   }
 
-  public getId() { return this._id; }
-  public get isPlaying() { return this._isPlaying; }
-  public get isPaused() { return this._isPaused; }
+  public getId() {
+    return this._id;
+  }
+  public get isPlaying() {
+    return this._isPlaying;
+  }
+  public get isPaused() {
+    return this._isPaused;
+  }
 
   public to(properties: any, duration?: number) {
     this._valuesEnd = Object.create(properties);
@@ -367,8 +375,7 @@ export class Tween {
         this._object[property] = this._interpolationFunction(end, value);
       } else {
         // Parses relative end values with start as base (e.g.: +10, -3)
-        if (typeof (end) === "string") {
-
+        if (typeof end === "string") {
           if (end.charAt(0) === "+" || end.charAt(0) === "-")
             end = start + parseFloat(end);
           else
@@ -376,7 +383,7 @@ export class Tween {
         }
 
         // Protect against non numeric properties.
-        if (typeof (end) === "number")
+        if (typeof end === "number")
           this._object[property] = start + (end - start) * value;
       }
     }
@@ -391,7 +398,6 @@ export class Tween {
 
         // Reassign starting values, restart by making startTime = now
         for (property in this._valuesStartRepeat) {
-
           if (typeof (this._valuesEnd[property]) === "string") {
             this._valuesStartRepeat[property] = this._valuesStartRepeat[property] + parseFloat(this._valuesEnd[property]);
           }
@@ -418,9 +424,7 @@ export class Tween {
           this._onRepeatCallback(this._object);
 
         return true;
-
       } else {
-
         if (this._onCompleteCallback !== undefined)
           this._onCompleteCallback(this._object);
 
@@ -431,7 +435,6 @@ export class Tween {
         }
         return false;
       }
-
     }
     return true;
   }
@@ -460,7 +463,7 @@ export const Easing = {
       if ((k *= 2) < 1) {
         return 0.5 * k * k;
       }
-      return - 0.5 * (--k * (k - 2) - 1);
+      return -0.5 * (--k * (k - 2) - 1);
     },
   },
 
@@ -496,7 +499,7 @@ export const Easing = {
         return 0.5 * k * k * k * k;
       }
 
-      return - 0.5 * ((k -= 2) * k * k * k - 2);
+      return -0.5 * ((k -= 2) * k * k * k - 2);
     },
   },
 
@@ -538,7 +541,7 @@ export const Easing = {
     },
 
     Out: (k: number) => {
-      return k === 1 ? 1 : 1 - Math.pow(2, - 10 * k);
+      return k === 1 ? 1 : 1 - Math.pow(2, -10 * k);
     },
 
     InOut: (k: number) => {
@@ -551,7 +554,7 @@ export const Easing = {
       if ((k *= 2) < 1)
         return 0.5 * Math.pow(1024, k - 1);
 
-      return 0.5 * (- Math.pow(2, - 10 * (k - 1)) + 2);
+      return 0.5 * (-Math.pow(2, -10 * (k - 1)) + 2);
     },
   },
 
@@ -566,7 +569,7 @@ export const Easing = {
 
     InOut: (k: number) => {
       if ((k *= 2) < 1)
-        return - 0.5 * (Math.sqrt(1 - k * k) - 1);
+        return -0.5 * (Math.sqrt(1 - k * k) - 1);
 
       return 0.5 * (Math.sqrt(1 - (k -= 2) * k) + 1);
     },
@@ -638,10 +641,10 @@ export const Easing = {
       if (k < (1 / 2.75))
         return 7.5625 * k * k;
       if (k < (2 / 2.75))
-        return 7.5625 * (k -= (1.5 / 2.75)) * k + 0.75;
+        return 7.5625 * (k -= 1.5 / 2.75) * k + 0.75;
       if (k < (2.5 / 2.75))
-        return 7.5625 * (k -= (2.25 / 2.75)) * k + 0.9375;
-      return 7.5625 * (k -= (2.625 / 2.75)) * k + 0.984375;
+        return 7.5625 * (k -= 2.25 / 2.75) * k + 0.9375;
+      return 7.5625 * (k -= 2.625 / 2.75) * k + 0.984375;
     },
 
     InOut: (k: number) => {
@@ -657,7 +660,6 @@ export const Easing = {
  *  @public
  */
 export const Interpolation = {
-
   Linear: (v: any, k: number) => {
     const m = v.length - 1;
     const f = m * k;
@@ -731,7 +733,6 @@ export const Interpolation = {
         a[n] = s;
         return s;
       };
-
     })(),
 
     CatmullRom: (p0: number, p1: number, p2: number, p3: number, t: number) => {
@@ -739,7 +740,7 @@ export const Interpolation = {
       const v1 = (p3 - p1) * 0.5;
       const t2 = t * t;
       const t3 = t * t2;
-      return (2 * p1 - 2 * p2 + v0 + v1) * t3 + (- 3 * p1 + 3 * p2 - 2 * v0 - v1) * t2 + v0 * t + p1;
+      return (2 * p1 - 2 * p2 + v0 + v1) * t3 + (-3 * p1 + 3 * p2 - 2 * v0 - v1) * t2 + v0 * t + p1;
     },
   },
 };

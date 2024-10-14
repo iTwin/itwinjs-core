@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { assert } from "chai";
 import * as os from "os";
-import { Logger, LogLevel } from "@itwin/core-bentley";
 import { DevTools, DevToolsStatsFormatter } from "../../core-backend";
 
 interface StringIndexedObject<T> {
@@ -84,5 +84,4 @@ describe("DevTools", () => {
     assert.isDefined(versions.iTwinJs);
     assert.isDefined(versions.availableRpcs);
   });
-},
-);
+});

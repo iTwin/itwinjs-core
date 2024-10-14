@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { join } from "path";
 import { AccessToken, Guid, Mutable } from "@itwin/core-bentley";
 import { ChangesetFileProps, ChangesetType, LockState } from "@itwin/core-common";
+import { assert, expect } from "chai";
+import { join } from "path";
 import { LockProps } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
+import { ProgressFunction, ProgressStatus } from "../../CheckpointManager";
+import { HubMock } from "../../HubMock";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
-import { HubMock } from "../../HubMock";
+import { LockStatusExclusive, LockStatusShared } from "../../LocalHub";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { LockStatusExclusive, LockStatusShared } from "../../LocalHub";
-import { ProgressFunction, ProgressStatus } from "../../CheckpointManager";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
@@ -77,8 +77,16 @@ describe("HubMock", () => {
 
     // try pushing changesets
     const cs1: ChangesetFileProps = {
-      id: "changeset0", description: "first changeset", changesType: ChangesetType.Regular, parentId: "", briefcaseId: 5, pushDate: "", index: 0,
-      userCreated: "user1", pathname, size: fileSize,
+      id: "changeset0",
+      description: "first changeset",
+      changesType: ChangesetType.Regular,
+      parentId: "",
+      briefcaseId: 5,
+      pushDate: "",
+      index: 0,
+      userCreated: "user1",
+      pathname,
+      size: fileSize,
     };
     cs1.index = localHub.addChangeset(cs1); // first changeset
     const changesets1 = localHub.queryChangesets();
@@ -97,8 +105,15 @@ describe("HubMock", () => {
     fileSize = IModelJsFs.lstatSync(pathname)!.size;
 
     const cs2: ChangesetFileProps = {
-      id: "changeset1", parentId: cs1.id, description: "second changeset", changesType: ChangesetType.Schema, briefcaseId: 5, pushDate: "", index: 0,
-      userCreated: "user2", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
+      id: "changeset1",
+      parentId: cs1.id,
+      description: "second changeset",
+      changesType: ChangesetType.Schema,
+      briefcaseId: 5,
+      pushDate: "",
+      index: 0,
+      userCreated: "user2",
+      pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
       size: fileSize,
     };
     cs2.index = localHub.addChangeset(cs2); // second changeset, parent = cs1
@@ -133,8 +148,15 @@ describe("HubMock", () => {
 
     // test for duplicate changeset id fails
     const cs3: ChangesetFileProps = {
-      id: "changeset0", parentId: "changeset1",
-      description: "third changeset", changesType: ChangesetType.Regular, pathname: cs1.pathname, briefcaseId: 500, userCreated: "", pushDate: "", index: 0,
+      id: "changeset0",
+      parentId: "changeset1",
+      description: "third changeset",
+      changesType: ChangesetType.Regular,
+      pathname: cs1.pathname,
+      briefcaseId: 500,
+      userCreated: "",
+      pushDate: "",
+      index: 0,
       size: fileSize,
     };
     expect(() => localHub.addChangeset(cs3)).throws("no briefcase with that id");
@@ -213,7 +235,9 @@ describe("HubMock", () => {
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(3));
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(5));
 
-    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Exclusive }, { briefcaseId: 6, changeset: { id: "cs1" } })).to.throw("shared lock is held").include({ briefcaseId: 3, briefcaseAlias: "user2 briefcase 1" });
+    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Exclusive }, { briefcaseId: 6, changeset: { id: "cs1" } })).to.throw(
+      "shared lock is held",
+    ).include({ briefcaseId: 3, briefcaseAlias: "user2 briefcase 1" });
     expect(() => localHub.releaseLocks([lock1], { briefcaseId: 9, changesetIndex: cs1.index })).to.throw("shared lock not held");
 
     localHub.releaseLocks([lock1], { briefcaseId: 3, changesetIndex: cs1.index });
@@ -236,8 +260,13 @@ describe("HubMock", () => {
     localHub.acquireLock(lock1, { briefcaseId: 6, changeset: cs1 });
     assert.equal(localHub.countSharedLocks(), 0);
     assert.equal(localHub.countLocks(), 1);
-    expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("exclusive lock is already held").include({ briefcaseId: 6, briefcaseAlias: "alias for 5" });
-    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Shared }, { briefcaseId: 5, changeset: cs1 })).to.throw("exclusive lock is already held").include({ briefcaseId: 6, briefcaseAlias: "alias for 5" });
+    expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("exclusive lock is already held").include({
+      briefcaseId: 6,
+      briefcaseAlias: "alias for 5",
+    });
+    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Shared }, { briefcaseId: 5, changeset: cs1 })).to.throw(
+      "exclusive lock is already held",
+    ).include({ briefcaseId: 6, briefcaseAlias: "alias for 5" });
     localHub.releaseLocks([lock1], { briefcaseId: 6, changesetIndex: cs2.index });
     assert.equal(localHub.countLocks(), 1);
     lockStat = localHub.queryLockStatus(lock1.id);
@@ -294,14 +323,28 @@ describe("HubMock", () => {
     const fileSize = IModelJsFs.lstatSync(pathname)!.size;
 
     const cs1: ChangesetFileProps = {
-      id: "changeset0", description: "first changeset", changesType: ChangesetType.Regular, parentId: "", briefcaseId, pushDate: "", index: 0,
+      id: "changeset0",
+      description: "first changeset",
+      changesType: ChangesetType.Regular,
+      parentId: "",
+      briefcaseId,
+      pushDate: "",
+      index: 0,
       size: fileSize,
-      userCreated: "user1", pathname,
+      userCreated: "user1",
+      pathname,
     };
     const cs2: ChangesetFileProps = {
-      id: "changeset1", parentId: cs1.id, description: "second changeset", changesType: ChangesetType.Schema, briefcaseId, pushDate: "", index: 0,
+      id: "changeset1",
+      parentId: cs1.id,
+      description: "second changeset",
+      changesType: ChangesetType.Schema,
+      briefcaseId,
+      pushDate: "",
+      index: 0,
       size: fileSize,
-      userCreated: "user2", pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
+      userCreated: "user2",
+      pathname: IModelTestUtils.resolveAssetFile("CloneTest.01.00.01.ecschema.xml"),
     };
     cs1.index = localHub.addChangeset(cs1);
     cs2.index = localHub.addChangeset(cs2);

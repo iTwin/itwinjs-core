@@ -8,12 +8,12 @@
 
 import { AnyEnumerator, Enumeration, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
-import { MutableEnumeration } from "./Mutable/MutableEnumeration";
 import { ECEditingStatus, EnumeratorId, SchemaEditingError, SchemaItemId } from "./Exception";
+import { MutableEnumeration } from "./Mutable/MutableEnumeration";
 import { SchemaItems } from "./SchemaItems";
 
 type MutableEnumerator = {
-  -readonly [P in keyof AnyEnumerator]: AnyEnumerator[P]
+  -readonly [P in keyof AnyEnumerator]: AnyEnumerator[P];
 };
 
 /**
@@ -25,16 +25,30 @@ export class Enumerations extends SchemaItems {
     super(SchemaItemType.Enumeration, schemaEditor);
   }
 
-  public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemKey> {
+  public async create(
+    schemaKey: SchemaKey,
+    name: string,
+    type: PrimitiveType.Integer | PrimitiveType.String,
+    displayLabel?: string,
+    isStrict?: boolean,
+    enumerators?: AnyEnumerator[],
+  ): Promise<SchemaItemKey> {
     try {
-      const newEnum = await this.createSchemaItem<Enumeration>(schemaKey, this.schemaItemType, (schema) => schema.createEnumeration.bind(schema), name, type) as MutableEnumeration;
+      const newEnum = await this.createSchemaItem<Enumeration>(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createEnumeration.bind(schema),
+        name,
+        type,
+      ) as MutableEnumeration;
 
       if (undefined !== isStrict)
         newEnum.setIsStrict(isStrict);
 
-      if (undefined !== enumerators)
+      if (undefined !== enumerators) {
         for (const enumerator of enumerators)
           await this.addEnumerator(newEnum.key, enumerator);
+      }
 
       if (displayLabel)
         newEnum.setDisplayLabel(displayLabel);
@@ -52,7 +66,12 @@ export class Enumerations extends SchemaItems {
    */
   public async createFromProps(schemaKey: SchemaKey, enumProps: EnumerationProps): Promise<SchemaItemKey> {
     try {
-      const newEnum = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createEnumeration.bind(schema), enumProps);
+      const newEnum = await this.createSchemaItemFromProps(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createEnumeration.bind(schema),
+        enumProps,
+      );
       return newEnum.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, enumProps.name!, schemaKey), e);
@@ -70,7 +89,7 @@ export class Enumerations extends SchemaItems {
         throw new SchemaEditingError(ECEditingStatus.InvalidEnumeratorType, new EnumeratorId(enumerator, enumeration));
 
       (enumeration as MutableEnumeration).addEnumerator(enumerator);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddEnumerator, new SchemaItemId(this.schemaItemType, enumerationKey), e);
     }
   }
@@ -84,7 +103,7 @@ export class Enumerations extends SchemaItems {
         throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, new EnumeratorId(enumeratorName, enumeration));
 
       (enumerator as MutableEnumerator).label = label;
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetEnumeratorLabel, new SchemaItemId(this.schemaItemType, enumerationKey), e);
     }
   }
@@ -98,7 +117,7 @@ export class Enumerations extends SchemaItems {
         throw new SchemaEditingError(ECEditingStatus.EnumeratorDoesNotExist, new EnumeratorId(enumeratorName, enumeration));
 
       (enumerator as MutableEnumerator).description = description;
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetEnumeratorLabel, new SchemaItemId(this.schemaItemType, enumerationKey), e);
     }
   }

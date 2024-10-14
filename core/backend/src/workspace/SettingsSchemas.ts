@@ -12,14 +12,14 @@ import { _implementationProhibited } from "../internal/Symbols";
 import { SettingName } from "./Settings";
 
 /** Metadata describing a single [[Setting]] as part of a [[SettingGroupSchema]].
-  * Every setting has a [[type]], which can be one of the following:
-  * - A primitive type like `string` or `number`;
-  * - An object containing any number of named properties, each with their own types; or
-  * - An array of elements, all of the same type.
-  * This metadata is used to validate setting values against the schema, and to enable user interfaces by which
-  * users can view and modify their settings.
-  * @beta
-  */
+ * Every setting has a [[type]], which can be one of the following:
+ * - A primitive type like `string` or `number`;
+ * - An object containing any number of named properties, each with their own types; or
+ * - An array of elements, all of the same type.
+ * This metadata is used to validate setting values against the schema, and to enable user interfaces by which
+ * users can view and modify their settings.
+ * @beta
+ */
 export interface SettingSchema extends Readonly<JSONSchema> {
   /** For arrays only, the metadata describing every element in the array. */
   readonly items?: SettingSchema;
@@ -42,26 +42,26 @@ export interface SettingSchema extends Readonly<JSONSchema> {
 }
 
 /** Metadata describing a group of related [[SettingSchema]]s. You can register setting schema groups via [[SettingsSchemas.addGroup]] and
-  * remove them via [[SettingsSchemas.removeGroup]].
-  *
-  * All of the settings share the same [[schemaPrefix]], which must be unique amongst all other groups.
-  * The prefix is combined with the name of each [[SettingSchema]] in the group to form the fully-qualified name used to refer
-  * to the setting outside of the group, e.g., when accessing [[SettingsSchemas.settingDefs]] or in [[SettingSchema.extends]].
-  * In the following example, the fully-qualified name of the setting named "metric" is "format/units/metric".
-  *
-  * ```json
-  *  {
-  *    "schemaPrefix": "format/units",
-  *    "settingDefs": {
-  *      "metric": { "type": "boolean" }
-  *    }
-  *  }
-  * ```
-  *
-  * A group can also define [[SettingSchema]]s that, rather than describing actual [[Setting]]s, instead describe types that can be extended by [[Setting]]s via
-  * [[SettingSchema.extends]]. A [[SettingSchema]] can refer to type definitions defined in its own group or any other group.
-  * @beta
-  */
+ * remove them via [[SettingsSchemas.removeGroup]].
+ *
+ * All of the settings share the same [[schemaPrefix]], which must be unique amongst all other groups.
+ * The prefix is combined with the name of each [[SettingSchema]] in the group to form the fully-qualified name used to refer
+ * to the setting outside of the group, e.g., when accessing [[SettingsSchemas.settingDefs]] or in [[SettingSchema.extends]].
+ * In the following example, the fully-qualified name of the setting named "metric" is "format/units/metric".
+ *
+ * ```json
+ *  {
+ *    "schemaPrefix": "format/units",
+ *    "settingDefs": {
+ *      "metric": { "type": "boolean" }
+ *    }
+ *  }
+ * ```
+ *
+ * A group can also define [[SettingSchema]]s that, rather than describing actual [[Setting]]s, instead describe types that can be extended by [[Setting]]s via
+ * [[SettingSchema.extends]]. A [[SettingSchema]] can refer to type definitions defined in its own group or any other group.
+ * @beta
+ */
 export interface SettingGroupSchema {
   /** Uniquely identifies this group amongst all other groups.
    * The prefix can use forward-slashes to define logical subgroups - for example, two related groups with the prefixes "units/metric" and "units/imperial".
@@ -87,20 +87,20 @@ export interface SettingGroupSchema {
  */
 
 /** The registry of metadata describing groups of [[SettingSchema]]s available to the current session.
-  * The schemas are used to look up the default values of [[Setting]]s, validate that their values are of the type dictated by the schema, and
-  * query metadata like [[SettingsSchema.combineArray]] that modify their behavior.
-  * They can also be used to drive a user interface that enables end users to edit [[Settings]].
-  *
-  * When [[IModelHost.startup]] is invoked at the beginning of a session, schemas delivered with the application - like those describing
-  * [[Workspace]]s - are automatically loaded.
-  * The application can manually register additional schemas using methods like [[addGroup]], [[addFile]], [[addDirectory]], and [[addJson]].
-  * When [[IModelHost.shutdown]] is invoked at the end of a session, all registered schemas are unregistered.
-  *
-  * See the [learning article]($docs/learning/backend/Workspace) for a detailed overiew and examples.
-  *
-  * @see [[IModelHost.settingsSchemas]] to access the registry for the current session.
-  * @beta
-  */
+ * The schemas are used to look up the default values of [[Setting]]s, validate that their values are of the type dictated by the schema, and
+ * query metadata like [[SettingsSchema.combineArray]] that modify their behavior.
+ * They can also be used to drive a user interface that enables end users to edit [[Settings]].
+ *
+ * When [[IModelHost.startup]] is invoked at the beginning of a session, schemas delivered with the application - like those describing
+ * [[Workspace]]s - are automatically loaded.
+ * The application can manually register additional schemas using methods like [[addGroup]], [[addFile]], [[addDirectory]], and [[addJson]].
+ * When [[IModelHost.shutdown]] is invoked at the end of a session, all registered schemas are unregistered.
+ *
+ * See the [learning article]($docs/learning/backend/Workspace) for a detailed overiew and examples.
+ *
+ * @see [[IModelHost.settingsSchemas]] to access the registry for the current session.
+ * @beta
+ */
 export interface SettingsSchemas {
   /** @internal */
   readonly [_implementationProhibited]: unknown;

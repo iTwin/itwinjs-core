@@ -31,7 +31,7 @@ chai.use(chaiSubset);
 
 faker.seed(1);
 
-beforeEach(function () {
+beforeEach(function() {
   const currentTest = this.currentTest;
 
   // we want snapshot tests to use the same random data between runs

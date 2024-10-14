@@ -3,12 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import * as cpx from "cpx2";
-import * as fs from "fs";
-import Backend from "i18next-http-backend";
-import * as path from "path";
-import rimraf from "rimraf";
-import sinon from "sinon";
 import { IModelHost, IModelHostOptions, IModelJsFs } from "@itwin/core-backend";
 import { Guid, Logger, LogLevel } from "@itwin/core-bentley";
 import {
@@ -33,6 +27,12 @@ import {
 } from "@itwin/presentation-backend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { Presentation as PresentationFrontend, PresentationProps as PresentationFrontendProps } from "@itwin/presentation-frontend";
+import * as cpx from "cpx2";
+import * as fs from "fs";
+import Backend from "i18next-http-backend";
+import * as path from "path";
+import rimraf from "rimraf";
+import sinon from "sinon";
 import { getOutputRoot } from "./Utils";
 
 const DEFAULT_BACKEND_TIMEOUT: number = 0;
@@ -165,7 +165,7 @@ const initializeCommon = async (props: {
   console.log(`[${new Date().toISOString()}] Tests initialized`);
 };
 
-export const initialize = async (props?: { backendTimeout?: number; frontendTimeout?: number; localization?: Localization }) => {
+export const initialize = async (props?: { backendTimeout?: number, frontendTimeout?: number, localization?: Localization }) => {
   await initializeCommon({
     backendTimeout: DEFAULT_BACKEND_TIMEOUT,
     ...props,

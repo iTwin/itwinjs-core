@@ -65,7 +65,9 @@ export class PointSearchContext {
    * @return detail closer to the target point.
    */
   public reAimFromEdge(
-    edgeHit: HalfEdgePositionDetail, ray: Ray3d, targetDistance: number,
+    edgeHit: HalfEdgePositionDetail,
+    ray: Ray3d,
+    targetDistance: number,
   ): HalfEdgePositionDetail {
     const nodeA = edgeHit.node!;
     const dataA = NodeXYZUV.createNodeAndRayOrigin(nodeA, ray);
@@ -128,7 +130,9 @@ export class PointSearchContext {
    * @return detail closer to the target point.
    */
   public reAimFromVertex(
-    vertexHit: HalfEdgePositionDetail, ray: Ray3d, targetDistance: number,
+    vertexHit: HalfEdgePositionDetail,
+    ray: Ray3d,
+    targetDistance: number,
   ): HalfEdgePositionDetail {
     assert(ray.origin.isExactEqual(vertexHit));
     const vertexNode = vertexHit.node;

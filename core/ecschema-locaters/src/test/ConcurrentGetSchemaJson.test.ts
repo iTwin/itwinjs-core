@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { ECVersion, Schema, SchemaContext, SchemaJsonLocater, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { assert, expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { ECVersion, Schema, SchemaContext, SchemaJsonLocater, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { SchemaJsonFileLocater } from "../SchemaJsonFileLocater";
 
 describe("Concurrent schema JSON deserialization", () => {
@@ -66,20 +66,53 @@ describe("Concurrent schema JSON deserialization", () => {
   function copySchemasToAssetsDir() {
     // Copy Schemas that we need for testing
     fs.copyFileSync(getSchemaPathFromPackage("aec-units-schema", "AecUnits.ecschema.json"), path.join(schemaFolder, "AecUnits.ecschema.json"));
-    fs.copyFileSync(getSchemaPathFromPackage("architectural-physical-schema", "ArchitecturalPhysical.ecschema.json"), path.join(schemaFolder, "ArchitecturalPhysical.ecschema.json"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("architectural-physical-schema", "ArchitecturalPhysical.ecschema.json"),
+      path.join(schemaFolder, "ArchitecturalPhysical.ecschema.json"),
+    );
     fs.copyFileSync(getSchemaPathFromPackage("bis-core-schema", "BisCore.ecschema.json"), path.join(schemaFolder, "BisCore.ecschema.json"));
-    fs.copyFileSync(getSchemaPathFromPackage("bis-custom-attributes-schema", "BisCustomAttributes.ecschema.json"), path.join(schemaFolder, "BisCustomAttributes.ecschema.json"));
-    fs.copyFileSync(getSchemaPathFromPackage("construction-schema", "Construction.ecschema.json"), path.join(schemaFolder, "Construction.ecschema.json"));
-    fs.copyFileSync(getSchemaPathFromPackage("core-custom-attributes-schema", "CoreCustomAttributes.ecschema.json"), path.join(schemaFolder, "CoreCustomAttributes.ecschema.json"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("bis-custom-attributes-schema", "BisCustomAttributes.ecschema.json"),
+      path.join(schemaFolder, "BisCustomAttributes.ecschema.json"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("construction-schema", "Construction.ecschema.json"),
+      path.join(schemaFolder, "Construction.ecschema.json"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("core-custom-attributes-schema", "CoreCustomAttributes.ecschema.json"),
+      path.join(schemaFolder, "CoreCustomAttributes.ecschema.json"),
+    );
     fs.copyFileSync(getSchemaPathFromPackage("ecdb-map-schema", "ECDbMap.ecschema.json"), path.join(schemaFolder, "ECDbMap.ecschema.json"));
-    fs.copyFileSync(getSchemaPathFromPackage("ecdb-schema-policies-schema", "ECDbSchemaPolicies.ecschema.json"), path.join(schemaFolder, "ECDbSchemaPolicies.ecschema.json"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("ecdb-schema-policies-schema", "ECDbSchemaPolicies.ecschema.json"),
+      path.join(schemaFolder, "ECDbSchemaPolicies.ecschema.json"),
+    );
     fs.copyFileSync(getSchemaPathFromPackage("formats-schema", "Formats.ecschema.json"), path.join(schemaFolder, "Formats.ecschema.json"));
-    fs.copyFileSync(getSchemaPathFromPackage("linear-referencing-schema", "LinearReferencing.ecschema.json"), path.join(schemaFolder, "LinearReferencing.ecschema.json"));
-    fs.copyFileSync(getSchemaPathFromPackage("physical-material-schema", "PhysicalMaterial.ecschema.json"), path.join(schemaFolder, "PhysicalMaterial.ecschema.json"));
-    fs.copyFileSync(getSchemaPathFromPackage("plant-custom-attributes-schema", "PlantCustomAttributes.ecschema.json"), path.join(schemaFolder, "PlantCustomAttributes.ecschema.json"));
-    fs.copyFileSync(getSchemaPathFromPackage("quantity-takeoffs-aspects-schema", "QuantityTakeoffsAspects.ecschema.json"), path.join(schemaFolder, "QuantityTakeoffsAspects.ecschema.json"));
-    fs.copyFileSync(getSchemaPathFromPackage("spatial-composition-schema", "SpatialComposition.ecschema.json"), path.join(schemaFolder, "SpatialComposition.ecschema.json"));
-    fs.copyFileSync(getSchemaPathFromPackage("structural-physical-schema", "StructuralPhysical.ecschema.json"), path.join(schemaFolder, "StructuralPhysical.ecschema.json"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("linear-referencing-schema", "LinearReferencing.ecschema.json"),
+      path.join(schemaFolder, "LinearReferencing.ecschema.json"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("physical-material-schema", "PhysicalMaterial.ecschema.json"),
+      path.join(schemaFolder, "PhysicalMaterial.ecschema.json"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("plant-custom-attributes-schema", "PlantCustomAttributes.ecschema.json"),
+      path.join(schemaFolder, "PlantCustomAttributes.ecschema.json"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("quantity-takeoffs-aspects-schema", "QuantityTakeoffsAspects.ecschema.json"),
+      path.join(schemaFolder, "QuantityTakeoffsAspects.ecschema.json"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("spatial-composition-schema", "SpatialComposition.ecschema.json"),
+      path.join(schemaFolder, "SpatialComposition.ecschema.json"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("structural-physical-schema", "StructuralPhysical.ecschema.json"),
+      path.join(schemaFolder, "StructuralPhysical.ecschema.json"),
+    );
     fs.copyFileSync(getSchemaPathFromPackage("units-schema", "Units.ecschema.json"), path.join(schemaFolder, "Units.ecschema.json"));
   }
 
@@ -216,7 +249,10 @@ describe("Concurrent schema JSON deserialization", () => {
         label: "BIS Core",
         name: "BisCore",
         version: "01.00.15",
-        references:[{name:"CoreCustomAttributes", version:"01.00.04"},{name:"ECDbMap", version:"02.00.00"},{name:"ECDbSchemaPolicies", version:"01.00.00"}],
+        references: [{ name: "CoreCustomAttributes", version: "01.00.04" }, { name: "ECDbMap", version: "02.00.00" }, {
+          name: "ECDbSchemaPolicies",
+          version: "01.00.00",
+        }],
       };
     }
     if (schemaName === "CoreCustomAttributes") {

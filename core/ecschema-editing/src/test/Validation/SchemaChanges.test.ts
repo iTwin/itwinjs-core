@@ -3,11 +3,28 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import {
-  AnyEnumerator, Constant, CustomAttributeClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveProperty,
-  PropertyCategory, RelationshipClass, RelationshipConstraint, RelationshipEnd, Schema, SchemaContext, SchemaItemType, Unit,
+  AnyEnumerator,
+  Constant,
+  CustomAttributeClass,
+  EntityClass,
+  Enumeration,
+  Format,
+  InvertedUnit,
+  KindOfQuantity,
+  Mixin,
+  Phenomenon,
+  PrimitiveProperty,
+  PropertyCategory,
+  RelationshipClass,
+  RelationshipConstraint,
+  RelationshipEnd,
+  Schema,
+  SchemaContext,
+  SchemaItemType,
+  Unit,
 } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { ChangeType, SchemaChanges } from "../../Validation/SchemaChanges";
 import { SchemaCompareDiagnostics } from "../../Validation/SchemaCompareDiagnostics";
 

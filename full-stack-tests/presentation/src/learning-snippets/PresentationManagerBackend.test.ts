@@ -2,11 +2,11 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { DisplayValue, IContentVisitor, ProcessPrimitiveValueProps, traverseContentItem, Value } from "@itwin/presentation-common";
-import { initialize, terminate } from "../IntegrationTests";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { Presentation } from "@itwin/presentation-backend";
+import { DisplayValue, IContentVisitor, ProcessPrimitiveValueProps, traverseContentItem, Value } from "@itwin/presentation-common";
+import { expect } from "chai";
+import { initialize, terminate } from "../IntegrationTests";
 
 describe("Learning Snippets", () => {
   let imodel: IModelDb;
@@ -28,9 +28,9 @@ describe("Learning Snippets", () => {
         interface PrimitivePropertiesSet {
           [propertyLabel: string]:
             | {
-                rawValue: string | number | boolean;
-                displayValue?: string;
-              }
+              rawValue: string | number | boolean;
+              displayValue?: string;
+            }
             | undefined;
         }
         class PrimitivePropertiesBuilder implements IContentVisitor {

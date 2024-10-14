@@ -52,17 +52,16 @@ export class BoxTopology {
   /** IN faceId pair, the first component for bottom and top caps is `primaryCapId` */
   public static readonly primaryCapId = -1;
   /** Indices of vertices around faces, in CCW from the outside. */
-  public static readonly cornerIndexCCW =
-  [
+  public static readonly cornerIndexCCW = [
     [1, 0, 2, 3],
     [4, 5, 7, 6],
     [0, 1, 5, 4],
     [1, 3, 7, 5],
     [3, 2, 6, 7],
-    [2, 0, 4, 6]];
+    [2, 0, 4, 6],
+  ];
   /**  // [partnerFace[faceIndex][k] = index of k'th adjacent face  */
-  public static readonly partnerFace =
-  [
+  public static readonly partnerFace = [
     [5, 4, 3, 2],
     [2, 3, 4, 5],
     [0, 3, 1, 5],
@@ -77,25 +76,26 @@ export class BoxTopology {
     [0, 0],
     [0, 1],
     [0, 2],
-    [0, 3]];
+    [0, 3],
+  ];
   /**
    * Table to look up axis indices of edges and normals in box faces.
    * faceDirections[faceIndex] =[[edge0AxisIndex, edge1AxisIndex, normalAxisIndex],[direction sign for along the axis]
    */
-  public static readonly faceDirections =
-  [
+  public static readonly faceDirections = [
     [[0, 1, 2], [-1, 1, -1]],
     [[0, 1, 2], [1, 1, 1]],
     [[0, 2, 1], [1, -1, 1]],
     [[1, 2, 0], [1, 1, 1]],
     [[0, 2, 1], [-1, 1, 1]],
-    [[1, 2, 0], [-1, 1, -1]]];
+    [[1, 2, 0], [-1, 1, -1]],
+  ];
   /** There are 4 edges in each axis direction.
    *  * axisEdgeVertex[axisIndex][edgeIndex 0..3][*] = vertex index at end of edge in axisIndex direction.
    */
-  public static readonly axisEdgeVertex =
-  [
+  public static readonly axisEdgeVertex = [
     [[0, 1], [2, 3], [4, 5], [6, 7]],
     [[0, 2], [1, 3], [4, 6], [5, 7]],
-    [[0, 4], [1, 5], [2, 6], [3, 7]]];
+    [[0, 4], [1, 5], [2, 6], [3, 7]],
+  ];
 }

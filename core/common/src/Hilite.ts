@@ -48,7 +48,9 @@ export namespace Hilite {
     /** The type of outline to be drawn around the boundaries of the hilited region. */
     public silhouette: Silhouette;
 
-    private static clamp(value: number) { return Math.min(1.0, Math.max(0.0, value)); }
+    private static clamp(value: number) {
+      return Math.min(1.0, Math.max(0.0, value));
+    }
 
     public constructor(color = ColorDef.from(0x23, 0xbb, 0xfc), visibleRatio = 0.25, hiddenRatio = 0.0, silhouette = Silhouette.Thin) {
       this.color = color;

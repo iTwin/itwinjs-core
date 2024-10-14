@@ -3,19 +3,57 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import * as fs from "fs";
 import { Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, DbResult, ElementGeometryInfo, ElementGeometryOpcode, FillDisplay, GeometryClass, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps,
-  ImageSourceFormat, IModel, LineStyle, PhysicalElementProps, Point2dProps, TextureMapProps, TextureMapUnits,
+  Code,
+  ColorDef,
+  DbResult,
+  ElementGeometryInfo,
+  ElementGeometryOpcode,
+  FillDisplay,
+  GeometryClass,
+  GeometryParams,
+  GeometryPartProps,
+  GeometryStreamBuilder,
+  GeometryStreamProps,
+  ImageSourceFormat,
+  IModel,
+  LineStyle,
+  PhysicalElementProps,
+  Point2dProps,
+  TextureMapProps,
+  TextureMapUnits,
 } from "@itwin/core-common";
 import {
-  Angle, Box, GeometryQuery, GrowableXYArray, GrowableXYZArray, LineSegment3d, LineString3d, Loop, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Vector3d,
+  Angle,
+  Box,
+  GeometryQuery,
+  GrowableXYArray,
+  GrowableXYZArray,
+  LineSegment3d,
+  LineString3d,
+  Loop,
+  Point3d,
+  PolyfaceBuilder,
+  Range3d,
+  Sphere,
+  StrokeOptions,
+  Vector3d,
 } from "@itwin/core-geometry";
+import { assert } from "chai";
+import * as fs from "fs";
 import {
-  ExportGraphics, ExportGraphicsInfo, ExportGraphicsMeshVisitor, ExportGraphicsOptions, GeometricElement, IModelJsFs, LineStyleDefinition, PhysicalObject,
-  RenderMaterialElement, SnapshotDb, Texture,
+  ExportGraphics,
+  ExportGraphicsInfo,
+  ExportGraphicsMeshVisitor,
+  ExportGraphicsOptions,
+  GeometricElement,
+  IModelJsFs,
+  LineStyleDefinition,
+  PhysicalObject,
+  RenderMaterialElement,
+  SnapshotDb,
+  Texture,
 } from "../../core-backend";
 import { GeometryPart } from "../../Element";
 import { ExportLinesInfo, ExportPartInfo, ExportPartInstanceInfo, ExportPartLinesInfo } from "../../ExportGraphics";
@@ -37,7 +75,12 @@ describe("exportGraphics", () => {
     return iModel.elements.insertElement(elementProps);
   }
 
-  function insertRenderMaterialWithTexture(name: string, textureId: Id64String, patternScale?: Point2dProps, patternScaleMode?: TextureMapUnits): Id64String {
+  function insertRenderMaterialWithTexture(
+    name: string,
+    textureId: Id64String,
+    patternScale?: Point2dProps,
+    patternScaleMode?: TextureMapUnits,
+  ): Id64String {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const props: TextureMapProps = { TextureId: textureId, pattern_offset: [0.0, 0.0] };
     if (patternScale)
@@ -213,11 +256,138 @@ describe("exportGraphics", () => {
       return textureIdString;
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
     // bottom right pixel.  The rest of the square is red.
-    const pngData = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217,
-      74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252,
-      97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65,
-      84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0,
-      0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130,
+    const pngData = new Uint8Array([
+      137,
+      80,
+      78,
+      71,
+      13,
+      10,
+      26,
+      10,
+      0,
+      0,
+      0,
+      13,
+      73,
+      72,
+      68,
+      82,
+      0,
+      0,
+      0,
+      3,
+      0,
+      0,
+      0,
+      3,
+      8,
+      2,
+      0,
+      0,
+      0,
+      217,
+      74,
+      34,
+      232,
+      0,
+      0,
+      0,
+      1,
+      115,
+      82,
+      71,
+      66,
+      0,
+      174,
+      206,
+      28,
+      233,
+      0,
+      0,
+      0,
+      4,
+      103,
+      65,
+      77,
+      65,
+      0,
+      0,
+      177,
+      143,
+      11,
+      252,
+      97,
+      5,
+      0,
+      0,
+      0,
+      9,
+      112,
+      72,
+      89,
+      115,
+      0,
+      0,
+      14,
+      195,
+      0,
+      0,
+      14,
+      195,
+      1,
+      199,
+      111,
+      168,
+      100,
+      0,
+      0,
+      0,
+      24,
+      73,
+      68,
+      65,
+      84,
+      24,
+      87,
+      99,
+      248,
+      15,
+      4,
+      12,
+      12,
+      64,
+      4,
+      198,
+      64,
+      46,
+      132,
+      5,
+      162,
+      254,
+      51,
+      0,
+      0,
+      195,
+      90,
+      10,
+      246,
+      127,
+      175,
+      154,
+      145,
+      0,
+      0,
+      0,
+      0,
+      73,
+      69,
+      78,
+      68,
+      174,
+      66,
+      96,
+      130,
     ]);
     return textureIdString = Texture.insertTexture(iModel, IModel.dictionaryId, "test-texture", ImageSourceFormat.Png, pngData);
   }
@@ -278,7 +448,7 @@ describe("exportGraphics", () => {
 
     /** return 2x2 array of uvParams: [vNegate][meters] given raw uv and the [1][1] entry */
     const mutateUV = (uvRaw: Float32Array, uvVNegatedMeters: Float32Array): Float32Array[][] => {
-      const uvArray: Float32Array[][] = [[],[]];
+      const uvArray: Float32Array[][] = [[], []];
       uvArray[1].push(Float32Array.from(uvRaw, negateV));
       uvArray[1].push(uvVNegatedMeters);
       for (let i = 0; i < 2; ++i)
@@ -286,7 +456,7 @@ describe("exportGraphics", () => {
       return uvArray;
     };
 
-    const materials: Id64String[][] = [["",""], ["",""]];
+    const materials: Id64String[][] = [["", ""], ["", ""]];
     const getMaterial = (vNegate: boolean, meters: boolean): Id64String => {
       const i = vNegate ? 1 : 0;
       const j = meters ? 1 : 0;
@@ -312,11 +482,292 @@ describe("exportGraphics", () => {
 
     const cubeBuilder = PolyfaceBuilder.create();
     cubeBuilder.options.needParams = cubeBuilder.options.needNormals = true;
-    const cubeIndices = new Int32Array([0, 1, 2, 2, 1, 3, 4, 5, 6, 6, 5, 7, 8, 9, 10, 10, 9, 11, 12, 13, 14, 14, 13, 15, 16, 17, 18, 18, 17, 19, 20, 21, 22, 22, 21, 23]);
-    const cubeXYZ = new Float32Array([-1, 1, -1, -1, 1, 1, 1, 1, -1, 1, 1, 1, 1, 1, 1, -1, 1, 1, 1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, -1, -1, -1, 1, -1, -1, -1, 1, -1, -1, 1, -1, 1, -1, -1, -1, -1, -1, 1, 1, 1, -1, 1, 1, 1, 1, -1, -1, 1, -1, 1, -1, 1, -1, 1, 1, -1, -1, -1, -1, 1, -1, -1]);
-    const cubeNormals = new Float32Array([0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, -1, 0, 0, -1, 0, 0, -1, 0, 0, -1]);
-    const cubeUV = new Float32Array([0.875, 0.5, 0.875, 0.25, 0.625, 0.5, 0.625, 0.25, 0.625, 0.25, 0.625, 0, 0.375, 0.25, 0.375, 0, 0.625, 1, 0.625, 0.75, 0.375, 1, 0.375, 0.75, 0.375, 0.5, 0.375, 0.25, 0.125, 0.5, 0.125, 0.25, 0.625, 0.5, 0.625, 0.25, 0.375, 0.5, 0.375, 0.25, 0.625, 0.75, 0.625, 0.5, 0.375, 0.75, 0.375, 0.5]);
-    const cubeUVScaled = new Float32Array([5.25, -3, 5.25, -1, 3.75, -3, 3.75, -1, 3.75, -1, 3.75, 1, 2.25, -1, 2.25, 1, 3.75, -7, 3.75, -5, 2.25, -7, 2.25, -5, 2.25, -3, 2.25, -1, 0.75, -3, 0.75, -1, 3.75, -3, 3.75, -1, 2.25, -3, 2.25, -1, 3.75, -5, 3.75, -3, 2.25, -5, 2.25, -3]);
+    const cubeIndices = new Int32Array([
+      0,
+      1,
+      2,
+      2,
+      1,
+      3,
+      4,
+      5,
+      6,
+      6,
+      5,
+      7,
+      8,
+      9,
+      10,
+      10,
+      9,
+      11,
+      12,
+      13,
+      14,
+      14,
+      13,
+      15,
+      16,
+      17,
+      18,
+      18,
+      17,
+      19,
+      20,
+      21,
+      22,
+      22,
+      21,
+      23,
+    ]);
+    const cubeXYZ = new Float32Array([
+      -1,
+      1,
+      -1,
+      -1,
+      1,
+      1,
+      1,
+      1,
+      -1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      1,
+      -1,
+      1,
+      1,
+      1,
+      -1,
+      1,
+      -1,
+      -1,
+      1,
+      -1,
+      1,
+      1,
+      -1,
+      1,
+      -1,
+      -1,
+      -1,
+      1,
+      -1,
+      -1,
+      -1,
+      1,
+      -1,
+      -1,
+      1,
+      -1,
+      1,
+      -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      1,
+      1,
+      1,
+      -1,
+      1,
+      1,
+      1,
+      1,
+      -1,
+      -1,
+      1,
+      -1,
+      1,
+      -1,
+      1,
+      -1,
+      1,
+      1,
+      -1,
+      -1,
+      -1,
+      -1,
+      1,
+      -1,
+      -1,
+    ]);
+    const cubeNormals = new Float32Array([
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      -1,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      -1,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      -1,
+      0,
+      0,
+      -1,
+    ]);
+    const cubeUV = new Float32Array([
+      0.875,
+      0.5,
+      0.875,
+      0.25,
+      0.625,
+      0.5,
+      0.625,
+      0.25,
+      0.625,
+      0.25,
+      0.625,
+      0,
+      0.375,
+      0.25,
+      0.375,
+      0,
+      0.625,
+      1,
+      0.625,
+      0.75,
+      0.375,
+      1,
+      0.375,
+      0.75,
+      0.375,
+      0.5,
+      0.375,
+      0.25,
+      0.125,
+      0.5,
+      0.125,
+      0.25,
+      0.625,
+      0.5,
+      0.625,
+      0.25,
+      0.375,
+      0.5,
+      0.375,
+      0.25,
+      0.625,
+      0.75,
+      0.625,
+      0.5,
+      0.375,
+      0.75,
+      0.375,
+      0.5,
+    ]);
+    const cubeUVScaled = new Float32Array([
+      5.25,
+      -3,
+      5.25,
+      -1,
+      3.75,
+      -3,
+      3.75,
+      -1,
+      3.75,
+      -1,
+      3.75,
+      1,
+      2.25,
+      -1,
+      2.25,
+      1,
+      3.75,
+      -7,
+      3.75,
+      -5,
+      2.25,
+      -7,
+      2.25,
+      -5,
+      2.25,
+      -3,
+      2.25,
+      -1,
+      0.75,
+      -3,
+      0.75,
+      -1,
+      3.75,
+      -3,
+      3.75,
+      -1,
+      2.25,
+      -3,
+      2.25,
+      -1,
+      3.75,
+      -5,
+      3.75,
+      -3,
+      2.25,
+      -5,
+      2.25,
+      -3,
+    ]);
     for (let i = 0; i < cubeIndices.length; i += 3)
       makeFacet(cubeBuilder, cubeXYZ, cubeNormals, cubeUV, cubeIndices[i], cubeIndices[i + 1], cubeIndices[i + 2]);
     const cube = cubeBuilder.claimPolyface();
@@ -358,9 +809,9 @@ describe("exportGraphics", () => {
   it("export elements from local bim file", () => {
     // edit these values to run
     const outBimFileName: string = "out.bim"; // will be written to core\backend\lib\cjs\test\output\ExportGraphics
-    const outFBFileName: string = "";         // e.g., "c:\\tmp\\foo.fb"
-    const inBimFilePathName: string = "";     // e.g., "c:\\tmp\\foo.bim"
-    const elementIds: Id64Array = [];         // e.g., ["0x2000000000c", "0x2000000000a"]
+    const outFBFileName: string = ""; // e.g., "c:\\tmp\\foo.fb"
+    const inBimFilePathName: string = ""; // e.g., "c:\\tmp\\foo.bim"
+    const elementIds: Id64Array = []; // e.g., ["0x2000000000c", "0x2000000000a"]
 
     if (outBimFileName !== "" && inBimFilePathName !== "" && elementIds.length > 0) {
       const testFileName = IModelTestUtils.prepareOutputFile("ExportGraphics", outBimFileName);
@@ -368,13 +819,16 @@ describe("exportGraphics", () => {
 
       if (outFBFileName !== "") {
         for (const elementId of elementIds) {
-          myIModel.elementGeometryRequest({elementId, onGeometry: (info: ElementGeometryInfo) => {
-            for (const entry of info.entryArray) {
-              // examine entry here, e.g.:
-              if (entry.opcode === ElementGeometryOpcode.BsplineSurface)
-                IModelJsFs.writeFileSync(outFBFileName, entry.data);
-            }
-          }});
+          myIModel.elementGeometryRequest({
+            elementId,
+            onGeometry: (info: ElementGeometryInfo) => {
+              for (const entry of info.entryArray) {
+                // examine entry here, e.g.:
+                if (entry.opcode === ElementGeometryOpcode.BsplineSurface)
+                  IModelJsFs.writeFileSync(outFBFileName, entry.data);
+              }
+            },
+          });
         }
       }
 
@@ -451,7 +905,9 @@ describe("exportGraphics", () => {
     const id0 = insertPhysicalElement(builder0.geometryStream);
 
     const builder1 = new GeometryStreamBuilder();
-    builder1.appendGeometry(Loop.createPolygon([Point3d.createZero(), Point3d.create(-1, 0, 0), Point3d.create(-1, -1, 0), Point3d.create(0, -1, 0)]));
+    builder1.appendGeometry(
+      Loop.createPolygon([Point3d.createZero(), Point3d.create(-1, 0, 0), Point3d.create(-1, -1, 0), Point3d.create(0, -1, 0)]),
+    );
     const id1 = insertPhysicalElement(builder1.geometryStream);
 
     const infos: ExportGraphicsInfo[] = [];
@@ -669,7 +1125,9 @@ describe("exportGraphics", () => {
     // Create line style with small component - logic copied from line style tests in GeometryStream.test.ts
     partParams.fillDisplay = FillDisplay.Always;
     partBuilder.appendGeometryParamsChange(partParams);
-    partBuilder.appendGeometry(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))));
+    partBuilder.appendGeometry(
+      Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))),
+    );
     const partProps: GeometryPartProps = {
       classFullName: GeometryPart.classFullName,
       model: IModel.dictionaryId,
@@ -681,10 +1139,17 @@ describe("exportGraphics", () => {
     const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(iModel, { geomPartId }); // base and size will be set automatically...
     assert.isTrue(undefined !== pointSymbolData);
 
-    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(iModel, { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
+    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(iModel, {
+      descr: "TestArrowHead",
+      lcId: 0,
+      lcType: LineStyleDefinition.ComponentType.Internal,
+      symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }],
+    });
     assert.isTrue(undefined !== strokePointData);
 
-    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(iModel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
+    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(iModel, {
+      comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }],
+    });
     assert.isTrue(undefined !== compoundData);
 
     const styleId = LineStyleDefinition.Utils.createStyle(iModel, IModel.dictionaryId, "TestArrowStyle", compoundData);
@@ -1187,5 +1652,4 @@ describe("exportGraphics", () => {
     assert.strictEqual(infos[0].elementId, newId);
     assert.strictEqual(infos[0].mesh.indices.length, 6);
   });
-
 });

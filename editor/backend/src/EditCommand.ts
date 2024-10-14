@@ -6,8 +6,8 @@
  * @module Editing
  */
 
-import { IModelStatus } from "@itwin/core-bentley";
 import { IModelDb, IpcHandler, IpcHost } from "@itwin/core-backend";
+import { IModelStatus } from "@itwin/core-bentley";
 import { BackendError, IModelError } from "@itwin/core-common";
 import { EditCommandIpc, EditorIpc, editorIpcStrings } from "@itwin/editor-common";
 
@@ -51,14 +51,14 @@ export class EditCommand implements EditCommandIpc {
     return this.constructor as EditCommandType;
   }
 
-  public async onStart(): Promise<any> { }
+  public async onStart(): Promise<any> {}
 
   public async ping(): Promise<{ commandId: string, version: string, [propName: string]: any }> {
     return { version: this.ctor.version, commandId: this.ctor.commandId };
   }
 
   // This is only temporary to find subclasses that used to implement this method. It was made async and renamed `requestFinish`.
-  private onFinish() { }
+  private onFinish() {}
 
   /**
    * Called when another EditCommand wishes to become the active EditCommand.
@@ -66,14 +66,16 @@ export class EditCommand implements EditCommandIpc {
    * If it is not currently possible to finish, return any string other than "done" and the other EditCommand will have to wait and retry,
    * potentially showing the returned string to the user.
    */
-  public async requestFinish(): Promise<"done" | string> {  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
+  public async requestFinish(): Promise<"done" | string> { // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
     this.onFinish(); // TODO: temporary, remove
     return "done";
   }
 }
 
 class EditorAppHandler extends IpcHandler implements EditorIpc {
-  public get channelName() { return editorIpcStrings.channel; }
+  public get channelName() {
+    return editorIpcStrings.channel;
+  }
 
   public async startCommand(commandId: string, iModelKey: string, ...args: any[]) {
     await EditCommandAdmin.finishCommand();
@@ -112,7 +114,9 @@ export class EditCommandAdmin {
 
   private static _activeCommand?: EditCommand;
   private static _isInitialized = false;
-  public static get activeCommand() { return this._activeCommand; }
+  public static get activeCommand() {
+    return this._activeCommand;
+  }
 
   /** If any command is currently active, wait for it to finish.
    * Afterward, no command will be active.
@@ -168,7 +172,7 @@ export class EditCommandAdmin {
    */
   public static registerModule(moduleObj: any) {
     let foundOne = false;
-    for (const thisMember in moduleObj) {  // eslint-disable-line guard-for-in
+    for (const thisMember in moduleObj) { // eslint-disable-line guard-for-in
       const thisCmd = moduleObj[thisMember];
       if (thisCmd.prototype instanceof EditCommand) {
         foundOne = true;

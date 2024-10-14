@@ -21,13 +21,12 @@ describe("convert schema xml string to ts", () => {
         </ECSchema>`,
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-      expectedPropsImportTs: [ new RegExp(`import { EntityProps } from "@itwin/core-common";`) ],
+      expectedPropsImportTs: [new RegExp(`import { EntityProps } from "@itwin/core-common";`)],
       expectedPropsTs: [utils.dedent`
         export interface EntityTestProps extends EntityProps {
           booleanProps?: boolean;
           stringProps?: string;
-        }`,
-      ],
+        }`],
       expectedElemImportTs: [
         new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
         new RegExp(`import { EntityTestProps } from "./TestSchemaElementProps";`),
@@ -43,8 +42,7 @@ describe("convert schema xml string to ts", () => {
           public constructor (props: EntityTestProps, iModel: IModelDb) {
             super(props, iModel);
           }
-        }`,
-      ],
+        }`],
     },
 
     // Test Case: Entity class with only primitive properties
@@ -80,8 +78,7 @@ describe("convert schema xml string to ts", () => {
           longProps?: any;
           point2DProps?: Point2d;
           point3DProps?: Point3d;
-        }`,
-      ],
+        }`],
       expectedElemImportTs: [
         new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
         new RegExp(`import { EntityTestProps } from "./TestSchemaElementProps";`),
@@ -93,8 +90,7 @@ describe("convert schema xml string to ts", () => {
           public constructor (props: EntityTestProps, iModel: IModelDb) {
             super(props, iModel);
           }
-        }`,
-      ],
+        }`],
     },
 
     // Test Case: Struct class with only primitive properties
@@ -113,7 +109,7 @@ describe("convert schema xml string to ts", () => {
         </ECSchema>`,
       expectedSchemaImportTs: utils.createExpectedSchemaImportTs("TestSchema"),
       expectedSchemaTs: utils.createExpectedSchemaTsString("TestSchema"),
-      expectedPropsImportTs: [ new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`) ],
+      expectedPropsImportTs: [new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`)],
       expectedPropsTs: [utils.dedent`
         export interface StructTest {
           booleanProps?: boolean;
@@ -121,8 +117,7 @@ describe("convert schema xml string to ts", () => {
           binaryProps?: any;
           point2DProps?: Point2d;
           point3DProps?: Point3d;
-        }`,
-      ],
+        }`],
       expectedElemImportTs: [],
       expectedElemTs: [],
     },
@@ -157,8 +152,7 @@ describe("convert schema xml string to ts", () => {
           stringProps?: string;
           binaryProps?: any;
           doubleProps?: number;
-        }`,
-      ],
+        }`],
       expectedElemImportTs: [
         new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
       ],
@@ -169,8 +163,7 @@ describe("convert schema xml string to ts", () => {
           public constructor (props: EntityProps, iModel: IModelDb) {
             super(props, iModel);
           }
-        }`,
-      ],
+        }`],
     },
 
     // Test Case: Enumeration
@@ -205,24 +198,26 @@ describe("convert schema xml string to ts", () => {
         export interface BaseEntityProps extends EntityProps {
           intEnumProps?: IntEnumeration;
           stringEnumProps?: StringEnumeration;
-        }`,
-      ],
+        }`],
       expectedElemImportTs: [
         new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
         new RegExp(`import { BaseEntityProps } from "./TestSchemaElementProps";`),
       ],
-      expectedElemTs: [utils.dedent`
+      expectedElemTs: [
+        utils.dedent`
         export const enum IntEnumeration {
           First = 1,
           Second = 2,
           Third = 3,
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export const enum StringEnumeration {
           FirstSeason = "spring",
           SecondSeason = "summer",
           ThirdSeason = "fall",
           FourthSeason = "winter",
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export class BaseEntity extends Entity implements BaseEntityProps {
           public static get className(): string { return "BaseEntity"; }
 
@@ -272,14 +267,16 @@ describe("convert schema xml string to ts", () => {
         new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
         new RegExp(`import { (?=.*\\b(IntEnumeration)\\b)(?=.*\\b(StringEnumeration)\\b).* } from "./TestSchemaElements";`),
       ],
-      expectedPropsTs: [utils.dedent`
+      expectedPropsTs: [
+        utils.dedent`
         export interface StructTest {
           booleanProps?: boolean;
           stringProps?: string;
           binaryProps?: any;
           point2DProps?: Point2d;
           point3DProps?: Point3d;
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export interface EntityTestProps extends EntityProps {
           structProps?: StructTest;
           intEnumProps?: IntEnumeration;
@@ -292,18 +289,21 @@ describe("convert schema xml string to ts", () => {
         new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
         new RegExp(`import { (?=.*\\b(EntityTestProps)\\b).* } from "./TestSchemaElementProps";`),
       ],
-      expectedElemTs: [utils.dedent`
+      expectedElemTs: [
+        utils.dedent`
         export const enum IntEnumeration {
           First = 1,
           Second = 2,
           Third = 3,
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export const enum StringEnumeration {
           FirstSeason = "spring",
           SecondSeason = "summer",
           ThirdSeason = "fall",
           FourthSeason = "winter",
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export class EntityTest extends Entity implements EntityTestProps {
           public static get className(): string { return "EntityTest"; }
 
@@ -334,11 +334,13 @@ describe("convert schema xml string to ts", () => {
       expectedPropsImportTs: [
         new RegExp(`import { EntityProps } from "@itwin/core-common";`),
       ],
-      expectedPropsTs: [utils.dedent`
+      expectedPropsTs: [
+        utils.dedent`
         export interface BaseEntityTestProps extends EntityProps {
           intProps?: number;
           stringProps?: string;
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export interface DerivedEntityTestProps extends BaseEntityTestProps {
           derivedIntProps?: number;
         }`,
@@ -347,14 +349,16 @@ describe("convert schema xml string to ts", () => {
         new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
         new RegExp(`import { (?=.*\\b(DerivedEntityTestProps)\\b)(?=.*\\b(BaseEntityTestProps)\\b).* } from "./TestSchemaElementProps";`),
       ],
-      expectedElemTs: [utils.dedent`
+      expectedElemTs: [
+        utils.dedent`
         export class BaseEntityTest extends Entity implements BaseEntityTestProps {
           public static get className(): string { return "BaseEntityTest"; }
 
           public constructor (props: BaseEntityTestProps, iModel: IModelDb) {
             super(props, iModel);
           }
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export class DerivedEntityTest extends BaseEntityTest implements DerivedEntityTestProps {
           public static get className(): string { return "DerivedEntityTest"; }
 
@@ -408,21 +412,25 @@ describe("convert schema xml string to ts", () => {
       expectedPropsImportTs: [
         new RegExp(`import { EntityProps } from "@itwin/core-common";`),
       ],
-      expectedPropsTs: [utils.dedent`
+      expectedPropsTs: [
+        utils.dedent`
         export interface MixinTest {
           booleanProps?: boolean;
           stringProps?: string;
           binaryProps?: any;
           doubleProps?: number;
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export interface DerivedMixinTest extends MixinTest {
           binaryProps?: any;
           doubleProps?: number;
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export interface BaseEntityTestProps extends EntityProps {
           intProps?: number;
           stringProps?: string;
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export interface DerivedEntityTestProps extends BaseEntityTestProps, MixinTest, DerivedMixinTest {
           derivedIntProps?: number;
         }`,
@@ -431,14 +439,16 @@ describe("convert schema xml string to ts", () => {
         new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
         new RegExp(`import { (?=.*\\b(DerivedEntityTestProps)\\b)(?=.*\\b(BaseEntityTestProps)\\b).* } from "./TestSchemaElementProps";`),
       ],
-      expectedElemTs: [utils.dedent`
+      expectedElemTs: [
+        utils.dedent`
         export class BaseEntityTest extends Entity implements BaseEntityTestProps {
           public static get className(): string { return "BaseEntityTest"; }
 
           public constructor (props: BaseEntityTestProps, iModel: IModelDb) {
             super(props, iModel);
           }
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export class DerivedEntityTest extends BaseEntityTest implements DerivedEntityTestProps {
           public static get className(): string { return "DerivedEntityTest"; }
 
@@ -472,14 +482,16 @@ describe("convert schema xml string to ts", () => {
       expectedPropsImportTs: [
         new RegExp(`import { (?=.*\\b(Point2d)\\b)(?=.*\\b(Point3d)\\b).* } from "@itwin/core-geometry";`),
       ],
-      expectedPropsTs: [utils.dedent`
+      expectedPropsTs: [
+        utils.dedent`
         export interface StructTest {
           booleanProps?: boolean;
           stringProps?: string;
           binaryProps?: any;
           point2DProps?: Point2d;
           point3DProps?: Point3d;
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export interface DerivedStructTest extends StructTest {
           derivedIntProps?: number;
         }`,
@@ -514,35 +526,42 @@ describe("convert schema xml string to ts", () => {
       expectedPropsImportTs: [
         new RegExp(`import { (?=.*\\b(GeometricElement2dProps)\\b)(?=.*\\b(ElementProps)\\b).* } from "@itwin/core-common";`),
       ],
-      expectedPropsTs: [utils.dedent`
+      expectedPropsTs: [
+        utils.dedent`
         export interface DerivedGeometricElement2dProps extends GeometricElement2dProps {
           intProps?: number;
           doubleProps?: number;
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export interface DerivedElementProps extends ElementProps {
           intProps?: number;
         }`,
       ],
       expectedElemImportTs: [
-        new RegExp(`import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Element)\\b)(?=.*\\b(AnnotationElement2d)\\b)(?=.*\\b(GeometricElement2d)\\b).* } from "@itwin/core-backend";`),
+        new RegExp(
+          `import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Element)\\b)(?=.*\\b(AnnotationElement2d)\\b)(?=.*\\b(GeometricElement2d)\\b).* } from "@itwin/core-backend";`,
+        ),
         new RegExp(`import { (?=.*\\b(GeometricElement2dProps)\\b).* } from "@itwin/core-common";`),
         new RegExp(`import { (?=.*\\b(DerivedGeometricElement2dProps)\\b)(?=.*\\b(DerivedElementProps)\\b).* } from "./TestSchemaElementProps";`),
       ],
-      expectedElemTs: [utils.dedent`
+      expectedElemTs: [
+        utils.dedent`
         export class DerivedGeometricElement2d extends GeometricElement2d implements DerivedGeometricElement2dProps {
           public static get className(): string { return "DerivedGeometricElement2d"; }
 
           public constructor (props: DerivedGeometricElement2dProps, iModel: IModelDb) {
             super(props, iModel);
           }
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export class DerivedElement extends Element implements DerivedElementProps {
           public static get className(): string { return "DerivedElement"; }
 
           public constructor (props: DerivedElementProps, iModel: IModelDb) {
             super(props, iModel);
           }
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export class DerivedAnnotationElement2d extends AnnotationElement2d {
           public static get className(): string { return "DerivedAnnotationElement2d"; }
 
@@ -581,28 +600,30 @@ describe("convert schema xml string to ts", () => {
         export interface BaseEntityTestProps extends EntityProps {
           intProps?: number;
           stringProps?: string;
-        }`,
-      ],
+        }`],
       expectedElemImportTs: [
         new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b)(?=.*\\b(Element)\\b).* } from "@itwin/core-backend";`),
         new RegExp(`import { (?=.*\\b(ElementProps)\\b).* } from "@itwin/core-common";`),
         new RegExp(`import { (?=.*\\b(BaseEntityTestProps)\\b).* } from "./TestSchemaElementProps";`),
       ],
-      expectedElemTs: [utils.dedent`
+      expectedElemTs: [
+        utils.dedent`
         export class DerivedElementTest extends Element {
           public static get className(): string { return "DerivedElementTest"; }
 
           public constructor (props: ElementProps, iModel: IModelDb) {
             super(props, iModel);
           }
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export class BaseEntityTest extends Entity implements BaseEntityTestProps {
           public static get className(): string { return "BaseEntityTest"; }
 
           public constructor (props: BaseEntityTestProps, iModel: IModelDb) {
             super(props, iModel);
           }
-        }`, utils.dedent`
+        }`,
+        utils.dedent`
         export class DerivedEntityTest extends BaseEntityTest {
           public static get className(): string { return "DerivedEntityTest"; }
 
@@ -674,11 +695,12 @@ describe("convert schema xml string to ts", () => {
 
         export interface DerivedElementTestProps extends BaseEntityProps {
           stringProps?: string;
-        }`,
-      ],
+        }`],
       expectedElemImportTs: [
         new RegExp(`import { (?=.*\\b(AnnotationElement2d)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
-        new RegExp(`import { (?=.*\\b(NormalEntityProps)\\b)(?=.*\\b(BaseEntityProps)\\b)(?=.*\\b(DerivedElementTestProps)\\b).* } from "./TestSchemaElementProps";`),
+        new RegExp(
+          `import { (?=.*\\b(NormalEntityProps)\\b)(?=.*\\b(BaseEntityProps)\\b)(?=.*\\b(DerivedElementTestProps)\\b).* } from "./TestSchemaElementProps";`,
+        ),
       ],
       expectedElemTs: [utils.dedent`
         /**
@@ -712,8 +734,7 @@ describe("convert schema xml string to ts", () => {
           public constructor (props: DerivedElementTestProps, iModel: IModelDb) {
             super(props, iModel);
           }
-        }`,
-      ],
+        }`],
     },
 
     // Test Case: Xml Deserialization should not crash when references Units and Formats
@@ -767,8 +788,7 @@ describe("convert schema xml string to ts", () => {
         export interface TestEntityProps extends EntityProps {
           intArrayProp?: number[];
           doubleProp?: number;
-        }`,
-      ],
+        }`],
       expectedElemImportTs: [
         new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
         new RegExp(`import { TestEntityProps } from "./TestSchemaElementProps";`),
@@ -780,8 +800,7 @@ describe("convert schema xml string to ts", () => {
           public constructor (props: TestEntityProps, iModel: IModelDb) {
             super(props, iModel);
           }
-        }`,
-      ],
+        }`],
     },
   ];
 

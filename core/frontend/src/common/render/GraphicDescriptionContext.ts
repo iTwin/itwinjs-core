@@ -7,9 +7,9 @@
  */
 
 import { TransientIdSequence } from "@itwin/core-bentley";
-import { _implementationProhibited, _textures } from "../internal/Symbols";
-import { WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicDescriptionContextImpl";
 import { Gradient, ImageBuffer, ImageSource, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
+import { WorkerGraphicDescriptionContextImpl } from "../internal/render/GraphicDescriptionContextImpl";
+import { _implementationProhibited, _textures } from "../internal/Symbols";
 import { MaterialParams } from "./MaterialParams";
 
 /** Parameters describing a [[RenderTexture]] to be created on a Worker by [[WorkerGraphicDescriptionContext.createTexture]].
@@ -97,4 +97,3 @@ export interface GraphicDescriptionContext {
   /** @internal */
   [_textures]: Map<string, RenderTexture>;
 }
-

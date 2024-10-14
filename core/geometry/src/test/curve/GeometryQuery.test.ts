@@ -4,24 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
+import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH } from "../../bspline/BSplineSurface";
+import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveCollection } from "../../curve/CurveCollection";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
 import { PointString3d } from "../../curve/PointString3d";
 import { CylindricalRangeQuery } from "../../curve/Query/CylindricalRange";
 import { StrokeCountSection } from "../../curve/Query/StrokeCountChain";
-import { StrokeOptions } from "../../curve/StrokeOptions";
 import { TransitionSpiral3d } from "../../curve/spiral/TransitionSpiral3d";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { GeometryHandler, NullGeometryHandler, RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler";
 import { Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Range1d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { Sample } from "../../serialization/GeometrySamples";
@@ -33,43 +38,62 @@ import { RuledSweep } from "../../solid/RuledSweep";
 import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
 import { Checker } from "../Checker";
-import { Range1d } from "../../geometry3d/Range";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { Loop } from "../../curve/Loop";
-import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
-import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
 
 /** Like  NullGeometryHandler, but allow various CurveCollections to flow to base class, where they reach handleCurveCollection. */
 export class MinimalGeometryHandler extends GeometryHandler {
   /** no-action implementation */
-  public handleLineSegment3d(_g: LineSegment3d): any { return undefined; }
+  public handleLineSegment3d(_g: LineSegment3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleLineString3d(_g: LineString3d): any { return undefined; }
+  public handleLineString3d(_g: LineString3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleArc3d(_g: Arc3d): any { return undefined; }
+  public handleArc3d(_g: Arc3d): any {
+    return undefined;
+  }
   /** no-action implementation */
   // public handleCurveCollection(_g: CurveCollection): any { return undefined; }
   /** no-action implementation */
-  public handleBSplineCurve3d(_g: BSplineCurve3d): any { return undefined; }
+  public handleBSplineCurve3d(_g: BSplineCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleInterpolationCurve3d(_g: InterpolationCurve3d): any { return undefined; }
+  public handleInterpolationCurve3d(_g: InterpolationCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleAkimaCurve3d(_g: AkimaCurve3d): any { return undefined; }
+  public handleAkimaCurve3d(_g: AkimaCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBSplineCurve3dH(_g: BSplineCurve3dH): any { return undefined; }
+  public handleBSplineCurve3dH(_g: BSplineCurve3dH): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBSplineSurface3d(_g: BSplineSurface3d): any { return undefined; }
+  public handleBSplineSurface3d(_g: BSplineSurface3d): any {
+    return undefined;
+  }
 
   /** no-action implementation */
-  public handleCoordinateXYZ(_g: CoordinateXYZ): any { return undefined; }
+  public handleCoordinateXYZ(_g: CoordinateXYZ): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBSplineSurface3dH(_g: BSplineSurface3dH): any { return undefined; }
+  public handleBSplineSurface3dH(_g: BSplineSurface3dH): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleIndexedPolyface(_g: IndexedPolyface): any { return undefined; }
+  public handleIndexedPolyface(_g: IndexedPolyface): any {
+    return undefined;
+  }
   /** no-action implementation
    * @alpha
    */
-  public handleTransitionSpiral(_g: TransitionSpiral3d): any { return undefined; }
+  public handleTransitionSpiral(_g: TransitionSpiral3d): any {
+    return undefined;
+  }
 
   /** no-action implementation */
   // public handlePath(_g: Path): any { return undefined; }
@@ -83,25 +107,45 @@ export class MinimalGeometryHandler extends GeometryHandler {
   // public handleBagOfCurves(_g: BagOfCurves): any { return undefined; }
 
   /** no-action implementation */
-  public handleSphere(_g: Sphere): any { return undefined; }
+  public handleSphere(_g: Sphere): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleCone(_g: Cone): any { return undefined; }
+  public handleCone(_g: Cone): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBox(_g: Box): any { return undefined; }
+  public handleBox(_g: Box): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleTorusPipe(_g: TorusPipe): any { return undefined; }
+  public handleTorusPipe(_g: TorusPipe): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleLinearSweep(_g: LinearSweep): any { return undefined; }
+  public handleLinearSweep(_g: LinearSweep): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleRotationalSweep(_g: RotationalSweep): any { return undefined; }
+  public handleRotationalSweep(_g: RotationalSweep): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleRuledSweep(_g: RuledSweep): any { return undefined; }
+  public handleRuledSweep(_g: RuledSweep): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handlePointString3d(_g: PointString3d): any { return undefined; }
+  public handlePointString3d(_g: PointString3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBezierCurve3d(_g: BezierCurve3d): any { return undefined; }
+  public handleBezierCurve3d(_g: BezierCurve3d): any {
+    return undefined;
+  }
   /** no-action implementation */
-  public handleBezierCurve3dH(_g: BezierCurve3dH): any { return undefined; }
+  public handleBezierCurve3dH(_g: BezierCurve3dH): any {
+    return undefined;
+  }
 }
 
 describe("GeometryQuery", () => {
@@ -117,7 +161,6 @@ describe("GeometryQuery", () => {
       g.dispatchToGeometryHandler(recurseHandler);
       if (g instanceof CurveCollection)
         recurseHandler.handleCurveCollection(g);
-
     }
 
     const minimalHandler = new MinimalGeometryHandler();
@@ -125,7 +168,6 @@ describe("GeometryQuery", () => {
       g.dispatchToGeometryHandler(minimalHandler);
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 
 describe("CylindricalRangeQuery", () => {

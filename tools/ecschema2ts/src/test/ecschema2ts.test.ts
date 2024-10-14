@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECSchemaToTs } from "../ecschema2ts";
-import { assert } from "chai";
-import * as utils from "./utilities/utils";
-import { SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { assert } from "chai";
+import { ECSchemaToTs } from "../ecschema2ts";
+import * as utils from "./utilities/utils";
 
 describe("Convert schema xml string to typescript string", () => {
   let ecschema2ts: ECSchemaToTs;
@@ -131,11 +131,9 @@ describe("ecxml to typescript string", () => {
     const testCases: utils.SchemaTestCase[] = [
       // Test Case: Basic Entity
       {
-        testName:
-          `Basic entity`,
+        testName: `Basic entity`,
         referenceXmls: [],
-        schemaXml:
-          `<?xml version="1.0" encoding="utf-8"?>
+        schemaXml: `<?xml version="1.0" encoding="utf-8"?>
           <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
             <ECEntityClass typeName="EntityTest" modified="None">
             </ECEntityClass>
@@ -155,8 +153,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: EntityProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Entity with description
@@ -186,8 +183,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: EntityProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Entity with abstract modifier
@@ -214,8 +210,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: EntityProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Entity with base class
@@ -239,8 +234,7 @@ describe("ecxml to typescript string", () => {
         expectedPropsTs: [utils.dedent`
           export interface EntityTestProps extends EntityProps {
             testProp?: number;
-          }`,
-        ],
+          }`],
         expectedElemImportTs: [
           new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
@@ -261,8 +255,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: EntityTestProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Entity with multiple base classes should assume the second is a mixin
@@ -305,8 +298,7 @@ describe("ecxml to typescript string", () => {
 
           export interface EntityTestProps extends BaseEntityTestProps, IMixin {
             testEntityIntProp?: number;
-          }`,
-        ],
+          }`],
         expectedElemImportTs: [
           new RegExp(`import { (?=.*\\b(Entity)\\b)(?=.*\\b(IModelDb)\\b).* } from "@itwin/core-backend";`),
           new RegExp(`import { (?=.*\\b(EntityTestProps)\\b)(?=.*\\b(BaseEntityTestProps)\\b).* } from "./TestSchemaElementProps";`),
@@ -326,8 +318,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: EntityTestProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Entity with base class in a reference schema
@@ -358,8 +349,7 @@ describe("ecxml to typescript string", () => {
         expectedPropsTs: [utils.dedent`
           export interface EntityTestProps extends BaseEntityTestProps {
             testEntityIntProp?: number;
-          }`,
-        ],
+          }`],
         expectedElemImportTs: [
           new RegExp(`import { IModelDb } from "@itwin/core-backend";`),
           new RegExp(`import { EntityTestProps } from "./TestSchemaElementProps";`),
@@ -372,8 +362,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: EntityTestProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
     ];
 
@@ -405,8 +394,7 @@ describe("ecxml to typescript string", () => {
         expectedPropsTs: [utils.dedent`
           export interface MixinTest {
             mixinIntProp?: number;
-          }`,
-        ],
+          }`],
         expectedElemImportTs: [],
         expectedElemTs: [],
       },
@@ -447,8 +435,7 @@ describe("ecxml to typescript string", () => {
 
           export interface MixinTest extends BaseMixinTest {
             mixinIntProp?: number;
-          }`,
-        ],
+          }`],
         expectedElemImportTs: [],
         expectedElemTs: [],
       },
@@ -486,8 +473,7 @@ describe("ecxml to typescript string", () => {
           export interface StructTest {
             primitiveProp?: string;
             enumProp?: IntEnumeration;
-          }`,
-        ],
+          }`],
         expectedElemImportTs: [],
         expectedElemTs: [utils.dedent`
           /**
@@ -497,8 +483,7 @@ describe("ecxml to typescript string", () => {
             First = 1,
             Second = 2,
             Third = 3,
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Basic struct with description
@@ -531,8 +516,7 @@ describe("ecxml to typescript string", () => {
           export interface StructTest {
             primitiveProp?: string;
             enumProp?: IntEnumeration;
-          }`,
-        ],
+          }`],
         expectedElemImportTs: [],
         expectedElemTs: [utils.dedent`
           /**
@@ -542,8 +526,7 @@ describe("ecxml to typescript string", () => {
             First = 1,
             Second = 2,
             Third = 3,
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Struct has base class
@@ -572,8 +555,7 @@ describe("ecxml to typescript string", () => {
 
           export interface StructTest extends BaseStructTest {
             primitiveProp?: string;
-          }`,
-        ],
+          }`],
         expectedElemImportTs: [],
         expectedElemTs: [],
       },
@@ -609,8 +591,7 @@ describe("ecxml to typescript string", () => {
         expectedPropsTs: [utils.dedent`
           export interface StructTest extends BaseStructTest {
             primitiveProp?: string;
-          }`,
-        ],
+          }`],
         expectedElemImportTs: [],
         expectedElemTs: [],
       },
@@ -656,8 +637,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: TestBaseProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: 2 References with 2 classes to import
@@ -699,14 +679,16 @@ describe("ecxml to typescript string", () => {
           new RegExp(`import { TestBaseProps } from "./RefSchemaElementProps";`),
           new RegExp(`import { TestBaseProps as SecondRefSchemaElementPropsTestBaseProps } from "./SecondRefSchemaElementProps";`),
         ],
-        expectedElemTs: [utils.dedent`
+        expectedElemTs: [
+          utils.dedent`
           export class TestClass extends TestBase {
             public static get className(): string { return "TestClass"; }
 
             public constructor (props: TestBaseProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`, utils.dedent`
+          }`,
+          utils.dedent`
           export class TestClass2 extends SecondRefSchemaElementsTestBase {
             public static get className(): string { return "TestClass2"; }
 
@@ -763,21 +745,24 @@ describe("ecxml to typescript string", () => {
           new RegExp(`import { (?=.*\\b(TestBaseProps)\\b)(?=.*\\b(TestBase2Props)\\b).* } from "./RefSchemaElementProps";`),
           new RegExp(`import { TestBaseProps as SecondRefSchemaElementPropsTestBaseProps } from "./SecondRefSchemaElementProps";`),
         ],
-        expectedElemTs: [utils.dedent`
+        expectedElemTs: [
+          utils.dedent`
           export class TestClass extends TestBase {
             public static get className(): string { return "TestClass"; }
 
             public constructor (props: TestBaseProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`, utils.dedent`
+          }`,
+          utils.dedent`
           export class TestClass2 extends TestBase2 {
             public static get className(): string { return "TestClass2"; }
 
             public constructor (props: TestBase2Props, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`, utils.dedent`
+          }`,
+          utils.dedent`
           export class TestClass3 extends SecondRefSchemaElementsTestBase {
             public static get className(): string { return "TestClass3"; }
 
@@ -830,8 +815,7 @@ describe("ecxml to typescript string", () => {
             point3dProp?: Point3d;
             testProp2?: GuidString;
             testStructProp?: StructClass;
-          }`,
-        ],
+          }`],
         expectedElemImportTs: [
           new RegExp(`import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Entity)\\b).* } from "@itwin/core-backend";`),
           new RegExp(`import { TestClassProps } from "./TestSchemaElementProps";`),
@@ -843,8 +827,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: TestClassProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Duplicate classes are not imported
@@ -864,14 +847,16 @@ describe("ecxml to typescript string", () => {
           new RegExp(`import { (?=.*\\b(IModelDb)\\b)(?=.*\\b(Entity)\\b).* } from "@itwin/core-backend";`),
           new RegExp(`import { EntityProps } from "@itwin/core-common";`),
         ],
-        expectedElemTs: [utils.dedent`
+        expectedElemTs: [
+          utils.dedent`
           export class TestClass extends Entity {
             public static get className(): string { return "TestClass"; }
 
             public constructor (props: EntityProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`, utils.dedent`
+          }`,
+          utils.dedent`
           export class TestClass2 extends Entity {
             public static get className(): string { return "TestClass2"; }
 
@@ -908,11 +893,13 @@ describe("ecxml to typescript string", () => {
         expectedPropsImportTs: [],
         expectedPropsTs: [],
         expectedElemImportTs: [],
-        expectedElemTs: [utils.dedent`
+        expectedElemTs: [
+          utils.dedent`
           export const enum TestEnum {
             TestEnumerator1 = 1,
             TestEnumerator2 = 2,
-          }`, utils.dedent`
+          }`,
+          utils.dedent`
           export const enum TestEnum2 {
             TestEnumerator1 = "testing",
             TestEnumerator2 = "testing2",
@@ -935,8 +922,7 @@ describe("ecxml to typescript string", () => {
         expectedElemImportTs: [],
         expectedElemTs: [utils.dedent`
           export const enum TestEnum {
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Schema with enum description
@@ -962,8 +948,7 @@ describe("ecxml to typescript string", () => {
           export const enum TestEnum {
             TestEnumerator1 = 1,
             TestEnumerator2 = 2,
-          }`,
-        ],
+          }`],
       },
     ];
 
@@ -998,8 +983,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: EntityProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
     ];
 
@@ -1033,8 +1017,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: EntityProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Package references no longer look in the lib directory
@@ -1065,8 +1048,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: GeometricElement3dProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
     ];
 
@@ -1102,8 +1084,7 @@ describe("ecxml to typescript string", () => {
             public constructor (props: SheetProps, iModel: IModelDb) {
               super(props, iModel);
             }
-          }`,
-        ],
+          }`],
       },
     ];
 

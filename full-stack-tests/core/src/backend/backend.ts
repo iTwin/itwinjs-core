@@ -6,11 +6,19 @@ import "./RpcImpl";
 // Sets up certa to allow a method on the frontend to get an access token
 import "@itwin/oidc-signin-tool/lib/cjs/certa/certaBackend";
 
-import * as fs from "fs";
-import * as path from "path";
 import {
-  BriefcaseDb, FileNameResolver, IModelDb, IModelHost, IModelHostOptions, IpcHandler, IpcHost, LocalhostIpcHost, PhysicalModel, PhysicalPartition,
-  SpatialCategory, SubjectOwnsPartitionElements,
+  BriefcaseDb,
+  FileNameResolver,
+  IModelDb,
+  IModelHost,
+  IModelHostOptions,
+  IpcHandler,
+  IpcHost,
+  LocalhostIpcHost,
+  PhysicalModel,
+  PhysicalPartition,
+  SpatialCategory,
+  SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
 import { Id64String, Logger, ProcessDetector } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance } from "@itwin/core-common";
@@ -21,6 +29,8 @@ import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
 import { WebEditServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
+import * as fs from "fs";
+import * as path from "path";
 import { exposeBackendCallbacks } from "../certa/certaBackend";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
@@ -43,7 +53,9 @@ function loadEnv(envFile: string) {
 }
 
 class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
-  public get channelName() { return fullstackIpcChannel; }
+  public get channelName() {
+    return fullstackIpcChannel;
+  }
 
   public static async createAndInsertPartition(iModelDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
     const modeledElementProps: ElementProps = {
@@ -64,7 +76,12 @@ class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
     return iModelDb.models.insertModel(newModel.toJSON());
   }
 
-  public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
+  public async createAndInsertSpatialCategory(
+    key: string,
+    scopeModelId: Id64String,
+    categoryName: string,
+    appearance: SubCategoryAppearance.Props,
+  ): Promise<Id64String> {
     const iModelDb = IModelDb.findByKey(key);
     const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
     const categoryId = category.insert();
@@ -85,7 +102,7 @@ async function init() {
   const iModelHost: IModelHostOptions = {};
   const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
   iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
-  iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
+  iModelHost.cacheDir = path.join(__dirname, ".cache"); // Set local cache dir
 
   let shutdown: undefined | (() => Promise<void>);
 
@@ -93,7 +110,9 @@ async function init() {
     exposeBackendCallbacks();
     const authClient = new ElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID ?? "testClientId",
-      redirectUris: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI !== undefined ? [process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI] : ["testRedirectUri"],
+      redirectUris: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI !== undefined
+        ? [process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI]
+        : ["testRedirectUri"],
       scopes: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES ?? "testScope",
     });
     await authClient.signInSilent();
@@ -143,9 +162,12 @@ class BackendTestAssetResolver extends FileNameResolver { // eslint-disable-line
   /** Resolve a key (for testing FileNameResolver) */
   public override tryResolveKey(fileKey: string): string | undefined {
     switch (fileKey) {
-      case "test-key": return this.tryResolveFileName("test.bim");
-      case "test2-key": return this.tryResolveFileName("test2.bim");
-      default: return undefined;
+      case "test-key":
+        return this.tryResolveFileName("test.bim");
+      case "test2-key":
+        return this.tryResolveFileName("test2.bim");
+      default:
+        return undefined;
     }
   }
 }

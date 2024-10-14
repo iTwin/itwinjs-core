@@ -9,11 +9,13 @@
 import { Id64String, IDisposable } from "@itwin/core-bentley";
 import { Frustum, ImageBuffer } from "@itwin/core-common";
 import { Point2d, XAndY } from "@itwin/core-geometry";
+import { _implementationProhibited } from "../common/internal/Symbols";
+import { ViewRect } from "../common/ViewRect";
 import { IModelConnection } from "../IModelConnection";
 import { HiliteSet } from "../SelectionSet";
+import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
 import { SceneContext } from "../ViewContext";
 import { ReadImageBufferArgs, Viewport } from "../Viewport";
-import { ViewRect } from "../common/ViewRect";
 import { CanvasDecoration } from "./CanvasDecoration";
 import { Decorations } from "./Decorations";
 import { FeatureSymbology } from "./FeatureSymbology";
@@ -28,8 +30,6 @@ import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./RenderSystem";
 import { Scene } from "./Scene";
 import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "./VisibleFeature";
-import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
-import { _implementationProhibited } from "../common/internal/Symbols";
 
 /** Used for debugging purposes, to toggle display of instanced or batched primitives.
  * @see [[RenderTargetDebugControl]].
@@ -80,7 +80,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   protected abstract readonly [_implementationProhibited]: unknown;
 
   /** @internal */
-  public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined { return undefined; }
+  public pickOverlayDecoration(_pt: XAndY): CanvasDecoration | undefined {
+    return undefined;
+  }
 
   /** @internal */
   public abstract get renderSystem(): RenderSystem;
@@ -90,7 +92,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public abstract get viewRect(): ViewRect;
 
   /** @internal */
-  public get devicePixelRatio(): number { return 1; }
+  public get devicePixelRatio(): number {
+    return 1;
+  }
   /** @internal */
   public cssPixelsToDevicePixels(cssPixels: number, floor = true): number {
     const pix = cssPixels * this.devicePixelRatio;
@@ -113,25 +117,35 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public abstract set analysisFraction(fraction: number);
 
   /** @internal */
-  public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
-  public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
+  public get animationBranches(): AnimationBranchStates | undefined {
+    return undefined;
+  }
+  public set animationBranches(_transforms: AnimationBranchStates | undefined) {}
 
   /** @internal */
-  public get antialiasSamples(): number { return 1; }
-  public set antialiasSamples(_numSamples: number) { }
+  public get antialiasSamples(): number {
+    return 1;
+  }
+  public set antialiasSamples(_numSamples: number) {}
 
   /** @internal */
-  public assignFrameStatsCollector(_collector: FrameStatsCollector) { }
+  public assignFrameStatsCollector(_collector: FrameStatsCollector) {}
 
   /** Update the solar shadow map. If a SceneContext is supplied, shadows are enabled; otherwise, shadows are disabled. */
   /** @internal */
-  public updateSolarShadows(_context: SceneContext | undefined): void { }
+  public updateSolarShadows(_context: SceneContext | undefined): void {}
   /** @internal */
-  public getPlanarClassifier(_id: string): RenderPlanarClassifier | undefined { return undefined; }
+  public getPlanarClassifier(_id: string): RenderPlanarClassifier | undefined {
+    return undefined;
+  }
   /** @internal */
-  public createPlanarClassifier(_properties?: ActiveSpatialClassifier): RenderPlanarClassifier | undefined { return undefined; }
+  public createPlanarClassifier(_properties?: ActiveSpatialClassifier): RenderPlanarClassifier | undefined {
+    return undefined;
+  }
   /** @internal */
-  public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined { return undefined; }
+  public getTextureDrape(_id: Id64String): RenderTextureDrape | undefined {
+    return undefined;
+  }
 
   /** @internal */
   public createGraphicBuilder(options: CustomGraphicBuilderOptions | ViewportGraphicBuilderOptions) {
@@ -139,9 +153,9 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   }
 
   /** @internal */
-  public dispose(): void { }
+  public dispose(): void {}
   /** @internal */
-  public reset(): void { }
+  public reset(): void {}
   /** @internal */
   public abstract changeScene(scene: Scene): void;
   /** @internal */
@@ -153,42 +167,58 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   /** @internal */
   public abstract drawFrame(sceneMilSecElapsed?: number): void;
   /** @internal */
-  public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
+  public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void {}
   /** @internal */
-  public setHiliteSet(_hilited: HiliteSet): void { }
+  public setHiliteSet(_hilited: HiliteSet): void {}
   /** @internal */
-  public setFlashed(_elementId: Id64String, _intensity: number): void { }
+  public setFlashed(_elementId: Id64String, _intensity: number): void {}
   /** @internal */
-  public onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void { }
+  public onBeforeRender(_viewport: Viewport, _setSceneNeedRedraw: (redraw: boolean) => void): void {}
   /** @internal */
   public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
   /** @internal */
-  public onResized(): void { }
+  public onResized(): void {}
   /** @internal */
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** `rect` is specified in *CSS* pixels. */
   /** @internal */
-  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
+  public abstract readPixels(
+    rect: ViewRect,
+    selector: Pixel.Selector,
+    receiver: Pixel.Receiver,
+    excludeNonLocatable: boolean,
+    excludedElements?: Iterable<Id64String>,
+  ): void;
   /** @deprecated in 3.x. use readImageBuffer
    * @internal
    */
-  public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
+  public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined {
+    return undefined;
+  }
   /** @internal */
-  public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined { return undefined; }
+  public readImageBuffer(_args?: ReadImageBufferArgs): ImageBuffer | undefined {
+    return undefined;
+  }
   /** @internal */
-  public readImageToCanvas(): HTMLCanvasElement { return document.createElement("canvas"); }
+  public readImageToCanvas(): HTMLCanvasElement {
+    return document.createElement("canvas");
+  }
   /** @internal */
-  public collectStatistics(_stats: RenderMemory.Statistics): void { }
+  public collectStatistics(_stats: RenderMemory.Statistics): void {}
 
   /** Specify whether webgl content should be rendered directly to the screen.
    * If rendering to screen becomes enabled, returns the canvas to which to render the webgl content.
    * Returns undefined if rendering to screen becomes disabled, or is not supported by this RenderTarget.
    */
   /** @internal */
-  public setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined { return undefined; }
+  public setRenderToScreen(_toScreen: boolean): HTMLCanvasElement | undefined {
+    return undefined;
+  }
 
   /** @internal */
-  public get debugControl(): RenderTargetDebugControl | undefined { return undefined; }
+  public get debugControl(): RenderTargetDebugControl | undefined {
+    return undefined;
+  }
 
   /** An ordered list of names of screen-space post-processing effects to be applied to the image produced by this target.
    * The effects are applied in the order in which they appear in the list. Any names not corresponding to a registered effect are ignored.

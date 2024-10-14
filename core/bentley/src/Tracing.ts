@@ -20,7 +20,7 @@ export enum SpanKind {
   SERVER = 1,
   CLIENT = 2,
   PRODUCER = 3,
-  CONSUMER = 4
+  CONSUMER = 4,
 }
 
 function isValidPrimitive(val: unknown): val is SpanAttributeValue {
@@ -152,11 +152,11 @@ export class Tracing {
   private static withOpenTelemetry(level: LogLevel, base: LogFunction, isError: boolean = false): LogFunction {
     return (category, message, metaData) => {
       const oTelContext = Tracing._openTelemetry?.context.active();
-      if(Tracing._openTelemetry === undefined || oTelContext === undefined)
+      if (Tracing._openTelemetry === undefined || oTelContext === undefined)
         return base(category, message, metaData);
 
       const serializedMetadata = Logger.getMetaData(metaData);
-      if(Logger.isEnabled(category, level)) {
+      if (Logger.isEnabled(category, level)) {
         try {
           Tracing._openTelemetry?.trace
             .getSpan(Tracing._openTelemetry.context.active())
@@ -165,7 +165,7 @@ export class Tracing {
               error: isError,
               loggerCategory: category,
             });
-        } catch (_e) { } // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
+        } catch (_e) {} // avoid throwing random errors (with stack trace mangled by async hooks) when openTelemetry collector doesn't work
 
         const spanContext = Tracing._openTelemetry.trace.getSpan(oTelContext)?.spanContext();
         base(category, message, {

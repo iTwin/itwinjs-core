@@ -291,15 +291,15 @@ export class TileRequestChannel {
   /** Invoked when a request that was previously dispatched is canceled before a response is received.
    * Some channels accumulate such requests for later cancellation in [[processCancellations]].
    */
-  public onActiveRequestCanceled(_request: TileRequest): void { }
+  public onActiveRequestCanceled(_request: TileRequest): void {}
 
   /** Invoked to do any additional work to cancel tiles accumulated by [[onActiveRequestCanceled]]. For example, a channel that requests tile content
    * over IPC may signal to the tile generation process that it should cease generating content for those tiles.
    */
-  public processCancellations(): void { }
+  public processCancellations(): void {}
 
   /** Invoked when an iModel is closed, to clean up any state associated with that iModel. */
-  public onIModelClosed(_iModel: IModelConnection): void { }
+  public onIModelClosed(_iModel: IModelConnection): void {}
 
   /** Request content for the specified tile. The default implementation simply forwards to [[Tile.requestContent]]. */
   public async requestContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response> {

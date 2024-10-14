@@ -32,8 +32,12 @@ export class InvertedUnit extends SchemaItem {
     this.schemaItemType = SchemaItemType.InvertedUnit;
   }
 
-  public get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
-  public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
+  public get invertsUnit(): LazyLoadedUnit | undefined {
+    return this._invertsUnit;
+  }
+  public get unitSystem(): LazyLoadedUnitSystem | undefined {
+    return this._unitSystem;
+  }
 
   /**
    * Save this InvertedUnit's properties to an object for serializing to JSON.
@@ -69,24 +73,22 @@ export class InvertedUnit extends SchemaItem {
   public override fromJSONSync(invertedUnitProps: InvertedUnitProps) {
     super.fromJSONSync(invertedUnitProps);
     const unitSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.invertsUnit);
-    this._invertsUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(unitSchemaItemKey,
-      async () => {
-        const invertsUnit = await this.schema.lookupItem<Unit>(unitSchemaItemKey);
-        if (undefined === invertsUnit)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`);
-        return invertsUnit;
-      });
+    this._invertsUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(unitSchemaItemKey, async () => {
+      const invertsUnit = await this.schema.lookupItem<Unit>(unitSchemaItemKey);
+      if (undefined === invertsUnit)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`);
+      return invertsUnit;
+    });
 
     const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.unitSystem);
     if (!unitSystemSchemaItemKey)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
-    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
-      async () => {
-        const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
-        if (undefined === unitSystem)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
-        return unitSystem;
-      });
+    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey, async () => {
+      const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
+      if (undefined === unitSystem)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
+      return unitSystem;
+    });
   }
 
   public override async fromJSON(invertedUnitProps: InvertedUnitProps) {

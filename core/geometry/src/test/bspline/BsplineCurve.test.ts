@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { BezierCurveBase } from "../../bspline/BezierCurveBase";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../../bspline/BSplineCurve";
@@ -64,7 +64,7 @@ function buildClampedSteppedKnots(numPoints: number, order: number, step: number
  */
 function buildWrappableSteppedKnots(numInterval: number, order: number, step: number): number[] {
   const knots = [];
-  const knot0 = - step * (order - 2);
+  const knot0 = -step * (order - 2);
   for (let i = 0; i < numInterval + order - 2; i++)
     knots.push(knot0 + i * step);
   return knots;
@@ -79,15 +79,15 @@ function translateAndPush(allGeometry: GeometryQuery[], g: GeometryQuery | undef
 function showPlane(allGeometry: GeometryQuery[], plane: Plane3dByOriginAndUnitNormal, a: number, dx: number, dy: number) {
   const origin = plane.getOriginRef();
   const normal = plane.getNormalRef();
-  const frame = Transform.createOriginAndMatrix(origin,
-    Matrix3d.createRigidViewAxesZTowardsEye(normal.x, normal.y, normal.z));
+  const frame = Transform.createOriginAndMatrix(origin, Matrix3d.createRigidViewAxesZTowardsEye(normal.x, normal.y, normal.z));
   const g = LineString3d.create(
     frame.multiplyXYZ(-0.5 * a, 0, 0),
     frame.multiplyXYZ(a, 0, 0),
     frame.multiplyXYZ(a, a, 0),
     frame.multiplyXYZ(0, a, 0),
     origin,
-    frame.multiplyXYZ(0, 0, 2 * a));
+    frame.multiplyXYZ(0, 0, 2 * a),
+  );
   if (g) {
     g.tryTranslateInPlace(dx, dy, 0);
     allGeometry.push(g);
@@ -100,7 +100,8 @@ function showPoint(allGeometry: GeometryQuery[], point: Point3d, a: number, dx: 
     Point3d.create(point.x - a, point.y, point.z),
     Point3d.create(point.x + a, point.y, point.z),
     Point3d.create(point.x, point.y + a, point.z),
-    Point3d.create(point.x, point.y, point.z));
+    Point3d.create(point.x, point.y, point.z),
+  );
   if (g) {
     g.tryTranslateInPlace(dx, dy, 0);
     allGeometry.push(g);
@@ -121,8 +122,14 @@ function ellipsePoints(a: number, b: number, sweep: AngleSweep, numStep: number)
  * @param edgeLengthFactor factor to apply to edgeLength conditions
  * @param angleFactor factor to apply to angle conditions
  */
-function checkStrokeProperties(ck: Checker, curve: CurvePrimitive, linestring: LineString3d, options: StrokeOptions,
-  angleFactor: number = 1.1, edgeLengthFactor: number = 1.1): boolean {
+function checkStrokeProperties(
+  ck: Checker,
+  curve: CurvePrimitive,
+  linestring: LineString3d,
+  options: StrokeOptions,
+  angleFactor: number = 1.1,
+  edgeLengthFactor: number = 1.1,
+): boolean {
   const numPoints = linestring.numPoints();
   let ok = true;
   if (ck.testLE(3, numPoints, "Expect 3 or more strokes")) {
@@ -136,17 +143,18 @@ function checkStrokeProperties(ck: Checker, curve: CurvePrimitive, linestring: L
       maxRadians = Geometry.maxXY(maxRadians, vector0.angleTo(vector1).radians);
       vector0.setFromVector3d(vector1);
     }
-    if (options.maxEdgeLength)
+    if (options.maxEdgeLength) {
       if (!ck.testLE(maxRadians, edgeLengthFactor * options.maxEdgeLength, "strokeProperties edge length", curve))
         ok = false;
-    if (options.angleTol)
+    }
+    if (options.angleTol) {
       if (!ck.testLE(maxRadians, angleFactor * options.angleTol.radians, "stroke properties angle", curve))
         ok = false;
+    }
   }
   return ok;
 }
 describe("BsplineCurve", () => {
-
   it("HelloWorld", () => {
     const ck = new Checker();
     for (const rational of [false, true]) {
@@ -191,7 +199,6 @@ describe("BsplineCurve", () => {
             const knotPoint = curve.knotToPoint(knot);
             ck.testCoordinate(knot, knotPoint.x, "x == knot");
             ck.testPoint3d(spanPoint, knotPoint, "spanPoint, knotPoint", order, span, spanFraction);
-
           }
           ck.testCoordinate(b, p1.y, "constant bspline y");
           if (Checker.noisy.bsplineEvaluation) GeometryCoreTestIO.consoleLog("span", span, p0, p1, p2);
@@ -225,7 +232,7 @@ describe("BsplineCurve", () => {
       for (const options of allOptions) {
         const linestring = LineString3d.create();
         curve.emitStrokes(linestring, options);
-        const angleFactor = curve.order <= 2 ? 1000 : 1.6;  // suppress angle test on linear case.  Be fluffy on others.
+        const angleFactor = curve.order <= 2 ? 1000 : 1.6; // suppress angle test on linear case.  Be fluffy on others.
         translateAndPush(allGeometry, linestring, xShift, yShift);
         if (!checkStrokeProperties(ck, curve, linestring, options, angleFactor, 1.1)) {
           linestring.clear();
@@ -266,13 +273,17 @@ describe("BsplineCurve", () => {
     // Be sure the curve is all in one quadrant so 00 is NOT in the stroke range.
     const ck = new Checker();
     const bcurve = BSplineCurve3d.create(
-      [Point3d.create(1, 0),
-      Point3d.create(2, 0, 0),
-      Point3d.create(2, 1, 0),
-      Point3d.create(3, 1, 0),
-      Point3d.create(4, 0, 0),
-      Point3d.create(5, 1, 0)],
-      [0, 0, 0.5, 0.5, 0.75, 1, 1], 3)!;
+      [
+        Point3d.create(1, 0),
+        Point3d.create(2, 0, 0),
+        Point3d.create(2, 1, 0),
+        Point3d.create(3, 1, 0),
+        Point3d.create(4, 0, 0),
+        Point3d.create(5, 1, 0),
+      ],
+      [0, 0, 0.5, 0.5, 0.75, 1, 1],
+      3,
+    )!;
     const path = Path.create(bcurve);
     const strokes = path.getPackedStrokes()!;
     // GeometryCoreTestIO.consoleLog(prettyPrint(strokes));
@@ -310,23 +321,31 @@ describe("BsplineCurve", () => {
     const microstationStyleArc = {
       bcurve: {
         closed: true,
-        knots: [-0.33333333333333337, 0.0, 0.0, 0.0, 0.33333333333333331, 0.33333333333333331, 0.66666666666666663, 0.66666666666666663,
+        knots: [
+          -0.33333333333333337,
+          0.0,
+          0.0,
+          0.0,
+          0.33333333333333331,
+          0.33333333333333331,
+          0.66666666666666663,
+          0.66666666666666663,
           1.0,
           1.0,
           1.0,
-          1.3333333333333333],
+          1.3333333333333333,
+        ],
         order: 3,
         points: [
-
           [1.0, 0.0, 0.0, 1.0],
           [0.50000000000000011, 0.86602540378443860, 0.0, 0.50000000000000011],
-          [-0.49999999999999978, 0.86602540378443871, 0.0, 1.0], [-0.99999999999999989, 7.2674717409587315e-17, 0.0,
-            0.50000000000000011],
+          [-0.49999999999999978, 0.86602540378443871, 0.0, 1.0],
+          [-0.99999999999999989, 7.2674717409587315e-17, 0.0, 0.50000000000000011],
 
           [-0.50000000000000044, -0.86602540378443849, 0.0, 1.0],
-          [0.49999999999999922, -0.86602540378443904, 0.0, 0.50000000000000011], [1.0,
-            -2.4492935982947064e-16, 0.0,
-            1.0]],
+          [0.49999999999999922, -0.86602540378443904, 0.0, 0.50000000000000011],
+          [1.0, -2.4492935982947064e-16, 0.0, 1.0],
+        ],
       },
     };
     const g1 = IModelJson.Reader.parse(microstationStyleArc);
@@ -343,22 +362,27 @@ describe("BsplineCurve", () => {
     const allGeometry: GeometryQuery[] = [];
     for (const factor of [0.5, 1, 3]) {
       const transform = Transform.createScaleAboutPoint(Point3d.create(0, 0, 0), factor);
-      for (const allPoints of [
-        [Point3d.create(0, 0, 0),
-        Point3d.create(0, 10, 0),
-        Point3d.create(10, 10, 0),
-        Point3d.create(10, 0, 0),
-        Point3d.create(20, 0, 0),
-        Point3d.create(20, 10, 0),
-        Point3d.create(25, 5, 0),
-        Point3d.create(30, 5, 0),
-        Point3d.create(35, 10, 0)],
-        ellipsePoints(35, 20, AngleSweep.createStartEndDegrees(-45, 110), 9)]) {
+      for (
+        const allPoints of [
+          [
+            Point3d.create(0, 0, 0),
+            Point3d.create(0, 10, 0),
+            Point3d.create(10, 10, 0),
+            Point3d.create(10, 0, 0),
+            Point3d.create(20, 0, 0),
+            Point3d.create(20, 10, 0),
+            Point3d.create(25, 5, 0),
+            Point3d.create(30, 5, 0),
+            Point3d.create(35, 10, 0),
+          ],
+          ellipsePoints(35, 20, AngleSweep.createStartEndDegrees(-45, 110), 9),
+        ]
+      ) {
         transform.multiplyPoint3dArrayInPlace(allPoints);
         for (let degree = 1; degree < 6; degree++) {
           const bcurve = BSplineCurve3d.createUniformKnots(allPoints, degree + 1)!;
           let cp: BezierCurveBase | undefined;
-          for (let spanIndex = 0; ; spanIndex++) {
+          for (let spanIndex = 0;; spanIndex++) {
             cp = bcurve.getSaturatedBezierSpan3d(spanIndex, cp);
             if (!cp) break;
             const bezier = cp as BezierCurve3d;
@@ -397,7 +421,7 @@ describe("BsplineCurve", () => {
         // Alter the ray z so it is not perpendicular ..
         // tangentRay.direction.z += 0.02;
         const intersections: CurveLocationDetail[] = [];
-        const plane = Plane3dByOriginAndUnitNormal.create(tangentRay.origin, tangentRay.direction)!;  // This normalizes.
+        const plane = Plane3dByOriginAndUnitNormal.create(tangentRay.origin, tangentRay.direction)!; // This normalizes.
         curve.appendPlaneIntersectionPoints(plane, intersections);
         if (intersections.length > 1)
           curve.appendPlaneIntersectionPoints(plane, intersections);
@@ -419,11 +443,27 @@ describe("BsplineCurve", () => {
   it("BsplineCurve3dHCoverage", () => {
     const ck = new Checker();
     const poleBuffer = new Float64Array([
-      0, 0, 0, 1,
-      1, 0, 0, 1,
-      1, 1, 0, 2,    // weights vary !!
-      0, 1, 1, 1,    // non planar
-      0, 2, 2, 1]);
+      0,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      1,
+      1,
+      0,
+      2, // weights vary !!
+      0,
+      1,
+      1,
+      1, // non planar
+      0,
+      2,
+      2,
+      1,
+    ]);
     const myKnots = [0, 0, 0, 1, 2, 2, 2];
     const bcurve = BSplineCurve3dH.create(poleBuffer, myKnots, 4)!;
     const bcurveB = BSplineCurve3dH.createUniformKnots(poleBuffer, 4);
@@ -463,11 +503,22 @@ describe("BsplineCurve", () => {
   it("BsplineCurve3dCoverage", () => {
     const ck = new Checker();
     const poleBuffer = new Float64Array([
-      0, 0, 0,
-      1, 0, 0,
-      1, 1, 0,
-      0, 1, 1,
-      0, 2, 2]);
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      1,
+      1,
+      0,
+      0,
+      1,
+      1,
+      0,
+      2,
+      2,
+    ]);
     const myKnots = [0, 0, 0, 1, 2, 2, 2];
     const myKnotsClassic = [0, ...myKnots, 2];
     const bcurve = BSplineCurve3d.create(poleBuffer, myKnots, 4)!;
@@ -477,7 +528,10 @@ describe("BsplineCurve", () => {
     ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 10), "create with order too large returns undefined");
     ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 1), "create with order too small returns undefined");
     ck.testUndefined(BSplineCurve3d.create(poleBuffer, [], 4), "create with empty knots returns undefined");
-    ck.testUndefined(BSplineCurve3d.create([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]], myKnots, 4), "create with pole input as 2D number array of invalid dimension returns undefined");
+    ck.testUndefined(
+      BSplineCurve3d.create([[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]], myKnots, 4),
+      "create with pole input as 2D number array of invalid dimension returns undefined",
+    );
     ck.testDefined(BSplineCurve3d.create(poleBuffer, myKnotsClassic, 4));
     ck.testPointer(bcurveB);
     const poleBufferA = bcurve.copyPointsFloat64Array();
@@ -524,7 +578,8 @@ describe("BsplineCurve", () => {
       Point3d.create(1, 0, 0),
       Point3d.create(1, 1, 0),
       Point3d.create(0, 1, 1),
-      Point3d.create(0, 2, 2)];
+      Point3d.create(0, 2, 2),
+    ];
     for (const order of [3, 4, 5]) {
       const myKnots = buildClampedSteppedKnots(poleArray.length, order, 1.0);
       const bcurve3d = BSplineCurve3d.create(poleArray, myKnots, order)!;
@@ -538,7 +593,6 @@ describe("BsplineCurve", () => {
           bcurve3d.fractionToPoint(u);
           bcurve4d.fractionToPoint(u);
         }
-
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "WeightedCurveMatch");
@@ -554,7 +608,8 @@ describe("BsplineCurve", () => {
       Point3d.create(1, 0, 0),
       Point3d.create(1, 1, 0),
       Point3d.create(0, 1, 1),
-      Point3d.create(0, 2, 2)];
+      Point3d.create(0, 2, 2),
+    ];
     for (const order of [2, 3, 4, 5]) {
       // wrap the points
       const wrappedPoleArray = [];
@@ -623,18 +678,34 @@ describe("BsplineCurve", () => {
     const path = IModelJson.Reader.parse({
       path: [{
         bcurve: {
-          points: [[562203.9888586091, 4184365.4828894683, 13.075188058999167],
-          [562203.8776459384, 4184365.258953491, 13.075185855086009],
-          [562203.7664332676, 4184365.035017514, 13.075183688796626],
-          [562203.6552205969, 4184364.811081537, 13.07518155809684],
-          [562203.5440079262, 4184364.58714556, 13.075179427397055],
-          [562203.4327952556, 4184364.3632095824, 13.07517733228783],
-          [562203.3215825849, 4184364.1392736053, 13.075175270883584],
-          [562203.0991924296, 4184363.691472501, 13.075171148727286],
-          [562202.8768022744, 4184363.2436713967, 13.075167161227737],
-          [562202.6544121193, 4184362.7958702925, 13.075163294885328]],
-          knots: [0, 0, 0, 0, 0.2500197756132385, 0.2500197756132385, 0.2500197756132385,
-            0.500039551226476, 0.500039551226476, 0.500039551226476, 1, 1, 1, 1],
+          points: [
+            [562203.9888586091, 4184365.4828894683, 13.075188058999167],
+            [562203.8776459384, 4184365.258953491, 13.075185855086009],
+            [562203.7664332676, 4184365.035017514, 13.075183688796626],
+            [562203.6552205969, 4184364.811081537, 13.07518155809684],
+            [562203.5440079262, 4184364.58714556, 13.075179427397055],
+            [562203.4327952556, 4184364.3632095824, 13.07517733228783],
+            [562203.3215825849, 4184364.1392736053, 13.075175270883584],
+            [562203.0991924296, 4184363.691472501, 13.075171148727286],
+            [562202.8768022744, 4184363.2436713967, 13.075167161227737],
+            [562202.6544121193, 4184362.7958702925, 13.075163294885328],
+          ],
+          knots: [
+            0,
+            0,
+            0,
+            0,
+            0.2500197756132385,
+            0.2500197756132385,
+            0.2500197756132385,
+            0.500039551226476,
+            0.500039551226476,
+            0.500039551226476,
+            1,
+            1,
+            1,
+            1,
+          ],
           closed: false,
           order: 4,
         },
@@ -654,7 +725,7 @@ describe("BsplineCurve", () => {
     const x2 = 100.0;
     const allGeometry: GeometryQuery[] = [];
     let x0Out = 0.0;
-    for (let i = 0; ; i++) {
+    for (let i = 0;; i++) {
       let options;
       if (i === 0) {
         options = undefined;
@@ -727,8 +798,7 @@ describe("BsplineCurve", () => {
   it("LegacyClosureRoundTrip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    for (const filename of ["./src/test/data/curve/openAndClosedCurves.imjs",
-      "./src/test/data/curve/openAndClosedCurves2.imjs"]) {
+    for (const filename of ["./src/test/data/curve/openAndClosedCurves.imjs", "./src/test/data/curve/openAndClosedCurves2.imjs"]) {
       const json = fs.readFileSync(filename, "utf8");
       const inputs = IModelJson.Reader.parse(JSON.parse(json));
       if (ck.testDefined(inputs)) {
@@ -739,7 +809,7 @@ describe("BsplineCurve", () => {
             for (const input of inputs) {
               let curve = input;
               if (input instanceof CurveChain && input.children.length === 1)
-                curve = input.children[0];  // assume input chains have only one child
+                curve = input.children[0]; // assume input chains have only one child
               if (curve instanceof BSplineCurve3dBase) {
                 const strokes = LineString3d.create();
                 curve.emitStrokes(strokes, options);
@@ -767,17 +837,31 @@ describe("BsplineCurve", () => {
     const endKnot = 10;
 
     const wrappedKnots = KnotVector.createUniformWrapped(numKnotIntervals, degree, startKnot, endKnot);
-    ck.testTrue(wrappedKnots.testClosable(BSplineWrapMode.OpenByAddingControlPoints), "wrapped knots are closable with wrap mode OpenByAddingControlPoints");
+    ck.testTrue(
+      wrappedKnots.testClosable(BSplineWrapMode.OpenByAddingControlPoints),
+      "wrapped knots are closable with wrap mode OpenByAddingControlPoints",
+    );
     ck.testFalse(wrappedKnots.testClosable(BSplineWrapMode.OpenByRemovingKnots), "wrapped knots are not closable with wrap mode OpenByRemovingKnots");
     wrappedKnots.wrappable = BSplineWrapMode.OpenByAddingControlPoints; // simulate B-spline imported from legacy data closed with full continuity
     const wrappedKnotsLegacy = wrappedKnots.copyKnots(true);
     ck.testExactNumber(numKnots + 2, wrappedKnotsLegacy.length, "copyKnots with wrapMode OpenByAddingControlPoints added two extra knots");
-    ck.testLT(wrappedKnotsLegacy[0], wrappedKnotsLegacy[1], "copyKnots with wrapMode OpenByAddingControlPoints prepended first knot less than second");
-    ck.testLT(wrappedKnotsLegacy[wrappedKnotsLegacy.length - 2], wrappedKnotsLegacy[wrappedKnotsLegacy.length - 1], "copyKnots appended last knot greater than penultimate");
+    ck.testLT(
+      wrappedKnotsLegacy[0],
+      wrappedKnotsLegacy[1],
+      "copyKnots with wrapMode OpenByAddingControlPoints prepended first knot less than second",
+    );
+    ck.testLT(
+      wrappedKnotsLegacy[wrappedKnotsLegacy.length - 2],
+      wrappedKnotsLegacy[wrappedKnotsLegacy.length - 1],
+      "copyKnots appended last knot greater than penultimate",
+    );
 
     const clampedKnots = KnotVector.createUniformClamped(numPoles, degree, startKnot, endKnot);
     ck.testTrue(clampedKnots.testClosable(BSplineWrapMode.OpenByRemovingKnots), "clamped knots are closable with wrap mode OpenByRemovingKnots");
-    ck.testFalse(clampedKnots.testClosable(BSplineWrapMode.OpenByAddingControlPoints), "clamped knots are not closable with wrap mode OpenByAddingControlPoints");
+    ck.testFalse(
+      clampedKnots.testClosable(BSplineWrapMode.OpenByAddingControlPoints),
+      "clamped knots are not closable with wrap mode OpenByAddingControlPoints",
+    );
     let clampedKnotsLegacy = clampedKnots.copyKnots(true);
     ck.testExactNumber(numKnots + 2, clampedKnotsLegacy.length, "copyKnots without wrapMode added two extra knots");
     ck.testExactNumber(clampedKnotsLegacy[0], startKnot, "copyKnots without wrapMode prepended start knot");
@@ -794,8 +878,14 @@ describe("BsplineCurve", () => {
     ck.testTrue(NumberArray.isExactEqual(clampedKnotsLegacy, clampedKnotsCopy), "cloneWithStartAndEndMultiplicity adds knots");
 
     // related array coverage
-    ck.testTrue(NumberArray.cloneWithStartAndEndMultiplicity(undefined, degree, degree).length === 0, "cover cloneWithStartAndEndMultiplicity on undefined input");
-    ck.testTrue(NumberArray.cloneWithStartAndEndMultiplicity([], degree, degree).length === 0, "cover cloneWithStartAndEndMultiplicity on empty input");
+    ck.testTrue(
+      NumberArray.cloneWithStartAndEndMultiplicity(undefined, degree, degree).length === 0,
+      "cover cloneWithStartAndEndMultiplicity on undefined input",
+    );
+    ck.testTrue(
+      NumberArray.cloneWithStartAndEndMultiplicity([], degree, degree).length === 0,
+      "cover cloneWithStartAndEndMultiplicity on empty input",
+    );
     ck.testUndefined(NumberArray.unpack2d(wrappedKnots.knots, 0), "unpack2d on invalid numPerBlock");
     ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 0, 1), "unpack3d on invalid numPerRow");
     ck.testUndefined(NumberArray.unpack3d(wrappedKnots.knots, 1, 0), "unpack3d on invalid numPerBlock");

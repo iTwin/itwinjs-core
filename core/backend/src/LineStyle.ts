@@ -22,7 +22,6 @@ import { IModelDb } from "./IModelDb";
  * @public
  */
 export namespace LineStyleDefinition {
-
   /** Line style component type identifiers */
   export enum ComponentType {
     /** Component type for [[LineStyleDefinition.PointSymbolProps]] */
@@ -301,7 +300,6 @@ export namespace LineStyleDefinition {
 
   /** Helper methods for creating and querying line styles */
   export class Utils {
-
     /** Create a file property for a new stroke pattern component. */
     public static createStrokePatternComponent(iModel: IModelDb, props: StrokePatternProps): StyleProps {
       const fileProps: FilePropertyProps = { name: "LineCodeV1", namespace: "dgn_LStyle" };
@@ -398,7 +396,13 @@ export namespace LineStyleDefinition {
       if (width === undefined) {
         const name0 = "Continuous";
         const lsId0 = this.queryStyle(imodel, scopeModelId, name0);
-        return (undefined === lsId0 ? this.createStyle(imodel, scopeModelId, name0, { compId: 0, compType: ComponentType.Internal, flags: StyleFlags.Continuous | StyleFlags.NoSnap }) : lsId0);
+        return (undefined === lsId0
+          ? this.createStyle(imodel, scopeModelId, name0, {
+            compId: 0,
+            compType: ComponentType.Internal,
+            flags: StyleFlags.Continuous | StyleFlags.NoSnap,
+          })
+          : lsId0);
       }
 
       const name = `Continuous-${width}`;
@@ -406,11 +410,18 @@ export namespace LineStyleDefinition {
       if (undefined !== lsId)
         return lsId;
 
-      const strokePatternData = this.createStrokePatternComponent(imodel, { descr: name, strokes: [{ length: 1e37, orgWidth: width, strokeMode: StrokeMode.Dash, widthMode: StrokeWidth.Full }] });
+      const strokePatternData = this.createStrokePatternComponent(imodel, {
+        descr: name,
+        strokes: [{ length: 1e37, orgWidth: width, strokeMode: StrokeMode.Dash, widthMode: StrokeWidth.Full }],
+      });
       if (undefined === strokePatternData)
         throw new IModelError(IModelStatus.BadArg, "Unable to insert stroke component");
 
-      return this.createStyle(imodel, scopeModelId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: StyleFlags.Continuous | StyleFlags.NoSnap });
+      return this.createStyle(imodel, scopeModelId, name, {
+        compId: strokePatternData.compId,
+        compType: strokePatternData.compType,
+        flags: StyleFlags.Continuous | StyleFlags.NoSnap,
+      });
     }
 
     /** Query for a line style using the supplied [[LinePixels]] value (Code1-Code7) and create one if it does not already exist.

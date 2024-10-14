@@ -10,12 +10,12 @@ import { BentleyStatus } from "@itwin/core-bentley";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
 import { RpcConfiguration } from "../core/RpcConfiguration";
+import { SerializedRpcActivity } from "../core/RpcInvocation";
 import { RpcOperation } from "../core/RpcOperation";
 import { SerializedRpcOperation, SerializedRpcRequest } from "../core/RpcProtocol";
 import { RpcRequest } from "../core/RpcRequest";
 import { OpenAPIParameter } from "./OpenAPI";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
-import { SerializedRpcActivity } from "../core/RpcInvocation";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -111,7 +111,9 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       appMode = AppMode.MilestoneReview;
     }
 
-    return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${iTwinId}/imodel/${iModelId}${!!routeChangesetId ? `/changeset/${routeChangesetId}` : ""}/${operationId}`;
+    return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${iTwinId}/imodel/${iModelId}${
+      !!routeChangesetId ? `/changeset/${routeChangesetId}` : ""
+    }/${operationId}`;
   }
 
   /**
@@ -144,7 +146,12 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
     // Overwrite the key if it includes a : because its most likely a guid. We know what it should be based off of the url.
     // Leave it alone if its a non guid key.
-    return { key: tokenFromBody.key === undefined || tokenFromBody.key.includes(":") ? `${iModelId}:${changeset.id}` : tokenFromBody.key, iTwinId, iModelId, changeset };
+    return {
+      key: tokenFromBody.key === undefined || tokenFromBody.key.includes(":") ? `${iModelId}:${changeset.id}` : tokenFromBody.key,
+      iTwinId,
+      iModelId,
+      changeset,
+    };
   }
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.

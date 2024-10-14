@@ -47,16 +47,24 @@ export class IndexMap<T> {
   }
 
   /** The number of elements in the map. */
-  public get length(): number { return this._array.length; }
+  public get length(): number {
+    return this._array.length;
+  }
 
   /** Returns true if the maximum number of elements have been inserted. */
-  public get isFull(): boolean { return this.length >= this._maximumSize; }
+  public get isFull(): boolean {
+    return this.length >= this._maximumSize;
+  }
 
   /** Returns true if the map contains no elements. */
-  public get isEmpty(): boolean { return 0 === this.length; }
+  public get isEmpty(): boolean {
+    return 0 === this.length;
+  }
 
   /** Removes all elements from the map. */
-  public clear(): void { this._array = []; }
+  public clear(): void {
+    this._array = [];
+  }
 
   /** Attempt to insert a new value into the map.
    * If an equivalent element already exists in the map, the corresponding index is returned.
@@ -96,7 +104,9 @@ export class IndexMap<T> {
     return bound.equal ? this._array[bound.index].index : -1;
   }
 
-  protected lowerBound(value: T): { index: number, equal: boolean } { return lowerBound(value, this._array, (lhs: T, rhs: IndexedValue<T>) => this._compareValues(lhs, rhs.value)); }
+  protected lowerBound(value: T): { index: number, equal: boolean } {
+    return lowerBound(value, this._array, (lhs: T, rhs: IndexedValue<T>) => this._compareValues(lhs, rhs.value));
+  }
 
   /** Return an array of the elements in this map in which the array index of each element corresponds to the index assigned to it by the map. */
   public toArray(): T[] {

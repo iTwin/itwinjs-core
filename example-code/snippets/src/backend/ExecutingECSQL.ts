@@ -2,55 +2,65 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DbResult, Id64String } from "@itwin/core-bentley";
 import { ECSqlStatement, ECSqlValue, IModelDb, SnapshotDb } from "@itwin/core-backend";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 import { NavigationValue } from "@itwin/core-common";
 
 /* eslint-disable no-console, @typescript-eslint/naming-convention */
 
 function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_ByParameter_Positional
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?", (stmt: ECSqlStatement) => {
-    stmt.bindString(1, "MyCode");
-    stmt.bindDateTime(2, "2018-01-01T12:00:00");
+  iModel.withPreparedStatement(
+    "SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?",
+    (stmt: ECSqlStatement) => {
+      stmt.bindString(1, "MyCode");
+      stmt.bindDateTime(2, "2018-01-01T12:00:00");
 
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      // do something with the query result
-    }
-  });
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        // do something with the query result
+      }
+    },
+  );
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_ByParameter_Named
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod", (stmt: ECSqlStatement) => {
-    stmt.bindString("code", "MyCode");
-    stmt.bindDateTime("lastmod", "2018-01-01T12:00:00Z");
+  iModel.withPreparedStatement(
+    "SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod",
+    (stmt: ECSqlStatement) => {
+      stmt.bindString("code", "MyCode");
+      stmt.bindDateTime("lastmod", "2018-01-01T12:00:00Z");
 
-    while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-      // do something with the query result
-    }
-  });
+      while (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        // do something with the query result
+      }
+    },
+  );
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Positional
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?",
+  iModel.withPreparedStatement(
+    "SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?",
     (stmt: ECSqlStatement) => {
       stmt.bindValues(["MyCode", "2018-01-01T12:00:00Z"]);
 
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         // do something with the query result
       }
-    });
+    },
+  );
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Named
-  iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod",
+  iModel.withPreparedStatement(
+    "SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod",
     (stmt: ECSqlStatement) => {
       stmt.bindValues({ code: "MyCode", lastmod: "2018-01-01T12:00:00Z" });
 
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         // do something with the query result
       }
-    });
+    },
+  );
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Navigation_ByParameter
@@ -128,7 +138,6 @@ function executeECSql_Binding(iModel: IModelDb) {
 function executeECSql_QueryResult(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetRow_IllustrateRowFormat
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
-
     stmt.bindId(1, "0x113");
 
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
@@ -140,7 +149,6 @@ function executeECSql_QueryResult(iModel: IModelDb) {
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetRow
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
-
     stmt.bindId(1, "0x113");
 
     console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");

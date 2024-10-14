@@ -4,28 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { GuidString, Id64String } from "@itwin/core-bentley";
-import {
-  ElementAspectProps,
-  IModel,
-  SubCategoryAppearance,
-} from "@itwin/core-common";
+import { ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "../";
+import { BriefcaseDb, ChannelControl, DictionaryModel, SpatialCategory } from "../../core-backend";
 import { HubMock } from "../../HubMock";
-import {
-  BriefcaseDb,
-  ChannelControl,
-  DictionaryModel,
-  SpatialCategory,
-} from "../../core-backend";
+import { HubWrappers, KnownTestLocations } from "../";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
 import sinon = require("sinon");
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
-  const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
+  const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(
+    rwIModel,
+    IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"),
+    true,
+    parent,
+  );
 
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
@@ -72,7 +68,13 @@ describe("Merge conflict & locking", () => {
     const iModelName = "TestIModel";
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
+    const rwIModelId = await HubMock.createNewIModel({
+      accessToken: accessToken1,
+      iTwinId,
+      iModelName,
+      description: "TestSubject",
+      noLocks: undefined,
+    });
     assert.isNotEmpty(rwIModelId);
 
     // to reproduce the issue we will disable locks altogether.
@@ -86,7 +88,8 @@ describe("Merge conflict & locking", () => {
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
       b1,
       IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
-      true);
+      true,
+    );
 
     const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
@@ -146,7 +149,8 @@ describe("Merge conflict & locking", () => {
     const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
     await assertThrowsAsync(
       async () => b2.pushChanges({ accessToken: accessToken1, description: `modify aspect ${aspectId1} with no lock` }),
-      "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
+      "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.",
+    );
 
     expect(onChangesetConflictStub.callCount).greaterThanOrEqual(1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
     onChangesetConflictStub.restore();
@@ -170,7 +174,13 @@ describe("Merge conflict & locking", () => {
     const iModelName = "TestIModel";
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
+    const rwIModelId = await HubMock.createNewIModel({
+      accessToken: accessToken1,
+      iTwinId,
+      iModelName,
+      description: "TestSubject",
+      noLocks: undefined,
+    });
     assert.isNotEmpty(rwIModelId);
 
     // to reproduce the issue we will disable locks altogether.
@@ -184,7 +194,8 @@ describe("Merge conflict & locking", () => {
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
       b1,
       IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
-      true);
+      true,
+    );
 
     const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
@@ -219,7 +230,8 @@ describe("Merge conflict & locking", () => {
     const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
     await assertThrowsAsync(
       async () => b2.pushChanges({ accessToken: accessToken2, description: `add aspect to element ${el1}` }),
-      "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
+      "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.",
+    );
 
     expect(onChangesetConflictStub.callCount).greaterThanOrEqual(1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");
     onChangesetConflictStub.restore();
@@ -240,7 +252,13 @@ describe("Merge conflict & locking", () => {
     const iModelName = "TestIModel";
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
+    const rwIModelId = await HubMock.createNewIModel({
+      accessToken: accessToken1,
+      iTwinId,
+      iModelName,
+      description: "TestSubject",
+      noLocks: undefined,
+    });
     assert.isNotEmpty(rwIModelId);
 
     const b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId });
@@ -256,7 +274,8 @@ describe("Merge conflict & locking", () => {
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
       b1,
       IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
-      true);
+      true,
+    );
 
     const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
@@ -287,7 +306,10 @@ describe("Merge conflict & locking", () => {
     };
 
     /* attempt to insert aspect without a lock */
-    assert.throws(insertAspectIntoB2, "Error inserting ElementAspect [exclusive lock not held on element for insert aspect (id=0x20000000004)], class: BisCore:ExternalSourceAspect");
+    assert.throws(
+      insertAspectIntoB2,
+      "Error inserting ElementAspect [exclusive lock not held on element for insert aspect (id=0x20000000004)], class: BisCore:ExternalSourceAspect",
+    );
 
     /* acquire lock and try again */
     await b2.locks.acquireLocks({ exclusive: el1 });
@@ -316,7 +338,10 @@ describe("Merge conflict & locking", () => {
     };
 
     /* attempt to update aspect without a lock */
-    assert.throws(updateAspectIntoB1, "Error updating ElementAspect [exclusive lock not held on element for update aspect (id=0x20000000004)], id: 0x30000000001");
+    assert.throws(
+      updateAspectIntoB1,
+      "Error updating ElementAspect [exclusive lock not held on element for update aspect (id=0x20000000004)], id: 0x30000000001",
+    );
 
     /* acquire lock and try again */
     await b1.locks.acquireLocks({ exclusive: el1 });

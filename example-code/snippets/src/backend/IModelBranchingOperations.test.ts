@@ -3,16 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as fs from "fs";
-import * as path from "path";
 import {
-  BriefcaseDb, BriefcaseManager, ExternalSource, ExternalSourceIsInRepository, HubMock, IModelDb, IModelHost, PhysicalModel, PhysicalObject,
-  PhysicalPartition, RepositoryLink, SnapshotDb, SpatialCategory,
+  BriefcaseDb,
+  BriefcaseManager,
+  ExternalSource,
+  ExternalSourceIsInRepository,
+  HubMock,
+  IModelDb,
+  IModelHost,
+  PhysicalModel,
+  PhysicalObject,
+  PhysicalPartition,
+  RepositoryLink,
+  SnapshotDb,
+  SpatialCategory,
 } from "@itwin/core-backend";
-import { IModelTestUtils as BackendTestUtils, HubWrappers, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
+import { HubWrappers, IModelTestUtils as BackendTestUtils, TestUserType } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { AccessToken } from "@itwin/core-bentley";
 import { Code, ExternalSourceProps, IModel, PhysicalElementProps, RepositoryLinkProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import * as fs from "fs";
+import * as path from "path";
 process.env.TRANSFORMER_NO_STRICT_DEP_CHECK = "1"; // allow this monorepo's dev versions of core libs in transformer
 import { IModelTransformer, ProcessChangesOptions } from "@itwin/imodel-transformer";
 import { KnownTestLocations } from "./IModelTestUtils";

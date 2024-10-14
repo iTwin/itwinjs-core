@@ -75,8 +75,12 @@ const generateTileContent = TileAdmin.prototype.generateTileContent;
  */
 export class RecordTileSizesTool extends Tool {
   public static override toolId = "RecordTileSizes";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const enable = parseToggle(args[0]);
@@ -94,7 +98,9 @@ export class RecordTileSizesTool extends Tool {
 
     if (enable) {
       recorder = new TileSizeRecorder();
-      IModelApp.tileAdmin.generateTileContent = async (tile: { iModelTree: IModelTileTree, contentId: string, request?: { isCanceled: boolean } }): Promise<Uint8Array> => {
+      IModelApp.tileAdmin.generateTileContent = async (
+        tile: { iModelTree: IModelTileTree, contentId: string, request?: { isCanceled: boolean } },
+      ): Promise<Uint8Array> => {
         const content = await generateTileContent.bind(IModelApp.tileAdmin, tile)();
         recorder?.record({ contentId: tile.contentId, modelId: tile.iModelTree.modelId }, tile.iModelTree, content.byteLength);
         return content;

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { BSplineCurve3dBase } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
@@ -114,7 +114,6 @@ function exerciseIModelJSon(ck: Checker, g: any, doParse: boolean = false, noisy
     }
     return;
   }
-
 }
 
 function exerciseIModelJSonArray(ck: Checker, g: any[], doParse: boolean = false, noisy: boolean = false) {
@@ -180,7 +179,6 @@ describe("CreateIModelJsonSamples", () => {
 
     // GeometryCoreTestIO.consoleLog(allIModelJsonSamples);
     expect(ck.getNumErrors()).toBe(0);
-
   });
   // exercise the secondary ArcBy3Points property, with various point formats . ..
   it("ArcByStartMiddleEnd", () => {
@@ -214,7 +212,7 @@ describe("CreateIModelJsonSamples", () => {
     mesh.data.pointIndex.push(0, 1, 2);
     mesh.data.edgeVisible.push(true, true, true);
     mesh.addNormalXYZ(0, 0, 1);
-    mesh.addNormal(Vector3d.create(0, 0, 1));    // in bug state, this reuses the first normal
+    mesh.addNormal(Vector3d.create(0, 0, 1)); // in bug state, this reuses the first normal
     mesh.addNormalXYZ(0, 0, 1);
     mesh.addNormalIndex(0);
     mesh.addNormalIndex(1);
@@ -235,11 +233,12 @@ describe("CreateIModelJsonSamples", () => {
     const ck = new Checker();
     const compareObj = new DeepCompare();
     const skipList = ["xyVectors", "readme", "README"];
-    const expectedJsonMismatchList = ["indexedMesh.numPerFace.",  // the mesh flips to zero-terminated
-      "cone.imjs",                // cone can change to cylinder
-      "box.minimal.imjs",         // minimal box gets remaining fields populated
+    const expectedJsonMismatchList = [
+      "indexedMesh.numPerFace.", // the mesh flips to zero-terminated
+      "cone.imjs", // cone can change to cylinder
+      "box.minimal.imjs", // minimal box gets remaining fields populated
     ];
-    const expectedFBMismatchList = ["point.imjs", // CoordinateXYZ is not implemented in writeGeometryQueryAsFBVariantGeometry...
+    const expectedFBMismatchList = ["point.imjs" // CoordinateXYZ is not implemented in writeGeometryQueryAsFBVariantGeometry...
     ];
     // read imjs files from various places -- some produced by native, some by core-geometry ...
     for (const sourceDirectory of [iModelJsonSamplesDirectory, iModelJsonNativeSamplesDirectory]) {
@@ -252,7 +251,10 @@ describe("CreateIModelJsonSamples", () => {
         // skip known non-round-trip files ...
         let isFiltered = false;
         for (const candidate of skipList)
-          if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
+          if (currFile.lastIndexOf(candidate) >= 0) {
+            isFiltered = true;
+            break;
+          }
         if (isFiltered) continue;
         Checker.noisy.printJSONFailure = true;
         const data = fs.readFileSync(currFile, "utf8");
@@ -277,8 +279,15 @@ describe("CreateIModelJsonSamples", () => {
             if (deepAlmostEqual(geometryQuery1, geometryQuery3)) {
               isFiltered = false;
               for (const candidate of expectedJsonMismatchList)
-                if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
-              GeometryCoreTestIO.consoleLog("%s json round trip mismatch (geometry matches):", isFiltered ? "Expected" : "Warning: Unexpected", currFile);
+                if (currFile.lastIndexOf(candidate) >= 0) {
+                  isFiltered = true;
+                  break;
+                }
+              GeometryCoreTestIO.consoleLog(
+                "%s json round trip mismatch (geometry matches):",
+                isFiltered ? "Expected" : "Warning: Unexpected",
+                currFile,
+              );
               if (!isFiltered) {
                 GeometryCoreTestIO.consoleLog("jsonObject1:", prettyPrint(jsonObject1));
                 GeometryCoreTestIO.consoleLog("jsonObject3:", prettyPrint(jsonObject3));
@@ -287,13 +296,19 @@ describe("CreateIModelJsonSamples", () => {
               ck.announceError("imjs => GeometryQuery => imjs round trip failure", currFile);
               GeometryCoreTestIO.consoleLog("jsonObject1:", prettyPrint(jsonObject1));
               GeometryCoreTestIO.consoleLog("jsonObject2:", prettyPrint(jsonObject2));
-              if (Checker.noisy.printJSONFailure) { GeometryCoreTestIO.consoleLog(`FAIL: ${i}`); GeometryCoreTestIO.consoleLog(compareObj.errorTracker); }
+              if (Checker.noisy.printJSONFailure) {
+                GeometryCoreTestIO.consoleLog(`FAIL: ${i}`);
+                GeometryCoreTestIO.consoleLog(compareObj.errorTracker);
+              }
             }
           }
           // test geometry roundtrip thru flatbuffer (and IMJS again)
           isFiltered = false;
           for (const candidate of expectedFBMismatchList)
-            if (currFile.lastIndexOf(candidate) >= 0) { isFiltered = true; break; }
+            if (currFile.lastIndexOf(candidate) >= 0) {
+              isFiltered = true;
+              break;
+            }
           if (isFiltered) continue;
           testGeometryQueryRoundTrip(ck, geometryQuery1);
         }
@@ -369,7 +384,13 @@ describe("ParseCurveCollections", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, inputs);
       for (const input of inputs) {
         ck.testExactNumber(7, input.children.length, "path has expected number of children");
-        ck.testExactNumber(3, input.children.filter((child: CurvePrimitive): boolean => { return child instanceof BSplineCurve3dBase; }).length, "path has expected number of B-spline curve children");
+        ck.testExactNumber(
+          3,
+          input.children.filter((child: CurvePrimitive): boolean => {
+            return child instanceof BSplineCurve3dBase;
+          }).length,
+          "path has expected number of B-spline curve children",
+        );
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParseCurveCollection", "BSplinePathRegression");

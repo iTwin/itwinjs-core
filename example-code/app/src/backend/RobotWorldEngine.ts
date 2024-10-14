@@ -2,13 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { DbResult, Id64String } from "@itwin/core-bentley";
-import { Angle, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost } from "@itwin/core-backend";
-import {
-  Code, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
-} from "@itwin/core-common";
+import { DbResult, Id64String } from "@itwin/core-bentley";
+import { Code, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager } from "@itwin/core-common";
+import { Angle, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import * as path from "path";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 import { Barrier } from "./BarrierElement";
 import { Robot } from "./RobotElement";
@@ -22,7 +20,6 @@ import { RobotWorld } from "./RobotWorldSchema";
 // The service exposes APIs to manage robots and barriers and to query their state.
 // In particular, the service does collision detection between robots and obstacles.
 export class RobotWorldEngine {
-
   private static _exposeWriteInterface = false;
 
   public static countRobotsInArray(iModelDb: IModelDb, elemIds: Id64String[]): number {
@@ -92,19 +89,19 @@ export class RobotWorldEngine {
     const props = {
       model: modelId,
       code: Code.createEmpty(),
-      classFullName: RobotWorld.Class.Robot,      // In this example, I know what class and category to use.
+      classFullName: RobotWorld.Class.Robot, // In this example, I know what class and category to use.
       category: Robot.getCategory(iModelDb).id,
-      geom: Robot.generateGeometry(radius),       // In this example, I know how to generate geometry, and I know that the placement is empty.
+      geom: Robot.generateGeometry(radius), // In this example, I know how to generate geometry, and I know that the placement is empty.
       placement: { origin: location, angles: new YawPitchRollAngles() },
       userLabel: name,
-      radius,                                     // Add extra, Robot-specific properties. Be sure to spell them correctly, as the compiler won't help you here.
+      radius, // Add extra, Robot-specific properties. Be sure to spell them correctly, as the compiler won't help you here.
     };
     return iModelDb.elements.insertElement(props);
   }
   // __PUBLISH_EXTRACT_END__
 
   public static insertBarrier(iModelDb: IModelDb, modelId: Id64String, location: Point3d, angle: Angle, length: number): Id64String {
-    const props = {      // I know what class and category to use.
+    const props = { // I know what class and category to use.
       model: modelId,
       code: Code.createEmpty(),
       classFullName: RobotWorld.Class.Barrier,

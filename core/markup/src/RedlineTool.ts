@@ -8,12 +8,21 @@
 
 // cspell:ignore rtmp stmp
 
-import { Point3d, Vector3d } from "@itwin/core-geometry";
 import {
-  BeButtonEvent, CoordinateLockOverrides, CoreTools, EventHandled, IModelApp, QuantityType, ToolAssistance, ToolAssistanceImage,
-  ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
+  BeButtonEvent,
+  CoordinateLockOverrides,
+  CoreTools,
+  EventHandled,
+  IModelApp,
+  QuantityType,
+  ToolAssistance,
+  ToolAssistanceImage,
+  ToolAssistanceInputMethod,
+  ToolAssistanceInstruction,
+  ToolAssistanceSection,
 } from "@itwin/core-frontend";
-import { G, Marker, Element as MarkupElement } from "@svgdotjs/svg.js";
+import { Point3d, Vector3d } from "@itwin/core-geometry";
+import { Element as MarkupElement, G, Marker } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 
@@ -31,18 +40,26 @@ export abstract class RedlineTool extends MarkupTool {
     undo.performOperation(this.keyin, () => undo.onAdded(el));
     markup.selected.restart(el);
   }
-  protected isComplete(_ev: BeButtonEvent) { return this._points.length >= this._nRequiredPoints; }
+  protected isComplete(_ev: BeButtonEvent) {
+    return this._points.length >= this._nRequiredPoints;
+  }
   protected override setupAndPromptForNextAction(): void {
     super.setupAndPromptForNextAction();
     this.markup.disablePick();
     IModelApp.toolAdmin.setCursor(0 === this._points.length ? IModelApp.viewManager.crossHairCursor : IModelApp.viewManager.dynamicsCursor);
   }
 
-  protected createMarkup(_svgMarkup: G, _ev: BeButtonEvent, _isDynamics: boolean): void { }
-  protected clearDynamicsMarkup(_isDynamics: boolean): void { this.markup.svgDynamics!.clear(); }
+  protected createMarkup(_svgMarkup: G, _ev: BeButtonEvent, _isDynamics: boolean): void {}
+  protected clearDynamicsMarkup(_isDynamics: boolean): void {
+    this.markup.svgDynamics!.clear();
+  }
 
-  public override async onRestartTool() { return this.exitTool(); } // Default to single shot and return control to select tool...
-  public override async onCleanup() { this.clearDynamicsMarkup(false); }
+  public override async onRestartTool() {
+    return this.exitTool();
+  } // Default to single shot and return control to select tool...
+  public override async onCleanup() {
+    this.clearDynamicsMarkup(false);
+  }
 
   public override async onReinitialize() {
     this.clearDynamicsMarkup(false);
@@ -88,7 +105,14 @@ export abstract class RedlineTool extends MarkupTool {
     const acceptMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
     const rejectMsg = CoreTools.translate("ElementSet.Inputs.Exit");
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
-      touchInstructions.push(ToolAssistance.createInstruction(singlePoint ? ToolAssistanceImage.OneTouchTap : ToolAssistanceImage.OneTouchDrag, acceptMsg, false, ToolAssistanceInputMethod.Touch));
+      touchInstructions.push(
+        ToolAssistance.createInstruction(
+          singlePoint ? ToolAssistanceImage.OneTouchTap : ToolAssistanceImage.OneTouchDrag,
+          acceptMsg,
+          false,
+          ToolAssistanceInputMethod.Touch,
+        ),
+      );
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, rejectMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, rejectMsg, false, ToolAssistanceInputMethod.Mouse));
@@ -109,7 +133,9 @@ export class LineTool extends RedlineTool {
   public static override toolId = "Markup.Line";
   public static override iconSpec = "icon-line";
 
-  protected override showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint")); }
+  protected override showPrompt(): void {
+    this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint"));
+  }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -130,9 +156,15 @@ export class RectangleTool extends RedlineTool {
   public static override toolId = "Markup.Rectangle";
   public static override iconSpec = "icon-rectangle";
 
-  constructor(protected _cornerRadius?: number) { super(); } // Specify radius to create a rectangle with rounded corners.
+  constructor(protected _cornerRadius?: number) {
+    super();
+  } // Specify radius to create a rectangle with rounded corners.
 
-  protected override showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner")); }
+  protected override showPrompt(): void {
+    this.provideToolAssistance(
+      CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner"),
+    );
+  }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -161,9 +193,13 @@ export class PolygonTool extends RedlineTool {
   public static override toolId = "Markup.Polygon";
   public static override iconSpec = "icon-polygon";
 
-  constructor(protected _numSides?: number) { super(); } // Specify number of polygon sides. Default if undefined is 5.
+  constructor(protected _numSides?: number) {
+    super();
+  } // Specify number of polygon sides. Default if undefined is 5.
 
-  protected override showPrompt(): void { this.provideToolAssistance(MarkupTool.toolKey + (0 === this._points.length ? "Polygon.Prompts.FirstPoint" : "Polygon.Prompts.NextPoint")); }
+  protected override showPrompt(): void {
+    this.provideToolAssistance(MarkupTool.toolKey + (0 === this._points.length ? "Polygon.Prompts.FirstPoint" : "Polygon.Prompts.NextPoint"));
+  }
 
   protected getPoints(points: number[], center: Point3d, edge: Point3d, numSides: number, inscribe: boolean): boolean {
     if (numSides < 3 || numSides > 100)
@@ -216,7 +252,11 @@ export class CloudTool extends RedlineTool {
   public static override iconSpec = "icon-cloud";
   protected _cloud?: MarkupElement;
 
-  protected override showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner")); }
+  protected override showPrompt(): void {
+    this.provideToolAssistance(
+      CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner"),
+    );
+  }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -255,7 +295,9 @@ export class CircleTool extends RedlineTool {
   public static override toolId = "Markup.Circle";
   public static override iconSpec = "icon-circle";
 
-  protected override showPrompt(): void { this.provideToolAssistance(MarkupTool.toolKey + (0 === this._points.length ? "Circle.Prompts.FirstPoint" : "Circle.Prompts.NextPoint")); }
+  protected override showPrompt(): void {
+    this.provideToolAssistance(MarkupTool.toolKey + (0 === this._points.length ? "Circle.Prompts.FirstPoint" : "Circle.Prompts.NextPoint"));
+  }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -279,7 +321,11 @@ export class EllipseTool extends RedlineTool {
   public static override toolId = "Markup.Ellipse";
   public static override iconSpec = "icon-ellipse";
 
-  protected override showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner")); }
+  protected override showPrompt(): void {
+    this.provideToolAssistance(
+      CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartCorner" : "ElementSet.Prompts.OppositeCorner"),
+    );
+  }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -309,9 +355,13 @@ export class ArrowTool extends RedlineTool {
   /** ctor for ArrowTool
    * @param _arrowPos "start", "end", or "both". If undefined = "end".
    */
-  constructor(protected _arrowPos?: string) { super(); }
+  constructor(protected _arrowPos?: string) {
+    super();
+  }
 
-  protected override showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint")); }
+  protected override showPrompt(): void {
+    this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint"));
+  }
 
   protected getOrCreateArrowMarker(color: string): Marker {
     const arrowProps = MarkupApp.props.active.arrow;
@@ -329,8 +379,8 @@ export class ArrowTool extends RedlineTool {
     const element = svgMarkup.line(start.x, start.y, end.x, end.y);
     this.setCurrentStyle(element, false);
     const marker = this.getOrCreateArrowMarker(element.css("stroke"));
-    const addToStart = ("start" === this._arrowPos || "both" === this._arrowPos);
-    const addToEnd = ("end" === this._arrowPos || "both" === this._arrowPos);
+    const addToStart = "start" === this._arrowPos || "both" === this._arrowPos;
+    const addToEnd = "end" === this._arrowPos || "both" === this._arrowPos;
     if (addToStart)
       element.marker("start", marker);
     if (addToEnd || !addToStart)
@@ -348,7 +398,9 @@ export class DistanceTool extends ArrowTool {
   public static override iconSpec = "icon-distance";
   protected readonly _startPointWorld = new Point3d();
 
-  protected override showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint")); }
+  protected override showPrompt(): void {
+    this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint"));
+  }
   protected override setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None;
@@ -417,7 +469,9 @@ export class SketchTool extends RedlineTool {
   public static override iconSpec = "icon-draw";
   protected _minDistSquared = 100;
 
-  protected override showPrompt(): void { this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint")); }
+  protected override showPrompt(): void {
+    this.provideToolAssistance(CoreTools.tools + (0 === this._points.length ? "ElementSet.Prompts.StartPoint" : "ElementSet.Prompts.EndPoint"));
+  }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
     if (this._points.length < (isDynamics ? this._nRequiredPoints - 1 : this._nRequiredPoints))
@@ -434,7 +488,8 @@ export class SketchTool extends RedlineTool {
       pts.push(evPt.y);
     }
 
-    const isClosed = (this._points.length > 2 && (this._points[0].distanceSquaredXY(isDynamics ? evPt : this._points[this._points.length - 1]) < this._minDistSquared * 2));
+    const isClosed = this._points.length > 2 &&
+      (this._points[0].distanceSquaredXY(isDynamics ? evPt : this._points[this._points.length - 1]) < this._minDistSquared * 2);
     const element = isClosed ? svgMarkup.polygon(pts) : svgMarkup.polyline(pts);
     this.setCurrentStyle(element, isClosed);
     if (!isDynamics)
@@ -458,7 +513,9 @@ export class SymbolTool extends RedlineTool {
   public static override iconSpec = "icon-symbol";
   protected _symbol?: MarkupElement;
 
-  constructor(protected _symbolData?: string, protected _applyCurrentStyle?: boolean) { super(); }
+  constructor(protected _symbolData?: string, protected _applyCurrentStyle?: boolean) {
+    super();
+  }
 
   public override async onInstall(): Promise<boolean> {
     if (undefined === this._symbolData)
@@ -467,7 +524,10 @@ export class SymbolTool extends RedlineTool {
   }
 
   protected override showPrompt(): void {
-    this.provideToolAssistance(0 === this._points.length ? (`${MarkupTool.toolKey}Symbol.Prompts.FirstPoint`) : `${CoreTools.tools}ElementSet.Prompts.OppositeCorner`, true);
+    this.provideToolAssistance(
+      0 === this._points.length ? (`${MarkupTool.toolKey}Symbol.Prompts.FirstPoint`) : `${CoreTools.tools}ElementSet.Prompts.OppositeCorner`,
+      true,
+    );
   }
 
   protected override createMarkup(svgMarkup: G, ev: BeButtonEvent, isDynamics: boolean): void {
@@ -490,7 +550,7 @@ export class SymbolTool extends RedlineTool {
       }
       try {
         symbol.flatten(symbol);
-      } catch { }
+      } catch {}
 
       this._symbol = symbol;
     } else if (!isDynamics) {
@@ -508,7 +568,12 @@ export class SymbolTool extends RedlineTool {
       this._symbol.forElementsOfGroup((child) => {
         const css = window.getComputedStyle(child.node);
         const toValue = (val: string | null, newVal: string) => (!val || val === "none") ? "none" : newVal;
-        child.css({ "fill": toValue(css.fill, active.element.fill), "stroke": toValue(css.stroke, active.element.stroke), "fill-opacity": active.element["fill-opacity"], "stroke-opacity": active.element["stroke-opacity"] });
+        child.css({
+          "fill": toValue(css.fill, active.element.fill),
+          "stroke": toValue(css.stroke, active.element.stroke),
+          "fill-opacity": active.element["fill-opacity"],
+          "stroke-opacity": active.element["stroke-opacity"],
+        });
       });
     }
     if (!isDynamics)

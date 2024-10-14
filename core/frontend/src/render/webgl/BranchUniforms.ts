@@ -7,21 +7,21 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
 import { ClipStyle, HiddenLine, ViewFlags } from "@itwin/core-common";
+import { ClipVector, Matrix3d, Matrix4d, Point3d, Transform, XYZ } from "@itwin/core-geometry";
+import { IModelApp } from "../../IModelApp";
 import { FeatureSymbology } from "../FeatureSymbology";
-import { BranchState } from "./BranchState";
-import { BranchStack } from "./BranchStack";
 import { BatchState } from "./BatchState";
+import { BranchStack } from "./BranchStack";
+import { BranchState } from "./BranchState";
 import { CachedGeometry } from "./CachedGeometry";
+import { ClipStack } from "./ClipStack";
 import { Branch } from "./Graphic";
-import { UniformHandle } from "./UniformHandle";
 import { Matrix3, Matrix4 } from "./Matrix";
 import { RenderCommands } from "./RenderCommands";
 import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
-import { ClipStack } from "./ClipStack";
-import { IModelApp } from "../../IModelApp";
+import { UniformHandle } from "./UniformHandle";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
   if (a === b)
@@ -71,7 +71,9 @@ export class BranchUniforms {
   private readonly _scratchVIModelMatrix = Transform.createIdentity();
   private readonly _zeroPoint = new Point3d(0, 0, 0);
 
-  public get stack(): BranchStack { return this._stack; }
+  public get stack(): BranchStack {
+    return this._stack;
+  }
 
   public constructor(target: Target) {
     this._target = target;
@@ -221,7 +223,10 @@ export class BranchUniforms {
         if (vio) {
           const viewToWorldRot = viewMatrix.matrix.inverse(this._scratchViewToWorld)!;
           const rotateAboutOrigin = Transform.createFixedPointAndMatrix(vio, viewToWorldRot, this._scratchTransform2);
-          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), this._scratchVIModelMatrix);
+          const viModelMatrix = rotateAboutOrigin.multiplyTransformTransform(
+            instancedGeom.getRtcModelTransform(modelMatrix),
+            this._scratchVIModelMatrix,
+          );
           mv = viewMatrix.multiplyTransformTransform(viModelMatrix, this._scratchTransform);
         } else {
           mv = viewMatrix.multiplyTransformTransform(instancedGeom.getRtcModelTransform(modelMatrix), this._scratchTransform);

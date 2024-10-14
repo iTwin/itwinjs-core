@@ -7,13 +7,13 @@
  */
 
 import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaConflictsError } from "../Differencing/Errors";
 import { getSchemaDifferences, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
+import { SchemaContextEditor } from "../Editing/Editor";
+import { ECEditingStatus, SchemaEditingError } from "../Editing/Exception";
+import type { SchemaEdits } from "./Edits/SchemaEdits";
 import { SchemaMergingVisitor } from "./SchemaMergingVisitor";
 import { SchemaMergingWalker } from "./SchemaMergingWalker";
-import type { SchemaEdits } from "./Edits/SchemaEdits";
-import { ECEditingStatus, SchemaEditingError } from "../Editing/Exception";
 
 /**
  * Defines the context of a Schema merging run.
@@ -32,7 +32,6 @@ export interface SchemaMergeContext {
  * @beta
  */
 export class SchemaMerger {
-
   private readonly _editor: SchemaContextEditor;
 
   /**

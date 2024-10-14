@@ -7,25 +7,26 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
+import { BatchType, PackedFeatureTable } from "@itwin/core-common";
 import { Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
+import { _featureTable, _implementationProhibited, _renderSystem, _transformCenter, _transforms } from "../../common/internal/Symbols";
 import { InstancedGraphicParams, InstancedGraphicProps, PatternGraphicParams } from "../../common/render/InstancedGraphicParams";
+import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 import { RenderMemory } from "../RenderMemory";
+import { RenderInstances } from "../RenderSystem";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
 import { CachedGeometry, LUTGeometry } from "./CachedGeometry";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
+import { Matrix4 } from "./Matrix";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
-import { Matrix4 } from "./Matrix";
-import { RenderInstances } from "../RenderSystem";
-import { _featureTable, _implementationProhibited, _renderSystem, _transformCenter, _transforms } from "../../common/internal/Symbols";
-import { BatchType, PackedFeatureTable } from "@itwin/core-common";
-import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
 /** @internal */
 export function isInstancedGraphicParams(params: any): params is InstancedGraphicParams {
-  return typeof params === "object" && typeof params.count === "number" && params.transforms instanceof Float32Array && params.transformCenter instanceof Point3d;
+  return typeof params === "object" && typeof params.count === "number" && params.transforms instanceof Float32Array &&
+    params.transformCenter instanceof Point3d;
 }
 
 class InstanceData {
@@ -77,7 +78,14 @@ export class InstanceBuffersData extends InstanceData {
   public readonly symbology?: BufferHandle;
   private _noDispose = false;
 
-  private constructor(count: number, transforms: BufferHandle, rtcCenter: Point3d, symbology?: BufferHandle, featureIds?: BufferHandle, disableDisposal = false) {
+  private constructor(
+    count: number,
+    transforms: BufferHandle,
+    rtcCenter: Point3d,
+    symbology?: BufferHandle,
+    featureIds?: BufferHandle,
+    disableDisposal = false,
+  ) {
     super(count, rtcCenter);
     this.transforms = transforms;
     this.featureIds = featureIds;
@@ -161,15 +169,31 @@ export class InstanceBuffers {
   public readonly viewIndependentOrigin = undefined;
   public readonly range: Range3d;
 
-  public get numInstances() { return this._data.numInstances; }
-  public get transforms() { return this._data.transforms; }
-  public get featureIds() { return this._data.featureIds; }
-  public get symbology() { return this._data.symbology; }
-  public get hasFeatures() { return undefined !== this.featureIds; }
-  public get patternFeatureId() { return this._data.patternFeatureId; }
+  public get numInstances() {
+    return this._data.numInstances;
+  }
+  public get transforms() {
+    return this._data.transforms;
+  }
+  public get featureIds() {
+    return this._data.featureIds;
+  }
+  public get symbology() {
+    return this._data.symbology;
+  }
+  public get hasFeatures() {
+    return undefined !== this.featureIds;
+  }
+  public get patternFeatureId() {
+    return this._data.patternFeatureId;
+  }
 
-  public getRtcModelTransform(modelMatrix: Transform) { return this._data.getRtcModelTransform(modelMatrix); }
-  public getRtcOnlyTransform() { return this._data.getRtcOnlyTransform(); }
+  public getRtcModelTransform(modelMatrix: Transform) {
+    return this._data.getRtcModelTransform(modelMatrix);
+  }
+  public getRtcOnlyTransform() {
+    return this._data.getRtcOnlyTransform();
+  }
 
   private constructor(data: InstanceBuffersData, range: Range3d) {
     this._data = data;
@@ -237,9 +261,11 @@ export class InstanceBuffers {
   }
 
   private static extendTransformedRange(tfs: Float32Array, i: number, range: Range3d, x: number, y: number, z: number) {
-    range.extendXYZ(tfs[i + 3] + tfs[i + 0] * x + tfs[i + 1] * y + tfs[i + 2] * z,
+    range.extendXYZ(
+      tfs[i + 3] + tfs[i + 0] * x + tfs[i + 1] * y + tfs[i + 2] * z,
       tfs[i + 7] + tfs[i + 4] * x + tfs[i + 5] * y + tfs[i + 6] * z,
-      tfs[i + 11] + tfs[i + 8] * x + tfs[i + 9] * y + tfs[i + 10] * z);
+      tfs[i + 11] + tfs[i + 8] * x + tfs[i + 9] * y + tfs[i + 10] * z,
+    );
   }
 
   public static computeRange(reprRange: Range3d, tfs: Float32Array, rtcCenter: XYAndZ, out?: Range3d): Range3d {
@@ -348,39 +374,97 @@ export class InstancedGeometry extends CachedGeometry {
   private readonly _repr: LUTGeometry;
   private readonly _ownsBuffers: boolean;
 
-  public getRtcModelTransform(modelMatrix: Transform) { return this._buffers.getRtcModelTransform(modelMatrix); }
-  public getRtcOnlyTransform() { return this._buffers.getRtcOnlyTransform(); }
+  public getRtcModelTransform(modelMatrix: Transform) {
+    return this._buffers.getRtcModelTransform(modelMatrix);
+  }
+  public getRtcOnlyTransform() {
+    return this._buffers.getRtcOnlyTransform();
+  }
 
-  public override get viewIndependentOrigin(): Point3d | undefined { return this._buffers.viewIndependentOrigin; }
+  public override get viewIndependentOrigin(): Point3d | undefined {
+    return this._buffers.viewIndependentOrigin;
+  }
 
-  public override get asInstanced() { return this; }
-  public override get asLUT() { return this._repr.asLUT; }
-  public override get asMesh() { return this._repr.asMesh; }
-  public override get asSurface() { return this._repr.asSurface; }
-  public override get asEdge() { return this._repr.asEdge; }
-  public override get asSilhouette() { return this._repr.asSilhouette; }
-  public override get asIndexedEdge() { return this._repr.asIndexedEdge; }
+  public override get asInstanced() {
+    return this;
+  }
+  public override get asLUT() {
+    return this._repr.asLUT;
+  }
+  public override get asMesh() {
+    return this._repr.asMesh;
+  }
+  public override get asSurface() {
+    return this._repr.asSurface;
+  }
+  public override get asEdge() {
+    return this._repr.asEdge;
+  }
+  public override get asSilhouette() {
+    return this._repr.asSilhouette;
+  }
+  public override get asIndexedEdge() {
+    return this._repr.asIndexedEdge;
+  }
 
-  public get renderOrder() { return this._repr.renderOrder; }
-  public override get isLitSurface() { return this._repr.isLitSurface; }
-  public override get hasBakedLighting() { return this._repr.hasBakedLighting; }
-  public override get hasAnimation() { return this._repr.hasAnimation; }
-  public override get usesQuantizedPositions() { return this._repr.usesQuantizedPositions; }
-  public get qOrigin() { return this._repr.qOrigin; }
-  public get qScale() { return this._repr.qScale; }
-  public override get materialInfo() { return this._repr.materialInfo; }
-  public override get polylineBuffers() { return this._repr.polylineBuffers; }
-  public override get isEdge() { return this._repr.isEdge; }
-  public override get hasFeatures() { return this._buffers.hasFeatures; }
-  public get techniqueId(): TechniqueId { return this._repr.techniqueId; }
-  public override get supportsThematicDisplay() { return this._repr.supportsThematicDisplay; }
+  public get renderOrder() {
+    return this._repr.renderOrder;
+  }
+  public override get isLitSurface() {
+    return this._repr.isLitSurface;
+  }
+  public override get hasBakedLighting() {
+    return this._repr.hasBakedLighting;
+  }
+  public override get hasAnimation() {
+    return this._repr.hasAnimation;
+  }
+  public override get usesQuantizedPositions() {
+    return this._repr.usesQuantizedPositions;
+  }
+  public get qOrigin() {
+    return this._repr.qOrigin;
+  }
+  public get qScale() {
+    return this._repr.qScale;
+  }
+  public override get materialInfo() {
+    return this._repr.materialInfo;
+  }
+  public override get polylineBuffers() {
+    return this._repr.polylineBuffers;
+  }
+  public override get isEdge() {
+    return this._repr.isEdge;
+  }
+  public override get hasFeatures() {
+    return this._buffers.hasFeatures;
+  }
+  public get techniqueId(): TechniqueId {
+    return this._repr.techniqueId;
+  }
+  public override get supportsThematicDisplay() {
+    return this._repr.supportsThematicDisplay;
+  }
 
-  public override getPass(target: Target) { return this._repr.getPass(target); }
-  public override wantWoWReversal(params: ShaderProgramParams) { return this._repr.wantWoWReversal(params); }
-  public override getLineCode(params: ShaderProgramParams) { return this._repr.getLineCode(params); }
-  public override getLineWeight(params: ShaderProgramParams) { return this._repr.getLineWeight(params); }
-  public override wantMonochrome(target: Target) { return this._repr.wantMonochrome(target); }
-  public override wantMixMonochromeColor(target: Target): boolean { return this._repr.wantMixMonochromeColor(target); }
+  public override getPass(target: Target) {
+    return this._repr.getPass(target);
+  }
+  public override wantWoWReversal(params: ShaderProgramParams) {
+    return this._repr.wantWoWReversal(params);
+  }
+  public override getLineCode(params: ShaderProgramParams) {
+    return this._repr.getLineCode(params);
+  }
+  public override getLineWeight(params: ShaderProgramParams) {
+    return this._repr.getLineWeight(params);
+  }
+  public override wantMonochrome(target: Target) {
+    return this._repr.wantMonochrome(target);
+  }
+  public override wantMixMonochromeColor(target: Target): boolean {
+    return this._repr.wantMixMonochromeColor(target);
+  }
 
   public static create(repr: LUTGeometry, ownsBuffers: boolean, buffers: InstanceBuffers): InstancedGeometry {
     const techId = repr.techniqueId;
@@ -464,7 +548,13 @@ export class InstancedGeometry extends CachedGeometry {
       this._buffers.collectStatistics(stats);
   }
 
-  public get patternParams(): Float32Array { return this._buffers.patternParams; }
-  public get patternTransforms(): PatternTransforms | undefined { return this._buffers.patternTransforms; }
-  public get patternFeatureId(): Float32Array { return this._buffers.patternFeatureId; }
+  public get patternParams(): Float32Array {
+    return this._buffers.patternParams;
+  }
+  public get patternTransforms(): PatternTransforms | undefined {
+    return this._buffers.patternTransforms;
+  }
+  public get patternFeatureId(): Float32Array {
+    return this._buffers.patternFeatureId;
+  }
 }

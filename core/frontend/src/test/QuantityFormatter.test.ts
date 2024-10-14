@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { Parser, UnitProps } from "@itwin/core-quantity";
+import { assert } from "chai";
 import { IModelApp } from "../IModelApp";
 import { LocalUnitFormatProvider } from "../quantity-formatting/LocalUnitFormatProvider";
 import { OverrideFormatEntry, QuantityFormatter, QuantityType, QuantityTypeArg } from "../quantity-formatting/QuantityFormatter";
@@ -21,7 +21,8 @@ function withinTolerance(x: number, y: number, tolerance?: number): boolean {
 /** setup a local storage mock that contains a unit system and QuantityType.Length override format */
 const storageMock = () => {
   const storage: { [key: string]: any } = {
-    "quantityTypeFormat#user#q:QuantityTypeEnumValue-1": `{"metric":{"type":"Decimal","precision":2,"roundFactor":0,"showSignOption":"OnlyNegative","formatTraits":["keepSingleZero","showUnitLabel"],"decimalSeparator":".","thousandSeparator":",","uomSeparator":" ","stationSeparator":"+","composite":{"spacer":"","includeZero":true,"units":[{"name":"Units.CM","label":"cm"}]}}}`,
+    "quantityTypeFormat#user#q:QuantityTypeEnumValue-1":
+      `{"metric":{"type":"Decimal","precision":2,"roundFactor":0,"showSignOption":"OnlyNegative","formatTraits":["keepSingleZero","showUnitLabel"],"decimalSeparator":".","thousandSeparator":",","uomSeparator":" ","stationSeparator":"+","composite":{"spacer":"","includeZero":true,"units":[{"name":"Units.CM","label":"cm"}]}}}`,
     "unitsystem#user": "metric",
   };
 
@@ -91,7 +92,6 @@ describe("Quantity formatter", async () => {
         precision: 4,
         type: "Decimal",
       },
-
     };
 
     // set the units settings provider that will set the QuantityFormatter to "metric" and provide overrides to display "cm"
@@ -195,9 +195,11 @@ describe("Quantity formatter", async () => {
     assert(Parser.isParsedQuantity(overrideValueInMeters3));
     assert(Parser.isParsedQuantity(overrideValueInMeters4));
     assert(Parser.isParsedQuantity(overrideValueInMeters5));
-    if (Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2) &&
+    if (
+      Parser.isParsedQuantity(overrideValueInMeters1) && Parser.isParsedQuantity(overrideValueInMeters2) &&
       Parser.isParsedQuantity(overrideValueInMeters3) && Parser.isParsedQuantity(overrideValueInMeters4)
-      && Parser.isParsedQuantity(overrideValueInMeters5)) {
+      && Parser.isParsedQuantity(overrideValueInMeters5)
+    ) {
       assert(withinTolerance(overrideValueInMeters1.value, 1.2192));
       assert(withinTolerance(overrideValueInMeters1.value, overrideValueInMeters2.value));
       assert(withinTolerance(overrideValueInMeters3.value, overrideValueInMeters2.value));
@@ -444,7 +446,10 @@ describe("Quantity formatter", async () => {
       const toUnit = await quantityFormatter.findUnitByName(toUnitName);
       const unitConversion = await quantityFormatter.getConversion(fromUnit, toUnit);
       const convertedValue = (magnitude * unitConversion.factor) + unitConversion.offset;
-      assert(withinTolerance(convertedValue, expectedValue, tolerance), `Expected ${expectedValue} ${toUnitName}, got ${convertedValue} ${toUnitName}`);
+      assert(
+        withinTolerance(convertedValue, expectedValue, tolerance),
+        `Expected ${expectedValue} ${toUnitName}, got ${convertedValue} ${toUnitName}`,
+      );
     }
 
     it("UnitConversionTests, USCustomaryLengths", async () => {

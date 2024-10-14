@@ -6,14 +6,14 @@
  * @module Workspace
  */
 
+import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { AccessToken, BeEvent, Logger, Optional, UnexpectedErrors } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CloudSqlite } from "../CloudSqlite";
+import { _implementationProhibited } from "../internal/Symbols";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingName, Settings, SettingsDictionary, SettingsPriority } from "./Settings";
-import type { IModelJsNative } from "@bentley/imodeljs-native";
-import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { _implementationProhibited } from "../internal/Symbols";
 
 /** The unique identifier of a [[WorkspaceContainer]]. This becomes the base name for a local file directory holding the container's [[WorkspaceDb]]s.
  * A valid `WorkspaceContainerId` must conform to the following constraints:
@@ -120,11 +120,11 @@ export interface WorkspaceDbQueryResourcesArgs {
 }
 
 /** Metadata stored inside a [[WorkspaceDb]] describing the database's contents, to help users understand the purpose of the [[WorkspaceDb]], who to
-  * contact with questions about it, and so on.
-  * @note Only the [[workspaceName]] field is required, and users may add additional fields for their own purposes.
-  * @note Since the information is stored inside of the [[WorkspaceDb]], it is versioned along with the rest of the contents.
-  * @beta
-  */
+ * contact with questions about it, and so on.
+ * @note Only the [[workspaceName]] field is required, and users may add additional fields for their own purposes.
+ * @note Since the information is stored inside of the [[WorkspaceDb]], it is versioned along with the rest of the contents.
+ * @beta
+ */
 export interface WorkspaceDbManifest {
   /** The name of the [[WorkspaceDb]] to be shown in user interfaces. Organizations should attempt to make this name informative enough
    * so that uses may refer to this name in conversations. It should also be unique enough that there's no confusion when it appears in
@@ -165,9 +165,9 @@ export interface WorkspaceDbLoadErrors extends Error {
 }
 
 /** Specifies a resource inside a [[WorkspaceDb]] that holds a [[SettingsDictionary]] to load into [[Workspace.settings]].
-  * Settings of this type named [[WorkspaceSettingNames.settingsWorkspaces]] are automatically loaded by [[Workspace.loadSettingsDictionary]].
-  * @beta
-  */
+ * Settings of this type named [[WorkspaceSettingNames.settingsWorkspaces]] are automatically loaded by [[Workspace.loadSettingsDictionary]].
+ * @beta
+ */
 export interface WorkspaceDbSettingsProps extends WorkspaceDbCloudProps {
   /** The name of the resource holding the stringified JSON of the [[SettingsDictionary]]. */
   resourceName: string;
@@ -289,8 +289,8 @@ export interface WorkspaceDb {
 }
 
 /** Options supplied to [[IModelHost.startup]] via [[IModelHostOptions.workspace]] to customize the initialization of [[IModelHost.appWorkspace]].
-  * @beta
-  */
+ * @beta
+ */
 export interface WorkspaceOpts {
   /** The local directory for non-cloud-based [[WorkspaceDb]] files. The [[Workspace]] API will look in this directory
    * for files named `${containerId}/${dbId}.itwin-workspace`.
@@ -343,7 +343,7 @@ export interface Workspace {
    * @note This function allows a `WorkspaceContainer.Props` without its [AccessToken]($bentley). It will attempt to obtain one from the [[BlobContainer]] service,
    * hence this function is async.
    * @see [[getContainer]] to obtain a container synchronously.
-  */
+   */
   getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceContainer>;
 
   /** Get a WorkspaceContainer with a supplied access token. This function is synchronous and may be used if:
@@ -363,7 +363,7 @@ export interface Workspace {
     /** The properties of the [[WorkspaceDb]], plus the resourceName and [[SettingsPriority]]. May be either a single value or an array of them */
     props: WorkspaceDbSettingsProps | WorkspaceDbSettingsProps[],
     /** If present, an array that is populated with a list of problems while attempting to load the [[SettingsDictionary]](s).   */
-    problems?: WorkspaceDbLoadError[]
+    problems?: WorkspaceDbLoadError[],
   ): Promise<void>;
 
   /** Get a single [[WorkspaceDb]].  */
@@ -382,7 +382,8 @@ export interface Workspace {
     /** the name of the setting. */
     settingName: SettingName,
     /** optional filter to choose specific WorkspaceDbs from the settings values. If present, only those WorkspaceDbs for which the filter returns `true` will be included. */
-    filter?: Workspace.DbListFilter): WorkspaceDbCloudProps[];
+    filter?: Workspace.DbListFilter,
+  ): WorkspaceDbCloudProps[];
 
   /**
    * Get a sorted array of [[WorkspaceDb]]s that can be used to query or load resources. If the arguments supply a `settingName`, this function will
@@ -397,7 +398,8 @@ export interface Workspace {
       problems?: WorkspaceDbLoadError[];
       /** only valid when called with a settingName, if so passed as `filter` argument to [[resolveWorkspaceDbSetting]]  */
       filter?: Workspace.DbListFilter;
-    }): Promise<WorkspaceDb[]>;
+    },
+  ): Promise<WorkspaceDb[]>;
 }
 
 /**
@@ -518,7 +520,7 @@ export namespace Workspace {
    * Applications can override this function to notify the user and/or attempt to diagnose the problem.
    * The default implementation simply logs each exception.
    */
-  export let exceptionDiagnosticFn = (e: WorkspaceDbLoadErrors) => {  // eslint-disable-line prefer-const
+  export let exceptionDiagnosticFn = (e: WorkspaceDbLoadErrors) => { // eslint-disable-line prefer-const
     if (e instanceof Error)
       Logger.logException(BackendLoggerCategory.Workspace, e);
     else
@@ -537,14 +539,17 @@ export namespace Workspace {
    * Applications can override this function to notify the user and/or record diagnostics.
    * The default implementation simply records an information message in the [Logger]($bentley).
    */
-  export let onSettingsDictionaryLoadedFn = (loaded: SettingsDictionaryLoaded) => {  // eslint-disable-line prefer-const
+  export let onSettingsDictionaryLoadedFn = (loaded: SettingsDictionaryLoaded) => { // eslint-disable-line prefer-const
     Logger.logInfo(BackendLoggerCategory.Workspace, `loaded setting dictionary ${loaded.dict.props.name} from ${loaded.from.dbFileName}`);
   };
 
   /** Either an array of [[WorkspaceDbCloudProps]] or the name of a [[Setting]] that resolves to an array of [[WorkspaceDbCloudProps]].
    * Used by [[Workspace.getWorkspaceDbs]].
    */
-  export type DbListOrSettingName = { readonly dbs: WorkspaceDbCloudProps[], readonly settingName?: never } | { readonly settingName: SettingName, readonly dbs?: never };
+  export type DbListOrSettingName = { readonly dbs: WorkspaceDbCloudProps[], readonly settingName?: never } | {
+    readonly settingName: SettingName;
+    readonly dbs?: never;
+  };
 
   /** In arguments supplied to [[Workspace.getWorkspaceDbs]] and [[Workspace.resolveWorkspaceDbSetting]], an optional function used to exclude some
    * [[WorkspaceDb]]s. Only those [[WorkspaceDb]]s for which the function returns `true` will be included.
@@ -555,7 +560,7 @@ export namespace Workspace {
     /** The SettingsDictionary holding the [[WorkspaceSettingNames.settingsWorkspace]] setting. May be used, for example, to determine the
      * [[SettingsPriority]] of the dictionary.
      */
-    dict: SettingsDictionary
+    dict: SettingsDictionary,
   ) => boolean;
 
   /** Searches a list of [[WorkspaceDb]]s for a string resource of a given name.

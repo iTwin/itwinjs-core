@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ECVersion, PropertyCategory, SchemaContext, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
 
@@ -39,8 +39,8 @@ describe("Property Category tests", () => {
   });
 
   it("try creating PropertyCategory to unknown schema, throws error", async () => {
-    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
-    await expect(testEditor.propertyCategories.create(badKey, "testPropCategory", 5)).to.be.eventually.rejected.then(function (error) {
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1, 0, 0));
+    await expect(testEditor.propertyCategories.create(badKey, "testPropCategory", 5)).to.be.eventually.rejected.then(function(error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
       expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
@@ -49,9 +49,12 @@ describe("Property Category tests", () => {
 
   it("try creating PropertyCategory with existing name, throws error", async () => {
     await testEditor.propertyCategories.create(testKey, "testPropCategory", 5);
-    await expect(testEditor.propertyCategories.create(testKey, "testPropCategory", 5)).to.be.eventually.rejected.then(function (error) {
+    await expect(testEditor.propertyCategories.create(testKey, "testPropCategory", 5)).to.be.eventually.rejected.then(function(error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `PropertyCategory testSchema.testPropCategory already exists in the schema ${testKey.name}.`);
+      expect(error).to.have.nested.property(
+        "innerError.message",
+        `PropertyCategory testSchema.testPropCategory already exists in the schema ${testKey.name}.`,
+      );
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
     });
   });

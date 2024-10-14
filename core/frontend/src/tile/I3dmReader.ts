@@ -6,11 +6,11 @@
  * @module Tiles
  */
 import { ByteStream, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
-import { AxisOrder, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, Feature, FeatureTable, I3dmHeader, TileReadStatus } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
+import { AxisOrder, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Mesh } from "../common/internal/render/MeshPrimitives";
+import { InstancedGraphicParams } from "../common/render/InstancedGraphicParams";
+import { IModelConnection } from "../IModelConnection";
 import { RenderSystem } from "../render/RenderSystem";
 import { BatchedTileIdMap, GltfReader, GltfReaderProps, GltfReaderResult, ShouldAbortReadGltf } from "./internal";
 
@@ -51,8 +51,19 @@ export class I3dmReader extends GltfReader {
   private _featureTable?: FeatureTable;
   private readonly _modelId: Id64String;
 
-  public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d,
-    system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: ShouldAbortReadGltf, idMap?: BatchedTileIdMap, deduplicateVertices=false): I3dmReader | undefined {
+  public static create(
+    stream: ByteStream,
+    iModel: IModelConnection,
+    modelId: Id64String,
+    is3d: boolean,
+    range: ElementAlignedBox3d,
+    system: RenderSystem,
+    yAxisUp: boolean,
+    isLeaf: boolean,
+    isCanceled?: ShouldAbortReadGltf,
+    idMap?: BatchedTileIdMap,
+    deduplicateVertices = false,
+  ): I3dmReader | undefined {
     const header = new I3dmHeader(stream);
     if (!header.isValid)
       return undefined;
@@ -66,17 +77,51 @@ export class I3dmReader extends GltfReader {
     if (undefined === featureStr)
       return undefined;
 
-    const featureBinary = new Uint8Array(stream.arrayBuffer, header.featureTableJsonPosition + header.featureTableJsonLength, header.featureTableBinaryLength);
-    return new I3dmReader(featureBinary, JSON.parse(featureStr), header.batchTableJson, props, iModel, modelId, is3d, system,
-      range, isLeaf, isCanceled, idMap, deduplicateVertices);
+    const featureBinary = new Uint8Array(
+      stream.arrayBuffer,
+      header.featureTableJsonPosition + header.featureTableJsonLength,
+      header.featureTableBinaryLength,
+    );
+    return new I3dmReader(
+      featureBinary,
+      JSON.parse(featureStr),
+      header.batchTableJson,
+      props,
+      iModel,
+      modelId,
+      is3d,
+      system,
+      range,
+      isLeaf,
+      isCanceled,
+      idMap,
+      deduplicateVertices,
+    );
   }
 
-  private constructor(private _featureBinary: Uint8Array, private _featureJson: any, private _batchTableJson: any, props: GltfReaderProps,
-    iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d,
-    private _isLeaf: boolean, shouldAbort?: ShouldAbortReadGltf, _idMap?: BatchedTileIdMap, deduplicateVertices=false) {
+  private constructor(
+    private _featureBinary: Uint8Array,
+    private _featureJson: any,
+    private _batchTableJson: any,
+    props: GltfReaderProps,
+    iModel: IModelConnection,
+    modelId: Id64String,
+    is3d: boolean,
+    system: RenderSystem,
+    private _range: ElementAlignedBox3d,
+    private _isLeaf: boolean,
+    shouldAbort?: ShouldAbortReadGltf,
+    _idMap?: BatchedTileIdMap,
+    deduplicateVertices = false,
+  ) {
     super({
-      props, iModel, system, shouldAbort, deduplicateVertices,
-      is2d: !is3d, idMap: _idMap,
+      props,
+      iModel,
+      system,
+      shouldAbort,
+      deduplicateVertices,
+      is2d: !is3d,
+      idMap: _idMap,
     });
     this._modelId = modelId;
   }
@@ -128,7 +173,9 @@ export class I3dmReader extends GltfReader {
     const upNormals = json.NORMAL_UP ? new Float32Array(binary.buffer, binary.byteOffset + json.NORMAL_UP.byteOffset, count * 3) : undefined;
     const rightNormals = json.NORMAL_RIGHT ? new Float32Array(binary.buffer, binary.byteOffset + json.NORMAL_RIGHT.byteOffset, count * 3) : undefined;
     const scales = json.SCALE ? new Float32Array(binary.buffer, binary.byteOffset + json.SCALE.byteOffset, count) : undefined;
-    const nonUniformScales = json.SCALE_NON_UNIFORM ? new Float32Array(binary.buffer, binary.byteOffset + json.SCALE_NON_UNIFORM.byteOffset, count * 3) : undefined;
+    const nonUniformScales = json.SCALE_NON_UNIFORM
+      ? new Float32Array(binary.buffer, binary.byteOffset + json.SCALE_NON_UNIFORM.byteOffset, count * 3)
+      : undefined;
 
     const matrix = Matrix3d.createIdentity();
     const position = Point3d.createZero();

@@ -4,7 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  EnumerationChoice, IconEditorParams, PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams, SuppressLabelEditorParams,
+  EnumerationChoice,
+  IconEditorParams,
+  PropertyDescriptionHelper,
+  PropertyEditorParamTypes,
+  RangeEditorParams,
+  SuppressLabelEditorParams,
 } from "../../appui-abstract";
 
 // cSpell:ignore Picklist
@@ -78,7 +83,6 @@ describe("PropertyDescriptionHelper", () => {
       expect(editorDescription.editor?.name).to.eq(editor);
       expect(editorDescription.editor?.params?.length).to.eq(1);
       expect(editorDescription.editor?.params?.[0].type).to.eq(PropertyEditorParamTypes.Range);
-
     });
 
     it("should build with additional editor params correctly", () => {
@@ -267,8 +271,7 @@ describe("PropertyDescriptionHelper", () => {
   });
 
   describe("bumpEnumProperty", () => {
-    const noChoices: EnumerationChoice[] = [
-    ];
+    const noChoices: EnumerationChoice[] = [];
 
     const choices = [
       { label: "Red", value: 1 },
@@ -324,5 +327,4 @@ describe("PropertyDescriptionHelper", () => {
       expect(newValue).to.eq(1);
     });
   });
-
 });

@@ -6,17 +6,16 @@
  * @module Utils
  */
 
+import { Schema } from "@itwin/ecschema-metadata";
+import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
-import { Schema } from "@itwin/ecschema-metadata";
 
 /**
  * Utility class to assist in creating serialized EC Schemas on the file system.
  * @beta
  */
 export namespace SchemaXml {
-
   /**
    * Writes a Schema to an xml file to the specified output path.
    * @param schema The Schema to serialize.

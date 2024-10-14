@@ -10,8 +10,18 @@
 import { BentleyError, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import { GeometrySummaryOptions, GeometrySummaryVerbosity, IModelReadRpcInterface } from "@itwin/core-common";
 import {
-  BeButtonEvent, CoreTools, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, MessageBoxIconType, MessageBoxType,
-  NotifyMessageDetails, OutputMessagePriority, PrimitiveTool,
+  BeButtonEvent,
+  CoreTools,
+  EventHandled,
+  HitDetail,
+  IModelApp,
+  LocateFilterStatus,
+  LocateResponse,
+  MessageBoxIconType,
+  MessageBoxType,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  PrimitiveTool,
 } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
@@ -29,8 +39,12 @@ import { parseArgs } from "./parseArgs";
  */
 export class InspectElementTool extends PrimitiveTool {
   public static override toolId = "InspectElement";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 6; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 6;
+  }
 
   private _options: GeometrySummaryOptions = {};
   private _elementIds?: Id64String[];
@@ -48,7 +62,7 @@ export class InspectElementTool extends PrimitiveTool {
   }
 
   private setupAndPromptForNextAction(): void {
-    this._useSelection = (undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive);
+    this._useSelection = undefined !== this.targetView && this.targetView.iModel.selectionSet.isActive;
     if (!this._useSelection)
       IModelApp.accuSnap.enableLocate(true);
 
@@ -59,9 +73,11 @@ export class InspectElementTool extends PrimitiveTool {
     CoreTools.outputPromptByKey(this._useSelection ? "ElementSet.Prompts.ConfirmSelection" : "ElementSet.Prompts.IdentifyElement");
   }
 
-  public override autoLockTarget(): void { }
+  public override autoLockTarget(): void {}
 
-  public override requireWriteableTarget(): boolean { return false; }
+  public override requireWriteableTarget(): boolean {
+    return false;
+  }
 
   public override async onUnsuspend() {
     this.showPrompt();
@@ -91,7 +107,9 @@ export class InspectElementTool extends PrimitiveTool {
         });
 
         if (0 === ids.length)
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.NotSupportedElmType")));
+          IModelApp.notifications.outputMessage(
+            new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.NotSupportedElmType")),
+          );
         else
           await this.process(ids);
 
@@ -139,7 +157,10 @@ export class InspectElementTool extends PrimitiveTool {
     };
     let messageDetails: NotifyMessageDetails;
     try {
-      let str = await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
+      let str = await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(
+        this.iModel.getRpcProps(),
+        request,
+      );
       if (this._explodeParts) {
         const regex = /^part id: (0x[a-f0-9]+)/gm;
         const partIds = new Set<string>();
@@ -150,7 +171,10 @@ export class InspectElementTool extends PrimitiveTool {
         if (partIds.size > 0) {
           request.elementIds = Array.from(partIds);
           str += `\npart ids: ${JSON.stringify(request.elementIds)}\n`;
-          str += await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(this.iModel.getRpcProps(), request);
+          str += await IModelReadRpcInterface.getClientForRouting(this.iModel.routingContext.token).getGeometrySummary(
+            this.iModel.getRpcProps(),
+            request,
+          );
         }
       }
 
@@ -182,7 +206,11 @@ export class InspectElementTool extends PrimitiveTool {
         await IModelApp.notifications.openMessageBox(MessageBoxType.Ok, div, MessageBoxIconType.Information);
       }
     } catch (err) {
-      messageDetails = new NotifyMessageDetails(OutputMessagePriority.Error, "Error occurred while generating summary", BentleyError.getErrorMessage(err));
+      messageDetails = new NotifyMessageDetails(
+        OutputMessagePriority.Error,
+        "Error occurred while generating summary",
+        BentleyError.getErrorMessage(err),
+      );
     }
 
     IModelApp.notifications.outputMessage(messageDetails);

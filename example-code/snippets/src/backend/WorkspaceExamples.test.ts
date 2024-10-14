@@ -3,14 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { IModelTestUtils } from "./IModelTestUtils";
 import {
-  EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, SettingGroupSchema, SettingsContainer,
-  SettingsDictionaryProps, SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor,
+  EditableWorkspaceContainer,
+  EditableWorkspaceDb,
+  IModelHost,
+  SettingGroupSchema,
+  SettingsContainer,
+  SettingsDictionaryProps,
+  SettingsPriority,
+  StandaloneDb,
+  Workspace,
+  WorkspaceDb,
+  WorkspaceEditor,
 } from "@itwin/core-backend";
 import { assert, Guid, OpenMode } from "@itwin/core-bentley";
+import { expect } from "chai";
 import { AzuriteTest } from "./AzuriteTest";
+import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Workspace Examples", () => {
@@ -422,7 +431,11 @@ describe("Workspace Examples", () => {
       // __PUBLISH_EXTRACT_END__
 
       expect(allTrees.map((x) => x.commonName)).to.deep.equal([
-        "Pagoda Dogwood", "Roughleaf Dogwood", "Northern Swamp Dogwood", "Pacific Silver Fir", "Balsam Fir",
+        "Pagoda Dogwood",
+        "Roughleaf Dogwood",
+        "Northern Swamp Dogwood",
+        "Pacific Silver Fir",
+        "Balsam Fir",
       ]);
       expect(iModelTrees.map((x) => x.commonName)).to.deep.equal(["Pagoda Dogwood", "Northern Swamp Dogwood", "Balsam Fir"]);
 

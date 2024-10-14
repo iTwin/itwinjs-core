@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema as MetaSchema, SchemaContext, SchemaLoader, SchemaPropsGetter } from "@itwin/ecschema-metadata";
 import { ClassRegistry, Element, ElementAspect, IModelDb, Relationship, Schema, Schemas } from "@itwin/core-backend";
 import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaComparer, SchemaContextEditor } from "@itwin/ecschema-editing";
+import { Schema as MetaSchema, SchemaContext, SchemaLoader, SchemaPropsGetter } from "@itwin/ecschema-metadata";
 import { MutableSchema } from "@itwin/ecschema-metadata/lib/cjs/Metadata/Schema";
 import * as pcf from "./pcf";
 
@@ -43,7 +43,6 @@ export async function syncDynamicSchema(
   domainSchemaNames: string[],
   props: DynamicSchemaProps,
 ): Promise<pcf.ItemState> {
-
   const { schemaName } = props;
   const existingSchema = await tryGetSchema(db, schemaName);
 
@@ -81,7 +80,6 @@ export async function syncDynamicSchema(
 
 // __PUBLISH_EXTRACT_START__ DynamicSchema-registerDynamicSchema.example-code
 function registerDynamicSchema(props: DynamicSchemaProps) {
-
   const entitiesModule: any = {};
   for (const entity of props.dynamicEntityMap.entities) {
     if (entity.registeredClass) {
@@ -122,7 +120,6 @@ async function createDynamicSchema(
   domainSchemaNames: string[],
   props: DynamicSchemaProps,
 ): Promise<MetaSchema> {
-
   const map = props.dynamicEntityMap;
   const context = new SchemaContext();
   const editor = new SchemaContextEditor(context);
@@ -190,8 +187,8 @@ class DynamicSchemaCompareReporter implements ISchemaCompareReporter {
     this.changes.push(schemaChanges as SchemaChanges);
   }
 
-  public get diagnostics(): AnyDiagnostic [] {
-    let diagnostics: AnyDiagnostic [] = [];
+  public get diagnostics(): AnyDiagnostic[] {
+    let diagnostics: AnyDiagnostic[] = [];
     for (const changes of this.changes) {
       diagnostics = diagnostics.concat(changes.allDiagnostics);
     }

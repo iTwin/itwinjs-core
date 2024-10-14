@@ -9,7 +9,19 @@
 
 import { Id64, Id64Arg, Id64Array, Id64String } from "@itwin/core-bentley";
 import { FeatureAppearance, FlatBufferGeometryStream, GeometricElementProps, JsonGeometryStream } from "@itwin/core-common";
-import { BeButtonEvent, DynamicsContext, ElementSetTool, FeatureOverrideProvider, FeatureSymbology, HitDetail, IModelApp, LocateResponse, SelectionMethod, SelectionSet, Viewport } from "@itwin/core-frontend";
+import {
+  BeButtonEvent,
+  DynamicsContext,
+  ElementSetTool,
+  FeatureOverrideProvider,
+  FeatureSymbology,
+  HitDetail,
+  IModelApp,
+  LocateResponse,
+  SelectionMethod,
+  SelectionSet,
+  Viewport,
+} from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./CreateElementTool";
 
@@ -19,12 +31,20 @@ import { computeChordToleranceFromPoint, DynamicGraphicsProvider } from "./Creat
 export abstract class ModifyElementTool extends ElementSetTool {
   protected readonly _checkedIds = new Map<Id64String, boolean>();
 
-  protected allowView(_vp: Viewport) { return true; }
-  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp)); }
+  protected allowView(_vp: Viewport) {
+    return true;
+  }
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
+    return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && this.allowView(vp));
+  }
 
-  protected onGeometryFilterChanged(): void { this._checkedIds.clear(); }
+  protected onGeometryFilterChanged(): void {
+    this._checkedIds.clear();
+  }
 
-  protected async doAcceptElementForOperation(_id: Id64String): Promise<boolean> { return false; }
+  protected async doAcceptElementForOperation(_id: Id64String): Promise<boolean> {
+    return false;
+  }
 
   protected async acceptElementForOperation(id: Id64String): Promise<boolean> {
     if (Id64.isInvalid(id) || Id64.isTransient(id))
@@ -69,11 +89,17 @@ export abstract class ModifyElementTool extends ElementSetTool {
     return this.postFilterIds(await super.getSelectionSetCandidates(ss));
   }
 
-  protected override async getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg> {
+  protected override async getDragSelectCandidates(
+    vp: Viewport,
+    origin: Point3d,
+    corner: Point3d,
+    method: SelectionMethod,
+    overlap: boolean,
+  ): Promise<Id64Arg> {
     return this.postFilterIds(await super.getDragSelectCandidates(vp, origin, corner, method, overlap));
   }
 
-  protected setupAccuDraw(): void { }
+  protected setupAccuDraw(): void {}
 
   protected override setupAndPromptForNextAction(): void {
     this.setupAccuDraw();
@@ -83,7 +109,9 @@ export abstract class ModifyElementTool extends ElementSetTool {
   protected abstract getGeometryProps(ev: BeButtonEvent, isAccept: boolean): JsonGeometryStream | FlatBufferGeometryStream | undefined;
   protected abstract getElementProps(ev: BeButtonEvent): GeometricElementProps | undefined;
 
-  protected async doUpdateElement(_props: GeometricElementProps): Promise<boolean> { return false; }
+  protected async doUpdateElement(_props: GeometricElementProps): Promise<boolean> {
+    return false;
+  }
 
   protected async applyAgendaOperation(ev: BeButtonEvent): Promise<boolean> {
     const geometry = this.getGeometryProps(ev, true);
@@ -117,8 +145,12 @@ export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool im
   protected _agendaAppearanceDefault?: FeatureAppearance;
   protected _agendaAppearanceDynamic?: FeatureAppearance;
 
-  protected override get wantAccuSnap(): boolean { return true; }
-  protected override get wantDynamics(): boolean { return true; }
+  protected override get wantAccuSnap(): boolean {
+    return true;
+  }
+  protected override get wantDynamics(): boolean {
+    return true;
+  }
 
   protected agendaAppearance(isDynamics: boolean): FeatureAppearance {
     if (isDynamics) {
@@ -134,7 +166,9 @@ export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool im
     return this._agendaAppearanceDefault;
   }
 
-  protected get wantAgendaAppearanceOverride(): boolean { return false; }
+  protected get wantAgendaAppearanceOverride(): boolean {
+    return false;
+  }
 
   public addFeatureOverrides(overrides: FeatureSymbology.Overrides, _vp: Viewport): void {
     if (this.agenda.isEmpty)

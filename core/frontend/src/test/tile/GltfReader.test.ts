@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../IModelApp";
+import { Range3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
+import { BatchedTileIdMap } from "../../core-frontend";
+import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
 import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
-import { BatchedTileIdMap } from "../../core-frontend";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
 const minimalJson = { asset: { version: "02.00" }, meshes: [] };
@@ -144,11 +144,14 @@ describe("GltfReader", () => {
 
   it("rejects glb with multiple binary chunks", () => {
     const glb = glbFromChunks([{
-      data: jsonToBytes(minimalJson), type: GltfV2ChunkTypes.JSON,
+      data: jsonToBytes(minimalJson),
+      type: GltfV2ChunkTypes.JSON,
     }, {
-      data: minimalBin, type: GltfV2ChunkTypes.Binary,
+      data: minimalBin,
+      type: GltfV2ChunkTypes.Binary,
     }, {
-      data: minimalBin, type: GltfV2ChunkTypes.Binary,
+      data: minimalBin,
+      type: GltfV2ChunkTypes.Binary,
     }]);
 
     expect(createReader(glb)).to.be.undefined;
@@ -156,9 +159,11 @@ describe("GltfReader", () => {
 
   it("ignores unrecognized chunks", () => {
     const chunks = [{
-      data: jsonToBytes(minimalJson), type: GltfV2ChunkTypes.JSON,
+      data: jsonToBytes(minimalJson),
+      type: GltfV2ChunkTypes.JSON,
     }, {
-      data: minimalBin, type: GltfV2ChunkTypes.Binary,
+      data: minimalBin,
+      type: GltfV2ChunkTypes.Binary,
     }];
 
     chunks.push({ data: minimalBin, type: 0xdeadbeef as GltfV2ChunkTypes });
@@ -170,9 +175,11 @@ describe("GltfReader", () => {
 
   it("rejects glb with out-of-order chunks", () => {
     const glb = glbFromChunks([{
-      data: minimalBin, type: GltfV2ChunkTypes.Binary,
+      data: minimalBin,
+      type: GltfV2ChunkTypes.Binary,
     }, {
-      data: jsonToBytes(minimalJson), type: GltfV2ChunkTypes.JSON,
+      data: jsonToBytes(minimalJson),
+      type: GltfV2ChunkTypes.JSON,
     }]);
 
     expect(createReader(glb)).to.be.undefined;
@@ -183,15 +190,15 @@ describe("GltfReader", () => {
       ...minimalJson,
       meshes: [] as any,
       nodes: [
-        { }, // 0
+        {}, // 0
         { children: [2] }, // 1
         { children: [4, 5] }, // 2
-        { }, // 3
-        { }, // 4
-        { }, // 5
+        {}, // 3
+        {}, // 4
+        {}, // 5
       ] as any,
       scenes: [
-        { }, // 0
+        {}, // 0
         { nodes: [] }, // 1
         { nodes: [0] }, // 2
         { nodes: [2, 3] }, // 3
@@ -227,16 +234,16 @@ describe("GltfReader", () => {
       ...minimalJson,
       meshes: [] as any,
       nodes: [
-        { }, // 0
+        {}, // 0
         { children: [2] }, // 1
         { children: [4, 5] }, // 2
         { children: [0] }, // 3
         { children: [9, 8, 7, 6] }, // 4
-        { }, // 5
-        { }, // 6
+        {}, // 5
+        {}, // 6
       ] as any,
       scenes: [
-        { }, // 0
+        {}, // 0
         { nodes: [] }, // 1
         { nodes: [0] }, // 2
         { nodes: [1] }, // 3
@@ -286,7 +293,7 @@ describe("GltfReader", () => {
         0: { children: ["0"] },
         1: { children: ["1"] },
         2: { children: ["2"] },
-        3: { },
+        3: {},
       },
       scenes: {
         0: { nodes: ["0"] },
@@ -301,7 +308,7 @@ describe("GltfReader", () => {
       const reader = createReader(makeGlb(json, minimalBin))!;
       expect(reader).not.to.be.undefined;
       expect(() => {
-        for (const _ of reader.traverseScene()) { }
+        for (const _ of reader.traverseScene()) {}
       }).to.throw("Cycle detected while traversing glTF nodes");
     }
 
@@ -397,7 +404,7 @@ describe("GltfReader", () => {
     // This test includes a current deviation from the glTF spec: we currently do not support mirrored repeat.
     it("produces normal textures unless clamp-to-edge is specified", () => {
       expectTextureType(RenderTexture.Type.Normal, undefined);
-      expectTextureType(RenderTexture.Type.Normal, { });
+      expectTextureType(RenderTexture.Type.Normal, {});
       expectTextureType(RenderTexture.Type.Normal, { magFilter: 9728, minFilter: 9987 });
 
       expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.Repeat });
@@ -420,7 +427,7 @@ describe("GltfReader", () => {
 
     it("overrides default texture type if unspecified by sampler", () => {
       expectTextureType(RenderTexture.Type.TileSection, undefined, GltfWrapMode.ClampToEdge);
-      expectTextureType(RenderTexture.Type.TileSection, { }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, {}, GltfWrapMode.ClampToEdge);
       expectTextureType(RenderTexture.Type.TileSection, { magFilter: 9728, minFilter: 9987 }, GltfWrapMode.ClampToEdge);
 
       expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.Repeat }, GltfWrapMode.ClampToEdge);
@@ -429,13 +436,25 @@ describe("GltfReader", () => {
 
       expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
       expectTextureType(RenderTexture.Type.Normal, { wrapT: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
-      expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.MirroredRepeat, wrapT: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
+      expectTextureType(
+        RenderTexture.Type.Normal,
+        { wrapS: GltfWrapMode.MirroredRepeat, wrapT: GltfWrapMode.MirroredRepeat },
+        GltfWrapMode.ClampToEdge,
+      );
 
       expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
       expectTextureType(RenderTexture.Type.TileSection, { wrapT: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
-      expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
+      expectTextureType(
+        RenderTexture.Type.TileSection,
+        { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.ClampToEdge },
+        GltfWrapMode.ClampToEdge,
+      );
       expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.Repeat, wrapT: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
-      expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
+      expectTextureType(
+        RenderTexture.Type.TileSection,
+        { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.MirroredRepeat },
+        GltfWrapMode.ClampToEdge,
+      );
     });
   });
 
@@ -894,12 +913,12 @@ describe("GltfReader", () => {
 
   const compareArrays = (a: any[], b: any[]) => {
     for (let i = 0; i < a.length; i++) {
-      if(Array.isArray(a[i])){
-        if (!compareArrays(a[i], b[i])){
+      if (Array.isArray(a[i])) {
+        if (!compareArrays(a[i], b[i])) {
           return false;
         }
-      } else{
-        if (a[i] !== b[i]){
+      } else {
+        if (a[i] !== b[i]) {
           return false;
         }
       }
@@ -908,19 +927,33 @@ describe("GltfReader", () => {
   };
 
   describe("EXT_structural_metadata", () => {
+    const instanceFeatures = [2, 1, 3, 0];
+    const expectedValuesUnsigned = [1, 2, 3, undefined];
+    const expectedValuesBigUnsigned = ["1", "2", "3", undefined];
+    const expectedValuesSigned = [-1, -2, -3, undefined];
+    const expectedValuesBigSigned = ["-1", "-2", "-3", undefined];
+    const expectedValuesString = ["one", "two", "three", undefined];
 
-    const instanceFeatures = [2,1,3,0];
-    const expectedValuesUnsigned = [1,2,3,undefined];
-    const expectedValuesBigUnsigned = ["1","2","3",undefined];
-    const expectedValuesSigned = [-1,-2,-3,undefined];
-    const expectedValuesBigSigned = ["-1","-2","-3",undefined];
-    const expectedValuesString = ["one","two","three",undefined];
-
-    const expectedValuesVec2 = [[1,2],[3,4],[5,6],[7,8]];
-    const expectedValuesVec3 = [[1,2,3],[4,5,6],[7,8,9],[10,11,12]];
-    const expectedValuesVec4 = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]];
-    const expectedValuesMat3 = [[1,2,3,4,5,6,7,8,9],[10,11,12,13,14,15,16,17,18],[19,20,21,22,23,24,25,26,27],[28,29,30,31,32,33,34,35,36]];
-    const expectedValuesMat4 = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],[17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32], [33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48], [49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64]];
+    const expectedValuesVec2 = [[1, 2], [3, 4], [5, 6], [7, 8]];
+    const expectedValuesVec3 = [[1, 2, 3], [4, 5, 6], [7, 8, 9], [10, 11, 12]];
+    const expectedValuesVec4 = [[1, 2, 3, 4], [5, 6, 7, 8], [9, 10, 11, 12], [13, 14, 15, 16]];
+    const expectedValuesMat3 = [[1, 2, 3, 4, 5, 6, 7, 8, 9], [10, 11, 12, 13, 14, 15, 16, 17, 18], [19, 20, 21, 22, 23, 24, 25, 26, 27], [
+      28,
+      29,
+      30,
+      31,
+      32,
+      33,
+      34,
+      35,
+      36,
+    ]];
+    const expectedValuesMat4 = [
+      [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16],
+      [17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32],
+      [33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48],
+      [49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64],
+    ];
 
     it("parses structural metadata", async () => {
       const reader = createReader(instanceFeaturesExt)!;
@@ -933,45 +966,45 @@ describe("GltfReader", () => {
       expect(structuralMetadata.tables.length === 2);
       expect(structuralMetadata.tables[0].entries.length === 11);
 
-      for(const entry of structuralMetadata.tables[0].entries ?? []) {
-        if(entry.name === "UINT8_VALUES") {
+      for (const entry of structuralMetadata.tables[0].entries ?? []) {
+        if (entry.name === "UINT8_VALUES") {
           expect(compareArrays(entry.values, expectedValuesUnsigned)).to.be.true;
-        } else if(entry.name === "UINT16_VALUES") {
+        } else if (entry.name === "UINT16_VALUES") {
           expect(compareArrays(entry.values, expectedValuesUnsigned)).to.be.true;
-        } else if(entry.name === "UINT32_VALUES") {
+        } else if (entry.name === "UINT32_VALUES") {
           expect(compareArrays(entry.values, expectedValuesUnsigned)).to.be.true;
-        } else if(entry.name === "UINT64_VALUES") {
+        } else if (entry.name === "UINT64_VALUES") {
           expect(compareArrays(entry.values, expectedValuesBigUnsigned)).to.be.true;
-        } else if(entry.name === "INT8_VALUES") {
+        } else if (entry.name === "INT8_VALUES") {
           expect(compareArrays(entry.values, expectedValuesSigned)).to.be.true;
-        } else if(entry.name === "INT16_VALUES") {
+        } else if (entry.name === "INT16_VALUES") {
           expect(compareArrays(entry.values, expectedValuesSigned)).to.be.true;
-        } else if(entry.name === "INT32_VALUES") {
+        } else if (entry.name === "INT32_VALUES") {
           expect(compareArrays(entry.values, expectedValuesSigned)).to.be.true;
-        } else if(entry.name === "INT64_VALUES") {
+        } else if (entry.name === "INT64_VALUES") {
           expect(compareArrays(entry.values, expectedValuesBigSigned)).to.be.true;
-        }else if(entry.name === "FLOAT32_VALUES") {
+        } else if (entry.name === "FLOAT32_VALUES") {
           expect(compareArrays(entry.values, expectedValuesUnsigned)).to.be.true;
-        } else if(entry.name === "FLOAT64_VALUES") {
+        } else if (entry.name === "FLOAT64_VALUES") {
           expect(compareArrays(entry.values, expectedValuesUnsigned)).to.be.true;
-        } else if(entry.name === "STRING_VALUES") {
+        } else if (entry.name === "STRING_VALUES") {
           expect(compareArrays(entry.values, expectedValuesString)).to.be.true;
         }
       }
 
       expect(structuralMetadata.tables[1].entries.length === 6);
-      for(const entry of structuralMetadata.tables[1].entries ?? []) {
-        if(entry.name === "UINT8_VEC2_VALUES") {
+      for (const entry of structuralMetadata.tables[1].entries ?? []) {
+        if (entry.name === "UINT8_VEC2_VALUES") {
           expect(compareArrays(entry.values, expectedValuesVec2)).to.be.true;
-        } else if(entry.name === "UINT8_VEC3_VALUES") {
+        } else if (entry.name === "UINT8_VEC3_VALUES") {
           expect(compareArrays(entry.values, expectedValuesVec3)).to.be.true;
-        } else if(entry.name === "UINT8_VEC4_VALUES") {
+        } else if (entry.name === "UINT8_VEC4_VALUES") {
           expect(compareArrays(entry.values, expectedValuesVec4)).to.be.true;
-        } else if(entry.name === "UINT8_MAT2_VALUES") {
+        } else if (entry.name === "UINT8_MAT2_VALUES") {
           expect(compareArrays(entry.values, expectedValuesVec4)).to.be.true;
-        } else if(entry.name === "UINT8_MAT3_VALUES") {
+        } else if (entry.name === "UINT8_MAT3_VALUES") {
           expect(compareArrays(entry.values, expectedValuesMat3)).to.be.true;
-        } else if(entry.name === "UINT8_MAT4_VALUES") {
+        } else if (entry.name === "UINT8_MAT4_VALUES") {
           expect(compareArrays(entry.values, expectedValuesMat4)).to.be.true;
         }
       }
@@ -987,46 +1020,46 @@ describe("GltfReader", () => {
       expect(result).not.to.be.undefined;
 
       let entryCount = 0;
-      for(const entry of idMap.entries()) {
+      for (const entry of idMap.entries()) {
         expect(entry).not.to.be.undefined;
 
         // Expect empty property set for noData = 4 | -4 | "four"
-        if(entryCount === 3){
+        if (entryCount === 3) {
           expect(JSON.stringify(entry.properties.propertySet0) === JSON.stringify({})).to.be.true;
         } else {
           let propertyCount0 = 0;
-          for(const [key, value] of Object.entries(entry.properties.propertySet0)){
-            if(key === "UINT8_VALUES") {
+          for (const [key, value] of Object.entries(entry.properties.propertySet0)) {
+            if (key === "UINT8_VALUES") {
               expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
               propertyCount0++;
-            } else if(key === "UINT16_VALUES") {
+            } else if (key === "UINT16_VALUES") {
               expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
               propertyCount0++;
-            } else if(key === "UINT32_VALUES") {
+            } else if (key === "UINT32_VALUES") {
               expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
               propertyCount0++;
-            } else if(key === "UINT64_VALUES") {
+            } else if (key === "UINT64_VALUES") {
               expect(value === expectedValuesBigUnsigned[entryCount]).to.be.true;
               propertyCount0++;
-            } else if(key === "INT8_VALUES") {
+            } else if (key === "INT8_VALUES") {
               expect(value === expectedValuesSigned[entryCount]).to.be.true;
               propertyCount0++;
-            } else if(key === "INT16_VALUES") {
+            } else if (key === "INT16_VALUES") {
               expect(value === expectedValuesSigned[entryCount]).to.be.true;
               propertyCount0++;
-            } else if(key === "INT32_VALUES") {
+            } else if (key === "INT32_VALUES") {
               expect(value === expectedValuesSigned[entryCount]).to.be.true;
               propertyCount0++;
-            } else if(key === "INT64_VALUES") {
+            } else if (key === "INT64_VALUES") {
               expect(value === expectedValuesBigSigned[entryCount]).to.be.true;
               propertyCount0++;
-            } else if(key === "FLOAT32_VALUES") {
+            } else if (key === "FLOAT32_VALUES") {
               expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
               propertyCount0++;
-            } else if(key === "FLOAT64_VALUES") {
+            } else if (key === "FLOAT64_VALUES") {
               expect(value === expectedValuesUnsigned[entryCount]).to.be.true;
               propertyCount0++;
-            } else if(key === "STRING_VALUES") {
+            } else if (key === "STRING_VALUES") {
               expect(value === expectedValuesString[entryCount]).to.be.true;
               propertyCount0++;
             }
@@ -1035,36 +1068,36 @@ describe("GltfReader", () => {
         }
 
         // Expect empty property set for null feature id = 3
-        if(instanceFeatures[entryCount] === 3){
+        if (instanceFeatures[entryCount] === 3) {
           expect(JSON.stringify(entry.properties.propertySet1) === JSON.stringify({})).to.be.true;
         } else {
           let propertyCount1 = 0;
-          for(const [key, value] of Object.entries(entry.properties.propertySet1)){
+          for (const [key, value] of Object.entries(entry.properties.propertySet1)) {
             const array = value as any[];
-            if(key === "UINT8_VEC2_VALUES") {
-              expect(compareArrays(array, expectedValuesVec2[instanceFeatures[entryCount]] )).to.be.true;
+            if (key === "UINT8_VEC2_VALUES") {
+              expect(compareArrays(array, expectedValuesVec2[instanceFeatures[entryCount]])).to.be.true;
               propertyCount1++;
-            } else if(key === "UINT8_VEC3_VALUES") {
-              expect(compareArrays(array, expectedValuesVec3[instanceFeatures[entryCount]] )).to.be.true;
+            } else if (key === "UINT8_VEC3_VALUES") {
+              expect(compareArrays(array, expectedValuesVec3[instanceFeatures[entryCount]])).to.be.true;
               propertyCount1++;
-            } else if(key === "UINT8_VEC4_VALUES") {
-              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]] )).to.be.true;
+            } else if (key === "UINT8_VEC4_VALUES") {
+              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).to.be.true;
               propertyCount1++;
-            } else if(key === "UINT8_MAT2_VALUES") {
-              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]] )).to.be.true;
+            } else if (key === "UINT8_MAT2_VALUES") {
+              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).to.be.true;
               propertyCount1++;
-            } else if(key === "UINT8_MAT3_VALUES") {
-              expect(compareArrays(array, expectedValuesMat3[instanceFeatures[entryCount]] )).to.be.true;
+            } else if (key === "UINT8_MAT3_VALUES") {
+              expect(compareArrays(array, expectedValuesMat3[instanceFeatures[entryCount]])).to.be.true;
               propertyCount1++;
-            }else if(key === "UINT8_MAT4_VALUES") {
-              expect(compareArrays(array, expectedValuesMat4[instanceFeatures[entryCount]] )).to.be.true;
+            } else if (key === "UINT8_MAT4_VALUES") {
+              expect(compareArrays(array, expectedValuesMat4[instanceFeatures[entryCount]])).to.be.true;
               propertyCount1++;
             }
           }
           expect(propertyCount1 === 6).to.be.true;
         }
 
-        entryCount ++;
+        entryCount++;
       }
       expect(entryCount === 4).to.be.true;
     });

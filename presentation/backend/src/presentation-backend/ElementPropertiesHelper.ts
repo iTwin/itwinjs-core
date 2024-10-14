@@ -6,10 +6,10 @@
  * @module Core
  */
 
-import { from, mergeAll, mergeMap, Observable, reduce } from "rxjs";
 import { ECSqlStatement, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
+import { from, mergeAll, mergeMap, Observable, reduce } from "rxjs";
 
 /** @internal */
 export function getElementsCount(db: IModelDb, classNames?: string[]) {
@@ -63,7 +63,7 @@ export async function getBatchedClassElementIds(
   imodel: IModelDb,
   fullClassName: string,
   batchSize: number,
-): Promise<Array<{ from: Id64String; to: Id64String }>> {
+): Promise<Array<{ from: Id64String, to: Id64String }>> {
   const batches = [];
   const reader = imodel.createQueryReader(`SELECT ECInstanceId id FROM ${getECSqlName(fullClassName)} ORDER BY ECInstanceId`);
   let currId: Id64String | undefined;

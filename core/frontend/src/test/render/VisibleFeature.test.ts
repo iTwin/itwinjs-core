@@ -2,15 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { EmptyLocalization } from "@itwin/core-common";
 import { Point3d, Vector3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { QueryVisibleFeaturesOptions } from "../../render/VisibleFeature";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport } from "../../Viewport";
 import { createBlankConnection } from "../createBlankConnection";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("Visible feature query", () => {
   let imodel: IModelConnection;

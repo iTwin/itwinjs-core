@@ -2,16 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { AccessToken } from "@itwin/core-bentley";
 import { CheckpointConnection } from "@itwin/core-frontend";
+import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
+import { expect } from "chai";
 import { IModelData } from "../../common/Settings";
-import { AccessToken } from "@itwin/core-bentley";
-import { AccessTokenAdapter } from "@itwin/imodels-access-frontend";
 
 export class IModelSession {
-
   public iTwinId: string;
   public iModelId: string;
   public changesetId?: string;
@@ -31,7 +30,7 @@ export class IModelSession {
     // Turn the iTwin name into an id
     if (iModelData.useITwinName && iModelData.iTwinName) {
       const client = new ITwinsAccessClient();
-      const iTwinListResponse: ITwinsAPIResponse<ITwin[]> = await client.queryAsync(accessToken, ITwinSubClass.Project , {
+      const iTwinListResponse: ITwinsAPIResponse<ITwin[]> = await client.queryAsync(accessToken, ITwinSubClass.Project, {
         displayName: iModelData.iTwinName,
       });
       const iTwinList = iTwinListResponse.data;
@@ -48,7 +47,7 @@ export class IModelSession {
       iTwinId = iModelData.iTwinId!;
 
     if (iModelData.useName) {
-      const imodelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+      const imodelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
       const iModels = imodelClient.iModels.getRepresentationList({
         authorization: AccessTokenAdapter.toAuthorizationCallback(accessToken),
         urlParams: {

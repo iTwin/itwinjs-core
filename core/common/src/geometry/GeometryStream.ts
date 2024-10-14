@@ -8,9 +8,25 @@
 
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  Angle, AnyGeometryQuery, GeometryQuery, IModelJson as GeomJson, LineSegment3d, LowAndHighXYZ, Matrix3d, Point2d, Point3d, Range3d, Transform, TransformProps,
-  Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps,
+  Angle,
+  AnyGeometryQuery,
+  GeometryQuery,
+  IModelJson as GeomJson,
+  LineSegment3d,
+  LowAndHighXYZ,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Range3d,
+  Transform,
+  TransformProps,
+  Vector3d,
+  XYZProps,
+  YawPitchRollAngles,
+  YawPitchRollProps,
 } from "@itwin/core-geometry";
+import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
+import { Base64EncodedString } from "../Base64EncodedString";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 import { GeometricElement2dProps, GeometricElement3dProps, GeometryPartProps, isPlacement2dProps, PlacementProps } from "../ElementProps";
 import { BackgroundFill, FillDisplay, GeometryClass, GeometryParams } from "../GeometryParams";
@@ -19,10 +35,8 @@ import { IModelError } from "../IModelError";
 import { AreaPattern } from "./AreaPattern";
 import { ImageGraphic, ImageGraphicProps } from "./ImageGraphic";
 import { LineStyle } from "./LineStyle";
-import { TextString, TextStringProps } from "./TextString";
-import { Base64EncodedString } from "../Base64EncodedString";
 import { Placement2d, Placement3d } from "./Placement";
-import { TextBlockGeometryProps } from "../annotation/TextBlockGeometryProps";
+import { TextString, TextStringProps } from "./TextString";
 
 /** Establish a non-default [[SubCategory]] or to override [[SubCategoryAppearance]] for the geometry that follows.
  * A GeometryAppearanceProps always signifies a reset to the [[SubCategoryAppearance]] for subsequent [[GeometryStreamProps]] entries for undefined values.
@@ -200,7 +214,7 @@ export class GeometryStreamBuilder {
    * Can be called with undefined or identity transform to start appending geometry supplied in local coordinates again.
    */
   public setLocalToWorld(localToWorld?: Transform) {
-    this._worldToLocal = (undefined === localToWorld || localToWorld.isIdentity ? undefined : localToWorld.inverse());
+    this._worldToLocal = undefined === localToWorld || localToWorld.isIdentity ? undefined : localToWorld.inverse();
   }
 
   /** Supply local to world transform from a Point3d and optional YawPitchRollAngles.
@@ -318,7 +332,12 @@ export class GeometryStreamBuilder {
    *  Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
    */
   public appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean {
-    return this.appendGeometryPart3d(partId, instanceOrigin ? Point3d.createFrom(instanceOrigin) : undefined, instanceRotation ? new YawPitchRollAngles(instanceRotation) : undefined, instanceScale);
+    return this.appendGeometryPart3d(
+      partId,
+      instanceOrigin ? Point3d.createFrom(instanceOrigin) : undefined,
+      instanceRotation ? new YawPitchRollAngles(instanceRotation) : undefined,
+      instanceScale,
+    );
   }
 
   /** Append a [[TextString]] supplied in either local or world coordinates to the [[GeometryStreamProps]] array */
@@ -527,13 +546,25 @@ class IteratorEntry implements GeometryStreamIteratorEntry {
     this.localToWorld = localToWorld;
   }
 
-  public get primitive() { return this._primitive!; }
-  public set primitive(primitive: GeometryStreamPrimitive) { this._primitive = primitive; }
+  public get primitive() {
+    return this._primitive!;
+  }
+  public set primitive(primitive: GeometryStreamPrimitive) {
+    this._primitive = primitive;
+  }
 
-  public setGeometryQuery(geometry: AnyGeometryQuery) { this._primitive = { type: "geometryQuery", geometry }; }
-  public setTextString(textString: TextString) { this._primitive = { type: "textString", textString }; }
-  public setBRep(brep: BRepEntity.DataProps) { this._primitive = { type: "brep", brep }; }
-  public setImage(image: ImageGraphic) { this._primitive = { type: "image", image }; }
+  public setGeometryQuery(geometry: AnyGeometryQuery) {
+    this._primitive = { type: "geometryQuery", geometry };
+  }
+  public setTextString(textString: TextString) {
+    this._primitive = { type: "textString", textString };
+  }
+  public setBRep(brep: BRepEntity.DataProps) {
+    this._primitive = { type: "brep", brep };
+  }
+  public setImage(image: ImageGraphic) {
+    this._primitive = { type: "image", image };
+  }
   public setPartReference(id: Id64String, toLocal?: Transform) {
     this._primitive = {
       type: "partReference",
@@ -593,7 +624,10 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
 
     let transform;
     if (element.placement !== undefined)
-      transform = Transform.createOriginAndMatrix(Point3d.fromJSON(element.placement.origin), YawPitchRollAngles.fromJSON(element.placement.angles).toMatrix3d());
+      transform = Transform.createOriginAndMatrix(
+        Point3d.fromJSON(element.placement.origin),
+        YawPitchRollAngles.fromJSON(element.placement.angles).toMatrix3d(),
+      );
 
     return new GeometryStreamIterator(element.geom, element.category, transform);
   }
@@ -703,7 +737,10 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
           const rotation = entry.geomPart.rotation ? YawPitchRollAngles.fromJSON(entry.geomPart.rotation).toMatrix3d() : Matrix3d.createIdentity();
           transform = Transform.createRefs(origin, rotation);
           if (entry.geomPart.scale)
-            transform.multiplyTransformTransform(Transform.createRefs(Point3d.createZero(), Matrix3d.createUniformScale(entry.geomPart.scale)), transform);
+            transform.multiplyTransformTransform(
+              Transform.createRefs(Point3d.createZero(), Matrix3d.createUniformScale(entry.geomPart.scale)),
+              transform,
+            );
         }
 
         // Subgraphic range doesn't apply to parts. A sane geometry stream (i.e., any that has been through the native layers or GeometryStreamBuilder)
@@ -754,5 +791,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   }
 
   /** @internal */
-  public get isViewIndependent(): boolean { return GeometryStreamFlags.None !== (this.flags & GeometryStreamFlags.ViewIndependent); }
+  public get isViewIndependent(): boolean {
+    return GeometryStreamFlags.None !== (this.flags & GeometryStreamFlags.ViewIndependent);
+  }
 }

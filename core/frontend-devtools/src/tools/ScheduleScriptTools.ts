@@ -8,13 +8,11 @@
  */
 
 import { assert, CompressedId64Set } from "@itwin/core-bentley";
-import {
-  ElementLoadOptions, RenderSchedule, RenderTimelineProps,
-} from "@itwin/core-common";
+import { ElementLoadOptions, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
 import { Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
-import { parseArgs } from "./parseArgs";
 import { DisplayStyleTool } from "./DisplayStyleTools";
+import { parseArgs } from "./parseArgs";
 
 /** Query the schedule script JSON from an element.
  * @beta
@@ -27,8 +25,12 @@ export class QueryScheduleScriptTool extends DisplayStyleTool {
   private _expandElementIds = false;
 
   public static override toolId = "QueryScheduleScript";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 3;
+  }
 
   public async parse(input: string[], vp: Viewport) {
     const args = parseArgs(input);
@@ -105,7 +107,10 @@ interface Timeline<Entry extends RenderSchedule.TimelineEntry> {
   getEntry(index: number): Entry | undefined;
 }
 
-function reverseTimeline<Entry extends RenderSchedule.TimelineEntry>(timeline: Timeline<Entry> | undefined, accept: (time: number, entry: Entry) => void): void {
+function reverseTimeline<Entry extends RenderSchedule.TimelineEntry>(
+  timeline: Timeline<Entry> | undefined,
+  accept: (time: number, entry: Entry) => void,
+): void {
   if (!timeline)
     return;
 
@@ -161,8 +166,12 @@ export class ReverseScheduleScriptTool extends DisplayStyleTool {
  */
 export class SetScheduleScriptTool extends DisplayStyleTool {
   public static override toolId = "SetScheduleScript";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   private _script?: RenderSchedule.Script;
 

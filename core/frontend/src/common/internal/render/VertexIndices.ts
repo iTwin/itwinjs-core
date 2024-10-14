@@ -26,7 +26,9 @@ export class VertexIndices implements Iterable<number> {
   }
 
   /** Get the number of 24-bit indices. */
-  public get length(): number { return this.data.length / 3; }
+  public get length(): number {
+    return this.data.length / 3;
+  }
 
   /** Convert an array of 24-bit unsigned integer values into a VertexIndices object. */
   public static fromArray(indices: number[]): VertexIndices {
@@ -63,7 +65,7 @@ export class VertexIndices implements Iterable<number> {
   }
 
   public [Symbol.iterator]() {
-    function * iterator(indices: VertexIndices) {
+    function* iterator(indices: VertexIndices) {
       for (let i = 0; i < indices.length; i++)
         yield indices.decodeIndex(i);
     }

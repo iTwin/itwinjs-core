@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
+import { deflateCoordinates } from "@itwin/core-frontend";
 import * as chai from "chai";
+import * as sinon from "sinon";
 import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader";
 import { MockGeometryRenderer } from "./Mocks";
-import { deflateCoordinates } from "@itwin/core-frontend";
 describe("GeoJSONGeometryReader", () => {
-
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
@@ -23,7 +22,7 @@ describe("GeoJSONGeometryReader", () => {
     const renderPathSpy = sandbox.spy(renderer, "renderPath");
     const renderPointSpy = sandbox.spy(renderer, "renderPoint");
     const coordinates = [10, -10];
-    await reader.readGeometry({type: "Point", coordinates});
+    await reader.readGeometry({ type: "Point", coordinates });
 
     const getPointCalls = renderPointSpy.getCalls();
     chai.expect(getPointCalls.length).to.be.equals(1);
@@ -38,16 +37,16 @@ describe("GeoJSONGeometryReader", () => {
 
     const renderPathSpy = sandbox.spy(renderer, "renderPath");
     const renderPointSpy = sandbox.spy(renderer, "renderPoint");
-    const coordinates = [[10, -10], [11,-11]];
-    await reader.readGeometry({type: "MultiPoint", coordinates});
+    const coordinates = [[10, -10], [11, -11]];
+    await reader.readGeometry({ type: "MultiPoint", coordinates });
 
     const getPointCalls = renderPointSpy.getCalls();
     chai.expect(getPointCalls.length).to.be.equals(1);
-    chai.expect(getPointCalls[0].args[0]).to.eql([1,1]);
+    chai.expect(getPointCalls[0].args[0]).to.eql([1, 1]);
     const flatCoords: number[] = [];
     deflateCoordinates(coordinates, flatCoords, 2, 0);
 
-    chai.expect(getPointCalls[0].args[1]).to.eql(flatCoords );
+    chai.expect(getPointCalls[0].args[1]).to.eql(flatCoords);
     chai.expect(renderPathSpy.called).to.be.false;
   });
 
@@ -61,9 +60,10 @@ describe("GeoJSONGeometryReader", () => {
       [-10, -10],
       [10, -10],
       [10, 10],
-      [-10, -10]];
+      [-10, -10],
+    ];
 
-    await reader.readGeometry({type: "LineString", coordinates});
+    await reader.readGeometry({ type: "LineString", coordinates });
 
     const getPathsCalls = renderPathSpy.getCalls();
     chai.expect(getPathsCalls.length).to.be.equals(1);
@@ -95,7 +95,7 @@ describe("GeoJSONGeometryReader", () => {
       ],
     ];
 
-    await reader.readGeometry({type: "MultiLineString", coordinates});
+    await reader.readGeometry({ type: "MultiLineString", coordinates });
 
     const getPathsCalls = renderPathSpy.getCalls();
     chai.expect(getPathsCalls.length).to.be.equals(1);
@@ -115,13 +115,15 @@ describe("GeoJSONGeometryReader", () => {
     await reader.readGeometry({
       type: "Polygon",
       coordinates: [
-        [ /* Ring 1 */
+        [
+          /* Ring 1 */
           [-10, -10],
           [10, -10],
           [10, 10],
           [-10, -10],
         ],
-        [ /* Ring 2 */
+        [
+          /* Ring 2 */
           [-5, -5],
           [5, -5],
           [5, 5],
@@ -146,7 +148,8 @@ describe("GeoJSONGeometryReader", () => {
     await reader.readGeometry({
       type: "MultiPolygon",
       coordinates: [
-        [ /* Polygon 1 */
+        [
+          /* Polygon 1 */
           [
             [-10.0, -10.0],
             [10.0, -10.0],
@@ -154,7 +157,8 @@ describe("GeoJSONGeometryReader", () => {
             [-10.0, -10.0],
           ],
         ],
-        [ /* Polygon 2 */
+        [
+          /* Polygon 2 */
           [
             [-10.0, -10.0],
             [10.0, -10.0],

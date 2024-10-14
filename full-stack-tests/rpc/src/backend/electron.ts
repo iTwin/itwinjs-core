@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { registerBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { commonSetup } from "./CommonBackendSetup";
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { setupIpcTestElectron } from "./ipc";
 
 async function init() {

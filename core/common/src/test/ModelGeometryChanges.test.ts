@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import { CompressedId64Set, DbOpcode, Guid, Id64String, OrderedId64Iterable, TransientIdSequence } from "@itwin/core-bentley";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import { describe, expect, it } from "vitest";
 import { ElementGeometryChange, ModelGeometryChanges, ModelGeometryChangesProps } from "../ModelGeometryChanges";
 
 // Each test is list of inserted, updated, and/or deleted element Ids; along with modelId.
@@ -90,7 +90,9 @@ function elementChangesToJSON(changes: ElementChangeSets): ModelGeometryChangesP
   const inserted = insertedIds && insertedRanges ? { ids: insertedIds, ranges: insertedRanges } : undefined;
   const updated = updatedIds && updatedRanges ? { ids: updatedIds, ranges: updatedRanges } : undefined;
   return {
-    inserted, updated, deleted,
+    inserted,
+    updated,
+    deleted,
     id: ids.getNext(),
     guid: Guid.createValue(),
     range: nextRange().toJSON(),

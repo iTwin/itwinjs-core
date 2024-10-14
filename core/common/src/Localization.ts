@@ -117,21 +117,31 @@ export interface Localization {
  * @public
  */
 export class EmptyLocalization implements Localization {
-  public async initialize(): Promise<void> { }
+  public async initialize(): Promise<void> {}
   public getLocalizedString(key: string | string[]): string {
-    if (typeof (key) !== "string") {
+    if (typeof key !== "string") {
       key = key[0];
     }
     // Simulate correct and simple usage of i18next's translation function
     // Namely, remove the leading namespace substring if there is one
     return key.split(":", 2).pop()!;
   }
-  public getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
-  public getEnglishString(_namespace: string, key: string | string[]): string { return this.getLocalizedString(key); }
-  public getLocalizedKeys(inputString: string): string { return inputString; }
-  public async registerNamespace(): Promise<void> { }
-  public unregisterNamespace(): void { }
-  public getNamespacePromise(): Promise<void> | undefined { return undefined; }
-  public getLanguageList(): readonly string[] { return []; }
-  public async changeLanguage() { }
+  public getLocalizedStringWithNamespace(_namespace: string, key: string | string[]): string {
+    return this.getLocalizedString(key);
+  }
+  public getEnglishString(_namespace: string, key: string | string[]): string {
+    return this.getLocalizedString(key);
+  }
+  public getLocalizedKeys(inputString: string): string {
+    return inputString;
+  }
+  public async registerNamespace(): Promise<void> {}
+  public unregisterNamespace(): void {}
+  public getNamespacePromise(): Promise<void> | undefined {
+    return undefined;
+  }
+  public getLanguageList(): readonly string[] {
+    return [];
+  }
+  public async changeLanguage() {}
 }

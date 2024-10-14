@@ -7,16 +7,28 @@
  */
 
 import { AccessToken, assert, BeDuration, Id64Array, Logger } from "@itwin/core-bentley";
-import { ElementGraphicsRequestProps, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeProps, RpcInterface, RpcManager, RpcPendingResponse, TileContentIdentifier, TileContentSource, TileTreeContentIds, TileVersionInfo } from "@itwin/core-common";
+import {
+  ElementGraphicsRequestProps,
+  IModelRpcProps,
+  IModelTileRpcInterface,
+  IModelTileTreeProps,
+  RpcInterface,
+  RpcManager,
+  RpcPendingResponse,
+  TileContentIdentifier,
+  TileContentSource,
+  TileTreeContentIds,
+  TileVersionInfo,
+} from "@itwin/core-common";
 import type { Metadata, TransferConfig } from "@itwin/object-storage-core";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
+import { IModelNative } from "../internal/NativePlatform";
+import { _nativeDb } from "../internal/Symbols";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { RpcTrace } from "../rpc/tracing";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
-import { IModelNative } from "../internal/NativePlatform";
-import { _nativeDb } from "../internal/Symbols";
 
 interface TileRequestProps {
   accessToken?: AccessToken;
@@ -26,12 +38,14 @@ interface TileRequestProps {
 
 function generateTileRequestKey(props: TileRequestProps): string {
   const token = props.tokenProps;
-  return `${JSON.stringify({
-    key: token.key,
-    iTwinId: token.iTwinId,
-    iModelId: token.iModelId,
-    changesetId: token.changeset?.id,
-  })}:${props.treeId}`;
+  return `${
+    JSON.stringify({
+      key: token.key,
+      iTwinId: token.iTwinId,
+      iModelId: token.iModelId,
+      changesetId: token.changeset?.id,
+    })
+  }:${props.treeId}`;
 }
 
 abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> extends PromiseMemoizer<Result> {
@@ -69,7 +83,7 @@ abstract class TileRequestMemoizer<Result, Props extends TileRequestProps> exten
 
     const tileQP = this.memoize(props);
 
-    await BeDuration.race(this._timeoutMilliseconds, tileQP.promise).catch(() => { });
+    await BeDuration.race(this._timeoutMilliseconds, tileQP.promise).catch(() => {});
     // Note: Rejections must be caught so that the memoization entry can be deleted
 
     if (tileQP.isPending) {
@@ -98,9 +112,15 @@ async function getTileTreeProps(props: TileRequestProps): Promise<IModelTileTree
 }
 
 class RequestTileTreePropsMemoizer extends TileRequestMemoizer<IModelTileTreeProps, TileRequestProps> {
-  protected get _timeoutMilliseconds() { return IModelHost.tileTreeRequestTimeout; }
-  protected get _operationName() { return "requestTileTreeProps"; }
-  protected stringify(props: TileRequestProps): string { return props.treeId; }
+  protected get _timeoutMilliseconds() {
+    return IModelHost.tileTreeRequestTimeout;
+  }
+  protected get _operationName() {
+    return "requestTileTreeProps";
+  }
+  protected stringify(props: TileRequestProps): string {
+    return props.treeId;
+  }
   protected addMetadata(meta: any, props: TileRequestProps): void {
     meta.treeId = props.treeId;
   }
@@ -140,7 +160,15 @@ async function getTileContent(props: TileContentRequestProps): Promise<TileConte
       tileGenerationTime: tile.elapsedSeconds.toString(),
       tileSize: tile.content.byteLength.toString(),
     };
-    await IModelHost.tileStorage?.uploadTile(props.tokenProps.iModelId ?? db.iModelId, props.tokenProps.changeset?.id ?? db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, tileMetadata);
+    await IModelHost.tileStorage?.uploadTile(
+      props.tokenProps.iModelId ?? db.iModelId,
+      props.tokenProps.changeset?.id ?? db.changeset.id,
+      props.treeId,
+      props.contentId,
+      tile.content,
+      props.guid,
+      tileMetadata,
+    );
     const { accessToken: _, ...safeProps } = props;
     Logger.logInfo(BackendLoggerCategory.IModelTileRequestRpc, "Generated and uploaded tile", { tileMetadata, ...safeProps });
 
@@ -155,9 +183,15 @@ function generateTileContentKey(props: TileContentRequestProps): string {
 }
 
 class RequestTileContentMemoizer extends TileRequestMemoizer<TileContentSource, TileContentRequestProps> {
-  protected get _timeoutMilliseconds() { return IModelHost.tileContentRequestTimeout; }
-  protected get _operationName() { return "requestTileContent"; }
-  protected stringify(props: TileContentRequestProps): string { return `${props.treeId}:${props.contentId}`; }
+  protected get _timeoutMilliseconds() {
+    return IModelHost.tileContentRequestTimeout;
+  }
+  protected get _operationName() {
+    return "requestTileContent";
+  }
+  protected stringify(props: TileContentRequestProps): string {
+    return `${props.treeId}:${props.contentId}`;
+  }
   protected addMetadata(meta: any, props: TileContentRequestProps): void {
     meta.treeId = props.treeId;
     meta.contentId = props.contentId;
@@ -191,7 +225,9 @@ function currentActivity() {
 
 /** @internal */
 export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInterface { // eslint-disable-line deprecation/deprecation
-  public static register() { RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl); }
+  public static register() {
+    RpcManager.registerImpl(IModelTileRpcInterface, IModelTileRpcImpl);
+  }
 
   public async requestTileTreeProps(tokenProps: IModelRpcProps, treeId: string): Promise<IModelTileTreeProps> {
     return RequestTileTreePropsMemoizer.perform({ accessToken: currentActivity().accessToken, tokenProps, treeId });
@@ -210,7 +246,12 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return db[_nativeDb].purgeTileTrees(modelIds);
   }
 
-  public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<TileContentSource> {
+  public async generateTileContent(
+    tokenProps: IModelRpcProps,
+    treeId: string,
+    contentId: string,
+    guid: string | undefined,
+  ): Promise<TileContentSource> {
     return RequestTileContentMemoizer.perform({ accessToken: currentActivity().accessToken, tokenProps, treeId, contentId, guid });
   }
 

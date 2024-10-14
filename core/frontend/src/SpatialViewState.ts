@@ -7,17 +7,23 @@
  */
 
 import { BeEvent, CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import {
+  AxisAlignedBox3d,
+  HydrateViewStateRequestProps,
+  HydrateViewStateResponseProps,
+  SpatialViewDefinitionProps,
+  ViewStateProps,
+} from "@itwin/core-common";
 import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
-import { AxisAlignedBox3d, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
-import { ModelSelectorState } from "./ModelSelectorState";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle3dState } from "./DisplayStyleState";
-import { GeometricModel3dState, GeometricModelState } from "./ModelState";
-import { SceneContext } from "./ViewContext";
 import { IModelConnection } from "./IModelConnection";
-import { AttachToViewportArgs, ViewState3d } from "./ViewState";
+import { ModelSelectorState } from "./ModelSelectorState";
+import { GeometricModel3dState, GeometricModelState } from "./ModelState";
 import { SpatialTileTreeReferences, TileTreeReference } from "./tile/internal";
+import { SceneContext } from "./ViewContext";
+import { AttachToViewportArgs, ViewState3d } from "./ViewState";
 
 /** Options supplied to [[SpatialViewState.computeFitRange]].
  * @public
@@ -33,7 +39,9 @@ export interface ComputeSpatialViewFitRangeOptions {
  * @extensions
  */
 export class SpatialViewState extends ViewState3d {
-  public static override get className() { return "SpatialViewDefinition"; }
+  public static override get className() {
+    return "SpatialViewDefinition";
+  }
 
   private readonly _treeRefs: SpatialTileTreeReferences;
   private _modelSelector: ModelSelectorState;
@@ -100,7 +108,13 @@ export class SpatialViewState extends ViewState3d {
     return props;
   }
 
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
+  constructor(
+    props: SpatialViewDefinitionProps,
+    iModel: IModelConnection,
+    arg3: CategorySelectorState,
+    displayStyle: DisplayStyle3dState,
+    modelSelector: ModelSelectorState,
+  ) {
     super(props, iModel, arg3, displayStyle);
     this._modelSelector = modelSelector;
     if (arg3 instanceof SpatialViewState) // from clone
@@ -110,12 +124,20 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  public override isSpatialView(): this is SpatialViewState { return true; }
+  public override isSpatialView(): this is SpatialViewState {
+    return true;
+  }
 
-  public override equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
+  public override equals(other: this): boolean {
+    return super.equals(other) && this.modelSelector.equals(other.modelSelector);
+  }
 
-  public override createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
-  public get defaultExtentLimits() { return { min: Constant.oneMillimeter, max: 3 * Constant.diameterOfEarth }; } // Increased max by 3X to support globe mode.
+  public override createAuxCoordSystem(acsName: string): AuxCoordSystemState {
+    return AuxCoordSystemSpatialState.createNew(acsName, this.iModel);
+  }
+  public get defaultExtentLimits() {
+    return { min: Constant.oneMillimeter, max: 3 * Constant.diameterOfEarth };
+  } // Increased max by 3X to support globe mode.
 
   /** @internal */
   public markModelSelectorChanged(): void {
@@ -205,10 +227,18 @@ export class SpatialViewState extends ViewState3d {
     await Promise.all(promises);
   }
 
-  public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
-  public clearViewedModels() { this.modelSelector.models.clear(); }
-  public addViewedModel(id: Id64String) { this.modelSelector.addModels(id); }
-  public removeViewedModel(id: Id64String) { this.modelSelector.dropModels(id); }
+  public viewsModel(modelId: Id64String): boolean {
+    return this.modelSelector.containsModel(modelId);
+  }
+  public clearViewedModels() {
+    this.modelSelector.models.clear();
+  }
+  public addViewedModel(id: Id64String) {
+    this.modelSelector.addModels(id);
+  }
+  public removeViewedModel(id: Id64String) {
+    this.modelSelector.dropModels(id);
+  }
 
   public forEachModel(func: (model: GeometricModelState) => void) {
     for (const modelId of this.modelSelector.models) {
@@ -252,7 +282,11 @@ export class SpatialViewState extends ViewState3d {
    * @param which The references to be affected as either a broad category or one or more indices of animated references.
    * @internal
    */
-  public setTileTreeReferencesDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, which: "all" | "animated" | "primary" | "section" | number[]): void {
+  public setTileTreeReferencesDeactivated(
+    modelIds: Id64String | Id64String[] | undefined,
+    deactivated: boolean | undefined,
+    which: "all" | "animated" | "primary" | "section" | number[],
+  ): void {
     this._treeRefs.setDeactivated(modelIds, deactivated, which);
   }
 
@@ -297,9 +331,21 @@ export class SpatialViewState extends ViewState3d {
  * @extensions
  */
 export class OrthographicViewState extends SpatialViewState {
-  public static override get className() { return "OrthographicViewDefinition"; }
+  public static override get className() {
+    return "OrthographicViewDefinition";
+  }
 
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
+  constructor(
+    props: SpatialViewDefinitionProps,
+    iModel: IModelConnection,
+    categories: CategorySelectorState,
+    displayStyle: DisplayStyle3dState,
+    modelSelector: ModelSelectorState,
+  ) {
+    super(props, iModel, categories, displayStyle, modelSelector);
+  }
 
-  public override supportsCamera(): boolean { return false; }
+  public override supportsCamera(): boolean {
+    return false;
+  }
 }

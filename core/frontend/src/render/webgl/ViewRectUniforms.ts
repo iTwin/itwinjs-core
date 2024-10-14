@@ -7,9 +7,9 @@
  */
 
 import { Matrix4d } from "@itwin/core-geometry";
-import { UniformHandle } from "./UniformHandle";
 import { Matrix4 } from "./Matrix";
 import { desync, sync } from "./Sync";
+import { UniformHandle } from "./UniformHandle";
 
 /** Maintains uniform variable state associated with a Target's ViewRect.
  * @internal
@@ -19,8 +19,8 @@ export class ViewRectUniforms {
   public readonly projectionMatrix = Matrix4d.createIdentity();
 
   public readonly projectionMatrix32 = new Matrix4();
-  private readonly _dimensions = [ 0, 0 ];
-  private readonly _inverseDimensions = [ 0, 0 ];
+  private readonly _dimensions = [0, 0];
+  private readonly _inverseDimensions = [0, 0];
   private readonly _viewportMatrix = new Matrix4();
 
   public update(width: number, height: number): void {
@@ -55,15 +55,32 @@ export class ViewRectUniforms {
     const column3Row3 = 1.0;
 
     Matrix4.fromValues(
-      column0Row0, 0.0, 0.0, column3Row0,
-      0.0, column1Row1, 0.0, column3Row1,
-      0.0, 0.0, column2Row2, column3Row2,
-      0.0, 0.0, 0.0, column3Row3,
-      this._viewportMatrix);
+      column0Row0,
+      0.0,
+      0.0,
+      column3Row0,
+      0.0,
+      column1Row1,
+      0.0,
+      column3Row1,
+      0.0,
+      0.0,
+      column2Row2,
+      column3Row2,
+      0.0,
+      0.0,
+      0.0,
+      column3Row3,
+      this._viewportMatrix,
+    );
   }
 
-  public get width() { return this._dimensions[0]; }
-  public get height() { return this._dimensions[1]; }
+  public get width() {
+    return this._dimensions[0];
+  }
+  public get height() {
+    return this._dimensions[1];
+  }
 
   public bindProjectionMatrix(uniform: UniformHandle): void {
     if (!sync(this, uniform))

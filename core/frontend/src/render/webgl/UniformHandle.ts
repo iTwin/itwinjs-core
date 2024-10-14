@@ -13,7 +13,7 @@ import { ShaderProgram } from "./ShaderProgram";
 import { SyncToken } from "./Sync";
 import { System } from "./System";
 
-const enum DataType {// eslint-disable-line no-restricted-syntax
+const enum DataType { // eslint-disable-line no-restricted-syntax
   Undefined, // eslint-disable-line id-blacklist
   Mat3,
   Mat4,
@@ -36,7 +36,9 @@ export class UniformHandle {
   private readonly _data: number[] = [];
   public syncToken?: SyncToken;
 
-  private constructor(location: WebGLUniformLocation | null) { this._location = location; }
+  private constructor(location: WebGLUniformLocation | null) {
+    this._location = location;
+  }
 
   public static create(program: ShaderProgram, name: string): UniformHandle {
     let location = null;

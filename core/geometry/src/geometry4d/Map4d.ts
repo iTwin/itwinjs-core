@@ -63,7 +63,11 @@ export class Map4d implements BeJSONFunctions {
    * @param highB high point of box B
    */
   public static createBoxMap(
-    lowA: Point3d, highA: Point3d, lowB: Point3d, highB: Point3d, result?: Map4d,
+    lowA: Point3d,
+    highA: Point3d,
+    lowB: Point3d,
+    highB: Point3d,
+    result?: Map4d,
   ): Map4d | undefined {
     const t0 = Matrix4d.createBoxToBox(lowA, highA, lowB, highB, result ? result.transform0 : undefined);
     const t1 = Matrix4d.createBoxToBox(lowB, highB, lowA, highA, result ? result.transform1 : undefined);
@@ -119,7 +123,11 @@ export class Map4d implements BeJSONFunctions {
    * @param fraction front size divided by rear size.
    */
   public static createVectorFrustum(
-    origin: Point3d, uVector: Vector3d, vVector: Vector3d, wVector: Vector3d, fraction: number,
+    origin: Point3d,
+    uVector: Vector3d,
+    vVector: Vector3d,
+    wVector: Vector3d,
+    fraction: number,
   ): Map4d | undefined {
     fraction = Math.max(fraction, 1.0e-8);
     const slabToWorld = Transform.createOriginAndMatrix(origin, Matrix3d.createColumns(uVector, vVector, wVector));

@@ -80,7 +80,9 @@ describe("Geometry", () => {
 
 class GeometryCheck {
   public ck: Checker;
-  public constructor() { this.ck = new Checker(); }
+  public constructor() {
+    this.ck = new Checker();
+  }
 
   public testTrigForm(a: number, cosCoff: number, sinCoff: number): void {
     const rootA = Geometry.solveTrigForm(a, cosCoff, sinCoff);
@@ -94,7 +96,6 @@ class GeometryCheck {
       // no roots. expect trig condition ....
       this.ck.testCoordinateOrder(Geometry.hypotenuseXY(cosCoff, sinCoff), Math.abs(a), " no-root coff condition");
     }
-
   }
   public testQuadratic(a: number, b: number, c: number): void {
     const rootA = Degree2PowerPolynomial.solveQuadratic(a, b, c);
@@ -106,7 +107,6 @@ class GeometryCheck {
     } else {
       this.ck.testCoordinateOrder(b * b - 4 * a * c, 0.0, " no-root coff condition");
     }
-
   }
 }
 describe("Geometry.solveTrigForm", () => {
@@ -114,7 +114,7 @@ describe("Geometry.solveTrigForm", () => {
     const gc = new GeometryCheck();
     gc.testTrigForm(0, 1, 0);
     gc.testTrigForm(0.2, 0.3, 0.9);
-    gc.testTrigForm(5, 1, 1);  // no solutions !!!
+    gc.testTrigForm(5, 1, 1); // no solutions !!!
 
     expect(gc.ck.getNumErrors()).toBe(0);
   });
@@ -161,7 +161,6 @@ describe("Geometry.modulo", () => {
       ck.testAngleAllowShift(theta, theta1, "JSON: simple number (radians)");
       theta3.setFromJSON(theta); // typed Angle
       ck.testAngleAllowShift(theta, theta3, "JSON: strongly typed Angle object");
-
     }
     expect(gc.ck.getNumErrors()).toBe(0);
   });
@@ -227,11 +226,15 @@ describe("GeometryA", () => {
       // clamping with reversed ends
       ck.testExactNumber(
         Geometry.clampToStartEnd(a, 2, 4),
-        Geometry.clampToStartEnd(a, 4, 2), "Clamp is same result with reversed ends");
+        Geometry.clampToStartEnd(a, 4, 2),
+        "Clamp is same result with reversed ends",
+      );
       // modulo with negated period
       ck.testCoordinate(
         Geometry.modulo(a, 4),
-        -Geometry.modulo(-a, -4), "Modulo with negative period");
+        -Geometry.modulo(-a, -4),
+        "Modulo with negative period",
+      );
       ck.testExactNumber(a, Geometry.modulo(a, 0), "modulo with zero period");
     }
     const q: any[] = [1, 2, 3, 6, 9];
@@ -253,10 +256,12 @@ describe("GeometryA", () => {
     }
     // inverse interpolate with huge target and small interval . . .
     ck.testUndefined(
-      Geometry.inverseInterpolate(0, 1, 1, 3, 1.0e12));
+      Geometry.inverseInterpolate(0, 1, 1, 3, 1.0e12),
+    );
     const e = Geometry.smallAngleRadians;
     ck.testUndefined(
-      Geometry.inverseInterpolate(0, 1, 1, 1 + e, 1000));
+      Geometry.inverseInterpolate(0, 1, 1, 1 + e, 1000),
+    );
 
     ck.testExactNumber(Geometry.stepCount(0, 100, 4, 30), 4, "stepSize 0 returns min");
     ck.testExactNumber(Geometry.stepCount(200, 100, 4, 30), 4, "stepSize huge returns min");
@@ -292,5 +297,4 @@ describe("GeometryA", () => {
     ck.testTrue(Number.isFinite(Number.MAX_VALUE));
     ck.testFalse(Number.isFinite(Number.NaN));
   });
-
 });

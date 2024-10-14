@@ -47,12 +47,12 @@ export class GrowableFloat64Array {
    * @param destOffset copy to instance array starting at this index; zero if undefined
    * @return count and offset of entries copied
    */
-  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {count: number, offset: number} {
+  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): { count: number, offset: number } {
     let myOffset = destOffset ?? 0;
     if (myOffset < 0)
       myOffset = 0;
     if (myOffset >= this._data.length)
-      return {count: 0, offset: 0};
+      return { count: 0, offset: 0 };
     let myCount = sourceCount ?? source.length;
     if (myCount > 0) {
       if (myCount > source.length)
@@ -61,14 +61,14 @@ export class GrowableFloat64Array {
         myCount = this._data.length - myOffset;
     }
     if (myCount <= 0)
-      return {count: 0, offset: 0};
+      return { count: 0, offset: 0 };
     if (myCount === source.length)
       this._data.set(source, myOffset);
     else if (source instanceof Float64Array)
       this._data.set(source.subarray(0, myCount), myOffset);
     else
       this._data.set(source.slice(0, myCount), myOffset);
-    return {count: myCount, offset: myOffset};
+    return { count: myCount, offset: myOffset };
   }
 
   /**
@@ -290,5 +290,4 @@ export class GrowableFloat64Array {
     }
     this._inUse = numAccepted;
   }
-
 }

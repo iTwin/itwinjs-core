@@ -8,9 +8,9 @@
 
 import { Hilite } from "@itwin/core-common";
 import { FloatRgb } from "./FloatRGBA";
-import { UniformHandle } from "./UniformHandle";
 import { Matrix3 } from "./Matrix";
 import { desync, sync } from "./Sync";
+import { UniformHandle } from "./UniformHandle";
 
 /** Maintains state for uniforms related to hilite and emphasis.
  * @internal
@@ -26,9 +26,15 @@ export class HiliteUniforms {
 
   public syncKey = 0;
 
-  public get hiliteSettings() { return this._hiliteSettings; }
-  public get emphasisSettings() { return this._emphasisSettings; }
-  public get hiliteColor() { return this._hiliteRgb; }
+  public get hiliteSettings() {
+    return this._hiliteSettings;
+  }
+  public get emphasisSettings() {
+    return this._emphasisSettings;
+  }
+  public get hiliteColor() {
+    return this._hiliteRgb;
+  }
 
   public update(hilite: Hilite.Settings, emphasis: Hilite.Settings): void {
     if (Hilite.equalSettings(hilite, this._hiliteSettings) && Hilite.equalSettings(emphasis, this._emphasisSettings))

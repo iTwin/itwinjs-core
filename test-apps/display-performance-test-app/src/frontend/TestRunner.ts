@@ -3,30 +3,61 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
+import { assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch } from "@itwin/core-bentley";
 import {
-  assert, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
-} from "@itwin/core-bentley";
-import {
-  BackgroundMapType, BaseMapLayerSettings, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
+  BackgroundMapType,
+  BaseMapLayerSettings,
+  DisplayStyleProps,
+  FeatureAppearance,
+  Hilite,
+  RenderMode,
+  ViewStateProps,
 } from "@itwin/core-common";
 import {
   CheckpointConnection,
-  DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
+  DisplayStyle3dState,
+  DisplayStyleState,
+  EntityState,
+  FeatureSymbology,
+  GLTimerResult,
+  GLTimerResultCallback,
+  IModelApp,
+  IModelConnection,
   ModelDisplayTransform,
   ModelDisplayTransformProvider,
-  PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
+  PerformanceMetrics,
+  Pixel,
+  RenderMemory,
+  RenderSystem,
+  ScreenViewport,
+  SnapshotConnection,
+  Target,
+  TileAdmin,
+  ToolAdmin,
+  ViewRect,
+  ViewState,
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
+import { Transform } from "@itwin/core-geometry";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/TestFrontendAuthorizationClient";
+import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { DisplayPerfTestApp } from "./DisplayPerformanceTestApp";
-import {
-  defaultEmphasis, defaultHilite, DisplayTransformProviderProps, ElementOverrideProps, HyperModelingProps, separator, TestConfig, TestConfigProps, TestConfigStack, ViewStateSpec, ViewStateSpecProps,
-} from "./TestConfig";
 import { SavedViewsFetcher } from "./SavedViewsFetcher";
-import { Transform } from "@itwin/core-geometry";
+import {
+  defaultEmphasis,
+  defaultHilite,
+  DisplayTransformProviderProps,
+  ElementOverrideProps,
+  HyperModelingProps,
+  separator,
+  TestConfig,
+  TestConfigProps,
+  TestConfigStack,
+  ViewStateSpec,
+  ViewStateSpecProps,
+} from "./TestConfig";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
@@ -100,9 +131,10 @@ class Timings {
       const label = result.label;
       const timings = this.gpu.get(label);
       this.gpu.set(label, timings ? timings.concat(result.nanoseconds / 1e6) : [result.nanoseconds / 1e6]); // save as milliseconds
-      if (result.children)
+      if (result.children) {
         for (const child of result.children)
           this.callback(child);
+      }
 
       if ("Total" === label)
         ++this.gpuFramesCollected;
@@ -145,7 +177,7 @@ class OverrideProvider {
 
 class DisplayTransformProvider implements ModelDisplayTransformProvider {
   private readonly _transforms = new Map<string, ModelDisplayTransform>();
-  private constructor() { }
+  private constructor() {}
 
   public static fromJSON(props: DisplayTransformProviderProps): DisplayTransformProvider {
     const provider = new DisplayTransformProvider();
@@ -177,7 +209,9 @@ export class TestRunner {
     return this._config.top;
   }
 
-  public get lastRestartConfig(): TestConfig { return this._lastRestartConfig; }
+  public get lastRestartConfig(): TestConfig {
+    return this._lastRestartConfig;
+  }
   public set lastRestartConfig(config: TestConfig) {
     this._lastRestartConfig = config;
   }
@@ -213,7 +247,9 @@ export class TestRunner {
     const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
     if (!this.curConfig.useDisjointTimer) {
       const ext = this.curConfig.renderOptions?.disabledExtensions;
-      renderOptions.disabledExtensions = Array.isArray(ext) ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"]) : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
+      renderOptions.disabledExtensions = Array.isArray(ext)
+        ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"])
+        : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
       needRestart = true;
     }
     if (IModelApp.initialized && needRestart) {
@@ -274,7 +310,9 @@ export class TestRunner {
         const renderOptions: RenderSystem.Options = this.curConfig.renderOptions ?? {};
         if (!this.curConfig.useDisjointTimer) {
           const ext = this.curConfig.renderOptions?.disabledExtensions;
-          renderOptions.disabledExtensions = Array.isArray(ext) ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"]) : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
+          renderOptions.disabledExtensions = Array.isArray(ext)
+            ? ext.concat(["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"])
+            : ["EXT_disjoint_timer_query", "EXT_disjoint_timer_query_webgl2"];
         }
         await DisplayPerfTestApp.startup({
           renderSys: renderOptions,
@@ -291,7 +329,9 @@ export class TestRunner {
       for (const iModelName of iModelNames) {
         this.curConfig.iModelName = iModelName;
         this.curConfig.viewName = originalViewName;
-        const iModelKey = this.curConfig.iModelId ? this.curConfig.iModelId : `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
+        const iModelKey = this.curConfig.iModelId
+          ? this.curConfig.iModelId
+          : `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
 
         try {
           const reuseContext = context && set.reuseContext && context.iModelKey === iModelKey;
@@ -389,7 +429,7 @@ export class TestRunner {
       // Collect CPU timings.
       setPerformanceMetrics(vp, new PerformanceMetrics(true, false, undefined));
       for (let i = 0; i < this.curConfig.numRendersToTime; ++i) {
-        vp.readPixels(viewRect, pixSelect, () => { });
+        vp.readPixels(viewRect, pixSelect, () => {});
         timings.cpu[i] = (vp.target as Target).performanceMetrics!.frameTimings;
         timings.cpu[i].delete("Scene Time");
       }
@@ -765,7 +805,7 @@ export class TestRunner {
   }
 
   private async finish(): Promise<void> {
-    let renderData = "\"End of Tests-----------\r\n";
+    let renderData = '"End of Tests-----------\r\n';
     const renderComp = IModelApp.queryRenderCompatibility();
     if (renderComp.userAgent) {
       renderData += `Browser: ${getBrowserName(renderComp.userAgent)}\r\n`;
@@ -1150,11 +1190,16 @@ function removeOptsFromString(input: string, ignore: string[] | string | undefin
 
 function getRenderMode(vp: ScreenViewport): string {
   switch (vp.viewFlags.renderMode) {
-    case RenderMode.Wireframe: return "Wireframe";
-    case RenderMode.HiddenLine: return "HiddenLine";
-    case RenderMode.SolidFill: return "SolidFill";
-    case RenderMode.SmoothShade: return "SmoothShade";
-    default: return "";
+    case RenderMode.Wireframe:
+      return "Wireframe";
+    case RenderMode.HiddenLine:
+      return "HiddenLine";
+    case RenderMode.SolidFill:
+      return "SolidFill";
+    case RenderMode.SmoothShade:
+      return "SmoothShade";
+    default:
+      return "";
   }
 }
 
@@ -1297,7 +1342,8 @@ function getBackgroundMapProps(vp: ScreenViewport): string {
 
 function hiliteSettingsStr(settings: Hilite.Settings): string {
   let hsStr = (settings.color.colors.r * 256 * 256 + settings.color.colors.g * 256 + settings.color.colors.b).toString(36).padStart(5, "0");
-  hsStr += (settings.silhouette * 256 * 256 + Math.round(settings.visibleRatio * 255) * 256 + Math.round(settings.hiddenRatio * 255)).toString(36).padStart(4, "0");
+  hsStr += (settings.silhouette * 256 * 256 + Math.round(settings.visibleRatio * 255) * 256 + Math.round(settings.hiddenRatio * 255)).toString(36)
+    .padStart(4, "0");
   return hsStr.toUpperCase();
 }
 

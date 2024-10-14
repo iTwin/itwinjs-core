@@ -69,9 +69,27 @@ export type LazyLoadedFormat = LazyLoadedSchemaItem<Format>;
 /** @beta */
 export type AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass;
 /** @beta */
-export type AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format;
+export type AnySchemaItem =
+  | AnyClass
+  | Enumeration
+  | KindOfQuantity
+  | PropertyCategory
+  | Unit
+  | InvertedUnit
+  | Constant
+  | Phenomenon
+  | UnitSystem
+  | Format;
 /** @beta */
-export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute | OverrideFormat | AnyEnumerator;
+export type AnyECType =
+  | Schema
+  | SchemaItem
+  | AnyProperty
+  | RelationshipConstraint
+  | CustomAttributeContainerProps
+  | CustomAttribute
+  | OverrideFormat
+  | AnyEnumerator;
 
 /**
  *  Holds the SchemaKeys for a schema and it's references.  Designed so that Schema fulfills this interface.

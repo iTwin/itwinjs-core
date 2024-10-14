@@ -7,8 +7,18 @@
  */
 import { Base64EncodedString } from "./Base64EncodedString";
 import {
-  DbQueryError, DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, DbResponseStatus, DbValueFormat, QueryBinder, QueryOptions, QueryOptionsBuilder,
-  QueryPropertyMetaData, QueryRowFormat,
+  DbQueryError,
+  DbQueryRequest,
+  DbQueryResponse,
+  DbRequestExecutor,
+  DbRequestKind,
+  DbResponseStatus,
+  DbValueFormat,
+  QueryBinder,
+  QueryOptions,
+  QueryOptionsBuilder,
+  QueryPropertyMetaData,
+  QueryRowFormat,
 } from "./ConcurrentQuery";
 
 /** @public */
@@ -212,7 +222,12 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   /**
    * @internal
    */
-  public constructor(private _executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>, public readonly query: string, param?: QueryBinder, options?: QueryOptions) {
+  public constructor(
+    private _executor: DbRequestExecutor<DbQueryRequest, DbQueryResponse>,
+    public readonly query: string,
+    param?: QueryBinder,
+    options?: QueryOptions,
+  ) {
     if (query.trim().length === 0) {
       throw new Error("expecting non-empty ecsql statement");
     }
@@ -328,9 +343,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     return this._stats;
   }
 
-  /**
-   *
-   */
+  /** */
   private async readRows(): Promise<any[]> {
     if (this._globalDone) {
       return [];
@@ -343,7 +356,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     }
     const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? DbValueFormat.JsNames : DbValueFormat.ECSqlNames;
     const request: DbQueryRequest = {
-      ... this._options,
+      ...this._options,
       kind: DbRequestKind.ECSql,
       valueFormat,
       query: this.query,
@@ -366,7 +379,9 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
    * @internal
    */
   protected async runWithRetry(request: DbQueryRequest) {
-    const needRetry = (rs: DbQueryResponse) => (rs.status === DbResponseStatus.Partial || rs.status === DbResponseStatus.QueueFull || rs.status === DbResponseStatus.Timeout) && (rs.data === undefined || rs.data.length === 0);
+    const needRetry = (rs: DbQueryResponse) =>
+      (rs.status === DbResponseStatus.Partial || rs.status === DbResponseStatus.QueueFull || rs.status === DbResponseStatus.Timeout) &&
+      (rs.data === undefined || rs.data.length === 0);
     const updateStats = (rs: DbQueryResponse) => {
       this._stats.backendCpuTime += rs.stats.cpuTime;
       this._stats.backendTotalTime += rs.stats.totalTime;
@@ -376,7 +391,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     const execQuery = async (req: DbQueryRequest) => {
       const startTime = Date.now();
       const rs = await this._executor.execute(req);
-      this.stats.totalTime += (Date.now() - startTime);
+      this.stats.totalTime += Date.now() - startTime;
       return rs;
     };
     let retry = ECSqlReader._maxRetryCount;
@@ -429,9 +444,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     return this._props.properties;
   }
 
-  /**
-   *
-   */
+  /** */
   private async fetchRows() {
     this._localOffset = -1;
     this._localRows = await this.readRows();
@@ -504,4 +517,3 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
     }
   }
 }
-

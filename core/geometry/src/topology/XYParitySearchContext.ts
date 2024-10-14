@@ -44,7 +44,11 @@ export class XYParitySearchContext {
   public constructor(xTest: number, yTest: number) {
     this.xTest = xTest;
     this.yTest = yTest;
-    this.u0 = this.v0 = this.u1 = this.v1 = 0; // not valid for search; caller must satisfy tryStartEdge
+    this.u0 =
+      this.v0 =
+      this.u1 =
+      this.v1 =
+        0; // not valid for search; caller must satisfy tryStartEdge
     this.numLeftCrossing = this.numRightCrossing = 0;
     this.numHit = 0;
   }
@@ -55,7 +59,7 @@ export class XYParitySearchContext {
       this.v0 = y0 - this.yTest;
       this.u1 = x1 - this.xTest;
       this.v1 = y1 - this.yTest;
-      return true;  // we won't need wraparound logic to process the final edge ending at (x0,y0)
+      return true; // we won't need wraparound logic to process the final edge ending at (x0,y0)
     }
     return false;
   }
@@ -93,7 +97,7 @@ export class XYParitySearchContext {
       const lambda = -this.v1 / (v2 - this.v1);
       const uCross = this.u1 + lambda * (u2 - this.u1);
       if (uCross === 0.0) {
-        this.numHit++;  // Current edge crosses at the origin.
+        this.numHit++; // Current edge crosses at the origin.
         return false;
       }
       if (uCross > 0)
@@ -106,7 +110,7 @@ export class XYParitySearchContext {
     if (v2 === 0.0) {
       if (this.v1 === 0.0) {
         if (u2 * this.u1 <= 0.0) {
-          this.numHit++;  // Current edge lies on u-axis and contains the origin.
+          this.numHit++; // Current edge lies on u-axis and contains the origin.
           return false;
         }
         // Current edge lies on the u-axis to one side of the origin.
@@ -116,7 +120,7 @@ export class XYParitySearchContext {
         return true;
       }
       if (u2 === 0.0) {
-        this.numHit++;  // Current edge ends at the origin.
+        this.numHit++; // Current edge ends at the origin.
         return false;
       }
       // Current edge ends on the u-axis away from the origin.
@@ -124,7 +128,7 @@ export class XYParitySearchContext {
     }
     // At this point, the current edge starts at the u-axis.
     if (this.u1 === 0.0) {
-      this.numHit++;  // Current edge starts at the origin.
+      this.numHit++; // Current edge starts at the origin.
       return false;
     }
     // At this point, the current edge starts on the u-axis away from the origin.

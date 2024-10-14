@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
 import { ModelProps } from "@itwin/core-common";
 import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import * as chai from "chai";
 import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;
@@ -13,7 +13,7 @@ describe("IModel Models", () => {
   let iModel: IModelConnection;
   let testContext: TestContext;
 
-  before(async function () {
+  before(async function() {
     testContext = await TestContext.instance();
 
     if (!testContext.settings.runiModelReadRpcTests)

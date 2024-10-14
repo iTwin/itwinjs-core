@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import {
@@ -17,8 +16,9 @@ import {
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
+import { expect } from "chai";
 import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
+import { initialize, terminate } from "../../IntegrationTests";
 import { collect } from "../../Utils";
 import { NodeValidators, validateHierarchy } from "./HierarchyValidation";
 
@@ -32,7 +32,7 @@ describe("Hierarchies", () => {
   });
 
   describe("Getting hierarchy level descriptors", () => {
-    it("creates descriptor for root hierarchy level", async function () {
+    it("creates descriptor for root hierarchy level", async function() {
       // create an "empty" iModel - we'll use the root Subject for our test
       const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => {});
 
@@ -88,7 +88,7 @@ describe("Hierarchies", () => {
       } as Partial<Descriptor>);
     });
 
-    it("creates descriptor for child hierarchy level", async function () {
+    it("creates descriptor for child hierarchy level", async function() {
       // create an "empty" iModel - we'll use the root Subject and default Models for our test
       const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => {});
 
@@ -159,7 +159,7 @@ describe("Hierarchies", () => {
       } as Partial<Descriptor>);
     });
 
-    it("creates descriptor for hierarchy level that uses `parent` ECExpression symbol in instance filter", async function () {
+    it("creates descriptor for hierarchy level that uses `parent` ECExpression symbol in instance filter", async function() {
       // set up imodel with 2 DocumentPartition elements "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
       const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
@@ -284,7 +284,7 @@ describe("Hierarchies", () => {
       } as Partial<Descriptor>);
     });
 
-    it("throws when attempting to get descriptor non-filterable hierarchy level", async function () {
+    it("throws when attempting to get descriptor non-filterable hierarchy level", async function() {
       // set up an empty imodel - we'll use the root Subject for this test
       const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => {});
 

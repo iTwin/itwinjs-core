@@ -2,16 +2,39 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
-import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@itwin/core-geometry";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb, SpatialCategory,
-  SpatialModel, StandaloneDb, ViewDefinition,
+  CategorySelector,
+  DefinitionModel,
+  DisplayStyle3d,
+  IModelDb,
+  ModelSelector,
+  OrthographicViewDefinition,
+  PhysicalModel,
+  SnapshotDb,
+  SpatialCategory,
+  SpatialModel,
+  StandaloneDb,
+  ViewDefinition,
 } from "@itwin/core-backend";
+import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, BackgroundMapType, Cartographic, Code, ColorByName, ColorDef, EcefLocation, GeometricElement3dProps,
-  GeometryParams, GeometryStreamBuilder, GeometryStreamProps, IModel, PersistentBackgroundMapProps, RenderMode, ViewFlags,
+  AxisAlignedBox3d,
+  BackgroundMapType,
+  Cartographic,
+  Code,
+  ColorByName,
+  ColorDef,
+  EcefLocation,
+  GeometricElement3dProps,
+  GeometryParams,
+  GeometryStreamBuilder,
+  GeometryStreamProps,
+  IModel,
+  PersistentBackgroundMapProps,
+  RenderMode,
+  ViewFlags,
 } from "@itwin/core-common";
+import { Angle, Arc3d, GeometryQuery, LineString3d, Loop, Range3d, StandardViewIndex } from "@itwin/core-geometry";
 import { insertClassifiedRealityModel } from "./ClassifyRealityModel";
 import { GeoJson } from "./GeoJson";
 
@@ -36,9 +59,24 @@ export class GeoJsonImporter {
    * @param iModelFileName the output iModel file name
    * @param geoJson the input GeoJson data
    */
-  public constructor(iModelFileName: string, geoJson: GeoJson, appendToExisting: boolean, modelName?: string, labelProperty?: string, pointRadius?: number, pseudoColor?: boolean, mapTypeString?: string, mapGroundBias?: number,
-    private _classifiedURL?: string, private _classifiedName?: string, private _classifiedOutside?: string, private _classifiedInside?: string) {
-    this.iModelDb = appendToExisting ? StandaloneDb.openFile(iModelFileName, OpenMode.ReadWrite) : SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: geoJson.title } });
+  public constructor(
+    iModelFileName: string,
+    geoJson: GeoJson,
+    appendToExisting: boolean,
+    modelName?: string,
+    labelProperty?: string,
+    pointRadius?: number,
+    pseudoColor?: boolean,
+    mapTypeString?: string,
+    mapGroundBias?: number,
+    private _classifiedURL?: string,
+    private _classifiedName?: string,
+    private _classifiedOutside?: string,
+    private _classifiedInside?: string,
+  ) {
+    this.iModelDb = appendToExisting
+      ? StandaloneDb.openFile(iModelFileName, OpenMode.ReadWrite)
+      : SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
     this._appendToExisting = appendToExisting;
     this._modelName = modelName;
@@ -90,7 +128,10 @@ export class GeoJsonImporter {
       const featureMin = Cartographic.createZero(), featureMax = Cartographic.createZero();
       if (!this.getFeatureRange(featureMin, featureMax))
         return;
-      const featureCenter = Cartographic.fromRadians({ longitude: (featureMin.longitude + featureMax.longitude) / 2, latitude: (featureMin.latitude + featureMax.latitude) / 2 });
+      const featureCenter = Cartographic.fromRadians({
+        longitude: (featureMin.longitude + featureMax.longitude) / 2,
+        latitude: (featureMin.latitude + featureMax.latitude) / 2,
+      });
 
       this.iModelDb.setEcefLocation(EcefLocation.createFromCartographicOrigin(featureCenter));
       this.convertFeatureCollection();
@@ -104,7 +145,18 @@ export class GeoJsonImporter {
 
     if (this._classifiedURL) {
       const isPlanar = (featureModelExtents.high.z - featureModelExtents.low.z) < 1.0E-2;
-      await insertClassifiedRealityModel(this._classifiedURL, this.physicalModelId, this.featureCategoryId, this.iModelDb, this._viewFlags, isPlanar, this._backgroundMap, this._classifiedName ? this._classifiedName : this._modelName, this._classifiedInside, this._classifiedOutside);
+      await insertClassifiedRealityModel(
+        this._classifiedURL,
+        this.physicalModelId,
+        this.featureCategoryId,
+        this.iModelDb,
+        this._viewFlags,
+        isPlanar,
+        this._backgroundMap,
+        this._classifiedName ? this._classifiedName : this._modelName,
+        this._classifiedInside,
+        this._classifiedOutside,
+      );
     }
 
     this.iModelDb.saveChanges();
@@ -112,13 +164,13 @@ export class GeoJsonImporter {
   private addCategoryToExistingDb(categoryName: string) {
     const categoryId = SpatialCategory.insert(this.iModelDb, IModel.dictionaryId, categoryName, { color: ColorDef.white.tbgr });
     // eslint-disable-next-line deprecation/deprecation
-    this.iModelDb.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, ((view: ViewDefinition) => {
+    this.iModelDb.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, (view: ViewDefinition) => {
       const categorySelector = this.iModelDb.elements.getElement<CategorySelector>(view.categorySelectorId);
       categorySelector.categories.push(categoryId);
       this.iModelDb.elements.updateElement(categorySelector.toJSON());
 
       return true;
-    }));
+    });
 
     return categoryId;
   }
@@ -195,7 +247,19 @@ export class GeoJsonImporter {
 
     const builder = new GeometryStreamBuilder();
     if (this._colorIndex !== undefined) {
-      const colorValues = [ColorByName.blue, ColorByName.red, ColorByName.green, ColorByName.yellow, ColorByName.cyan, ColorByName.magenta, ColorByName.cornSilk, ColorByName.blueViolet, ColorByName.deepSkyBlue, ColorByName.indigo, ColorByName.fuchsia];
+      const colorValues = [
+        ColorByName.blue,
+        ColorByName.red,
+        ColorByName.green,
+        ColorByName.yellow,
+        ColorByName.cyan,
+        ColorByName.magenta,
+        ColorByName.cornSilk,
+        ColorByName.blueViolet,
+        ColorByName.deepSkyBlue,
+        ColorByName.indigo,
+        ColorByName.fuchsia,
+      ];
       const geomParams = new GeometryParams(this.featureCategoryId);
       geomParams.lineColor = ColorDef.create(colorValues[this._colorIndex++ % colorValues.length]);
       builder.appendGeometryParamsChange(geomParams);
@@ -244,7 +308,6 @@ export class GeoJsonImporter {
   }
   private convertPoint(inPoint: GeoJson.Point): Loop {
     return Loop.create(Arc3d.createXY(this.pointFromCoordinate(inPoint), this._pointRadius));
-
   }
 
   /** Convert a GeoJSON LineString into an @itwin/core-geometry lineString */
@@ -277,7 +340,7 @@ export class GeoJsonImporter {
       case 1:
         return outLoops[0];
       default:
-        return undefined;   // TBD... Multi-loop Regions,
+        return undefined; // TBD... Multi-loop Regions,
     }
   }
   private static _scratchCartographic = Cartographic.createZero();
@@ -292,7 +355,19 @@ export class GeoJsonImporter {
   protected insertSpatialView(viewName: string, range: AxisAlignedBox3d): Id64String {
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.featureCategoryId]);
-    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundMap: this._backgroundMap });
-    return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, {
+      viewFlags: this._viewFlags,
+      backgroundMap: this._backgroundMap,
+    });
+    return OrthographicViewDefinition.insert(
+      this.iModelDb,
+      this.definitionModelId,
+      viewName,
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      range,
+      StandardViewIndex.Top,
+    );
   }
 }

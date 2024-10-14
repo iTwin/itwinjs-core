@@ -6,7 +6,7 @@
  * @module OrbitGT
  */
 
-//package orbitgt.system.storage;
+// package orbitgt.system.storage;
 
 type int8 = number;
 type int16 = number;
@@ -22,16 +22,16 @@ import { ALong } from "../runtime/ALong";
  */
 /** @internal */
 export class FileContent {
-    /** The (integer) offset of the content range */
-    public offset: ALong;
-    /** The content */
-    public content: ABuffer;
+  /** The (integer) offset of the content range */
+  public offset: ALong;
+  /** The content */
+  public content: ABuffer;
 
-    /**
-     * Create a new content holder.
-     */
-    public constructor(offset: ALong, content: ABuffer) {
-        this.offset = offset;
-        this.content = content;
-    }
+  /**
+   * Create a new content holder.
+   */
+  public constructor(offset: ALong, content: ABuffer) {
+    this.offset = offset;
+    this.content = content;
+  }
 }

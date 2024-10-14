@@ -45,7 +45,6 @@ describe("DialogProperty", () => {
       expect(item.value.value).to.eq("yellow");
       expect(item.value.displayValue).to.eq("Yellow");
     });
-
   });
   describe("Non-string types", () => {
     it("Number property test", () => {
@@ -53,11 +52,19 @@ describe("DialogProperty", () => {
       expect(numberProperty.dialogItemValue.value).to.eq(1);
     });
     it("Boolean property test", () => {
-      const booleanProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildTextEditorDescription("boolean", "Boolean"), true, undefined);
+      const booleanProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildTextEditorDescription("boolean", "Boolean"),
+        true,
+        undefined,
+      );
       expect(booleanProperty.dialogItemValue.value).to.eq(true);
     });
     it("Undefined property test", () => {
-      const undefinedProperty = new DialogProperty<undefined>(PropertyDescriptionHelper.buildTextEditorDescription("undefined", "Undefined"), undefined, undefined);
+      const undefinedProperty = new DialogProperty<undefined>(
+        PropertyDescriptionHelper.buildTextEditorDescription("undefined", "Undefined"),
+        undefined,
+        undefined,
+      );
       expect(undefinedProperty.dialogItemValue.value).to.be.undefined;
     });
     it("Date property test", () => {

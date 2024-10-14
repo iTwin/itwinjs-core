@@ -7,17 +7,31 @@
  */
 
 import {
-  CustomAttribute, DelayedPromiseWithProps, ECClassModifier, EntityClass, LazyLoadedRelationshipConstraintClass, Mixin, NavigationPropertyProps,
-  RelationshipClass, RelationshipClassProps, RelationshipConstraint, RelationshipEnd, RelationshipMultiplicity, SchemaItemKey, SchemaItemType,
-  SchemaKey, StrengthDirection, StrengthType,
+  CustomAttribute,
+  DelayedPromiseWithProps,
+  ECClassModifier,
+  EntityClass,
+  LazyLoadedRelationshipConstraintClass,
+  Mixin,
+  NavigationPropertyProps,
+  RelationshipClass,
+  RelationshipClassProps,
+  RelationshipConstraint,
+  RelationshipEnd,
+  RelationshipMultiplicity,
+  SchemaItemKey,
+  SchemaItemType,
+  SchemaKey,
+  StrengthDirection,
+  StrengthType,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
-import { ECClasses } from "./ECClasses";
-import { MutableRelationshipClass, MutableRelationshipConstraint } from "./Mutable/MutableRelationshipClass";
-import * as Rules from "../Validation/ECRules";
 import { AnyDiagnostic, RelationshipConstraintDiagnostic, SchemaItemDiagnostic } from "../Validation/Diagnostic";
-import { NavigationProperties } from "./Properties";
+import * as Rules from "../Validation/ECRules";
+import { ECClasses } from "./ECClasses";
+import { SchemaContextEditor } from "./Editor";
 import { ClassId, CustomAttributeId, ECEditingStatus, RelationshipConstraintId, SchemaEditingError } from "./Exception";
+import { MutableRelationshipClass, MutableRelationshipConstraint } from "./Mutable/MutableRelationshipClass";
+import { NavigationProperties } from "./Properties";
 
 /**
  * @alpha
@@ -42,9 +56,23 @@ export class RelationshipClasses extends ECClasses {
    * @param StrengthDirection The relationship StrengthDirection of the class.
    * @param baseClassKey An optional SchemaItemKey that specifies the base relationship class.
    */
-  public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, strength: StrengthType, direction: StrengthDirection, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
+  public async create(
+    schemaKey: SchemaKey,
+    name: string,
+    modifier: ECClassModifier,
+    strength: StrengthType,
+    direction: StrengthDirection,
+    baseClassKey?: SchemaItemKey,
+  ): Promise<SchemaItemKey> {
     try {
-      const newClass = await this.createClass<RelationshipClass>(schemaKey, this.schemaItemType, (schema) => schema.createRelationshipClass.bind(schema), name, baseClassKey, modifier) as MutableRelationshipClass;
+      const newClass = await this.createClass<RelationshipClass>(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createRelationshipClass.bind(schema),
+        name,
+        baseClassKey,
+        modifier,
+      ) as MutableRelationshipClass;
 
       newClass.setStrength(strength);
       newClass.setStrengthDirection(direction);
@@ -90,14 +118,23 @@ export class RelationshipClasses extends ECClasses {
    */
   public async createFromProps(schemaKey: SchemaKey, relationshipProps: RelationshipClassProps): Promise<SchemaItemKey> {
     try {
-      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createRelationshipClass.bind(schema), relationshipProps);
+      const newClass = await this.createSchemaItemFromProps(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createRelationshipClass.bind(schema),
+        relationshipProps,
+      );
 
       await newClass.source.fromJSON(relationshipProps.source);
       await newClass.target.fromJSON(relationshipProps.target);
 
       return newClass.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, relationshipProps.name!, schemaKey), e);
+      throw new SchemaEditingError(
+        ECEditingStatus.CreateSchemaItemFromProps,
+        new ClassId(this.schemaItemType, relationshipProps.name!, schemaKey),
+        e,
+      );
     }
   }
 
@@ -114,17 +151,22 @@ export class RelationshipClasses extends ECClasses {
 
     try {
       await this.validate(relClass!);
-    } catch(e: any) {
+    } catch (e: any) {
       relClass!.baseClass = baseClass;
       throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(SchemaItemType.RelationshipClass, itemKey), e);
     }
   }
 
-  public async createNavigationProperty(relationshipKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<void> {
+  public async createNavigationProperty(
+    relationshipKey: SchemaItemKey,
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): Promise<void> {
     try {
       const relationshipClass = await this.getSchemaItem<MutableRelationshipClass>(relationshipKey);
       await relationshipClass.createNavigationProperty(name, relationship, direction);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateNavigationProperty, new ClassId(SchemaItemType.RelationshipClass, relationshipKey), e);
     }
   }
@@ -137,10 +179,18 @@ export class RelationshipClasses extends ECClasses {
   public async createNavigationPropertyFromProps(relationshipKey: SchemaItemKey, navigationProps: NavigationPropertyProps): Promise<void> {
     try {
       const relationshipClass = await this.getSchemaItem<MutableRelationshipClass>(relationshipKey);
-      const property = await relationshipClass.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
+      const property = await relationshipClass.createNavigationProperty(
+        navigationProps.name,
+        navigationProps.relationshipName,
+        navigationProps.direction,
+      );
       await property.fromJSON(navigationProps);
-    } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateNavigationPropertyFromProps, new ClassId(SchemaItemType.RelationshipClass, relationshipKey), e);
+    } catch (e: any) {
+      throw new SchemaEditingError(
+        ECEditingStatus.CreateNavigationPropertyFromProps,
+        new ClassId(SchemaItemType.RelationshipClass, relationshipKey),
+        e,
+      );
     }
   }
 
@@ -159,8 +209,11 @@ export class RelationshipClasses extends ECClasses {
     mutableConstraint.relationshipEnd = relationshipEnd;
   }
 
-  public async setAbstractConstraint(constraint: RelationshipConstraint, abstractConstraint?: EntityClass | Mixin | RelationshipClass): Promise<void> {
-    const existing: LazyLoadedRelationshipConstraintClass | undefined  = constraint.abstractConstraint;
+  public async setAbstractConstraint(
+    constraint: RelationshipConstraint,
+    abstractConstraint?: EntityClass | Mixin | RelationshipClass,
+  ): Promise<void> {
+    const existing: LazyLoadedRelationshipConstraintClass | undefined = constraint.abstractConstraint;
     const mutableConstraint = constraint as MutableRelationshipConstraint;
 
     if (undefined === abstractConstraint) {
@@ -171,14 +224,14 @@ export class RelationshipClasses extends ECClasses {
 
     try {
       await this.validate(constraint.relationshipClass);
-    } catch(e: any){
+    } catch (e: any) {
       mutableConstraint.abstractConstraint = existing;
       throw new SchemaEditingError(ECEditingStatus.SetAbstractConstraint, new RelationshipConstraintId(constraint), e);
     }
 
     try {
       await this.validate(constraint);
-    } catch(e: any){
+    } catch (e: any) {
       mutableConstraint.abstractConstraint = existing;
       throw new SchemaEditingError(ECEditingStatus.SetAbstractConstraint, new RelationshipConstraintId(constraint), e);
     }
@@ -190,14 +243,14 @@ export class RelationshipClasses extends ECClasses {
 
     try {
       await this.validate(constraint.relationshipClass);
-    } catch(e: any){
+    } catch (e: any) {
       mutableConstraint.removeClass(ecClass);
       throw new SchemaEditingError(ECEditingStatus.AddConstraintClass, new RelationshipConstraintId(constraint), e);
     }
 
     try {
       await this.validate(constraint);
-    } catch(e: any){
+    } catch (e: any) {
       mutableConstraint.removeClass(ecClass);
       throw new SchemaEditingError(ECEditingStatus.AddConstraintClass, new RelationshipConstraintId(constraint), e);
     }
@@ -207,9 +260,9 @@ export class RelationshipClasses extends ECClasses {
     const mutableConstraint = constraint as MutableRelationshipConstraint;
     mutableConstraint.removeClass(ecClass);
 
-    try{
+    try {
       await this.validate(constraint);
-    } catch(e: any) {
+    } catch (e: any) {
       mutableConstraint.addClass(ecClass);
       throw new SchemaEditingError(ECEditingStatus.RemoveConstraintClass, new RelationshipConstraintId(constraint), e);
     }
@@ -228,8 +281,11 @@ export class RelationshipClasses extends ECClasses {
 
     if (diagnostics.length > 0) {
       this.removeCustomAttribute(constraint, customAttribute);
-      throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToConstraint, new RelationshipConstraintId(constraint),
-        new SchemaEditingError(ECEditingStatus.RuleViolation, new CustomAttributeId(customAttribute.className, constraint), undefined, diagnostics));
+      throw new SchemaEditingError(
+        ECEditingStatus.AddCustomAttributeToConstraint,
+        new RelationshipConstraintId(constraint),
+        new SchemaEditingError(ECEditingStatus.RuleViolation, new CustomAttributeId(customAttribute.className, constraint), undefined, diagnostics),
+      );
     }
   }
 
@@ -252,7 +308,12 @@ export class RelationshipClasses extends ECClasses {
 
     if (diagnostics.length > 0) {
       if (relationshipOrConstraint instanceof RelationshipClass) {
-        throw new SchemaEditingError(ECEditingStatus.RuleViolation, new ClassId(SchemaItemType.RelationshipClass, relationshipKey), undefined, diagnostics);
+        throw new SchemaEditingError(
+          ECEditingStatus.RuleViolation,
+          new ClassId(SchemaItemType.RelationshipClass, relationshipKey),
+          undefined,
+          diagnostics,
+        );
       } else {
         throw new SchemaEditingError(ECEditingStatus.RuleViolation, new RelationshipConstraintId(relationshipOrConstraint), undefined, diagnostics);
       }

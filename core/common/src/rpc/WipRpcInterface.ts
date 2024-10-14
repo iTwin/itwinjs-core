@@ -22,7 +22,9 @@ import { RpcManager } from "../RpcManager";
  */
 export abstract class WipRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** Returns the IModelReadRpcInterface instance for the frontend. */
-  public static getClient(): WipRpcInterface { return RpcManager.getClientForInterface(WipRpcInterface); } // eslint-disable-line deprecation/deprecation
+  public static getClient(): WipRpcInterface {
+    return RpcManager.getClientForInterface(WipRpcInterface);
+  } // eslint-disable-line deprecation/deprecation
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "WipRpcInterface";
@@ -36,9 +38,23 @@ export abstract class WipRpcInterface extends RpcInterface { // eslint-disable-l
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ==========================================================================================*/
-  public async placeholder(_iModelToken: IModelRpcProps): Promise<string> { return this.forward(arguments); } // here to test that WipRpcInterface is configured properly
-  public async isChangeCacheAttached(_iModelToken: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
-  public async attachChangeCache(_iModelToken: IModelRpcProps): Promise<void> { return this.forward(arguments); }
-  public async getChangedElements(_iModelToken: IModelRpcProps, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined> { return this.forward(arguments); }
-  public async isChangesetProcessed(_iModelToken: IModelRpcProps, _changesetId: string): Promise<boolean> { return this.forward(arguments); }
+  public async placeholder(_iModelToken: IModelRpcProps): Promise<string> {
+    return this.forward(arguments);
+  } // here to test that WipRpcInterface is configured properly
+  public async isChangeCacheAttached(_iModelToken: IModelRpcProps): Promise<boolean> {
+    return this.forward(arguments);
+  }
+  public async attachChangeCache(_iModelToken: IModelRpcProps): Promise<void> {
+    return this.forward(arguments);
+  }
+  public async getChangedElements(
+    _iModelToken: IModelRpcProps,
+    _startChangesetId: string,
+    _endChangesetId: string,
+  ): Promise<ChangedElements | undefined> {
+    return this.forward(arguments);
+  }
+  public async isChangesetProcessed(_iModelToken: IModelRpcProps, _changesetId: string): Promise<boolean> {
+    return this.forward(arguments);
+  }
 }

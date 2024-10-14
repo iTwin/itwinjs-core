@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ECObjectsError, ECObjectsStatus, type SchemaItemKey } from "@itwin/ecschema-metadata";
 import type { PhenomenonDifference } from "../Differencing/SchemaDifference";
 import type { MutablePhenomenon } from "../Editing/Mutable/MutablePhenomenon";
 import type { SchemaMergeContext } from "./SchemaMerger";
-import { ECObjectsError, ECObjectsStatus, type SchemaItemKey } from "@itwin/ecschema-metadata";
 
 /**
  * Merges a new Phenomenon into the target schema.
@@ -30,14 +30,14 @@ export async function addPhenomenon(context: SchemaMergeContext, change: Phenome
  */
 export async function modifyPhenomenon(context: SchemaMergeContext, change: PhenomenonDifference, itemKey: SchemaItemKey) {
   const phenomenon = await context.targetSchema.lookupItem(itemKey) as MutablePhenomenon;
-  if(change.difference.label !== undefined) {
+  if (change.difference.label !== undefined) {
     await context.editor.phenomenons.setDisplayLabel(itemKey, change.difference.label);
   }
-  if(change.difference.description !== undefined) {
+  if (change.difference.description !== undefined) {
     await context.editor.phenomenons.setDescription(itemKey, change.difference.description);
   }
 
-  if(change.difference.definition !== undefined) {
+  if (change.difference.definition !== undefined) {
     // It would be better if the validation would be part of phenomenon.setDefinition.
     if (phenomenon.definition !== "" && change.difference.definition.toLowerCase() !== phenomenon.definition.toLowerCase())
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${itemKey.name} has an invalid 'definition' attribute.`);

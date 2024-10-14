@@ -2,11 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { Id64, Id64Arg } from "@itwin/core-bentley";
 import {
-  ElementAgenda, HiliteSet, IModelConnection, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection,
+  ElementAgenda,
+  HiliteSet,
+  IModelConnection,
+  ModifyElementSource,
+  SelectionSet,
+  SelectionSetEventType,
+  SnapshotConnection,
 } from "@itwin/core-frontend";
+import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
 
 describe("Tools", () => {

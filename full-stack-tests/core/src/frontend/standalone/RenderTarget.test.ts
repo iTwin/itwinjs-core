@@ -2,16 +2,36 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ClipStyle, ColorDef, FeatureAppearance, FeatureAppearanceProvider, Hilite, RenderMode, RgbColor } from "@itwin/core-common";
 import {
-  DecorateContext, Decorator, FeatureOverrideProvider, FeatureSymbology, GraphicBranch, GraphicBranchOptions, GraphicType, IModelApp,
-  IModelConnection, OffScreenViewport, Pixel, RenderSystem, SnapshotConnection, SpatialViewState, Viewport, ViewRect,
+  DecorateContext,
+  Decorator,
+  FeatureOverrideProvider,
+  FeatureSymbology,
+  GraphicBranch,
+  GraphicBranchOptions,
+  GraphicType,
+  IModelApp,
+  IModelConnection,
+  OffScreenViewport,
+  Pixel,
+  RenderSystem,
+  SnapshotConnection,
+  SpatialViewState,
+  Viewport,
+  ViewRect,
 } from "@itwin/core-frontend";
 import { ClipVector, Point2d, Point3d, Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
 import {
-  Color, comparePixelData, createOnScreenTestViewport, testOnScreenViewport, TestViewport, testViewports, testViewportsWithDpr,
+  Color,
+  comparePixelData,
+  createOnScreenTestViewport,
+  testOnScreenViewport,
+  TestViewport,
+  testViewports,
+  testViewportsWithDpr,
 } from "../TestViewport";
 
 /* eslint-disable @typescript-eslint/unbound-method */
@@ -231,7 +251,12 @@ describe("RenderTarget", () => {
     await testViewportsWithDpr(imodel, cssRect, async (vp) => {
       await vp.waitForAllTilesToRender();
 
-      const expectImageDimensions = (readRect: ViewRect | undefined, targetSize: Point2d | undefined, expectedWidth: number, expectedHeight: number) => {
+      const expectImageDimensions = (
+        readRect: ViewRect | undefined,
+        targetSize: Point2d | undefined,
+        expectedWidth: number,
+        expectedHeight: number,
+      ) => {
         const img = vp.readImageBuffer({ rect: readRect, size: targetSize })!;
         expect(img).not.to.be.undefined;
         expect(img.width).to.equal(Math.floor(expectedWidth));
@@ -250,7 +275,12 @@ describe("RenderTarget", () => {
       const devHalfWidth = Math.floor(devRect.width / 2);
       const devQuarterHeight = Math.floor(devRect.height / 4);
       expectImageDimensions(new ViewRect(0, 0, cssHalfWidth, cssQuarterHeight), undefined, devHalfWidth, devQuarterHeight);
-      expectImageDimensions(new ViewRect(cssHalfWidth, cssQuarterHeight, cssRect.right, cssRect.bottom), undefined, devRect.width - devHalfWidth, devRect.height - devQuarterHeight);
+      expectImageDimensions(
+        new ViewRect(cssHalfWidth, cssQuarterHeight, cssRect.right, cssRect.bottom),
+        undefined,
+        devRect.width - devHalfWidth,
+        devRect.height - devQuarterHeight,
+      );
       expectImageDimensions(new ViewRect(0, 0, cssHalfWidth, cssRect.bottom), undefined, devHalfWidth, devRect.height);
 
       // Read full image and resize
@@ -366,7 +396,8 @@ describe("RenderTarget", () => {
       // Set bg color to red, elem color to 50% transparent blue => expect blending
       vp.view.displayStyle.backgroundColor = ColorDef.red;
       vp.invalidateRenderPlan();
-      ovrProvider.ovrFunc = (ovrs, _) => ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }) });
+      ovrProvider.ovrFunc = (ovrs, _) =>
+        ovrs.override({ elementId: elemId, appearance: FeatureAppearance.fromJSON({ rgb: new RgbColor(0, 0, 0xff), transparency: 0.5 }) });
       vp.setFeatureOverrideProviderChanged();
       await vp.drawFrame();
       colors = vp.readUniqueColors();
@@ -434,7 +465,10 @@ describe("RenderTarget", () => {
       //  - If the child has no symbology overrides:
       //    - It uses its own AppearanceProvider, or its parents if it has none.
       //  - Otherwise, it uses its own AppearanceProvider, or none.
-      interface OvrAug { ovr?: ColorDef, aug?: ColorDef }
+      interface OvrAug {
+        ovr?: ColorDef;
+        aug?: ColorDef;
+      }
       const testNestedBranch = async (parent: OvrAug | undefined, child: OvrAug | undefined, expected: ColorDef) => {
         const applyOvrs = (branch: GraphicBranch, ovraug?: OvrAug) => {
           if (ovraug?.ovr) {
@@ -507,7 +541,6 @@ describe("RenderTarget", () => {
   it("should show transparency for polylines", async () => {
     const rect = new ViewRect(0, 0, 200, 150);
     await testOnScreenViewport("0x24", imodel, rect.width, rect.height, async (vp) => {
-
       class TestPolylineDecorator implements Decorator {
         public decorate(context: DecorateContext) {
           expect(context.viewport === vp);
@@ -675,7 +708,13 @@ describe("RenderTarget", () => {
 
       const clip = ClipVector.fromJSON([{
         shape: {
-          points: [[-58.57249751634662, -261.9870625343174, 0], [297.4029912650585, -261.9870625343174, 0], [297.4029912650585, 111.24234024435282, 0], [-58.57249751634662, 111.24234024435282, 0], [-58.57249751634662, -261.9870625343174, 0]],
+          points: [
+            [-58.57249751634662, -261.9870625343174, 0],
+            [297.4029912650585, -261.9870625343174, 0],
+            [297.4029912650585, 111.24234024435282, 0],
+            [-58.57249751634662, 111.24234024435282, 0],
+            [-58.57249751634662, -261.9870625343174, 0],
+          ],
           trans: [[1, 0, 0, 289076.52682419703], [0, 1, 0, 3803926.4450675533], [0, 0, 1, 0]],
         },
       }]);

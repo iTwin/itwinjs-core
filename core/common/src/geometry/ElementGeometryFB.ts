@@ -26,7 +26,7 @@ export namespace EGFBAccessors {
     Cylindrical = 3,
     Spherical = 4,
     Hemispherical = 5,
-    Thematic = 6
+    Thematic = 6,
   }
 
   /**
@@ -35,7 +35,7 @@ export namespace EGFBAccessors {
   export enum BoundaryType {
     None = 0,
     Open = 1,
-    Closed = 2
+    Closed = 2,
   }
 
   /**
@@ -45,7 +45,7 @@ export namespace EGFBAccessors {
     None = 0,
     ByView = 1,
     Always = 2,
-    Blanking = 3
+    Blanking = 3,
   }
 
   /**
@@ -55,7 +55,7 @@ export namespace EGFBAccessors {
     Primary = 0,
     Construction = 1,
     Dimension = 2,
-    Pattern = 3
+    Pattern = 3,
   }
 
   /**
@@ -64,7 +64,7 @@ export namespace EGFBAccessors {
   export enum BRepType {
     Solid = 0,
     Sheet = 1,
-    Wire = 2
+    Wire = 2,
   }
 
   /**
@@ -120,7 +120,6 @@ export namespace EGFBAccessors {
       builder.writeFloat64(x);
       return builder.offset();
     }
-
   }
 
   /**
@@ -167,7 +166,6 @@ export namespace EGFBAccessors {
       builder.writeFloat64(x);
       return builder.offset();
     }
-
   }
 
   /**
@@ -223,7 +221,6 @@ export namespace EGFBAccessors {
       builder.writeFloat64(x);
       return builder.offset();
     }
-
   }
 
   /**
@@ -320,7 +317,18 @@ export namespace EGFBAccessors {
      * @param number x22
      * @returns flatbuffers.Offset
      */
-    static createRotMatrix(builder: flatbuffers.Builder, x00: number, x01: number, x02: number, x10: number, x11: number, x12: number, x20: number, x21: number, x22: number): flatbuffers.Offset {
+    static createRotMatrix(
+      builder: flatbuffers.Builder,
+      x00: number,
+      x01: number,
+      x02: number,
+      x10: number,
+      x11: number,
+      x12: number,
+      x20: number,
+      x21: number,
+      x22: number,
+    ): flatbuffers.Offset {
       builder.prep(8, 72);
       builder.writeFloat64(x22);
       builder.writeFloat64(x21);
@@ -333,7 +341,6 @@ export namespace EGFBAccessors {
       builder.writeFloat64(x00);
       return builder.offset();
     }
-
   }
 
   /**
@@ -455,7 +462,21 @@ export namespace EGFBAccessors {
      * @param number tz
      * @returns flatbuffers.Offset
      */
-    static createTransform(builder: flatbuffers.Builder, x00: number, x01: number, x02: number, tx: number, x10: number, x11: number, x12: number, ty: number, x20: number, x21: number, x22: number, tz: number): flatbuffers.Offset {
+    static createTransform(
+      builder: flatbuffers.Builder,
+      x00: number,
+      x01: number,
+      x02: number,
+      tx: number,
+      x10: number,
+      x11: number,
+      x12: number,
+      ty: number,
+      x20: number,
+      x21: number,
+      x22: number,
+      tz: number,
+    ): flatbuffers.Offset {
       builder.prep(8, 96);
       builder.writeFloat64(tz);
       builder.writeFloat64(x22);
@@ -471,7 +492,6 @@ export namespace EGFBAccessors {
       builder.writeFloat64(x00);
       return builder.offset();
     }
-
   }
 
   /**
@@ -544,7 +564,15 @@ export namespace EGFBAccessors {
      * @param number ty
      * @returns flatbuffers.Offset
      */
-    static createTrans2x3(builder: flatbuffers.Builder, x00: number, x01: number, tx: number, y00: number, y01: number, ty: number): flatbuffers.Offset {
+    static createTrans2x3(
+      builder: flatbuffers.Builder,
+      x00: number,
+      x01: number,
+      tx: number,
+      y00: number,
+      y01: number,
+      ty: number,
+    ): flatbuffers.Offset {
       builder.prep(8, 48);
       builder.writeFloat64(ty);
       builder.writeFloat64(y01);
@@ -554,7 +582,6 @@ export namespace EGFBAccessors {
       builder.writeFloat64(x00);
       return builder.offset();
     }
-
   }
 
   /**
@@ -629,7 +656,16 @@ export namespace EGFBAccessors {
      * @param number uv_y
      * @returns flatbuffers.Offset
      */
-    static createFaceSymbology(builder: flatbuffers.Builder, useColor: number, useMaterial: number, color: number, materialId: flatbuffers.Long, transparency: number, uv_x: number, uv_y: number): flatbuffers.Offset {
+    static createFaceSymbology(
+      builder: flatbuffers.Builder,
+      useColor: number,
+      useMaterial: number,
+      color: number,
+      materialId: flatbuffers.Long,
+      transparency: number,
+      uv_x: number,
+      uv_y: number,
+    ): flatbuffers.Offset {
       builder.prep(8, 40);
       builder.prep(8, 16);
       builder.writeFloat64(uv_y);
@@ -642,7 +678,6 @@ export namespace EGFBAccessors {
       builder.writeInt8(useColor);
       return builder.offset();
     }
-
   }
 
   /**
@@ -689,7 +724,6 @@ export namespace EGFBAccessors {
       builder.writeInt32(faceIndex);
       return builder.offset();
     }
-
   }
 
   /**
@@ -736,7 +770,6 @@ export namespace EGFBAccessors {
       builder.writeFloat64(low);
       return builder.offset();
     }
-
   }
 
   /**
@@ -1113,7 +1146,15 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createArcPrimitive(builder: flatbuffers.Builder, centerOffset: flatbuffers.Offset, vector0Offset: flatbuffers.Offset, vector90Offset: flatbuffers.Offset, start: number, sweep: number, boundary: BoundaryType): flatbuffers.Offset {
+    static createArcPrimitive(
+      builder: flatbuffers.Builder,
+      centerOffset: flatbuffers.Offset,
+      vector0Offset: flatbuffers.Offset,
+      vector90Offset: flatbuffers.Offset,
+      start: number,
+      sweep: number,
+      boundary: BoundaryType,
+    ): flatbuffers.Offset {
       ArcPrimitive.startArcPrimitive(builder);
       ArcPrimitive.addCenter(builder, centerOffset);
       ArcPrimitive.addVector0(builder, vector0Offset);
@@ -1201,7 +1242,13 @@ export namespace EGFBAccessors {
      */
     entityDataArray(): Uint8Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
-      return offset ? new Uint8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      return offset
+        ? new Uint8Array(
+          this.bb!.bytes().buffer,
+          this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
+          this.bb!.__vector_len(this.bb_pos + offset),
+        )
+        : null;
     }
 
     /**
@@ -1333,7 +1380,14 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createBRepData(builder: flatbuffers.Builder, entityTransformOffset: flatbuffers.Offset, brepType: BRepType, entityDataOffset: flatbuffers.Offset, symbologyOffset: flatbuffers.Offset, symbologyIndexOffset: flatbuffers.Offset): flatbuffers.Offset {
+    static createBRepData(
+      builder: flatbuffers.Builder,
+      entityTransformOffset: flatbuffers.Offset,
+      brepType: BRepType,
+      entityDataOffset: flatbuffers.Offset,
+      symbologyOffset: flatbuffers.Offset,
+      symbologyIndexOffset: flatbuffers.Offset,
+    ): flatbuffers.Offset {
       BRepData.startBRepData(builder);
       BRepData.addEntityTransform(builder, entityTransformOffset);
       BRepData.addBrepType(builder, brepType);
@@ -1479,7 +1533,13 @@ export namespace EGFBAccessors {
      */
     byteDataArray(): Uint8Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 22);
-      return offset ? new Uint8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      return offset
+        ? new Uint8Array(
+          this.bb!.bytes().buffer,
+          this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
+          this.bb!.__vector_len(this.bb_pos + offset),
+        )
+        : null;
     }
 
     /**
@@ -1615,7 +1675,20 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createImage(builder: flatbuffers.Builder, drawBorder: number, useFillTint: number, tileCorner0Offset: flatbuffers.Offset, tileCorner1Offset: flatbuffers.Offset, tileCorner2Offset: flatbuffers.Offset, tileCorner3Offset: flatbuffers.Offset, width: number, height: number, format: number, byteDataOffset: flatbuffers.Offset, textureId: flatbuffers.Long): flatbuffers.Offset {
+    static createImage(
+      builder: flatbuffers.Builder,
+      drawBorder: number,
+      useFillTint: number,
+      tileCorner0Offset: flatbuffers.Offset,
+      tileCorner1Offset: flatbuffers.Offset,
+      tileCorner2Offset: flatbuffers.Offset,
+      tileCorner3Offset: flatbuffers.Offset,
+      width: number,
+      height: number,
+      format: number,
+      byteDataOffset: flatbuffers.Offset,
+      textureId: flatbuffers.Long,
+    ): flatbuffers.Offset {
       Image.startImage(builder);
       Image.addDrawBorder(builder, drawBorder);
       Image.addUseFillTint(builder, useFillTint);
@@ -1782,7 +1855,15 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createGeometryPart(builder: flatbuffers.Builder, geomPartId: flatbuffers.Long, originOffset: flatbuffers.Offset, yaw: number, pitch: number, roll: number, scale: number): flatbuffers.Offset {
+    static createGeometryPart(
+      builder: flatbuffers.Builder,
+      geomPartId: flatbuffers.Long,
+      originOffset: flatbuffers.Offset,
+      yaw: number,
+      pitch: number,
+      roll: number,
+      scale: number,
+    ): flatbuffers.Offset {
       GeometryPart.startGeometryPart(builder);
       GeometryPart.addGeomPartId(builder, geomPartId);
       GeometryPart.addOrigin(builder, originOffset);
@@ -2007,7 +2088,19 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createBasicSymbology(builder: flatbuffers.Builder, subCategoryId: flatbuffers.Long, color: number, weight: number, lineStyleId: flatbuffers.Long, transparency: number, displayPriority: number, geomClass: GeometryClass, useColor: number, useWeight: number, useStyle: number): flatbuffers.Offset {
+    static createBasicSymbology(
+      builder: flatbuffers.Builder,
+      subCategoryId: flatbuffers.Long,
+      color: number,
+      weight: number,
+      lineStyleId: flatbuffers.Long,
+      transparency: number,
+      displayPriority: number,
+      geomClass: GeometryClass,
+      useColor: number,
+      useWeight: number,
+      useStyle: number,
+    ): flatbuffers.Offset {
       BasicSymbology.startBasicSymbology(builder);
       BasicSymbology.addSubCategoryId(builder, subCategoryId);
       BasicSymbology.addColor(builder, color);
@@ -2269,7 +2362,21 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createLineStyleModifiers(builder: flatbuffers.Builder, modifiers: number, scale: number, dashScale: number, gapScale: number, startWidth: number, endWidth: number, distPhase: number, fractPhase: number, normalOffset: flatbuffers.Offset, yaw: number, pitch: number, roll: number): flatbuffers.Offset {
+    static createLineStyleModifiers(
+      builder: flatbuffers.Builder,
+      modifiers: number,
+      scale: number,
+      dashScale: number,
+      gapScale: number,
+      startWidth: number,
+      endWidth: number,
+      distPhase: number,
+      fractPhase: number,
+      normalOffset: flatbuffers.Offset,
+      yaw: number,
+      pitch: number,
+      roll: number,
+    ): flatbuffers.Offset {
       LineStyleModifiers.startLineStyleModifiers(builder);
       LineStyleModifiers.addModifiers(builder, modifiers);
       LineStyleModifiers.addScale(builder, scale);
@@ -2471,7 +2578,17 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createMaterial(builder: flatbuffers.Builder, useMaterial: number, materialId: flatbuffers.Long, originOffset: flatbuffers.Offset, sizeOffset: flatbuffers.Offset, yaw: number, pitch: number, roll: number, trans2x3Offset: flatbuffers.Offset): flatbuffers.Offset {
+    static createMaterial(
+      builder: flatbuffers.Builder,
+      useMaterial: number,
+      materialId: flatbuffers.Long,
+      originOffset: flatbuffers.Offset,
+      sizeOffset: flatbuffers.Offset,
+      yaw: number,
+      pitch: number,
+      roll: number,
+      trans2x3Offset: flatbuffers.Offset,
+    ): flatbuffers.Offset {
       Material.startMaterial(builder);
       Material.addUseMaterial(builder, useMaterial);
       Material.addMaterialId(builder, materialId);
@@ -2635,7 +2752,15 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createThematicSettings(builder: flatbuffers.Builder, stepCount: number, margin: number, marginColor: number, mode: number, colorScheme: number, rangeOffset: flatbuffers.Offset): flatbuffers.Offset {
+    static createThematicSettings(
+      builder: flatbuffers.Builder,
+      stepCount: number,
+      margin: number,
+      marginColor: number,
+      mode: number,
+      colorScheme: number,
+      rangeOffset: flatbuffers.Offset,
+    ): flatbuffers.Offset {
       ThematicSettings.startThematicSettings(builder);
       ThematicSettings.addStepCount(builder, stepCount);
       ThematicSettings.addMargin(builder, margin);
@@ -2786,7 +2911,13 @@ export namespace EGFBAccessors {
      */
     colorsArray(): Uint32Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 24);
-      return offset ? new Uint32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      return offset
+        ? new Uint32Array(
+          this.bb!.bytes().buffer,
+          this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
+          this.bb!.__vector_len(this.bb_pos + offset),
+        )
+        : null;
     }
 
     /**
@@ -2811,7 +2942,13 @@ export namespace EGFBAccessors {
      */
     valuesArray(): Float64Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 26);
-      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      return offset
+        ? new Float64Array(
+          this.bb!.bytes().buffer,
+          this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
+          this.bb!.__vector_len(this.bb_pos + offset),
+        )
+        : null;
     }
 
     /**
@@ -2985,7 +3122,22 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createAreaFill(builder: flatbuffers.Builder, fill: FillDisplay, color: number, useColor: number, backgroundFill: number, transparency: number, mode: GradientMode, flags: number, angle: number, tint: number, shift: number, colorsOffset: flatbuffers.Offset, valuesOffset: flatbuffers.Offset, thematicSettingsOffset: flatbuffers.Offset): flatbuffers.Offset {
+    static createAreaFill(
+      builder: flatbuffers.Builder,
+      fill: FillDisplay,
+      color: number,
+      useColor: number,
+      backgroundFill: number,
+      transparency: number,
+      mode: GradientMode,
+      flags: number,
+      angle: number,
+      tint: number,
+      shift: number,
+      colorsOffset: flatbuffers.Offset,
+      valuesOffset: flatbuffers.Offset,
+      thematicSettingsOffset: flatbuffers.Offset,
+    ): flatbuffers.Offset {
       AreaFill.startAreaFill(builder);
       AreaFill.addFill(builder, fill);
       AreaFill.addColor(builder, color);
@@ -3089,7 +3241,13 @@ export namespace EGFBAccessors {
      */
     dashesArray(): Float64Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
-      return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      return offset
+        ? new Float64Array(
+          this.bb!.bytes().buffer,
+          this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
+          this.bb!.__vector_len(this.bb_pos + offset),
+        )
+        : null;
     }
 
     /**
@@ -3161,7 +3319,13 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createDwgHatchDefLine(builder: flatbuffers.Builder, angle: number, throughOffset: flatbuffers.Offset, offsetOffset: flatbuffers.Offset, dashesOffset: flatbuffers.Offset): flatbuffers.Offset {
+    static createDwgHatchDefLine(
+      builder: flatbuffers.Builder,
+      angle: number,
+      throughOffset: flatbuffers.Offset,
+      offsetOffset: flatbuffers.Offset,
+      dashesOffset: flatbuffers.Offset,
+    ): flatbuffers.Offset {
       DwgHatchDefLine.startDwgHatchDefLine(builder);
       DwgHatchDefLine.addAngle(builder, angle);
       DwgHatchDefLine.addThrough(builder, throughOffset);
@@ -3329,7 +3493,9 @@ export namespace EGFBAccessors {
      */
     defLine(index: number, obj?: DwgHatchDefLine): DwgHatchDefLine | null {
       var offset = this.bb!.__offset(this.bb_pos, 32);
-      return offset ? (obj || new DwgHatchDefLine()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
+      return offset
+        ? (obj || new DwgHatchDefLine()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!)
+        : null;
     }
 
     /**
@@ -3497,7 +3663,24 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createAreaPattern(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset, rotationOffset: flatbuffers.Offset, space1: number, space2: number, angle1: number, angle2: number, scale: number, color: number, weight: number, useColor: number, useWeight: number, invisibleBoundary: number, snappable: number, symbolId: flatbuffers.Long, defLineOffset: flatbuffers.Offset): flatbuffers.Offset {
+    static createAreaPattern(
+      builder: flatbuffers.Builder,
+      originOffset: flatbuffers.Offset,
+      rotationOffset: flatbuffers.Offset,
+      space1: number,
+      space2: number,
+      angle1: number,
+      angle2: number,
+      scale: number,
+      color: number,
+      weight: number,
+      useColor: number,
+      useWeight: number,
+      invisibleBoundary: number,
+      snappable: number,
+      symbolId: flatbuffers.Long,
+      defLineOffset: flatbuffers.Offset,
+    ): flatbuffers.Offset {
       AreaPattern.startAreaPattern(builder);
       AreaPattern.addOrigin(builder, originOffset);
       AreaPattern.addRotation(builder, rotationOffset);
@@ -3636,7 +3819,21 @@ export namespace EGFBAccessors {
      * @param number form3d23
      * @returns flatbuffers.Offset
      */
-    static createTextStringTransform(builder: flatbuffers.Builder, form3d00: number, form3d01: number, form3d02: number, form3d03: number, form3d10: number, form3d11: number, form3d12: number, form3d13: number, form3d20: number, form3d21: number, form3d22: number, form3d23: number): flatbuffers.Offset {
+    static createTextStringTransform(
+      builder: flatbuffers.Builder,
+      form3d00: number,
+      form3d01: number,
+      form3d02: number,
+      form3d03: number,
+      form3d10: number,
+      form3d11: number,
+      form3d12: number,
+      form3d13: number,
+      form3d20: number,
+      form3d21: number,
+      form3d22: number,
+      form3d23: number,
+    ): flatbuffers.Offset {
       builder.prep(8, 96);
       builder.writeFloat64(form3d23);
       builder.writeFloat64(form3d22);
@@ -3652,7 +3849,6 @@ export namespace EGFBAccessors {
       builder.writeFloat64(form3d00);
       return builder.offset();
     }
-
   }
 
   /**
@@ -3717,7 +3913,6 @@ export namespace EGFBAccessors {
       builder.writeFloat64(lowx);
       return builder.offset();
     }
-
   }
 
   /**
@@ -3764,7 +3959,6 @@ export namespace EGFBAccessors {
       builder.writeFloat64(x);
       return builder.offset();
     }
-
   }
 
   /**
@@ -3948,7 +4142,17 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createTextStringStyle(builder: flatbuffers.Builder, majorVersion: number, minorVersion: number, fontId: number, isBold: boolean, isItalic: boolean, isUnderlined: boolean, height: number, widthFactor: number): flatbuffers.Offset {
+    static createTextStringStyle(
+      builder: flatbuffers.Builder,
+      majorVersion: number,
+      minorVersion: number,
+      fontId: number,
+      isBold: boolean,
+      isItalic: boolean,
+      isUnderlined: boolean,
+      height: number,
+      widthFactor: number,
+    ): flatbuffers.Offset {
       TextStringStyle.startTextStringStyle(builder);
       TextStringStyle.addMajorVersion(builder, majorVersion);
       TextStringStyle.addMinorVersion(builder, minorVersion);
@@ -4075,7 +4279,13 @@ export namespace EGFBAccessors {
      */
     glyphIdsArray(): Uint32Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 16);
-      return offset ? new Uint32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
+      return offset
+        ? new Uint32Array(
+          this.bb!.bytes().buffer,
+          this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset),
+          this.bb!.__vector_len(this.bb_pos + offset),
+        )
+        : null;
     }
 
     /**
@@ -4205,7 +4415,17 @@ export namespace EGFBAccessors {
       return offset;
     }
 
-    static createTextString(builder: flatbuffers.Builder, majorVersion: number, minorVersion: number, textOffset: flatbuffers.Offset, styleOffset: flatbuffers.Offset, transformOffset: flatbuffers.Offset, rangeOffset: flatbuffers.Offset, glyphIdsOffset: flatbuffers.Offset, glyphOriginsOffset: flatbuffers.Offset): flatbuffers.Offset {
+    static createTextString(
+      builder: flatbuffers.Builder,
+      majorVersion: number,
+      minorVersion: number,
+      textOffset: flatbuffers.Offset,
+      styleOffset: flatbuffers.Offset,
+      transformOffset: flatbuffers.Offset,
+      rangeOffset: flatbuffers.Offset,
+      glyphIdsOffset: flatbuffers.Offset,
+      glyphOriginsOffset: flatbuffers.Offset,
+    ): flatbuffers.Offset {
       TextString.startTextString(builder);
       TextString.addMajorVersion(builder, majorVersion);
       TextString.addMinorVersion(builder, minorVersion);
@@ -4218,5 +4438,4 @@ export namespace EGFBAccessors {
       return TextString.endTextString(builder);
     }
   }
-
 }

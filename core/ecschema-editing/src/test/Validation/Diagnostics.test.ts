@@ -3,10 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { EntityClass, PrimitiveProperty, RelationshipClass, RelationshipConstraint, RelationshipEnd,
-  Schema, SchemaContext,
+import {
+  EntityClass,
+  PrimitiveProperty,
+  RelationshipClass,
+  RelationshipConstraint,
+  RelationshipEnd,
+  Schema,
+  SchemaContext,
 } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import * as Diagnostics from "../../Validation/Diagnostic";
 
 describe("Diagnostics tests", () => {

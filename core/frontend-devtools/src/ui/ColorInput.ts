@@ -34,16 +34,17 @@ export interface ColorInput {
 export function convertHexToRgb(hex: string): RgbColor | undefined {
   // Parse a hex color string formatted as "#FFFFFF"
   const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return result ? new RgbColor(
-    parseInt(result[1], 16),
-    parseInt(result[2], 16),
-    parseInt(result[3], 16),
-  ) : undefined;
+  return result ?
+    new RgbColor(
+      parseInt(result[1], 16),
+      parseInt(result[2], 16),
+      parseInt(result[3], 16),
+    ) :
+    undefined;
 }
 
 /** @alpha */
 export function createColorInput(props: ColorInputProps): ColorInput {
-
   const inputDiv = document.createElement("div");
 
   const colorInput = document.createElement("input");

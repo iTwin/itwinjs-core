@@ -1,4 +1,3 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -78,7 +77,17 @@ export type ToolAssistancePromptKey = "IdentifyElement" | "IdentifyPoint" | "Sta
  * @public
  * @extensions
  */
-export type ToolAssistanceInputKey = "AcceptSelection" | "AcceptElement" | "AcceptPoint" | "AdditionalElement" | "AdditionalPoint" | "Accept" | "Complete" | "Cancel" | "Restart" | "Exit";
+export type ToolAssistanceInputKey =
+  | "AcceptSelection"
+  | "AcceptElement"
+  | "AcceptPoint"
+  | "AdditionalElement"
+  | "AdditionalPoint"
+  | "Accept"
+  | "Complete"
+  | "Cancel"
+  | "Restart"
+  | "Exit";
 
 /** Tool Assistance image keyboard keys
  * @public
@@ -137,7 +146,6 @@ export interface ToolAssistanceInstructions {
  * @extensions
  */
 export class ToolAssistance {
-
   /** Up key symbol. */
   public static readonly upSymbol: string = "\u2bc5";
   /** Down key symbol. */
@@ -153,8 +161,12 @@ export class ToolAssistance {
     bottomKeys: [ToolAssistance.leftSymbol, ToolAssistance.downSymbol, ToolAssistance.rightSymbol],
   };
 
-  private static translateKey(key: string) { return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:toolAssistance.${key}`); }
-  private static translateTouch(cursor: string) { return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:touchCursor.${cursor}`); }
+  private static translateKey(key: string) {
+    return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:toolAssistance.${key}`);
+  }
+  private static translateTouch(cursor: string) {
+    return IModelApp.localization.getLocalizedString(`${CoreTools.namespace}:touchCursor.${cursor}`);
+  }
 
   /** Return the translated string for the specified main instruction key */
   public static translatePrompt(key: ToolAssistancePromptKey): string {
@@ -232,7 +244,13 @@ export class ToolAssistance {
 
   /** Creates a [[ToolAssistanceInstruction]].
    */
-  public static createInstruction(image: string | ToolAssistanceImage, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod, keyboardInfo?: ToolAssistanceKeyboardInfo): ToolAssistanceInstruction {
+  public static createInstruction(
+    image: string | ToolAssistanceImage,
+    text: string,
+    isNew?: boolean,
+    inputMethod?: ToolAssistanceInputMethod,
+    keyboardInfo?: ToolAssistanceKeyboardInfo,
+  ): ToolAssistanceInstruction {
     if (inputMethod === undefined)
       inputMethod = ToolAssistanceInputMethod.Both;
 
@@ -248,7 +266,12 @@ export class ToolAssistance {
 
   /** Creates a [[ToolAssistanceInstruction]] with a [[ToolAssistanceKeyboardInfo]].
    */
-  public static createKeyboardInstruction(keyboardInfo: ToolAssistanceKeyboardInfo, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod): ToolAssistanceInstruction {
+  public static createKeyboardInstruction(
+    keyboardInfo: ToolAssistanceKeyboardInfo,
+    text: string,
+    isNew?: boolean,
+    inputMethod?: ToolAssistanceInputMethod,
+  ): ToolAssistanceInstruction {
     if (inputMethod === undefined)
       inputMethod = ToolAssistanceInputMethod.Mouse;
 
@@ -264,7 +287,13 @@ export class ToolAssistance {
 
   /** Creates a [[ToolAssistanceInstruction]] with a modifier key and an image.
    */
-  public static createModifierKeyInstruction(modifierKey: string, image: string | ToolAssistanceImage, text: string, isNew?: boolean, inputMethod?: ToolAssistanceInputMethod): ToolAssistanceInstruction {
+  public static createModifierKeyInstruction(
+    modifierKey: string,
+    image: string | ToolAssistanceImage,
+    text: string,
+    isNew?: boolean,
+    inputMethod?: ToolAssistanceInputMethod,
+  ): ToolAssistanceInstruction {
     if (inputMethod === undefined)
       inputMethod = ToolAssistanceInputMethod.Both;
 
@@ -296,11 +325,27 @@ export class ToolAssistance {
   public static createTouchCursorInstructions(instructions: ToolAssistanceInstruction[]): boolean {
     const accuSnap = IModelApp.accuSnap;
     if (undefined === accuSnap.touchCursor && accuSnap.wantVirtualCursor) {
-      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, this.translateTouch("Activate"), false, ToolAssistanceInputMethod.Touch));
+      instructions.push(
+        ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, this.translateTouch("Activate"), false, ToolAssistanceInputMethod.Touch),
+      );
       return true;
     } else if (undefined !== accuSnap.touchCursor) {
-      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorDrag, this.translateTouch("IdentifyPoint"), false, ToolAssistanceInputMethod.Touch));
-      instructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TouchCursorTap, this.translateTouch("AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+      instructions.push(
+        ToolAssistance.createInstruction(
+          ToolAssistanceImage.TouchCursorDrag,
+          this.translateTouch("IdentifyPoint"),
+          false,
+          ToolAssistanceInputMethod.Touch,
+        ),
+      );
+      instructions.push(
+        ToolAssistance.createInstruction(
+          ToolAssistanceImage.TouchCursorTap,
+          this.translateTouch("AcceptPoint"),
+          false,
+          ToolAssistanceInputMethod.Touch,
+        ),
+      );
       return true;
     }
     return false;

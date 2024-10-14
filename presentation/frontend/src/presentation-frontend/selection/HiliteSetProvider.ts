@@ -6,14 +6,23 @@
  * @module UnifiedSelection
  */
 
-import { from, Observable, shareReplay } from "rxjs";
-import { eachValueFrom } from "rxjs-for-await";
 import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
-import { ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset } from "@itwin/presentation-common";
+import {
+  ContentFlags,
+  DEFAULT_KEYS_BATCH_SIZE,
+  DefaultContentDisplayTypes,
+  DescriptorOverrides,
+  Item,
+  Key,
+  KeySet,
+  Ruleset,
+} from "@itwin/presentation-common";
+import { from, Observable, shareReplay } from "rxjs";
+import { eachValueFrom } from "rxjs-for-await";
 import { Presentation } from "../Presentation";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
 import hiliteRuleset from "./HiliteRules.json";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
 
 const HILITE_RULESET = hiliteRuleset as Ruleset;
 
@@ -46,7 +55,7 @@ export interface HiliteSetProviderProps {
  */
 export class HiliteSetProvider {
   private _imodel: IModelConnection;
-  private _cache: undefined | { keysGuid: string; observable: Observable<HiliteSet> };
+  private _cache: undefined | { keysGuid: string, observable: Observable<HiliteSet> };
 
   private constructor(props: HiliteSetProviderProps) {
     this._imodel = props.imodel;

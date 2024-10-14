@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Checker } from "../Checker";
-import { Sample } from "../../serialization/GeometrySamples";
 import { AkimaCurve3d } from "../../bspline/AkimaCurve3d";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 
 describe("AkimaCurve3d", () => {

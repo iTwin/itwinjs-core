@@ -34,12 +34,12 @@ describe("SortableEdgeCluster", () => {
     edgeArray.addPath([1, 6, 7, 2], 1);
     ck.testExactNumber(1, edgeArray.edges[4].facetIndex, "confirm facet index");
     const n1 = edgeArray.edges.length;
-    edgeArray.addPath([], 20);  // force null return.
+    edgeArray.addPath([], 20); // force null return.
     ck.testExactNumber(n1, edgeArray.edges.length, "confirm no edges added with empty input");
     edgeArray.addPath([5, 6, 1, 0], 2);
-    edgeArray.addPath([6, 9, 8, 5], 3);    // Clockwise == creates error case 5>>>6 !!!
+    edgeArray.addPath([6, 9, 8, 5], 3); // Clockwise == creates error case 5>>>6 !!!
     edgeArray.addPath([8, 9], 4);
-    edgeArray.addPath([2, 7, 10, 10, 2], 5, false);    // null edge, with explicit closure
+    edgeArray.addPath([2, 7, 10, 10, 2], 5, false); // null edge, with explicit closure
 
     const manifold: SortableEdgeCluster[] = [];
     const boundary: SortableEdgeCluster[] = [];
@@ -74,12 +74,10 @@ describe("SortableEdgeCluster", () => {
     const edgeArray = new IndexedEdgeMatcher();
     // wander around and catch both sides of all the edges in one path !!
     edgeArray.addPath(
-      [5, 3,
-        5, 7, 1, 3,
-        1, 0, 2, 3,
-        2, 4, 2,
-        0, 6, 0, 1, 7,
-        6, 4, 6, 7, 5, 4, 5], 0, false);
+      [5, 3, 5, 7, 1, 3, 1, 0, 2, 3, 2, 4, 2, 0, 6, 0, 1, 7, 6, 4, 6, 7, 5, 4, 5],
+      0,
+      false,
+    );
     const manifold: SortableEdgeCluster[] = [];
     const boundary: SortableEdgeCluster[] = [];
     const compound: SortableEdgeCluster[] = [];

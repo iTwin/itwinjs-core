@@ -2,18 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Code, EmptyLocalization, PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings, RealityModelDisplaySettings,
+  Code,
+  EmptyLocalization,
+  PlanarClipMaskMode,
+  PlanarClipMaskProps,
+  PlanarClipMaskSettings,
+  RealityModelDisplaySettings,
 } from "@itwin/core-common";
-import { DisplayStyle3dState } from "../DisplayStyleState";
+import { expect } from "chai";
 import { ContextRealityModelState } from "../ContextRealityModelState";
-import { IModelConnection } from "../IModelConnection";
+import { DisplayStyle3dState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
-import {
-  createOrbitGtTileTreeReference, createRealityTileTreeReference, OrbitGtTreeReference, TileTreeOwner,
-} from "../tile/internal";
+import { IModelConnection } from "../IModelConnection";
+import { createOrbitGtTileTreeReference, createRealityTileTreeReference, OrbitGtTreeReference, TileTreeOwner } from "../tile/internal";
 import { createBlankConnection } from "./createBlankConnection";
 
 describe("ContextRealityModelState", () => {

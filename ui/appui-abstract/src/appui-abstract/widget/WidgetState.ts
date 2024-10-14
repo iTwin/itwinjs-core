@@ -9,7 +9,7 @@
 /** Widget state enum.
  * @deprecated in 3.6. Use [WidgetState]($appui-react) instead.
  * @public
- */
+ */
 export enum WidgetState {
   /** Widget tab is visible and active and its contents are visible */
   Open,

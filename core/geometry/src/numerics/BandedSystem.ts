@@ -12,7 +12,7 @@ export class BandedSystem {
   /** apply LU decomposition to a banded system */
   public static decomposeLU(
     numRow: number,
-    bw: number,   /* band width */
+    bw: number, /* band width */
     data: Float64Array,
   ): boolean {
     const n = numRow - 1;
@@ -45,7 +45,7 @@ export class BandedSystem {
         for (let k = kl; k < i; k++)
           sum += data[j * bw + k - j + sbw] * data[k * bw + i - k + sbw];
 
-        if (Math.abs(data[i * bw + sbw]) < 1e-9)   // TODO -- tolerance !!!
+        if (Math.abs(data[i * bw + sbw]) < 1e-9) // TODO -- tolerance !!!
           return false;
 
         data[j * bw + i - j + sbw] = (data[j * bw + i - j + sbw] - sum) / data[i * bw + sbw];
@@ -55,7 +55,6 @@ export class BandedSystem {
   }
 
   /**
-   *
    * @param sum evolving sum.  sum.length
    * @param source data being added
    * @param sourceRow row in source.  Plain offset is sourceRow * sum.length
@@ -78,7 +77,15 @@ export class BandedSystem {
     }
   }
   //   dest[destRow][*] = sourceA[sourceBRow][*] * scaleA - sourceB[*] * scaleB
-  private static blockSumOfScaledBlockScaledArray(dest: Float64Array, destRow: number, sourceA: Float64Array, sourceBRow: number, scaleA: number, sourceB: Float64Array, scaleB: number) {
+  private static blockSumOfScaledBlockScaledArray(
+    dest: Float64Array,
+    destRow: number,
+    sourceA: Float64Array,
+    sourceBRow: number,
+    scaleA: number,
+    sourceB: Float64Array,
+    scaleB: number,
+  ) {
     const n = sourceB.length;
     let destIndex = destRow * n;
     let sourceBIndex = sourceBRow * n;
@@ -101,7 +108,7 @@ export class BandedSystem {
    */
   public static solveBandedSystemMultipleRHS(
     numRow: number,
-    bw: number,   /* band width */
+    bw: number, /* band width */
     matrix: Float64Array,
     numRHS: number, // number of components in each RHS row.
     rhs: Float64Array, // RHS data, packed, overwritten by solution
@@ -151,7 +158,7 @@ export class BandedSystem {
    */
   public static multiplyBandedTimesFull(
     numRow: number,
-    bw: number,   /* band width */
+    bw: number, /* band width */
     bandedMatrix: Float64Array,
     numRHS: number, // number of components in each RHS row.
     rhs: Float64Array, // RHS data, packed, overwritten by solution

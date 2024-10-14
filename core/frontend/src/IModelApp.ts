@@ -12,12 +12,20 @@ import packageJson from "../../package.json";
 /** @public */
 // eslint-disable-next-line @typescript-eslint/no-var-requires
 export const ITWINJS_CORE_VERSION = packageJson.version as string;
-const COPYRIGHT_NOTICE = 'Copyright © 2017-2024 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
+const COPYRIGHT_NOTICE =
+  'Copyright © 2017-2024 <a href="https://www.bentley.com" target="_blank" rel="noopener noreferrer">Bentley Systems, Inc.</a>';
 
 import { UiAdmin } from "@itwin/appui-abstract";
 import { AccessToken, BeDuration, BeEvent, BentleyStatus, DbResult, dispose, Guid, GuidString, Logger, ProcessDetector } from "@itwin/core-bentley";
 import {
-  AuthorizationClient, IModelStatus, Localization, RealityDataAccess, RpcConfiguration, RpcInterfaceDefinition, RpcRequest, SerializedRpcActivity,
+  AuthorizationClient,
+  IModelStatus,
+  Localization,
+  RealityDataAccess,
+  RpcConfiguration,
+  RpcInterfaceDefinition,
+  RpcRequest,
+  SerializedRpcActivity,
 } from "@itwin/core-common";
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { TelemetryManager } from "@itwin/core-telemetry";
@@ -26,23 +34,23 @@ import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
 import * as auxCoordState from "./AuxCoordSys";
 import * as categorySelectorState from "./CategorySelectorState";
-import { ExtensionAdmin } from "./extension/ExtensionAdmin";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
+import { ExtensionAdmin } from "./extension/ExtensionAdmin";
 import { FrontendHubAccess } from "./FrontendHubAccess";
-import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
 import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
+import { RealityDataSourceProviderRegistry } from "./RealityDataSource";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
 import * as spatialViewState from "./SpatialViewState";
 import { TentativePoint } from "./TentativePoint";
-import { RealityDataSourceProviderRegistry } from "./RealityDataSource";
 import { MapLayerFormatRegistry, MapLayerOptions, TerrainProviderRegistry, TileAdmin } from "./tile/internal";
 import * as accudrawTool from "./tools/AccuDrawTool";
 import * as clipViewTool from "./tools/ClipViewTool";
@@ -213,7 +221,7 @@ export class IModelApp {
   private static _publicPath: string;
 
   // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
-  protected constructor() { }
+  protected constructor() {}
 
   /** Event raised just before the frontend IModelApp is to be [[shutdown]]. */
   public static readonly onBeforeShutdown = new BeEvent<() => void>();
@@ -228,52 +236,92 @@ export class IModelApp {
   /** A uniqueId for this session */
   public static sessionId: GuidString;
   /** The [[MapLayerFormatRegistry]] for this session. */
-  public static get mapLayerFormatRegistry(): MapLayerFormatRegistry { return this._mapLayerFormatRegistry; }
+  public static get mapLayerFormatRegistry(): MapLayerFormatRegistry {
+    return this._mapLayerFormatRegistry;
+  }
   /** The [[TerrainProviderRegistry]] for this session. */
-  public static get terrainProviderRegistry(): TerrainProviderRegistry { return this._terrainProviderRegistry; }
+  public static get terrainProviderRegistry(): TerrainProviderRegistry {
+    return this._terrainProviderRegistry;
+  }
   /** The [[RealityDataSourceProviderRegistry]] for this session.
    * @alpha
    */
-  public static get realityDataSourceProviders(): RealityDataSourceProviderRegistry { return this._realityDataSourceProviders; }
+  public static get realityDataSourceProviders(): RealityDataSourceProviderRegistry {
+    return this._realityDataSourceProviders;
+  }
   /** The [[RenderSystem]] for this session. */
-  public static get renderSystem(): RenderSystem { return this._renderSystem!; }
+  public static get renderSystem(): RenderSystem {
+    return this._renderSystem!;
+  }
   /** The [[ViewManager]] for this session. */
-  public static get viewManager(): ViewManager { return this._viewManager; }
+  public static get viewManager(): ViewManager {
+    return this._viewManager;
+  }
   /** The [[NotificationManager]] for this session. */
-  public static get notifications(): NotificationManager { return this._notifications; }
+  public static get notifications(): NotificationManager {
+    return this._notifications;
+  }
   /** The [[TileAdmin]] for this session. */
-  public static get tileAdmin(): TileAdmin { return this._tileAdmin; }
+  public static get tileAdmin(): TileAdmin {
+    return this._tileAdmin;
+  }
   /** The [[QuantityFormatter]] for this session. */
-  public static get quantityFormatter(): QuantityFormatter { return this._quantityFormatter; }
+  public static get quantityFormatter(): QuantityFormatter {
+    return this._quantityFormatter;
+  }
   /** The [[ToolAdmin]] for this session. */
-  public static get toolAdmin(): ToolAdmin { return this._toolAdmin; }
+  public static get toolAdmin(): ToolAdmin {
+    return this._toolAdmin;
+  }
   /** The [[AccuDraw]] for this session. */
-  public static get accuDraw(): AccuDraw { return this._accuDraw; }
+  public static get accuDraw(): AccuDraw {
+    return this._accuDraw;
+  }
   /** The [[AccuSnap]] for this session. */
-  public static get accuSnap(): AccuSnap { return this._accuSnap; }
-  public static get locateManager(): ElementLocateManager { return this._locateManager; }
+  public static get accuSnap(): AccuSnap {
+    return this._accuSnap;
+  }
+  public static get locateManager(): ElementLocateManager {
+    return this._locateManager;
+  }
   /** The [[TentativePoint]] for this session]]. */
-  public static get tentativePoint(): TentativePoint { return this._tentativePoint; }
+  public static get tentativePoint(): TentativePoint {
+    return this._tentativePoint;
+  }
   /** The [[Localization]] for this session. */
-  public static get localization(): Localization { return this._localization; }
+  public static get localization(): Localization {
+    return this._localization;
+  }
   /** The [[UserPreferencesAccess]] for this session.
    * @beta
    */
-  public static get userPreferences(): UserPreferencesAccess | undefined { return this._userPreferences; }
+  public static get userPreferences(): UserPreferencesAccess | undefined {
+    return this._userPreferences;
+  }
   /** The Id of this application. Applications must set this to the Global Product Registry ID (GPRID) for usage logging. */
-  public static get applicationId(): string { return this._applicationId; }
+  public static get applicationId(): string {
+    return this._applicationId;
+  }
   /** The version of this application. Must be set for usage logging. */
-  public static get applicationVersion(): string { return this._applicationVersion; }
+  public static get applicationVersion(): string {
+    return this._applicationVersion;
+  }
   /** True after [[startup]] has been called, until [[shutdown]] is called. */
-  public static get initialized() { return this._initialized; }
+  public static get initialized() {
+    return this._initialized;
+  }
 
   /** Provides access to IModelHub services. */
-  public static get hubAccess(): FrontendHubAccess | undefined { return this._hubAccess; }
+  public static get hubAccess(): FrontendHubAccess | undefined {
+    return this._hubAccess;
+  }
 
   /** Provides access to the RealityData service implementation for this IModelApp
    * @beta
    */
-  public static get realityDataAccess(): RealityDataAccess | undefined { return this._realityDataAccess; }
+  public static get realityDataAccess(): RealityDataAccess | undefined {
+    return this._realityDataAccess;
+  }
 
   /** Whether the [renderSystem[]] has been successfully initialized.
    * This will always be `false` before calling [[startup]] and after calling [[shutdown]].
@@ -286,14 +334,20 @@ export class IModelApp {
   }
 
   /** The [[UiAdmin]] for this session. */
-  public static get uiAdmin() { return this._uiAdmin; }
+  public static get uiAdmin() {
+    return this._uiAdmin;
+  }
   /** The requested security options for the frontend. */
-  public static get securityOptions() { return this._securityOptions; }
+  public static get securityOptions() {
+    return this._securityOptions;
+  }
 
   /** If present, overrides where public assets are fetched. The default is to fetch assets relative to the current URL.
    * The path should always end with a trailing `/`.
    */
-  public static get publicPath() { return this._publicPath; }
+  public static get publicPath() {
+    return this._publicPath;
+  }
 
   /** The [[TelemetryManager]] for this session
    * @internal
@@ -324,7 +378,8 @@ export class IModelApp {
   public static registerEntityState(classFullName: string, classType: typeof EntityState) {
     const lowerName = classFullName.toLowerCase();
     if (this._entityClasses.has(lowerName)) {
-      const errMsg = `Class ${classFullName} is already registered. Make sure static schemaName and className members are correct on class ${classType.name}`;
+      const errMsg =
+        `Class ${classFullName} is already registered. Make sure static schemaName and className members are correct on class ${classType.name}`;
       Logger.logError(FrontendLoggerCategory.IModelConnection, errMsg);
       throw new Error(errMsg);
     }
@@ -333,7 +388,9 @@ export class IModelApp {
   }
 
   /** @internal */
-  public static lookupEntityClass(classFullName: string) { return this._entityClasses.get(classFullName.toLowerCase()); }
+  public static lookupEntityClass(classFullName: string) {
+    return this._entityClasses.get(classFullName.toLowerCase());
+  }
 
   /**
    * Obtain WebGL rendering compatibility information for the client system.  This information describes whether the client meets the
@@ -342,7 +399,10 @@ export class IModelApp {
    * @note As of 4.x, iTwin.js requires WebGL 2. If the client does not support WebGL 2, the `status` field of the returned compatibility info will be [WebGLRenderCompatibilityStatus.CannotCreateContext]($webgl-compatibility).
    */
   public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
-    return queryRenderCompatibility(true, (canvas, useWebGL2, inputContextAttributes) => System.createContext(canvas, useWebGL2, inputContextAttributes));
+    return queryRenderCompatibility(
+      true,
+      (canvas, useWebGL2, inputContextAttributes) => System.createContext(canvas, useWebGL2, inputContextAttributes),
+    );
   }
 
   /**
@@ -367,7 +427,7 @@ export class IModelApp {
     }
 
     this.sessionId = opts.sessionId ?? Guid.createValue();
-    this._applicationId = opts.applicationId ?? "2686";  // Default to product id of iTwin.js
+    this._applicationId = opts.applicationId ?? "2686"; // Default to product id of iTwin.js
     this._applicationVersion = opts.applicationVersion ?? "1.0.0";
     this.authorizationClient = opts.authorizationClient;
     this._hubAccess = opts.hubAccess;
@@ -467,7 +527,9 @@ export class IModelApp {
    * @param interval The interval at which to poll for changes. If undefined (or negative), the application will never poll. If zero, the application will poll as frequently as possible.
    * @beta
    */
-  public static get animationInterval(): BeDuration | undefined { return IModelApp._animationInterval; }
+  public static get animationInterval(): BeDuration | undefined {
+    return IModelApp._animationInterval;
+  }
   public static set animationInterval(interval: BeDuration | undefined) {
     if (undefined !== interval && interval.isTowardsPast)
       interval = undefined;
@@ -558,7 +620,9 @@ export class IModelApp {
   }
 
   /** @internal */
-  public static createRenderSys(opts?: RenderSystem.Options): RenderSystem { return System.create(opts); }
+  public static createRenderSys(opts?: RenderSystem.Options): RenderSystem {
+    return System.create(opts);
+  }
 
   private static _setupRpcRequestContext() {
     RpcConfiguration.requestContext.getId = (_request: RpcRequest): string => {
@@ -684,7 +748,8 @@ export class IModelApp {
       iconWidth?: number;
       /** A *notice* string to be shown on the logo card. May include HTML.  */
       notice?: string | HTMLElement;
-    }): HTMLTableRowElement {
+    },
+  ): HTMLTableRowElement {
     const card = IModelApp.makeHTMLElement("tr");
     const iconCell = IModelApp.makeHTMLElement("td", { parent: card, className: "logo-card-logo" });
     if (undefined !== opts.iconSrc) {

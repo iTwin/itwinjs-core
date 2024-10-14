@@ -3,10 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import { Id64String } from "@itwin/core-bentley";
+import { describe, expect, it } from "vitest";
 import {
-  SpatialClassifier, SpatialClassifierFlags, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, SpatialClassifierProps, SpatialClassifiers,
+  SpatialClassifier,
+  SpatialClassifierFlags,
+  SpatialClassifierInsideDisplay,
+  SpatialClassifierOutsideDisplay,
+  SpatialClassifierProps,
+  SpatialClassifiers,
   SpatialClassifiersContainer,
 } from "../SpatialClassification";
 
@@ -82,7 +87,9 @@ describe("SpatialClassifiers", () => {
 
   it("sets active classifier", () => {
     const classifiers = [
-      makeClassifier("0x1", "1"), makeClassifier("0x2", "2"), makeClassifier("0x3", "3"),
+      makeClassifier("0x1", "1"),
+      makeClassifier("0x2", "2"),
+      makeClassifier("0x3", "3"),
     ];
 
     const json = { classifiers: classifiers.map((x) => x.toJSON()) };
@@ -142,7 +149,9 @@ describe("SpatialClassifiers", () => {
     expect(set.has(c)).to.be.true;
 
     expectJson(json.classifiers, [
-      makeClassifier("0x1", "1").toJSON(), makeClassifier("0x2", "2").toJSON(), makeClassifier("0x1", "1", undefined, 12).toJSON(),
+      makeClassifier("0x1", "1").toJSON(),
+      makeClassifier("0x2", "2").toJSON(),
+      makeClassifier("0x1", "1", undefined, 12).toJSON(),
     ]);
   });
 
@@ -184,7 +193,9 @@ describe("SpatialClassifiers", () => {
   it("resets active classifier if deleted", () => {
     const set = new SpatialClassifiers({
       classifiers: [
-        makeClassifier("0x1", "1").toJSON(), makeClassifierProps(makeClassifier("0x2", "2"), true), makeClassifier("0x3", "3").toJSON(),
+        makeClassifier("0x1", "1").toJSON(),
+        makeClassifierProps(makeClassifier("0x2", "2"), true),
+        makeClassifier("0x3", "3").toJSON(),
       ],
     });
     expect(set.active!.name).to.equal("2");
@@ -216,7 +227,8 @@ describe("SpatialClassifiers", () => {
   it("resets active classifier when cleared", () => {
     const set = new SpatialClassifiers({
       classifiers: [
-        makeClassifierProps(makeClassifier("0x1", "1"), true), makeClassifier("0x2", "2").toJSON(),
+        makeClassifierProps(makeClassifier("0x1", "1"), true),
+        makeClassifier("0x2", "2").toJSON(),
       ],
     });
     expect(set.active).not.to.be.undefined;
@@ -225,7 +237,9 @@ describe("SpatialClassifiers", () => {
   });
 
   it("replaces classifiers", () => {
-    const json = { classifiers: [makeClassifier("0x1", "1").toJSON(), makeClassifier("0x2", "2").toJSON(), makeClassifierProps(makeClassifier("0x3", "3"), true)] };
+    const json = {
+      classifiers: [makeClassifier("0x1", "1").toJSON(), makeClassifier("0x2", "2").toJSON(), makeClassifierProps(makeClassifier("0x3", "3"), true)],
+    };
     const set = new SpatialClassifiers(json);
 
     const c2 = set.findEquivalent(makeClassifier("0x2", "2"))!;

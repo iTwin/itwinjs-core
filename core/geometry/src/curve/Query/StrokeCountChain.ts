@@ -9,8 +9,8 @@
 import { Geometry } from "../../Geometry";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
-import { AnyCurve } from "../CurveTypes";
 import { CurveChain, CurveCollection } from "../CurveCollection";
+import { AnyCurve } from "../CurveTypes";
 import { LineString3d } from "../LineString3d";
 import { Loop } from "../Loop";
 import { ParityRegion } from "../ParityRegion";
@@ -52,7 +52,9 @@ export abstract class StrokeCountMapMultipassVisitor {
    * @param componentIndex optional component index.
    * @returns the number of sweeps to perform.
    */
-  public startSweeps(_chainIndex: number, _primitiveIndex: number, _componentIndex?: number): boolean { return true; }
+  public startSweeps(_chainIndex: number, _primitiveIndex: number, _componentIndex?: number): boolean {
+    return true;
+  }
   /**
    * announce the beginning of a sweep pass.
    * @param pass the index (0,1...) for this sweep pass.
@@ -71,8 +73,9 @@ export abstract class StrokeCountMapMultipassVisitor {
    * announce the end of handling for particular chainIndex and primitiveIndex;
    * @return true to continue outer loops.
    */
-  public endSweeps(_chainIndex: number, _primitiveIndex: number, _componentIndex?: number): boolean { return true; }
-
+  public endSweeps(_chainIndex: number, _primitiveIndex: number, _componentIndex?: number): boolean {
+    return true;
+  }
 }
 /**
  * * pass 1: determine max numStroke
@@ -112,7 +115,9 @@ export class StrokeCountMapVisitorApplyMaxCount extends StrokeCountMapMultipassV
     return false;
   }
 
-  public endPass(_pass: number): boolean { return true; }
+  public endPass(_pass: number): boolean {
+    return true;
+  }
 }
 /**
  * * pass 1: determine max curveLength among maps presented.
@@ -152,7 +157,9 @@ export class StrokeCountMapVisitorApplyMaxCurveLength extends StrokeCountMapMult
     return false;
   }
 
-  public endPass(_pass: number): boolean { return true; }
+  public endPass(_pass: number): boolean {
+    return true;
+  }
 }
 /**
  * class `StrokeCountChain` contains:
@@ -201,7 +208,6 @@ export class StrokeCountChain {
         m.primitive.addMappedStrokesToLineString3D(m, ls);
     }
     return ls;
-
   }
   /** internal form of  */
   private static applySummed01LimitsWithinArray(maps: StrokeCountMap[], incomingSum: number): number {
@@ -243,7 +249,10 @@ export class StrokeCountChain {
 export class StrokeCountSection {
   public chains: StrokeCountChain[];
   public parent?: CurveCollection;
-  private constructor(parent?: CurveCollection) { this.parent = parent; this.chains = []; }
+  private constructor(parent?: CurveCollection) {
+    this.parent = parent;
+    this.chains = [];
+  }
   /**
    * construct array of arrays of `StrokeCountMap`s
    * @param parent
@@ -263,7 +272,7 @@ export class StrokeCountSection {
   /** test if all sections have the same structure. */
   public static areSectionsCompatible(sections: StrokeCountSection[], enforceCounts: boolean): boolean {
     if (sections.length < 2)
-      return true;  // hm.. don't know if that is useful, but nothing to check here.
+      return true; // hm.. don't know if that is useful, but nothing to check here.
     const numChains = sections[0].chains.length;
     for (let i = 1; i < sections.length; i++) {
       // first level: must match number of paths or loops
@@ -279,7 +288,6 @@ export class StrokeCountSection {
             return false;
         }
       }
-
     }
     return true;
   }
@@ -295,13 +303,18 @@ export class StrokeCountSection {
     }
   }
 
-  private static applyMultipassVisitorCallbackNoComponents(sections: StrokeCountSection[], chainIndex: number, primitiveIndex: number,
-    componentIndex: number | undefined, callback: StrokeCountMapMultipassVisitor) {
+  private static applyMultipassVisitorCallbackNoComponents(
+    sections: StrokeCountSection[],
+    chainIndex: number,
+    primitiveIndex: number,
+    componentIndex: number | undefined,
+    callback: StrokeCountMapMultipassVisitor,
+  ) {
     const numSection = sections.length;
     if (!callback.startSweeps(chainIndex, primitiveIndex, componentIndex)) return false;
     if (componentIndex === undefined) {
       // there are corresponding primitives directly at the section, chain, primitive index:
-      for (let pass = 0; ; pass++) {
+      for (let pass = 0;; pass++) {
         if (!callback.startPass(pass))
           break;
         for (let sectionIndex = 0; sectionIndex < numSection; sectionIndex++)
@@ -313,7 +326,7 @@ export class StrokeCountSection {
     } else {
       // there are corresponding primitives at the section, chain, primitive,componentIndex
       // there are corresponding primitives directly at the section, chain, primitive index:
-      for (let pass = 0; ; pass++) {
+      for (let pass = 0;; pass++) {
         if (!callback.startPass(pass))
           break;
         for (let sectionIndex = 0; sectionIndex < numSection; sectionIndex++)
@@ -322,7 +335,6 @@ export class StrokeCountSection {
         if (!callback.endPass(pass))
           return false;
       }
-
     }
     if (!callback.endSweeps(chainIndex, primitiveIndex, componentIndex)) return false;
     return true;
@@ -343,7 +355,6 @@ export class StrokeCountSection {
           for (let i = 0; i < numComponent; i++)
             if (!this.applyMultipassVisitorCallbackNoComponents(sections, chainIndex, primitiveIndex, i, callback))
               return false;
-
         } else {
           if (!this.applyMultipassVisitorCallbackNoComponents(sections, chainIndex, primitiveIndex, undefined, callback))
             return false;
@@ -359,7 +370,6 @@ export class StrokeCountSection {
    * @param sections array of per-section stroke count entries
    */
   public static enforceStrokeCountCompatibility(sections: StrokeCountSection[]): boolean {
-
     if (sections.length < 2)
       return true;
     if (!StrokeCountSection.areSectionsCompatible(sections, false))
@@ -367,7 +377,6 @@ export class StrokeCountSection {
     const visitor = new StrokeCountMapVisitorApplyMaxCount();
     this.runMultiPassVisitorAtCorrespondingPrimitives(sections, visitor);
     return true;
-
   }
   /**
    * * Confirm that all sections in the array have the same structure.
@@ -376,7 +385,6 @@ export class StrokeCountSection {
    * @param sections array of per-section stroke count entries
    */
   public static enforceCompatibleDistanceSums(sections: StrokeCountSection[]): boolean {
-
     if (sections.length < 2)
       return true;
     if (!StrokeCountSection.areSectionsCompatible(sections, false))
@@ -385,7 +393,6 @@ export class StrokeCountSection {
     this.runMultiPassVisitorAtCorrespondingPrimitives(sections, visitor);
     this.remapa0a1WithinEachChain(sections);
     return true;
-
   }
 
   /**

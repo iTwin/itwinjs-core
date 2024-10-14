@@ -10,7 +10,15 @@ import { assert } from "@itwin/core-bentley";
 import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 import {
-  MapCartoRectangle, MapTile, MapTilingScheme, QuadId, ReadMeshArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TileRequest, WebMercatorTilingScheme,
+  MapCartoRectangle,
+  MapTile,
+  MapTilingScheme,
+  QuadId,
+  ReadMeshArgs,
+  TerrainMeshProvider,
+  TerrainMeshProviderOptions,
+  TileRequest,
+  WebMercatorTilingScheme,
 } from "../internal";
 
 const scratchPoint2d = Point2d.createZero();
@@ -37,7 +45,9 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
   }
 
   /** Implements [[TerrainMeshProvider.maxDepth]] to return a fixed maximum depth of 22. */
-  public get maxDepth(): number { return 22; }
+  public get maxDepth(): number {
+    return 22;
+  }
 
   /** Implements [[TerrainMeshProvider.getChildHeightRange]] to return an empty range, because the ellipsoid is smooth. */
   public override getChildHeightRange(_quadId: QuadId, _rectangle: MapCartoRectangle, _parent: MapTile): Range1d | undefined {
@@ -64,7 +74,6 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
         Point2d.create(u, 1 - v, uv);
         builder.addUnquantizedVertex(projection.getPoint(u, v, 0, pos), uv);
       }
-
     }
 
     builder.addQuad(0, 1, 2, 3);
@@ -97,7 +106,7 @@ export class EllipsoidTerrainProvider extends TerrainMeshProvider {
       builder.addUnquantizedVertex(positions[i], uvs[i]);
 
     builder.addQuad(0, 2, 4, 6);
-    const  reorder = [0, 2, 6, 4, 0];
+    const reorder = [0, 2, 6, 4, 0];
     for (let i = 0; i < 4; i++) {
       const iThis = reorder[i], iNext = reorder[i + 1];
       builder.addQuad(iThis, iNext, iThis + 1, iNext + 1);

@@ -50,11 +50,13 @@ export function createImageButton(props: ImageButtonProps) {
 export abstract class ToolBarDropDown {
   protected _isPinned: boolean = false;
 
-  public get onViewChanged(): Promise<void> | undefined { return undefined; }
+  public get onViewChanged(): Promise<void> | undefined {
+    return undefined;
+  }
 
   protected abstract _open(): void;
   protected abstract _close(): void;
-  public dispose(): void { }
+  public dispose(): void {}
 
   public abstract get isOpen(): boolean;
 

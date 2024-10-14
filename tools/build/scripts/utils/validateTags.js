@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-const FS = require('fs-extra');
+const FS = require("fs-extra");
 const validTags = [
   "see",
   "note",
@@ -38,20 +38,20 @@ function parseFile(path) {
   let allTags = {};
 
   if (FS.existsSync(path) && FS.statSync(path).isFile()) {
-    const contents = FS.readFileSync(path, 'utf-8');
+    const contents = FS.readFileSync(path, "utf-8");
     let jsonContents = JSON.parse(contents);
 
-    let tags = findValues(jsonContents, 'tags');
+    let tags = findValues(jsonContents, "tags");
 
     for (let j = 0; j < tags.length; j++) {
       for (let i = 0; i < tags[j].length; i++)
-        allTags[tags[j][i]['tag']] = allTags[tags[j][i]['tag']] ? allTags[tags[j][i]['tag']] + 1 : 1;
+        allTags[tags[j][i]["tag"]] = allTags[tags[j][i]["tag"]] ? allTags[tags[j][i]["tag"]] + 1 : 1;
     }
 
     let invalidTagObjects = [];
     for (tag in allTags) {
       if (!validTags.includes(tag))
-        invalidTagObjects.push(tag, findSource(jsonContents, 'tag', tag));
+        invalidTagObjects.push(tag, findSource(jsonContents, "tag", tag));
     }
     return invalidTagObjects;
   }
@@ -93,20 +93,20 @@ function findSourceHelper(obj, key, value, list) {
     return list;
   }
 
-  //Look for tag in signature or in comment
-  if (obj['signatures']) {
-    if (obj['signatures'][0] && obj['signatures'][0]['comment'] && obj['signatures'][0]['comment']['tags']) {
-      for (let tag in obj['signatures'][0]['comment']['tags']) {
-        if (obj['signatures'][0]['comment']['tags'][tag].tag === value && obj['sources'] && obj['sources'][0])
-          list.push(obj['sources'][0]);
+  // Look for tag in signature or in comment
+  if (obj["signatures"]) {
+    if (obj["signatures"][0] && obj["signatures"][0]["comment"] && obj["signatures"][0]["comment"]["tags"]) {
+      for (let tag in obj["signatures"][0]["comment"]["tags"]) {
+        if (obj["signatures"][0]["comment"]["tags"][tag].tag === value && obj["sources"] && obj["sources"][0])
+          list.push(obj["sources"][0]);
       }
     }
   }
 
-  if (obj['comment'] && obj['comment']['tags']) {
-    for (let tag in obj['comment']['tags']) {
-      if (obj['comment']['tags'][tag].tag === value && obj['sources'] && obj['sources'][0])
-        list.push(obj['sources'][0]);
+  if (obj["comment"] && obj["comment"]["tags"]) {
+    for (let tag in obj["comment"]["tags"]) {
+      if (obj["comment"]["tags"][tag].tag === value && obj["sources"] && obj["sources"][0])
+        list.push(obj["sources"][0]);
     }
   }
 

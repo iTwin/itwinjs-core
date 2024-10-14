@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
-import { expect } from "chai";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -155,8 +155,7 @@ describe("StructClass merger tests", () => {
           changeType: "add",
           schemaType: SchemaItemType.StructClass,
           itemName: "BaseStruct",
-          difference: {
-          },
+          difference: {},
         },
         {
           changeType: "modify",

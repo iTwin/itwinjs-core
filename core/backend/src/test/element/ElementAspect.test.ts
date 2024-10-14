@@ -2,16 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { ElementAspectProps, ExternalSourceAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { assert, expect } from "chai";
 import {
-  Element, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect, PhysicalElement, SnapshotDb, SpatialCategory,
+  Element,
+  ElementAspect,
+  ElementMultiAspect,
+  ElementUniqueAspect,
+  ExternalSourceAspect,
+  PhysicalElement,
+  SnapshotDb,
+  SpatialCategory,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ElementAspect", () => {
-
   let iModel: SnapshotDb;
 
   before(() => {
@@ -36,7 +42,10 @@ describe("ElementAspect", () => {
     assert.equal(aspect1.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
     assert.equal(aspect1.asAny.testUniqueAspectProperty, "Aspect1-Updated");
     assert.equal(aspect1.asAny.length, 1);
-    assert.equal(JSON.stringify(aspect1), `{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`);
+    assert.equal(
+      JSON.stringify(aspect1),
+      `{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`,
+    );
 
     // Test getAspects with dot separator
     const aspect1DotSeparator: ElementAspect = iModel.elements.getAspects(element.id, "DgnPlatformTest.TestUniqueAspectNoHandler")[0];
@@ -45,7 +54,10 @@ describe("ElementAspect", () => {
     assert.equal(aspect1DotSeparator.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
     assert.equal(aspect1DotSeparator.asAny.testUniqueAspectProperty, "Aspect1-Updated");
     assert.equal(aspect1DotSeparator.asAny.length, 1);
-    assert.equal(JSON.stringify(aspect1DotSeparator), `{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`);
+    assert.equal(
+      JSON.stringify(aspect1DotSeparator),
+      `{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`,
+    );
 
     // cross-check getAspects against getAspect
     const aspect1X: ElementAspect = iModel.elements.getAspect(aspect1.id);
@@ -54,7 +66,10 @@ describe("ElementAspect", () => {
     assert.equal(aspect1X.classFullName, "DgnPlatformTest:TestUniqueAspectNoHandler");
     assert.equal(aspect1X.asAny.testUniqueAspectProperty, "Aspect1-Updated");
     assert.equal(aspect1X.asAny.length, 1);
-    assert.equal(JSON.stringify(aspect1X), `{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`);
+    assert.equal(
+      JSON.stringify(aspect1X),
+      `{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`,
+    );
 
     const aspect2: ElementAspect = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestUniqueAspect")[0];
     assert.exists(aspect2);
@@ -62,7 +77,10 @@ describe("ElementAspect", () => {
     assert.equal(aspect2.classFullName, "DgnPlatformTest:TestUniqueAspect");
     assert.equal(aspect2.asAny.testUniqueAspectProperty, "Aspect2-Updated");
     assert.isUndefined(aspect2.asAny.length);
-    assert.equal(JSON.stringify(aspect2), `{"classFullName":"DgnPlatformTest:TestUniqueAspect","id":"0x1","testUniqueAspectProperty":"Aspect2-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`);
+    assert.equal(
+      JSON.stringify(aspect2),
+      `{"classFullName":"DgnPlatformTest:TestUniqueAspect","id":"0x1","testUniqueAspectProperty":"Aspect2-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`,
+    );
 
     // Test getAspects with dot separator
     const aspect2DotSeparator: ElementAspect = iModel.elements.getAspects(element.id, "DgnPlatformTest.TestUniqueAspect")[0];
@@ -71,7 +89,10 @@ describe("ElementAspect", () => {
     assert.equal(aspect2DotSeparator.classFullName, "DgnPlatformTest:TestUniqueAspect");
     assert.equal(aspect2DotSeparator.asAny.testUniqueAspectProperty, "Aspect2-Updated");
     assert.isUndefined(aspect2DotSeparator.asAny.length);
-    assert.equal(JSON.stringify(aspect2DotSeparator), `{"classFullName":"DgnPlatformTest:TestUniqueAspect","id":"0x1","testUniqueAspectProperty":"Aspect2-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`);
+    assert.equal(
+      JSON.stringify(aspect2DotSeparator),
+      `{"classFullName":"DgnPlatformTest:TestUniqueAspect","id":"0x1","testUniqueAspectProperty":"Aspect2-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`,
+    );
 
     // cross-check getAspects against getAspect
     const aspect2X: ElementAspect = iModel.elements.getAspect(aspect2.id);
@@ -80,7 +101,10 @@ describe("ElementAspect", () => {
     assert.equal(aspect2X.classFullName, "DgnPlatformTest:TestUniqueAspect");
     assert.equal(aspect2X.asAny.testUniqueAspectProperty, "Aspect2-Updated");
     assert.isUndefined(aspect2X.asAny.length);
-    assert.equal(JSON.stringify(aspect2X), `{"classFullName":"DgnPlatformTest:TestUniqueAspect","id":"0x1","testUniqueAspectProperty":"Aspect2-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`);
+    assert.equal(
+      JSON.stringify(aspect2X),
+      `{"classFullName":"DgnPlatformTest:TestUniqueAspect","id":"0x1","testUniqueAspectProperty":"Aspect2-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}`,
+    );
 
     const uniqueAspects: ElementUniqueAspect[] = iModel.elements.getAspects(element.id, ElementUniqueAspect.classFullName);
     assert.equal(uniqueAspects.length, 2);
@@ -92,8 +116,12 @@ describe("ElementAspect", () => {
       assert.equal(aspectX.schemaName, aspect.schemaName);
       assert.equal(aspectX.className, aspect.className);
     });
-    assert.equal(JSON.stringify(uniqueAspects), `[{"classFullName":"DgnPlatformTest:TestUniqueAspect","id":"0x1","testUniqueAspectProperty":"Aspect2-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}},
-    {"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}]`.replace(/\s+/g, ""));
+    assert.equal(
+      JSON.stringify(uniqueAspects),
+      `[{"classFullName":"DgnPlatformTest:TestUniqueAspect","id":"0x1","testUniqueAspectProperty":"Aspect2-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}},
+    {"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}]`
+        .replace(/\s+/g, ""),
+    );
 
     const multiAspectsA: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestMultiAspectNoHandler");
     assert.exists(multiAspectsA);
@@ -112,8 +140,12 @@ describe("ElementAspect", () => {
       assert.exists(aspectX.asAny.testMultiAspectProperty);
       assert.equal(aspectX.asAny.testMultiAspectProperty, aspect.asAny.testMultiAspectProperty);
     });
-    assert.equal(JSON.stringify(multiAspectsA), `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
-    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}}]`.replace(/\s+/g, ""));
+    assert.equal(
+      JSON.stringify(multiAspectsA),
+      `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
+    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}}]`
+        .replace(/\s+/g, ""),
+    );
 
     // Test getAspects with dot separator
     const multiAspectsADotSeparator: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest.TestMultiAspectNoHandler");
@@ -133,8 +165,12 @@ describe("ElementAspect", () => {
       assert.exists(aspectX.asAny.testMultiAspectProperty);
       assert.equal(aspectX.asAny.testMultiAspectProperty, aspect.asAny.testMultiAspectProperty);
     });
-    assert.equal(JSON.stringify(multiAspectsADotSeparator), `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
-    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}}]`.replace(/\s+/g, ""));
+    assert.equal(
+      JSON.stringify(multiAspectsADotSeparator),
+      `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
+    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}}]`
+        .replace(/\s+/g, ""),
+    );
 
     const multiAspectsB: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestMultiAspect");
     assert.exists(multiAspectsB);
@@ -152,8 +188,12 @@ describe("ElementAspect", () => {
       assert.equal(aspectX.className, "TestMultiAspect");
       assert.exists(aspectX.asAny.testMultiAspectProperty);
     });
-    assert.equal(JSON.stringify(multiAspectsB), `[{"classFullName":"DgnPlatformTest:TestMultiAspect","id":"0x2","testMultiAspectProperty":"Aspect5-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}},
-    {"classFullName":"DgnPlatformTest:TestMultiAspect","id":"0x3","testMultiAspectProperty":"Aspect6-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`.replace(/\s+/g, ""));
+    assert.equal(
+      JSON.stringify(multiAspectsB),
+      `[{"classFullName":"DgnPlatformTest:TestMultiAspect","id":"0x2","testMultiAspectProperty":"Aspect5-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}},
+    {"classFullName":"DgnPlatformTest:TestMultiAspect","id":"0x3","testMultiAspectProperty":"Aspect6-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`
+        .replace(/\s+/g, ""),
+    );
 
     const multiAspects: ElementAspect[] = iModel.elements.getAspects(element.id, ElementMultiAspect.classFullName);
     assert.equal(multiAspects.length, 4);
@@ -165,24 +205,38 @@ describe("ElementAspect", () => {
       assert.equal(aspectX.schemaName, aspect.schemaName);
       assert.equal(aspectX.className, aspect.className);
     });
-    assert.equal(JSON.stringify(multiAspects), `[{"classFullName":"DgnPlatformTest:TestMultiAspect","id":"0x2","testMultiAspectProperty":"Aspect5-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}},
+    assert.equal(
+      JSON.stringify(multiAspects),
+      `[{"classFullName":"DgnPlatformTest:TestMultiAspect","id":"0x2","testMultiAspectProperty":"Aspect5-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}},
     {"classFullName":"DgnPlatformTest:TestMultiAspect","id":"0x3","testMultiAspectProperty":"Aspect6-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}},
     {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
-    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}}]`.replace(/\s+/g, ""));
+    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}}]`
+        .replace(/\s+/g, ""),
+    );
 
     const rootSubject = iModel.elements.getRootSubject();
-    assert.equal(0, iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestUniqueAspect").length, "Don't expect DgnPlatformTest:TestUniqueAspect aspects on the root Subject");
-    assert.equal(0, iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestMultiAspect").length, "Don't expect DgnPlatformTest:TestMultiAspect aspects on the root Subject");
+    assert.equal(
+      0,
+      iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestUniqueAspect").length,
+      "Don't expect DgnPlatformTest:TestUniqueAspect aspects on the root Subject",
+    );
+    assert.equal(
+      0,
+      iModel.elements.getAspects(rootSubject.id, "DgnPlatformTest:TestMultiAspect").length,
+      "Don't expect DgnPlatformTest:TestMultiAspect aspects on the root Subject",
+    );
     assert.equal(0, iModel.elements.getAspects(rootSubject.id).length, "Don't expect any aspects on the root Subject");
 
     // The 'Element' property is introduced by ElementUniqueAspect and ElementMultiAspect, but is not available at the ElementAspect base class.
     // Since we're now using instance queries to query ElementUniqueAspect and ElementMultiAspect directly in getAspects(), we can provide ElementAspect to the function as well.
-    const aspectList = `[{"classFullName":"DgnPlatformTest:TestMultiAspect","id":"0x2","testMultiAspectProperty":"Aspect5-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}},
+    const aspectList =
+      `[{"classFullName":"DgnPlatformTest:TestMultiAspect","id":"0x2","testMultiAspectProperty":"Aspect5-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}},
     {"classFullName":"DgnPlatformTest:TestMultiAspect","id":"0x3","testMultiAspectProperty":"Aspect6-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}},
     {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
     {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
     {"classFullName":"DgnPlatformTest:TestUniqueAspect","id":"0x1","testUniqueAspectProperty":"Aspect2-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}},
-    {"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}]`.replace(/\s+/g, "");
+    {"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"Aspect1-Updated","length":1,"element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}]`
+        .replace(/\s+/g, "");
 
     const aspects: ElementAspect[] = iModel.elements.getAspects(element.id, ElementAspect.classFullName);
     assert.equal(aspects.length, 6);
@@ -198,7 +252,9 @@ describe("ElementAspect", () => {
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
 
-    interface Props extends ElementAspectProps { testMultiAspectProperty: string }
+    interface Props extends ElementAspectProps {
+      testMultiAspectProperty: string;
+    }
     const aspectProps: Props = {
       classFullName: "DgnPlatformTest:TestMultiAspectNoHandler",
       element: { id: element.id },
@@ -207,9 +263,13 @@ describe("ElementAspect", () => {
     iModel.elements.insertAspect(aspectProps);
     let aspects: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.isAtLeast(aspects.length, 1);
-    assert.equal(JSON.stringify(aspects), `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
+    assert.equal(
+      JSON.stringify(aspects),
+      `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
     {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
-    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x21","testMultiAspectProperty":"MultiAspectInsertTest1","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`.replace(/\s+/g, ""));
+    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x21","testMultiAspectProperty":"MultiAspectInsertTest1","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`
+        .replace(/\s+/g, ""),
+    );
     const numAspects = aspects.length;
 
     let found: boolean = false;
@@ -230,16 +290,24 @@ describe("ElementAspect", () => {
     assert.equal(aspectsUpdated.length, aspects.length);
     assert.equal(aspectsUpdated[foundIndex].asAny.testMultiAspectProperty, "MultiAspectInsertTest1-Updated");
     // Check if aspect was updated
-    assert.equal(JSON.stringify(aspectsUpdated), `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
+    assert.equal(
+      JSON.stringify(aspectsUpdated),
+      `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
     {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
-    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x21","testMultiAspectProperty":"MultiAspectInsertTest1-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`.replace(/\s+/g, ""));
+    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x21","testMultiAspectProperty":"MultiAspectInsertTest1-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`
+        .replace(/\s+/g, ""),
+    );
 
     iModel.elements.deleteAspect(aspects[foundIndex].id);
     aspects = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.equal(numAspects, aspects.length + 1);
     // Check if aspect was deleted
-    assert.equal(JSON.stringify(aspects), `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
-    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}}]`.replace(/\s+/g, ""));
+    assert.equal(
+      JSON.stringify(aspects),
+      `[{"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x4","testMultiAspectProperty":"Aspect3-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}},
+    {"classFullName":"DgnPlatformTest:TestMultiAspectNoHandler","id":"0x5","testMultiAspectProperty":"Aspect4-Updated","element":{"id":"0x17","relClassName":"DgnPlatformTest.TestElement"}}]`
+        .replace(/\s+/g, ""),
+    );
   });
 
   it("should be able to insert, update, and delete UniqueAspects", () => {
@@ -256,14 +324,20 @@ describe("ElementAspect", () => {
     const aspects: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.isTrue(aspects.length === 1);
     assert.equal(aspects[0].asAny.testUniqueAspectProperty, aspectProps.testUniqueAspectProperty);
-    assert.equal(JSON.stringify(aspects), `[{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"UniqueAspectInsertTest1","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}]`);
+    assert.equal(
+      JSON.stringify(aspects),
+      `[{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"UniqueAspectInsertTest1","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}]`,
+    );
 
     aspects[0].asAny.testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
     iModel.elements.updateAspect(aspects[0].toJSON());
     const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.equal(aspectsUpdated.length, 1);
     assert.equal(aspectsUpdated[0].asAny.testUniqueAspectProperty, "UniqueAspectInsertTest1-Updated");
-    assert.equal(JSON.stringify(aspectsUpdated), `[{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"UniqueAspectInsertTest1-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}]`);
+    assert.equal(
+      JSON.stringify(aspectsUpdated),
+      `[{"classFullName":"DgnPlatformTest:TestUniqueAspectNoHandler","id":"0x6","testUniqueAspectProperty":"UniqueAspectInsertTest1-Updated","element":{"id":"0x17","relClassName":"BisCore.ElementOwnsUniqueAspect"}}]`,
+    );
 
     iModel.elements.deleteAspect(aspects[0].id);
     try {
@@ -301,7 +375,10 @@ describe("ElementAspect", () => {
 
     const aspects: ElementAspect[] = iModelDb.elements.getAspects(elementId, aspectProps.classFullName);
     assert.equal(aspects.length, 1);
-    assert.equal(JSON.stringify(aspects), `[{"classFullName":"BisCore:ExternalSourceAspect","id":"0x21","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"A","kind":"Letter","version":"1.0","checksum":"1","element":{"id":"0x11","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`);
+    assert.equal(
+      JSON.stringify(aspects),
+      `[{"classFullName":"BisCore:ExternalSourceAspect","id":"0x21","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"A","kind":"Letter","version":"1.0","checksum":"1","element":{"id":"0x11","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`,
+    );
     expect(aspects[0]).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
 
     expect(aspectJson).to.deep.subsetEqual(aspectProps, { normalizeClassNameProps: true });
@@ -373,19 +450,27 @@ describe("ElementAspect", () => {
     e1Aspects.forEach((x) => {
       assert.isTrue(findInProps(x, e1AspectProps));
     });
-    assert.equal(JSON.stringify(e1Aspects), `[{"classFullName":"BisCore:ExternalSourceAspect","id":"0x21","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"A","kind":"Letter","element":{"id":"0x11","relClassName":"BisCore.ElementOwnsMultiAspects"}},
+    assert.equal(
+      JSON.stringify(e1Aspects),
+      `[{"classFullName":"BisCore:ExternalSourceAspect","id":"0x21","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"A","kind":"Letter","element":{"id":"0x11","relClassName":"BisCore.ElementOwnsMultiAspects"}},
     {"classFullName":"BisCore:ExternalSourceAspect","id":"0x22","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"A","kind":"Letter","element":{"id":"0x11","relClassName":"BisCore.ElementOwnsMultiAspects"}},
     {"classFullName":"BisCore:ExternalSourceAspect","id":"0x23","scope":{"id":"0x11","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"A","kind":"Letter","element":{"id":"0x11","relClassName":"BisCore.ElementOwnsMultiAspects"}},
     {"classFullName":"BisCore:ExternalSourceAspect","id":"0x24","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"B","kind":"Letter","element":{"id":"0x11","relClassName":"BisCore.ElementOwnsMultiAspects"}},
-    {"classFullName":"BisCore:ExternalSourceAspect","id":"0x25","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"C","kind":"Kind2","element":{"id":"0x11","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`.replace(/\s+/g, ""));
+    {"classFullName":"BisCore:ExternalSourceAspect","id":"0x25","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"C","kind":"Kind2","element":{"id":"0x11","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`
+        .replace(/\s+/g, ""),
+    );
 
     const e2Aspects: ElementAspect[] = iModelDb.elements.getAspects(e2, aspectProps.classFullName);
     assert.equal(e2Aspects.length, e2AspectProps.length);
     e2Aspects.forEach((x) => {
       assert.isTrue(findInProps(x, e2AspectProps));
     });
-    assert.equal(JSON.stringify(e2Aspects), `[{"classFullName":"BisCore:ExternalSourceAspect","id":"0x26","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"A","kind":"Letter","element":{"id":"0x13","relClassName":"BisCore.ElementOwnsMultiAspects"}},
-    {"classFullName":"BisCore:ExternalSourceAspect","id":"0x27","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"C","kind":"Letter","element":{"id":"0x13","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`.replace(/\s+/g, ""));
+    assert.equal(
+      JSON.stringify(e2Aspects),
+      `[{"classFullName":"BisCore:ExternalSourceAspect","id":"0x26","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"A","kind":"Letter","element":{"id":"0x13","relClassName":"BisCore.ElementOwnsMultiAspects"}},
+    {"classFullName":"BisCore:ExternalSourceAspect","id":"0x27","scope":{"id":"0x1","relClassName":"BisCore.ElementScopesExternalSourceIdentifier"},"identifier":"C","kind":"Letter","element":{"id":"0x13","relClassName":"BisCore.ElementOwnsMultiAspects"}}]`
+        .replace(/\s+/g, ""),
+    );
 
     const allA = ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind, "A");
     assert.equal(allA.filter((x) => x.elementId === e1).length, 2, "there are two A's in scope 1 on e1");
@@ -410,5 +495,4 @@ describe("ElementAspect", () => {
 
     assert.equal(ExternalSourceAspect.findAllBySource(iModelDb, scopeId1, kind, "<notfound>").length, 0);
   });
-
 });

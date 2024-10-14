@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as path from "path";
-import * as fs from "fs-extra";
-import * as sinon from "sinon";
 import { SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
+import { expect } from "chai";
+import * as fs from "fs-extra";
+import * as path from "path";
+import * as sinon from "sinon";
 import { SchemaXml } from "../SchemaXml";
+import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
 
 describe("SchemaXml tests:", () => {
   let locater: SchemaXmlFileLocater;

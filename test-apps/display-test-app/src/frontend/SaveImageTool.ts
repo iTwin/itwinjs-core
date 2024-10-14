@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ProcessDetector } from "@itwin/core-bentley";
-import { Point2d } from "@itwin/core-geometry";
 import { imageBufferToPngDataUrl, IModelApp, openImageDataUrlInNewWindow, Tool } from "@itwin/core-frontend";
+import { Point2d } from "@itwin/core-geometry";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 interface SaveImageOptions {
@@ -16,8 +16,12 @@ interface SaveImageOptions {
 
 export class SaveImageTool extends Tool {
   public static override toolId = "SaveImage";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 3;
+  }
 
   public override async run(opts?: SaveImageOptions): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;

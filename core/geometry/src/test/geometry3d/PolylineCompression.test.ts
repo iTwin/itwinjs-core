@@ -20,12 +20,18 @@ class PolylineCompressionChecker {
   public x0 = 0;
   public y0 = 0;
   public allGeometry: GeometryQuery[] = [];
-  public shift(dx: number, dy: number) { this.x0 += dx; this.y0 += dy; }
+  public shift(dx: number, dy: number) {
+    this.x0 += dx;
+    this.y0 += dy;
+  }
 
-  public verifyGlobalChordErrorCompression(numExpected: number, points: Point3d[],
+  public verifyGlobalChordErrorCompression(
+    numExpected: number,
+    points: Point3d[],
     globalEdgeTolerance: number,
     areaTolerance = 0.0,
-    perpendicularDistanceTolerance: number = 0.0) {
+    perpendicularDistanceTolerance: number = 0.0,
+  ) {
     const result = PolylineOps.compressByChordError(points, globalEdgeTolerance);
     const y0 = this.y0;
     this.x0 += 2.0 * globalEdgeTolerance;
@@ -92,11 +98,13 @@ describe("GlobalCompression", () => {
     context.verifyGlobalChordErrorCompression(3, point3, 0.5);
     context.verifyGlobalChordErrorCompression(2, point3, 2.0);
     for (const depth of [1, 2, 3]) {
-      for (const fractal of [
-        Sample.createFractalHatReversingPattern(depth, 0.25),
-        Sample.createFractalLReversingPattern(depth, 1.0),
-        Sample.createFractalHatReversingPattern(depth, 0.05)]) {
-
+      for (
+        const fractal of [
+          Sample.createFractalHatReversingPattern(depth, 0.25),
+          Sample.createFractalLReversingPattern(depth, 1.0),
+          Sample.createFractalHatReversingPattern(depth, 0.05),
+        ]
+      ) {
         const dataRange = Range3d.createFromVariantData(fractal);
         const qBase = 0.001 * dataRange.diagonal().magnitude();
         for (const factor of [1.0, 5.0, 10.0, 50.0, 100.0, 200.0]) {
@@ -113,9 +121,11 @@ describe("GlobalCompression", () => {
     const context = new PolylineCompressionChecker();
 
     for (const depth of [3, 1, 2, 3]) {
-      for (const fractal of [
-        Sample.createFractalHatReversingPattern(depth, 0.05)]) {
-
+      for (
+        const fractal of [
+          Sample.createFractalHatReversingPattern(depth, 0.05),
+        ]
+      ) {
         const dataRange = Range3d.createFromVariantData(fractal);
         const qBase = 0.001 * dataRange.diagonal().magnitude();
         for (const factor of [1.0, 5.0, 10.0, 50.0, 100.0, 200.0]) {
@@ -134,7 +144,7 @@ describe("GlobalCompression", () => {
     let yy = 0.0;
     for (let i = 0; i < 3; i++) {
       points.push(Point3d.create(i, yy, 0));
-      yy = 2.0 - yy;    // toggle to sharp corner
+      yy = 2.0 - yy; // toggle to sharp corner
       const pointsA = PolylineOps.compressShortEdges(points, 1.0);
       ck.testExactNumber(points.length, pointsA.length, "No Change chord error case");
 

@@ -6,10 +6,30 @@
  * @module Validation
  */
 
-import { AnyClass, AnyECType, AnyProperty, Constant, CustomAttribute, CustomAttributeClass, CustomAttributeContainerProps,
-  EntityClass, Enumeration, Format, InvertedUnit, ISchemaPartVisitor, KindOfQuantity, Mixin,
-  Phenomenon, PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem,
-  StructClass, Unit, UnitSystem,
+import {
+  AnyClass,
+  AnyECType,
+  AnyProperty,
+  Constant,
+  CustomAttribute,
+  CustomAttributeClass,
+  CustomAttributeContainerProps,
+  EntityClass,
+  Enumeration,
+  Format,
+  InvertedUnit,
+  ISchemaPartVisitor,
+  KindOfQuantity,
+  Mixin,
+  Phenomenon,
+  PropertyCategory,
+  RelationshipClass,
+  RelationshipConstraint,
+  Schema,
+  SchemaItem,
+  StructClass,
+  Unit,
+  UnitSystem,
 } from "@itwin/ecschema-metadata";
 
 import { AnyDiagnostic, DiagnosticCategory } from "./Diagnostic";
@@ -540,7 +560,10 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
     }
   }
 
-  private findSuppressionRule<T extends AnyECType, U = {}>(suppressionSet: Array<IRuleSuppressionMap<T, U>>, code: string): ISuppressionRule<T, U> | undefined {
+  private findSuppressionRule<T extends AnyECType, U = {}>(
+    suppressionSet: Array<IRuleSuppressionMap<T, U>>,
+    code: string,
+  ): ISuppressionRule<T, U> | undefined {
     if (!suppressionSet)
       return;
 
@@ -560,7 +583,11 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
     return ruleSet.schemaExclusionSet.includes(schema.name);
   }
 
-  private async reportDiagnostics<T extends AnyECType, U = {}>(diagnostic: AnyDiagnostic, ecType: T, suppressionMap: Array<IRuleSuppressionMap<T, U>> | undefined) {
+  private async reportDiagnostics<T extends AnyECType, U = {}>(
+    diagnostic: AnyDiagnostic,
+    ecType: T,
+    suppressionMap: Array<IRuleSuppressionMap<T, U>> | undefined,
+  ) {
     if (!diagnostic)
       return;
 

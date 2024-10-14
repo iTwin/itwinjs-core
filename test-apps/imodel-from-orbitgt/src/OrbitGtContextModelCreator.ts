@@ -2,17 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { Range3d, StandardViewIndex } from "@itwin/core-geometry";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, PhysicalModel, SnapshotDb, SpatialViewDefinition,
+  CategorySelector,
+  DefinitionModel,
+  DisplayStyle3d,
+  IModelDb,
+  ModelSelector,
+  PhysicalModel,
+  SnapshotDb,
+  SpatialViewDefinition,
 } from "@itwin/core-backend";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
-import {
-  ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS,
-} from "@itwin/core-orbitgt";
+import { Range3d, StandardViewIndex } from "@itwin/core-geometry";
+import { ALong, CRSManager, Downloader, OnlineEngine, OPCReader, OrbitGtBounds, PageCachedFile, PointCloudReader, UrlFS } from "@itwin/core-orbitgt";
 import { DownloaderNode } from "@itwin/core-orbitgt/lib/cjs/system/runtime/DownloaderNode";
+import * as fs from "fs";
 
 interface OrbitGtPointCloudProps {
   rdsUrl?: string;
@@ -34,7 +39,7 @@ export class OrbitGtContextIModelCreator {
    * @param url the reality model URL
    */
   public constructor(private _props: OrbitGtPointCloudProps, iModelFileName: string, private _name: string) {
-    fs.unlink(iModelFileName, ((_err) => { }));
+    fs.unlink(iModelFileName, (_err) => {});
     this.iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "Reality Model Context" } });
   }
   /** Perform the import */
@@ -57,14 +62,21 @@ export class OrbitGtContextIModelCreator {
 
       // wrap a caching layer (16 MB) around the blob file
       const blobFileSize: ALong = await urlFS.getFileLength(blobFileURL);
-      const blobFile: PageCachedFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, 128 * 1024 /* pageSize */, 128 /* maxPageCount */);
-      const fileReader: PointCloudReader = await OPCReader.openFile(blobFile, blobFileURL, true/* lazyLoading */);
+      const blobFile: PageCachedFile = new PageCachedFile(urlFS, blobFileURL, blobFileSize, 128 * 1024, /* pageSize */ 128 /* maxPageCount */);
+      const fileReader: PointCloudReader = await OPCReader.openFile(blobFile, blobFileURL, true /* lazyLoading */);
 
       let fileCrs = fileReader.getFileCRS();
       if (fileCrs == null)
         fileCrs = "";
       const bounds = fileReader.getFileBounds();
-      let worldRange = Range3d.createXYZXYZ(bounds.getMinX(), bounds.getMinY(), bounds.getMinZ(), bounds.getMaxX(), bounds.getMaxY(), bounds.getMaxZ());
+      let worldRange = Range3d.createXYZXYZ(
+        bounds.getMinX(),
+        bounds.getMinY(),
+        bounds.getMinZ(),
+        bounds.getMaxX(),
+        bounds.getMaxY(),
+        bounds.getMaxZ(),
+      );
       let geoLocated = false;
       // the CRS 9300 is not defined in the CRS registry database, so we cannot use CRSManager
       // Check to isGeographicCRS and isProjectedCRS are both going to return false in that case and we will fallback to
@@ -77,7 +89,14 @@ export class OrbitGtContextIModelCreator {
         await CRSManager.ENGINE.prepareForArea(wgs84Crs, new OrbitGtBounds());
 
         const ecefBounds = CRSManager.transformBounds(bounds, fileCrs, wgs84Crs);
-        const ecefRange = Range3d.createXYZXYZ(ecefBounds.getMinX(), ecefBounds.getMinY(), ecefBounds.getMinZ(), ecefBounds.getMaxX(), ecefBounds.getMaxY(), ecefBounds.getMaxZ());
+        const ecefRange = Range3d.createXYZXYZ(
+          ecefBounds.getMinX(),
+          ecefBounds.getMinY(),
+          ecefBounds.getMinZ(),
+          ecefBounds.getMaxX(),
+          ecefBounds.getMaxY(),
+          ecefBounds.getMaxZ(),
+        );
         const ecefCenter = ecefRange.localXYZToWorld(.5, .5, .5)!;
         const cartoCenter = Cartographic.fromEcef(ecefCenter)!;
         cartoCenter.height = 0;
@@ -101,7 +120,19 @@ export class OrbitGtContextIModelCreator {
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, []);
     const vf = new ViewFlags({ backgroundMap: geoLocated, renderMode: RenderMode.SmoothShade, lighting: true });
-    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
-    return SpatialViewDefinition.insertWithCamera(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, {
+      viewFlags: vf,
+      contextRealityModels: realityModels,
+    });
+    return SpatialViewDefinition.insertWithCamera(
+      this.iModelDb,
+      this.definitionModelId,
+      viewName,
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      range,
+      StandardViewIndex.Iso,
+    );
   }
 }

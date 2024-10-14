@@ -20,13 +20,11 @@ import { Transform } from "./Transform";
 import { XAndY, XYAndZ, XYZProps } from "./XYZProps";
 
 /**
- *
  * @param numA first candidate -- presumed 0 or positive
  * @param numB second candidate -- may be undefined, invalid if outside closed interval 0..numA
  * @param multiplyBy second candidate multiplier (applied only if candidate is defined)
  */
 function selectOptionalClampedMin(numA: number, numB: number | undefined, multiplyBy: number): number {
-
   if (numB !== undefined) {
     const numC = numB * multiplyBy;
     if (numC >= 0 && numC <= numA)
@@ -74,7 +72,8 @@ export class NumberArray {
   public static isAlmostEqual(
     dataA: number[] | Float64Array | undefined,
     dataB: number[] | Float64Array | undefined,
-    tolerance: number = Geometry.smallMetricDistance): boolean {
+    tolerance: number = Geometry.smallMetricDistance,
+  ): boolean {
     if (dataA && dataB) {
       if (dataA.length !== dataB.length)
         return false;
@@ -301,7 +300,7 @@ export class NumberArray {
     // compute a convex combination of each byte
     for (let iByte = 0, shiftBits = 0; iByte < 4; ++iByte, shiftBits += 8) {
       for (let iTerm = 0; iTerm < numTerms; ++iTerm) {
-        const fraction = Geometry.clamp(scales[iTerm], 0, 1);  // chop slop
+        const fraction = Geometry.clamp(scales[iTerm], 0, 1); // chop slop
         const colorComponent = (colors[iTerm] >>> shiftBits) & 0xFF;
         bytes[iByte] += fraction * colorComponent;
       }
@@ -353,7 +352,6 @@ export class Point2dArray {
     }
     return n;
   }
-
 }
 
 /**
@@ -394,7 +392,11 @@ export class Point4dArray {
    * @param result optional destination array. If insufficiently sized, a new array is returned.
    * @return packed weighted point array
    */
-  public static packPointsAndWeightsToFloat64Array(data: Point3d[] | Float64Array | number[], weights: number[] | Float64Array, result?: Float64Array): Float64Array | undefined {
+  public static packPointsAndWeightsToFloat64Array(
+    data: Point3d[] | Float64Array | number[],
+    weights: number[] | Float64Array,
+    result?: Float64Array,
+  ): Float64Array | undefined {
     let points: Point3d[] | Float64Array | number[];
     if (Array.isArray(data) && data[0] instanceof Point3d) {
       points = data as Point3d[];
@@ -463,8 +465,12 @@ export class Point4dArray {
    * @param weights output weights (w portion of input)
    * @param pointFormatter optional xyz formatter. By default, returns a Point3d created from the xyz portion of the input.
    */
-  public static unpackFloat64ArrayToPointsAndWeights(data: Float64Array, points: Point3d[], weights: number[],
-    pointFormatter: (x: number, y: number, z: number) => any = (x, y, z) => Point3d.create(x, y, z)) {
+  public static unpackFloat64ArrayToPointsAndWeights(
+    data: Float64Array,
+    points: Point3d[],
+    weights: number[],
+    pointFormatter: (x: number, y: number, z: number) => any = (x, y, z) => Point3d.create(x, y, z),
+  ) {
     points.length = 0;
     weights.length = 0;
     for (let i = 0; i + 3 < data.length; i += 4) {
@@ -504,16 +510,18 @@ export class Point4dArray {
         for (let i = 0; i < dataA.length; i++)
           if (!dataA[i].isAlmostEqual(dataB[i]))
             return false;
-      } else {  // different types
+      } else { // different types
         const points = dataA instanceof Float64Array ? dataB as Point4d[] : dataA;
         const numbers = dataA instanceof Float64Array ? dataA : dataB as Float64Array;
         if (numbers.length !== points.length * 4)
           return false;
         for (let iPoint = 0; iPoint < points.length; ++iPoint) {
-          if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[4 * iPoint]) ||
+          if (
+            !Geometry.isSameCoordinate(points[iPoint].x, numbers[4 * iPoint]) ||
             !Geometry.isSameCoordinate(points[iPoint].y, numbers[4 * iPoint + 1]) ||
             !Geometry.isSameCoordinate(points[iPoint].z, numbers[4 * iPoint + 2]) ||
-            !Geometry.isSameCoordinate(points[iPoint].w, numbers[4 * iPoint + 3]))
+            !Geometry.isSameCoordinate(points[iPoint].w, numbers[4 * iPoint + 3])
+          )
             return false;
         }
       }
@@ -523,7 +531,11 @@ export class Point4dArray {
     return (dataA === undefined && dataB === undefined);
   }
   /** return true iff all xyzw points' altitudes are within tolerance of the plane.*/
-  public static isCloseToPlane(data: Point4d[] | Float64Array, plane: Plane3dByOriginAndUnitNormal, tolerance: number = Geometry.smallMetricDistance): boolean {
+  public static isCloseToPlane(
+    data: Point4d[] | Float64Array,
+    plane: Plane3dByOriginAndUnitNormal,
+    tolerance: number = Geometry.smallMetricDistance,
+  ): boolean {
     if (Array.isArray(data)) {
       for (const xyzw of data) {
         if (Math.abs(plane.altitudeXYZW(xyzw.x, xyzw.y, xyzw.z, xyzw.w)) > tolerance)
@@ -538,7 +550,6 @@ export class Point4dArray {
     }
     return true;
   }
-
 }
 /**
  * The `Point3dArray` class contains static methods that act on arrays of 3d points.
@@ -595,7 +606,6 @@ export class Point3dArray {
    * @param w1 high w weight
    */
   public static evaluateTrilinearWeights(weights: Float64Array, u0: number, u1: number, v0: number, v1: number, w0: number, w1: number) {
-
     weights[0] = u0 * v0 * w0;
     weights[1] = u1 * v0 * w0;
     weights[2] = u0 * v1 * w0;
@@ -684,10 +694,20 @@ export class Point3dArray {
     this.evaluateTrilinearWeights(this._weightDV, 1 - u, u, -1, 1, 1 - w, w);
     this.evaluateTrilinearWeights(this._weightDW, 1 - u, u, 1 - v, v, -1, 1);
     return Transform.createRowValues(
-      this.sumWeightedX(this._weightDU, points), this.sumWeightedX(this._weightDV, points), this.sumWeightedX(this._weightDW, points), this.sumWeightedX(this._weightUVW, points),
-      this.sumWeightedY(this._weightDU, points), this.sumWeightedY(this._weightDV, points), this.sumWeightedY(this._weightDW, points), this.sumWeightedY(this._weightUVW, points),
-      this.sumWeightedZ(this._weightDU, points), this.sumWeightedZ(this._weightDV, points), this.sumWeightedZ(this._weightDW, points), this.sumWeightedZ(this._weightUVW, points),
-      result);
+      this.sumWeightedX(this._weightDU, points),
+      this.sumWeightedX(this._weightDV, points),
+      this.sumWeightedX(this._weightDW, points),
+      this.sumWeightedX(this._weightUVW, points),
+      this.sumWeightedY(this._weightDU, points),
+      this.sumWeightedY(this._weightDV, points),
+      this.sumWeightedY(this._weightDW, points),
+      this.sumWeightedY(this._weightUVW, points),
+      this.sumWeightedZ(this._weightDU, points),
+      this.sumWeightedZ(this._weightDV, points),
+      this.sumWeightedZ(this._weightDW, points),
+      this.sumWeightedZ(this._weightUVW, points),
+      result,
+    );
   }
   /** unpack from a number array or Float64Array to an array of `Point3d` */
   public static unpackNumbersToPoint3dArray(data: Float64Array | number[]): Point3d[] {
@@ -777,15 +797,17 @@ export class Point3dArray {
         for (let i = 0; i < dataA.length; i++)
           if (!dataA[i].isAlmostEqual(dataB[i]))
             return false;
-      } else {  // different types
+      } else { // different types
         const points = dataA instanceof Float64Array ? dataB as Point3d[] : dataA;
         const numbers = dataA instanceof Float64Array ? dataA : dataB as Float64Array;
         if (numbers.length !== points.length * 3)
           return false;
         for (let iPoint = 0; iPoint < points.length; ++iPoint) {
-          if (!Geometry.isSameCoordinate(points[iPoint].x, numbers[3 * iPoint]) ||
+          if (
+            !Geometry.isSameCoordinate(points[iPoint].x, numbers[3 * iPoint]) ||
             !Geometry.isSameCoordinate(points[iPoint].y, numbers[3 * iPoint + 1]) ||
-            !Geometry.isSameCoordinate(points[iPoint].z, numbers[3 * iPoint + 2]))
+            !Geometry.isSameCoordinate(points[iPoint].z, numbers[3 * iPoint + 2])
+          )
             return false;
         }
       }
@@ -803,7 +825,9 @@ export class Point3dArray {
       if (points.length > 0) {
         for (let i = 0; i < points.length; i++) {
           points.getPoint3dAtCheckedPointIndex(i, p);
-          result.x += p.x; result.y += p.y; result.z += p.z;
+          result.x += p.x;
+          result.y += p.y;
+          result.z += p.z;
         }
         result.scaleInPlace(1.0 / points.length);
       }
@@ -831,7 +855,12 @@ export class Point3dArray {
     return result;
   }
   /** return the index of the point whose vector from space point has the largest magnitude of cross product with given vector. */
-  public static indexOfPointWithMaxCrossProductMagnitude(points: Point3d[], spacePoint: Point3d, vector: Vector3d, farVector: Vector3d): number | undefined {
+  public static indexOfPointWithMaxCrossProductMagnitude(
+    points: Point3d[],
+    spacePoint: Point3d,
+    vector: Vector3d,
+    farVector: Vector3d,
+  ): number | undefined {
     if (points.length === 0)
       return undefined;
     let dMax = -1;
@@ -868,7 +897,11 @@ export class Point3dArray {
     return index;
   }
   /** return true iff all points' altitudes are within tolerance of the plane.*/
-  public static isCloseToPlane(data: Point3d[] | Float64Array, plane: Plane3dByOriginAndUnitNormal, tolerance: number = Geometry.smallMetricDistance): boolean {
+  public static isCloseToPlane(
+    data: Point3d[] | Float64Array,
+    plane: Plane3dByOriginAndUnitNormal,
+    tolerance: number = Geometry.smallMetricDistance,
+  ): boolean {
     if (Array.isArray(data)) {
       let xyz;
       for (xyz of data) {
@@ -897,19 +930,14 @@ export class Point3dArray {
       for (let i = 0; i < n; i++) sum += data[i].distance(data[i + 1]);
       if (addClosureEdge && n > 0)
         sum += data[0].distance(data[n]);
-
     } else if (data instanceof Float64Array) {
       const numXYZ = selectOptionalClampedMin(data.length, maxPointsToUse, 3);
       let i = 0;
-      for (; i + 5 < numXYZ; i += 3) {  // final i points at final point x
-        sum += Geometry.hypotenuseXYZ(data[i + 3] - data[i],
-          data[i + 4] - data[i + 1],
-          data[i + 5] - data[i + 2]);
+      for (; i + 5 < numXYZ; i += 3) { // final i points at final point x
+        sum += Geometry.hypotenuseXYZ(data[i + 3] - data[i], data[i + 4] - data[i + 1], data[i + 5] - data[i + 2]);
       }
       if (addClosureEdge && i >= 3) {
-        sum += Geometry.hypotenuseXYZ(data[0] - data[i],
-          data[1] - data[i + 1],
-          data[2] - data[i + 2]);
+        sum += Geometry.hypotenuseXYZ(data[0] - data[i], data[1] - data[i + 1], data[2] - data[i + 2]);
       }
     }
     return sum;
@@ -979,12 +1007,13 @@ export class Point3dArray {
       for (let k = 1; k < n; k++)
         result.push(points[i - 1].interpolate(k / n, points[i]));
       result.push(points[i]);
-
     }
     return result;
   }
   /** Pack isolated x,y,z args as a json `[x,y,z]` */
-  private static xyzToArray(x: number, y: number, z: number): number[] { return [x, y, z]; }
+  private static xyzToArray(x: number, y: number, z: number): number[] {
+    return [x, y, z];
+  }
 
   /**
    * return similarly-structured array, array of arrays, etc, with the lowest level point data specifically structured as arrays of 3 numbers `[1,2,3]`
@@ -1069,7 +1098,7 @@ export class Point3dArray {
       return vectorV.magnitude(); // AC is degenerate; return ||B-A||
     if (!extrapolate) {
       if (fraction > 1.0)
-        return points[indexB].distance(points[indexC]);  // return ||B-C||
+        return points[indexB].distance(points[indexC]); // return ||B-C||
       if (fraction < 0.0)
         return vectorV.magnitude(); // return ||B-A||
     }
@@ -1087,7 +1116,10 @@ export class Point3dArray {
    * @param addClosurePoint whether to append the first hull point to `hullPoints`.
    */
   public static computeConvexHullXY(
-    points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint: boolean = false,
+    points: Point3d[],
+    hullPoints: Point3d[],
+    insidePoints: Point3d[],
+    addClosurePoint: boolean = false,
   ): void {
     hullPoints.length = 0;
     insidePoints.length = 0;

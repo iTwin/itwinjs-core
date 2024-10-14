@@ -13,20 +13,20 @@ module.exports = [
         "error",
         {
           "required-barrel-modules": [
-            "./src/tile/internal.ts"
-          ]
-        }
+            "./src/tile/internal.ts",
+          ],
+        },
       ],
       "@itwin/public-extension-exports": [
         "error",
         {
           "releaseTags": [
-            "public"
+            "public",
           ],
-          "outputApiFile": false
-        }
-      ]
-    }
+          "outputApiFile": false,
+        },
+      ],
+    },
   },
   ...eslintBaseConfig,
 ];

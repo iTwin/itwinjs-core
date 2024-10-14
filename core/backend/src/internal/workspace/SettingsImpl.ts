@@ -6,14 +6,23 @@
  * @module Workspace
  */
 
+import { BeEvent } from "@itwin/core-bentley";
+import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import * as fs from "fs-extra";
 import { parse } from "json5";
 import { extname, join } from "path";
-import { BeEvent } from "@itwin/core-bentley";
-import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import { IModelJsFs } from "../../IModelJsFs";
-import { Setting, SettingName, Settings, SettingsContainer, SettingsDictionary, SettingsDictionaryProps, SettingsDictionarySource, SettingsPriority } from "../../workspace/Settings";
 import { IModelHost } from "../../IModelHost";
+import { IModelJsFs } from "../../IModelJsFs";
+import {
+  Setting,
+  SettingName,
+  Settings,
+  SettingsContainer,
+  SettingsDictionary,
+  SettingsDictionaryProps,
+  SettingsDictionarySource,
+  SettingsPriority,
+} from "../../workspace/Settings";
 import { _implementationProhibited } from "../Symbols";
 
 const dictionaryMatches = (d1: SettingsDictionarySource, d2: SettingsDictionarySource): boolean => {
@@ -43,8 +52,8 @@ class SettingsDictionaryImpl implements SettingsDictionary {
 export class SettingsImpl implements Settings {
   public readonly [_implementationProhibited] = undefined;
   public dictionaries: SettingsDictionary[] = [];
-  protected verifyPriority(_priority: SettingsPriority) { }
-  public close() { }
+  protected verifyPriority(_priority: SettingsPriority) {}
+  public close() {}
   public readonly onSettingsChanged = new BeEvent<() => void>();
 
   public addFile(fileName: LocalFileName, priority: SettingsPriority) {
@@ -100,7 +109,7 @@ export class SettingsImpl implements Settings {
     return false;
   }
 
-  public * getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary}> {
+  public *getSettingEntries<T extends Setting>(settingName: SettingName): Iterable<{ value: T, dictionary: SettingsDictionary }> {
     for (const dictionary of this.dictionaries) {
       const value = dictionary.getSetting<T>(settingName);
       if (undefined !== value) {
@@ -109,7 +118,7 @@ export class SettingsImpl implements Settings {
     }
   }
 
-  public * getSettingValues<T extends Setting>(settingName: SettingName): Iterable<T> {
+  public *getSettingValues<T extends Setting>(settingName: SettingName): Iterable<T> {
     for (const entry of this.getSettingEntries<T>(settingName)) {
       yield entry.value;
     }

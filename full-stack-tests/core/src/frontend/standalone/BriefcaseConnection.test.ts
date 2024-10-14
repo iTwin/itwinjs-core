@@ -29,9 +29,7 @@ class MockAbortSignal implements GenericAbortSignal {
 }
 
 if (ProcessDetector.isElectronAppFrontend) {
-
   describe("BriefcaseConnection (#integration)", async () => {
-
     beforeEach(async () => {
       await TestUtility.startFrontend();
       await TestUtility.initialize(TestUsers.regular);

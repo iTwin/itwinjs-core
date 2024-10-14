@@ -3,22 +3,22 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as moq from "typemoq";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, Item, KeySet } from "@itwin/presentation-common";
 import { createRandomECInstanceKey, createRandomTransientId, createTestContentDescriptor } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import sinon from "sinon";
+import * as moq from "typemoq";
+import { GetContentRequestOptions, MultipleValuesRequestOptions, PresentationManager } from "../../presentation-frontend";
+import { Presentation } from "../../presentation-frontend/Presentation";
 import { HiliteSetProvider } from "../../presentation-frontend/selection/HiliteSetProvider";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "../../presentation-frontend/selection/SelectionManager";
-import sinon from "sinon";
-import { Presentation } from "../../presentation-frontend/Presentation";
-import { GetContentRequestOptions, MultipleValuesRequestOptions, PresentationManager } from "../../presentation-frontend";
 
 describe("HiliteSetProvider", () => {
   const imodelMock = moq.Mock.ofType<IModelConnection>();
   const fakeGetContentIterator = sinon.stub<
     [GetContentRequestOptions & MultipleValuesRequestOptions],
-    Promise<{ descriptor: Descriptor; total: number; items: AsyncIterableIterator<Item> } | undefined>
+    Promise<{ descriptor: Descriptor, total: number, items: AsyncIterableIterator<Item> } | undefined>
   >();
 
   before(() => {
@@ -105,7 +105,9 @@ describe("HiliteSetProvider", () => {
     it("creates result for model keys", async () => {
       const persistentKey = createRandomECInstanceKey();
       const resultKey = createRandomECInstanceKey();
-      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [new Item([resultKey], "", "", undefined, {}, {}, [], { isModel: true })]);
+      const resultContent = new Content(createTestContentDescriptor({ fields: [] }), [
+        new Item([resultKey], "", "", undefined, {}, {}, [], { isModel: true }),
+      ]);
 
       fakeGetContentIterator
         .onFirstCall()

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 import { expect } from "chai";
+import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 
 class TestSchemaCompareReporter implements ISchemaCompareReporter {
   public changes: SchemaChanges[] = [];
@@ -18,8 +18,10 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA?: 
   diagnostics.find((anyDiagnostic) => {
     switch (code) {
       case SchemaCompareCodes.CustomAttributeInstanceClassMissing: {
-        if (anyDiagnostic.code === code &&
-                    anyDiagnostic.messageArgs?.at(0).className === fullNameA) {
+        if (
+          anyDiagnostic.code === code &&
+          anyDiagnostic.messageArgs?.at(0).className === fullNameA
+        ) {
           found = true;
         }
         break;
@@ -185,7 +187,7 @@ describe("Custom attributes class comparison tests", () => {
       expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-114", "DummyReference.customAttributeOne")).to.equal(true);
     });
 
-    it("should not report custom attribute instance class missing for top level referenced custom attribute if same full name", async ()=> {
+    it("should not report custom attribute instance class missing for top level referenced custom attribute if same full name", async () => {
       const context = new SchemaContext();
       const _dummyRefOne = await Schema.fromJson({
         ...dummyRefJson,
@@ -304,6 +306,5 @@ describe("Custom attributes class comparison tests", () => {
 
       expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-114", "DummyReference.customAttributeOne")).to.equal(false);
     });
-
   });
 });

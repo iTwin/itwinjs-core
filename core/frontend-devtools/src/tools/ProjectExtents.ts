@@ -22,7 +22,9 @@ export class ProjectExtentsDecoration {
     this.updateDecorationListener(true);
   }
 
-  protected stop(): void { this.updateDecorationListener(false); }
+  protected stop(): void {
+    this.updateDecorationListener(false);
+  }
 
   protected updateDecorationListener(add: boolean): void {
     if (this._removeDecorationListener) {
@@ -102,8 +104,12 @@ export function toggleProjectExtents(imodel: IModelConnection, enabled?: boolean
  */
 export class ToggleProjectExtentsTool extends Tool {
   public static override toolId = "ToggleProjectExtents";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;

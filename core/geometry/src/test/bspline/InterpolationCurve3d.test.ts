@@ -23,39 +23,137 @@ describe("InterpolationCurve3d", () => {
     const circlePoints = Sample.createUnitCircle(8);
     for (const pt of circlePoints) { pt.y *= 1.4; } // perturb
     const arcPoints = Sample.createArcStrokes(3, Point3d.create(0, 0, 0), 1.0, Angle.createDegrees(-20.0), Angle.createDegrees(200.0), false);
-    for (const pt of arcPoints) { pt.y *= 1.5; }  // perturb
+    for (const pt of arcPoints) { pt.y *= 1.5; } // perturb
     const startTan = Vector3d.create(1, 1, 0);
     const endTan = Vector3d.create(1, -1, 0);
     let x0 = 0;
     const delta = 3.0 * circleRadius;
     const y0 = 0;
     let count = 0;
-    for (const options of [ // we don't test input fitParams since they are not preserved in roundtrip: DGN ignores them!
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, isColinearTangents: 0, isNaturalTangents: 0 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, isColinearTangents: 0, isNaturalTangents: 1 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, isColinearTangents: 1, isNaturalTangents: 0 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, isColinearTangents: 1, isNaturalTangents: 1 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, isColinearTangents: 0, isChordLenTangents: 0, isNaturalTangents: 0 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, isColinearTangents: 0, isChordLenTangents: 0, isNaturalTangents: 1 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, isColinearTangents: 0, isChordLenTangents: 1, isNaturalTangents: 0 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, isColinearTangents: 0, isChordLenTangents: 1, isNaturalTangents: 1 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, isColinearTangents: 1, isChordLenTangents: 0, isNaturalTangents: 0 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, isColinearTangents: 1, isChordLenTangents: 0, isNaturalTangents: 1 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, isColinearTangents: 1, isChordLenTangents: 1, isNaturalTangents: 0 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, isColinearTangents: 1, isChordLenTangents: 1, isNaturalTangents: 1 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, endTangent: endTan, isColinearTangents: 0, isChordLenTangents: 0, isNaturalTangents: 0 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, endTangent: endTan, isColinearTangents: 0, isChordLenTangents: 0, isNaturalTangents: 1 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, endTangent: endTan, isColinearTangents: 0, isChordLenTangents: 1, isNaturalTangents: 0 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, endTangent: endTan, isColinearTangents: 0, isChordLenTangents: 1, isNaturalTangents: 1 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, endTangent: endTan, isColinearTangents: 1, isChordLenTangents: 0, isNaturalTangents: 0 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, endTangent: endTan, isColinearTangents: 1, isChordLenTangents: 0, isNaturalTangents: 1 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, endTangent: endTan, isColinearTangents: 1, isChordLenTangents: 1, isNaturalTangents: 0 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, endTangent: endTan, isColinearTangents: 1, isChordLenTangents: 1, isNaturalTangents: 1 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, endTangent: endTan, isChordLenTangents: 0 }),
-      InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, endTangent: endTan, isChordLenTangents: 1 }),
-      InterpolationCurve3dOptions.create({ fitPoints: circlePoints, closed: true, isChordLenKnots: 0 }),  // the only interpolant with uniform knots
-      InterpolationCurve3dOptions.create({ fitPoints: circlePoints, closed: true, isChordLenKnots: 1 }),
-    ]) {
+    for (
+      const options of [ // we don't test input fitParams since they are not preserved in roundtrip: DGN ignores them!
+        InterpolationCurve3dOptions.create({ fitPoints: arcPoints, isColinearTangents: 0, isNaturalTangents: 0 }),
+        InterpolationCurve3dOptions.create({ fitPoints: arcPoints, isColinearTangents: 0, isNaturalTangents: 1 }),
+        InterpolationCurve3dOptions.create({ fitPoints: arcPoints, isColinearTangents: 1, isNaturalTangents: 0 }),
+        InterpolationCurve3dOptions.create({ fitPoints: arcPoints, isColinearTangents: 1, isNaturalTangents: 1 }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          startTangent: startTan,
+          isColinearTangents: 0,
+          isChordLenTangents: 0,
+          isNaturalTangents: 0,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          startTangent: startTan,
+          isColinearTangents: 0,
+          isChordLenTangents: 0,
+          isNaturalTangents: 1,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          startTangent: startTan,
+          isColinearTangents: 0,
+          isChordLenTangents: 1,
+          isNaturalTangents: 0,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          startTangent: startTan,
+          isColinearTangents: 0,
+          isChordLenTangents: 1,
+          isNaturalTangents: 1,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          startTangent: startTan,
+          isColinearTangents: 1,
+          isChordLenTangents: 0,
+          isNaturalTangents: 0,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          startTangent: startTan,
+          isColinearTangents: 1,
+          isChordLenTangents: 0,
+          isNaturalTangents: 1,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          startTangent: startTan,
+          isColinearTangents: 1,
+          isChordLenTangents: 1,
+          isNaturalTangents: 0,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          startTangent: startTan,
+          isColinearTangents: 1,
+          isChordLenTangents: 1,
+          isNaturalTangents: 1,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          endTangent: endTan,
+          isColinearTangents: 0,
+          isChordLenTangents: 0,
+          isNaturalTangents: 0,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          endTangent: endTan,
+          isColinearTangents: 0,
+          isChordLenTangents: 0,
+          isNaturalTangents: 1,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          endTangent: endTan,
+          isColinearTangents: 0,
+          isChordLenTangents: 1,
+          isNaturalTangents: 0,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          endTangent: endTan,
+          isColinearTangents: 0,
+          isChordLenTangents: 1,
+          isNaturalTangents: 1,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          endTangent: endTan,
+          isColinearTangents: 1,
+          isChordLenTangents: 0,
+          isNaturalTangents: 0,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          endTangent: endTan,
+          isColinearTangents: 1,
+          isChordLenTangents: 0,
+          isNaturalTangents: 1,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          endTangent: endTan,
+          isColinearTangents: 1,
+          isChordLenTangents: 1,
+          isNaturalTangents: 0,
+        }),
+        InterpolationCurve3dOptions.create({
+          fitPoints: arcPoints,
+          endTangent: endTan,
+          isColinearTangents: 1,
+          isChordLenTangents: 1,
+          isNaturalTangents: 1,
+        }),
+        InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, endTangent: endTan, isChordLenTangents: 0 }),
+        InterpolationCurve3dOptions.create({ fitPoints: arcPoints, startTangent: startTan, endTangent: endTan, isChordLenTangents: 1 }),
+        InterpolationCurve3dOptions.create({ fitPoints: circlePoints, closed: true, isChordLenKnots: 0 }), // the only interpolant with uniform knots
+        InterpolationCurve3dOptions.create({ fitPoints: circlePoints, closed: true, isChordLenKnots: 1 }),
+      ]
+    ) {
       if (noisy)
         GeometryCoreTestIO.consoleLog(`InterpolationCurve index ${count}`);
       count++;
@@ -74,10 +172,17 @@ describe("InterpolationCurve3d", () => {
       Point3d.create(53.44488806143417, -28.649852653892122, 1.0000000000000036),
       Point3d.create(52.155105205956495, -31.11087513966227, 1.000000000000007),
       Point3d.create(51.81089204818833, -31.38045503480483, 1.000000000000007),
-      Point3d.create(51.616695380910535, -31.499726679972767, 1.000000000000007)];
+      Point3d.create(51.616695380910535, -31.499726679972767, 1.000000000000007),
+    ];
     const startTan = Vector3d.create(0, -1, 0);
     const endTan = Vector3d.create(1, 0, 0);
-    const options = InterpolationCurve3dOptions.create({ fitPoints: points, startTangent: startTan, endTangent: endTan, isChordLenKnots: 1, isColinearTangents: 1 });
+    const options = InterpolationCurve3dOptions.create({
+      fitPoints: points,
+      startTangent: startTan,
+      endTangent: endTan,
+      isChordLenKnots: 1,
+      isColinearTangents: 1,
+    });
     testInterpolationCurveConstruction(ck, allGeometry, options);
     GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "BrienCurve");
     expect(ck.getNumErrors()).toBe(0);
@@ -117,10 +222,16 @@ describe("InterpolationCurve3d", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "ExercisePointSpacing");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 
-function testInterpolationCurveConstruction(ck: Checker, allGeometry: GeometryQuery[], options: InterpolationCurve3dOptions, x0: number = 0, y0: number = 0, delta: number = 0) {
+function testInterpolationCurveConstruction(
+  ck: Checker,
+  allGeometry: GeometryQuery[],
+  options: InterpolationCurve3dOptions,
+  x0: number = 0,
+  y0: number = 0,
+  delta: number = 0,
+) {
   const curve = InterpolationCurve3d.create(options);
   if (ck.testType(curve, InterpolationCurve3d, `Expect interpolation curve for options ${JSON.stringify(options)}`)) {
     if (ck.testType(curve.options, InterpolationCurve3dOptions)) {
@@ -149,19 +260,18 @@ function testInterpolationCurveConstruction(ck: Checker, allGeometry: GeometryQu
     }
     const ls = LineString3d.create();
     curve.proxyCurve.emitStrokes(ls);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, y2, 0);                      // top row is stroked proxy curve
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve.proxyCurve, x0, y1, 0);        // middle row is MSBsplineCurve proxy
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, ls, x0, y2, 0); // top row is stroked proxy curve
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve.proxyCurve, x0, y1, 0); // middle row is MSBsplineCurve proxy
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve.options.fitPoints, x0, y1, 0); // ... and fit points
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, x0, y0, 0);                   // bottom row is MSInterpolationCurve
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, x0, y0, 0); // bottom row is MSInterpolationCurve
     testGeometryQueryRoundTrip(ck, curve);
   }
 }
 
 /** push points interpolated at fractions (index0/count)<= i <= (index1/count)
  * Note that the range is INCLUSIVE
-*/
-function pushInterpolatedInteriorPoints(points: Point3d[], point0: Point3d, point1: Point3d,
-  index0: number, index1: number, count: number) {
+ */
+function pushInterpolatedInteriorPoints(points: Point3d[], point0: Point3d, point1: Point3d, index0: number, index1: number, count: number) {
   for (let i = index0; i <= index1; i++) {
     points.push(point0.interpolate(i / count, point1));
   }

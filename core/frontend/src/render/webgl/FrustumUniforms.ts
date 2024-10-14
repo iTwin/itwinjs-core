@@ -6,12 +6,12 @@
  * @module WebGL
  */
 
-import { InverseMatrixState, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Frustum, Npc } from "@itwin/core-common";
-import { UniformHandle } from "./UniformHandle";
+import { InverseMatrixState, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { IModelFrameLifecycle } from "./IModelFrameLifecycle";
 import { Matrix4 } from "./Matrix";
 import { desync, sync } from "./Sync";
+import { UniformHandle } from "./UniformHandle";
 
 /** @internal */
 export const enum FrustumUniformType { // eslint-disable-line no-restricted-syntax
@@ -81,19 +81,35 @@ export class FrustumUniforms {
   }
 
   // uniform vec4 u_frustumPlanes; // { top, bottom, left, right }
-  public get planes(): Float32Array { return this._planeData; }
+  public get planes(): Float32Array {
+    return this._planeData;
+  }
 
   // uniform vec3 u_frustum; // { near, far, type }
-  public get frustum(): Float32Array { return this._frustumData; }
+  public get frustum(): Float32Array {
+    return this._frustumData;
+  }
 
-  public get nearPlane(): number { return this._frustumData[FrustumData.kNear]; }
-  public get farPlane(): number { return this._frustumData[FrustumData.kFar]; }
-  public get type(): FrustumUniformType { return this.frustum[FrustumData.kType] as FrustumUniformType; }
-  public get is2d(): boolean { return FrustumUniformType.TwoDee === this.type; }
-  public get planFraction(): number { return this._planFraction; }
+  public get nearPlane(): number {
+    return this._frustumData[FrustumData.kNear];
+  }
+  public get farPlane(): number {
+    return this._frustumData[FrustumData.kFar];
+  }
+  public get type(): FrustumUniformType {
+    return this.frustum[FrustumData.kType] as FrustumUniformType;
+  }
+  public get is2d(): boolean {
+    return FrustumUniformType.TwoDee === this.type;
+  }
+  public get planFraction(): number {
+    return this._planFraction;
+  }
 
   // uniform vec2 u_logZ where x = 1/near and y = log(far/near)
-  public get logZ(): Float32Array { return this._logZData; }
+  public get logZ(): Float32Array {
+    return this._logZData;
+  }
 
   public changeFrustum(newFrustum: Frustum, newFraction: number, is3d: boolean): void {
     if (newFraction === this._planFraction && is3d !== this.is2d && newFrustum.equals(this.planFrustum))
@@ -247,18 +263,44 @@ function lookIn(eye: Point3d, viewX: Vector3d, viewY: Vector3d, viewZ: Vector3d,
 
 function ortho(left: number, right: number, bottom: number, top: number, near: number, far: number, result: Matrix4d) {
   Matrix4d.createRowValues(
-    2.0 / (right - left), 0.0, 0.0, -(right + left) / (right - left),
-    0.0, 2.0 / (top - bottom), 0.0, -(top + bottom) / (top - bottom),
-    0.0, 0.0, -2.0 / (far - near), -(far + near) / (far - near),
-    0.0, 0.0, 0.0, 1.0,
-    result);
+    2.0 / (right - left),
+    0.0,
+    0.0,
+    -(right + left) / (right - left),
+    0.0,
+    2.0 / (top - bottom),
+    0.0,
+    -(top + bottom) / (top - bottom),
+    0.0,
+    0.0,
+    -2.0 / (far - near),
+    -(far + near) / (far - near),
+    0.0,
+    0.0,
+    0.0,
+    1.0,
+    result,
+  );
 }
 
 function frustum(left: number, right: number, bottom: number, top: number, near: number, far: number, result: Matrix4d) {
   Matrix4d.createRowValues(
-    (2.0 * near) / (right - left), 0.0, (right + left) / (right - left), 0.0,
-    0.0, (2.0 * near) / (top - bottom), (top + bottom) / (top - bottom), 0.0,
-    0.0, 0.0, -(far + near) / (far - near), -(2.0 * far * near) / (far - near),
-    0.0, 0.0, -1.0, 0.0,
-    result);
+    (2.0 * near) / (right - left),
+    0.0,
+    (right + left) / (right - left),
+    0.0,
+    0.0,
+    (2.0 * near) / (top - bottom),
+    (top + bottom) / (top - bottom),
+    0.0,
+    0.0,
+    0.0,
+    -(far + near) / (far - near),
+    -(2.0 * far * near) / (far - near),
+    0.0,
+    0.0,
+    -1.0,
+    0.0,
+    result,
+  );
 }

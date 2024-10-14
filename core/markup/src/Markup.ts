@@ -7,10 +7,10 @@
  */
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { Point3d, XAndY } from "@itwin/core-geometry";
 import { ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { FrontendLoggerCategory, imageElementFromImageSource, IModelApp, ScreenViewport } from "@itwin/core-frontend";
-import { adopt, create, G, Marker, Element as MarkupElement, Matrix, Point, Svg, SVG } from "@svgdotjs/svg.js";
+import { Point3d, XAndY } from "@itwin/core-geometry";
+import { adopt, create, Element as MarkupElement, G, Marker, Matrix, Point, SVG, Svg } from "@svgdotjs/svg.js";
 import * as redlineTool from "./RedlineTool";
 import { MarkupSelected, SelectTool } from "./SelectTool";
 import * as textTool from "./TextEdit";
@@ -118,7 +118,8 @@ export class MarkupApp {
         width: 6,
       },
       cloud: {
-        path: "M3.0,2.5 C3.9,.78 5.6,-.4 8.1,1.0 C9.1,0 11.3,-.2 12.5,.5 C14.2,-.5 17,.16 17.9,2.5 C21,3 20.2,7.3 17.6,7.5 C16.5,9.2 14.4,9.8 12.7,8.9 C11.6,10 9.5,10.3 8.1,9.4 C5.7,10.8 3.3,9.4 2.6,7.5 C-.9,7.7 .6,1.7 3.0,2.5z",
+        path:
+          "M3.0,2.5 C3.9,.78 5.6,-.4 8.1,1.0 C9.1,0 11.3,-.2 12.5,.5 C14.2,-.5 17,.16 17.9,2.5 C21,3 20.2,7.3 17.6,7.5 C16.5,9.2 14.4,9.8 12.7,8.9 C11.6,10 9.5,10.3 8.1,9.4 C5.7,10.8 3.3,9.4 2.6,7.5 C-.9,7.7 .6,1.7 3.0,2.5z",
       },
     },
     /** Values for placing and editing Text. */
@@ -175,7 +176,9 @@ export class MarkupApp {
   }
 
   /** @internal */
-  public static getVpToVbMtx(): Matrix { return this.getVpToScreenMtx().lmultiplyO(this.screenToVbMtx()); }
+  public static getVpToVbMtx(): Matrix {
+    return this.getVpToScreenMtx().lmultiplyO(this.screenToVbMtx());
+  }
   /** @internal */
   public static convertVpToVb(pt: XAndY): Point3d {
     const pt0 = new Point(pt.x, pt.y);
@@ -184,10 +187,14 @@ export class MarkupApp {
   }
 
   /** determine whether there's a markup session currently active */
-  public static get isActive() { return undefined !== this.markup; }
+  public static get isActive() {
+    return undefined !== this.markup;
+  }
   public static markupSelectToolId = "Markup.Select";
 
-  protected static createMarkup(view: ScreenViewport, markupData?: MarkupSvgData) { return new Markup(view, markupData); }
+  protected static createMarkup(view: ScreenViewport, markupData?: MarkupSvgData) {
+    return new Markup(view, markupData);
+  }
 
   protected static lockViewportSize(view: ScreenViewport, markupData?: MarkupSvgData) {
     const parentDiv = view.vpDiv;
@@ -207,7 +214,9 @@ export class MarkupApp {
   }
 
   /** @internal */
-  public static getActionName(action: string) { return IModelApp.localization.getLocalizedString(`${this.namespace}:actions.${action}`); }
+  public static getActionName(action: string) {
+    return IModelApp.localization.getLocalizedString(`${this.namespace}:actions.${action}`);
+  }
 
   /** Start a markup session */
   public static async start(view: ScreenViewport, markupData?: MarkupSvgData): Promise<void> {
@@ -268,7 +277,7 @@ export class MarkupApp {
    * calls return the same Promise.
    */
   public static async initialize(): Promise<void> {
-    if (undefined === this.namespace) {     // only need to do this once
+    if (undefined === this.namespace) { // only need to do this once
       this.namespace = "MarkupTools";
       const namespacePromise = IModelApp.localization.registerNamespace(this.namespace);
       IModelApp.tools.register(SelectTool, this.namespace);
@@ -313,7 +322,7 @@ export class MarkupApp {
     let svg, image;
     try {
       svg = this.readMarkupSvg(); // read the current svg data for the markup
-      const svgForImage = (svg && result.imprintSvgOnImage ? this.readMarkupSvgForDrawImage() : undefined);
+      const svgForImage = svg && result.imprintSvgOnImage ? this.readMarkupSvgForDrawImage() : undefined;
       if (svgForImage) {
         const svgImage = await imageElementFromImageSource(new ImageSource(svgForImage, ImageSourceFormat.Svg));
         canvas.getContext("2d")!.drawImage(svgImage, 0, 0); // draw markup svg onto view's canvas2d
@@ -330,7 +339,7 @@ export class MarkupApp {
       }
 
       // return the markup data to be saved by the application.
-      image = (!result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat));
+      image = !result.imageFormat ? undefined : canvas.toDataURL(result.imageFormat);
     } catch (e) {
       Logger.logError(`${FrontendLoggerCategory.Package}.markup`, "Error creating image from svg", BentleyError.getErrorProps(e));
     }
@@ -340,35 +349,65 @@ export class MarkupApp {
   /** @internal */
   public static markupPrefix = "markup-";
   /** @internal */
-  public static get dropShadowId() { return `${this.markupPrefix}dropShadow`; } // this is referenced in the markup Svg to apply the drop-shadow filter to all markup elements.
+  public static get dropShadowId() {
+    return `${this.markupPrefix}dropShadow`;
+  } // this is referenced in the markup Svg to apply the drop-shadow filter to all markup elements.
   /** @internal */
-  public static get cornerId() { return `${this.markupPrefix}photoCorner`; }
+  public static get cornerId() {
+    return `${this.markupPrefix}photoCorner`;
+  }
   /** @internal */
-  public static get containerClass() { return `${this.markupPrefix}container`; }
+  public static get containerClass() {
+    return `${this.markupPrefix}container`;
+  }
   /** @internal */
-  public static get dynamicsClass() { return `${this.markupPrefix}dynamics`; }
+  public static get dynamicsClass() {
+    return `${this.markupPrefix}dynamics`;
+  }
   /** @internal */
-  public static get decorationsClass() { return `${this.markupPrefix}decorations`; }
+  public static get decorationsClass() {
+    return `${this.markupPrefix}decorations`;
+  }
   /** @internal */
-  public static get markupSvgClass() { return `${this.markupPrefix}svg`; }
+  public static get markupSvgClass() {
+    return `${this.markupPrefix}svg`;
+  }
   /** @internal */
-  public static get boxedTextClass() { return `${this.markupPrefix}boxedText`; }
+  public static get boxedTextClass() {
+    return `${this.markupPrefix}boxedText`;
+  }
   /** @internal */
-  public static get textClass() { return `${this.markupPrefix}text`; }
+  public static get textClass() {
+    return `${this.markupPrefix}text`;
+  }
   /** @internal */
-  public static get stretchHandleClass() { return `${this.markupPrefix}stretchHandle`; }
+  public static get stretchHandleClass() {
+    return `${this.markupPrefix}stretchHandle`;
+  }
   /** @internal */
-  public static get rotateLineClass() { return `${this.markupPrefix}rotateLine`; }
+  public static get rotateLineClass() {
+    return `${this.markupPrefix}rotateLine`;
+  }
   /** @internal */
-  public static get rotateHandleClass() { return `${this.markupPrefix}rotateHandle`; }
+  public static get rotateHandleClass() {
+    return `${this.markupPrefix}rotateHandle`;
+  }
   /** @internal */
-  public static get vertexHandleClass() { return `${this.markupPrefix}vertexHandle`; }
+  public static get vertexHandleClass() {
+    return `${this.markupPrefix}vertexHandle`;
+  }
   /** @internal */
-  public static get moveHandleClass() { return `${this.markupPrefix}moveHandle`; }
+  public static get moveHandleClass() {
+    return `${this.markupPrefix}moveHandle`;
+  }
   /** @internal */
-  public static get textOutlineClass() { return `${this.markupPrefix}textOutline`; }
+  public static get textOutlineClass() {
+    return `${this.markupPrefix}textOutline`;
+  }
   /** @internal */
-  public static get textEditorClass() { return `${this.markupPrefix}textEditor`; }
+  public static get textEditorClass() {
+    return `${this.markupPrefix}textEditor`;
+  }
 }
 
 const removeSvgNamespace = (svg: Svg) => {
@@ -407,15 +446,32 @@ export class Markup {
 
     // create a new filter, and add it to the Defs of the supplied svg
     svg.defs()
-      .add(newSvgElement("filter").id(MarkupApp.dropShadowId)
-        .add(newSvgElement("feDropShadow").attr(MarkupApp.props.dropShadow.attr)));
+      .add(
+        newSvgElement("filter").id(MarkupApp.dropShadowId)
+          .add(newSvgElement("feDropShadow").attr(MarkupApp.props.dropShadow.attr)),
+      );
   }
-  private addNested(className: string): G { return this.svgContainer!.group().addClass(className); }
+  private addNested(className: string): G {
+    return this.svgContainer!.group().addClass(className);
+  }
   private addBorder() {
     const rect = this.svgContainer!.viewbox();
     const inset = MarkupApp.props.borderOutline["stroke-width"];
     const cornerSize = inset * 6;
-    const cornerPts = [0, 0, cornerSize, 0, cornerSize * .7, cornerSize * .3, cornerSize * .3, cornerSize * .3, cornerSize * .3, cornerSize * .7, 0, cornerSize];
+    const cornerPts = [
+      0,
+      0,
+      cornerSize,
+      0,
+      cornerSize * .7,
+      cornerSize * .3,
+      cornerSize * .3,
+      cornerSize * .3,
+      cornerSize * .3,
+      cornerSize * .7,
+      0,
+      cornerSize,
+    ];
     const decorations = this.svgDecorations!;
     const photoCorner = decorations.symbol().polygon(cornerPts).attr(MarkupApp.props.borderCorners).id(MarkupApp.cornerId);
     const cornerGroup = decorations.group();
@@ -442,7 +498,7 @@ export class Markup {
       if (!this.svgContainer || !this.svgMarkup) // if either isn't present, its not a valid markup
         return;
       removeSvgNamespace(this.svgContainer); // the SVG call above adds this - remove it
-      this.svgMarkup.each(() => { }, true); // create an SVG.Element for each entry in the supplied markup.
+      this.svgMarkup.each(() => {}, true); // create an SVG.Element for each entry in the supplied markup.
     } else {
       // create the container that will be returned as the "svg" data for this markup
       this.svgContainer = SVG().addTo(this.markupDiv).addClass(MarkupApp.containerClass).viewbox(0, 0, rect.width, rect.height);
@@ -463,19 +519,33 @@ export class Markup {
   }
 
   /** Called when the Markup is destroyed */
-  public destroy() { this.markupDiv.remove(); }
+  public destroy() {
+    this.markupDiv.remove();
+  }
   /** Turn on picking the markup elements in the markup view */
-  public enablePick() { this.markupDiv.style.pointerEvents = "auto"; }
+  public enablePick() {
+    this.markupDiv.style.pointerEvents = "auto";
+  }
   /** Turn off picking the markup elements in the markup view */
-  public disablePick() { this.markupDiv.style.pointerEvents = "none"; }
+  public disablePick() {
+    this.markupDiv.style.pointerEvents = "none";
+  }
   /** Change the default cursor for the markup view */
-  public setCursor(cursor: string) { this.markupDiv.style.cursor = cursor; }
+  public setCursor(cursor: string) {
+    this.markupDiv.style.cursor = cursor;
+  }
   /** Delete all the entries in the selection set, then empty it. */
-  public deleteSelected() { this.selected.deleteAll(this.undo); }
+  public deleteSelected() {
+    this.selected.deleteAll(this.undo);
+  }
   /** Bring all the entries in the selection set to the front. */
-  public bringToFront() { this.selected.reposition(MarkupApp.getActionName("toFront"), this.undo, (el) => el.front()); }
+  public bringToFront() {
+    this.selected.reposition(MarkupApp.getActionName("toFront"), this.undo, (el) => el.front());
+  }
   /** Send all the entries in the selection set to the back. */
-  public sendToBack() { this.selected.reposition(MarkupApp.getActionName("toBack"), this.undo, (el) => el.back()); }
+  public sendToBack() {
+    this.selected.reposition(MarkupApp.getActionName("toBack"), this.undo, (el) => el.back());
+  }
   /** Group all the entries in the selection set, then select the group. */
   public groupSelected() {
     if (undefined !== this.svgMarkup)

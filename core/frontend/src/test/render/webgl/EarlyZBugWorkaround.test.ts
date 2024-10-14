@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { EmptyLocalization } from "@itwin/core-common";
 import { Capabilities } from "@itwin/webgl-compatibility";
-import { RenderSystem } from "../../../render/RenderSystem";
+import { expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
+import { RenderSystem } from "../../../render/RenderSystem";
 import { CompileStatus, ShaderProgram } from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
-import { EmptyLocalization } from "@itwin/core-common";
 
 class TestSystem extends System {
   private static _simulateBug = true;

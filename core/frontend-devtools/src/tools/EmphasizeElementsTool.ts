@@ -15,8 +15,12 @@ import { parseArgs } from "./parseArgs";
  * @beta
  */
 export abstract class EmphasizeElementsTool extends Tool {
-  protected get _wantCreate(): boolean { return true; }
-  protected get _wantClear(): boolean { return false; }
+  protected get _wantCreate(): boolean {
+    return true;
+  }
+  protected get _wantClear(): boolean {
+    return false;
+  }
   protected abstract execute(emph: EmphasizeElements, vp: ScreenViewport): void;
 
   public override async run(_args: any[]): Promise<boolean> {
@@ -47,8 +51,12 @@ const enum OverrideType { // eslint-disable-line no-restricted-syntax
  */
 export class EmphasizeSelectedElementsTool extends EmphasizeElementsTool {
   public static override toolId = "EmphasizeSelectedElements";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
   private _type = OverrideType.None;
 
   public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
@@ -102,7 +110,9 @@ export class IsolateSelectedElementsTool extends EmphasizeElementsTool {
  */
 export class ClearIsolatedElementsTool extends EmphasizeElementsTool {
   public static override toolId = "ClearIsolatedElements";
-  protected override get _wantCreate() { return false; }
+  protected override get _wantCreate() {
+    return false;
+  }
   public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
     emph.clearIsolatedElements(vp);
   }
@@ -113,8 +123,12 @@ export class ClearIsolatedElementsTool extends EmphasizeElementsTool {
  */
 export class ClearEmphasizedElementsTool extends EmphasizeElementsTool {
   public static override toolId = "ClearEmphasizedElements";
-  protected override get _wantCreate() { return false; }
-  protected override get _wantClear() { return true; }
+  protected override get _wantCreate() {
+    return false;
+  }
+  protected override get _wantClear() {
+    return true;
+  }
 
   public execute(emph: EmphasizeElements, vp: ScreenViewport): void {
     emph.clearEmphasizedElements(vp);
@@ -127,10 +141,16 @@ export class ClearEmphasizedElementsTool extends EmphasizeElementsTool {
  */
 export class EmphasizeVisibleElementsTool extends EmphasizeElementsTool {
   public static override toolId = "EmphasizeVisibleElements";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
   private _options: QueryVisibleFeaturesOptions = { source: "screen" };
-  protected override get _wantClear() { return true; }
+  protected override get _wantClear() {
+    return true;
+  }
 
   public override async parseAndRun(...input: string[]): Promise<boolean> {
     const args = parseArgs(input);

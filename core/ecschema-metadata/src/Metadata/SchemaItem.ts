@@ -30,11 +30,21 @@ export abstract class SchemaItem {
     this.schema = schema;
   }
 
-  public get name() { return this.key.name; }
-  public get fullName() { return this.key.schemaKey ? `${this.key.schemaName}.${this.name}` : this.name; }
-  public get key() { return this._key; }
-  public get label() { return this._label; }
-  public get description() { return this._description; }
+  public get name() {
+    return this.key.name;
+  }
+  public get fullName() {
+    return this.key.schemaKey ? `${this.key.schemaName}.${this.name}` : this.name;
+  }
+  public get key() {
+    return this._key;
+  }
+  public get label() {
+    return this._label;
+  }
+  public get description() {
+    return this._description;
+  }
 
   // Proposal: Create protected setter methods for description and label? For UnitSystems as an example, where using createFromProps isn't that necessary and can just use basic create().
   /**
@@ -83,12 +93,18 @@ export abstract class SchemaItem {
 
     if (undefined !== schemaItemProps.schema) {
       if (schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}.`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}.`,
+        );
     }
 
     if (undefined !== schemaItemProps.schemaVersion) {
       if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`,
+        );
     }
   }
 
@@ -100,12 +116,18 @@ export abstract class SchemaItem {
 
     if (undefined !== schemaItemProps.schema) {
       if (schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem ${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to deserialize the SchemaItem ${this.fullName}' with a different schema name, ${schemaItemProps.schema}, than the current Schema of this SchemaItem, ${this.schema.fullName}`,
+        );
     }
 
     if (undefined !== schemaItemProps.schemaVersion) {
       if (this.key.schemaKey.version.compare(ECVersion.fromString(schemaItemProps.schemaVersion)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to deserialize the SchemaItem '${this.fullName}' with a different schema version, ${schemaItemProps.schemaVersion}, than the current Schema version of this SchemaItem, ${this.key.schemaKey.version}.`,
+        );
     }
   }
 
@@ -139,13 +161,13 @@ export abstract class SchemaItem {
   }
 
   /**
-  * @internal
-  */
+   * @internal
+   */
   public static isSchemaItem(object: any): object is SchemaItem {
     const schemaItem = object as SchemaItem;
 
     return schemaItem !== undefined && schemaItem.key !== undefined && schemaItem.schema !== undefined
-             && schemaItem.schemaItemType !== undefined;
+      && schemaItem.schemaItemType !== undefined;
   }
 
   /**

@@ -6,12 +6,12 @@
  * @module Rendering
  */
 
-import { LinePixels, MeshEdge, OctEncodedNormalPair, PolylineIndices } from "@itwin/core-common";
-import { VertexIndices } from "./VertexIndices";
-import { TesselatedPolyline, tesselatePolylineFromMesh, wantJointTriangles } from "./PolylineParams";
-import { MeshArgsEdges } from "./MeshPrimitives";
 import { assert } from "@itwin/core-bentley";
+import { LinePixels, MeshEdge, OctEncodedNormalPair, PolylineIndices } from "@itwin/core-common";
 import { MeshArgs } from "../../../render/MeshArgs";
+import { MeshArgsEdges } from "./MeshPrimitives";
+import { TesselatedPolyline, tesselatePolylineFromMesh, wantJointTriangles } from "./PolylineParams";
+import { VertexIndices } from "./VertexIndices";
 
 /**
  * Describes a set of line segments representing edges of a mesh.
@@ -144,9 +144,10 @@ export function calculateEdgeTableParams(numSegmentEdges: number, numSilhouettes
 
 function convertPolylinesAndEdges(polylines?: PolylineIndices[], edges?: MeshEdge[]): SegmentEdgeParams | undefined {
   let numIndices = undefined !== edges ? edges.length : 0;
-  if (undefined !== polylines)
+  if (undefined !== polylines) {
     for (const pd of polylines)
-      numIndices += (pd.length - 1);
+      numIndices += pd.length - 1;
+  }
 
   if (0 === numIndices)
     return undefined;
@@ -247,7 +248,7 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
     for (let j = 0; j < 6; j++)
       indices.setNthIndex(i * 6 + j, i);
 
-  const {width, height, silhouettePadding, silhouetteStartByteIndex } = calculateEdgeTableParams (numSegmentEdges, numSilhouettes, maxSize);
+  const { width, height, silhouettePadding, silhouetteStartByteIndex } = calculateEdgeTableParams(numSegmentEdges, numSilhouettes, maxSize);
 
   const data = new Uint8Array(width * height * 4);
   function setUint24(byteIndex: number, value: number): void {
@@ -263,9 +264,10 @@ function buildIndexedEdges(args: MeshArgsEdges, doPolylines: boolean, maxSize: n
   }
 
   let curIndex = 0;
-  if (hardEdges)
+  if (hardEdges) {
     for (const edge of hardEdges)
       setEdge(curIndex++, edge.indices[0], edge.indices[1]);
+  }
 
   if (polylines) {
     for (const pd of polylines) {
@@ -334,7 +336,9 @@ export function createEdgeParams(args: {
     indexed = buildIndexedEdges(edgeArgs, !doJoints, maxWidth);
   } else {
     segments = convertPolylinesAndEdges(undefined, edgeArgs.edges.edges);
-    silhouettes = edgeArgs.silhouettes.edges && edgeArgs.silhouettes.normals ? convertSilhouettes(edgeArgs.silhouettes.edges, edgeArgs.silhouettes.normals) : undefined;
+    silhouettes = edgeArgs.silhouettes.edges && edgeArgs.silhouettes.normals
+      ? convertSilhouettes(edgeArgs.silhouettes.edges, edgeArgs.silhouettes.normals)
+      : undefined;
   }
 
   if (!segments && !silhouettes && !polylines && !indexed)

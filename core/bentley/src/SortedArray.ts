@@ -115,13 +115,19 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
   }
 
   /** The number of elements in the array */
-  public get length(): number { return this._array.length; }
+  public get length(): number {
+    return this._array.length;
+  }
 
   /** Returns true if the array contains no elements. */
-  public get isEmpty(): boolean { return 0 === this.length; }
+  public get isEmpty(): boolean {
+    return 0 === this.length;
+  }
 
   /** Returns an iterator over the contents of the array in sorted order, suitable for use in `for-of` loops. */
-  public [Symbol.iterator](): Iterator<T> { return this._array[Symbol.iterator](); }
+  public [Symbol.iterator](): Iterator<T> {
+    return this._array[Symbol.iterator]();
+  }
 
   /**
    * Looks up the index of an element comparing equal to the specified value using binary search.
@@ -183,7 +189,9 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
    * @param index The array index
    * @returns the element corresponding to that position in the array, or undefined if the supplied index exceeds the length of the array.
    */
-  public get(index: number): T | undefined { return index < this.length ? this._array[index] : undefined; }
+  public get(index: number): T | undefined {
+    return index < this.length ? this._array[index] : undefined;
+  }
 
   /** Apply a function to each element in the array, in sorted order.
    * @param func The function to be applied.
@@ -205,10 +213,14 @@ export class ReadonlySortedArray<T> implements Iterable<T> {
    * @param value The value whose position is to be computed.
    * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent element already exists at that index.
    */
-  protected lowerBound(value: T): { index: number, equal: boolean } { return lowerBound(value, this._array, this._compare); }
+  protected lowerBound(value: T): { index: number, equal: boolean } {
+    return lowerBound(value, this._array, this._compare);
+  }
 
   /** Clears the contents of the sorted array. */
-  protected _clear(): void { this._array.length = 0; }
+  protected _clear(): void {
+    this._array.length = 0;
+  }
 
   /** Extracts the sorted array as a T[] and empties the contents of this ReadonlySortedArray.
    * @returns the contents of this ReadonlySortedArray as a T[].
@@ -312,12 +324,16 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
   }
 
   /** Clears the contents of the sorted array. */
-  public clear(): void { this._clear(); }
+  public clear(): void {
+    this._clear();
+  }
 
   /** Extracts the sorted array as a T[] and empties the contents of this SortedArray.
    * @returns the contents of this SortedArray as a T[].
    */
-  public extractArray(): T[] { return this._extractArray(); }
+  public extractArray(): T[] {
+    return this._extractArray();
+  }
 
   /**
    * Attempts to insert a new value into the array at a position determined by the ordering.
@@ -334,14 +350,18 @@ export class SortedArray<T> extends ReadonlySortedArray<T> {
    * @param onInsert The optional callback method to call if insertion occurs with the inserted value
    * @returns the index in the array of the newly-inserted value, or, if duplicates are not permitted and an equivalent value already exists, the index of the equivalent value.
    */
-  public insert(value: T, onInsert?: (value: T) => any): number { return this._insert(value, onInsert); }
+  public insert(value: T, onInsert?: (value: T) => any): number {
+    return this._insert(value, onInsert);
+  }
 
   /**
    * Removes the first occurrence of a value comparing equal to the specified value from the array.
    * @param value The value of the element to delete
    * @returns the index of the deleted value, or -1 if no such element exists.
    */
-  public remove(value: T): number { return this._remove(value); }
+  public remove(value: T): number {
+    return this._remove(value);
+  }
 
   /** The equivalent of [Array.slice](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/slice). */
   public override slice(start?: number, end?: number): SortedArray<T> {

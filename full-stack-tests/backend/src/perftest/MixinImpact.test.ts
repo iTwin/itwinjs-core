@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
-import {
-  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
-} from "@itwin/core-common";
-import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
+import { Reporter } from "@itwin/perf-tools";
+import { assert } from "chai";
+import * as path from "path";
 
 describe("SchemaDesignPerf Impact of Mixins", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "MixinPerformance");
@@ -20,7 +18,12 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
   let propCount = 0;
   const reporter = new Reporter();
 
-  function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
+  function createElemProps(
+    _imodel: IModelDb,
+    modId: Id64String,
+    catId: Id64String,
+    className: string = "TestPropsSchema:PropElement",
+  ): GeometricElementProps {
     // add Geometry
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -126,14 +129,21 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, `mixin_${hCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", `mixin_${hCount}.bim`), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("MixinPerformance", `mixin_${hCount}.bim`), {
+          rootSubject: { name: "PerfTest" },
+        });
         await seedIModel.importSchemas([st]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData("TestMixinSchema:MixinElement"), "Mixin Class is not present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          spatialCategoryId = SpatialCategory.insert(
+            seedIModel,
+            IModel.dictionaryId,
+            "MySpatialCategory",
+            new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+          );
         // create base class elements
         for (let i = 0; i < seedCount; ++i) {
           let elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestMixinSchema:propElement");
@@ -161,7 +171,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
           }
         }
         seedIModel.saveChanges();
-        assert.equal(getCount(seedIModel, "TestMixinSchema:PropElement"), ((2 * seedCount * hCount) + seedCount));
+        assert.equal(getCount(seedIModel, "TestMixinSchema:PropElement"), (2 * seedCount * hCount) + seedCount);
         seedIModel.close();
       }
     }

@@ -7,19 +7,33 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import {
-  ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
-  OctEncodedNormal, PolylineEdgeArgs, PolylineFlags, PolylineTypeFlags, QParams3d, QPoint3dList,
+  ColorIndex,
+  EdgeArgs,
+  Feature,
+  FeatureIndex,
+  FeatureIndexType,
+  FeatureTable,
+  LinePixels,
+  MeshEdges,
+  MeshPolyline,
+  MeshPolylineList,
+  OctEncodedNormal,
+  PolylineEdgeArgs,
+  PolylineFlags,
+  PolylineTypeFlags,
+  QParams3d,
+  QPoint3dList,
   SilhouetteEdgeArgs,
 } from "@itwin/core-common";
+import { AuxChannel, AuxChannelData, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
+import { MeshArgs } from "../../../render/MeshArgs";
+import { PolylineArgs } from "../../../render/PolylineArgs";
 import { ColorMap } from "./ColorMap";
 import { DisplayParams } from "./DisplayParams";
 import { MeshPointList, MeshPrimitiveType, Point3dList } from "./MeshPrimitive";
 import { Triangle, TriangleList } from "./Primitives";
 import { VertexKeyProps } from "./VertexKey";
-import { MeshArgs } from "../../../render/MeshArgs";
-import { PolylineArgs } from "../../../render/PolylineArgs";
 
 export function createPolylineArgs(mesh: Mesh): PolylineArgs | undefined {
   if (!mesh.polylines || mesh.polylines.length === 0)
@@ -79,7 +93,9 @@ export class MeshArgsEdges {
     this.width = 0;
     this.linePixels = LinePixels.Solid;
   }
-  public get isValid(): boolean { return this.edges.isValid || this.silhouettes.isValid || this.polylines.isValid; }
+  public get isValid(): boolean {
+    return this.edges.isValid || this.silhouettes.isValid || this.polylines.isValid;
+  }
 }
 
 export function createMeshArgs(mesh: Mesh): MeshArgs | undefined {
@@ -154,8 +170,8 @@ export class Mesh {
     this.type = type;
     this.is2d = is2d;
     this.isPlanar = isPlanar;
-    this.hasBakedLighting = (true === props.hasBakedLighting);
-    this.isVolumeClassifier = (true === props.isVolumeClassifier);
+    this.hasBakedLighting = true === props.hasBakedLighting;
+    this.isVolumeClassifier = true === props.isVolumeClassifier;
     if (props.quantizePositions) {
       this.points = new QPoint3dList(QParams3d.fromRange(range));
     } else {
@@ -170,7 +186,9 @@ export class Mesh {
     }
   }
 
-  public static create(props: Mesh.Props): Mesh { return new Mesh(props); }
+  public static create(props: Mesh.Props): Mesh {
+    return new Mesh(props);
+  }
 
   public get triangles(): TriangleList | undefined {
     return MeshPrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined;
@@ -294,7 +312,9 @@ export namespace Mesh { // eslint-disable-line no-redeclare
     public uniform = 0;
     public initialized = false;
 
-    public constructor(table: FeatureTable) { this.table = table; }
+    public constructor(table: FeatureTable) {
+      this.table = table;
+    }
 
     public add(feat: Feature, numVerts: number): void {
       const index = this.table.insert(feat);
@@ -327,7 +347,7 @@ export namespace Mesh { // eslint-disable-line no-redeclare
     }
 
     public toFeatureIndex(output?: FeatureIndex): FeatureIndex {
-      const index = output ?? new  FeatureIndex();
+      const index = output ?? new FeatureIndex();
       if (!this.initialized) {
         index.type = FeatureIndexType.Empty;
       } else if (this.indices.length === 0) {

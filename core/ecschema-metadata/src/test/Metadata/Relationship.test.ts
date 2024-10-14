@@ -108,7 +108,6 @@ describe("RelationshipClass", () => {
   });
 
   describe("deserialization", () => {
-
     function createSchemaJson(relClassJson: any): any {
       return {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -307,7 +306,10 @@ describe("RelationshipClass", () => {
         strengthDirection: "backward",
         target: validConstraint,
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship is missing the required source constraint.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(
+        ECObjectsError,
+        `The RelationshipClass TestSchema.TestRelationship is missing the required source constraint.`,
+      );
     });
 
     it("should throw for missing target constraint", async () => {
@@ -316,7 +318,10 @@ describe("RelationshipClass", () => {
         strengthDirection: "forward",
         source: validConstraint,
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship is missing the required target constraint.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(
+        ECObjectsError,
+        `The RelationshipClass TestSchema.TestRelationship is missing the required target constraint.`,
+      );
     });
 
     it("should throw for invalid source constraint", async () => {
@@ -326,7 +331,10 @@ describe("RelationshipClass", () => {
         source: 0,
         target: validConstraint,
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship has an invalid source constraint. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(
+        ECObjectsError,
+        `The RelationshipClass TestSchema.TestRelationship has an invalid source constraint. It should be of type 'object'.`,
+      );
     });
 
     it("should throw for invalid target constraint", async () => {
@@ -336,7 +344,10 @@ describe("RelationshipClass", () => {
         source: validConstraint,
         target: 0,
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestSchema.TestRelationship has an invalid target constraint. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(
+        ECObjectsError,
+        `The RelationshipClass TestSchema.TestRelationship has an invalid target constraint. It should be of type 'object'.`,
+      );
     });
 
     it("should throw for invalid abstractConstraint", async () => {
@@ -354,7 +365,10 @@ describe("RelationshipClass", () => {
         },
         target: {},
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(
+        ECObjectsError,
+        `The Source Constraint of TestSchema.TestRelationship has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`,
+      );
     });
 
     it("should throw for invalid constraintClasses", async () => {
@@ -369,7 +383,10 @@ describe("RelationshipClass", () => {
         },
         target: {},
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestSchema.TestRelationship has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(
+        ECObjectsError,
+        `The Source Constraint of TestSchema.TestRelationship has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`,
+      );
     });
   });
 

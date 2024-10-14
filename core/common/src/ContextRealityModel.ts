@@ -9,8 +9,8 @@
 import { assert, BeEvent } from "@itwin/core-bentley";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
 import { PlanarClipMaskMode, PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
-import { SpatialClassifierProps, SpatialClassifiers, SpatialClassifiersContainer } from "./SpatialClassification";
 import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
+import { SpatialClassifierProps, SpatialClassifiers, SpatialClassifiersContainer } from "./SpatialClassification";
 
 /** JSON representation of the blob properties for an OrbitGt property cloud.
  * @alpha
@@ -59,11 +59,11 @@ export enum RealityDataProvider {
 export enum RealityDataFormat {
   /**
    * 3dTile supported formats; RealityMesh3DTiles, Terrain3DTiles, Cesium3DTiles
-   * */
+   */
   ThreeDTile = "ThreeDTile",
   /**
    * Orbit Point Cloud (OPC) storage format (RealityDataType.OPC)
-  */
+   */
   OPC = "OPC",
 }
 
@@ -93,12 +93,12 @@ export interface RealityDataSourceKey {
   /**
    * The provider that supplies the access to reality data source for displaying the reality model
    * @see [[RealityDataProvider]] for default supported value;
-  */
+   */
   provider: string;
   /**
    * The format used by the provider to store the reality data
    * @see [[RealityDataFormat]] for default supported value;
-  */
+   */
   format: string;
   /** The reality data id that identify a reality data for the provider */
   id: string;
@@ -127,7 +127,7 @@ export namespace RealityDataSourceKey {
 
 /** JSON representation of the reality data reference attachment properties.
  * @beta
-*/
+ */
 export interface RealityDataSourceProps {
   /** The source key that identify a reality data for the provider. */
   sourceKey: RealityDataSourceKey;
@@ -209,7 +209,9 @@ export namespace ContextRealityModelProps {
       output.planarClipMask = { ...input.planarClipMask };
 
     if (input.classifiers)
-      output.classifiers = input.classifiers.map((x) => { return { ...x, flags: { ...x.flags } }; });
+      output.classifiers = input.classifiers.map((x) => {
+        return { ...x, flags: { ...x.flags } };
+      });
 
     if (input.invisible)
       output.invisible = input.invisible;
@@ -267,7 +269,10 @@ export class ContextRealityModel {
    * @param props JSON representation of the reality model, which will be kept in sync with changes made via the ContextRealityModel's methods.
    * @param options Options to customize how the reality model is created.
    */
-  public constructor(props: ContextRealityModelProps, options?: { createClassifiers: (container: SpatialClassifiersContainer) => SpatialClassifiers }) {
+  public constructor(
+    props: ContextRealityModelProps,
+    options?: { createClassifiers: (container: SpatialClassifiersContainer) => SpatialClassifiers },
+  ) {
     this._props = props;
     this.rdSourceKey = props.rdSourceKey;
     this.name = props.name ?? "";
@@ -336,7 +341,7 @@ export class ContextRealityModel {
 
   /** If true, reality model is not drawn.
    * @beta
-  */
+   */
   public get invisible(): boolean {
     return this._invisible;
   }
@@ -428,7 +433,10 @@ export class ContextRealityModels {
   public constructor(args: ContextRealityModelsArgs);
 
   /** @internal */
-  public constructor(arg0: ContextRealityModelsContainer | ContextRealityModelsArgs, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel) {
+  public constructor(
+    arg0: ContextRealityModelsContainer | ContextRealityModelsArgs,
+    createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel,
+  ) {
     let container: ContextRealityModelsContainer;
     let defer = false;
     if (arg0.container) {
@@ -454,9 +462,10 @@ export class ContextRealityModels {
   public populate(): void {
     assert(this._models.length === 0, "do not call ContextRealityModels.populate more than once");
     const models = this._container.contextRealityModels;
-    if (models)
+    if (models) {
       for (const model of models)
         this._models.push(this.createModel(model));
+    }
   }
 
   /** The read-only list of reality models. */

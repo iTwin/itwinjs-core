@@ -4,16 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
+import { ClipPlane } from "../../clipping/ClipPlane";
 import { AxisOrder } from "../../Geometry";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
-import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Checker } from "../Checker";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Point4d } from "../../geometry4d/Point4d";
-import { ClipPlane } from "../../clipping/ClipPlane";
 import { Plane3d } from "../../geometry3d/Plane3d";
+import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { Point4d } from "../../geometry4d/Point4d";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
 
 /**
  * Check that planeA and planeB have matched PlaneAltitudeEvaluator results (other than bit loss)
@@ -52,9 +52,7 @@ describe("PlaneEvaluator", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
     const pointA = Point3d.create(1.2, 3);
-    for (const normal of [Vector3d.createNormalized(0, 0, 1)!,
-    Vector3d.createNormalized(2, -1, 4)!]) {
-
+    for (const normal of [Vector3d.createNormalized(0, 0, 1)!, Vector3d.createNormalized(2, -1, 4)!]) {
       const matrix = Matrix3d.createRigidHeadsUp(normal, AxisOrder.ZXY);
       const vectorU = matrix.columnX();
       const vectorV = matrix.columnY();
@@ -92,5 +90,4 @@ describe("PlaneEvaluator", () => {
     }
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

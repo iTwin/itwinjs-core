@@ -21,34 +21,34 @@ yargs.strict(true)
     "backend": {
       alias: "b",
       describe: `The path to a javascript file containing backend initialization logic.`,
-      type: "string"
+      type: "string",
     },
     "config": {
       alias: "c",
       describe: `Path to a certa.json config file.`,
       type: "string",
-      default: "./certa.json"
+      default: "./certa.json",
     },
     "cover": {
       describe: `Measure code coverage using nyc.`,
       type: "boolean",
-      default: undefined
+      default: undefined,
     },
     "debug": {
       describe: `Run in debug mode.`,
       type: "boolean",
-      default: undefined
+      default: undefined,
     },
     "debug-electron": {
       describe: `Run in debug mode (alias to '--debug').`,
       type: "boolean",
       default: undefined,
-      hidden: true
+      hidden: true,
     },
     "testBundle": {
       alias: "t",
       describe: `The path to a javascript file containing all mocha tests to be run.`,
-      type: "string"
+      type: "string",
     },
     "grep": {
       alias: "g",
@@ -84,7 +84,7 @@ const opts = {
     grep: yargs.argv.grep,
     fgrep: yargs.argv.fgrep,
     invert: yargs.argv.invert,
-  }
+  },
 };
 
 const configFilePath = path.resolve(process.cwd(), yargs.argv.config);

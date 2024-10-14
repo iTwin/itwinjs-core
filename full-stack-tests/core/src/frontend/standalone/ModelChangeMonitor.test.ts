@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
+import { Transform } from "@itwin/core-geometry";
 import { expect } from "chai";
 import * as path from "path";
-import { Guid, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
-import { BriefcaseConnection, GeometricModelState } from "@itwin/core-frontend";
 import { addAllowedChannel, coreFullStackTestIpc, initializeEditTools, insertLineElement, makeModelCode, transformElements } from "../Editing";
 import { TestUtility } from "../TestUtility";
 
@@ -49,7 +49,10 @@ if (!ProcessDetector.isMobileAppFrontend) {
       let elemId: string;
 
       beforeEach(async () => {
-        const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+        const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(
+          imodel.key,
+          await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue()),
+        );
         const dictId = await imodel.models.getDictionaryModel();
         const categoryId = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictId, Guid.createValue(), { color: 0 });
         elemId = await insertLineElement(imodel, modelId, categoryId);

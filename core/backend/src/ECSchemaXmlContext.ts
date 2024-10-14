@@ -6,9 +6,9 @@
  * @module Schema
  */
 
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelNative } from "./internal/NativePlatform";
 
 /** @internal */

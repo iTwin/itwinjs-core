@@ -187,20 +187,28 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const oldDetailA = this._results[numPrevious - 1].detailA;
       const oldDetailB = this._results[numPrevious - 1].detailB;
       if (reversed) {
-        if (oldDetailB.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
-          oldDetailA.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
+        if (
+          oldDetailB.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
+          oldDetailA.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB })
+        )
           return;
       } else {
-        if (oldDetailA.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
-          oldDetailB.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB }))
+        if (
+          oldDetailA.isSameCurveAndFraction({ curve: cpA, fraction: globalFractionA }) &&
+          oldDetailB.isSameCurveAndFraction({ curve: cpB, fraction: globalFractionB })
+        )
           return;
       }
     }
     const detailA = CurveLocationDetail.createCurveFractionPoint(
-      cpA, globalFractionA, cpA.fractionToPoint(globalFractionA),
+      cpA,
+      globalFractionA,
+      cpA.fractionToPoint(globalFractionA),
     );
     const detailB = CurveLocationDetail.createCurveFractionPoint(
-      cpB, globalFractionB, cpB.fractionToPoint(globalFractionB),
+      cpB,
+      globalFractionB,
+      cpB.fractionToPoint(globalFractionB),
     );
     if (isInterval) {
       detailA.captureFraction1Point1(globalFractionA1, cpA.fractionToPoint(globalFractionA1));
@@ -223,12 +231,24 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * @param reversed true to have order reversed in final structures.
    */
   public recordPairs(
-    cpA: CurvePrimitive, cpB: CurvePrimitive, pairs: CurveLocationDetailPair[] | undefined, reversed: boolean,
+    cpA: CurvePrimitive,
+    cpB: CurvePrimitive,
+    pairs: CurveLocationDetailPair[] | undefined,
+    reversed: boolean,
   ): void {
     if (pairs !== undefined) {
       for (const p of pairs) {
         this.recordPointWithLocalFractions(
-          p.detailA.fraction, cpA, 0, 1, p.detailB.fraction, cpB, 0, 1, reversed, p,
+          p.detailA.fraction,
+          cpA,
+          0,
+          1,
+          p.detailB.fraction,
+          cpB,
+          0,
+          1,
+          reversed,
+          p,
         );
       }
     }
@@ -258,19 +278,37 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     //  So do the overlap first.  This should do a quick exit in non-coincident case.
     const overlap = this._coincidentGeometryContext.coincidentSegmentRangeXY(pointA0, pointA1, pointB0, pointB1, false);
     if (overlap) { // the lines are coincident
-      if (this._coincidentGeometryContext.clampCoincidentOverlapToSegmentBounds(
-        overlap, pointA0, pointA1, pointB0, pointB1,
-        extendA0, extendA1, extendB0, extendB1,
-      )) {
+      if (
+        this._coincidentGeometryContext.clampCoincidentOverlapToSegmentBounds(
+          overlap,
+          pointA0,
+          pointA1,
+          pointB0,
+          pointB1,
+          extendA0,
+          extendA1,
+          extendB0,
+          extendB1,
+        )
+      ) {
         this.recordPointWithLocalFractions(
-          overlap.detailA.fraction, cpA, fractionA0, fractionA1,
-          overlap.detailB.fraction, cpB, fractionB0, fractionB1,
-          reversed, overlap,
+          overlap.detailA.fraction,
+          cpA,
+          fractionA0,
+          fractionA1,
+          overlap.detailB.fraction,
+          cpB,
+          fractionB0,
+          fractionB1,
+          reversed,
+          overlap,
         );
       }
     } else if (SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(pointA0, pointA1, pointB0, pointB1, uv)) {
-      if (this.acceptFractionOnLine(extendA0, uv.x, extendA1, pointA0, pointA1, this._coincidentGeometryContext.tolerance) &&
-        this.acceptFractionOnLine(extendB0, uv.y, extendB1, pointB0, pointB1, this._coincidentGeometryContext.tolerance)) {
+      if (
+        this.acceptFractionOnLine(extendA0, uv.x, extendA1, pointA0, pointA1, this._coincidentGeometryContext.tolerance) &&
+        this.acceptFractionOnLine(extendB0, uv.y, extendB1, pointB0, pointB1, this._coincidentGeometryContext.tolerance)
+      ) {
         this.recordPointWithLocalFractions(uv.x, cpA, fractionA0, fractionA1, uv.y, cpB, fractionB0, fractionB1, reversed);
       }
     }
@@ -311,7 +349,15 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       if (this.acceptFraction(extendA0, fractionA, extendA1) && this.acceptFraction(extendB0, fractionB, extendB1)) {
         // final fraction acceptance uses original world points, with perspective-aware fractions
         this.recordPointWithLocalFractions(
-          fractionA, cpA, fractionA0, fractionA1, fractionB, cpB, fractionB0, fractionB1, reversed,
+          fractionA,
+          cpA,
+          fractionA0,
+          fractionA1,
+          fractionB,
+          cpB,
+          fractionB0,
+          fractionB1,
+          reversed,
         );
       }
     }
@@ -341,22 +387,56 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       // non-perspective projection
       CurveCurveIntersectXY.setTransformedWorkPoints(this._worldToLocalAffine, pointA0, pointA1, pointB0, pointB1);
       this.computeSegmentSegment3D(
-        cpA, extendA0, CurveCurveIntersectXY._workPointA0,
-        fractionA0, CurveCurveIntersectXY._workPointA1, fractionA1, extendA1,
-        cpB, extendB0, CurveCurveIntersectXY._workPointB0,
-        fractionB0, CurveCurveIntersectXY._workPointB1, fractionB1, extendB1,
+        cpA,
+        extendA0,
+        CurveCurveIntersectXY._workPointA0,
+        fractionA0,
+        CurveCurveIntersectXY._workPointA1,
+        fractionA1,
+        extendA1,
+        cpB,
+        extendB0,
+        CurveCurveIntersectXY._workPointB0,
+        fractionB0,
+        CurveCurveIntersectXY._workPointB1,
+        fractionB1,
+        extendB1,
         reversed,
       );
     } else if (this._worldToLocalPerspective) {
       this.computeSegmentSegment3DH(
-        cpA, extendA0, pointA0, fractionA0, pointA1, fractionA1, extendA1,
-        cpB, extendB0, pointB0, fractionB0, pointB1, fractionB1, extendB1,
+        cpA,
+        extendA0,
+        pointA0,
+        fractionA0,
+        pointA1,
+        fractionA1,
+        extendA1,
+        cpB,
+        extendB0,
+        pointB0,
+        fractionB0,
+        pointB1,
+        fractionB1,
+        extendB1,
         reversed,
       );
     } else {
       this.computeSegmentSegment3D(
-        cpA, extendA0, pointA0, fractionA0, pointA1, fractionA1, extendA1,
-        cpB, extendB0, pointB0, fractionB0, pointB1, fractionB1, extendB1,
+        cpA,
+        extendA0,
+        pointA0,
+        fractionA0,
+        pointA1,
+        fractionA1,
+        extendA1,
+        cpB,
+        extendB0,
+        pointB0,
+        fractionB0,
+        pointB1,
+        fractionB1,
+        extendB1,
         reversed,
       );
     }
@@ -396,17 +476,27 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const sines = new GrowableFloat64Array(2);
       const radians = new GrowableFloat64Array(2);
       const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(
-        alpha, beta, gamma, cosines, sines, radians,
+        alpha,
+        beta,
+        gamma,
+        cosines,
+        sines,
+        radians,
       );
       for (let i = 0; i < numRoots; i++) {
         const arcPoint = data.center.plus2Scaled(
-          data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i),
+          data.vector0,
+          cosines.atUncheckedIndex(i),
+          data.vector90,
+          sines.atUncheckedIndex(i),
         );
         const arcFraction = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(i), extendB0);
         const lineFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(pointA0H, pointA1H, arcPoint);
-        if (lineFraction !== undefined &&
+        if (
+          lineFraction !== undefined &&
           this.acceptFraction(extendA0, lineFraction, extendA1) &&
-          this.acceptFraction(extendB0, arcFraction, extendB1)) {
+          this.acceptFraction(extendB0, arcFraction, extendB1)
+        ) {
           this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed);
         }
       }
@@ -425,19 +515,29 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const sines = new GrowableFloat64Array(2);
       const radians = new GrowableFloat64Array(2);
       const numRoots = AnalyticRoots.appendImplicitLineUnitCircleIntersections(
-        alpha, beta, gamma, cosines, sines, radians,
+        alpha,
+        beta,
+        gamma,
+        cosines,
+        sines,
+        radians,
       );
-      const lineFractionTol = 1.0e-10;  // TODO: why are we loosening tolerances here?
+      const lineFractionTol = 1.0e-10; // TODO: why are we loosening tolerances here?
       const arcFractionTol = 1.0e-7;
       for (let i = 0; i < numRoots; i++) {
         const arcPoint = data.center.plus2Scaled(
-          data.vector0, cosines.atUncheckedIndex(i), data.vector90, sines.atUncheckedIndex(i),
+          data.vector0,
+          cosines.atUncheckedIndex(i),
+          data.vector90,
+          sines.atUncheckedIndex(i),
         );
         const arcFraction = data.sweep.radiansToSignedFraction(radians.atUncheckedIndex(i), extendB0);
         const lineFraction = SmallSystem.lineSegment3dXYClosestPointUnbounded(pointA0Local, pointA1Local, arcPoint);
-        if (lineFraction !== undefined &&
+        if (
+          lineFraction !== undefined &&
           this.acceptFraction(extendA0, lineFraction, extendA1, lineFractionTol) &&
-          this.acceptFraction(extendB0, arcFraction, extendB1, arcFractionTol)) {
+          this.acceptFraction(extendB0, arcFraction, extendB1, arcFractionTol)
+        ) {
           this.recordPointWithLocalFractions(lineFraction, cpA, fractionA0, fractionA1, arcFraction, arc, 0, 1, reversed);
         }
       }
@@ -468,10 +568,17 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const circleRadians: number[] = [];
       // find the intersection of the transformed arcs
       TrigPolynomial.solveUnitCircleHomogeneousEllipseIntersection(
-        localB.coffs[2], localB.coffs[5], localB.coffs[8], // center xyw
-        localB.coffs[0], localB.coffs[3], localB.coffs[6], // vector0 xyw
-        localB.coffs[1], localB.coffs[4], localB.coffs[7], // vector90 xyw
-        ellipseRadians, circleRadians,
+        localB.coffs[2],
+        localB.coffs[5],
+        localB.coffs[8], // center xyw
+        localB.coffs[0],
+        localB.coffs[3],
+        localB.coffs[6], // vector0 xyw
+        localB.coffs[1],
+        localB.coffs[4],
+        localB.coffs[7], // vector90 xyw
+        ellipseRadians,
+        circleRadians,
       );
       // the intersections are transform-invariant, so the solution angles apply directly to the input arcs
       for (let i = 0; i < ellipseRadians.length; i++) {
@@ -491,7 +598,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * 5- Convert intersection angles to fractions and record intersections.
    */
   private dispatchArcArc(
-    cpA: Arc3d, extendA0: boolean, extendA1: boolean, cpB: Arc3d, extendB0: boolean, extendB1: boolean, reversed: boolean,
+    cpA: Arc3d,
+    extendA0: boolean,
+    extendA1: boolean,
+    cpB: Arc3d,
+    extendB0: boolean,
+    extendB1: boolean,
+    reversed: boolean,
   ): void {
     let matrixA: Matrix3d;
     let matrixB: Matrix3d;
@@ -499,10 +612,20 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       const dataA = cpA.toTransformedPoint4d(this._worldToLocalPerspective);
       const dataB = cpB.toTransformedPoint4d(this._worldToLocalPerspective);
       matrixA = Matrix3d.createColumnsXYW(
-        dataA.vector0, dataA.vector0.w, dataA.vector90, dataA.vector90.w, dataA.center, dataA.center.w,
+        dataA.vector0,
+        dataA.vector0.w,
+        dataA.vector90,
+        dataA.vector90.w,
+        dataA.center,
+        dataA.center.w,
       );
       matrixB = Matrix3d.createColumnsXYW(
-        dataB.vector0, dataB.vector0.w, dataB.vector90, dataA.vector90.w, dataB.center, dataB.center.w,
+        dataB.vector0,
+        dataB.vector0.w,
+        dataB.vector90,
+        dataA.vector90.w,
+        dataB.center,
+        dataB.center.w,
       );
     } else {
       const dataA = cpA.toTransformedVectors(this._worldToLocalAffine);
@@ -531,7 +654,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
   }
   private dispatchArcBsplineCurve3d(
-    cpA: Arc3d, extendA0: boolean, extendA1: boolean, cpB: BSplineCurve3d, extendB0: boolean, extendB1: boolean, reversed: boolean,
+    cpA: Arc3d,
+    extendA0: boolean,
+    extendA1: boolean,
+    cpB: BSplineCurve3d,
+    extendB0: boolean,
+    extendB1: boolean,
+    reversed: boolean,
   ): void {
     // Arc: X = C + cU + sV
     // implicitize the arc as viewed.  This "3d" matrix is homogeneous "XYW" not "xyz"
@@ -539,7 +668,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     if (this._worldToLocalPerspective) {
       const dataA = cpA.toTransformedPoint4d(this._worldToLocalPerspective);
       matrixA = Matrix3d.createColumnsXYW(
-        dataA.vector0, dataA.vector0.w, dataA.vector90, dataA.vector90.w, dataA.center, dataA.center.w,
+        dataA.vector0,
+        dataA.vector0.w,
+        dataA.vector90,
+        dataA.vector90.w,
+        dataA.center,
+        dataA.center.w,
       );
     } else {
       const dataA = cpA.toTransformedVectors(this._worldToLocalAffine);
@@ -570,7 +704,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
 
       if (matrixAInverse) {
         let bezier: BezierCurve3dH | undefined;
-        for (let spanIndex = 0; ; spanIndex++) {
+        for (let spanIndex = 0;; spanIndex++) {
           bezier = cpB.getSaturatedBezierSpan3dH(spanIndex, bezier);
           if (!bezier) break;
           if (this._worldToLocalPerspective)
@@ -593,8 +727,10 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
               const c = bcurvePoint4d.dotProductXYZW(axx, axy, axz, axw);
               const s = bcurvePoint4d.dotProductXYZW(ayx, ayy, ayz, ayw);
               const arcFraction = cpA.sweep.radiansToSignedFraction(Math.atan2(s, c), extendA0);
-              if (this.acceptFraction(extendA0, arcFraction, extendA1) &&
-                this.acceptFraction(extendB0, fractionB, extendB1)) {
+              if (
+                this.acceptFraction(extendA0, arcFraction, extendA1) &&
+                this.acceptFraction(extendB0, fractionB, extendB1)
+              ) {
                 this.recordPointWithLocalFractions(arcFraction, cpA, 0, 1, fractionB, cpB, 0, 1, reversed);
               }
             }
@@ -626,7 +762,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     bezierB: BezierCurve3dH,
     bcurveB: BSplineCurve3dBase,
     _strokeCountB: number,
-    univariateBezierB: UnivariateBezier,  // caller-allocated for univariate coefficients.
+    univariateBezierB: UnivariateBezier, // caller-allocated for univariate coefficients.
     reversed: boolean,
   ): void {
     if (!this._xyzwA0)
@@ -664,7 +800,11 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       bezierA.fractionToPoint4d(f1, this._xyzwA1);
       Point4d.createPlanePointPointZ(this._xyzwA0, this._xyzwA1, this._xyzwPlane);
       bezierB.poleProductsXYZW(
-        univariateBezierB.coffs, this._xyzwPlane.x, this._xyzwPlane.y, this._xyzwPlane.z, this._xyzwPlane.w,
+        univariateBezierB.coffs,
+        this._xyzwPlane.x,
+        this._xyzwPlane.y,
+        this._xyzwPlane.z,
+        this._xyzwPlane.w,
       );
       let errors = 0;
       const roots = univariateBezierB.roots(0.0, true);
@@ -673,7 +813,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           let bezierBFraction = r;
           bezierB.fractionToPoint4d(bezierBFraction, this._xyzwB);
           const segmentAFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(
-            this._xyzwA0, this._xyzwA1, this._xyzwB,
+            this._xyzwA0,
+            this._xyzwA1,
+            this._xyzwB,
           );
           if (segmentAFraction && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
             let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
@@ -704,7 +846,15 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
             }
             if (this.acceptFraction(false, bcurveAFraction, false) && this.acceptFraction(false, bcurveBFraction, false)) {
               this.recordPointWithLocalFractions(
-                bcurveAFraction, bcurveA, 0, 1, bcurveBFraction, bcurveB, 0, 1, reversed,
+                bcurveAFraction,
+                bcurveA,
+                0,
+                1,
+                bcurveBFraction,
+                bcurveB,
+                0,
+                1,
+                reversed,
               );
             }
           }
@@ -713,7 +863,9 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
   }
   private dispatchBSplineCurve3dBSplineCurve3d(
-    bcurveA: BSplineCurve3dBase, bcurveB: BSplineCurve3dBase, _reversed: boolean,
+    bcurveA: BSplineCurve3dBase,
+    bcurveB: BSplineCurve3dBase,
+    _reversed: boolean,
   ): void {
     const bezierSpanA = bcurveA.collectBezierSpans(true) as BezierCurve3dH[];
     const bezierSpanB = bcurveB.collectBezierSpans(true) as BezierCurve3dH[];
@@ -734,11 +886,25 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           const strokeCountB = bezierSpanB[b].computeStrokeCountForOptions();
           if (strokeCountA < strokeCountB)
             this.dispatchBezierBezierStrokeFirst(
-              bezierSpanA[a], bcurveA, strokeCountA, bezierSpanB[b], bcurveB, strokeCountB, univariateCoffsB, _reversed,
+              bezierSpanA[a],
+              bcurveA,
+              strokeCountA,
+              bezierSpanB[b],
+              bcurveB,
+              strokeCountB,
+              univariateCoffsB,
+              _reversed,
             );
           else
             this.dispatchBezierBezierStrokeFirst(
-              bezierSpanB[b], bcurveB, strokeCountB, bezierSpanA[a], bcurveA, strokeCountA, univariateCoffsA, !_reversed,
+              bezierSpanB[b],
+              bcurveB,
+              strokeCountB,
+              bezierSpanA[a],
+              bcurveA,
+              strokeCountA,
+              univariateCoffsA,
+              !_reversed,
             );
         }
       }
@@ -810,8 +976,13 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   }
   /** Low level dispatch of linestring with (beziers of) a bspline curve. */
   public dispatchLineStringBSplineCurve(
-    lsA: LineString3d, extendA0: boolean, extendA1: boolean,
-    curveB: BSplineCurve3d, extendB0: boolean, extendB1: boolean, reversed: boolean,
+    lsA: LineString3d,
+    extendA0: boolean,
+    extendA1: boolean,
+    curveB: BSplineCurve3d,
+    extendB0: boolean,
+    extendB1: boolean,
+    reversed: boolean,
   ): any {
     const numA = lsA.numPoints();
     if (numA > 1) {
@@ -826,16 +997,30 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         lsA.pointAt(iA, pointA1);
         fA1 = iA * dfA;
         this.dispatchSegmentBsplineCurve(
-          lsA, iA === 1 && extendA0, pointA0, fA0, pointA1, fA1, (iA + 1) === numA && extendA1,
-          curveB, extendB0, extendB1, reversed);
+          lsA,
+          iA === 1 && extendA0,
+          pointA0,
+          fA0,
+          pointA1,
+          fA1,
+          (iA + 1) === numA && extendA1,
+          curveB,
+          extendB0,
+          extendB1,
+          reversed,
+        );
       }
     }
     return undefined;
   }
   /** Detail computation for segment intersecting linestring. */
   public computeSegmentLineString(
-    lsA: LineSegment3d, extendA0: boolean, extendA1: boolean,
-    lsB: LineString3d, extendB0: boolean, extendB1: boolean,
+    lsA: LineSegment3d,
+    extendA0: boolean,
+    extendA1: boolean,
+    lsB: LineString3d,
+    extendB0: boolean,
+    extendB1: boolean,
     reversed: boolean,
   ): any {
     const pointA0 = lsA.point0Ref;
@@ -853,8 +1038,20 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         lsB.pointAt(ib, pointB1);
         fB1 = ib * dfB;
         this.dispatchSegmentSegment(
-          lsA, extendA0, pointA0, 0.0, pointA1, 1.0, extendA1,
-          lsB, ib === 1 && extendB0, pointB0, fB0, pointB1, fB1, (ib + 1) === numB && extendB1,
+          lsA,
+          extendA0,
+          pointA0,
+          0.0,
+          pointA1,
+          1.0,
+          extendA1,
+          lsB,
+          ib === 1 && extendB0,
+          pointB0,
+          fB0,
+          pointB1,
+          fB1,
+          (ib + 1) === numB && extendB1,
           reversed,
         );
       }
@@ -863,8 +1060,12 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   }
   /** Detail computation for arc intersecting linestring. */
   public computeArcLineString(
-    arcA: Arc3d, extendA0: boolean, extendA1: boolean,
-    lsB: LineString3d, extendB0: boolean, extendB1: boolean,
+    arcA: Arc3d,
+    extendA0: boolean,
+    extendA1: boolean,
+    lsB: LineString3d,
+    extendB0: boolean,
+    extendB1: boolean,
     reversed: boolean,
   ): any {
     const pointB0 = CurveCurveIntersectXY._workPointBB0;
@@ -880,8 +1081,17 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         lsB.pointAt(ib, pointB1);
         fB1 = ib * dfB;
         this.dispatchSegmentArc(
-          lsB, ib === 1 && extendB0, pointB0, fB0, pointB1, fB1,
-          (ib + 1) === numB && extendB1, arcA, extendA0, extendA1, !reversed,
+          lsB,
+          ib === 1 && extendB0,
+          pointB0,
+          fB0,
+          pointB1,
+          fB1,
+          (ib + 1) === numB && extendB1,
+          arcA,
+          extendA0,
+          extendA1,
+          !reversed,
         );
       }
     }
@@ -913,8 +1123,20 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
           lsB.pointAt(ib, pointB1);
           fB1 = ib * dfB;
           this.dispatchSegmentSegment(
-            lsA, ia === 1 && this._extendA0, pointA0, fA0, pointA1, fA1, (ia + 1) === numA && this._extendA1,
-            lsB, ib === 1 && this._extendB0, pointB0, fB0, pointB1, fB1, (ib + 1) === numB && this._extendB1,
+            lsA,
+            ia === 1 && this._extendA0,
+            pointA0,
+            fA0,
+            pointA1,
+            fA1,
+            (ia + 1) === numA && this._extendA1,
+            lsB,
+            ib === 1 && this._extendB0,
+            pointB0,
+            fB0,
+            pointB1,
+            fB1,
+            (ib + 1) === numB && this._extendB1,
             reversed,
           );
         }
@@ -922,7 +1144,11 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     }
   }
   private static setTransformedWorkPoints(
-    transform: Transform, pointA0: Point3d, pointA1: Point3d, pointB0: Point3d, pointB1: Point3d,
+    transform: Transform,
+    pointA0: Point3d,
+    pointA1: Point3d,
+    pointB0: Point3d,
+    pointB1: Point3d,
   ): void {
     transform.multiplyPoint3d(pointA0, this._workPointA0);
     transform.multiplyPoint3d(pointA1, this._workPointA1);
@@ -934,7 +1160,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
    * We take care of extend variables of geometry's children here if geometry is Path or Loop.
    */
   private dispatchCurveCollection(geomA: AnyCurve, geomAHandler: (geomA: any) => any): void {
-    const geomB = this._geometryB;  // save
+    const geomB = this._geometryB; // save
     if (!geomB || !geomB.children || !(geomB instanceof CurveCollection))
       return;
     const children = geomB.children;
@@ -975,7 +1201,11 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     this.dispatchCurveCollection(geomA, geomAHandler);
     this.resetGeometry(geomB); // restore
     this._results = CurveChainWithDistanceIndex.convertChildDetailToChainDetail(
-      this._results, index0, undefined, geomB, true,
+      this._results,
+      index0,
+      undefined,
+      geomB,
+      true,
     );
   }
   /**
@@ -986,7 +1216,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     const children = g.children;
     const extendA0 = this._extendA0; // save
     const extendA1 = this._extendA1; // save
-    if (children)
+    if (children) {
       for (let i = 0; i < children.length; i++) {
         if (g instanceof Path && children.length > 1) {
           if (i === 0)
@@ -1002,29 +1232,66 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
         this._extendA0 = extendA0; // restore
         this._extendA1 = extendA1; // restore
       }
+    }
   }
   /** Double dispatch handler for strongly typed segment. */
   public override handleLineSegment3d(segmentA: LineSegment3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       const segmentB = this._geometryB;
       this.dispatchSegmentSegment(
-        segmentA, this._extendA0, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA1,
-        segmentB, this._extendB0, segmentB.point0Ref, 0.0, segmentB.point1Ref, 1.0, this._extendB1,
+        segmentA,
+        this._extendA0,
+        segmentA.point0Ref,
+        0.0,
+        segmentA.point1Ref,
+        1.0,
+        this._extendA1,
+        segmentB,
+        this._extendB0,
+        segmentB.point0Ref,
+        0.0,
+        segmentB.point1Ref,
+        1.0,
+        this._extendB1,
         false,
       );
     } else if (this._geometryB instanceof LineString3d) {
       this.computeSegmentLineString(
-        segmentA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
+        segmentA,
+        this._extendA0,
+        this._extendA1,
+        this._geometryB,
+        this._extendB0,
+        this._extendB1,
+        false,
       );
     } else if (this._geometryB instanceof Arc3d) {
       this.dispatchSegmentArc(
-        segmentA, this._extendA0, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA1,
-        this._geometryB, this._extendB0, this._extendB1, false,
+        segmentA,
+        this._extendA0,
+        segmentA.point0Ref,
+        0.0,
+        segmentA.point1Ref,
+        1.0,
+        this._extendA1,
+        this._geometryB,
+        this._extendB0,
+        this._extendB1,
+        false,
       );
     } else if (this._geometryB instanceof BSplineCurve3d) {
       this.dispatchSegmentBsplineCurve(
-        segmentA, this._extendA0, segmentA.point0Ref, 0.0, segmentA.point1Ref, 1.0, this._extendA1,
-        this._geometryB, this._extendB0, this._extendB1, false,
+        segmentA,
+        this._extendA0,
+        segmentA.point0Ref,
+        0.0,
+        segmentA.point1Ref,
+        1.0,
+        this._extendA1,
+        this._geometryB,
+        this._extendB0,
+        this._extendB1,
+        false,
       );
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(segmentA, this.handleLineSegment3d.bind(this));
@@ -1040,15 +1307,33 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       this.computeLineStringLineString(lsA, lsB, false);
     } else if (this._geometryB instanceof LineSegment3d) {
       this.computeSegmentLineString(
-        this._geometryB, this._extendB0, this._extendB1, lsA, this._extendA0, this._extendA1, true,
+        this._geometryB,
+        this._extendB0,
+        this._extendB1,
+        lsA,
+        this._extendA0,
+        this._extendA1,
+        true,
       );
     } else if (this._geometryB instanceof Arc3d) {
       this.computeArcLineString(
-        this._geometryB, this._extendB0, this._extendB1, lsA, this._extendA0, this._extendA1, true,
+        this._geometryB,
+        this._extendB0,
+        this._extendB1,
+        lsA,
+        this._extendA0,
+        this._extendA1,
+        true,
       );
     } else if (this._geometryB instanceof BSplineCurve3d) {
       this.dispatchLineStringBSplineCurve(
-        lsA, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
+        lsA,
+        this._extendA0,
+        this._extendA1,
+        this._geometryB,
+        this._extendB0,
+        this._extendB1,
+        false,
       );
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(lsA, this.handleLineString3d.bind(this));
@@ -1061,18 +1346,39 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   public override handleArc3d(arc0: Arc3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentArc(
-        this._geometryB, this._extendB0, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB1,
-        arc0, this._extendA0, this._extendA1, true,
+        this._geometryB,
+        this._extendB0,
+        this._geometryB.point0Ref,
+        0.0,
+        this._geometryB.point1Ref,
+        1.0,
+        this._extendB1,
+        arc0,
+        this._extendA0,
+        this._extendA1,
+        true,
       );
     } else if (this._geometryB instanceof LineString3d) {
       this.computeArcLineString(
-        arc0, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
+        arc0,
+        this._extendA0,
+        this._extendA1,
+        this._geometryB,
+        this._extendB0,
+        this._extendB1,
+        false,
       );
     } else if (this._geometryB instanceof Arc3d) {
       this.dispatchArcArc(arc0, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false);
     } else if (this._geometryB instanceof BSplineCurve3d) {
       this.dispatchArcBsplineCurve3d(
-        arc0, this._extendA0, this._extendA1, this._geometryB, this._extendB0, this._extendB1, false,
+        arc0,
+        this._extendA0,
+        this._extendA1,
+        this._geometryB,
+        this._extendB0,
+        this._extendB1,
+        false,
       );
     } else if (this._geometryB instanceof CurveCollection) {
       this.dispatchCurveCollection(arc0, this.handleArc3d.bind(this));
@@ -1085,15 +1391,37 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
   public override handleBSplineCurve3d(curve: BSplineCurve3d): any {
     if (this._geometryB instanceof LineSegment3d) {
       this.dispatchSegmentBsplineCurve(
-        this._geometryB, this._extendB0, this._geometryB.point0Ref, 0.0, this._geometryB.point1Ref, 1.0, this._extendB1,
-        curve, this._extendA0, this._extendA1, true,
+        this._geometryB,
+        this._extendB0,
+        this._geometryB.point0Ref,
+        0.0,
+        this._geometryB.point1Ref,
+        1.0,
+        this._extendB1,
+        curve,
+        this._extendA0,
+        this._extendA1,
+        true,
       );
     } else if (this._geometryB instanceof LineString3d) {
       this.dispatchLineStringBSplineCurve(
-        this._geometryB, this._extendB0, this._extendB1, curve, this._extendA0, this._extendA1, true);
+        this._geometryB,
+        this._extendB0,
+        this._extendB1,
+        curve,
+        this._extendA0,
+        this._extendA1,
+        true,
+      );
     } else if (this._geometryB instanceof Arc3d) {
       this.dispatchArcBsplineCurve3d(
-        this._geometryB, this._extendB0, this._extendB1, curve, this._extendA0, this._extendA1, true,
+        this._geometryB,
+        this._extendB0,
+        this._extendB1,
+        curve,
+        this._extendA0,
+        this._extendA1,
+        true,
       );
     } else if (this._geometryB instanceof BSplineCurve3dBase) {
       this.dispatchBSplineCurve3dBSplineCurve3d(curve, this._geometryB, false);

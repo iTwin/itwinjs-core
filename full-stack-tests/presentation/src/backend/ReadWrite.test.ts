@@ -2,12 +2,12 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as fs from "fs";
 import { IModelDb, StandaloneDb } from "@itwin/core-backend";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { PresentationManager } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { expect } from "chai";
+import * as fs from "fs";
 import { initialize, terminate } from "../IntegrationTests";
 import { prepareOutputFilePath } from "../Utils";
 

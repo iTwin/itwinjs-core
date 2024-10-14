@@ -4,13 +4,13 @@
  *--------------------------------------------------------------------------------------------*/
 /* eslint-disable no-console */
 
-import { expect } from "chai";
-import * as os from "os";
-import { join } from "path";
 import { IModelDb, IModelHost, SnapshotDb } from "@itwin/core-backend";
 import { StopWatch } from "@itwin/core-bentley";
 import { DbResult, QueryRowFormat } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
+import { expect } from "chai";
+import * as os from "os";
+import { join } from "path";
 
 describe("#performance Element properties loading", () => {
   let imodel: SnapshotDb;
@@ -34,10 +34,14 @@ describe("#performance Element properties loading", () => {
     expect(imodel).is.not.null;
   });
 
-  it("load properties using 'getElementProperties'", async function () {
+  it("load properties using 'getElementProperties'", async function() {
     const timer = new StopWatch(undefined, true);
     let itemsCount = 0;
-    const { total, iterator } = await Presentation.getManager().getElementProperties({ imodel, elementClasses: ["BisCore.GeometricElement"], batchSize: 1000 });
+    const { total, iterator } = await Presentation.getManager().getElementProperties({
+      imodel,
+      elementClasses: ["BisCore.GeometricElement"],
+      batchSize: 1000,
+    });
     console.log(`Loading properties for ${total} elements...`);
     for await (const items of iterator()) {
       itemsCount += items.length;
@@ -47,7 +51,7 @@ describe("#performance Element properties loading", () => {
     console.log(`Loaded ${itemsCount} elements properties in ${timer.currentSeconds.toFixed(2)} s`);
   });
 
-  it("load properties using ECSQL", async function () {
+  it("load properties using ECSQL", async function() {
     const timer = new StopWatch(undefined, true);
     process.stdout.write(`Loading properties.`);
     let itemsCount = 0;

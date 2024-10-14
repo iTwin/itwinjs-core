@@ -91,8 +91,7 @@ export default {
         type: "PrimitiveProperty",
         typeName: "boolean",
         customAttributes: [{ className: "CustomAttributeSchema.MissingCA" }],
-      },
-      {
+      }, {
         name: "IntegerProperty",
         type: "PrimitiveArrayProperty",
         typeName: "int",
@@ -115,8 +114,7 @@ export default {
         type: "PrimitiveProperty",
         typeName: "boolean",
         customAttributes: [{ className: "CustomAttributeSchema.InternalId" }],
-      },
-      {
+      }, {
         name: "StructProperty",
         type: "StructArrayProperty",
         typeName: "SourceSchema.MissingStruct",

@@ -2,14 +2,14 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as fs from "fs";
-import path from "path";
-import * as sinon from "sinon";
 import { IpcHost, StandaloneDb } from "@itwin/core-backend";
 import { IpcSocketBackend } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
 import { KeySet, PresentationIpcEvents } from "@itwin/presentation-common";
+import { expect } from "chai";
+import * as fs from "fs";
+import path from "path";
+import * as sinon from "sinon";
 import { createValidIModelFileName } from "../IModelSetupUtils";
 import { setupTestsOutputDirectory } from "../IntegrationTests";
 import { getFieldByLabel, prepareOutputFilePath, waitFor } from "../Utils";
@@ -48,7 +48,7 @@ describe("Reacting to IModel data changes", () => {
     await IpcHost.shutdown();
   });
 
-  beforeEach(function () {
+  beforeEach(function() {
     imodelPath = prepareOutputFilePath(`${createValidIModelFileName(this.test!.fullTitle())}.bim`);
     if (fs.existsSync(imodelPath)) {
       fs.unlinkSync(imodelPath);

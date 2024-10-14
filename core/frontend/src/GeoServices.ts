@@ -7,16 +7,20 @@
  */
 
 // cspell:ignore GCRS
+import { assert, BeEvent, Dictionary, Logger, SortedArray } from "@itwin/core-bentley";
 import {
-  assert, BeEvent, Dictionary, Logger, SortedArray,
-} from "@itwin/core-bentley";
-import { WritableXYAndZ, XYAndZ, XYZProps } from "@itwin/core-geometry";
-import {
-  GeoCoordinatesRequestProps, GeoCoordinatesResponseProps, GeoCoordStatus, GeographicCRSProps, IModelCoordinatesRequestProps, IModelCoordinatesResponseProps,
-  IModelReadRpcInterface, PointWithStatus,
+  GeoCoordinatesRequestProps,
+  GeoCoordinatesResponseProps,
+  GeoCoordStatus,
+  GeographicCRSProps,
+  IModelCoordinatesRequestProps,
+  IModelCoordinatesResponseProps,
+  IModelReadRpcInterface,
+  PointWithStatus,
 } from "@itwin/core-common";
-import { IModelConnection } from "./IModelConnection";
+import { WritableXYAndZ, XYAndZ, XYZProps } from "@itwin/core-geometry";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
+import { IModelConnection } from "./IModelConnection";
 
 /** Options used to create a [[CoordinateConverter]].
  * @internal exported strictly for tests.
@@ -39,10 +43,10 @@ function cloneXYAndZ(xyz: XYAndZ): XYAndZ {
 
 type CoordinateConverterState =
   // No pending requests.
-  "idle" |
-  // We have scheduled a requestAnimationFrame to dispatch all pending requests.
-  "scheduled" |
-  // We have dispatched all requests that were pending at the most recent requestAnimationFrame callback.
+  | "idle"
+  | // We have scheduled a requestAnimationFrame to dispatch all pending requests.
+  "scheduled"
+  | // We have dispatched all requests that were pending at the most recent requestAnimationFrame callback.
   "in-flight";
 
 /** Performs conversion of coordinates from one coordinate system to another.
@@ -134,7 +138,10 @@ export class CoordinateConverter {
           return;
 
         if (results.length !== requests.length)
-          Logger.logError(`${FrontendLoggerCategory.Package}.geoservices`, `requested conversion of ${requests.length} points, but received ${results.length} points`);
+          Logger.logError(
+            `${FrontendLoggerCategory.Package}.geoservices`,
+            `requested conversion of ${requests.length} points, but received ${results.length} points`,
+          );
 
         for (let j = 0; j < results.length; j++) {
           if (j < requests.length)

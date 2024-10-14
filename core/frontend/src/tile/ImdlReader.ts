@@ -7,19 +7,17 @@
  */
 
 import { ByteStream, Id64Set, Id64String } from "@itwin/core-bentley";
+import { BatchType, decodeTileContentDescription, TileReadError, TileReadStatus } from "@itwin/core-common";
 import { Point3d, Transform } from "@itwin/core-geometry";
-import {
-  BatchType, decodeTileContentDescription, TileReadError, TileReadStatus,
-} from "@itwin/core-common";
+import { ImdlModel } from "../common/imdl/ImdlModel";
+import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument";
+import { BatchOptions } from "../common/render/BatchOptions";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
-import { ImdlModel } from "../common/imdl/ImdlModel";
-import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument";
 import { decodeImdlGraphics, IModelTileContent } from "./internal";
-import { BatchOptions } from "../common/render/BatchOptions";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -37,10 +35,20 @@ export interface ImdlReaderResult extends IModelTileContent {
  * @public
  * @extensions
  */
-export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions | false): Promise<RenderGraphic | undefined> {
+export async function readElementGraphics(
+  bytes: Uint8Array,
+  iModel: IModelConnection,
+  modelId: Id64String,
+  is3d: boolean,
+  options?: BatchOptions | false,
+): Promise<RenderGraphic | undefined> {
   const stream = ByteStream.fromUint8Array(bytes);
   const reader = ImdlReader.create({
-    stream, iModel, modelId, is3d, options,
+    stream,
+    iModel,
+    modelId,
+    is3d,
+    options,
     system: IModelApp.renderSystem,
   });
 
@@ -71,7 +79,9 @@ export interface ImdlReaderCreateArgs {
 }
 
 /** @internal */
-export async function readImdlContent(args: ImdlReaderCreateArgs & { parseDocument?: (parseOpts: ImdlParserOptions) => Promise<ImdlModel.Document | ImdlParseError> }): Promise<ImdlReaderResult> {
+export async function readImdlContent(
+  args: ImdlReaderCreateArgs & { parseDocument?: (parseOpts: ImdlParserOptions) => Promise<ImdlModel.Document | ImdlParseError> },
+): Promise<ImdlReaderResult> {
   const isCanceled = args.isCanceled ?? (() => false);
   let content;
   try {

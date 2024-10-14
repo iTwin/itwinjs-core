@@ -5,10 +5,10 @@
 import { describe, expect, it } from "vitest";
 import { Geometry } from "../../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Point4d } from "../../geometry4d/Point4d";
 import { Checker } from "../Checker";
-import { Point2d } from "../../geometry3d/Point2dVector2d";
 
 function testExactPoint4dXYZW(ck: Checker, point: Point4d, x: number, y: number, z: number, w: number) {
   ck.testExactNumber(x, point.x);
@@ -31,19 +31,25 @@ describe("Point4d", () => {
     testExactPoint4dXYZW(ck, pointA, 3, 6, 9, 12);
     pointA.set(2, 4, 6, 8);
     testExactPoint4dXYZW(ck, pointA, 2, 4, 6, 8);
-    pointA.x = 10; testExactPoint4dXYZW(ck, pointA, 10, 4, 6, 8);
-    pointA.y = 20; testExactPoint4dXYZW(ck, pointA, 10, 20, 6, 8);
-    pointA.z = 30; testExactPoint4dXYZW(ck, pointA, 10, 20, 30, 8);
-    pointA.w = 40; testExactPoint4dXYZW(ck, pointA, 10, 20, 30, 40);
+    pointA.x = 10;
+    testExactPoint4dXYZW(ck, pointA, 10, 4, 6, 8);
+    pointA.y = 20;
+    testExactPoint4dXYZW(ck, pointA, 10, 20, 6, 8);
+    pointA.z = 30;
+    testExactPoint4dXYZW(ck, pointA, 10, 20, 30, 8);
+    pointA.w = 40;
+    testExactPoint4dXYZW(ck, pointA, 10, 20, 30, 40);
 
     const pointB = Point4d.create(-1, -2, -3, -4);
-    pointB.setFrom(pointA); testExactPoint4dPoint4d(ck, pointA, pointB);
-    const pointC = pointA.clone(); testExactPoint4dPoint4d(ck, pointB, pointC);
+    pointB.setFrom(pointA);
+    testExactPoint4dPoint4d(ck, pointA, pointB);
+    const pointC = pointA.clone();
+    testExactPoint4dPoint4d(ck, pointB, pointC);
     const dataD = [12, 13, 14, 15];
     pointC.setFromJSON(dataD);
     const pointC2 = Point4d.fromJSON(dataD);
     testExactPoint4dPoint4d(ck, pointC, pointC2);
-    const e = 1.0e-14;  // well below coordinate tolerance
+    const e = 1.0e-14; // well below coordinate tolerance
     ck.testTrue(pointC.isAlmostEqualXYZW(dataD[0], dataD[1], dataD[2], dataD[3]));
     const q = 1.0 + e;
     ck.testTrue(pointC.isAlmostEqualXYZW(dataD[0] * q, dataD[1] * q + e, dataD[2] / q, dataD[3] / q + e));
@@ -55,10 +61,18 @@ describe("Point4d", () => {
 
     const pointA1 = pointA.clone();
     ck.testTrue(pointA1.isAlmostEqual(pointA));
-    pointA1.x += f; ck.testFalse(pointA1.isAlmostEqual(pointA)); pointA1.setFrom(pointA);
-    pointA1.y += f; ck.testFalse(pointA1.isAlmostEqual(pointA)); pointA1.setFrom(pointA);
-    pointA1.z += f; ck.testFalse(pointA1.isAlmostEqual(pointA)); pointA1.setFrom(pointA);
-    pointA1.w += f; ck.testFalse(pointA1.isAlmostEqual(pointA)); pointA1.setFrom(pointA);
+    pointA1.x += f;
+    ck.testFalse(pointA1.isAlmostEqual(pointA));
+    pointA1.setFrom(pointA);
+    pointA1.y += f;
+    ck.testFalse(pointA1.isAlmostEqual(pointA));
+    pointA1.setFrom(pointA);
+    pointA1.z += f;
+    ck.testFalse(pointA1.isAlmostEqual(pointA));
+    pointA1.setFrom(pointA);
+    pointA1.w += f;
+    ck.testFalse(pointA1.isAlmostEqual(pointA));
+    pointA1.setFrom(pointA);
 
     pointC.setFromJSON([1]);
     testExactPoint4dXYZW(ck, pointC, 0, 0, 0, 0);
@@ -122,8 +136,7 @@ describe("Point4d", () => {
     ck.testCoordinate(0.0, pointB.dotProduct(planeABZ));
     ck.testCoordinate(0.0, planeABZ.dotProductXYZW(0, 0, 1, 0));
     const pointU0 = Point4d.create(3, 7, 11, 0);
-    ck.testCoordinate(pointB.velocityXYZ(pointU0.x, pointU0.y, pointU0.z),
-      pointB.dotProductXYZW(pointU0.x, pointU0.y, pointU0.z, 0.0));
+    ck.testCoordinate(pointB.velocityXYZ(pointU0.x, pointU0.y, pointU0.z), pointB.dotProductXYZW(pointU0.x, pointU0.y, pointU0.z, 0.0));
 
     const pointC = Point3d.create(1, 2, 9);
     const pointCH = Point4d.createFromPointAndWeight(pointC, 1.0);
@@ -142,7 +155,7 @@ describe("Point4d", () => {
     const workPlane = Plane3dByOriginAndUnitNormal.createXYPlane();
     Plane3dByOriginAndUnitNormal.create(Point3d.createZero(), Vector3d.createZero(), workPlane);
     const zeroPoint = Point4d.createZero();
-    zeroPoint.setComponent(3, 1);  // homogeneous "zero" has weight 1
+    zeroPoint.setComponent(3, 1); // homogeneous "zero" has weight 1
     const testPoint = Point4d.createFromPoint([1, 4, 9, 16]);
     let workPoint = Point4d.createFromPoint(testPoint);
     ck.testPoint4d(testPoint, workPoint);
@@ -171,11 +184,11 @@ describe("Point4d", () => {
       const a = Math.sqrt(pt.magnitudeSquaredXYZ());
       const direction = Vector3d.create(pt.x, pt.y, pt.z);
       const w = pt.w;
-      const divA = Geometry.conditionalDivideFraction(1.0, a);  // much tighter than smallMetricTol!
+      const divA = Geometry.conditionalDivideFraction(1.0, a); // much tighter than smallMetricTol!
       if (divA !== undefined) {
         const divASquared = divA * divA;
         const b = -w * divASquared;
-        direction.scaleInPlace(divASquared);  // wrong, but renormalized later
+        direction.scaleInPlace(divASquared); // wrong, but renormalized later
         return Plane3dByOriginAndUnitNormal.create(Point3d.create(pt.x * b, pt.y * b, pt.z * b), direction);
       }
       return undefined;
@@ -199,15 +212,24 @@ describe("Point4d", () => {
       for (let count = 0; count < 100; ++count) {
         const pt = Point4d.create(randomCoordinate(size), randomCoordinate(size), randomCoordinate(size), randomCoordinate(size));
         const oldPlane = toPlane3dByOriginAndUnitNormalOrig(pt);
-        const newPlane = (count % 2) ? pt.toPlane3dByOriginAndUnitNormal(workPlane) : pt.toPlane3dByOriginAndUnitNormal();  // cover both
+        const newPlane = (count % 2) ? pt.toPlane3dByOriginAndUnitNormal(workPlane) : pt.toPlane3dByOriginAndUnitNormal(); // cover both
         ck.testTrue((!!oldPlane && !!newPlane) || !oldPlane, "new plane successfully constructed at least as often as oldPlane");
         if (oldPlane && newPlane) {
-          ck.testPoint3d(oldPlane.getOriginRef(), newPlane.getOriginRef(), `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same origins`);
-          ck.testVector3d(oldPlane.getNormalRef(), newPlane.getNormalRef(), `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same normals`);
-        } else if (!!oldPlane && !newPlane) {  // error case: recompute to debug
+          ck.testPoint3d(
+            oldPlane.getOriginRef(),
+            newPlane.getOriginRef(),
+            `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same origins`,
+          );
+          ck.testVector3d(
+            oldPlane.getNormalRef(),
+            newPlane.getNormalRef(),
+            `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same normals`,
+          );
+        } else if (!!oldPlane && !newPlane) { // error case: recompute to debug
           const oldPlane1 = toPlane3dByOriginAndUnitNormalOrig(pt);
           const newPlane1 = pt.toPlane3dByOriginAndUnitNormal();
-          ck.testDefined(oldPlane1); ck.testUndefined(newPlane1);  // silence linter
+          ck.testDefined(oldPlane1);
+          ck.testUndefined(newPlane1); // silence linter
         }
       }
     }
@@ -254,8 +276,10 @@ describe("Point4d", () => {
     const pointB = Point4d.create(-1.1, 0.2, 5.3, 1.4);
     const xyzA = pointA.normalizeWeight()!;
     const xyzB = pointB.normalizeWeight()!;
-    const vectorA = xyzA.clone(); vectorA.w = 0.0;
-    const vectorB = xyzB.clone(); vectorB.w = 0.0;
+    const vectorA = xyzA.clone();
+    vectorA.w = 0.0;
+    const vectorB = xyzB.clone();
+    vectorB.w = 0.0;
 
     ck.testCoordinate(0.0, pointA.realDistanceXY(pointA)!);
     ck.testCoordinate(pointA.realDistanceXY(pointB)!, xyzA.realDistanceXY(xyzB)!);
@@ -266,8 +290,10 @@ describe("Point4d", () => {
 
   it("Quaternions", () => {
     const ck = new Checker();
-    const quatA = Point4d.create(3, 6, 9, 12); quatA.normalizeQuaternion();
-    const quatB = Point4d.create(-1.1, 0.2, 5.3, 1.4); quatB.normalizeQuaternion();
+    const quatA = Point4d.create(3, 6, 9, 12);
+    quatA.normalizeQuaternion();
+    const quatB = Point4d.create(-1.1, 0.2, 5.3, 1.4);
+    quatB.normalizeQuaternion();
     const quat0 = Point4d.interpolateQuaternions(quatA, 0, quatA);
     const quat1 = Point4d.interpolateQuaternions(quatB, 1.0, quatB);
     ck.testCoordinate(1.0, quatA.magnitudeXYZW());
@@ -282,15 +308,15 @@ describe("Point4d", () => {
     // const quatC = Point4d.interpolateQuaternions(quat0, 25, quat80);
     // ck.testPoint4d(quat20, quatC, "variant path to interpolant");
 
-    const perp20 = Point4d.perpendicularPoint4dPlane(quat0, quat20, quat1);  // The three inputs are in a plane.  Quat should be zero?
-    const perp80 = Point4d.perpendicularPoint4dPlane(quat0, quat80, quat1);  // The three inputs are in a plane.  Quat should be zero?
+    const perp20 = Point4d.perpendicularPoint4dPlane(quat0, quat20, quat1); // The three inputs are in a plane.  Quat should be zero?
+    const perp80 = Point4d.perpendicularPoint4dPlane(quat0, quat80, quat1); // The three inputs are in a plane.  Quat should be zero?
     ck.testCoordinate(0.0, perp20.magnitudeXYZW(), "coplanar quaternions have 0 cross product.");
     ck.testCoordinate(0.0, perp80.magnitudeXYZW(), "coplanar quaternions have 0 cross product.");
     const epsilon = 0.000001;
     const nearly1 = 1.0 - epsilon;
     const quatQ0 = Point4d.interpolateQuaternions(quat0, epsilon, quat1);
     const quatQ1 = Point4d.interpolateQuaternions(quat0, nearly1, quat1);
-    const quat0Q0 = Point4d.interpolateQuaternions(quat0, 0.8, quatQ0);   // nearly parallel !!!
+    const quat0Q0 = Point4d.interpolateQuaternions(quat0, 0.8, quatQ0); // nearly parallel !!!
     ck.testLE(quat1.distanceXYZW(quatQ1), epsilon);
     ck.testLE(quat0.distanceXYZW(quat0Q0), epsilon);
 

@@ -43,29 +43,44 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
   }
 
   /* @internal */
-  protected get _transparency() { return this._layerSettings.transparency ? this._layerSettings.transparency : undefined; }
+  protected get _transparency() {
+    return this._layerSettings.transparency ? this._layerSettings.transparency : undefined;
+  }
 
   /** Returns true if the associated map layer, including its sublayers, is opaque. */
   public get isOpaque() {
-    return this._layerSettings.visible && (!this._layerSettings.allSubLayersInvisible) && !this._layerSettings.transparentBackground && 0 === this._layerSettings.transparency;
+    return this._layerSettings.visible && (!this._layerSettings.allSubLayersInvisible) && !this._layerSettings.transparentBackground &&
+      0 === this._layerSettings.transparency;
   }
 
   /* Returns the map layer name. */
-  public get layerName() { return this._layerSettings.name; }
+  public get layerName() {
+    return this._layerSettings.name;
+  }
 
   /** Returns the imagery provider for the tile tree. */
-  public get imageryProvider(): MapLayerImageryProvider | undefined { return undefined; }
+  public get imageryProvider(): MapLayerImageryProvider | undefined {
+    return undefined;
+  }
 
-  public set layerSettings(layerSettings: MapLayerSettings) { this._layerSettings = layerSettings; }
+  public set layerSettings(layerSettings: MapLayerSettings) {
+    this._layerSettings = layerSettings;
+  }
 
   /** Returns the layer settings for the map layer. */
-  public get layerSettings(): MapLayerSettings { return this._layerSettings; }
+  public get layerSettings(): MapLayerSettings {
+    return this._layerSettings;
+  }
 
   /** Returns the index of the map layer associated with the tile tree. */
-  public get layerIndex(): number { return this._layerIndex; }
+  public get layerIndex(): number {
+    return this._layerIndex;
+  }
 
   /** Returns the transparency value of the map layer. */
-  public get transparency() { return this._transparency; }
+  public get transparency() {
+    return this._transparency;
+  }
 
   public override canSupplyToolTip(hit: HitDetail): boolean {
     const tree = this.treeOwner.tileTree;
@@ -94,13 +109,17 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
  * @returns Returns the new tile tree reference, either a ModelMapLayerTileTreeReference or an ImageryMapLayerTreeReference.
  * @internal
  */
-export function createMapLayerTreeReference(layerSettings: MapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined {
+export function createMapLayerTreeReference(
+  layerSettings: MapLayerSettings,
+  layerIndex: number,
+  iModel: IModelConnection,
+): MapLayerTileTreeReference | undefined {
   if (layerSettings instanceof ModelMapLayerSettings) {
     return createModelMapLayerTileTreeReference(layerSettings, layerIndex, iModel);
   } else if (layerSettings instanceof ImageMapLayerSettings)
     return IModelApp.mapLayerFormatRegistry.createImageryMapLayerTree(layerSettings, layerIndex, iModel);
   else {
-    assert (false);
+    assert(false);
     return undefined;
   }
 }

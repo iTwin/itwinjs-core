@@ -80,4 +80,3 @@ export class SpatialClassifiersState extends SpatialClassifiers {
     return new SpatialClassifiersState(container);
   }
 }
-

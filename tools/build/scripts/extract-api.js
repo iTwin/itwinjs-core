@@ -15,13 +15,13 @@ if (argv.entry === undefined) {
   return;
 }
 
-const isCI = (process.env.TF_BUILD);
+const isCI = process.env.TF_BUILD;
 const entryPointFileName = argv.entry;
 const ignoreMissingTags = argv.ignoreMissingTags;
 const includeUnexportedApis = argv.includeUnexportedApis;
 
 // Resolves the root of the Rush repo
-const resolveRoot = relativePath => {
+const resolveRoot = (relativePath) => {
   // recurse until you find the "rush.json"
   const parts = paths.appSrc.split(path.sep).reverse();
   while (parts.length > 0) {
@@ -47,7 +47,7 @@ const config = {
   $schema: "https://developer.microsoft.com/json-schemas/api-extractor/v7/api-extractor.schema.json",
   projectFolder: "../../",
   compiler: {
-    tsconfigFilePath: "<projectFolder>/tsconfig.json"
+    tsconfigFilePath: "<projectFolder>/tsconfig.json",
   },
   mainEntryPointFilePath: `${entryPointFileName}.d.ts`,
   apiReport: {
@@ -57,51 +57,51 @@ const config = {
     includeForgottenExports: !!includeUnexportedApis,
   },
   docModel: {
-    enabled: false
+    enabled: false,
   },
   dtsRollup: {
-    enabled: false
+    enabled: false,
   },
   tsdocMetadata: {
-    enabled: false
+    enabled: false,
   },
   messages: {
     tsdocMessageReporting: {
       default: {
-        logLevel: "none"
-      }
+        logLevel: "none",
+      },
     },
     extractorMessageReporting: {
       default: {
         logLevel: "error",
-        addToApiReportFile: false
+        addToApiReportFile: false,
       },
       "ae-incompatible-release-tags": {
         logLevel: "error",
-        addToApiReportFile: false
+        addToApiReportFile: false,
       },
       "ae-missing-release-tag": {
         logLevel: ignoreMissingTags ? "none" : "error",
-        addToApiReportFile: false
+        addToApiReportFile: false,
       },
       "ae-internal-missing-underscore": {
         logLevel: "none",
-        addToApiReportFile: false
+        addToApiReportFile: false,
       },
       "ae-forgotten-export": {
         logLevel: "none",
-        addToApiReportFile: false
+        addToApiReportFile: false,
       },
       "ae-unresolved-inheritdoc-reference": {
         logLevel: "error",
-        addToApiReportFile: true
+        addToApiReportFile: true,
       },
       "ae-unresolved-inheritdoc-base": {
         logLevel: "error",
-        addToApiReportFile: true
-      }
-    }
-  }
+        addToApiReportFile: true,
+      },
+    },
+  },
 };
 
 if (!fs.existsSync("lib")) {
@@ -114,7 +114,8 @@ fs.writeFileSync(configFileName, JSON.stringify(config, null, 2));
 
 const args = [
   "run",
-  "-c", configFileName
+  "-c",
+  configFileName,
 ];
 if (!isCI)
   args.push("-l");
@@ -129,8 +130,10 @@ spawn(require.resolve(".bin/api-extractor"), args).then((code) => {
 
   const extractSummaryArgs = [
     path.resolve(__dirname, "extract-api-summary.js"),
-    "--apiSignature", path.resolve(path.join(apiReportFolder, `${entryPointFileName}.api.md`)),
-    "--outDir", path.resolve(apiSummaryFolder),
+    "--apiSignature",
+    path.resolve(path.join(apiReportFolder, `${entryPointFileName}.api.md`)),
+    "--outDir",
+    path.resolve(apiSummaryFolder),
   ];
 
   spawn("node", extractSummaryArgs).then((code) => {

@@ -50,10 +50,13 @@ export abstract class SchemaItems {
       await schema.deleteSchemaItem(existingName);
       schema.addItem(mutableItem);
       return mutableItem.key;
-    } catch(e: any) {
+    } catch (e: any) {
       if (e instanceof ECObjectsError && e.errorNumber === ECObjectsStatus.InvalidECName) {
-        throw new SchemaEditingError(ECEditingStatus.SetClassName, new SchemaItemId(this.schemaItemType, itemKey),
-          new SchemaEditingError(ECEditingStatus.InvalidECName, new SchemaItemId(this.schemaItemType, itemKey)));
+        throw new SchemaEditingError(
+          ECEditingStatus.SetClassName,
+          new SchemaItemId(this.schemaItemType, itemKey),
+          new SchemaEditingError(ECEditingStatus.InvalidECName, new SchemaItemId(this.schemaItemType, itemKey)),
+        );
       }
 
       throw new SchemaEditingError(ECEditingStatus.SetClassName, new SchemaItemId(this.schemaItemType, itemKey), e);
@@ -94,17 +97,27 @@ export abstract class SchemaItems {
     return schema;
   }
 
-  protected async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T>{
+  protected async getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T> {
     schemaItemType = schemaItemType ?? this.schemaItemType;
     return this.schemaEditor.getSchemaItem<T>(schemaItemKey, schemaItemType);
   }
 
-  protected async lookupSchemaItem<T extends SchemaItem>(schemaOrKey: MutableSchema | SchemaKey, schemaItemKey: SchemaItemKey, schemaItemType?: SchemaItemType): Promise<T>{
+  protected async lookupSchemaItem<T extends SchemaItem>(
+    schemaOrKey: MutableSchema | SchemaKey,
+    schemaItemKey: SchemaItemKey,
+    schemaItemType?: SchemaItemType,
+  ): Promise<T> {
     schemaItemType = schemaItemType ?? this.schemaItemType;
     return this.schemaEditor.lookupSchemaItem(schemaOrKey, schemaItemKey, schemaItemType);
   }
 
-  protected async createSchemaItem<T extends SchemaItem>(schemaKey: SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, name: string, ...args: any[]): Promise<T> {
+  protected async createSchemaItem<T extends SchemaItem>(
+    schemaKey: SchemaKey,
+    type: SchemaItemType,
+    create: CreateSchemaItem<T>,
+    name: string,
+    ...args: any[]
+  ): Promise<T> {
     const schema = await this.getSchema(schemaKey);
     try {
       const boundCreate = create(schema);
@@ -118,7 +131,12 @@ export abstract class SchemaItems {
     }
   }
 
-  protected async createSchemaItemFromProps<T extends SchemaItem>(schemaKey: SchemaKey, type: SchemaItemType, create: CreateSchemaItem<T>, props: SchemaItemProps): Promise<T> {
+  protected async createSchemaItemFromProps<T extends SchemaItem>(
+    schemaKey: SchemaKey,
+    type: SchemaItemType,
+    create: CreateSchemaItem<T>,
+    props: SchemaItemProps,
+  ): Promise<T> {
     if (props.name === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNameNotSpecified, new SchemaItemId(type, "", schemaKey));
 

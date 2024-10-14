@@ -6,15 +6,15 @@
  * @module Polyface
  */
 
+import { Geometry, PolygonLocation } from "../Geometry";
+import { TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
+import { IndexedXYCollection } from "../geometry3d/IndexedXYCollection";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { TriangleLocationDetail } from "../geometry3d/BarycentricTriangle";
-import { Geometry, PolygonLocation } from "../Geometry";
-import { PolyfaceVisitor } from "./Polyface";
-import { PolygonLocationDetail, PolygonOps } from "../geometry3d/PolygonOps";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
-import { IndexedXYCollection } from "../geometry3d/IndexedXYCollection";
 import { NumberArray } from "../geometry3d/PointHelpers";
+import { PolygonLocationDetail, PolygonOps } from "../geometry3d/PolygonOps";
+import { PolyfaceVisitor } from "./Polyface";
 
 /** Callback for processing the detail for an intersected facet.
  * @param detail reference to the intersection data, with `detail.IsInsideOn === true`. Note that `detail` is owned by the caller; to persist, use `detail.clone`.
@@ -137,11 +137,15 @@ export class TriangularFacetLocationDetail implements FacetLocationDetail {
    * @param detail optional, copied if given
    * @param result optional pre-allocated object to fill and return
    */
-  public static create(facetIndex: number = -1, detail?: TriangleLocationDetail, result?: TriangularFacetLocationDetail): TriangularFacetLocationDetail {
+  public static create(
+    facetIndex: number = -1,
+    detail?: TriangleLocationDetail,
+    result?: TriangularFacetLocationDetail,
+  ): TriangularFacetLocationDetail {
     if (!result)
       result = new TriangularFacetLocationDetail();
     else
-      result.invalidate(false);   // shallow: detail might be owned by result!
+      result.invalidate(false); // shallow: detail might be owned by result!
     result._facetIndex = facetIndex;
     if (undefined !== detail && result._detail !== detail)
       result._detail.copyContentsFrom(detail);
@@ -245,7 +249,7 @@ export class TriangularFacetLocationDetail implements FacetLocationDetail {
   }
   /** Get the barycentric coordinates of this location.
    * @returns cached barycentric coordinates
-  */
+   */
   public getBarycentricCoordinates(): number[] {
     return [this._detail.local.x, this._detail.local.y, this._detail.local.z];
   }
@@ -277,11 +281,16 @@ export class NonConvexFacetLocationDetail implements FacetLocationDetail {
    * @param detail optional, copied if given
    * @param result optional pre-allocated object to fill and return
    */
-  public static create(facetIndex: number = -1, edgeCount: number = 0, detail?: PolygonLocationDetail, result?: NonConvexFacetLocationDetail): NonConvexFacetLocationDetail {
+  public static create(
+    facetIndex: number = -1,
+    edgeCount: number = 0,
+    detail?: PolygonLocationDetail,
+    result?: NonConvexFacetLocationDetail,
+  ): NonConvexFacetLocationDetail {
     if (!result)
       result = new NonConvexFacetLocationDetail();
     else
-      result.invalidate(false);   // shallow: detail might be owned by result!
+      result.invalidate(false); // shallow: detail might be owned by result!
     result._facetIndex = facetIndex;
     result._edgeCount = edgeCount;
     if (undefined !== detail && result._detail !== detail)
@@ -348,19 +357,19 @@ export class NonConvexFacetLocationDetail implements FacetLocationDetail {
   }
   /** Interpolated data is not defined for a non-convex facet.
    * @returns undefined
-  */
+   */
   public getNormal(): Vector3d | undefined {
     return undefined;
   }
   /** Interpolated data is not defined for a non-convex facet.
    * @returns undefined
-  */
+   */
   public getParam(): Point2d | undefined {
     return undefined;
   }
   /** Interpolated data is not defined for a non-convex facet.
    * @returns undefined
-  */
+   */
   public getColor(): number | undefined {
     return undefined;
   }
@@ -398,11 +407,16 @@ export class ConvexFacetLocationDetail extends NonConvexFacetLocationDetail {
    * @param detail optional, copied if given
    * @param result optional pre-allocated object to fill and return
    */
-  public static override create(facetIndex: number = -1, edgeCount: number = 0, detail?: PolygonLocationDetail, result?: ConvexFacetLocationDetail): ConvexFacetLocationDetail {
+  public static override create(
+    facetIndex: number = -1,
+    edgeCount: number = 0,
+    detail?: PolygonLocationDetail,
+    result?: ConvexFacetLocationDetail,
+  ): ConvexFacetLocationDetail {
     if (!result)
       result = new ConvexFacetLocationDetail();
     else
-      result.invalidate(false);   // shallow: detail might be owned by result!
+      result.invalidate(false); // shallow: detail might be owned by result!
     return super.create(facetIndex, edgeCount, detail, result);
   }
   /** Create a detail, capturing inputs. */
@@ -435,7 +449,11 @@ export class ConvexFacetLocationDetail extends NonConvexFacetLocationDetail {
    * @param distanceTolerance used to compute the barycentric coordinate cache
    * @returns reference to cached normal
    */
-  public override getNormal(facetNormals?: IndexedXYZCollection, facetVertices?: IndexedXYZCollection, distanceTolerance: number = Geometry.smallMetricDistance): Vector3d | undefined {
+  public override getNormal(
+    facetNormals?: IndexedXYZCollection,
+    facetVertices?: IndexedXYZCollection,
+    distanceTolerance: number = Geometry.smallMetricDistance,
+  ): Vector3d | undefined {
     if (this._detail.isValid && undefined === this._normal && undefined !== facetNormals) {
       const scales = this.getBarycentricCoordinates(facetVertices, distanceTolerance);
       if (undefined !== scales) {
@@ -451,7 +469,11 @@ export class ConvexFacetLocationDetail extends NonConvexFacetLocationDetail {
    * @param distanceTolerance used to compute the barycentric coordinate cache
    * @returns reference to cached uv parameter
    */
-  public override getParam(facetParams?: IndexedXYCollection, facetVertices?: IndexedXYZCollection, distanceTolerance: number = Geometry.smallMetricDistance): Point2d | undefined {
+  public override getParam(
+    facetParams?: IndexedXYCollection,
+    facetVertices?: IndexedXYZCollection,
+    distanceTolerance: number = Geometry.smallMetricDistance,
+  ): Point2d | undefined {
     if (this._detail.isValid && undefined === this._param && undefined !== facetParams) {
       const scales = this.getBarycentricCoordinates(facetVertices, distanceTolerance);
       if (undefined !== scales) {
@@ -467,7 +489,11 @@ export class ConvexFacetLocationDetail extends NonConvexFacetLocationDetail {
    * @param distanceTolerance used to compute the barycentric coordinate cache
    * @returns cached color
    */
-  public override getColor(facetColors?: number[], facetVertices?: IndexedXYZCollection, distanceTolerance: number = Geometry.smallMetricDistance): number | undefined {
+  public override getColor(
+    facetColors?: number[],
+    facetVertices?: IndexedXYZCollection,
+    distanceTolerance: number = Geometry.smallMetricDistance,
+  ): number | undefined {
     if (this._detail.isValid && undefined === this._color && undefined !== facetColors) {
       const scales = this.getBarycentricCoordinates(facetVertices, distanceTolerance);
       if (undefined !== scales)
@@ -479,8 +505,11 @@ export class ConvexFacetLocationDetail extends NonConvexFacetLocationDetail {
    * @param facetVertices used to compute the barycentric coordinate cache
    * @param distanceTolerance used to compute the barycentric coordinate cache
    * @returns cached barycentric coordinates
-  */
-  public override getBarycentricCoordinates(facetVertices?: IndexedXYZCollection, distanceTolerance: number = Geometry.smallMetricDistance): number[] | undefined {
+   */
+  public override getBarycentricCoordinates(
+    facetVertices?: IndexedXYZCollection,
+    distanceTolerance: number = Geometry.smallMetricDistance,
+  ): number[] | undefined {
     if (this._detail.isValid && undefined === this._barycentricCoordinates && undefined !== facetVertices) {
       this._barycentricCoordinates = PolygonOps.convexBarycentricCoordinates(facetVertices, this._detail.point, distanceTolerance);
     }

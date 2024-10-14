@@ -15,9 +15,9 @@ import { RequestBasicCredentials } from "./Request";
  */
 export function headersIncludeAuthMethod(headers: Headers, query: string[]): boolean {
   const wwwAuthenticate = headers.get("WWW-authenticate");
-  const lowerCaseQuery = query.map(((value)=>value.toLowerCase()));     // not case-sensitive
+  const lowerCaseQuery = query.map((value) => value.toLowerCase()); // not case-sensitive
   if (wwwAuthenticate !== null) {
-    const authMethods = wwwAuthenticate.split(",").map(((value)=>value.toLowerCase().trim()));
+    const authMethods = wwwAuthenticate.split(",").map((value) => value.toLowerCase().trim());
     for (const queryValue of lowerCaseQuery) {
       if (authMethods.includes(queryValue))
         return true;
@@ -35,15 +35,15 @@ export function setBasicAuthorization(headers: Headers, credentials: RequestBasi
 /** @internal */
 export function setBasicAuthorization(headers: Headers, user: string, password: string): void;
 /** @internal */
-export function setBasicAuthorization(headers: Headers, userOrCreds: string|RequestBasicCredentials, password?: string): void {
-  let username: string|undefined;
-  let pwd: string|undefined;
+export function setBasicAuthorization(headers: Headers, userOrCreds: string | RequestBasicCredentials, password?: string): void {
+  let username: string | undefined;
+  let pwd: string | undefined;
   if (typeof userOrCreds === "string") {
     username = userOrCreds;
-    pwd  = password;
+    pwd = password;
   } else {
     username = userOrCreds.user;
-    pwd  = userOrCreds.password;
+    pwd = userOrCreds.password;
   }
 
   if (username !== undefined && pwd !== undefined)
@@ -54,9 +54,8 @@ export function setBasicAuthorization(headers: Headers, userOrCreds: string|Requ
  * Set number of milliseconds a request can take before automatically being terminated
  * @internal
  */
-export function setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController ): void {
+export function setRequestTimeout(opts: RequestInit, ms: number, abortController?: AbortController): void {
   const controller = abortController ?? new AbortController();
   setTimeout(() => controller.abort(), ms);
   opts.signal = controller.signal;
 }
-

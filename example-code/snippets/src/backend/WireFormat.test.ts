@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { Id64 } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { SnapshotDb } from "@itwin/core-backend";
+import { Id64 } from "@itwin/core-bentley";
 import { Code, GeometricElement3dProps, GeometryStreamBuilder, IModel, Placement3dProps } from "@itwin/core-common";
+import { Angle, AngleSweep, Arc3d, LineString3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully.
@@ -33,20 +33,18 @@ describe("Wire Format Snippets", () => {
 
     /* eslint-disable */
     const expectedProps =
-    // __PUBLISH_EXTRACT_START__ WireFormat_RootSubject.json
-    {
-      "classFullName": "BisCore:Subject",
-      "code": {
-        "scope": "0x1",
-        "spec": "0x1f",
-        "value": "DgnDbTestUtils"
-      },
-      "description": "",
-      "id": "0x1",
-      "model": "0x1"
-    }
-      // __PUBLISH_EXTRACT_END__
-      ;
+      // __PUBLISH_EXTRACT_START__ WireFormat_RootSubject.json
+      {
+        "classFullName": "BisCore:Subject",
+        "code": {
+          "scope": "0x1",
+          "spec": "0x1f",
+          "value": "DgnDbTestUtils",
+        },
+        "description": "",
+        "id": "0x1",
+        "model": "0x1",
+      }; // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
 
     expect(JSON.parse(json)).deep.eq(expectedProps);
@@ -61,22 +59,20 @@ describe("Wire Format Snippets", () => {
 
     /* eslint-disable */
     const expectedProps =
-    // __PUBLISH_EXTRACT_START__ WireFormat_RepositoryModel.json
-    {
-      "classFullName": "BisCore:RepositoryModel",
-      "id": "0x1",
-      "isPrivate": false,
-      "isTemplate": false,
-      "jsonProperties": {},
-      "modeledElement": {
+      // __PUBLISH_EXTRACT_START__ WireFormat_RepositoryModel.json
+      {
+        "classFullName": "BisCore:RepositoryModel",
         "id": "0x1",
-        "relClassName": "BisCore:ModelModelsElement",
-      },
-      "parentModel": "0x1",
-      "name": "DgnDbTestUtils"
-    }
-      // __PUBLISH_EXTRACT_END__
-      ;
+        "isPrivate": false,
+        "isTemplate": false,
+        "jsonProperties": {},
+        "modeledElement": {
+          "id": "0x1",
+          "relClassName": "BisCore:ModelModelsElement",
+        },
+        "parentModel": "0x1",
+        "name": "DgnDbTestUtils",
+      }; // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
 
     expect(JSON.parse(json)).deep.eq(expectedProps);
@@ -129,56 +125,51 @@ describe("Wire Format Snippets", () => {
 
     /* eslint-disable */
     const expectedArcJson =
-    // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Arc.json
-    {
-      "center": [
-        0,
-        0,
-        0
-      ],
-      "sweep": [
-        90,
-        180
-      ],
-      "vector0": [
-        1,
-        0,
-        0
-      ],
-      "vector90": [
-        0,
-        1,
-        0
-      ]
-    }
-      // __PUBLISH_EXTRACT_END__
-      ;
+      // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Arc.json
+      {
+        "center": [
+          0,
+          0,
+          0,
+        ],
+        "sweep": [
+          90,
+          180,
+        ],
+        "vector0": [
+          1,
+          0,
+          0,
+        ],
+        "vector90": [
+          0,
+          1,
+          0,
+        ],
+      }; // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
     expect(JSON.parse(arcJson)).deep.eq(expectedArcJson);
 
     /* eslint-disable */
     const expectedLineStringJson =
       // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_LineString.json
-
       [
         [
           0,
           0,
-          0
+          0,
         ],
         [
           1,
           2,
-          0
+          0,
         ],
         [
           1,
           2,
-          4
-        ]
-      ]
-      // __PUBLISH_EXTRACT_END__
-      ;
+          4,
+        ],
+      ]; // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
     expect(JSON.parse(lineStringJson)).deep.eq(expectedLineStringJson);
 
@@ -191,138 +182,131 @@ describe("Wire Format Snippets", () => {
             "center": [
               0,
               0,
-              0
+              0,
             ],
             "vectorX": [
               1,
               0,
-              0
+              0,
             ],
             "vectorY": [
               0,
               1,
-              0
+              0,
             ],
             "sweepStartEnd": [
               90,
-              180
-            ]
-          }
+              180,
+            ],
+          },
         },
         {
           "lineString": [
             [
               0,
               0,
-              0
+              0,
             ],
             [
               1,
               2,
-              0
+              0,
             ],
             [
               1,
               2,
-              4
-            ]
-          ]
-        }
-      ]
-      // __PUBLISH_EXTRACT_END__
-      ;
+              4,
+            ],
+          ],
+        },
+      ]; // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
     expect(JSON.parse(geometryStreamJson)).deep.eq(expectedGeomStreamJson);
 
     /* eslint-disable */
     const expectedPlacementJson =
-    // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Placement.json
-    {
-      "origin": [
-        100,
-        100,
-        0
-      ],
-      "angles": {
-        "pitch": 90
-      }
-    }
-      // __PUBLISH_EXTRACT_END__
-      ;
+      // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Placement.json
+      {
+        "origin": [
+          100,
+          100,
+          0,
+        ],
+        "angles": {
+          "pitch": 90,
+        },
+      }; // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
     expect(JSON.parse(placementJson)).deep.eq(expectedPlacementJson);
 
     /* eslint-disable */
     const expectedElementJson =
-    // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Element.json
-    {
-      "classFullName": "Generic:PhysicalObject",
-      "model": "0",
-      "code": {
-        "spec": "0x1",
-        "scope": "0x1",
-        "value": ""
-      },
-      "category": "0",
-      "placement": {
-        "origin": [
-          100,
-          100,
-          0
-        ],
-        "angles": {
-          "pitch": 90
-        }
-      },
-      "geom": [
-        {
-          "arc": {
-            "center": [
-              0,
-              0,
-              0
-            ],
-            "vectorX": [
-              1,
-              0,
-              0
-            ],
-            "vectorY": [
-              0,
-              1,
-              0
-            ],
-            "sweepStartEnd": [
-              90,
-              180
-            ]
-          }
+      // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d_Element.json
+      {
+        "classFullName": "Generic:PhysicalObject",
+        "model": "0",
+        "code": {
+          "spec": "0x1",
+          "scope": "0x1",
+          "value": "",
         },
-        {
-          "lineString": [
-            [
-              0,
-              0,
-              0
+        "category": "0",
+        "placement": {
+          "origin": [
+            100,
+            100,
+            0,
+          ],
+          "angles": {
+            "pitch": 90,
+          },
+        },
+        "geom": [
+          {
+            "arc": {
+              "center": [
+                0,
+                0,
+                0,
+              ],
+              "vectorX": [
+                1,
+                0,
+                0,
+              ],
+              "vectorY": [
+                0,
+                1,
+                0,
+              ],
+              "sweepStartEnd": [
+                90,
+                180,
+              ],
+            },
+          },
+          {
+            "lineString": [
+              [
+                0,
+                0,
+                0,
+              ],
+              [
+                1,
+                2,
+                0,
+              ],
+              [
+                1,
+                2,
+                4,
+              ],
             ],
-            [
-              1,
-              2,
-              0
-            ],
-            [
-              1,
-              2,
-              4
-            ]
-          ]
-        }
-      ]
-    }
-      // __PUBLISH_EXTRACT_END__
-      ;
+          },
+        ],
+      }; // __PUBLISH_EXTRACT_END__
     /* eslint-enable */
     expect(JSON.parse(elementPropsJson)).deep.eq(expectedElementJson);
   });
-
 });

@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import { Id64String, OpenMode } from "@itwin/core-bentley";
-import { Angle, Point3d } from "@itwin/core-geometry";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
+import { Id64String, OpenMode } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
+import { Angle, Point3d } from "@itwin/core-geometry";
+import { assert } from "chai";
 import { Barrier } from "../BarrierElement";
 import { Robot } from "../RobotElement";
 import { RobotWorldEngine } from "../RobotWorldEngine";

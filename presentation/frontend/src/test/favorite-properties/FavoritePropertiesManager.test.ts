@@ -2,9 +2,6 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import sinon from "sinon";
-import * as moq from "typemoq";
 import { ECSqlReader, QueryRowFormat, QueryRowProxy } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Field, NestedContentField, PropertiesField, PropertyInfo } from "@itwin/presentation-common";
@@ -16,6 +13,9 @@ import {
   createTestRelatedClassInfo,
   createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import sinon from "sinon";
+import * as moq from "typemoq";
 import {
   createFieldOrderInfos,
   FavoritePropertiesManager,
@@ -66,7 +66,7 @@ describe("FavoritePropertiesManager", () => {
     imodelMock.reset();
   });
 
-  function setupMocksForQueryingBaseClasses(classBaseClass: Array<{ classFullName: string; baseClassFullName: string }>) {
+  function setupMocksForQueryingBaseClasses(classBaseClass: Array<{ classFullName: string, baseClassFullName: string }>) {
     let currIndex = -1;
     const ecSqlReaderMock = moq.Mock.ofType<ECSqlReader>();
     ecSqlReaderMock.setup(async (x) => x.step()).returns(async () => ++currIndex < classBaseClass.length);
@@ -553,7 +553,9 @@ describe("FavoritePropertiesManager", () => {
       const orderInfos = getFieldsOrderInfos(allFields);
       storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
 
-      await expect(manager.changeFieldPriority(imodelMock.object, a, a, allFields)).to.be.rejectedWith("`field` can not be the same as `afterField`.");
+      await expect(manager.changeFieldPriority(imodelMock.object, a, a, allFields)).to.be.rejectedWith(
+        "`field` can not be the same as `afterField`.",
+      );
     });
 
     it("throws if given non-visible field", async () => {
@@ -568,7 +570,9 @@ describe("FavoritePropertiesManager", () => {
       storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
 
       const fakeField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "does-not-exist" }) }] });
-      await expect(manager.changeFieldPriority(imodelMock.object, fakeField, b, allFields)).to.be.rejectedWith("Field is not contained in visible fields.");
+      await expect(manager.changeFieldPriority(imodelMock.object, fakeField, b, allFields)).to.be.rejectedWith(
+        "Field is not contained in visible fields.",
+      );
     });
 
     it("throws if given non-favorite field", async () => {
@@ -601,7 +605,9 @@ describe("FavoritePropertiesManager", () => {
       storageMock.setup(async (x) => x.loadPropertiesOrder(moq.It.isAny(), moq.It.isAny())).returns(async () => orderInfos);
 
       const fakeField = createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "does-not-exist" }) }] });
-      await expect(manager.changeFieldPriority(imodelMock.object, a, fakeField, allFields)).to.be.rejectedWith("Field is not contained in visible fields.");
+      await expect(manager.changeFieldPriority(imodelMock.object, a, fakeField, allFields)).to.be.rejectedWith(
+        "Field is not contained in visible fields.",
+      );
     });
 
     it("throws if given non-favorite afterField", async () => {
@@ -651,7 +657,10 @@ describe("FavoritePropertiesManager", () => {
       await manager.changeFieldPriority(imodelMock.object, b, a, allFields);
       expect(orderInfos[0]).to.eq(oldOrderInfo[0]); // a
       expect(orderInfos[1]).to.eq(oldOrderInfo[1]); // b
-      imodelMock.verify((x) => x.createQueryReader(moq.It.isAnyString(), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }), moq.Times.once());
+      imodelMock.verify(
+        (x) => x.createQueryReader(moq.It.isAnyString(), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }),
+        moq.Times.once(),
+      );
     });
 
     it("does not change the order of irrelevant properties", async () => {
@@ -947,7 +956,8 @@ describe("FavoritePropertiesManager", () => {
   });
 });
 
-const getFieldsInfos = (fields: Field[]): PropertyFullName[] => fields.reduce((total: PropertyFullName[], field) => [...total, ...getFieldInfos(field)], []);
+const getFieldsInfos = (fields: Field[]): PropertyFullName[] =>
+  fields.reduce((total: PropertyFullName[], field) => [...total, ...getFieldInfos(field)], []);
 
 const getFieldsOrderInfos = (fields: Field[]): FavoritePropertiesOrderInfo[] => {
   const orderInfos = fields.reduce((total: FavoritePropertiesOrderInfo[], field) => [...total, ...createFieldOrderInfos(field)], []);

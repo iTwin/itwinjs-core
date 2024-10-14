@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
 import { QueryRowFormat } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp } from "@itwin/core-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import { TestContext } from "../setup/TestContext";
 
 const expect = chai.expect;
@@ -45,10 +45,14 @@ describe("Basic Scenarios", async () => {
     const iModel = await testContext.iModelWithChangesets!.getConnection();
 
     const rows = [];
-    for await (const row of iModel.createQueryReader("SELECT ECInstanceId AS id FROM BisCore.Element", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 10 } }))
+    for await (
+      const row of iModel.createQueryReader("SELECT ECInstanceId AS id FROM BisCore.Element", undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+        limit: { count: 10 },
+      })
+    )
       rows.push(row);
 
     expect(rows).not.to.be.empty;
   });
-
 });

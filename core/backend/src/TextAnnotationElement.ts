@@ -6,11 +6,11 @@
  * @module Elements
  */
 
-import { GeometryParams, GeometryStreamBuilder, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
-import { IModelDb } from "./IModelDb";
-import { AnnotationElement2d, GraphicalElement3d } from "./Element";
-import { produceTextAnnotationGeometry } from "./TextAnnotationGeometry";
 import { Id64String } from "@itwin/core-bentley";
+import { GeometryParams, GeometryStreamBuilder, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps } from "@itwin/core-common";
+import { AnnotationElement2d, GraphicalElement3d } from "./Element";
+import { IModelDb } from "./IModelDb";
+import { produceTextAnnotationGeometry } from "./TextAnnotationGeometry";
 
 function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotation: TextAnnotation, subCategory: Id64String | undefined): boolean {
   const builder = new GeometryStreamBuilder();
@@ -38,8 +38,12 @@ function updateAnnotation(element: TextAnnotation2d | TextAnnotation3d, annotati
  */
 export class TextAnnotation2d extends AnnotationElement2d {
   /** @internal */
-  public static override get className(): string { return "TextAnnotation2d"; }
-  protected constructor(props: TextAnnotation2dProps, iModel: IModelDb) { super(props, iModel); }
+  public static override get className(): string {
+    return "TextAnnotation2d";
+  }
+  protected constructor(props: TextAnnotation2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 
   public static fromJSON(props: TextAnnotation2dProps, iModel: IModelDb): TextAnnotation2d {
     return new TextAnnotation2d(props, iModel);
@@ -75,8 +79,12 @@ export class TextAnnotation2d extends AnnotationElement2d {
  */
 export class TextAnnotation3d extends GraphicalElement3d {
   /** @internal */
-  public static override get className(): string { return "TextAnnotation3d"; }
-  protected constructor(props: TextAnnotation3dProps, iModel: IModelDb) { super(props, iModel); }
+  public static override get className(): string {
+    return "TextAnnotation3d";
+  }
+  protected constructor(props: TextAnnotation3dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 
   public static fromJSON(props: TextAnnotation3dProps, iModel: IModelDb): TextAnnotation3d {
     return new TextAnnotation3d(props, iModel);

@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { Point3d, Range3d } from "@itwin/core-geometry";
 import { QPoint3dList } from "@itwin/core-common";
+import { Point3d, Range3d } from "@itwin/core-geometry";
 
 /** @internal */
 export enum MeshPrimitiveType {

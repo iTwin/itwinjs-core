@@ -2,27 +2,34 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, LinePixels, OctEncodedNormal, PackedFeatureTable,
-  QParams2d, QPoint3d, QPoint3dList, RenderMaterial, RenderTexture,
+  ColorDef,
+  ColorIndex,
+  Feature,
+  FeatureIndex,
+  FeatureTable,
+  FillFlags,
+  LinePixels,
+  OctEncodedNormal,
+  PackedFeatureTable,
+  QParams2d,
+  QPoint3d,
+  QPoint3dList,
+  RenderMaterial,
+  RenderTexture,
 } from "@itwin/core-common";
-import {
-  IModelApp,
-  MeshArgs,
-  MockRender,
-  PolylineArgs,
-} from "../../../core-frontend";
-import { createPointStringParams, PointStringParams } from "../../../common/internal/render/PointStringParams";
-import { VertexTable } from "../../../common/internal/render/VertexTable";
-import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
-import { MeshParams } from "../../../common/internal/render/MeshParams";
-import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
-import { TesselatedPolyline } from "../../../common/internal/render/PolylineParams";
-import { ComputeAnimationNodeId, IndexBuffer, splitMeshParams, splitPointStringParams } from "../../../common/internal/render/VertexTableSplitter";
+import { Point2d, Point3d, Range2d, Range3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { EdgeParams, SegmentEdgeParams } from "../../../common/internal/render/EdgeParams";
+import { MeshParams } from "../../../common/internal/render/MeshParams";
+import { createPointStringParams, PointStringParams } from "../../../common/internal/render/PointStringParams";
+import { TesselatedPolyline } from "../../../common/internal/render/PolylineParams";
+import { SurfaceType } from "../../../common/internal/render/SurfaceParams";
+import { VertexTable } from "../../../common/internal/render/VertexTable";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
+import { ComputeAnimationNodeId, IndexBuffer, splitMeshParams, splitPointStringParams } from "../../../common/internal/render/VertexTableSplitter";
+import { IModelApp, MeshArgs, MockRender, PolylineArgs } from "../../../core-frontend";
 
 interface Point {
   x: number; // quantized or unquantized x coordinate - y will be x+1 and z will be x+5.
@@ -98,7 +105,7 @@ function makePointStringParams(pts: Point[], colors: ColorDef | ColorDef[], unqu
     linePixels: LinePixels.Solid,
     flags: { isPlanar: true, isDisjoint: true },
     points,
-    polylines: [[...new Array<number>(points.length).keys()] ],
+    polylines: [[...new Array<number>(points.length).keys()]],
   };
 
   const params = createPointStringParams(args, IModelApp.renderSystem.maxTextureSize)!;
@@ -110,7 +117,11 @@ function makePointStringParams(pts: Point[], colors: ColorDef | ColorDef[], unqu
 }
 
 function getVertexTableData(vertexTable: VertexTable, numExtraRgba: number): Uint32Array {
-  let data = new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset, vertexTable.numVertices * vertexTable.numRgbaPerVertex + numExtraRgba);
+  let data = new Uint32Array(
+    vertexTable.data.buffer,
+    vertexTable.data.byteOffset,
+    vertexTable.numVertices * vertexTable.numRgbaPerVertex + numExtraRgba,
+  );
   if (!vertexTable.usesUnquantizedPositions)
     return data;
 
@@ -160,25 +171,27 @@ function expectBaseVertices(vertexTable: VertexTable, expectedPts: Point[], hasC
   const data = getVertexTableData(vertexTable, 0);
 
   const fpts = new Float32Array(data.buffer);
-  const getVertex = vertexTable.usesUnquantizedPositions ? (idx: number) => {
-    const x = fpts[idx];
-    return {
-      x,
-      y: fpts[idx + 1],
-      z: fpts[idx + 2],
-      featureIndex: data[idx + 3],
-      colorIndex: (data[idx + 4] & 0x0000ffff),
+  const getVertex = vertexTable.usesUnquantizedPositions ?
+    (idx: number) => {
+      const x = fpts[idx];
+      return {
+        x,
+        y: fpts[idx + 1],
+        z: fpts[idx + 2],
+        featureIndex: data[idx + 3],
+        colorIndex: (data[idx + 4] & 0x0000ffff),
+      };
+    } :
+    (idx: number) => {
+      const x = data[idx] & 0xffff;
+      return {
+        x,
+        y: (data[idx] & 0xffff0000) >>> 16,
+        z: data[idx + 1] & 0xffff,
+        colorIndex: (data[idx + 1] & 0xffff0000) >>> 16,
+        featureIndex: data[idx + 2] & 0x00ffffff,
+      };
     };
-  } : (idx: number) => {
-    const x = data[idx] & 0xffff;
-    return {
-      x,
-      y: (data[idx] & 0xffff0000) >>> 16,
-      z: data[idx + 1] & 0xffff,
-      colorIndex: (data[idx + 1] & 0xffff0000) >>> 16,
-      featureIndex: data[idx + 2] & 0x00ffffff,
-    };
-  };
 
   for (let i = 0; i < vertexTable.numVertices; i++) {
     const idx = i * vertexTable.numRgbaPerVertex;
@@ -218,7 +231,7 @@ interface TriMeshPoint extends Point {
 
 function makeTriangleStrip(firstPoint: TriMeshPoint, numTriangles: number, adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): TriMeshPoint[] {
   adjustPt = adjustPt ?? ((pt: TriMeshPoint) => pt);
-  const strip = [ adjustPt(firstPoint) ];
+  const strip = [adjustPt(firstPoint)];
   const pointCount = numTriangles + 2;
   for (let i = 1; i < pointCount; i++)
     strip.push(adjustPt({ ...firstPoint, x: firstPoint.x + i }));
@@ -255,7 +268,9 @@ function makeMeshParams(mesh: TriMesh): MeshParams {
   for (const point of mesh.points)
     qpoints.push(QPoint3d.fromScalars(point.x, point.x + 1, point.x + 5));
 
-  const normals = SurfaceType.Lit === type || SurfaceType.TexturedLit === type ? mesh.points.map((pt) => new OctEncodedNormal(pt.normal!)) : undefined;
+  const normals = SurfaceType.Lit === type || SurfaceType.TexturedLit === type
+    ? mesh.points.map((pt) => new OctEncodedNormal(pt.normal!))
+    : undefined;
   let textureMapping;
   if (mesh.texture) {
     textureMapping = {
@@ -360,7 +375,11 @@ function expectPolyline(polyline: TesselatedPolyline, expected: PolylineIndices[
   expect(polyline.nextIndicesAndParams.length).to.equal(4 * expected.length);
 
   let i = 0;
-  const niap = new Uint32Array(polyline.nextIndicesAndParams.buffer, polyline.nextIndicesAndParams.byteOffset, polyline.nextIndicesAndParams.length / 4);
+  const niap = new Uint32Array(
+    polyline.nextIndicesAndParams.buffer,
+    polyline.nextIndicesAndParams.byteOffset,
+    polyline.nextIndicesAndParams.length / 4,
+  );
   const prevIter = polyline.prevIndices[Symbol.iterator]();
   for (const index of polyline.indices) {
     const pt = expected[i];
@@ -376,9 +395,9 @@ function expectPolyline(polyline: TesselatedPolyline, expected: PolylineIndices[
 
 interface Edges {
   // index, other index, quad index
-  segments?: Array<[ number, number, number ]>;
+  segments?: Array<[number, number, number]>;
   // segments plus oct-encoded normal pair
-  silhouettes?: Array<[ number, number, number, number ]>;
+  silhouettes?: Array<[number, number, number, number]>;
   polylines?: PolylineIndices[];
 }
 
@@ -420,7 +439,9 @@ function makeEdgeParams(edges: Edges): EdgeParams {
   }
 
   return {
-    segments, silhouettes, indexed,
+    segments,
+    silhouettes,
+    indexed,
     polylines: edges.polylines ? makePolyline(edges.polylines) : undefined,
     weight: 12,
     linePixels: LinePixels.Invisible,
@@ -432,7 +453,11 @@ function expectSegments(params: SegmentEdgeParams, expected: Array<[number, numb
   expect(params.indices.length).to.equal(expected.length);
   expect(params.endPointAndQuadIndices.length).to.equal(4 * expected.length);
   expect(params.endPointAndQuadIndices.length % 4).to.equal(0);
-  const epaq = new Uint32Array(params.endPointAndQuadIndices.buffer, params.endPointAndQuadIndices.byteOffset, params.endPointAndQuadIndices.length / 4);
+  const epaq = new Uint32Array(
+    params.endPointAndQuadIndices.buffer,
+    params.endPointAndQuadIndices.byteOffset,
+    params.endPointAndQuadIndices.length / 4,
+  );
   for (const index of params.indices) {
     expect(index).to.equal(expected[i][0]);
     const endPointAndQuad = epaq[i];
@@ -456,7 +481,11 @@ function expectEdges(params: EdgeParams | undefined, expected: Edges | undefined
     expectSegments(params.silhouettes, expected.silhouettes!);
     expect(params.silhouettes.normalPairs.length).to.equal(expected.silhouettes!.length * 4);
     expect(params.silhouettes.normalPairs.length % 4).to.equal(0);
-    const normals = new Uint32Array(params.silhouettes.normalPairs.buffer, params.silhouettes.normalPairs.byteOffset, params.silhouettes.normalPairs.length / 4);
+    const normals = new Uint32Array(
+      params.silhouettes.normalPairs.buffer,
+      params.silhouettes.normalPairs.byteOffset,
+      params.silhouettes.normalPairs.length / 4,
+    );
     for (let i = 0; i < expected.silhouettes!.length; i++)
       expect(normals[i]).to.equal(expected.silhouettes![i][3]);
   }
@@ -469,13 +498,19 @@ function expectEdges(params: EdgeParams | undefined, expected: Edges | undefined
 describe("VertexTableSplitter", () => {
   class MockSystem extends MockRender.System {
     public static maxTextureSize = 2048;
-    public override get maxTextureSize() { return MockSystem.maxTextureSize; }
+    public override get maxTextureSize() {
+      return MockSystem.maxTextureSize;
+    }
 
     public static makeTexture(): RenderTexture {
       class Texture extends RenderTexture {
-        public constructor() { super(RenderTexture.Type.Normal); }
-        public dispose() { }
-        public get bytesUsed() { return 4; }
+        public constructor() {
+          super(RenderTexture.Type.Normal);
+        }
+        public dispose() {}
+        public get bytesUsed() {
+          return 4;
+        }
       }
 
       return new Texture();
@@ -520,7 +555,9 @@ describe("VertexTableSplitter", () => {
         expectPointStrings(params, ColorDef.red, points);
 
         const split = splitPointStringParams({
-          params, featureTable, maxDimension: 2048,
+          params,
+          featureTable,
+          maxDimension: 2048,
           computeNodeId: makeComputeNodeId(featureTable, (id) => id.upper > 0 ? 1 : 0),
         });
         expect(split.size).to.equal(2);
@@ -540,7 +577,7 @@ describe("VertexTableSplitter", () => {
       it("reconstructs or collapses color tables and remaps color indices", () => {
         const featureTable = makePackedFeatureTable("0x1", "0x2");
 
-        const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
+        const colors = [ColorDef.red, ColorDef.green, ColorDef.blue];
 
         const points = [
           { x: 1, color: 2, feature: 0 },
@@ -553,12 +590,14 @@ describe("VertexTableSplitter", () => {
         expectPointStrings(params, colors, points);
 
         const split = splitPointStringParams({
-          params, featureTable, maxDimension: 2048,
+          params,
+          featureTable,
+          maxDimension: 2048,
           computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
         });
         expect(split.size).to.equal(2);
 
-        expectPointStrings(split.get(1)!, [ ColorDef.blue, ColorDef.red ], [
+        expectPointStrings(split.get(1)!, [ColorDef.blue, ColorDef.red], [
           { x: 1, color: 0, feature: 0 },
           { x: 2, color: 1, feature: 0 },
         ]);
@@ -579,7 +618,7 @@ describe("VertexTableSplitter", () => {
       expect(p.vertices.height).to.equal(h);
     };
 
-    const colors = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
+    const colors = [ColorDef.red, ColorDef.green, ColorDef.blue];
     const featureTable = makePackedFeatureTable("0x2", "0x20", "0x200", "0x2000");
     const points = [
       { x: 0, color: 0, feature: 0 },
@@ -600,14 +639,16 @@ describe("VertexTableSplitter", () => {
     expectPointStrings(params, colors, points);
 
     const split = splitPointStringParams({
-      params, featureTable, maxDimension: 6,
+      params,
+      featureTable,
+      maxDimension: 6,
       computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
     });
     expect(split.size).to.equal(4);
 
     const p1 = split.get(0x2)!;
     expectDimensions(p1, 3, 3);
-    expectPointStrings(p1, [ ColorDef.red, ColorDef.green ], [
+    expectPointStrings(p1, [ColorDef.red, ColorDef.green], [
       { x: 0, color: 0, feature: 0 },
       { x: 1, color: 1, feature: 0 },
     ]);
@@ -632,8 +673,10 @@ describe("VertexTableSplitter", () => {
       { x: 8, color: 0, feature: 3 },
     ]);
   });
-  function makeSurface(adjustPt?: (pt: TriMeshPoint) => TriMeshPoint): { params: MeshParams, colors: ColorDef | ColorDef[], featureTable: PackedFeatureTable, mesh: TriMesh } {
-    let colors: ColorDef | ColorDef[] = [ ColorDef.red, ColorDef.green, ColorDef.blue ];
+  function makeSurface(
+    adjustPt?: (pt: TriMeshPoint) => TriMeshPoint,
+  ): { params: MeshParams, colors: ColorDef | ColorDef[], featureTable: PackedFeatureTable, mesh: TriMesh } {
+    let colors: ColorDef | ColorDef[] = [ColorDef.red, ColorDef.green, ColorDef.blue];
     const featureTable = makePackedFeatureTable("0x1", "0x2", "0x3");
     const mesh: TriMesh = {
       points: [
@@ -645,19 +688,37 @@ describe("VertexTableSplitter", () => {
       ],
       indices: [
         // feature 0
-        0, 1, 2,
-        1, 2, 3,
-        4, 5, 6,
+        0,
+        1,
+        2,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
 
         // feature 1
-        7, 8, 9,
-        10, 11, 12,
-        10, 11, 13,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        10,
+        11,
+        13,
 
         // feature 2
-        14, 15, 16,
-        16, 15, 17,
-        14, 18, 17,
+        14,
+        15,
+        16,
+        16,
+        15,
+        17,
+        14,
+        18,
+        17,
       ],
       colors,
     };
@@ -677,7 +738,9 @@ describe("VertexTableSplitter", () => {
     const texture = params.surface.textureMapping?.texture;
 
     const split = splitMeshParams({
-      params, featureTable, maxDimension: 2048,
+      params,
+      featureTable,
+      maxDimension: 2048,
       computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
       createMaterial: (args) => IModelApp.renderSystem.createRenderMaterial(args),
     });
@@ -685,14 +748,21 @@ describe("VertexTableSplitter", () => {
 
     expectMesh(split.get(1)!, {
       texture,
-      colors: texture ? ColorDef.from(1, 2, 3) : [ ColorDef.blue, ColorDef.red ],
+      colors: texture ? ColorDef.from(1, 2, 3) : [ColorDef.blue, ColorDef.red],
       points: [
         ...makeTriangleStrip({ x: 0, color: 0, feature: 0 }, 2, adjustPt),
         ...makeTriangleStrip({ x: 10, color: 1, feature: 0 }, 1, adjustPt),
-      ], indices: [
-        0, 1, 2,
-        1, 2, 3,
-        4, 5, 6,
+      ],
+      indices: [
+        0,
+        1,
+        2,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
       ],
     });
 
@@ -702,10 +772,17 @@ describe("VertexTableSplitter", () => {
       points: [
         ...makeTriangleStrip({ x: 20, color: 0, feature: 1 }, 1, adjustPt),
         ...makeTriangleStrip({ x: 30, color: 0, feature: 1 }, 2, adjustPt),
-      ], indices: [
-        0, 1, 2,
-        3, 4, 5,
-        3, 4, 6,
+      ],
+      indices: [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        3,
+        4,
+        6,
       ],
     });
 
@@ -714,9 +791,15 @@ describe("VertexTableSplitter", () => {
       colors: texture ? ColorDef.from(1, 2, 3) : ColorDef.red,
       points: makeTriangleStrip({ x: 40, color: 0, feature: 2 }, 3, adjustPt),
       indices: [
-        0, 1, 2,
-        2, 1, 3,
-        0, 4, 3,
+        0,
+        1,
+        2,
+        2,
+        1,
+        3,
+        0,
+        4,
+        3,
       ],
     });
   }
@@ -762,7 +845,8 @@ describe("VertexTableSplitter", () => {
         [14, 16, 1],
         [15, 17, 2],
         [16, 18, 3],
-      ], silhouettes: [
+      ],
+      silhouettes: [
         [2, 3, 0, 123],
         [4, 6, 1, 987],
 
@@ -772,7 +856,8 @@ describe("VertexTableSplitter", () => {
         [15, 16, 0, 0],
         [16, 17, 1, 789],
         [15, 18, 2, 0xdeadbeef],
-      ], polylines: [
+      ],
+      polylines: [
         [0, 0, 1, 0],
         [1, 0, 5, 1],
         [5, 1, 5, 2],
@@ -793,7 +878,9 @@ describe("VertexTableSplitter", () => {
 
     const { params, featureTable } = surface;
     const split = splitMeshParams({
-      params, featureTable, maxDimension: 2048,
+      params,
+      featureTable,
+      maxDimension: 2048,
       computeNodeId: makeComputeNodeId(featureTable, (id) => id.lower),
       createMaterial: (args) => IModelApp.renderSystem.createRenderMaterial(args),
     });
@@ -809,11 +896,12 @@ describe("VertexTableSplitter", () => {
       segments: [
         [3, 5, 3],
         [3, 4, 0],
-      ], silhouettes: [
+      ],
+      silhouettes: [
         [0, 1, 2, 0xfedcba98],
         [1, 2, 3, 0xffffffff],
       ],
-      polylines: edges.polylines!.slice(3, 5).map((p) => [ p[0] - 7, p[1] - 7, p[2] - 7, p[3] ]),
+      polylines: edges.polylines!.slice(3, 5).map((p) => [p[0] - 7, p[1] - 7, p[2] - 7, p[3]]),
     });
 
     expectEdges(split.get(3)!.edges, {
@@ -821,12 +909,13 @@ describe("VertexTableSplitter", () => {
         [0, 2, 1],
         [1, 3, 2],
         [2, 4, 3],
-      ], silhouettes: [
+      ],
+      silhouettes: [
         [1, 2, 0, 0],
         [2, 3, 1, 789],
         [1, 4, 2, 0xdeadbeef],
       ],
-      polylines: edges.polylines!.slice(5, 10).map((p) => [ p[0] - 14, p[1] - 14, p[2] - 14, p[3] ]),
+      polylines: edges.polylines!.slice(5, 10).map((p) => [p[0] - 14, p[1] - 14, p[2] - 14, p[3]]),
     });
   });
 

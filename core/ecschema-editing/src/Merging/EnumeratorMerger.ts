@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { SchemaItemKey } from "@itwin/ecschema-metadata";
 import type { EnumeratorDifference } from "../Differencing/SchemaDifference";
 import type { SchemaMergeContext } from "./SchemaMerger";
-import { SchemaItemKey } from "@itwin/ecschema-metadata";
 
 /**
  * Merges a new Enumerator into the target schema.
@@ -32,13 +32,13 @@ export async function addEnumerator(context: SchemaMergeContext, change: Enumera
  * @internal
  */
 export async function modifyEnumerator(context: SchemaMergeContext, change: EnumeratorDifference, itemKey: SchemaItemKey) {
-  if(change.difference.value !== undefined) {
+  if (change.difference.value !== undefined) {
     throw new Error(`Failed to merge enumerator attribute, Enumerator "${change.path}" has different values.`);
   }
-  if(change.difference.description !== undefined) {
+  if (change.difference.description !== undefined) {
     await context.editor.enumerations.setEnumeratorDescription(itemKey, change.path, change.difference.description);
   }
-  if(change.difference.label !== undefined) {
+  if (change.difference.label !== undefined) {
     await context.editor.enumerations.setEnumeratorLabel(itemKey, change.path, change.difference.label);
   }
 }

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { EmphasizeElements, IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
 import { BentleyStatus, Id64, Id64Array } from "@itwin/core-bentley";
-import { ClipPlaneContainment, ClipVector } from "@itwin/core-geometry";
 import { ColorDef, GeometryContainmentRequestProps } from "@itwin/core-common";
+import { EmphasizeElements, IModelApp, ScreenViewport, Tool } from "@itwin/core-frontend";
+import { ClipPlaneContainment, ClipVector } from "@itwin/core-geometry";
 
 /** Color code current selection set based on containment with current view clip.
  * For selecting elements outside clip, turn off clipvolume in view settings dialog.
@@ -14,8 +14,12 @@ import { ColorDef, GeometryContainmentRequestProps } from "@itwin/core-common";
  */
 export class FenceClassifySelectedTool extends Tool {
   public static override toolId = "Fence.ClassifySelected";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public async doClassify(vp: ScreenViewport, candidates: Id64Array, clip: ClipVector, allowOverlaps: boolean): Promise<void> {
     const requestProps: GeometryContainmentRequestProps = {

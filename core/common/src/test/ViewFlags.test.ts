@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, describe, expect, it } from "vitest";
-import {
-  RenderMode, ViewFlagOverrides, ViewFlagProps, ViewFlags, ViewFlagsProperties,
-} from "../ViewFlags";
+import { RenderMode, ViewFlagOverrides, ViewFlagProps, ViewFlags, ViewFlagsProperties } from "../ViewFlags";
 
 function invertDefaults(): ViewFlags {
   const invertedProperties: Partial<ViewFlagsProperties> = { renderMode: RenderMode.SolidFill };
@@ -31,7 +29,7 @@ describe("ViewFlags", () => {
   it("should round-trip through JSON", () => {
     const roundTrip = (input: ViewFlagProps | undefined, expected: ViewFlagProps | "input") => {
       if ("input" === expected)
-        expected = input ?? { };
+        expected = input ?? {};
 
       const vf = ViewFlags.fromJSON(input);
       const output = vf.toJSON();
@@ -42,7 +40,7 @@ describe("ViewFlags", () => {
         expect(fullOutput[key]).to.equal(output[key]);
     };
 
-    roundTrip({ }, { renderMode: RenderMode.Wireframe });
+    roundTrip({}, { renderMode: RenderMode.Wireframe });
     roundTrip({ acs: true, monochrome: true, renderMode: RenderMode.Wireframe }, "input");
     roundTrip({ acs: false, monochrome: false, renderMode: RenderMode.SmoothShade }, { renderMode: RenderMode.SmoothShade });
 
@@ -141,7 +139,11 @@ describe("ViewFlags", () => {
     expect(def.copy(inv)).to.deep.equal(inv);
     expect(inv.copy(def)).to.deep.equal(def);
 
-    expect(inv.copy({ ...inv, renderMode: undefined, transparency: undefined })).to.deep.equal({ ...inv, renderMode: RenderMode.Wireframe, transparency: true });
+    expect(inv.copy({ ...inv, renderMode: undefined, transparency: undefined })).to.deep.equal({
+      ...inv,
+      renderMode: RenderMode.Wireframe,
+      transparency: true,
+    });
   });
 
   it("overrides", () => {
@@ -158,14 +160,14 @@ describe("ViewFlags", () => {
   it("returns defaults if no properties supplied", () => {
     expect(ViewFlags.fromJSON()).to.equal(ViewFlags.defaults);
     expect(ViewFlags.create()).to.equal(ViewFlags.defaults);
-    expect(ViewFlags.create({ })).to.equal(ViewFlags.defaults);
+    expect(ViewFlags.create({})).to.equal(ViewFlags.defaults);
   });
 
   it("uses different defaults for undefined vs ViewFlagProps", () => {
     const def = ViewFlags.defaults;
     expect(ViewFlags.fromJSON(undefined)).to.deep.equal(def);
 
-    expect(ViewFlags.fromJSON({ })).to.deep.equal({
+    expect(ViewFlags.fromJSON({})).to.deep.equal({
       ...def,
       clipVolume: !def.clipVolume,
       lighting: !def.lighting,
@@ -243,7 +245,7 @@ describe("ViewFlagOverrides", () => {
     const ovrsTestCases: Array<[ViewFlagOverrides, RenderMode | undefined, boolean | undefined]> = [];
     for (const renderMode of [undefined, RenderMode.Wireframe, RenderMode.HiddenLine, RenderMode.SolidFill, RenderMode.SmoothShade]) {
       for (let i = 0; i < 3; i++) {
-        const ovrs: ViewFlagOverrides = { };
+        const ovrs: ViewFlagOverrides = {};
         if (undefined !== renderMode)
           ovrs.renderMode = renderMode;
 

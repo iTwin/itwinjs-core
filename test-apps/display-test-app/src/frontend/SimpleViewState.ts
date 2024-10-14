@@ -7,5 +7,5 @@ import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 /** Global information on the currently opened iModel and the state of the view. */
 export class SimpleViewState {
   public oidcClient?: BrowserAuthorizationClient;
-  constructor() { }
+  constructor() {}
 }

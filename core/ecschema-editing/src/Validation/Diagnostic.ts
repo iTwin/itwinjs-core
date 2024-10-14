@@ -6,7 +6,15 @@
  * @module Diagnostic
  */
 
-import { AnyClass, AnyECType, AnyProperty, CustomAttributeContainerProps, RelationshipConstraint, Schema, SchemaItem } from "@itwin/ecschema-metadata";
+import {
+  AnyClass,
+  AnyECType,
+  AnyProperty,
+  CustomAttributeContainerProps,
+  RelationshipConstraint,
+  Schema,
+  SchemaItem,
+} from "@itwin/ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/no-shadow */
 
@@ -121,10 +129,14 @@ export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnosti
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public get schema(): Schema { return this.ecDefinition; }
+  public get schema(): Schema {
+    return this.ecDefinition;
+  }
 
   /** Gets the DiagnosticType. */
-  public get diagnosticType(): DiagnosticType { return DiagnosticType.Schema; }
+  public get diagnosticType(): DiagnosticType {
+    return DiagnosticType.Schema;
+  }
 }
 
 /**
@@ -144,10 +156,14 @@ export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public get schema(): Schema { return this.ecDefinition.schema; }
+  public get schema(): Schema {
+    return this.ecDefinition.schema;
+  }
 
   /** Gets the DiagnosticType. */
-  public get diagnosticType(): DiagnosticType { return DiagnosticType.SchemaItem; }
+  public get diagnosticType(): DiagnosticType {
+    return DiagnosticType.SchemaItem;
+  }
 }
 
 /**
@@ -166,7 +182,9 @@ export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiag
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public override get schema(): Schema { return this.ecDefinition.schema; }
+  public override get schema(): Schema {
+    return this.ecDefinition.schema;
+  }
 }
 
 /**
@@ -185,10 +203,14 @@ export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnos
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public get schema(): Schema { return this.ecDefinition.schema; }
+  public get schema(): Schema {
+    return this.ecDefinition.schema;
+  }
 
   /** Gets the DiagnosticType. */
-  public get diagnosticType(): DiagnosticType { return DiagnosticType.Property; }
+  public get diagnosticType(): DiagnosticType {
+    return DiagnosticType.Property;
+  }
 }
 
 /**
@@ -207,10 +229,14 @@ export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> exten
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public get schema(): Schema { return this.ecDefinition.schema; }
+  public get schema(): Schema {
+    return this.ecDefinition.schema;
+  }
 
   /** Gets the DiagnosticType. */
-  public get diagnosticType(): DiagnosticType { return DiagnosticType.RelationshipConstraint; }
+  public get diagnosticType(): DiagnosticType {
+    return DiagnosticType.RelationshipConstraint;
+  }
 }
 
 /**
@@ -229,10 +255,14 @@ export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> ext
   }
 
   /** Gets the schema where the diagnostic originated. */
-  public get schema(): Schema { return this.ecDefinition.schema; }
+  public get schema(): Schema {
+    return this.ecDefinition.schema;
+  }
 
   /** Gets the DiagnosticType. */
-  public get diagnosticType(): DiagnosticType { return DiagnosticType.CustomAttributeContainer; }
+  public get diagnosticType(): DiagnosticType {
+    return DiagnosticType.CustomAttributeContainer;
+  }
 }
 
 /**
@@ -245,8 +275,12 @@ export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, me
   validateCode(code);
   return class extends SchemaDiagnostic<ARGS> {
     public static code = code;
-    public get code(): string { return code; }
-    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
+    public get code(): string {
+      return code;
+    }
+    public get messageText(): string {
+      return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs);
+    }
   };
 }
 
@@ -259,8 +293,12 @@ export function createSchemaDiagnosticClass<ARGS extends any[]>(code: string, me
 export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
   return class extends SchemaItemDiagnostic<ITEM, ARGS> {
-    public get code(): string { return code; }
-    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
+    public get code(): string {
+      return code;
+    }
+    public get messageText(): string {
+      return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs);
+    }
   };
 }
 
@@ -273,8 +311,12 @@ export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS ex
 export function createClassDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
   return class extends ClassDiagnostic<ARGS> {
-    public get code(): string { return code; }
-    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
+    public get code(): string {
+      return code;
+    }
+    public get messageText(): string {
+      return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs);
+    }
   };
 }
 
@@ -288,8 +330,12 @@ export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, 
   validateCode(code);
   return class extends PropertyDiagnostic<ARGS> {
     public static code = code;
-    public get code(): string { return code; }
-    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
+    public get code(): string {
+      return code;
+    }
+    public get messageText(): string {
+      return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs);
+    }
   };
 }
 
@@ -302,8 +348,12 @@ export function createPropertyDiagnosticClass<ARGS extends any[]>(code: string, 
 export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
   return class extends RelationshipConstraintDiagnostic<ARGS> {
-    public get code(): string { return code; }
-    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
+    public get code(): string {
+      return code;
+    }
+    public get messageText(): string {
+      return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs);
+    }
   };
 }
 
@@ -316,8 +366,12 @@ export function createRelationshipConstraintDiagnosticClass<ARGS extends any[]>(
 export function createCustomAttributeContainerDiagnosticClass<ARGS extends any[]>(code: string, messageText: string) {
   validateCode(code);
   return class extends CustomAttributeContainerDiagnostic<ARGS> {
-    public get code(): string { return code; }
-    public get messageText(): string { return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs); }
+    public get code(): string {
+      return code;
+    }
+    public get messageText(): string {
+      return undefined === this.messageArgs ? messageText : formatString(messageText, ...this.messageArgs);
+    }
   };
 }
 

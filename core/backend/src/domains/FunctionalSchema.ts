@@ -6,20 +6,24 @@
  * @module Schema
  */
 
-import * as path from "path";
 import { DbResult } from "@itwin/core-bentley";
 import { IModelError } from "@itwin/core-common";
+import * as path from "path";
 import { ClassRegistry } from "../ClassRegistry";
 import { IModelDb } from "../IModelDb";
 import { KnownLocations } from "../IModelHost";
+import { _nativeDb } from "../internal/Symbols";
 import { Schema, Schemas } from "../Schema";
 import * as elementsModule from "./FunctionalElements";
-import { _nativeDb } from "../internal/Symbols";
 
 /** @public */
 export class FunctionalSchema extends Schema {
-  public static override get schemaName(): string { return "Functional"; }
-  public static get schemaFilePath(): string { return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", `${FunctionalSchema.schemaName}.ecschema.xml`); }
+  public static override get schemaName(): string {
+    return "Functional";
+  }
+  public static get schemaFilePath(): string {
+    return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", `${FunctionalSchema.schemaName}.ecschema.xml`);
+  }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);

@@ -2,10 +2,10 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { getFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
@@ -177,7 +177,7 @@ describe("Learning Snippets", () => {
                       value: "123",
                       extendedData: {
                         extendedDataInt: "2*2",
-                        extendedDataStr: "\"xxx\""
+                        extendedDataStr: '"xxx"',
                       },
                     },
                   ],
@@ -202,7 +202,7 @@ describe("Learning Snippets", () => {
             label: "My Calculated Property",
             extendedData: {
               extendedDataInt: 4,
-              extendedDataStr: "xxx"
+              extendedDataStr: "xxx",
             },
           },
         ]);
@@ -225,7 +225,7 @@ describe("Learning Snippets", () => {
                     {
                       label: "My Calculated Property",
                       value: "2+2",
-                      type: "int"
+                      type: "int",
                     },
                   ],
                 },

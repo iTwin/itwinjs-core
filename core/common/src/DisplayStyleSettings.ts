@@ -9,7 +9,15 @@
 // cspell:ignore greyscale ovrs
 
 import {
-  assert, BeEvent, CompressedId64Set, Id64, Id64Array, Id64String, JsonUtils, MutableCompressedId64Set, OrderedId64Iterable,
+  assert,
+  BeEvent,
+  CompressedId64Set,
+  Id64,
+  Id64Array,
+  Id64String,
+  JsonUtils,
+  MutableCompressedId64Set,
+  OrderedId64Iterable,
 } from "@itwin/core-bentley";
 import { XYZProps } from "@itwin/core-geometry";
 import { AmbientOcclusion } from "./AmbientOcclusion";
@@ -17,27 +25,27 @@ import { AnalysisStyle, AnalysisStyleProps } from "./AnalysisStyle";
 import { BackgroundMapSettings, PersistentBackgroundMapProps } from "./BackgroundMapSettings";
 import { ClipStyle, ClipStyleProps } from "./ClipStyle";
 import { ColorDef, ColorDefProps } from "./ColorDef";
+import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
+import { ContourDisplay, ContourDisplayProps } from "./ContourDisplay";
 import { DefinitionElementProps } from "./ElementProps";
-import { HiddenLine } from "./HiddenLine";
+import { Environment, EnvironmentProps } from "./Environment";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
-import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
-import { SubCategoryOverride } from "./SubCategoryOverride";
+import { Cartographic } from "./geometry/Cartographic";
+import { HiddenLine } from "./HiddenLine";
+import { IModel } from "./IModel";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
 import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
+import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
+import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
 import { RenderSchedule } from "./RenderSchedule";
-import { Environment, EnvironmentProps } from "./Environment";
+import { calculateSolarDirection } from "./SolarCalculate";
 import { SolarShadowSettings, SolarShadowSettingsProps } from "./SolarShadows";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
+import { SubCategoryOverride } from "./SubCategoryOverride";
 import { ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps } from "./ThematicDisplay";
 import { ViewFlagProps, ViewFlags } from "./ViewFlags";
-import { Cartographic } from "./geometry/Cartographic";
-import { IModel } from "./IModel";
-import { calculateSolarDirection } from "./SolarCalculate";
-import { ContextRealityModel, ContextRealityModelProps, ContextRealityModels } from "./ContextRealityModel";
-import { RealityModelDisplayProps, RealityModelDisplaySettings } from "./RealityModelDisplaySettings";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "./WhiteOnWhiteReversalSettings";
-import { ContourDisplay, ContourDisplayProps } from "./ContourDisplay";
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
  * @see [[DisplayStyleSettingsProps]]
@@ -315,7 +323,9 @@ type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr" | "real
  */
 class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
   // This is required for mock framework used by ui libraries, which otherwise try to clone this as a standard Map.
-  public override get [Symbol.toStringTag]() { return "OverridesMap"; }
+  public override get [Symbol.toStringTag]() {
+    return "OverridesMap";
+  }
 
   public constructor(
     private readonly _json: DisplayStyleSettingsProps,
@@ -323,7 +333,8 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
     private readonly _event: BeEvent<(id: Id64String, ovr: Override | undefined) => void>,
     private readonly _idFromProps: (props: OverrideProps) => Id64String | undefined,
     private readonly _overrideToProps: (ovr: Override, id: Id64String) => OverrideProps,
-    private readonly _overrideFromProps: (props: OverrideProps) => Override | undefined) {
+    private readonly _overrideFromProps: (props: OverrideProps) => Override | undefined,
+  ) {
     super();
     this.populate();
   }
@@ -502,7 +513,9 @@ export class DisplayStyleSettings {
   /** Event raised just before [[setRealityModelDisplaySettings]] changes the display settings for a reality model.
    * @beta
    */
-  public readonly onRealityModelDisplaySettingsChanged = new BeEvent<(modelId: Id64String, newSettings: RealityModelDisplaySettings | undefined) => void>();
+  public readonly onRealityModelDisplaySettingsChanged = new BeEvent<
+    (modelId: Id64String, newSettings: RealityModelDisplaySettings | undefined) => void
+  >();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.thematic]] property. */
   public readonly onThematicChanged = new BeEvent<(newThematic: ThematicDisplay) => void>();
   /** Event raised just prior to assignment to the [[DisplayStyle3dSettings.contours]] property. */
@@ -557,35 +570,58 @@ export class DisplayStyleSettings {
     this._whiteOnWhiteReversal = WhiteOnWhiteReversalSettings.fromJSON(this._json.whiteOnWhiteReversal);
     this._clipStyle = ClipStyle.fromJSON(this._json.clipStyle);
 
-    this._subCategoryOverrides = new OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>(this._json, "subCategoryOvr", this.onSubCategoryOverridesChanged,
+    this._subCategoryOverrides = new OverridesMap<DisplayStyleSubCategoryProps, SubCategoryOverride>(
+      this._json,
+      "subCategoryOvr",
+      this.onSubCategoryOverridesChanged,
       (props) => props.subCategory,
-      (ovr, subCategory) => { return { ...ovr.toJSON(), subCategory }; },
+      (ovr, subCategory) => {
+        return { ...ovr.toJSON(), subCategory };
+      },
       (props) => {
         const ovr = SubCategoryOverride.fromJSON(props);
         return ovr.anyOverridden ? ovr : undefined;
-      });
+      },
+    );
 
-    this._modelAppearanceOverrides = new OverridesMap<DisplayStyleModelAppearanceProps, FeatureAppearance>(this._json, "modelOvr", this.onModelAppearanceOverrideChanged,
+    this._modelAppearanceOverrides = new OverridesMap<DisplayStyleModelAppearanceProps, FeatureAppearance>(
+      this._json,
+      "modelOvr",
+      this.onModelAppearanceOverrideChanged,
       (props) => props.modelId,
-      (ovr, modelId) => { return { ...ovr.toJSON(), modelId }; },
+      (ovr, modelId) => {
+        return { ...ovr.toJSON(), modelId };
+      },
       (props) => {
         const app = FeatureAppearance.fromJSON(props);
         return app.anyOverridden ? app : undefined;
-      });
+      },
+    );
 
-    this._realityModelDisplaySettings = new OverridesMap<DisplayStyleRealityModelDisplayProps, RealityModelDisplaySettings>(this._json, "realityModelDisplay", this.onRealityModelDisplaySettingsChanged,
+    this._realityModelDisplaySettings = new OverridesMap<DisplayStyleRealityModelDisplayProps, RealityModelDisplaySettings>(
+      this._json,
+      "realityModelDisplay",
+      this.onRealityModelDisplaySettingsChanged,
       (props) => props.modelId,
-      (settings, modelId) => { return { ...settings.toJSON(), modelId }; },
+      (settings, modelId) => {
+        return { ...settings.toJSON(), modelId };
+      },
       (props) => RealityModelDisplaySettings.fromJSON(props),
     );
 
-    this._planarClipMasks = new OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>(this._json, "planarClipOvr", this.onPlanarClipMaskChanged,
+    this._planarClipMasks = new OverridesMap<DisplayStylePlanarClipMaskProps, PlanarClipMaskSettings>(
+      this._json,
+      "planarClipOvr",
+      this.onPlanarClipMaskChanged,
       (props) => props.modelId,
-      (ovr, modelId) => { return { ...ovr.toJSON(), modelId }; },
+      (ovr, modelId) => {
+        return { ...ovr.toJSON(), modelId };
+      },
       (props) => {
         const settings = PlanarClipMaskSettings.fromJSON(props);
         return settings.isValid ? settings : undefined;
-      });
+      },
+    );
 
     this._contextRealityModels = new ContextRealityModels({
       container: this._json,
@@ -595,7 +631,9 @@ export class DisplayStyleSettings {
   }
 
   /** Flags controlling various aspects of the display style. */
-  public get viewFlags(): ViewFlags { return this._viewFlags; }
+  public get viewFlags(): ViewFlags {
+    return this._viewFlags;
+  }
   public set viewFlags(flags: ViewFlags) {
     if (this.viewFlags.equals(flags))
       return;
@@ -606,7 +644,9 @@ export class DisplayStyleSettings {
   }
 
   /** The color displayed in the view background - by default, [[ColorDef.black]]. */
-  public get backgroundColor(): ColorDef { return this._background; }
+  public get backgroundColor(): ColorDef {
+    return this._background;
+  }
   public set backgroundColor(color: ColorDef) {
     if (this.backgroundColor.equals(color))
       return;
@@ -620,7 +660,9 @@ export class DisplayStyleSettings {
    * The monochrome color is applied to all surfaces and linear geometry, but only applied to the **edges** of surfaces in [[RenderMode.Wireframe]].
    * @see [[monochromeMode]] to control how the color is applied.
    */
-  public get monochromeColor(): ColorDef { return this._monochrome; }
+  public get monochromeColor(): ColorDef {
+    return this._monochrome;
+  }
   public set monochromeColor(color: ColorDef) {
     if (this.monochromeColor.equals(color))
       return;
@@ -631,7 +673,9 @@ export class DisplayStyleSettings {
   }
 
   /** The style in which [[monochromeColor]] is applied when [[ViewFlags.monochrome]] is enabled - by default, [[MonochromeMode.Scaled]]. */
-  public get monochromeMode(): MonochromeMode { return this._monochromeMode; }
+  public get monochromeMode(): MonochromeMode {
+    return this._monochromeMode;
+  }
   public set monochromeMode(mode: MonochromeMode) {
     if (this.monochromeMode === mode)
       return;
@@ -642,7 +686,9 @@ export class DisplayStyleSettings {
   }
 
   /** Settings controlling display of the background map within views of geolocated models. */
-  public get backgroundMap(): BackgroundMapSettings { return this._backgroundMap; }
+  public get backgroundMap(): BackgroundMapSettings {
+    return this._backgroundMap;
+  }
 
   public set backgroundMap(map: BackgroundMapSettings) {
     if (!this.backgroundMap.equals(map)) {
@@ -655,7 +701,9 @@ export class DisplayStyleSettings {
   /** Settings defining the map imagery layers to be displayed within the view.
    * @beta
    */
-  public get mapImagery(): MapImagerySettings { return this._mapImagery; }
+  public get mapImagery(): MapImagerySettings {
+    return this._mapImagery;
+  }
 
   public set mapImagery(mapImagery: MapImagerySettings) {
     this.onMapImageryChanged.raiseEvent(mapImagery);
@@ -717,7 +765,9 @@ export class DisplayStyleSettings {
   /** Settings controlling the display of analytical models.
    * @see [[analysisFraction]] to control playback of the animation.
    */
-  public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
+  public get analysisStyle(): AnalysisStyle | undefined {
+    return this._analysisStyle;
+  }
   public set analysisStyle(style: AnalysisStyle | undefined) {
     if (style === this.analysisStyle)
       return;
@@ -746,7 +796,9 @@ export class DisplayStyleSettings {
   }
 
   /** Settings controlling how white-on-white reversal is applied when [[ViewFlags.whiteOnWhiteReversal]] is enabled. */
-  public get whiteOnWhiteReversal(): WhiteOnWhiteReversalSettings { return this._whiteOnWhiteReversal; }
+  public get whiteOnWhiteReversal(): WhiteOnWhiteReversalSettings {
+    return this._whiteOnWhiteReversal;
+  }
   public set whiteOnWhiteReversal(settings: WhiteOnWhiteReversalSettings) {
     if (settings.equals(this.whiteOnWhiteReversal))
       return;
@@ -952,9 +1004,10 @@ export class DisplayStyleSettings {
       props.timePoint = this.timePoint;
       if (this._json.contextRealityModels) {
         props.contextRealityModels = this._json.contextRealityModels;
-        if (!options?.includeIModelSpecific)
+        if (!options?.includeIModelSpecific) {
           for (const model of this._json.contextRealityModels)
             delete model.classifiers;
+        }
       }
     }
 
@@ -1083,7 +1136,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _environment: Environment;
   private _planProjections?: Map<string, PlanProjectionSettings>;
 
-  private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
+  private get _json3d(): DisplayStyle3dSettingsProps {
+    return this._json as DisplayStyle3dSettingsProps;
+  }
 
   public override is3d(): this is DisplayStyle3dSettings {
     return true;
@@ -1209,7 +1264,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   }
 
   /** The settings that control thematic display. */
-  public get thematic(): ThematicDisplay { return this._thematic; }
+  public get thematic(): ThematicDisplay {
+    return this._thematic;
+  }
   public set thematic(thematic: ThematicDisplay) {
     if (thematic.equals(this.thematic))
       return;
@@ -1220,7 +1277,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   }
 
   /** The settings that control contour display. */
-  public get contours(): ContourDisplay { return this._contours; }
+  public get contours(): ContourDisplay {
+    return this._contours;
+  }
   public set contours(contours: ContourDisplay) {
     if (contours.equals(this.contours))
       return;
@@ -1231,7 +1290,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   }
 
   /** The settings that control how visible and hidden edges are displayed.  */
-  public get hiddenLineSettings(): HiddenLine.Settings { return this._hline; }
+  public get hiddenLineSettings(): HiddenLine.Settings {
+    return this._hline;
+  }
   public set hiddenLineSettings(hline: HiddenLine.Settings) {
     if (hline.equals(this.hiddenLineSettings))
       return;
@@ -1242,7 +1303,9 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   }
 
   /** The settings that control how ambient occlusion is displayed. */
-  public get ambientOcclusionSettings(): AmbientOcclusion.Settings { return this._ao; }
+  public get ambientOcclusionSettings(): AmbientOcclusion.Settings {
+    return this._ao;
+  }
   public set ambientOcclusionSettings(ao: AmbientOcclusion.Settings) {
     this.onAmbientOcclusionSettingsChanged.raiseEvent(ao);
     this._ao = ao;

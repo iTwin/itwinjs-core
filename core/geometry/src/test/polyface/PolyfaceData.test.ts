@@ -60,9 +60,14 @@ describe("PolyfaceData", () => {
     const numX = 3;
     const numY = 2;
     const polyface0 = Sample.createTriangularUnitGridPolyface(
-      origin, Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0),
-      numX, numY,
-      true, true, true, // params, normals, and colors
+      origin,
+      Vector3d.create(1, 0, 0),
+      Vector3d.create(0, 1, 0),
+      numX,
+      numY,
+      true,
+      true,
+      true, // params, normals, and colors
     );
     ck.testExactNumber(polyface0.data.pointIndex[0], 0);
     ck.testExactNumber(polyface0.data.pointIndex[1], 1);
@@ -120,9 +125,14 @@ describe("PolyfaceData", () => {
     const numX = 3;
     const numY = 2;
     const polyface0 = Sample.createTriangularUnitGridPolyface(
-      origin, Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0),
-      numX, numY,
-      true, true, true, // params, normals, and colors
+      origin,
+      Vector3d.create(1, 0, 0),
+      Vector3d.create(0, 1, 0),
+      numX,
+      numY,
+      true,
+      true,
+      true, // params, normals, and colors
     );
     ck.testExactNumber(polyface0.data.pointIndex[0], 0);
     ck.testExactNumber(polyface0.data.pointIndex[1], 1);

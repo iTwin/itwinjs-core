@@ -33,15 +33,24 @@ export class NamedViewStatePropsString {
     this._displayTransforms = props._displayTransforms;
   }
 
-  public get name(): string { return this._name; }
-  public get viewStatePropsString(): string { return this._viewStatePropsString; }
-  public get selectedElements(): string | undefined { return this._selectedElements; }
-  public get overrideElements(): string | undefined { return this._overrideElements; }
-  public get displayTransforms(): string | undefined { return this._displayTransforms; }
+  public get name(): string {
+    return this._name;
+  }
+  public get viewStatePropsString(): string {
+    return this._viewStatePropsString;
+  }
+  public get selectedElements(): string | undefined {
+    return this._selectedElements;
+  }
+  public get overrideElements(): string | undefined {
+    return this._overrideElements;
+  }
+  public get displayTransforms(): string | undefined {
+    return this._displayTransforms;
+  }
 }
 
 export class NamedVSPSList extends SortedArray<NamedViewStatePropsString> {
-
   private constructor() {
     super((lhs, rhs) => compareStrings(lhs.name, rhs.name));
   }

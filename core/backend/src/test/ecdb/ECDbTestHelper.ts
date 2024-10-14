@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
 import { Guid } from "@itwin/core-bentley";
+import * as path from "path";
 import { ECDb } from "../../ECDb";
 import { IModelJsFs } from "../../IModelJsFs";
 
 export class ECDbTestHelper {
-
   public static createECDb(outDir: string, fileName: string, schemaXml?: string): ECDb {
     if (!IModelJsFs.existsSync(outDir))
       IModelJsFs.mkdirSync(outDir);

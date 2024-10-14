@@ -2,16 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Logger } from "@itwin/core-bentley";
 import { Base64EncodedString, ColorDef } from "@itwin/core-common";
 import {
-  BeButtonEvent, Cluster, DecorateContext, Decorator,
-  GeometryTileTreeReference, GraphicBuilder, GraphicPrimitive, GraphicType, IModelApp, MapTileTreeReference, Marker, MarkerImage, MarkerSet,
+  BeButtonEvent,
+  Cluster,
+  DecorateContext,
+  Decorator,
+  GeometryTileTreeReference,
+  GraphicBuilder,
+  GraphicPrimitive,
+  GraphicType,
+  IModelApp,
+  MapTileTreeReference,
+  Marker,
+  MarkerImage,
+  MarkerSet,
   ScreenViewport,
-  TileTreeReference, Viewport } from "@itwin/core-frontend";
+  TileTreeReference,
+  Viewport,
+} from "@itwin/core-frontend";
 import { GrowableXYZArray, LineString3d, Point2d, Point3d, Polyface, Range3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
 import { GeometryTerrainDraper } from "./GeometryTerrainDraper";
-import { Logger } from "@itwin/core-bentley";
+import { MapFeatureInfoToolData } from "./MapFeatureInfoTool";
 const loggerCategory = "MapLayersFormats.MapFeatureInfoDecorator";
 
 /** @internal */
@@ -29,7 +42,9 @@ class PinMarkerCluster extends Marker {
   constructor(location: XYAndZ, size: XAndY, cluster: Cluster<PinMarker>, image: MarkerImage | Promise<MarkerImage> | undefined) {
     super(location, size);
 
-    this.title = IModelApp.localization.getLocalizedString("mapLayersFormats:Messages.MapFeatureInfoDecorator.clusterZoomIn", { nbInstances: cluster.markers.length});
+    this.title = IModelApp.localization.getLocalizedString("mapLayersFormats:Messages.MapFeatureInfoDecorator.clusterZoomIn", {
+      nbInstances: cluster.markers.length,
+    });
 
     this.imageOffset = new Point3d(0, size.y * 0.5);
     this.label = cluster.markers.length.toLocaleString();
@@ -51,7 +66,9 @@ class PinMarkerCluster extends Marker {
     ctx.stroke();
   }
 
-  public override onMouseButton(_ev: BeButtonEvent): boolean { return true; } // Don't allow clicks to be sent to active tool...
+  public override onMouseButton(_ev: BeButtonEvent): boolean {
+    return true;
+  } // Don't allow clicks to be sent to active tool...
 }
 
 /** @internal */
@@ -113,7 +130,7 @@ export class MapFeatureInfoDecorator implements Decorator {
   public readonly useCachedDecorations = true;
   public readonly disableTerrainDraper = false;
   public markerSize = new Point2d(32, 32);
-  public lineWidth =  3;
+  public lineWidth = 3;
 
   // This is the maximum allowed size of a geometry, in pixels, to be draped.
   // If the value is too large, we will end up downloading tons of terrain tiles, and possibly hang for too long.
@@ -124,13 +141,17 @@ export class MapFeatureInfoDecorator implements Decorator {
   public chordTolerancePixels = 20;
 
   private _highlightColor = ColorDef.from(0, 255, 255, 127);
-  public get highlightColor() { return this._highlightColor;}
+  public get highlightColor() {
+    return this._highlightColor;
+  }
   public set highlightColor(color: ColorDef) {
     this.updateMarkerImage();
     this._highlightColor = color;
   }
 
-  public get defaultMarkerIconSvgXml() { return `<svg class="indicator" viewBox="0 0 22 22" width="22" height="22" xmlns="http://www.w3.org/2000/svg"><path d="m11 0a7.44506 7.44506 0 0 0 -7.5 7.2875c0 1.65 1.132 4.2625 3.25477 8.1125 1.55652 2.75 4.24523 6.6 4.24523 6.6s2.68865-3.9875 4.24528-6.7375c2.12272-3.85 3.25472-6.4625 3.25472-8.1125a7.4215 7.4215 0 0 0 -7.5-7.15z" fill="black"/><path d="m11 1.01715a6.46476 6.46476 0 0 0 -6.48285 6.27033c0 1.72619 1.67181 4.97973 3.12836 7.62139.97564 1.7237 2.42828 3.92176 3.34118 5.27161.91413-1.39148 2.385-3.673 3.37336-5.41907 1.451-2.63171 3.1228-5.88525 3.1228-7.61139a6.39982 6.39982 0 0 0 -6.48285-6.13287zm.00183 8.98285a3 3 0 1 1 3-3 3 3 0 0 1 -3 3z" fill="${this.highlightColor.toRgbString()}"/></svg>`; }
+  public get defaultMarkerIconSvgXml() {
+    return `<svg class="indicator" viewBox="0 0 22 22" width="22" height="22" xmlns="http://www.w3.org/2000/svg"><path d="m11 0a7.44506 7.44506 0 0 0 -7.5 7.2875c0 1.65 1.132 4.2625 3.25477 8.1125 1.55652 2.75 4.24523 6.6 4.24523 6.6s2.68865-3.9875 4.24528-6.7375c2.12272-3.85 3.25472-6.4625 3.25472-8.1125a7.4215 7.4215 0 0 0 -7.5-7.15z" fill="black"/><path d="m11 1.01715a6.46476 6.46476 0 0 0 -6.48285 6.27033c0 1.72619 1.67181 4.97973 3.12836 7.62139.97564 1.7237 2.42828 3.92176 3.34118 5.27161.91413-1.39148 2.385-3.673 3.37336-5.41907 1.451-2.63171 3.1228-5.88525 3.1228-7.61139a6.39982 6.39982 0 0 0 -6.48285-6.13287zm.00183 8.98285a3 3 0 1 1 3-3 3 3 0 0 1 -3 3z" fill="${this.highlightColor.toRgbString()}"/></svg>`;
+  }
 
   private _scratchPoints = new GrowableXYZArray();
 
@@ -142,7 +163,7 @@ export class MapFeatureInfoDecorator implements Decorator {
   private _markerSet = new PinMarkerSet();
 
   // Extra markers can be added outside the normal state
-  public extraMarkers: Point3d[]|undefined;
+  public extraMarkers: Point3d[] | undefined;
 
   private _data: MapFeatureInfoToolData | undefined;
 
@@ -172,22 +193,21 @@ export class MapFeatureInfoDecorator implements Decorator {
   }
 
   private computeChordTolerance(viewport: Viewport, drapeRange: Range3d) {
-    const drapeSizeWorld = Math.max(drapeRange.xLength(),  drapeRange.yLength());
+    const drapeSizeWorld = Math.max(drapeRange.xLength(), drapeRange.yLength());
     const pixelSize = this.computePixelSize(viewport, true, drapeRange.center);
-    const maxDrapeRangeSizeRatio = this.maxDrapeSizePixels /  (drapeSizeWorld / pixelSize);
+    const maxDrapeRangeSizeRatio = this.maxDrapeSizePixels / (drapeSizeWorld / pixelSize);
     if (maxDrapeRangeSizeRatio < 1) {
       Logger.logWarning(loggerCategory, "Element too large; chord tolerance was adjusted");
-      return (pixelSize / maxDrapeRangeSizeRatio)*this.chordTolerancePixels;
+      return (pixelSize / maxDrapeRangeSizeRatio) * this.chordTolerancePixels;
     }
-    return pixelSize*this.chordTolerancePixels;
-  };
+    return pixelSize * this.chordTolerancePixels;
+  }
 
   public clearData = () => {
     this._data = undefined;
   };
 
   public setData = (data: MapFeatureInfoToolData) => {
-
     this._drapedPrimitives.clear();
     this._allGeomDraped = false;
     this.hidden = false;
@@ -198,7 +218,6 @@ export class MapFeatureInfoDecorator implements Decorator {
     this._drapeGraphicsStates = [];
 
     if (!this.disableTerrainDraper && this._data.mapInfo?.layerInfos && data.hit.viewport.displayStyle.displayTerrain) {
-
       if (data.hit?.modelId) {
         const drapeTreeRef = this.getGeometryTreeRef(data.hit.viewport);
         if (drapeTreeRef) {
@@ -235,10 +254,10 @@ export class MapFeatureInfoDecorator implements Decorator {
       return undefined;
     }
 
-    let transform: Transform|undefined;
+    let transform: Transform | undefined;
     const groundBias = context.viewport.displayStyle.backgroundMapSettings.groundBias;
     if (groundBias !== 0) {
-      transform = Transform.createTranslationXYZ(0, 0 , groundBias);
+      transform = Transform.createTranslationXYZ(0, 0, groundBias);
     }
     const builder = context.createGraphicBuilder(this._graphicType, transform);
 
@@ -258,8 +277,8 @@ export class MapFeatureInfoDecorator implements Decorator {
     }
 
     // Add extra markers if any specified
-    if ( this.extraMarkers !== undefined) {
-      this.extraMarkers.forEach((markerPoint)=> {
+    if (this.extraMarkers !== undefined) {
+      this.extraMarkers.forEach((markerPoint) => {
         builder.setSymbology(this.highlightColor, this.highlightColor, this.lineWidth);
         this._markerSet.markers.add(new PinMarker(markerPoint, this.markerSize, this._markerImage));
       });
@@ -282,11 +301,10 @@ export class MapFeatureInfoDecorator implements Decorator {
           return Range3d.createNull();
       };
 
-      for (const layerInfo of this._data?.mapInfo?.layerInfos??[]) {
-        for (const subLayerInfo of layerInfo?.subLayerInfos??[]) {
+      for (const layerInfo of this._data?.mapInfo?.layerInfos ?? []) {
+        for (const subLayerInfo of layerInfo?.subLayerInfos ?? []) {
           for (const feature of subLayerInfo.features) {
-
-            feature.geometries?.forEach(((geom)=> {
+            feature.geometries?.forEach((geom) => {
               const range = getGraphicRange(geom.graphic);
               this._drapeGraphicsStates.push({
                 graphic: geom.graphic,
@@ -294,7 +312,7 @@ export class MapFeatureInfoDecorator implements Decorator {
                 chordTolerance: this.computeChordTolerance(viewport, range),
                 range,
               });
-            } ));
+            });
           }
         }
       }
@@ -322,7 +340,7 @@ export class MapFeatureInfoDecorator implements Decorator {
             state.collectorState = "complete";
           }
         } else if (state.graphic.type === "loop") {
-          const loop =  state.graphic.loop;
+          const loop = state.graphic.loop;
           const outMeshes: Polyface[] = [];
           if ("loading" === this._draper.drapeLoop(outMeshes, loop, state.chordTolerance, state.range)) {
             hasMissingDrapeGeoms = true;
@@ -362,7 +380,9 @@ export class MapFeatureInfoDecorator implements Decorator {
 
     if (this._drapedPrimitives.points.length > 0) {
       for (let i = 0; i < this._drapedPrimitives.points.length; i++) {
-        this._markerSet.markers.add(new PinMarker(this._drapedPrimitives.points.getPoint3dAtUncheckedPointIndex(i), this.markerSize, this._markerImage));
+        this._markerSet.markers.add(
+          new PinMarker(this._drapedPrimitives.points.getPoint3dAtUncheckedPointIndex(i), this.markerSize, this._markerImage),
+        );
       }
     }
   }
@@ -384,14 +404,11 @@ export class MapFeatureInfoDecorator implements Decorator {
                 } else {
                   builder.addPrimitive(geom.graphic);
                 }
-
               }
             }
           }
         }
-
       }
-
     }
   }
 

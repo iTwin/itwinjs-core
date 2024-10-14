@@ -52,7 +52,9 @@ export class MomentData {
   /** Return the lower-right (3,3) entry in the sums.
    * * This is the quantity (i.e. length, area, or volume) summed
    */
-  public get quantitySum(): number { return this.sums.atIJ(3, 3); }
+  public get quantitySum(): number {
+    return this.sums.atIJ(3, 3);
+  }
   /** Return a scale factor to make these sums match the target orientation sign.
    * * 1.0 if `this.quantitySum` has the same sign as `targetSign`.
    * * -1.0 if `this.quantitySum` has the opposite sign from `targetSign`
@@ -63,7 +65,6 @@ export class MomentData {
 
   /**
    *  If `this.needOrigin` flag is set, copy `origin` to `this.origin` and clear the flag.
-   *
    */
   public setOriginIfNeeded(origin: Point3d) {
     if (this.needOrigin) {
@@ -73,7 +74,6 @@ export class MomentData {
   }
   /**
    *  If `this.needOrigin` flag is set, copy `origin` to `this.origin` and clear the flag.
-   *
    */
   public setOriginFromGrowableXYZArrayIfNeeded(points: GrowableXYZArray) {
     if (this.needOrigin && points.length > 0) {
@@ -84,7 +84,6 @@ export class MomentData {
 
   /**
    *  If `this.needOrigin` flag is set, copy `origin` to `this.origin` and clear the flag.
-   *
    */
   public setOriginXYZIfNeeded(x: number, y: number, z: number) {
     if (this.needOrigin) {
@@ -97,7 +96,6 @@ export class MomentData {
    */
   public radiusOfGyration: Vector3d;
   /** principal quantity (e.g. length, area, or volume).  This is undefined in raw moments, and becomes defined by
-   *
    */
   public absoluteQuantity?: number;
 
@@ -107,7 +105,7 @@ export class MomentData {
     this.localToWorldMap = Transform.createIdentity();
     this.radiusOfGyration = Vector3d.create();
     this.needOrigin = false;
-    this.absoluteQuantity = 0.1;   // so optimizer sees its type
+    this.absoluteQuantity = 0.1; // so optimizer sees its type
     this.absoluteQuantity = undefined;
   }
   /** Create moments with optional origin.
@@ -116,7 +114,7 @@ export class MomentData {
    *   * (origin) sets up to use that durable origin, set needsOrigin flag false
    *   * (origin, true) the "true" is meaningless
    *   * (undefined, false) makes 000 the durable origin
-  */
+   */
   public static create(origin?: Point3d | undefined, needOrigin: boolean = false): MomentData {
     const data = new MomentData();
     data.needOrigin = needOrigin;
@@ -199,7 +197,10 @@ export class MomentData {
       axisVectors.scaleColumnsInPlace(1, -1, -1);
     moments.localToWorldMap = Transform.createOriginAndMatrix(moments.origin, axisVectors);
     moments.radiusOfGyration.set(
-      Math.sqrt(Math.abs(moment2.x)), Math.sqrt(Math.abs(moment2.y)), Math.sqrt(Math.abs(moment2.z)));
+      Math.sqrt(Math.abs(moment2.x)),
+      Math.sqrt(Math.abs(moment2.y)),
+      Math.sqrt(Math.abs(moment2.z)),
+    );
     moments.radiusOfGyration.scaleInPlace(1.0 / Math.sqrt(Math.abs(w)));
     moments.absoluteQuantity = Math.abs(w);
     return moments;
@@ -219,10 +220,14 @@ export class MomentData {
    * @param dataB second set of moments
    */
   public static areEquivalentPrincipalAxes(dataA: MomentData | undefined, dataB: MomentData | undefined): boolean {
-    if (dataA && dataB
-      && Geometry.isSameCoordinate(dataA.quantitySum, dataB.quantitySum)) {  // um.. need different tolerance for area, volume?)
-      if (dataA.localToWorldMap.getOrigin().isAlmostEqual(dataB.localToWorldMap.getOrigin())
-        && dataA.radiusOfGyration.isAlmostEqual(dataB.radiusOfGyration)) {
+    if (
+      dataA && dataB
+      && Geometry.isSameCoordinate(dataA.quantitySum, dataB.quantitySum)
+    ) { // um.. need different tolerance for area, volume?)
+      if (
+        dataA.localToWorldMap.getOrigin().isAlmostEqual(dataB.localToWorldMap.getOrigin())
+        && dataA.radiusOfGyration.isAlmostEqual(dataB.radiusOfGyration)
+      ) {
         if (Geometry.isSameCoordinate(dataA.radiusOfGyration.x, dataA.radiusOfGyration.y)) {
           // We have at least xy symmetry ....
           if (Geometry.isSameCoordinate(dataA.radiusOfGyration.x, dataA.radiusOfGyration.z))
@@ -265,7 +270,8 @@ export class MomentData {
         p.x - this.origin.x,
         p.y - this.origin.y,
         p.z - this.origin.z,
-        1.0);
+        1.0,
+      );
     }
   }
   /** revise the accumulated sums to be "around the centroid" */
@@ -281,7 +287,7 @@ export class MomentData {
   /** revise the accumulated sums
    * * add ax,ay,ax to the origin coordinates.
    * * apply the negative translation to the sums.
-  */
+   */
   public shiftOriginAndSumsByXYZ(ax: number, ay: number, az: number) {
     this.origin.addXYZInPlace(ax, ay, az);
     this.sums.multiplyTranslationSandwichInPlace(-ax, -ay, -az);
@@ -298,14 +304,14 @@ export class MomentData {
    * Accumulate them to this.sums.
    * * If `pointA` is undefined, use `this.origin` as pointA.
    * * If `this.needOrigin` is set, pointB is used
-  */
+   */
   public accumulateTriangleMomentsXY(pointA: XAndY | undefined, pointB: XAndY, pointC: XAndY) {
     this.setOriginXYZIfNeeded(pointB.x, pointB.y, 0.0);
     const x0 = this.origin.x;
     const y0 = this.origin.y;
-    const vectorA = MomentData._vectorA =
-      pointA !== undefined ? Point4d.create(pointA.x - x0, pointA.y - y0, 0.0, 1.0, MomentData._vectorA)
-        : Point4d.create(this.origin.x, this.origin.y, 0.0, 1.0, MomentData._vectorA);
+    const vectorA = MomentData._vectorA = pointA !== undefined ?
+      Point4d.create(pointA.x - x0, pointA.y - y0, 0.0, 1.0, MomentData._vectorA)
+      : Point4d.create(this.origin.x, this.origin.y, 0.0, 1.0, MomentData._vectorA);
     const vectorB = MomentData._vectorB = Point4d.create(pointB.x - x0, pointB.y - y0, 0.0, 1.0, MomentData._vectorB);
     const vectorC = MomentData._vectorC = Point4d.create(pointC.x - x0, pointC.y - y0, 0.0, 1.0, MomentData._vectorC);
 
@@ -333,7 +339,13 @@ export class MomentData {
   /** add scaled outer product of (4d, unit weight) point to this.sums */
   public accumulateScaledOuterProduct(point: XYAndZ, scaleFactor: number) {
     this.setOriginXYZIfNeeded(point.x, point.y, 0.0);
-    const vectorA = MomentData._vectorA = Point4d.create(point.x - this.origin.x, point.y - this.origin.y, point.z - this.origin.z, 1.0, MomentData._vectorA);
+    const vectorA = MomentData._vectorA = Point4d.create(
+      point.x - this.origin.x,
+      point.y - this.origin.y,
+      point.z - this.origin.z,
+      1.0,
+      MomentData._vectorA,
+    );
     this.sums.addScaledOuterProductInPlace(vectorA, vectorA, scaleFactor);
   }
   /** Accumulate wire moment integral from pointA to pointB */
@@ -351,7 +363,6 @@ export class MomentData {
     this.sums.addScaledOuterProductInPlace(vectorA, vectorB, r1_6);
     this.sums.addScaledOuterProductInPlace(vectorB, vectorA, r1_6);
     this.sums.addScaledOuterProductInPlace(vectorB, vectorB, r1_3);
-
   }
 
   private _point0 = Point3d.create();
@@ -360,7 +371,6 @@ export class MomentData {
    * Accumulate them to this.sums.
    * * If `pointA` is undefined, use `this.origin` as pointA.
    * * If `this.needOrigin` is set, the first point of the array is captured as local origin for subsequent sums.
-   *
    */
   public accumulateTriangleToLineStringMomentsXY(sweepBase: XAndY | undefined, points: GrowableXYZArray) {
     const n = points.length;
@@ -386,19 +396,52 @@ export class MomentData {
    * @param vectorU Caller's U axis (not necessarily unit)
    * @param vectorV Caller's V axis (not necessarily unit)
    */
-  public accumulateXYProductsInCentroidalFrame(productXX: number, productXY: number, productYY: number, area: number,
-    origin: XAndY, vectorU: XAndY, vectorV: XAndY) {
+  public accumulateXYProductsInCentroidalFrame(
+    productXX: number,
+    productXY: number,
+    productYY: number,
+    area: number,
+    origin: XAndY,
+    vectorU: XAndY,
+    vectorV: XAndY,
+  ) {
     const centroidalProducts = Matrix4d.createRowValues(
-      productXX, productXY, 0, 0,
-      productXY, productYY, 0, 0,
-      0, 0, 0, 0,
-      0, 0, 0, area);
+      productXX,
+      productXY,
+      0,
+      0,
+      productXY,
+      productYY,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      area,
+    );
     const detJ = Geometry.crossProductXYXY(vectorU.x, vectorV.x, vectorU.y, vectorV.y);
     const placement = Matrix4d.createRowValues(
-      vectorU.x, vectorV.x, 0, origin.x - this.origin.x,
-      vectorU.y, vectorV.y, 0, origin.y - this.origin.y,
-      0, 0, 0, 0,
-      0, 0, 0, 1);
+      vectorU.x,
+      vectorV.x,
+      0,
+      origin.x - this.origin.x,
+      vectorU.y,
+      vectorV.y,
+      0,
+      origin.y - this.origin.y,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+    );
     const AB = placement.multiplyMatrixMatrix(centroidalProducts);
     const ABAT = AB.multiplyMatrixMatrixTranspose(placement);
     this.sums.addScaledInPlace(ABAT, detJ);
@@ -411,15 +454,21 @@ export class MomentData {
    */
   public accumulateProducts(other: MomentData, scale: number) {
     this.setOriginIfNeeded(other.origin);
-    this.sums.addTranslationSandwichInPlace(other.sums, this.origin.x - other.origin.x, this.origin.y - other.origin.y, this.origin.z - other.origin.z, scale);
+    this.sums.addTranslationSandwichInPlace(
+      other.sums,
+      this.origin.x - other.origin.x,
+      this.origin.y - other.origin.y,
+      this.origin.z - other.origin.z,
+      scale,
+    );
   }
 
   /**
- * Accumulate sums from Matrix4d and origin.
- * * scale by given scaleFactor (e.g. sign to correct orientation)
- * * trap the origin if `this` needs an origin.
- * *
- */
+   * Accumulate sums from Matrix4d and origin.
+   * * scale by given scaleFactor (e.g. sign to correct orientation)
+   * * trap the origin if `this` needs an origin.
+   * *
+   */
   public accumulateProductsFromOrigin(origin: Point3d, products: Matrix4d, scale: number) {
     this.setOriginIfNeeded(origin);
     this.sums.addTranslationSandwichInPlace(products, this.origin.x - origin.x, this.origin.y - origin.y, this.origin.z - origin.z, scale);

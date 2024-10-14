@@ -7,8 +7,8 @@
  */
 
 import { Range1d, Range1dProps } from "@itwin/core-geometry";
-import { ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
 import { Gradient } from "./Gradient";
+import { ThematicGradientSettings, ThematicGradientSettingsProps } from "./ThematicDisplay";
 
 /** JSON representation of an [[AnalysisStyleDisplacement]].
  * @see [[AnalysisStyleProps.displacement]].

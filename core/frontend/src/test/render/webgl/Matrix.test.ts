@@ -3,14 +3,24 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
 import { Matrix3d, Matrix4d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import { fromNormalizedCrossProduct, Matrix3, Matrix4, normalizedDifference } from "../../../render/webgl/Matrix";
 
 describe("Matrix3", () => {
   it("constructor works as expected", () => {
     // ensure correct conversion from 64 bit number to 32 bit number
-    const mat = Matrix3.fromValues(9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991);
+    const mat = Matrix3.fromValues(
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+    );
     mat.data.forEach((v) => assert.isTrue(v === 9007199254740992));
   });
   it("toMatrix3d works as expected", () => {
@@ -59,7 +69,24 @@ describe("Matrix3", () => {
 describe("Matrix4", () => {
   it("constructor works as expected", () => {
     // ensure correct conversion from 64 bit number to 32 bit number
-    const mat = Matrix4.fromValues(9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991, 9007199254740991);
+    const mat = Matrix4.fromValues(
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+      9007199254740991,
+    );
     mat.data.forEach((v) => assert.isTrue(v === 9007199254740992));
   });
   it("identity works as expected", () => {

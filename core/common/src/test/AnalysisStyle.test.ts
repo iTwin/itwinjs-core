@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { ThematicGradientSettings } from "../ThematicDisplay";
 import { AnalysisStyle, AnalysisStyleProps, LegacyAnalysisStyleProps } from "../AnalysisStyle";
+import { ThematicGradientSettings } from "../ThematicDisplay";
 
 describe("AnalysisStyle", () => {
   it("round-trips through JSON", () => {
     function roundTrip(props: AnalysisStyleProps | undefined, expected: AnalysisStyleProps | "input"): void {
       if ("input" === expected)
-        expected = props ?? { };
+        expected = props ?? {};
 
       const style = AnalysisStyle.fromJSON(props);
       const actual = style.toJSON();
@@ -22,8 +22,8 @@ describe("AnalysisStyle", () => {
         expect(expected).not.to.deep.equal({});
     }
 
-    roundTrip({ }, "input");
-    roundTrip(undefined, { });
+    roundTrip({}, "input");
+    roundTrip(undefined, {});
 
     roundTrip({ normalChannelName: "normals" }, "input");
     roundTrip({ normalChannelName: "" }, "input");
@@ -53,12 +53,20 @@ describe("AnalysisStyle", () => {
       expect(src.clone(changed).toJSON()).to.deep.equal(expected);
     }
 
-    expectClone({ }, props);
+    expectClone({}, props);
     expectClone({ normalChannelName: undefined }, { displacement: props.displacement, scalar: props.scalar });
-    expectClone({ displacement: undefined, normalChannelName: undefined, scalar: undefined }, { });
+    expectClone({ displacement: undefined, normalChannelName: undefined, scalar: undefined }, {});
     expectClone({ normalChannelName: "abnormals" }, { normalChannelName: "abnormals", displacement: props.displacement, scalar: props.scalar });
-    expectClone({ displacement: { channelName: "disp" } }, { displacement: { channelName: "disp" }, normalChannelName: "normals", scalar: props.scalar });
-    expectClone({ displacement: { channelName: "disp", scale: -2 } }, { displacement: { channelName: "disp", scale: -2 }, normalChannelName: "normals", scalar: props.scalar });
+    expectClone({ displacement: { channelName: "disp" } }, {
+      displacement: { channelName: "disp" },
+      normalChannelName: "normals",
+      scalar: props.scalar,
+    });
+    expectClone({ displacement: { channelName: "disp", scale: -2 } }, {
+      displacement: { channelName: "disp", scale: -2 },
+      normalChannelName: "normals",
+      scalar: props.scalar,
+    });
     expectClone(
       { scalar: { channelName: "s", range: [-5, 15] } },
       { scalar: { channelName: "s", range: [-5, 15] }, displacement: props.displacement, normalChannelName: "normals" },
@@ -69,7 +77,11 @@ describe("AnalysisStyle", () => {
     );
     expectClone(
       { scalar: { channelName: "s", range: [-5, 15], thematicSettings: { stepCount: 1234 } } },
-      { scalar: { channelName: "s", range: [-5, 15], thematicSettings: { stepCount: 1234 } }, displacement: props.displacement, normalChannelName: "normals" },
+      {
+        scalar: { channelName: "s", range: [-5, 15], thematicSettings: { stepCount: 1234 } },
+        displacement: props.displacement,
+        normalChannelName: "normals",
+      },
     );
   });
 
@@ -80,13 +92,13 @@ describe("AnalysisStyle", () => {
       expect(actual).to.deep.equal(expected);
     }
 
-    roundTrip({ }, { });
+    roundTrip({}, {});
     roundTrip({ normalChannelName: "normals" }, { normalChannelName: "normals" });
     roundTrip(
       { displacementChannelName: "disp" },
       { displacement: { channelName: "disp" } },
     );
-    roundTrip({ displacementScale: 42 }, { });
+    roundTrip({ displacementScale: 42 }, {});
     roundTrip(
       { displacementChannelName: "disp", displacementScale: 42 },
       { displacement: { channelName: "disp", scale: 42 } },
@@ -99,8 +111,8 @@ describe("AnalysisStyle", () => {
       { scalarChannelName: "scalar", scalarRange: [1, 2], scalarThematicSettings: { stepCount: 6 } },
       { scalar: { channelName: "scalar", range: [1, 2], thematicSettings: { stepCount: 6 } } },
     );
-    roundTrip({ scalarChannelName: "scalar" }, { });
-    roundTrip({ scalarRange: [0, 1] }, { });
-    roundTrip({ scalarThematicSettings: { stepCount: 6 } }, { });
+    roundTrip({ scalarChannelName: "scalar" }, {});
+    roundTrip({ scalarRange: [0, 1] }, {});
+    roundTrip({ scalarThematicSettings: { stepCount: 6 } }, {});
   });
 });

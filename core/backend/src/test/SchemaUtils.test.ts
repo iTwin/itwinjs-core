@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { DbResult } from "@itwin/core-bentley";
 import { assert } from "chai";
 import { convertEC2SchemasToEC3Schemas, ECDb, ECSqlStatement, upgradeCustomAttributesToEC3 } from "../core-backend";
-import { KnownTestLocations } from "./KnownTestLocations";
 import { ECDbTestHelper } from "./ecdb/ECDbTestHelper";
-import { DbResult } from "@itwin/core-bentley";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 describe("convertEC2Schemas", () => {
   it("verify namespace", () => {
@@ -63,7 +63,9 @@ describe("convertEC2Schemas", () => {
     assert.isTrue(db.isOpen);
 
     const propNamesInEntityClass = [];
-    let stmt: ECSqlStatement = db.prepareStatement("SELECT p.Name FROM meta.ECPropertyDef p JOIN meta.ECClassDef c USING meta.ClassOwnsLocalProperties JOIN meta.ECSchemaDef s USING meta.SchemaOwnsClasses WHERE s.Name='TestSchema' AND c.Name='TestEntityClass' ORDER BY p.Ordinal");
+    let stmt: ECSqlStatement = db.prepareStatement(
+      "SELECT p.Name FROM meta.ECPropertyDef p JOIN meta.ECClassDef c USING meta.ClassOwnsLocalProperties JOIN meta.ECSchemaDef s USING meta.SchemaOwnsClasses WHERE s.Name='TestSchema' AND c.Name='TestEntityClass' ORDER BY p.Ordinal",
+    );
     let rowCount = 0;
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       rowCount++;
@@ -73,21 +75,23 @@ describe("convertEC2Schemas", () => {
     stmt.dispose();
     assert.equal(rowCount, 9);
 
-    assert.isFalse(propNamesInEntityClass.includes("Id"));  // The Id property is a reserved keyword and should have been renamed
+    assert.isFalse(propNamesInEntityClass.includes("Id")); // The Id property is a reserved keyword and should have been renamed
     assert.isFalse(propNamesInEntityClass.includes("ECClassId")); // The ECClassId property is a reserved keyword and should have been renamed
-    assert.isFalse(propNamesInEntityClass.includes("ECInstanceId"));  // The ECInstanceId property is a reserved keyword and should have been renamed
+    assert.isFalse(propNamesInEntityClass.includes("ECInstanceId")); // The ECInstanceId property is a reserved keyword and should have been renamed
     assert.isTrue(propNamesInEntityClass.includes("TestSchema_Id_")); // The Id property is a reserved keyword and should have been renamed
-    assert.isTrue(propNamesInEntityClass.includes("TestSchema_ECClassId_"));  // The ECClassId property is a reserved keyword and should have been renamed
+    assert.isTrue(propNamesInEntityClass.includes("TestSchema_ECClassId_")); // The ECClassId property is a reserved keyword and should have been renamed
     assert.isTrue(propNamesInEntityClass.includes("TestSchema_ECInstanceId_")); // The ECInstanceId property is a reserved keyword and should have been renamed
     assert.isTrue(propNamesInEntityClass.includes("SourceECInstanceId")); // The SourceECInstanceId property is allowed on Entity classes and should not be renamed
     assert.isTrue(propNamesInEntityClass.includes("SourceId")); // The SourceId property is allowed on Entity classes and should not be renamed
-    assert.isTrue(propNamesInEntityClass.includes("SourceECClassId"));  // The SourceECClassId property is allowed on Entity classes and should not be renamed
+    assert.isTrue(propNamesInEntityClass.includes("SourceECClassId")); // The SourceECClassId property is allowed on Entity classes and should not be renamed
     assert.isTrue(propNamesInEntityClass.includes("TargetECInstanceId")); // The TargetECInstanceId property is allowed on Entity classes and should not be renamed
     assert.isTrue(propNamesInEntityClass.includes("TargetId")); // The TargetId property is allowed on Entity classes and should not be renamed
-    assert.isTrue(propNamesInEntityClass.includes("TargetECClassId"));  // The TargetECClassId property is allowed on Entity classes and should not be renamed
+    assert.isTrue(propNamesInEntityClass.includes("TargetECClassId")); // The TargetECClassId property is allowed on Entity classes and should not be renamed
 
     const propNamesInStructClass = [];
-    stmt = db.prepareStatement("SELECT p.Name FROM meta.ECPropertyDef p JOIN meta.ECClassDef c USING meta.ClassOwnsLocalProperties JOIN meta.ECSchemaDef s USING meta.SchemaOwnsClasses WHERE s.Name='TestSchema' AND c.Name='TestStructClass' ORDER BY p.Ordinal");
+    stmt = db.prepareStatement(
+      "SELECT p.Name FROM meta.ECPropertyDef p JOIN meta.ECClassDef c USING meta.ClassOwnsLocalProperties JOIN meta.ECSchemaDef s USING meta.SchemaOwnsClasses WHERE s.Name='TestSchema' AND c.Name='TestStructClass' ORDER BY p.Ordinal",
+    );
     rowCount = 0;
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       rowCount++;
@@ -98,10 +102,10 @@ describe("convertEC2Schemas", () => {
     assert.equal(rowCount, 3);
 
     assert.isTrue(propNamesInStructClass.includes("Id")); // The Id property is not a reserved keyword for Struct classes and should not be renamed
-    assert.isTrue(propNamesInStructClass.includes("ECClassId"));  // The ECClassId property is not a reserved keyword for Struct classes and should not be renamed
+    assert.isTrue(propNamesInStructClass.includes("ECClassId")); // The ECClassId property is not a reserved keyword for Struct classes and should not be renamed
     assert.isTrue(propNamesInStructClass.includes("ECInstanceId")); // The ECInstanceId property is not a reserved keyword for Struct classes and should not be renamed
-    assert.isFalse(propNamesInStructClass.includes("TestSchema_Id_"));  // The Id property is not a reserved keyword for Struct classes and should not be renamed
+    assert.isFalse(propNamesInStructClass.includes("TestSchema_Id_")); // The Id property is not a reserved keyword for Struct classes and should not be renamed
     assert.isFalse(propNamesInStructClass.includes("TestSchema_ECClassId_")); // The ECClassId property is not a reserved keyword for Struct classes and should not be renamed
-    assert.isFalse(propNamesInStructClass.includes("TestSchema_ECInstanceId_"));  // The ECInstanceId property is not a reserved keyword for Struct classes and should not be renamed
+    assert.isFalse(propNamesInStructClass.includes("TestSchema_ECInstanceId_")); // The ECInstanceId property is not a reserved keyword for Struct classes and should not be renamed
   });
 });

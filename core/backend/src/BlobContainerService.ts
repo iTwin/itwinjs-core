@@ -16,7 +16,6 @@ import { SettingsContainer } from "./workspace/Settings";
  * @beta
  */
 export namespace BlobContainer {
-
   /** Object that implements the methods to create, delete, and request access to a container. */
   export let service: BlobContainer.ContainerService | undefined;
 
@@ -115,7 +114,7 @@ export namespace BlobContainer {
   export type RequestAccessLevel = "write" | "read" | "admin" | "writeIfPossible";
 
   /** Information required to request an access token for a container. */
-  export interface RequestTokenProps extends Omit<AccessContainerProps,"baseUri">  {
+  export interface RequestTokenProps extends Omit<AccessContainerProps, "baseUri"> {
     /** the level of access requested. If not specified, defaults to `"writeIfPossible"`. */
     accessLevel?: RequestAccessLevel;
     /** the number of seconds before the token should expire.

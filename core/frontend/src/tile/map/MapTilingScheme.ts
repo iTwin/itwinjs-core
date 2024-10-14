@@ -6,8 +6,8 @@
  * @module Tiles
  */
 
-import { Angle, Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
+import { Angle, Matrix3d, Point2d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { MapCartoRectangle } from "../internal";
 
@@ -66,7 +66,7 @@ export abstract class MapTilingScheme {
    * @param level The level of detail, with 0 corresponding to the root tile.
    */
   public getNumberOfYTilesAtLevel(level: number): number {
-    return  level < 0 ? 1 : this.numberOfLevelZeroTilesY << level;
+    return level < 0 ? 1 : this.numberOfLevelZeroTilesY << level;
   }
 
   /** @alpha */
@@ -169,7 +169,6 @@ export abstract class MapTilingScheme {
   public cartographicToTileXY(carto: Cartographic, level: number, result?: Point2d): Point2d {
     const fraction = this.cartographicToFraction(carto.latitude, carto.longitude, this._scratchPoint2d);
     return Point2d.create(this.xFractionToTileX(fraction.x, level), this.yFractionToTileY(fraction.y, level), result);
-
   }
 
   /** Given fractional coordinates in the XY plane and an elevation, compute the corresponding cartographic position. */
@@ -190,7 +189,11 @@ export abstract class MapTilingScheme {
   /** @alpha */
   private ecefToPixelFraction(point: Point3d, applyTerrain: boolean): Point3d {
     const cartoGraphic = Cartographic.fromEcef(point)!;
-    return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitude), this.latitudeToYFraction(cartoGraphic.latitude), applyTerrain ? cartoGraphic.height : 0);
+    return Point3d.create(
+      this.longitudeToXFraction(cartoGraphic.longitude),
+      this.latitudeToYFraction(cartoGraphic.latitude),
+      applyTerrain ? cartoGraphic.height : 0,
+    );
   }
 
   /** @alpha */
@@ -291,6 +294,6 @@ export class WebMercatorTilingScheme extends MapTilingScheme {
       latitude = -WebMercatorProjection.maximumLatitude;
     }
     const sinLatitude = Math.sin(latitude);
-    return (0.5 - Math.log((1.0 + sinLatitude) / (1.0 - sinLatitude)) / (4.0 * Angle.piRadians));   // https://msdn.microsoft.com/en-us/library/bb259689.aspx
+    return (0.5 - Math.log((1.0 + sinLatitude) / (1.0 - sinLatitude)) / (4.0 * Angle.piRadians)); // https://msdn.microsoft.com/en-us/library/bb259689.aspx
   }
 }

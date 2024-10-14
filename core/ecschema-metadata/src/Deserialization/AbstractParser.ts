@@ -4,21 +4,39 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps, MixinProps,
-  NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps, RelationshipClassProps,
-  SchemaItemFormatProps, SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
+  ConstantProps,
+  CustomAttributeClassProps,
+  EntityClassProps,
+  EnumerationProps,
+  InvertedUnitProps,
+  KindOfQuantityProps,
+  MixinProps,
+  NavigationPropertyProps,
+  PhenomenonProps,
+  PrimitiveArrayPropertyProps,
+  PrimitivePropertyProps,
+  PropertyCategoryProps,
+  RelationshipClassProps,
+  SchemaItemFormatProps,
+  SchemaItemUnitProps,
+  SchemaProps,
+  SchemaReferenceProps,
+  StructArrayPropertyProps,
+  StructClassProps,
+  StructPropertyProps,
+  UnitSystemProps,
 } from "../Deserialization/JsonProps";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 
-type SchemaItemTuple<T> = Readonly<[string /** Name */, string /** SchemaItemType */, Readonly<T>]>;
-type PropertyTuple<T> = Readonly<[string /** Name */, string /** Property */, Readonly<T>]>;
+type SchemaItemTuple<T> = Readonly<[string, /** Name */ string, /** SchemaItemType */ Readonly<T>]>;
+type PropertyTuple<T> = Readonly<[string, /** Name */ string, /** Property */ Readonly<T>]>;
 
 /** @internal */
 export type CustomAttributeProvider = (caClass: CustomAttributeClass) => CustomAttribute;
 
 /** @internal */
-export type CAProviderTuple = Readonly<[string /** Full Name */, CustomAttributeProvider]>;
+export type CAProviderTuple = Readonly<[string, /** Full Name */ CustomAttributeProvider]>;
 
 /** @internal */
 export abstract class AbstractParser<TItem = any, TProperty = TItem> {
@@ -53,9 +71,13 @@ export abstract class AbstractParser<TItem = any, TProperty = TItem> {
   public abstract getSchemaCustomAttributeProviders(): Iterable<CAProviderTuple>;
   public abstract getClassCustomAttributeProviders(data: Readonly<TItem>): Iterable<CAProviderTuple>;
   public abstract getPropertyCustomAttributeProviders(data: Readonly<TProperty>): Iterable<CAProviderTuple>;
-  public abstract getRelationshipConstraintCustomAttributeProviders(data: Readonly<TItem>): [Iterable<CAProviderTuple> /* source */, Iterable<CAProviderTuple> /* target */];
+  public abstract getRelationshipConstraintCustomAttributeProviders(
+    data: Readonly<TItem>,
+  ): [Iterable<CAProviderTuple>, /* source */ Iterable<CAProviderTuple> /* target */];
 }
 
 /** @internal */
 // eslint-disable-next-line @typescript-eslint/prefer-function-type
-export interface AbstractParserConstructor<TSchema, TItem = any, TProperty = TItem> { new(obj: Readonly<TSchema>): AbstractParser<TItem, TProperty> }
+export interface AbstractParserConstructor<TSchema, TItem = any, TProperty = TItem> {
+  new(obj: Readonly<TSchema>): AbstractParser<TItem, TProperty>;
+}

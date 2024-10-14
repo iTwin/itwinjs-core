@@ -187,11 +187,11 @@ export interface BeJSONFunctions {
  * @public
  */
 export type AngleProps =
-  { degrees: number } |
-  { radians: number } |
-  { _radians: number } |
-  { _degrees: number } |
-  number;
+  | { degrees: number }
+  | { radians: number }
+  | { _radians: number }
+  | { _degrees: number }
+  | number;
 /**
  * The properties for a JSON representation of an `AngleSweep`.
  * * The json data is always *start* and *end* angles as a pair in an array.
@@ -203,15 +203,15 @@ export type AngleProps =
  * @public
  */
 export type AngleSweepProps =
-  AngleSweep |
-  { degrees: [number, number] } |
-  { radians: [number, number] } |
-  [number, number];
+  | AngleSweep
+  | { degrees: [number, number] }
+  | { radians: [number, number] }
+  | [number, number];
 /**
-* Interface for method with a clone operation.
-* @public
-* @deprecated in 4.x. Use ICloneable.
-*/
+ * Interface for method with a clone operation.
+ * @public
+ * @deprecated in 4.x. Use ICloneable.
+ */
 export interface Cloneable<T> {
   /** Required method to return a deep clone. */
   clone(): T | undefined;
@@ -357,7 +357,7 @@ export class Geometry {
   /**
    * Boolean test for metric coordinate near-equality (i.e., if `x` and `y` are almost equal) using
    * `tolerance = toleranceFactor * smallMetricDistance`
-   * */
+   */
   public static isSameCoordinateWithToleranceFactor(x: number, y: number, toleranceFactor: number): boolean {
     return Geometry.isSameCoordinate(x, y, toleranceFactor * Geometry.smallMetricDistance);
   }
@@ -367,7 +367,11 @@ export class Geometry {
    * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSameCoordinateXY(
-    x0: number, y0: number, x1: number, y1: number, tolerance: number = Geometry.smallMetricDistance,
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    tolerance: number = Geometry.smallMetricDistance,
   ): boolean {
     let d = x1 - x0;
     if (d < 0)
@@ -385,7 +389,9 @@ export class Geometry {
    * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSameCoordinateSquared(
-    x: number, y: number, tolerance: number = Geometry.smallMetricDistance,
+    x: number,
+    y: number,
+    tolerance: number = Geometry.smallMetricDistance,
   ): boolean {
     return Math.abs(Math.sqrt(x) - Math.sqrt(y)) <= tolerance;
   }
@@ -394,7 +400,9 @@ export class Geometry {
    * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSamePoint3d(
-    dataA: Point3d, dataB: Point3d, tolerance: number = Geometry.smallMetricDistance,
+    dataA: Point3d,
+    dataB: Point3d,
+    tolerance: number = Geometry.smallMetricDistance,
   ): boolean {
     return dataA.distance(dataB) <= tolerance;
   }
@@ -404,7 +412,9 @@ export class Geometry {
    * * Note that Point3d and Vector3d are both derived from XYZ, so this method tolerates mixed types.
    */
   public static isSameXYZ(
-    dataA: XYZ, dataB: XYZ, tolerance: number = Geometry.smallMetricDistance,
+    dataA: XYZ,
+    dataB: XYZ,
+    tolerance: number = Geometry.smallMetricDistance,
   ): boolean {
     return dataA.distance(dataB) <= tolerance;
   }
@@ -413,7 +423,9 @@ export class Geometry {
    * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSamePoint3dXY(
-    dataA: Point3d, dataB: Point3d, tolerance: number = Geometry.smallMetricDistance,
+    dataA: Point3d,
+    dataB: Point3d,
+    tolerance: number = Geometry.smallMetricDistance,
   ): boolean {
     return dataA.distanceXY(dataB) <= tolerance;
   }
@@ -422,7 +434,9 @@ export class Geometry {
    * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSameVector3d(
-    dataA: Vector3d, dataB: Vector3d, tolerance: number = Geometry.smallMetricDistance,
+    dataA: Vector3d,
+    dataB: Vector3d,
+    tolerance: number = Geometry.smallMetricDistance,
   ): boolean {
     return dataA.distance(dataB) <= tolerance;
   }
@@ -431,7 +445,9 @@ export class Geometry {
    * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSamePoint2d(
-    dataA: Point2d, dataB: Point2d, tolerance: number = Geometry.smallMetricDistance,
+    dataA: Point2d,
+    dataB: Point2d,
+    tolerance: number = Geometry.smallMetricDistance,
   ): boolean {
     return dataA.distance(dataB) <= tolerance;
   }
@@ -440,7 +456,9 @@ export class Geometry {
    * * [[smallMetricDistance]] is used if tolerance is `undefined`.
    */
   public static isSameVector2d(
-    dataA: Vector2d, dataB: Vector2d, tolerance: number = Geometry.smallMetricDistance,
+    dataA: Vector2d,
+    dataB: Vector2d,
+    tolerance: number = Geometry.smallMetricDistance,
   ): boolean {
     return dataA.distance(dataB) <= tolerance;
   }
@@ -738,9 +756,15 @@ export class Geometry {
    * common vertex.
    */
   public static tripleProduct(
-    ux: number, uy: number, uz: number,
-    vx: number, vy: number, vz: number,
-    wx: number, wy: number, wz: number,
+    ux: number,
+    uy: number,
+    uz: number,
+    vx: number,
+    vy: number,
+    vz: number,
+    wx: number,
+    wy: number,
+    wz: number,
   ): number {
     return ux * (vy * wz - vz * wy)
       + uy * (vz * wx - vx * wz)
@@ -748,10 +772,22 @@ export class Geometry {
   }
   /** Returns the determinant of the 4x4 matrix unrolled as the 16 parameters */
   public static determinant4x4(
-    xx: number, xy: number, xz: number, xw: number,
-    yx: number, yy: number, yz: number, yw: number,
-    zx: number, zy: number, zz: number, zw: number,
-    wx: number, wy: number, wz: number, ww: number,
+    xx: number,
+    xy: number,
+    xz: number,
+    xw: number,
+    yx: number,
+    yy: number,
+    yz: number,
+    yw: number,
+    zx: number,
+    zy: number,
+    zz: number,
+    zw: number,
+    wx: number,
+    wy: number,
+    wz: number,
+    ww: number,
   ): number {
     return xx * this.tripleProduct(yy, yz, yw, zy, zz, zw, wy, wz, ww)
       - yx * this.tripleProduct(xy, xz, xw, zy, zz, zw, wy, wz, ww)
@@ -766,14 +802,23 @@ export class Geometry {
    *      [ weightA     weightB     weightC ]
    */
   public static tripleProductXYW(
-    columnA: XAndY, weightA: number,
-    columnB: XAndY, weightB: number,
-    columnC: XAndY, weightC: number,
+    columnA: XAndY,
+    weightA: number,
+    columnB: XAndY,
+    weightB: number,
+    columnC: XAndY,
+    weightC: number,
   ): number {
     return Geometry.tripleProduct(
-      columnA.x, columnB.x, columnC.x,
-      columnA.y, columnB.y, columnC.y,
-      weightA, weightB, weightC,
+      columnA.x,
+      columnB.x,
+      columnC.x,
+      columnA.y,
+      columnB.y,
+      columnC.y,
+      weightA,
+      weightB,
+      weightC,
     );
   }
   /**
@@ -784,9 +829,15 @@ export class Geometry {
    */
   public static tripleProductPoint4dXYW(columnA: Point4d, columnB: Point4d, columnC: Point4d): number {
     return Geometry.tripleProduct(
-      columnA.x, columnB.x, columnC.x,
-      columnA.y, columnB.y, columnC.y,
-      columnA.w, columnB.w, columnC.w,
+      columnA.x,
+      columnB.x,
+      columnC.x,
+      columnA.y,
+      columnB.y,
+      columnC.y,
+      columnA.w,
+      columnB.w,
+      columnC.w,
     );
   }
   /**
@@ -800,7 +851,13 @@ export class Geometry {
   }
   /** 3D cross product of vectors with the vectors presented as numbers. */
   public static crossProductXYZXYZ(
-    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d,
+    ux: number,
+    uy: number,
+    uz: number,
+    vx: number,
+    vy: number,
+    vz: number,
+    result?: Vector3d,
   ): Vector3d {
     return Vector3d.create(
       uy * vz - uz * vy,
@@ -811,7 +868,12 @@ export class Geometry {
   }
   /** Magnitude of 3D cross product of vectors with the vectors presented as numbers. */
   public static crossProductMagnitude(
-    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
+    ux: number,
+    uy: number,
+    uz: number,
+    vx: number,
+    vy: number,
+    vz: number,
   ): number {
     return Geometry.hypotenuseXYZ(
       uy * vz - uz * vy,
@@ -857,8 +919,12 @@ export class Geometry {
    * @param vz second derivative z component
    */
   public static curvatureMagnitude(
-    ux: number, uy: number, uz: number,
-    vx: number, vy: number, vz: number,
+    ux: number,
+    uy: number,
+    uz: number,
+    vx: number,
+    vy: number,
+    vz: number,
   ): number {
     let q = uy * vz - uz * vy;
     let sum = q * q;
@@ -929,7 +995,7 @@ export class Geometry {
   private static interpolateByte(color0: number, fraction: number, color1: number, shiftBits: number): number {
     color0 = (color0 >>> shiftBits) & 0xFF;
     color1 = (color1 >>> shiftBits) & 0xFF;
-    const color = Math.floor(color0 + fraction * (color1 - color0)) & 0xFF;   // in range [0,255]
+    const color = Math.floor(color0 + fraction * (color1 - color0)) & 0xFF; // in range [0,255]
     return color << shiftBits;
   }
   /**
@@ -1025,7 +1091,9 @@ export class Geometry {
    * @returns return `numerator/denominator` but if the ratio exceeds `largestResult`, return `undefined`.
    */
   public static conditionalDivideCoordinate(
-    numerator: number, denominator: number, largestResult: number = Geometry.largeCoordinateResult,
+    numerator: number,
+    denominator: number,
+    largestResult: number = Geometry.largeCoordinateResult,
   ): number | undefined {
     if (0 === denominator)
       return undefined;
@@ -1086,7 +1154,12 @@ export class Geometry {
    * Return `defaultResult` if `(fTarget - f0) / (f1 - f0)` exceeds [[largeFractionResult]].
    */
   public static inverseInterpolate(
-    x0: number, f0: number, x1: number, f1: number, fTarget: number = 0, defaultResult?: number,
+    x0: number,
+    f0: number,
+    x1: number,
+    f1: number,
+    fTarget: number = 0,
+    defaultResult?: number,
   ): number | undefined {
     /**
      * Line equation is "fTarget-f0 = (f1-f0)/(x1-x0) * (x-x0)" or "(fTarget-f0)/(f1-f0) = (x-x0)/(x1-x0)".
@@ -1233,7 +1306,9 @@ export class Geometry {
    * Returns `true` if both arrays have the same length and have the same entries (or both are empty arrays).
    */
   public static almostEqualArrays<T>(
-    a: T[] | undefined, b: T[] | undefined, testFunction: (p: T, q: T) => boolean,
+    a: T[] | undefined,
+    b: T[] | undefined,
+    testFunction: (p: T, q: T) => boolean,
   ): boolean {
     if (Array.isArray(a) && a.length === 0)
       a = undefined;
@@ -1257,7 +1332,8 @@ export class Geometry {
    * Returns `true` if both arrays have the same length and have the same entries (or both are empty arrays).
    */
   public static almostEqualNumberArrays(
-    a: number[] | Float64Array | undefined, b: number[] | Float64Array | undefined,
+    a: number[] | Float64Array | undefined,
+    b: number[] | Float64Array | undefined,
     testFunction: (p: number, q: number) => boolean,
   ): boolean {
     if (Array.isArray(a) && a.length === 0)
@@ -1286,7 +1362,9 @@ export class Geometry {
    * but not equal or if one is defined and the other undefined.
    */
   public static areEqualAllowUndefined<T>(
-    a: T | undefined, b: T | undefined, resultIfBothUndefined: boolean = true,
+    a: T | undefined,
+    b: T | undefined,
+    resultIfBothUndefined: boolean = true,
   ): boolean {
     if (a === undefined && b === undefined)
       return resultIfBothUndefined;

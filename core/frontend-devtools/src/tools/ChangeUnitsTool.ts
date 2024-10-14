@@ -18,8 +18,12 @@ import { parseToggle } from "./parseToggle";
  */
 export class ChangeUnitsTool extends Tool {
   public static override toolId = "ChangeUnits";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   // support boolean for backwards compatibility
   public override async run(useMetric?: boolean): Promise<boolean> {

@@ -6,9 +6,7 @@
  * @module QuantityFormatting
  */
 
-import {
-  FormatProps,
-} from "@itwin/core-quantity";
+import { FormatProps } from "@itwin/core-quantity";
 
 /** Properties that define an EditorSpec for editing a custom formatting property that is stored in the "custom" property in the FormatProps.
  * The editor controls will be automatically generated in the UI and are limited to a checkbox to set a boolean value, a text dropdown/select

@@ -6,12 +6,8 @@
  * @module Rendering
  */
 
-import {
-  Range1d, Range2d, Vector3d,
-} from "@itwin/core-geometry";
-import {
-  OctEncodedNormal, QParams2d, QPoint2d, QPoint3d, Quantization,
-} from "@itwin/core-common";
+import { OctEncodedNormal, QParams2d, QPoint2d, QPoint3d, Quantization } from "@itwin/core-common";
+import { Range1d, Range2d, Vector3d } from "@itwin/core-geometry";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "./RealityMeshParams";
 
 class UpsampleIndexMap extends Map<number, number> {
@@ -35,7 +31,7 @@ export interface UpsampledRealityMeshParams {
 }
 
 class ClipAxis {
-  constructor(public vertical: boolean, public lessThan: boolean, public value: number) { }
+  constructor(public vertical: boolean, public lessThan: boolean, public value: number) {}
 }
 
 export function upsampleRealityMeshParams(params: RealityMeshParams, uvSampleRange: Range2d): UpsampledRealityMeshParams {
@@ -134,7 +130,11 @@ function interpolateInt(value0: number, value1: number, fraction: number) {
 }
 
 function interpolateQPoint3d(qPoint: QPoint3d, qNext: QPoint3d, fraction: number): QPoint3d {
-  return QPoint3d.fromScalars(interpolateInt(qPoint.x, qNext.x, fraction), interpolateInt(qPoint.y, qNext.y, fraction), interpolateInt(qPoint.z, qNext.z, fraction));
+  return QPoint3d.fromScalars(
+    interpolateInt(qPoint.x, qNext.x, fraction),
+    interpolateInt(qPoint.y, qNext.y, fraction),
+    interpolateInt(qPoint.z, qNext.z, fraction),
+  );
 }
 
 function interpolateQPoint2d(qPoint: QPoint2d, qNext: QPoint2d, fraction: number): QPoint2d {
@@ -153,7 +153,16 @@ function interpolateOctEncodedNormal(normal0: number, normal1: number, fraction:
   }
 }
 
-function addClipped(params: RealityMeshParams, triangleIndices: number[], indexMap: UpsampleIndexMap, clipAxes: ClipAxis[], clipIndex: number, addedPoints: QPoint3d[], addedParams: QPoint2d[], addedNormals: number[]) {
+function addClipped(
+  params: RealityMeshParams,
+  triangleIndices: number[],
+  indexMap: UpsampleIndexMap,
+  clipAxes: ClipAxis[],
+  clipIndex: number,
+  addedPoints: QPoint3d[],
+  addedParams: QPoint2d[],
+  addedNormals: number[],
+) {
   if (clipIndex === clipAxes.length) {
     indexMap.addTriangle(triangleIndices);
     return;
@@ -224,7 +233,6 @@ function addClipped(params: RealityMeshParams, triangleIndices: number[], indexM
       addedParams.push(interpolateQPoint2d(getParam(index, scratchQPoint2d), getParam(nextIndex, scratchQPoint2d1), fraction));
       if (parentNormals)
         addedNormals.push(interpolateOctEncodedNormal(getNormal(index)!, getNormal(nextIndex)!, fraction));
-
     }
   }
 
@@ -234,4 +242,3 @@ function addClipped(params: RealityMeshParams, triangleIndices: number[], indexM
       addClipped(params, [clipOutput[0], clipOutput[2], clipOutput[3]], indexMap, clipAxes, clipIndex, addedPoints, addedParams, addedNormals);
   }
 }
-

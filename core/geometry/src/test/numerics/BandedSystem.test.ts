@@ -29,7 +29,14 @@ function maxDiff(arrayA: Float64Array, arrayB: Float64Array): number {
  * @param diagonalBaseValue value for diagonals (varies with "a" effects)
  * @param a reference value for varying values, to be multiplied by cos(radians0 + i * radiansStep) with i advancing with each step across the rows.
  */
-function createBandedTestSystem(numRow: number, bw: number, diagonalBaseValue = 1.0, a: number = 0.1, radians0: number = 0.0, radiansStep: number = 0.04): Float64Array {
+function createBandedTestSystem(
+  numRow: number,
+  bw: number,
+  diagonalBaseValue = 1.0,
+  a: number = 0.1,
+  radians0: number = 0.0,
+  radiansStep: number = 0.04,
+): Float64Array {
   let radians = radians0;
   const matrix = new Float64Array(numRow * bw);
   const halfBand = Math.floor(bw / 2);
@@ -54,10 +61,19 @@ describe("BandedSystem", () => {
     let a0 = 0;
     for (const a1 of [0, 0.1, 0.05]) {
       const bandedMatrix = new Float64Array([
-        -3333, 2, a1,
-        a0, 3, a1,
-        a0, 4, a1,
-        a0, 5, 1000]);
+        -3333,
+        2,
+        a1,
+        a0,
+        3,
+        a1,
+        a0,
+        4,
+        a1,
+        a0,
+        5,
+        1000,
+      ]);
       if (Checker.noisy.bandedMatrix)
         GeometryCoreTestIO.consoleLog("bandedMatrix", bandedMatrix);
       // const solution0 = new Float64Array([1, 2, 3, 4, 5, 6, 7, 8]);
@@ -129,15 +145,21 @@ describe("BandedSystem", () => {
     allPoints.push(GrowableXYZArray.create([Point3d.create(1, 0, 0), Point3d.create(2, 3, 0), Point3d.create(3, 6, 0), Point3d.create(4, 9, 0)]));
     for (const yFactor of [1, 1.5, 2]) {
       for (const yy of [1, 3, 5])
-        allPoints.push(GrowableXYZArray.create([Point3d.create(0, 0, 0), Point3d.create(0, yy, 0), Point3d.create(4, yFactor * yy + 1, 0), Point3d.create(5, 0, 0)]));
+        allPoints.push(
+          GrowableXYZArray.create([
+            Point3d.create(0, 0, 0),
+            Point3d.create(0, yy, 0),
+            Point3d.create(4, yFactor * yy + 1, 0),
+            Point3d.create(5, 0, 0),
+          ]),
+        );
     }
     allPoints.push(GrowableXYZArray.create([[0, 0], [0, 1], [1, 1], [1, 0], [2, 0], [2, 1], [3, 1]]));
     for (const count of [5, 6, 10])
       allPoints.push(Sample.createGrowableArrayCirclePoints(3, count, true, 0, 0));
     allPoints.push(GrowableXYZArray.create(
-      Sample.createPointSineWave(undefined, 25, 6.25,
-        2.0, AngleSweep.createStartEndDegrees(0, 300),
-        0.5, AngleSweep.createStartEndDegrees(0, 200))));
+      Sample.createPointSineWave(undefined, 25, 6.25, 2.0, AngleSweep.createStartEndDegrees(0, 300), 0.5, AngleSweep.createStartEndDegrees(0, 200)),
+    ));
     for (const points of allPoints) {
       let y0 = 0;
       const range = points.getRange();
@@ -157,5 +179,4 @@ describe("BandedSystem", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "BandedSystem", "GrevilleBspline");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

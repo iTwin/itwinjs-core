@@ -7,10 +7,10 @@
  */
 
 import { SchemaItemKey, SchemaItemType, SchemaKey, StructClass, StructClassProps } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
 import { ECClasses } from "./ECClasses";
-import { MutableStructClass } from "./Mutable/MutableClass";
+import { SchemaContextEditor } from "./Editor";
 import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
+import { MutableStructClass } from "./Mutable/MutableClass";
 
 /**
  * @alpha A class extending ECClasses allowing you to create schema items of type StructClass.
@@ -22,7 +22,13 @@ export class Structs extends ECClasses {
 
   public async create(schemaKey: SchemaKey, name: string, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
     try {
-      const newClass = await this.createClass<StructClass>(schemaKey, this.schemaItemType, (schema) => schema.createStructClass.bind(schema), name, baseClassKey) as MutableStructClass;
+      const newClass = await this.createClass<StructClass>(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createStructClass.bind(schema),
+        name,
+        baseClassKey,
+      ) as MutableStructClass;
 
       if (displayLabel)
         newClass.setDisplayLabel(displayLabel);
@@ -40,7 +46,12 @@ export class Structs extends ECClasses {
    */
   public async createFromProps(schemaKey: SchemaKey, structProps: StructClassProps): Promise<SchemaItemKey> {
     try {
-      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createStructClass.bind(schema), structProps);
+      const newClass = await this.createSchemaItemFromProps(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createStructClass.bind(schema),
+        structProps,
+      );
       return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, structProps.name!, schemaKey), e);

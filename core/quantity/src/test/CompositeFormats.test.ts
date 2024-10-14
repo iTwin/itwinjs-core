@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
+import { FormatTraits } from "../core-quantity";
 import { Format } from "../Formatter/Format";
-import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
+import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { BasicUnit } from "../Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatTraits } from "../core-quantity";
 
 describe("Composite Formats tests:", () => {
   it("Bad Composite unit order", async () => {
@@ -20,7 +20,7 @@ describe("Composite Formats tests:", () => {
         spacer: "",
         units: [
           {
-            label: "\"",
+            label: '"',
             name: "Units.IN",
           },
           {
@@ -37,7 +37,7 @@ describe("Composite Formats tests:", () => {
 
     try {
       const format = new Format("test");
-      await format.fromJSON(unitsProvider, formatData).catch(() => { });
+      await format.fromJSON(unitsProvider, formatData).catch(() => {});
       assert.isTrue(format.hasUnits);
 
       const testEntry = { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2" };
@@ -65,7 +65,7 @@ describe("Composite Formats tests:", () => {
             name: "Units.FT",
           },
           {
-            label: "\"",
+            label: '"',
             name: "Units.BOGUS.IN",
           },
         ],
@@ -78,11 +78,13 @@ describe("Composite Formats tests:", () => {
 
     try {
       const format = new Format("test");
-      await format.fromJSON(unitsProvider, formatData).catch(() => { });
+      await format.fromJSON(unitsProvider, formatData).catch(() => {});
       assert.isTrue(format.hasUnits);
 
       const testEntry = {
-        magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2",
+        magnitude: 12.5416666666667,
+        unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" },
+        result: "12:6 1/2",
       };
 
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
@@ -118,7 +120,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -204,10 +206,18 @@ describe("Composite Formats tests:", () => {
         formatData.formatTraits.push("trailZeroes");
 
       const format = new Format("test");
-      await format.fromJSON(unitsProvider, formatData).catch(() => { });
+      await format.fromJSON(unitsProvider, formatData).catch(() => {});
       assert.isTrue(format.hasUnits, `Test case number ${testEntry.testCaseNum} failed`);
-      assert.equal(format.hasFormatTraitSet(FormatTraits.KeepSingleZero), testEntry.keepSingleZero, `Test case number ${testEntry.testCaseNum} failed`);
-      assert.equal(format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint), testEntry.keepDecimalPoint, `Test case number ${testEntry.testCaseNum} failed`);
+      assert.equal(
+        format.hasFormatTraitSet(FormatTraits.KeepSingleZero),
+        testEntry.keepSingleZero,
+        `Test case number ${testEntry.testCaseNum} failed`,
+      );
+      assert.equal(
+        format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint),
+        testEntry.keepDecimalPoint,
+        `Test case number ${testEntry.testCaseNum} failed`,
+      );
       assert.equal(format.hasFormatTraitSet(FormatTraits.TrailZeroes), testEntry.trailZeroes, `Test case number ${testEntry.testCaseNum} failed`);
 
       const spec = await FormatterSpec.create("test", format, unitsProvider, new BasicUnit(unit.name, unit.label, unit.contextId));
@@ -230,7 +240,7 @@ describe("Composite Formats tests:", () => {
             name: "Units.FT",
           },
           {
-            label: "\"",
+            label: '"',
             name: "Units.IN",
           },
         ],
@@ -242,7 +252,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -279,7 +289,7 @@ describe("Composite Formats tests:", () => {
             name: "Units.FT",
           },
           {
-            label: "\"",
+            label: '"',
             name: "Units.IN",
           },
         ],
@@ -291,7 +301,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -324,7 +334,7 @@ describe("Composite Formats tests:", () => {
         spacer: "",
         units: [
           {
-            label: "\"",
+            label: '"',
             name: "Units.IN",
           },
         ],
@@ -336,16 +346,16 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-150 1/2\"" },
-      { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "150 1/2\"" },
-      { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12 5/8\"" },
-      { magnitude: 12345789, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "148149468\"" },
-      { magnitude: 0.00000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0\"" },
-      { magnitude: 11.9999999999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "144\"" },
+      { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: '-150 1/2"' },
+      { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: '150 1/2"' },
+      { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: '12 5/8"' },
+      { magnitude: 12345789, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: '148149468"' },
+      { magnitude: 0.00000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: '0"' },
+      { magnitude: 11.9999999999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: '144"' },
     ];
 
     for (const testEntry of testQuantityData) {
@@ -380,7 +390,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -412,7 +422,7 @@ describe("Composite Formats tests:", () => {
         spacer: "",
         units: [
           {
-            label: "\"",
+            label: '"',
             name: "Units.IN",
           },
         ],
@@ -424,16 +434,16 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
-      { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-150.5\"" },
-      { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "150.5\"" },
-      { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.6\"" },
-      { magnitude: 12345789, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "148149468\"" },
+      { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: '-150.5"' },
+      { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: '150.5"' },
+      { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: '12.6"' },
+      { magnitude: 12345789, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: '148149468"' },
       { magnitude: 0.00000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "" },
-      { magnitude: 11.9999999999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "144\"" },
+      { magnitude: 11.9999999999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: '144"' },
     ];
 
     for (const testEntry of testQuantityData) {
@@ -459,7 +469,7 @@ describe("Composite Formats tests:", () => {
             name: "Units.FT",
           },
           {
-            label: "\"",
+            label: '"',
             name: "Units.IN",
           },
         ],
@@ -471,7 +481,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -506,7 +516,7 @@ describe("Composite Formats tests:", () => {
             name: "Units.FT",
           },
           {
-            label: "\"",
+            label: '"',
             name: "Units.IN",
           },
         ],
@@ -518,7 +528,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -561,7 +571,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -601,7 +611,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -637,7 +647,7 @@ describe("Composite Formats tests:", () => {
             name: "Units.ARC_MINUTE",
           },
           {
-            label: "\"",
+            label: '"',
             name: "Units.ARC_SECOND",
           },
         ],
@@ -649,7 +659,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -684,7 +694,7 @@ describe("Composite Formats tests:", () => {
             name: "Units.ARC_MINUTE",
           },
           {
-            label: "\"",
+            label: '"',
             name: "Units.ARC_SECOND",
           },
         ],
@@ -696,7 +706,7 @@ describe("Composite Formats tests:", () => {
     };
 
     const format = new Format("test");
-    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    await format.fromJSON(unitsProvider, formatData).catch(() => {});
     assert.isTrue(format.hasUnits);
 
     const testQuantityData = [
@@ -727,7 +737,7 @@ describe("Composite Formats tests:", () => {
       composite: {
         includeZero: true,
         spacer: "",
-        units: [{name: "Units.KM"},{name: "Units.M", label: ""},{name: "Units.CM", label: "CM"},{name: "Units.MM", label: "'"}],
+        units: [{ name: "Units.KM" }, { name: "Units.M", label: "" }, { name: "Units.CM", label: "CM" }, { name: "Units.MM", label: "'" }],
       },
       formatTraits: ["keepSingleZero", "applyRounding"],
       precision: 4,
@@ -737,7 +747,9 @@ describe("Composite Formats tests:", () => {
     const format = new Format("test");
     assert.isDefined(format);
 
-    await format.fromJSON(unitsProvider, compositeFormat).catch(() => { });
-    expect(JSON.stringify(format.toJSON().composite)).to.eql(`{"spacer":"","includeZero":true,"units":[{"name":"Units.KM"},{"name":"Units.M","label":""},{"name":"Units.CM","label":"CM"},{"name":"Units.MM","label":"'"}]}`);
+    await format.fromJSON(unitsProvider, compositeFormat).catch(() => {});
+    expect(JSON.stringify(format.toJSON().composite)).to.eql(
+      `{"spacer":"","includeZero":true,"units":[{"name":"Units.KM"},{"name":"Units.M","label":""},{"name":"Units.CM","label":"CM"},{"name":"Units.MM","label":"'"}]}`,
+    );
   });
 });

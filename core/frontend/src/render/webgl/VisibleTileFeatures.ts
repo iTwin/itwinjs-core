@@ -10,8 +10,8 @@ import { Id64 } from "@itwin/core-bentley";
 import { BatchType, PackedFeature } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { QueryTileFeaturesOptions, VisibleFeature } from "../VisibleFeature";
-import { RenderPass } from "./RenderFlags";
 import { RenderCommands } from "./RenderCommands";
+import { RenderPass } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Target } from "./Target";
 
@@ -56,11 +56,16 @@ function isFeatureVisible(feature: PackedFeature, target: Target, includeNonLoca
 
   const app = target.currentBranch.getFeatureAppearance(
     ovrs,
-    feature.elementId.lower, feature.elementId.upper,
-    feature.subCategoryId.lower, feature.subCategoryId.upper,
+    feature.elementId.lower,
+    feature.elementId.upper,
+    feature.subCategoryId.lower,
+    feature.subCategoryId.upper,
     feature.geometryClass,
-    feature.modelId.lower, feature.modelId.upper,
-    BatchType.Primary, feature.animationNodeId);
+    feature.modelId.lower,
+    feature.modelId.upper,
+    BatchType.Primary,
+    feature.animationNodeId,
+  );
 
   return undefined !== app && (includeNonLocatable || !app.nonLocatable);
 }

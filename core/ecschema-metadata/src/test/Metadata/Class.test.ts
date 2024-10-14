@@ -4,21 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
-import { RelationshipClass } from "../../Metadata/RelationshipClass";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
+import { StrengthDirection } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
 import { CustomAttributeSet } from "../../Metadata/CustomAttribute";
+import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
 import { EntityClass, MutableEntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
+import { RelationshipClass } from "../../Metadata/RelationshipClass";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { SchemaItem } from "../../Metadata/SchemaItem";
 import { SchemaKey } from "../../SchemaKey";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
-import { StrengthDirection } from "../../ECObjects";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -208,8 +208,15 @@ describe("ECClass", () => {
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("PrimProp");
       const primArrProp = await (entityClass as ECClass as MutableClass).createPrimitiveArrayProperty("PrimArrProp");
       const structProp = await (entityClass as ECClass as MutableClass).createStructProperty("StructProp", new StructClass(schema, "TestStruct"));
-      const structArrProp = await (entityClass as ECClass as MutableClass).createStructArrayProperty("StructArrProp", new StructClass(schema, "TestStruct"));
-      const navProp = await (entityClass as MutableEntityClass).createNavigationProperty("NavProp", new RelationshipClass(schema, "TestRel"), StrengthDirection.Forward);
+      const structArrProp = await (entityClass as ECClass as MutableClass).createStructArrayProperty(
+        "StructArrProp",
+        new StructClass(schema, "TestStruct"),
+      );
+      const navProp = await (entityClass as MutableEntityClass).createNavigationProperty(
+        "NavProp",
+        new RelationshipClass(schema, "TestRel"),
+        StrengthDirection.Forward,
+      );
 
       expect([...entityClass.properties!].length).to.equal(5);
       expect(await entityClass.getProperty("PrimProp")).equal(primProp);
@@ -243,8 +250,15 @@ describe("ECClass", () => {
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("PrimProp");
       const primArrProp = await (entityClass as ECClass as MutableClass).createPrimitiveArrayProperty("PrimArrProp");
       const structProp = await (entityClass as ECClass as MutableClass).createStructProperty("StructProp", new StructClass(schema, "TestStruct"));
-      const structArrProp = await (entityClass as ECClass as MutableClass).createStructArrayProperty("StructArrProp", new StructClass(schema, "TestStruct"));
-      const navProp = await (entityClass as MutableEntityClass).createNavigationProperty("NavProp", new RelationshipClass(schema, "TestRel"), StrengthDirection.Forward);
+      const structArrProp = await (entityClass as ECClass as MutableClass).createStructArrayProperty(
+        "StructArrProp",
+        new StructClass(schema, "TestStruct"),
+      );
+      const navProp = await (entityClass as MutableEntityClass).createNavigationProperty(
+        "NavProp",
+        new RelationshipClass(schema, "TestRel"),
+        StrengthDirection.Forward,
+      );
 
       expect([...entityClass.properties!].length).to.equal(5);
       expect(await entityClass.getProperty("PrimProp")).equal(primProp);
@@ -592,14 +606,12 @@ describe("ECClass", () => {
             {
               className: "TestSchema.TestCAClass",
               ShowClasses: true,
-
             },
           ],
         },
       },
     };
     it("async - Deserialize One Custom Attribute", async () => {
-
       schema = await Schema.fromJson(oneCustomAttributeJson, new SchemaContext());
 
       const testClass = await schema.getItem<EntityClass>("testClass");
@@ -638,7 +650,6 @@ describe("ECClass", () => {
       },
     };
     it("async - Deserialize Two Custom Attributes", async () => {
-
       schema = await Schema.fromJson(twoCustomAttributesJson, new SchemaContext());
 
       const testClass = await schema.getItem<EntityClass>("testClass");
@@ -668,10 +679,17 @@ describe("ECClass", () => {
       },
     };
     it("async - Custom Attributes must be an array", async () => {
-      await expect(Schema.fromJson(mustBeAnArrayJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      await expect(Schema.fromJson(mustBeAnArrayJson, new SchemaContext())).to.be.rejectedWith(
+        ECObjectsError,
+        `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`,
+      );
     });
     it("sync - Custom Attributes must be an array", async () => {
-      assert.throws(() => Schema.fromJsonSync(mustBeAnArrayJson, new SchemaContext()), ECObjectsError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      assert.throws(
+        () => Schema.fromJsonSync(mustBeAnArrayJson, new SchemaContext()),
+        ECObjectsError,
+        `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`,
+      );
     });
     it("sync - Deserialize Multiple Custom Attributes with additional properties", () => {
       const classJson = {
@@ -1368,7 +1386,7 @@ describe("ECClass", () => {
 
       testClass.addCustomAttribute(ca);
       const serialized = await testClass.toXml(newDom);
-      const expectedTimeFromString  = new Date("2021-08-19T16:37:42.278").getTime();
+      const expectedTimeFromString = new Date("2021-08-19T16:37:42.278").getTime();
 
       let element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TrueBoolean");
       expect(element.textContent).to.equal("True");
@@ -1533,19 +1551,19 @@ describe("ECClass", () => {
       const structs = element.getElementsByTagName("TestStruct");
       expect(structs.length).to.equal(2);
 
-      let prop1 = (structs[0]).getElementsByTagName("Integer");
+      let prop1 = structs[0].getElementsByTagName("Integer");
       expect(prop1.length).to.equal(1);
       expect(prop1[0].textContent).to.equal("1");
 
-      let prop2 = (structs[0]).getElementsByTagName("String");
+      let prop2 = structs[0].getElementsByTagName("String");
       expect(prop2.length).to.equal(1);
       expect(prop2[0].textContent).to.equal("test1");
 
-      prop1 = (structs[1]).getElementsByTagName("Integer");
+      prop1 = structs[1].getElementsByTagName("Integer");
       expect(prop1.length).to.equal(1);
       expect(prop1[0].textContent).to.equal("2");
 
-      prop2 = (structs[1]).getElementsByTagName("String");
+      prop2 = structs[1].getElementsByTagName("String");
       expect(prop2.length).to.equal(1);
       expect(prop2[0].textContent).to.equal("test2");
     });
@@ -1641,8 +1659,13 @@ describe("ECClass", () => {
     });
 
     const expectedCallBackObjects = [
-      { name: "G", arg: "testArg" }, { name: "A", arg: "testArg" }, { name: "B", arg: "testArg" }, { name: "E", arg: "testArg" },
-      { name: "C", arg: "testArg" }, { name: "F", arg: "testArg" }, { name: "D", arg: "testArg" },
+      { name: "G", arg: "testArg" },
+      { name: "A", arg: "testArg" },
+      { name: "B", arg: "testArg" },
+      { name: "E", arg: "testArg" },
+      { name: "C", arg: "testArg" },
+      { name: "F", arg: "testArg" },
+      { name: "D", arg: "testArg" },
     ];
 
     it("traverseBaseClasses, should correctly traverse a complex inheritance hierarchy", async () => {
@@ -1816,7 +1839,10 @@ describe("ECClass", () => {
         ],
       });
 
-      await assert.isRejected(Schema.fromJson(json, new SchemaContext()), "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
+      await assert.isRejected(
+        Schema.fromJson(json, new SchemaContext()),
+        "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.",
+      );
     });
 
     it("should throw synchronously", () => {
@@ -1832,7 +1858,10 @@ describe("ECClass", () => {
         ],
       });
 
-      assert.throw(() => Schema.fromJsonSync(json, new SchemaContext()), "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
+      assert.throw(
+        () => Schema.fromJsonSync(json, new SchemaContext()),
+        "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.",
+      );
     });
   });
 

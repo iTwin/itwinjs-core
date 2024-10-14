@@ -136,7 +136,9 @@ export class BackgroundMapSettings {
   }
 
   /** If transparency is overridden, the transparency to apply; otherwise, undefined. */
-  public get transparencyOverride(): number | undefined { return false !== this.transparency ? this.transparency : undefined; }
+  public get transparencyOverride(): number | undefined {
+    return false !== this.transparency ? this.transparency : undefined;
+  }
 
   private constructor(props: BackgroundMapProps | PersistentBackgroundMapProps) {
     this.groundBias = props.groundBias ?? 0;
@@ -244,7 +246,9 @@ export class BackgroundMapSettings {
       globeMode: changedProps.globeMode ?? this.globeMode,
       nonLocatable: changedProps.nonLocatable ?? !this._locatable,
       applyTerrain: changedProps.applyTerrain ?? this.applyTerrain,
-      terrainSettings: changedProps.terrainSettings ? this.terrainSettings.clone(changedProps.terrainSettings).toJSON() : this.terrainSettings.toJSON(),
+      terrainSettings: changedProps.terrainSettings
+        ? this.terrainSettings.clone(changedProps.terrainSettings).toJSON()
+        : this.terrainSettings.toJSON(),
       planarClipMask: changedProps.planarClipMask ? this.planarClipMask.clone(changedProps.planarClipMask).toJSON() : this.planarClipMask.toJSON(),
       providerName: this._provider.name,
       providerData: { mapType: this._provider.type },

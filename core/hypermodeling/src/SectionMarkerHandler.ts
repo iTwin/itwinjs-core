@@ -6,11 +6,11 @@
  * @module HyperModeling
  */
 
-import { IModelApp } from "@itwin/core-frontend";
 import type { AbstractToolbarProps } from "@itwin/appui-abstract";
-import { SectionMarker } from "./SectionMarkers";
+import { IModelApp } from "@itwin/core-frontend";
 import { SectionMarkerConfig } from "./HyperModelingConfig";
 import { HyperModelingDecorator } from "./HyperModelingDecorator";
+import { SectionMarker } from "./SectionMarkers";
 
 /** Supplies interactions with [[SectionMarker]]s, including a mini-toolbar displayed when the mouse hovers over a marker and what action occurs when the user clicks a marker.
  * The base implementation supplies the following interactions:
@@ -50,7 +50,7 @@ export class SectionMarkerHandler {
           itemPriority: 10,
           label: localization.getLocalizedString("HyperModeling:Message.ApplyView"),
           icon: "icon-spatial-view-apply",
-          execute: () => { },
+          execute: () => {},
           isDisabled: false,
         },
         {
@@ -58,7 +58,7 @@ export class SectionMarkerHandler {
           itemPriority: 20,
           label: localization.getLocalizedString("HyperModeling:Message.OpenSection"),
           icon: "icon-plan-drawing",
-          execute: () => { },
+          execute: () => {},
           isDisabled: false,
         },
         {
@@ -66,7 +66,7 @@ export class SectionMarkerHandler {
           itemPriority: 30,
           label: localization.getLocalizedString("HyperModeling:Message.OpenSheet"),
           icon: "icon-plan-floor",
-          execute: () => { },
+          execute: () => {},
           isDisabled: undefined === marker.state.viewAttachment?.viewId,
         },
       ],

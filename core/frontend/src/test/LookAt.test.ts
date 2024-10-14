@@ -2,17 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Cartographic, EcefLocation, EmptyLocalization } from "@itwin/core-common";
+import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { createBlankConnection } from "./createBlankConnection";
-import { Cartographic, EcefLocation, EmptyLocalization } from "@itwin/core-common";
+import { MarginPercent, PaddingPercent } from "../MarginPercent";
 import { SpatialViewState } from "../SpatialViewState";
-import { Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { StandardViewId } from "../StandardView";
 import { MarginOptions } from "../ViewAnimation";
-import { MarginPercent, PaddingPercent } from "../MarginPercent";
 import { ViewStatus } from "../ViewStatus";
+import { createBlankConnection } from "./createBlankConnection";
 
 describe("Look At", () => {
   let imodel: IModelConnection;
@@ -82,7 +82,10 @@ describe("Look At", () => {
 
         return {
           marginPercent: {
-            left: percent.left ?? 0, right: percent.right ?? 0, top: percent.top ?? 0, bottom: percent.bottom ?? 0,
+            left: percent.left ?? 0,
+            right: percent.right ?? 0,
+            top: percent.top ?? 0,
+            bottom: percent.bottom ?? 0,
           },
         };
       }
@@ -113,8 +116,14 @@ describe("Look At", () => {
     });
 
     it("prioritizes PaddingPercent over MarginPercent", () => {
-      expectExtents([0, 0, 100, 100], [-50, -50, 200, 200], { paddingPercent: 0.5, marginPercent: { left: 0, right: 0.25, top: 0.125, bottom: 0.2 } });
-      expectExtents([0, 0, 100, 100], [-50, -50, 200, 200], { paddingPercent: undefined, marginPercent: { left: 0.25, right: 0.25, top: 0.25, bottom: 0.25 } });
+      expectExtents([0, 0, 100, 100], [-50, -50, 200, 200], {
+        paddingPercent: 0.5,
+        marginPercent: { left: 0, right: 0.25, top: 0.125, bottom: 0.2 },
+      });
+      expectExtents([0, 0, 100, 100], [-50, -50, 200, 200], {
+        paddingPercent: undefined,
+        marginPercent: { left: 0.25, right: 0.25, top: 0.25, bottom: 0.25 },
+      });
     });
   });
 });

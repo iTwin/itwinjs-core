@@ -3,27 +3,36 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./setup";
+import { DictionaryModel, ElementAspect, IModelDb, IModelHost, IModelHostOptions, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
+import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { AccessToken, Id64String } from "@itwin/core-bentley";
+import { ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
+import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { Reporter } from "@itwin/perf-tools";
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { AccessToken, Id64String } from "@itwin/core-bentley";
-import { ElementAspectProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
-import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
-import { Reporter } from "@itwin/perf-tools";
-import { DictionaryModel, ElementAspect, IModelDb, IModelHost, IModelHostOptions, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
-import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 async function createNewModelAndCategory(rwIModel: IModelDb) {
   // Create a new physical model.
-  const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
+  const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+    rwIModel,
+    IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"),
+    true,
+  );
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 }));
+  const spatialCategoryId: Id64String = SpatialCategory.insert(
+    rwIModel,
+    IModel.dictionaryId,
+    newCategoryCode.value,
+    new SubCategoryAppearance({ color: 0xff0000 }),
+  );
   return { modelId, spatialCategoryId };
 }
 
@@ -43,7 +52,7 @@ describe("ElementAspectPerformance", () => {
     const iModelHost: IModelHostOptions = {};
     const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
     iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
-    iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
+    iModelHost.cacheDir = path.join(__dirname, ".cache"); // Set local cache dir
     await IModelHost.startup(iModelHost);
 
     accessToken = await TestUtility.getAccessToken(TestUsers.regular);
@@ -105,13 +114,24 @@ describe("ElementAspectPerformance", () => {
       const endTime3 = new Date().getTime();
       const elapsedTime3 = (endTime3 - startTime3) / 1000.0;
       totalTimeDeleteSimpELeGet = totalTimeDeleteSimpELeGet + elapsedTime3;
-
     }
     iModelDb.close();
-    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeInsertSimpELeGet, { ElementCount: count1, Operation: "Insert" });
-    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeUpdateSimpELeGet, { ElementCount: count1, Operation: "Update" });
-    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeDeleteSimpELeGet, { ElementCount: count1, Operation: "Delete" });
-    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeReadSimpELeGet, { ElementCount: count1, Operation: "Read" });
+    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeInsertSimpELeGet, {
+      ElementCount: count1,
+      Operation: "Insert",
+    });
+    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeUpdateSimpELeGet, {
+      ElementCount: count1,
+      Operation: "Update",
+    });
+    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeDeleteSimpELeGet, {
+      ElementCount: count1,
+      Operation: "Delete",
+    });
+    reporter.addEntry("ElementAspectPerformance", "SimpleElement", "Execution time(s)", totalTimeReadSimpELeGet, {
+      ElementCount: count1,
+      Operation: "Read",
+    });
   });
 
   it("UniqueAspectElement-Insert-Update-Delete-Read", async () => {
@@ -120,8 +140,12 @@ describe("ElementAspectPerformance", () => {
     const iModelDb = SnapshotDb.createFrom(iModelDbHub, snapshotPath);
     assert.exists(iModelDb);
 
-    interface TestAspectProps extends ElementAspectProps { testUniqueAspectProperty: string }
-    class TestAspect extends ElementAspect { public testUniqueAspectProperty: string = ""; }
+    interface TestAspectProps extends ElementAspectProps {
+      testUniqueAspectProperty: string;
+    }
+    class TestAspect extends ElementAspect {
+      public testUniqueAspectProperty: string = "";
+    }
 
     const count1 = 10000;
     let eleId: Id64String;
@@ -181,10 +205,22 @@ describe("ElementAspectPerformance", () => {
       totalTimeDelete = totalTimeDelete + elapsedTime3;
     }
     iModelDb.close();
-    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeInsert, { ElementCount: count1, Operation: "Insert" });
-    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeUpdate, { ElementCount: count1, Operation: "Update" });
-    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeDelete, { ElementCount: count1, Operation: "Delete" });
-    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeRead, { ElementCount: count1, Operation: "Read" });
+    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeInsert, {
+      ElementCount: count1,
+      Operation: "Insert",
+    });
+    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeUpdate, {
+      ElementCount: count1,
+      Operation: "Update",
+    });
+    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeDelete, {
+      ElementCount: count1,
+      Operation: "Delete",
+    });
+    reporter.addEntry("ElementAspectPerformance", "UniqueAspectElement", "Execution time(s)", totalTimeRead, {
+      ElementCount: count1,
+      Operation: "Read",
+    });
   });
 
   it("MultiAspectElement-Insert-Update-Delete-Read", async () => {
@@ -262,9 +298,21 @@ describe("ElementAspectPerformance", () => {
       totalTimeDelete = totalTimeDelete + elapsedTime3;
     }
     iModelDb.close();
-    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeInsert, { ElementCount: count1, Operation: "Insert" });
-    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeUpdate, { ElementCount: count1, Operation: "Update" });
-    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeDelete, { ElementCount: count1, Operation: "Delete" });
-    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeRead, { ElementCount: count1, Operation: "Read" });
+    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeInsert, {
+      ElementCount: count1,
+      Operation: "Insert",
+    });
+    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeUpdate, {
+      ElementCount: count1,
+      Operation: "Update",
+    });
+    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeDelete, {
+      ElementCount: count1,
+      Operation: "Delete",
+    });
+    reporter.addEntry("ElementAspectPerformance", "MultiAspectElement", "Execution time(s)", totalTimeRead, {
+      ElementCount: count1,
+      Operation: "Read",
+    });
   });
 });

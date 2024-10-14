@@ -12,12 +12,12 @@ import { CurvePrimitive } from "../curve/CurvePrimitive";
 import type { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import type { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import type { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import type { Ray3d } from "../geometry3d/Ray3d";
-import type { Transform } from "../geometry3d/Transform";
 import type { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import type { Range1d, Range3d } from "../geometry3d/Range";
-import type { OffsetOptions } from "./OffsetOptions";
+import type { Ray3d } from "../geometry3d/Ray3d";
+import type { Transform } from "../geometry3d/Transform";
 import type { LineString3d } from "./LineString3d";
+import type { OffsetOptions } from "./OffsetOptions";
 import type { StrokeOptions } from "./StrokeOptions";
 
 /**
@@ -91,7 +91,8 @@ export abstract class ProxyCurve extends CurvePrimitive {
   }
   /** Implement by proxyCurve */
   public fractionToPointAnd2Derivatives(
-    fraction: number, result?: Plane3dByOriginAndVectors,
+    fraction: number,
+    result?: Plane3dByOriginAndVectors,
   ): Plane3dByOriginAndVectors | undefined {
     return this._proxyCurve.fractionToPointAnd2Derivatives(fraction, result);
   }

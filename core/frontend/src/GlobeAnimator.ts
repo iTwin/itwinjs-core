@@ -6,13 +6,18 @@
  * @module Views
  */
 
-import { Arc3d, Geometry, Point3d, SmoothTransformBetweenFrusta } from "@itwin/core-geometry";
 import { Cartographic, Easing, Frustum, GlobeMode, Interpolation, Tweens } from "@itwin/core-common";
+import { Arc3d, Geometry, Point3d, SmoothTransformBetweenFrusta } from "@itwin/core-geometry";
+import { Animator } from "./ViewAnimation";
 import {
-  areaToEyeHeight, areaToEyeHeightFromGcs, eyeToCartographicOnGlobe, GlobalLocation, metersToRange, ViewGlobalLocationConstants,
+  areaToEyeHeight,
+  areaToEyeHeightFromGcs,
+  eyeToCartographicOnGlobe,
+  GlobalLocation,
+  metersToRange,
+  ViewGlobalLocationConstants,
 } from "./ViewGlobalLocation";
 import { ScreenViewport } from "./Viewport";
-import { Animator } from "./ViewAnimation";
 
 /** Animates the transition of a [[Viewport]] to view a location on the Earth. The animation traces a flight path from the viewport's current [Frustum]($common) to the destination.
  * The duration of the animation varies based on the distance traversed.
@@ -48,7 +53,7 @@ export class GlobeAnimator implements Animator {
 
     // If we're done, set the final state directly
     if (fraction >= 1.0) {
-      if (vp.view.is3d())  // Need to reset focus as well -- setupViewFromFustum does not set this and it will remain at flight distance.
+      if (vp.view.is3d()) // Need to reset focus as well -- setupViewFromFustum does not set this and it will remain at flight distance.
         vp.view.camera.setFocusDistance(this._afterFocusDistance);
       vp.setupViewFromFrustum(this._afterLanding);
       vp.synchWithView();
@@ -109,7 +114,9 @@ export class GlobeAnimator implements Animator {
     if (!(view.is3d()) || !viewport.iModel.isGeoLocated) // This animation only works for 3d views and geolocated models
       return undefined;
 
-    const endHeight = destination.area !== undefined ? await areaToEyeHeightFromGcs(view, destination.area, destination.center.height) : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
+    const endHeight = destination.area !== undefined
+      ? await areaToEyeHeightFromGcs(view, destination.area, destination.center.height)
+      : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
 
     const beforeFrustum = viewport.getWorldFrustum();
     await view.lookAtGlobalLocationFromGcs(endHeight, ViewGlobalLocationConstants.birdPitchAngleRadians, destination);
@@ -138,7 +145,9 @@ export class GlobeAnimator implements Animator {
       return;
 
     this._startHeight = eyeToCartographicOnGlobe(this._viewport, true)!.height;
-    this._endHeight = destination.area !== undefined ? areaToEyeHeight(view, destination.area, destination.center.height) : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
+    this._endHeight = destination.area !== undefined
+      ? areaToEyeHeight(view, destination.area, destination.center.height)
+      : ViewGlobalLocationConstants.birdHeightAboveEarthInMeters;
 
     // Starting cartographic position is the eye projected onto the globe.
     let startCartographic = eyeToCartographicOnGlobe(viewport);
@@ -159,7 +168,12 @@ export class GlobeAnimator implements Animator {
     } else {
       // Calculate a flight arc from the ellipsoid of the Earth and the starting and ending cartographic coordinates.
       const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
-      this._ellipsoidArc = earthEllipsoid.radiansPairToGreatArc(this._startCartographic.longitude, this._startCartographic.latitude, this._endLocation.center.longitude, this._endLocation.center.latitude)!;
+      this._ellipsoidArc = earthEllipsoid.radiansPairToGreatArc(
+        this._startCartographic.longitude,
+        this._startCartographic.latitude,
+        this._endLocation.center.longitude,
+        this._endLocation.center.latitude,
+      )!;
       if (this._ellipsoidArc !== undefined)
         this._flightLength = this._ellipsoidArc.curveLength();
       // Set a longer flight duration in 3D mode
@@ -170,10 +184,12 @@ export class GlobeAnimator implements Animator {
       return;
 
     // The peak of the flight varies based on total distance to travel. The larger the distance, the higher the peak of the flight will be.
-    this._midHeight = metersToRange(this._flightLength,
+    this._midHeight = metersToRange(
+      this._flightLength,
       ViewGlobalLocationConstants.birdHeightAboveEarthInMeters,
       ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters * 4,
-      ViewGlobalLocationConstants.largestEarthArc);
+      ViewGlobalLocationConstants.largestEarthArc,
+    );
 
     // We will "fix" the initial frustum so it smoothly transitions to some point along the travel arc depending on the starting height.
     // Alternatively, if the distance to travel is small enough, we will _only_ do a frustum transition to the destination location - ignoring the flight arc.
@@ -184,7 +200,9 @@ export class GlobeAnimator implements Animator {
       // However, if within driving distance, still use SmoothTransformBetweenFrusta to navigate there without flight.
       this._fixTakeoffFraction = this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive ? 1.0 : 0.0;
     } else {
-      this._fixTakeoffFraction = this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive ? 1.0 : metersToRange(this._startHeight, 0.1, 0.4, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters);
+      this._fixTakeoffFraction = this._flightLength <= ViewGlobalLocationConstants.maximumDistanceToDrive
+        ? 1.0
+        : metersToRange(this._startHeight, 0.1, 0.4, ViewGlobalLocationConstants.birdHeightAboveEarthInMeters);
     }
 
     if (this._fixTakeoffFraction > 0.0) {

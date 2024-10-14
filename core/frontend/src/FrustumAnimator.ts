@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Tweens } from "@itwin/core-common";
+import { Angle, Geometry, Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { Animator, ViewAnimationOptions } from "./ViewAnimation";
 import { ScreenViewport } from "./Viewport";
 import { ViewPose, ViewPose3d } from "./ViewPose";
@@ -105,22 +105,33 @@ export class FrustumAnimator implements Animator {
       start: true,
       easing: options.easingFunction ? options.easingFunction : settings.easing,
       interpolation: zoomSettings.interpolation,
-      onComplete: () =>
-        viewport.setupFromView(end), // when we're done, set up from final state
+      onComplete: () => viewport.setupFromView(end), // when we're done, set up from final state
       onUpdate: () => {
         const fraction = extentBias ? timing.position : timing.fraction; // if we're zooming, fraction comes from position interpolation
-        const rot = Matrix3d.createRotationAroundVector(axis.axis, Angle.createDegrees(fraction * axis.angle.degrees))!.multiplyMatrixMatrix(begin.rotation);
+        const rot = Matrix3d.createRotationAroundVector(axis.axis, Angle.createDegrees(fraction * axis.angle.degrees))!.multiplyMatrixMatrix(
+          begin.rotation,
+        );
         if (begin.cameraOn) {
           const newExtents = begin.extents.interpolate(fraction, end.extents);
           if (undefined !== eyeBias) {
             const eyePoint = begin3.camera.eye.interpolate(fraction, end3.camera.eye);
             eyePoint.plusScaled(eyeBias, timing.height, eyePoint);
-            const targetPoint = eyePoint.plusScaled(rot.getRow(2), -1.0 * (Geometry.interpolate(begin3.camera.focusDist, fraction, end3.camera.focusDist)));
+            const targetPoint = eyePoint.plusScaled(
+              rot.getRow(2),
+              -1.0 * (Geometry.interpolate(begin3.camera.focusDist, fraction, end3.camera.focusDist)),
+            );
             view3.lookAt({ eyePoint, targetPoint, upVector: rot.getRow(1), newExtents });
           } else {
             const data = interpolateSwingingEye(
-              begin3.rotation, begin3.camera.eye, begin3.camera.focusDist,
-              end3.rotation, end3.camera.eye, end3.camera.focusDist, fraction, rot);
+              begin3.rotation,
+              begin3.camera.eye,
+              begin3.camera.focusDist,
+              end3.rotation,
+              end3.camera.eye,
+              end3.camera.focusDist,
+              fraction,
+              rot,
+            );
             view3.lookAt({ eyePoint: data.eye, targetPoint: data.target, upVector: rot.getRow(1), newExtents });
           }
         } else {

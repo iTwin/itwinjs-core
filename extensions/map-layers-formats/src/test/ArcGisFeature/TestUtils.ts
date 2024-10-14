@@ -9,10 +9,9 @@ import { ArcGisSymbologyCanvasRenderer } from "../../ArcGisFeature/ArcGisSymbolo
 import { EsriRenderer } from "../../ArcGisFeature/EsriSymbology";
 
 /**
-* @internal
-*/
+ * @internal
+ */
 export class TestUtils {
-
   public static async createSymbologyRenderer(geometryType: ArcGisFeatureGeometryType, rendererDef: any) {
     const defaultSymb = new DefaultArcGiSymbology();
     await defaultSymb.initialize();

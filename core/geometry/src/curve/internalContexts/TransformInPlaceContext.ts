@@ -17,7 +17,12 @@ export class TransformInPlaceContext extends RecursiveCurveProcessor {
   public numFail: number;
   public numOK: number;
   public transform: Transform;
-  constructor(transform: Transform) { super(); this.numFail = 0; this.numOK = 0; this.transform = transform; }
+  constructor(transform: Transform) {
+    super();
+    this.numFail = 0;
+    this.numOK = 0;
+    this.transform = transform;
+  }
   public static tryTransformInPlace(target: CurveCollection, transform: Transform): boolean {
     const context = new TransformInPlaceContext(transform);
     target.announceToCurveProcessor(context);

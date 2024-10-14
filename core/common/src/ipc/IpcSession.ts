@@ -22,7 +22,9 @@ export interface InterceptedRpcRequest {
 /** @internal */
 export abstract class IpcSession {
   private static _active?: IpcSession;
-  public static get active(): IpcSession | undefined { return this._active; }
+  public static get active(): IpcSession | undefined {
+    return this._active;
+  }
 
   public static start(session: IpcSession) {
     if (this._active)

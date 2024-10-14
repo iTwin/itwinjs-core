@@ -4,12 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Feature, GeometryClass } from "@itwin/core-common";
-import {
-  GraphicDescription, GraphicDescriptionBuilder, GraphicType,
-} from "../../common";
-import { registerWorker } from "../../workers/RegisterWorker";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps } from "../../common/render/GraphicDescriptionContext";
+import { GraphicDescription, GraphicDescriptionBuilder, GraphicType } from "../../common";
+import {
+  GraphicDescriptionContextProps,
+  WorkerGraphicDescriptionContext,
+  WorkerGraphicDescriptionContextProps,
+} from "../../common/render/GraphicDescriptionContext";
+import { registerWorker } from "../../workers/RegisterWorker";
 
 export interface WorkerGraphic {
   description: GraphicDescription;
@@ -81,7 +83,10 @@ registerWorker<TestWorker>({
 
     builder.activateFeature(new Feature(context.transientIds.getNext(), "0x123", GeometryClass.Primary));
     builder.addShape2d([
-      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+      new Point2d(0, 0),
+      new Point2d(10, 0),
+      new Point2d(10, 5),
+      new Point2d(0, 5),
     ], 2);
 
     builder.activateFeature(new Feature("0x456", context.transientIds.getNext()));

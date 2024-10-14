@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as chai from "chai";
 import { BisCodeSpec, CodeSpec } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
+import * as chai from "chai";
 import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;
@@ -13,7 +13,7 @@ const expect = chai.expect;
 describe("Get Code Specs", () => {
   let testContext: TestContext;
 
-  before(async function () {
+  before(async function() {
     testContext = await TestContext.instance();
 
     if (!testContext.settings.runiModelReadRpcTests)
@@ -27,7 +27,6 @@ describe("Get Code Specs", () => {
 
   /** verify that given codespec has expected properties */
   function verifyCodeSpec(codeSpec: CodeSpec, requestedIModel: IModelConnection, requestedName: string, requestedId: string) {
-
     expect(codeSpec).to.exist;
 
     expect(codeSpec.id).to.exist;

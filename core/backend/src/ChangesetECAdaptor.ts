@@ -37,7 +37,6 @@ interface IProperty {
   readonly structClass?: IClassRef;
   readonly dateTimeInfo?: IDateTimeInfo;
   readonly columns: IColumn[];
-
 }
 
 interface IColumn {
@@ -60,7 +59,7 @@ interface ITable {
 class ECDbMap {
   private _cachedClassMaps = new Map<Id64String, IClassMap>();
   private _cacheTables = new Map<string, ITable>();
-  public constructor(public readonly db: AnyDb) { }
+  public constructor(public readonly db: AnyDb) {}
   public getAllDerivedClasses(classFullName: string) {
     const sql = `
       SELECT format('0x%x', ch.ClassId)
@@ -349,7 +348,7 @@ class ECDbMap {
 /**
  * Record meta data for the change.
  * @beta
- * */
+ */
 export interface ChangeMetaData {
   /** list of tables making up this EC change */
   tables: string[];
@@ -381,7 +380,7 @@ export interface ChangedECInstance {
 /**
  * Helper function to convert between JS DateTime & SQLite JulianDay values.
  * @beta
- * */
+ */
 namespace DateTime {
   /**
    * Convert JS date to JulianDay value.
@@ -544,7 +543,9 @@ export class PartialECChangeUnifier {
    * Returns complete EC change instances.
    * @beta
    */
-  public get instances(): IterableIterator<ChangedECInstance> { return this._cache.values(); }
+  public get instances(): IterableIterator<ChangedECInstance> {
+    return this._cache.values();
+  }
 }
 
 /**
@@ -552,8 +553,7 @@ export class PartialECChangeUnifier {
  * it is per table while a single instance can span multiple table.
  * @note PrimitiveArray and StructArray are not supported types.
  * @beta
- *
-*/
+ */
 export class ChangesetECAdaptor implements IDisposable {
   private readonly _mapCache: ECDbMap;
   private readonly _tableFilter = new Set<string>();
@@ -661,8 +661,9 @@ export class ChangesetECAdaptor implements IDisposable {
     // Convert each element to a two-digit hexadecimal string
     const hex = Array.from(binaryGUID, (byte) => byte.toString(16).padStart(2, "0"));
     // Join the hexadecimal strings and insert hyphens
-    return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${hex.slice(10, 16).join("")}`;
-
+    return `${hex.slice(0, 4).join("")}-${hex.slice(4, 6).join("")}-${hex.slice(6, 8).join("")}-${hex.slice(8, 10).join("")}-${
+      hex.slice(10, 16).join("")
+    }`;
   }
   /**
    * Set value use access string in a JS object.
@@ -714,13 +715,21 @@ export class ChangesetECAdaptor implements IDisposable {
     }
   }
   /** helper method around reader.op */
-  public get op() { return this.reader.op; }
+  public get op() {
+    return this.reader.op;
+  }
   /** Return true if current change is of type "Inserted" */
-  public get isInserted() { return this.op === "Inserted"; }
+  public get isInserted() {
+    return this.op === "Inserted";
+  }
   /** Return true if current change is of type "Deleted" */
-  public get isDeleted() { return this.op === "Deleted"; }
+  public get isDeleted() {
+    return this.op === "Deleted";
+  }
   /** Return true if current change is of type "Updated" */
-  public get isUpdated() { return this.op === "Updated"; }
+  public get isUpdated() {
+    return this.op === "Updated";
+  }
 
   /**
    * Advance reader to next change or a change that meets the filter set in the current adaptor
@@ -897,7 +906,11 @@ export class ChangesetECAdaptor implements IDisposable {
               continue;
             }
             if (prop.extendedTypeName === "BeGuid") {
-              ChangesetECAdaptor.setValue(out, col.accessString, this.debugFlags.replaceGuidWithEllipsis ? "..." : ChangesetECAdaptor.convertBinaryToGuid(columnValue));
+              ChangesetECAdaptor.setValue(
+                out,
+                col.accessString,
+                this.debugFlags.replaceGuidWithEllipsis ? "..." : ChangesetECAdaptor.convertBinaryToGuid(columnValue),
+              );
               continue;
             }
             if (prop.extendedTypeName === "GeometryStream") {

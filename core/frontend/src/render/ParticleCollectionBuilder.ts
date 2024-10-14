@@ -7,18 +7,27 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import {
-  ColorDef, ColorIndex, Feature, FeatureIndex, FeatureTable, FillFlags, PackedFeatureTable, QParams3d, QPoint3dList, RenderTexture,
+  ColorDef,
+  ColorIndex,
+  Feature,
+  FeatureIndex,
+  FeatureTable,
+  FillFlags,
+  PackedFeatureTable,
+  QParams3d,
+  QPoint3dList,
+  RenderTexture,
 } from "@itwin/core-common";
-import { Viewport } from "../Viewport";
-import { RenderGraphic } from "./RenderGraphic";
-import { GraphicBranch } from "./GraphicBranch";
+import { Matrix3d, Point2d, Point3d, Range3d, Transform, Vector2d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { DisplayParams } from "../common/internal/render/DisplayParams";
 import { MeshParams } from "../common/internal/render/MeshParams";
 import { createMeshParams } from "../common/internal/render/VertexTableBuilder";
 import { IModelApp } from "../IModelApp";
+import { Viewport } from "../Viewport";
+import { GraphicBranch } from "./GraphicBranch";
 import { MeshArgs } from "./MeshArgs";
+import { RenderGraphic } from "./RenderGraphic";
 
 /** Parameters used to construct a [[ParticleCollectionBuilder]].
  * @public
@@ -83,7 +92,7 @@ export interface ParticleProps extends XYAndZ {
  *
  * Creating a particle collection using a ParticleCollectionBuilder is far more efficient (in both CPU and GPU usage) than doing so using a [[GraphicBuilder]].
  * @see interactive demonstrations of [Snow and Rain](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=snow-rain-sample&imodel=Villa) and
-   * [Fire and Smoke](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=fire-sample&imodel=Villa) particle effects.
+ * [Fire and Smoke](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=fire-sample&imodel=Villa) particle effects.
  * @see [SnowEffect]($frontend-devtools) for an example of a particle effect.
  * @public
  * @extensions
@@ -159,7 +168,9 @@ class Builder implements ParticleCollectionBuilder {
     this._pickableId = params.pickableId;
     this._texture = params.texture;
     this._transparency = undefined !== params.transparency ? clampTransparency(params.transparency) : 0;
-    this._localToWorldTransform = params.origin ? Transform.createTranslationXYZ(params.origin.x, params.origin.y, params.origin.z) : Transform.createIdentity();
+    this._localToWorldTransform = params.origin
+      ? Transform.createTranslationXYZ(params.origin.x, params.origin.y, params.origin.z)
+      : Transform.createIdentity();
 
     if ("number" === typeof params.size)
       this._size = new Vector2d(params.size, params.size);
@@ -347,8 +358,10 @@ function createQuad(size: XAndY, texture: RenderTexture, transparency: number, v
   const halfWidth = size.x / 2;
   const halfHeight = size.y / 2;
   const corners = [
-    new Point3d(-halfWidth, -halfHeight, 0), new Point3d(halfWidth, -halfHeight, 0),
-    new Point3d(-halfWidth, halfHeight, 0), new Point3d(halfWidth, halfHeight, 0),
+    new Point3d(-halfWidth, -halfHeight, 0),
+    new Point3d(halfWidth, -halfHeight, 0),
+    new Point3d(-halfWidth, halfHeight, 0),
+    new Point3d(halfWidth, halfHeight, 0),
   ];
 
   const range = new Range3d();

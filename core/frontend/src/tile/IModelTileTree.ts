@@ -7,19 +7,41 @@
  */
 
 import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@itwin/core-bentley";
-import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, ContentIdProvider, EdgeOptions, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, RenderSchedule, TileProps,
+  BatchType,
+  ContentIdProvider,
+  EdgeOptions,
+  ElementAlignedBox3d,
+  ElementGeometryChange,
+  FeatureAppearanceProvider,
+  IModelTileTreeId,
+  IModelTileTreeProps,
+  ModelGeometryChanges,
+  RenderSchedule,
+  TileProps,
 } from "@itwin/core-common";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { GraphicalEditingScope } from "../GraphicalEditingScope";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { GraphicalEditingScope } from "../GraphicalEditingScope";
-import { RenderSystem } from "../render/RenderSystem";
 import { GraphicBranch } from "../render/GraphicBranch";
+import { RenderSystem } from "../render/RenderSystem";
 import {
-  acquireImdlDecoder, DynamicIModelTile, ImdlDecoder, IModelTile, IModelTileParams, iModelTileParamsFromJSON, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest,
-  TileRequestChannel, TileTree, TileTreeParams,
+  acquireImdlDecoder,
+  DynamicIModelTile,
+  ImdlDecoder,
+  IModelTile,
+  IModelTileParams,
+  iModelTileParamsFromJSON,
+  Tile,
+  TileContent,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileParams,
+  TileRequest,
+  TileRequestChannel,
+  TileTree,
+  TileTreeParams,
 } from "./internal";
 
 /** @internal */
@@ -49,7 +71,12 @@ export interface IModelTileTreeParams extends TileTreeParams {
 }
 
 /** @internal */
-export function iModelTileTreeParamsFromJSON(props: IModelTileTreeProps, iModel: IModelConnection, modelId: Id64String, options: IModelTileTreeOptions): IModelTileTreeParams {
+export function iModelTileTreeParamsFromJSON(
+  props: IModelTileTreeProps,
+  iModel: IModelConnection,
+  modelId: Id64String,
+  options: IModelTileTreeOptions,
+): IModelTileTreeParams {
   const location = Transform.fromJSON(props.location);
   const { formatVersion, id, rootTile, contentIdQualifier, maxInitialTilesToSkip, geometryGuid } = props;
   const tileScreenSize = props.tileScreenSize ?? 512;
@@ -163,7 +190,7 @@ class DynamicState {
 /** The tile tree has been disposed. */
 class DisposedState {
   public readonly type = "disposed";
-  public dispose(): void { }
+  public dispose(): void {}
 }
 
 const disposedState = new DisposedState();
@@ -314,7 +341,6 @@ class RootTile extends Tile {
 
     if (this._staticTreeContentRange && this.tree.contentRange)
       this._staticTreeContentRange.clone(this.tree.contentRange);
-
   }
 
   public get tileScreenSize(): number {
@@ -397,17 +423,35 @@ export class IModelTileTree extends TileTree {
     super.dispose();
   }
 
-  public get maxDepth() { return 32; }
-  public get rootTile(): Tile { return this._rootTile; }
+  public get maxDepth() {
+    return 32;
+  }
+  public get rootTile(): Tile {
+    return this._rootTile;
+  }
   /** Exposed chiefly for tests. */
-  public get staticBranch(): IModelTile { return this._rootTile.staticBranch; }
-  public get is3d() { return this._options.is3d; }
-  public override get isContentUnbounded() { return false; }
-  public get viewFlagOverrides() { return viewFlagOverrides; }
+  public get staticBranch(): IModelTile {
+    return this._rootTile.staticBranch;
+  }
+  public get is3d() {
+    return this._options.is3d;
+  }
+  public override get isContentUnbounded() {
+    return false;
+  }
+  public get viewFlagOverrides() {
+    return viewFlagOverrides;
+  }
 
-  public get batchType(): BatchType { return this._options.batchType; }
-  public get edgeOptions(): EdgeOptions | false { return this._options.edges; }
-  public get timeline(): RenderSchedule.ModelTimeline | undefined { return this._options.timeline; }
+  public get batchType(): BatchType {
+    return this._options.batchType;
+  }
+  public get edgeOptions(): EdgeOptions | false {
+    return this._options.edges;
+  }
+  public get timeline(): RenderSchedule.ModelTimeline | undefined {
+    return this._options.timeline;
+  }
 
   public override get loadPriority(): TileLoadPriority {
     // If the model has been modified, we want to prioritize keeping its graphics up to date.

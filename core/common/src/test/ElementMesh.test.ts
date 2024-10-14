@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import { Uint8ArrayBuilder } from "@itwin/core-bentley";
 import { BentleyGeometryFlatBuffer, IndexedPolyface, Point3d, PolyfaceBuilder } from "@itwin/core-geometry";
+import { describe, expect, it } from "vitest";
 import { readElementMeshes } from "../ElementMesh";
 
 class MeshesBuilder extends Uint8ArrayBuilder {
@@ -94,4 +94,3 @@ describe("readElementMeshes", () => {
     expect(builder.getPolyfaces().length).to.equal(0);
   });
 });
-

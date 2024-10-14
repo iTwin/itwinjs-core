@@ -6,9 +6,9 @@
 /** @packageDocumentation
  * @module CartesianGeometry
  */
-import { AnyRegion } from "../curve/CurveTypes";
 import { CurveChain } from "../curve/CurveCollection";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { AnyRegion } from "../curve/CurveTypes";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
 import { ParityRegion } from "../curve/ParityRegion";
@@ -54,7 +54,9 @@ abstract class SimpleRegionCarrier {
 class PolygonCarrier extends SimpleRegionCarrier {
   public data: IndexedReadWriteXYZCollection;
   private _signedArea: number;
-  public get signedArea(): number { return this._signedArea; }
+  public get signedArea(): number {
+    return this._signedArea;
+  }
   public constructor(data: IndexedReadWriteXYZCollection) {
     super();
     this.data = data;
@@ -79,7 +81,9 @@ class PolygonCarrier extends SimpleRegionCarrier {
     }
     return undefined;
   }
-  public grabPolygon(): IndexedReadWriteXYZCollection | undefined { return this.data; }
+  public grabPolygon(): IndexedReadWriteXYZCollection | undefined {
+    return this.data;
+  }
   public grabLoop(): Loop | undefined {
     return Loop.createPolygon(this.data);
   }
@@ -109,7 +113,6 @@ class PolygonCarrier extends SimpleRegionCarrier {
     }
     return undefined;
   }
-
 }
 /**
  * Implement `LoopCarrier` queries with the area as a strongly typed `Loop`
@@ -117,7 +120,9 @@ class PolygonCarrier extends SimpleRegionCarrier {
 class LoopCarrier extends SimpleRegionCarrier {
   public data: Loop;
   private _signedArea: number;
-  public get signedArea(): number { return this._signedArea; }
+  public get signedArea(): number {
+    return this._signedArea;
+  }
   public constructor(data: Loop) {
     super();
     this.data = data;
@@ -196,7 +201,6 @@ export class SortablePolygon {
   public isHole: boolean;
   public outputSetIndex?: number;
   /**
-   *
    * @param loop Loop to capture.
    */
   public constructor(loop: IndexedReadWriteXYZCollection | Loop, range: Range3d) {

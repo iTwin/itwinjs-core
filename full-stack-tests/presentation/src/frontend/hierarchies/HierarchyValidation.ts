@@ -30,12 +30,16 @@ export namespace NodeValidators {
     }
     if (expectations.hasChildren !== undefined && node.hasChildren !== expectations.hasChildren) {
       throw new Error(
-        `Expected node's \`hasChildren\` flag to be ${optionalBooleanToString(expectations.hasChildren)}, got ${optionalBooleanToString(node.hasChildren)}`,
+        `Expected node's \`hasChildren\` flag to be ${optionalBooleanToString(expectations.hasChildren)}, got ${
+          optionalBooleanToString(node.hasChildren)
+        }`,
       );
     }
     if (expectations.supportsFiltering !== undefined && node.supportsFiltering !== expectations.supportsFiltering) {
       throw new Error(
-        `Expected node's \`supportsFiltering\` flag to be "${optionalBooleanToString(expectations.supportsFiltering)}", got "${optionalBooleanToString(node.supportsFiltering)}"`,
+        `Expected node's \`supportsFiltering\` flag to be "${optionalBooleanToString(expectations.supportsFiltering)}", got "${
+          optionalBooleanToString(node.supportsFiltering)
+        }"`,
       );
     }
   }
@@ -55,7 +59,9 @@ export namespace NodeValidators {
           node.key.instanceKeys.length !== props.instanceKeys.length ||
           !node.key.instanceKeys.every((nk) => props.instanceKeys.some((ek) => 0 === InstanceKey.compare(nk, ek)))
         ) {
-          throw new Error(`Expected node to represent instance keys ${JSON.stringify(props.instanceKeys)}, got ${JSON.stringify(node.key.instanceKeys)}`);
+          throw new Error(
+            `Expected node to represent instance keys ${JSON.stringify(props.instanceKeys)}, got ${JSON.stringify(node.key.instanceKeys)}`,
+          );
         }
         validateBaseNodeAttributes(node, {
           label: props.label,

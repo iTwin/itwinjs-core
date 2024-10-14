@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
-import { DiagnosticsPanel } from "@itwin/frontend-devtools";
 import { IModelApp, Viewport } from "@itwin/core-frontend";
+import { DiagnosticsPanel } from "@itwin/frontend-devtools";
 import { Surface } from "./Surface";
 import { Window } from "./Window";
 
@@ -42,8 +42,12 @@ export class DebugWindow extends Window {
     this._dispose();
   }
 
-  public override get isResizable() { return false; }
-  public get windowId() { return this._windowId; }
+  public override get isResizable() {
+    return false;
+  }
+  public get windowId() {
+    return this._windowId;
+  }
 
   public toggle(): void {
     if (this._isOpen)

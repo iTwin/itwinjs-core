@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
-import {
-  BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps,
-} from "@itwin/core-common";
+import { BackgroundMapProps, ColorDef, Hilite, RenderMode, ViewFlags, ViewStateProps } from "@itwin/core-common";
 import { ModelDisplayTransformProvider, RenderSystem, TileAdmin } from "@itwin/core-frontend";
 import { TransformProps } from "@itwin/core-geometry";
 
@@ -39,7 +37,7 @@ export type TestType = "timing" | "readPixels" | "image" | "both";
 /** Specifies symbology overrides to apply to elements in a TestConfig. */
 export interface ElementOverrideProps {
   /** The Id of the affected element, or "-default-" to apply to all elements not otherwise overridden. */
-  id: Id64String | "-default-";  // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
+  id: Id64String | "-default-"; // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
   /** The symbology overrides to apply. */
   fsa: string; // A stringified FeatureAppearanceProps. Why is all the JSON double-stringified???
 }
@@ -273,7 +271,6 @@ export class TestConfig {
 
       if (prevConfig.viewFlags)
         this.viewFlags = { ...prevConfig.viewFlags };
-
     } else if (props.argOutputPath) {
       this.outputPath = props.argOutputPath;
     }
@@ -355,7 +352,12 @@ export class TestConfigStack {
 function hiliteSettings(settings: Hilite.Settings, props: HiliteProps): Hilite.Settings {
   const colors = settings.color.colors;
   const color = ColorDef.from(props?.red ?? colors.r, props?.green ?? colors.g, props?.blue ?? colors.b, 0);
-  return new Hilite.Settings(color, props.visibleRatio ?? settings.visibleRatio, props.hiddenRatio ?? settings.hiddenRatio, props.silhouette ?? settings.silhouette);
+  return new Hilite.Settings(
+    color,
+    props.visibleRatio ?? settings.visibleRatio,
+    props.hiddenRatio ?? settings.hiddenRatio,
+    props.silhouette ?? settings.silhouette,
+  );
 }
 
 /** Merge two objects of type T such that any property defined by second overrides the value supplied for that property by first.

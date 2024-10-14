@@ -38,4 +38,3 @@ export const enum OvrFlags { // eslint-disable-line no-restricted-syntax
 
   Rgba = Rgb | Alpha,
 }
-

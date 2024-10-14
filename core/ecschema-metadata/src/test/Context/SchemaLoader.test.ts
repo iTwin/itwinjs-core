@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { SchemaLoader } from "../../SchemaLoader";
 import { ECObjectsError } from "../../Exception";
+import { SchemaLoader } from "../../SchemaLoader";
 
 describe("SchemaLoader", () => {
-
   const getSchemaProps = (schemaName: string) => {
     if (schemaName === "SchemaD") {
       return {

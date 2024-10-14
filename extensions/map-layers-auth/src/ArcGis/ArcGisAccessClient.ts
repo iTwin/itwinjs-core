@@ -8,8 +8,8 @@
 
 import { assert, BeEvent } from "@itwin/core-bentley";
 import { MapLayerAccessClient, MapLayerAccessToken, MapLayerAccessTokenParams, MapLayerTokenEndpoint } from "@itwin/core-frontend";
-import { ArcGisOAuth2Token, ArcGisTokenClientType } from "./ArcGisTokenGenerator";
 import { ArcGisOAuth2Endpoint, ArcGisOAuth2EndpointType } from "./ArcGisOAuth2Endpoint";
+import { ArcGisOAuth2Token, ArcGisTokenClientType } from "./ArcGisTokenGenerator";
 import { ArcGisTokenManager } from "./ArcGisTokenManager";
 import { ArcGisUrl } from "./ArcGisUrl";
 
@@ -36,7 +36,7 @@ export interface ArcGisOAuthClientIds {
  * ArcGIS OAuth configurations parameters.
  * See https://developers.arcgis.com/documentation/mapping-apis-and-services/security/arcgis-identity/serverless-web-apps/
  * more details.
-*/
+ */
 export interface ArcGisOAuthConfig {
   /* URL to which a user is sent once they complete sign in authorization.
     Must match a URI you define in the developer dashboard, otherwise, the authorization will be rejected.
@@ -101,16 +101,14 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
             const state = JSON.parse(stateStr);
             stateData = state?.customData;
             endpointOrigin = state?.endpointOrigin;
-
           } catch {
           }
           const expiresIn = Number(expiresInStr);
-          const expiresAt = (expiresIn * 1000) + (+new Date());   // Converts the token expiration delay (seconds) into a timestamp (UNIX time)
+          const expiresAt = (expiresIn * 1000) + (+new Date()); // Converts the token expiration delay (seconds) into a timestamp (UNIX time)
           if (endpointOrigin !== undefined) {
             ArcGisTokenManager.setOAuth2Token(endpointOrigin, { token, expiresAt, ssl, userName, persist });
             eventSuccess = true;
           }
-
         }
       }
       this.onOAuthProcessEnd.raiseEvent(eventSuccess, stateData);
@@ -142,7 +140,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   /** @internal */
   public static async validateOAuth2Endpoint(endpointUrl: string): Promise<boolean> {
     const data = await fetch(endpointUrl, { method: "GET" });
-    return data.status === 400;    // Oauth2 API returns 400 (Bad Request) when there are missing parameters
+    return data.status === 400; // Oauth2 API returns 400 (Bad Request) when there are missing parameters
   }
 
   public async getTokenServiceEndPoint(mapLayerUrl: string): Promise<MapLayerTokenEndpoint | undefined> {
@@ -211,7 +209,6 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   public setEnterpriseClientId(serviceBaseUrl: string, clientId: string) {
-
     if (this._clientIds?.enterpriseClientIds) {
       const foundIdx = this._clientIds.enterpriseClientIds.findIndex((entry) => entry.serviceBaseUrl === serviceBaseUrl);
       if (foundIdx !== -1) {
@@ -228,11 +225,9 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   public removeEnterpriseClientId(clientId: ArcGisEnterpriseClientId) {
-
     if (this._clientIds?.enterpriseClientIds) {
       this._clientIds.enterpriseClientIds = this._clientIds?.enterpriseClientIds?.filter((item) => item.serviceBaseUrl !== clientId.serviceBaseUrl);
     }
-
   }
 
   /// //////////
@@ -244,7 +239,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
         const oauthEndpointUrl = new URL(oauthEndpoint.getUrl());
         return ArcGisTokenManager.getOAuth2Token(oauthEndpointUrl.origin);
       }
-    } catch { }
+    } catch {}
     return undefined;
   }
 
@@ -255,19 +250,23 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   private _endPointsCache = new Map<MapLayerUrl, EndPointsCacheEntry>();
 
   /**
- * Get OAuth2 endpoint that must be cause to get the Oauth2 token
- * @internal
- */
+   * Get OAuth2 endpoint that must be cause to get the Oauth2 token
+   * @internal
+   */
   private cacheEndpoint(url: MapLayerUrl, endpointType: ArcGisOAuth2EndpointType, endPoint: ArcGisOAuth2Endpoint) {
-    const entry = endpointType === ArcGisOAuth2EndpointType.Authorize ? {authorizeEndpoint: endPoint} : {tokenEndpoint: endPoint};
+    const entry = endpointType === ArcGisOAuth2EndpointType.Authorize ? { authorizeEndpoint: endPoint } : { tokenEndpoint: endPoint };
     this._endPointsCache.set(url, entry);
   }
 
   /**
- * Get OAuth2 endpoint that must be cause to get the Oauth2 token
- * @internal
- */
-  private async createEndpoint(mapLayerUrl: MapLayerUrl, oauthEndpointUrl: string, endpointType: ArcGisOAuth2EndpointType): Promise<ArcGisOAuth2Endpoint | undefined> {
+   * Get OAuth2 endpoint that must be cause to get the Oauth2 token
+   * @internal
+   */
+  private async createEndpoint(
+    mapLayerUrl: MapLayerUrl,
+    oauthEndpointUrl: string,
+    endpointType: ArcGisOAuth2EndpointType,
+  ): Promise<ArcGisOAuth2Endpoint | undefined> {
     // Validate the URL we just composed
     const oauthEndpoint = new ArcGisOAuth2Endpoint(oauthEndpointUrl, this.constructLoginUrl(oauthEndpointUrl, false), false);
     this.cacheEndpoint(mapLayerUrl, endpointType, oauthEndpoint);
@@ -275,9 +274,9 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   /**
-  * Returns whether the ArcGis host is valid
-  * @internal
-  */
+   * Returns whether the ArcGis host is valid
+   * @internal
+   */
   private isArcGisHostValid(url: URL): boolean {
     const allowedHosts = [
       "arcgis.com",
@@ -287,7 +286,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   private async validateEndpointUrl(url: string) {
-    let valid: boolean|undefined;
+    let valid: boolean | undefined;
     try {
       valid = await ArcGisAccessClient.validateOAuth2Endpoint(url.toString());
     } catch {
@@ -299,9 +298,9 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
   }
 
   /**
- * Get OAuth2 endpoint that must be cause to get the Oauth2 token
- * @internal
- */
+   * Get OAuth2 endpoint that must be cause to get the Oauth2 token
+   * @internal
+   */
   private async getOAuth2Endpoint(mapLayerUrl: string, endpointType: ArcGisOAuth2EndpointType): Promise<ArcGisOAuth2Endpoint | undefined> {
     // Return from cache if available
     const cachedEndpoint = this._endPointsCache.get(mapLayerUrl);
@@ -309,7 +308,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
       return (endpointType === ArcGisOAuth2EndpointType.Authorize ? cachedEndpoint.authorizeEndpoint : cachedEndpoint.authorizeEndpoint);
     }
 
-    const endpointStr = (endpointType === ArcGisOAuth2EndpointType.Authorize ? "authorize" : "token");
+    const endpointStr = endpointType === ArcGisOAuth2EndpointType.Authorize ? "authorize" : "token";
 
     const urlObj = new URL(mapLayerUrl);
 
@@ -324,7 +323,6 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
       const oauth2Url = `https://www.arcgis.com/sharing/rest/oauth2/${endpointStr}`;
       return new ArcGisOAuth2Endpoint(oauth2Url, this.constructLoginUrl(oauth2Url, true), true);
     } else {
-
       // First attempt: derive the Oauth2 token URL from the 'tokenServicesUrl', exposed by the 'info request'
       try {
         const restUrlFromTokenService = await ArcGisUrl.getRestUrlFromGenerateTokenUrl(urlObj);
@@ -340,7 +338,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
 
             // Check again the URL we just composed
             const isValidUrl = await this.validateEndpointUrl(newUrlObj.toString());
-            if (isValidUrl === undefined || isValidUrl ) {
+            if (isValidUrl === undefined || isValidUrl) {
               const endpoint = await this.createEndpoint(mapLayerUrl, newUrlObj.toString(), endpointType);
               if (endpoint)
                 return endpoint;
@@ -349,7 +347,7 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
         } else {
           const oauthEndpointUrl = `${restUrlFromTokenService.toString()}oauth2/${endpointStr}`;
           const isValidUrl = await this.validateEndpointUrl(oauthEndpointUrl);
-          if (isValidUrl === undefined || isValidUrl ) {
+          if (isValidUrl === undefined || isValidUrl) {
             const endpoint = await this.createEndpoint(mapLayerUrl, oauthEndpointUrl, endpointType);
             if (endpoint)
               return endpoint;
@@ -360,15 +358,15 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
     }
 
     // If we reach here, we were not successful creating an endpoint
-    this._endPointsCache.set(mapLayerUrl, {});  // Cache an empty entry, and avoid making repeated failing requests.
+    this._endPointsCache.set(mapLayerUrl, {}); // Cache an empty entry, and avoid making repeated failing requests.
 
-    return undefined;   // we could not find any valid oauth2 endpoint
+    return undefined; // we could not find any valid oauth2 endpoint
   }
 
   /**
- * Construct the complete Authorize url to starts the Oauth process
- * @internal
- */
+   * Construct the complete Authorize url to starts the Oauth process
+   * @internal
+   */
   private constructLoginUrl(url: string, isArcgisOnline: boolean) {
     const urlObj = new URL(url);
 
@@ -379,7 +377,6 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
       if (clientId !== undefined) {
         urlObj.searchParams.set("client_id", clientId);
       }
-
     } else {
       const clientId = this.getMatchingEnterpriseClientId(url);
       assert(clientId !== undefined);
@@ -398,5 +395,4 @@ export class ArcGisAccessClient implements MapLayerAccessClient {
 
     return urlObj.toString();
   }
-
 }

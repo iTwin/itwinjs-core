@@ -7,8 +7,15 @@
  */
 
 import { CompressedId64Set, Id64String, IModelStatus } from "@itwin/core-bentley";
+import {
+  EcefLocationProps,
+  ElementGeometryBuilderParams,
+  ElementGeometryInfo,
+  ElementGeometryOpcode,
+  GeometricElementProps,
+  GeometryPartProps,
+} from "@itwin/core-common";
 import { Matrix3dProps, Range3dProps, TransformProps } from "@itwin/core-geometry";
-import { EcefLocationProps, ElementGeometryBuilderParams, ElementGeometryInfo, ElementGeometryOpcode, GeometricElementProps, GeometryPartProps } from "@itwin/core-common";
 import { EditCommandIpc } from "./EditorIpc";
 
 /** Command ids for built in EditCommandIpc classes.

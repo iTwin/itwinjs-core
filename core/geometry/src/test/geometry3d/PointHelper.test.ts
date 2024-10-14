@@ -47,10 +47,13 @@ describe("FrameBuilder", () => {
     const builder = new FrameBuilder();
     ck.testFalse(builder.hasOrigin, "frameBuilder.hasOrigin at start");
 
-    for (const points of [
-      [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(0, 1, 0)], [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0),
-        /* */ Point3d.create(1, 1, 0)], [Point3d.create(1, 2, -1), Point3d.create(1, 3, 5), Point3d.create(-2, 1, 7)],
-    ]) {
+    for (
+      const points of [
+        [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(0, 1, 0)],
+        [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), /* */ Point3d.create(1, 1, 0)],
+        [Point3d.create(1, 2, -1), Point3d.create(1, 3, 5), Point3d.create(-2, 1, 7)],
+      ]
+    ) {
       builder.clear();
       const point0 = points[0];
       const point1 = points[1];
@@ -71,8 +74,10 @@ describe("FrameBuilder", () => {
       builder.announcePoint(point2);
       ck.testUndefined(builder.getValidatedFrame(true), "frame in progress");
       const rFrame = builder.getValidatedFrame(false);
-      if (ck.testPointer(rFrame, "expect right handed frame") && rFrame
-        && ck.testBoolean(true, rFrame.matrix.isRigid(), "good frame")) {
+      if (
+        ck.testPointer(rFrame, "expect right handed frame") && rFrame
+        && ck.testBoolean(true, rFrame.matrix.isRigid(), "good frame")
+      ) {
         const inverse = rFrame.inverse();
         if (ck.testPointer(inverse, "invertible frame") && inverse) {
           const product = rFrame.multiplyTransformTransform(inverse);
@@ -96,10 +101,20 @@ describe("FrameBuilder", () => {
 
   it("createFrameWithCCWPolygon", () => {
     const ck = new Checker();
-    ck.testUndefined(FrameBuilder.createFrameWithCCWPolygon([
-      Point3d.create(1, 2, 3)]), "detect incomplete frame data");
-    ck.testUndefined(FrameBuilder.createFrameWithCCWPolygon([
-      Point3d.create(1, 2, 3), Point3d.create(1, 2, 3), Point3d.create(1, 2, 3)]), "detect singular frame data");
+    ck.testUndefined(
+      FrameBuilder.createFrameWithCCWPolygon([
+        Point3d.create(1, 2, 3),
+      ]),
+      "detect incomplete frame data",
+    );
+    ck.testUndefined(
+      FrameBuilder.createFrameWithCCWPolygon([
+        Point3d.create(1, 2, 3),
+        Point3d.create(1, 2, 3),
+        Point3d.create(1, 2, 3),
+      ]),
+      "detect singular frame data",
+    );
 
     const triangle0 = [Point3d.create(1, 0), Point3d.create(0, 1), Point3d.create(0, 0)];
     const triangle1 = Point3dArray.clonePoint3dArray(triangle0);
@@ -136,7 +151,6 @@ describe("FrameBuilder", () => {
     ck.testExactNumber(0, emptyArray.length);
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 
 // ASSUME pointsA is planar with at least 3 points, and first turn is left.
@@ -158,9 +172,11 @@ function testCentroidNormal(ck: Checker, pointsA: Point3d[], expectedArea: numbe
     PolygonOps.areaNormalGo(pointsQ, normalQ);
     ck.testVector3d(normalC, normalQ);
     const ray = PolygonOps.centroidAreaNormal(pointsB);
-    if (ck.testParallel(normalB, normalC, "polygon normal", transform)
+    if (
+      ck.testParallel(normalB, normalC, "polygon normal", transform)
       && ck.testCoordinate(expectedArea, normalC.magnitude())
-      && ck.testPointer(ray, "area computed") && ray && ray.a)
+      && ck.testPointer(ray, "area computed") && ray && ray.a
+    )
       ck.testCoordinate(expectedArea, ray.a);
   }
 }
@@ -191,10 +207,7 @@ describe("MomentData.HelloWorld", () => {
     // Test undefined/empty returns
     const mData = MomentData.pointsToPrincipalAxes([])!;
     ck.testTrue(mData.origin.isAlmostZero);
-    const tempMatrix = Matrix4d.createRowValues(1, 1, 1, 0,
-      1, 1, 1, 0,
-      1, 1, 1, 0,
-      1, 1, 1, 0);
+    const tempMatrix = Matrix4d.createRowValues(1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0);
     ck.testUndefined(MomentData.inertiaProductsToPrincipalAxes(Point3d.create(1, 2, 3), tempMatrix));
     mData.origin = Point3d.create(1, 2, 3);
     mData.clearSums();
@@ -243,14 +256,15 @@ describe("MomentData.HelloWorld", () => {
           const principalZ = moments.localToWorldMap.matrix.columnZ();
           ck.testTrue(principalZ.isPerpendicularTo(axes0.columnX()), "principal Z perp X");
           ck.testTrue(principalZ.isPerpendicularTo(axes0.columnY()), "principal Z perp Z");
-          ck.testCoordinate(Math.max(radiusA, radiusB) / Math.min(radiusA, radiusB),
+          ck.testCoordinate(
+            Math.max(radiusA, radiusB) / Math.min(radiusA, radiusB),
             moments.radiusOfGyration.y / moments.radiusOfGyration.x,
-            "Radii for Symmetric points on ellipse scale as axis lengths");
+            "Radii for Symmetric points on ellipse scale as axis lengths",
+          );
           if (Geometry.isAlmostEqualNumber(radiusA, radiusB)) {
             ck.testCoordinate(radiusA, moments.radiusOfGyration.z, "Circle radius Of gyration is radius");
             // extra call for debugger . . .
             MomentData.pointsToPrincipalAxes(ls.points)!;
-
           }
         }
       }
@@ -286,7 +300,8 @@ describe("PolygonOps", () => {
       Point2d.create(ax1, ay),
       Point2d.create(ax1, 8),
       Point2d.create(ax0, 8),
-      Point2d.create(ax0, 0)];
+      Point2d.create(ax0, 0),
+    ];
     const points3d = [];
     for (const p of points)
       points3d.push(Point3d.create(p.x, p.y));
@@ -380,7 +395,7 @@ describe("PolygonOps", () => {
     const perpendicularSign = [1, 0, -1];
     const perpendicularFraction = 0.01;
 
-    for (let node0 = faceSeed; ;) {
+    for (let node0 = faceSeed;;) {
       node0 = node0.faceSuccessor;
       for (const v of perpendicularSign) {
         const point = node0.fractionAlongAndPerpendicularToPoint2d(0.3, v * perpendicularFraction);
@@ -409,7 +424,7 @@ describe("PolygonOps", () => {
     const perpendicularSign = [1, -1];
     const perpendicularFraction = 0.01;
 
-    for (let node0 = faceSeed; ;) {
+    for (let node0 = faceSeed;;) {
       node0 = node0.faceSuccessor;
       for (const v of perpendicularSign) {
         const point = node0.fractionAlongAndPerpendicularToPoint2d(0.3, v * perpendicularFraction);
@@ -428,7 +443,7 @@ describe("PolygonOps", () => {
     const ck = new Checker();
     const testPoint = Point3d.createZero();
     let points = [Point3d.create(1, 1), Point3d.create(-1, 1), testPoint];
-    const rotate = <T,>(arr: Array<T>, n = 1) => [...arr.slice(n, arr.length), ...arr.slice(0, n)];
+    const rotate = <T>(arr: Array<T>, n = 1) => [...arr.slice(n, arr.length), ...arr.slice(0, n)];
     const testVertexHit = (testPt: XAndY, pts: Point3d[]) => {
       const result = PolygonOps.classifyPointInPolygon(testPt.x, testPt.y, pts);
       if (ck.testDefined(result, "classification successful"))
@@ -495,14 +510,18 @@ describe("Point3dArray", () => {
   it("MiscArrayOps", () => {
     const ck = new Checker();
     const pointsA = Sample.createFractalDiamondConvexPattern(1, -0.5);
-    const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
-      Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
+    const frame = Transform.createFixedPointAndMatrix(
+      Point3d.create(1, 2, 3),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!,
+    );
     frame.multiplyPoint3dArrayInPlace(pointsA);
 
     const map = FrameBuilder.createRightHandedLocalToWorld(pointsA);
     if (ck.testPointer(map, "Right Handed Map") && map) {
       const plane = Plane3dByOriginAndUnitNormal.create(
-        map.getOrigin(), map.matrix.columnZ())!;
+        map.getOrigin(),
+        map.matrix.columnZ(),
+      )!;
       ck.testTrue(Point3dArray.isCloseToPlane(pointsA, plane), "points in plane of frame");
     }
 
@@ -538,8 +557,10 @@ describe("Point3dArray", () => {
   it("Point4dArray", () => {
     const ck = new Checker();
     const pointsA = Sample.createFractalDiamondConvexPattern(1, -0.5);
-    const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 3),
-      Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!);
+    const frame = Transform.createFixedPointAndMatrix(
+      Point3d.create(1, 2, 3),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0.3, -0.2, 1.2), Angle.createDegrees(15.7))!,
+    );
     frame.multiplyPoint3dArrayInPlace(pointsA);
     const weights = [];
     const amplitude = 0.25;
@@ -613,7 +634,8 @@ describe("Point3dArray", () => {
       Point2d.create(8, b),
       Point2d.create(a, b),
       Point2d.create(a, 6),
-      Point2d.create(0, 6)];
+      Point2d.create(0, 6),
+    ];
     for (const p of polygon) {
       ck.testExactNumber(0, PolygonOps.classifyPointInPolygon(p.x, p.y, polygon)!);
     }
@@ -634,7 +656,8 @@ describe("Point3dArray", () => {
       polygon[2],
       polygon[3],
       polygon[4],
-      polygon[5]];
+      polygon[5],
+    ];
     ck.testExactNumber(1, PolygonOps.classifyPointInPolygon(pointQ.x, pointQ.y, polygonQ)!);
     ck.testExactNumber(1, PolygonOps.classifyPointInPolygon(pointQ.x, pointQ.y, polygonQ)!);
     expect(ck.getNumErrors()).toBe(0);
@@ -643,13 +666,28 @@ describe("Point3dArray", () => {
   it("PolylineLength", () => {
     const ck = new Checker();
     const packedPoints = [
-      0, 0, 0,
-      2, 0, 0,
-      2, 2, 0,
-      2, 2, 2,
-      0, 2, 2,
-      0, 2, 0,
-      0, 0, 0];
+      0,
+      0,
+      0,
+      2,
+      0,
+      0,
+      2,
+      2,
+      0,
+      2,
+      2,
+      2,
+      0,
+      2,
+      2,
+      0,
+      2,
+      0,
+      0,
+      0,
+      0,
+    ];
 
     const packed64 = new Float64Array(packedPoints);
     const points = Point3dArray.unpackNumbersToPoint3dArray(packed64);
@@ -801,11 +839,11 @@ describe("Point3dArray", () => {
     const ck = new Checker();
     const pointsA = [Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(0, 4, 0)];
     const pointsC = pointsA.map((xyz: Point3d) => xyz.clone());
-    pointsC.push(Point3d.create(0, 2, 0));    // more points, same normal and area!!!
-    pointsC.push(Point3d.create(0, 1, 0));    // more points, same normal and area!!!
+    pointsC.push(Point3d.create(0, 2, 0)); // more points, same normal and area!!!
+    pointsC.push(Point3d.create(0, 1, 0)); // more points, same normal and area!!!
 
     const pointsB = Point3dArray.clonePoint3dArray(pointsA);
-    pointsB.push(pointsB[0].clone());   // degenerate quad !!!!
+    pointsB.push(pointsB[0].clone()); // degenerate quad !!!!
 
     ck.testExactNumber(3, Point2dArray.pointCountExcludingTrailingWraparound(pointsA));
     // single point ...
@@ -862,7 +900,6 @@ function compareAreaData(ck: Checker, polygonA: Point3d[], polygonB: Point3d[] |
 }
 
 describe("PolygonAreas", () => {
-
   it("TriangleVariants", () => {
     const ck = new Checker();
     const triangle000 = Sample.createTriangleWithSplitEdges(0, 0, 0);
@@ -926,24 +963,36 @@ describe("PolygonAreas", () => {
     ];
     const centroidA = PolygonOps.centroidAreaNormal(pointA)!;
     GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointA));
-    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidA.origin, centroidA.direction, equivalentCircleRadius(centroidA)));
+    GeometryCoreTestIO.captureGeometry(
+      allGeometry,
+      Arc3d.createCenterNormalRadius(centroidA.origin, centroidA.direction, equivalentCircleRadius(centroidA)),
+    );
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(centroidA.origin, centroidA.origin.plus(centroidA.direction)));
     const a = 2.0;
     const scaleTransform = Transform.createFixedPointAndMatrix(centroidA.origin, Matrix3d.createScale(a, a, a));
     const pointB = scaleTransform.multiplyPoint3dArray(pointA);
     const centroidB = PolygonOps.centroidAreaNormal(pointB)!;
     GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointB));
-    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidB.origin, centroidB.direction, equivalentCircleRadius(centroidB)));
+    GeometryCoreTestIO.captureGeometry(
+      allGeometry,
+      Arc3d.createCenterNormalRadius(centroidB.origin, centroidB.direction, equivalentCircleRadius(centroidB)),
+    );
     ck.testPoint3d(centroidA.origin, centroidB.origin, "origin is invariant after scale around origin");
     ck.testVector3d(centroidA.direction, centroidB.direction, "origin is invariant after scale around origin");
     ck.testCoordinate(a * a * centroidA.a!, centroidB.a!, "area scales");
 
-    const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0, 1, 3), Matrix3d.createRotationAroundVector(Vector3d.create(2, 3, 1), Angle.createDegrees(45.0))!);
+    const rotationTransform = Transform.createFixedPointAndMatrix(
+      Point3d.create(0, 1, 3),
+      Matrix3d.createRotationAroundVector(Vector3d.create(2, 3, 1), Angle.createDegrees(45.0))!,
+    );
     const pointC = rotationTransform.multiplyPoint3dArray(pointA);
     const centroidC = PolygonOps.centroidAreaNormal(pointC)!;
     const centroidC1 = centroidA.cloneTransformed(rotationTransform);
     GeometryCoreTestIO.captureGeometry(allGeometry, Loop.createPolygon(pointC));
-    GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createCenterNormalRadius(centroidC.origin, centroidC.direction, equivalentCircleRadius(centroidC)));
+    GeometryCoreTestIO.captureGeometry(
+      allGeometry,
+      Arc3d.createCenterNormalRadius(centroidC.origin, centroidC.direction, equivalentCircleRadius(centroidC)),
+    );
     ck.testPoint3d(centroidC.origin, centroidC1.origin);
     ck.testVector3d(centroidC.direction, centroidC1.direction);
     ck.testCoordinate((centroidA as any).a, (centroidC as any).a);
@@ -1060,7 +1109,6 @@ describe("PolygonAreas", () => {
         for (const x of q)
           ck.testExactNumber(data10[k++], x);
       }
-
     }
     const numPerRowB = 4;
     const leafB = 3;
@@ -1172,7 +1220,6 @@ describe("PolygonAreas", () => {
     }
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 
 // coverage missing from other tests
@@ -1187,7 +1234,10 @@ describe("PointHelperCoverage", () => {
 
     const testXYZPropsArray = (a: XYZProps[]) => {
       const aNumberArray = Point3dArray.cloneXYZPropsAsNumberArray(a);
-      ck.testTrue(Array.isArray(aNumberArray) && aNumberArray.length > 0 && Array.isArray(aNumberArray[0]), "cloneXYZPropsAsNumberArray returns a 2d array");
+      ck.testTrue(
+        Array.isArray(aNumberArray) && aNumberArray.length > 0 && Array.isArray(aNumberArray[0]),
+        "cloneXYZPropsAsNumberArray returns a 2d array",
+      );
       ck.testExactNumber(aNumberArray.length, a.length, "cloneXYZPropsAsNumberArray returns outer array of expected length");
       for (let i = 0; i < aNumberArray.length; ++i) {
         ck.testExactNumber(aNumberArray[i].length, 3, "cloneXYZPropsAsNumberArray returns inner arrays of length 3");
@@ -1206,7 +1256,7 @@ describe("PointHelperCoverage", () => {
     const indexA = 0;
     const indexC = xyz.length - 1;
     const distToUnboundedAC = 5;
-    const distFromOutlierToBoundedAC = 5 * Math.sqrt(2);  // indices 1 and 3 are outliers (project outside bounded AC)
+    const distFromOutlierToBoundedAC = 5 * Math.sqrt(2); // indices 1 and 3 are outliers (project outside bounded AC)
     for (const extrapolate of [true, false]) {
       for (const indexB of [1, 2, 3]) {
         dist = Point3dArray.distanceIndexedPointBToSegmentAC(xyz, indexA, indexB, indexC, extrapolate);
@@ -1221,7 +1271,7 @@ describe("PointHelperCoverage", () => {
 
     const hull: Point3d[] = [];
     const interior: Point3d[] = [];
-    xyz.push(Point3d.create(1, 1, 1));  // add a (second) point inside the hull
+    xyz.push(Point3d.create(1, 1, 1)); // add a (second) point inside the hull
     Point3dArray.computeConvexHullXY(xyz, hull, interior, true);
     if (ck.testExactNumber(2, interior.length, "computeConvexHullXY returned expected number of interior points")) {
       ck.testTrue(interior.find((p) => p.isExactEqual(xyz[2])) !== undefined, "computeConvexHullXY returned expected interior point");
@@ -1235,7 +1285,7 @@ describe("PointHelperCoverage", () => {
   it("Point4dArray", () => {
     const ck = new Checker();
     const data = [0, 1, 2, 3, 4, 5];
-    const points = [];  // arrays of 2 points
+    const points = []; // arrays of 2 points
     points.push([Point3d.create(data[0], data[1], data[2]), Point3d.create(data[3], data[4], data[5])]);
     points.push(new Float64Array(data));
     points.push(data);
@@ -1247,7 +1297,7 @@ describe("PointHelperCoverage", () => {
       weights.push(w);
       weights.push(new Float64Array(w));
     }
-    const data1 = [0, 1, 2, 1, 3, 4, 5, 1];  // with "weights"
+    const data1 = [0, 1, 2, 1, 3, 4, 5, 1]; // with "weights"
     const result = new Float64Array(data1.length);
     const shortResult = new Float64Array(data1.length - 1);
     let packed: Float64Array | undefined;
@@ -1257,7 +1307,10 @@ describe("PointHelperCoverage", () => {
       ck.testTrue(NumberArray.isExactEqual(packed, data1), "packPointsAndWeightsToFloat64Array returns expected array");
 
       packed = Point4dArray.packPointsAndWeightsToFloat64Array(pointArray, [1, 1], shortResult);
-      ck.testTrue(packed !== undefined && packed !== shortResult, "packPointsAndWeightsToFloat64Array with insufficiently allocated result argument returns new array");
+      ck.testTrue(
+        packed !== undefined && packed !== shortResult,
+        "packPointsAndWeightsToFloat64Array with insufficiently allocated result argument returns new array",
+      );
       ck.testTrue(NumberArray.isExactEqual(packed, data1), "packPointsAndWeightsToFloat64Array returns expected array");
 
       for (const weightArray of weights) {

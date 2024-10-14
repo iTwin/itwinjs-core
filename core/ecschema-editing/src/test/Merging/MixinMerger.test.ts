@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Mixin, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
+import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -144,8 +144,7 @@ describe("Mixin merger tests", () => {
           changeType: "add",
           schemaType: SchemaItemType.EntityClass,
           itemName: "SourceEntity",
-          difference: {
-          },
+          difference: {},
         },
         {
           changeType: "modify",

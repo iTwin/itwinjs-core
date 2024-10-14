@@ -21,7 +21,6 @@ enum DataState {
  * @internal
  */
 export class TriDiagonalSystem {
-
   // Lower diagonal, indexed by rows
   private _aLeft: Float64Array;
   // Upper diagonal, indexed by rows
@@ -49,7 +48,12 @@ export class TriDiagonalSystem {
     this._dataState = DataState.RawMatrix;
     const n = this._aDiag.length;
     for (let i = 0; i < n; i++) {
-      this._aLeft[i] = this._aRight[i] = this._aDiag[i] = this._b[i] = this._x[i] = 0.0;
+      this._aLeft[i] =
+        this._aRight[i] =
+        this._aDiag[i] =
+        this._b[i] =
+        this._x[i] =
+          0.0;
     }
   }
   /** Install data in a row of the matrix */
@@ -128,7 +132,6 @@ export class TriDiagonalSystem {
     if (this._dataState === DataState.FactorFailed) {
       return false;
     } else if (this._dataState === DataState.FactorOK) {
-
       const n = this._aDiag.length;
       const nm1 = n - 1;
       for (let i = 0; i < nm1; i++) {
@@ -148,9 +151,14 @@ export class TriDiagonalSystem {
       let i;
       for (i = 1; i < nm1; i++) {
         Point3d.createAdd3Scaled(
-          pointX[i - 1], this._aLeft[i], pointX[i], this._aDiag[i],
-          pointX[i + 1], this._aRight[i],
-          pointB[i]);
+          pointX[i - 1],
+          this._aLeft[i],
+          pointX[i],
+          this._aDiag[i],
+          pointX[i + 1],
+          this._aRight[i],
+          pointB[i],
+        );
       }
       Point3d.createAdd2Scaled(pointX[n - 2], this._aLeft[nm1], pointX[nm1], this._aDiag[nm1], pointB[nm1]);
       return true;
@@ -185,7 +193,7 @@ export class TriDiagonalSystem {
     }
     this._dataState = DataState.FactorFailed;
 
-    const n1 = this._aDiag.length - 1;    // Last pivot index
+    const n1 = this._aDiag.length - 1; // Last pivot index
     // Eliminate in subdiagonal.
     for (let i = 0; i < n1; i++) {
       const r = Geometry.conditionalDivideFraction(this._aLeft[i + 1], this._aDiag[i]);
@@ -292,7 +300,8 @@ export class TriDiagonalSystem {
 
     for (let i = 0; i < n; i++) {
       data.push(
-        [i, [this._aLeft[i], this._aDiag[i], this._aRight[i]], this._x[i], this._b[i]]);
+        [i, [this._aLeft[i], this._aDiag[i], this._aRight[i]], this._x[i], this._b[i]],
+      );
     }
     return data;
   }
@@ -304,7 +313,8 @@ export class TriDiagonalSystem {
 
     for (let i = 0; i < n; i++) {
       data.push(
-        [i, [this._aLeft[i], this._aDiag[i], this._aRight[i]], this._x[i], xyzB[i].toJSON()]);
+        [i, [this._aLeft[i], this._aDiag[i], this._aRight[i]], this._x[i], xyzB[i].toJSON()],
+      );
     }
     return data;
   }

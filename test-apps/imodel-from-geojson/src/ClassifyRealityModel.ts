@@ -2,12 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String, JsonUtils } from "@itwin/core-bentley";
-import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
 import { CategorySelector, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition } from "@itwin/core-backend";
+import { Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Cartographic, IModel, PersistentBackgroundMapProps, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
+  AxisAlignedBox3d,
+  Cartographic,
+  IModel,
+  PersistentBackgroundMapProps,
+  SpatialClassifierInsideDisplay,
+  SpatialClassifierOutsideDisplay,
+  ViewFlags,
 } from "@itwin/core-common";
+import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
 
 class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
@@ -23,7 +29,7 @@ class RealityModelTileUtils {
       for (let j = 0; j < 2; j++) {
         for (let k = 0; k < 2; k++) {
           for (let l = 0; l < 2; l++) {
-            corners.push(center.plus3Scaled(ux, (j ? -1.0 : 1.0), uy, (k ? -1.0 : 1.0), uz, (l ? -1.0 : 1.0)));
+            corners.push(center.plus3Scaled(ux, j ? -1.0 : 1.0, uy, k ? -1.0 : 1.0, uz, l ? -1.0 : 1.0));
           }
         }
       }
@@ -38,11 +44,16 @@ class RealityModelTileUtils {
   }
 
   public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
-    const minToleranceRatio = .5;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
+    const minToleranceRatio = .5; // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
     return minToleranceRatio * range.diagonal().magnitude() / geometricError;
   }
   public static transformFromJson(jTrans: number[] | undefined): Transform | undefined {
-    return (jTrans === undefined) ? undefined : Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
+    return (jTrans === undefined)
+      ? undefined
+      : Transform.createOriginAndMatrix(
+        Point3d.create(jTrans[12], jTrans[13], jTrans[14]),
+        Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]),
+      );
   }
   public static rangeFromJson(json: any): AxisAlignedBox3d {
     if (undefined !== json.root.boundingVolume.region) {
@@ -91,7 +102,18 @@ function parseDisplayMode(defaultDisplay: number, option?: string) {
   }
 }
 
-export async function insertClassifiedRealityModel(url: string, classifierModelId: Id64String, classifierCategoryId: Id64String, iModelDb: IModelDb, viewFlags: ViewFlags, isPlanar: boolean, backgroundMap?: PersistentBackgroundMapProps, inputName?: string, inside?: string, outside?: string): Promise<void> {
+export async function insertClassifiedRealityModel(
+  url: string,
+  classifierModelId: Id64String,
+  classifierCategoryId: Id64String,
+  iModelDb: IModelDb,
+  viewFlags: ViewFlags,
+  isPlanar: boolean,
+  backgroundMap?: PersistentBackgroundMapProps,
+  inputName?: string,
+  inside?: string,
+  outside?: string,
+): Promise<void> {
   const name = inputName ? inputName : url;
   const classificationFlags = {
     inside: parseDisplayMode(SpatialClassifierInsideDisplay.ElementColor, inside),
@@ -101,7 +123,11 @@ export async function insertClassifiedRealityModel(url: string, classifierModelI
 
   const classifier = { modelId: classifierModelId, name, flags: classificationFlags, isActive: true, expand: 1.0 };
   const realityModel = { tilesetUrl: url, name, classifiers: [classifier] };
-  const displayStyleId = DisplayStyle3d.insert(iModelDb, IModel.dictionaryId, name, { viewFlags, backgroundMap, contextRealityModels: [realityModel] });
+  const displayStyleId = DisplayStyle3d.insert(iModelDb, IModel.dictionaryId, name, {
+    viewFlags,
+    backgroundMap,
+    contextRealityModels: [realityModel],
+  });
 
   const projectExtents = Range3d.createFrom(iModelDb.projectExtents);
   let range;
@@ -119,5 +145,14 @@ export async function insertClassifiedRealityModel(url: string, classifierModelI
 
   const modelSelectorId: Id64String = ModelSelector.insert(iModelDb, IModel.dictionaryId, name, []);
   const categorySelectorId: Id64String = CategorySelector.insert(iModelDb, IModel.dictionaryId, name, [classifierCategoryId]);
-  OrthographicViewDefinition.insert(iModelDb, IModel.dictionaryId, name, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
+  OrthographicViewDefinition.insert(
+    iModelDb,
+    IModel.dictionaryId,
+    name,
+    modelSelectorId,
+    categorySelectorId,
+    displayStyleId,
+    range,
+    StandardViewIndex.Iso,
+  );
 }

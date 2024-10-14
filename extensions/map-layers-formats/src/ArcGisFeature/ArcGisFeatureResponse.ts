@@ -14,7 +14,7 @@ export interface ArcGisResponseData {
 
 /** @internal */
 export type ArcGisFieldType =
-  "esriFieldTypeInteger"
+  | "esriFieldTypeInteger"
   | "esriFieldTypeSmallInteger"
   | "esriFieldTypeDouble"
   | "esriFieldTypeSingle"
@@ -35,17 +35,17 @@ export class ArcGisFeatureResponse {
 
   private _response: Promise<Response>;
 
-  constructor(format: ArcGisFeatureFormat,  response: Promise<Response>, envelope?: ArcGisExtent) {
+  constructor(format: ArcGisFeatureFormat, response: Promise<Response>, envelope?: ArcGisExtent) {
     this.format = format;
     this._response = response;
     this.envelope = envelope;
   }
 
-  public async getResponseData(): Promise<ArcGisResponseData|undefined> {
+  public async getResponseData(): Promise<ArcGisResponseData | undefined> {
     let data: any;
     try {
       const tileResponse = await this._response;
-      if (tileResponse === undefined || tileResponse.status !== 200  )
+      if (tileResponse === undefined || tileResponse.status !== 200)
         return undefined;
 
       if (this.format === "PBF") {
@@ -55,17 +55,15 @@ export class ArcGisFeatureResponse {
 
         data = esriPBuffer.FeatureCollectionPBuffer.deserialize(byteArray);
         const collection = data as esriPBuffer.FeatureCollectionPBuffer;
-        return {data, exceedTransferLimit: collection?.queryResult?.featureResult?.exceededTransferLimit};
-
+        return { data, exceedTransferLimit: collection?.queryResult?.featureResult?.exceededTransferLimit };
       } else {
         data = await tileResponse.json();
         if (data === undefined || data == null)
           return undefined;
 
-        return {data, exceedTransferLimit: data.exceededTransferLimit};
+        return { data, exceedTransferLimit: data.exceededTransferLimit };
       }
-
-    } catch(_e) {
+    } catch (_e) {
       return undefined;
     }
   }

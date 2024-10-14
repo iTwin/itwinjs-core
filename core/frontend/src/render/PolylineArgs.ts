@@ -32,4 +32,3 @@ export interface PolylineArgs {
   /** The set of polylines. Each entry in the array describes a separate line string or point string as a series of indices into [[points]]. */
   polylines: PolylineIndices[];
 }
-

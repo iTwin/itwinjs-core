@@ -7,8 +7,8 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Arc3d, ClipPlaneContainment, Matrix4d, Point2d, Point3d, Point4d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { BoundingSphere, ColorDef, ElementAlignedBox3d, Frustum, FrustumPlanes } from "@itwin/core-common";
+import { Arc3d, ClipPlaneContainment, Matrix4d, Point2d, Point3d, Point4d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -18,7 +18,17 @@ import { RenderSystem } from "../render/RenderSystem";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import {
-  LRUTileListNode, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree, TileTreeLoadStatus, TileUsageMarker, TileUser, TileUserIdSet,
+  LRUTileListNode,
+  TileContent,
+  TileDrawArgs,
+  TileParams,
+  TileRequest,
+  TileRequestChannel,
+  TileTree,
+  TileTreeLoadStatus,
+  TileUsageMarker,
+  TileUser,
+  TileUserIdSet,
 } from "./internal";
 
 // cSpell:ignore undisplayable bitfield
@@ -94,9 +104,13 @@ export abstract class Tile {
   /** The bounding sphere for this tile. */
   public readonly boundingSphere: BoundingSphere;
   /** The point at the center of this tile's volume. */
-  public get center(): Point3d { return this.boundingSphere.center; }
+  public get center(): Point3d {
+    return this.boundingSphere.center;
+  }
   /** The radius of a sphere fully encompassing this tile's volume - used for culling. */
-  public get radius(): number { return this.boundingSphere.radius; }
+  public get radius(): number {
+    return this.boundingSphere.radius;
+  }
   /** Tracks the usage of this tile. After a period of disuse, the tile may be [[prune]]d to free up memory. */
   public readonly usageMarker = new TileUsageMarker();
 
@@ -175,26 +189,42 @@ export abstract class Tile {
   /** This tile's child tiles, if they exist and are loaded. The children are fully contained within this tile's volume and provide higher-resolution graphics than this tile.
    * @see [[loadChildren]]
    */
-  public get children(): Tile[] | undefined { return this._children; }
+  public get children(): Tile[] | undefined {
+    return this._children;
+  }
   /** The [[IModelConnection]] to which this tile belongs. */
-  public get iModel(): IModelConnection { return this.tree.iModel; }
+  public get iModel(): IModelConnection {
+    return this.tree.iModel;
+  }
   /** Uniquely identifies this tile's content. */
-  public get contentId(): string { return this._contentId; }
+  public get contentId(): string {
+    return this._contentId;
+  }
 
   /** True if this tile's content is currently being loaded. */
-  public get isLoading(): boolean { return TileLoadStatus.Loading === this.loadStatus; }
+  public get isLoading(): boolean {
+    return TileLoadStatus.Loading === this.loadStatus;
+  }
   /** True if a request for this tile's content has been enqueued. */
-  public get isQueued(): boolean { return TileLoadStatus.Queued === this.loadStatus; }
+  public get isQueued(): boolean {
+    return TileLoadStatus.Queued === this.loadStatus;
+  }
   /** True if an attempt to load this tile's content failed. */
-  public get isNotFound(): boolean { return TileLoadStatus.NotFound === this.loadStatus; }
+  public get isNotFound(): boolean {
+    return TileLoadStatus.NotFound === this.loadStatus;
+  }
   /** True if this tile's content has been loaded and is ready to be drawn. */
-  public get isReady(): boolean { return TileLoadStatus.Ready === this.loadStatus; }
+  public get isReady(): boolean {
+    return TileLoadStatus.Ready === this.loadStatus;
+  }
 
   /** Indicates the tile should not be selected for display because it is out of the range of LODs supported by the tile provider.
    * @see [[ImageryMapTile.isOutOfLodRange]].
    * @alpha
    */
-  public get isOutOfLodRange(): boolean { return false;}
+  public get isOutOfLodRange(): boolean {
+    return false;
+  }
 
   /** @public */
   public setNotFound(): void {
@@ -219,20 +249,34 @@ export abstract class Tile {
   }
 
   /** True if this tile has no child tiles. */
-  public get isLeaf(): boolean { return this._isLeaf; }
+  public get isLeaf(): boolean {
+    return this._isLeaf;
+  }
   /** @internal */
-  public get isEmpty(): boolean { return this.isReady && !this.hasGraphics && this.isLeaf; }
+  public get isEmpty(): boolean {
+    return this.isReady && !this.hasGraphics && this.isLeaf;
+  }
   /** @internal */
-  public get isDisplayable(): boolean { return 0 < this.maximumSize; }
+  public get isDisplayable(): boolean {
+    return 0 < this.maximumSize;
+  }
   /** The maximum size in pixels this tile can be drawn. If the size of the tile on screen exceeds this maximum, a higher-resolution tile should be drawn in its place. */
-  public get maximumSize(): number { return this._maximumSize; }
+  public get maximumSize(): number {
+    return this._maximumSize;
+  }
   /** @internal */
-  public get isParentDisplayable(): boolean { return undefined !== this.parent && this.parent.isDisplayable; }
+  public get isParentDisplayable(): boolean {
+    return undefined !== this.parent && this.parent.isDisplayable;
+  }
   /** @internal */
-  public get isUndisplayableRootTile(): boolean { return undefined === this.parent && !this.isDisplayable; }
+  public get isUndisplayableRootTile(): boolean {
+    return undefined === this.parent && !this.isDisplayable;
+  }
 
   /** @internal */
-  public get request(): TileRequest | undefined { return this._request; }
+  public get request(): TileRequest | undefined {
+    return this._request;
+  }
   public set request(request: TileRequest | undefined) {
     assert(undefined === request || undefined === this.request);
     this._request = request;
@@ -249,9 +293,13 @@ export abstract class Tile {
   }
 
   /** True if this tile has graphics ready to draw. */
-  public get hasGraphics(): boolean { return undefined !== this._graphic; }
+  public get hasGraphics(): boolean {
+    return undefined !== this._graphic;
+  }
   /** True if this tile has a known volume tightly encompassing its graphics. */
-  public get hasContentRange(): boolean { return undefined !== this._contentRange; }
+  public get hasContentRange(): boolean {
+    return undefined !== this._contentRange;
+  }
   /** A volume no larger than this tile's `range`, and optionally more tightly encompassing its contents, used for more accurate culling. */
   public get contentRange(): ElementAlignedBox3d {
     if (undefined !== this._contentRange)
@@ -321,7 +369,7 @@ export abstract class Tile {
   /** Disclose any resources owned by this tile, other than its [[RenderGraphic]].
    * @internal
    */
-  protected _collectStatistics(_stats: RenderMemory.Statistics): void { }
+  protected _collectStatistics(_stats: RenderMemory.Statistics): void {}
 
   /** Disclose resources owned by this tile and (by default) all of its child tiles.
    * @note Do not override this method! Override `_collectStatistics` instead.
@@ -336,9 +384,10 @@ export abstract class Tile {
       return;
 
     const children = this.children;
-    if (undefined !== children)
+    if (undefined !== children) {
       for (const child of children)
         child.collectStatistics(stats);
+    }
   }
 
   /** If this tile's child tiles have not yet been requested, enqueue an asynchronous request to load them.
@@ -414,7 +463,10 @@ export abstract class Tile {
       return true;
 
     // Test against intersection clip - reject if tile doesn't intersect (used for section-cut graphics).
-    if (testClipIntersection && undefined !== args.intersectionClip && ClipPlaneContainment.Ambiguous !== args.intersectionClip.classifyPointContainment(worldBox.points))
+    if (
+      testClipIntersection && undefined !== args.intersectionClip &&
+      ClipPlaneContainment.Ambiguous !== args.intersectionClip.classifyPointContainment(worldBox.points)
+    )
       return true;
 
     return false;
@@ -473,7 +525,7 @@ export abstract class Tile {
         if (pt.w > .0001)
           range.extendXYZW(pt.x, pt.y, pt.z, pt.w);
         else
-          range.high.z = Math.max(1.0, range.high.z);   // behind eye plane...
+          range.high.z = Math.max(1.0, range.high.z); // behind eye plane...
       }
     } else {
       for (const child of this.children)
@@ -567,7 +619,9 @@ export abstract class Tile {
   /** Optional corners used to compute the screen size of the tile. These are used, e.g., by reality tiles with oriented bounding boxes to
    * produce more accurate size calculation.
    */
-  public getSizeProjectionCorners(): Point3d[] | undefined { return undefined; }
+  public getSizeProjectionCorners(): Point3d[] | undefined {
+    return undefined;
+  }
 }
 
 /** Describes the current status of a [[Tile]]'s content. Tile content is loaded via an asynchronous [[TileRequest]].
@@ -656,7 +710,7 @@ export enum TileBoundingBoxes {
 }
 
 // TileLoadStatus is computed from the combination of Tile._state and, if Tile.request is defined, Tile.request.state.
-const enum TileState {// eslint-disable-line no-restricted-syntax
+const enum TileState { // eslint-disable-line no-restricted-syntax
   NotReady = TileLoadStatus.NotLoaded, // Tile requires loading, but no request has yet completed.
   Ready = TileLoadStatus.Ready, // request completed successfully, or no loading was required.
   NotFound = TileLoadStatus.NotFound, // request failed.

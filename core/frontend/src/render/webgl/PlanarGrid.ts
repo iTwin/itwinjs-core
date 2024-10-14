@@ -7,8 +7,8 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@itwin/core-geometry";
 import { Frustum, QPoint2dList, QPoint3dList } from "@itwin/core-common";
+import { Plane3dByOriginAndUnitNormal, Point2d, Transform } from "@itwin/core-geometry";
 import { GraphicBranch } from "../GraphicBranch";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -22,10 +22,15 @@ import { Pass, RenderOrder } from "./RenderFlags";
 import { TechniqueId } from "./TechniqueId";
 
 class PlanarGridGeometryParams extends IndexedGeometryParams {
-
   public readonly uvParams: QBufferHandle2d;
 
-  public constructor(positions: QBufferHandle3d, uvParams: QBufferHandle2d, indices: BufferHandle, numIndices: number, public readonly props: PlanarGridProps) {
+  public constructor(
+    positions: QBufferHandle3d,
+    uvParams: QBufferHandle2d,
+    indices: BufferHandle,
+    numIndices: number,
+    public readonly props: PlanarGridProps,
+  ) {
     super(positions, indices, numIndices);
     const attrParams = AttributeMap.findAttribute("a_uvParam", TechniqueId.PlanarGrid, false);
     assert(attrParams !== undefined);
@@ -35,13 +40,21 @@ class PlanarGridGeometryParams extends IndexedGeometryParams {
 }
 
 export class PlanarGridGeometry extends IndexedGeometry {
-  public get techniqueId(): TechniqueId { return TechniqueId.PlanarGrid; }
-  public override getPass(): Pass { return "translucent"; }
-  public collectStatistics(_stats: RenderMemory.Statistics): void { }
-  public get renderOrder(): RenderOrder { return RenderOrder.UnlitSurface; }
+  public get techniqueId(): TechniqueId {
+    return TechniqueId.PlanarGrid;
+  }
+  public override getPass(): Pass {
+    return "translucent";
+  }
+  public collectStatistics(_stats: RenderMemory.Statistics): void {}
+  public get renderOrder(): RenderOrder {
+    return RenderOrder.UnlitSurface;
+  }
   public readonly uvParams: QBufferHandle2d;
   public readonly props: PlanarGridProps;
-  public override get asPlanarGrid(): PlanarGridGeometry | undefined { return this; }
+  public override get asPlanarGrid(): PlanarGridGeometry | undefined {
+    return this;
+  }
 
   private constructor(params: PlanarGridGeometryParams) {
     super(params);
@@ -110,4 +123,3 @@ export class PlanarGridGeometry extends IndexedGeometry {
     return graphic;
   }
 }
-

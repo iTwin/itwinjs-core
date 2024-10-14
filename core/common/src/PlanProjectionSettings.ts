@@ -55,7 +55,9 @@ export class PlanProjectionSettings {
     if (undefined === props)
       return undefined;
 
-    if (undefined === props.elevation && undefined === props.transparency && undefined === props.overlay && undefined === props.enforceDisplayPriority)
+    if (
+      undefined === props.elevation && undefined === props.transparency && undefined === props.overlay && undefined === props.enforceDisplayPriority
+    )
       return undefined;
 
     return new PlanProjectionSettings(props);
@@ -103,6 +105,7 @@ export class PlanProjectionSettings {
     if (this === other)
       return true;
 
-    return this.elevation === other.elevation && this.transparency === other.transparency && this.overlay === other.overlay && this.enforceDisplayPriority === other.enforceDisplayPriority;
+    return this.elevation === other.elevation && this.transparency === other.transparency && this.overlay === other.overlay &&
+      this.enforceDisplayPriority === other.enforceDisplayPriority;
   }
 }

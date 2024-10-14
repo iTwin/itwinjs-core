@@ -6,28 +6,51 @@
  * @module Workspace
  */
 
+import type { IModelJsNative } from "@bentley/imodeljs-native";
+import { AccessToken, assert, BeEvent, DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
+import { FilePropertyProps, IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { createHash } from "crypto";
 import * as fs from "fs-extra";
 import { dirname, extname, join } from "path";
 import * as semver from "semver";
-import { AccessToken, assert, BeEvent, DbResult, Mutable, OpenMode } from "@itwin/core-bentley";
-import { FilePropertyProps, IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
 import { CloudSqlite } from "../../CloudSqlite";
 import { IModelHost, KnownLocations } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
 import { SQLiteDb } from "../../SQLiteDb";
 import { SqliteStatement } from "../../SqliteStatement";
 import { SettingName, Settings, SettingsContainer, SettingsDictionaryProps, SettingsPriority } from "../../workspace/Settings";
-import type { IModelJsNative } from "@bentley/imodeljs-native";
 import {
-  GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerId, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps,
-  WorkspaceDbFullName, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion, WorkspaceDbProps,
-  WorkspaceDbQueryResourcesArgs, WorkspaceDbSettingsProps, WorkspaceDbVersion, WorkspaceOpts, WorkspaceResourceName, WorkspaceSettingNames,
+  GetWorkspaceContainerArgs,
+  Workspace,
+  WorkspaceContainer,
+  WorkspaceContainerId,
+  WorkspaceContainerProps,
+  WorkspaceDb,
+  WorkspaceDbCloudProps,
+  WorkspaceDbFullName,
+  WorkspaceDbLoadError,
+  WorkspaceDbLoadErrors,
+  WorkspaceDbManifest,
+  WorkspaceDbName,
+  WorkspaceDbNameAndVersion,
+  WorkspaceDbProps,
+  WorkspaceDbQueryResourcesArgs,
+  WorkspaceDbSettingsProps,
+  WorkspaceDbVersion,
+  WorkspaceOpts,
+  WorkspaceResourceName,
+  WorkspaceSettingNames,
 } from "../../workspace/Workspace";
-import { CreateNewWorkspaceContainerArgs, CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
-import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
-import { SettingsImpl } from "./SettingsImpl";
+import {
+  CreateNewWorkspaceContainerArgs,
+  CreateNewWorkspaceDbVersionArgs,
+  EditableWorkspaceContainer,
+  EditableWorkspaceDb,
+  WorkspaceEditor,
+} from "../../workspace/WorkspaceEditor";
 import { _implementationProhibited, _nativeDb } from "../Symbols";
+import { SettingsImpl } from "./SettingsImpl";
+import { WorkspaceSqliteDb } from "./WorkspaceSqliteDb";
 
 function workspaceDbNameWithDefault(dbName?: WorkspaceDbName): WorkspaceDbName {
   return dbName ?? "workspace-db";
@@ -66,7 +89,7 @@ function getWorkspaceCloudContainer(props: CloudSqlite.ContainerAccessProps, cac
   cloudContainer = CloudSqlite.createCloudContainer(props) as WorkspaceCloudContainer;
   cache.workspaceContainers.set(id, cloudContainer);
   cloudContainer.connectCount = 0;
-  cloudContainer.sharedConnect = function (this: WorkspaceCloudContainer) {
+  cloudContainer.sharedConnect = function(this: WorkspaceCloudContainer) {
     if (this.connectCount++ === 0) {
       this.connect(cache);
       return true;
@@ -75,7 +98,7 @@ function getWorkspaceCloudContainer(props: CloudSqlite.ContainerAccessProps, cac
     return false;
   };
 
-  cloudContainer.sharedDisconnect = function (this: WorkspaceCloudContainer) {
+  cloudContainer.sharedDisconnect = function(this: WorkspaceCloudContainer) {
     if (--this.connectCount <= 0) {
       this.disconnect();
       cache.workspaceContainers.delete(id);
@@ -99,7 +122,9 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
   }
 
   protected _wsDbs = new Map<WorkspaceDbName, WorkspaceDb>();
-  public get dirName() { return join(this.workspace.containerDir, this.id); }
+  public get dirName() {
+    return join(this.workspace.containerDir, this.id);
+  }
 
   public constructor(workspace: WorkspaceImpl, props: WorkspaceContainerProps & { accessToken: AccessToken }) {
     validateWorkspaceContainerId(props.containerId);
@@ -193,8 +218,12 @@ class WorkspaceDbImpl implements WorkspaceDb {
   protected _manifest?: WorkspaceDbManifest;
 
   /** true if this WorkspaceDb is currently open */
-  public get isOpen() { return this.sqliteDb.isOpen; }
-  public get container(): WorkspaceContainer { return this._container; }
+  public get isOpen() {
+    return this.sqliteDb.isOpen;
+  }
+  public get container(): WorkspaceContainer {
+    return this._container;
+  }
   public queryFileResource(rscName: WorkspaceResourceName): { localFileName: LocalFileName, info: IModelJsNative.EmbedFileQuery } | undefined {
     const info = this.sqliteDb[_nativeDb].queryEmbeddedFile(rscName);
     if (undefined === info)
@@ -243,7 +272,7 @@ class WorkspaceDbImpl implements WorkspaceDb {
   }
 
   private withOpenDb<T>(operation: (db: WorkspaceSqliteDb) => T): T {
-    const done = this.isOpen ? () => { } : (this.open(), () => this.close());
+    const done = this.isOpen ? () => {} : (this.open(), () => this.close());
     try {
       return operation(this.sqliteDb);
     } finally {
@@ -371,7 +400,9 @@ class WorkspaceImpl implements Workspace {
   }
 
   public async getContainerAsync(props: WorkspaceContainerProps): Promise<WorkspaceContainer> {
-    const accessToken = props.accessToken ?? ((props.baseUri === "") || props.isPublic) ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "read" });
+    const accessToken = props.accessToken ?? ((props.baseUri === "") || props.isPublic)
+      ? ""
+      : await CloudSqlite.requestToken({ ...props, accessLevel: "read" });
     return this.getContainer({ ...props, accessToken });
   }
 
@@ -398,7 +429,11 @@ class WorkspaceImpl implements Workspace {
         if (undefined === this.settings.getDictionary(dictProps)) {
           const settingsJson = db.getString(prop.resourceName);
           if (undefined === settingsJson)
-            throwWorkspaceDbLoadError(`could not load setting dictionary resource '${prop.resourceName}' from: '${manifest.workspaceName}'`, prop, db);
+            throwWorkspaceDbLoadError(
+              `could not load setting dictionary resource '${prop.resourceName}' from: '${manifest.workspaceName}'`,
+              prop,
+              db,
+            );
 
           db.close(); // don't leave this db open in case we're going to find another dictionary in it recursively.
 
@@ -448,7 +483,9 @@ class WorkspaceImpl implements Workspace {
     return result;
   }
 
-  public async getWorkspaceDbs(args: Workspace.DbListOrSettingName & { filter?: Workspace.DbListFilter, problems?: WorkspaceDbLoadError[] }): Promise<WorkspaceDb[]> {
+  public async getWorkspaceDbs(
+    args: Workspace.DbListOrSettingName & { filter?: Workspace.DbListFilter, problems?: WorkspaceDbLoadError[] },
+  ): Promise<WorkspaceDb[]> {
     const dbList = (args.settingName !== undefined) ? this.resolveWorkspaceDbSetting(args.settingName, args.filter) : args.dbs;
     const result: WorkspaceDb[] = [];
     const pushUnique = (wsDb: WorkspaceDb) => {
@@ -506,7 +543,8 @@ class EditorImpl implements WorkspaceEditor {
   }
 
   public getContainer(props: GetWorkspaceContainerArgs): EditableWorkspaceContainer {
-    return this.workspace.findContainer(props.containerId) as EditableWorkspaceContainer | undefined ?? new EditorContainerImpl(this.workspace, props);
+    return this.workspace.findContainer(props.containerId) as EditableWorkspaceContainer | undefined ??
+      new EditorContainerImpl(this.workspace, props);
   }
   public async getContainerAsync(props: WorkspaceContainerProps): Promise<EditableWorkspaceContainer> {
     const accessToken = props.accessToken ?? (props.baseUri === "") ? "" : await CloudSqlite.requestToken({ ...props, accessLevel: "write" });
@@ -519,7 +557,7 @@ class EditorImpl implements WorkspaceEditor {
 }
 
 interface EditCloudContainer extends WorkspaceCloudContainer {
-  writeLockHeldBy?: string;  // added by acquireWriteLock
+  writeLockHeldBy?: string; // added by acquireWriteLock
 }
 
 class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWorkspaceContainer {
@@ -539,7 +577,9 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
     };
   }
 
-  public async createNewWorkspaceDbVersion(args: CreateNewWorkspaceDbVersionArgs): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
+  public async createNewWorkspaceDbVersion(
+    args: CreateNewWorkspaceDbVersionArgs,
+  ): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }> {
     const cloudContainer = this.cloudContainer;
     if (undefined === cloudContainer)
       throw new Error("versions require cloud containers");
@@ -602,7 +642,10 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
         IModelJsFs.removeSync(tempDbFile);
 
       WorkspaceEditor.createEmptyDb({ localFileName: tempDbFile, manifest: args.manifest });
-      await CloudSqlite.uploadDb(this.cloudContainer, { localFileName: tempDbFile, dbName: makeWorkspaceDbFileName(workspaceDbNameWithDefault(args.dbName)) });
+      await CloudSqlite.uploadDb(this.cloudContainer, {
+        localFileName: tempDbFile,
+        dbName: makeWorkspaceDbFileName(workspaceDbNameWithDefault(args.dbName)),
+      });
       IModelJsFs.removeSync(tempDbFile);
     }
 
@@ -690,7 +733,11 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
   }
   public updateString(rscName: WorkspaceResourceName, val: string): void {
     this.validateResourceSize(val);
-    this.performWriteSql(rscName, "INSERT INTO strings(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindString(2, val));
+    this.performWriteSql(
+      rscName,
+      "INSERT INTO strings(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value",
+      (stmt) => stmt.bindString(2, val),
+    );
   }
   public removeString(rscName: WorkspaceResourceName): void {
     this.performWriteSql(rscName, "DELETE FROM strings WHERE id=?");
@@ -702,7 +749,11 @@ class EditableDbImpl extends WorkspaceDbImpl implements EditableWorkspaceDb {
   }
   public updateBlob(rscName: WorkspaceResourceName, val: Uint8Array): void {
     this.validateResourceSize(val);
-    this.performWriteSql(rscName, "INSERT INTO blobs(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value", (stmt) => stmt.bindBlob(2, val));
+    this.performWriteSql(
+      rscName,
+      "INSERT INTO blobs(id,value) VALUES(?,?) ON CONFLICT(id) DO UPDATE SET value=excluded.value WHERE value!=excluded.value",
+      (stmt) => stmt.bindBlob(2, val),
+    );
   }
   public getBlobWriter(rscName: WorkspaceResourceName): SQLiteDb.BlobIO {
     return this.sqliteDb.withSqliteStatement("SELECT rowid from blobs WHERE id=?", (stmt) => {

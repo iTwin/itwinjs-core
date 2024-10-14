@@ -8,8 +8,18 @@
 
 import { BeEvent } from "@itwin/core-bentley";
 import {
-  ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, ipcAppChannels,
-  ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, RemoveFunction, RootSubjectProps, TxnNotifications,
+  ChangesetIndexAndId,
+  EcefLocation,
+  EcefLocationProps,
+  GeographicCRS,
+  GeographicCRSProps,
+  IModelStatus,
+  ipcAppChannels,
+  ModelIdAndGeometryGuid,
+  NotifyEntitiesChangedArgs,
+  RemoveFunction,
+  RootSubjectProps,
+  TxnNotifications,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, XYZProps } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -22,9 +32,13 @@ import { EntityChanges, TxnEntityChanges } from "./TxnEntityChanges";
  * @public
  */
 export abstract class BriefcaseNotificationHandler extends NotificationHandler {
-  constructor(private _key: string) { super(); }
+  constructor(private _key: string) {
+    super();
+  }
   public abstract get briefcaseChannelName(): string;
-  public get channelName() { return `${this.briefcaseChannelName}/${this._key}`; }
+  public get channelName() {
+    return `${this.briefcaseChannelName}/${this._key}`;
+  }
 }
 
 /** Manages local changes to a [[BriefcaseConnection]] via [Txns]($docs/learning/InteractiveEditing.md).

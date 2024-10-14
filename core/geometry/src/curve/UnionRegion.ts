@@ -7,9 +7,9 @@
  * @module Curve
  */
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
-import { AnyCurve } from "./CurveTypes";
 import { CurveCollection } from "./CurveCollection";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
+import { AnyCurve } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { Loop } from "./Loop";
 import { ParityRegion } from "./ParityRegion";

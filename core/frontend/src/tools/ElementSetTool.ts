@@ -10,6 +10,7 @@ import { CompressedId64Set, Id64, Id64Arg, Id64Array, Id64String, OrderedId64Arr
 import { ColorDef, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
 import { AccuDrawHintBuilder } from "../AccuDraw";
+import { ViewRect } from "../common/ViewRect";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -19,7 +20,6 @@ import { Pixel } from "../render/Pixel";
 import { SelectionSet } from "../SelectionSet";
 import { DecorateContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
-import { ViewRect } from "../common/ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { SelectionMethod } from "./SelectTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, CoreTools, EventHandled } from "./Tool";
@@ -51,7 +51,7 @@ export interface GroupMark {
  * and to manage their hilite state.
  * @see [[ElementSetTool]]
  * @public
-*/
+ */
 export class ElementAgenda {
   /** The IDs of the elements in this agenda.
    * @note Prefer methods like [[ElementAgenda.add]] instead of modifying directly.
@@ -62,7 +62,7 @@ export class ElementAgenda {
    */
   public readonly groupMarks: GroupMark[] = [];
   public manageHiliteState = true; // Whether entries are hilited/unhilited as they are added/removed...
-  public constructor(public iModel: IModelConnection) { }
+  public constructor(public iModel: IModelConnection) {}
 
   /** Get the source for the last group added to this agenda, if applicable. The "source" is merely an indication of what the collection of elements represents. */
   public getSource() {
@@ -75,9 +75,15 @@ export class ElementAgenda {
       this.groupMarks[this.groupMarks.length - 1].source = val;
   }
 
-  public get isEmpty() { return this.length === 0; }
-  public get count() { return this.length; }
-  public get length() { return this.elements.length; }
+  public get isEmpty() {
+    return this.length === 0;
+  }
+  public get count() {
+    return this.length;
+  }
+  public get length() {
+    return this.elements.length;
+  }
 
   /** Create [[OrderedId64Array]] from agenda. */
   public orderIds(): OrderedId64Array {
@@ -131,10 +137,14 @@ export class ElementAgenda {
   }
 
   /** Return true if elementId is already in this agenda. */
-  public has(id: string) { return this.elements.some((entry) => id === entry); }
+  public has(id: string) {
+    return this.elements.some((entry) => id === entry);
+  }
 
   /** Return true if elementId is already in this agenda. */
-  public find(id: Id64String) { return this.has(id); }
+  public find(id: Id64String) {
+    return this.has(id);
+  }
 
   /** Add elements to this agenda. */
   public add(arg: Id64Arg) {
@@ -182,12 +192,12 @@ export class ElementAgenda {
       if (0 === groupEnd) {
         if (iMark + 1 === groupMarks.length) {
           markToErase = iMark;
-          removeSingleEntry = (ModifyElementSource.DragSelect === groupMarks[iMark].source);
+          removeSingleEntry = ModifyElementSource.DragSelect === groupMarks[iMark].source;
           groupStart = groupMarks[iMark].start;
           groupEnd = elements.length;
         } else if (groupMarks[iMark].start <= groupIndex && groupMarks[iMark + 1].start > groupIndex) {
           markToErase = iMark;
-          removeSingleEntry = (ModifyElementSource.DragSelect === groupMarks[iMark].source);
+          removeSingleEntry = ModifyElementSource.DragSelect === groupMarks[iMark].source;
           groupStart = groupMarks[iMark].start;
           groupEnd = groupMarks[iMark + 1].start;
         }
@@ -198,7 +208,7 @@ export class ElementAgenda {
       if (removeSingleEntry)
         groupMarks[iMark].start -= 1; // Only removing single entry, not entire group...
       else
-        groupMarks[iMark].start -= (groupEnd - groupStart); // Adjust indices...
+        groupMarks[iMark].start -= groupEnd - groupStart; // Adjust indices...
     }
 
     if (removeSingleEntry) { // Only remove single entry...
@@ -303,82 +313,110 @@ export abstract class ElementSetTool extends PrimitiveTool {
   }
 
   /** Convenience method to get current count from [[ElementSetTool.agenda]]. */
-  protected get currentElementCount(): number { return undefined !== this._agenda ? this._agenda.count : 0; }
+  protected get currentElementCount(): number {
+    return undefined !== this._agenda ? this._agenda.count : 0;
+  }
 
   /** Minimum required number of elements for tool to be able to complete.
    * @return number to compare with [[ElementSetTool.currentElementCount]] to determine if more elements remain to be identified.
    * @note A tool to subtract elements is an example where returning 2 would be necessary.
    */
-  protected get requiredElementCount(): number { return 1; }
+  protected get requiredElementCount(): number {
+    return 1;
+  }
 
   /** Whether to allow element identification by drag box or crossing line selection.
    * @return true to allow drag select as an element source when the ctrl key is down.
    * @note Use ctrl+left drag for box selection. Inside/overlap is based on left/right direction (shift key inverts).
    * @note Use ctrl+right drag for crossing line selection.
    */
-  protected get allowDragSelect(): boolean { return false; }
+  protected get allowDragSelect(): boolean {
+    return false;
+  }
 
   /** Support operations on groups/assemblies independent of selection scope.
    * @return true to add or remove all members of an assembly from [[ElementSetTool.agenda]] when any single member is identified.
    * @note Applies to [[ElementSetTool.getLocateCandidates]] only.
    */
-  protected get allowGroups(): boolean { return false; }
+  protected get allowGroups(): boolean {
+    return false;
+  }
 
   /** Whether [[ElementSetTool.agenda]] should be populated from an active selection set.
    * @return true to allow selection sets as an element source.
    * @note A selection set must have at least [[ElementSetTool.requiredElementCount]] elements to be considered.
    */
-  protected get allowSelectionSet(): boolean { return false; }
+  protected get allowSelectionSet(): boolean {
+    return false;
+  }
 
   /** Whether to clear the active selection set for tools that return false for [[ElementSetTool.allowSelectionSet]].
    * @return true to clear unsupported selection sets (desired default behavior).
    * @note It is expected that the selection set be cleared before using [[ElementLocateManager]] to identify elements.
    * This allows the element hilite to be a visual representation of the [[ElementSetTool.agenda]] contents.
    */
-  protected get clearSelectionSet(): boolean { return !this.allowSelectionSet; }
+  protected get clearSelectionSet(): boolean {
+    return !this.allowSelectionSet;
+  }
 
   /** Whether a selection set should be processed immediately upon installation or require a data button to accept.
    * @return false only for tools without settings or a need for confirmation.
    * @note A tool to delete elements is an example where returning false could be desirable.
    */
-  protected get requireAcceptForSelectionSetOperation(): boolean { return true; }
+  protected get requireAcceptForSelectionSetOperation(): boolean {
+    return true;
+  }
 
   /** Whether to begin dynamics for a selection set immediately or wait for a data button.
    * @return false for tools that can start showing dynamics without any additional input.
    * @note A tool to rotate elements by an active angle setting is an example where returning false could be desirable.
    */
-  protected get requireAcceptForSelectionSetDynamics(): boolean { return true; }
+  protected get requireAcceptForSelectionSetDynamics(): boolean {
+    return true;
+  }
 
   /** Whether original source of elements being modified was the active selection set.
    * @return true when [[ElementSetTool.allowSelectionSet]] and active selection set count >= [[ElementSetTool.requiredElementCount]].
    */
-  protected get isSelectionSetModify(): boolean { return this._useSelectionSet; }
+  protected get isSelectionSetModify(): boolean {
+    return this._useSelectionSet;
+  }
 
   /** Whether drag box or crossing line selection is currently active.
    * @return true when [[ElementSetTool.allowDragSelect]] and corner points are currently being defined.
    */
-  protected get isSelectByPoints(): boolean { return undefined !== this.dragStartPoint; }
+  protected get isSelectByPoints(): boolean {
+    return undefined !== this.dragStartPoint;
+  }
 
   /** Whether to continue selection of additional elements by holding the ctrl key down.
    * @return true to continue the element identification phase beyond [[ElementSetTool.requiredElementCount]] by holding down the ctrl key.
    */
-  protected get controlKeyContinuesSelection(): boolean { return false; }
+  protected get controlKeyContinuesSelection(): boolean {
+    return false;
+  }
 
   /** Whether to invert selection of elements identified with the ctrl key held down.
    * @return true to allow ctrl to deselect already selected elements.
    */
-  protected get controlKeyInvertsSelection(): boolean { return this.controlKeyContinuesSelection; }
+  protected get controlKeyInvertsSelection(): boolean {
+    return this.controlKeyContinuesSelection;
+  }
 
   /** Whether [[ElementSetTool.setupAndPromptForNextAction]] should call [[AccuSnap.enableSnap]] for current tool phase.
    * @return true to enable snapping to elements.
    * @note A tool that just needs to identify elements and doesn't care about location should not enable snapping.
    */
-  protected get wantAccuSnap(): boolean { return false; }
+  protected get wantAccuSnap(): boolean {
+    return false;
+  }
 
   /** Whether to automatically start element dynamics after all required elements have been identified.
    * @return true if tool will implement [[InteractiveTool.onDynamicFrame]] to show element dynamics.
    */
-  protected get wantDynamics(): boolean { return false; }
+  protected get wantDynamics(): boolean {
+    return false;
+  }
 
   /** Whether tool is done identifying elements and is ready to move to the next phase.
    * @return true when [[ElementSetTool.requiredElementCount]] is not yet satisfied or ctrl key is being used to extend selection.
@@ -399,17 +437,21 @@ export abstract class ElementSetTool extends PrimitiveTool {
    * @return true if tool does not yet have enough information to complete.
    * @note When [[ElementSetTool.wantDynamics]] is true an additional point is automatically required to support the dynamic preview.
    */
-  protected get wantAdditionalInput(): boolean { return (!this.isDynamicsStarted && this.wantDynamics); }
+  protected get wantAdditionalInput(): boolean {
+    return (!this.isDynamicsStarted && this.wantDynamics);
+  }
 
   /** Whether the tool is ready for [[ElementSetTool.processAgenda]] to be called to complete the tool operation.
    * Sub-classes should override to collect additional point input before calling super or [[ElementSetTool.wantAdditionalInput]].
    * @return true if tool has enough information and is ready to complete.
    */
-  protected wantProcessAgenda(_ev: BeButtonEvent): boolean { return !this.wantAdditionalInput; }
+  protected wantProcessAgenda(_ev: BeButtonEvent): boolean {
+    return !this.wantAdditionalInput;
+  }
 
   /** Whether tool should operate on an existing selection set or instead prompt user to identity elements.
    * Unsupported selection sets will be cleared when [[ElementSetTool.clearSelectionSet]] is true.
-  */
+   */
   protected setPreferredElementSource(): void {
     this._useSelectionSet = false;
     if (!this.iModel.selectionSet.isActive)
@@ -457,12 +499,13 @@ export abstract class ElementSetTool extends PrimitiveTool {
     try {
       // When assembly parent is selected, pick all geometric elements with it as the parent.
       // When assembly member is selected, pick the parent as well as all the other members.
-      const ecsql = `SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE (parent.Id IS NOT NULL AND ECInstanceId IN (${id})) OR parent.Id IN (${id}))`;
+      const ecsql =
+        `SELECT ECInstanceId as id, Parent.Id as parentId FROM BisCore.GeometricElement WHERE Parent.Id IN (SELECT Parent.Id as parentId FROM BisCore.GeometricElement WHERE (parent.Id IS NOT NULL AND ECInstanceId IN (${id})) OR parent.Id IN (${id}))`;
       for await (const row of this.iModel.createQueryReader(ecsql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
         ids.add(row.parentId as Id64String);
         ids.add(row.id as Id64String);
       }
-    } catch { }
+    } catch {}
 
     return ids;
   }
@@ -502,7 +545,13 @@ export abstract class ElementSetTool extends PrimitiveTool {
   /** Get element ids to process from drag box or crossing line selection.
    * Sub-classes may override to support selection scopes or apply tool specific filtering.
    */
-  protected async getDragSelectCandidates(vp: Viewport, origin: Point3d, corner: Point3d, method: SelectionMethod, overlap: boolean): Promise<Id64Arg> {
+  protected async getDragSelectCandidates(
+    vp: Viewport,
+    origin: Point3d,
+    corner: Point3d,
+    method: SelectionMethod,
+    overlap: boolean,
+  ): Promise<Id64Arg> {
     let contents = new Set<Id64String>();
 
     // TODO: Include option to use IModelConnection.getGeometryContainment instead of readPixels. No/Yes/2dOnly...
@@ -653,7 +702,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
       return (undefined !== hit && this.buildLocateAgenda(hit));
 
     // If next element is already in agenda (part of a group, etc.) don't re-add group...
-    const addNext = (undefined !== hit && !this.agenda.has(hit.sourceId));
+    const addNext = undefined !== hit && !this.agenda.has(hit.sourceId);
     this.agenda.popGroup();
 
     if (!addNext || !await this.buildLocateAgenda(hit))
@@ -671,7 +720,7 @@ export abstract class ElementSetTool extends PrimitiveTool {
       return false;
     const pt1 = ev.viewport.worldToView(this.dragStartPoint);
     const pt2 = ev.viewport.worldToView(ev.point);
-    const overlapMode = (pt1.x > pt2.x);
+    const overlapMode = pt1.x > pt2.x;
     return (ev.isShiftKey ? !overlapMode : overlapMode); // Shift inverts inside/overlap selection...
   }
 
@@ -724,9 +773,9 @@ export abstract class ElementSetTool extends PrimitiveTool {
       return;
 
     const vp = context.viewport;
-    const bestContrastIsBlack = (ColorDef.black === vp.getContrastToBackgroundColor());
-    const crossingLine = (BeButton.Reset === ev.button);
-    const overlapSelection = (crossingLine || this.useOverlapSelection(ev));
+    const bestContrastIsBlack = ColorDef.black === vp.getContrastToBackgroundColor();
+    const crossingLine = BeButton.Reset === ev.button;
+    const overlapSelection = crossingLine || this.useOverlapSelection(ev);
 
     const position = vp.worldToView(this.dragStartPoint);
     position.x = Math.floor(position.x) + 0.5;
@@ -757,7 +806,9 @@ export abstract class ElementSetTool extends PrimitiveTool {
   }
 
   /** Show graphics for when drag selection is active. */
-  public override decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
+  public override decorate(context: DecorateContext): void {
+    this.selectByPointsDecorate(context);
+  }
 
   /** Make sure drag selection graphics are updated when mouse moves. */
   public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
@@ -945,23 +996,27 @@ export abstract class ElementSetTool extends PrimitiveTool {
   /** Sub-classes can override to be notified of [[ElementSetTool.agenda]] changes by other methods.
    * @note Tools should not modify [[ElementSetTool.agenda]] in this method, it should merely serve as a convenient place
    * to update information, such as element graphics once dynamics has started, ex. [[ElementSetTool.chooseNextHit]].
-  */
-  protected async onAgendaModified(): Promise<void> { }
+   */
+  protected async onAgendaModified(): Promise<void> {}
 
   /** Sub-classes can override to continue with current [[ElementSetTool.agenda]] or restart after processing has completed. */
-  protected async onProcessComplete(): Promise<void> { return this.onReinitialize(); }
+  protected async onProcessComplete(): Promise<void> {
+    return this.onReinitialize();
+  }
 
   /** Sub-classes that return false for [[ElementSetTool.requireAcceptForSelectionSetOperation]] should override to apply the tool operation to [[ElementSetTool.agenda]]. */
-  protected async processAgendaImmediate(): Promise<void> { }
+  protected async processAgendaImmediate(): Promise<void> {}
 
   /** Sub-classes that require and use the accept point should override to apply the tool operation to [[ElementSetTool.agenda]].
    * @note Not called for [[ElementSetTool.isSelectionSetModify]] when [[ElementSetTool.requireAcceptForSelectionSetOperation]] is false.
    */
-  protected async processAgenda(_ev: BeButtonEvent): Promise<void> { return this.processAgendaImmediate(); }
+  protected async processAgenda(_ev: BeButtonEvent): Promise<void> {
+    return this.processAgendaImmediate();
+  }
 
   /** Support either [[ElementSetTool.requireAcceptForSelectionSetOperation]] or [[ElementSetTool.requireAcceptForSelectionSetDynamics]] returning false. */
   protected async doProcessSelectionSetImmediate(): Promise<void> {
-    const buildImmediate = (!this.requireAcceptForSelectionSetOperation || (this.wantDynamics && !this.requireAcceptForSelectionSetDynamics));
+    const buildImmediate = !this.requireAcceptForSelectionSetOperation || (this.wantDynamics && !this.requireAcceptForSelectionSetDynamics);
     if (!buildImmediate)
       return;
 
@@ -1008,8 +1063,14 @@ export abstract class ElementSetTool extends PrimitiveTool {
     this.provideToolAssistance();
   }
 
-  protected get shouldEnableLocate(): boolean { return this.isSelectByPoints ? false : this.wantAdditionalElements; }
-  protected get shouldEnableSnap(): boolean { return this.isSelectByPoints ? false : (this.wantAccuSnap && (!this.isControlDown || !this.controlKeyContinuesSelection || !this.wantAdditionalElements)); }
+  protected get shouldEnableLocate(): boolean {
+    return this.isSelectByPoints ? false : this.wantAdditionalElements;
+  }
+  protected get shouldEnableSnap(): boolean {
+    return this.isSelectByPoints
+      ? false
+      : (this.wantAccuSnap && (!this.isControlDown || !this.controlKeyContinuesSelection || !this.wantAdditionalElements));
+  }
 
   /** Setup auto-locate, AccuSnap, AccuDraw, and supply tool assistance. */
   protected setupAndPromptForNextAction(): void {
@@ -1063,16 +1124,48 @@ export abstract class ElementSetTool extends PrimitiveTool {
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
-      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse));
+      touchInstructions.push(
+        ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch),
+      );
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse),
+    );
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(
+      ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Touch),
+    );
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Mouse),
+    );
 
     if (addDragInstr) {
-      mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClickDrag, CoreTools.translate("ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Mouse));
-      mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.RightClickDrag, CoreTools.translate("ElementSet.Inputs.CrossingLine"), false, ToolAssistanceInputMethod.Mouse));
-      mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, CoreTools.translate("ElementSet.Inputs.OverlapSelection"), false, ToolAssistanceInputMethod.Mouse));
+      mouseInstructions.push(
+        ToolAssistance.createModifierKeyInstruction(
+          ToolAssistance.ctrlKey,
+          ToolAssistanceImage.LeftClickDrag,
+          CoreTools.translate("ElementSet.Inputs.BoxCorners"),
+          false,
+          ToolAssistanceInputMethod.Mouse,
+        ),
+      );
+      mouseInstructions.push(
+        ToolAssistance.createModifierKeyInstruction(
+          ToolAssistance.ctrlKey,
+          ToolAssistanceImage.RightClickDrag,
+          CoreTools.translate("ElementSet.Inputs.CrossingLine"),
+          false,
+          ToolAssistanceInputMethod.Mouse,
+        ),
+      );
+      mouseInstructions.push(
+        ToolAssistance.createModifierKeyInstruction(
+          ToolAssistance.shiftKey,
+          ToolAssistanceImage.LeftClickDrag,
+          CoreTools.translate("ElementSet.Inputs.OverlapSelection"),
+          false,
+          ToolAssistanceInputMethod.Mouse,
+        ),
+      );
     }
 
     if (undefined !== additionalInstr) {
@@ -1088,7 +1181,10 @@ export abstract class ElementSetTool extends PrimitiveTool {
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
     sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
 
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, undefined !== mainInstrText ? mainInstrText : CoreTools.translate(mainMsg));
+    const mainInstruction = ToolAssistance.createInstruction(
+      this.iconSpec,
+      undefined !== mainInstrText ? mainInstrText : CoreTools.translate(mainMsg),
+    );
     const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }

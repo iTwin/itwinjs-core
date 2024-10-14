@@ -8,39 +8,55 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import {
-  ScreenSpaceEffectBuilder, ScreenSpaceEffectBuilderParams, ScreenSpaceEffectContext, UniformArrayParams, UniformParams, UniformType, VaryingType,
+  ScreenSpaceEffectBuilder,
+  ScreenSpaceEffectBuilderParams,
+  ScreenSpaceEffectContext,
+  UniformArrayParams,
+  UniformParams,
+  UniformType,
+  VaryingType,
 } from "../ScreenSpaceEffectBuilder";
-import { TechniqueId } from "./TechniqueId";
-import { ProgramBuilder, VariableType } from "./ShaderBuilder";
-import { CompileStatus, ShaderProgram } from "./ShaderProgram";
-import { RenderState } from "./RenderState";
 import { SingleTexturedViewportQuadGeometry, ViewportQuadGeometry } from "./CachedGeometry";
 import { FrameBuffer } from "./FrameBuffer";
-import { getDrawParams } from "./ScratchDrawParams";
-import { SingularTechnique } from "./Technique";
-import { Target } from "./Target";
-import { System } from "./System";
 import { createScreenSpaceEffectProgramBuilder } from "./glsl/ScreenSpaceEffect";
+import { RenderState } from "./RenderState";
+import { getDrawParams } from "./ScratchDrawParams";
+import { ProgramBuilder, VariableType } from "./ShaderBuilder";
+import { CompileStatus, ShaderProgram } from "./ShaderProgram";
+import { System } from "./System";
+import { Target } from "./Target";
+import { SingularTechnique } from "./Technique";
+import { TechniqueId } from "./TechniqueId";
 
 type ShouldApply = (context: ScreenSpaceEffectContext) => boolean;
 
 function getUniformVariableType(type: UniformType): VariableType {
   switch (type) {
-    case UniformType.Bool: return VariableType.Boolean;
-    case UniformType.Int: return VariableType.Int;
-    case UniformType.Float: return VariableType.Float;
-    case UniformType.Vec2: return VariableType.Vec2;
-    case UniformType.Vec3: return VariableType.Vec3;
-    case UniformType.Vec4: return VariableType.Vec4;
+    case UniformType.Bool:
+      return VariableType.Boolean;
+    case UniformType.Int:
+      return VariableType.Int;
+    case UniformType.Float:
+      return VariableType.Float;
+    case UniformType.Vec2:
+      return VariableType.Vec2;
+    case UniformType.Vec3:
+      return VariableType.Vec3;
+    case UniformType.Vec4:
+      return VariableType.Vec4;
   }
 }
 
 function getVaryingVariableType(type: VaryingType): VariableType {
   switch (type) {
-    case VaryingType.Float: return VariableType.Float;
-    case VaryingType.Vec2: return VariableType.Vec2;
-    case VaryingType.Vec3: return VariableType.Vec3;
-    case VaryingType.Vec4: return VariableType.Vec4;
+    case VaryingType.Float:
+      return VariableType.Float;
+    case VaryingType.Vec2:
+      return VariableType.Vec2;
+    case VaryingType.Vec3:
+      return VariableType.Vec3;
+    case VaryingType.Vec4:
+      return VariableType.Vec4;
   }
 }
 

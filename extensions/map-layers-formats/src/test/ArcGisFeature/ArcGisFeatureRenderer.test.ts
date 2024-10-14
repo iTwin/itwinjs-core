@@ -3,17 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Point3d, Transform } from "@itwin/core-geometry";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { fakeContext } from "./Mocks";
 import { ArcGisSimpleSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
-import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
-import { Point3d, Transform } from "@itwin/core-geometry";
-import { TestUtils } from "./TestUtils";
 import { FeatureCanvasRenderer } from "../../Feature/FeatureCanvasRenderer";
+import { fakeContext } from "./Mocks";
+import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
+import { TestUtils } from "./TestUtils";
 
 describe("FeatureCanvasRenderer", () => {
-
   const sandbox = sinon.createSandbox();
 
   let beginPathSpy: sinon.SinonSpy<[], void>;
@@ -37,8 +36,10 @@ describe("FeatureCanvasRenderer", () => {
   });
 
   it("should render simple path, stride = 2", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryLine",
+      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer,
+    );
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1, 2, 3, 4];
     const applyFillStyleSpy = sandbox.spy(symbolRenderer, "applyFillStyle");
@@ -65,8 +66,10 @@ describe("FeatureCanvasRenderer", () => {
   });
 
   it("should render simple filled path", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryLine",
+      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer,
+    );
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1, 2, 3, 4];
 
@@ -91,12 +94,13 @@ describe("FeatureCanvasRenderer", () => {
 
     expect(applyFillStyleSpy.calledOnce).to.be.true;
     expect(applyStrokeStyleSpy.calledOnce).to.be.true;
-
   });
 
   it("should render simple Path, stride = 3", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryLine",
+      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer,
+    );
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1, 2, 3, 4, 5, 6];
 
@@ -115,12 +119,13 @@ describe("FeatureCanvasRenderer", () => {
     expect(strokeSpy.calledOnce).to.be.true;
     expect(fillSpy.called).to.be.false;
     expect(closePathSpy.called).to.be.false;
-
   });
 
   it("should render multiple Paths, stride = 2", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryLine",
+      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer,
+    );
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1, 2, 3, 4];
     const applyFillStyleSpy = sandbox.spy(symbolRenderer, "applyFillStyle");
@@ -147,8 +152,10 @@ describe("FeatureCanvasRenderer", () => {
   });
 
   it("should not render invalid with stride value", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryLine",
+      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer,
+    );
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const coords = [1, 2, 3, 4];
 
@@ -164,8 +171,10 @@ describe("FeatureCanvasRenderer", () => {
   });
 
   it("should render Path and apply transform, relativeCoords OFF", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryLine",
+      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer,
+    );
 
     const fakeOffset = 10;
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
@@ -183,12 +192,13 @@ describe("FeatureCanvasRenderer", () => {
     // IMPORTANT: Only first coord is absolute, following coords are expressed relative to previous coord.
     expect(lineToSpy.getCalls()[0].args[0]).to.equals(coords[2] + fakeOffset);
     expect(lineToSpy.getCalls()[0].args[1]).to.equals(coords[3] + fakeOffset);
-
   });
 
   it("should render single Point, no transform, relativeCoords OFF", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryPoint",
+      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer,
+    );
 
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
 
@@ -199,12 +209,13 @@ describe("FeatureCanvasRenderer", () => {
     expect(drawPointStub.calledOnce).to.be.true;
     expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0]);
     expect(drawPointStub.getCalls()[0].args[2]).to.equals(coords[1]);
-
   });
 
   it("should render single Point and apply transform, relativeCoords OFF", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryPoint",
+      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer,
+    );
 
     const fakeOffset = 10;
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
@@ -216,12 +227,13 @@ describe("FeatureCanvasRenderer", () => {
     expect(drawPointStub.calledOnce).to.be.true;
     expect(drawPointStub.getCalls()[0].args[1]).to.equals(coords[0] + fakeOffset);
     expect(drawPointStub.getCalls()[0].args[2]).to.equals(coords[1] + fakeOffset);
-
   });
 
   it("should render multi Point, transform, relativeCoords OFF", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryPoint",
+      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer,
+    );
 
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
 
@@ -237,8 +249,10 @@ describe("FeatureCanvasRenderer", () => {
   });
 
   it("should render multi Point and apply transform, relativeCoords OFF", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryPoint",
+      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer,
+    );
 
     const fakeOffset = 10;
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
@@ -255,8 +269,10 @@ describe("FeatureCanvasRenderer", () => {
   });
 
   it("should render multi Point and apply transform, relativeCoords ON", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryPoint",
+      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer,
+    );
 
     const fakeOffset = 10;
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
@@ -273,8 +289,10 @@ describe("FeatureCanvasRenderer", () => {
   });
 
   it("should render and apply transform, relativeCoords ON", async () => {
-
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryLine", PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryLine",
+      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer,
+    );
 
     const fakeOffset = 10;
     const renderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer, Transform.createTranslation(Point3d.create(fakeOffset, fakeOffset)));
@@ -293,5 +311,4 @@ describe("FeatureCanvasRenderer", () => {
     expect(lineToSpy.getCalls()[0].args[0]).to.equals(coords[0] + coords[2] + fakeOffset);
     expect(lineToSpy.getCalls()[0].args[1]).to.equals(coords[1] + coords[3] + fakeOffset);
   });
-
 });

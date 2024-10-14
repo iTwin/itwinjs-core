@@ -64,9 +64,12 @@ describe("ECSql AST", () => {
       new SelectExpr(
         new SelectionClauseExpr([
           new DerivedPropertyExpr(
-            new PropertyNameExpr("ECInstanceId")),
+            new PropertyNameExpr("ECInstanceId"),
+          ),
           new DerivedPropertyExpr(
-            new PropertyNameExpr("CodeValue"))]),
+            new PropertyNameExpr("CodeValue"),
+          ),
+        ]),
         "ALL",
         new FromClauseExpr([
           new ClassNameExpr("bis", "Element"),
@@ -75,7 +78,10 @@ describe("ECSql AST", () => {
           new BinaryBooleanExpr(
             "=",
             new PropertyNameExpr("ECInstanceId"),
-            new LiteralExpr(LiteralValueType.Raw, "1")))),
+            new LiteralExpr(LiteralValueType.Raw, "1"),
+          ),
+        ),
+      ),
     );
     const expected = "SELECT ALL [ECInstanceId], [CodeValue] FROM [bis].[Element] WHERE ([ECInstanceId] = 1)";
     assert.equal(stmt.toECSql(), expected);
@@ -94,9 +100,12 @@ describe("ECSql AST", () => {
       new SelectExpr(
         new SelectionClauseExpr([
           new DerivedPropertyExpr(
-            new PropertyNameExpr("ECInstanceId")),
+            new PropertyNameExpr("ECInstanceId"),
+          ),
           new DerivedPropertyExpr(
-            new PropertyNameExpr("CodeValue"))]),
+            new PropertyNameExpr("CodeValue"),
+          ),
+        ]),
         undefined,
         new FromClauseExpr([
           new ClassNameExpr("bis", "Element"),
@@ -105,7 +114,10 @@ describe("ECSql AST", () => {
           new BinaryBooleanExpr(
             "=",
             new PropertyNameExpr("ECInstanceId"),
-            new ParameterExpr()))),
+            new ParameterExpr(),
+          ),
+        ),
+      ),
     );
     const expected = "SELECT [ECInstanceId], [CodeValue] FROM [bis].[Element] WHERE ([ECInstanceId] = ?)";
     assert.equal(stmt.toECSql(), expected);

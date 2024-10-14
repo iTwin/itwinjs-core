@@ -82,10 +82,18 @@ export class BilinearPatch implements UVSurface {
   }
   /** Create a patch from xyz values of the 4 corners. */
   public static createXYZ(
-    x00: number, y00: number, z00: number,
-    x10: number, y10: number, z10: number,
-    x01: number, y01: number, z01: number,
-    x11: number, y11: number, z11: number,
+    x00: number,
+    y00: number,
+    z00: number,
+    x10: number,
+    y10: number,
+    z10: number,
+    x01: number,
+    y01: number,
+    z01: number,
+    x11: number,
+    y11: number,
+    z11: number,
   ) {
     return new BilinearPatch(
       Point3d.create(x00, y00, z00),
@@ -217,17 +225,25 @@ export class BilinearPatch implements UVSurface {
     SmallSystem.eliminateFromPivot(coffs[0], 0, coffs[1], -1.0);
     SmallSystem.eliminateFromPivot(coffs[0], 0, coffs[2], -1.0);
     const uvArray = SmallSystem.solveBilinearPair(
-      coffs[1][1], coffs[1][2], coffs[1][3], coffs[1][4],
-      coffs[2][1], coffs[2][2], coffs[2][3], coffs[2][4],
+      coffs[1][1],
+      coffs[1][2],
+      coffs[1][3],
+      coffs[1][4],
+      coffs[2][1],
+      coffs[2][2],
+      coffs[2][3],
+      coffs[2][4],
     );
     if (uvArray) {
       const result: CurveAndSurfaceLocationDetail[] = [];
       for (const uv of uvArray) {
         const t = -(coffs[0][1] + coffs[0][2] * uv.x + (coffs[0][3] + coffs[0][4] * uv.x) * uv.y) / coffs[0][0];
         const point = ray.fractionToPoint(t);
-        result.push(new CurveAndSurfaceLocationDetail(
-          CurveLocationDetail.createRayFractionPoint(ray, t, point),
-          UVSurfaceLocationDetail.createSurfaceUVPoint(this, uv, point)),
+        result.push(
+          new CurveAndSurfaceLocationDetail(
+            CurveLocationDetail.createRayFractionPoint(ray, t, point),
+            UVSurfaceLocationDetail.createSurfaceUVPoint(this, uv, point),
+          ),
         );
       }
       return result;

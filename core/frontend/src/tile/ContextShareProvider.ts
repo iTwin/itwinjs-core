@@ -22,7 +22,10 @@ export class ContextShareProvider {
       return false;
     }
     // If api.bentley.com/realitydata or api.bentley.com/reality-management is used, it is context share
-    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata") || tilesetUrl.toLowerCase().includes("api.bentley.com/reality-management/reality-data"))
+    if (
+      tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata") ||
+      tilesetUrl.toLowerCase().includes("api.bentley.com/reality-management/reality-data")
+    )
       return true;
     // detect if it is a RDS url
     const formattedUrl1 = attUrl.pathname.replace(/~2F/g, "/").replace(/\\/g, "/");
@@ -36,13 +39,16 @@ export class ContextShareProvider {
         }
         return false;
       });
-      const isRDSUrl = (urlParts1[partOffset1] === "Repositories") && (urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null) && (urlParts1[partOffset1 + 2] === "S3MX");
+      const isRDSUrl = (urlParts1[partOffset1] === "Repositories") && (urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null) &&
+        (urlParts1[partOffset1 + 2] === "S3MX");
       return isRDSUrl;
     }
     return false;
   }
   /** Return true if this is a supported url to this service provider */
-  public static getInfoFromUrl(tilesetUrl: string): {provider: RealityDataProvider, format: RealityDataFormat, id: string, iTwinId: string | undefined} {
+  public static getInfoFromUrl(
+    tilesetUrl: string,
+  ): { provider: RealityDataProvider, format: RealityDataFormat, id: string, iTwinId: string | undefined } {
     const invalidUrlInfo = { provider: RealityDataProvider.TilesetUrl, format: RealityDataFormat.ThreeDTile, id: tilesetUrl, iTwinId: undefined };
     let attUrl: URL;
     try {
@@ -52,7 +58,10 @@ export class ContextShareProvider {
       return invalidUrlInfo;
     }
     // If api.bentley.com/realitydata or api.bentley.com/reality-management is used, it is context share
-    if (tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata") || tilesetUrl.toLowerCase().includes("api.bentley.com/reality-management/reality-data")) {
+    if (
+      tilesetUrl.toLowerCase().includes("api.bentley.com/realitydata") ||
+      tilesetUrl.toLowerCase().includes("api.bentley.com/reality-management/reality-data")
+    ) {
       const lcTilesetUrl = tilesetUrl.toLowerCase();
       // NOTICE: We assume it is a ThreeDTile BUT this could technically be a point cloud (OPC).
       // This method was used in typical workflow where format was always ThreeDTile and is here for legacy support.
@@ -61,10 +70,10 @@ export class ContextShareProvider {
       let indexId = -1;
       let indexProjectId = -1;
 
-      if(tilesetUrl.toLowerCase().includes("reality-management/reality-data")) {
+      if (tilesetUrl.toLowerCase().includes("reality-management/reality-data")) {
         indexId = lcTilesetUrl.indexOf("reality-management/reality-data/") + 32; // length of "reality-management/reality-data/" = 32;
         indexProjectId = lcTilesetUrl.indexOf("itwinid=") + 8; // length of "itwinid=" = 8;
-      } else if(tilesetUrl.toLowerCase().includes("realitydata")) {
+      } else if (tilesetUrl.toLowerCase().includes("realitydata")) {
         indexId = lcTilesetUrl.indexOf("realitydata/") + 12; // length of "realitydata/" = 12;
         indexProjectId = lcTilesetUrl.indexOf("projectid=") + 10; // length of "projectid=" = 10;
       }
@@ -90,7 +99,8 @@ export class ContextShareProvider {
         return false;
       });
       const isOPC = attUrl.pathname.match(".opc*") !== null;
-      const isRDSUrl = (urlParts1[partOffset1] === "Repositories") && (urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null) && (urlParts1[partOffset1 + 2] === "S3MX");
+      const isRDSUrl = (urlParts1[partOffset1] === "Repositories") && (urlParts1[partOffset1 + 1].match("S3MXECPlugin--*") !== null) &&
+        (urlParts1[partOffset1 + 2] === "S3MX");
       let projectId: string | undefined;
       const projectIdSection = urlParts1.find((val: string) => val.includes("--"));
       if (projectIdSection)
@@ -110,17 +120,17 @@ export class ContextShareProvider {
     // Not a valid URL and not equal, probably $cesiumAsset
     return invalidUrlInfo;
   }
-  public static getInfoFromBlobUrl(blobUrl: string): {provider: RealityDataProvider, format: RealityDataFormat, id: string } {
+  public static getInfoFromBlobUrl(blobUrl: string): { provider: RealityDataProvider, format: RealityDataFormat, id: string } {
     let format = RealityDataFormat.ThreeDTile;
     let provider = RealityDataProvider.TilesetUrl;
     const url = new URL(blobUrl);
 
     // If we cannot interpret that url pass in parameter we just fallback to old implementation
-    if(!url.pathname)
+    if (!url.pathname)
       return { provider, format, id: blobUrl };
 
     // const accountName   = url.hostname.split(".")[0];
-    let containerName= "";
+    let containerName = "";
     if (url.pathname) {
       const pathSplit = url.pathname.split("/");
       containerName = pathSplit[1];

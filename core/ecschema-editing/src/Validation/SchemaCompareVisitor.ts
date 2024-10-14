@@ -6,10 +6,31 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyProperty, Constant, CustomAttributeClass, CustomAttributeContainerProps,
-  ECClass, EntityClass, Enumeration, Format, InvertedUnit, ISchemaPartVisitor, KindOfQuantity, Mixin,
-  Phenomenon, Property, PropertyCategory, RelationshipClass, RelationshipConstraint, Schema, SchemaItem,
-  SchemaItemType, StructClass, Unit, UnitSystem,
+import {
+  AnyClass,
+  AnyProperty,
+  Constant,
+  CustomAttributeClass,
+  CustomAttributeContainerProps,
+  ECClass,
+  EntityClass,
+  Enumeration,
+  Format,
+  InvertedUnit,
+  ISchemaPartVisitor,
+  KindOfQuantity,
+  Mixin,
+  Phenomenon,
+  Property,
+  PropertyCategory,
+  RelationshipClass,
+  RelationshipConstraint,
+  Schema,
+  SchemaItem,
+  SchemaItemType,
+  StructClass,
+  Unit,
+  UnitSystem,
 } from "@itwin/ecschema-metadata";
 import { ISchemaComparer } from "./SchemaComparer";
 
@@ -66,7 +87,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
     let propertyB: AnyProperty | undefined;
 
     const classB = await this._schemaB.lookupItem<ECClass>(propertyA.class.name);
-    if (classB && propertyA.class.schemaItemType === classB.schemaItemType){
+    if (classB && propertyA.class.schemaItemType === classB.schemaItemType) {
       propertyB = await classB.getProperty(propertyA.name) as AnyProperty;
       this._schemaComparer.compareProperties(propertyA, propertyB);
     }

@@ -7,8 +7,16 @@
  */
 
 import {
-  BeButtonEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod,
-  ToolAssistanceInstruction, ToolAssistanceSection,
+  BeButtonEvent,
+  CoreTools,
+  EventHandled,
+  IModelApp,
+  InputSource,
+  ToolAssistance,
+  ToolAssistanceImage,
+  ToolAssistanceInputMethod,
+  ToolAssistanceInstruction,
+  ToolAssistanceSection,
 } from "@itwin/core-frontend";
 import { G, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
@@ -32,7 +40,9 @@ export class PlaceTextTool extends RedlineTool {
     return super.onPostInstall();
   }
 
-  protected override showPrompt(): void { this.provideToolAssistance(`${MarkupTool.toolKey}Text.Place.Prompts.FirstPoint`, true); }
+  protected override showPrompt(): void {
+    this.provideToolAssistance(`${MarkupTool.toolKey}Text.Place.Prompts.FirstPoint`, true);
+  }
 
   protected override async createMarkup(svg: G, ev: BeButtonEvent, isDynamics: boolean): Promise<void> {
     if (isDynamics && InputSource.Touch === ev.inputSource)
@@ -63,10 +73,15 @@ export class EditTextTool extends MarkupTool {
   public editor?: HTMLTextAreaElement;
   public editDiv?: HTMLDivElement;
   public boxed?: G;
-  constructor(public text?: MarkupText | G, private _fromPlaceTool = false) { super(); }
+  constructor(public text?: MarkupText | G, private _fromPlaceTool = false) {
+    super();
+  }
 
   protected override showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`));
+    const mainInstruction = ToolAssistance.createInstruction(
+      this.iconSpec,
+      IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Text.Edit.Prompts.FirstPoint`),
+    );
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
@@ -122,14 +137,17 @@ export class EditTextTool extends MarkupTool {
     editor.wrap = "off";
     // so we don't send these events to the ToolAdmin and process them by tools. We want default handling
     const mouseListener = (ev: Event) => (ev.stopPropagation(), true);
-    (editor as any).onselectstart = editor.oncontextmenu = editor.onmousedown = editor.onmouseup = mouseListener; // enable default handling for these events
+    (editor as any).onselectstart =
+      editor.oncontextmenu =
+      editor.onmousedown =
+      editor.onmouseup =
+        mouseListener; // enable default handling for these events
 
     // Tab, Escape, ctrl-enter, or shift-enter all end the editor
     editor.onkeydown = async (ev: KeyboardEvent) => {
       if (ev.key === "Tab" || ev.key === "Escape" || (ev.key === "Enter" && (ev.shiftKey || ev.ctrlKey)))
         this.exitTool(); // eslint-disable-line @typescript-eslint/no-floating-promises
       ev.stopPropagation();
-
     };
     const textElStyle = window.getComputedStyle(text.node);
 

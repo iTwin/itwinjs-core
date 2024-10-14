@@ -3,14 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
-import { Volume } from "memfs";
 import { expect } from "chai";
-import * as path from "path";
 import * as fs from "fs-extra";
-import { clearCache, clearFileSystem, fsFromJson, getTestConfig, runWebpack } from "./TestUtils";
-import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExternals, RequireMagicCommentsPlugin } from "../plugins/RequireMagicCommentsPlugin";
+import { Volume } from "memfs";
+import * as path from "path";
 import { ExternalsPlugin } from "webpack";
+import {
+  addCopyFilesSuffix,
+  addExternalPrefix,
+  copyFilesRule,
+  handlePrefixedExternals,
+  RequireMagicCommentsPlugin,
+} from "../plugins/RequireMagicCommentsPlugin";
 import { setApplicationDir } from "../utils/paths";
+import { clearCache, clearFileSystem, fsFromJson, getTestConfig, runWebpack } from "./TestUtils";
 
 describe("RequireMagicCommentsPlugin", () => { // Issue #4354 @aruniverse
   let testConfig: any;
@@ -37,11 +43,16 @@ describe("RequireMagicCommentsPlugin", () => { // Issue #4354 @aruniverse
     vol.fromJSON({
       "lib/test/assets/require-magic-comments-plugin-test/test.js": `require(/*webpack: external*/"foo");`,
     });
-    const pluginsToTest = [new RequireMagicCommentsPlugin([{ test: /webpack: *external/i, handler: addExternalPrefix }]), new ExternalsPlugin("commonjs", handlePrefixedExternals)];
+    const pluginsToTest = [
+      new RequireMagicCommentsPlugin([{ test: /webpack: *external/i, handler: addExternalPrefix }]),
+      new ExternalsPlugin("commonjs", handlePrefixedExternals),
+    ];
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest);
 
     const { logging } = await runWebpack(testConfig, vol);
-    expect(logging?.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
+    expect(logging?.RequireMagicCommentsPlugin.entries[0].message).to.include(
+      `Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`,
+    );
     expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
@@ -76,11 +87,16 @@ describe("RequireMagicCommentsPlugin", () => { // Issue #4354 @aruniverse
     vol.fromJSON({
       "lib/test/assets/require-magic-comments-plugin-test/test.js": `require.resolve(/*webpack: external*/"foo");`,
     });
-    const pluginsToTest = [new RequireMagicCommentsPlugin([{ test: /webpack: *external/i, handler: addExternalPrefix }]), new ExternalsPlugin("commonjs", handlePrefixedExternals)];
+    const pluginsToTest = [
+      new RequireMagicCommentsPlugin([{ test: /webpack: *external/i, handler: addExternalPrefix }]),
+      new ExternalsPlugin("commonjs", handlePrefixedExternals),
+    ];
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest);
 
     const { logging } = await runWebpack(testConfig, vol);
-    expect(logging?.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
+    expect(logging?.RequireMagicCommentsPlugin.entries[0].message).to.include(
+      `Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`,
+    );
     expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
@@ -88,12 +104,17 @@ describe("RequireMagicCommentsPlugin", () => { // Issue #4354 @aruniverse
     vol.fromJSON({
       "lib/test/assets/require-magic-comments-plugin-test/test.js": `require.resolve(/*webpack: external*/"foo");`,
     });
-    const pluginsToTest = [new RequireMagicCommentsPlugin([{ test: /webpack: *external/i, handler: addExternalPrefix, convertResolve: true }]), new ExternalsPlugin("commonjs", handlePrefixedExternals)];
+    const pluginsToTest = [
+      new RequireMagicCommentsPlugin([{ test: /webpack: *external/i, handler: addExternalPrefix, convertResolve: true }]),
+      new ExternalsPlugin("commonjs", handlePrefixedExternals),
+    ];
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest);
 
     const { logging } = await runWebpack(testConfig, vol);
     expect(logging?.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for "foo"`);
-    expect(logging?.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`);
+    expect(logging?.RequireMagicCommentsPlugin.entries[1].message).to.include(
+      `Handler for /*webpack: external*/ - transformed "foo" => "BeWebpack-EXTERNAL:foo"`,
+    );
     expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8")).to.matchSnapshot();
   });
 
@@ -106,7 +127,9 @@ describe("RequireMagicCommentsPlugin", () => { // Issue #4354 @aruniverse
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest, undefined, [copyFilesRule]);
 
     const { logging } = await runWebpack(testConfig);
-    expect(logging?.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
+    expect(logging?.RequireMagicCommentsPlugin.entries[0].message).to.include(
+      `Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`,
+    );
     expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
     expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.d9b9bf.txt"), "utf8")).to.equal("This is bar.txt");
   });
@@ -121,7 +144,9 @@ describe("RequireMagicCommentsPlugin", () => { // Issue #4354 @aruniverse
 
     const { logging } = await runWebpack(testConfig);
     expect(logging?.RequireMagicCommentsPlugin.entries[0].message).to.include(`Converting require.resolve => require for "./bar.txt"`);
-    expect(logging?.RequireMagicCommentsPlugin.entries[1].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
+    expect(logging?.RequireMagicCommentsPlugin.entries[1].message).to.include(
+      `Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`,
+    );
     expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
     expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.d9b9bf.txt"), "utf8")).to.equal("This is bar.txt");
   });
@@ -135,7 +160,9 @@ describe("RequireMagicCommentsPlugin", () => { // Issue #4354 @aruniverse
     testConfig = getTestConfig("assets/require-magic-comments-plugin-test/test.js", pluginsToTest, undefined, [copyFilesRule]);
 
     const { logging } = await runWebpack(testConfig);
-    expect(logging?.RequireMagicCommentsPlugin.entries[0].message).to.include(`Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`);
+    expect(logging?.RequireMagicCommentsPlugin.entries[0].message).to.include(
+      `Handler for /*webpack: copyfile*/ - transformed "./bar.txt" => "./bar.txt?BeWebpack-COPYFILE}"`,
+    );
     expect(fs.readFileSync(path.join(__dirname, "dist/main.js"), "utf8").split(`\* 3 \*`)[0]).to.matchSnapshot();
     expect(fs.readFileSync(path.join(__dirname, "dist/static/bar.d9b9bf.txt"), "utf8")).to.equal("This is bar.txt");
   });

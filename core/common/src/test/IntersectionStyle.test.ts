@@ -22,7 +22,7 @@ describe("IntersectionStyle", () => {
     roundTrip(undefined, undefined);
     roundTrip(ClipIntersectionStyle.create().toJSON(), undefined);
 
-    roundTrip({ color:{ r: 0, g: 100, b: 200 }, width: 3 }, "input");
+    roundTrip({ color: { r: 0, g: 100, b: 200 }, width: 3 }, "input");
   });
 
   it("should trigger changed events", () => {
@@ -34,7 +34,7 @@ describe("IntersectionStyle", () => {
       eventHeard = true;
     });
 
-    details.clipStyle = ClipStyle.fromJSON({ colorizeIntersection: true, intersectionStyle: { color:{ r: 0, g: 100, b: 200 }, width: 3 }});
+    details.clipStyle = ClipStyle.fromJSON({ colorizeIntersection: true, intersectionStyle: { color: { r: 0, g: 100, b: 200 }, width: 3 } });
     expect(eventHeard).to.be.true;
   });
 });

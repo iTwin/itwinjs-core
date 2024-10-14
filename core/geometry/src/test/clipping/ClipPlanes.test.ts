@@ -76,7 +76,7 @@ function testConvexClipXY(x0: number, y0: number, ux: number, uy: number, xyz: P
   const plane1 = Plane3dByOriginAndUnitNormal.create(Point3d.create(x0, y0, 0.0), Vector3d.create(-ux, -uy, 0.0));
   const clip0 = ClipPlane.createPlane(plane0!);
   const clip1 = ClipPlane.createPlane(plane1!);
-  if (clip0 && clip1) {   // Since constructor could return undefined
+  if (clip0 && clip1) { // Since constructor could return undefined
     const xyz0: Point3d[] = xyz.slice(0);
     const xyz1: Point3d[] = xyz.slice(0);
     const normal: Vector3d = PolygonOps.areaNormal(xyz);
@@ -93,14 +93,12 @@ function testConvexClipXY(x0: number, y0: number, ux: number, uy: number, xyz: P
 }
 
 describe("ClipPlane", () => {
-
   // ---------------------------------------------------------------------------------------------------
 
   it("BoundedSegmentIntersection", () => {
     const ck = new Checker();
     // XY plane with upward (+z) facing normal
-    const clip = ClipPlane.createNormalAndPoint(Vector3d.create(0, 0, 1),
-      Point3d.create(0, 0, 0), false, false);
+    const clip = ClipPlane.createNormalAndPoint(Vector3d.create(0, 0, 1), Point3d.create(0, 0, 0), false, false);
 
     if (clip) { // Should never fail
       // Move segment through plane, testing fractional value each time
@@ -132,8 +130,7 @@ describe("ClipPlane", () => {
   it("Offset", () => {
     const ck = new Checker();
     // XY plane with upward (+z) facing normal
-    const clip = ClipPlane.createNormalAndPoint(Vector3d.create(0, 0, 1),
-      Point3d.create(0, 0, 0), false, false)!;
+    const clip = ClipPlane.createNormalAndPoint(Vector3d.create(0, 0, 1), Point3d.create(0, 0, 0), false, false)!;
     const h0 = 5.0;
     const testPoint = Point3d.create(2, 3, h0);
     ck.testCoordinate(h0, clip.dotProductPlaneNormalPoint(testPoint));
@@ -161,15 +158,14 @@ describe("ClipPlane", () => {
     ck.testCoordinate(clipPlane.altitude(pointA), plane.altitude(pointA));
     ck.testCoordinate(clipPlane.altitude(pointB), plane.altitude(pointB));
     // announced fractions are strictly increasing pair within what we send as start end fractions, so relation to ends is known ...
-    clipPlane.announceClippedSegmentIntervals(0.2, 0.9, pointA, pointB,
-      (f0: number, f1: number) => {
-        const segmentPoint = pointA.interpolate((f0 + f1) * 0.5, pointB);
-        ck.testTrue(clipPlane.isPointInside(segmentPoint));
-        const point0 = pointA.interpolate(f0, pointB);
-        const point1 = pointA.interpolate(f1, pointB);
-        ck.testBoolean(clipPlane.isPointInside(pointA), clipPlane.isPointInside(pointA.interpolate(0.5, point0)));
-        ck.testBoolean(clipPlane.isPointInside(pointB), clipPlane.isPointInside(point1.interpolate(0.5, pointB)));
-      });
+    clipPlane.announceClippedSegmentIntervals(0.2, 0.9, pointA, pointB, (f0: number, f1: number) => {
+      const segmentPoint = pointA.interpolate((f0 + f1) * 0.5, pointB);
+      ck.testTrue(clipPlane.isPointInside(segmentPoint));
+      const point0 = pointA.interpolate(f0, pointB);
+      const point1 = pointA.interpolate(f1, pointB);
+      ck.testBoolean(clipPlane.isPointInside(pointA), clipPlane.isPointInside(pointA.interpolate(0.5, point0)));
+      ck.testBoolean(clipPlane.isPointInside(pointB), clipPlane.isPointInside(point1.interpolate(0.5, pointB)));
+    });
 
     ck.checkpoint("Offset");
     expect(ck.getNumErrors()).toBe(0);
@@ -198,7 +194,8 @@ describe("ClipPlane", () => {
       Point3d.create(0, 0, 0),
       Point3d.create(0, 1, 0),
       Vector3d.create(0, 0, 1),
-      Angle.createDegrees(45))!;
+      Angle.createDegrees(45),
+    )!;
     ck.testTrue(tiltPlane.isPointInside(Point3d.create(1, 0, 0)));
     ck.testFalse(tiltPlane.isPointInside(Point3d.create(1, 0, 10)));
     expect(ck.getNumErrors()).toBe(0);
@@ -216,7 +213,6 @@ describe("ClipPlane", () => {
     const crossings: Point3d[] = [];
 
     if (clip) { // Should never fail
-
       for (let i = 2; i < 15; i++) {
         let z: number;
         const rand = Math.random();
@@ -224,8 +220,14 @@ describe("ClipPlane", () => {
         let didCross = false;
         let toReduce = false;
         if (rand >= .5) { z = i; } else { z = -i; }
-        if (z * lastSign < 0) { numExpectedCrossings++; didCross = true; }
-        if (z * array[0].z < 0) { numExpectedCrossings++; toReduce = true; }
+        if (z * lastSign < 0) {
+          numExpectedCrossings++;
+          didCross = true;
+        }
+        if (z * array[0].z < 0) {
+          numExpectedCrossings++;
+          toReduce = true;
+        }
 
         lastSign = z;
         array.push(Point3d.create(x, 0, z));
@@ -243,7 +245,7 @@ describe("ClipPlane", () => {
         if (didCross) {
           const m = (z - array[array.length - 2].z) / (x - array[array.length - 2].x);
           const b = z - m * x;
-          const xCross = - b / m;
+          const xCross = -b / m;
           ck.testCoordinate(xCross, crossings[crossings.length - 1].x, "Expected and actual x location of crossing match");
         } else {
           const subArray: Point3d[] = array.slice(array.length - 2);
@@ -355,7 +357,6 @@ describe("ConvexClipPlaneSet", () => {
 });
 
 describe("ClipPlaneSet", () => {
-
   it("GetRayIntersections", () => {
     const ck = new Checker();
     const sideLength = 1;
@@ -386,7 +387,7 @@ describe("ClipPlaneSet", () => {
     // Ray origins below box, inside, and above box
     for (let i = -0.5; i < 2; i++) {
       // Rotate rays 360 degrees around x and y axis
-      for (let theta = 0; theta < 2 * Math.PI; theta += (Math.PI / 4)) {
+      for (let theta = 0; theta < 2 * Math.PI; theta += Math.PI / 4) {
         const xAlignedRay = Ray3d.create(Point3d.create(xyMiddleOfCube, xyMiddleOfCube, i), Vector3d.create(Math.cos(theta), 0, Math.sin(theta)));
         const yAlignedRay = Ray3d.create(Point3d.create(xyMiddleOfCube, xyMiddleOfCube, i), Vector3d.create(0, Math.cos(theta), Math.sin(theta)));
         const xAlignedRange = Range1d.createNull();
@@ -426,8 +427,8 @@ describe("ClipPlaneSet", () => {
 
     const edgePoint01 = triangle[0].interpolate(0.4, triangle[1]);
     const edgePoint12 = triangle[1].interpolate(0.4, triangle[2]);
-    const linePointA = edgePoint01.interpolate(0.1, edgePoint12);  // a little inside along edge01
-    const linePointB = edgePoint01.interpolate(0.5, edgePoint12);  // a little inside along edge01
+    const linePointA = edgePoint01.interpolate(0.1, edgePoint12); // a little inside along edge01
+    const linePointB = edgePoint01.interpolate(0.5, edgePoint12); // a little inside along edge01
 
     const sweepDirection = Vector3d.create(0, 0, 1);
     convexSetA.reloadSweptPolygon(triangle, sweepDirection, 1);
@@ -436,11 +437,10 @@ describe("ClipPlaneSet", () => {
     convexSetA1.reloadSweptPolygon(triangleWithDuplicate, sweepDirection, 1);
     convexSetB.reloadSweptPolygon(triangle, sweepDirection, -1);
     convexSet0.reloadSweptPolygon(triangle, sweepDirection, 0);
-    convexSetA.clipUnboundedSegment(linePointA, linePointB,
-      (fA: number, fB: number) => {
-        ck.testPoint3d(edgePoint01, linePointA.interpolate(fA, linePointB), fA, "unboundedLine clip pointA");
-        ck.testPoint3d(edgePoint12, linePointA.interpolate(fB, linePointB), fB, "unboundedLine clip pointB");
-      });
+    convexSetA.clipUnboundedSegment(linePointA, linePointB, (fA: number, fB: number) => {
+      ck.testPoint3d(edgePoint01, linePointA.interpolate(fA, linePointB), fA, "unboundedLine clip pointA");
+      ck.testPoint3d(edgePoint12, linePointA.interpolate(fB, linePointB), fB, "unboundedLine clip pointB");
+    });
     const tolerance = 1.0e-10;
     const values: number[] = [-0.5, 0.3, 0.5, 0.8, 1.1];
     for (const u of values) {
@@ -481,7 +481,7 @@ describe("ClipPlaneSet", () => {
     const convexSet = ConvexClipPlaneSet.createXYBox(0, 0, 1, 1);
     const clipZ0 = ClipPlane.createNormalAndPoint(Vector3d.create(0, 0, 1), Point3d.create(0, 0, 0), false, false);
     const clipZ1 = ClipPlane.createNormalAndPoint(Vector3d.create(0, 0, -1), Point3d.create(0, 0, 1), false, false);
-    if (clipZ0 && clipZ1) {  // Should never fail
+    if (clipZ0 && clipZ1) { // Should never fail
       convexSet.addPlaneToConvexSet(clipZ0);
       convexSet.addPlaneToConvexSet(clipZ1);
     }
@@ -560,7 +560,7 @@ describe("ClipPlaneSet", () => {
     const convexSet1 = ConvexClipPlaneSet.createXYBox(0, 0, 1, 1);
     const clipZ0 = ClipPlane.createNormalAndPoint(Vector3d.create(0, 0, 1), Point3d.create(0, 0, 0), false, true);
     const clipZ1 = ClipPlane.createNormalAndPoint(Vector3d.create(0, 0, -1), Point3d.create(0, 0, 1), false, true);
-    if (clipZ0 && clipZ1) {  // Should never fail
+    if (clipZ0 && clipZ1) { // Should never fail
       convexSet1.addPlaneToConvexSet(clipZ0);
       convexSet1.addPlaneToConvexSet(clipZ1);
     }
@@ -576,8 +576,16 @@ describe("ClipPlaneSet", () => {
     ck.testExactNumber(set.classifyPointContainment(array, false), ClipPlaneContainment.StronglyInside, "All points inside one region");
     ck.testExactNumber(set.classifyPointContainment(array, true), ClipPlaneContainment.StronglyInside, "All points inside one region");
     array.push(Point3d.create(0, 0, 0));
-    ck.testExactNumber(set.classifyPointContainment(array, true), ClipPlaneContainment.Ambiguous, "All points inside one region with exception of one on border");
-    ck.testExactNumber(set.classifyPointContainment(array, false), ClipPlaneContainment.Ambiguous, "All points inside one region with exception of one on border");
+    ck.testExactNumber(
+      set.classifyPointContainment(array, true),
+      ClipPlaneContainment.Ambiguous,
+      "All points inside one region with exception of one on border",
+    );
+    ck.testExactNumber(
+      set.classifyPointContainment(array, false),
+      ClipPlaneContainment.Ambiguous,
+      "All points inside one region with exception of one on border",
+    );
     array.pop();
     array.push(Point3d.create(0.0000001, 0.0000001, 0.0000001));
     ck.testExactNumber(set.classifyPointContainment(array, true), ClipPlaneContainment.StronglyInside, "All points inside one region");
@@ -589,8 +597,16 @@ describe("ClipPlaneSet", () => {
       Point3d.create(0, 0, 0),
     ];
 
-    ck.testExactNumber(set.classifyPointContainment(array, false), ClipPlaneContainment.StronglyOutside, "All points outside except for one on border (not counting)");
-    ck.testExactNumber(set.classifyPointContainment(array, true), ClipPlaneContainment.StronglyOutside, "All points outside except for one on border (not counting)");
+    ck.testExactNumber(
+      set.classifyPointContainment(array, false),
+      ClipPlaneContainment.StronglyOutside,
+      "All points outside except for one on border (not counting)",
+    );
+    ck.testExactNumber(
+      set.classifyPointContainment(array, true),
+      ClipPlaneContainment.StronglyOutside,
+      "All points outside except for one on border (not counting)",
+    );
 
     ck.checkpoint("ClassifyPointContainment");
     expect(ck.getNumErrors()).toBe(0);
@@ -634,7 +650,8 @@ function clipMovingCurve(
   curve: CurvePrimitive,
   traceCurve: CurvePrimitive,
   numTrace: number,
-  announceCurve: AnnounceNumberNumberCurvePrimitive) {
+  announceCurve: AnnounceNumberNumberCurvePrimitive,
+) {
   for (let i = 0; i + 1 < numTrace; i++) {
     const shift = traceCurve.fractionToPoint(i / numTrace);
     const curve1 = curve.cloneTransformed(Transform.createTranslation(shift)) as CurvePrimitive;
@@ -652,8 +669,9 @@ describe("ClipPlaneUtilities", () => {
     for (const low of [1, 4, 9])
       intervals.push(Range1d.createXX(low, low + intervalSize));
     const cp = LineSegment3d.create(Point3d.create(1, 1, 2), Point3d.create(4, 2, 1));
-    ClipUtilities.announceNNC(intervals, cp,
-      (a: number, b: number, _cp: CurvePrimitive) => { sum += b - a; });
+    ClipUtilities.announceNNC(intervals, cp, (a: number, b: number, _cp: CurvePrimitive) => {
+      sum += b - a;
+    });
 
     ck.testExactNumber(intervalSize * intervals.length, sum, "summed data from announceNNC");
     expect(ck.getNumErrors()).toBe(0);
@@ -662,7 +680,8 @@ describe("ClipPlaneUtilities", () => {
 
 describe("CurveClips", () => {
   it("CurvePrimitiveClips", () => {
-    const ck = new Checker(); expect(ck.getNumErrors()).toBe(0);
+    const ck = new Checker();
+    expect(ck.getNumErrors()).toBe(0);
     const traceCurve = Arc3d.createXY(Point3d.create(0, 0.2, 0), 1.0);
     const curves = Sample.createSmoothCurvePrimitives(2.0);
     const output: GeometryQuery[] = [];
@@ -682,37 +701,37 @@ describe("CurveClips", () => {
       output.push(clipGeometry);
       output.push(clipGeometry.cloneTransformed(transform0));
       output.push(clipGeometry.cloneTransformed(transform1));
-      clipMovingCurve(clipper, curve, traceCurve, 5,
-        (group: number, _index: number, cp: CurvePrimitive) => {
-          output.push(cp.cloneTransformed(group === 0 ? transform0 : transform1)!);
-        });
+      clipMovingCurve(clipper, curve, traceCurve, 5, (group: number, _index: number, cp: CurvePrimitive) => {
+        output.push(cp.cloneTransformed(group === 0 ? transform0 : transform1)!);
+      });
     }
     GeometryCoreTestIO.saveGeometry(output, "ClipPlane", "CurvePrimitiveClips");
     expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PlaneArcClips", () => {
-    const ck = new Checker(); expect(ck.getNumErrors()).toBe(0);
+    const ck = new Checker();
+    expect(ck.getNumErrors()).toBe(0);
     const arc = Arc3d.createXY(Point3d.create(0, 0.2, 0), 2.0, AngleSweep.createStartEndDegrees(0, 270.0));
 
     const plane = ClipPlane.createEdgeXY(Point3d.create(3, 1, 0), Point3d.create(3, -10, 0))!;
-    plane.announceClippedArcIntervals(arc,
-      (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
-        const point0 = arc.fractionToPoint(fraction0);
-        const point1 = arc.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
-        const point2 = arc.fractionToPoint(fraction1);
+    plane.announceClippedArcIntervals(arc, (fraction0: number, fraction1: number, _cp: CurvePrimitive) => {
+      const point0 = arc.fractionToPoint(fraction0);
+      const point1 = arc.fractionToPoint(Geometry.interpolate(fraction0, 0.5, fraction1));
+      const point2 = arc.fractionToPoint(fraction1);
 
-        ck.testTrue(plane.isPointOn(point0), "interval start point is ON");
-        ck.testFalse(plane.isPointOn(point1), "interval midpoint is not ON");
-        ck.testTrue(plane.isPointOnOrInside(point1), "interval midpoint is IN");
-        ck.testTrue(plane.isPointOn(point2), "interval end point is ON");
-      });
+      ck.testTrue(plane.isPointOn(point0), "interval start point is ON");
+      ck.testFalse(plane.isPointOn(point1), "interval midpoint is not ON");
+      ck.testTrue(plane.isPointOnOrInside(point1), "interval midpoint is IN");
+      ck.testTrue(plane.isPointOn(point2), "interval end point is ON");
+    });
     ck.checkpoint("PlaneArcClips");
     expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PlaneSetArcClips", () => {
-    const ck = new Checker(); expect(ck.getNumErrors()).toBe(0);
+    const ck = new Checker();
+    expect(ck.getNumErrors()).toBe(0);
     const arc = Arc3d.createXYEllipse(Point3d.create(0, 0.2, 0), 3.0, 0.5, AngleSweep.createStartEndDegrees(0, 270.0));
     const pointA = Point3d.create(-1.5, 1);
     const pointB = Point3d.create(2, -0.5);
@@ -722,11 +741,11 @@ describe("CurveClips", () => {
 
     const transform = Transform.createFixedPointAndMatrix(
       Point3d.create(1, 0.5),
-      Matrix3d.createRotationAroundVector(Vector3d.create(1, 1, 9), Angle.createDegrees(60))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(1, 1, 9), Angle.createDegrees(60))!,
+    );
     const arc1 = arc.clone();
     arc1.tryTransformInPlace(transform);
     for (const clipper of clippers) {
-
       const clipper1 = clipper.clone();
       clipper1.transformInPlace(transform);
       let activeClipper = clipper;
@@ -779,15 +798,18 @@ describe("CurveClips", () => {
     const positiveOctant = ConvexClipPlaneSet.createRange3dPlanes(rangeA, true, false, true, false, true, false);
     const negativeOctant = positiveOctant.clone();
     negativeOctant.negateAllPlanes();
-    for (const data of [
-      [1, 1, 1, true, false],
-      [-1, -1, -1, false, true],
-      [-1, 1, 1, false, false],
-      [1, -1, 1, false, false],
-      [-1, 1, -1, false, false],
-      [-1, -1, 1, false, false],
-      [-1, 1, -1, false, false],
-      [-1, 1, -1, false, false]]) {
+    for (
+      const data of [
+        [1, 1, 1, true, false],
+        [-1, -1, -1, false, true],
+        [-1, 1, 1, false, false],
+        [1, -1, 1, false, false],
+        [-1, 1, -1, false, false],
+        [-1, -1, 1, false, false],
+        [-1, 1, -1, false, false],
+        [-1, 1, -1, false, false],
+      ]
+    ) {
       const point = Point3d.create(data[0] as number, data[1] as number, data[2] as number);
       ck.testBoolean(data[3] as boolean, positiveOctant.isPointInside(point), "unbounded clip planes A");
       ck.testBoolean(data[4] as boolean, negativeOctant.isPointInside(point), "unbounded clip planes B");
@@ -804,7 +826,7 @@ describe("CurveClips", () => {
     const planeB = planeA.cloneNegated();
     ck.testTrue(planeA.isPointOn(origin), "origin on plane");
     ck.testTrue(planeB.isPointOn(origin), "origin on negated plane");
-    for (const x of [-10.0, 10.0]) {  // These x values are big enough to be sure we get points far from origin.
+    for (const x of [-10.0, 10.0]) { // These x values are big enough to be sure we get points far from origin.
       const point = Point3d.create(x, 5, 3);
       ck.testBoolean(planeA.isPointInside(point), !planeB.isPointInside(point), "negated plane isPointInside");
       ck.testFalse(planeA.isPointOn(point), "off-plane point test");
@@ -822,9 +844,10 @@ describe("CurveClips", () => {
     const plane = ClipPlane.createNormalAndPoint(Vector3d.create(1, 0, 0), Point3d.create(1, 1, 0))!;
     const rectangle0 = [
       Point3d.create(-1, -1, 0),
-      Point3d.create(10, - 1, 0),
+      Point3d.create(10, -1, 0),
       Point3d.create(10, 2, 0),
-      Point3d.create(-1, 2, 0)];
+      Point3d.create(-1, 2, 0),
+    ];
     const splitA: Point3d[] = [];
     const splitB: Point3d[] = [];
     const altitudeRange = Range1d.createNull();
@@ -847,9 +870,10 @@ describe("CurveClips", () => {
     const convexA = ConvexClipPlaneSet.createRange3dPlanes(range, true, false, true, false, false);
     const rectangle0 = [
       Point3d.create(-1, -1, 0),
-      Point3d.create(bx, - 1, 0),
+      Point3d.create(bx, -1, 0),
       Point3d.create(bx, by, 0),
-      Point3d.create(-1, by, 0)];
+      Point3d.create(-1, by, 0),
+    ];
 
     // const area0 = PolygonOps.sumTriangleAreas(rectangle0);
     const splitA = new GrowableXYZArray();
@@ -868,7 +892,8 @@ describe("CurveClips", () => {
       Point3d.create(0, 0, 0),
       Point3d.create(1, 0, 0),
       Point3d.create(0, 1, 0),
-      Point3d.create(0, 0, 0)];
+      Point3d.create(0, 0, 0),
+    ];
     const area0 = PolygonOps.sumTriangleAreas(triangle0);
     const rectangle0 = Sample.createRectangle(-2, -1, 2, 2, 0, false);
     // const rectangle1 = Sample.createRectangle(-2, -1, 2, 2, 1, false);
@@ -907,10 +932,13 @@ describe("CurveClips", () => {
     ck.testExactNumber(ClipStatus.ClipRequired, ClipUtilities.pointSetSingleClipStatus(boundaryB, clipAB, 0.0));
 
     const spreadQ = GrowableXYZArray.create(
-      [Point3d.create(1, 8), Point3d.create(2, 8)]);
+      [Point3d.create(1, 8), Point3d.create(2, 8)],
+    );
     ck.testExactNumber(ClipStatus.TrivialReject, ClipUtilities.pointSetSingleClipStatus(spreadQ, clipAB, 0.0));
-    ck.testExactNumber(ClipStatus.TrivialAccept, ClipUtilities.pointSetSingleClipStatus(spreadQ,
-      UnionOfConvexClipPlaneSets.createConvexSets([]), 0.0));
+    ck.testExactNumber(
+      ClipStatus.TrivialAccept,
+      ClipUtilities.pointSetSingleClipStatus(spreadQ, UnionOfConvexClipPlaneSets.createConvexSets([]), 0.0),
+    );
     ck.checkpoint("QuickClipStatus");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -964,14 +992,17 @@ describe("CurveClips", () => {
     const allGeometry: GeometryQuery[] = [];
     let dy = 0.0;
     // obviously inside ...
-    for (const clipPlane of [
-      ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0)!,
-      ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 0, 0, 0)!,
-      ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0.1)!,
-      ClipPlane.createNormalAndPointXYZXYZ(-2, 4, 1, 0.3, 0.2, 1.1)!,
-      ClipPlane.createNormalAndPointXYZXYZ(1, 1, 1.1, 0.3, 0.2, 1.1)!,
-      ClipPlane.createNormalAndPointXYZXYZ(-2, 6, 3, 0.3, 0.2, 1.1)!,
-      ClipPlane.createNormalAndPointXYZXYZ(0.2, 0, 1, 0, 0, 0)!]) {
+    for (
+      const clipPlane of [
+        ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0)!,
+        ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, 0, 0, 0)!,
+        ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, 0.1)!,
+        ClipPlane.createNormalAndPointXYZXYZ(-2, 4, 1, 0.3, 0.2, 1.1)!,
+        ClipPlane.createNormalAndPointXYZXYZ(1, 1, 1.1, 0.3, 0.2, 1.1)!,
+        ClipPlane.createNormalAndPointXYZXYZ(-2, 6, 3, 0.3, 0.2, 1.1)!,
+        ClipPlane.createNormalAndPointXYZXYZ(0.2, 0, 1, 0, 0, 0)!,
+      ]
+    ) {
       const clipped = clipPlane.intersectRange(range, true);
       GeometryCoreTestIO.captureRangeEdges(allGeometry, range, 0, dy, 0);
       if (ck.testPointer(clipped)) {
@@ -982,11 +1013,14 @@ describe("CurveClips", () => {
     }
     // obviously outside
     const big = 20.0;
-    for (const clipPlane of [
-      ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, big)!,
-      ClipPlane.createNormalAndPointXYZXYZ(0, 1, 0, 0, big, 0)!,
-      ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, big, 0, 0)!,
-      ClipPlane.createNormalAndPointXYZXYZ(1, 1, 1, big, big, big)!]) {
+    for (
+      const clipPlane of [
+        ClipPlane.createNormalAndPointXYZXYZ(0, 0, 1, 0, 0, big)!,
+        ClipPlane.createNormalAndPointXYZXYZ(0, 1, 0, 0, big, 0)!,
+        ClipPlane.createNormalAndPointXYZXYZ(1, 0, 0, big, 0, 0)!,
+        ClipPlane.createNormalAndPointXYZXYZ(1, 1, 1, big, big, big)!,
+      ]
+    ) {
       const clipped = clipPlane.intersectRange(range, true);
       ck.testUndefined(clipped, prettyPrint(clipPlane), prettyPrint(range));
     }
@@ -1074,7 +1108,6 @@ describe("CurveClips", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "ClipConvexSetToRange");
     expect(ck.getNumErrors()).toBe(0);
-
   });
 
   it("ClipConvexPolygonToRangeCoverage", () => {
@@ -1110,7 +1143,6 @@ describe("CurveClips", () => {
     ck.testUndefined(IndexedXYZCollectionPolygonOps.intersectRangeConvexPolygonInPlace(Range3d.createNull(), polygon), "null range clips to nothing");
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPlane", "ClipConvexPolygonToRangeCoverage");
     expect(ck.getNumErrors()).toBe(0);
-
   });
   it("StairwellClipViaSweptPolyline", () => {
     const ck = new Checker();
@@ -1121,8 +1153,8 @@ describe("CurveClips", () => {
     const y0 = 0.0;
 
     // Outline a rectangle in xz plane at the bottom of the stairwell
-    const a = 1.0;  // stair clearance width.
-    const b = 2.5;  // stair clearance height
+    const a = 1.0; // stair clearance width.
+    const b = 2.5; // stair clearance height
     const baseRectangle = [Point3d.create(0, 0), Point3d.create(a, 0), Point3d.create(a, 0, b), Point3d.create(0, 0, b), Point3d.create(0, 0)];
     const sweepVector = Vector3d.create(0, 1, 0.8);
     // create uncapped sweep
@@ -1137,8 +1169,7 @@ describe("CurveClips", () => {
     PolyfaceClip.clipPolyfaceInsideOutside(target, clipper, clipBuilders);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, target, x0, y0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseRectangle, x0, y0);
-    GeometryCoreTestIO.captureGeometry(allGeometry,
-      LineSegment3d.create(baseRectangle[0], baseRectangle[0].plusScaled(sweepVector, 5.0)), x0, y0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(baseRectangle[0], baseRectangle[0].plusScaled(sweepVector, 5.0)), x0, y0);
     const clip0 = clipBuilders.claimPolyface(0, false);
     const clip1 = clipBuilders.claimPolyface(1, true);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip0, x1, y0);
@@ -1146,7 +1177,6 @@ describe("CurveClips", () => {
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "StairwellClip");
     expect(ck.getNumErrors()).toBe(0);
-
   });
   it("StairwellClipViaLinearSweep", () => {
     const ck = new Checker();
@@ -1158,8 +1188,8 @@ describe("CurveClips", () => {
     let y0 = 0.0;
 
     // Outline a rectangle in xz plane at the bottom of the stairwell
-    const a = 1.0;  // stair clearance width.
-    const b = 2.0;  // stair clearance height
+    const a = 1.0; // stair clearance width.
+    const b = 2.0; // stair clearance height
     const baseRectangle = [Point3d.create(0, 0), Point3d.create(a, 0), Point3d.create(a, 0, b), Point3d.create(0, 0, b), Point3d.create(0, 0)];
     const sweepVector = Vector3d.create(0, 3, 2.4);
     for (const capped of [false, true]) {
@@ -1182,8 +1212,7 @@ describe("CurveClips", () => {
       PolyfaceClip.clipPolyfaceInsideOutside(target, clipper, clipBuilders);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, target, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, baseRectangle, x0, y0);
-      GeometryCoreTestIO.captureGeometry(allGeometry,
-        LineSegment3d.create(baseRectangle[0], baseRectangle[0].plusScaled(sweepVector, 5.0)), x0, y0);
+      GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(baseRectangle[0], baseRectangle[0].plusScaled(sweepVector, 5.0)), x0, y0);
       const clip0 = clipBuilders.claimPolyface(0, false);
       const clip1 = clipBuilders.claimPolyface(1, true);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, clip0, x1, y0);
@@ -1192,9 +1221,7 @@ describe("CurveClips", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "clipping", "StairwellClipViaLinearSweep");
     expect(ck.getNumErrors()).toBe(0);
-
   });
-
 });
 
 /* Tests for various levels of appendPolygonClip implementation */
@@ -1221,7 +1248,6 @@ describe("PolygonClipper", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(pointA, pointB));
     x0 += dx;
     for (const clipper of [unionBoth, planeAB, planeBA, convexSetAB, convexSetBA, unionAB, unionBoth]) {
-
       const insideFragments: GrowableXYZArray[] = [];
       const outsideFragments: GrowableXYZArray[] = [];
       const cache = new GrowableXYZArrayCache();
@@ -1278,27 +1304,19 @@ export class OutputManager {
   }
 
   public drawMinus(xyz: Point3d, radius: number = 0.1) {
-    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry,
-      [xyz.plusXYZ(-radius, 0, 0), xyz.plusXYZ(radius, 0, 0)],
-      this.x0, this.y0, this.z0);
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, [xyz.plusXYZ(-radius, 0, 0), xyz.plusXYZ(radius, 0, 0)], this.x0, this.y0, this.z0);
   }
 
   public drawPlus(xyz: Point3d, radius: number = 0.1) {
-    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry,
-      [xyz.plusXYZ(-radius, 0, 0), xyz.plusXYZ(radius, 0, 0)],
-      this.x0, this.y0, this.z0);
-    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry,
-      [xyz.plusXYZ(0, -radius, 0), xyz.plusXYZ(0, radius, 0)],
-      this.x0, this.y0, this.z0);
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, [xyz.plusXYZ(-radius, 0, 0), xyz.plusXYZ(radius, 0, 0)], this.x0, this.y0, this.z0);
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, [xyz.plusXYZ(0, -radius, 0), xyz.plusXYZ(0, radius, 0)], this.x0, this.y0, this.z0);
   }
   public drawLines(xyz: Point3d[]) {
-    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, xyz,
-      this.x0, this.y0, this.z0);
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, xyz, this.x0, this.y0, this.z0);
   }
 
   public drawCircle(xyz: Point3d, radius: number = 0.1) {
-    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry,
-      Arc3d.createXY(xyz, radius));
+    GeometryCoreTestIO.captureCloneGeometry(this.allGeometry, Arc3d.createXY(xyz, radius));
   }
 
   public captureClone(data: GeometryQuery | undefined) {
@@ -1316,15 +1334,25 @@ export class OutputManager {
     this.x0 += dx;
     this.y0 += dy;
   }
-  public setX0(x0: number): number { const a = this.x0; this.x0 = x0; return a; }
-  public setY0(y0: number): number { const a = this.y0; this.y0 = y0; return a; }
-  public setZ0(z0: number): number { const a = this.z0; this.z0 = z0; return a; }
+  public setX0(x0: number): number {
+    const a = this.x0;
+    this.x0 = x0;
+    return a;
+  }
+  public setY0(y0: number): number {
+    const a = this.y0;
+    this.y0 = y0;
+    return a;
+  }
+  public setZ0(z0: number): number {
+    const a = this.z0;
+    this.z0 = z0;
+    return a;
+  }
   public drawGraph(graph: HalfEdgeGraph | undefined) {
     if (graph)
-      GeometryCoreTestIO.captureGeometry(this.allGeometry, PolyfaceBuilder.graphToPolyface(graph),
-        this.x0, this.y0, 0);
+      GeometryCoreTestIO.captureGeometry(this.allGeometry, PolyfaceBuilder.graphToPolyface(graph), this.x0, this.y0, 0);
   }
-
 }
 /**
  * Create planes with (inward) normal computed as cross product of sweepVector edge vectors.
@@ -1355,12 +1383,17 @@ function createSweptConvexClipperForPolygon(points: Point3d[], invisibleBits: bo
  * * If point counts are different, use the smaller count.
  * * "interior" edges are marked
  */
-function createUnionOfConvexClipPlaneSetsBetweenCompatibleLineStringSweeps(pointA: Point3d[], pointB: Point3d[], sweepVector: Vector3d, hideInteriorPlanes: boolean): UnionOfConvexClipPlaneSets {
+function createUnionOfConvexClipPlaneSetsBetweenCompatibleLineStringSweeps(
+  pointA: Point3d[],
+  pointB: Point3d[],
+  sweepVector: Vector3d,
+  hideInteriorPlanes: boolean,
+): UnionOfConvexClipPlaneSets {
   const n = Math.min(pointA.length, pointB.length);
   const allClippers = UnionOfConvexClipPlaneSets.createEmpty();
   for (let i = 0; i + 1 < n; i++) {
-    const hide0 = (i !== 0);
-    const hide1 = (i + 1 !== n);
+    const hide0 = i !== 0;
+    const hide1 = i + 1 !== n;
     const pA0 = pointA[i];
     const pA1 = pointA[i + 1];
     const pB0 = pointB[i];
@@ -1382,7 +1415,7 @@ function createUnionOfConvexClipPlaneSetsBetweenCompatibleLineStringSweeps(point
     } else {
       const loopPoints = [pA0, pA1, pB1, pB0];
       if (a0 < 0)
-        loopPoints.reverse();   // reversal preserves 01 sequencing used in visibility check
+        loopPoints.reverse(); // reversal preserves 01 sequencing used in visibility check
       allClippers.addConvexSet(createSweptConvexClipperForPolygon(loopPoints, [false, hide1, false, hide0], sweepVector));
     }
   }
@@ -1393,9 +1426,9 @@ describe("ClipPlaneDocs", () => {
   it("Quadrants", () => {
     const ck = new Checker();
     const out = new OutputManager();
-    const a = 5.0;  // clipped polygon extent
+    const a = 5.0; // clipped polygon extent
     const b = 7.0 * a; // step between origins of successive snips
-    const c = 3.0;    // length of arrows for planes
+    const c = 3.0; // length of arrows for planes
     const c1 = c / 10.0;
     const axisLength = 2.0 * a;
     const axisArrowLength = 1.0;
@@ -1419,13 +1452,14 @@ describe("ClipPlaneDocs", () => {
         out.drawAxes(axisLength, axisArrowLength);
         const ax = 2 * Geometry.split3WaySign(xSign, -c, c, c);
         const cx = Geometry.split3WaySign(xSign, -c1, c1, c1);
-        const xPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(cx, ay, 0, xSign, 0, 0);    // undefined is expected in 0 case!
-        const yPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(ax, cy, 0, 0, ySign, 0);    // undefined is expected in 0 case!
+        const xPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(cx, ay, 0, xSign, 0, 0); // undefined is expected in 0 case!
+        const yPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(ax, cy, 0, 0, ySign, 0); // undefined is expected in 0 case!
         const clipper = ConvexClipPlaneSet.createEmpty();
         applyConditionalPlane1(clipper, xPlane);
         applyConditionalPlane1(clipper, yPlane);
-        const polygonToClip = GrowableXYZArray.create(Sample.createArcStrokes(3, Point3d.create(0, 0), a, Angle.createDegrees(15),
-          Angle.createDegrees(375), true, -0.04));
+        const polygonToClip = GrowableXYZArray.create(
+          Sample.createArcStrokes(3, Point3d.create(0, 0), a, Angle.createDegrees(15), Angle.createDegrees(375), true, -0.04),
+        );
         clipper.clipConvexPolygonInPlace(polygonToClip, work);
         out.drawPolygon(polygonToClip, true);
         out.shift(0, b);
@@ -1460,7 +1494,8 @@ describe("ClipPlaneDocs", () => {
     const planes = [
       Plane3dByOriginAndUnitNormal.createXYZUVW(8, 9, 0, -1, -3, 0)!,
       Plane3dByOriginAndUnitNormal.createXYZUVW(5, 8, 0, 4, 1.5, 0)!,
-      Plane3dByOriginAndUnitNormal.createXYZUVW(9, 4, 0, -4, 1.5, 0)!];
+      Plane3dByOriginAndUnitNormal.createXYZUVW(9, 4, 0, -4, 1.5, 0)!,
+    ];
 
     for (const plane of planes) {
       const clipPlane = ClipPlane.createPlane(plane);
@@ -1489,7 +1524,8 @@ describe("ClipPlaneDocs", () => {
     const planesForUnboundedConvexSet = [
       Plane3dByOriginAndUnitNormal.createXYZUVW(4.1, 2.1, 0, 1, 3, 0)!,
       Plane3dByOriginAndUnitNormal.createXYZUVW(2.5, 6.5, 0, 1, 0, 0)!,
-      Plane3dByOriginAndUnitNormal.createXYZUVW(4.1, 12.1, 0, 1, -2, 0)!];
+      Plane3dByOriginAndUnitNormal.createXYZUVW(4.1, 12.1, 0, 1, -2, 0)!,
+    ];
 
     showClipPlaneEffects(planesForUnboundedConvexSet, grid);
     out.shift(30, 0);
@@ -1514,9 +1550,13 @@ describe("ClipPlaneDocs", () => {
 
     const polygonQ = Sample.createArcStrokes(3, Point3d.create(1, 0, 0), 4, Angle.createDegrees(0), Angle.createDegrees(360), true, -0.01);
 
-    for (const clipData of [{ clipper: clipperA, polygon: polygonA, doPolyface: true },
-    { clipper: clipperB, polygon: polygonB, doPolyface: true },
-    { clipper: clipperC, polygon: polygonC, doPolyface: false }]) {
+    for (
+      const clipData of [{ clipper: clipperA, polygon: polygonA, doPolyface: true }, { clipper: clipperB, polygon: polygonB, doPolyface: true }, {
+        clipper: clipperC,
+        polygon: polygonC,
+        doPolyface: false,
+      }]
+    ) {
       for (const polygon of [polygonQ]) {
         out.drawPolygon(clipData.polygon, true);
         out.drawPolygon(polygon, false);
@@ -1545,5 +1585,4 @@ describe("ClipPlaneDocs", () => {
     out.saveToFile("ClipPlaneDocs", "UnionOfConvexClipPlaneSets");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

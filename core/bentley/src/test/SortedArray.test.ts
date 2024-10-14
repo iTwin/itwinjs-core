@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
-import { compareStrings, SortedArray } from "../core-bentley";
 import { compareBooleans, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, compareWithTolerance } from "../Compare";
+import { compareStrings, SortedArray } from "../core-bentley";
 
 class Thing {
-  public constructor(public readonly first: number, public readonly second: number) { }
+  public constructor(public readonly first: number, public readonly second: number) {}
 }
 
 function compareThings(lhs: Thing, rhs: Thing) {
@@ -22,7 +22,7 @@ function compareThings(lhs: Thing, rhs: Thing) {
 }
 
 export class Id {
-  public constructor(public readonly value: string) { }
+  public constructor(public readonly value: string) {}
 
   public compare(rhs: Id) {
     if (this === rhs || this.value === rhs.value)
@@ -113,7 +113,6 @@ describe("SortedArray", () => {
       list.insert(new Id(toInsert));
     expect(list.length, "length of protected array").to.equal(ids.length + lengthA);
     expectSorted(list.extractArray(), ids.length + 2, true, (lhs: Id, rhs: Id) => lhs.compare(rhs));
-
   });
 
   it("Number array", () => {
@@ -130,7 +129,7 @@ describe("SortedArray", () => {
       sumAll += toInsert;
     }
 
-    expect(listA.findEqual(sumAll)).to.be.undefined;   // sum of positives is larger
+    expect(listA.findEqual(sumAll)).to.be.undefined; // sum of positives is larger
 
     expect(sumBInsert).to.equal(sumAll);
     let sumA = 0;
@@ -149,13 +148,12 @@ describe("SortedArray", () => {
       expect(listA.contains(a)).to.be.false;
       const removeB = listB.remove(a);
       expect(removeB, "listB should have all original entries with duplicates").is.gte(0);
-      if (removeA === -1)   // this must be removal of a dup.
+      if (removeA === -1) // this must be removal of a dup.
         numDuplicatesDuringRemoval++;
     }
     expect(numDuplicates).to.be.equal(numDuplicatesDuringRemoval);
     listA.clear();
     expect(listA.isEmpty).to.be.true;
-
   });
 
   it("Should support iteration", () => {

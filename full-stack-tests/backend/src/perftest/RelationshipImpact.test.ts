@@ -2,16 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
-import {
-  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, RelatedElement, RelationshipProps, SubCategoryAppearance,
-} from "@itwin/core-common";
-import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import {
+  BriefcaseIdValue,
+  Code,
+  ColorDef,
+  GeometricElementProps,
+  GeometryStreamProps,
+  IModel,
+  RelatedElement,
+  RelationshipProps,
+  SubCategoryAppearance,
+} from "@itwin/core-common";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
+import { Reporter } from "@itwin/perf-tools";
+import { assert } from "chai";
+import * as path from "path";
 import { PerfTestUtility } from "./PerfTestUtils";
 
 describe("SchemaDesignPerf Relationship Comparison", () => {
@@ -20,7 +28,12 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
   let opCount = 0;
   const reporter = new Reporter();
 
-  function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
+  function createElemProps(
+    _imodel: IModelDb,
+    modId: Id64String,
+    catId: Id64String,
+    className: string = "TestPropsSchema:PropElement",
+  ): GeometricElementProps {
     // add Geometry
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -148,14 +161,21 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     assert(IModelJsFs.existsSync(st));
     const seedName = path.join(outDir, "relationship.bim");
     if (!IModelJsFs.existsSync(seedName)) {
-      const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), { rootSubject: { name: "PerfTest" } });
+      const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), {
+        rootSubject: { name: "PerfTest" },
+      });
       await seedIModel.importSchemas([st]);
       seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
       // first create Elements and then Relationship
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+        spatialCategoryId = SpatialCategory.insert(
+          seedIModel,
+          IModel.dictionaryId,
+          "MySpatialCategory",
+          new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+        );
 
       for (let i = 0; i < seedCount; ++i) {
         const idC = insertElement(seedIModel, newModelId, spatialCategoryId, "TestRelationSchema:ChildC");
@@ -201,7 +221,12 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
     if (undefined === spatialCategoryId)
-      spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      spatialCategoryId = SpatialCategory.insert(
+        perfimodel,
+        IModel.dictionaryId,
+        "MySpatialCategory",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+      );
 
     for (let i = 0; i < opCount; ++i) {
       // LinkTable
@@ -240,8 +265,16 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     verifyCounts(perfimodel, seedCount + opCount);
     perfimodel.close();
 
-    reporter.addEntry("RelPerfTest", "RelationshipInsert", "Execution time(s)", totalTimeLink, { count: opCount, sCount: seedCount, relType: "LinkTable" });
-    reporter.addEntry("RelPerfTest", "RelationshipInsert", "Execution time(s)", totalTimeNav, { count: opCount, sCount: seedCount, relType: "NavProp" });
+    reporter.addEntry("RelPerfTest", "RelationshipInsert", "Execution time(s)", totalTimeLink, {
+      count: opCount,
+      sCount: seedCount,
+      relType: "LinkTable",
+    });
+    reporter.addEntry("RelPerfTest", "RelationshipInsert", "Execution time(s)", totalTimeNav, {
+      count: opCount,
+      sCount: seedCount,
+      relType: "NavProp",
+    });
   });
   it("Read", async () => {
     const seedFileName = path.join(outDir, "relationship.bim");
@@ -254,8 +287,11 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const startTime = new Date().getTime();
     for (let i = 0; i < opCount; ++i) {
       try {
-        const tId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
-        const query = IModelTestUtils.executeQuery(perfimodel, `SELECT SourceECInstanceId FROM TestRelationSchema.CIsRelatedToD WHERE TargetECInstanceId=${tId}`)[0];
+        const tId: Id64String = Id64.fromLocalAndBriefcaseIds(minId + elementIdIncrement * i, 0);
+        const query = IModelTestUtils.executeQuery(
+          perfimodel,
+          `SELECT SourceECInstanceId FROM TestRelationSchema.CIsRelatedToD WHERE TargetECInstanceId=${tId}`,
+        )[0];
         assert.isTrue(Id64.isValidId64(query.sourceId));
       } catch (err) {
         assert.isTrue(false);
@@ -269,8 +305,9 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const startTime1 = new Date().getTime();
     for (let i = 0; i < opCount; ++i) {
       try {
-        const tId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
-        const query = IModelTestUtils.executeQuery(perfimodel, `SELECT SourceECInstanceId FROM TestRelationSchema.ADrivesB WHERE TargetECInstanceId=${tId}`)[0];
+        const tId: Id64String = Id64.fromLocalAndBriefcaseIds(minId + elementIdIncrement * i, 0);
+        const query =
+          IModelTestUtils.executeQuery(perfimodel, `SELECT SourceECInstanceId FROM TestRelationSchema.ADrivesB WHERE TargetECInstanceId=${tId}`)[0];
         assert.isTrue(Id64.isValidId64(query.sourceId));
       } catch (err) {
         assert.isTrue(false);
@@ -282,9 +319,16 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     perfimodel.saveChanges();
     perfimodel.close();
 
-    reporter.addEntry("RelPerfTest", "RelationshipRead", "Execution time(s)", elapsedTimeLink, { count: opCount, sCount: seedCount, relType: "LinkTable" });
-    reporter.addEntry("RelPerfTest", "RelationshipRead", "Execution time(s)", elapsedTimeNav, { count: opCount, sCount: seedCount, relType: "NavProp" });
-
+    reporter.addEntry("RelPerfTest", "RelationshipRead", "Execution time(s)", elapsedTimeLink, {
+      count: opCount,
+      sCount: seedCount,
+      relType: "LinkTable",
+    });
+    reporter.addEntry("RelPerfTest", "RelationshipRead", "Execution time(s)", elapsedTimeNav, {
+      count: opCount,
+      sCount: seedCount,
+      relType: "NavProp",
+    });
   });
   it("Delete", async () => {
     const seedFileName = path.join(outDir, "relationship.bim");
@@ -297,9 +341,9 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const startTime = new Date().getTime();
     for (let i = 0; i < opCount; ++i) {
       try {
-        const sId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
+        const sId: Id64String = Id64.fromLocalAndBriefcaseIds(minId + elementIdIncrement * i, 0);
         // Need improvement. Currently assuming that they were added one after another so have next Id.
-        const tId: Id64String = Id64.fromLocalAndBriefcaseIds(((minId + elementIdIncrement * i) + 1), 0);
+        const tId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i) + 1, 0);
         const rel = perfimodel.relationships.getInstance("TestRelationSchema:CIsRelatedToD", { sourceId: sId, targetId: tId });
         rel.delete();
       } catch (err) {
@@ -315,7 +359,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     const startTime1 = new Date().getTime();
     for (let i = 0; i < opCount; ++i) {
       try {
-        const elId: Id64String = Id64.fromLocalAndBriefcaseIds((minId + elementIdIncrement * i), 0);
+        const elId: Id64String = Id64.fromLocalAndBriefcaseIds(minId + elementIdIncrement * i, 0);
         const editElem: any = perfimodel.elements.getElement(elId);
         editElem.childB = null;
         perfimodel.elements.updateElement(editElem);
@@ -330,7 +374,15 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     perfimodel.saveChanges();
     perfimodel.close();
 
-    reporter.addEntry("RelPerfTest", "RelationshipDelete", "Execution time(s)", elapsedTimeLink, { count: opCount, sCount: seedCount, relType: "LinkTable" });
-    reporter.addEntry("RelPerfTest", "RelationshipDelete", "Execution time(s)", elapsedTimeNav, { count: opCount, sCount: seedCount, relType: "NavProp" });
+    reporter.addEntry("RelPerfTest", "RelationshipDelete", "Execution time(s)", elapsedTimeLink, {
+      count: opCount,
+      sCount: seedCount,
+      relType: "LinkTable",
+    });
+    reporter.addEntry("RelPerfTest", "RelationshipDelete", "Execution time(s)", elapsedTimeNav, {
+      count: opCount,
+      sCount: seedCount,
+      relType: "NavProp",
+    });
   });
 });

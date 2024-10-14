@@ -2,16 +2,27 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as sinon from "sinon";
-import * as sinonChai from "sinon-chai";
-import { expect, use } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
 import { IModelTileRpcInterface, ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelTile, IModelTileContent, IModelTileTree, IpcApp, RenderGraphic, RenderMemory, SnapshotConnection, Tile, TileLoadStatus,
-  TileRequestChannel, TileStorage, Viewport,
+  IModelApp,
+  IModelTile,
+  IModelTileContent,
+  IModelTileTree,
+  IpcApp,
+  RenderGraphic,
+  RenderMemory,
+  SnapshotConnection,
+  Tile,
+  TileLoadStatus,
+  TileRequestChannel,
+  TileStorage,
+  Viewport,
 } from "@itwin/core-frontend";
 import type { FrontendStorage, TransferConfig } from "@itwin/object-storage-core/lib/frontend";
+import { expect, use } from "chai";
+import * as sinon from "sinon";
+import * as sinonChai from "sinon-chai";
 import { TestUtility } from "../../TestUtility";
 import { TILE_DATA_2_0 } from "./data/TileIO.data.2.0";
 import { fakeViewState } from "./TileIO.test";
@@ -52,7 +63,7 @@ describe("IModelTileRequestChannels", () => {
     const viewport = {
       viewportId: 12345,
       iModel: tile.tree.iModel,
-      invalidateScene: () => { },
+      invalidateScene: () => {},
     } as Viewport;
 
     IModelApp.tileAdmin.requestTiles(viewport, new Set<Tile>([tile]));

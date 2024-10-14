@@ -6,15 +6,15 @@
  * @module Metadata
  */
 
+import { Mutable } from "@itwin/core-bentley";
+import { DecimalPrecision, FormatProps, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
+import { SchemaItemOverrideFormatProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
-import { DecimalPrecision, FormatProps, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "@itwin/core-quantity";
 import { Format } from "./Format";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
-import { SchemaItemOverrideFormatProps } from "../Deserialization/JsonProps";
 import { Unit } from "./Unit";
-import { Mutable } from "@itwin/core-bentley";
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
@@ -41,24 +41,56 @@ export class OverrideFormat {
   }
 
   // Properties that can be overriden
-  public get precision(): DecimalPrecision | FractionalPrecision { return (undefined === this._precision) ? this.parent.precision : this._precision; }
-  public get units() { return (undefined === this._units) ? this.parent.units : this._units; }
+  public get precision(): DecimalPrecision | FractionalPrecision {
+    return (undefined === this._precision) ? this.parent.precision : this._precision;
+  }
+  public get units() {
+    return (undefined === this._units) ? this.parent.units : this._units;
+  }
 
   // Properties that cannot be overriden
-  public get fullName(): string { return this.name; }
-  public get roundFactor(): number { return this.parent.roundFactor; }
-  public get type(): FormatType { return this.parent.type; }
-  public get minWidth(): number | undefined { return this.parent.minWidth; }
-  public get scientificType(): ScientificType | undefined { return this.parent.scientificType; }
-  public get showSignOption(): ShowSignOption { return this.parent.showSignOption; }
-  public get decimalSeparator(): string { return this.parent.decimalSeparator; }
-  public get thousandSeparator(): string { return this.parent.thousandSeparator; }
-  public get uomSeparator(): string { return this.parent.uomSeparator; }
-  public get stationSeparator(): string { return this.parent.stationSeparator; }
-  public get stationOffsetSize(): number | undefined { return this.parent.stationOffsetSize; }
-  public get formatTraits(): FormatTraits { return this.parent.formatTraits; }
-  public get spacer(): string | undefined { return this.parent.spacer; }
-  public get includeZero(): boolean | undefined { return this.parent.includeZero; }
+  public get fullName(): string {
+    return this.name;
+  }
+  public get roundFactor(): number {
+    return this.parent.roundFactor;
+  }
+  public get type(): FormatType {
+    return this.parent.type;
+  }
+  public get minWidth(): number | undefined {
+    return this.parent.minWidth;
+  }
+  public get scientificType(): ScientificType | undefined {
+    return this.parent.scientificType;
+  }
+  public get showSignOption(): ShowSignOption {
+    return this.parent.showSignOption;
+  }
+  public get decimalSeparator(): string {
+    return this.parent.decimalSeparator;
+  }
+  public get thousandSeparator(): string {
+    return this.parent.thousandSeparator;
+  }
+  public get uomSeparator(): string {
+    return this.parent.uomSeparator;
+  }
+  public get stationSeparator(): string {
+    return this.parent.stationSeparator;
+  }
+  public get stationOffsetSize(): number | undefined {
+    return this.parent.stationOffsetSize;
+  }
+  public get formatTraits(): FormatTraits {
+    return this.parent.formatTraits;
+  }
+  public get spacer(): string | undefined {
+    return this.parent.spacer;
+  }
+  public get includeZero(): boolean | undefined {
+    return this.parent.includeZero;
+  }
 
   public hasFormatTrait(formatTrait: FormatTraits) {
     return (this.parent.formatTraits & formatTrait) === formatTrait;
@@ -90,7 +122,11 @@ export class OverrideFormat {
    * @param parent The parent Format.
    * @param unitAndLabels The overridden unit and labels collection.
    */
-  public static createOverrideFormatFullName(parent: Format, precision?: DecimalPrecision | FractionalPrecision, unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>): string {
+  public static createOverrideFormatFullName(
+    parent: Format,
+    precision?: DecimalPrecision | FractionalPrecision,
+    unitAndLabels?: Array<[Unit | InvertedUnit, string | undefined]>,
+  ): string {
     let fullName = parent.fullName;
 
     if (precision)
@@ -112,7 +148,8 @@ export class OverrideFormat {
   public static isOverrideFormat(object: any): object is OverrideFormat {
     const overrideFormat = object as OverrideFormat;
 
-    return overrideFormat !== undefined && overrideFormat.name !== undefined && overrideFormat.parent !== undefined && overrideFormat.parent.schemaItemType === SchemaItemType.Format;
+    return overrideFormat !== undefined && overrideFormat.name !== undefined && overrideFormat.parent !== undefined &&
+      overrideFormat.parent.schemaItemType === SchemaItemType.Format;
   }
 
   /**

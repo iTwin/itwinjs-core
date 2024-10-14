@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
+import { expect } from "chai";
 import { Material } from "../../../render/webgl/Material";
 
 // Equivalent to the glsl function used in glsl/Material.ts to unpack a vec3 material param from a packed float value.

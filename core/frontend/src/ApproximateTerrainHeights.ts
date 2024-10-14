@@ -7,10 +7,10 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Point2d, Range1d, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
-import { GeographicTilingScheme, QuadId } from "./tile/internal";
+import { Point2d, Range1d, Range2d } from "@itwin/core-geometry";
 import type { ApproximateTerrainHeightsProps } from "./ApproximateTerrainHeightsProps";
+import { GeographicTilingScheme, QuadId } from "./tile/internal";
 
 let instance: ApproximateTerrainHeights | undefined;
 
@@ -47,12 +47,12 @@ export class ApproximateTerrainHeights {
   public getTileHeightRange(quadId: QuadId, result?: Range1d): Range1d {
     result = Range1d.createFrom(this.globalHeightRange, result);
     if (undefined === this._terrainHeights)
-      return result;   // Not initialized.
+      return result; // Not initialized.
 
     let level = quadId.level, column = quadId.column, row = quadId.row;
     if (level > 6) {
       column = column >> (level - 6);
-      row = row >> quadId.row >> ((level - 6));
+      row = row >> quadId.row >> (level - 6);
       level = 6;
     }
 
@@ -69,7 +69,7 @@ export class ApproximateTerrainHeights {
   public getMinimumMaximumHeights(rectangle: Range2d, result?: Range1d): Range1d {
     result = Range1d.createFrom(this.globalHeightRange, result);
     if (undefined === this._terrainHeights)
-      return result;   // Not initialized.
+      return result; // Not initialized.
 
     const xyLevel = this._getTileXYLevel(rectangle);
     if (undefined !== xyLevel) {

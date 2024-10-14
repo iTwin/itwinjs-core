@@ -34,8 +34,7 @@ enum OwsConstants {
   TITLE_XMLTAG = "ows:Title",
   UPPERCORNER_XMLTAG = "ows:UpperCorner",
   VALUE_XMLTAG = "ows:Value",
-  WGS84BOUNDINGBOX_XMLTAG = "ows:WGS84BoundingBox"
-
+  WGS84BOUNDINGBOX_XMLTAG = "ows:WGS84BoundingBox",
 }
 
 enum XmlConstants {
@@ -61,7 +60,7 @@ enum XmlConstants {
 }
 
 /** @internal
-*/
+ */
 export enum WmtsConstants {
   GOOGLEMAPS_LEVEL0_SCALE_DENOM = 559082264.0287178,
   GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME = "googlemapscompatible",
@@ -74,13 +73,11 @@ export enum WmtsConstants {
  * @internal
  */
 const getElementTextContent = (elem: Element, qualifiedName: string, defaultText?: string) => {
-
   const tmpElem = elem.getElementsByTagName(qualifiedName);
   if (tmpElem.length > 0) {
     return tmpElem[0].textContent ?? defaultText;
   } else
     return defaultText;
-
 };
 
 /** Encapsulation of the capabilities for an WMTS server
@@ -121,13 +118,19 @@ export namespace WmtsCapability {
 
   export class OperationMetadata {
     private _getCapabilities?: Operation;
-    public get getCapabilities(): Operation | undefined { return this._getCapabilities; }
+    public get getCapabilities(): Operation | undefined {
+      return this._getCapabilities;
+    }
 
     private _getFeatureInfo?: Operation;
-    public get getFeatureInfo(): Operation | undefined { return this._getFeatureInfo; }
+    public get getFeatureInfo(): Operation | undefined {
+      return this._getFeatureInfo;
+    }
 
     private _getTile?: Operation;
-    public get getTile(): Operation | undefined { return this._getTile; }
+    public get getTile(): Operation | undefined {
+      return this._getTile;
+    }
 
     private readOperation(op: Element) {
       const nameAttr = op.attributes.getNamedItem("name");
@@ -183,9 +186,13 @@ export namespace WmtsCapability {
   export class Operation {
     public readonly name?: string;
     private _getDcpHttp?: HttpDcp[];
-    public get getDcpHttp(): HttpDcp[] | undefined { return this._getDcpHttp; }
+    public get getDcpHttp(): HttpDcp[] | undefined {
+      return this._getDcpHttp;
+    }
     private _postDcpHttp?: HttpDcp[];
-    public get postDcpHttp(): HttpDcp[] | undefined { return this._postDcpHttp; }
+    public get postDcpHttp(): HttpDcp[] | undefined {
+      return this._postDcpHttp;
+    }
 
     constructor(elem: Element) {
       const name = elem.getAttribute("name");
@@ -238,7 +245,6 @@ export namespace WmtsCapability {
         for (const tmsElem of tms)
           this.tileMatrixSets.push(new TileMatrixSet(tmsElem));
       }
-
     }
 
     public getGoogleMapsCompatibleTileMatrixSet(): TileMatrixSet[] {
@@ -246,10 +252,10 @@ export namespace WmtsCapability {
       this.tileMatrixSets.forEach((tms) => {
         if (tms.wellKnownScaleSet?.toLowerCase().includes(WmtsConstants.GOOGLEMAPS_COMPATIBLE_WELLKNOWNNAME))
           googleMapsTms.push(tms);
-
         // In case wellKnownScaleSet was not been set properly, infer from scaleDenominator
         // Note: some servers are quite inaccurate in their scale values, hence I used a delta value of 1.
-        else if (tms.tileMatrix.length > 0
+        else if (
+          tms.tileMatrix.length > 0
           && Math.abs(tms.tileMatrix[0].scaleDenominator - WmtsConstants.GOOGLEMAPS_LEVEL0_SCALE_DENOM) < 1
           && (tms.supportedCrs.includes("3857") || tms.supportedCrs.includes("900913"))
         )
@@ -305,7 +311,6 @@ export namespace WmtsCapability {
     public tileMatrix?: string;
 
     constructor(elem: Element) {
-
       this.tileMatrix = getElementTextContent(elem, "TileMatrix");
 
       const minTileRow = getElementTextContent(elem, "MinTileRow");
@@ -323,7 +328,6 @@ export namespace WmtsCapability {
     public readonly tileMatrixSetLimits = new Array<TileMatrixSetLimits>();
 
     constructor(elem: Element) {
-
       this.tileMatrixSet = getElementTextContent(elem, "TileMatrixSet", "")!;
 
       const tileMatrixLimitsRoot = elem.getElementsByTagName("TileMatrixSetLimits");
@@ -444,7 +448,6 @@ export namespace WmtsCapability {
     public readonly tileMatrixSetLinks: TileMatrixSetLink[] = [];
 
     constructor(elem: Element) {
-
       const identifier = getElementTextContent(elem, OwsConstants.IDENTIFIER_XMLTAG, "");
       if (identifier)
         this.identifier = identifier;
@@ -508,7 +511,6 @@ export class WmtsCapabilities {
   public readonly operationsMetadata?: WmtsCapability.OperationMetadata;
 
   constructor(xmlDoc: Document) {
-
     const capabilities = xmlDoc.getElementsByTagName("Capabilities");
     if (capabilities.length !== 0) {
       const capability = capabilities[0];
@@ -537,7 +539,12 @@ export class WmtsCapabilities {
     return new WmtsCapabilities(xmlDoc);
   }
 
-  public static async create(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean, queryParams?: {[key: string]: string}): Promise<WmtsCapabilities | undefined> {
+  public static async create(
+    url: string,
+    credentials?: RequestBasicCredentials,
+    ignoreCache?: boolean,
+    queryParams?: { [key: string]: string },
+  ): Promise<WmtsCapabilities | undefined> {
     if (!ignoreCache) {
       const cached = WmtsCapabilities._capabilitiesCache.get(url);
       if (cached !== undefined)

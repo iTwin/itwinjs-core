@@ -6,16 +6,16 @@
  * @module WebGL
  */
 
+import { OvrFlags } from "../../common/internal/render/OvrFlags";
 import { BatchState } from "./BatchState";
+import { Contours } from "./Contours";
 import { FeatureOverrides } from "./FeatureOverrides";
 import { Batch } from "./Graphic";
-import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
 import { Target } from "./Target";
 import { FeatureMode } from "./TechniqueFlags";
 import { ThematicSensors } from "./ThematicSensors";
-import { Contours } from "./Contours";
-import { OvrFlags } from "../../common/internal/render/OvrFlags";
+import { UniformHandle } from "./UniformHandle";
 
 const scratchRgb = new Float32Array(3);
 const noOverrideRgb = new Float32Array([-1.0, -1.0, -1.0]);
@@ -82,7 +82,9 @@ export class BatchUniforms {
     this.state.reset();
   }
 
-  public get featureMode(): FeatureMode { return this._featureMode; }
+  public get featureMode(): FeatureMode {
+    return this._featureMode;
+  }
 
   public bindNumThematicSensors(uniform: UniformHandle): void {
     if (undefined !== this._sensors)
@@ -166,7 +168,7 @@ export class BatchUniforms {
     if (undefined !== this._overrides) {
       const uo = this._overrides.getUniformOverrides();
       if (uo[0] & OvrFlags.Alpha) {
-        uniform.setUniform1f(uo[7]/255.0);
+        uniform.setUniform1f(uo[7] / 255.0);
       } else {
         uniform.setUniform1f(-1.0);
       }

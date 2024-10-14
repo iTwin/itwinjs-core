@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import * as EC from "@itwin/ecschema-metadata";
 import { assert } from "chai";
 import * as path from "path";
-import * as EC from "@itwin/ecschema-metadata";
 import { FileSchemaKey } from "../SchemaFileLocater";
 import { SchemaJsonFileLocater } from "../SchemaJsonFileLocater";
 

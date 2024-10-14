@@ -18,12 +18,12 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 /* cspell:word isnan */
 
 class AngleTests {
-  constructor(public noisy: boolean = false) { }
+  constructor(public noisy: boolean = false) {}
 
   public testAlmostEqual(ck: Checker) {
     const a = 0.5 * Geometry.smallAngleRadians;
     const b = 8.0 * Geometry.smallAngleRadians;
-    const c = 1.0;    // radians, a nonzero angle
+    const c = 1.0; // radians, a nonzero angle
     const degreeCandidates = [0, 2, 56, 89, 90, 180];
     const periodCandidates = [0, 1, -1, 4, -6];
     let shiftPeriod = 0;
@@ -66,9 +66,12 @@ class AngleTests {
         const theta2 = Angle.createDegreesAdjustSigned180(degrees);
         if (this.noisy)
           GeometryCoreTestIO.consoleLog(
-            "adjust angle:", theta0.degrees,
-            "    positive:", theta1.degrees,
-            "    signed:", theta2.degrees,
+            "adjust angle:",
+            theta0.degrees,
+            "    positive:",
+            theta1.degrees,
+            "    signed:",
+            theta2.degrees,
           );
         ck.testBoolean(true, theta0.isAlmostEqualAllowPeriodShift(theta1), "adjust positive");
         ck.testBoolean(true, theta0.isAlmostEqualAllowPeriodShift(theta2), "adjust signed");
@@ -263,15 +266,27 @@ describe("MiscAngles", () => {
       const radians = Angle.degreesToRadians(degrees);
       const radiansPositive = radians > 0 ? radians : Angle.adjustRadians0To2Pi(radians);
       const alphaTrue = Angle.orientedRadiansBetweenVectorsXYZ(
-        vectorU.x, vectorU.y, vectorU.z,
-        vectorV.x, vectorV.y, vectorV.z,
-        vectorW.x, vectorW.y, vectorW.z,
+        vectorU.x,
+        vectorU.y,
+        vectorU.z,
+        vectorV.x,
+        vectorV.y,
+        vectorV.z,
+        vectorW.x,
+        vectorW.y,
+        vectorW.z,
         true,
       );
       const alphaFalse = Angle.orientedRadiansBetweenVectorsXYZ(
-        vectorU.x, vectorU.y, vectorU.z,
-        vectorV.x, vectorV.y, vectorV.z,
-        vectorW.x, vectorW.y, vectorW.z,
+        vectorU.x,
+        vectorU.y,
+        vectorU.z,
+        vectorV.x,
+        vectorV.y,
+        vectorV.z,
+        vectorW.x,
+        vectorW.y,
+        vectorW.z,
         false,
       );
       ck.testCoordinate(alphaTrue, radiansPositive, { degrees, adjust: true });
@@ -548,14 +563,22 @@ describe("MiscAngles", () => {
             f0 %= period;
           const a = Angle.createRadians(r);
           const fPos = sweep.angleToSignedFraction(a, false, emptySweepResult);
-          ck.testFraction(fPos, sweep.angleToPositivePeriodicFraction(a, emptySweepResult), "!exteriorAngleToNegativeFraction reproduces angleToPositivePeriodicFraction");
+          ck.testFraction(
+            fPos,
+            sweep.angleToPositivePeriodicFraction(a, emptySweepResult),
+            "!exteriorAngleToNegativeFraction reproduces angleToPositivePeriodicFraction",
+          );
           const oldCode = oldAngleToSignedPeriodicFraction(sweep, a, emptySweepResult);
           const newCode = sweep.angleToSignedPeriodicFraction(a, emptySweepResult);
           ck.testCoordinate(oldCode, newCode, "old and new code for signed periodic sweep fraction is equivalent");
           const fNeg = sweep.angleToSignedFraction(a, true, emptySweepResult);
           if (sweep.isAngleInSweep(a)) {
             ck.testFraction(fPos, fNeg, "interior angle unchanged by exteriorAngleToNegativeFraction value");
-            ck.testFraction(fPos, sweep.fractionToSignedPeriodicFraction(fPos, true), "interior fraction unchanged by fractionToSignedPeriodicFraction");
+            ck.testFraction(
+              fPos,
+              sweep.fractionToSignedPeriodicFraction(fPos, true),
+              "interior fraction unchanged by fractionToSignedPeriodicFraction",
+            );
           } else { // exterior angle
             ck.testFraction(fPos - fNeg, period, Geometry.smallFraction, "sum of pos + neg exterior fractions equals period");
             // extremely tiny non-empty intervals suffer from subtractive cancellation. Be generous: tol = 1.0e-5 fails.
@@ -747,7 +770,7 @@ describe("Angle.cloneComplement", () => {
       const startAngle: number = Math.PI / 6;
       const endAngle: number = Math.PI / 3;
       const startAngleComplement: number = Math.PI / 6;
-      const endAngleComplement: number = - 2 * Math.PI + Math.PI / 3;
+      const endAngleComplement: number = -2 * Math.PI + Math.PI / 3;
       const angleSweep: AngleSweep = AngleSweep.createStartEndRadians(startAngle, endAngle);
       const output: AngleSweep = angleSweep.cloneComplement(true);
       assert.isOk(Angle.isAlmostEqualRadiansNoPeriodShift(output.startAngle.radians, startAngleComplement));
@@ -970,7 +993,7 @@ describe("Angle.dotProductsToHalfAngleTrigValues", () => {
     const uSeg0 = LineSegment3d.create(arc0.center, arc0.center.plus(arc0.vector0));
     const vSeg0 = LineSegment3d.create(arc0.center, arc0.center.plus(arc0.vector90));
     const arc0full = arc0.clone();
-    arc0full.sweep = AngleSweep.create360(arc0full.sweep.startRadians);  // the full ellipse created by c, u, and v
+    arc0full.sweep = AngleSweep.create360(arc0full.sweep.startRadians); // the full ellipse created by c, u, and v
     const dotUU = U.dotProduct(U);
     const dotVV = V.dotProduct(V);
     const dotUV = U.dotProduct(V);
@@ -981,7 +1004,12 @@ describe("Angle.dotProductsToHalfAngleTrigValues", () => {
     // arc1 is the squared arc (created by 2 perpendicular vector basis). arc1 is same as arc0 but arc1 is
     // created by the 2 semi-axis (2 perpendicular vector basis) while arc0 is created by 2 random vector basis.
     // note that toScaledMatrix3d returns unit axis so we have to apply scale (r0 and r90)
-    const arc1 = Arc3d.create(arc1json.center, arc1json.axes.columnX().scale(arc1json.r0), arc1json.axes.columnY().scale(arc1json.r90), arc1json.sweep);
+    const arc1 = Arc3d.create(
+      arc1json.center,
+      arc1json.axes.columnX().scale(arc1json.r0),
+      arc1json.axes.columnY().scale(arc1json.r90),
+      arc1json.sweep,
+    );
     // uSeg0 and vSeg0 are the 2 ellipse semi-axis. note that uSeg1 is same as perpSeg
     const uSeg1 = LineSegment3d.create(arc1.center, arc1.center.plus(arc1.vector0));
     const vSeg1 = LineSegment3d.create(arc1.center, arc1.center.plus(arc1.vector90));

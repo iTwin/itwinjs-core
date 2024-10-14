@@ -7,15 +7,38 @@
  */
 
 import { assert, compareBooleans, compareStrings, Id64 } from "@itwin/core-bentley";
-import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, Placement2d, ViewAttachmentProps, ViewDefinition2dProps, ViewFlagOverrides } from "@itwin/core-common";
 import {
-  CategorySelectorState, DisclosedTileTreeSet, DisplayStyle2dState, DrawingViewState,
-  FeatureSymbology, GeometricModel2dState, GraphicBranch, HitDetail, IModelApp, IModelConnection, RenderClipVolume, RenderSystem, SheetModelState, Tile, TileContent, TiledGraphicsProvider, TileDrawArgs,
-  TileLoadPriority, TileRequest, TileRequestChannel, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier, Viewport, ViewState2d,
+  CategorySelectorState,
+  DisclosedTileTreeSet,
+  DisplayStyle2dState,
+  DrawingViewState,
+  FeatureSymbology,
+  GeometricModel2dState,
+  GraphicBranch,
+  HitDetail,
+  IModelApp,
+  IModelConnection,
+  RenderClipVolume,
+  RenderSystem,
+  SheetModelState,
+  Tile,
+  TileContent,
+  TiledGraphicsProvider,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileRequest,
+  TileRequestChannel,
+  TileTree,
+  TileTreeOwner,
+  TileTreeReference,
+  TileTreeSupplier,
+  Viewport,
+  ViewState2d,
 } from "@itwin/core-frontend";
-import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
+import { ClipShape, ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { HyperModeling } from "./HyperModeling";
+import { SectionDrawingLocationState } from "./SectionDrawingLocationState";
 
 interface ProxyTreeId {
   state: SectionDrawingLocationState;
@@ -126,7 +149,9 @@ class ProxyTreeReference extends TileTreeReference {
     return true !== HyperModeling.graphicsConfig.ignoreClip ? super.getClipVolume(tree) : undefined;
   }
 
-  public get treeOwner() { return this._owner; }
+  public get treeOwner() {
+    return this._owner;
+  }
 
   private get _proxiedRef(): TileTreeReference | undefined {
     const proxiedTree = this.treeOwner.tileTree as ProxyTree;
@@ -184,11 +209,21 @@ abstract class ProxyTree extends TileTree {
     this._rootTile = new ProxyTile(this, range);
   }
 
-  public get rootTile(): ProxyTile { return this._rootTile; }
-  public get viewFlagOverrides() { return this._viewFlagOverrides; }
-  public get is3d() { return false; }
-  public override get isContentUnbounded() { return false; }
-  public get maxDepth() { return 1; }
+  public get rootTile(): ProxyTile {
+    return this._rootTile;
+  }
+  public get viewFlagOverrides() {
+    return this._viewFlagOverrides;
+  }
+  public get is3d() {
+    return false;
+  }
+  public override get isContentUnbounded() {
+    return false;
+  }
+  public get maxDepth() {
+    return 1;
+  }
 
   protected abstract get isDisplayed(): boolean;
 
@@ -243,7 +278,9 @@ class DrawingProxyTree extends ProxyTree {
     super(params, location, clipVolume);
   }
 
-  protected get isDisplayed() { return true !== HyperModeling.graphicsConfig.hideSectionGraphics; }
+  protected get isDisplayed() {
+    return true !== HyperModeling.graphicsConfig.hideSectionGraphics;
+  }
 }
 
 class SheetProxyTree extends ProxyTree {
@@ -263,7 +300,9 @@ class SheetProxyTree extends ProxyTree {
     this.symbologyOverrides.ignoreSubCategory = true;
   }
 
-  protected get isDisplayed() { return true !== HyperModeling.graphicsConfig.hideSheetAnnotations; }
+  protected get isDisplayed() {
+    return true !== HyperModeling.graphicsConfig.hideSheetAnnotations;
+  }
 }
 
 /** The single Tile belonging to a ProxyTree, serving as a proxy for all of the proxied tree's tiles. */
@@ -273,13 +312,23 @@ class ProxyTile extends Tile {
     this.setIsReady();
   }
 
-  public get hasChildren() { return false; }
-  public override get hasGraphics() { return true; }
+  public get hasChildren() {
+    return false;
+  }
+  public override get hasGraphics() {
+    return true;
+  }
 
-  public get channel(): TileRequestChannel { throw new Error("Proxy tile has no content"); }
-  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> { return undefined; }
-  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> { return {}; }
-  protected _loadChildren(_resolve: (children: Tile[]) => void, _reject: (error: Error) => void): void { }
+  public get channel(): TileRequestChannel {
+    throw new Error("Proxy tile has no content");
+  }
+  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+    return undefined;
+  }
+  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> {
+    return {};
+  }
+  protected _loadChildren(_resolve: (children: Tile[]) => void, _reject: (error: Error) => void): void {}
 
   public override drawGraphics(args: TileDrawArgs) {
     const proxyTree = this.tree as ProxyTree;
@@ -287,7 +336,16 @@ class ProxyTile extends Tile {
 
     const location = proxyTree.iModelTransform.multiplyTransformTransform(sectionTree.iModelTransform);
     const clipVolume = true === proxyTree.viewFlagOverrides.clipVolume ? proxyTree.clipVolume : undefined;
-    args = new TileDrawArgs({ context: args.context, location, tree: sectionTree, now: args.now, viewFlagOverrides: proxyTree.viewFlagOverrides, clipVolume, parentsAndChildrenExclusive: args.parentsAndChildrenExclusive, symbologyOverrides: proxyTree.symbologyOverrides });
+    args = new TileDrawArgs({
+      context: args.context,
+      location,
+      tree: sectionTree,
+      now: args.now,
+      viewFlagOverrides: proxyTree.viewFlagOverrides,
+      clipVolume,
+      parentsAndChildrenExclusive: args.parentsAndChildrenExclusive,
+      symbologyOverrides: proxyTree.symbologyOverrides,
+    });
     sectionTree.draw(args);
 
     const rangeGfx = this.getRangeGraphic(args.context);

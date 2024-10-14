@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { BriefcaseManager, IModelHost, SnapshotDb } from "@itwin/core-backend";
+import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { AccessToken, GuidString, RepositoryStatus } from "@itwin/core-bentley";
 import { IModelError, IModelVersion } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert, expect } from "chai";
-import { BriefcaseManager, IModelHost, SnapshotDb } from "@itwin/core-backend";
-import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubUtility } from "../HubUtility";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -64,9 +64,13 @@ describe("IModelOpen", () => {
     const numChangeSets = changesets.length;
     assert.isAbove(numChangeSets, 10);
 
-    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(changesets[9].id).toJSON() });
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      asOf: IModelVersion.asOfChangeSet(changesets[9].id).toJSON(),
+    });
     assert.isDefined(iModel);
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
-
 });

@@ -5,7 +5,10 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  PointCloudDisplayProps, PointCloudDisplaySettings, RealityModelDisplayProps, RealityModelDisplaySettings,
+  PointCloudDisplayProps,
+  PointCloudDisplaySettings,
+  RealityModelDisplayProps,
+  RealityModelDisplaySettings,
 } from "../RealityModelDisplaySettings";
 
 describe("PointCloudDisplaySettings", () => {
@@ -27,8 +30,11 @@ describe("PointCloudDisplaySettings", () => {
     roundTrip(undefined, undefined);
     roundTrip({ sizeMode: "voxel", voxelScale: 1, minPixelsPerVoxel: 2, maxPixelsPerVoxel: 20, pixelSize: 1, shape: "round" }, undefined);
     roundTrip({ sizeMode: "pixel", voxelScale: 2, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 10, pixelSize: 2, shape: "square" }, "input");
-    roundTrip({ sizeMode: "voxel", voxelScale: 2, minPixelsPerVoxel: 2, maxPixelsPerVoxel: 10, pixelSize: 2, shape: "round" },
-      { voxelScale: 2, maxPixelsPerVoxel: 10, pixelSize: 2 });
+    roundTrip({ sizeMode: "voxel", voxelScale: 2, minPixelsPerVoxel: 2, maxPixelsPerVoxel: 10, pixelSize: 2, shape: "round" }, {
+      voxelScale: 2,
+      maxPixelsPerVoxel: 10,
+      pixelSize: 2,
+    });
 
     roundTrip({ shape: "round" }, undefined);
     roundTrip({ shape: "square" }, "input");
@@ -40,7 +46,11 @@ describe("PointCloudDisplaySettings", () => {
   });
 
   it("clones", () => {
-    const test = (baseProps: PointCloudDisplayProps | undefined, changedProps: PointCloudDisplayProps, expected: PointCloudDisplayProps | undefined | "input") => {
+    const test = (
+      baseProps: PointCloudDisplayProps | undefined,
+      changedProps: PointCloudDisplayProps,
+      expected: PointCloudDisplayProps | undefined | "input",
+    ) => {
       if (expected === "input")
         expected = baseProps;
 
@@ -51,12 +61,23 @@ describe("PointCloudDisplaySettings", () => {
     };
 
     test(undefined, { sizeMode: "voxel", voxelScale: 1, minPixelsPerVoxel: 2, maxPixelsPerVoxel: 20, pixelSize: 1, shape: "round" }, "input");
-    test({ voxelScale: 2, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 10, pixelSize: 1 }, { voxelScale: 0.5, maxPixelsPerVoxel: 12 }, { voxelScale: 0.5, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 12 });
-    test({ voxelScale: 2, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 4, pixelSize: 5, sizeMode: "voxel", shape: "square" },
-      { voxelScale: undefined, minPixelsPerVoxel: undefined, maxPixelsPerVoxel: undefined, pixelSize: undefined, sizeMode: undefined, shape: undefined },
-      undefined,
-    );
-    test({ voxelScale: 2, pixelSize: 3, minPixelsPerVoxel: 4 }, { pixelSize: undefined, minPixelsPerVoxel: 5 }, { voxelScale: 2, minPixelsPerVoxel: 5 });
+    test({ voxelScale: 2, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 10, pixelSize: 1 }, { voxelScale: 0.5, maxPixelsPerVoxel: 12 }, {
+      voxelScale: 0.5,
+      minPixelsPerVoxel: 3,
+      maxPixelsPerVoxel: 12,
+    });
+    test({ voxelScale: 2, minPixelsPerVoxel: 3, maxPixelsPerVoxel: 4, pixelSize: 5, sizeMode: "voxel", shape: "square" }, {
+      voxelScale: undefined,
+      minPixelsPerVoxel: undefined,
+      maxPixelsPerVoxel: undefined,
+      pixelSize: undefined,
+      sizeMode: undefined,
+      shape: undefined,
+    }, undefined);
+    test({ voxelScale: 2, pixelSize: 3, minPixelsPerVoxel: 4 }, { pixelSize: undefined, minPixelsPerVoxel: 5 }, {
+      voxelScale: 2,
+      minPixelsPerVoxel: 5,
+    });
   });
 });
 
@@ -79,7 +100,10 @@ describe("RealityModelDisplaySettings", () => {
     roundTrip(undefined, undefined);
     roundTrip({ overrideColorRatio: 0.5 }, undefined);
     roundTrip({ overrideColorRatio: 0.5, pointCloud: undefined }, undefined);
-    roundTrip({ overrideColorRatio: 0.5, pointCloud: { sizeMode: "voxel", voxelScale: 1, minPixelsPerVoxel: 2, maxPixelsPerVoxel: 20, pixelSize: 1, shape: "round" } }, undefined);
+    roundTrip({
+      overrideColorRatio: 0.5,
+      pointCloud: { sizeMode: "voxel", voxelScale: 1, minPixelsPerVoxel: 2, maxPixelsPerVoxel: 20, pixelSize: 1, shape: "round" },
+    }, undefined);
 
     roundTrip({ overrideColorRatio: 0.1 }, "input");
     roundTrip({ overrideColorRatio: 0 }, "input");
@@ -91,7 +115,11 @@ describe("RealityModelDisplaySettings", () => {
   });
 
   it("clones", () => {
-    const test = (baseProps: RealityModelDisplayProps | undefined, changedProps: RealityModelDisplayProps, expected: RealityModelDisplayProps | undefined | "input") => {
+    const test = (
+      baseProps: RealityModelDisplayProps | undefined,
+      changedProps: RealityModelDisplayProps,
+      expected: RealityModelDisplayProps | undefined | "input",
+    ) => {
       if (expected === "input")
         expected = baseProps;
 
@@ -106,7 +134,10 @@ describe("RealityModelDisplaySettings", () => {
     test({ overrideColorRatio: 2 }, { overrideColorRatio: 3 }, { overrideColorRatio: 3 });
     test({ pointCloud: { sizeMode: "pixel" } }, { overrideColorRatio: 2 }, { pointCloud: { sizeMode: "pixel" }, overrideColorRatio: 2 });
     test({ pointCloud: { sizeMode: "pixel" } }, { pointCloud: { pixelSize: 2 } }, { pointCloud: { sizeMode: "pixel", pixelSize: 2 } });
-    test({ pointCloud: { sizeMode: "pixel" }, overrideColorRatio: 2 }, { pointCloud: { sizeMode: undefined} }, { overrideColorRatio: 2 });
-    test({ pointCloud: { sizeMode: "pixel" }, overrideColorRatio: 2 }, { pointCloud: { } }, { overrideColorRatio: 2, pointCloud: { sizeMode: "pixel" } });
+    test({ pointCloud: { sizeMode: "pixel" }, overrideColorRatio: 2 }, { pointCloud: { sizeMode: undefined } }, { overrideColorRatio: 2 });
+    test({ pointCloud: { sizeMode: "pixel" }, overrideColorRatio: 2 }, { pointCloud: {} }, {
+      overrideColorRatio: 2,
+      pointCloud: { sizeMode: "pixel" },
+    });
   });
 });

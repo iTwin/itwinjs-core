@@ -21,20 +21,22 @@ export type DiagnosticsLoggerSeverity = "error" | "warning" | "info" | "debug" |
  * ```
  * @internal
  */
-export function combineDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity) {
+export function combineDiagnosticsSeverities(
+  lhs: undefined | boolean | DiagnosticsLoggerSeverity,
+  rhs: undefined | boolean | DiagnosticsLoggerSeverity,
+) {
   if (!lhs && !rhs) {
     return undefined;
   }
-  const combinedSeverity: DiagnosticsLoggerSeverity =
-    lhs === "trace" || rhs === "trace"
-      ? "trace"
-      : lhs === "debug" || lhs === true || rhs === "debug" || rhs === true
-        ? "debug"
-        : lhs === "info" || rhs === "info"
-          ? "info"
-          : lhs === "warning" || rhs === "warning"
-            ? "warning"
-            : "error";
+  const combinedSeverity: DiagnosticsLoggerSeverity = lhs === "trace" || rhs === "trace"
+    ? "trace"
+    : lhs === "debug" || lhs === true || rhs === "debug" || rhs === true
+    ? "debug"
+    : lhs === "info" || rhs === "info"
+    ? "info"
+    : lhs === "warning" || rhs === "warning"
+    ? "warning"
+    : "error";
   return combinedSeverity;
 }
 
@@ -50,7 +52,10 @@ export function combineDiagnosticsSeverities(lhs: undefined | boolean | Diagnost
  * ```
  * @internal
  */
-export function compareDiagnosticsSeverities(lhs: undefined | boolean | DiagnosticsLoggerSeverity, rhs: undefined | boolean | DiagnosticsLoggerSeverity) {
+export function compareDiagnosticsSeverities(
+  lhs: undefined | boolean | DiagnosticsLoggerSeverity,
+  rhs: undefined | boolean | DiagnosticsLoggerSeverity,
+) {
   const normalizedLhs: DiagnosticsLoggerSeverity = lhs === undefined || lhs === false ? "error" : lhs === true ? "debug" : lhs;
   const normalizedRhs: DiagnosticsLoggerSeverity = rhs === undefined || rhs === false ? "error" : rhs === true ? "debug" : rhs;
   if (normalizedLhs === normalizedRhs) {

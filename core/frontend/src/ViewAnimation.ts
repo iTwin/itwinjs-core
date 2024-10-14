@@ -7,9 +7,9 @@
  */
 
 import { EasingFunction } from "@itwin/core-common";
-import { ViewStatus } from "./ViewStatus";
-import { MarginPercent, PaddingPercent } from "./MarginPercent";
 import { Point3d } from "@itwin/core-geometry";
+import { MarginPercent, PaddingPercent } from "./MarginPercent";
+import { ViewStatus } from "./ViewStatus";
 
 /** An object to animate a transition of a [[Viewport]].
  * Only one animator may be associated with a viewport at a time. Registering a new

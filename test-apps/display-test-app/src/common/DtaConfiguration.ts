@@ -41,8 +41,8 @@ export interface DtaStringConfiguration {
   viewName?: string;
   iModelName?: string;
   filename?: string;
-  standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
-  startupMacro?: string;    // Used when running a macro at startup, specifies file path
+  standalonePath?: string; // Used when run in the browser - a common base path for all standalone imodels
+  startupMacro?: string; // Used when running a macro at startup, specifies file path
   iTwinId?: GuidString; // default is undefined, used by spatial classification to query reality data from context share, and by iModel download
   mapBoxKey?: string; // default undefined
   bingMapsKey?: string; // default undefined

@@ -5,19 +5,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
-import {
-  ArcGisUtilities,
-  ArcGisValidateSourceArgs,
-  MapLayerSource,
-  MapLayerSourceStatus,
-} from "@itwin/core-frontend";
+import { ArcGisUtilities, ArcGisValidateSourceArgs, MapLayerSource, MapLayerSourceStatus } from "@itwin/core-frontend";
 import { expect } from "chai";
+import * as sinon from "sinon";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
 import { esriFeatureSampleSource } from "./Mocks";
-import * as sinon from "sinon";
 
 describe("ArcGisFeatureFormats", () => {
-
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
@@ -30,28 +24,27 @@ describe("ArcGisFeatureFormats", () => {
   });
 
   it("should validateSource", async () => {
-
     const fakeMethod = async (_args?: ArcGisValidateSourceArgs) => {
-      return {status: MapLayerSourceStatus.Valid};
-
+      return { status: MapLayerSourceStatus.Valid };
     };
     const validateSourceStub = sinon.stub(ArcGisUtilities, "validateSource").callsFake(fakeMethod);
 
     const source = MapLayerSource.fromJSON({
       name: "dummyFeatureLayer",
       url: "https://services7.arcgis.com/nZ2Vb4CUwdo9AIiQ/ArcGIS/rest/services/PhillyRailLines/FeatureServer",
-      formatId: ArcGisFeatureMapLayerFormat.formatId});
+      formatId: ArcGisFeatureMapLayerFormat.formatId,
+    });
 
     if (!source) {
       chai.assert.fail();
     }
 
-    source.unsavedQueryParams = {key1_1: "value1_1", key1_2: "value1_2"};
-    source.savedQueryParams = { key2_1: "value2_1", key2_2: "value2_2"};
+    source.unsavedQueryParams = { key1_1: "value1_1", key1_2: "value1_2" };
+    source.savedQueryParams = { key2_1: "value2_1", key2_2: "value2_2" };
     source.userName = "username1";
     source.password = "password1";
 
-    await ArcGisFeatureMapLayerFormat.validate({source, ignoreCache: true});
+    await ArcGisFeatureMapLayerFormat.validate({ source, ignoreCache: true });
 
     expect(validateSourceStub.calledOnce).to.be.true;
     const firstCall = validateSourceStub.getCalls()[0];
@@ -59,8 +52,7 @@ describe("ArcGisFeatureFormats", () => {
     expect(JSON.stringify(actualArgs.source)).to.eql(JSON.stringify(source.toJSON()));
     expect(actualArgs.source.userName).to.equals(source.userName);
     expect(actualArgs.source.password).to.eql(source.password);
-    expect(actualArgs.capabilitiesFilter).to.eql(["query"] );
+    expect(actualArgs.capabilitiesFilter).to.eql(["query"]);
     expect(actualArgs.ignoreCache).to.eql(true);
   });
-
 });

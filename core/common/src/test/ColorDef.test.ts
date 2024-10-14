@@ -128,7 +128,6 @@ describe("ColorDef", () => {
     assert.equal(0, t2.r);
     assert.equal(0, t2.b);
     assert.equal(100, t2.t);
-
   });
 
   it("determines whether string and numeric values represent valid colors", () => {

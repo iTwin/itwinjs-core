@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Constant, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 describe("Constant merger tests", () => {
   const targetJson = {
@@ -171,7 +171,6 @@ describe("Constant merger tests", () => {
       ],
     });
     await expect(merge).to.be.rejectedWith("The Constant testConstant has an invalid 'definition' attribute.");
-
   });
 
   it("it should throw error if numerator conflict exist", async () => {

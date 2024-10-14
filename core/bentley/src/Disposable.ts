@@ -110,8 +110,12 @@ export type DisposeFunc = () => void;
 
 class FuncDisposable implements IDisposable {
   private _disposeFunc: () => void;
-  constructor(disposeFunc: () => void) { this._disposeFunc = disposeFunc; }
-  public dispose() { this._disposeFunc(); }
+  constructor(disposeFunc: () => void) {
+    this._disposeFunc = disposeFunc;
+  }
+  public dispose() {
+    this._disposeFunc();
+  }
 }
 
 /** A disposable container of disposable objects.

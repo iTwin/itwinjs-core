@@ -7,8 +7,8 @@
  */
 
 import { IDisposable } from "@itwin/core-bentley";
-import { RenderMemory } from "./RenderMemory";
 import { Range3d } from "@itwin/core-geometry";
+import { RenderMemory } from "./RenderMemory";
 
 /** Abstract representation of an object which can be rendered by a [[RenderSystem]].
  * Two broad classes of graphics exist:
@@ -25,8 +25,8 @@ export abstract class RenderGraphic implements IDisposable /* , RenderMemory.Con
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 
   /** Extend `range` to include the bounding box of this graphic, including any child graphics.
-  * @internal
-  */
+   * @internal
+   */
   public abstract unionRange(range: Range3d): void;
 }
 
@@ -41,13 +41,19 @@ export abstract class RenderGraphicOwner extends RenderGraphic {
   /** The owned graphic. */
   public abstract get graphic(): RenderGraphic;
   /** Does nothing. To dispose of the owned graphic, use [[disposeGraphic]]. */
-  public dispose(): void { }
+  public dispose(): void {}
   /** Disposes of the owned graphic. */
-  public disposeGraphic(): void { this.graphic.dispose(); }
+  public disposeGraphic(): void {
+    this.graphic.dispose();
+  }
   /** @internal */
-  public collectStatistics(stats: RenderMemory.Statistics): void { this.graphic.collectStatistics(stats); }
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.graphic.collectStatistics(stats);
+  }
   /** @internal */
-  public override unionRange(range: Range3d): void { this.graphic.unionRange(range); }
+  public override unionRange(range: Range3d): void {
+    this.graphic.unionRange(range);
+  }
 }
 
 /** An array of [[RenderGraphic]]s.

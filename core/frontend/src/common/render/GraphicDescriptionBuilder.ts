@@ -6,13 +6,13 @@
  * @module Rendering
  */
 
-import { GraphicAssembler } from "./GraphicAssembler";
-import { collectGraphicDescriptionTransferables, GraphicDescriptionBuilderImpl } from "../internal/render/GraphicDescriptionBuilderImpl";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { GraphicType } from "./GraphicType";
-import { PickableGraphicOptions } from "./BatchOptions";
+import { collectGraphicDescriptionTransferables, GraphicDescriptionBuilderImpl } from "../internal/render/GraphicDescriptionBuilderImpl";
 import { _implementationProhibited } from "../internal/Symbols";
+import { PickableGraphicOptions } from "./BatchOptions";
+import { GraphicAssembler } from "./GraphicAssembler";
 import { WorkerGraphicDescriptionContext } from "./GraphicDescriptionContext";
+import { GraphicType } from "./GraphicType";
 
 /** An opaque representation of a [[RenderGraphic]] created by a [[GraphicDescriptionBuilder]].
  * Unlike `RenderGraphic`, a `GraphicDescription` does not allocate any WebGL resources like textures, vertex buffers, etc, so
@@ -49,38 +49,42 @@ export interface ComputeGraphicDescriptionChordToleranceArgs {
 /** Options supplied to [[GraphicDescriptionBuilder.create]].
  * @beta
  */
-export type GraphicDescriptionBuilderOptions = {
-  /** The type of graphic to create. This influences the default values of some other options like [[generateEdges]] and
-   * properties like [[GraphicDescriptionBuilder.wantNormals]].
-   */
-  type: GraphicType;
-  /** The local-to-world transform in which the builder's geoemtry is to be defined.
-   * Default: an identity transform.
-   */
-  placement?: Transform;
-  /** If the graphic is to contain one or more [Feature]($common)s, specifies the initial pickable Id and other options. */
-  pickable?: PickableGraphicOptions;
-  /** Specifies whether edges are generated for surfaces.
-   * By default, edges are only produced if [[type]] is [[GraphicType.Scene]].
-   */
-  generateEdges?: boolean;
-  /** Computes the level of detail in meters for the graphics produced by the builder. */
-  computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
-  /** Context in which the graphic description will be created, obtained from the [[RenderSystem]] on the main thread. */
-  context: WorkerGraphicDescriptionContext;
-} & ({
-  /** If defined, specifies a point about which the graphic will rotate such that it always faces the viewer.
-   * This can be particular useful for planar regions to create a billboarding effect - e.g., to implement [[Marker]]-like WebGL decorations.
-   * The graphic's [[placement]] transform is not applied to the point.
-   * @note This has no effect for graphics displayed in a 2d view.
-   */
-  viewIndependentOrigin?: Point3d;
-  /** @internal */
-  instances?: never;
-}/* ) | {
+export type GraphicDescriptionBuilderOptions =
+  & {
+    /** The type of graphic to create. This influences the default values of some other options like [[generateEdges]] and
+     * properties like [[GraphicDescriptionBuilder.wantNormals]].
+     */
+    type: GraphicType;
+    /** The local-to-world transform in which the builder's geoemtry is to be defined.
+     * Default: an identity transform.
+     */
+    placement?: Transform;
+    /** If the graphic is to contain one or more [Feature]($common)s, specifies the initial pickable Id and other options. */
+    pickable?: PickableGraphicOptions;
+    /** Specifies whether edges are generated for surfaces.
+     * By default, edges are only produced if [[type]] is [[GraphicType.Scene]].
+     */
+    generateEdges?: boolean;
+    /** Computes the level of detail in meters for the graphics produced by the builder. */
+    computeChordTolerance: (args: ComputeGraphicDescriptionChordToleranceArgs) => number;
+    /** Context in which the graphic description will be created, obtained from the [[RenderSystem]] on the main thread. */
+    context: WorkerGraphicDescriptionContext;
+  }
+  & (
+    {
+      /** If defined, specifies a point about which the graphic will rotate such that it always faces the viewer.
+       * This can be particular useful for planar regions to create a billboarding effect - e.g., to implement [[Marker]]-like WebGL decorations.
+       * The graphic's [[placement]] transform is not applied to the point.
+       * @note This has no effect for graphics displayed in a 2d view.
+       */
+      viewIndependentOrigin?: Point3d;
+      /** @internal */
+      instances?: never;
+    } /* ) | {
   instances?: InstancedGraphicParams;
   viewIndependentOrigin?: never;
-}*/);
+}*/
+  );
 
 /** An equivalent of a [[GraphicBuilder]] that is designed for use on a [Worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker).
  * Unlike [[GraphicBuilder.finish]], which produces a [[RenderGraphic]], [[GraphicDescriptionBuilder.finish]] produces a [[GraphicDescription]].

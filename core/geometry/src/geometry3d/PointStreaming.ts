@@ -23,9 +23,9 @@ import { Range3d } from "./Range";
  * @internal
  */
 export class PointStreamXYZHandlerBase {
-  public startChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void { }
-  public handleXYZ(_x: number, _y: number, _z: number): void { }
-  public endChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void { }
+  public startChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void {}
+  public handleXYZ(_x: number, _y: number, _z: number): void {}
+  public endChain(_chainData: MultiLineStringDataVariant, _isLeaf: boolean): void {}
 }
 /** Base class for handling points in pairs.
  * * Callers implement handleXYZXYZ to receive point pairs.
@@ -57,7 +57,7 @@ export class PointStreamXYZXYZHandlerBase extends PointStreamXYZHandlerBase {
    * @param _y1 y coordinate of point 1
    * @param _z1 z coordinate of point 1
    */
-  public handleXYZXYZ(_x0: number, _y0: number, _z0: number, _x1: number, _y1: number, _z1: number): void { }
+  public handleXYZXYZ(_x0: number, _y0: number, _z0: number, _x1: number, _y1: number, _z1: number): void {}
 }
 /**
  * Concrete class to handle startChain, handleXYZ and endChain calls and return a (one-level deep array of
@@ -115,7 +115,6 @@ export class PointStringDeepXYZArrayCollector {
   private _resultStack: any[];
   private _xyzFunction: (x: number, y: number, z: number) => any;
   /**
-   *
    * @param xyzFunction function to map (x,y,z) to the leaf object type in the arrays.
    */
   public constructor(xyzFunction: (x: number, y: number, z: number) => any) {
@@ -192,5 +191,4 @@ export class VariantPointDataStream {
     }
     return numPoint;
   }
-
 }

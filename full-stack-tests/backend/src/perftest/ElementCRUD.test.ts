@@ -2,16 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import {
+  _nativeDb,
+  DrawingCategory,
+  ECSqlStatement,
+  Element,
+  IModelDb,
+  IModelHost,
+  IModelJsFs,
+  SnapshotDb,
+  SpatialCategory,
+} from "@itwin/core-backend";
+import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
+import { Reporter } from "@itwin/perf-tools";
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
-import {
-  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
-} from "@itwin/core-common";
-import { Reporter } from "@itwin/perf-tools";
-import { _nativeDb, DrawingCategory, ECSqlStatement, Element, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
-import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 import { PerfTestUtility } from "./PerfTestUtils";
 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
@@ -25,10 +33,19 @@ const CORE_MAJ_MIN = `${ITWINJS_CORE_VERSION.split(".")[0]}.${ITWINJS_CORE_VERSI
 /* eslint-disable @typescript-eslint/naming-convention */
 
 const values: any = {
-  baseStr: "PerfElement - InitValue", baseStr2: "PerfElement - InitValue2", sub1Str: "PerfElementSub1 - InitValue",
-  sub2Str: "PerfElementSub2 - InitValue", sub3Str: "PerfElementSub3 - InitValue",
-  baseLong: "0x989680", sub1Long: "0x1312d00", sub2Long: "0x1c9c380", sub3Long: "0x2625a00",
-  baseDouble: -3.1416, sub1Double: 2.71828, sub2Double: 1.414121, sub3Double: 1.61803398874,
+  baseStr: "PerfElement - InitValue",
+  baseStr2: "PerfElement - InitValue2",
+  sub1Str: "PerfElementSub1 - InitValue",
+  sub2Str: "PerfElementSub2 - InitValue",
+  sub3Str: "PerfElementSub3 - InitValue",
+  baseLong: "0x989680",
+  sub1Long: "0x1312d00",
+  sub2Long: "0x1c9c380",
+  sub3Long: "0x2625a00",
+  baseDouble: -3.1416,
+  sub1Double: 2.71828,
+  sub2Double: 1.414121,
+  sub3Double: 1.61803398874,
 };
 
 interface TestElementProps extends GeometricElementProps {
@@ -140,7 +157,9 @@ describe("PerformanceElementsTests", () => {
 
         await IModelHost.startup();
 
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), {
+          rootSubject: { name: "PerfTest" },
+        });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -148,7 +167,12 @@ describe("PerformanceElementsTests", () => {
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          spatialCategoryId = SpatialCategory.insert(
+            seedIModel,
+            IModel.dictionaryId,
+            "MySpatialCategory",
+            new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+          );
 
         for (let m = 0; m < size; ++m) {
           const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
@@ -182,7 +206,12 @@ describe("PerformanceElementsTests", () => {
           const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
           if (undefined === spatialCategoryId)
-            spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+            spatialCategoryId = SpatialCategory.insert(
+              perfimodel,
+              IModel.dictionaryId,
+              "MySpatialCategory",
+              new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+            );
 
           let totalTime = 0.0;
           for (let m = 0; m < opCount; ++m) {
@@ -196,7 +225,12 @@ describe("PerformanceElementsTests", () => {
             totalTime = totalTime + elapsedTime;
           }
 
-          reporter.addEntry("PerformanceElementsTests", "ElementsInsert", "Execution time(s)", totalTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
+          reporter.addEntry("PerformanceElementsTests", "ElementsInsert", "Execution time(s)", totalTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+            CoreVersion: CORE_MAJ_MIN,
+          });
           assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size + opCount);
           perfimodel.close();
         }
@@ -228,7 +262,12 @@ describe("PerformanceElementsTests", () => {
           }
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry("PerformanceElementsTests", "ElementsDelete", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
+          reporter.addEntry("PerformanceElementsTests", "ElementsDelete", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+            CoreVersion: CORE_MAJ_MIN,
+          });
           assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size - opCount);
           perfimodel.close();
         }
@@ -265,7 +304,12 @@ describe("PerformanceElementsTests", () => {
           }
 
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry("PerformanceElementsTests", "ElementsRead", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
+          reporter.addEntry("PerformanceElementsTests", "ElementsRead", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+            CoreVersion: CORE_MAJ_MIN,
+          });
           perfimodel.close();
         }
       }
@@ -320,7 +364,12 @@ describe("PerformanceElementsTests", () => {
             assert.equal((elemFound as any).baseStr, "PerfElement - UpdatedValue");
           }
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry("PerformanceElementsTests", "ElementsUpdate", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
+          reporter.addEntry("PerformanceElementsTests", "ElementsUpdate", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+            CoreVersion: CORE_MAJ_MIN,
+          });
           perfimodel.close();
         }
       }
@@ -350,7 +399,9 @@ describe("PerformanceElementsTests2d", () => {
 
         await IModelHost.startup();
 
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", fileName), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", fileName), {
+          rootSubject: { name: "PerfTest" },
+        });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -361,7 +412,12 @@ describe("PerformanceElementsTests2d", () => {
         const [, newModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(seedIModel, codeProps, true);
         let drawingCategoryId = DrawingCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MyDrawingCategory");
         if (undefined === drawingCategoryId)
-          drawingCategoryId = DrawingCategory.insert(seedIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          drawingCategoryId = DrawingCategory.insert(
+            seedIModel,
+            IModel.dictionaryId,
+            "MyDrawingCategory",
+            new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+          );
 
         for (let m = 0; m < size; ++m) {
           const elementProps = createElemProps(name, seedIModel, newModelId, drawingCategoryId);
@@ -399,7 +455,12 @@ describe("PerformanceElementsTests2d", () => {
           const [, newModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(perfimodel, codeProps, true);
           let drawingCategoryId = DrawingCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MyDrawingCategory");
           if (undefined === drawingCategoryId)
-            drawingCategoryId = DrawingCategory.insert(perfimodel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+            drawingCategoryId = DrawingCategory.insert(
+              perfimodel,
+              IModel.dictionaryId,
+              "MyDrawingCategory",
+              new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+            );
           let totalTime = 0.0;
           for (let m = 0; m < opCount; ++m) {
             const elementProps = createElemProps(name, perfimodel, newModelId, drawingCategoryId);
@@ -412,7 +473,12 @@ describe("PerformanceElementsTests2d", () => {
             totalTime = totalTime + elapsedTime;
           }
 
-          reporter.addEntry("PerformanceElementsTests2d", "ElementsInsert2d", "Execution time(s)", totalTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
+          reporter.addEntry("PerformanceElementsTests2d", "ElementsInsert2d", "Execution time(s)", totalTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+            CoreVersion: CORE_MAJ_MIN,
+          });
           assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size + opCount);
           perfimodel.close();
         }
@@ -444,7 +510,12 @@ describe("PerformanceElementsTests2d", () => {
           }
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry("PerformanceElementsTests2d", "ElementsDelete2d", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
+          reporter.addEntry("PerformanceElementsTests2d", "ElementsDelete2d", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+            CoreVersion: CORE_MAJ_MIN,
+          });
           assert.equal(getCount(perfimodel, `PerfTestDomain:${name}`), size - opCount);
           perfimodel.close();
         }
@@ -481,7 +552,12 @@ describe("PerformanceElementsTests2d", () => {
           }
 
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry("PerformanceElementsTests2d", "ElementsRead2d", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
+          reporter.addEntry("PerformanceElementsTests2d", "ElementsRead2d", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+            CoreVersion: CORE_MAJ_MIN,
+          });
           perfimodel.close();
         }
       }
@@ -535,7 +611,12 @@ describe("PerformanceElementsTests2d", () => {
             assert.equal((elemFound as any).baseStr, "PerfElement - UpdatedValue");
           }
           const elapsedTime = (endTime - startTime) / 1000.0;
-          reporter.addEntry("PerformanceElementsTests2d", "ElementsUpdate2d", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, opCount, CoreVersion: CORE_MAJ_MIN });
+          reporter.addEntry("PerformanceElementsTests2d", "ElementsUpdate2d", "Execution time(s)", elapsedTime, {
+            ElementClassName: name,
+            InitialCount: size,
+            opCount,
+            CoreVersion: CORE_MAJ_MIN,
+          });
           perfimodel.close();
         }
       }

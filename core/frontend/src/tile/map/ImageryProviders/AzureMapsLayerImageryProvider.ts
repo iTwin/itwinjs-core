@@ -12,7 +12,9 @@ import { MapLayerImageryProvider } from "../../internal";
 
 /** @internal */
 export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
-  constructor(settings: ImageMapLayerSettings) { super(settings, true); }
+  constructor(settings: ImageMapLayerSettings) {
+    super(settings, true);
+  }
 
   // construct the Url from the desired Tile
   public async constructUrl(y: number, x: number, zoom: number): Promise<string> {
@@ -24,7 +26,12 @@ export class AzureMapsLayerImageryProvider extends MapLayerImageryProvider {
   public override addLogoCards(cards: HTMLTableElement): void {
     if (!cards.dataset.azureMapsLogoCard) {
       cards.dataset.azureMapsLogoCard = "true";
-      cards.appendChild(IModelApp.makeLogoCard({ heading: "Azure Maps", notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright") }));
+      cards.appendChild(
+        IModelApp.makeLogoCard({
+          heading: "Azure Maps",
+          notice: IModelApp.localization.getLocalizedString("iModelJs:BackgroundMap.AzureMapsCopyright"),
+        }),
+      );
     }
   }
 }

@@ -2,11 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import {
+  BentleyCloudRpcConfiguration,
+  BentleyCloudRpcManager,
+  IModelReadRpcInterface,
+  IModelTileRpcInterface,
+  SnapshotIModelRpcInterface,
+} from "@itwin/core-common";
 import * as child_process from "child_process";
 import * as chromeLauncher from "chrome-launcher";
 import * as express from "express";
 import * as path from "path";
-import { BentleyCloudRpcConfiguration, BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 
@@ -36,7 +42,7 @@ function startWebServer() {
   });
   // Run the server...
   appExp.set("port", 3000);
-  const announceWebServer = () => { };
+  const announceWebServer = () => {};
   DisplayPerfRpcInterface.webServer = appExp.listen(appExp.get("port"), announceWebServer);
 }
 
@@ -58,7 +64,7 @@ function startWebServer() {
       browser = arg;
     else if (arg === "headless")
       chromeFlags.push("--headless");
-    else if (arg === "egl"){
+    else if (arg === "egl") {
       chromeFlags.push("--use-gl=angle");
       chromeFlags.push("--use-angle=gl-egl");
     }
@@ -67,7 +73,6 @@ function startWebServer() {
   if (serverConfig === undefined) {
     serverConfig = { port: 3001, baseUrl: "https://localhost" };
   } else {
-
   }
 
   // Set up the ability to serve the supported rpcInterfaces via web requests
@@ -106,12 +111,14 @@ function startWebServer() {
   switch (browser) {
     case "chrome":
       if (process.platform === "darwin") { // Ie, if running on Mac
-        child_process.execSync("open -a \"Google Chrome\" http://localhost:3000");
+        child_process.execSync('open -a "Google Chrome" http://localhost:3000');
       } else {
         chromeLauncher.launch({ // eslint-disable-line @typescript-eslint/no-floating-promises
           startingUrl: "http://localhost:3000",
           chromeFlags,
-        }).then((val) => { DisplayPerfRpcInterface.chrome = val; });
+        }).then((val) => {
+          DisplayPerfRpcInterface.chrome = val;
+        });
       }
       break;
     case "edge":

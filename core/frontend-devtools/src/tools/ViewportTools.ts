@@ -9,9 +9,7 @@
 
 import { BeDuration } from "@itwin/core-bentley";
 import { Camera, ColorDef, Hilite } from "@itwin/core-common";
-import {
-  DrawingViewState, FlashMode, FlashSettings, FlashSettingsOptions, IModelApp, TileBoundingBoxes, Tool, Viewport,
-} from "@itwin/core-frontend";
+import { DrawingViewState, FlashMode, FlashSettings, FlashSettingsOptions, IModelApp, TileBoundingBoxes, Tool, Viewport } from "@itwin/core-frontend";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";
 
@@ -19,8 +17,12 @@ import { parseToggle } from "./parseToggle";
  * @beta
  */
 export abstract class ViewportToggleTool extends Tool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   protected abstract toggle(vp: Viewport, enable?: boolean): Promise<void>;
 
@@ -72,8 +74,12 @@ const boundingVolumeNames = [
  */
 export class ShowTileVolumesTool extends Tool {
   public static override toolId = "ShowTileVolumes";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(boxes?: TileBoundingBoxes): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -113,8 +119,12 @@ export class ShowTileVolumesTool extends Tool {
  */
 export class ToggleTileTreeReferencesTool extends Tool {
   public static override toolId = "ToggleTileTreeReferences";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 3; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 3;
+  }
 
   private _modelIds?: string | string[];
   private _which?: "all" | "animated" | "primary" | "section" | number[];
@@ -166,8 +176,12 @@ export class ToggleTileTreeReferencesTool extends Tool {
  */
 export class SetAspectRatioSkewTool extends Tool {
   public static override toolId = "SetAspectRatioSkew";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, setting the aspect ratio skew for the selected viewport.
    * @param skew the aspect ratio (x/y) skew value; 1.0 or undefined removes any skew
@@ -199,8 +213,12 @@ export class SetAspectRatioSkewTool extends Tool {
  * @beta
  */
 export class ChangeHiliteModeTool extends Tool {
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
   public static override toolId = "ChangeHiliteMode";
 
   public override async run(mode?: string) {
@@ -223,8 +241,12 @@ export class ChangeHiliteModeTool extends Tool {
  * @beta
  */
 export abstract class ChangeHiliteTool extends Tool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 6; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 6;
+  }
 
   public override async run(settings?: Hilite.Settings): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -300,7 +322,9 @@ export abstract class ChangeHiliteTool extends Tool {
 export class ChangeHiliteSettingsTool extends ChangeHiliteTool {
   public static override toolId = "ChangeHiliteSettings";
 
-  protected getCurrentSettings(vp: Viewport) { return vp.hilite; }
+  protected getCurrentSettings(vp: Viewport) {
+    return vp.hilite;
+  }
   protected apply(vp: Viewport, settings?: Hilite.Settings): void {
     vp.hilite = undefined !== settings ? settings : new Hilite.Settings();
   }
@@ -312,7 +336,9 @@ export class ChangeHiliteSettingsTool extends ChangeHiliteTool {
 export class ChangeEmphasisSettingsTool extends ChangeHiliteTool {
   public static override toolId = "ChangeEmphasisSettings";
 
-  protected getCurrentSettings(vp: Viewport) { return vp.emphasisSettings; }
+  protected getCurrentSettings(vp: Viewport) {
+    return vp.emphasisSettings;
+  }
   protected apply(vp: Viewport, settings?: Hilite.Settings): void {
     if (undefined !== settings)
       vp.emphasisSettings = settings;
@@ -324,8 +350,12 @@ export class ChangeEmphasisSettingsTool extends ChangeHiliteTool {
  */
 export class ChangeFlashSettingsTool extends Tool {
   public static override toolId = "ChangeFlashSettings";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 3;
+  }
 
   public override async run(settings?: FlashSettings): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -391,8 +421,12 @@ export class FadeOutTool extends ViewportToggleTool {
  */
 export class DefaultTileSizeModifierTool extends Tool {
   public static override toolId = "DefaultTileSizeMod";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, setting the default tile size modifier used for all viewports that don't explicitly override it.
    * @param modifier the tile size modifier to use; if undefined, do not set modifier
@@ -417,8 +451,12 @@ export class DefaultTileSizeModifierTool extends Tool {
  */
 export class ViewportTileSizeModifierTool extends Tool {
   public static override toolId = "ViewportTileSizeMod";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, setting the tile size modifier used for the selected viewport.
    * @param modifier the tile size modifier to use; if undefined, reset the modifier
@@ -446,8 +484,12 @@ export class ViewportTileSizeModifierTool extends Tool {
  */
 export class ViewportAddRealityModel extends Tool {
   public static override toolId = "ViewportAddRealityModel";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, adding a reality model to the viewport
    * @param url the URL which points to the reality model tileset
@@ -574,8 +616,12 @@ export class ToggleSectionDrawingSpatialViewTool extends ViewportToggleTool {
  * @beta
  */
 export class ChangeCameraTool extends Tool {
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
   public static override toolId = "ChangeCamera";
 
   public override async run(camera?: Camera): Promise<boolean> {

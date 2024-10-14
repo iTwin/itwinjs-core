@@ -7,8 +7,8 @@
  */
 
 import { BeTimePoint } from "@itwin/core-bentley";
-import { Angle, Matrix3d, Point2d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Camera } from "@itwin/core-common";
+import { Angle, Matrix3d, Point2d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { ViewState, ViewState2d, ViewState3d } from "./ViewState";
 
 /** The "pose" for a [View]($docs/learning/frontend/views#viewstate-parameters) describing the viewed area or volume, depending upon whether
@@ -51,10 +51,14 @@ export abstract class ViewPose {
   }
 
   /** Returns the target point of the view. This is the same as [[center]] unless [[cameraOn]] is `true`. */
-  public get target() { return this.center; }
+  public get target() {
+    return this.center;
+  }
 
   /** Computes the Z vector of the [[rotation]] matrix. */
-  public get zVec() { return this.rotation.getRow(2); }
+  public get zVec() {
+    return this.rotation.getRow(2);
+  }
 
   public constructor(cameraOn: boolean) {
     this.cameraOn = cameraOn;

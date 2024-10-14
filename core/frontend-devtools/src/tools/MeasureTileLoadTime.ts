@@ -51,7 +51,9 @@ class TileLoadTimer {
       return;
 
     this._stopwatch.stop();
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Tiles loaded in ${this._stopwatch.elapsedSeconds.toFixed(4)} seconds.`));
+    IModelApp.notifications.outputMessage(
+      new NotifyMessageDetails(OutputMessagePriority.Info, `Tiles loaded in ${this._stopwatch.elapsedSeconds.toFixed(4)} seconds.`),
+    );
 
     this.stop();
   }

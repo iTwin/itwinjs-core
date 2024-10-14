@@ -37,9 +37,14 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     return this._workBezier;
   }
   /** Test if `other` is an instance of `BSplineCurve3dH` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof BSplineCurve3dH; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof BSplineCurve3dH;
+  }
   /** Apply `transform` to the curve */
-  public tryTransformInPlace(transform: Transform): boolean { Point4dArray.multiplyInPlace(transform, this._bcurve.packedData); return true; }
+  public tryTransformInPlace(transform: Transform): boolean {
+    Point4dArray.multiplyInPlace(transform, this._bcurve.packedData);
+    return true;
+  }
   /** Get a pole, normalized to Point3d. */
   public getPolePoint3d(poleIndex: number, result?: Point3d): Point3d | undefined {
     const k = this.poleIndexToDataIndex(poleIndex);
@@ -68,9 +73,13 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     super(4, numPoles, order, knots);
   }
   /** Return a simple array of arrays with the control points as `[[x,y,z,w],[x,y,z,w],..]` */
-  public copyPoints(): any[] { return Point3dArray.unpackNumbersToNestedArrays(this._bcurve.packedData, 4); }
+  public copyPoints(): any[] {
+    return Point3dArray.unpackNumbersToNestedArrays(this._bcurve.packedData, 4);
+  }
   /** Return a simple array of the control points coordinates */
-  public copyPointsFloat64Array(): Float64Array { return this._bcurve.packedData.slice(); }
+  public copyPointsFloat64Array(): Float64Array {
+    return this._bcurve.packedData.slice();
+  }
   /** Return a simple array of the control points xyz coordinates.  */
   public copyXYZFloat64Array(deweighted: boolean): Float64Array {
     const numValue = this.numPoles * 3;
@@ -84,7 +93,6 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
         result[k++] = this._bcurve.packedData[i++] * dw;
         result[k++] = this._bcurve.packedData[i++] * dw;
         result[k++] = this._bcurve.packedData[i++] * dw;
-
       } else {
         result[k++] = this._bcurve.packedData[i++];
         result[k++] = this._bcurve.packedData[i++];
@@ -170,7 +178,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
         endPoint.set(poles[numPoles - 1].x, poles[numPoles - 1].y, poles[numPoles - 1].z, is4d ? (poles[numPoles - 1] as Point4d).w : 1.0);
       }
       if (hasClosurePoint = startPoint.isAlmostEqual(endPoint))
-        --numPoles;   // remove wraparound pole if found
+        --numPoles; // remove wraparound pole if found
     } while (hasClosurePoint && numPoles > 1);
 
     if (numPoles < order)
@@ -210,7 +218,9 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
    * Assemble a variously structured control points into packed array of [xyzw].
    * @param controlPoints
    */
-  public static assemblePackedXYZW(controlPoints: Float64Array | Point4d[] | { xyz: Float64Array, weights: Float64Array } | Point3d[] | number[][]): Float64Array | undefined {
+  public static assemblePackedXYZW(
+    controlPoints: Float64Array | Point4d[] | { xyz: Float64Array, weights: Float64Array } | Point3d[] | number[][],
+  ): Float64Array | undefined {
     if (controlPoints instanceof Float64Array)
       return controlPoints.slice();
 
@@ -279,7 +289,11 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
    *    * If poleArray.length + order == knotArray.length, the first and last are assumed to be the extraneous knots of classic clamping.
    *    * If poleArray.length + order == knotArray.length + 2, the knots are in modern form.
    */
-  public static create(controlPointData: Float64Array | Point4d[] | { xyz: Float64Array, weights: Float64Array } | Point3d[] | number[][], knotArray: Float64Array | number[], order: number): BSplineCurve3dH | undefined {
+  public static create(
+    controlPointData: Float64Array | Point4d[] | { xyz: Float64Array, weights: Float64Array } | Point3d[] | number[][],
+    knotArray: Float64Array | number[],
+    order: number,
+  ): BSplineCurve3dH | undefined {
     if (order < 2)
       return undefined;
 
@@ -292,7 +306,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       return undefined;
 
     const numKnots = knotArray.length;
-    const skipFirstAndLast = (numPoles + order === numKnots);   // classic over-clamped input knots
+    const skipFirstAndLast = numPoles + order === numKnots; // classic over-clamped input knots
     if (!skipFirstAndLast && numPoles + order !== numKnots + 2) // modern knots
       return undefined;
     const knots = KnotVector.create(knotArray, order - 1, skipFirstAndLast);
@@ -326,8 +340,16 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     const xyzw = this._bcurve.poleBuffer;
     const dXYZW = this._bcurve.poleBuffer1;
     return Point4d.createRealDerivativeRay3dDefault000(
-      xyzw[0], xyzw[1], xyzw[2], xyzw[3],
-      dXYZW[0], dXYZW[1], dXYZW[2], dXYZW[3], result);
+      xyzw[0],
+      xyzw[1],
+      xyzw[2],
+      xyzw[3],
+      dXYZW[0],
+      dXYZW[1],
+      dXYZW[2],
+      dXYZW[3],
+      result,
+    );
   }
 
   /** Evaluate at a position given by a knot value. */
@@ -342,8 +364,16 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     const xyzw = this._bcurve.poleBuffer;
     const dXYZW = this._bcurve.poleBuffer1;
     return Point4d.createRealDerivativeRay3dDefault000(
-      xyzw[0], xyzw[1], xyzw[2], xyzw[3],
-      dXYZW[0], dXYZW[1], dXYZW[2], dXYZW[3], result);
+      xyzw[0],
+      xyzw[1],
+      xyzw[2],
+      xyzw[3],
+      dXYZW[0],
+      dXYZW[1],
+      dXYZW[2],
+      dXYZW[3],
+      result,
+    );
   }
 
   /** Evaluate at a position given by a knot value.  Return point with 2 derivatives. */
@@ -353,10 +383,20 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     const dXYZW = this._bcurve.poleBuffer1;
     const ddXYZW = this._bcurve.poleBuffer2;
     return Point4d.createRealDerivativePlane3dByOriginAndVectorsDefault000(
-      xyzw[0], xyzw[1], xyzw[2], xyzw[3],
-      dXYZW[0], dXYZW[1], dXYZW[2], dXYZW[3],
-      ddXYZW[0], ddXYZW[1], ddXYZW[2], ddXYZW[3],
-      result);
+      xyzw[0],
+      xyzw[1],
+      xyzw[2],
+      xyzw[3],
+      dXYZW[0],
+      dXYZW[1],
+      dXYZW[2],
+      dXYZW[3],
+      ddXYZW[0],
+      ddXYZW[1],
+      ddXYZW[2],
+      ddXYZW[3],
+      result,
+    );
   }
   /** test if the curve is almost equal to `other` */
   public override isAlmostEqual(other: any): boolean {
@@ -371,7 +411,9 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     return Point4dArray.isCloseToPlane(this._bcurve.packedData, plane);
   }
   /** Return the control polygon length as quick approximation to the curve length. */
-  public quickLength(): number { return Point3dArray.sumEdgeLengths(this._bcurve.packedData); }
+  public quickLength(): number {
+    return Point3dArray.sumEdgeLengths(this._bcurve.packedData);
+  }
   /** call a handler with interval data for stroking. */
   public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {
     const needBeziers = (handler as any).announceBezierCurve;
@@ -383,15 +425,21 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
       if (bezier) {
         numStrokes = bezier.computeStrokeCountForOptions(options);
         if (needBeziers) {
-          (handler as any).announceBezierCurve(bezier, numStrokes, this,
+          (handler as any).announceBezierCurve(
+            bezier,
+            numStrokes,
+            this,
             spanIndex,
             this._bcurve.knots.spanFractionToFraction(spanIndex, 0.0),
-            this._bcurve.knots.spanFractionToFraction(spanIndex, 1.0));
-
+            this._bcurve.knots.spanFractionToFraction(spanIndex, 1.0),
+          );
         } else {
-          handler.announceIntervalForUniformStepStrokes(this, numStrokes,
+          handler.announceIntervalForUniformStepStrokes(
+            this,
+            numStrokes,
             this._bcurve.knots.spanFractionToFraction(spanIndex, 0.0),
-            this._bcurve.knots.spanFractionToFraction(spanIndex, 1.0));
+            this._bcurve.knots.spanFractionToFraction(spanIndex, 1.0),
+          );
         }
       }
     }

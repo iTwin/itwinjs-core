@@ -29,7 +29,9 @@ export class ViewList extends SortedArray<ViewSpec> {
     });
   }
 
-  public get defaultViewId(): Id64String { return this._defaultViewId; }
+  public get defaultViewId(): Id64String {
+    return this._defaultViewId;
+  }
 
   public async getView(id: Id64String, iModel: IModelConnection): Promise<ViewState> {
     let view = this._views.get(id);
@@ -145,7 +147,9 @@ export class ViewPicker {
   private readonly _select: HTMLSelectElement;
   public readonly onSelectedViewChanged = new BeEvent<(viewId: Id64String) => void>();
 
-  public get element(): HTMLElement { return this._select; }
+  public get element(): HTMLElement {
+    return this._select;
+  }
 
   public constructor(parent: HTMLElement, views: ViewList) {
     this._select = document.createElement("select");

@@ -6,19 +6,24 @@
  * @module SelectionSet
  */
 
-import { Id64, Id64Arg } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
-import { ColorDef } from "@itwin/core-common";
 import {
-  ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription, PropertyEditorParamTypes,
+  ButtonGroupEditorParams,
+  DialogItem,
+  DialogItemValue,
+  DialogPropertySyncItem,
+  PropertyDescription,
+  PropertyEditorParamTypes,
   SuppressLabelEditorParams,
 } from "@itwin/appui-abstract";
+import { Id64, Id64Arg } from "@itwin/core-bentley";
+import { ColorDef } from "@itwin/core-common";
+import { Point2d, Point3d, Range2d } from "@itwin/core-geometry";
+import { ViewRect } from "../common/ViewRect";
 import { LocateFilterStatus, LocateResponse } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { Pixel } from "../render/Pixel";
 import { DecorateContext } from "../ViewContext";
-import { ViewRect } from "../common/ViewRect";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoordinateLockOverrides, CoreTools, EventHandled, InputSource } from "./Tool";
 import { ManipulatorToolEvent } from "./ToolAdmin";
@@ -80,20 +85,40 @@ export class SelectionTool extends PrimitiveTool {
   private _selectionMethodValue: DialogItemValue = { value: SelectionMethod.Pick };
   private _selectionModeValue: DialogItemValue = { value: SelectionMode.Replace };
 
-  public override requireWriteableTarget(): boolean { return false; }
-  public override autoLockTarget(): void { } // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
+  public override requireWriteableTarget(): boolean {
+    return false;
+  }
+  public override autoLockTarget(): void {} // NOTE: For selecting elements we only care about iModel, so don't lock target model automatically.
 
-  protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean { return SelectionMode.Replace === this.selectionMode; }
-  protected wantEditManipulators(): boolean { return SelectionMethod.Pick === this.selectionMethod; }
-  protected wantPickableDecorations(): boolean { return this.wantEditManipulators(); } // Allow pickable decorations selection to be independent of manipulators...
-  protected wantToolSettings(): boolean { return true; }
+  protected wantSelectionClearOnMiss(_ev: BeButtonEvent): boolean {
+    return SelectionMode.Replace === this.selectionMode;
+  }
+  protected wantEditManipulators(): boolean {
+    return SelectionMethod.Pick === this.selectionMethod;
+  }
+  protected wantPickableDecorations(): boolean {
+    return this.wantEditManipulators();
+  } // Allow pickable decorations selection to be independent of manipulators...
+  protected wantToolSettings(): boolean {
+    return true;
+  }
 
-  public get selectionMethod(): SelectionMethod { return this._selectionMethodValue.value as SelectionMethod; }
-  public set selectionMethod(method: SelectionMethod) { this._selectionMethodValue.value = method; }
-  public get selectionMode(): SelectionMode { return this._selectionModeValue.value as SelectionMode; }
-  public set selectionMode(mode: SelectionMode) { this._selectionModeValue.value = mode; }
+  public get selectionMethod(): SelectionMethod {
+    return this._selectionMethodValue.value as SelectionMethod;
+  }
+  public set selectionMethod(method: SelectionMethod) {
+    this._selectionMethodValue.value = method;
+  }
+  public get selectionMode(): SelectionMode {
+    return this._selectionModeValue.value as SelectionMode;
+  }
+  public set selectionMode(mode: SelectionMode) {
+    this._selectionModeValue.value = mode;
+  }
 
-  private static methodsMessage(str: string) { return CoreTools.translate(`ElementSet.SelectionMethods.${str}`); }
+  private static methodsMessage(str: string) {
+    return CoreTools.translate(`ElementSet.SelectionMethods.${str}`);
+  }
   private static _methodsName = "selectionMethods";
   /* The property descriptions used to generate ToolSettings UI. */
   private static _getMethodsDescription(): PropertyDescription {
@@ -113,8 +138,7 @@ export class SelectionTool extends PrimitiveTool {
         } as ButtonGroupEditorParams, {
           type: PropertyEditorParamTypes.SuppressEditorLabel,
           suppressLabelPlaceholder: true,
-        } as SuppressLabelEditorParams,
-        ],
+        } as SuppressLabelEditorParams],
       },
       enum: {
         choices: [
@@ -126,7 +150,9 @@ export class SelectionTool extends PrimitiveTool {
     };
   }
 
-  private static modesMessage(str: string) { return CoreTools.translate(`ElementSet.SelectionModes.${str}`); }
+  private static modesMessage(str: string) {
+    return CoreTools.translate(`ElementSet.SelectionModes.${str}`);
+  }
   private static _modesName = "selectionModes";
   /* The property descriptions used to generate ToolSettings UI. */
   private static _getModesDescription(): PropertyDescription {
@@ -152,8 +178,7 @@ export class SelectionTool extends PrimitiveTool {
         } as ButtonGroupEditorParams, {
           type: PropertyEditorParamTypes.SuppressEditorLabel,
           suppressLabelPlaceholder: true,
-        } as SuppressLabelEditorParams,
-        ],
+        } as SuppressLabelEditorParams],
       },
       enum: {
         choices: [
@@ -172,10 +197,10 @@ export class SelectionTool extends PrimitiveTool {
         mainMsg += "IdentifyElement";
         break;
       case SelectionMethod.Line:
-        mainMsg += (0 === this._points.length ? "StartPoint" : "EndPoint");
+        mainMsg += 0 === this._points.length ? "StartPoint" : "EndPoint";
         break;
       case SelectionMethod.Box:
-        mainMsg += (0 === this._points.length ? "StartCorner" : "OppositeCorner");
+        mainMsg += 0 === this._points.length ? "StartCorner" : "OppositeCorner";
         break;
     }
 
@@ -185,42 +210,144 @@ export class SelectionTool extends PrimitiveTool {
     switch (method) {
       case SelectionMethod.Pick:
         const mousePickInstructions: ToolAssistanceInstruction[] = [];
-        mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Mouse));
-        mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, CoreTools.translate("ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Mouse));
-        mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClickDrag, CoreTools.translate("ElementSet.Inputs.CrossingLine"), false, ToolAssistanceInputMethod.Mouse));
-        mousePickInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, CoreTools.translate("ElementSet.Inputs.OverlapSelection"), false, ToolAssistanceInputMethod.Mouse));
+        mousePickInstructions.push(
+          ToolAssistance.createInstruction(
+            ToolAssistanceImage.LeftClick,
+            CoreTools.translate("ElementSet.Inputs.AcceptElement"),
+            false,
+            ToolAssistanceInputMethod.Mouse,
+          ),
+        );
+        mousePickInstructions.push(
+          ToolAssistance.createInstruction(
+            ToolAssistanceImage.LeftClickDrag,
+            CoreTools.translate("ElementSet.Inputs.BoxCorners"),
+            false,
+            ToolAssistanceInputMethod.Mouse,
+          ),
+        );
+        mousePickInstructions.push(
+          ToolAssistance.createInstruction(
+            ToolAssistanceImage.RightClickDrag,
+            CoreTools.translate("ElementSet.Inputs.CrossingLine"),
+            false,
+            ToolAssistanceInputMethod.Mouse,
+          ),
+        );
+        mousePickInstructions.push(
+          ToolAssistance.createModifierKeyInstruction(
+            ToolAssistance.shiftKey,
+            ToolAssistanceImage.LeftClickDrag,
+            CoreTools.translate("ElementSet.Inputs.OverlapSelection"),
+            false,
+            ToolAssistanceInputMethod.Mouse,
+          ),
+        );
         if (SelectionMode.Replace === mode) {
-          mousePickInstructions.push(ToolAssistance.createKeyboardInstruction(ToolAssistance.ctrlKeyboardInfo, CoreTools.translate("ElementSet.Inputs.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
-          mousePickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, CoreTools.translate("ElementSet.Inputs.ClearSelection"), false, ToolAssistanceInputMethod.Mouse));
+          mousePickInstructions.push(
+            ToolAssistance.createKeyboardInstruction(
+              ToolAssistance.ctrlKeyboardInfo,
+              CoreTools.translate("ElementSet.Inputs.InvertSelection"),
+              false,
+              ToolAssistanceInputMethod.Mouse,
+            ),
+          );
+          mousePickInstructions.push(
+            ToolAssistance.createInstruction(
+              ToolAssistanceImage.CursorClick,
+              CoreTools.translate("ElementSet.Inputs.ClearSelection"),
+              false,
+              ToolAssistanceInputMethod.Mouse,
+            ),
+          );
         }
         sections.push(ToolAssistance.createSection(mousePickInstructions, ToolAssistance.inputsLabel));
 
         const touchPickInstructions: ToolAssistanceInstruction[] = [];
         if (!ToolAssistance.createTouchCursorInstructions(touchPickInstructions))
-          touchPickInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate("ElementSet.Inputs.AcceptElement"), false, ToolAssistanceInputMethod.Touch));
+          touchPickInstructions.push(
+            ToolAssistance.createInstruction(
+              ToolAssistanceImage.OneTouchTap,
+              CoreTools.translate("ElementSet.Inputs.AcceptElement"),
+              false,
+              ToolAssistanceInputMethod.Touch,
+            ),
+          );
         sections.push(ToolAssistance.createSection(touchPickInstructions, ToolAssistance.inputsLabel));
         break;
       case SelectionMethod.Line:
         const mouseLineInstructions: ToolAssistanceInstruction[] = [];
-        mouseLineInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
+        mouseLineInstructions.push(
+          ToolAssistance.createInstruction(
+            ToolAssistanceImage.LeftClick,
+            CoreTools.translate("ElementSet.Inputs.AcceptPoint"),
+            false,
+            ToolAssistanceInputMethod.Mouse,
+          ),
+        );
         if (SelectionMode.Replace === mode)
-          mouseLineInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
+          mouseLineInstructions.push(
+            ToolAssistance.createModifierKeyInstruction(
+              ToolAssistance.ctrlKey,
+              ToolAssistanceImage.LeftClick,
+              CoreTools.translate("ElementSet.Inputs.InvertSelection"),
+              false,
+              ToolAssistanceInputMethod.Mouse,
+            ),
+          );
         sections.push(ToolAssistance.createSection(mouseLineInstructions, ToolAssistance.inputsLabel));
 
         const touchLineInstructions: ToolAssistanceInstruction[] = [];
-        touchLineInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, CoreTools.translate("ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+        touchLineInstructions.push(
+          ToolAssistance.createInstruction(
+            ToolAssistanceImage.OneTouchDrag,
+            CoreTools.translate("ElementSet.Inputs.AcceptPoint"),
+            false,
+            ToolAssistanceInputMethod.Touch,
+          ),
+        );
         sections.push(ToolAssistance.createSection(touchLineInstructions, ToolAssistance.inputsLabel));
         break;
       case SelectionMethod.Box:
         const mouseBoxInstructions: ToolAssistanceInstruction[] = [];
-        mouseBoxInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Mouse));
-        mouseBoxInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.OverlapSelection"), false, ToolAssistanceInputMethod.Mouse));
+        mouseBoxInstructions.push(
+          ToolAssistance.createInstruction(
+            ToolAssistanceImage.LeftClick,
+            CoreTools.translate("ElementSet.Inputs.AcceptPoint"),
+            false,
+            ToolAssistanceInputMethod.Mouse,
+          ),
+        );
+        mouseBoxInstructions.push(
+          ToolAssistance.createModifierKeyInstruction(
+            ToolAssistance.shiftKey,
+            ToolAssistanceImage.LeftClick,
+            CoreTools.translate("ElementSet.Inputs.OverlapSelection"),
+            false,
+            ToolAssistanceInputMethod.Mouse,
+          ),
+        );
         if (SelectionMode.Replace === mode)
-          mouseBoxInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
+          mouseBoxInstructions.push(
+            ToolAssistance.createModifierKeyInstruction(
+              ToolAssistance.ctrlKey,
+              ToolAssistanceImage.LeftClick,
+              CoreTools.translate("ElementSet.Inputs.InvertSelection"),
+              false,
+              ToolAssistanceInputMethod.Mouse,
+            ),
+          );
         sections.push(ToolAssistance.createSection(mouseBoxInstructions, ToolAssistance.inputsLabel));
 
         const touchBoxInstructions: ToolAssistanceInstruction[] = [];
-        touchBoxInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, CoreTools.translate("ElementSet.Inputs.AcceptPoint"), false, ToolAssistanceInputMethod.Touch));
+        touchBoxInstructions.push(
+          ToolAssistance.createInstruction(
+            ToolAssistanceImage.OneTouchDrag,
+            CoreTools.translate("ElementSet.Inputs.AcceptPoint"),
+            false,
+            ToolAssistanceInputMethod.Touch,
+          ),
+        );
         sections.push(ToolAssistance.createSection(touchBoxInstructions, ToolAssistance.inputsLabel));
         break;
     }
@@ -274,14 +401,16 @@ export class SelectionTool extends PrimitiveTool {
     return returnValue;
   }
 
-  public async processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean> { return this.updateSelection(elementId, process); }
+  public async processSelection(elementId: Id64Arg, process: SelectionProcessing): Promise<boolean> {
+    return this.updateSelection(elementId, process);
+  }
 
   protected useOverlapSelection(ev: BeButtonEvent): boolean {
     if (undefined === ev.viewport)
       return false;
     const pt1 = ev.viewport.worldToView(this._points[0]);
     const pt2 = ev.viewport.worldToView(ev.point);
-    const overlapMode = (pt1.x > pt2.x);
+    const overlapMode = pt1.x > pt2.x;
     return (ev.isShiftKey ? !overlapMode : overlapMode); // Shift inverts inside/overlap selection...
   }
 
@@ -295,9 +424,10 @@ export class SelectionTool extends PrimitiveTool {
       return;
 
     const vp = context.viewport;
-    const bestContrastIsBlack = (ColorDef.black === vp.getContrastToBackgroundColor());
-    const crossingLine = (SelectionMethod.Line === this.selectionMethod || (SelectionMethod.Pick === this.selectionMethod && BeButton.Reset === ev.button));
-    const overlapSelection = (crossingLine || this.useOverlapSelection(ev));
+    const bestContrastIsBlack = ColorDef.black === vp.getContrastToBackgroundColor();
+    const crossingLine = SelectionMethod.Line === this.selectionMethod ||
+      (SelectionMethod.Pick === this.selectionMethod && BeButton.Reset === ev.button);
+    const overlapSelection = crossingLine || this.useOverlapSelection(ev);
 
     const position = vp.worldToView(this._points[0]);
     position.x = Math.floor(position.x) + 0.5;
@@ -481,7 +611,9 @@ export class SelectionTool extends PrimitiveTool {
       currHit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
 
     if (undefined !== currHit)
-      return (currHit.isElementHit ? IModelApp.viewManager.overrideElementButtonEvent(currHit, ev) : IModelApp.viewManager.onDecorationButtonEvent(currHit, ev));
+      return (currHit.isElementHit
+        ? IModelApp.viewManager.overrideElementButtonEvent(currHit, ev)
+        : IModelApp.viewManager.onDecorationButtonEvent(currHit, ev));
 
     return EventHandled.No;
   }
@@ -492,7 +624,10 @@ export class SelectionTool extends PrimitiveTool {
 
     switch (this.selectionMode) {
       case SelectionMode.Replace:
-        await this.processSelection(hit.sourceId, ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement);
+        await this.processSelection(
+          hit.sourceId,
+          ev.isControlKey ? SelectionProcessing.InvertElementInSelection : SelectionProcessing.ReplaceSelectionWithElement,
+        );
         break;
 
       case SelectionMode.Add:
@@ -624,7 +759,9 @@ export class SelectionTool extends PrimitiveTool {
       return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset);
   }
 
-  public override decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
+  public override decorate(context: DecorateContext): void {
+    this.selectByPointsDecorate(context);
+  }
 
   public override async onModifierKeyTransition(_wentDown: boolean, modifier: BeModifierKeys, _event: KeyboardEvent): Promise<EventHandled> {
     return (modifier === BeModifierKeys.Shift && this._isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
@@ -639,13 +776,15 @@ export class SelectionTool extends PrimitiveTool {
       return LocateFilterStatus.Accept;
 
     const isSelected = this.iModel.selectionSet.has(hit.sourceId);
-    const status = ((SelectionMode.Add === mode ? !isSelected : isSelected) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject);
+    const status = (SelectionMode.Add === mode ? !isSelected : isSelected) ? LocateFilterStatus.Accept : LocateFilterStatus.Reject;
     if (out && LocateFilterStatus.Reject === status)
       out.explanation = CoreTools.translate(`ElementSet.Error.${isSelected ? "AlreadySelected" : "NotSelected"}`);
     return status;
   }
 
-  public async onRestartTool(): Promise<void> { return this.exitTool(); }
+  public async onRestartTool(): Promise<void> {
+    return this.exitTool();
+  }
 
   public override async onCleanup() {
     if (this.wantEditManipulators())
@@ -661,7 +800,9 @@ export class SelectionTool extends PrimitiveTool {
     this.initSelectTool();
   }
 
-  public static async startTool(): Promise<boolean> { return new SelectionTool().run(); }
+  public static async startTool(): Promise<boolean> {
+    return new SelectionTool().run();
+  }
 
   private syncSelectionMode(): void {
     if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
@@ -692,13 +833,24 @@ export class SelectionTool extends PrimitiveTool {
     // Make sure a mode of SelectionMode.Remove is valid
     if (SelectionMode.Remove === this.selectionMode && !this.iModel.selectionSet.isActive) {
       this.selectionMode = SelectionMode.Replace;
-      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, {
+        propertyName: SelectionTool._modesName,
+        value: this._selectionModeValue,
+      });
     }
 
     const toolSettings = new Array<DialogItem>();
     // generate 3 columns - label will be placed in column 0 and button group editors in columns 1 and 2.
-    toolSettings.push({ value: this._selectionMethodValue, property: SelectionTool._getMethodsDescription(), editorPosition: { rowPriority: 0, columnIndex: 1 } });
-    toolSettings.push({ value: this._selectionModeValue, property: SelectionTool._getModesDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } });
+    toolSettings.push({
+      value: this._selectionMethodValue,
+      property: SelectionTool._getMethodsDescription(),
+      editorPosition: { rowPriority: 0, columnIndex: 1 },
+    });
+    toolSettings.push({
+      value: this._selectionModeValue,
+      property: SelectionTool._getModesDescription(),
+      editorPosition: { rowPriority: 0, columnIndex: 2 },
+    });
     return toolSettings;
   }
 
@@ -721,7 +873,10 @@ export class SelectionTool extends PrimitiveTool {
       this._selectionModeValue = updatedValue.value;
       if (this._selectionModeValue) {
         if (this.wantToolSettings())
-          IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, { propertyName: SelectionTool._modesName, value: this._selectionModeValue });
+          IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, {
+            propertyName: SelectionTool._modesName,
+            value: this._selectionModeValue,
+          });
         changed = true;
       }
     }

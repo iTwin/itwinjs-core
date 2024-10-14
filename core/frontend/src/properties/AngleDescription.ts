@@ -24,8 +24,14 @@ export class AngleDescription extends FormattedQuantityDescription {
     );
   }
 
-  public get formatterQuantityType(): QuantityType { return QuantityType.Angle; }
-  public get quantityType(): string { return "Angle"; }
+  public get formatterQuantityType(): QuantityType {
+    return QuantityType.Angle;
+  }
+  public get quantityType(): string {
+    return "Angle";
+  }
 
-  public get parseError(): string { return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseAngle"); }
+  public get parseError(): string {
+    return IModelApp.localization.getLocalizedString("iModelJs:Properties.UnableToParseAngle");
+  }
 }

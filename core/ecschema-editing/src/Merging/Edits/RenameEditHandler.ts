@@ -6,10 +6,30 @@
  * @module Merging
  */
 
-import type { RenamePropertyEdit, RenameSchemaItemEdit } from "./SchemaEdits";
-import { AnyClassItemDifference, AnySchemaItemDifference, ClassPropertyDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, SchemaDifferenceResult, SchemaOtherTypes, SchemaType } from "../../Differencing/SchemaDifference";
-import { NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, RelationshipConstraintProps, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps, StructPropertyProps } from "@itwin/ecschema-metadata";
+import {
+  NavigationPropertyProps,
+  PrimitiveArrayPropertyProps,
+  PrimitivePropertyProps,
+  RelationshipConstraintProps,
+  SchemaItem,
+  SchemaItemKey,
+  SchemaItemType,
+  SchemaKey,
+  StructArrayPropertyProps,
+  StructPropertyProps,
+} from "@itwin/ecschema-metadata";
+import {
+  AnyClassItemDifference,
+  AnySchemaItemDifference,
+  ClassPropertyDifference,
+  RelationshipClassDifference,
+  RelationshipConstraintClassDifference,
+  SchemaDifferenceResult,
+  SchemaOtherTypes,
+  SchemaType,
+} from "../../Differencing/SchemaDifference";
 import * as Utils from "../../Differencing/Utils";
+import type { RenamePropertyEdit, RenameSchemaItemEdit } from "./SchemaEdits";
 
 type Editable<T extends object> = {
   -readonly [P in keyof T]: T[P];
@@ -133,7 +153,11 @@ function renameName(change: AnySchemaItemDifference, oldName: string, newName: s
   }
 }
 
-function renameRelationshipConstraint(change: RelationshipClassDifference | RelationshipConstraintClassDifference, oldKey: SchemaItemKey, newKey: SchemaItemKey) {
+function renameRelationshipConstraint(
+  change: RelationshipClassDifference | RelationshipConstraintClassDifference,
+  oldKey: SchemaItemKey,
+  newKey: SchemaItemKey,
+) {
   if (change.schemaType === SchemaItemType.RelationshipClass) {
     const constraintProps = [change.difference.source, change.difference.target] as Editable<RelationshipConstraintProps>[];
     for (const props of constraintProps) {
@@ -211,9 +235,11 @@ function renameEnumerationName({ differences }: SchemaDifferenceResult, oldKey: 
       }
     }
 
-    if (change.schemaType === SchemaOtherTypes.Property && (
-      change.difference.type === "PrimitiveProperty" || change.difference.type === "PrimitiveArrayProperty"
-    )) {
+    if (
+      change.schemaType === SchemaOtherTypes.Property && (
+        change.difference.type === "PrimitiveProperty" || change.difference.type === "PrimitiveArrayProperty"
+      )
+    ) {
       const props = change.difference as Editable<PrimitivePropertyProps | PrimitiveArrayPropertyProps>;
       if (props.typeName && oldKey.matchesFullName(props.typeName))
         props.typeName = newKey.fullName;
@@ -239,16 +265,18 @@ function renameStructClassName({ differences }: SchemaDifferenceResult, oldKey: 
     if (Utils.isClassDifference(change) && change.difference.properties) {
       for (const property of change.difference.properties) {
         if (property.type === "StructProperty" || property.type === "StructArrayProperty") {
-          const props = property as Editable<StructPropertyProps | StructArrayPropertyProps>;;
+          const props = property as Editable<StructPropertyProps | StructArrayPropertyProps>;
           if (props.typeName && oldKey.matchesFullName(props.typeName))
             props.typeName = newKey.fullName;
         }
       }
     }
 
-    if (change.schemaType === SchemaOtherTypes.Property && (
-      change.difference.type === "StructProperty" || change.difference.type === "StructArrayProperty"
-    )) {
+    if (
+      change.schemaType === SchemaOtherTypes.Property && (
+        change.difference.type === "StructProperty" || change.difference.type === "StructArrayProperty"
+      )
+    ) {
       const props = change.difference as Editable<StructPropertyProps | StructArrayPropertyProps>;
       if (props.typeName && oldKey.matchesFullName(props.typeName))
         props.typeName = newKey.fullName;

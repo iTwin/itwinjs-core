@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
+import { assert } from "chai";
 import * as sinon from "sinon";
+import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
 
 describe("PromiseMemoizer", () => {
   let clock: sinon.SinonFakeTimers | undefined;

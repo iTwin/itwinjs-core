@@ -7,9 +7,9 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { Matrix4 } from "../Matrix";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
 import { UniformHandle } from "../UniformHandle";
-import { Matrix4 } from "../Matrix";
 import { addExtractNthBit } from "./Common";
 import { addOvrFlagConstants } from "./FeatureSymbology";
 
@@ -43,17 +43,32 @@ function setMatrix(uniform: UniformHandle, matrix: Matrix4 | undefined): void {
 }
 
 function addPatternTransforms(vert: VertexShaderBuilder): void {
-  vert.addUniform("u_patOrg", VariableType.Mat4, (prog) =>
-    prog.addGraphicUniform("u_patOrg", (uniform, params) =>
-      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.orgTransform)));
+  vert.addUniform(
+    "u_patOrg",
+    VariableType.Mat4,
+    (prog) =>
+      prog.addGraphicUniform("u_patOrg", (uniform, params) => setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.orgTransform)),
+  );
 
-  vert.addUniform("u_patLocalToModel", VariableType.Mat4, (prog) =>
-    prog.addGraphicUniform("u_patLocalToModel", (uniform, params) =>
-      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.localToModel)));
+  vert.addUniform(
+    "u_patLocalToModel",
+    VariableType.Mat4,
+    (prog) =>
+      prog.addGraphicUniform(
+        "u_patLocalToModel",
+        (uniform, params) => setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.localToModel),
+      ),
+  );
 
-  vert.addUniform("u_patSymbolToLocal", VariableType.Mat4, (prog) =>
-    prog.addGraphicUniform("u_patSymbolToLocal", (uniform, params) =>
-      setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.symbolToLocal)));
+  vert.addUniform(
+    "u_patSymbolToLocal",
+    VariableType.Mat4,
+    (prog) =>
+      prog.addGraphicUniform(
+        "u_patSymbolToLocal",
+        (uniform, params) => setMatrix(uniform, params.geometry.asInstanced?.patternTransforms?.symbolToLocal),
+      ),
+  );
 
   vert.addUniform("u_patternOrigin", VariableType.Vec2, (prog) => {
     prog.addGraphicUniform("u_patternOrigin", (uniform, params) => {

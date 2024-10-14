@@ -3,25 +3,31 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
 import { IModelApp, ModelDisplayTransformProvider, Tool } from "@itwin/core-frontend";
+import { Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 class DisplayScaleTransformProvider implements ModelDisplayTransformProvider {
-  public constructor(private readonly _models: Set<string>, private readonly _scaleTransform: Transform) { }
+  public constructor(private readonly _models: Set<string>, private readonly _scaleTransform: Transform) {}
 
   public getModelDisplayTransform(modelId: string): Transform | undefined {
     return this._models.has(modelId) ? this._scaleTransform.clone() : undefined;
   }
 
-  public get transform(): Transform { return this._scaleTransform.clone(); }
+  public get transform(): Transform {
+    return this._scaleTransform.clone();
+  }
 }
 
 /** Apply a display transform to all currently displayed models. */
 export class ApplyModelDisplayScaleTool extends Tool {
   public static override toolId = "ApplyModelDisplayScale";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 3;
+  }
 
   public override async run(scale: Point3d): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;

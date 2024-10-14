@@ -2,28 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { BSplineSurface3d, BSplineSurface3dH, BSplineSurface3dQuery, UVSelect, WeightStyle } from "../../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../../bspline/KnotVector";
-import { Geometry } from "../../Geometry";
 import { GeometryQuery } from "../../curve/GeometryQuery";
+import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Geometry } from "../../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { NumberArray, Point3dArray, Point4dArray } from "../../geometry3d/PointHelpers";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
+import { Point4d } from "../../geometry4d/Point4d";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Sample } from "../../serialization/GeometrySamples";
+import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { NumberArray, Point3dArray, Point4dArray } from "../../geometry3d/PointHelpers";
-import { Point4d } from "../../geometry4d/Point4d";
 
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
-  let s = 0.0; for (const a of data) s += a;
+  let s = 0.0;
+  for (const a of data) s += a;
   ck.testCoordinate(expectedValue, s, "basis sum");
 }
 function testBSplineSurface(ck: Checker, surfaceA: BSplineSurface3dQuery) {
@@ -43,10 +44,12 @@ function testBSplineSurface(ck: Checker, surfaceA: BSplineSurface3dQuery) {
   const pointB1 = surfaceB.fractionToPoint(u1, v1);
   const frameA0 = surfaceA.fractionToRigidFrame(u0, v0);
   const frameB0 = surfaceB.fractionToRigidFrame(u0, v0);
-  if (ck.testPointer(frameA0)
+  if (
+    ck.testPointer(frameA0)
     && ck.testPointer(frameB0)
     && frameA0
-    && frameB0) {
+    && frameB0
+  ) {
     ck.testTransform(frameA0, frameB0);
     const frameA0Inverse = frameA0.inverse();
     if (ck.testPointer(frameA0Inverse)) {
@@ -54,10 +57,9 @@ function testBSplineSurface(ck: Checker, surfaceA: BSplineSurface3dQuery) {
       surfaceA.extendRange(rangeA2, frameA0Inverse);
       const planeA2 = Plane3dByOriginAndUnitNormal.create(
         Point3d.createFrom(frameA0.origin),
-        frameA0.matrix.columnZ());
-      ck.testBoolean(surfaceA.isInPlane(planeA2!),
-        Geometry.isSmallMetricDistance(rangeA2.zLength()),
-        "Surface planarity test versus range in frame");
+        frameA0.matrix.columnZ(),
+      );
+      ck.testBoolean(surfaceA.isInPlane(planeA2!), Geometry.isSmallMetricDistance(rangeA2.zLength()), "Surface planarity test versus range in frame");
     }
   }
 
@@ -136,7 +138,6 @@ function testBSplineSurface(ck: Checker, surfaceA: BSplineSurface3dQuery) {
         }
       }
     }
-
   }
 }
 
@@ -174,9 +175,13 @@ describe("BSplineSurface", () => {
       dy = 0.0;
       for (const orderV of [2, 3, 4, 5]) {
         const bsurf = Sample.createPseudoTorusBsplineSurface(
-          4.0, 1.0, // radii
-          Math.max(12, orderU + 1), Math.max(6, orderV + 1),    // grid edges
-          orderU, orderV);
+          4.0,
+          1.0, // radii
+          Math.max(12, orderU + 1),
+          Math.max(6, orderV + 1), // grid edges
+          orderU,
+          orderV,
+        );
         if (ck.testPointer(bsurf)) {
           if (ck.testTrue(bsurf.isClosable(UVSelect.uDirection)))
             ck.testExactNumber(BSplineWrapMode.OpenByAddingControlPoints, bsurf.isClosableSurface(UVSelect.uDirection));
@@ -198,11 +203,21 @@ describe("BSplineSurface", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const surfaceA = Sample.createPseudoTorusBsplineSurface(
-      4.0, 1.0, // radii
-      12, 6, 4, 4)!;  // bicubic
+      4.0,
+      1.0, // radii
+      12,
+      6,
+      4,
+      4,
+    )!; // bicubic
     const surfaceB = Sample.createPseudoTorusBsplineSurface(
-      4.0, 1.0, // radii
-      12, 6, 5, 3)!;
+      4.0,
+      1.0, // radii
+      12,
+      6,
+      5,
+      3,
+    )!;
     surfaceB.tryTranslateInPlace(10, 0, 0);
 
     const options = StrokeOptions.createForFacets();
@@ -231,15 +246,24 @@ describe("BSplineSurface", () => {
     const allGeometry = [];
     let dx = 0.0;
     const dy = 0.0;
-    for (const bsurf of [Sample.createConeBsplineSurface(
-      Point3d.create(0, 0, 0),
-      Point3d.create(0, 0, 1),
-      4.0, 1.0, 2),
-    Sample.createConeBsplineSurface(
-      Point3d.create(0, 0, 0),
-      Point3d.create(1, 3, 1),
-      4.0, 1.0,
-      3)]) {
+    for (
+      const bsurf of [
+        Sample.createConeBsplineSurface(
+          Point3d.create(0, 0, 0),
+          Point3d.create(0, 0, 1),
+          4.0,
+          1.0,
+          2,
+        ),
+        Sample.createConeBsplineSurface(
+          Point3d.create(0, 0, 0),
+          Point3d.create(1, 3, 1),
+          4.0,
+          1.0,
+          3,
+        ),
+      ]
+    ) {
       if (ck.testPointer(bsurf)) {
         bsurf.tryTranslateInPlace(dx, dy);
         allGeometry.push(bsurf);
@@ -261,11 +285,26 @@ describe("BSplineSurface", () => {
     let surface2: BSplineSurface3d | BSplineSurface3dH | undefined;
     if (surface instanceof BSplineSurface3dH) {
       const poles = surface.copyXYZToFloat64Array(true);
-      surface2 = BSplineSurface3d.create(poles, surface.numPolesUV(UVSelect.uDirection), surface.orderUV(UVSelect.uDirection), surface.knots[UVSelect.uDirection].knots,
-        surface.numPolesUV(UVSelect.vDirection), surface.orderUV(UVSelect.vDirection), surface.knots[UVSelect.vDirection].knots);
+      surface2 = BSplineSurface3d.create(
+        poles,
+        surface.numPolesUV(UVSelect.uDirection),
+        surface.orderUV(UVSelect.uDirection),
+        surface.knots[UVSelect.uDirection].knots,
+        surface.numPolesUV(UVSelect.vDirection),
+        surface.orderUV(UVSelect.vDirection),
+        surface.knots[UVSelect.vDirection].knots,
+      );
     } else {
-      surface2 = BSplineSurface3dH.create(surface.coffs, undefined, surface.numPolesUV(UVSelect.uDirection), surface.orderUV(UVSelect.uDirection), surface.knots[UVSelect.uDirection].knots,
-        surface.numPolesUV(UVSelect.vDirection), surface.orderUV(UVSelect.vDirection), surface.knots[UVSelect.vDirection].knots); // unit weights
+      surface2 = BSplineSurface3dH.create(
+        surface.coffs,
+        undefined,
+        surface.numPolesUV(UVSelect.uDirection),
+        surface.orderUV(UVSelect.uDirection),
+        surface.knots[UVSelect.uDirection].knots,
+        surface.numPolesUV(UVSelect.vDirection),
+        surface.orderUV(UVSelect.vDirection),
+        surface.knots[UVSelect.vDirection].knots,
+      ); // unit weights
     }
     if (ck.testDefined(surface2, "surface has valid pole dimension"))
       testGeometryQueryRoundTrip(ck, surface2);
@@ -276,10 +315,14 @@ describe("BSplineSurface", () => {
     const options = StrokeOptions.createForFacets();
     options.needNormals = options.needParams = options.shouldTriangulate = true;
     const allGeometry: GeometryQuery[] = [];
-    for (const filename of ["./src/test/data/BSplineSurface/torus3_open_closed.imjs",
-      "./src/test/data/BSplineSurface/torus6_open_closed.imjs",
-      "./src/test/data/BSplineSurface/nonrational_toroid_open.imjs",
-      "./src/test/data/BSplineSurface/nonrational_toroid_legacy_closed.imjs"]) {
+    for (
+      const filename of [
+        "./src/test/data/BSplineSurface/torus3_open_closed.imjs",
+        "./src/test/data/BSplineSurface/torus6_open_closed.imjs",
+        "./src/test/data/BSplineSurface/nonrational_toroid_open.imjs",
+        "./src/test/data/BSplineSurface/nonrational_toroid_legacy_closed.imjs",
+      ]
+    ) {
       const json = fs.readFileSync(filename, "utf8");
       const inputs = IModelJson.Reader.parse(JSON.parse(json));
       if (ck.testDefined(inputs)) {
@@ -327,23 +370,65 @@ describe("BSplineSurface", () => {
       ck.testExactNumber(polesGrid.weightStyle!, WeightStyle.UnWeighted, "getPointGridJSON returns expected weightStyle");
       ck.testExactNumber(polesGrid.numCartesianDimensions, 3, "getPointGridJSON returns expected dim");
       ck.testTrue(NumberArray.isExactEqual(bsurf.copyPointsFloat64Array(), poles), "copyPointsFloat64Array returns expected points");
-      ck.testTrue(NumberArray.isExactEqual(bsurf.knots[UVSelect.uDirection].knots, bsurf.copyKnots(UVSelect.uDirection, false)), "copyKnots returns expected uKnots");
-      ck.testTrue(NumberArray.isExactEqual(bsurf.knots[UVSelect.vDirection].knots, bsurf.copyKnots(UVSelect.vDirection, false)), "copyKnots returns expected vKnots");
+      ck.testTrue(
+        NumberArray.isExactEqual(bsurf.knots[UVSelect.uDirection].knots, bsurf.copyKnots(UVSelect.uDirection, false)),
+        "copyKnots returns expected uKnots",
+      );
+      ck.testTrue(
+        NumberArray.isExactEqual(bsurf.knots[UVSelect.vDirection].knots, bsurf.copyKnots(UVSelect.vDirection, false)),
+        "copyKnots returns expected vKnots",
+      );
       ck.testFalse(bsurf.testClosableGrid(UVSelect.uDirection), "testClosableGrid returns false with undefined mode in u-direction on open surface");
-      ck.testFalse(bsurf.testClosableGrid(UVSelect.vDirection, BSplineWrapMode.None), "testClosableGrid returns false with mode None in v-direction on open surface");
+      ck.testFalse(
+        bsurf.testClosableGrid(UVSelect.vDirection, BSplineWrapMode.None),
+        "testClosableGrid returns false with mode None in v-direction on open surface",
+      );
       ck.testPoint3d(bsurf.uvFractionToPoint(1, 1), bsurf.getPole(uNumPoles - 1, vNumPoles - 1)!, "uvFractionToPoint returns expected point");
     }
-    ck.testUndefined(BSplineSurface3d.create(poles, uNumPoles, 1, undefined, vNumPoles, vOrder, undefined), "create with uOrder too small yields undefined surface");
-    ck.testUndefined(BSplineSurface3d.create(poles, uNumPoles, uNumPoles + 1, undefined, vNumPoles, vOrder, undefined), "create with uOrder too large yields undefined surface");
-    ck.testUndefined(BSplineSurface3d.create(poles, uNumPoles, uOrder, undefined, vNumPoles, 1, undefined), "create with vOrder too small yields undefined surface");
-    ck.testUndefined(BSplineSurface3d.create(poles, uNumPoles, uOrder, undefined, vNumPoles, vNumPoles + 1, undefined), "create with vOrder too large yields undefined surface");
-    ck.testUndefined(BSplineSurface3d.create(poles, uNumPoles + 1, uOrder, undefined, vNumPoles, vOrder, undefined), "create with invalid uPole count yields undefined surface");
-    ck.testUndefined(BSplineSurface3d.create(poles, uNumPoles, uOrder, undefined, vNumPoles + 1, vOrder, undefined), "create with invalid vPole count yields undefined surface");
-    ck.testUndefined(BSplineSurface3d.createGrid([[[]]], uOrder, undefined, vOrder, undefined), "createGrid with invalid poles inner dimension yields undefined surface");
-    ck.testUndefined(BSplineSurface3d.createGrid(polesFlat, 1, undefined, vOrder, undefined), "createGrid with uOrder too small yields undefined surface");
-    ck.testUndefined(BSplineSurface3d.createGrid(polesFlat, uNumPoles + 1, undefined, vOrder, undefined), "createGrid with uOrder too large yields undefined surface");
-    ck.testUndefined(BSplineSurface3d.createGrid(polesFlat, uOrder, undefined, 1, undefined), "createGrid with vOrder too small yields undefined surface");
-    ck.testUndefined(BSplineSurface3d.createGrid(polesFlat, uOrder, undefined, vNumPoles + 1, undefined), "createGrid with vOrder too large yields undefined surface");
+    ck.testUndefined(
+      BSplineSurface3d.create(poles, uNumPoles, 1, undefined, vNumPoles, vOrder, undefined),
+      "create with uOrder too small yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3d.create(poles, uNumPoles, uNumPoles + 1, undefined, vNumPoles, vOrder, undefined),
+      "create with uOrder too large yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3d.create(poles, uNumPoles, uOrder, undefined, vNumPoles, 1, undefined),
+      "create with vOrder too small yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3d.create(poles, uNumPoles, uOrder, undefined, vNumPoles, vNumPoles + 1, undefined),
+      "create with vOrder too large yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3d.create(poles, uNumPoles + 1, uOrder, undefined, vNumPoles, vOrder, undefined),
+      "create with invalid uPole count yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3d.create(poles, uNumPoles, uOrder, undefined, vNumPoles + 1, vOrder, undefined),
+      "create with invalid vPole count yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3d.createGrid([[[]]], uOrder, undefined, vOrder, undefined),
+      "createGrid with invalid poles inner dimension yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3d.createGrid(polesFlat, 1, undefined, vOrder, undefined),
+      "createGrid with uOrder too small yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3d.createGrid(polesFlat, uNumPoles + 1, undefined, vOrder, undefined),
+      "createGrid with uOrder too large yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3d.createGrid(polesFlat, uOrder, undefined, 1, undefined),
+      "createGrid with vOrder too small yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3d.createGrid(polesFlat, uOrder, undefined, vNumPoles + 1, undefined),
+      "createGrid with vOrder too large yields undefined surface",
+    );
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "BSplineSurface3dCoverage");
     expect(ck.getNumErrors()).toBe(0);
@@ -383,30 +468,86 @@ describe("BSplineSurface", () => {
       bsurf.copyPointsAndWeights(myPoles, myWeights);
       ck.testTrue(Point3dArray.isAlmostEqual(myPoles, polesPoint3d), "copyPointsAndWeights returns expected points");
       ck.testTrue(NumberArray.isExactEqual(myWeights, weights), "copyPointsAndWeights returns expected weights");
-      ck.testTrue(NumberArray.isExactEqual(bsurf.knots[UVSelect.uDirection].knots, bsurf.copyKnots(UVSelect.uDirection, false)), "copyKnots returns expected uKnots");
-      ck.testTrue(NumberArray.isExactEqual(bsurf.knots[UVSelect.vDirection].knots, bsurf.copyKnots(UVSelect.vDirection, false)), "copyKnots returns expected vKnots");
+      ck.testTrue(
+        NumberArray.isExactEqual(bsurf.knots[UVSelect.uDirection].knots, bsurf.copyKnots(UVSelect.uDirection, false)),
+        "copyKnots returns expected uKnots",
+      );
+      ck.testTrue(
+        NumberArray.isExactEqual(bsurf.knots[UVSelect.vDirection].knots, bsurf.copyKnots(UVSelect.vDirection, false)),
+        "copyKnots returns expected vKnots",
+      );
       ck.testFalse(bsurf.testClosableGrid(UVSelect.uDirection), "testClosableGrid returns false with undefined mode in u-direction on open surface");
-      ck.testFalse(bsurf.testClosableGrid(UVSelect.vDirection, BSplineWrapMode.None), "testClosableGrid returns false with mode None in v-direction on open surface");
+      ck.testFalse(
+        bsurf.testClosableGrid(UVSelect.vDirection, BSplineWrapMode.None),
+        "testClosableGrid returns false with mode None in v-direction on open surface",
+      );
       ck.testPoint3d(bsurf.uvFractionToPoint(1, 1), bsurf.getPole(uNumPoles - 1, vNumPoles - 1)!, "uvFractionToPoint returns expected point");
-      let bsurfGrid = BSplineSurface3dH.createGrid(polesFlatUnweighted, WeightStyle.WeightsSeparateFromCoordinates, uOrder, undefined, vOrder, undefined);
+      let bsurfGrid = BSplineSurface3dH.createGrid(
+        polesFlatUnweighted,
+        WeightStyle.WeightsSeparateFromCoordinates,
+        uOrder,
+        undefined,
+        vOrder,
+        undefined,
+      );
       if (ck.testType(bsurfGrid, BSplineSurface3dH, "createGrid returns expected type"))
         ck.testNumberArray(bsurfGrid.coffs, bsurf.coffs, "createGrid with separate weights input yields expected poles");
       bsurfGrid = BSplineSurface3dH.createGrid(polesFlatUnweighted, WeightStyle.UnWeighted, uOrder, undefined, vOrder, undefined);
       if (ck.testType(bsurfGrid, BSplineSurface3dH, "createGrid returns expected type"))
-        ck.testNumberArray(bsurfGrid.copyXYZToFloat64Array(false), bsurf.copyXYZToFloat64Array(true), "createGrid with unweighted input yields expected poles");
+        ck.testNumberArray(
+          bsurfGrid.copyXYZToFloat64Array(false),
+          bsurf.copyXYZToFloat64Array(true),
+          "createGrid with unweighted input yields expected poles",
+        );
     }
-    ck.testUndefined(BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles, 1, undefined, vNumPoles, vOrder, undefined), "create with uOrder too small yields undefined surface");
-    ck.testUndefined(BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles, uNumPoles + 1, undefined, vNumPoles, vOrder, undefined), "create with uOrder too large yields undefined surface");
-    ck.testUndefined(BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles, uOrder, undefined, vNumPoles, 1, undefined), "create with vOrder too small yields undefined surface");
-    ck.testUndefined(BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles, uOrder, undefined, vNumPoles, vNumPoles + 1, undefined), "create with vOrder too large yields undefined surface");
-    ck.testUndefined(BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles + 1, uOrder, undefined, vNumPoles, vOrder, undefined), "create with invalid uPole count yields undefined surface");
-    ck.testUndefined(BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles, uOrder, undefined, vNumPoles + 1, vOrder, undefined), "create with invalid vPole count yields undefined surface");
-    ck.testUndefined(BSplineSurface3dH.create(polesPoint3d, [1, 1], uNumPoles, uOrder, undefined, vNumPoles, vOrder, undefined), "create with different counts for poles and weights yields undefined surface");
-    ck.testUndefined(BSplineSurface3dH.createGrid([[[]]], WeightStyle.WeightsAlreadyAppliedToCoordinates, uOrder, undefined, vOrder, undefined), "createGrid with invalid poles inner dimension yields undefined surface");
-    ck.testUndefined(BSplineSurface3dH.createGrid(polesFlat, WeightStyle.WeightsAlreadyAppliedToCoordinates, 1, undefined, vOrder, undefined), "createGrid with uOrder too small yields undefined surface");
-    ck.testUndefined(BSplineSurface3dH.createGrid(polesFlat, WeightStyle.WeightsAlreadyAppliedToCoordinates, uNumPoles + 1, undefined, vOrder, undefined), "createGrid with uOrder too large yields undefined surface");
-    ck.testUndefined(BSplineSurface3dH.createGrid(polesFlat, WeightStyle.WeightsAlreadyAppliedToCoordinates, uOrder, undefined, 1, undefined), "createGrid with vOrder too small yields undefined surface");
-    ck.testUndefined(BSplineSurface3dH.createGrid(polesFlat, WeightStyle.WeightsAlreadyAppliedToCoordinates, uOrder, undefined, vNumPoles + 1, undefined), "createGrid with vOrder too large yields undefined surface");
+    ck.testUndefined(
+      BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles, 1, undefined, vNumPoles, vOrder, undefined),
+      "create with uOrder too small yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles, uNumPoles + 1, undefined, vNumPoles, vOrder, undefined),
+      "create with uOrder too large yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles, uOrder, undefined, vNumPoles, 1, undefined),
+      "create with vOrder too small yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles, uOrder, undefined, vNumPoles, vNumPoles + 1, undefined),
+      "create with vOrder too large yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles + 1, uOrder, undefined, vNumPoles, vOrder, undefined),
+      "create with invalid uPole count yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3dH.create(polesPoint3d, weights, uNumPoles, uOrder, undefined, vNumPoles + 1, vOrder, undefined),
+      "create with invalid vPole count yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3dH.create(polesPoint3d, [1, 1], uNumPoles, uOrder, undefined, vNumPoles, vOrder, undefined),
+      "create with different counts for poles and weights yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3dH.createGrid([[[]]], WeightStyle.WeightsAlreadyAppliedToCoordinates, uOrder, undefined, vOrder, undefined),
+      "createGrid with invalid poles inner dimension yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3dH.createGrid(polesFlat, WeightStyle.WeightsAlreadyAppliedToCoordinates, 1, undefined, vOrder, undefined),
+      "createGrid with uOrder too small yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3dH.createGrid(polesFlat, WeightStyle.WeightsAlreadyAppliedToCoordinates, uNumPoles + 1, undefined, vOrder, undefined),
+      "createGrid with uOrder too large yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3dH.createGrid(polesFlat, WeightStyle.WeightsAlreadyAppliedToCoordinates, uOrder, undefined, 1, undefined),
+      "createGrid with vOrder too small yields undefined surface",
+    );
+    ck.testUndefined(
+      BSplineSurface3dH.createGrid(polesFlat, WeightStyle.WeightsAlreadyAppliedToCoordinates, uOrder, undefined, vNumPoles + 1, undefined),
+      "createGrid with vOrder too large yields undefined surface",
+    );
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "BSplineSurface3dHCoverage");
     expect(ck.getNumErrors()).toBe(0);

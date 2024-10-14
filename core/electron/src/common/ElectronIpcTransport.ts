@@ -5,7 +5,13 @@
 
 import { BentleyError, BentleyStatus, ProcessDetector } from "@itwin/core-bentley";
 import {
-  IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
+  IModelError,
+  iTwinChannel,
+  RpcPushChannel,
+  RpcPushConnection,
+  RpcRequestFulfillment,
+  RpcSerializedValue,
+  SerializedRpcRequest,
 } from "@itwin/core-common";
 import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
@@ -15,18 +21,31 @@ import { ElectronRpcRequest } from "./ElectronRpcRequest";
 const OBJECTS_CHANNEL = iTwinChannel("rpc.objects");
 const DATA_CHANNEL = iTwinChannel("rpc.data");
 
-interface PartialPayload { id: string, index: number, data: Uint8Array }
+interface PartialPayload {
+  id: string;
+  index: number;
+  data: Uint8Array;
+}
 
 /** @internal */
-export interface IpcTransportMessage { id: string, parameters?: RpcSerializedValue, result?: RpcSerializedValue }
+export interface IpcTransportMessage {
+  id: string;
+  parameters?: RpcSerializedValue;
+  result?: RpcSerializedValue;
+}
 
 /** @internal */
-export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = IpcTransportMessage, TOut extends IpcTransportMessage = IpcTransportMessage> {
+export abstract class ElectronIpcTransport<
+  TIn extends IpcTransportMessage = IpcTransportMessage,
+  TOut extends IpcTransportMessage = IpcTransportMessage,
+> {
   private _partials: Map<string, { message: TIn, received: number } | PartialPayload[]>;
   private _removeListeners: VoidFunction[] = [];
   protected _protocol: ElectronRpcProtocol;
 
-  public get protocol() { return this._protocol; }
+  public get protocol() {
+    return this._protocol;
+  }
 
   public sendRequest(request: SerializedRpcRequest) {
     const value = this._extractValue(request);
@@ -41,7 +60,7 @@ export abstract class ElectronIpcTransport<TIn extends IpcTransportMessage = Ipc
     this.setupPush();
   }
 
-  protected setupPush() { }
+  protected setupPush() {}
 
   private _setupDataChannel() {
     const removeListener = this.protocol.ipcSocket.addListener(DATA_CHANNEL, async (evt: any, chunk: PartialPayload) => {

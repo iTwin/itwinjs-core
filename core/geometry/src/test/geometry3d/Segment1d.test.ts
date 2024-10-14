@@ -47,5 +47,4 @@ describe("Segment1d", () => {
     ck.checkpoint("Segment1d.Create");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

@@ -186,7 +186,7 @@ export class Range1dArray {
 
     data.sort(compareRange1dLexicalLowHigh);
 
-    let currentIndex = 0;   // last accepted interval
+    let currentIndex = 0; // last accepted interval
     for (let i = 1; i < data.length; i++) {
       if (data[i].low <= data[currentIndex].high) {
         // extend the current range
@@ -283,7 +283,13 @@ export class Range1dArray {
    * @param sort optionally request immediate sort.
    * @param compress optionally request removal of duplicates.
    */
-  public static getBreaks(data: Range1d[], result?: GrowableFloat64Array, sort: boolean = false, compress: boolean = false, clear: boolean = true): GrowableFloat64Array {
+  public static getBreaks(
+    data: Range1d[],
+    result?: GrowableFloat64Array,
+    sort: boolean = false,
+    compress: boolean = false,
+    clear: boolean = true,
+  ): GrowableFloat64Array {
     if (!result) result = new GrowableFloat64Array(2 * data.length);
     if (clear) result.clear();
     for (const range of data) {
@@ -308,9 +314,16 @@ export class Range1dArray {
    * @param finalRangeFraction fraction coordinate applied only to last range (typically an extrapolation above)
    * @param result array to receive values
    */
-  public static appendFractionalPoints(data: Range1d[], initialRangeFraction: number | undefined, rangeFraction: number | undefined, includeDegenerateRange: boolean,
-    gapFraction: number | undefined, includeDegenerateGap: boolean,
-    finalRangeFraction: number | undefined, result: GrowableFloat64Array | number[]): GrowableFloat64Array | number[] {
+  public static appendFractionalPoints(
+    data: Range1d[],
+    initialRangeFraction: number | undefined,
+    rangeFraction: number | undefined,
+    includeDegenerateRange: boolean,
+    gapFraction: number | undefined,
+    includeDegenerateGap: boolean,
+    finalRangeFraction: number | undefined,
+    result: GrowableFloat64Array | number[],
+  ): GrowableFloat64Array | number[] {
     const numRange = data.length;
     if (numRange > 0) {
       if (undefined !== initialRangeFraction)

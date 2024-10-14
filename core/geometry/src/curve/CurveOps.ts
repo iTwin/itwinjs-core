@@ -89,7 +89,11 @@ export class CurveOps {
    * @param gapTolerance distance to be treated as "effectively zero" when joining head-to-tail
    * @returns object with named chains, insideOffsets, outsideOffsets
    */
-  public static collectInsideAndOutsideXYOffsets(fragments: AnyCurve[], offsetDistance: number, gapTolerance: number): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains?: AnyChain } {
+  public static collectInsideAndOutsideXYOffsets(
+    fragments: AnyCurve[],
+    offsetDistance: number,
+    gapTolerance: number,
+  ): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains?: AnyChain } {
     const collector = new MultiChainCollector(gapTolerance, gapTolerance);
     for (const s of fragments) {
       collector.captureCurve(s);
@@ -119,7 +123,10 @@ export class CurveOps {
    * @param curve primitive to offset
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object
    */
-  public static createSingleOffsetPrimitiveXY(curve: CurvePrimitive, offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined {
+  public static createSingleOffsetPrimitiveXY(
+    curve: CurvePrimitive,
+    offsetDistanceOrOptions: number | OffsetOptions,
+  ): CurvePrimitive | CurvePrimitive[] | undefined {
     return CurveChainWireOffsetContext.createSingleOffsetPrimitiveXY(curve, offsetDistanceOrOptions);
   }
   /**
@@ -130,7 +137,11 @@ export class CurveOps {
    * @param planeTolerance tolerance for considering a closed chain to be planar. If undefined, only create Path. If defined, create Loops for closed chains within tolerance of a plane.
    * @returns chains, possibly wrapped in a [[BagOfCurves]].
    */
-  public static collectChains(fragments: AnyCurve[], gapTolerance: number = Geometry.smallMetricDistance, planeTolerance?: number): AnyChain | undefined {
+  public static collectChains(
+    fragments: AnyCurve[],
+    gapTolerance: number = Geometry.smallMetricDistance,
+    planeTolerance?: number,
+  ): AnyChain | undefined {
     const collector = new MultiChainCollector(gapTolerance, planeTolerance);
     for (const s of fragments) {
       collector.captureCurve(s);
@@ -146,7 +157,13 @@ export class CurveOps {
    * @param gapTolerance distance to be treated as "effectively zero" when assembling fragments head-to-tail. Also used for removing duplicate points in the stroked chains.
    * @param _planeTolerance unused, pass undefined
    */
-  public static collectChainsAsLineString3d(fragments: AnyCurve[], announceChain: (chainPoints: LineString3d) => void, strokeOptions?: StrokeOptions, gapTolerance: number = Geometry.smallMetricDistance, _planeTolerance?: number) {
+  public static collectChainsAsLineString3d(
+    fragments: AnyCurve[],
+    announceChain: (chainPoints: LineString3d) => void,
+    strokeOptions?: StrokeOptions,
+    gapTolerance: number = Geometry.smallMetricDistance,
+    _planeTolerance?: number,
+  ) {
     const collector = new MultiChainCollector(gapTolerance); // no planarity tolerance needed
     for (const s of fragments) {
       collector.captureCurve(s);

@@ -78,7 +78,6 @@ export class RegularizationContext {
           else
             this.topPeaks.push(nodeB);
         }
-
       } else { // ab is DOWN
         this.downEdges.push(nodeA);
         if (bcUp) {
@@ -122,7 +121,6 @@ export class RegularizationContext {
           else
             this.topPeaks.push(nodeB);
         }
-
       } else { // ab is DOWN
         this.downEdges.push(nodeA);
         if (bcUp) {
@@ -136,9 +134,15 @@ export class RegularizationContext {
   }
 
   private swapArrays() {
-    let save = this.downEdges; this.downEdges = this.upEdges; this.upEdges = save;
-    save = this.localMax; this.localMax = this.localMin; this.localMin = save;
-    save = this.topPeaks; this.topPeaks = this.bottomPeaks; this.bottomPeaks = save;
+    let save = this.downEdges;
+    this.downEdges = this.upEdges;
+    this.upEdges = save;
+    save = this.localMax;
+    this.localMax = this.localMin;
+    this.localMin = save;
+    save = this.topPeaks;
+    this.topPeaks = this.bottomPeaks;
+    this.bottomPeaks = save;
   }
 
   /**
@@ -150,8 +154,7 @@ export class RegularizationContext {
    * @param candidates Array of nodes to search
    * @param nodeComparisonFunction function for lexical comparison.
    */
-  private findTopVisibleEdge(node: HalfEdge, candidates: HalfEdge[],
-    directionSign: number) {
+  private findTopVisibleEdge(node: HalfEdge, candidates: HalfEdge[], directionSign: number) {
     const y0 = node.y;
     const x0 = node.x;
     let dx;
@@ -179,7 +182,6 @@ export class RegularizationContext {
     return result;
   }
   /**
-   *
    * @param downPeak a "bottom" node where the interior CCW loop has a local min
    * @param downEdgeStart (optional) node at the start (heading downwards!) of an edge that brackets downPeak on the left.
    * @param upEdgeStart  (optional) node at the start (heading up!) of the edge that brackets downPeak on the right.
@@ -215,7 +217,11 @@ export class RegularizationContext {
     return highestPeak;
   }
 
-  private updateMaxNode(maxNode: HalfEdge | undefined, candidate: HalfEdge | undefined, compare: (a: HalfEdge, b: HalfEdge) => number): HalfEdge | undefined {
+  private updateMaxNode(
+    maxNode: HalfEdge | undefined,
+    candidate: HalfEdge | undefined,
+    compare: (a: HalfEdge, b: HalfEdge) => number,
+  ): HalfEdge | undefined {
     if (!maxNode)
       return candidate;
     if (!candidate)
@@ -373,7 +379,8 @@ export class RegularizationContext {
     positiveAreaOnly: boolean,
     mutate: (seed: HalfEdge) => HalfEdge | undefined,
     mappedEdges: HalfEdge[] | undefined,
-    unMappedSeeds: HalfEdge[] | undefined) {
+    unMappedSeeds: HalfEdge[] | undefined,
+  ) {
     if (mappedEdges)
       mappedEdges.length = 0;
     if (unMappedSeeds)
@@ -396,5 +403,4 @@ export class RegularizationContext {
       }
     }
   }
-
 }

@@ -8,14 +8,14 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { _implementationProhibited } from "../common/internal/Symbols";
+import type { PickableGraphicOptions } from "../common/render/BatchOptions";
+import { GraphicAssembler } from "../common/render/GraphicAssembler";
+import { GraphicType } from "../common/render/GraphicType";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
-import { RenderGraphic } from "./RenderGraphic";
-import { GraphicType } from "../common/render/GraphicType";
-import type { PickableGraphicOptions} from "../common/render/BatchOptions";
-import { GraphicAssembler } from "../common/render/GraphicAssembler";
-import { _implementationProhibited } from "../common/internal/Symbols";
 import { GraphicTemplate } from "./GraphicTemplate";
+import { RenderGraphic } from "./RenderGraphic";
 
 /** Options for creating a [[GraphicBuilder]] used by functions like [[DecorateContext.createGraphic]] and [[RenderSystem.createGraphic]].
  * @see [[ViewportGraphicBuilderOptions]] to create a graphic builder for a [[Viewport]].
@@ -150,7 +150,8 @@ export abstract class GraphicBuilder extends GraphicAssembler {
     const placement = options.placement ?? Transform.createIdentity();
     const wantEdges = options.generateEdges ?? (options.type === GraphicType.Scene && (!vp || vp.viewFlags.edgesRequired()));
     const wantNormals = options.wantNormals ?? (wantEdges || options.type === GraphicType.Scene);
-    const preserveOrder = options.preserveOrder ?? (options.type === GraphicType.ViewOverlay || options.type === GraphicType.WorldOverlay || options.type === GraphicType.ViewBackground);
+    const preserveOrder = options.preserveOrder ??
+      (options.type === GraphicType.ViewOverlay || options.type === GraphicType.WorldOverlay || options.type === GraphicType.ViewBackground);
 
     super({
       ...options,

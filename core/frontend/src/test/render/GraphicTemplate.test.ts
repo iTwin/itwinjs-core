@@ -3,20 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { IModelApp } from "../../IModelApp";
-import { EmptyLocalization } from "@itwin/core-common";
-import { GraphicType } from "../../common/render/GraphicType";
-import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
-import { RenderInstances } from "../../render/RenderSystem";
-import { _batch, _branch, _nodes } from "../../common/internal/Symbols";
-import { GraphicTemplate } from "../../render/GraphicTemplate";
-import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
 import { TransientIdSequence } from "@itwin/core-bentley";
+import { EmptyLocalization } from "@itwin/core-common";
+import { Point2d, Point3d, Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { GraphicDescriptionImpl } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
+import { _batch, _branch, _nodes } from "../../common/internal/Symbols";
 import { GraphicDescriptionBuilder } from "../../common/render/GraphicDescriptionBuilder";
 import { WorkerGraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
+import { GraphicType } from "../../common/render/GraphicType";
+import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
+import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
+import { GraphicTemplate } from "../../render/GraphicTemplate";
+import { RenderInstances } from "../../render/RenderSystem";
 
 describe("GraphicTemplate", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -68,10 +68,12 @@ describe("GraphicTemplate", () => {
 
     const viewIndep = makeTemplate(true);
     expect(viewIndep.isInstanceable).to.be.false;
-    expect(() => IModelApp.renderSystem.createGraphicFromTemplate({
-      template: viewIndep,
-      instances: makeInstances(),
-    })).to.throw("instanceable");
+    expect(() =>
+      IModelApp.renderSystem.createGraphicFromTemplate({
+        template: viewIndep,
+        instances: makeInstances(),
+      })
+    ).to.throw("instanceable");
   });
 
   it("produces a batch if features are specified", () => {

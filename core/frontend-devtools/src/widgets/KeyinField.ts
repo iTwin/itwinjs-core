@@ -87,8 +87,12 @@ export class KeyinField {
       id: `${props.baseId}_textBox`,
       parent: props.parent,
       handler: () => this.selectAll(),
-      keypresshandler: async (_tb, ev) => { await this.handleKeyPress(ev); },
-      focushandler: (_tb) => { this.respondToKeyinFocus(); },
+      keypresshandler: async (_tb, ev) => {
+        await this.handleKeyPress(ev);
+      },
+      focushandler: (_tb) => {
+        this.respondToKeyinFocus();
+      },
       tooltip: "Type the key-in text here",
       inline: true,
       list: autoCompleteListId,
@@ -96,7 +100,9 @@ export class KeyinField {
 
     if (props.wantButton) {
       createButton({
-        handler: async (_bt) => { await this.submitKeyin(); },
+        handler: async (_bt) => {
+          await this.submitKeyin();
+        },
         parent: props.parent,
         value: "Enter",
         inline: true,
@@ -111,8 +117,12 @@ export class KeyinField {
     }
   }
 
-  public focus() { this.textBox.textbox.focus(); }
-  public loseFocus() { this.textBox.textbox.blur(); }
+  public focus() {
+    this.textBox.textbox.focus();
+  }
+  public loseFocus() {
+    this.textBox.textbox.blur();
+  }
 
   public selectAll(): void {
     this.textBox.textbox.setSelectionRange(0, this.textBox.textbox.value.length);

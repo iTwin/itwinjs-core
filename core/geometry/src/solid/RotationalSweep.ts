@@ -7,8 +7,8 @@
  * @module Solid
  */
 
-import { AnyCurve } from "../curve/CurveTypes";
 import { CurveCollection } from "../curve/CurveCollection";
+import { AnyCurve } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { AxisOrder, Geometry } from "../Geometry";
@@ -68,15 +68,25 @@ export class RotationalSweep extends SolidPrimitive {
     return undefined;
   }
   /** return clone of (not reference to) the axis vector. */
-  public cloneAxisRay(): Ray3d { return this._normalizedAxis.clone(); }
+  public cloneAxisRay(): Ray3d {
+    return this._normalizedAxis.clone();
+  }
   /** Return (REFERENCE TO) the swept curves. */
-  public getCurves(): CurveCollection { return this._contour.curves; }
+  public getCurves(): CurveCollection {
+    return this._contour.curves;
+  }
   /** Return (REFERENCE TO) the swept curves with containing plane markup. */
-  public getSweepContourRef(): SweepContour { return this._contour; }
+  public getSweepContourRef(): SweepContour {
+    return this._contour;
+  }
   /** Return the sweep angle. */
-  public getSweep(): Angle { return this._sweepAngle.clone(); }
+  public getSweep(): Angle {
+    return this._sweepAngle.clone();
+  }
   /** Test if `other` is a `RotationalSweep` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof RotationalSweep; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof RotationalSweep;
+  }
   /** Test for same axis, capping, and swept geometry. */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof RotationalSweep) {
@@ -92,8 +102,10 @@ export class RotationalSweep extends SolidPrimitive {
   }
   /** Transform the contour and axis */
   public tryTransformInPlace(transform: Transform): boolean {
-    if (!transform.matrix.isSingular()
-      && this._contour.tryTransformInPlace(transform)) {
+    if (
+      !transform.matrix.isSingular()
+      && this._contour.tryTransformInPlace(transform)
+    ) {
       this._normalizedAxis.transformInPlace(transform);
       return this._normalizedAxis.direction.normalizeInPlace();
     }
@@ -112,9 +124,14 @@ export class RotationalSweep extends SolidPrimitive {
   /** Return a transform that rotates around the rotational axis by a fraction of the total sweep. */
   public getFractionalRotationTransform(vFraction: number, result?: Transform): Transform {
     const radians = this._sweepAngle.radians * vFraction;
-    const rotation = Transform.createFixedPointAndMatrix(this._normalizedAxis.origin,
-      Matrix3d.createRotationAroundVector(this._normalizedAxis.direction, Angle.createRadians(radians),
-        result ? result.matrix : undefined) as Matrix3d);
+    const rotation = Transform.createFixedPointAndMatrix(
+      this._normalizedAxis.origin,
+      Matrix3d.createRotationAroundVector(
+        this._normalizedAxis.direction,
+        Angle.createRadians(radians),
+        result ? result.matrix : undefined,
+      ) as Matrix3d,
+    );
     return rotation;
   }
   /**
@@ -142,7 +159,6 @@ export class RotationalSweep extends SolidPrimitive {
         transform.multiplyTransformTransform(this.getFractionalRotationTransform(i / numStep, stepTransform), compositeTransform);
         strokes.extendRange(range, compositeTransform);
       }
-
     } else {
       for (let i = 0; i <= numStep; i++)
         strokes.extendRange(range, this.getFractionalRotationTransform(i / numStep, stepTransform));

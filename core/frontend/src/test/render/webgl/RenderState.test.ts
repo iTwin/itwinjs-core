@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { EmptyLocalization } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import { GL } from "../../../render/webgl/GL";
 import { RenderState } from "../../../render/webgl/RenderState";
 import { System } from "../../../render/webgl/System";
-import { EmptyLocalization } from "@itwin/core-common";
 
 function withinTolerance(x: number, y: number): boolean {
   const tol: number = 0.1e-6;
@@ -281,7 +281,6 @@ describe("RenderState", () => {
       [GL.Capability.StencilBackOpFail, rs.stencil.backOperation.fail],
       [GL.Capability.StencilBackOpZFail, rs.stencil.backOperation.zFail],
       [GL.Capability.StencilBackOpZPass, rs.stencil.backOperation.zPass],
-
       // The WebGL spec states these are 32-bit unsigned integers and initially all bits are set.
       // Chrome or ANGLE appears to have a bug that always leaves the high bit unset, even if you explicitly
       // call e.g., stencilMask(0xffffffff).
@@ -369,7 +368,10 @@ describe("RenderState", () => {
     prevState.copyFrom(newState);
     newState.blend.equationRgb = GL.BlendEquation.ReverseSubtract;
     newState.apply(prevState);
-    assert.isTrue(gl.getParameter(GL.Capability.BlendEquationRGB) === GL.BlendEquation.ReverseSubtract, "blend.equationRgb should now be ReverseSubtract");
+    assert.isTrue(
+      gl.getParameter(GL.Capability.BlendEquationRGB) === GL.BlendEquation.ReverseSubtract,
+      "blend.equationRgb should now be ReverseSubtract",
+    );
 
     prevState.copyFrom(newState);
     newState.blend.equationAlpha = GL.BlendEquation.Subtract;
@@ -379,21 +381,33 @@ describe("RenderState", () => {
     prevState.copyFrom(newState);
     newState.blend.functionSourceRgb = GL.BlendFactor.OneMinusSrcColor;
     newState.apply(prevState);
-    assert.isTrue(gl.getParameter(GL.Capability.BlendSrcRgb) === GL.BlendFactor.OneMinusSrcColor, "blend.functionSourceRgb should now be OneMinusSrcColor");
+    assert.isTrue(
+      gl.getParameter(GL.Capability.BlendSrcRgb) === GL.BlendFactor.OneMinusSrcColor,
+      "blend.functionSourceRgb should now be OneMinusSrcColor",
+    );
 
     prevState.copyFrom(newState);
     newState.blend.functionSourceAlpha = GL.BlendFactor.OneMinusSrcAlpha;
     newState.apply(prevState);
-    assert.isTrue(gl.getParameter(GL.Capability.BlendSrcAlpha) === GL.BlendFactor.OneMinusSrcAlpha, "blend.functionSourceAlpha should now be OneMinusSrcAlpha");
+    assert.isTrue(
+      gl.getParameter(GL.Capability.BlendSrcAlpha) === GL.BlendFactor.OneMinusSrcAlpha,
+      "blend.functionSourceAlpha should now be OneMinusSrcAlpha",
+    );
 
     prevState.copyFrom(newState);
     newState.blend.functionDestRgb = GL.BlendFactor.OneMinusDstColor;
     newState.apply(prevState);
-    assert.isTrue(gl.getParameter(GL.Capability.BlendDstRgb) === GL.BlendFactor.OneMinusDstColor, "blend.functionDestRgb should now be OneMinusDstColor");
+    assert.isTrue(
+      gl.getParameter(GL.Capability.BlendDstRgb) === GL.BlendFactor.OneMinusDstColor,
+      "blend.functionDestRgb should now be OneMinusDstColor",
+    );
 
     prevState.copyFrom(newState);
     newState.blend.functionDestAlpha = GL.BlendFactor.OneMinusDstAlpha;
     newState.apply(prevState);
-    assert.isTrue(gl.getParameter(GL.Capability.BlendDstAlpha) === GL.BlendFactor.OneMinusDstAlpha, "blend.functionDestAlpha should now be OneMinusDstAlpha");
+    assert.isTrue(
+      gl.getParameter(GL.Capability.BlendDstAlpha) === GL.BlendFactor.OneMinusDstAlpha,
+      "blend.functionDestAlpha should now be OneMinusDstAlpha",
+    );
   });
 });

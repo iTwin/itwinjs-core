@@ -55,7 +55,7 @@ export enum RpcRequestStatus {
   ServiceUnavailable,
   GatewayTimeout,
   RequestTimeout,
-  TooManyRequests
+  TooManyRequests,
 }
 
 /** @public @deprecated in 3.6. The RPC system will be significantly refactored (or replaced) in the future. */
@@ -73,7 +73,7 @@ export namespace RpcRequestStatus { // eslint-disable-line @typescript-eslint/no
 export enum RpcRequestEvent {
   StatusChanged,
   PendingUpdateReceived,
-  TransientErrorReceived
+  TransientErrorReceived,
 }
 
 /** RPC content types.

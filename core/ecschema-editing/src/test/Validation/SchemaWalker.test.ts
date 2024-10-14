@@ -5,9 +5,9 @@
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
+import { ECClass, ISchemaPartVisitor, RelationshipClass, Schema, SchemaContext, SchemaWalker } from "@itwin/ecschema-metadata";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ECClass, ISchemaPartVisitor, RelationshipClass, Schema, SchemaContext, SchemaWalker } from "@itwin/ecschema-metadata";
 
 describe("SchemaWalker tests", () => {
   let testSchema: Schema;
@@ -128,7 +128,7 @@ describe("SchemaWalker tests", () => {
     },
   };
 
-  type Mock<T> = { readonly [P in keyof T]: sinon.SinonSpy; };
+  type Mock<T> = { readonly [P in keyof T]: sinon.SinonSpy };
   let mockVisitor: Mock<ISchemaPartVisitor>;
 
   beforeEach(async () => {

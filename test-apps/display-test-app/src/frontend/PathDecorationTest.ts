@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CanvasDecoration, DecorateContext, GraphicType, HitDetail, IModelApp, Tool } from "@itwin/core-frontend";
 import { AxisAlignedBox3d, GeometryStreamProps } from "@itwin/core-common";
+import { CanvasDecoration, DecorateContext, GraphicType, HitDetail, IModelApp, Tool } from "@itwin/core-frontend";
 import { AngleSweep, Arc3d, Path, Range1d, Range3d } from "@itwin/core-geometry";
 
 class PathCanvasDecoration implements CanvasDecoration {
@@ -44,10 +44,14 @@ export class PathDecorationTest {
   }
 
   /** Test any hits against this id. */
-  public testDecorationHit(id: string): boolean { return id === this._pickId; }
+  public testDecorationHit(id: string): boolean {
+    return id === this._pickId;
+  }
 
   /** Return no decoration geometry for picking. */
-  public getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined { return undefined; }
+  public getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
+    return undefined;
+  }
 
   /** Create the PathDecorationTest object and adding it as a ViewManager decorator. */
   private static start(extents: AxisAlignedBox3d) {

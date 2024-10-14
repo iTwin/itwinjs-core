@@ -2,14 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
-import { Id64, Id64String } from "@itwin/core-bentley";
-import { GeometryQuery, IModelJson, Point3d, Range3d, StandardViewIndex, Transform } from "@itwin/core-geometry";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, SnapshotDb,
-  SpatialCategory, SpatialModel,
+  CategorySelector,
+  DefinitionModel,
+  DisplayStyle3d,
+  IModelDb,
+  ModelSelector,
+  OrthographicViewDefinition,
+  PhysicalModel,
+  PhysicalObject,
+  SnapshotDb,
+  SpatialCategory,
+  SpatialModel,
 } from "@itwin/core-backend";
+import { Id64, Id64String } from "@itwin/core-bentley";
 import { AxisAlignedBox3d, Code, ColorDef, PhysicalElementProps, RenderMode, ViewFlags } from "@itwin/core-common";
+import { GeometryQuery, IModelJson, Point3d, Range3d, StandardViewIndex, Transform } from "@itwin/core-geometry";
+import * as fs from "fs";
 /* eslint-disable no-console */
 function collectRange(g: any, rangeToExtend: Range3d) {
   if (g instanceof GeometryQuery) {
@@ -67,7 +76,6 @@ export class ModelIdGroup {
   }
 }
 export class ImportIMJS {
-
   public iModelDb: IModelDb;
   public definitionModelId: Id64String = Id64.invalid;
   public featureCategoryId: Id64String = Id64.invalid;
@@ -78,7 +86,7 @@ export class ImportIMJS {
     this._viewFlags = new ViewFlags({ renderMode: RenderMode.SmoothShade, lighting: true });
   }
   public static create(databasePath: string, rootSubject: string): ImportIMJS | undefined {
-    fs.unlink(databasePath, (_err) => { });
+    fs.unlink(databasePath, (_err) => {});
     const db = SnapshotDb.createEmpty(databasePath, { rootSubject: { name: rootSubject } });
     if (db)
       return new ImportIMJS(db);
@@ -149,7 +157,6 @@ export class ImportIMJS {
       for (const group of modelGroups) {
         if (group.modelNames.length > 0)
           this.insertSpatialView(group.groupName, group.range, group.modelNames);
-
       }
       this.iModelDb.updateProjectExtents(globalRange);
     }
@@ -161,13 +168,37 @@ export class ImportIMJS {
   protected insertSpatialView(viewName: string, range: AxisAlignedBox3d, models: string[]): Id64String {
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, models);
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.featureCategoryId]);
-    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundColor: ColorDef.blue });
-    return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, {
+      viewFlags: this._viewFlags,
+      backgroundColor: ColorDef.blue,
+    });
+    return OrthographicViewDefinition.insert(
+      this.iModelDb,
+      this.definitionModelId,
+      viewName,
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      range,
+      StandardViewIndex.Top,
+    );
   }
   protected insertSpatialViewOneModel(viewName: string, range: AxisAlignedBox3d, physicalModelId: string): Id64String {
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [physicalModelId]);
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.featureCategoryId]);
-    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: this._viewFlags, backgroundColor: ColorDef.blue });
-    return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, {
+      viewFlags: this._viewFlags,
+      backgroundColor: ColorDef.blue,
+    });
+    return OrthographicViewDefinition.insert(
+      this.iModelDb,
+      this.definitionModelId,
+      viewName,
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      range,
+      StandardViewIndex.Top,
+    );
   }
 }

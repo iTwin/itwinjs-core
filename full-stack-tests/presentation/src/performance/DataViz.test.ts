@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 /* eslint-disable no-console */
-import { expect } from "chai";
 import { assert, Guid, Id64String, OrderedId64Iterable, StopWatch } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
@@ -30,6 +29,7 @@ import {
   Value,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { ECClassHierarchy, ECClassInfo } from "../ECClasHierarchy";
 import { initialize, terminate } from "../IntegrationTests";
 import { collect, getFieldsByLabel } from "../Utils";
@@ -310,7 +310,7 @@ describe("#performance DataViz requests", () => {
           `Suggested implementation took ${suggestedRequestsTime} s. with ${suggestedRequestsCount.elementIds} requests for direct element IDs and ${suggestedRequestsCount.childElementIds} for child element IDs.`,
         );
 
-        const totals = [...suggestedEntries.values()].reduce<{ e: number; c: number }>(
+        const totals = [...suggestedEntries.values()].reduce<{ e: number, c: number }>(
           (t, curr) => ({ e: t.e + curr.elementIds.length, c: t.c + curr.childIds.length }),
           { e: 0, c: 0 },
         );
@@ -368,7 +368,14 @@ describe("#performance DataViz requests", () => {
           // find and group all classes that have instances with each individual distinct value
           const displayValueEntries = new Map<
             string,
-            Set<{ contentClassId: Id64String; pathFromContentToPropertyClass: StrippedRelationshipPath; filteredProperty: PropertyInfo; rawValues: Value[] }>
+            Set<
+              {
+                contentClassId: Id64String;
+                pathFromContentToPropertyClass: StrippedRelationshipPath;
+                filteredProperty: PropertyInfo;
+                rawValues: Value[];
+              }
+            >
           >();
           const readEntries = async (
             queryBase: string,
@@ -379,7 +386,9 @@ describe("#performance DataViz requests", () => {
             for (const distinctValuesEntry of distinctValues) {
               const [displayValue, rawValues] = distinctValuesEntry;
               const filteredClassesQuery = `${queryBase}${createWhereClause(propertyClassAlias, filteredProperty, [...rawValues])}`;
-              for await (const { classId } of iModel.createQueryReader(filteredClassesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+              for await (
+                const { classId } of iModel.createQueryReader(filteredClassesQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })
+              ) {
                 pushValues(displayValueEntries, displayValue, [
                   { contentClassId: classId, pathFromContentToPropertyClass, filteredProperty, rawValues: [...rawValues] },
                 ]);
@@ -433,24 +442,23 @@ describe("#performance DataViz requests", () => {
                       {
                         specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
                         classes: { schemaName: contentClassInfo.schemaName, classNames: [contentClassInfo.name], arePolymorphic: false },
-                        relatedInstances:
-                          pathFromContentToPropertyClass.length > 0
-                            ? [
-                              {
-                                relationshipPath: pathFromContentToPropertyClass.map((step) => {
-                                  const [relationshipSchemaName, relationshipClassName] = step.relationshipName.split(":");
-                                  const [targetSchemaName, targetClassName] = step.targetClassName.split(":");
-                                  return {
-                                    relationship: { schemaName: relationshipSchemaName, className: relationshipClassName },
-                                    direction: step.isForwardRelationship ? RelationshipDirection.Forward : RelationshipDirection.Backward,
-                                    targetClass: { schemaName: targetSchemaName, className: targetClassName },
-                                  };
-                                }),
-                                isRequired: true,
-                                alias: propertyClassAlias,
-                              },
-                            ]
-                            : [],
+                        relatedInstances: pathFromContentToPropertyClass.length > 0
+                          ? [
+                            {
+                              relationshipPath: pathFromContentToPropertyClass.map((step) => {
+                                const [relationshipSchemaName, relationshipClassName] = step.relationshipName.split(":");
+                                const [targetSchemaName, targetClassName] = step.targetClassName.split(":");
+                                return {
+                                  relationship: { schemaName: relationshipSchemaName, className: relationshipClassName },
+                                  direction: step.isForwardRelationship ? RelationshipDirection.Forward : RelationshipDirection.Backward,
+                                  targetClass: { schemaName: targetSchemaName, className: targetClassName },
+                                };
+                              }),
+                              isRequired: true,
+                              alias: propertyClassAlias,
+                            },
+                          ]
+                          : [],
                         instanceFilter: rawValues.reduce<string>((filter, rawValue) => {
                           if (filter !== "") {
                             filter += " OR ";
@@ -490,7 +498,7 @@ describe("#performance DataViz requests", () => {
           elementIds: 0,
           childElementIds: 0,
         };
-        const idEntries = new Map<string, { elementIds: Id64String[]; childIds: Id64String[] }>();
+        const idEntries = new Map<string, { elementIds: Id64String[], childIds: Id64String[] }>();
 
         async function getNodeKeys(ruleset: Ruleset, node: Node) {
           const keys: InstanceKey[] = [];
@@ -566,7 +574,7 @@ describe("#performance DataViz requests", () => {
         const timer = new StopWatch("", true);
 
         // group filtered fields by their root content classes
-        const selectClasses = new Map<Id64String, { class: ClassInfo; fields: Array<{ rootField: Field; filteredField: Field; stack: Field[] }> }>();
+        const selectClasses = new Map<Id64String, { class: ClassInfo, fields: Array<{ rootField: Field, filteredField: Field, stack: Field[] }> }>();
         for (const filteredField of filteredFields) {
           const { rootField, path: stack } = getRootField(filteredField);
           if (rootField.isNestedContentField()) {
@@ -678,7 +686,7 @@ describe("#performance DataViz requests", () => {
 
         // Similar to the "current" approach, we need to recursively get child element IDs. But in this case
         // we request them per display value entry rather than per every unique class for the entry.
-        const entries = new Map<string, { elementIds: Id64String[]; childIds: Id64String[] }>();
+        const entries = new Map<string, { elementIds: Id64String[], childIds: Id64String[] }>();
         await Promise.all(
           [...elementEntries].map(async (entry) => {
             const [displayValue, elementIds] = entry;
@@ -748,7 +756,7 @@ function getRootField(field: PropertiesField) {
   };
 }
 
-function detectIntersections(distinctValueElementIds: Map<string, { elementIds: Id64String[]; childIds: Id64String[] }>) {
+function detectIntersections(distinctValueElementIds: Map<string, { elementIds: Id64String[], childIds: Id64String[] }>) {
   const arr = [...distinctValueElementIds];
   for (let i = 0; i < arr.length; ++i) {
     for (let j = i + 1; j < arr.length; ++j) {

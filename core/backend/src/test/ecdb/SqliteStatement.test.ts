@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
 import { DbResult, using } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
+import { assert } from "chai";
+import * as path from "path";
 import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ECDbTestHelper } from "./ECDbTestHelper";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
+import { ECDbTestHelper } from "./ECDbTestHelper";
 
 describe("SqliteStatement", () => {
   const outDir = KnownTestLocations.outputDir;
@@ -22,10 +22,13 @@ describe("SqliteStatement", () => {
     using(ECDbTestHelper.createECDb(outDir, "sqlitestatement.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      ecdb.withSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly);
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-      });
+      ecdb.withSqliteStatement(
+        "CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)",
+        (stmt: SqliteStatement) => {
+          assert.isFalse(stmt.isReadonly);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        },
+      );
 
       const stmt1 = "INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)";
       ecdb.withPreparedSqliteStatement(stmt1, (stmt) => {
@@ -171,10 +174,13 @@ describe("SqliteStatement", () => {
     using(ECDbTestHelper.createECDb(outDir, "bindnull.ecdb"), (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      ecdb.withSqliteStatement("CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly);
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-      });
+      ecdb.withSqliteStatement(
+        "CREATE TABLE MyTable(id INTEGER PRIMARY KEY, stringcol TEXT, intcol INTEGER, doublecol REAL, blobcol)",
+        (stmt: SqliteStatement) => {
+          assert.isFalse(stmt.isReadonly);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        },
+      );
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)", (stmt: SqliteStatement) => {
         assert.isFalse(stmt.isReadonly);
@@ -197,14 +203,17 @@ describe("SqliteStatement", () => {
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
       });
 
-      ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(:string,:int,:double,:blob)", (stmt: SqliteStatement) => {
-        assert.isFalse(stmt.isReadonly);
-        stmt.bindValue(":string", undefined);
-        stmt.bindValue(":int", undefined);
-        stmt.bindValue(":double", undefined);
-        stmt.bindValue(":blob", undefined);
-        assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
-      });
+      ecdb.withPreparedSqliteStatement(
+        "INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(:string,:int,:double,:blob)",
+        (stmt: SqliteStatement) => {
+          assert.isFalse(stmt.isReadonly);
+          stmt.bindValue(":string", undefined);
+          stmt.bindValue(":int", undefined);
+          stmt.bindValue(":double", undefined);
+          stmt.bindValue(":blob", undefined);
+          assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+        },
+      );
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(stringcol,intcol,doublecol,blobcol) VALUES(?,?,?,?)", (stmt: SqliteStatement) => {
         assert.isFalse(stmt.isReadonly);
@@ -369,7 +378,7 @@ describe("SqliteStatement", () => {
       });
       assert.isTrue(stmt0?.isPrepared, "stmt0 is in the cache");
 
-      ecdb.resetSqliteCache(3);  // reset the statement cache to only hold 3 members so we can exercise overflowing it
+      ecdb.resetSqliteCache(3); // reset the statement cache to only hold 3 members so we can exercise overflowing it
       assert.isFalse(stmt0?.isPrepared, "reset cache clears stmt0");
 
       let stmt1: SqliteStatement | undefined;
@@ -418,26 +427,26 @@ describe("SqliteStatement", () => {
       assert.isTrue(ecdb.isOpen);
       // expect log message when statement fails
       let slm = new SequentialLogMatcher();
-      slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
-      assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }), "no such table: def (BE_SQLITE_ERROR)");
+      slm.append().error().category("BeSQLite").message('Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def');
+      assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => {}), "no such table: def (BE_SQLITE_ERROR)");
       assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
       // now pass suppress log error which mean we should not get the error
       slm = new SequentialLogMatcher();
-      slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
-      assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }, /* logErrors = */ false), "no such table: def (BE_SQLITE_ERROR)");
+      slm.append().error().category("BeSQLite").message('Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def');
+      assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => {}, /* logErrors = */ false), "no such table: def (BE_SQLITE_ERROR)");
       assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
 
       // expect log message when statement fails
       slm = new SequentialLogMatcher();
       slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
-      assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }), "ECClass 'abc.def' does not exist or could not be loaded.");
+      assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => {}), "ECClass 'abc.def' does not exist or could not be loaded.");
       assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
       // now pass suppress log error which mean we should not get the error
       slm = new SequentialLogMatcher();
       slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
-      assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ false), ""); // BUG: we do not see error message
+      assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => {}, /* logErrors = */ false), ""); // BUG: we do not see error message
       assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
     });
   });

@@ -3,21 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Guid } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import { extname } from "path";
 import * as sinon from "sinon";
-import { Guid } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
+import { _nativeDb } from "../../internal/Symbols";
+import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl";
 import { SettingsPriority } from "../../workspace/Settings";
 import { Workspace, WorkspaceContainerProps, WorkspaceDbManifest, WorkspaceDbProps } from "../../workspace/Workspace";
 import { EditableWorkspaceDb, WorkspaceEditor } from "../../workspace/WorkspaceEditor";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { validateWorkspaceContainerId, validateWorkspaceDbName } from "../../internal/workspace/WorkspaceImpl";
-import { _nativeDb } from "../../internal/Symbols";
 
 describe("WorkspaceFile", () => {
-
   let editor: WorkspaceEditor;
   let workspace: Workspace;
 
@@ -65,7 +64,8 @@ describe("WorkspaceFile", () => {
       "newline\n",
       "a".repeat(64), // too long
       "-leading-dash",
-      "trailing-dash-"]);
+      "trailing-dash-",
+    ]);
 
     validateWorkspaceContainerId(Guid.createValue()); // guids should be valid
   });
@@ -167,21 +167,34 @@ describe("WorkspaceFile", () => {
 
   it("load workspace settings", async () => {
     const settingsFile = IModelTestUtils.resolveAssetFile("test.setting.json5");
-    const defaultDb = await makeEditableDb({ containerId: "default", dbName: "db1", baseUri: "", storageType: "azure" }, { workspaceName: "default resources", contactName: "contact 123" });
+    const defaultDb = await makeEditableDb({ containerId: "default", dbName: "db1", baseUri: "", storageType: "azure" }, {
+      workspaceName: "default resources",
+      contactName: "contact 123",
+    });
     defaultDb.addString("default-settings", fs.readFileSync(settingsFile, "utf-8"));
     defaultDb.close();
 
     const settings = workspace.settings;
     await workspace.loadSettingsDictionary(
-      { dbName: "db1", containerId: "default", baseUri: "", storageType: "azure", resourceName: "default-settings", priority: SettingsPriority.defaults });
+      {
+        dbName: "db1",
+        containerId: "default",
+        baseUri: "",
+        storageType: "azure",
+        resourceName: "default-settings",
+        priority: SettingsPriority.defaults,
+      },
+    );
     expect(settings.getSetting("editor/renderWhitespace")).equals("selection");
 
     const workspaceName = "all fonts workspace";
     const schemaFile = IModelTestUtils.resolveAssetFile("TestSettings.schema.json");
-    const fontsDb = await makeEditableDb({ containerId: "fonts", dbName: "fonts", baseUri: "", storageType: "azure" }, { workspaceName, contactName: "font guy" });
+    const fontsDb = await makeEditableDb({ containerId: "fonts", dbName: "fonts", baseUri: "", storageType: "azure" }, {
+      workspaceName,
+      contactName: "font guy",
+    });
 
     fontsDb.addFile("Helvetica.ttf", schemaFile, "ttf");
     fontsDb.close();
   });
-
 });

@@ -4,12 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
 import {
-  BingElevationProvider, GeographicTilingScheme, IModelApp, MapTileProjection, ReadMeshArgs, RealityMeshParams, RealityMeshParamsBuilder,
-  RealityMeshParamsBuilderOptions, RequestMeshDataArgs, TerrainMeshProvider, TerrainMeshProviderOptions, TerrainProvider,
+  BingElevationProvider,
+  GeographicTilingScheme,
+  IModelApp,
+  MapTileProjection,
+  ReadMeshArgs,
+  RealityMeshParams,
+  RealityMeshParamsBuilder,
+  RealityMeshParamsBuilderOptions,
+  RequestMeshDataArgs,
+  TerrainMeshProvider,
+  TerrainMeshProviderOptions,
+  TerrainProvider,
 } from "@itwin/core-frontend";
+import { Point2d, Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 
 // The number of elevation values per row/column within each tile.
 const size = 16;
@@ -194,14 +204,14 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
         const p0 = builder.positions.unquantize(row * size + col, scratchP0);
         // This could be made more efficient with a loop that retains the output of the previous iteration,
         // but less readable.
-        addNormal(vertexNormal, p0, row+0, col+1, row+1, col+1);
-        addNormal(vertexNormal, p0, row+1, col+1, row+1, col+0);
-        addNormal(vertexNormal, p0, row+1, col+0, row+1, col-1);
-        addNormal(vertexNormal, p0, row+1, col-1, row+0, col-1);
-        addNormal(vertexNormal, p0, row+0, col-1, row-1, col-1);
-        addNormal(vertexNormal, p0, row-1, col-1, row-1, col+0);
-        addNormal(vertexNormal, p0, row-1, col+0, row-1, col+1);
-        addNormal(vertexNormal, p0, row-1, col+1, row+0, col+1);
+        addNormal(vertexNormal, p0, row + 0, col + 1, row + 1, col + 1);
+        addNormal(vertexNormal, p0, row + 1, col + 1, row + 1, col + 0);
+        addNormal(vertexNormal, p0, row + 1, col + 0, row + 1, col - 1);
+        addNormal(vertexNormal, p0, row + 1, col - 1, row + 0, col - 1);
+        addNormal(vertexNormal, p0, row + 0, col - 1, row - 1, col - 1);
+        addNormal(vertexNormal, p0, row - 1, col - 1, row - 1, col + 0);
+        addNormal(vertexNormal, p0, row - 1, col + 0, row - 1, col + 1);
+        addNormal(vertexNormal, p0, row - 1, col + 1, row + 0, col + 1);
 
         vertexNormal.normalizeInPlace();
         builder.normals.push(OctEncodedNormal.encode(vertexNormal));
@@ -266,7 +276,7 @@ export class BingTerrainMeshProvider extends TerrainMeshProvider {
 
       // right side
       const right = c * size + sizeM1;
-      builder.addTriangle(right, right +size, rightIndex + 4);
+      builder.addTriangle(right, right + size, rightIndex + 4);
       builder.addTriangle(right, rightIndex + 4, rightIndex);
     }
   }

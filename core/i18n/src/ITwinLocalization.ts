@@ -6,11 +6,11 @@
  * @module Localization
  */
 
+import { Logger } from "@itwin/core-bentley";
+import type { Localization } from "@itwin/core-common";
 import i18next, { i18n, InitOptions, Module, TOptionsBase } from "i18next";
 import i18nextBrowserLanguageDetector, { DetectorOptions } from "i18next-browser-languagedetector";
 import Backend, { BackendOptions } from "i18next-http-backend";
-import { Logger } from "@itwin/core-bentley";
-import type { Localization } from "@itwin/core-common";
 
 const DEFAULT_MAX_RETRIES: number = 1; // a low number prevents wasted time and potential timeouts when requesting localization files throws an error
 
@@ -69,7 +69,6 @@ export class ITwinLocalization implements Localization {
   }
 
   public async initialize(namespaces: string[]): Promise<void> {
-
     // Also consider namespaces passed into constructor
     const initNamespaces: string[] = [this._initOptions.ns || []].flat();
     const combinedNamespaces: Set<string> = new Set([...namespaces, ...initNamespaces]); // without duplicates
@@ -261,9 +260,15 @@ export class ITwinLocalization implements Localization {
 
 class TranslationLogger {
   public static readonly type = "logger";
-  public log(args: string[]) { Logger.logInfo("i18n", this.createLogMessage(args)); }
-  public warn(args: string[]) { Logger.logWarning("i18n", this.createLogMessage(args)); }
-  public error(args: string[]) { Logger.logError("i18n", this.createLogMessage(args)); }
+  public log(args: string[]) {
+    Logger.logInfo("i18n", this.createLogMessage(args));
+  }
+  public warn(args: string[]) {
+    Logger.logWarning("i18n", this.createLogMessage(args));
+  }
+  public error(args: string[]) {
+    Logger.logError("i18n", this.createLogMessage(args));
+  }
   private createLogMessage(args: string[]) {
     let message = args[0];
     for (let i = 1; i < args.length; ++i) {

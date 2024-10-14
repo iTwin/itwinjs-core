@@ -30,26 +30,37 @@ export interface EsriSymbolCommonProps {
 export type EsriSymbolProps = EsriSLSProps | EsriPMSProps | EsriSFSProps | EsriSMSProps;
 
 /** @internal */
-export abstract class EsriSymbol extends FeatureSymbology implements EsriSymbolCommonProps  {
-  public readonly abstract type: EsriSymbolPropsType;
+export abstract class EsriSymbol extends FeatureSymbology implements EsriSymbolCommonProps {
+  public abstract readonly type: EsriSymbolPropsType;
 
   public static fromJSON(props: EsriSymbolProps) {
     if (props.type === "esriSFS") {
-      return EsriSFS.fromJSON(props );
+      return EsriSFS.fromJSON(props);
     } else if (props.type === "esriSLS") {
-      return EsriSLS.fromJSON(props );
+      return EsriSLS.fromJSON(props);
     } else if (props.type === "esriPMS") {
-      return EsriPMS.fromJSON(props );
+      return EsriPMS.fromJSON(props);
     } else if (props.type === "esriSMS") {
-      return EsriSMS.fromJSON(props );
+      return EsriSMS.fromJSON(props);
     }
     throw new Error(`Unknown ESRI symbology type}`);
   }
 }
 
 /** @internal */
-export type EsriSLSStyle = "esriSLSDash" | "esriSLSDashDot" | "esriSLSDashDotDot" | "esriSLSDot" | "esriSLSLongDash" | "esriSLSLongDashDot" |
-"esriSLSNull" | "esriSLSShortDash" | "esriSLSShortDashDot" | "esriSLSShortDashDotDot" | "esriSLSShortDot" | "esriSLSSolid";
+export type EsriSLSStyle =
+  | "esriSLSDash"
+  | "esriSLSDashDot"
+  | "esriSLSDashDotDot"
+  | "esriSLSDot"
+  | "esriSLSLongDash"
+  | "esriSLSLongDashDot"
+  | "esriSLSNull"
+  | "esriSLSShortDash"
+  | "esriSLSShortDashDot"
+  | "esriSLSShortDashDotDot"
+  | "esriSLSShortDot"
+  | "esriSLSSolid";
 
 /** @internal */
 export interface EsriSLSProps extends EsriSymbolCommonProps {
@@ -63,10 +74,18 @@ export interface EsriSLSProps extends EsriSymbolCommonProps {
 export class EsriSLS implements EsriSymbolCommonProps {
   public readonly props: EsriSLSProps;
 
-  public get color() { return colorFromArray(this.props.color); }
-  public get type() { return this.props.type; }
-  public get width() { return this.props.width; }
-  public get style() { return this.props.style; }
+  public get color() {
+    return colorFromArray(this.props.color);
+  }
+  public get type() {
+    return this.props.type;
+  }
+  public get width() {
+    return this.props.width;
+  }
+  public get style() {
+    return this.props.style;
+  }
 
   constructor(json: EsriSLSProps) {
     this.props = json;
@@ -93,22 +112,42 @@ export interface EsriPMSProps extends EsriSymbolCommonProps {
 /** @internal */
 export class EsriPMS implements EsriSymbolCommonProps {
   public readonly props: EsriPMSProps;
-  private _image: HTMLImageElement|undefined;
+  private _image: HTMLImageElement | undefined;
 
-  public get type() { return this.props.type; }
-  public get url() { return this.props.url; }
-  public get imageData() { return this.props.imageData; }
-  public get imageUrl() { return `data:${this.contentType};base64,${this.imageData}`; }
+  public get type() {
+    return this.props.type;
+  }
+  public get url() {
+    return this.props.url;
+  }
+  public get imageData() {
+    return this.props.imageData;
+  }
+  public get imageUrl() {
+    return `data:${this.contentType};base64,${this.imageData}`;
+  }
   public get image() {
     assert(this._image !== undefined);
     return this._image;
   }
-  public get contentType() { return this.props.contentType; }
-  public get width() { return this.props.width; }
-  public get height() { return this.props.height; }
-  public get xoffset() { return this.props.xoffset; }
-  public get yoffset() { return this.props.yoffset; }
-  public get angle() { return this.props.angle; }
+  public get contentType() {
+    return this.props.contentType;
+  }
+  public get width() {
+    return this.props.width;
+  }
+  public get height() {
+    return this.props.height;
+  }
+  public get xoffset() {
+    return this.props.xoffset;
+  }
+  public get yoffset() {
+    return this.props.yoffset;
+  }
+  public get angle() {
+    return this.props.angle;
+  }
 
   public async loadImage() {
     if (this._image === undefined) {
@@ -154,14 +193,30 @@ export interface EsriSMSProps extends EsriSymbolCommonProps {
 export class EsriSMS implements EsriSymbolCommonProps {
   public readonly props: EsriSMSProps;
   private _outline: EsriSLS | undefined;
-  public get angle()    { return this.props.angle; }
-  public get color()    { return colorFromArray(this.props.color); }
-  public get outline()  { return this._outline; }
-  public get size()     { return this.props.size; }
-  public get style()    { return this.props.style; }
-  public get type()     { return this.props.type; }
-  public get xoffset()  { return this.props.xoffset; }
-  public get yoffset()  { return this.props.yoffset; }
+  public get angle() {
+    return this.props.angle;
+  }
+  public get color() {
+    return colorFromArray(this.props.color);
+  }
+  public get outline() {
+    return this._outline;
+  }
+  public get size() {
+    return this.props.size;
+  }
+  public get style() {
+    return this.props.style;
+  }
+  public get type() {
+    return this.props.type;
+  }
+  public get xoffset() {
+    return this.props.xoffset;
+  }
+  public get yoffset() {
+    return this.props.yoffset;
+  }
 
   private constructor(json: EsriSMSProps) {
     this.props = json;
@@ -175,7 +230,15 @@ export class EsriSMS implements EsriSymbolCommonProps {
 }
 
 /** @internal */
-export type EsriSFSStyleProps = "esriSFSBackwardDiagonal" | "esriSFSCross" | "esriSFSDiagonalCross" | "esriSFSForwardDiagonal" | "esriSFSHorizontal" | "esriSFSNull" | "esriSFSSolid" | "esriSFSVertical";
+export type EsriSFSStyleProps =
+  | "esriSFSBackwardDiagonal"
+  | "esriSFSCross"
+  | "esriSFSDiagonalCross"
+  | "esriSFSForwardDiagonal"
+  | "esriSFSHorizontal"
+  | "esriSFSNull"
+  | "esriSFSSolid"
+  | "esriSFSVertical";
 
 /** @internal */
 export interface EsriSFSProps extends EsriSymbolCommonProps {
@@ -190,10 +253,18 @@ export class EsriSFS implements EsriSymbolCommonProps {
   public readonly props: EsriSFSProps;
   private _outline: EsriSLS | undefined;
 
-  public get color() { return colorFromArray(this.props.color); }
-  public get type() { return this.props.type; }
-  public get style() { return this.props.style; }
-  public get outline() { return this._outline; }
+  public get color() {
+    return colorFromArray(this.props.color);
+  }
+  public get type() {
+    return this.props.type;
+  }
+  public get style() {
+    return this.props.style;
+  }
+  public get outline() {
+    return this._outline;
+  }
   constructor(json: EsriSFSProps) {
     this.props = json;
     if (json.outline)
@@ -214,11 +285,10 @@ export interface EsriUniqueValueInfoProps {
 }
 
 /** @internal */
-export class EsriUniqueValueInfo  {
-
+export class EsriUniqueValueInfo {
   public readonly value: string;
-  public readonly label: string|undefined;
-  public readonly description: string|undefined;
+  public readonly label: string | undefined;
+  public readonly description: string | undefined;
   public readonly symbol: EsriSymbol;
 
   private constructor(json: EsriUniqueValueInfoProps) {
@@ -243,12 +313,11 @@ export interface EsriClassBreaksInfoProps {
 }
 
 /** @internal */
-export class EsriClassBreaksValueInfo  {
-
+export class EsriClassBreaksValueInfo {
   public readonly classMaxValue: number;
   public readonly classMinValue?: number;
-  public readonly label: string|undefined;
-  public readonly description: string|undefined;
+  public readonly label: string | undefined;
+  public readonly description: string | undefined;
   public readonly symbol: EsriSymbol;
 
   private constructor(json: EsriClassBreaksInfoProps) {
@@ -284,7 +353,13 @@ export interface EsriUniqueValueRendererProps extends EsriRendererBaseProps {
 }
 
 /** @internal */
-export type EsriClassificationMethodType = "esriClassifyDefinedInterval" | "esriClassifyEqualInterval" | "esriClassifyManual" | "esriClassifyNaturalBreaks" | "esriClassifyQuantile" | "esriClassifyStandardDeviation";
+export type EsriClassificationMethodType =
+  | "esriClassifyDefinedInterval"
+  | "esriClassifyEqualInterval"
+  | "esriClassifyManual"
+  | "esriClassifyNaturalBreaks"
+  | "esriClassifyQuantile"
+  | "esriClassifyStandardDeviation";
 
 /** @internal */
 export interface EsriClassBreaksRendererProps extends EsriRendererBaseProps {
@@ -299,13 +374,15 @@ export interface EsriClassBreaksRendererProps extends EsriRendererBaseProps {
 export type EsriRendererType = "simple" | "uniqueValue" | "classBreaks";
 
 /** @internal */
-export  type EsriRendererProps = EsriSimpleRendererProps | EsriUniqueValueRendererProps | EsriClassBreaksRendererProps;
+export type EsriRendererProps = EsriSimpleRendererProps | EsriUniqueValueRendererProps | EsriClassBreaksRendererProps;
 
 /** @internal */
 export abstract class EsriRenderer {
-  public readonly abstract type: EsriRendererType;
+  public abstract readonly type: EsriRendererType;
   public abstract initialize(): Promise<void>;
-  public get fields(): string[]|undefined {return undefined;}
+  public get fields(): string[] | undefined {
+    return undefined;
+  }
   public static fromJSON(json: EsriRendererProps): EsriRenderer {
     if (json.type === "simple")
       return EsriSimpleRenderer.fromJSON(json as EsriSimpleRendererProps);
@@ -360,9 +437,15 @@ export class EsriUniqueValueRenderer extends EsriRenderer {
     return fields;
   }
 
-  public get field1() { return this._props.field1 ?? undefined; }
-  public get field2() { return this._props.field2 ?? undefined; }
-  public get field3() { return this._props.field3 ?? undefined; }
+  public get field1() {
+    return this._props.field1 ?? undefined;
+  }
+  public get field2() {
+    return this._props.field2 ?? undefined;
+  }
+  public get field3() {
+    return this._props.field3 ?? undefined;
+  }
 
   protected constructor(json: EsriUniqueValueRendererProps) {
     super();
@@ -398,7 +481,9 @@ export class EsriClassBreaksRenderer extends EsriRenderer {
   private _props: EsriClassBreaksRendererProps;
   public readonly type: EsriRendererType = "classBreaks";
   public readonly defaultSymbol?: EsriSymbol;
-  public get classificationMethod() {return this._props.classificationMethod;}
+  public get classificationMethod() {
+    return this._props.classificationMethod;
+  }
   public readonly classBreakInfos: EsriClassBreaksValueInfo[] = [];
 
   public override get fields() {
@@ -408,8 +493,12 @@ export class EsriClassBreaksRenderer extends EsriRenderer {
     return undefined;
   }
 
-  public get field() { return this._props.field ?? undefined; }
-  public get minValue() { return this._props.minValue ?? 0; }
+  public get field() {
+    return this._props.field ?? undefined;
+  }
+  public get minValue() {
+    return this._props.minValue ?? 0;
+  }
 
   protected constructor(json: EsriClassBreaksRendererProps) {
     super();
@@ -440,4 +529,3 @@ export class EsriClassBreaksRenderer extends EsriRenderer {
     return new EsriClassBreaksRenderer(json);
   }
 }
-

@@ -16,7 +16,9 @@ class Listener {
     set.onCleared.addListener(() => this._cleared = true);
   }
 
-  private clear() { this._added = this._deleted = this._cleared; }
+  private clear() {
+    this._added = this._deleted = this._cleared;
+  }
 
   public expect(added: boolean, deleted: boolean, cleared: boolean, func: () => void): void {
     this.clear();
@@ -27,10 +29,18 @@ class Listener {
     this.clear();
   }
 
-  public expectNone(func: () => void) { this.expect(false, false, false, func); }
-  public expectAdd(func: () => void) { this.expect(true, false, false, func); }
-  public expectDelete(func: () => void) { this.expect(false, true, false, func); }
-  public expectClear(func: () => void) { this.expect(false, false, true, func); }
+  public expectNone(func: () => void) {
+    this.expect(false, false, false, func);
+  }
+  public expectAdd(func: () => void) {
+    this.expect(true, false, false, func);
+  }
+  public expectDelete(func: () => void) {
+    this.expect(false, true, false, func);
+  }
+  public expectClear(func: () => void) {
+    this.expect(false, false, true, func);
+  }
 }
 
 describe("ObservableSet", () => {

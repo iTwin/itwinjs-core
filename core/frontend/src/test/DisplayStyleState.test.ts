@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Code, DisplayStyle3dProps, EmptyLocalization, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { expect } from "chai";
 import { DisplayStyle3dState } from "../DisplayStyleState";
-import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
 
 describe("DisplayStyleState", () => {
@@ -59,7 +59,9 @@ describe("DisplayStyleState", () => {
         expect(this.scheduleScript!.modelTimelines[0].modelId).to.equal(props[0].modelId);
       }
 
-      public get isLoading() { return undefined !== this._queryRenderTimelinePropsPromise; }
+      public get isLoading() {
+        return undefined !== this._queryRenderTimelinePropsPromise;
+      }
       public async finishLoading() {
         while (this._queryRenderTimelinePropsPromise)
           await this._queryRenderTimelinePropsPromise;

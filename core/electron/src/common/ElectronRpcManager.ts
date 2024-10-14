@@ -3,14 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager, RpcRegistry } from "@itwin/core-common";
+import {
+  IpcSocket,
+  IpcSocketBackend,
+  IpcSocketFrontend,
+  RpcConfiguration,
+  RpcInterfaceDefinition,
+  RpcManager,
+  RpcRegistry,
+} from "@itwin/core-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
 /** RPC interface configuration for an Electron-based application.
  * @internal
  */
 export abstract class ElectronRpcConfiguration extends RpcConfiguration {
-
   public static targetWindowId?: number;
 
   /** The protocol of the configuration. */

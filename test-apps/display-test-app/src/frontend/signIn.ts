@@ -2,17 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
-import { IModelApp  } from "@itwin/core-frontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
 import { AccessToken, ProcessDetector } from "@itwin/core-bentley";
+import { IModelApp } from "@itwin/core-frontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { getConfigurationString } from "./DisplayTestApp";
 
 // Wraps the signIn process
 // @return Promise that resolves to true after signIn is complete
 export async function signIn(): Promise<boolean> {
   const existingAuthClient = IModelApp.authorizationClient;
-  if (undefined !== existingAuthClient && (existingAuthClient instanceof BrowserAuthorizationClient || existingAuthClient instanceof ElectronRendererAuthorization)) {
+  if (
+    undefined !== existingAuthClient &&
+    (existingAuthClient instanceof BrowserAuthorizationClient || existingAuthClient instanceof ElectronRendererAuthorization)
+  ) {
     if (existingAuthClient.isAuthorized) {
       return (await existingAuthClient.getAccessToken()) !== undefined;
     }
@@ -45,7 +48,7 @@ export async function signIn(): Promise<boolean> {
     });
     try {
       await authClient.signInSilent();
-    } catch (err) { }
+    } catch (err) {}
   }
 
   if (typeof authClient === "undefined") {
@@ -64,7 +67,7 @@ export async function signIn(): Promise<boolean> {
 
 export async function signOut(): Promise<void> {
   const auth = IModelApp.authorizationClient;
-  if (auth instanceof ElectronRendererAuthorization || auth instanceof BrowserAuthorizationClient){
+  if (auth instanceof ElectronRendererAuthorization || auth instanceof BrowserAuthorizationClient) {
     await auth.signOut();
     IModelApp.authorizationClient = undefined;
   }

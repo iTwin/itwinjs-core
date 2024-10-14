@@ -306,7 +306,12 @@ export interface LabelGroupingNodeKeyJSON extends GroupingNodeKey {
  * @deprecated in 3.x. Use [[NodeKey]].
  */
 // eslint-disable-next-line deprecation/deprecation
-export type NodeKeyJSON = BaseNodeKeyJSON | ECInstancesNodeKeyJSON | ECClassGroupingNodeKeyJSON | ECPropertyGroupingNodeKeyJSON | LabelGroupingNodeKeyJSON;
+export type NodeKeyJSON =
+  | BaseNodeKeyJSON
+  | ECInstancesNodeKeyJSON
+  | ECClassGroupingNodeKeyJSON
+  | ECPropertyGroupingNodeKeyJSON
+  | LabelGroupingNodeKeyJSON;
 
 /**
  * Data structure that describes a presentation query

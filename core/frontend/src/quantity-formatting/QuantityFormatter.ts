@@ -8,8 +8,17 @@
 
 import { BentleyError, BeUiEvent, Logger } from "@itwin/core-bentley";
 import {
-  AlternateUnitLabelsProvider, Format, FormatProps, FormatterSpec, ParseError, ParserSpec, QuantityParseResult,
-  UnitConversionProps, UnitProps, UnitsProvider, UnitSystemKey,
+  AlternateUnitLabelsProvider,
+  Format,
+  FormatProps,
+  FormatterSpec,
+  ParseError,
+  ParserSpec,
+  QuantityParseResult,
+  UnitConversionProps,
+  UnitProps,
+  UnitsProvider,
+  UnitSystemKey,
 } from "@itwin/core-quantity";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import { IModelApp } from "../IModelApp";
@@ -41,7 +50,7 @@ export enum QuantityType {
   /** LengthSurvey is a distance value stored in meters. Typically formatted to display in meters or US Survey Feet based on active unit system.. */
   LengthSurvey = 8,
   /** LengthEngineering is a distance value stored in meters. Typically formatted to display either meters or feet based on active unit system. */
-  LengthEngineering = 9
+  LengthEngineering = 9,
 }
 
 /**
@@ -123,7 +132,11 @@ export interface QuantityTypeDefinition {
   /** Async function to generate a [FormatterSpec]$(core-quantity) that will be called to format values.*/
   generateFormatterSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider) => Promise<FormatterSpec>;
   /** Async function to generate a [ParserSpec]$(core-quantity) that will be called to parse a string into a quantity value.*/
-  generateParserSpec: (formatProps: FormatProps, unitsProvider: UnitsProvider, alternateUnitLabelsProvider?: AlternateUnitLabelsProvider) => Promise<ParserSpec>;
+  generateParserSpec: (
+    formatProps: FormatProps,
+    unitsProvider: UnitsProvider,
+    alternateUnitLabelsProvider?: AlternateUnitLabelsProvider,
+  ) => Promise<ParserSpec>;
 }
 
 /** CustomQuantityTypeDefinition interface is used to define a Custom quantity type that can be registered with the [[QuantityFormatter]].
@@ -145,7 +158,7 @@ export interface CustomQuantityTypeDefinition extends QuantityTypeDefinition {
 
 /** CustomQuantityTypeDefinition type guard.
  * @public
-*/
+ */
 export function isCustomQuantityTypeDefinition(item: QuantityTypeDefinition): item is CustomQuantityTypeDefinition {
   return !!(item as CustomQuantityTypeDefinition).isCompatibleFormatProps;
 }
@@ -160,7 +173,9 @@ class StandardQuantityTypeDefinition implements QuantityTypeDefinition {
     this._key = getQuantityTypeKey(type);
   }
 
-  public get key(): string { return this._key; }
+  public get key(): string {
+    return this._key;
+  }
 
   public get label(): string {
     if (!this._label) {
@@ -330,8 +345,8 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Called after the active unit system is changed.
-  * The system will report the UnitSystemKey/name of the the system that was activated.
-  */
+   * The system will report the UnitSystemKey/name of the the system that was activated.
+   */
   public readonly onActiveFormattingUnitSystemChanged = new BeUiEvent<FormattingUnitSystemChangedArgs>();
 
   /** Called when the format of a QuantityType is overriden or the override is cleared. The string returned will
@@ -369,51 +384,87 @@ export class QuantityFormatter implements UnitsProvider {
   protected async initializeQuantityTypesRegistry() {
     // QuantityType.Length
     const lengthUnit = await this.findUnitByName("Units.M");
-    const lengthDefinition = new StandardQuantityTypeDefinition(QuantityType.Length, lengthUnit,
-      "iModelJs:QuantityType.Length.label", "iModelJs:QuantityType.Length.description");
+    const lengthDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Length,
+      lengthUnit,
+      "iModelJs:QuantityType.Length.label",
+      "iModelJs:QuantityType.Length.description",
+    );
     this._quantityTypeRegistry.set(lengthDefinition.key, lengthDefinition);
 
     // QuantityType.LengthEngineering
-    const lengthEngineeringDefinition = new StandardQuantityTypeDefinition(QuantityType.LengthEngineering, lengthUnit,
-      "iModelJs:QuantityType.LengthEngineering.label", "iModelJs:QuantityType.LengthEngineering.description");
+    const lengthEngineeringDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.LengthEngineering,
+      lengthUnit,
+      "iModelJs:QuantityType.LengthEngineering.label",
+      "iModelJs:QuantityType.LengthEngineering.description",
+    );
     this._quantityTypeRegistry.set(lengthEngineeringDefinition.key, lengthEngineeringDefinition);
 
     // QuantityType.Coordinate
-    const coordinateDefinition = new StandardQuantityTypeDefinition(QuantityType.Coordinate, lengthUnit,
-      "iModelJs:QuantityType.Coordinate.label", "iModelJs:QuantityType.Coordinate.description");
+    const coordinateDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Coordinate,
+      lengthUnit,
+      "iModelJs:QuantityType.Coordinate.label",
+      "iModelJs:QuantityType.Coordinate.description",
+    );
     this._quantityTypeRegistry.set(coordinateDefinition.key, coordinateDefinition);
 
     // QuantityType.Stationing
-    const stationingDefinition = new StandardQuantityTypeDefinition(QuantityType.Stationing, lengthUnit,
-      "iModelJs:QuantityType.Stationing.label", "iModelJs:QuantityType.Stationing.description");
+    const stationingDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Stationing,
+      lengthUnit,
+      "iModelJs:QuantityType.Stationing.label",
+      "iModelJs:QuantityType.Stationing.description",
+    );
     this._quantityTypeRegistry.set(stationingDefinition.key, stationingDefinition);
 
     // QuantityType.LengthSurvey
-    const lengthSurveyDefinition = new StandardQuantityTypeDefinition(QuantityType.LengthSurvey, lengthUnit,
-      "iModelJs:QuantityType.LengthSurvey.label", "iModelJs:QuantityType.LengthSurvey.description");
+    const lengthSurveyDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.LengthSurvey,
+      lengthUnit,
+      "iModelJs:QuantityType.LengthSurvey.label",
+      "iModelJs:QuantityType.LengthSurvey.description",
+    );
     this._quantityTypeRegistry.set(lengthSurveyDefinition.key, lengthSurveyDefinition);
 
     // QuantityType.Angle
     const radUnit = await this.findUnitByName("Units.RAD");
-    const angleDefinition = new StandardQuantityTypeDefinition(QuantityType.Angle, radUnit,
-      "iModelJs:QuantityType.Angle.label", "iModelJs:QuantityType.Angle.description");
+    const angleDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Angle,
+      radUnit,
+      "iModelJs:QuantityType.Angle.label",
+      "iModelJs:QuantityType.Angle.description",
+    );
     this._quantityTypeRegistry.set(angleDefinition.key, angleDefinition);
 
     // QuantityType.LatLong
-    const latLongDefinition = new StandardQuantityTypeDefinition(QuantityType.LatLong, radUnit,
-      "iModelJs:QuantityType.LatLong.label", "iModelJs:QuantityType.LatLong.description");
+    const latLongDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.LatLong,
+      radUnit,
+      "iModelJs:QuantityType.LatLong.label",
+      "iModelJs:QuantityType.LatLong.description",
+    );
     this._quantityTypeRegistry.set(latLongDefinition.key, latLongDefinition);
 
     // QuantityType.Area
     const sqMetersUnit = await this.findUnitByName("Units.SQ_M");
-    const areaDefinition = new StandardQuantityTypeDefinition(QuantityType.Area, sqMetersUnit,
-      "iModelJs:QuantityType.Area.label", "iModelJs:QuantityType.Area.description");
+    const areaDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Area,
+      sqMetersUnit,
+      "iModelJs:QuantityType.Area.label",
+      "iModelJs:QuantityType.Area.description",
+    );
     this._quantityTypeRegistry.set(areaDefinition.key, areaDefinition);
 
     // QuantityType.Volume
     const cubicMetersUnit = await this.findUnitByName("Units.CUB_M");
-    const volumeDefinition = new StandardQuantityTypeDefinition(QuantityType.Volume, cubicMetersUnit,
-      "iModelJs:QuantityType.Volume.label", "iModelJs:QuantityType.Volume.description");
+    const volumeDefinition = new StandardQuantityTypeDefinition(
+      QuantityType.Volume,
+      cubicMetersUnit,
+      "iModelJs:QuantityType.Volume.label",
+      "iModelJs:QuantityType.Volume.description",
+    );
     this._quantityTypeRegistry.set(volumeDefinition.key, volumeDefinition);
   }
 
@@ -436,7 +487,11 @@ export class QuantityFormatter implements UnitsProvider {
     }
   }
 
-  private getFormatPropsByQuantityTypeEntryAndSystem(quantityEntry: QuantityTypeDefinition, requestedSystem: UnitSystemKey, ignoreOverrides?: boolean): FormatProps {
+  private getFormatPropsByQuantityTypeEntryAndSystem(
+    quantityEntry: QuantityTypeDefinition,
+    requestedSystem: UnitSystemKey,
+    ignoreOverrides?: boolean,
+  ): FormatProps {
     if (!ignoreOverrides) {
       const overrideProps = this.getOverrideFormatPropsByQuantityType(quantityEntry.key, requestedSystem);
       if (overrideProps)
@@ -554,9 +609,12 @@ export class QuantityFormatter implements UnitsProvider {
     try {
       // force all cached data to be reinitialized
       await IModelApp.quantityFormatter.onInitialized();
-    } catch(err) {
+    } catch (err) {
       Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, BentleyError.getErrorMessage(err), BentleyError.getErrorMetadata(err));
-      Logger.logWarning(`${FrontendLoggerCategory.Package}.quantityFormatter`, "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.");
+      Logger.logWarning(
+        `${FrontendLoggerCategory.Package}.quantityFormatter`,
+        "An exception occurred initializing the iModelApp.quantityFormatter with the given UnitsProvider. Defaulting back to the internal units provider.",
+      );
       // If there is a problem initializing with the given provider, default back to the internal provider
       await IModelApp.quantityFormatter.resetToUseInternalUnitsProvider();
       return;
@@ -598,8 +656,12 @@ export class QuantityFormatter implements UnitsProvider {
    * startDefaultTool - set to true to start the Default to instead of leaving any active tool pointing to cached unit data that is no longer valid
    * @public
    */
-  public async reinitializeFormatAndParsingsMaps(overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>,
-    unitSystemKey?: UnitSystemKey, fireUnitSystemChanged?: boolean, startDefaultTool?: boolean): Promise<void> {
+  public async reinitializeFormatAndParsingsMaps(
+    overrideFormatPropsByUnitSystem: Map<UnitSystemKey, Map<QuantityTypeKey, FormatProps>>,
+    unitSystemKey?: UnitSystemKey,
+    fireUnitSystemChanged?: boolean,
+    startDefaultTool?: boolean,
+  ): Promise<void> {
     this._overrideFormatPropsByUnitSystem.clear();
     if (overrideFormatPropsByUnitSystem.size) {
       this._overrideFormatPropsByUnitSystem = overrideFormatPropsByUnitSystem;
@@ -633,7 +695,9 @@ export class QuantityFormatter implements UnitsProvider {
   }
 
   /** Retrieve the active [[UnitSystemKey]] which is used to determine what formats are to be used to display quantities */
-  public get activeUnitSystem(): UnitSystemKey { return this._activeUnitSystem; }
+  public get activeUnitSystem(): UnitSystemKey {
+    return this._activeUnitSystem;
+  }
 
   /** Clear any formatting override for specified quantity type, but only for the "active" Unit System. */
   public async clearOverrideFormats(type: QuantityTypeArg) {
@@ -890,7 +954,7 @@ export class QuantityFormatter implements UnitsProvider {
 // ========================================================================================================================================
 const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
   {
-    system: "metric",  // PresentationUnitSystem.Metric,
+    system: "metric", // PresentationUnitSystem.Metric,
     entries: [
       { type: getQuantityTypeKey(QuantityType.Length), formatKey: "[units:length]meter4" },
       { type: getQuantityTypeKey(QuantityType.Angle), formatKey: "[units:angle]degree2" },
@@ -918,7 +982,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
     ],
   },
   {
-    system: "usCustomary",  // PresentationUnitSystem.UsCustomary
+    system: "usCustomary", // PresentationUnitSystem.UsCustomary
     entries: [
       { type: getQuantityTypeKey(QuantityType.Length), formatKey: "[units:length]fi8" },
       { type: getQuantityTypeKey(QuantityType.Angle), formatKey: "[units:angle]dms2" },
@@ -932,7 +996,7 @@ const DEFAULT_FORMATKEY_BY_UNIT_SYSTEM = [
     ],
   },
   {
-    system: "usSurvey",  // PresentationUnitSystem.UsSurvey
+    system: "usSurvey", // PresentationUnitSystem.UsSurvey
     entries: [
       { type: getQuantityTypeKey(QuantityType.Length), formatKey: "[units:length]f-survey-4" },
       { type: getQuantityTypeKey(QuantityType.Angle), formatKey: "[units:angle]dms2" },
@@ -1020,7 +1084,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
       composite: {
         includeZero: true,
         spacer: "-",
-        units: [{ label: "'", name: "Units.FT" }, { label: "\"", name: "Units.IN" }],
+        units: [{ label: "'", name: "Units.FT" }, { label: '"', name: "Units.IN" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 8,
@@ -1139,7 +1203,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
       composite: {
         includeZero: true,
         spacer: "",
-        units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: "\"", name: "Units.ARC_SECOND" }],
+        units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: '"', name: "Units.ARC_SECOND" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 4,
@@ -1154,7 +1218,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
       composite: {
         includeZero: true,
         spacer: "",
-        units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: "\"", name: "Units.ARC_SECOND" }],
+        units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: '"', name: "Units.ARC_SECOND" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
       precision: 2,

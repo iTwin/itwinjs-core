@@ -3,13 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { EmptyLocalization } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
+import { ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType } from "../../../render/webgl/ShaderBuilder";
 import { ShaderProgram } from "../../../render/webgl/ShaderProgram";
-import {
-  ShaderVariable, ShaderVariables, VariablePrecision, VariableScope, VariableType,
-} from "../../../render/webgl/ShaderBuilder";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("ShaderBuilder", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

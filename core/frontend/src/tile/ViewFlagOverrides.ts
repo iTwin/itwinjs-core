@@ -12,7 +12,9 @@ import { RenderMode, ViewFlagOverrides, ViewFlags } from "@itwin/core-common";
  * @param options Customize the overrides. Any properties left unspecified use the current view settings, except white-on-white reversal is always disabled.
  * @internal
  */
-export function createDefaultViewFlagOverrides(options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean, thematic?: false }): ViewFlagOverrides {
+export function createDefaultViewFlagOverrides(
+  options: { clipVolume?: boolean, shadows?: boolean, lighting?: boolean, thematic?: false },
+): ViewFlagOverrides {
   const noLights = undefined !== options.lighting ? !options.lighting : undefined;
   const viewflags = ViewFlags.fromJSON({
     renderMode: RenderMode.SmoothShade,

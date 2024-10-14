@@ -7,8 +7,8 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
 import { FeatureIndexType, FillFlags, LinePixels } from "@itwin/core-common";
+import { Point3d } from "@itwin/core-geometry";
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
 import { RenderMemory } from "../RenderMemory";
@@ -70,11 +70,11 @@ export class MeshData implements WebGLDisposable {
             this.constantLodVParams = new Float32Array(3);
             this.constantLodVParams[0] = matTM.params.constantLodParams.offset.x; // x offset
             this.constantLodVParams[1] = matTM.params.constantLodParams.offset.y; // y offset
-            this.constantLodVParams[3] = 0.0;                                     // placeholder for orto view distance
+            this.constantLodVParams[3] = 0.0; // placeholder for orto view distance
             this.constantLodFParams = new Float32Array(3);
             this.constantLodFParams[0] = matTM.params.constantLodParams.minDistClamp; // Minimum texture size
             this.constantLodFParams[1] = matTM.params.constantLodParams.maxDistClamp; // Maximum texture size
-            this.constantLodFParams[2] = matTM.params.constantLodParams.repetitions;  // # repetitions of pattern (to scale it)
+            this.constantLodFParams[2] = matTM.params.constantLodParams.repetitions; // # repetitions of pattern (to scale it)
           }
         }
       }
@@ -99,7 +99,9 @@ export class MeshData implements WebGLDisposable {
     return undefined !== lut ? new MeshData(lut, params, viOrigin) : undefined;
   }
 
-  public get isDisposed(): boolean { return undefined === this.texture && this.lut.isDisposed; }
+  public get isDisposed(): boolean {
+    return undefined === this.texture && this.lut.isDisposed;
+  }
 
   public dispose() {
     dispose(this.lut);
@@ -107,8 +109,12 @@ export class MeshData implements WebGLDisposable {
       this.texture!.dispose();
   }
 
-  public get isGlyph() { return undefined !== this.texture && this.texture.isGlyph; }
-  public get isTextureAlwaysDisplayed() { return this.isGlyph || this._textureAlwaysDisplayed; }
+  public get isGlyph() {
+    return undefined !== this.texture && this.texture.isGlyph;
+  }
+  public get isTextureAlwaysDisplayed() {
+    return this.isGlyph || this._textureAlwaysDisplayed;
+  }
 
   // Returns true if no one else owns this texture. Implies that the texture should be disposed when this object is disposed, and the texture's memory should be tracked as belonging to this object.
   private get _ownsTexture(): boolean {

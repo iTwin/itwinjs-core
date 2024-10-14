@@ -165,4 +165,16 @@ export interface GraphicSolidPrimitive {
  * @public
  * @extensions
  */
-export type GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface | GraphicSolidPrimitive;
+export type GraphicPrimitive =
+  | GraphicLineString
+  | GraphicLineString2d
+  | GraphicPointString
+  | GraphicPointString2d
+  | GraphicShape
+  | GraphicShape2d
+  | GraphicArc
+  | GraphicArc2d
+  | GraphicPath
+  | GraphicLoop
+  | GraphicPolyface
+  | GraphicSolidPrimitive;

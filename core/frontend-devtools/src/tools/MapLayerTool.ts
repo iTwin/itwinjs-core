@@ -9,7 +9,16 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { BaseMapLayerSettings, ColorDef, ModelMapLayerSettings } from "@itwin/core-common";
-import { IModelApp, MapLayerSource, MapLayerSources, MapLayerSourceStatus, NotifyMessageDetails, OutputMessagePriority, Tool, WmsUtilities } from "@itwin/core-frontend";
+import {
+  IModelApp,
+  MapLayerSource,
+  MapLayerSources,
+  MapLayerSourceStatus,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  Tool,
+  WmsUtilities,
+} from "@itwin/core-frontend";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
 
@@ -40,22 +49,32 @@ class AttachMapLayerBaseTool extends Tool {
 
         if (validation.status === MapLayerSourceStatus.Valid) {
           vp.invalidateRenderPlan();
-          const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttached", { sourceName: source.name });
+          const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttached", {
+            sourceName: source.name,
+          });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
         } else if (validation.status === MapLayerSourceStatus.RequireAuth) {
-          const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", { sourceName: source.name });
+          const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachedRequiresAuth", {
+            sourceName: source.name,
+          });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
-
       } else if (validation.status === MapLayerSourceStatus.IncompatibleFormat) {
-        const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayersIncompatibleFormat", { sourceName: source.name });
+        const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayersIncompatibleFormat", {
+          sourceName: source.name,
+        });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       } else {
-        const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerValidationFailed", { sourceName: source.name });
+        const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerValidationFailed", {
+          sourceName: source.name,
+        });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       }
     }).catch((error) => {
-      const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError", { error, sourceName: source.name });
+      const msg = IModelApp.localization.getLocalizedString("FrontendDevTools:tools.AttachMapLayerTool.Messages.MapLayerAttachError", {
+        error,
+        sourceName: source.name,
+      });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
     });
   }
@@ -65,10 +84,16 @@ class AttachMapLayerBaseTool extends Tool {
  * @beta
  */
 export class AttachModelMapLayerTool extends Tool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
   public static override toolId = "AttachModelMapLayerTool";
-  constructor(protected _formatId: string) { super(); }
+  constructor(protected _formatId: string) {
+    super();
+  }
 
   public override async run(nameIn?: string): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -100,9 +125,15 @@ export class AttachModelMapLayerTool extends Tool {
 }
 /** Attach a map layer from URL base class. */
 class AttachMapLayerByURLBaseTool extends AttachMapLayerBaseTool {
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 4; }
-  constructor(protected _formatId: string) { super(); }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 4;
+  }
+  constructor(protected _formatId: string) {
+    super();
+  }
 
   public override async run(url: string, name?: string, userName?: string, password?: string): Promise<boolean> {
     const source = MapLayerSource.fromJSON({ url, name: (name ? name : url), formatId: this._formatId });
@@ -125,7 +156,9 @@ class AttachMapLayerByURLBaseTool extends AttachMapLayerBaseTool {
  */
 export class AttachWmsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
   public static override toolId = "AttachWmsMapLayerTool";
-  constructor() { super("WMS"); }
+  constructor() {
+    super("WMS");
+  }
   /** This method runs the tool, attaching a WMS map layer from a given URL.
    * @param args contains url, name, userName, password in array order
    */
@@ -139,7 +172,9 @@ export class AttachWmsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
  */
 export class AttachWmtsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
   public static override toolId = "AttachWmtsMapLayerTool";
-  constructor() { super("WMTS"); }
+  constructor() {
+    super("WMTS");
+  }
   /** This method runs the tool, attaching a WMTS map layer from a given URL.
    * @param args contains url, name, userName, password in array order
    */
@@ -153,7 +188,9 @@ export class AttachWmtsMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
  */
 export class AttachArcGISMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
   public static override toolId = "AttachArcGISMapLayerTool";
-  constructor() { super("ArcGIS"); }
+  constructor() {
+    super("ArcGIS");
+  }
 }
 
 /** This tool attaches an ArcGIS map layer from a given URL.
@@ -161,7 +198,9 @@ export class AttachArcGISMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
  */
 export class AttachArcGISFeatureMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
   public static override toolId = "AttachArcGISFeatureMapLayerTool";
-  constructor() { super("ArcGISFeature"); }
+  constructor() {
+    super("ArcGISFeature");
+  }
 }
 
 /** This tool attaches an ArcGIS map layer from a given URL.
@@ -169,7 +208,9 @@ export class AttachArcGISFeatureMapLayerByUrlTool extends AttachMapLayerByURLBas
  */
 export class AttachOgcApiFeaturesMapLayerTool extends AttachMapLayerByURLBaseTool {
   public static override toolId = "AttachOgcApiFeaturesMapLayerTool";
-  constructor() { super("OgcApiFeatures"); }
+  constructor() {
+    super("OgcApiFeatures");
+  }
 }
 
 /** This tool attaches a map layer from a given tile URL.
@@ -177,7 +218,9 @@ export class AttachOgcApiFeaturesMapLayerTool extends AttachMapLayerByURLBaseToo
  */
 export class AttachTileURLMapLayerByUrlTool extends AttachMapLayerByURLBaseTool {
   public static override toolId = "AttachTileURLMapLayerTool";
-  constructor() { super("TileURL"); }
+  constructor() {
+    super("TileURL");
+  }
 }
 
 /** This tool add a Map Layer from a specified name (look up in MapLayerSources.json).
@@ -185,8 +228,12 @@ export class AttachTileURLMapLayerByUrlTool extends AttachMapLayerByURLBaseTool 
  */
 export class AttachMapLayerTool extends AttachMapLayerBaseTool {
   public static override toolId = "AttachMapLayerTool";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, adding a map layer from a specified name in MayLayerSources.json.
    * @param name the name of the map layer to add
@@ -202,7 +249,7 @@ export class AttachMapLayerTool extends AttachMapLayerBaseTool {
         if (source !== undefined)
           this.doAttach(source);
       }
-    }).catch((_err) => { });
+    }).catch((_err) => {});
 
     return true;
   }
@@ -241,8 +288,12 @@ export class SetMapBaseTool extends AttachMapLayerTool {
  */
 export class DetachMapLayersTool extends Tool {
   public static override toolId = "DetachMapLayersTool";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 0; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 0;
+  }
   public override async parseAndRun(..._args: string[]): Promise<boolean> {
     return this.run();
   }
@@ -268,8 +319,12 @@ function parseLayerIndex(args: string[]) {
  */
 export class MapLayerVisibilityTool extends Tool {
   public static override toolId = "SetMapLayerVisibility";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   /** This method runs the tool, setting the visibility of a map layer.
    * @param layerIndex the index of the layer to change
@@ -309,8 +364,12 @@ export class MapLayerVisibilityTool extends Tool {
  */
 export class ReorderMapLayers extends Tool {
   public static override toolId = "ReorderMapLayers";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
   /** This method runs the tool, reordering the map layers.
    * @param from a numeric value specifying the layer index that is being moved
    * @param from a numeric value specifying the layer index to move that layer to
@@ -333,7 +392,6 @@ export class ReorderMapLayers extends Tool {
     await this.run(from, to);
     return true;
   }
-
 }
 
 /** This tool sets the transparency of a map layer.
@@ -341,8 +399,12 @@ export class ReorderMapLayers extends Tool {
  */
 export class MapLayerTransparencyTool extends Tool {
   public static override toolId = "SetMapLayerTransparency";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
   /** This method runs the tool, setting the transparency of a map layer.
    * @param layerIndex the index of the layer to change
    * @param transparency a numeric value in the range 0.0 (fully opaque) to 1.0 (fully transparent)
@@ -374,8 +436,12 @@ export class MapLayerTransparencyTool extends Tool {
  */
 export class MapLayerSubLayerVisibilityTool extends Tool {
   public static override toolId = "SetMapSubLayerVisibility";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   /** This method runs the tool, setting the visibility of a map sublayer.
    * @param layerIndex the index of the layer to change
@@ -409,8 +475,12 @@ export class MapLayerSubLayerVisibilityTool extends Tool {
  */
 export class MapLayerZoomTool extends Tool {
   public static override toolId = "MapLayerZoom";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, changing the viewport so it is zoomed to the range of a map layer.
    * @param layerIndex the index of the layer whose range to zoom to
@@ -420,7 +490,7 @@ export class MapLayerZoomTool extends Tool {
     if (undefined === vp || !vp.view.isSpatialView())
       return false;
 
-    vp.viewMapLayerRange({ index: layerIndex, isOverlay: false }, vp).then(() => { }).catch(() => { });
+    vp.viewMapLayerRange({ index: layerIndex, isOverlay: false }, vp).then(() => {}).catch(() => {});
 
     return true;
   }
@@ -441,8 +511,12 @@ export class MapLayerZoomTool extends Tool {
  */
 export class ToggleTerrainTool extends Tool {
   public static override toolId = "ToggleTerrain";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, changing whether to apply terrain heights to the map.
    * @param enable whether or not to enable terrain heights on the map
@@ -476,8 +550,12 @@ export class ToggleTerrainTool extends Tool {
  */
 export class MapBaseColorTool extends Tool {
   public static override toolId = "SetMapBaseColorTool";
-  public static override get minArgs() { return 3; }
-  public static override get maxArgs() { return 3; }
+  public static override get minArgs() {
+    return 3;
+  }
+  public static override get maxArgs() {
+    return 3;
+  }
 
   /** This method runs the tool, changing the color of the base map.
    * @param color the color for the base map
@@ -501,7 +579,9 @@ export class MapBaseColorTool extends Tool {
   public override async parseAndRun(...args: string[]): Promise<boolean> {
     const red = parseFloat(args[0]), green = parseFloat(args[1]), blue = parseFloat(args[2]);
 
-    return (isNaN(red) || red < 0 || red > 255 || isNaN(green) || green < 0 || green > 255 || isNaN(blue) || blue < 0 || blue > 255) ? false : this.run(ColorDef.from(red, green, blue));
+    return (isNaN(red) || red < 0 || red > 255 || isNaN(green) || green < 0 || green > 255 || isNaN(blue) || blue < 0 || blue > 255)
+      ? false
+      : this.run(ColorDef.from(red, green, blue));
   }
 }
 /** This tool changes the transparency of the base map.
@@ -509,8 +589,12 @@ export class MapBaseColorTool extends Tool {
  */
 export class MapBaseTransparencyTool extends Tool {
   public static override toolId = "SetMapBaseTransparencyTool";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, changing the transparency of the base map.
    * @param transparency a numeric value in range 0.0 to 1.0 whether 0.0 means fully opaque and 1.0 means fully transparent
@@ -541,8 +625,12 @@ export class MapBaseTransparencyTool extends Tool {
  */
 export class MapBaseVisibilityTool extends Tool {
   public static override toolId = "SetMapBaseVisibilityTool";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, changing the visibility of the base map.
    * @param visible a boolean which specifies whether or not to make the base map visible

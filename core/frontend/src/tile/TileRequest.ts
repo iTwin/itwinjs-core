@@ -44,10 +44,14 @@ export class TileRequest {
   }
 
   /** The request's current state. */
-  public get state(): TileRequest.State { return this._state; }
+  public get state(): TileRequest.State {
+    return this._state;
+  }
 
   /** True if the request has been enqueued but not yet dispatched. */
-  public get isQueued() { return TileRequest.State.Queued === this._state; }
+  public get isQueued() {
+    return TileRequest.State.Queued === this._state;
+  }
 
   /** True if the request has been canceled. */
   public get isCanceled(): boolean {
@@ -64,7 +68,9 @@ export class TileRequest {
   }
 
   /** The tile tree to which the requested [[Tile]] belongs. */
-  public get tree(): TileTree { return this.tile.tree; }
+  public get tree(): TileTree {
+    return this.tile.tree;
+  }
 
   /** Indicate that the specified user is awaiting the result of this request.
    * @internal
@@ -211,7 +217,7 @@ export namespace TileRequest { // eslint-disable-line no-redeclare
 
   /** The states through which a [[TileRequest]] proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined,
    * and its [[Tile.LoadStatus]] is computed based on the state of its request.
-   *@ public
+   * @ public
    */
   export enum State {
     /** Initial state. Request is pending but not yet dispatched. */

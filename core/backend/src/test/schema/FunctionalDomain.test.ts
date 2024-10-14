@@ -3,18 +3,36 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Guid, Id64 } from "@itwin/core-bentley";
+import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import { join } from "path";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { Guid, Id64 } from "@itwin/core-bentley";
-import { CodeScopeSpec, CodeSpec, ElementProps, IModel } from "@itwin/core-common";
 import { ClassRegistry } from "../../ClassRegistry";
-import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
 import {
-  _nativeDb, ChannelControl, ChannelKey, FunctionalBreakdownElement, FunctionalComponentElement, FunctionalModel, FunctionalPartition,
-  FunctionalSchema, InformationPartitionElement, OnChildElementIdArg, OnChildElementPropsArg, OnElementIdArg, OnElementInModelIdArg,
-  OnElementInModelPropsArg, OnElementPropsArg, OnModelIdArg, OnModelPropsArg, OnSubModelIdArg, OnSubModelPropsArg, Schemas, StandaloneDb,
+  _nativeDb,
+  ChannelControl,
+  ChannelKey,
+  FunctionalBreakdownElement,
+  FunctionalComponentElement,
+  FunctionalModel,
+  FunctionalPartition,
+  FunctionalSchema,
+  InformationPartitionElement,
+  OnChildElementIdArg,
+  OnChildElementPropsArg,
+  OnElementIdArg,
+  OnElementInModelIdArg,
+  OnElementInModelPropsArg,
+  OnElementPropsArg,
+  OnModelIdArg,
+  OnModelPropsArg,
+  OnSubModelIdArg,
+  OnSubModelPropsArg,
+  Schemas,
+  StandaloneDb,
 } from "../../core-backend";
+import { ElementUniqueAspect, OnAspectIdArg, OnAspectPropsArg } from "../../ElementAspect";
 import { ElementOwnsChildElements, ElementOwnsUniqueAspect, SubjectOwnsPartitionElements } from "../../NavigationRelationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -26,12 +44,16 @@ const updatedLabel = "updated label";
 
 /** test schema for supplying element/model/aspect classes */
 class TestSchema extends FunctionalSchema {
-  public static override get schemaName() { return "TestFunctional"; }
+  public static override get schemaName() {
+    return "TestFunctional";
+  }
 }
 
 /** partition element for testing `Element.onSubModelXxx` methods */
 class TestFuncPartition extends InformationPartitionElement {
-  public static override get className() { return "TestFuncPartition"; }
+  public static override get className() {
+    return "TestFuncPartition";
+  }
 
   public static override onSubModelInsert(arg: OnSubModelPropsArg): void {
     super.onSubModelInsert(arg);
@@ -54,7 +76,9 @@ class TestFuncPartition extends InformationPartitionElement {
 
 /** for testing `Model.onXxx` methods */
 class TestFuncModel extends FunctionalModel {
-  public static override get className() { return "TestFuncModel"; }
+  public static override get className() {
+    return "TestFuncModel";
+  }
   public static dontDelete = "";
 
   public static override onInsert(arg: OnModelPropsArg): void {
@@ -114,7 +138,9 @@ class TestFuncModel extends FunctionalModel {
 
 /** for testing `Element.onXxx` methods */
 class Breakdown extends FunctionalBreakdownElement {
-  public static override get className() { return "Breakdown"; }
+  public static override get className() {
+    return "Breakdown";
+  }
   public static dontDeleteChild = "";
 
   public static override onInsert(arg: OnElementPropsArg): void {
@@ -191,7 +217,9 @@ class Breakdown extends FunctionalBreakdownElement {
 
 /** for testing `ElementAspect.onXxx` methods */
 class TestFuncAspect extends ElementUniqueAspect {
-  public static override get className() { return "TestFuncAspect"; }
+  public static override get className() {
+    return "TestFuncAspect";
+  }
   public static expectedVal = "";
 
   public static override onInsert(arg: OnAspectPropsArg): void {
@@ -225,11 +253,12 @@ class TestFuncAspect extends ElementUniqueAspect {
 }
 
 class Component extends FunctionalComponentElement {
-  public static override get className() { return "Component"; }
+  public static override get className() {
+    return "Component";
+  }
 }
 
 describe("Functional Domain", () => {
-
   afterEach(() => {
     sinonRestore();
   });
@@ -346,14 +375,20 @@ describe("Functional Domain", () => {
 
     const partitionCode = FunctionalPartition.createCode(iModelDb, subject1Id, "Test Functional Model");
     const partitionProps = {
-      classFullName: TestFuncPartition.classFullName, model: IModel.repositoryModelId,
-      parent: new SubjectOwnsPartitionElements(subject1Id), code: partitionCode,
+      classFullName: TestFuncPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(subject1Id),
+      code: partitionCode,
     };
 
     iModelDb.channels.addAllowedChannel(testChannelKey1);
     let partitionId = iModelDb.elements.insertElement(partitionProps);
 
-    const modelId = testChannel(testChannelKey1, () => iModelDb.models.insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } }), [spy.model.onInsert]);
+    const modelId = testChannel(
+      testChannelKey1,
+      () => iModelDb.models.insertModel({ classFullName: TestFuncModel.classFullName, modeledElement: { id: partitionId } }),
+      [spy.model.onInsert],
+    );
 
     assert.isTrue(Id64.isValidId64(modelId));
     assert.isTrue(spy.model.onInsert.calledOnce);
@@ -364,13 +399,20 @@ describe("Functional Domain", () => {
 
     assert.isTrue(spy.partition.onSubModelInsert.calledOnce);
     assert.isTrue(spy.partition.onSubModelInserted.calledOnce);
-    assert.equal(spy.partition.onSubModelInserted.getCall(0).args[0].subModelId, modelId, "Element.onSubModelInserted should have correct subModelId");
+    assert.equal(
+      spy.partition.onSubModelInserted.getCall(0).args[0].subModelId,
+      modelId,
+      "Element.onSubModelInserted should have correct subModelId",
+    );
 
-    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey1 })).to.throw("a channel root for the specified key already exists");
+    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey1 })).to.throw(
+      "a channel root for the specified key already exists",
+    );
     const subject2Id = iModelDb.channels.insertChannelSubject({ subjectName: "Test Functional Subject 2", channelKey: testChannelKey2 });
     iModelDb.channels.addAllowedChannel(testChannelKey2);
 
-    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Nested Subject", parentSubjectId: subject2Id, channelKey: "nested channel" })).to.throw("may not nest");
+    expect(() => iModelDb.channels.insertChannelSubject({ subjectName: "Nested Subject", parentSubjectId: subject2Id, channelKey: "nested channel" }))
+      .to.throw("may not nest");
 
     partitionProps.code.value = "Test Func 2";
     partitionProps.parent = new SubjectOwnsPartitionElements(subject2Id);
@@ -381,7 +423,11 @@ describe("Functional Domain", () => {
     assert.equal(spy.model.onInserted.getCall(1).args[0].id, modelId2, "second insert should set new id");
     assert.equal(spy.model.onInsert.callCount, 2);
     assert.equal(spy.model.onInserted.callCount, 2);
-    assert.equal(spy.partition.onSubModelInserted.getCall(1).args[0].subModelId, modelId2, "Element.onSubModelInserted should have correct subModelId");
+    assert.equal(
+      spy.partition.onSubModelInserted.getCall(1).args[0].subModelId,
+      modelId2,
+      "Element.onSubModelInserted should have correct subModelId",
+    );
 
     const model2 = iModelDb.models.getModel(modelId2);
     testChannel(testChannelKey2, () => model2.update(), []);
@@ -397,8 +443,15 @@ describe("Functional Domain", () => {
     assert.isTrue(spy.partition.onSubModelDeleted.calledOnce);
     assert.equal(spy.partition.onSubModelDeleted.getCall(0).args[0].subModelId, modelId2);
 
-    const breakdownProps = { classFullName: Breakdown.classFullName, model: modelId, code: { spec: codeSpec.id, scope: modelId, value: "Breakdown1" } };
-    const breakdownId = testChannel(testChannelKey1, () => elements.insertElement(breakdownProps), [spy.model.onInsertElement, spy.breakdown.onInsert]);
+    const breakdownProps = {
+      classFullName: Breakdown.classFullName,
+      model: modelId,
+      code: { spec: codeSpec.id, scope: modelId, value: "Breakdown1" },
+    };
+    const breakdownId = testChannel(testChannelKey1, () => elements.insertElement(breakdownProps), [
+      spy.model.onInsertElement,
+      spy.breakdown.onInsert,
+    ]);
     assert.isTrue(Id64.isValidId64(breakdownId));
     assert.isTrue(spy.model.onInsertElement.calledOnce);
     assert.isTrue(spy.model.onInsertedElement.calledOnce);
@@ -409,7 +462,11 @@ describe("Functional Domain", () => {
     assert.equal(spy.breakdown.onInserted.getCall(0).args[0].id, breakdownId);
     assert.equal(spy.breakdown.onInsert.getCall(0).args[0].props, breakdownProps);
 
-    const breakdown2Props: ElementProps = { classFullName: Breakdown.classFullName, model: modelId, code: { spec: codeSpec.id, scope: modelId, value: "badval" } };
+    const breakdown2Props: ElementProps = {
+      classFullName: Breakdown.classFullName,
+      model: modelId,
+      code: { spec: codeSpec.id, scope: modelId, value: "badval" },
+    };
     // TestFuncModel.onInsertElement throws for this code.value
     expect(() => elements.insertElement(breakdown2Props)).to.throw("bad element");
 

@@ -34,13 +34,19 @@ export class PriorityQueue<T> implements Iterable<T> {
   }
 
   /** The number of values in the queue. */
-  public get length(): number { return this._array.length; }
+  public get length(): number {
+    return this._array.length;
+  }
 
   /** Returns true if the queue contains no values. */
-  public get isEmpty(): boolean { return 0 === this.length; }
+  public get isEmpty(): boolean {
+    return 0 === this.length;
+  }
 
   /** Returns an iterator over the contents of the heap suitable for use in `for-of` loops. */
-  public [Symbol.iterator](): Iterator<T> { return this._array[Symbol.iterator](); }
+  public [Symbol.iterator](): Iterator<T> {
+    return this._array[Symbol.iterator]();
+  }
 
   protected _swap(a: number, b: number) {
     const temp = this._array[a];

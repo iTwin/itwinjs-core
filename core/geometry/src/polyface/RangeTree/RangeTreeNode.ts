@@ -81,7 +81,9 @@ export abstract class SingleTreeSearchHandler<AppDataType> {
    * * Search processes check this after range tests and child processing.
    */
   // eslint-disable-next-line @itwin/prefer-get
-  public isAborted(): boolean { return false; }
+  public isAborted(): boolean {
+    return false;
+  }
 }
 /**
  * Abstract class for handler objects called during traversal of two range trees.
@@ -103,7 +105,9 @@ export abstract class TwoTreeSearchHandler<AppDataType> {
    * * Search processes check this after range tests and child processing.
    */
   // eslint-disable-next-line @itwin/prefer-get
-  public isAborted(): boolean { return false; }
+  public isAborted(): boolean {
+    return false;
+  }
 }
 /**
  * This class refines the TwoTreeSearchHandler with an implementation of `isRangePairActive` appropriate for computing the minimum distance between trees.
@@ -111,7 +115,7 @@ export abstract class TwoTreeSearchHandler<AppDataType> {
  * * The implementation of `isRangePairActive` returns true if the distance between ranges is less than or equal to the `getCurrentDistance()` value.
  * @internal
  */
-export abstract class TwoTreeDistanceMinimizationSearchHandler<AppDataType> extends TwoTreeSearchHandler<AppDataType>{
+export abstract class TwoTreeDistanceMinimizationSearchHandler<AppDataType> extends TwoTreeSearchHandler<AppDataType> {
   /**
    * Provides the allowable distance between ranges.
    * * Range pairs with more than this distance separation are rejected.
@@ -191,7 +195,8 @@ export class RangeTreeNode<AppDataType> {
   public static createCapture<AppDataType>(
     range: Range3d,
     appData: FlexData<AppDataType>,
-    children: FlexData<RangeTreeNode<AppDataType>>): RangeTreeNode<AppDataType> {
+    children: FlexData<RangeTreeNode<AppDataType>>,
+  ): RangeTreeNode<AppDataType> {
     return new RangeTreeNode<AppDataType>(range, appData, children);
   }
   /** copy (not capture) from given data into the range in this RangeEntry */
@@ -420,11 +425,20 @@ export class RangeTreeNode<AppDataType> {
         this.pushPaths<AppDataType>(leftTip, leftStack, leftStackWithAppData);
         this.pushPaths<AppDataType>(rightTip, rightStack, rightStackWithAppData);
         for (let leftIndex = 0; undefined !== (leftChild = getByIndex<RangeTreeNode<AppDataType>>(leftIndex, leftTip._children)); leftIndex++) {
-          for (let rightIndex = 0; undefined !== (rightChild = getByIndex<RangeTreeNode<AppDataType>>(rightIndex, rightTip._children)); rightIndex++) {
+          for (
+            let rightIndex = 0;
+            undefined !== (rightChild = getByIndex<RangeTreeNode<AppDataType>>(rightIndex, rightTip._children));
+            rightIndex++
+          ) {
             this.recursivePairSearch(
-              leftChild, leftStack, leftStackWithAppData,
-              rightChild, rightStack, rightStackWithAppData,
-              handler);
+              leftChild,
+              leftStack,
+              leftStackWithAppData,
+              rightChild,
+              rightStack,
+              rightStackWithAppData,
+              handler,
+            );
           }
         }
         this.popPaths<AppDataType>(leftTip, leftStack, leftStackWithAppData);
@@ -485,14 +499,21 @@ export class RangeTreeOps {
   /** Count nodes in this tree. */
   public static getRecursiveNodeCount<AppDataType>(root: RangeTreeNode<AppDataType>): number {
     let count = 0;
-    root.recurseIntoTree((_node: RangeTreeNode<AppDataType>): boolean => { count++; return true; });
+    root.recurseIntoTree((_node: RangeTreeNode<AppDataType>): boolean => {
+      count++;
+      return true;
+    });
     return count;
   }
   /** Count appData in this tree. */
   public static getRecursiveAppDataCount<AppDataType>(root: RangeTreeNode<AppDataType>): number {
     let count = 0;
     root.recurseIntoTree(
-      (node: RangeTreeNode<AppDataType>): boolean => { count += node.getNumAppData(); return true; });
+      (node: RangeTreeNode<AppDataType>): boolean => {
+        count += node.getNumAppData();
+        return true;
+      },
+    );
     return count;
   }
   /**
@@ -509,7 +530,8 @@ export class RangeTreeOps {
     appData: IndexToType<AppDataType>,
     index0: number,
     index1: number,
-    arrayLength: number): RangeTreeNode<AppDataType> {
+    arrayLength: number,
+  ): RangeTreeNode<AppDataType> {
     const appDataBlock: AppDataType[] = [];
     const range = Range3d.createNull();
     index1 = Math.min(index1, arrayLength);
@@ -548,7 +570,7 @@ export class RangeTreeOps {
     const maxChildrenAppData = maxChildPerNode * maxAppDataPerLeaf;
     // console.log({ name: "createRecursive", index0, index1, maxChildrenAppData });
 
-    if (index1 <= index0 + maxChildrenAppData) {  // index range is small enough to hold the appData in leaf children
+    if (index1 <= index0 + maxChildrenAppData) { // index range is small enough to hold the appData in leaf children
       // console.log({ case: "LEAF GROUP", index0, index1 });
       for (let indexA = index0 + maxAppDataPerLeaf; index0 < index1; index0 = indexA, indexA = Math.min(indexA + maxAppDataPerLeaf, index1)) {
         const leaf = RangeTreeOps.createLeafInIndexRange(ranges, appData, index0, indexA, arrayLength);
@@ -557,7 +579,7 @@ export class RangeTreeOps {
           children.push(leaf);
         }
       }
-    } else {  // split the appData among interior and leaf children
+    } else { // split the appData among interior and leaf children
       // console.log({ case: "INTERIOR", index0, index1 });
       const numPerGulp = Math.ceil((index1 - index0) / maxChildPerNode);
       for (let indexA = index0 + numPerGulp; index0 < index1; index0 = indexA, indexA = Math.min(indexA + numPerGulp, index1)) {
@@ -591,13 +613,22 @@ export class RangeTreeOps {
     // console.log();
     // const numData = getFlexDataCount(appData);
     // console.log({ numData });
-    if (arrayLength <= 0
+    if (
+      arrayLength <= 0
       || (Array.isArray(ranges) && ranges.length !== arrayLength)
-      || (Array.isArray(appData) && appData.length !== arrayLength))
+      || (Array.isArray(appData) && appData.length !== arrayLength)
+    )
       return undefined;
     if (maxChildrenPerNode < 2)
       maxChildrenPerNode = 2;
-    return RangeTreeOps.createRecursiveByIndexSplits<AppDataType>(ranges, appData, 0, arrayLength, arrayLength, maxChildrenPerNode, maxAppDataPerLeaf);
+    return RangeTreeOps.createRecursiveByIndexSplits<AppDataType>(
+      ranges,
+      appData,
+      0,
+      arrayLength,
+      arrayLength,
+      maxChildrenPerNode,
+      maxAppDataPerLeaf,
+    );
   }
 }
-

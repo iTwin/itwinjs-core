@@ -8,7 +8,12 @@
 
 import { compareStrings } from "@itwin/core-bentley";
 import {
-  BackgroundMapProvider, BackgroundMapType, BaseMapLayerSettings, DeprecatedBackgroundMapProps, ImageMapLayerSettings, MapSubLayerProps,
+  BackgroundMapProvider,
+  BackgroundMapType,
+  BaseMapLayerSettings,
+  DeprecatedBackgroundMapProps,
+  ImageMapLayerSettings,
+  MapSubLayerProps,
 } from "@itwin/core-common";
 import { Point2d } from "@itwin/core-geometry";
 import { IModelApp } from "../../IModelApp";
@@ -57,7 +62,7 @@ export interface MapLayerSourceProps {
 
   /** List of query parameters that will get appended to the source.
    * @beta
-  */
+   */
   queryParams?: { [key: string]: string };
 }
 
@@ -75,15 +80,22 @@ export class MapLayerSource {
 
   /** List of query parameters that will get appended to the source URL that should be be persisted part of the JSON representation.
    * @beta
-  */
+   */
   public savedQueryParams?: { [key: string]: string };
 
   /** List of query parameters that will get appended to the source URL that should *not* be be persisted part of the JSON representation.
    * @beta
-  */
+   */
   public unsavedQueryParams?: { [key: string]: string };
 
-  private constructor(formatId = "WMS", name: string, url: string, baseMap = false, transparentBackground = true, savedQueryParams?: { [key: string]: string}) {
+  private constructor(
+    formatId = "WMS",
+    name: string,
+    url: string,
+    baseMap = false,
+    transparentBackground = true,
+    savedQueryParams?: { [key: string]: string },
+  ) {
     this.formatId = formatId;
     this.name = name;
     this.url = url;
@@ -100,7 +112,7 @@ export class MapLayerSource {
   }
 
   public async validateSource(ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    return IModelApp.mapLayerFormatRegistry.validateSource({source: this, ignoreCache});
+    return IModelApp.mapLayerFormatRegistry.validateSource({ source: this, ignoreCache });
   }
 
   /** @internal*/
@@ -117,8 +129,14 @@ export class MapLayerSource {
 
     return undefined;
   }
-  public toJSON(): Omit<MapLayerSourceProps, "formatId"> & {formatId: string}  {
-    return { url: this.url, name: this.name, formatId: this.formatId, transparentBackground: this.transparentBackground, queryParams: this.savedQueryParams };
+  public toJSON(): Omit<MapLayerSourceProps, "formatId"> & { formatId: string } {
+    return {
+      url: this.url,
+      name: this.name,
+      formatId: this.formatId,
+      transparentBackground: this.transparentBackground,
+      queryParams: this.savedQueryParams,
+    };
   }
 
   public toLayerSettings(subLayers?: MapSubLayerProps[]): ImageMapLayerSettings | undefined {
@@ -129,11 +147,11 @@ export class MapLayerSource {
     }
 
     if (this.savedQueryParams) {
-      layerSettings.savedQueryParams = {...this.savedQueryParams};
+      layerSettings.savedQueryParams = { ...this.savedQueryParams };
     }
 
     if (this.unsavedQueryParams) {
-      layerSettings.unsavedQueryParams = {...this.unsavedQueryParams};
+      layerSettings.unsavedQueryParams = { ...this.unsavedQueryParams };
     }
     return layerSettings;
   }
@@ -143,18 +161,17 @@ export class MapLayerSource {
   }
 
   /** Collect all query parameters
- * @beta
- */
+   * @beta
+   */
   public collectQueryParams() {
-    let queryParams: {[key: string]: string} = {};
+    let queryParams: { [key: string]: string } = {};
 
     if (this.savedQueryParams)
-      queryParams = {...this.savedQueryParams};
+      queryParams = { ...this.savedQueryParams };
     if (this.unsavedQueryParams)
-      queryParams = {...queryParams, ...this.unsavedQueryParams};
+      queryParams = { ...queryParams, ...this.unsavedQueryParams };
     return queryParams;
   }
-
 }
 
 /** A collection of [[MapLayerSource]] objects.
@@ -162,9 +179,11 @@ export class MapLayerSource {
  */
 export class MapLayerSources {
   private static _instance?: MapLayerSources;
-  private constructor(private _sources: MapLayerSource[]) { }
+  private constructor(private _sources: MapLayerSource[]) {}
 
-  public static getInstance() { return MapLayerSources._instance; }
+  public static getInstance() {
+    return MapLayerSources._instance;
+  }
 
   public findByName(name: string, baseMap: boolean = false): MapLayerSource | undefined {
     const nameTest = name.toLowerCase();
@@ -183,7 +202,9 @@ export class MapLayerSources {
 
     return layers;
   }
-  public get allSource() { return this._sources; }
+  public get allSource() {
+    return this._sources;
+  }
   public get bases(): MapLayerSource[] {
     const layers = new Array<MapLayerSource>();
     this._sources.forEach((source) => {
@@ -196,17 +217,29 @@ export class MapLayerSources {
 
   private static getBingMapLayerSource(): MapLayerSource[] {
     const mapLayerSources: MapLayerSource[] = [];
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Street } })!,
+    );
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Aerial } })!,
+    );
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!,
+    );
     return mapLayerSources;
   }
 
   private static getMapBoxLayerSource(): MapLayerSource[] {
     const mapLayerSources: MapLayerSource[] = [];
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!);
-    mapLayerSources.push(MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!);
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } })!,
+    );
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } })!,
+    );
+    mapLayerSources.push(
+      MapLayerSource.fromBackgroundMapProps({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Hybrid } })!,
+    );
     return mapLayerSources;
   }
 
@@ -223,17 +256,22 @@ export class MapLayerSources {
       const cartoCenter = iModel.spatialToCartographicFromEcef(projectCenter);
       const globeRange = MapCartoRectangle.createMaximum();
       const nearDelta = Point2d.create(globeRange.xLength() / 100, globeRange.yLength() / 100);
-      sourceRange = MapCartoRectangle.fromRadians(cartoCenter.longitude - nearDelta.x, cartoCenter.latitude - nearDelta.y, cartoCenter.longitude + nearDelta.x, cartoCenter.latitude + nearDelta.y);
+      sourceRange = MapCartoRectangle.fromRadians(
+        cartoCenter.longitude - nearDelta.x,
+        cartoCenter.latitude - nearDelta.y,
+        cartoCenter.longitude + nearDelta.x,
+        cartoCenter.latitude + nearDelta.y,
+      );
     }
 
     const sources = new Array<MapLayerSource>();
     const urlSet = new Set<string>();
-    const addSource = ((source: MapLayerSource) => {
+    const addSource = (source: MapLayerSource) => {
       if (!urlSet.has(source.url)) {
         sources.push(source);
         urlSet.add(source.url);
       }
-    });
+    };
 
     this.getBingMapLayerSource().forEach((source) => {
       addSource(source);

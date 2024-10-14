@@ -6,12 +6,19 @@
  * @module NativeApp
  */
 
-import { join } from "path";
 import { AccessToken, assert, BeEvent, GuidString } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppFunctions, nativeAppIpcStrings, NativeAppNotifications,
-  OverriddenBy, RequestNewBriefcaseProps, StorageValue,
+  BriefcaseProps,
+  InternetConnectivityStatus,
+  LocalBriefcaseProps,
+  NativeAppFunctions,
+  nativeAppIpcStrings,
+  NativeAppNotifications,
+  OverriddenBy,
+  RequestNewBriefcaseProps,
+  StorageValue,
 } from "@itwin/core-common";
+import { join } from "path";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "./BriefcaseManager";
 import { Downloads, ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
@@ -22,7 +29,9 @@ import { NativeAppStorage } from "./NativeAppStorage";
  * Implementation of NativeAppFunctions
  */
 class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
-  public get channelName() { return nativeAppIpcStrings.channelName; }
+  public get channelName() {
+    return nativeAppIpcStrings.channelName;
+  }
 
   public async getAccessToken(): Promise<AccessToken | undefined> {
     return IModelHost.authorizationClient?.getAccessToken();
@@ -40,7 +49,11 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public async getBriefcaseFileName(props: BriefcaseProps): Promise<string> {
     return BriefcaseManager.getFileName(props);
   }
-  public async downloadBriefcase(request: RequestNewBriefcaseProps, reportProgress: boolean, progressInterval?: number): Promise<LocalBriefcaseProps> {
+  public async downloadBriefcase(
+    request: RequestNewBriefcaseProps,
+    reportProgress: boolean,
+    progressInterval?: number,
+  ): Promise<LocalBriefcaseProps> {
     const args: RequestNewBriefcaseArg = {
       ...request,
       accessToken: await this.getAccessToken(),
@@ -133,7 +146,7 @@ export interface NativeHostOpts extends IpcHostOpts {
 export class NativeHost {
   private static _reachability?: InternetConnectivityStatus;
   private static _applicationName: string;
-  private constructor() { } // no instances - static methods only
+  private constructor() {} // no instances - static methods only
 
   /** Event called when the internet connectivity changes, if known. */
   public static readonly onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
@@ -151,8 +164,12 @@ export class NativeHost {
   }
 
   private static _isValid = false;
-  public static get isValid(): boolean { return this._isValid; }
-  public static get applicationName() { return this._applicationName; }
+  public static get isValid(): boolean {
+    return this._isValid;
+  }
+  public static get applicationName() {
+    return this._applicationName;
+  }
   /** Get the settings store for this NativeHost. */
   public static get settingsStore() {
     return NativeAppStorage.open(this.applicationName);
@@ -166,12 +183,13 @@ export class NativeHost {
     if (!this.isValid) {
       this._isValid = true;
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) =>
-        NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
+        NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status)
+      );
       this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
     }
 
     await IpcHost.startup(opt);
-    if (IpcHost.isValid)  // for tests, we use NativeHost but don't have a frontend
+    if (IpcHost.isValid) // for tests, we use NativeHost but don't have a frontend
       NativeAppHandler.register();
   }
 

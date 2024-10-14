@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { BagOfCurves, CurveCollection } from "../../curve/CurveCollection";
@@ -75,7 +75,6 @@ function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
     ck.testCoordinate(length1, length3, "length of clone(transform), transformInPlace");
     const path5 = collection.cloneTransformed(scaleTransform)!;
     path5.sumLengths();
-
   }
 
   ck.testCoordinate(length0 * scaleFactor, length1, "scaled length");
@@ -95,7 +94,6 @@ function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
       ck.testTrue(child === child1, "collection.getChild matches iterator ");
     }
   }
-
 }
 describe("CurveCollection", () => {
   it("HelloWorld", () => {
@@ -151,7 +149,6 @@ describe("CurveCollection", () => {
 });
 
 describe("ConsolidateAdjacentPrimitives", () => {
-
   it("Lines", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -200,10 +197,9 @@ describe("ConsolidateAdjacentPrimitives", () => {
     const chain0 = CurveFactory.createFilletsInLineString(points, 0.2, false)!;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chain0, x0, y0);
     x0 += 10;
-    chain0.tryAddChild(BezierCurve3d.create([tail,
-      tail.plus(Vector3d.create(1, 1, 0)),
-      tail.plus(Vector3d.create(2, 0, -1)),
-      tail.plus(Vector3d.create(-2, 3, 0))]));
+    chain0.tryAddChild(
+      BezierCurve3d.create([tail, tail.plus(Vector3d.create(1, 1, 0)), tail.plus(Vector3d.create(2, 0, -1)), tail.plus(Vector3d.create(-2, 3, 0))]),
+    );
     const chain1 = Path.create();
     const breakFractionRadius = 0.4;
     let radians = 0.3;
@@ -344,7 +340,6 @@ describe("ConsolidateAdjacentPrimitives", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCollection", "ClosestPoint");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 /**
  * Capture markers at shiftFraction and (1-shiftFraction) on each primitive of curves.
@@ -355,7 +350,15 @@ describe("ConsolidateAdjacentPrimitives", () => {
  * @param x0
  * @param y0
  */
-function markLimits(allGeometry: GeometryQuery[], primitives: CurvePrimitive[], shiftFraction: number, markerSize0: number, markerSize1: number, x0: number, y0: number) {
+function markLimits(
+  allGeometry: GeometryQuery[],
+  primitives: CurvePrimitive[],
+  shiftFraction: number,
+  markerSize0: number,
+  markerSize1: number,
+  x0: number,
+  y0: number,
+) {
   for (const p of primitives) {
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p.fractionToPoint(shiftFraction), markerSize0, x0, y0);
     GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p.fractionToPoint(1.0 - shiftFraction), markerSize1, x0, y0);

@@ -6,7 +6,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 export class ArcGISMapLayerDataset {
-
   public static readonly TilesOnlyDataset26918: any = {
     id: "ae830ad7b2a39acf",
     name: "Philadelphia2",
@@ -18,103 +17,94 @@ export class ArcGISMapLayerDataset {
     access: "SECURE",
     status: "created",
     singleFusedMapCache: true,
-    spatialReference:
-  {
-    wkid: 26918,
-    latestWkid: 26918,
-  },
-    initialExtent:
-  {
-    xmin: 442494.57455522625,
-    ymin: 4410580.203758644,
-    xmax: 536978.6719738642,
-    ymax: 4444183.334639749,
-    spatialReference:
-     {
-       wkid: 26918,
-       latestWkid: 26918,
-     },
-  },
-    fullExtent:
-  {
-    xmin: 475778.10840000026,
-    ymin: 4412107.618799999,
-    xmax: 503695.13810000004,
-    ymax: 4442655.9196,
-    spatialReference:
-     {
-       wkid: 26918,
-       latestWkid: 26918,
-     },
-  },
+    spatialReference: {
+      wkid: 26918,
+      latestWkid: 26918,
+    },
+    initialExtent: {
+      xmin: 442494.57455522625,
+      ymin: 4410580.203758644,
+      xmax: 536978.6719738642,
+      ymax: 4444183.334639749,
+      spatialReference: {
+        wkid: 26918,
+        latestWkid: 26918,
+      },
+    },
+    fullExtent: {
+      xmin: 475778.10840000026,
+      ymin: 4412107.618799999,
+      xmax: 503695.13810000004,
+      ymax: 4442655.9196,
+      spatialReference: {
+        wkid: 26918,
+        latestWkid: 26918,
+      },
+    },
     minScale: 1.47914382E8,
     maxScale: 5842.0,
     minLOD: 0,
     maxLOD: 4,
-    tileInfo:
-  {
-    rows: 256,
-    cols: 256,
-    dpi: 96,
-    format: "PNG",
-    compressionQuality: 0,
-    storageFormat: "esriMapCacheStorageModeCompactV2",
-    origin:
-     {
-       x: -5120900.0,
-       y: 9998100.0,
-     },
-    spatialReference:
-     {
-       wkid: 26918,
-       latestWkid: 26918,
-     },
-    lods: [
-      {
-        level: 0,
-        resolution: 66.1459656252646,
-        scale: 250000.0,
+    tileInfo: {
+      rows: 256,
+      cols: 256,
+      dpi: 96,
+      format: "PNG",
+      compressionQuality: 0,
+      storageFormat: "esriMapCacheStorageModeCompactV2",
+      origin: {
+        x: -5120900.0,
+        y: 9998100.0,
       },
-      {
-        level: 1,
-        resolution: 33.0729828126323,
-        scale: 125000.0,
+      spatialReference: {
+        wkid: 26918,
+        latestWkid: 26918,
       },
-      {
-        level: 2,
-        resolution: 16.933367200067735,
-        scale: 64000.0,
-      },
-      {
-        level: 3,
-        resolution: 8.466683600033868,
-        scale: 32000.0,
-      },
-      {
-        level: 4,
-        resolution: 4.233341800016934,
-        scale: 16000.0,
-      },
-    ],
-  },
-    documentInfo:
-  {
-    title: "Philadelphia2",
-    author: "mcayerbentley",
-    comments: "",
-    subject: "landmarks2",
-    category: "",
-    keywords: "philly",
-    credits: "",
-    Title: "",
-    Author: "",
-    Comments: "",
-    Subject: "landmarks",
-    Category: "",
-    AntialiasingMode: "Best",
-    TextAntialiasingMode: "Force",
-    Keywords: "philly",
-  },
+      lods: [
+        {
+          level: 0,
+          resolution: 66.1459656252646,
+          scale: 250000.0,
+        },
+        {
+          level: 1,
+          resolution: 33.0729828126323,
+          scale: 125000.0,
+        },
+        {
+          level: 2,
+          resolution: 16.933367200067735,
+          scale: 64000.0,
+        },
+        {
+          level: 3,
+          resolution: 8.466683600033868,
+          scale: 32000.0,
+        },
+        {
+          level: 4,
+          resolution: 4.233341800016934,
+          scale: 16000.0,
+        },
+      ],
+    },
+    documentInfo: {
+      title: "Philadelphia2",
+      author: "mcayerbentley",
+      comments: "",
+      subject: "landmarks2",
+      category: "",
+      keywords: "philly",
+      credits: "",
+      Title: "",
+      Author: "",
+      Comments: "",
+      Subject: "landmarks",
+      Category: "",
+      AntialiasingMode: "Best",
+      TextAntialiasingMode: "Force",
+      Keywords: "philly",
+    },
     copyrightText: "",
     tileServers: null,
     maxExportTilesCount: 100000,
@@ -141,9 +131,11 @@ export class ArcGISMapLayerDataset {
 
   public static readonly UsaTopoMaps: any = {
     currentVersion: 10.91,
-    serviceDescription: "This map presents land cover imagery for the world and detailed topographic maps for the United States. The map includes the National Park Service (NPS) Natural Earth physical map at 1.24km per pixel for the world at small scales, i-cubed eTOPO 1:250,000-scale maps for the contiguous United States at medium scales, and National Geographic TOPO! 1:100,000 and 1:24,000-scale maps (1:250,000 and 1:63,000 in Alaska) for the United States at large scales. The TOPO! maps are seamless, scanned images of United States Geological Survey (USGS) paper topographic maps. For more information on this map, including the terms of use, visit us <a href=\"http://goto.arcgisonline.com/maps/USA_Topo_Maps \" target=\"_new\" >online<\/a>.",
+    serviceDescription:
+      'This map presents land cover imagery for the world and detailed topographic maps for the United States. The map includes the National Park Service (NPS) Natural Earth physical map at 1.24km per pixel for the world at small scales, i-cubed eTOPO 1:250,000-scale maps for the contiguous United States at medium scales, and National Geographic TOPO! 1:100,000 and 1:24,000-scale maps (1:250,000 and 1:63,000 in Alaska) for the United States at large scales. The TOPO! maps are seamless, scanned images of United States Geological Survey (USGS) paper topographic maps. For more information on this map, including the terms of use, visit us <a href="http://goto.arcgisonline.com/maps/USA_Topo_Maps " target="_new" >online<\/a>.',
     mapName: "Layers",
-    description: "This map presents land cover imagery for the world and detailed topographic maps for the United States. The map includes the National Park Service (NPS) Natural Earth physical map at 1.24km per pixel for the world at small scales, i-cubed eTOPO 1:250,000-scale maps for the contiguous United States at medium scales, and National Geographic TOPO! 1:100,000 and 1:24,000-scale maps (1:250,000 and 1:63,000 in Alaska) for the United States at large scales. The TOPO! maps are seamless, scanned images of United States Geological Survey (USGS) paper topographic maps. For more information on this map, including our terms of use, visit us online at http://goto.arcgisonline.com/maps/USA_Topo_Maps",
+    description:
+      "This map presents land cover imagery for the world and detailed topographic maps for the United States. The map includes the National Park Service (NPS) Natural Earth physical map at 1.24km per pixel for the world at small scales, i-cubed eTOPO 1:250,000-scale maps for the contiguous United States at medium scales, and National Geographic TOPO! 1:100,000 and 1:24,000-scale maps (1:250,000 and 1:63,000 in Alaska) for the United States at large scales. The TOPO! maps are seamless, scanned images of United States Geological Survey (USGS) paper topographic maps. For more information on this map, including our terms of use, visit us online at http://goto.arcgisonline.com/maps/USA_Topo_Maps",
     copyrightText: "Copyright:© 2013 National Geographic Society, i-cubed",
     supportsDynamicLayers: false,
     layers: [
@@ -747,9 +739,9 @@ export class ArcGISMapLayerDataset {
     ],
     supportsDatumTransformation: true,
     floorAwareMapProperties: {
-      defaultFloorFilterSettings: {isEnabled: true},
+      defaultFloorFilterSettings: { isEnabled: true },
     },
-    archivingInfo: {supportsHistoricMoment: false},
+    archivingInfo: { supportsHistoricMoment: false },
     supportsClipping: true,
     supportsSpatialFilter: true,
     supportsTimeRelation: true,

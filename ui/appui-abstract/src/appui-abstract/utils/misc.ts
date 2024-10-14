@@ -25,4 +25,3 @@ export const getClassName = (obj: any): string => {
 
   return className;
 };
-

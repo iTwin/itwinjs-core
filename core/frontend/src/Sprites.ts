@@ -7,10 +7,10 @@
  */
 
 import { Logger } from "@itwin/core-bentley";
-import { Point2d, Point3d, XYAndZ } from "@itwin/core-geometry";
 import { ImageSource } from "@itwin/core-common";
+import { Point2d, Point3d, XYAndZ } from "@itwin/core-geometry";
 import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
-import { imageElementFromImageSource, imageElementFromUrl  } from "./common/ImageUtil";
+import { imageElementFromImageSource, imageElementFromUrl } from "./common/ImageUtil";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
@@ -38,9 +38,13 @@ export class Sprite {
   /** Promise fulfilled when this sprite is loaded. */
   public loadPromise: Promise<HTMLImageElement>;
   /** The offset to the middle of this Sprite. If not loaded, value is not meaningful. */
-  public get offset(): Point2d { return new Point2d(Math.round(this.size.x) / 2, Math.round(this.size.y / 2)); }
+  public get offset(): Point2d {
+    return new Point2d(Math.round(this.size.x) / 2, Math.round(this.size.y / 2));
+  }
   /** Whether this sprite has be successfully loaded. */
-  public get isLoaded(): boolean { return undefined !== this.image; }
+  public get isLoaded(): boolean {
+    return undefined !== this.image;
+  }
 
   /** construct a Sprite from an ImageSource or a Url
    * @param src The ImageSource holding an image to create the texture for this Sprite, or the url of the image
@@ -79,7 +83,9 @@ export class IconSprites {
   }
 
   /** Empty the cache, disposing all existing Sprites. */
-  public static emptyAll() { this._sprites.clear(); }
+  public static emptyAll() {
+    this._sprites.clear();
+  }
 }
 
 /** A Sprite location. Sprites generally move around on the screen and this object holds the current location
@@ -97,7 +103,9 @@ export class SpriteLocation implements CanvasDecoration {
    * @see [[CanvasDecoration.position]]
    */
   public readonly position = new Point3d();
-  public get isActive(): boolean { return this._viewport !== undefined; }
+  public get isActive(): boolean {
+    return this._viewport !== undefined;
+  }
 
   /** Activate this SpriteLocation to show a Sprite at a location in a single ScreenViewport.
    * This call does not display the Sprite. Rather, subsequent calls to [[decorate]] from  will show the Sprite.

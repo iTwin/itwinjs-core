@@ -27,13 +27,17 @@ describe("ConvexClipPlaneSet", () => {
     const ay = -2;
     const bx = 1;
     const by = 4;
-    const boxA = ConvexClipPlaneSet.createXYPolyLine([
-      Point3d.create(ax, ay, 0),
-      Point3d.create(bx, ay, 0),
-      Point3d.create(bx, by, 0),
-      Point3d.create(ax, by, 0),
-      Point3d.create(ax, ay, 0)],
-      [true, true, true, true, true], true);
+    const boxA = ConvexClipPlaneSet.createXYPolyLine(
+      [
+        Point3d.create(ax, ay, 0),
+        Point3d.create(bx, ay, 0),
+        Point3d.create(bx, by, 0),
+        Point3d.create(ax, by, 0),
+        Point3d.create(ax, ay, 0),
+      ],
+      [true, true, true, true, true],
+      true,
+    );
     const boxA1 = boxA.clone();
     ck.testFalse(errorSet1.isAlmostEqual(boxA));
     ConvexClipPlaneSet.createEmpty(boxA1);
@@ -41,18 +45,26 @@ describe("ConvexClipPlaneSet", () => {
     const boxB = ConvexClipPlaneSet.createXYBox(ax, ay, bx, by);
     const boxC = boxB.clone();
     const segmentM = LineSegment3d.createXYXY(
-      Geometry.interpolate(ax, 0.3, bx), ay,
-      bx, Geometry.interpolate(ay, 0.9, by), 0);
+      Geometry.interpolate(ax, 0.3, bx),
+      ay,
+      bx,
+      Geometry.interpolate(ay, 0.9, by),
+      0,
+    );
 
-    for (const transform of [
-      Transform.createTranslationXYZ(10, 0, 0),
-      Transform.createFixedPointAndMatrix(
-        Point3d.create(ax, ay, 0),
-        Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(90))!),
-      Transform.createFixedPointAndMatrix(
-        Point3d.create(3, 2, 5),
-        Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 9), Angle.createDegrees(23))!)]) {
-
+    for (
+      const transform of [
+        Transform.createTranslationXYZ(10, 0, 0),
+        Transform.createFixedPointAndMatrix(
+          Point3d.create(ax, ay, 0),
+          Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(90))!,
+        ),
+        Transform.createFixedPointAndMatrix(
+          Point3d.create(3, 2, 5),
+          Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 9), Angle.createDegrees(23))!,
+        ),
+      ]
+    ) {
       const segmentN = segmentM.cloneTransformed(transform);
       const boxD = boxA.clone();
       boxD.transformInPlace(transform);

@@ -66,7 +66,7 @@ export class RpcPendingQueue {
     this.clearPendingInterval();
   }
 
-  private _pendingIntervalHandler = function (this: RpcPendingQueue) {
+  private _pendingIntervalHandler = function(this: RpcPendingQueue) {
     const now = new Date().getTime();
 
     ++this._pendingLock;

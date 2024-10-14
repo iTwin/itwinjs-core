@@ -7,9 +7,9 @@
  */
 
 import { SchemaKeyProps } from "./Deserialization/JsonProps";
+import { ECName } from "./ECName";
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
-import { ECName } from "./ECName";
 
 /**
  * @beta
@@ -24,7 +24,6 @@ export class ECVersion {
    * @param read Can support up to 999.
    * @param write Can support up to 999.
    * @param minor Can support up to 9999999.
-   *
    */
   constructor(read?: number, write?: number, minor?: number) {
     if (undefined !== read)
@@ -38,9 +37,15 @@ export class ECVersion {
       throw new ECObjectsError(ECObjectsStatus.InvalidECVersion);
   }
 
-  public get read() { return this._read; }
-  public get write() { return this._write; }
-  public get minor() { return this._minor; }
+  public get read() {
+    return this._read;
+  }
+  public get write() {
+    return this._write;
+  }
+  public get minor() {
+    return this._minor;
+  }
 
   /**
    * Creates a string, in the format 'RR.ww.mm', representing this ECVersion.
@@ -106,24 +111,36 @@ export class SchemaKey {
   constructor(name: string, readVersion?: number, writeVersion?: number, minorVersion?: number);
   constructor(name: string, readOrVersion?: number | ECVersion, writeVersion?: number, minorVersion?: number) {
     this._name = new ECName(name);
-    if (readOrVersion !== undefined && typeof (readOrVersion) !== "number")
+    if (readOrVersion !== undefined && typeof readOrVersion !== "number")
       this._version = readOrVersion;
     else
       this._version = new ECVersion(readOrVersion, writeVersion, minorVersion);
   }
 
-  public get version() { return this._version; }
-  public get name() { return this._name.name; }
-  public get readVersion() { return this.version.read; }
-  public get writeVersion() { return this.version.write; }
-  public get minorVersion() { return this.version.minor; }
+  public get version() {
+    return this._version;
+  }
+  public get name() {
+    return this._name.name;
+  }
+  public get readVersion() {
+    return this.version.read;
+  }
+  public get writeVersion() {
+    return this.version.write;
+  }
+  public get minorVersion() {
+    return this.version.minor;
+  }
 
   /**
    * Creates a string, in the format 'RR.ww.mm', representing this SchemaKey.
    * @note The default is to pad the full name with zeroes.
    * @param padZeroes If true, the returned string will strictly follow `Name.RR.ww.mm` and add leading zeroes if necessary.
    */
-  public toString(padZeroes: boolean = true) { return `${this.name}.${this.version.toString(padZeroes)}`; }
+  public toString(padZeroes: boolean = true) {
+    return `${this.name}.${this.version.toString(padZeroes)}`;
+  }
 
   public static parseString(fullName: string) {
     const keyPieces = fullName.split(".");
@@ -145,7 +162,7 @@ export class SchemaKey {
     if (undefined === rhs)
       return false;
 
-    if (typeof (rhs) === "string")
+    if (typeof rhs === "string")
       return rhs.toLowerCase() === this.name.toLowerCase();
 
     return rhs.name.toLowerCase() === this.name.toLowerCase();
@@ -161,7 +178,6 @@ export class SchemaKey {
   }
 
   /**
-   *
    * @param rhs The SchemaKey to compare with
    * @param matchType The match type to use for comparison.
    */
@@ -231,13 +247,21 @@ export class SchemaItemKey {
     this._schemaKey = schema;
   }
 
-  public get schemaKey() { return this._schemaKey; }
-  public get name() { return this._name.name; }
+  public get schemaKey() {
+    return this._schemaKey;
+  }
+  public get name() {
+    return this._name.name;
+  }
 
-  public get schemaName() { return this.schemaKey.name; }
+  public get schemaName() {
+    return this.schemaKey.name;
+  }
 
   /** Returns the name in the format, {schemaName}.{name}. */
-  public get fullName() { return `${this.schemaName}.${this.name}`; }
+  public get fullName() {
+    return `${this.schemaName}.${this.name}`;
+  }
 
   /**
    * Checks whether this SchemaItemKey matches the one provided.

@@ -36,7 +36,9 @@ export class Debug {
   }
 
   /** If [[Debug.evaluateEnabled]] is true, returns whether the currently-bound framebuffer is complete. */
-  public static get isValidFrameBuffer(): boolean { return GL.FrameBuffer.Status.Complete === this.checkFrameBufferStatus(); }
+  public static get isValidFrameBuffer(): boolean {
+    return GL.FrameBuffer.Status.Complete === this.checkFrameBufferStatus();
+  }
 
   /** If [[Debug.evaluateEnabled]] is true, returns the status of the currently-bound framebuffer. */
   public static checkFrameBufferStatus(): GL.FrameBuffer.Status {

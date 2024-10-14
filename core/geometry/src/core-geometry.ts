@@ -56,7 +56,6 @@
  *   * Point2dArray, Point3dArray, Point4dArray, Vector3dArray -- miscellaneous operations on arrays of 2d and 3d points.
  * * Interfaces
  *   * GeometryHandler -- a double-dispatch protocol used for efficient implementation of algorithms that work on many geometry types.
- *
  */
 // doc:export class ArraysAndInterfacesDoc { }
 

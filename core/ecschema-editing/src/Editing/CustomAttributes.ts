@@ -8,13 +8,16 @@
 
 import {
   CustomAttributeClass,
-  CustomAttributeClassProps, CustomAttributeContainerType,
-  SchemaItemKey, SchemaItemType, SchemaKey,
+  CustomAttributeClassProps,
+  CustomAttributeContainerType,
+  SchemaItemKey,
+  SchemaItemType,
+  SchemaKey,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
 import { ECClasses } from "./ECClasses";
-import { MutableCAClass } from "./Mutable/MutableCAClass";
+import { SchemaContextEditor } from "./Editor";
 import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
+import { MutableCAClass } from "./Mutable/MutableCAClass";
 
 /**
  * @alpha
@@ -25,9 +28,21 @@ export class CustomAttributes extends ECClasses {
     super(SchemaItemType.CustomAttributeClass, schemaEditor);
   }
 
-  public async create(schemaKey: SchemaKey, name: string, appliesTo: CustomAttributeContainerType, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
+  public async create(
+    schemaKey: SchemaKey,
+    name: string,
+    appliesTo: CustomAttributeContainerType,
+    displayLabel?: string,
+    baseClassKey?: SchemaItemKey,
+  ): Promise<SchemaItemKey> {
     try {
-      const newClass = await this.createClass<CustomAttributeClass>(schemaKey, this.schemaItemType, (schema) => schema.createCustomAttributeClass.bind(schema), name, baseClassKey) as MutableCAClass;
+      const newClass = await this.createClass<CustomAttributeClass>(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createCustomAttributeClass.bind(schema),
+        name,
+        baseClassKey,
+      ) as MutableCAClass;
 
       if (displayLabel)
         newClass.setDisplayLabel(displayLabel);
@@ -46,7 +61,12 @@ export class CustomAttributes extends ECClasses {
    */
   public async createFromProps(schemaKey: SchemaKey, caProps: CustomAttributeClassProps): Promise<SchemaItemKey> {
     try {
-      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createCustomAttributeClass.bind(schema), caProps);
+      const newClass = await this.createSchemaItemFromProps(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createCustomAttributeClass.bind(schema),
+        caProps,
+      );
       return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, caProps.name!, schemaKey), e);

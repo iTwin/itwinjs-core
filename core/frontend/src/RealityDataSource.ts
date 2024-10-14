@@ -6,14 +6,22 @@
  * @module Tiles
  */
 import { BentleyError, GuidString, Logger, LoggingMetaData, RealityDataStatus } from "@itwin/core-bentley";
-import { Cartographic, EcefLocation, OrbitGtBlobProps, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey } from "@itwin/core-common";
-import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
-import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
-import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
-import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
-import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
-import { IModelApp } from "./IModelApp";
+import {
+  Cartographic,
+  EcefLocation,
+  OrbitGtBlobProps,
+  RealityData,
+  RealityDataFormat,
+  RealityDataProvider,
+  RealityDataSourceKey,
+} from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
+import { FrontendLoggerCategory } from "./common/FrontendLoggerCategory";
+import { IModelApp } from "./IModelApp";
+import { RealityDataSourceCesiumIonAssetImpl } from "./RealityDataSourceCesiumIonAssetImpl";
+import { RealityDataSourceContextShareImpl } from "./RealityDataSourceContextShareImpl";
+import { RealityDataSourceTilesetUrlImpl } from "./RealityDataSourceTilesetUrlImpl";
+import { CesiumIonAssetProvider, ContextShareProvider, getCesiumAssetUrl } from "./tile/internal";
 
 const loggerCategory: string = FrontendLoggerCategory.RealityData;
 
@@ -132,7 +140,7 @@ export namespace RealityDataSource {
     let format = inputFormat ? inputFormat : RealityDataFormat.fromUrl(tilesetUrl);
     if (CesiumIonAssetProvider.isProviderUrl(tilesetUrl)) {
       const provider = RealityDataProvider.CesiumIonAsset;
-      let cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id:  CesiumIonAssetProvider.osmBuildingId }; // default OSM building
+      let cesiumIonAssetKey: RealityDataSourceKey = { provider, format, id: CesiumIonAssetProvider.osmBuildingId }; // default OSM building
       // Parse URL to extract possible asset id and key if provided
       const cesiumAsset = CesiumIonAssetProvider.parseCesiumUrl(tilesetUrl);
       if (cesiumAsset) {
@@ -164,7 +172,11 @@ export namespace RealityDataSource {
     return contextShareKey;
   }
   /** @alpha - OrbitGtBlobProps is alpha */
-  export function createKeyFromOrbitGtBlobProps(orbitGtBlob: OrbitGtBlobProps, inputProvider?: RealityDataProvider, inputFormat?: RealityDataFormat): RealityDataSourceKey {
+  export function createKeyFromOrbitGtBlobProps(
+    orbitGtBlob: OrbitGtBlobProps,
+    inputProvider?: RealityDataProvider,
+    inputFormat?: RealityDataFormat,
+  ): RealityDataSourceKey {
     const format = inputFormat ? inputFormat : RealityDataFormat.OPC;
     if (orbitGtBlob.blobFileName && orbitGtBlob.blobFileName.toLowerCase().startsWith("http")) {
       return RealityDataSource.createKeyFromBlobUrl(orbitGtBlob.blobFileName, inputProvider, format);
@@ -192,8 +204,8 @@ export namespace RealityDataSource {
   }
   /** @internal - Is used by "fdt attach cesium asset" keyin*/
   export function createCesiumIonAssetKey(osmAssetId: number, requestKey: string): RealityDataSourceKey {
-    const id = getCesiumAssetUrl(osmAssetId,requestKey);
-    return {provider: RealityDataProvider.CesiumIonAsset, format: RealityDataFormat.ThreeDTile, id};
+    const id = getCesiumAssetUrl(osmAssetId, requestKey);
+    return { provider: RealityDataProvider.CesiumIonAsset, format: RealityDataFormat.ThreeDTile, id };
   }
   /** Return an instance of a RealityDataSource from a source key.
    * There will aways be only one reality data RealityDataSource for a corresponding reality data source key.

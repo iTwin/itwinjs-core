@@ -46,7 +46,10 @@ function saveTree(root: AlternatingCCTreeNode, shiftX: number = 0, shiftY: numbe
     Checker.saveTransformedLineString(root.points);
   else {
     const centroid = Point3dArray.centroid(root.points);
-    const transform = Transform.createFixedPointAndMatrix(centroid, Matrix3d.createScale(scaleAroundCentroidFactor, scaleAroundCentroidFactor, scaleAroundCentroidFactor));
+    const transform = Transform.createFixedPointAndMatrix(
+      centroid,
+      Matrix3d.createScale(scaleAroundCentroidFactor, scaleAroundCentroidFactor, scaleAroundCentroidFactor),
+    );
     const scaledPoints = transform.multiplyPoint3dArray(root.points);
     scaledPoints.push(scaledPoints[0].clone());
     Checker.saveTransformedLineString(scaledPoints);
@@ -127,7 +130,6 @@ function testClipper(points: Point3d[], root: AlternatingCCTreeNode, outputLevel
 }
 
 describe("RecursiveClipSets", () => {
-
   it("Test1", () => {
     const ck = new Checker();
     for (const numPoints of [5, 8, 12, 15, 23, 37, 67]) {
@@ -169,11 +171,14 @@ describe("RecursiveClipSets", () => {
   it("Test2", () => {
     const ck = new Checker();
     for (const perpendicularFactor of [-1.0, 1.0]) {
-      for (const generatorFunction of [
-        (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(numRecursion, _perpendicularFactor),
-        (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
-        (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(numRecursion, _perpendicularFactor),
-        (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(numRecursion, _perpendicularFactor)]) {
+      for (
+        const generatorFunction of [
+          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(numRecursion, _perpendicularFactor),
+          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
+          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(numRecursion, _perpendicularFactor),
+          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(numRecursion, _perpendicularFactor),
+        ]
+      ) {
         const shifterA = new SaveAndRestoreCheckTransform(0, 20, 0);
         for (let numRecursion = 0; numRecursion < 4; numRecursion++) {
           const shifterB = new SaveAndRestoreCheckTransform(10, 0, 0);
@@ -216,7 +221,6 @@ describe("RecursiveClipSets", () => {
 
       Point3d.create(1, -2, 0),
       Point3d.create(2, -1, 0),
-
       // Point3d.create(5, 0, 0),
     ];
 
@@ -247,8 +251,10 @@ describe("RecursiveClipSets", () => {
     x0 += 100;
     for (const degrees of [0, 45, 90, 180, 270]) {
       x0 += 100;
-      const transform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0),
-        Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
+      const transform = Transform.createFixedPointAndMatrix(
+        Point3d.create(0, 0),
+        Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)),
+      );
       const rotatedPoints = transform.multiplyPoint3dArray(pointsA);
       testHullAndInlets(rotatedPoints, x0, 10);
     }
@@ -281,13 +287,16 @@ describe("RecursiveClipSets", () => {
     const linesToClip: Point3d[] = [];
     const baseShift = Vector3d.create(-0.1, -0.1, 0);
     for (const perpendicularFactor of [-1.0, 1.0]) {
-      for (const generatorFunction of [
-        (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
-        (numRecursion: number, _perpendicularFactor: number) => Sample.nonConvexQuadSimpleFractal(numRecursion, _perpendicularFactor),
-        (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(numRecursion, _perpendicularFactor),
-        (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
-        (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(numRecursion, _perpendicularFactor),
-        (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(numRecursion, _perpendicularFactor)]) {
+      for (
+        const generatorFunction of [
+          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
+          (numRecursion: number, _perpendicularFactor: number) => Sample.nonConvexQuadSimpleFractal(numRecursion, _perpendicularFactor),
+          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(numRecursion, _perpendicularFactor),
+          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
+          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(numRecursion, _perpendicularFactor),
+          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(numRecursion, _perpendicularFactor),
+        ]
+      ) {
         const shifterA = new SaveAndRestoreCheckTransform(50, 0, 0);
         for (const depth of [0, 1, 2]) {
           const shifterB = new SaveAndRestoreCheckTransform(5, 0, 0);
@@ -365,7 +374,8 @@ describe("RecursiveClipSets", () => {
               Point3d.create(-0.3, 0.1),
               Point3d.create(0, 0.8),
               Point3d.create(0.5, 1.3),
-            ]);
+            ],
+          );
           Checker.saveTransformed(linestring);
           Checker.shift(0, 4, 0);
           Checker.saveTransformedLineString(polygon);
@@ -375,7 +385,8 @@ describe("RecursiveClipSets", () => {
           Checker.saveTransformedLineString(polygon);
           const segmentB = LineSegment3d.create(
             Point3d.create(1, 0.3),
-            Point3d.create(1.2, 0.8));
+            Point3d.create(1.2, 0.8),
+          );
           Checker.saveTransformed(segmentB);
           Checker.shift(0, 4, 0);
           Checker.saveTransformedLineString(polygon);
@@ -396,7 +407,14 @@ describe("RecursiveClipSets", () => {
   it("PolygonClipA", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const polygon = [Point3d.create(0, 0), Point3d.create(4, 0), Point3d.create(4, 2), Point3d.create(2, 2), Point3d.create(2, 3), Point3d.create(0, 4)];
+    const polygon = [
+      Point3d.create(0, 0),
+      Point3d.create(4, 0),
+      Point3d.create(4, 2),
+      Point3d.create(2, 2),
+      Point3d.create(2, 3),
+      Point3d.create(0, 4),
+    ];
     const root = AlternatingCCTreeNode.createTreeForPolygon(polygon);
     let x0 = 0;
     const dx = 10.0;
@@ -437,13 +455,16 @@ describe("RecursiveClipSets", () => {
     for (const polygonUV of [polygonUVB, polygonUVA]) {
       for (const perpendicularFactor of [-1.0, 1.0]) {
         const y0 = 0;
-        for (const generatorFunction of [
-          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
-          (numRecursion: number, _perpendicularFactor: number) => Sample.nonConvexQuadSimpleFractal(numRecursion, _perpendicularFactor),
-          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(numRecursion, _perpendicularFactor),
-          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
-          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(numRecursion, _perpendicularFactor),
-          (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(numRecursion, _perpendicularFactor)]) {
+        for (
+          const generatorFunction of [
+            (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
+            (numRecursion: number, _perpendicularFactor: number) => Sample.nonConvexQuadSimpleFractal(numRecursion, _perpendicularFactor),
+            (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(numRecursion, _perpendicularFactor),
+            (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(numRecursion, _perpendicularFactor),
+            (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(numRecursion, _perpendicularFactor),
+            (numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(numRecursion, _perpendicularFactor),
+          ]
+        ) {
           for (const depth of [0, 1, 2]) {
             const polygon = generatorFunction(depth, perpendicularFactor);
             const range = Range3d.createArray(polygon);

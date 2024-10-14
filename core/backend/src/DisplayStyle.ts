@@ -8,8 +8,22 @@
 
 import { CompressedId64Set, Id64, Id64Array, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, Code, CodeScopeProps, CodeSpec, ColorDef, DisplayStyle3dProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, DisplayStyleSubCategoryProps, EntityReferenceSet, PlanProjectionSettingsProps, RenderSchedule, SkyBoxImageProps, ViewFlags,
+  BisCodeSpec,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  ColorDef,
+  DisplayStyle3dProps,
+  DisplayStyle3dSettings,
+  DisplayStyle3dSettingsProps,
+  DisplayStyleProps,
+  DisplayStyleSettings,
+  DisplayStyleSubCategoryProps,
+  EntityReferenceSet,
+  PlanProjectionSettingsProps,
+  RenderSchedule,
+  SkyBoxImageProps,
+  ViewFlags,
 } from "@itwin/core-common";
 import { DefinitionElement, RenderTimeline } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -21,7 +35,9 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
  * @public
  */
 export abstract class DisplayStyle extends DefinitionElement {
-  public static override get className(): string { return "DisplayStyle"; }
+  public static override get className(): string {
+    return "DisplayStyle";
+  }
   public abstract get settings(): DisplayStyleSettings;
 
   protected constructor(props: DisplayStyleProps, iModel: IModelDb) {
@@ -57,7 +73,11 @@ export abstract class DisplayStyle extends DefinitionElement {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyleProps, targetElementProps: DisplayStyleProps): void {
+  protected static override onCloned(
+    context: IModelElementCloneContext,
+    sourceElementProps: DisplayStyleProps,
+    targetElementProps: DisplayStyleProps,
+  ): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
 
     if (!context.isBetweenIModels || !targetElementProps.jsonProperties?.styles)
@@ -70,13 +90,15 @@ export abstract class DisplayStyle extends DefinitionElement {
         ovr.subCategory;
         const targetSubCategoryId = context.findTargetElementId(Id64.fromJSON(ovr.subCategory));
         if (Id64.isValid(targetSubCategoryId))
-          targetOverrides.push({...ovr, subCategory: targetSubCategoryId});
+          targetOverrides.push({ ...ovr, subCategory: targetSubCategoryId });
       }
       settings.subCategoryOvr = targetOverrides;
     }
 
     if (settings.excludedElements) {
-      const excluded: Id64Array = "string" === typeof settings.excludedElements ? CompressedId64Set.decompressArray(settings.excludedElements) : settings.excludedElements;
+      const excluded: Id64Array = "string" === typeof settings.excludedElements
+        ? CompressedId64Set.decompressArray(settings.excludedElements)
+        : settings.excludedElements;
       const excludedTargetElements: Id64Array = [];
       for (const excludedElement of excluded) {
         const remapped = context.findTargetElementId(excludedElement);
@@ -127,10 +149,14 @@ export abstract class DisplayStyle extends DefinitionElement {
  * @public
  */
 export class DisplayStyle2d extends DisplayStyle {
-  public static override get className(): string { return "DisplayStyle2d"; }
+  public static override get className(): string {
+    return "DisplayStyle2d";
+  }
   private readonly _settings: DisplayStyleSettings;
 
-  public get settings(): DisplayStyleSettings { return this._settings; }
+  public get settings(): DisplayStyleSettings {
+    return this._settings;
+  }
 
   protected constructor(props: DisplayStyleProps, iModel: IModelDb) {
     super(props, iModel);
@@ -193,10 +219,14 @@ export interface DisplayStyleCreationOptions extends Omit<DisplayStyle3dSettings
  * @public
  */
 export class DisplayStyle3d extends DisplayStyle {
-  public static override get className(): string { return "DisplayStyle3d"; }
+  public static override get className(): string {
+    return "DisplayStyle3d";
+  }
   private readonly _settings: DisplayStyle3dSettings;
 
-  public get settings(): DisplayStyle3dSettings { return this._settings; }
+  public get settings(): DisplayStyle3dSettings {
+    return this._settings;
+  }
 
   protected constructor(props: DisplayStyle3dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -208,9 +238,10 @@ export class DisplayStyle3d extends DisplayStyle {
     for (const textureId of this.settings.environment.sky.textureIds)
       referenceIds.addElement(textureId);
 
-    if (this.settings.planProjectionSettings)
+    if (this.settings.planProjectionSettings) {
       for (const planProjectionSetting of this.settings.planProjectionSettings)
         referenceIds.addElement(planProjectionSetting[0]);
+    }
 
     const groups = this.settings.contours.groups;
     for (const group of groups) {
@@ -222,7 +253,11 @@ export class DisplayStyle3d extends DisplayStyle {
   }
 
   /** @alpha */
-  protected static override onCloned(context: IModelElementCloneContext, sourceElementProps: DisplayStyle3dProps, targetElementProps: DisplayStyle3dProps): void {
+  protected static override onCloned(
+    context: IModelElementCloneContext,
+    sourceElementProps: DisplayStyle3dProps,
+    targetElementProps: DisplayStyle3dProps,
+  ): void {
     super.onCloned(context, sourceElementProps, targetElementProps);
     if (context.isBetweenIModels) {
       const convertTexture = (id: string) => Id64.isValidId64(id) ? context.findTargetElementId(id) : id;
@@ -297,7 +332,6 @@ export class DisplayStyle3d extends DisplayStyle {
       model: definitionModelId,
       jsonProperties: { styles: settings },
       isPrivate: false,
-
     };
 
     return new DisplayStyle3d(displayStyleProps, iModelDb);

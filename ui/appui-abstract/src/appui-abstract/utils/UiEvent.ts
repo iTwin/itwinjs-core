@@ -12,4 +12,4 @@ import { BeUiEvent } from "@itwin/core-bentley";
  * @public
  * @deprecated in 4.2. This type is a duplicate of [[BeUiEvent]], which should be used instead.
  */
-export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> { }
+export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {}

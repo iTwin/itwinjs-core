@@ -3,23 +3,48 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import {
+  _nativeDb,
+  BisCoreSchema,
+  ClassRegistry,
+  GenericSchema,
+  GeometricElement3d,
+  IModelDb,
+  IModelHost,
+  IModelJsFs,
+  KnownLocations,
+  PhysicalPartition,
+  Schema,
+  Schemas,
+  SnapshotDb,
+  SpatialCategory,
+  SubjectOwnsPartitionElements,
+} from "@itwin/core-backend";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import {
+  CategoryProps,
+  Code,
+  ColorDef,
+  GeometricElement3dProps,
+  IModel,
+  InformationPartitionElementProps,
+  ModelProps,
+  PropertyMetaData,
+  RelatedElement,
+  TypeDefinitionElementProps,
+} from "@itwin/core-common";
 import { assert } from "chai";
 import * as path from "path";
 import * as semver from "semver";
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
-import {
-  _nativeDb, BisCoreSchema, ClassRegistry, GenericSchema, GeometricElement3d, IModelDb, IModelHost, IModelJsFs, KnownLocations, PhysicalPartition, Schema,
-  Schemas, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
-} from "@itwin/core-backend";
-import {
-  CategoryProps, Code, ColorDef, GeometricElement3dProps, IModel, InformationPartitionElementProps, ModelProps, PropertyMetaData, RelatedElement,
-  TypeDefinitionElementProps,
-} from "@itwin/core-common";
 import { AnalyticalElement, AnalyticalModel, AnalyticalPartition, AnalyticalSchema } from "../analytical-backend";
 
 class TestAnalyticalSchema extends Schema {
-  public static override get schemaName(): string { return "TestAnalytical"; }
-  public static get schemaFilePath(): string { return path.join(__dirname, "assets", "TestAnalytical.ecschema.xml"); }
+  public static override get schemaName(): string {
+    return "TestAnalytical";
+  }
+  public static get schemaFilePath(): string {
+    return path.join(__dirname, "assets", "TestAnalytical.ecschema.xml");
+  }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);
@@ -32,16 +57,24 @@ class TestAnalyticalSchema extends Schema {
 }
 
 class TestAnalyticalPartition extends AnalyticalPartition {
-  public static override get className(): string { return "Partition"; }
+  public static override get className(): string {
+    return "Partition";
+  }
 }
 
 class TestAnalyticalElement extends AnalyticalElement {
-  public static override get className(): string { return "Element"; }
-  public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
+  public static override get className(): string {
+    return "Element";
+  }
+  public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 }
 
 class TestAnalyticalModel extends AnalyticalModel {
-  public static override get className(): string { return "Model"; }
+  public static override get className(): string {
+    return "Model";
+  }
 }
 
 describe("AnalyticalSchema", () => {

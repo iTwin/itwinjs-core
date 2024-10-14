@@ -21,7 +21,7 @@ export class PassThroughCache implements LocalCache {
 }
 
 /** @internal */
-export class IndexedDBCache implements LocalCache{
+export class IndexedDBCache implements LocalCache {
   private _db: any;
   private _dbName: string;
   private _expirationTime?: number;
@@ -31,11 +31,9 @@ export class IndexedDBCache implements LocalCache{
     this._expirationTime = expirationTime ?? undefined;
   }
 
-  protected async open(){
-
+  protected async open() {
     // need to return a promise so that we can wait for the db to open before using it
-    return new Promise(function (this: IndexedDBCache, resolve: any) {
-
+    return new Promise(function(this: IndexedDBCache, resolve: any) {
       // open the db
       const openDB = window.indexedDB.open(this._dbName, 1);
 
@@ -45,7 +43,6 @@ export class IndexedDBCache implements LocalCache{
 
       // this is the success callback for opening the db, it is called after onupgradeneeded
       openDB.onsuccess = async (event) => {
-
         const target: any = event.target;
         if (target) {
           this._db = target.result;
@@ -62,8 +59,8 @@ export class IndexedDBCache implements LocalCache{
           this._db = target.result;
 
         const initialObjectStore = this._db.createObjectStore("cache", { keyPath: "uniqueId" });
-        initialObjectStore.createIndex("content", "content", {unique: false});
-        initialObjectStore.createIndex("timeOfStorage", "timeOfStorage", {unique: false});
+        initialObjectStore.createIndex("content", "content", { unique: false });
+        initialObjectStore.createIndex("timeOfStorage", "timeOfStorage", { unique: false });
       };
     }.bind(this));
   }
@@ -80,9 +77,7 @@ export class IndexedDBCache implements LocalCache{
 
       // this is successful if the db was successfully searched - not only if a match was found
       storedResponse.onsuccess = async () => {
-
         if (storedResponse.result !== undefined) {
-
           // if the content has an expiration time
           if (this._expirationTime) {
             // We want to know when the result was stored, and how long it's been since that point
@@ -166,7 +161,6 @@ export class IndexedDBCache implements LocalCache{
 
     // If nothing was found in the db, fetch normally, then add that content to the db
     if (response === undefined) {
-
       // If necessary, use the callback url
       if (callBackUrl)
         response = await (await callback(callBackUrl)).arrayBuffer();
@@ -179,4 +173,3 @@ export class IndexedDBCache implements LocalCache{
     return response;
   }
 }
-

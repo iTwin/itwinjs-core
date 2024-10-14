@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { CheckpointConnection, SheetViewState, ViewState } from "@itwin/core-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
-import { testOnScreenViewport } from "../TestViewport";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
+import { testOnScreenViewport } from "../TestViewport";
 
 describe("Sheet views (#integration)", () => {
   let imodel: CheckpointConnection;

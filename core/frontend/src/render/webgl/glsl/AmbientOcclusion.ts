@@ -233,9 +233,12 @@ export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): 
       });
     });
 
-  frag.set(FragmentShaderComponent.ComputeBaseColor, shouldUseDB ?
-    computeAmbientOcclusionPrefixDB + computeAmbientOcclusion :
-    computeAmbientOcclusionPrefixPB + computeAmbientOcclusion);
+  frag.set(
+    FragmentShaderComponent.ComputeBaseColor,
+    shouldUseDB ?
+      computeAmbientOcclusionPrefixDB + computeAmbientOcclusion :
+      computeAmbientOcclusionPrefixPB + computeAmbientOcclusion,
+  );
   frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
 
   frag.addUniform("u_pickDepthAndOrder", VariableType.Sampler2D, (prog) => {
@@ -283,7 +286,8 @@ export function createAmbientOcclusionProgram(context: WebGL2RenderingContext): 
         params.target.ambientOcclusionSettings.bias,
         params.target.ambientOcclusionSettings.zLengthCap,
         params.target.ambientOcclusionSettings.intensity,
-        params.target.ambientOcclusionSettings.texelStepSize]);
+        params.target.ambientOcclusionSettings.texelStepSize,
+      ]);
       uniform.setUniform4fv(hbaoSettings);
     });
   }, VariablePrecision.High);

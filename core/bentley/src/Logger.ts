@@ -71,13 +71,13 @@ export class Logger {
     return Logger._onLogLevelChanged;
   }
 
-  private static _categoryFilter: {[categoryName: string]: LogLevel | undefined} = {};
+  private static _categoryFilter: { [categoryName: string]: LogLevel | undefined } = {};
 
   /** Maps category names to the least severe level at which messages in that category should be displayed,
    * or `undefined` if a minimum has not been defined.
    * @see [[setLevel]] to change the minimum logging level for a category.
    */
-  public static get categoryFilter(): Readonly<{[categoryName: string]: LogLevel | undefined}> {
+  public static get categoryFilter(): Readonly<{ [categoryName: string]: LogLevel | undefined }> {
     // NOTE: this property is accessed by native code.
     return this._categoryFilter;
   }
@@ -149,13 +149,20 @@ export class Logger {
   /** Interpret a string as the name of a LogLevel */
   public static parseLogLevel(str: string): LogLevel {
     switch (str.toUpperCase()) {
-      case "EXCEPTION": return LogLevel.Error;
-      case "FATAL": return LogLevel.Error;
-      case "ERROR": return LogLevel.Error;
-      case "WARNING": return LogLevel.Warning;
-      case "INFO": return LogLevel.Info;
-      case "TRACE": return LogLevel.Trace;
-      case "DEBUG": return LogLevel.Trace;
+      case "EXCEPTION":
+        return LogLevel.Error;
+      case "FATAL":
+        return LogLevel.Error;
+      case "ERROR":
+        return LogLevel.Error;
+      case "WARNING":
+        return LogLevel.Warning;
+      case "INFO":
+        return LogLevel.Info;
+      case "TRACE":
+        return LogLevel.Trace;
+      case "DEBUG":
+        return LogLevel.Trace;
     }
     return LogLevel.None;
   }
@@ -185,16 +192,27 @@ export class Logger {
         throw new BentleyError(IModelStatus.BadArg, `LoggerLevelsConfig - unrecognized property: ${prop}`);
       if (prop === "defaultLevel") {
         if (!Logger.isLogLevel(config.defaultLevel))
-          throw new BentleyError(IModelStatus.BadArg, `LoggerLevelsConfig.defaultLevel must be a LogLevel. Invalid value: ${JSON.stringify(config.defaultLevel)}`);
+          throw new BentleyError(
+            IModelStatus.BadArg,
+            `LoggerLevelsConfig.defaultLevel must be a LogLevel. Invalid value: ${JSON.stringify(config.defaultLevel)}`,
+          );
       } else if (prop === "categoryLevels") {
         const value = config[prop];
         if (!Array.isArray(value))
           throw new BentleyError(IModelStatus.BadArg, `LoggerLevelsConfig.categoryLevels must be an array. Invalid value: ${JSON.stringify(value)}`);
         for (const item of config[prop]) {
           if (!item.hasOwnProperty("category") || !item.hasOwnProperty("logLevel"))
-            throw new BentleyError(IModelStatus.BadArg, `LoggerLevelsConfig.categoryLevels - each item must be a LoggerCategoryAndLevel {category: logLevel:}. Invalid value: ${JSON.stringify(item)}`);
+            throw new BentleyError(
+              IModelStatus.BadArg,
+              `LoggerLevelsConfig.categoryLevels - each item must be a LoggerCategoryAndLevel {category: logLevel:}. Invalid value: ${
+                JSON.stringify(item)
+              }`,
+            );
           if (!Logger.isLogLevel(item.logLevel))
-            throw new BentleyError(IModelStatus.BadArg, `LoggerLevelsConfig.categoryLevels - each item's logLevel property must be a LogLevel. Invalid value: ${JSON.stringify(item.logLevel)}`);
+            throw new BentleyError(
+              IModelStatus.BadArg,
+              `LoggerLevelsConfig.categoryLevels - each item's logLevel property must be a LogLevel. Invalid value: ${JSON.stringify(item.logLevel)}`,
+            );
         }
       }
     }
@@ -261,9 +279,13 @@ export class Logger {
    * @param err  The exception object.
    * @param log The logger output function to use - defaults to Logger.logError
    */
-  public static logException(category: string, err: any, log: LogFunction = (_category, message, metaData) => Logger.logError(_category, message, metaData)): void {
+  public static logException(
+    category: string,
+    err: any,
+    log: LogFunction = (_category, message, metaData) => Logger.logError(_category, message, metaData),
+  ): void {
     log(category, Logger.getExceptionMessage(err), () => {
-      return { ...BentleyError.getErrorMetadata(err), exceptionType: err?.constructor?.name ?? "<Unknown>"};
+      return { ...BentleyError.getErrorMetadata(err), exceptionType: err?.constructor?.name ?? "<Unknown>" };
     });
   }
 
@@ -335,7 +357,8 @@ export class PerfLogger implements IDisposable {
     Logger.logInfo(BentleyLoggerCategory.Performance, `${this._operation},END`, () => {
       const mdata = this._metaData ? BentleyError.getMetaData(this._metaData) : {};
       return {
-        ...mdata, TimeElapsed: endTimeStamp - this._startTimeStamp, // eslint-disable-line @typescript-eslint/naming-convention
+        ...mdata,
+        TimeElapsed: endTimeStamp - this._startTimeStamp, // eslint-disable-line @typescript-eslint/naming-convention
       };
     });
   }
@@ -344,4 +367,3 @@ export class PerfLogger implements IDisposable {
     this.logMessage();
   }
 }
-

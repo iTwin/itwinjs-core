@@ -28,17 +28,16 @@ class Bundle implements WebGLDisposable {
     public edlCalcTex4?: TextureHandle,
     public edlFiltTex2?: TextureHandle,
     public edlFiltTex4?: TextureHandle,
-
     public edlCalcFbo1?: FrameBuffer,
     public edlCalcFbo2?: FrameBuffer,
     public edlCalcFbo4?: FrameBuffer,
     public edlFiltFbo2?: FrameBuffer,
     public edlFiltFbo4?: FrameBuffer,
-
     public edlCalcBasicGeom?: EDLCalcBasicGeometry,
     public edlCalcFullGeom?: [EDLCalcFullGeometry | undefined, EDLCalcFullGeometry | undefined, EDLCalcFullGeometry | undefined],
     public edlFiltGeom?: [EDLFilterGeometry | undefined, EDLFilterGeometry | undefined],
-    public edlMixGeom?: EDLMixGeometry) {
+    public edlMixGeom?: EDLMixGeometry,
+  ) {
   }
 
   public static create(width: number, height: number): Bundle | undefined {
@@ -47,12 +46,14 @@ class Bundle implements WebGLDisposable {
     const edlCalcTex4 = TextureHandle.createForAttachment(width >> 2, height >> 2, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     const edlFiltTex2 = TextureHandle.createForAttachment(width >> 1, height >> 1, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     const edlFiltTex4 = TextureHandle.createForAttachment(width >> 2, height >> 2, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === edlCalcTex1 || undefined === edlCalcTex2 || undefined === edlCalcTex4 || undefined === edlFiltTex2 || undefined === edlFiltTex4) {
-      dispose (edlCalcTex1);
-      dispose (edlCalcTex2);
-      dispose (edlCalcTex4);
-      dispose (edlFiltTex2);
-      dispose (edlFiltTex4);
+    if (
+      undefined === edlCalcTex1 || undefined === edlCalcTex2 || undefined === edlCalcTex4 || undefined === edlFiltTex2 || undefined === edlFiltTex4
+    ) {
+      dispose(edlCalcTex1);
+      dispose(edlCalcTex2);
+      dispose(edlCalcTex4);
+      dispose(edlFiltTex2);
+      dispose(edlFiltTex4);
       return undefined;
     }
     const edlCalcFbo1 = FrameBuffer.create([edlCalcTex1]);
@@ -60,15 +61,28 @@ class Bundle implements WebGLDisposable {
     const edlCalcFbo4 = FrameBuffer.create([edlCalcTex4]);
     const edlFiltFbo2 = FrameBuffer.create([edlFiltTex2]);
     const edlFiltFbo4 = FrameBuffer.create([edlFiltTex4]);
-    if (undefined === edlCalcFbo1 || undefined === edlCalcFbo2 || undefined === edlCalcFbo4 || undefined === edlFiltFbo2 || undefined === edlFiltFbo4) {
-      dispose (edlCalcFbo1);
-      dispose (edlCalcFbo2);
-      dispose (edlCalcFbo4);
-      dispose (edlFiltFbo2);
-      dispose (edlFiltFbo4);
+    if (
+      undefined === edlCalcFbo1 || undefined === edlCalcFbo2 || undefined === edlCalcFbo4 || undefined === edlFiltFbo2 || undefined === edlFiltFbo4
+    ) {
+      dispose(edlCalcFbo1);
+      dispose(edlCalcFbo2);
+      dispose(edlCalcFbo4);
+      dispose(edlFiltFbo2);
+      dispose(edlFiltFbo4);
       return undefined;
     }
-    return new Bundle(edlCalcTex1, edlCalcTex2, edlCalcTex4, edlFiltTex2, edlFiltTex4, edlCalcFbo1, edlCalcFbo2, edlCalcFbo4, edlFiltFbo2, edlFiltFbo4);
+    return new Bundle(
+      edlCalcTex1,
+      edlCalcTex2,
+      edlCalcTex4,
+      edlFiltTex2,
+      edlFiltTex4,
+      edlCalcFbo1,
+      edlCalcFbo2,
+      edlCalcFbo4,
+      edlFiltFbo2,
+      edlFiltFbo4,
+    );
   }
 
   public get isDisposed(): boolean {
@@ -121,14 +135,18 @@ class Bundle implements WebGLDisposable {
 }
 
 /** @internal */
-export enum EDLMode { Off, On, Full }
+export enum EDLMode {
+  Off,
+  On,
+  Full,
+}
 
 /** @internal */
 export interface EDLDrawParams {
-  inputTex: TextureHandle;  // input to calc EDL from
-  curFbo: FrameBuffer;      // output fbo to get color texture from for EDL to put result in
+  inputTex: TextureHandle; // input to calc EDL from
+  curFbo: FrameBuffer; // output fbo to get color texture from for EDL to put result in
   edlMode: EDLMode;
-  edlFilter: boolean;       // applies to Full mode only
+  edlFilter: boolean; // applies to Full mode only
   useMsBuffers: boolean;
 }
 
@@ -136,7 +154,7 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
   private _bundle?: Bundle;
   private _width: number;
   private _height: number;
-  private _depth?: DepthBuffer;  // depth buffer to read from, has to be non-MS and be up to date in draw if MS is used
+  private _depth?: DepthBuffer; // depth buffer to read from, has to be non-MS and be up to date in draw if MS is used
   private _edlFinalFbo?: FrameBuffer;
   private _edlFinalBufs?: { tex: TextureHandle, msBuf: RenderBufferMultiSample | undefined };
   private readonly _target: Target;
@@ -182,11 +200,13 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
     }
   }
 
-  public get isDisposed(): boolean { return undefined === this._bundle && undefined === this._edlFinalFbo; }
+  public get isDisposed(): boolean {
+    return undefined === this._bundle && undefined === this._edlFinalFbo;
+  }
 
   public dispose() {
     this._bundle = dispose(this._bundle);
-    this._edlFinalFbo = dispose (this._edlFinalFbo);
+    this._edlFinalFbo = dispose(this._edlFinalFbo);
   }
 
   public reset() {
@@ -206,13 +226,20 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
 
     // NB: have to test and create MS buffer as well if useMsBuffers, not outputting to depth
     const finalBufs = edlParams.curFbo.getColorTargets(edlParams.useMsBuffers, 0);
-    if (undefined === this._edlFinalFbo || this._edlFinalBufs?.tex !== finalBufs.tex ||
-       (edlParams.useMsBuffers && this._edlFinalBufs?.msBuf !== finalBufs.msBuf)) {
-      this._edlFinalFbo = dispose (this._edlFinalFbo);
+    if (
+      undefined === this._edlFinalFbo || this._edlFinalBufs?.tex !== finalBufs.tex ||
+      (edlParams.useMsBuffers && this._edlFinalBufs?.msBuf !== finalBufs.msBuf)
+    ) {
+      this._edlFinalFbo = dispose(this._edlFinalFbo);
       this._edlFinalBufs = finalBufs;
       const filters = [GL.MultiSampling.Filter.Linear];
-      this._edlFinalFbo = FrameBuffer.create([this._edlFinalBufs.tex], undefined,
-        edlParams.useMsBuffers && this._edlFinalBufs.msBuf ? [this._edlFinalBufs.msBuf] : undefined, filters, undefined);
+      this._edlFinalFbo = FrameBuffer.create(
+        [this._edlFinalBufs.tex],
+        undefined,
+        edlParams.useMsBuffers && this._edlFinalBufs.msBuf ? [this._edlFinalBufs.msBuf] : undefined,
+        filters,
+        undefined,
+      );
       if (undefined === this._edlFinalFbo)
         return false;
     }
@@ -241,9 +268,11 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
         const ct2 = bundle.edlCalcTex2;
         const ct4 = bundle.edlCalcTex4;
         const ctd = this._depth.getHandle()!;
-        bundle.edlCalcFullGeom = [EDLCalcFullGeometry.createGeometry(ct1.getHandle()!, ctd, 1, ct1.width, ct1.height),
+        bundle.edlCalcFullGeom = [
+          EDLCalcFullGeometry.createGeometry(ct1.getHandle()!, ctd, 1, ct1.width, ct1.height),
           EDLCalcFullGeometry.createGeometry(ct1.getHandle()!, ctd, 2, ct2!.width, ct2!.height),
-          EDLCalcFullGeometry.createGeometry(ct1.getHandle()!, ctd, 4, ct4!.width, ct4!.height)];
+          EDLCalcFullGeometry.createGeometry(ct1.getHandle()!, ctd, 4, ct4!.width, ct4!.height),
+        ];
       }
 
       const edlFiltFbos: FrameBuffer[] = [bundle.edlFiltFbo2!, bundle.edlFiltFbo4!];
@@ -251,8 +280,10 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
         const ft2 = bundle.edlCalcTex2;
         const ft4 = bundle.edlCalcTex4;
         const ftd = this._depth.getHandle()!;
-        bundle.edlFiltGeom = [EDLFilterGeometry.createGeometry(ft2!.getHandle()!, ftd, 2, ft2!.width, ft2!.height),
-          EDLFilterGeometry.createGeometry(ft4!.getHandle()!, ftd, 4, ft4!.width, ft4!.height)];
+        bundle.edlFiltGeom = [
+          EDLFilterGeometry.createGeometry(ft2!.getHandle()!, ftd, 2, ft2!.width, ft2!.height),
+          EDLFilterGeometry.createGeometry(ft4!.getHandle()!, ftd, 4, ft4!.width, ft4!.height),
+        ];
       }
 
       const gl = System.instance.context;
@@ -266,8 +297,8 @@ export class EyeDomeLighting implements RenderMemory.Consumer, WebGLDisposable {
         });
 
         if (edlParams.edlFilter && i > 0) {
-          fbStack.execute(edlFiltFbos[i-1], true, false, () => {
-            const params = getDrawParams(this._target, bundle.edlFiltGeom![i-1]!);
+          fbStack.execute(edlFiltFbos[i - 1], true, false, () => {
+            const params = getDrawParams(this._target, bundle.edlFiltGeom![i - 1]!);
             this._target.techniques.draw(params);
           });
         }

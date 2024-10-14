@@ -3,16 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { Suite } from "mocha";
-import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
-import { AzuriteTest } from "./AzuriteTest";
+import {
+  _nativeDb,
+  BriefcaseDb,
+  BriefcaseManager,
+  ChannelControl,
+  CloudSqlite,
+  DrawingCategory,
+  HubMock,
+  IModelDb,
+  IModelHost,
+  SchemaSync,
+  SnapshotDb,
+  SqliteStatement,
+} from "@itwin/core-backend";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
 import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
-import * as path from "path";
-import { EOL } from "os";
 import { ChangesetType, Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
+import { Suite } from "mocha";
+import { EOL } from "os";
+import * as path from "path";
+import { AzuriteTest } from "./AzuriteTest";
 const storageType = "azure" as const;
 interface TinySchemaRef {
   name: string;
@@ -73,7 +86,9 @@ const tinySchemaToXml = (s: TinySchema) => {
 const queryPropNames = (b: BriefcaseDb, className: string) => {
   try {
     return Object.getOwnPropertyNames(b.getMetaData(className).properties);
-  } catch { return []; }
+  } catch {
+    return [];
+  }
 };
 const assertChangesetTypeAndDescr = async (b: BriefcaseDb, changesetType: ChangesetType, description: string) => {
   const cs = await HubMock.getLatestChangeset({ iModelId: b.iModelId });
@@ -107,15 +122,15 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
     return;
   }
   throw new Error(`Failed to throw error with message: "${msg}"`);
-};
+}
 async function initializeContainer(containerProps: { containerId: string, isPublic?: boolean, baseUri: string }) {
   await AzuriteTest.Sqlite.createAzContainer(containerProps);
   const accessToken = await CloudSqlite.requestToken({ ...containerProps });
   await SchemaSync.CloudAccess.initializeDb({ ...containerProps, accessToken, storageType });
   return { ...containerProps, accessToken, storageType };
-};
+}
 
-describe("Schema synchronization", function (this: Suite) {
+describe("Schema synchronization", function(this: Suite) {
   this.timeout(0);
 
   before(async () => {
@@ -363,8 +378,7 @@ describe("Schema synchronization", function (this: Suite) {
         props: [
           { kind: "primitive", name: "p0", type: "string" },
         ],
-      },
-      ],
+      }],
     });
     assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0"]);
 
@@ -379,7 +393,8 @@ describe("Schema synchronization", function (this: Suite) {
     const newContainerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-2" });
     await assertThrowsAsync(
       async () => SchemaSync.initializeForIModel({ iModel: b2, containerProps: newContainerProps }),
-      "Local db already initialized to schema sync (container-id: imodel-sync-itwin-1)");
+      "Local db already initialized to schema sync (container-id: imodel-sync-itwin-1)",
+    );
 
     await SchemaSync.initializeForIModel({ iModel: b2, containerProps: newContainerProps, overrideContainer: true });
     assert.equal(querySchemaSyncDataVer(b2), "0x2");
@@ -396,8 +411,7 @@ describe("Schema synchronization", function (this: Suite) {
           { kind: "primitive", name: "p0", type: "string" },
           { kind: "primitive", name: "p1", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-2 */
         ],
-      },
-      ],
+      }],
     });
     assert.equal(querySchemaSyncDataVer(b2), "0x3");
     assert.deepEqual(queryPropNames(b2, "Test1:Pipe1"), ["p0", "p1"]);
@@ -419,8 +433,7 @@ describe("Schema synchronization", function (this: Suite) {
           { kind: "primitive", name: "p0", type: "string" },
           { kind: "primitive", name: "p2", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-1 */
         ],
-      },
-      ],
+      }],
     });
     assert.equal(querySchemaSyncDataVer(b1), "0x3");
     assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p2"]);
@@ -445,8 +458,7 @@ describe("Schema synchronization", function (this: Suite) {
           { kind: "primitive", name: "p1", type: "string" },
           { kind: "primitive", name: "p2", type: "string" }, /* New property added by B2 using new imodel-sync-itwin-2 */
         ],
-      },
-      ],
+      }],
     });
     assert.equal(querySchemaSyncDataVer(b1), "0x4");
     assert.deepEqual(queryPropNames(b1, "Test1:Pipe1"), ["p0", "p1", "p2"]);
@@ -494,8 +506,7 @@ describe("Schema synchronization", function (this: Suite) {
       description: "b1 push",
       changesType: 65,
       briefcaseId: 2,
-    },
-    ];
+    }];
     assert.deepEqual(masterHistory, expectedHistory);
 
     [b1, b2, b3].forEach((b) => {
@@ -515,7 +526,10 @@ describe("Schema synchronization", function (this: Suite) {
     HubMock.startup("test", KnownTestLocations.outputDir);
 
     // Setup seed file from existing 4.0.0.3 imodel
-    const testFile = SnapshotDb.openDgnDb({ path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4003.bim") }, OpenMode.ReadWrite);
+    const testFile = SnapshotDb.openDgnDb(
+      { path: path.join(imodelJsCoreDirname, "core/backend/lib/cjs/test/assets/test_ec_4003.bim") },
+      OpenMode.ReadWrite,
+    );
     const version0 = testFile.getFilePath();
     testFile.closeFile();
 
@@ -550,8 +564,7 @@ describe("Schema synchronization", function (this: Suite) {
         props: [
           { kind: "primitive", name: "p0", type: "string" },
         ],
-      },
-      ],
+      }],
     });
 
     assert.isUndefined(querySchemaSyncDataVer(b1), "SchemaSync data version should be undefined as its not initialized");
@@ -559,7 +572,8 @@ describe("Schema synchronization", function (this: Suite) {
     // should fail as there are pending changeset.
     await assertThrowsAsync(
       async () => SchemaSync.initializeForIModel({ iModel: b1, containerProps }),
-      "Enabling SchemaSync for iModel failed. There are unsaved or un-pushed local changes.");
+      "Enabling SchemaSync for iModel failed. There are unsaved or un-pushed local changes.",
+    );
 
     // push changes and then retry.
     await b1.pushChanges({ description: "schema changes" });
@@ -624,20 +638,21 @@ describe("Schema synchronization", function (this: Suite) {
     assert.equal(querySchemaSyncDataVer(b1), "0x4", "Test1 schema update should change it from 0x3 -> 0x4");
 
     // 6. B2 import new schema but should fail as it does not see SchemaSync enable so it attempt acquire schema lock
-    await assertThrowsAsync(async () => importSchema(b2, {
-      name: "Test2",
-      alias: "ts2",
-      ver: "01.00.00",
-      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
-      classes: [{
-        type: "entity",
-        name: "Pipe1",
-        baseClass: "bis:GeometricElement2d",
-        props: [
-          { kind: "primitive", name: "p0", type: "string" },
-        ],
-      }],
-    }), "pull is required to obtain lock");
+    await assertThrowsAsync(async () =>
+      importSchema(b2, {
+        name: "Test2",
+        alias: "ts2",
+        ver: "01.00.00",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "entity",
+          name: "Pipe1",
+          baseClass: "bis:GeometricElement2d",
+          props: [
+            { kind: "primitive", name: "p0", type: "string" },
+          ],
+        }],
+      }), "pull is required to obtain lock");
     assert.isUndefined(querySchemaSyncDataVer(b2), "should be undefined in B2");
     b2.abandonChanges();
 
@@ -838,8 +853,7 @@ describe("Schema synchronization", function (this: Suite) {
       description: "final push by b3",
       changesType: 65,
       briefcaseId: 4,
-    },
-    ];
+    }];
     assert.deepEqual(masterHistory, expectedHistory);
 
     [b1, b2, b3, b4].forEach((b) => {
@@ -880,7 +894,8 @@ describe("Schema synchronization", function (this: Suite) {
     await SchemaSync.initializeForIModel({ iModel: b1, containerProps });
     await b1.pushChanges({ accessToken: user1AccessToken, description: "enable shared schema channel" });
     assert.isTrue(b1[_nativeDb].schemaSyncEnabled());
-    const sequence = (start: number, stop: number, step: number = 1) => Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + (i * step));
+    const sequence = (start: number, stop: number, step: number = 1) =>
+      Array.from({ length: (stop - start) / step + 1 }, (_, i) => start + (i * step));
 
     await importSchema(b1, {
       name: "Test1",
@@ -891,14 +906,18 @@ describe("Schema synchronization", function (this: Suite) {
         type: "struct",
         name: "Struct1",
         props: [
-          ...sequence(0, 10).map<TinyPrimitiveProp>((i) => { return { kind: "primitive", name: `p${i}`, type: "string" }; }),
+          ...sequence(0, 10).map<TinyPrimitiveProp>((i) => {
+            return { kind: "primitive", name: `p${i}`, type: "string" };
+          }),
         ],
       }, {
         type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          ...sequence(0, 1).map<TinyStructProp>((i) => { return { kind: "struct", name: `s${i}`, type: "Struct1" }; }),
+          ...sequence(0, 1).map<TinyStructProp>((i) => {
+            return { kind: "struct", name: `s${i}`, type: "Struct1" };
+          }),
         ],
       }],
     });
@@ -916,14 +935,18 @@ describe("Schema synchronization", function (this: Suite) {
         type: "struct",
         name: "Struct1",
         props: [
-          ...sequence(0, 30).map<TinyPrimitiveProp>((i) => { return { kind: "primitive", name: `p${i}`, type: "string" }; }),
+          ...sequence(0, 30).map<TinyPrimitiveProp>((i) => {
+            return { kind: "primitive", name: `p${i}`, type: "string" };
+          }),
         ],
       }, {
         type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          ...sequence(0, 1).map<TinyStructProp>((i) => { return { kind: "struct", name: `s${i}`, type: "Struct1" }; }),
+          ...sequence(0, 1).map<TinyStructProp>((i) => {
+            return { kind: "struct", name: `s${i}`, type: "Struct1" };
+          }),
         ],
       }],
     });
@@ -940,39 +963,48 @@ describe("Schema synchronization", function (this: Suite) {
         type: "struct",
         name: "Struct1",
         props: [
-          ...sequence(0, 10).map<TinyPrimitiveProp>((i) => { return { kind: "primitive", name: `p${i}`, type: "string" }; }),
+          ...sequence(0, 10).map<TinyPrimitiveProp>((i) => {
+            return { kind: "primitive", name: `p${i}`, type: "string" };
+          }),
         ],
       }, {
         type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          ...sequence(0, 1).map<TinyStructProp>((i) => { return { kind: "struct", name: `s${i}`, type: "Struct1" }; }),
+          ...sequence(0, 1).map<TinyStructProp>((i) => {
+            return { kind: "struct", name: `s${i}`, type: "Struct1" };
+          }),
         ],
       }],
     });
 
     await b3.pullChanges();
-    await assertThrowsAsync(async () => importSchema(b3, {
-      name: "Test2",
-      alias: "ts2",
-      ver: "01.00.01",
-      refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
-      classes: [{
-        type: "struct",
-        name: "Struct1",
-        props: [
-          ...sequence(0, 30).map<TinyPrimitiveProp>((i) => { return { kind: "primitive", name: `p${i}`, type: "string" }; }),
-        ],
-      }, {
-        type: "entity",
-        name: "Pipe1",
-        baseClass: "bis:GeometricElement2d",
-        props: [
-          ...sequence(0, 1).map<TinyStructProp>((i) => { return { kind: "struct", name: `s${i}`, type: "Struct1" }; }),
-        ],
-      }],
-    }), "exclusive lock is already held");
+    await assertThrowsAsync(async () =>
+      importSchema(b3, {
+        name: "Test2",
+        alias: "ts2",
+        ver: "01.00.01",
+        refs: [{ name: "BisCore", ver: "01.00.00", alias: "bis" }],
+        classes: [{
+          type: "struct",
+          name: "Struct1",
+          props: [
+            ...sequence(0, 30).map<TinyPrimitiveProp>((i) => {
+              return { kind: "primitive", name: `p${i}`, type: "string" };
+            }),
+          ],
+        }, {
+          type: "entity",
+          name: "Pipe1",
+          baseClass: "bis:GeometricElement2d",
+          props: [
+            ...sequence(0, 1).map<TinyStructProp>((i) => {
+              return { kind: "struct", name: `s${i}`, type: "Struct1" };
+            }),
+          ],
+        }],
+      }), "exclusive lock is already held");
 
     await b1.pushChanges({ description: "schema with 30 props in test1:Pipe1" });
     await b3.pullChanges();
@@ -986,14 +1018,18 @@ describe("Schema synchronization", function (this: Suite) {
         type: "struct",
         name: "Struct1",
         props: [
-          ...sequence(0, 30).map<TinyPrimitiveProp>((i) => { return { kind: "primitive", name: `p${i}`, type: "string" }; }),
+          ...sequence(0, 30).map<TinyPrimitiveProp>((i) => {
+            return { kind: "primitive", name: `p${i}`, type: "string" };
+          }),
         ],
       }, {
         type: "entity",
         name: "Pipe1",
         baseClass: "bis:GeometricElement2d",
         props: [
-          ...sequence(0, 1).map<TinyStructProp>((i) => { return { kind: "struct", name: `s${i}`, type: "Struct1" }; }),
+          ...sequence(0, 1).map<TinyStructProp>((i) => {
+            return { kind: "struct", name: `s${i}`, type: "Struct1" };
+          }),
         ],
       }],
     });
@@ -1075,7 +1111,12 @@ describe("Schema synchronization", function (this: Suite) {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(b1, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(b1, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(b1, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(
+        b1,
+        IModel.dictionaryId,
+        "MyDrawingCategory",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+      );
 
     b1.saveChanges();
     await b1.pushChanges({ description: "setup category", accessToken: adminToken });
@@ -1102,7 +1143,7 @@ describe("Schema synchronization", function (this: Suite) {
         geom: geometryStream,
         ...args,
       };
-      return b1.elements.insertElement(e1);;
+      return b1.elements.insertElement(e1);
     };
     const updateEl = async (id: Id64String, args: { [key: string]: any }) => {
       await b1.locks.acquireLocks({ exclusive: id });

@@ -2,12 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, OffScreenViewport, Pixel, ScreenViewport, Tile, TileTreeLoadStatus, Viewport, ViewRect,
+  IModelApp,
+  IModelConnection,
+  OffScreenViewport,
+  Pixel,
+  ScreenViewport,
+  Tile,
+  TileTreeLoadStatus,
+  Viewport,
+  ViewRect,
 } from "@itwin/core-frontend";
+import { expect } from "chai";
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
   if (undefined === lhs && undefined === rhs)
@@ -40,18 +48,29 @@ export class PixelDataSet extends SortedArray<Pixel.Data> {
     super((lhs: Pixel.Data, rhs: Pixel.Data) => comparePixelData(lhs, rhs));
   }
 
-  public get array(): Pixel.Data[] { return this._array; }
+  public get array(): Pixel.Data[] {
+    return this._array;
+  }
 
   public containsFeature(elemId?: Id64String, subcatId?: Id64String, geomClass?: GeometryClass) {
     return this.containsWhere((pxl) =>
       (undefined === elemId || pxl.elementId === elemId) &&
       (undefined === subcatId || pxl.subCategoryId === subcatId) &&
-      (undefined === geomClass || pxl.geometryClass === geomClass));
+      (undefined === geomClass || pxl.geometryClass === geomClass)
+    );
   }
-  public containsElement(id: Id64String) { return this.containsWhere((pxl) => pxl.elementId === id); }
-  public containsPlanarity(planarity: Pixel.Planarity) { return this.containsWhere((pxl) => pxl.planarity === planarity); }
-  public containsGeometryType(type: Pixel.GeometryType) { return this.containsWhere((pxl) => pxl.type === type); }
-  public containsGeometry(type: Pixel.GeometryType, planarity: Pixel.Planarity) { return this.containsWhere((pxl) => pxl.type === type && pxl.planarity === planarity); }
+  public containsElement(id: Id64String) {
+    return this.containsWhere((pxl) => pxl.elementId === id);
+  }
+  public containsPlanarity(planarity: Pixel.Planarity) {
+    return this.containsWhere((pxl) => pxl.planarity === planarity);
+  }
+  public containsGeometryType(type: Pixel.GeometryType) {
+    return this.containsWhere((pxl) => pxl.type === type);
+  }
+  public containsGeometry(type: Pixel.GeometryType, planarity: Pixel.Planarity) {
+    return this.containsWhere((pxl) => pxl.type === type && pxl.planarity === planarity);
+  }
   public containsWhere(criterion: (pxl: Pixel.Data) => boolean) {
     for (const pixel of this.array)
       if (criterion(pixel))
@@ -79,7 +98,9 @@ export class Color {
     this.a = ((val & 0xff000000) >>> 0x18) >>> 0;
   }
 
-  public static from(val: number) { return new Color(val); }
+  public static from(val: number) {
+    return new Color(val);
+  }
   public static fromRgba(r: number, g: number, b: number, a: number) {
     const v = (r | (g << 0x08) | (b << 0x10) | (a << 0x18)) >>> 0;
     return Color.from(v);
@@ -101,8 +122,12 @@ export class Color {
 }
 
 export class ColorSet extends SortedArray<Color> {
-  public constructor() { super((lhs: Color, rhs: Color) => lhs.compare(rhs)); }
-  public get array(): Color[] { return this._array; }
+  public constructor() {
+    super((lhs: Color, rhs: Color) => lhs.compare(rhs));
+  }
+  public get array(): Color[] {
+    return this._array;
+  }
 }
 
 // Read depth, geometry type, and feature for each pixel. Return only the unique ones.
@@ -201,11 +226,21 @@ export interface TestableViewport {
 }
 
 class OffScreenTestViewport extends OffScreenViewport implements TestableViewport {
-  public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet { return readUniquePixelData(this, readRect, excludeNonLocatable); }
-  public readUniqueColors(readRect?: ViewRect): ColorSet { return readUniqueColors(this, readRect); }
-  public readColor(x: number, y: number): Color { return readColor(this, x, y); }
-  public readPixel(x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data { return readPixel(this, x, y, excludeNonLocatable); }
-  public get areAllTilesLoaded(): boolean { return areAllTilesLoaded(this); }
+  public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
+    return readUniquePixelData(this, readRect, excludeNonLocatable);
+  }
+  public readUniqueColors(readRect?: ViewRect): ColorSet {
+    return readUniqueColors(this, readRect);
+  }
+  public readColor(x: number, y: number): Color {
+    return readColor(this, x, y);
+  }
+  public readPixel(x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
+    return readPixel(this, x, y, excludeNonLocatable);
+  }
+  public get areAllTilesLoaded(): boolean {
+    return areAllTilesLoaded(this);
+  }
 
   public async waitForAllTilesToRender(): Promise<void> {
     this.renderFrame();
@@ -223,7 +258,12 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
     return this.waitForAllTilesToRender();
   }
 
-  public static async createTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<OffScreenTestViewport> {
+  public static async createTestViewport(
+    viewId: Id64String,
+    imodel: IModelConnection,
+    width: number,
+    height: number,
+  ): Promise<OffScreenTestViewport> {
     const view = await imodel.views.load(viewId);
     const rect = new ViewRect(0, 0, width, height);
     const vp = this.create({ view, viewRect: rect }) as OffScreenTestViewport;
@@ -242,11 +282,21 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
 export class ScreenTestViewport extends ScreenViewport implements TestableViewport {
   private _frameRendered: boolean = false;
 
-  public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet { return readUniquePixelData(this, readRect, excludeNonLocatable); }
-  public readUniqueColors(readRect?: ViewRect): ColorSet { return readUniqueColors(this, readRect); }
-  public readColor(x: number, y: number): Color { return readColor(this, x, y); }
-  public readPixel(x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data { return readPixel(this, x, y, excludeNonLocatable); }
-  public get areAllTilesLoaded(): boolean { return areAllTilesLoaded(this); }
+  public readUniquePixelData(readRect?: ViewRect, excludeNonLocatable = false): PixelDataSet {
+    return readUniquePixelData(this, readRect, excludeNonLocatable);
+  }
+  public readUniqueColors(readRect?: ViewRect): ColorSet {
+    return readUniqueColors(this, readRect);
+  }
+  public readColor(x: number, y: number): Color {
+    return readColor(this, x, y);
+  }
+  public readPixel(x: number, y: number, excludeNonLocatable?: boolean): Pixel.Data {
+    return readPixel(this, x, y, excludeNonLocatable);
+  }
+  public get areAllTilesLoaded(): boolean {
+    return areAllTilesLoaded(this);
+  }
 
   private async waitForRenderFrame(): Promise<void> {
     if (this._frameRendered) {
@@ -309,12 +359,23 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
 export type TestViewport = Viewport & TestableViewport;
 
 // Create an off-screen viewport for tests.
-export async function createOffScreenTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number): Promise<TestViewport> {
+export async function createOffScreenTestViewport(
+  viewId: Id64String,
+  imodel: IModelConnection,
+  width: number,
+  height: number,
+): Promise<TestViewport> {
   return OffScreenTestViewport.createTestViewport(viewId, imodel, width, height);
 }
 
 // Create an on-screen viewport for tests. The viewport is added to the ViewManager on construction, and dropped on disposal.
-export async function createOnScreenTestViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, devicePixelRatio?: number): Promise<ScreenTestViewport> {
+export async function createOnScreenTestViewport(
+  viewId: Id64String,
+  imodel: IModelConnection,
+  width: number,
+  height: number,
+  devicePixelRatio?: number,
+): Promise<ScreenTestViewport> {
   const vp = await ScreenTestViewport.createTestViewport(viewId, imodel, width, height);
   if (undefined !== devicePixelRatio) {
     const debugControl = vp.target.debugControl;
@@ -325,7 +386,14 @@ export async function createOnScreenTestViewport(viewId: Id64String, imodel: IMo
   return vp;
 }
 
-export async function testOnScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: ScreenTestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
+export async function testOnScreenViewport(
+  viewId: Id64String,
+  imodel: IModelConnection,
+  width: number,
+  height: number,
+  test: (vp: ScreenTestViewport) => Promise<void>,
+  devicePixelRatio?: number,
+): Promise<void> {
   if (!IModelApp.initialized)
     return;
 
@@ -340,7 +408,13 @@ export async function testOnScreenViewport(viewId: Id64String, imodel: IModelCon
   }
 }
 
-export async function testOffScreenViewport(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>): Promise<void> {
+export async function testOffScreenViewport(
+  viewId: Id64String,
+  imodel: IModelConnection,
+  width: number,
+  height: number,
+  test: (vp: TestViewport) => Promise<void>,
+): Promise<void> {
   if (!IModelApp.initialized)
     return;
 
@@ -353,7 +427,14 @@ export async function testOffScreenViewport(viewId: Id64String, imodel: IModelCo
 }
 
 // Execute a test against both an off-screen and on-screen viewport.
-export async function testViewports(viewId: Id64String, imodel: IModelConnection, width: number, height: number, test: (vp: TestViewport) => Promise<void>, devicePixelRatio?: number): Promise<void> {
+export async function testViewports(
+  viewId: Id64String,
+  imodel: IModelConnection,
+  width: number,
+  height: number,
+  test: (vp: TestViewport) => Promise<void>,
+  devicePixelRatio?: number,
+): Promise<void> {
   if (!IModelApp.initialized)
     return;
 

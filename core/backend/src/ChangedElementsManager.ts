@@ -24,7 +24,9 @@ export class ChangedElementsManager {
   /** Maintains a single entry since we will only have a cache per iModel, which means a ChangedElementsDb per backend instance */
   private static _entry: ChangedElementsDbCacheEntry | undefined;
 
-  public static getChangedElementsPathName(iModelId: GuidString): string { return BriefcaseManager.getChangedElementsPathName(iModelId); }
+  public static getChangedElementsPathName(iModelId: GuidString): string {
+    return BriefcaseManager.getChangedElementsPathName(iModelId);
+  }
 
   /** Get changed elements Db */
   private static getChangedElementsDb(iModelId: GuidString): ChangedElementsDb | undefined {

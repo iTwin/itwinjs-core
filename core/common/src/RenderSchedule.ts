@@ -7,16 +7,37 @@
  */
 
 import {
-  assert, compareBooleans, compareNumbers, comparePossiblyUndefined, compareStrings, compareStringsOrUndefined,
-  CompressedId64Set, Constructor, Id64, Id64String, OrderedId64Iterable,
+  assert,
+  compareBooleans,
+  compareNumbers,
+  comparePossiblyUndefined,
+  compareStrings,
+  compareStringsOrUndefined,
+  CompressedId64Set,
+  Constructor,
+  Id64,
+  Id64String,
+  OrderedId64Iterable,
 } from "@itwin/core-bentley";
-import { EntityReferenceSet } from "./EntityReference";
 import {
-  ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Transform, UnionOfConvexClipPlaneSets, Vector3d, XYAndZ,
+  ClipPlane,
+  ClipPrimitive,
+  ClipVector,
+  ConvexClipPlaneSet,
+  Matrix3d,
+  Plane3dByOriginAndUnitNormal,
+  Point3d,
+  Point4d,
+  Range1d,
+  Transform,
+  UnionOfConvexClipPlaneSets,
+  Vector3d,
+  XYAndZ,
 } from "@itwin/core-geometry";
-import { RgbColor } from "./RgbColor";
+import { EntityReferenceSet } from "./EntityReference";
 import { FeatureAppearance, FeatureOverrides } from "./FeatureSymbology";
-import {PackedFeatureWithIndex} from "./FeatureTable";
+import { PackedFeatureWithIndex } from "./FeatureTable";
+import { RgbColor } from "./RgbColor";
 
 function interpolate(start: number, end: number, fraction: number): number {
   return start + fraction * (end - start);
@@ -305,7 +326,8 @@ export namespace RenderSchedule {
     }
 
     public equals(other: TransformComponents): boolean {
-      return this.pivot.isAlmostEqual(other.pivot) && this.position.isAlmostEqual(other.position) && this.orientation.isAlmostEqual(other.orientation);
+      return this.pivot.isAlmostEqual(other.pivot) && this.position.isAlmostEqual(other.position) &&
+        this.orientation.isAlmostEqual(other.orientation);
     }
   }
 
@@ -386,7 +408,8 @@ export namespace RenderSchedule {
     }
 
     public compareTo(other: CuttingPlane): number {
-      return compareXYZ(this.position, other.position) || compareXYZ(this.direction, other.direction) || compareBooleans(this.visible, other.visible) || compareBooleans(this.hidden, other.hidden);
+      return compareXYZ(this.position, other.position) || compareXYZ(this.direction, other.direction) ||
+        compareBooleans(this.visible, other.visible) || compareBooleans(this.hidden, other.hidden);
     }
 
     public equals(other: CuttingPlane): boolean {
@@ -617,8 +640,10 @@ export namespace RenderSchedule {
       else if (!!this.cuttingPlane !== !!other.cuttingPlane)
         return this.cuttingPlane ? 1 : -1;
 
-      return comparePossiblyUndefined((x, y) => x.compareTo(y), this.visibility, other.visibility) || comparePossiblyUndefined((x, y) => x.compareTo(y), this.color, other.color)
-        || comparePossiblyUndefined((x, y) => x.compareTo(y), this.transform, other.transform) || comparePossiblyUndefined((x, y) => x.compareTo(y), this.cuttingPlane, other.cuttingPlane);
+      return comparePossiblyUndefined((x, y) => x.compareTo(y), this.visibility, other.visibility) ||
+        comparePossiblyUndefined((x, y) => x.compareTo(y), this.color, other.color)
+        || comparePossiblyUndefined((x, y) => x.compareTo(y), this.transform, other.transform) ||
+        comparePossiblyUndefined((x, y) => x.compareTo(y), this.cuttingPlane, other.cuttingPlane);
     }
 
     public equals(other: Timeline): boolean {
@@ -945,8 +970,10 @@ export namespace RenderSchedule {
 
       assert(other instanceof ModelTimeline);
       let cmp = compareStrings(this.modelId, other.modelId) || compareStringsOrUndefined(this.realityModelUrl, other.realityModelUrl)
-        || compareNumbers(this.elementTimelines.length, other.elementTimelines.length) || compareBooleans(this.containsFeatureOverrides, other.containsFeatureOverrides)
-        || compareBooleans(this.containsModelClipping, other.containsModelClipping) || compareBooleans(this.containsTransform, other.containsTransform)
+        || compareNumbers(this.elementTimelines.length, other.elementTimelines.length) ||
+        compareBooleans(this.containsFeatureOverrides, other.containsFeatureOverrides)
+        || compareBooleans(this.containsModelClipping, other.containsModelClipping) ||
+        compareBooleans(this.containsTransform, other.containsTransform)
         || super.compareTo(other);
 
       if (0 === cmp) {
@@ -1071,7 +1098,8 @@ export namespace RenderSchedule {
       if (undefined !== cached)
         return cached;
 
-      let cmp = compareNumbers(this.modelTimelines.length, other.modelTimelines.length) || compareBooleans(this.containsModelClipping, other.containsModelClipping)
+      let cmp = compareNumbers(this.modelTimelines.length, other.modelTimelines.length) ||
+        compareBooleans(this.containsModelClipping, other.containsModelClipping)
         || compareBooleans(this.requiresBatching, other.requiresBatching) || compareBooleans(this.containsTransform, other.containsTransform)
         || compareBooleans(this.containsFeatureOverrides, other.containsFeatureOverrides) || compareDurations(this.duration, other.duration);
 
@@ -1274,7 +1302,11 @@ export namespace RenderSchedule {
     }
 
     /** Append a new [[RenderSchedule.ColorEntry]] to the timeline. `time` must be more recent than any previously-appended color entries. */
-    public addColor(time: number, color: RgbColor | { red: number, green: number, blue: number } | undefined, interpolation = Interpolation.Linear): void {
+    public addColor(
+      time: number,
+      color: RgbColor | { red: number, green: number, blue: number } | undefined,
+      interpolation = Interpolation.Linear,
+    ): void {
       if (!this.color)
         this.color = [];
 
@@ -1283,7 +1315,11 @@ export namespace RenderSchedule {
     }
 
     /** Append a new [[RenderSchedule.CuttingPlaneEntry]] to the timeline.  `time` must be more recent than any previously-appended cutting plane entries. */
-    public addCuttingPlane(time: number, plane: { position: XYAndZ, direction: XYAndZ, visible?: boolean, hidden?: boolean } | undefined, interpolation = Interpolation.Linear): void {
+    public addCuttingPlane(
+      time: number,
+      plane: { position: XYAndZ, direction: XYAndZ, visible?: boolean, hidden?: boolean } | undefined,
+      interpolation = Interpolation.Linear,
+    ): void {
       if (!this.cuttingPlane)
         this.cuttingPlane = [];
 
@@ -1305,7 +1341,12 @@ export namespace RenderSchedule {
     }
 
     /** Append a new [[RenderSchedule.TransformEntry]] to the timeline.  `time` must be more recent than any previously-appended transform entries. */
-    public addTransform(time: number, transform: Readonly<Transform> | undefined, components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ }, interpolation = Interpolation.Linear): void {
+    public addTransform(
+      time: number,
+      transform: Readonly<Transform> | undefined,
+      components?: { pivot: XYAndZ, orientation: Point4d, position: XYAndZ },
+      interpolation = Interpolation.Linear,
+    ): void {
       if (!this.transform)
         this.transform = [];
 
@@ -1393,7 +1434,6 @@ export namespace RenderSchedule {
 
     /** Add a new [[RenderSchedule.ElementTimeline]] to be applied to the specified elements.
      * This function will sort and compress the Ids if they are not already compressed.
-     *
      */
     public addElementTimeline(elementIds: CompressedId64Set | Iterable<Id64String>): ElementTimelineBuilder {
       const batchId = this._obtainNextBatchId();

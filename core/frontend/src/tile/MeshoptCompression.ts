@@ -7,8 +7,8 @@
  */
 
 import { assert, Logger } from "@itwin/core-bentley";
-import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import type { MeshoptDecoder } from "meshoptimizer";
+import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
 import type { ExtMeshoptCompressionFilter, ExtMeshoptCompressionMode } from "../common/gltf/GltfSchema";
 
 /** Arguments supplied to decodeMeshoptBuffer.

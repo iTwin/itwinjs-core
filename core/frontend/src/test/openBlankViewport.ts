@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Dictionary, Id64String, SortedArray } from "@itwin/core-bentley";
 import { ColorDef, Feature, GeometryClass } from "@itwin/core-common";
-import { BlankConnection } from "../IModelConnection";
-import { ScreenViewport, Viewport } from "../Viewport";
+import { expect } from "chai";
 import { ViewRect } from "../common/ViewRect";
-import { SpatialViewState } from "../SpatialViewState";
+import { BlankConnection } from "../IModelConnection";
 import { Pixel } from "../render/Pixel";
+import { SpatialViewState } from "../SpatialViewState";
+import { ScreenViewport, Viewport } from "../Viewport";
 import { createBlankConnection } from "./createBlankConnection";
 
 /** Options for openBlankViewport.
@@ -88,7 +88,7 @@ export function testBlankViewport(args: TestBlankViewportOptions | ((vp: ScreenV
 /** Open a viewport for a blank spatial view, invoke a test function, then dispose of the viewport and remove it from the DOM.
  * @internal
  */
-export async function testBlankViewportAsync(args: ((vp: ScreenViewport) => Promise<void>)): Promise<void> {
+export async function testBlankViewportAsync(args: (vp: ScreenViewport) => Promise<void>): Promise<void> {
   const vp = openBlankViewport(typeof args === "function" ? undefined : args);
   try {
     await args(vp);
@@ -131,19 +131,30 @@ export class PixelDataSet extends SortedArray<Pixel.Data> {
     super((lhs: Pixel.Data, rhs: Pixel.Data) => comparePixelData(lhs, rhs));
   }
 
-  public get array(): Pixel.Data[] { return this._array; }
+  public get array(): Pixel.Data[] {
+    return this._array;
+  }
 
   public containsFeature(elemId?: Id64String, subcatId?: Id64String, geomClass?: GeometryClass, modelId?: Id64String) {
     return this.containsWhere((pxl) =>
       (undefined === elemId || pxl.elementId === elemId) &&
       (undefined === subcatId || pxl.subCategoryId === subcatId) &&
       (undefined === geomClass || pxl.geometryClass === geomClass) &&
-      (undefined === modelId || pxl.modelId === modelId));
+      (undefined === modelId || pxl.modelId === modelId)
+    );
   }
-  public containsElement(id: Id64String) { return this.containsWhere((pxl) => pxl.elementId === id); }
-  public containsPlanarity(planarity: Pixel.Planarity) { return this.containsWhere((pxl) => pxl.planarity === planarity); }
-  public containsGeometryType(type: Pixel.GeometryType) { return this.containsWhere((pxl) => pxl.type === type); }
-  public containsGeometry(type: Pixel.GeometryType, planarity: Pixel.Planarity) { return this.containsWhere((pxl) => pxl.type === type && pxl.planarity === planarity); }
+  public containsElement(id: Id64String) {
+    return this.containsWhere((pxl) => pxl.elementId === id);
+  }
+  public containsPlanarity(planarity: Pixel.Planarity) {
+    return this.containsWhere((pxl) => pxl.planarity === planarity);
+  }
+  public containsGeometryType(type: Pixel.GeometryType) {
+    return this.containsWhere((pxl) => pxl.type === type);
+  }
+  public containsGeometry(type: Pixel.GeometryType, planarity: Pixel.Planarity) {
+    return this.containsWhere((pxl) => pxl.type === type && pxl.planarity === planarity);
+  }
   public containsWhere(criterion: (pxl: Pixel.Data) => boolean) {
     for (const pixel of this.array)
       if (criterion(pixel))
@@ -174,7 +185,9 @@ export class Color {
     this.a = ((val & 0xff000000) >>> 0x18) >>> 0;
   }
 
-  public static from(val: number) { return new Color(val); }
+  public static from(val: number) {
+    return new Color(val);
+  }
   public static fromRgba(r: number, g: number, b: number, a: number) {
     const v = (r | (g << 0x08) | (b << 0x10) | (a << 0x18)) >>> 0;
     return Color.from(v);
@@ -204,12 +217,24 @@ export class Color {
  * @internal
  */
 export class ColorSet extends SortedArray<Color> {
-  public constructor() { super((lhs: Color, rhs: Color) => lhs.compare(rhs)); }
-  public get array(): Color[] { return this._array; }
-  public containsColorDef(color: ColorDef): boolean { return this.contains(Color.fromColorDef(color)); }
+  public constructor() {
+    super((lhs: Color, rhs: Color) => lhs.compare(rhs));
+  }
+  public get array(): Color[] {
+    return this._array;
+  }
+  public containsColorDef(color: ColorDef): boolean {
+    return this.contains(Color.fromColorDef(color));
+  }
 }
 
-export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => void, readRect?: ViewRect, excludeNonLocatable?: boolean, excludedElements?: Iterable<string>): void {
+export function processPixels(
+  vp: Viewport,
+  processor: (pixel: Pixel.Data) => void,
+  readRect?: ViewRect,
+  excludeNonLocatable?: boolean,
+  excludedElements?: Iterable<string>,
+): void {
   const rect = undefined !== readRect ? readRect : vp.viewRect;
 
   vp.readPixels({
@@ -237,20 +262,35 @@ export function processPixels(vp: Viewport, processor: (pixel: Pixel.Data) => vo
  * Omit `readRect` to read the contents of the entire viewport.
  * @internal
  */
-export function readUniquePixelData(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): PixelDataSet {
+export function readUniquePixelData(
+  vp: Viewport,
+  readRect?: ViewRect,
+  excludeNonLocatable = false,
+  excludedElements?: Iterable<string>,
+): PixelDataSet {
   const set = new PixelDataSet();
   processPixels(vp, (pixel) => set.insert(pixel), readRect, excludeNonLocatable, excludedElements);
   return set;
 }
 
-export function readUniqueFeatures(vp: Viewport, readRect?: ViewRect, excludeNonLocatable = false, excludedElements?: Iterable<string>): SortedArray<Feature> {
+export function readUniqueFeatures(
+  vp: Viewport,
+  readRect?: ViewRect,
+  excludeNonLocatable = false,
+  excludedElements?: Iterable<string>,
+): SortedArray<Feature> {
   const features = new SortedArray<Feature>((lhs, rhs) => lhs.compare(rhs));
-  processPixels(vp, (pixel) => {
-    if (pixel.feature) {
-      features.insert(pixel.feature);
-    }
-  },
-  readRect, excludeNonLocatable, excludedElements);
+  processPixels(
+    vp,
+    (pixel) => {
+      if (pixel.feature) {
+        features.insert(pixel.feature);
+      }
+    },
+    readRect,
+    excludeNonLocatable,
+    excludedElements,
+  );
 
   return features;
 }

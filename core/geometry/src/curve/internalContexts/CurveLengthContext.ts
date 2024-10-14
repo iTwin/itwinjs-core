@@ -90,7 +90,14 @@ export class CurveLengthContext implements IStrokeHandler {
     }
   }
 
-  public announceSegmentInterval(_cp: CurvePrimitive, point0: Point3d, point1: Point3d, _numStrokes: number, fraction0: number, fraction1: number): void {
+  public announceSegmentInterval(
+    _cp: CurvePrimitive,
+    point0: Point3d,
+    point1: Point3d,
+    _numStrokes: number,
+    fraction0: number,
+    fraction1: number,
+  ): void {
     const segmentLength = point0.distance(point1);
     if (this._fraction0 <= fraction0 && fraction1 <= this._fraction1)
       this._summedLength += segmentLength;

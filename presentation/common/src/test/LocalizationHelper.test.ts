@@ -339,7 +339,12 @@ describe("LocalizationHelper", () => {
     });
 
     it("translates element properties label", () => {
-      const elementProperties = localizationHelper.getLocalizedElementProperties({ class: "class", label: "@namespace:LocalizedLabel@", id: "id", items: {} });
+      const elementProperties = localizationHelper.getLocalizedElementProperties({
+        class: "class",
+        label: "@namespace:LocalizedLabel@",
+        id: "id",
+        items: {},
+      });
       expect(elementProperties.label).to.be.eq("LocalizedLabel");
     });
   });

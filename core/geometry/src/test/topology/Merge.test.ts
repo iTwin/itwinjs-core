@@ -23,7 +23,6 @@ import { prettyPrint } from "../testFunctions";
 import { GraphChecker } from "./Graph.test";
 
 describe("GraphMerge", () => {
-
   it("HalfEdgePriorityQueueWithPartnerArray", () => {
     const ck = new Checker();
     const edges = new HalfEdgePriorityQueueWithPartnerArray();
@@ -52,7 +51,6 @@ describe("GraphMerge", () => {
           ck.testTrue(p.y < q.y, "low y moved to active edges first");
       }
       edges.removeArrayMembersWithY1Below(q.faceSuccessor.y);
-
     }
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -68,7 +66,10 @@ describe("GraphMerge", () => {
 
     for (const degrees of [10, 0, 1.2, 55]) {
       const graph = new HalfEdgeGraph();
-      const transform = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
+      const transform = Transform.createFixedPointAndMatrix(
+        Point3d.create(0, 0, 0),
+        Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)),
+      );
       Triangulator.createFaceLoopFromCoordinates(graph, loop0, true, false);
       Triangulator.createFaceLoopFromCoordinates(graph, loop1, true, false);
       graph.transformInPlace(transform);
@@ -85,10 +86,22 @@ describe("GraphMerge", () => {
       HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
       GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y0 += dy);
 
-      GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph, undefined, (node) => HalfEdge.testFacePositiveAreaXY(node)), x0, y0 += dy, 0);
+      GeometryCoreTestIO.captureGeometry(
+        allGeometry,
+        PolyfaceBuilder.graphToPolyface(graph, undefined, (node) => HalfEdge.testFacePositiveAreaXY(node)),
+        x0,
+        y0 += dy,
+        0,
+      );
 
       Triangulator.triangulateAllPositiveAreaFaces(graph);
-      GeometryCoreTestIO.captureGeometry(allGeometry, PolyfaceBuilder.graphToPolyface(graph, undefined, (node) => HalfEdge.testFacePositiveAreaXY(node)), x0, y0 += dy, 0);
+      GeometryCoreTestIO.captureGeometry(
+        allGeometry,
+        PolyfaceBuilder.graphToPolyface(graph, undefined, (node) => HalfEdge.testFacePositiveAreaXY(node)),
+        x0,
+        y0 += dy,
+        0,
+      );
 
       const summary1 = HalfEdgeGraphSearch.collectFaceAreaSummary(graph, true);
       ck.testExactNumber(summary1.numNegative, summary1.negativeItemArray!.length, " negative face counts");

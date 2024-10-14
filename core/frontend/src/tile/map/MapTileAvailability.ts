@@ -6,9 +6,9 @@
  * @module Tiles
  */
 
+import { SortedArray } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { MapCartoRectangle, MapTilingScheme } from "../internal";
-import { SortedArray } from "@itwin/core-bentley";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 /** @internal */
@@ -26,7 +26,13 @@ class QuadTreeNode {
   public neNode?: QuadTreeNode;
   public extent: MapCartoRectangle;
   public rectangles = new SortedArray<RectangleWithLevel>((lhs: RectangleWithLevel, rhs: RectangleWithLevel) => lhs.level - rhs.level, true);
-  constructor(public tilingScheme: MapTilingScheme, public parent: QuadTreeNode | undefined, public level: number, public x: number, public y: number) {
+  constructor(
+    public tilingScheme: MapTilingScheme,
+    public parent: QuadTreeNode | undefined,
+    public level: number,
+    public x: number,
+    public y: number,
+  ) {
     this.extent = tilingScheme.tileXYToRectangle(x, y, level + 1);
   }
   public get nw(): QuadTreeNode {
@@ -77,7 +83,7 @@ function putRectangleInQuadtree(maxDepth: number, node: QuadTreeNode, rectangle:
 /** @internal */
 export class TileAvailability {
   private _rootNodes = new Array<QuadTreeNode>();
-  constructor(private _tilingScheme: MapTilingScheme, private _maximumLevel: number) { }
+  constructor(private _tilingScheme: MapTilingScheme, private _maximumLevel: number) {}
 
   public static rectangleScratch = MapCartoRectangle.createMaximum();
 

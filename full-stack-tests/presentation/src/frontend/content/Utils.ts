@@ -3,10 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Content, Descriptor, DisplayValue, Field, NestedContentField, Value } from "@itwin/presentation-common";
+import { expect } from "chai";
 import { ECClassHierarchyInfo } from "../../ECClasHierarchy";
 import { initialize, terminate, testLocalization } from "../../IntegrationTests";
 
@@ -60,7 +60,7 @@ export function createContentTestSuite(): ContentTestSuiteFunction {
 }
 export const describeContentTestSuite = createContentTestSuite();
 
-export type FieldLabels = Array<string | { label: string; nested: FieldLabels }>;
+export type FieldLabels = Array<string | { label: string, nested: FieldLabels }>;
 export function getFieldLabels(fields: Descriptor | Field[]): FieldLabels {
   if (fields instanceof Descriptor) {
     fields = fields.fields;
@@ -95,7 +95,9 @@ function cloneFilteredNestedContentField(field: NestedContentField, filterClassI
 function filterNestedContentFieldsByClass(fields: Field[], classInfo: ECClassHierarchyInfo) {
   const filteredFields = new Array<Field>();
   fields.forEach((f) => {
-    if (f.isNestedContentField() && f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClasses.some((info) => info.id === id))) {
+    if (
+      f.isNestedContentField() && f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClasses.some((info) => info.id === id))
+    ) {
       const clone = cloneFilteredNestedContentField(f, classInfo);
       if (clone.nestedFields.length > 0) {
         filteredFields.push(clone);
@@ -113,7 +115,9 @@ export function filterFieldsByClass(fields: Field[], classInfo: ECClassHierarchy
       // always include nested content field if its `actualPrimaryClassIds` contains either id of given class itself or one of its derived class ids
       // note: nested content fields might have more nested fields inside them and these deeply nested fields might not apply for given class - for
       // that we need to clone the field and pick only property fields and nested fields that apply.
-      const appliesForGivenClass = f.actualPrimaryClassIds.some((id) => classInfo.id === id || classInfo.derivedClasses.some((info) => info.id === id));
+      const appliesForGivenClass = f.actualPrimaryClassIds.some((id) =>
+        classInfo.id === id || classInfo.derivedClasses.some((info) => info.id === id)
+      );
       if (appliesForGivenClass) {
         const clone = cloneFilteredNestedContentField(f, classInfo);
         if (clone.nestedFields.length > 0) {
@@ -162,10 +166,12 @@ export function getDisplayValue(content: Content, fieldsPath: Field[]) {
       continue;
     }
     throw new Error(
-      `Failed to find a value for field "${currField.name} at path [${fieldsPath
-        .slice(0, i)
-        .map((f) => f.name)
-        .join(", ")}]. Current values: ${JSON.stringify(values)}"`,
+      `Failed to find a value for field "${currField.name} at path [${
+        fieldsPath
+          .slice(0, i)
+          .map((f) => f.name)
+          .join(", ")
+      }]. Current values: ${JSON.stringify(values)}"`,
     );
   }
   return displayValues[fieldsPath[fieldsPath.length - 1].name];

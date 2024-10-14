@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import {
   KindOfQuantityProps,
   PhenomenonProps,
@@ -15,6 +14,7 @@ import {
   SchemaProps,
   UnitSystemProps,
 } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { KoqPropertyValueFormatter } from "../presentation-common/KoqPropertyValueFormatter";
 
 describe("KoqPropertyValueFormatter", () => {

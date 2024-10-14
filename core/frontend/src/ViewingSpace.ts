@@ -6,17 +6,31 @@
  * @module Views
  */
 
-import {
-  AxisOrder, ClipPlaneContainment, Constant, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point3d, Point4d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ,
-} from "@itwin/core-geometry";
 import { AxisAlignedBox3d, Frustum, GridOrientationType, Npc, NpcCorners } from "@itwin/core-common";
+import {
+  AxisOrder,
+  ClipPlaneContainment,
+  Constant,
+  Map4d,
+  Matrix3d,
+  Plane3dByOriginAndUnitNormal,
+  Point3d,
+  Point4d,
+  Range1d,
+  Range2d,
+  Range3d,
+  Transform,
+  Vector3d,
+  XYAndZ,
+  XYZ,
+} from "@itwin/core-geometry";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
-import { CoordSystem } from "./CoordSystem";
-import { Viewport } from "./Viewport";
-import { ViewRect } from "./common/ViewRect";
-import { ViewState } from "./ViewState";
-import { Frustum2d } from "./Frustum2d";
 import { getFrustumPlaneIntersectionDepthRange } from "./BackgroundMapGeometry";
+import { ViewRect } from "./common/ViewRect";
+import { CoordSystem } from "./CoordSystem";
+import { Frustum2d } from "./Frustum2d";
+import { Viewport } from "./Viewport";
+import { ViewState } from "./ViewState";
 
 /** Describes a [[Viewport]]'s viewing volume, plus its size on the screen. A new
  * instance of ViewingSpace is created every time the Viewport's frustum changes.
@@ -53,15 +67,19 @@ export class ViewingSpace {
   /** Providers conversions between world and Npc (non-dimensional perspective) coordinates. */
   public readonly worldToNpcMap = Map4d.createIdentity();
   /** @internal */
-  public readonly zClipAdjusted: boolean = false;    // were the view z clip planes adjusted due to front/back clipping off?
+  public readonly zClipAdjusted: boolean = false; // were the view z clip planes adjusted due to front/back clipping off?
   /** Eye point - undefined if not a perspective projection. */
   public readonly eyePoint: Point3d | undefined;
 
   private _view: ViewState;
 
   /** The ViewState for this Viewport */
-  public get view(): ViewState { return this._view; }
-  public set view(view: ViewState) { this._view = view; }
+  public get view(): ViewState {
+    return this._view;
+  }
+  public set view(view: ViewState) {
+    this._view = view;
+  }
 
   private readonly _clientWidth: number;
   private readonly _clientHeight: number;
@@ -83,9 +101,13 @@ export class ViewingSpace {
   }
 
   /** @internal */
-  public toViewOrientation(from: XYZ, to?: XYZ) { this.rotation.multiplyVectorInPlace(ViewingSpace._copyOutput(from, to)); }
+  public toViewOrientation(from: XYZ, to?: XYZ) {
+    this.rotation.multiplyVectorInPlace(ViewingSpace._copyOutput(from, to));
+  }
   /** @internal */
-  public fromViewOrientation(from: XYZ, to?: XYZ) { this.rotation.multiplyTransposeVectorInPlace(ViewingSpace._copyOutput(from, to)); }
+  public fromViewOrientation(from: XYZ, to?: XYZ) {
+    this.rotation.multiplyTransposeVectorInPlace(ViewingSpace._copyOutput(from, to));
+  }
 
   /** Ensure the rotation matrix for this view is aligns the root z with the view out (i.e. a "2d view"). */
   private alignWithRootZ() {
@@ -169,7 +191,7 @@ export class ViewingSpace {
     let gridPlane;
     if (this.view.viewFlags.grid) {
       const gridOrigin = this.view.isSpatialView() ? this.view.iModel.globalOrigin : Point3d.create();
-      switch(this.view.getGridOrientation()) {
+      switch (this.view.getGridOrientation()) {
         case GridOrientationType.WorldXY:
           gridPlane = Plane3dByOriginAndUnitNormal.create(gridOrigin, Vector3d.create(0, 0, 1));
           break;
@@ -192,7 +214,13 @@ export class ViewingSpace {
       const viewZ = this.rotation.getRow(2);
       const eyeDepth = this.eyePoint ? viewZ.dotProduct(this.eyePoint) : undefined;
 
-      depthRange = globalGeometry.geometry.getFrustumIntersectionDepthRange(frustum, extents, globalGeometry.heightRange, gridPlane, this.view.maxGlobalScopeFactor > 1);
+      depthRange = globalGeometry.geometry.getFrustumIntersectionDepthRange(
+        frustum,
+        extents,
+        globalGeometry.heightRange,
+        gridPlane,
+        this.view.maxGlobalScopeFactor > 1,
+      );
 
       if (eyeDepth !== undefined) {
         const maxBackgroundFrontBackRatio = 1.0E6;
@@ -202,7 +230,7 @@ export class ViewingSpace {
           depthRange.high = eyeDepth - backDist / maxBackgroundFrontBackRatio;
       }
     } else
-      depthRange = gridPlane ? getFrustumPlaneIntersectionDepthRange(frustum, gridPlane) :  Range1d.createNull();
+      depthRange = gridPlane ? getFrustumPlaneIntersectionDepthRange(frustum, gridPlane) : Range1d.createNull();
 
     if (!extents.isNull) {
       const viewZ = this.rotation.getRow(2);
@@ -214,8 +242,8 @@ export class ViewingSpace {
     if (depthRange.isNull)
       return;
 
-    this.rotation.multiplyVectorInPlace(origin);       // put origin in view coordinates
-    origin.z = depthRange.low;                          // set origin to back of viewed extents
+    this.rotation.multiplyVectorInPlace(origin); // put origin in view coordinates
+    origin.z = depthRange.low; // set origin to back of viewed extents
     delta.z = Math.max(depthRange.high - depthRange.low, ViewingSpace._minDepth); // and delta to front of viewed extents
     this.rotation.multiplyTransposeVectorInPlace(origin);
 
@@ -230,7 +258,7 @@ export class ViewingSpace {
     // that the camera is outside the viewed extents and pointed away from it. There's nothing to see anyway.
     if (eyeOrg.z < 1.0) {
       this.rotation.multiplyVectorInPlace(origin);
-      origin.z -= (2.0 - eyeOrg.z);
+      origin.z -= 2.0 - eyeOrg.z;
       this.rotation.multiplyTransposeVectorInPlace(origin);
       delta.z = 1.0;
       return;
@@ -257,7 +285,7 @@ export class ViewingSpace {
     const corners = this._viewCorners;
     const viewRect = this._viewRect;
     corners.high.x = viewRect.right;
-    corners.low.y = viewRect.bottom;    // y's are swapped on the screen!
+    corners.low.y = viewRect.bottom; // y's are swapped on the screen!
     corners.low.x = 0;
     corners.high.y = 0;
     corners.low.z = -32767;
@@ -333,7 +361,7 @@ export class ViewingSpace {
           if (frontDist < minFrontDist) {
             // camera is too close to front plane, move origin away from eye to maintain a minimum front distance.
             this.toViewOrientation(origin);
-            origin.z -= (minFrontDist - frontDist);
+            origin.z -= minFrontDist - frontDist;
             this.fromViewOrientation(origin);
           }
         }
@@ -349,7 +377,12 @@ export class ViewingSpace {
     this.viewOrigin.setFrom(origin);
     this.viewDelta.setFrom(delta);
 
-    const newRootToNpc = this.view.computeWorldToNpc(this.rotation, origin, delta, !this.view.displayStyle.getIsBackgroundMapVisible() /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */);
+    const newRootToNpc = this.view.computeWorldToNpc(
+      this.rotation,
+      origin,
+      delta,
+      !this.view.displayStyle.getIsBackgroundMapVisible(), /* if displaying background map, don't enforce front/back ratio as no Z-Buffer */
+    );
     if (newRootToNpc.map === undefined) {
       this.frustFraction = 0; // invalid frustum
       return;
@@ -401,54 +434,78 @@ export class ViewingSpace {
   }
 
   /** Convert an array of points from CoordSystem.World to CoordSystem.Npc */
-  public worldToNpcArray(pts: Point3d[]): void { this.worldToNpcMap.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToNpcArray(pts: Point3d[]): void {
+    this.worldToNpcMap.transform0.multiplyPoint3dArrayQuietNormalize(pts);
+  }
   /** Convert an array of points from CoordSystem.Npc to CoordSystem.World */
-  public npcToWorldArray(pts: Point3d[]): void { this.worldToNpcMap.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  public npcToWorldArray(pts: Point3d[]): void {
+    this.worldToNpcMap.transform1.multiplyPoint3dArrayQuietNormalize(pts);
+  }
   /** Convert an array of points from CoordSystem.World to CoordSystem.View */
-  public worldToViewArray(pts: Point3d[]): void { this.worldToViewMap.transform0.multiplyPoint3dArrayQuietNormalize(pts); }
+  public worldToViewArray(pts: Point3d[]): void {
+    this.worldToViewMap.transform0.multiplyPoint3dArrayQuietNormalize(pts);
+  }
   /** Convert an array of points from CoordSystem.World to CoordSystem.View, as Point4ds */
-  public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void { this.worldToViewMap.transform0.multiplyPoint3dArray(worldPts, viewPts); }
+  public worldToView4dArray(worldPts: Point3d[], viewPts: Point4d[]): void {
+    this.worldToViewMap.transform0.multiplyPoint3dArray(worldPts, viewPts);
+  }
   /** Convert an array of points from CoordSystem.View to CoordSystem.World */
-  public viewToWorldArray(pts: Point3d[]) { this.worldToViewMap.transform1.multiplyPoint3dArrayQuietNormalize(pts); }
+  public viewToWorldArray(pts: Point3d[]) {
+    this.worldToViewMap.transform1.multiplyPoint3dArrayQuietNormalize(pts);
+  }
   /** Convert an array of points from CoordSystem.View as Point4ds to CoordSystem.World */
-  public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void { this.worldToViewMap.transform1.multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts); }
+  public view4dToWorldArray(viewPts: Point4d[], worldPts: Point3d[]): void {
+    this.worldToViewMap.transform1.multiplyPoint4dArrayQuietRenormalize(viewPts, worldPts);
+  }
 
   /**
    * Convert a point from CoordSystem.World to CoordSystem.Npc
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public worldToNpc(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform0.multiplyPoint3dQuietNormalize(pt, out); }
+  public worldToNpc(pt: XYAndZ, out?: Point3d): Point3d {
+    return this.worldToNpcMap.transform0.multiplyPoint3dQuietNormalize(pt, out);
+  }
   /**
    * Convert a point from CoordSystem.Npc to CoordSystem.World
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public npcToWorld(pt: XYAndZ, out?: Point3d): Point3d { return this.worldToNpcMap.transform1.multiplyPoint3dQuietNormalize(pt, out); }
+  public npcToWorld(pt: XYAndZ, out?: Point3d): Point3d {
+    return this.worldToNpcMap.transform1.multiplyPoint3dQuietNormalize(pt, out);
+  }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.View
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public worldToView(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(input, out); }
+  public worldToView(input: XYAndZ, out?: Point3d): Point3d {
+    return this.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(input, out);
+  }
   /**
    * Convert a point from CoordSystem.World to CoordSystem.View as Point4d
    * @param input the point to convert
    * @param out optional location for result. If undefined, a new Point4d is created.
    */
-  public worldToView4d(input: XYAndZ, out?: Point4d): Point4d { return this.worldToViewMap.transform0.multiplyPoint3d(input, 1.0, out); }
+  public worldToView4d(input: XYAndZ, out?: Point4d): Point4d {
+    return this.worldToViewMap.transform0.multiplyPoint3d(input, 1.0, out);
+  }
   /**
    * Convert a point from CoordSystem.View to CoordSystem.World
    * @param pt the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public viewToWorld(input: XYAndZ, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(input, out); }
+  public viewToWorld(input: XYAndZ, out?: Point3d): Point3d {
+    return this.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(input, out);
+  }
   /**
    * Convert a point from CoordSystem.View as a Point4d to CoordSystem.View
    * @param input the point to convert
    * @param out optional location for result. If undefined, a new Point3d is created.
    */
-  public view4dToWorld(input: Point4d, out?: Point3d): Point3d { return this.worldToViewMap.transform1.multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out); }
+  public view4dToWorld(input: Point4d, out?: Point3d): Point3d {
+    return this.worldToViewMap.transform1.multiplyXYZWQuietRenormalize(input.x, input.y, input.z, input.w, out);
+  }
 
   /** Get an 8-point Frustum corresponding to the 8 corners of the Viewport in the specified coordinate system.
    *

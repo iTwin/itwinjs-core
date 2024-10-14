@@ -66,9 +66,13 @@ export class Ray2d {
     return new Ray2d(origin, direction);
   }
   /** Get the reference to the ray origin. */
-  public get origin() { return this._origin; }
+  public get origin() {
+    return this._origin;
+  }
   /** Get the reference to the ray direction. */
-  public get direction() { return this._direction; }
+  public get direction() {
+    return this._direction;
+  }
   /**
    * Return a parallel ray to the left of this ray.
    * @param leftFraction distance between rays, as a fraction of the magnitude of this ray's direction vector

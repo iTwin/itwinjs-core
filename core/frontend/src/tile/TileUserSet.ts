@@ -35,9 +35,15 @@ class TileUserSet extends ReadonlyTileUserSet {
     return clone;
   }
 
-  public insert(user: TileUser): number { return this._insert(user); }
-  public remove(user: TileUser): number { return this._remove(user); }
-  public clear(): void { this._clear(); }
+  public insert(user: TileUser): number {
+    return this._insert(user);
+  }
+  public remove(user: TileUser): number {
+    return this._remove(user);
+  }
+  public clear(): void {
+    this._clear();
+  }
 }
 
 function compareTileUserSets(lhs: TileUserSet, rhs: TileUserSet): number {

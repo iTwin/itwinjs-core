@@ -3,13 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as fs from "fs";
-import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
-import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SnapshotDb,
+  CategorySelector,
+  DefinitionModel,
+  DisplayStyle3d,
+  IModelDb,
+  ModelSelector,
+  OrthographicViewDefinition,
+  PhysicalModel,
+  SnapshotDb,
 } from "@itwin/core-backend";
+import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import { AxisAlignedBox3d, Cartographic, ContextRealityModelProps, EcefLocation, RenderMode, ViewFlags } from "@itwin/core-common";
+import { Matrix3d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d } from "@itwin/core-geometry";
+import * as fs from "fs";
 
 class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
@@ -25,7 +32,7 @@ class RealityModelTileUtils {
       for (let j = 0; j < 2; j++) {
         for (let k = 0; k < 2; k++) {
           for (let l = 0; l < 2; l++) {
-            corners.push(center.plus3Scaled(ux, (j ? -1.0 : 1.0), uy, (k ? -1.0 : 1.0), uz, (l ? -1.0 : 1.0)));
+            corners.push(center.plus3Scaled(ux, j ? -1.0 : 1.0, uy, k ? -1.0 : 1.0, uz, l ? -1.0 : 1.0));
           }
         }
       }
@@ -40,11 +47,16 @@ class RealityModelTileUtils {
   }
 
   public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
-    const minToleranceRatio = .5;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
+    const minToleranceRatio = .5; // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
     return minToleranceRatio * range.diagonal().magnitude() / geometricError;
   }
   public static transformFromJson(jTrans: number[] | undefined): Transform | undefined {
-    return (jTrans === undefined) ? undefined : Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
+    return (jTrans === undefined)
+      ? undefined
+      : Transform.createOriginAndMatrix(
+        Point3d.create(jTrans[12], jTrans[13], jTrans[14]),
+        Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]),
+      );
   }
 }
 
@@ -61,7 +73,7 @@ export class RealityModelContextIModelCreator {
    * @param url the reality model URL
    */
   public constructor(iModelFileName: string, url: string, private _name: string) {
-    fs.unlink(iModelFileName, ((_err) => { }));
+    fs.unlink(iModelFileName, (_err) => {});
     this.iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "Reality Model Context" } });
     this.url = url;
   }
@@ -74,7 +86,11 @@ export class RealityModelContextIModelCreator {
       const ecefLow = (Cartographic.fromRadians({ longitude: region[0], latitude: region[1], height: region[4] })).toEcef();
       const ecefHigh = (Cartographic.fromRadians({ longitude: region[2], latitude: region[3], height: region[5] })).toEcef();
       const ecefRange = Range3d.create(ecefLow, ecefHigh);
-      const cartoCenter = Cartographic.fromRadians({ longitude: (region[0] + region[2]) / 2.0, latitude: (region[1] + region[3]) / 2.0, height: (region[4] + region[5]) / 2.0 });
+      const cartoCenter = Cartographic.fromRadians({
+        longitude: (region[0] + region[2]) / 2.0,
+        latitude: (region[1] + region[3]) / 2.0,
+        height: (region[4] + region[5]) / 2.0,
+      });
       const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter);
       this.iModelDb.setEcefLocation(ecefLocation);
       const ecefToWorld = ecefLocation.getTransform().inverse()!;
@@ -128,8 +144,10 @@ export class RealityModelContextIModelCreator {
       let worldToEcef: Transform | undefined;
       for (const modelValue of Object.values(json.models)) {
         const model = modelValue as any;
-        if (model.tilesetUrl !== undefined &&
-          model.type === "spatial") {
+        if (
+          model.tilesetUrl !== undefined &&
+          model.type === "spatial"
+        ) {
           let modelUrl = prefix + model.tilesetUrl.replace(/\/\//g, "/");
           modelUrl = modelUrl.replace(/ /g, "%20");
           const ecefRange = Range3d.fromJSON(model.extents);
@@ -166,7 +184,19 @@ export class RealityModelContextIModelCreator {
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, []);
     const vf = new ViewFlags({ backgroundMap: geoLocated, renderMode: RenderMode.SmoothShade, lighting: true });
-    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
-    return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, {
+      viewFlags: vf,
+      contextRealityModels: realityModels,
+    });
+    return OrthographicViewDefinition.insert(
+      this.iModelDb,
+      this.definitionModelId,
+      viewName,
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      range,
+      StandardViewIndex.Iso,
+    );
   }
 }

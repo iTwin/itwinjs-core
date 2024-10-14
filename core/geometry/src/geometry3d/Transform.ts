@@ -85,18 +85,30 @@ export class Transform implements BeJSONFunctions {
       }
       if (Geometry.isArrayOfNumberArray(json, 3, 4)) {
         this._matrix.setRowValues(
-          json[0][0], json[0][1], json[0][2],
-          json[1][0], json[1][1], json[1][2],
-          json[2][0], json[2][1], json[2][2],
+          json[0][0],
+          json[0][1],
+          json[0][2],
+          json[1][0],
+          json[1][1],
+          json[1][2],
+          json[2][0],
+          json[2][1],
+          json[2][2],
         );
         this._origin.set(json[0][3], json[1][3], json[2][3]);
         return;
       }
       if (Geometry.isNumberArray(json, 12)) {
         this._matrix.setRowValues(
-          json[0], json[1], json[2],
-          json[4], json[5], json[6],
-          json[8], json[9], json[10],
+          json[0],
+          json[1],
+          json[2],
+          json[4],
+          json[5],
+          json[6],
+          json[8],
+          json[9],
+          json[10],
         );
         this._origin.set(json[3], json[7], json[11]);
         return;
@@ -134,7 +146,7 @@ export class Transform implements BeJSONFunctions {
   /**
    * Return a 3 by 4 matrix containing the rows of this Transform.
    * * The transform's origin coordinates are the last entries of the 3 json arrays
-  */
+   */
   public toJSON(): TransformProps {
     return this.toRows();
   }
@@ -179,9 +191,18 @@ export class Transform implements BeJSONFunctions {
   }
   /** Create a Transform with complete contents given. `q` inputs make the matrix and `a` inputs make the origin */
   public static createRowValues(
-    qxx: number, qxy: number, qxz: number, ax: number,
-    qyx: number, qyy: number, qyz: number, ay: number,
-    qzx: number, qzy: number, qzz: number, az: number,
+    qxx: number,
+    qxy: number,
+    qxz: number,
+    ax: number,
+    qyx: number,
+    qyy: number,
+    qyz: number,
+    ay: number,
+    qzx: number,
+    qzy: number,
+    qzz: number,
+    az: number,
     result?: Transform,
   ): Transform {
     if (result) {
@@ -264,7 +285,9 @@ export class Transform implements BeJSONFunctions {
    * * If origin is `undefined`, (0,0,0) is used. If matrix is `undefined` the identity matrix is used.
    */
   public static createOriginAndMatrix(
-    origin: XYZ | undefined, matrix: Matrix3d | undefined, result?: Transform,
+    origin: XYZ | undefined,
+    matrix: Matrix3d | undefined,
+    result?: Transform,
   ): Transform {
     if (result) {
       result._origin.setFromPoint3d(origin);
@@ -279,7 +302,10 @@ export class Transform implements BeJSONFunctions {
   }
   /** Create a Transform using the given `origin` and columns of the `matrix`. If `undefined` zero is used. */
   public setOriginAndMatrixColumns(
-    origin: XYZ | undefined, vectorX: Vector3d | undefined, vectorY: Vector3d | undefined, vectorZ: Vector3d | undefined,
+    origin: XYZ | undefined,
+    vectorX: Vector3d | undefined,
+    vectorY: Vector3d | undefined,
+    vectorZ: Vector3d | undefined,
   ): void {
     if (origin !== undefined)
       this._origin.setFrom(origin);
@@ -287,7 +313,11 @@ export class Transform implements BeJSONFunctions {
   }
   /** Create a Transform using the given `origin` and columns of the `matrix` */
   public static createOriginAndMatrixColumns(
-    origin: XYZ, vectorX: Vector3d, vectorY: Vector3d, vectorZ: Vector3d, result?: Transform,
+    origin: XYZ,
+    vectorX: Vector3d,
+    vectorY: Vector3d,
+    vectorZ: Vector3d,
+    result?: Transform,
   ): Transform {
     if (result)
       result.setOriginAndMatrixColumns(origin, vectorX, vectorY, vectorZ);
@@ -300,7 +330,11 @@ export class Transform implements BeJSONFunctions {
    * @see [[Matrix3d.createRigidFromColumns]] for details of how the matrix is created to be rigid.
    */
   public static createRigidFromOriginAndColumns(
-    origin: XYZ | undefined, vectorX: Vector3d, vectorY: Vector3d, axisOrder: AxisOrder, result?: Transform,
+    origin: XYZ | undefined,
+    vectorX: Vector3d,
+    vectorY: Vector3d,
+    axisOrder: AxisOrder,
+    result?: Transform,
   ): Transform | undefined {
     const matrix = Matrix3d.createRigidFromColumns(vectorX, vectorY, axisOrder, result ? result._matrix : undefined);
     if (!matrix)
@@ -326,7 +360,9 @@ export class Transform implements BeJSONFunctions {
    * where `f` is the fixedPoint (i.e., `Tp = M*(p-f) + f`).
    */
   public static createFixedPointAndMatrix(
-    fixedPoint: XYAndZ | undefined, matrix: Matrix3d, result?: Transform,
+    fixedPoint: XYAndZ | undefined,
+    matrix: Matrix3d,
+    result?: Transform,
   ): Transform {
     if (fixedPoint) {
       /**
@@ -343,7 +379,10 @@ export class Transform implements BeJSONFunctions {
    * point `p` to `M*(p-a) + b` (i.e., `Tp = M*(p-a) + b`), so maps `a` to `b`.
    */
   public static createMatrixPickupPutdown(
-    matrix: Matrix3d, a: Point3d, b: Point3d, result?: Transform,
+    matrix: Matrix3d,
+    a: Point3d,
+    b: Point3d,
+    result?: Transform,
   ): Transform {
     // we define the origin o = b - M*a so Tp = M*p + o = M*p + (b - M*a) = M*(p-a) + b
     const origin = Matrix3d.xyzMinusMatrixTimesXYZ(b, matrix, a);

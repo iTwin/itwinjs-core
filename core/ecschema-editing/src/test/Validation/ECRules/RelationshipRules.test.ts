@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { RelationshipClass, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
+import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 import * as Rules from "../../../Validation/ECRules";
 import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
-import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable deprecation/deprecation */
@@ -80,9 +80,15 @@ describe("RelationshipRule tests", () => {
       TM1: { schemaItemType: "Mixin", appliesTo: "TestSchema.TDE1" },
 
       SBR1: { ...createNavPropRelationship({ constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.SBE1"] }) },
-      SDR1: { baseClass: "TestSchema.SBR1", ...createNavPropRelationship({ constraintClasses: ["TestSchema.SDE1"] }, { constraintClasses: ["TestSchema.SDE1"] }) },
+      SDR1: {
+        baseClass: "TestSchema.SBR1",
+        ...createNavPropRelationship({ constraintClasses: ["TestSchema.SDE1"] }, { constraintClasses: ["TestSchema.SDE1"] }),
+      },
       TBR1: { ...createNavPropRelationship({ constraintClasses: ["TestSchema.TBE1"] }, { constraintClasses: ["TestSchema.TBE1"] }) },
-      TDR1: { baseClass: "TestSchema.TBR1", ...createNavPropRelationship({ constraintClasses: ["TestSchema.TDE1"] }, { constraintClasses: ["TestSchema.TDE1"] }) },
+      TDR1: {
+        baseClass: "TestSchema.TBR1",
+        ...createNavPropRelationship({ constraintClasses: ["TestSchema.TDE1"] }, { constraintClasses: ["TestSchema.TDE1"] }),
+      },
 
       E1: { schemaItemType: "EntityClass" },
       E2: { schemaItemType: "EntityClass" },
@@ -115,7 +121,9 @@ describe("RelationshipRule tests", () => {
   describe("AbstractConstraintMustNarrowBaseConstraints rule tests", () => {
     it("supported source and target constraint classes, rule passes", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
-      const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
+      const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, {
+        constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"],
+      });
       schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
@@ -127,7 +135,9 @@ describe("RelationshipRule tests", () => {
 
     it("no base class, rule passes", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
-      const childJson: any = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
+      const childJson: any = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, {
+        constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"],
+      });
       delete childJson.ChildRelationship.baseClass;
       schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
@@ -170,7 +180,8 @@ describe("RelationshipRule tests", () => {
       let count = 0;
       for await (const diagnostic of result) {
         count++;
-        const expectedArgs = count === 1 ? ["TestSchema.E1", "Source", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"] :
+        const expectedArgs = count === 1 ?
+          ["TestSchema.E1", "Source", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"] :
           ["TestSchema.E2", "Target", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"];
 
         expect(diagnostic.ecDefinition).to.equal(relationship);
@@ -186,7 +197,9 @@ describe("RelationshipRule tests", () => {
   describe("DerivedConstraintsMustNarrowBaseConstraints rule tests", () => {
     it("supported source and target constraint classes, rule passes", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
-      const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
+      const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, {
+        constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"],
+      });
       schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
@@ -198,7 +211,9 @@ describe("RelationshipRule tests", () => {
 
     it("no base class, rule passes", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
-      const childJson: any = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, { constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"] });
+      const childJson: any = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.SDE2"] }, {
+        constraintClasses: ["TestSchema.TDE1", "TestSchema.TDE2"],
+      });
       delete childJson.ChildRelationship.baseClass;
       schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
@@ -211,7 +226,9 @@ describe("RelationshipRule tests", () => {
 
     it("unsupported source constraint class, rule violated", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
-      const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.E1"] }, { constraintClasses: ["TestSchema.TDE1"] });
+      const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.E1"] }, {
+        constraintClasses: ["TestSchema.TDE1"],
+      });
       schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
@@ -232,7 +249,9 @@ describe("RelationshipRule tests", () => {
 
     it("unsupported source and target constraint classes, rule violated twice", async () => {
       const baseJson = createBaseRelationship(true, { constraintClasses: ["TestSchema.SBE1"] }, { constraintClasses: ["TestSchema.TBE1"] });
-      const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.E1"] }, { constraintClasses: ["TestSchema.E2"] });
+      const childJson = createChildRelationship(true, { constraintClasses: ["TestSchema.SDE1", "TestSchema.E1"] }, {
+        constraintClasses: ["TestSchema.E2"],
+      });
       schema = await Schema.fromJson(createSchemaJson(baseJson, childJson), new SchemaContext());
       const relationship = schema.getItemSync("ChildRelationship") as RelationshipClass;
 
@@ -241,7 +260,8 @@ describe("RelationshipRule tests", () => {
       let count = 0;
       for await (const diagnostic of result) {
         count++;
-        const expectedArgs = count === 1 ? ["TestSchema.E1", "Source", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"] :
+        const expectedArgs = count === 1 ?
+          ["TestSchema.E1", "Source", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"] :
           ["TestSchema.E2", "Target", "TestSchema.ChildRelationship", "TestSchema.BaseRelationship"];
 
         expect(diagnostic.ecDefinition).to.equal(relationship);
@@ -255,7 +275,6 @@ describe("RelationshipRule tests", () => {
   });
 
   describe("ConstraintClassesDeriveFromAbstractConstraint rule tests", () => {
-
     it("supported source and target constraint Entity classes, rule passes", async () => {
       const sourceConstraints = {
         abstractConstraint: "TestSchema.SBE1",
@@ -514,7 +533,8 @@ describe("RelationshipRule tests", () => {
       let count = 0;
       for await (const diagnostic of result) {
         count++;
-        const expectedArgs = count === 1 ? ["TestSchema.E1", "Source", "TestSchema.BaseRelationship", "TestSchema.SBE1"] :
+        const expectedArgs = count === 1 ?
+          ["TestSchema.E1", "Source", "TestSchema.BaseRelationship", "TestSchema.SBE1"] :
           ["TestSchema.E2", "Target", "TestSchema.BaseRelationship", "TestSchema.TBE1"];
 
         expect(diagnostic.ecDefinition).to.equal(relationship);

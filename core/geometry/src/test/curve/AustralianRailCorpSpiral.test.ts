@@ -41,7 +41,6 @@ describe("AustralianRailCorpSpiral", () => {
           ck.testTightNumber(y1 * scaleFactor, yA, " y from scaled construction");
           ck.testTightNumber(x1 * scaleFactor, xB, "x from scaled clone");
           ck.testTightNumber(y1 * scaleFactor, yB, "y from scaled clone");
-
         }
       }
 

@@ -5,15 +5,17 @@
 
 import { assert, ByteStream, Guid } from "@itwin/core-bentley";
 import { PersistentGraphicsRequestProps } from "@itwin/core-common";
-import {
-  ImdlReader, IModelApp, IModelConnection, IModelTileTree, Tool,
-} from "@itwin/core-frontend";
+import { ImdlReader, IModelApp, IModelConnection, IModelTileTree, Tool } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 export class GenerateTileContentTool extends Tool {
   public static override toolId = "GenerateTileContent";
-  public static override get minArgs() { return 2; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 2;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public override async run(args?: { tree: IModelTileTree, contentId: string }) {
     if (!args)
@@ -25,7 +27,11 @@ export class GenerateTileContentTool extends Tool {
       const stream = ByteStream.fromUint8Array(bytes);
       const { iModel, modelId, is3d, containsTransformNodes } = tree;
       const reader = ImdlReader.create({
-        stream, iModel, modelId, is3d, containsTransformNodes,
+        stream,
+        iModel,
+        modelId,
+        is3d,
+        containsTransformNodes,
         system: IModelApp.renderSystem,
         type: tree.batchType,
         loadEdges: false !== tree.edgeOptions,
@@ -66,8 +72,12 @@ export class GenerateTileContentTool extends Tool {
 
 export class GenerateElementGraphicsTool extends Tool {
   public static override toolId = "GenerateElementGraphics";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public override async run(props?: PersistentGraphicsRequestProps, iModel?: IModelConnection): Promise<boolean> {
     if (!props || !iModel)

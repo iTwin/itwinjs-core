@@ -6,8 +6,6 @@
  * @module Core
  */
 
-import * as path from "path";
-import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
 import {
   DefinitionElement,
   DefinitionModel,
@@ -36,6 +34,8 @@ import {
   SubjectProps,
 } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
+import * as path from "path";
+import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
 import * as RulesetElements from "./domain/RulesetElements";
 import { normalizeVersion } from "./Utils";
@@ -152,7 +152,9 @@ export class RulesetEmbedder {
       SELECT ECInstanceId, JsonProperties
       FROM ${RulesetElements.Ruleset.schema.name}.${RulesetElements.Ruleset.className}
       WHERE json_extract(JsonProperties, '$.jsonProperties.id') = :rulesetId`;
-    const reader = this._imodel.createQueryReader(query, QueryBinder.from({ rulesetId: ruleset.id }), { rowFormat: QueryRowFormat.UseJsPropertyNames });
+    const reader = this._imodel.createQueryReader(query, QueryBinder.from({ rulesetId: ruleset.id }), {
+      rowFormat: QueryRowFormat.UseJsPropertyNames,
+    });
     while (await reader.step()) {
       const row = reader.current.toRow();
       const existingRulesetElementId: Id64String = row.id;
@@ -165,10 +167,10 @@ export class RulesetEmbedder {
     }
 
     // check if we need to do anything at all
-    const shouldSkip =
-      (normalizedOptions.skip === "same-id" && rulesetsWithSameId.length > 0) ||
+    const shouldSkip = (normalizedOptions.skip === "same-id" && rulesetsWithSameId.length > 0) ||
       (normalizedOptions.skip === "same-id-and-version-eq" && rulesetsWithSameId.some((entry) => entry.normalizedVersion === rulesetVersion)) ||
-      (normalizedOptions.skip === "same-id-and-version-gte" && rulesetsWithSameId.some((entry) => versionGte(entry.normalizedVersion, rulesetVersion)));
+      (normalizedOptions.skip === "same-id-and-version-gte" &&
+        rulesetsWithSameId.some((entry) => versionGte(entry.normalizedVersion, rulesetVersion)));
     if (shouldSkip) {
       // we're not inserting anything - return ID of the ruleset element with the highest version
       const rulesetEntryWithHighestVersion = rulesetsWithSameId.reduce((highest, curr) => {

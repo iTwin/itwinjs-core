@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Assertion, util } from "chai";
 import { Geometry } from "@itwin/core-geometry";
+import { Assertion, util } from "chai";
 
 interface DeepEqualOpts {
   /**
@@ -56,10 +56,9 @@ export function advancedDeepEqual(
   a: any,
   options: AdvancedEqualFuncOpts = {},
 ): boolean {
-  const normalizedClassNameProps
-    = options.normalizeClassNameProps === true
-      ? ["classFullName", "relClassName"]
-      : options.normalizeClassNameProps || [];
+  const normalizedClassNameProps = options.normalizeClassNameProps === true
+    ? ["classFullName", "relClassName"]
+    : options.normalizeClassNameProps || [];
   if (options.tolerance === undefined)
     options.tolerance = defaultOpts.tolerance;
   if (e === a)
@@ -83,7 +82,7 @@ export function advancedDeepEqual(
       return (eSize === aSize || !!options.useSubsetEquality) && Object.keys(e).every(
         (keyOfE) =>
           (keyOfE in a || options.considerNonExistingAndUndefinedEqual) &&
-          normalizedClassNameProps.includes(keyOfE)
+            normalizedClassNameProps.includes(keyOfE)
             ? advancedDeepEqual(normalizeClassName(e[keyOfE]), normalizeClassName(a[keyOfE]))
             : advancedDeepEqual(e[keyOfE], a[keyOfE], options),
       );
@@ -106,12 +105,8 @@ Assertion.addMethod(
       isDeep
         ? advancedDeepEqual(expected, actual, options)
         : isAlmostEqualNumber(expected, actual, options.tolerance),
-      `expected ${
-        isDeep ? "deep equality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      `expected ${
-        isDeep ? "deep inequality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
+      `expected ${isDeep ? "deep equality of " : " "}#{exp} and #{act} with a tolerance of ${options.tolerance}`,
+      `expected ${isDeep ? "deep inequality of " : " "}#{exp} and #{act} with a tolerance of ${options.tolerance}`,
       expected,
       actual,
     );
@@ -128,7 +123,7 @@ Assertion.addMethod(
       options.tolerance = 1e-10;
     const actual = this._obj;
     this.assert(
-      advancedDeepEqual(expected, actual, {...options, useSubsetEquality: true }),
+      advancedDeepEqual(expected, actual, { ...options, useSubsetEquality: true }),
       `expected #{act} to contain as a subset #{exp}`,
       `expected #{act} not to contain as a subset #{exp}`,
       expected,

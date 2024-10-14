@@ -13,10 +13,10 @@ import { DisplayStyleProps, DisplayStyleSettingsProps } from "./DisplayStyleSett
 import { DefinitionElementProps, DisplayStyleLoadProps, ElementProps, RenderTimelineProps, SheetProps, ViewAttachmentProps } from "./ElementProps";
 import { EntityQueryParams } from "./EntityProps";
 import { ModelProps } from "./ModelProps";
-import { SubCategoryAppearance } from "./SubCategoryAppearance";
-import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
-import { ThumbnailProps } from "./Thumbnail";
 import { RenderSchedule } from "./RenderSchedule";
+import { SubCategoryAppearance } from "./SubCategoryAppearance";
+import { ThumbnailProps } from "./Thumbnail";
+import { ViewDetails3dProps, ViewDetailsProps } from "./ViewDetails";
 
 /** The id of either an element or an entry in a ViewStore.
  * @public
@@ -249,7 +249,6 @@ export interface AuxCoordSystem3dProps extends AuxCoordSystemProps {
  * @beta
  */
 export namespace ViewStoreRpc {
-
   /**
    * Version of the Rpc interface. If any methods or interfaces of this API change, this number should
    * be incremented according to the rules of semantic versioning. See .\rpc\README-RpcInterfaceVersioning.md for more information.
@@ -330,7 +329,7 @@ export namespace ViewStoreRpc {
     where?: string;
     /** List of Model or Category ids to add to the query results.
      * @note This is only valid if there is a `where` clause. Otherwise all instances of `from` will be returned so there is no value in adding ids.
-    */
+     */
     adds?: Id64Array | CompressedId64Set;
     /** List of Model or Category Ids to remove from the query results. */
     removes?: Id64Array | CompressedId64Set;

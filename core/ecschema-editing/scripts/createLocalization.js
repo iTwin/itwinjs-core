@@ -27,11 +27,11 @@ function createLocalization() {
 
   const json = {
     Diagnostics: {
-      ...jsonEntries
-    }
-  }
+      ...jsonEntries,
+    },
+  };
 
-  fs.writeFile(path.resolve(localesDir, "ECSchemaEditing.json"), JSON.stringify(json, undefined, 2), "utf8", function (err) {
+  fs.writeFile(path.resolve(localesDir, "ECSchemaEditing.json"), JSON.stringify(json, undefined, 2), "utf8", function(err) {
     if (err) {
       printErrorAndFail(err);
     }

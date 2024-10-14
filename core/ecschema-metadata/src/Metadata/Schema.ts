@@ -11,11 +11,11 @@ import { SchemaReadHelper } from "../Deserialization/Helper";
 import { JsonParser } from "../Deserialization/JsonParser";
 import { SchemaProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { ECName } from "../ECName";
 import { ECClassModifier, PrimitiveType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, AnySchemaItem, SchemaInfo } from "../Interfaces";
 import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
-import { ECName } from "../ECName";
 import { ECClass, StructClass } from "./Class";
 import { Constant } from "./Constant";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
@@ -62,7 +62,7 @@ export class Schema implements CustomAttributeContainerProps {
    * @param context The SchemaContext that will control the lifetime of the schema
    * @param key A SchemaKey that uniquely identifies the schema
    */
-  constructor(context: SchemaContext, key: SchemaKey, alias: string);  // eslint-disable-line @typescript-eslint/unified-signatures
+  constructor(context: SchemaContext, key: SchemaKey, alias: string); // eslint-disable-line @typescript-eslint/unified-signatures
   /**
    * Constructs an empty Schema (without a SchemaKey) in the provided context.
    * This should only be used when the schema name and version will be deserialized (via `fromJson()`) immediately after this Schema is instantiated.
@@ -72,7 +72,7 @@ export class Schema implements CustomAttributeContainerProps {
   constructor(context: SchemaContext);
   /** @internal */
   constructor(context: SchemaContext, nameOrKey?: SchemaKey | string, alias?: string, readVer?: number, writeVer?: number, minorVer?: number) {
-    this._schemaKey = (typeof (nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVer as number, writeVer, minorVer)) : nameOrKey;
+    this._schemaKey = (typeof nameOrKey === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVer as number, writeVer, minorVer)) : nameOrKey;
     this._context = context;
     this.references = [];
     this._items = new Map<string, SchemaItem>();
@@ -90,13 +90,21 @@ export class Schema implements CustomAttributeContainerProps {
     return this._schemaKey;
   }
 
-  public get name() { return this.schemaKey.name; }
+  public get name() {
+    return this.schemaKey.name;
+  }
 
-  public get readVersion() { return this.schemaKey.readVersion; }
+  public get readVersion() {
+    return this.schemaKey.readVersion;
+  }
 
-  public get writeVersion() { return this.schemaKey.writeVersion; }
+  public get writeVersion() {
+    return this.schemaKey.writeVersion;
+  }
 
-  public get minorVersion() { return this.schemaKey.minorVersion; }
+  public get minorVersion() {
+    return this.schemaKey.minorVersion;
+  }
 
   public get alias() {
     if (this._alias === undefined || this._alias === null) {
@@ -104,20 +112,32 @@ export class Schema implements CustomAttributeContainerProps {
     } else { return this._alias; }
   }
 
-  public get label() { return this._label; }
+  public get label() {
+    return this._label;
+  }
 
-  public get description() { return this._description; }
+  public get description() {
+    return this._description;
+  }
 
-  public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+  public get customAttributes(): CustomAttributeSet | undefined {
+    return this._customAttributes;
+  }
 
   /** Returns the schema name. */
-  public get fullName() { return this.schemaKey.name; }
+  public get fullName() {
+    return this.schemaKey.name;
+  }
 
   /** Returns the schema. */
-  public get schema(): Schema { return this; }
+  public get schema(): Schema {
+    return this;
+  }
 
   /** Returns the schema context this schema is within. */
-  public get context(): SchemaContext { return this._context; }
+  public get context(): SchemaContext {
+    return this._context;
+  }
 
   /**
    * Returns a SchemaItemKey given the item name and the schema it belongs to
@@ -137,7 +157,10 @@ export class Schema implements CustomAttributeContainerProps {
 
   protected addItem<T extends SchemaItem>(item: T): void {
     if (undefined !== this.getItemSync(item.name))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
+      throw new ECObjectsError(
+        ECObjectsStatus.DuplicateItem,
+        `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`,
+      );
 
     this._items.set(item.name.toUpperCase(), item);
   }
@@ -145,7 +168,11 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * @alpha
    */
-  protected createClass<T extends AnyClass>(type: (new (_schema: Schema, _name: string, _modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
+  protected createClass<T extends AnyClass>(
+    type: new(_schema: Schema, _name: string, _modifier?: ECClassModifier) => T,
+    name: string,
+    modifier?: ECClassModifier,
+  ): T {
     const item = new type(this, name, modifier);
     this.addItem(item);
     return item;
@@ -200,7 +227,7 @@ export class Schema implements CustomAttributeContainerProps {
   /**
    * @alpha
    */
-  protected createItem<T extends AnySchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T {
+  protected createItem<T extends AnySchemaItem>(type: new(_schema: Schema, _name: string) => T, name: string): T {
     const item = new type(this, name);
     this.addItem(item);
     return item;
@@ -230,8 +257,12 @@ export class Schema implements CustomAttributeContainerProps {
    * Creates a Mixin with the provided name in this schema.
    * @param name
    */
-  protected async createMixinClass(name: string): Promise<Mixin> { return this.createClass<Mixin>(Mixin, name); }
-  protected createMixinClassSync(name: string): Mixin { return this.createClass<Mixin>(Mixin, name); }
+  protected async createMixinClass(name: string): Promise<Mixin> {
+    return this.createClass<Mixin>(Mixin, name);
+  }
+  protected createMixinClassSync(name: string): Mixin {
+    return this.createClass<Mixin>(Mixin, name);
+  }
 
   /**
    * Creates a StructClass with the provided name in this schema.
@@ -382,7 +413,6 @@ export class Schema implements CustomAttributeContainerProps {
     return this.createItem<PropertyCategory>(PropertyCategory, name);
   }
   /**
-   *
    * @param refSchema
    */
   protected async addReference(refSchema: Schema): Promise<void> {
@@ -411,7 +441,11 @@ export class Schema implements CustomAttributeContainerProps {
     if (!this._schemaKey)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaKey, `The schema '${this.name}' has an invalid SchemaKey.`);
 
-    const newVersion = new ECVersion(readVersion ?? this._schemaKey.readVersion, writeVersion ?? this._schemaKey.writeVersion, minorVersion ?? this._schemaKey.minorVersion);
+    const newVersion = new ECVersion(
+      readVersion ?? this._schemaKey.readVersion,
+      writeVersion ?? this._schemaKey.writeVersion,
+      minorVersion ?? this._schemaKey.minorVersion,
+    );
     this._schemaKey = new SchemaKey(this._schemaKey.name, newVersion);
   }
 
@@ -439,7 +473,7 @@ export class Schema implements CustomAttributeContainerProps {
    */
   public async lookupItem<T extends SchemaItem>(key: Readonly<SchemaItemKey> | string): Promise<T | undefined> {
     let schemaName, itemName: string;
-    if (typeof (key) === "string") {
+    if (typeof key === "string") {
       [schemaName, itemName] = SchemaItem.parseFullName(key);
     } else {
       itemName = key.name;
@@ -463,7 +497,7 @@ export class Schema implements CustomAttributeContainerProps {
    */
   public lookupItemSync<T extends SchemaItem>(key: Readonly<SchemaItemKey> | string): T | undefined {
     let schemaName, itemName: string;
-    if (typeof (key) === "string") {
+    if (typeof key === "string") {
       [schemaName, itemName] = SchemaItem.parseFullName(key);
     } else {
       itemName = key.name;
@@ -602,7 +636,10 @@ export class Schema implements CustomAttributeContainerProps {
       if (schemaProps.name.toLowerCase() !== this.name.toLowerCase())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not match the provided name, '${schemaProps.name}'.`);
       if (this.schemaKey.version.compare(ECVersion.fromString(schemaProps.version)))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`,
+        );
     }
 
     if (SCHEMAURL3_2_JSON !== schemaProps.$schema && SCHEMAURL3_2_XML !== schemaProps.$schema) // TODO: Allow for 3.x URI versions to allow the API to read newer specs. (Start at 3.2 though)

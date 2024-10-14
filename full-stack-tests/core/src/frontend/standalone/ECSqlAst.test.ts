@@ -6,11 +6,12 @@
  * @module ECSqlExpr
  */
 
-import { assert } from "chai";
+import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import {
   AssignmentExpr,
   BetweenExpr,
-  BinaryBooleanExpr, BinaryValueExpr,
+  BinaryBooleanExpr,
+  BinaryValueExpr,
   CastExpr,
   ClassNameExpr,
   CteBlockExpr,
@@ -56,7 +57,7 @@ import {
   UsingRelationshipJoinExpr,
   WhereClauseExp,
 } from "@itwin/ecsql-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { assert } from "chai";
 import { TestUtility } from "../TestUtility";
 
 describe("ECSql Abstract Syntax Tree", () => {
@@ -187,8 +188,7 @@ describe("ECSql Abstract Syntax Tree", () => {
       {
         orignalECSql: "select IIF(('Hello, World' LIKE '%World') , 2, 3)",
         expectedECSql: "SELECT IIF('Hello, World' LIKE '%World', 2, 3)",
-      }
-      ,
+      },
       {
         orignalECSql: "select IIF(('Hello, World' NOT LIKE '%World') , 2, 3)",
         expectedECSql: "SELECT IIF('Hello, World' NOT LIKE '%World', 2, 3)",
@@ -208,8 +208,7 @@ describe("ECSql Abstract Syntax Tree", () => {
       {
         orignalECSql: "SELECT IIF( 3 IN (1,2,3), 'True', 'False')",
         expectedECSql: "SELECT IIF(3 IN (1, 2, 3), 'True', 'False')",
-      }
-      ,
+      },
       {
         orignalECSql: "SELECT IIF( 3 NOT IN (1,2,3), 'True', 'False')",
         expectedECSql: "SELECT IIF(3 NOT IN (1, 2, 3), 'True', 'False')",
@@ -443,12 +442,15 @@ describe("ECSql Abstract Syntax Tree", () => {
         expectedECSql: "WITH [c]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [c] WHERE ([i] < 10) ORDER BY 1) SELECT [i] FROM [c]",
       },
       {
-        orignalECSql: "WITH c(i) AS (SELECT 1 UNION SELECT i+1 FROM c WHERE i < 10 ORDER BY 1), d(i) AS (SELECT 1 UNION SELECT i+1 FROM d WHERE i < 100 ORDER BY 1) SELECT * FROM c,d",
-        expectedECSql: "WITH [c]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [c] WHERE ([i] < 10) ORDER BY 1), [d]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [d] WHERE ([i] < 100) ORDER BY 1) SELECT [c].[i], [d].[i] FROM [c], [d]",
+        orignalECSql:
+          "WITH c(i) AS (SELECT 1 UNION SELECT i+1 FROM c WHERE i < 10 ORDER BY 1), d(i) AS (SELECT 1 UNION SELECT i+1 FROM d WHERE i < 100 ORDER BY 1) SELECT * FROM c,d",
+        expectedECSql:
+          "WITH [c]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [c] WHERE ([i] < 10) ORDER BY 1), [d]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [d] WHERE ([i] < 100) ORDER BY 1) SELECT [c].[i], [d].[i] FROM [c], [d]",
       },
       {
         orignalECSql: "WITH c(a,b,c) AS (SELECT ECInstanceId, ECClassId, Name FROM meta.ECClassDef) SELECT * FROM c",
-        expectedECSql: "WITH [c]([a], [b], [c]) AS (SELECT [ECInstanceId], [ECClassId], [Name] FROM [ECDbMeta].[ECClassDef]) SELECT [c].[a], [c].[b], [c].[c] FROM [c]",
+        expectedECSql:
+          "WITH [c]([a], [b], [c]) AS (SELECT [ECInstanceId], [ECClassId], [Name] FROM [ECDbMeta].[ECClassDef]) SELECT [c].[a], [c].[b], [c].[c] FROM [c]",
       },
     ];
     for (const test of tests) {
@@ -521,11 +523,13 @@ describe("ECSql Abstract Syntax Tree", () => {
     const tests = [
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
-        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] INNER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+        expectedECSql:
+          "SELECT 1 FROM [ECDbMeta].[ECClassDef] INNER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
       },
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef INNER JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
-        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] INNER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+        expectedECSql:
+          "SELECT 1 FROM [ECDbMeta].[ECClassDef] INNER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
       },
     ];
     for (const test of tests) {
@@ -537,11 +541,13 @@ describe("ECSql Abstract Syntax Tree", () => {
     const tests = [
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef RIGHT JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
-        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] RIGHT OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+        expectedECSql:
+          "SELECT 1 FROM [ECDbMeta].[ECClassDef] RIGHT OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
       },
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef RIGHT OUTER JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
-        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] RIGHT OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+        expectedECSql:
+          "SELECT 1 FROM [ECDbMeta].[ECClassDef] RIGHT OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
       },
     ];
     for (const test of tests) {
@@ -553,11 +559,13 @@ describe("ECSql Abstract Syntax Tree", () => {
     const tests = [
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef FULL JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
-        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] FULL OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+        expectedECSql:
+          "SELECT 1 FROM [ECDbMeta].[ECClassDef] FULL OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
       },
       {
         orignalECSql: "SELECT 1 FROM meta.ECClassDef FULL OUTER JOIN meta.ECPropertyDef ON ECPropertyDef.Class.Id = ECClassDef.ECInstanceId",
-        expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] FULL OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
+        expectedECSql:
+          "SELECT 1 FROM [ECDbMeta].[ECClassDef] FULL OUTER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId])",
       },
     ];
     for (const test of tests) {
@@ -569,21 +577,24 @@ describe("ECSql Abstract Syntax Tree", () => {
     const tests = [
       {
         orignalECSql: "SELECT a.ECInstanceId FROM meta.ECClassDef a UNION SELECT b.ECInstanceId FROM meta.ECPropertyDef b",
-        expectedECSql: "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] UNION SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
+        expectedECSql:
+          "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] UNION SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
       },
       {
         orignalECSql: "SELECT a.ECInstanceId FROM meta.ECClassDef a UNION ALL SELECT b.ECInstanceId FROM meta.ECPropertyDef b",
-        expectedECSql: "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] UNION ALL SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
+        expectedECSql:
+          "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] UNION ALL SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
       },
       {
         orignalECSql: "SELECT a.ECInstanceId FROM meta.ECClassDef a INTERSECT SELECT b.ECInstanceId FROM meta.ECPropertyDef b",
-        expectedECSql: "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] INTERSECT SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
+        expectedECSql:
+          "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] INTERSECT SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
       },
       {
         orignalECSql: "SELECT a.ECInstanceId FROM meta.ECClassDef a EXCEPT SELECT b.ECInstanceId FROM meta.ECPropertyDef b",
-        expectedECSql: "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] EXCEPT SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
+        expectedECSql:
+          "SELECT [a].[ECInstanceId] FROM [ECDbMeta].[ECClassDef] [a] EXCEPT SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]",
       },
-
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
@@ -604,7 +615,6 @@ describe("ECSql Abstract Syntax Tree", () => {
         orignalECSql: "SELECT  1 FROM [ECDbMeta].[ECClassDef] [a] WHERE (SELECT [b].[ECInstanceId] FROM meta.ECPropertyDef b) = 1",
         expectedECSql: "SELECT 1 FROM [ECDbMeta].[ECClassDef] [a] WHERE ((SELECT [b].[ECInstanceId] FROM [ECDbMeta].[ECPropertyDef] [b]) = 1)",
       },
-
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
@@ -633,7 +643,6 @@ describe("ECSql Abstract Syntax Tree", () => {
         orignalECSql: "SELECT 1 FROM +ONLY [ECDbMeta].[ECClassDef]",
         expectedECSql: "SELECT 1 FROM +ONLY [ECDbMeta].[ECClassDef]",
       },
-
     ];
     for (const test of tests) {
       assert.equal(test.expectedECSql, await toNormalizeECSql(test.orignalECSql));
@@ -659,8 +668,10 @@ describe("ECSql Abstract Syntax Tree", () => {
   it("parse SELECT, WHERE, FROM, GROUP BY, HAVING, ORDER BY, LIMIT & ECSQLOPTIONS", async () => {
     const tests = [
       {
-        orignalECSql: "select count(*) from bis.element where codevalue lIKE '%s' group by ecclassid having count(*)>0 order by UserLabel limit 1 offset 10 ECSQLOPTIONS x=3",
-        expectedECSql: "SELECT COUNT(*) FROM [BisCore].[Element] WHERE [codevalue] LIKE '%s' GROUP BY [ecclassid] HAVING (COUNT(*) > 0) ORDER BY [UserLabel] LIMIT 1 OFFSET 10 ECSQLOPTIONS x = 3",
+        orignalECSql:
+          "select count(*) from bis.element where codevalue lIKE '%s' group by ecclassid having count(*)>0 order by UserLabel limit 1 offset 10 ECSQLOPTIONS x=3",
+        expectedECSql:
+          "SELECT COUNT(*) FROM [BisCore].[Element] WHERE [codevalue] LIKE '%s' GROUP BY [ecclassid] HAVING (COUNT(*) > 0) ORDER BY [UserLabel] LIMIT 1 OFFSET 10 ECSQLOPTIONS x = 3",
       },
     ];
     for (const test of tests) {
@@ -834,7 +845,8 @@ describe("ECSql Abstract Syntax Tree", () => {
         ORDER BY [k0].[Name] ASC, [k0].[ECInstanceId] DESC LIMIT 33 OFFSET (? + :param2)
         ECSQLOPTIONS NoECClassIdFilter ReadonlyPropertiesAreUpdatable X = 3
      */
-    const expected = "WITH RECURSIVE [f0]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [f0] WHERE ([i] < 10) ORDER BY 1), [f1]([i]) AS (SELECT 3.14159265358), [f2]([i]) AS (SELECT IIF(((((1 <> 2) OR ((4 = 5) AND (4 > 8))) OR (4 < 5)) OR ((4 <= 5) AND (4 >= 6))), 'True', 'False') [i]), [f3]([i]) AS (SELECT 1 FROM [BisCore].[Element] [t0] JOIN [BisCore].[Element] [t1] USING [BisCore].[ElementOwnsChildElements] FORWARD), [f4]([i]) AS (SELECT 1 FROM [BisCore].[Element] [t0] JOIN [BisCore].[Element] [t1] USING [BisCore].[ElementOwnsChildElements] BACKWARD), [f5]([i]) AS (SELECT 1 FROM [ECDbMeta].[ECClassDef] INNER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId]) WHERE ([ECClassDef].[ECInstanceId] = :param1)) SELECT (((1 & 2) | (3 << 4)) >> ((((((5 / 6) * (7 + 8)) + (4 % 9)) + -10) + +20) - ~45)) [c0], TIMESTAMP '2013-02-09T12:00:00' [c1], DATE '2012-01-18' [c2], TIME '13:35:16' [c3], TRUE [c4], FALSE [c5], 3.14159265358 [c6], 314159 [c7], 'Hello, World' [c8], (('Hello' || ',') || 'World') [c9], IIF(((((1 <> 2) OR ((4 = 5) AND (4 > 8))) OR (4 < 5)) OR ((4 <= 5) AND (4 >= 6))), 'True', 'False') [c10], CASE WHEN (4 > 5) THEN NULL WHEN (1 IS NOT NULL) THEN 'Hello' ELSE 'Bye' END [c11], IIF('Hello, World' LIKE '\\%World' ESCAPE '\\', 2, 3) [c12], IIF('Hello, World' LIKE '%World', 2, 3) [c13], IIF('Hello, World' NOT LIKE '%World', 2, 3) [c14], IIF(3 IN (SELECT 1 [N] UNION SELECT 2), 'True', 'False') [c15], IIF(3 IN (1, 2, 3), 'True', 'False') [c16], IIF(3 NOT IN (1, 2, 3), 'True', 'False') [c17], IIF((NULL IS NULL), 'True', 'False') [c18], IIF((NULL IS NOT NULL), 'True', 'False') [c19], IIF((1 IS NOT NULL), 'True', 'False') [c20], IIF(3 IS (ALL [ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False') [c21], IIF(3 IS NOT (ALL [ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False') [c22], IIF((NOT 3), 'True', 'False') [c23], IIF((NOT (NOT (NOT (NOT 3)))), 'True', 'False') [c24], IIF(EXISTS(SELECT 1), 'True', 'False') [c25], IIF((NOT EXISTS(SELECT 1)), 'True', 'False') [c26], CAST(1 AS TEXT) [c27], CAST(1 AS INTEGER) [c28], CAST(1 AS REAL) [c29], CAST(1 AS BLOB) [c30], CAST(1 AS TIMESTAMP) [c31], INSTR('First', 'Second') [c32], [f0].[i] [c33], [f1].[i] [c34], [f2].[i] [c35], [k0].[ECInstanceId] [c36] FROM [f0], [f1], [f2], [f3], [f4], [f5], [ECDbMeta].[ECClassDef] [k0], (SELECT [ECInstanceId] FROM [ECDbMeta].[ECClassDef] UNION SELECT DISTINCT [ECInstanceId] FROM [ECDbMeta].[ECClassDef] UNION ALL SELECT ALL [ECInstanceId] FROM [ECDbMeta].[ECClassDef] EXCEPT SELECT SUM(DISTINCT [ECInstanceId]) FROM [ECDbMeta].[ECClassDef] INTERSECT SELECT SUM([ECInstanceId]) FROM [ECDbMeta].[ECClassDef] GROUP BY [ECClassId] HAVING (COUNT(*) > 1)) [k1] WHERE (([f0].[i] = [f1].[i]) AND ([k0].[ECInstanceId] = (? + 2))) GROUP BY [k0].[ECClassId], [k0].[DisplayLabel] HAVING (COUNT(*) > 1) ORDER BY [k0].[Name] ASC, [k0].[ECInstanceId] DESC LIMIT 33 OFFSET (? + :param2) ECSQLOPTIONS NoECClassIdFilter ReadonlyPropertiesAreUpdatable X = 3";
+    const expected =
+      "WITH RECURSIVE [f0]([i]) AS (SELECT 1 UNION SELECT ([i] + 1) FROM [f0] WHERE ([i] < 10) ORDER BY 1), [f1]([i]) AS (SELECT 3.14159265358), [f2]([i]) AS (SELECT IIF(((((1 <> 2) OR ((4 = 5) AND (4 > 8))) OR (4 < 5)) OR ((4 <= 5) AND (4 >= 6))), 'True', 'False') [i]), [f3]([i]) AS (SELECT 1 FROM [BisCore].[Element] [t0] JOIN [BisCore].[Element] [t1] USING [BisCore].[ElementOwnsChildElements] FORWARD), [f4]([i]) AS (SELECT 1 FROM [BisCore].[Element] [t0] JOIN [BisCore].[Element] [t1] USING [BisCore].[ElementOwnsChildElements] BACKWARD), [f5]([i]) AS (SELECT 1 FROM [ECDbMeta].[ECClassDef] INNER JOIN [ECDbMeta].[ECPropertyDef] ON ([ECPropertyDef].[Class].[Id] = [ECClassDef].[ECInstanceId]) WHERE ([ECClassDef].[ECInstanceId] = :param1)) SELECT (((1 & 2) | (3 << 4)) >> ((((((5 / 6) * (7 + 8)) + (4 % 9)) + -10) + +20) - ~45)) [c0], TIMESTAMP '2013-02-09T12:00:00' [c1], DATE '2012-01-18' [c2], TIME '13:35:16' [c3], TRUE [c4], FALSE [c5], 3.14159265358 [c6], 314159 [c7], 'Hello, World' [c8], (('Hello' || ',') || 'World') [c9], IIF(((((1 <> 2) OR ((4 = 5) AND (4 > 8))) OR (4 < 5)) OR ((4 <= 5) AND (4 >= 6))), 'True', 'False') [c10], CASE WHEN (4 > 5) THEN NULL WHEN (1 IS NOT NULL) THEN 'Hello' ELSE 'Bye' END [c11], IIF('Hello, World' LIKE '\\%World' ESCAPE '\\', 2, 3) [c12], IIF('Hello, World' LIKE '%World', 2, 3) [c13], IIF('Hello, World' NOT LIKE '%World', 2, 3) [c14], IIF(3 IN (SELECT 1 [N] UNION SELECT 2), 'True', 'False') [c15], IIF(3 IN (1, 2, 3), 'True', 'False') [c16], IIF(3 NOT IN (1, 2, 3), 'True', 'False') [c17], IIF((NULL IS NULL), 'True', 'False') [c18], IIF((NULL IS NOT NULL), 'True', 'False') [c19], IIF((1 IS NOT NULL), 'True', 'False') [c20], IIF(3 IS (ALL [ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False') [c21], IIF(3 IS NOT (ALL [ECDbMeta].[ECClassDef], ONLY [ECDbMeta].[ECPropertyDef]), 'True', 'False') [c22], IIF((NOT 3), 'True', 'False') [c23], IIF((NOT (NOT (NOT (NOT 3)))), 'True', 'False') [c24], IIF(EXISTS(SELECT 1), 'True', 'False') [c25], IIF((NOT EXISTS(SELECT 1)), 'True', 'False') [c26], CAST(1 AS TEXT) [c27], CAST(1 AS INTEGER) [c28], CAST(1 AS REAL) [c29], CAST(1 AS BLOB) [c30], CAST(1 AS TIMESTAMP) [c31], INSTR('First', 'Second') [c32], [f0].[i] [c33], [f1].[i] [c34], [f2].[i] [c35], [k0].[ECInstanceId] [c36] FROM [f0], [f1], [f2], [f3], [f4], [f5], [ECDbMeta].[ECClassDef] [k0], (SELECT [ECInstanceId] FROM [ECDbMeta].[ECClassDef] UNION SELECT DISTINCT [ECInstanceId] FROM [ECDbMeta].[ECClassDef] UNION ALL SELECT ALL [ECInstanceId] FROM [ECDbMeta].[ECClassDef] EXCEPT SELECT SUM(DISTINCT [ECInstanceId]) FROM [ECDbMeta].[ECClassDef] INTERSECT SELECT SUM([ECInstanceId]) FROM [ECDbMeta].[ECClassDef] GROUP BY [ECClassId] HAVING (COUNT(*) > 1)) [k1] WHERE (([f0].[i] = [f1].[i]) AND ([k0].[ECInstanceId] = (? + 2))) GROUP BY [k0].[ECClassId], [k0].[DisplayLabel] HAVING (COUNT(*) > 1) ORDER BY [k0].[Name] ASC, [k0].[ECInstanceId] DESC LIMIT 33 OFFSET (? + :param2) ECSQLOPTIONS NoECClassIdFilter ReadonlyPropertiesAreUpdatable X = 3";
     assert.equal(expected, await toNormalizeECSql(ecsql));
   });
   describe("test methods", () => {
@@ -843,9 +855,12 @@ describe("ECSql Abstract Syntax Tree", () => {
         new SelectExpr(
           new SelectionClauseExpr([
             new DerivedPropertyExpr(
-              new PropertyNameExpr("ECInstanceId")),
+              new PropertyNameExpr("ECInstanceId"),
+            ),
             new DerivedPropertyExpr(
-              new PropertyNameExpr("CodeValue"))]),
+              new PropertyNameExpr("CodeValue"),
+            ),
+          ]),
           "ALL",
           new FromClauseExpr([
             new ClassNameExpr("bis", "Element"),
@@ -854,7 +869,10 @@ describe("ECSql Abstract Syntax Tree", () => {
             new BinaryBooleanExpr(
               "=",
               new PropertyNameExpr("ECInstanceId"),
-              new LiteralExpr(LiteralValueType.Raw, "1")))),
+              new LiteralExpr(LiteralValueType.Raw, "1"),
+            ),
+          ),
+        ),
       );
       const expected = "SELECT ALL [ECInstanceId], [CodeValue] FROM [bis].[Element] WHERE ([ECInstanceId] = 1)";
       assert.equal(stmt.toECSql(), expected);
@@ -873,9 +891,12 @@ describe("ECSql Abstract Syntax Tree", () => {
         new SelectExpr(
           new SelectionClauseExpr([
             new DerivedPropertyExpr(
-              new PropertyNameExpr("ECInstanceId")),
+              new PropertyNameExpr("ECInstanceId"),
+            ),
             new DerivedPropertyExpr(
-              new PropertyNameExpr("CodeValue"))]),
+              new PropertyNameExpr("CodeValue"),
+            ),
+          ]),
           undefined,
           new FromClauseExpr([
             new ClassNameExpr("bis", "Element"),
@@ -884,7 +905,10 @@ describe("ECSql Abstract Syntax Tree", () => {
             new BinaryBooleanExpr(
               "=",
               new PropertyNameExpr("ECInstanceId"),
-              new ParameterExpr()))),
+              new ParameterExpr(),
+            ),
+          ),
+        ),
       );
       const expected = "SELECT [ECInstanceId], [CodeValue] FROM [bis].[Element] WHERE ([ECInstanceId] = ?)";
       assert.equal(stmt.toECSql(), expected);
@@ -954,10 +978,10 @@ describe("ECSql Abstract Syntax Tree", () => {
       assert.equal(ExprType.WhereClause, WhereClauseExp.type);
     });
     it.skip("test print tree", async () => {
-      const ecsql = "select el.ECInstanceId as id, count(*) as instances from bis.element el where el.codevalue lIKE '%s' group by el.ecclassid having count(*)>0 order by el.UserLabel limit 1 offset 10 ECSQLOPTIONS x=3";
+      const ecsql =
+        "select el.ECInstanceId as id, count(*) as instances from bis.element el where el.codevalue lIKE '%s' group by el.ecclassid having count(*)>0 order by el.UserLabel limit 1 offset 10 ECSQLOPTIONS x=3";
       const selectStmt = await parseECSql(ecsql);
       printTree(selectStmt);
-
     });
     it("test ClassNameExpr.fromECSql()", async () => {
       assert.equal(ClassNameExpr.fromECSql("+all Bis.Element").toECSql(), "+ALL [Bis].[Element]");

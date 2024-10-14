@@ -51,7 +51,7 @@ export class ColorDef {
   private readonly _tbgr: number;
 
   private constructor(tbgr: number) {
-    scratchUInt32[0] = tbgr;   // Force to be a 32-bit unsigned integer
+    scratchUInt32[0] = tbgr; // Force to be a 32-bit unsigned integer
     this._tbgr = scratchUInt32[0];
   }
 
@@ -80,7 +80,9 @@ export class ColorDef {
   }
 
   /** Convert this ColorDef to a 32 bit number representing the 0xTTBBGGRR value */
-  public toJSON(): ColorDefProps { return this._tbgr; }
+  public toJSON(): ColorDefProps {
+    return this._tbgr;
+  }
 
   /** Create a new ColorDef from a json object. If the json object is a number, it is assumed to be a 0xTTBBGGRR value. */
   public static fromJSON(json?: ColorDefProps): ColorDef {
@@ -193,7 +195,8 @@ export class ColorDef {
               intOrPercent(color[1]),
               intOrPercent(color[2]),
               intOrPercent(color[3]),
-              typeof color[5] === "string" ? 255 - floatOrPercent(color[5]) : 0);
+              typeof color[5] === "string" ? 255 - floatOrPercent(color[5]) : 0,
+            );
           }
 
           break;
@@ -211,7 +214,7 @@ export class ColorDef {
           break;
       }
       // eslint-disable-next-line no-cond-assign
-    } else if (m = /^\#([a-f0-9]+)$/.exec(val)) {  // hex color
+    } else if (m = /^\#([a-f0-9]+)$/.exec(val)) { // hex color
       const hex = m[1];
       const size = hex.length;
 
@@ -219,17 +222,21 @@ export class ColorDef {
         return this.computeTbgrFromComponents(
           parseInt(hex.charAt(0) + hex.charAt(0), 16),
           parseInt(hex.charAt(1) + hex.charAt(1), 16),
-          parseInt(hex.charAt(2) + hex.charAt(2), 16), 0);
+          parseInt(hex.charAt(2) + hex.charAt(2), 16),
+          0,
+        );
       }
-      if (size === 6) {  // #ff0000
+      if (size === 6) { // #ff0000
         return this.computeTbgrFromComponents(
           parseInt(hex.charAt(0) + hex.charAt(1), 16),
           parseInt(hex.charAt(2) + hex.charAt(3), 16),
-          parseInt(hex.charAt(4) + hex.charAt(5), 16), 0);
+          parseInt(hex.charAt(4) + hex.charAt(5), 16),
+          0,
+        );
       }
     }
 
-    if (val && val.length > 0) {   // ColorRgb value
+    if (val && val.length > 0) { // ColorRgb value
       for (const [key, value] of Object.entries(ColorByName))
         if (key.toLowerCase() === val)
           return value;
@@ -255,7 +262,9 @@ export class ColorDef {
   }
 
   /** The color value of this ColorDef as an integer in the form 0xTTBBGGRR (red in the low byte) */
-  public get tbgr(): ColorDefProps { return this._tbgr; }
+  public get tbgr(): ColorDefProps {
+    return this._tbgr;
+  }
 
   /** Get the value of the color as a number in 0xAABBGGRR format (i.e. red is in low byte). Transparency (0==fully opaque) converted to alpha (0==fully transparent).  */
   public getAbgr(): number {
@@ -476,7 +485,8 @@ export class ColorDef {
       hue2rgb(q, p, h + 1 / 3),
       hue2rgb(q, p, h),
       hue2rgb(q, p, h - 1 / 3),
-      transparency);
+      transparency,
+    );
   }
 
   /** Create an [[HSLColor]] from this ColorDef */
@@ -539,11 +549,14 @@ export class ColorDef {
       const blueDistance = (max - b) / deltaRgb;
 
       let intermediateHue: number;
-      if (r === max)           /* color between yellow & magenta */
+      if (r === max)
+        /* color between yellow & magenta */
         intermediateHue = blueDistance - greenDistance;
-      else if (g === max)      /* color between cyan & yellow */
+      else if (g === max)
+        /* color between cyan & yellow */
         intermediateHue = 2.0 + redDistance - blueDistance;
-      else                    /* color between magenta & cyan */
+      /* color between magenta & cyan */
+      else
         intermediateHue = 4.0 + greenDistance - redDistance;
 
       /* intermediate hue is [0..6] */
@@ -590,13 +603,33 @@ export class ColorDef {
     let r = 0, b = 0, g = 0;
     switch (hueIntpart) {
       /* eslint-disable max-statements-per-line */
-      case 0: r = v; g = t; b = p; break; // reddish
-      case 1: r = q, g = v; b = p; break; // yellowish
-      case 2: r = p, g = v; b = t; break; // greenish
-      case 3: r = p, g = q; b = v; break; // cyanish
-      case 4: r = t, g = p; b = v; break; // bluish
-      case 5: r = v, g = p; b = q; break; // magenta-ish
-      /* eslint-enable max-statements-per-line */
+      case 0:
+        r = v;
+        g = t;
+        b = p;
+        break; // reddish
+      case 1:
+        r = q, g = v;
+        b = p;
+        break; // yellowish
+      case 2:
+        r = p, g = v;
+        b = t;
+        break; // greenish
+      case 3:
+        r = p, g = q;
+        b = v;
+        break; // cyanish
+      case 4:
+        r = t, g = p;
+        b = v;
+        break; // bluish
+      case 5:
+        r = v, g = p;
+        b = q;
+        break;
+        /* eslint-enable max-statements-per-line */
+        // magenta-ish
     }
 
     return ColorDef.from(r, g, b, transparency);

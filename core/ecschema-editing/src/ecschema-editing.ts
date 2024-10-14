@@ -17,7 +17,7 @@ export * from "./Validation/SchemaComparer";
 export * from "./Validation/SchemaCompareReporter";
 export * from "./Editing/Editor";
 export * from "./Editing/Exception";
-export { ISuppressionRule, IRuleSuppressionSet, IRuleSuppressionMap } from "./Validation/RuleSuppressionSet";
+export { IRuleSuppressionMap, IRuleSuppressionSet, ISuppressionRule } from "./Validation/RuleSuppressionSet";
 export { SchemaValidater } from "./Validation/SchemaValidater";
 export * from "./Differencing/SchemaDifference";
 export * from "./Differencing/SchemaConflicts";

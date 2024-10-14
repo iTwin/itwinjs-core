@@ -147,7 +147,7 @@ export class InsertAndRetriangulateContext {
    * Reset the "current" position to a vertex nearest the target point.
    * @param xyz target point
    * @param searchEdgesToo reset to nearest vertex or edge
-  */
+   */
   public resetSearch(xyz: Point3d, searchEdgesToo: boolean): void {
     if (searchEdgesToo)
       this._searcher = this.searchForNearestEdgeOrVertex(xyz);
@@ -247,7 +247,7 @@ export class InsertAndRetriangulateContext {
       // insert point into the graph by splitting its containing edge
       const newA = this._graph.splitEdgeAtFraction(this._searcher.node, this._searcher.edgeFraction!);
       const newB = newA.vertexPredecessor;
-      this.updateZAroundVertex(newA, point, InsertedVertexZOptions.Replace);  // always replace
+      this.updateZAroundVertex(newA, point, InsertedVertexZOptions.Replace); // always replace
       this.retriangulateFromBaseVertex(newA);
       this.retriangulateFromBaseVertex(newB);
       Triangulator.flipTrianglesInEdgeSet(this._graph, this._edgeSet);
@@ -318,9 +318,11 @@ export class InsertAndRetriangulateContext {
             break;
           }
           case RayClassification.TargetAfter: {
-            if (movingPosition.node === lastBefore.node
+            if (
+              movingPosition.node === lastBefore.node
               && movingPosition.isFace
-              && (lastBefore.isEdge || lastBefore.isVertex)) {
+              && (lastBefore.isEdge || lastBefore.isVertex)
+            ) {
               trap++;
             } else {
               trap = 0;
@@ -357,7 +359,10 @@ export class InsertAndRetriangulateContext {
 }
 /** Set `position` to a random unmasked edge at the specified fraction. */
 function moveToAnyUnmaskedEdge(
-  graph: HalfEdgeGraph, position: HalfEdgePositionDetail, edgeFraction: number, skipMask: HalfEdgeMask,
+  graph: HalfEdgeGraph,
+  position: HalfEdgePositionDetail,
+  edgeFraction: number,
+  skipMask: HalfEdgeMask,
 ): boolean {
   for (const candidate of graph.allHalfEdges) {
     if (!candidate.isMaskSet(skipMask)) {

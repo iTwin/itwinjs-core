@@ -7,9 +7,9 @@
  */
 
 import { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps";
+import { ECName } from "../ECName";
 import { PrimitiveType, primitiveTypeToString, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import { ECName } from "../ECName";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
@@ -34,9 +34,15 @@ export class Enumeration extends SchemaItem {
   protected _isStrict: boolean;
   protected _enumerators: AnyEnumerator[];
 
-  public get enumerators() { return this._enumerators; }
-  public get type() { return this._type; }
-  public get isStrict() { return this._isStrict; }
+  public get enumerators() {
+    return this._enumerators;
+  }
+  public get type() {
+    return this._type;
+  }
+  public get isStrict() {
+    return this._isStrict;
+  }
 
   constructor(schema: Schema, name: string, primitiveType?: PrimitiveType.Integer | PrimitiveType.String) {
     super(schema, name);
@@ -46,8 +52,12 @@ export class Enumeration extends SchemaItem {
     this._enumerators = [];
   }
 
-  public get isInt(): boolean { return this._type === PrimitiveType.Integer; }
-  public get isString(): boolean { return this._type === PrimitiveType.String; }
+  public get isInt(): boolean {
+    return this._type === PrimitiveType.Integer;
+  }
+  public get isString(): boolean {
+    return this._type === PrimitiveType.String;
+  }
 
   /**
    * Gets an enumerator that matches the name provided.
@@ -91,13 +101,22 @@ export class Enumeration extends SchemaItem {
    * @return AnyEnumerator object
    */
   public createEnumerator(name: string, value: string | number, label?: string, description?: string): AnyEnumerator {
-    if (this.isInt && typeof (value) === "string") // throws if backing type is int and value is string
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'integer' and an enumerator with value of type 'string'.`);
-    if (!this.isInt && typeof (value) === "number") // also throws if backing type is string and value is number
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'string' and an enumerator with value of type 'integer'.`);
+    if (this.isInt && typeof value === "string") // throws if backing type is int and value is string
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidECJson,
+        `The Enumeration ${this.name} has a backing type 'integer' and an enumerator with value of type 'string'.`,
+      );
+    if (!this.isInt && typeof value === "number") // also throws if backing type is string and value is number
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidECJson,
+        `The Enumeration ${this.name} has a backing type 'string' and an enumerator with value of type 'integer'.`,
+      );
     this.findDuplicateEnumerators(name, value); // check for duplicates; throw if there are any
     if (!ECName.validate(name))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName, `The Enumeration ${this.name} has an enumerator with an invalid 'name' attribute. ${name} is not a valid ECName.`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidECName,
+        `The Enumeration ${this.name} has an enumerator with an invalid 'name' attribute. ${name} is not a valid ECName.`,
+      );
     return { name, value, label, description };
   }
 
@@ -159,11 +178,19 @@ export class Enumeration extends SchemaItem {
       else if (/string/i.test(enumerationProps.type))
         this._type = PrimitiveType.String;
       else
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be either "int" or "string".`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `The Enumeration ${this.name} has an invalid 'type' attribute. It should be either "int" or "string".`,
+        );
     } else {
       const primitiveTypePattern = (this.isInt) ? /int/i : /string/i;
       if (!primitiveTypePattern.test(enumerationProps.type))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an incompatible type. It must be "${(this.isInt) ? "int" : "string"}", not "${(this.isInt) ? "string" : "int"}".`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `The Enumeration ${this.name} has an incompatible type. It must be "${(this.isInt) ? "int" : "string"}", not "${
+            (this.isInt) ? "string" : "int"
+          }".`,
+        );
     }
     this._isStrict = enumerationProps.isStrict;
 
@@ -186,7 +213,6 @@ export class Enumeration extends SchemaItem {
   protected setIsStrict(isStrict: boolean) {
     this._isStrict = isStrict;
   }
-
 }
 
 /** @internal

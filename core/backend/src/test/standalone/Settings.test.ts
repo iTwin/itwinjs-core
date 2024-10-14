@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { assert, Mutable, OpenMode } from "@itwin/core-bentley";
+import { expect } from "chai";
+import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig";
 import { SnapshotDb, StandaloneDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { Setting, SettingsContainer, SettingsPriority } from "../../workspace/Settings";
 import { SettingGroupSchema, SettingSchema } from "../../workspace/SettingsSchemas";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { GcsDbProps, GeoCoordConfig } from "../../GeoCoordConfig";
 
 describe("Settings", () => {
   let iModel: SnapshotDb;
@@ -81,7 +81,6 @@ describe("Settings", () => {
             },
           },
         },
-
       },
       databases: {
         type: "array",
@@ -181,7 +180,9 @@ describe("Settings", () => {
     settings.addDictionary({ name: "iTwin.setting.json", priority: SettingsPriority.iTwin }, iTwinSettings);
     expect(settingsChanged).eq(3);
 
-    expect(() => IModelHost.appWorkspace.settings.addDictionary({ name: "iModel", priority: SettingsPriority.iModel }, imodel1Settings)).to.throw("Use IModelSettings");
+    expect(() => IModelHost.appWorkspace.settings.addDictionary({ name: "iModel", priority: SettingsPriority.iModel }, imodel1Settings)).to.throw(
+      "Use IModelSettings",
+    );
 
     expect(settings.getString("app1/sub1")).equals(imodel2Settings["app1/sub1"]);
     expect(settings.getString("app2/setting6")).equals(iTwinSettings["app2/setting6"]);
@@ -254,7 +255,9 @@ describe("Settings", () => {
     // test validation of values vs. setting schemas
     const workspace: any = { dbName: "abc", containerId: "123", baseUri: "aab.com" };
     const fontListVal: any = [{ workspace, fontName: "arial" }, { workspace, fontName: "helvetica", fontType: 3 }];
-    expect(() => IModelHost.settingsSchemas.validateSetting(fontListVal, "testApp/fontList")).throws("required value for \"workspaceLimit\" is missing");
+    expect(() => IModelHost.settingsSchemas.validateSetting(fontListVal, "testApp/fontList")).throws(
+      'required value for "workspaceLimit" is missing',
+    );
     workspace.workspaceLimit = 4; // add missing value
     expect(() => IModelHost.settingsSchemas.validateSetting(fontListVal, "testApp/fontList")).throws("value for testApp/fontList[1].fontType");
     fontListVal[1].fontType = "ttf"; // correct font type to string
@@ -330,7 +333,7 @@ describe("Settings", () => {
     }
 
     function addArray(schemaPrefix: string, name: string, value: Setting[], priority: SettingsPriority | number): void {
-      const settings: SettingsContainer = { };
+      const settings: SettingsContainer = {};
       settings[`${schemaPrefix}/array`] = value;
 
       IModelHost.appWorkspace.settings.addDictionary({
@@ -355,7 +358,7 @@ describe("Settings", () => {
         const settingName = `${prefix}/array`;
         expect(IModelHost.appWorkspace.settings.getSetting<number[]>(settingName)).to.deep.equal([1, 2]);
 
-        const expected = ("true" === prefix ? [1, 2, 3, 4] : [1, 2]);
+        const expected = "true" === prefix ? [1, 2, 3, 4] : [1, 2];
         expect(IModelHost.appWorkspace.settings.getArray<number>(settingName)).to.deep.equal(expected);
       }
     });
@@ -384,14 +387,20 @@ describe("Settings", () => {
 
       expect(IModelHost.appWorkspace.settings.getArray<number>("numbers/array")).to.deep.equal([4, 8, 2, 6, 10, 12, 3, 9]);
 
-      interface Point { x: number, y: number };
+      interface Point {
+        x: number;
+        y: number;
+      }
       addGroup("points", "object", true);
 
       addArray("points", "a", [{ x: 1, y: 1 }, { x: 1, y: 2 }], 101);
       addArray("points", "b", [{ x: 2, y: 1 }, { x: 1, y: 2 }], 100);
       addArray("points", "c", [{ y: 1, x: 1 }, { y: 2, x: 1 }, { x: 3, y: 3 }], 99);
 
-      expect(IModelHost.appWorkspace.settings.getArray<Point>("points/array")).to.deep.equal([{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 1 }, { x: 3, y: 3 }]);
+      expect(IModelHost.appWorkspace.settings.getArray<Point>("points/array")).to.deep.equal([{ x: 1, y: 1 }, { x: 1, y: 2 }, { x: 2, y: 1 }, {
+        x: 3,
+        y: 3,
+      }]);
     });
   });
 });

@@ -15,60 +15,136 @@ import { LensDistortionConfig, LensDistortionEffect } from "./effects/LensDistor
 import { SaturationConfig, SaturationEffect } from "./effects/Saturation";
 import { SnowEffect } from "./effects/Snow";
 import { VignetteConfig, VignetteEffect } from "./effects/Vignette";
-import {
-  MaskBackgroundMapByElementTool, MaskBackgroundMapByExcludedElementTool, MaskBackgroundMapByModelTool, MaskBackgroundMapBySubCategoryTool, MaskRealityModelByElementTool, MaskRealityModelByExcludedElementTool,
-  MaskRealityModelByModelTool, MaskRealityModelBySubCategoryTool, SetHigherPriorityRealityModelMasking, SetMapHigherPriorityMasking, UnmaskMapTool, UnmaskRealityModelTool,
-} from "./tools/PlanarMaskTools";
-import {
-  ChangeCameraTool, ChangeEmphasisSettingsTool, ChangeFlashSettingsTool, ChangeHiliteModeTool, ChangeHiliteSettingsTool, DefaultTileSizeModifierTool, FadeOutTool,
-  FreezeSceneTool, SetAspectRatioSkewTool, ShowTileVolumesTool, Toggle3dManipulationsTool, ToggleDrawingGraphicsTool, ToggleSectionDrawingSpatialViewTool,
-  ToggleTileTreeReferencesTool, ToggleViewAttachmentBoundariesTool, ToggleViewAttachmentClipShapesTool, ToggleViewAttachmentsTool, ViewportAddRealityModel,
-  ViewportTileSizeModifierTool,
-} from "./tools/ViewportTools";
 import { AnimationIntervalTool } from "./tools/AnimationIntervalTool";
 import { ChangeUnitsTool } from "./tools/ChangeUnitsTool";
 import { ClipColorTool, ClipIntersectionTool, TestClipStyleTool, ToggleSectionCutTool } from "./tools/ClipTools";
 import {
-  ApplyRenderingStyleTool, ChangeBackgroundColorTool, ChangeViewFlagsTool, OverrideSubCategoryTool, SaveRenderingStyleTool, SkyCubeTool,
-  SkySphereTool, ToggleSkyboxTool, ToggleWiremeshTool, WoWIgnoreBackgroundTool,
+  ApplyRenderingStyleTool,
+  ChangeBackgroundColorTool,
+  ChangeViewFlagsTool,
+  OverrideSubCategoryTool,
+  SaveRenderingStyleTool,
+  SkyCubeTool,
+  SkySphereTool,
+  ToggleSkyboxTool,
+  ToggleWiremeshTool,
+  WoWIgnoreBackgroundTool,
 } from "./tools/DisplayStyleTools";
-import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool } from "./tools/ScheduleScriptTools";
 import {
-  ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
+  ClearEmphasizedElementsTool,
+  ClearIsolatedElementsTool,
+  EmphasizeSelectedElementsTool,
+  EmphasizeVisibleElementsTool,
+  IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
 import {
   AttachArcGISFeatureMapLayerByUrlTool,
-  AttachArcGISMapLayerByUrlTool, AttachMapLayerTool, AttachMapOverlayTool, AttachModelMapLayerTool, AttachOgcApiFeaturesMapLayerTool, AttachTileURLMapLayerByUrlTool, AttachWmsMapLayerByUrlTool,
-  AttachWmtsMapLayerByUrlTool, DetachMapLayersTool, MapBaseColorTool, MapBaseTransparencyTool, MapBaseVisibilityTool, MapLayerSubLayerVisibilityTool,
-  MapLayerTransparencyTool, MapLayerVisibilityTool, MapLayerZoomTool, ReorderMapLayers, SetMapBaseTool, ToggleTerrainTool,
+  AttachArcGISMapLayerByUrlTool,
+  AttachMapLayerTool,
+  AttachMapOverlayTool,
+  AttachModelMapLayerTool,
+  AttachOgcApiFeaturesMapLayerTool,
+  AttachTileURLMapLayerByUrlTool,
+  AttachWmsMapLayerByUrlTool,
+  AttachWmtsMapLayerByUrlTool,
+  DetachMapLayersTool,
+  MapBaseColorTool,
+  MapBaseTransparencyTool,
+  MapBaseVisibilityTool,
+  MapLayerSubLayerVisibilityTool,
+  MapLayerTransparencyTool,
+  MapLayerVisibilityTool,
+  MapLayerZoomTool,
+  ReorderMapLayers,
+  SetMapBaseTool,
+  ToggleTerrainTool,
 } from "./tools/MapLayerTool";
 import { MeasureTileLoadTimeTool } from "./tools/MeasureTileLoadTime";
 import {
-  ClearModelAppearanceOverrides, SetModelColorTool, SetModelEmphasizedTool, SetModelIgnoresMaterialsTool, SetModelLineCodeTool,
-  SetModelLineWeightTool, SetModelLocateTool, SetModelTransparencyTool,
+  ClearModelAppearanceOverrides,
+  SetModelColorTool,
+  SetModelEmphasizedTool,
+  SetModelIgnoresMaterialsTool,
+  SetModelLineCodeTool,
+  SetModelLineWeightTool,
+  SetModelLocateTool,
+  SetModelTransparencyTool,
 } from "./tools/ModelAppearanceTools";
+import {
+  MaskBackgroundMapByElementTool,
+  MaskBackgroundMapByExcludedElementTool,
+  MaskBackgroundMapByModelTool,
+  MaskBackgroundMapBySubCategoryTool,
+  MaskRealityModelByElementTool,
+  MaskRealityModelByExcludedElementTool,
+  MaskRealityModelByModelTool,
+  MaskRealityModelBySubCategoryTool,
+  SetHigherPriorityRealityModelMasking,
+  SetMapHigherPriorityMasking,
+  UnmaskMapTool,
+  UnmaskRealityModelTool,
+} from "./tools/PlanarMaskTools";
 import { ChangePlanProjectionSettingsTool, DumpPlanProjectionSettingsTool, OverrideSubCategoryPriorityTool } from "./tools/PlanProjectionTools";
 import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
 import {
-  AttachCesiumAssetTool, AttachRealityModelTool, ClearRealityModelAppearanceOverrides, DetachRealityModelTool, SaveRealityModelTool,
-  SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool, ToggleOSMBuildingDisplay,
+  AttachCesiumAssetTool,
+  AttachRealityModelTool,
+  ClearRealityModelAppearanceOverrides,
+  DetachRealityModelTool,
+  SaveRealityModelTool,
+  SetRealityModelColorTool,
+  SetRealityModelEmphasizedTool,
+  SetRealityModelLocateTool,
+  SetRealityModelTransparencyTool,
+  ToggleOSMBuildingDisplay,
 } from "./tools/RealityModelTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool } from "./tools/RenderSystemTools";
 import {
-  SetAASamplesTool, ToggleDrapeFrustumTool, ToggleMaskFrustumTool, ToggleNormalMaps, TogglePrimitiveVisibilityTool, ToggleReadPixelsTool, ToggleRealityTileBounds, ToggleRealityTileFreeze,
-  ToggleRealityTileLogging, ToggleRealityTilePreload, ToggleVolClassIntersect,
+  SetAASamplesTool,
+  ToggleDrapeFrustumTool,
+  ToggleMaskFrustumTool,
+  ToggleNormalMaps,
+  TogglePrimitiveVisibilityTool,
+  ToggleReadPixelsTool,
+  ToggleRealityTileBounds,
+  ToggleRealityTileFreeze,
+  ToggleRealityTileLogging,
+  ToggleRealityTilePreload,
+  ToggleVolClassIntersect,
 } from "./tools/RenderTargetTools";
 import { ReportWebGLCompatibilityTool } from "./tools/ReportWebGLCompatibilityTool";
 import { ApplyViewByIdTool, ApplyViewTool, SaveViewTool } from "./tools/SavedViews";
+import { QueryScheduleScriptTool, ReverseScheduleScriptTool, SetScheduleScriptTool } from "./tools/ScheduleScriptTools";
 import { DumpSelectionSetTool, SelectElementsByIdTool } from "./tools/SelectionTools";
 import { SetGpuMemoryLimitTool } from "./tools/SetGpuMemoryLimitTool";
 import { ElementIdFromSourceAspectIdTool, SourceAspectIdFromElementIdTool } from "./tools/SourceAspectIdTools";
 import { ToggleTileRequestDecorationTool } from "./tools/TileRequestDecoration";
 import { ToggleTileTreeBoundsDecorationTool } from "./tools/TileTreeBoundsDecoration";
 import { ToggleToolTipsTool } from "./tools/ToolTipProvider";
+import {
+  ChangeCameraTool,
+  ChangeEmphasisSettingsTool,
+  ChangeFlashSettingsTool,
+  ChangeHiliteModeTool,
+  ChangeHiliteSettingsTool,
+  DefaultTileSizeModifierTool,
+  FadeOutTool,
+  FreezeSceneTool,
+  SetAspectRatioSkewTool,
+  ShowTileVolumesTool,
+  Toggle3dManipulationsTool,
+  ToggleDrawingGraphicsTool,
+  ToggleSectionDrawingSpatialViewTool,
+  ToggleTileTreeReferencesTool,
+  ToggleViewAttachmentBoundariesTool,
+  ToggleViewAttachmentClipShapesTool,
+  ToggleViewAttachmentsTool,
+  ViewportAddRealityModel,
+  ViewportTileSizeModifierTool,
+} from "./tools/ViewportTools";
 
 /** Entry-point for the package. Before using the package you *must* call [[FrontendDevTools.initialize]].
  * @beta

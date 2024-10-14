@@ -9,13 +9,48 @@
 import { BeDuration, BeEvent, BentleyError } from "@itwin/core-bentley";
 import { Cartographic, ColorDef, EcefLocation, EcefLocationProps } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, EditManipulator, EventHandled, GraphicType, HitDetail, IModelApp,
-  IModelConnection, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessagePriority, QuantityType, ScreenViewport,
-  Tool, ViewClipControlArrow, ViewClipDecorationProvider, ViewClipShapeModifyTool, ViewClipTool, Viewport,
+  BeButton,
+  BeButtonEvent,
+  BriefcaseConnection,
+  CoreTools,
+  DecorateContext,
+  EditManipulator,
+  EventHandled,
+  GraphicType,
+  HitDetail,
+  IModelApp,
+  IModelConnection,
+  MessageBoxIconType,
+  MessageBoxType,
+  MessageBoxValue,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  QuantityType,
+  ScreenViewport,
+  Tool,
+  ViewClipControlArrow,
+  ViewClipDecorationProvider,
+  ViewClipShapeModifyTool,
+  ViewClipTool,
+  Viewport,
 } from "@itwin/core-frontend";
 import {
-  Angle, Arc3d, AxisIndex, AxisOrder, ClipShape, ClipVector, Constant, Matrix3d, Point3d, PolygonOps, Range1d, Range3d, Range3dProps, Ray3d,
-  Transform, Vector3d,
+  Angle,
+  Arc3d,
+  AxisIndex,
+  AxisOrder,
+  ClipShape,
+  ClipVector,
+  Constant,
+  Matrix3d,
+  Point3d,
+  PolygonOps,
+  Range1d,
+  Range3d,
+  Range3dProps,
+  Ray3d,
+  Transform,
+  Vector3d,
 } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "../EditTool";
@@ -159,7 +194,11 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   private getClipData(): boolean {
-    this._clip = this._clipShape = this._clipShapeExtents = this._clipRange = undefined;
+    this._clip =
+      this._clipShape =
+      this._clipShapeExtents =
+      this._clipRange =
+        undefined;
     const clip = this.viewport.view.getViewClip();
     if (undefined === clip)
       return false;
@@ -220,12 +259,19 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       const faceNormal = edgeTangent.crossProduct(shapeArea.direction);
       faceNormal.normalizeInPlace();
       this._controls[i] = new ProjectExtentsControlArrow(faceCenter, faceNormal, 0.75);
-      this._controls[i].extentValid = (faceNormal.isParallelTo(Vector3d.unitX(), true) ? this._extentsLengthValid : this._extentsWidthValid);
+      this._controls[i].extentValid = faceNormal.isParallelTo(Vector3d.unitX(), true) ? this._extentsLengthValid : this._extentsWidthValid;
     }
 
     const zFillColor = ColorDef.from(150, 150, 250);
     this._controls[numControls - 2] = new ProjectExtentsControlArrow(shapeArea.origin, Vector3d.unitZ(-1.0), 0.75, zFillColor, undefined, "zLow");
-    this._controls[numControls - 1] = new ProjectExtentsControlArrow(shapeArea.origin.plusScaled(Vector3d.unitZ(), shapePtsLo[0].distance(shapePtsHi[0])), Vector3d.unitZ(), 0.75, zFillColor, undefined, "zHigh");
+    this._controls[numControls - 1] = new ProjectExtentsControlArrow(
+      shapeArea.origin.plusScaled(Vector3d.unitZ(), shapePtsLo[0].distance(shapePtsHi[0])),
+      Vector3d.unitZ(),
+      0.75,
+      zFillColor,
+      undefined,
+      "zHigh",
+    );
     this._controls[numControls - 2].extentValid = this._extentsHeightValid;
     this._controls[numControls - 1].extentValid = this._extentsHeightValid;
 
@@ -233,10 +279,14 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   /** Allow project extents for map projections to be larger since curvature of the earth is accounted for. */
-  protected get maxExtentLength(): number { return ((this._allowEcefLocationChange ? 20 : 350) * Constant.oneKilometer); }
+  protected get maxExtentLength(): number {
+    return ((this._allowEcefLocationChange ? 20 : 350) * Constant.oneKilometer);
+  }
 
   /** Impose some reasonable height limit for project extents. */
-  protected get maxExtentHeight(): number { return (2 * Constant.oneKilometer); }
+  protected get maxExtentHeight(): number {
+    return (2 * Constant.oneKilometer);
+  }
 
   protected hasValidGCS(): boolean {
     if (!this.iModel.isGeoLocated || this.iModel.noGcsDefined)
@@ -247,9 +297,9 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       return false; // A valid GCS ought to have horizontalCR defined...
 
     // Check for approximate GCS (such as from MicroStation's "From Placemark" tool) and allow it to be replaced...
-    const hasValidId = (undefined !== gcs.horizontalCRS.id && 0 !== gcs.horizontalCRS.id.length);
-    const hasValidDescr = (undefined !== gcs.horizontalCRS.description && 0 !== gcs.horizontalCRS.description.length);
-    const hasValidProjection = (undefined !== gcs.horizontalCRS.projection && "AzimuthalEqualArea" !== gcs.horizontalCRS.projection.method);
+    const hasValidId = undefined !== gcs.horizontalCRS.id && 0 !== gcs.horizontalCRS.id.length;
+    const hasValidDescr = undefined !== gcs.horizontalCRS.description && 0 !== gcs.horizontalCRS.description.length;
+    const hasValidProjection = undefined !== gcs.horizontalCRS.projection && "AzimuthalEqualArea" !== gcs.horizontalCRS.projection.method;
 
     return hasValidId || hasValidDescr || hasValidProjection;
   }
@@ -262,9 +312,9 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     this._allowEcefLocationChange = !this.hasValidGCS();
 
     if (undefined !== this._clipRange) {
-      this._extentsLengthValid = (this._clipRange.xLength() < this.maxExtentLength);
-      this._extentsWidthValid = (this._clipRange.yLength() < this.maxExtentLength);
-      this._extentsHeightValid = (this._clipRange.zLength() < this.maxExtentHeight);
+      this._extentsLengthValid = this._clipRange.xLength() < this.maxExtentLength;
+      this._extentsWidthValid = this._clipRange.yLength() < this.maxExtentLength;
+      this._extentsHeightValid = this._clipRange.zLength() < this.maxExtentHeight;
     }
 
     // Show controls if only range box and it's controls are selected, selection set doesn't include any other elements...
@@ -306,9 +356,13 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     return this._suspendDecorator;
   }
 
-  protected override async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+  protected override async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> {
+    return EventHandled.No;
+  }
 
-  protected override async onTouchTap(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> { return (hit.sourceId === this._clipId ? EventHandled.No : super.onTouchTap(hit, ev)); }
+  protected override async onTouchTap(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
+    return (hit.sourceId === this._clipId ? EventHandled.No : super.onTouchTap(hit, ev));
+  }
 
   public override async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
     if (hit.sourceId === this._monumentId) {
@@ -361,7 +415,6 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
         toolTipHtml += `${translateCoreMeasureBold("LatLong") + formattedLat + latDir}, ${formattedLong}${longDir}<br>`;
         toolTipHtml += `${translateCoreMeasureBold("Altitude") + formattedHeight}<br>`;
       }
-
     } else if (hit.sourceId === this._northId) {
       toolTipHtml += `${translateMessage("ModifyNorthDirection")}<br>`;
 
@@ -370,9 +423,8 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
         const formattedAngle = quantityFormatter.formatQuantity(this.getClockwiseAngleToNorth().radians, angleFormatterSpec);
         toolTipHtml += `${translateMessageBold("Angle") + formattedAngle}<br>`;
       }
-
     } else if (hit.sourceId === this._clipId) {
-      const extentsValid = (this._extentsLengthValid && this._extentsWidthValid && this._extentsHeightValid);
+      const extentsValid = this._extentsLengthValid && this._extentsWidthValid && this._extentsHeightValid;
       toolTipHtml += `${translateMessage(extentsValid ? "ProjectExtents" : "LargeProjectExtents")}<br>`;
 
       const distanceFormatterSpec = quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
@@ -384,7 +436,6 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
         toolTipHtml += `${translateMessageBold("Width") + formattedWidth}<br>`;
         toolTipHtml += `${translateMessageBold("Height") + formattedHeight}<br>`;
       }
-
     } else {
       const arrowIndex = this._controlIds.indexOf(hit.sourceId);
       if (-1 !== arrowIndex) {
@@ -414,9 +465,11 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
             if (!this._extentsHeightValid)
               arrowLengthMax = this.maxExtentHeight;
 
-            const coordFormatterSpec = (this.iModel.isGeoLocated ? quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate) : undefined);
+            const coordFormatterSpec = this.iModel.isGeoLocated
+              ? quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Coordinate)
+              : undefined;
             if (undefined !== coordFormatterSpec) {
-              const heightPt = ("zLow" === arrowControl.name ? this._clipRange.low : this._clipRange.high);
+              const heightPt = "zLow" === arrowControl.name ? this._clipRange.low : this._clipRange.high;
               const cartographic = this.iModel.spatialToCartographicFromEcef(heightPt);
               const formattedAltitude = quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
               toolTipHtml += `${translateCoreMeasureBold("Altitude") + formattedAltitude}<br>`;
@@ -438,8 +491,12 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     return toolTip;
   }
 
-  public testDecorationHit(id: string): boolean { return (id === this._monumentId || id === this._northId || id === this._clipId || this._controlIds.includes(id)); }
-  protected override updateDecorationListener(_add: boolean): void { super.updateDecorationListener(undefined !== this._clipId); } // Decorator isn't just for resize controls...
+  public testDecorationHit(id: string): boolean {
+    return (id === this._monumentId || id === this._northId || id === this._clipId || this._controlIds.includes(id));
+  }
+  protected override updateDecorationListener(_add: boolean): void {
+    super.updateDecorationListener(undefined !== this._clipId);
+  } // Decorator isn't just for resize controls...
 
   public getMonumentPoint(): Point3d {
     const origin = Point3d.createZero();
@@ -458,12 +515,12 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
   }
 
   public getNorthAngle(): Angle {
-    const northDirection = (undefined !== this._northDirection ? this._northDirection : this.getNorthDirection());
+    const northDirection = undefined !== this._northDirection ? this._northDirection : this.getNorthDirection();
     return northDirection.direction.angleToXY(Vector3d.unitY());
   }
 
   public getNorthDirection(refOrigin?: Point3d): Ray3d {
-    const origin = (undefined !== refOrigin ? refOrigin : this.iModel.projectExtents.center);
+    const origin = undefined !== refOrigin ? refOrigin : this.iModel.projectExtents.center;
 
     if (!this.iModel.isGeoLocated)
       return Ray3d.create(origin, Vector3d.unitY());
@@ -614,7 +671,6 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       ctx.moveTo(0, (sizePixels * 0.3) + 4);
       ctx.lineTo(0, (sizePixels * 0.3) + 4.5);
       ctx.stroke();
-
     };
     context.addCanvasDecoration({ position, drawDecoration });
   }
@@ -640,7 +696,14 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (!this.suspendGeolocationDecorations && undefined !== this._monumentPoint && this._allowEcefLocationChange)
       this.drawMonumentPoint(context, this._monumentPoint, 1.0, this._monumentId);
 
-    ViewClipTool.drawClipShape(context, this._clipShape, this._clipShapeExtents!, ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor), 3, this._clipId);
+    ViewClipTool.drawClipShape(
+      context,
+      this._clipShape,
+      this._clipShapeExtents!,
+      ColorDef.white.adjustedForContrast(context.viewport.view.backgroundColor),
+      3,
+      this._clipId,
+    );
     this.drawAreaTooLargeIndicator(context);
 
     if (!this._isActive)
@@ -657,7 +720,11 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
       if (0.0 === sizeInches)
         continue;
 
-      const anchorRay = ViewClipTool.getClipRayTransformed(this._controls[iFace].origin, this._controls[iFace].direction, undefined !== this._clipShape ? this._clipShape.transformFromClip : undefined);
+      const anchorRay = ViewClipTool.getClipRayTransformed(
+        this._controls[iFace].origin,
+        this._controls[iFace].direction,
+        undefined !== this._clipShape ? this._clipShape.transformFromClip : undefined,
+      );
       const transform = EditManipulator.HandleUtils.getArrowTransform(vp, anchorRay.origin, anchorRay.direction, sizeInches);
       if (undefined === transform)
         continue;
@@ -742,7 +809,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (!this._allowEcefLocationChange)
       return false;
 
-    const newEcefLocation = EcefLocation.createFromCartographicOrigin(origin, point, (undefined !== angle ? angle : this.getNorthAngle())); // Preserve modified north direction...
+    const newEcefLocation = EcefLocation.createFromCartographicOrigin(origin, point, undefined !== angle ? angle : this.getNorthAngle()); // Preserve modified north direction...
     const ecefLocation = this.iModel.ecefLocation;
     if (undefined !== ecefLocation && ecefLocation.isAlmostEqual(newEcefLocation))
       return false;
@@ -762,7 +829,7 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
     if (!this._allowEcefLocationChange || !this.iModel.isGeoLocated)
       return false;
 
-    const point = (undefined !== this._monumentPoint ? this._monumentPoint : this.getMonumentPoint()); // Preserve modified monument point...
+    const point = undefined !== this._monumentPoint ? this._monumentPoint : this.getMonumentPoint(); // Preserve modified monument point...
     const origin = this.iModel.spatialToCartographicFromEcef(point);
 
     const saveDirection = this._northDirection;
@@ -845,7 +912,9 @@ export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider
           ViewClipTool.setViewClip(vp, deco._clip);
         }
         if (undefined === deco._removeManipulatorToolListener) {
-          deco._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) => deco.onManipulatorToolEvent(tool, event));
+          deco._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) =>
+            deco.onManipulatorToolEvent(tool, event)
+          );
           deco.start();
           deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Show);
         }
@@ -950,7 +1019,10 @@ export class ProjectLocationSaveTool extends Tool {
       return true;
 
     // NOTE: Default if openMessageBox isn't implemented is MessageBoxValue.Ok, so we'll check No instead of Yes...
-    if (MessageBoxValue.No === await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo, translateMessage("RestartTxn"), MessageBoxIconType.Question))
+    if (
+      MessageBoxValue.No ===
+        await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo, translateMessage("RestartTxn"), MessageBoxIconType.Question)
+    )
       return false;
 
     return true;
@@ -975,7 +1047,9 @@ export class ProjectLocationSaveTool extends Tool {
       await deco.iModel.saveChanges(this.toolId);
       await deco.iModel.txns.restartTxnSession();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."),
+      );
     }
 
     deco.onChanged.raiseEvent(deco.iModel, ProjectLocationChanged.Save);

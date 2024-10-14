@@ -24,21 +24,29 @@ export class TentativePoint {
   public isActive = false;
   public currSnap?: SnapDetail;
   public tpHits?: HitList<HitDetail>;
-  private get _hotDistanceInches(): number { return 0.21; }
+  private get _hotDistanceInches(): number {
+    return 0.21;
+  }
   private readonly _point: Point3d = new Point3d();
   private readonly _rawPoint: Point3d = new Point3d();
   private readonly _viewPoint: Point3d = new Point3d();
   private _tentativePromise?: Promise<SnapDetail | undefined>;
   public viewport?: ScreenViewport;
 
-  public onInitialized() { }
-  public setHitList(list?: HitList<HitDetail>) { this.tpHits = list; }
+  public onInitialized() {}
+  public setHitList(list?: HitList<HitDetail>) {
+    this.tpHits = list;
+  }
 
   /** @return true if the tentative point is currently active and snapped to an element. */
-  public get isSnapped(): boolean { return undefined !== this.currSnap; }
+  public get isSnapped(): boolean {
+    return undefined !== this.currSnap;
+  }
 
   /** @return The current snap path when TentativePoint.isSnapped or undefined. */
-  public getCurrSnap(): SnapDetail | undefined { return this.currSnap; }
+  public getCurrSnap(): SnapDetail | undefined {
+    return this.currSnap;
+  }
 
   public getPoint(): Point3d {
     const snap = this.currSnap;
@@ -158,7 +166,7 @@ export class TentativePoint {
 
   private async getSnap(newSearch: boolean): Promise<SnapDetail | undefined> {
     // Use next hit from previous search when using tentative to cycle through hits...
-    let thisHit = (!newSearch && undefined !== this.tpHits ? this.tpHits.getNextHit() : undefined);
+    let thisHit = !newSearch && undefined !== this.tpHits ? this.tpHits.getNextHit() : undefined;
 
     // Use existing AccuSnap hit list if one exists...
     if (undefined === thisHit) {
@@ -177,7 +185,7 @@ export class TentativePoint {
         return undefined;
 
       this.tpHits = picker.getHitList(true);
-      thisHit = (undefined !== this.tpHits ? this.tpHits.getNextHit() : undefined);
+      thisHit = undefined !== this.tpHits ? this.tpHits.getNextHit() : undefined;
     } else if (thisHit instanceof SnapDetail) {
       // Make the current AccuSnap the TentativePoint snap...
       return thisHit;
@@ -198,7 +206,9 @@ export class TentativePoint {
     return thisSnap;
   }
 
-  private static arePointsCloseEnough(pt1: Point3d, pt2: Point3d, pixelDistance: number): boolean { return pt1.distance(pt2) < (pixelDistance + 1.5); }
+  private static arePointsCloseEnough(pt1: Point3d, pt2: Point3d, pixelDistance: number): boolean {
+    return pt1.distance(pt2) < (pixelDistance + 1.5);
+  }
 
   public process(ev: BeButtonEvent): void {
     if (undefined !== this._tentativePromise)
@@ -217,7 +227,8 @@ export class TentativePoint {
     this._rawPoint.setFrom(ev.rawPoint);
     this._viewPoint.setFrom(ev.viewPoint);
 
-    const newSearch = (!this.isSnapped || !TentativePoint.arePointsCloseEnough(lastPtView, this._viewPoint, this.viewport.pixelsFromInches(IModelApp.locateManager.apertureInches)));
+    const newSearch = !this.isSnapped ||
+      !TentativePoint.arePointsCloseEnough(lastPtView, this._viewPoint, this.viewport.pixelsFromInches(IModelApp.locateManager.apertureInches));
     const promise = this.getSnap(newSearch);
     this._tentativePromise = promise;
 

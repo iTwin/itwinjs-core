@@ -113,7 +113,7 @@ export class MultiChainCollector {
   }
   /** If allowed by the geometry type, move an endpoint. */
   private static simpleEndPointMove(curve: CurvePrimitive, atEnd: boolean, to: XYAndZ): boolean {
-    if (curve instanceof (LineSegment3d)) {
+    if (curve instanceof LineSegment3d) {
       if (atEnd) {
         curve.point1Ref.setFrom(to);
       } else {
@@ -332,7 +332,7 @@ export class MultiChainCollector {
   /**
    * Return chains as individual calls to announceChain.
    * * Does not use planeTolerance.
-  */
+   */
   public announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void, options?: StrokeOptions): void {
     const chains = this._chains;
     if (chains.length === 1) {

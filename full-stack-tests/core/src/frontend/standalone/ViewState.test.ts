@@ -2,18 +2,40 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { Mutable } from "@itwin/core-bentley";
 import {
-  AmbientOcclusion, BackgroundMapType, BaseMapLayerSettings, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps,
+  AmbientOcclusion,
+  BackgroundMapType,
+  BaseMapLayerSettings,
+  ColorDef,
+  HiddenLine,
+  RenderMode,
+  SpatialViewDefinitionProps,
+  ViewDefinitionProps,
 } from "@itwin/core-common";
 import {
-  AuxCoordSystemSpatialState, CategorySelectorState, DrawingModelState, DrawingViewState, IModelConnection, LookAtOrthoArgs, MarginPercent,
-  ModelSelectorState, SheetModelState, SheetViewState, SnapshotConnection, SpatialModelState, SpatialViewState, StandardView,
-  StandardViewId, ViewState, ViewState3d, ViewStatus,
+  AuxCoordSystemSpatialState,
+  CategorySelectorState,
+  DrawingModelState,
+  DrawingViewState,
+  IModelConnection,
+  LookAtOrthoArgs,
+  MarginPercent,
+  ModelSelectorState,
+  SheetModelState,
+  SheetViewState,
+  SnapshotConnection,
+  SpatialModelState,
+  SpatialViewState,
+  StandardView,
+  StandardViewId,
+  ViewState,
+  ViewState3d,
+  ViewStatus,
 } from "@itwin/core-frontend";
+import { Angle, DeepCompare, Geometry, Matrix3d, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
-import { Mutable } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
 
 describe("ViewState", () => {
@@ -60,8 +82,14 @@ describe("ViewState", () => {
     assert.equal(viewState.displayStyle.id, "0x36", "Display Style Id is 0x36");
     assert.equal(viewState.categorySelector.id, "0x37", "Category Id is 0x37");
     assert.isFalse(viewState.isCameraOn, "The camera is not turned on");
-    assert.isTrue(viewState.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)), "View extents as expected");
-    assert.isTrue(viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
+    assert.isTrue(
+      viewState.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)),
+      "View extents as expected",
+    );
+    assert.isTrue(
+      viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)),
+      "View origin as expected",
+    );
     assert.isTrue(viewState.rotation.isIdentity, "View rotation is identity");
     assert.equal(viewState.details.gridOrientation, 0, "Grid orientation as expected");
     assert.equal(viewState.details.gridSpacing.x, 0.001, "GridSpaceX as expected");
@@ -71,7 +99,10 @@ describe("ViewState", () => {
     assert.equal(viewState.categorySelector.categories.size, 4);
     assert.instanceOf(viewState.modelSelector, ModelSelectorState);
     assert.equal(viewState.modelSelector.models.size, 5);
-    assert.isTrue(viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");
+    assert.isTrue(
+      viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)),
+      "View origin as expected",
+    );
 
     const v2 = viewState.clone();
     compareView(viewState, v2.toJSON(), "v2 clone");
@@ -209,7 +240,11 @@ describe("ViewState", () => {
     assert.equal(vs0AOSettings.texelStepSize, vs1AOSettings.texelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.texelStepSize");
     assert.equal(vs0AOSettings.blurDelta, vs1AOSettings.blurDelta, "clone should copy displayStyle.ambientOcclusionSettings.blurDelta");
     assert.equal(vs0AOSettings.blurSigma, vs1AOSettings.blurSigma, "clone should copy displayStyle.ambientOcclusionSettings.blurSigma");
-    assert.equal(vs0AOSettings.blurTexelStepSize, vs1AOSettings.blurTexelStepSize, "clone should copy displayStyle.ambientOcclusionSettings.blurTexelStepSize");
+    assert.equal(
+      vs0AOSettings.blurTexelStepSize,
+      vs1AOSettings.blurTexelStepSize,
+      "clone should copy displayStyle.ambientOcclusionSettings.blurTexelStepSize",
+    );
     assert.isTrue(vs0BackgroundColor.equals(vs1BackgroundColor), "clone should copy displayStyle.backgroundColor");
 
     const vs0BackgroundBase = vs0.displayStyle.settings.mapImagery.backgroundBase as BaseMapLayerSettings;
@@ -223,7 +258,11 @@ describe("ViewState", () => {
     expect(vs0BackgroundMap.useDepthBuffer).not.to.equal(oldBackgroundMap?.useDepthBuffer ?? false);
     expect(vs1BackgroundMap.useDepthBuffer).to.equal(vs0BackgroundMap.useDepthBuffer);
 
-    assert.equal(vs0HLSettings.transparencyThreshold, vs1HLSettings.transparencyThreshold, "clone should copy displayStyle.hiddenLineSettings.transparencyThreshold");
+    assert.equal(
+      vs0HLSettings.transparencyThreshold,
+      vs1HLSettings.transparencyThreshold,
+      "clone should copy displayStyle.hiddenLineSettings.transparencyThreshold",
+    );
     assert.isTrue(vs0MonochromeColor.equals(vs1MonochromeColor), "clone should copy displayStyle.monochromeColor");
   });
 
@@ -346,7 +385,14 @@ describe("ViewState", () => {
     viewState.setFocusDistance(191);
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
     const cppView: SpatialViewDefinitionProps = await unitTestRpcImp.executeTest(imodel.getRpcProps(), "lookAtUsingLensAngle", testParams);
-    viewState.lookAt({ eyePoint: testParams.eye, targetPoint: testParams.target, upVector: testParams.up, lensAngle: testParams.lens, frontDistance: testParams.front, backDistance: testParams.back });
+    viewState.lookAt({
+      eyePoint: testParams.eye,
+      targetPoint: testParams.target,
+      upVector: testParams.up,
+      lensAngle: testParams.lens,
+      frontDistance: testParams.front,
+      backDistance: testParams.back,
+    });
     compareToCppView(viewState, cppView, 116.961632, "lookAtUsingLensAngle");
 
     // changing the focus distance shouldn't change the viewing frustum
@@ -375,7 +421,14 @@ describe("ViewState", () => {
     viewState.setEyePoint(Point3d.create(-64, 120, 500));
     const viewState2 = viewState.clone();
     const viewState3 = viewState.clone();
-    viewState.lookAt({ eyePoint: testParams.eye, targetPoint: testParams.target, upVector: testParams.up, lensAngle: testParams.lens, frontDistance: testParams.front, backDistance: testParams.back });
+    viewState.lookAt({
+      eyePoint: testParams.eye,
+      targetPoint: testParams.target,
+      upVector: testParams.up,
+      lensAngle: testParams.lens,
+      frontDistance: testParams.front,
+      backDistance: testParams.back,
+    });
     const extents = viewState.getExtents();
 
     const perspectiveArgs = {

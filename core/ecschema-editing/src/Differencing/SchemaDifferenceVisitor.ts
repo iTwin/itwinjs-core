@@ -15,7 +15,11 @@ import { type AnySchemaDifference, SchemaOtherTypes } from "./SchemaDifference";
  * @internal
  */
 export type SchemaDifferenceVisitor = {
-  [Difference in AnySchemaDifference as `visit${Difference["schemaType"]}Difference`]: (entry: Difference, index: number, array: AnySchemaDifference[]) => Promise<void>;
+  [Difference in AnySchemaDifference as `visit${Difference["schemaType"]}Difference`]: (
+    entry: Difference,
+    index: number,
+    array: AnySchemaDifference[],
+  ) => Promise<void>;
 };
 
 /**
@@ -24,7 +28,6 @@ export type SchemaDifferenceVisitor = {
  * @internal
  */
 export class SchemaDifferenceWalker {
-
   private readonly _visitor: SchemaDifferenceVisitor;
 
   /** Initializes a new instance of SchemaDifferenceWalker class. */

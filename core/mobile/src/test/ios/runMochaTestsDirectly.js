@@ -10,7 +10,7 @@ require("mocha"); // puts the symbol "mocha" in global.
 require("chai"); // puts 'assert', etc. into global
 
 const configs = eval('require("./config.json");');
-process.env = {...process.env, ...configs};
+process.env = { ...process.env, ...configs };
 
 const xunit = require("mocha/lib/reporters/xunit");
 function MobileReporter(runner) {
@@ -20,7 +20,7 @@ function MobileReporter(runner) {
   var failedTest = [];
   runner.stats = stats;
   function indent() {
-    return Array(indents).join('  ');
+    return Array(indents).join("  ");
   }
   function log(type, msg) {
     // Following send a event to UI and write the log message in a text view
@@ -33,7 +33,7 @@ function MobileReporter(runner) {
 
     // remove \n from the front of the string
     let i = 0;
-    while (plainMsg[i] === '\n') {
+    while (plainMsg[i] === "\n") {
       i++;
     }
     plainMsg = plainMsg.substring(i);
@@ -43,32 +43,33 @@ function MobileReporter(runner) {
       process.log("MOCHA ERROR", plainMsg);
     }
   }
-  runner.on('suite', function (suite) {
+  runner.on("suite", function(suite) {
     stats.suites = stats.suites || 0;
     if (suite.root) return;
     stats.suites++;
     log("info", `\n${indent()} λ ${suite.title}`);
     indents++;
   });
-  runner.on('suite end', function (suite) {
+  runner.on("suite end", function(suite) {
     indents--;
   });
-  runner.on('pending', function (test) {
+  runner.on("pending", function(test) {
     stats.pending++;
   });
-  runner.on('test', function (test) {
+  runner.on("test", function(test) {
   });
-  runner.on('pass', function (test) {
+  runner.on("pass", function(test) {
     stats.passes = stats.passes || 0;
     var medium = test.slow() / 2;
-    test.speed =
-      test.duration > test.slow()
-        ? 'slow'
-        : test.duration > medium ? 'medium' : 'fast';
+    test.speed = test.duration > test.slow()
+      ? "slow"
+      : test.duration > medium
+      ? "medium"
+      : "fast";
     stats.passes++;
     log("info", `${indent()} ✔ ${test.title}  (${test.speed}) ${test.duration} ms`);
   });
-  runner.on('fail', function (test, err) {
+  runner.on("fail", function(test, err) {
     stats.failures++;
     log("error", `${indent()} ✘ ${test.title}`);
     test.err = err;
@@ -81,10 +82,10 @@ function MobileReporter(runner) {
     }
     failedTest.push(test);
   });
-  runner.on('start', function () {
-    stats.start = new Date()
+  runner.on("start", function() {
+    stats.start = new Date();
   });
-  runner.on('end', function () {
+  runner.on("end", function() {
     stats.end = new Date();
     stats.duration = (stats.end.getTime() - stats.start.getTime()) / 1000;
     log("info", `\n${stats.passes} Passes`);
@@ -109,14 +110,13 @@ function MobileReporter(runner) {
   });
 }
 
-
 mocha.setup({
-  ui: 'bdd',
+  ui: "bdd",
   reporter: MobileReporter,
   // WIP we need these arg to come from ios launchArguments
   timeout: 9999999,
   grep: require("./ignoreTest.js").join("|"),
-  invert: true
+  invert: true,
 }); // puts 'describe', 'it', etc. into global
 
 require("./IModelTestUtils.js");

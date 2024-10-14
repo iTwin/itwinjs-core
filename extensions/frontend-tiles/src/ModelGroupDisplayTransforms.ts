@@ -42,7 +42,9 @@ export class ModelGroupDisplayTransforms {
   }
 
   /** A string uniquely identifying the current grouping. */
-  public get guid(): string { return this._state.guid; }
+  public get guid(): string {
+    return this._state.guid;
+  }
 
   /** Get the display transform for the specified model.
    * @note This method is guaranteed to return the same object for all models in the same group, at least between calls to `update`.

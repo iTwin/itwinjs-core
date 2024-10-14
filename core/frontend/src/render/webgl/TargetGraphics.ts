@@ -7,9 +7,9 @@
  */
 
 import { dispose, disposeArray } from "@itwin/core-bentley";
-import { GraphicList } from "../RenderGraphic";
-import { Decorations } from "../Decorations";
 import { CanvasDecorationList } from "../CanvasDecoration";
+import { Decorations } from "../Decorations";
+import { GraphicList } from "../RenderGraphic";
 import { Scene } from "../Scene";
 
 /** The various graphics associated with a [[Target]].
@@ -39,13 +39,17 @@ export class TargetGraphics {
     this.overlays = scene.overlay;
   }
 
-  public get dynamics(): GraphicList | undefined { return this._dynamics; }
+  public get dynamics(): GraphicList | undefined {
+    return this._dynamics;
+  }
   public set dynamics(dynamics: GraphicList | undefined) {
     disposeArray(this._dynamics);
     this._dynamics = dynamics;
   }
 
-  public get decorations(): Decorations | undefined { return this._decorations; }
+  public get decorations(): Decorations | undefined {
+    return this._decorations;
+  }
   public set decorations(decorations: Decorations | undefined) {
     dispose(this._decorations);
     this._decorations = decorations;

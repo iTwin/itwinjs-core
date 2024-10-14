@@ -3,11 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Schema } from "../../Schema";
 import * as Semver from "semver";
+import { Schema } from "../../Schema";
 
 describe("Schema Utilities Test", () => {
-
   it("paddedVersionToSemver", async () => {
     assert.equal(Schema.toSemverString("1.00.00"), "1.0.0");
     assert.isNotNull(Semver.valid(Schema.toSemverString("1.00.00")));

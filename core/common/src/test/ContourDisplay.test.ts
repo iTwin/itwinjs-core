@@ -61,37 +61,37 @@ describe("ContourDisplay", () => {
 
     // modify a group
     const groupsA = contourDisplayA.groups;
-    let modifiedGroup = groupsA[0].clone({name: "test 2"});
+    let modifiedGroup = groupsA[0].clone({ name: "test 2" });
     expect(groupsA[0].equals(modifiedGroup)).to.be.false; // ensure old group and modified group do not match
-    contourDisplayB = contourDisplayA.clone({groups: [ modifiedGroup ]});
+    contourDisplayB = contourDisplayA.clone({ groups: [modifiedGroup] });
     expect(contourDisplayA.equals(contourDisplayB)).to.be.false; // ensure the main object itself no longer matches
 
     // modify a contour
-    let modifiedContour = groupsA[0].contourDef.clone({showGeometry: true});
+    let modifiedContour = groupsA[0].contourDef.clone({ showGeometry: true });
     expect(modifiedContour.equals(groupsA[0].contourDef)).to.be.false; // ensure the old contour and modified contour do not match
-    modifiedGroup = groupsA[0].clone({contourDef: modifiedContour});
+    modifiedGroup = groupsA[0].clone({ contourDef: modifiedContour });
     expect(groupsA[0].equals(modifiedGroup)).to.be.false; // ensure old group and modified group do not match
-    contourDisplayB = contourDisplayA.clone({groups: [ modifiedGroup ]});
+    contourDisplayB = contourDisplayA.clone({ groups: [modifiedGroup] });
     expect(contourDisplayA.equals(contourDisplayB)).to.be.false; // ensure the main object itself no longer matches
 
     // modify a contour style
-    let modifiedContourStyle = groupsA[0].contourDef.minorStyle.clone({pattern: LinePixels.Solid});
+    let modifiedContourStyle = groupsA[0].contourDef.minorStyle.clone({ pattern: LinePixels.Solid });
     expect(modifiedContourStyle.equals(groupsA[0].contourDef.minorStyle)).to.be.false; // ensure old contour style and modified contour style do not match
-    modifiedContour = groupsA[0].contourDef.clone({minorStyle: modifiedContourStyle});
+    modifiedContour = groupsA[0].contourDef.clone({ minorStyle: modifiedContourStyle });
     expect(modifiedContour.equals(groupsA[0].contourDef)).to.be.false; // ensure the old contour and modified contour do not match
-    modifiedGroup = groupsA[0].clone({contourDef: modifiedContour});
+    modifiedGroup = groupsA[0].clone({ contourDef: modifiedContour });
     expect(groupsA[0].equals(modifiedGroup)).to.be.false; // ensure old group and modified group do not match
-    contourDisplayB = contourDisplayA.clone({groups: [ modifiedGroup ]});
+    contourDisplayB = contourDisplayA.clone({ groups: [modifiedGroup] });
     expect(contourDisplayA.equals(contourDisplayB)).to.be.false; // ensure the main object itself no longer matches
 
     // unmodify the contour style
-    modifiedContourStyle = contourDisplayB.groups[0].contourDef.minorStyle.clone({pattern: LinePixels.Code1});
+    modifiedContourStyle = contourDisplayB.groups[0].contourDef.minorStyle.clone({ pattern: LinePixels.Code1 });
     expect(modifiedContourStyle.equals(groupsA[0].contourDef.minorStyle)).to.be.true; // ensure old contour style and modified contour style do match
-    modifiedContour = groupsA[0].contourDef.clone({minorStyle: modifiedContourStyle});
+    modifiedContour = groupsA[0].contourDef.clone({ minorStyle: modifiedContourStyle });
     expect(modifiedContour.equals(groupsA[0].contourDef)).to.be.true; // ensure the old contour and modified contour do match
-    modifiedGroup = groupsA[0].clone({contourDef: modifiedContour});
+    modifiedGroup = groupsA[0].clone({ contourDef: modifiedContour });
     expect(groupsA[0].equals(modifiedGroup)).to.be.true; // ensure old group and modified group do match
-    contourDisplayB = contourDisplayA.clone({groups: [ modifiedGroup ]});
+    contourDisplayB = contourDisplayA.clone({ groups: [modifiedGroup] });
     expect(contourDisplayA.equals(contourDisplayB)).to.be.true; // ensure the main object itself matches
   });
 });

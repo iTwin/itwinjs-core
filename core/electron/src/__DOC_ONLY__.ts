@@ -28,5 +28,5 @@ export * from "./frontend/ElectronApp";
 
 /**
  * @docs-group-description RpcInterface
-  * Functionality facilitate electron RPC
+ * Functionality facilitate electron RPC
  */

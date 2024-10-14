@@ -6,11 +6,11 @@
 /** @packageDocumentation
  * @module Tiles
  */
-import { request } from "../../request/Request";
-import { IModelApp } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
 import { Cartographic } from "@itwin/core-common";
 import { Point3d, Range1d, Range2d } from "@itwin/core-geometry";
+import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { request } from "../../request/Request";
 
 // cspell:ignore atae qdng uyzv auje sealevel
 
@@ -34,12 +34,10 @@ export class BingElevationProvider {
     this._heightRangeRequestTemplate =
       "https://dev.virtualearth.net/REST/v1/Elevation/Bounds?bounds={boundingBox}&rows=16&cols=16&heights=ellipsoid&key={BingMapsAPIKey}"
         .replace("{BingMapsAPIKey}", bingKey);
-    this._seaLevelOffsetRequestTemplate =
-      "https://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}"
-        .replace("{BingMapsAPIKey}", bingKey);
-    this._heightListRequestTemplate =
-      "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}"
-        .replace("{BingMapsAPIKey}", bingKey);
+    this._seaLevelOffsetRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/SeaLevel?points={points}&key={BingMapsAPIKey}"
+      .replace("{BingMapsAPIKey}", bingKey);
+    this._heightListRequestTemplate = "https://dev.virtualearth.net/REST/v1/Elevation/List?points={points}&heights={heights}&key={BingMapsAPIKey}"
+      .replace("{BingMapsAPIKey}", bingKey);
   }
 
   /** Return the height (altitude) at a given cartographic location.
@@ -50,10 +48,9 @@ export class BingElevationProvider {
     if (undefined === carto)
       return 0.0;
 
-    const requestUrl =
-      this._heightListRequestTemplate
-        .replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`)
-        .replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
+    const requestUrl = this._heightListRequestTemplate
+      .replace("{points}", `${carto.latitudeDegrees},${carto.longitudeDegrees}`)
+      .replace("{heights}", geodetic ? "ellipsoid" : "sealevel");
 
     try {
       const tileResponseBody = await request(requestUrl, "json");

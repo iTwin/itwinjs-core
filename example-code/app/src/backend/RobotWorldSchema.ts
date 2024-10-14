@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
 import { ClassRegistry, IModelDb, IModelHost, Schema, Schemas, SpatialCategory } from "@itwin/core-backend";
 import { ColorByName, IModelError, IModelStatus, SubCategoryAppearance } from "@itwin/core-common";
+import * as path from "path";
 import * as _schemaNames from "../common/RobotWorldSchema";
 import * as obstacles from "./BarrierElement";
 
@@ -23,10 +23,11 @@ import * as robots from "./RobotElement";
  * definition. You would then edit the generated TypeScript class to add methods.
  */
 export class RobotWorld extends Schema {
-  public static override get schemaName(): string { return "RobotWorld"; }
+  public static override get schemaName(): string {
+    return "RobotWorld";
+  }
   /** An app must call this to register the RobotWorld schema prior to using it. */
   public static registerSchema() {
-
     // Make sure that this Schema is registered.
     // An app may call this more than once. Make sure that's harmless.
     if (this !== Schemas.getRegisteredSchema(RobotWorld.name)) {

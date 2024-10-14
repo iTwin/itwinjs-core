@@ -2,16 +2,43 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, ComputeRangesForTextLayout, ComputeRangesForTextLayoutArgs, FindFontId, FindTextStyle, layoutTextBlock, LineLayout, RunLayout, TextBlockLayout, TextLayoutRanges } from "../../TextAnnotationLayout";
+import { Id64, ProcessDetector } from "@itwin/core-bentley";
+import {
+  ColorDef,
+  FontMap,
+  FractionRun,
+  LineBreakRun,
+  LineLayoutResult,
+  Run,
+  RunLayoutResult,
+  TextAnnotation,
+  TextAnnotation2dProps,
+  TextAnnotation3dProps,
+  TextBlock,
+  TextBlockGeometryPropsEntry,
+  TextRun,
+  TextStyleSettings,
+} from "@itwin/core-common";
 import { Range2d } from "@itwin/core-geometry";
-import { ColorDef, FontMap, FractionRun, LineBreakRun, LineLayoutResult, Run, RunLayoutResult, TextAnnotation, TextAnnotation2dProps, TextAnnotation3dProps, TextBlock, TextBlockGeometryPropsEntry, TextRun, TextStyleSettings } from "@itwin/core-common";
+import { assert, expect } from "chai";
+import { GeometricElement3d } from "../../Element";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { TextAnnotation2d, TextAnnotation3d } from "../../TextAnnotationElement";
 import { produceTextAnnotationGeometry } from "../../TextAnnotationGeometry";
+import {
+  computeGraphemeOffsets,
+  ComputeGraphemeOffsetsArgs,
+  ComputeRangesForTextLayout,
+  ComputeRangesForTextLayoutArgs,
+  FindFontId,
+  FindTextStyle,
+  layoutTextBlock,
+  LineLayout,
+  RunLayout,
+  TextBlockLayout,
+  TextLayoutRanges,
+} from "../../TextAnnotationLayout";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { GeometricElement3d } from "../../Element";
-import { Id64, ProcessDetector } from "@itwin/core-bentley";
 
 function computeTextRangeAsStringLength(args: ComputeRangesForTextLayoutArgs): TextLayoutRanges {
   const range = new Range2d(0, 0, args.chars.length, args.lineHeight);
@@ -47,14 +74,15 @@ function isIntlSupported(): boolean {
 
 describe("layoutTextBlock", () => {
   it("resolves TextStyleSettings from combination of TextBlock and Run", () => {
-    const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 }});
-    const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 }});
-    const run1 = TextRun.create({ content: "run1", styleName: "run", styleOverrides: { widthFactor: 78, fontName: "run1" }});
+    const textBlock = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 34, color: 0x00ff00 } });
+    const run0 = TextRun.create({ content: "run0", styleName: "run", styleOverrides: { lineHeight: 56, color: 0xff0000 } });
+    const run1 = TextRun.create({ content: "run1", styleName: "run", styleOverrides: { widthFactor: 78, fontName: "run1" } });
     textBlock.appendRun(run0);
     textBlock.appendRun(run1);
 
-    const tb = doLayout(textBlock,{
-      findTextStyle: (name: string) => TextStyleSettings.fromJSON(name === "block" ? { lineSpacingFactor: 12, fontName: "block" } : { lineSpacingFactor: 99, fontName: "run" }),
+    const tb = doLayout(textBlock, {
+      findTextStyle: (name: string) =>
+        TextStyleSettings.fromJSON(name === "block" ? { lineSpacingFactor: 12, fontName: "block" } : { lineSpacingFactor: 99, fontName: "run" }),
     });
 
     expect(tb.lines.length).to.equal(1);
@@ -119,7 +147,7 @@ describe("layoutTextBlock", () => {
         expect(line.range.low.y).to.equal(0);
         expect(line.range.high.y).to.equal(1);
         expect(line.range.high.x).to.equal(3 * (l + 1));
-        for (const run of line.runs){
+        for (const run of line.runs) {
           expect(run.charOffset).to.equal(0);
           expect(run.numChars).to.equal(3);
           expect(run.range.low.x).to.equal(0);
@@ -145,7 +173,7 @@ describe("layoutTextBlock", () => {
     textBlock.appendRun(TextRun.create({ styleName: "", content: "def" }));
     textBlock.appendRun(TextRun.create({ styleName: "", content: "ghi" }));
     textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl"}));
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl" }));
 
     const tb = doLayout(textBlock);
     expect(tb.lines.length).to.equal(3);
@@ -168,7 +196,7 @@ describe("layoutTextBlock", () => {
     textBlock.appendRun(TextRun.create({ styleName: "", content: "def" }));
     textBlock.appendRun(TextRun.create({ styleName: "", content: "ghi" }));
     textBlock.appendRun(LineBreakRun.create({ styleName: "" }));
-    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl"}));
+    textBlock.appendRun(TextRun.create({ styleName: "", content: "jkl" }));
 
     const tb = doLayout(textBlock);
     expect(tb.lines.length).to.equal(3);
@@ -188,7 +216,7 @@ describe("layoutTextBlock", () => {
     expect(tb.lines.every((line) => line.offsetFromDocument.x === 0)).to.be.true;
   });
 
-  it("splits paragraphs into multiple lines if runs exceed the document width", function () {
+  it("splits paragraphs into multiple lines if runs exceed the document width", function() {
     if (!isIntlSupported()) {
       this.skip();
     }
@@ -224,7 +252,7 @@ describe("layoutTextBlock", () => {
     expect(range.yLength()).to.equal(height);
   }
 
-  it("computes range for wrapped lines", function () {
+  it("computes range for wrapped lines", function() {
     if (!isIntlSupported()) {
       this.skip();
     }
@@ -257,7 +285,7 @@ describe("layoutTextBlock", () => {
     expectBlockRange(10, 2);
   });
 
-  it("computes range for split runs", function () {
+  it("computes range for split runs", function() {
     if (!isIntlSupported()) {
       this.skip();
     }
@@ -280,7 +308,7 @@ describe("layoutTextBlock", () => {
     expectBlockRange(10, 2);
   });
 
-  it("justifies lines", function () {
+  it("justifies lines", function() {
     if (!isIntlSupported()) {
       this.skip();
     }
@@ -363,13 +391,16 @@ describe("layoutTextBlock", () => {
     const layout = doLayout(textBlock);
     expect(layout.lines.every((line) => line.runs.every((r) => r.source === run))).to.be.true;
 
-    const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
+    const actual = layout.lines.map((line) =>
+      line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars))
+        .join("")
+    );
     expect(actual).to.deep.equal(expectedLines);
 
     return layout;
   }
 
-  it("splits a single TextRun at word boundaries if it exceeds the document width", function () {
+  it("splits a single TextRun at word boundaries if it exceeds the document width", function() {
     if (!isIntlSupported()) {
       this.skip();
     }
@@ -415,7 +446,7 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it("considers consecutive whitespace part of a single 'word'", function () {
+  it("considers consecutive whitespace part of a single 'word'", function() {
     if (!isIntlSupported()) {
       this.skip();
     }
@@ -430,16 +461,16 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it("wraps Japanese text", function () {
+  it("wraps Japanese text", function() {
     if (!isIntlSupported()) {
       this.skip();
     }
 
     // "I am a cat. The name is Tanuki."
-    expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾","輩","は","猫","で","あ","る。","名","前","は","た","ぬ","き。"]);
+    expectLines("吾輩は猫である。名前はたぬき。", 1, ["吾", "輩", "は", "猫", "で", "あ", "る。", "名", "前", "は", "た", "ぬ", "き。"]);
   });
 
-  it("performs word-wrapping with punctuation", function () {
+  it("performs word-wrapping with punctuation", function() {
     if (!isIntlSupported()) {
       this.skip();
     }
@@ -459,7 +490,7 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it("performs word-wrapping and line-splitting with multiple runs", function () {
+  it("performs word-wrapping and line-splitting with multiple runs", function() {
     if (!isIntlSupported()) {
       this.skip();
     }
@@ -472,7 +503,10 @@ describe("layoutTextBlock", () => {
     function test(width: number, expected: string[]): void {
       textBlock.width = width;
       const layout = doLayout(textBlock);
-      const actual = layout.lines.map((line) => line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars)).join(""));
+      const actual = layout.lines.map((line) =>
+        line.runs.map((runLayout) => (runLayout.source as TextRun).content.substring(runLayout.charOffset, runLayout.charOffset + runLayout.numChars))
+          .join("")
+      );
       expect(actual).to.deep.equal(expected);
     }
 
@@ -507,7 +541,7 @@ describe("layoutTextBlock", () => {
     ]);
   });
 
-  it("wraps multiple runs", function () {
+  it("wraps multiple runs", function() {
     if (!isIntlSupported()) {
       this.skip();
     }
@@ -551,13 +585,13 @@ describe("layoutTextBlock", () => {
     expectLayout(-2, "aabb ccc d eeff ggg h");
   });
 
-  it("has consistent data when converted to a layout result", function () {
+  it("has consistent data when converted to a layout result", function() {
     if (!isIntlSupported()) {
       this.skip();
     }
 
     // Initialize a new TextBlockLayout object
-    const textBlock = TextBlock.create({ width: 50, styleName: "", styleOverrides: { widthFactor: 34, color: 0x00ff00, fontName: "arial" }});
+    const textBlock = TextBlock.create({ width: 50, styleName: "", styleOverrides: { widthFactor: 34, color: 0x00ff00, fontName: "arial" } });
     const run0 = TextRun.create({
       content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus pretium mi sit amet magna malesuada, at venenatis ante eleifend.",
       styleName: "",
@@ -569,7 +603,8 @@ describe("layoutTextBlock", () => {
       styleOverrides: { widthFactor: 78, fontName: "run1" },
     });
     const run2 = TextRun.create({
-      content: "Duis dui quam, suscipit quis feugiat id, fermentum ut augue. Mauris iaculis odio rhoncus lorem eleifend, posuere viverra turpis elementum.",
+      content:
+        "Duis dui quam, suscipit quis feugiat id, fermentum ut augue. Mauris iaculis odio rhoncus lorem eleifend, posuere viverra turpis elementum.",
       styleName: "",
       styleOverrides: {},
     });
@@ -592,7 +627,8 @@ describe("layoutTextBlock", () => {
           }
           return 0;
         },
-      });
+      },
+    );
     const result = textBlockLayout.toResult();
 
     // Assert that the result object has the same data as the original TextBlockLayout object
@@ -600,7 +636,7 @@ describe("layoutTextBlock", () => {
     expect(result.lines.length).to.equal(textBlockLayout.lines.length);
 
     // Loop through each line in the result and the original object
-    for(let i = 0; i < result.lines.length; i++) {
+    for (let i = 0; i < result.lines.length; i++) {
       const resultLine: LineLayoutResult = result.lines[i];
       const originalLine: LineLayout = textBlockLayout.lines[i];
 
@@ -612,7 +648,7 @@ describe("layoutTextBlock", () => {
       // Offset matches
       expect(resultLine.offsetFromDocument).to.deep.equal(originalLine.offsetFromDocument);
 
-      for(let j = 0; j < resultLine.runs.length; j++) {
+      for (let j = 0; j < resultLine.runs.length; j++) {
         const resultRun: RunLayoutResult = resultLine.runs[j];
         const originalRun: RunLayout = originalLine.runs[j];
 
@@ -668,7 +704,7 @@ describe("layoutTextBlock", () => {
   });
 
   describe("grapheme offsets", () => {
-    it("should return an empty array if source type is not text", function () {
+    it("should return an empty array if source type is not text", function() {
       const textBlock = TextBlock.create({ styleName: "" });
       const fractionRun = FractionRun.create({ numerator: "1", denominator: "2", styleName: "fraction" });
       textBlock.appendRun(fractionRun);
@@ -690,7 +726,7 @@ describe("layoutTextBlock", () => {
       expect(graphemeRanges).to.be.an("array").that.is.empty;
     });
 
-    it("should handle empty text content", function () {
+    it("should handle empty text content", function() {
       const textBlock = TextBlock.create({ styleName: "" });
       const textRun = TextRun.create({ content: "", styleName: "text" });
       textBlock.appendRun(textRun);
@@ -712,7 +748,7 @@ describe("layoutTextBlock", () => {
       expect(graphemeRanges).to.be.an("array").that.is.empty;
     });
 
-    it("should compute grapheme offsets correctly for a given text", function () {
+    it("should compute grapheme offsets correctly for a given text", function() {
       const textBlock = TextBlock.create({ styleName: "" });
       const textRun = TextRun.create({ content: "hello", styleName: "text" });
       textBlock.appendRun(textRun);
@@ -736,7 +772,7 @@ describe("layoutTextBlock", () => {
       expect(graphemeRanges[4].high.x).to.equal(5);
     });
 
-    it("should compute grapheme offsets correctly for non-English text", function () {
+    it("should compute grapheme offsets correctly for non-English text", function() {
       const textBlock = TextBlock.create({ styleName: "" });
       // Hindi - "Paragraph"
       const textRun = TextRun.create({ content: "अनुच्छेद", styleName: "text" });
@@ -763,7 +799,7 @@ describe("layoutTextBlock", () => {
       expect(graphemeRanges[3].high.x).to.equal(8);
     });
 
-    it("should compute grapheme offsets correctly for emoji content", function () {
+    it("should compute grapheme offsets correctly for emoji content", function() {
       const textBlock = TextBlock.create({ styleName: "" });
       const textRun = TextRun.create({ content: "👨‍👦", styleName: "text" });
       textBlock.appendRun(textRun);
@@ -831,7 +867,9 @@ describe("layoutTextBlock", () => {
       // test("aRIaL", arial);
     });
 
-    function computeDimensions(args: { content?: string, bold?: boolean, italic?: boolean, font?: string, height?: number, width?: number }): { x: number, y: number } {
+    function computeDimensions(
+      args: { content?: string, bold?: boolean, italic?: boolean, font?: string, height?: number, width?: number },
+    ): { x: number, y: number } {
       const textBlock = TextBlock.create({
         styleName: "",
         styleOverrides: {
@@ -889,7 +927,7 @@ describe("layoutTextBlock", () => {
       }
 
       function test(chars: string, expectEqualRanges: boolean): void {
-        const { justification, layout }= computeRanges(chars);
+        const { justification, layout } = computeRanges(chars);
         expect(layout.low.x).to.equal(justification.low.x);
         expect(layout.high.y).to.equal(justification.high.y);
         expect(layout.low.y).to.equal(justification.low.y);
@@ -926,7 +964,9 @@ describe("layoutTextBlock", () => {
 function mockIModel(): IModelDb {
   const iModel: Pick<IModelDb, "fontMap" | "computeRangesForText" | "forEachMetaData"> = {
     fontMap: new FontMap(),
-    computeRangesForText: () => { return { layout: new Range2d(0, 0, 1, 1), justification: new Range2d(0, 0, 1, 1) }; },
+    computeRangesForText: () => {
+      return { layout: new Range2d(0, 0, 1, 1), justification: new Range2d(0, 0, 1, 1) };
+    },
     forEachMetaData: () => undefined,
   };
 
@@ -1012,7 +1052,9 @@ describe("produceTextAnnotationGeometry", () => {
       makeText(ColorDef.green),
       makeBreak(ColorDef.black),
       makeText(ColorDef.green),
-    ]).map((entry) => entry.text ? "text" : (entry.separator ? "sep" : (typeof entry.color === "number" ? ColorDef.fromJSON(entry.color) : entry.color)));
+    ]).map((entry) =>
+      entry.text ? "text" : (entry.separator ? "sep" : (typeof entry.color === "number" ? ColorDef.fromJSON(entry.color) : entry.color))
+    );
 
     expect(geom).to.deep.equal([
       ColorDef.blue,
@@ -1026,7 +1068,9 @@ describe("produceTextAnnotationGeometry", () => {
       "text",
       "text",
       ColorDef.green,
-      "text", "sep", "text",
+      "text",
+      "sep",
+      "text",
       "text",
       "text",
     ]);

@@ -58,7 +58,6 @@ export class UVSurfaceLocationDetail {
     detail.point.setFromPoint3d(point);
     return detail;
   }
-
 }
 /**
  * Carrier for both curve and surface data, e.g. from intersection calculations.

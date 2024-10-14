@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaDifferenceWalker } from "../Differencing/SchemaDifferenceVisitor";
 import { AnySchemaDifference, DifferenceType, SchemaOtherTypes, SchemaType } from "../Differencing/SchemaDifference";
+import { SchemaDifferenceWalker } from "../Differencing/SchemaDifferenceVisitor";
 
 /**
  * A walker that traverses the schema differences in a certain oder and invokes the appropriate
@@ -12,7 +12,6 @@ import { AnySchemaDifference, DifferenceType, SchemaOtherTypes, SchemaType } fro
  * @internal
  */
 export class SchemaMergingWalker extends SchemaDifferenceWalker {
-
   /**
    * Traverses the schema differences and calls the appropriate method on the visitor.
    * This method overrides the derived class method to apply some ordering how the
@@ -22,7 +21,6 @@ export class SchemaMergingWalker extends SchemaDifferenceWalker {
    * @param changeType  Optional type of change to filter by.
    */
   public override async traverse(differences: Array<AnySchemaDifference>, changeType?: DifferenceType): Promise<void> {
-
     const filterByType = (schemaType: SchemaType) => {
       return (entry: AnySchemaDifference) => {
         return entry.schemaType === schemaType && (!changeType || entry.changeType === changeType);

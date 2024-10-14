@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { RelationshipClass, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { ECEditingStatus } from "../../Editing/Exception";
 import { AnyDiagnostic } from "../../ecschema-editing";
+import { ECEditingStatus } from "../../Editing/Exception";
+import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -651,17 +651,21 @@ describe("Relationship Class merger tests", () => {
           schemaType: SchemaOtherTypes.RelationshipConstraint,
           itemName: "BaseRelationship",
           path: "$source",
-          difference: {
-          },
+          difference: {},
         },
       ],
     });
 
     // await expect(merge).to.be.rejectedWith(Error, "ECObjects-1601: The Source-Constraint of 'TargetSchema.BaseRelationship' has multiple constraint classes which requires an abstract constraint to be defined.");
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
+    await expect(merge).to.be.eventually.rejected.then(function(error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.AddConstraintClass);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-      expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from Source constraint of RelationshipClass TargetSchema.BaseRelationship: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
+      expect(error).to.have.nested.property(
+        "innerError.message",
+        `Rule violations occurred from Source constraint of RelationshipClass TargetSchema.BaseRelationship: ${
+          getRuleViolationMessage(error.innerError.ruleViolations)
+        }`,
+      );
     });
   });
 
@@ -711,10 +715,13 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
+    await expect(merge).to.be.eventually.rejected.then(function(error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.AddConstraintClass);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-      expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from RelationshipClass TargetSchema.BaseRelationship: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
+      expect(error).to.have.nested.property(
+        "innerError.message",
+        `Rule violations occurred from RelationshipClass TargetSchema.BaseRelationship: ${getRuleViolationMessage(error.innerError.ruleViolations)}`,
+      );
     });
   });
 
@@ -763,10 +770,13 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
+    await expect(merge).to.be.eventually.rejected.then(function(error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.AddConstraintClass);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-      expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from RelationshipClass TargetSchema.ChildRelationship: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
+      expect(error).to.have.nested.property(
+        "innerError.message",
+        `Rule violations occurred from RelationshipClass TargetSchema.ChildRelationship: ${getRuleViolationMessage(error.innerError.ruleViolations)}`,
+      );
     });
   });
 
@@ -1011,9 +1021,12 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
+    await expect(merge).to.be.eventually.rejected.then(function(error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestRelationship must derive from TestSchema.BaseRelationship.`);
+      expect(error).to.have.nested.property(
+        "innerError.message",
+        `Base class TargetSchema.TestRelationship must derive from TestSchema.BaseRelationship.`,
+      );
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });
   });

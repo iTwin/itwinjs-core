@@ -11,7 +11,8 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { RangeTreeNode, RangeTreeOps } from "./RangeTreeNode";
 import {
-  SingleTreeSearchHandlerForClosestPointInArray, TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach,
+  SingleTreeSearchHandlerForClosestPointInArray,
+  TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach,
 } from "./RangeTreeSearchHandlers";
 
 /**
@@ -52,10 +53,18 @@ export class Point3dArrayRangeTreeContext {
    * @param maxChildPerNode maximum children per range tree node (default 4)
    * @param maxAppDataPerLeaf maximum point indices per leaf node (default 4)
    */
-  public static createCapture(points: Point3d[], maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): Point3dArrayRangeTreeContext | undefined {
+  public static createCapture(
+    points: Point3d[],
+    maxChildPerNode: number = 4,
+    maxAppDataPerLeaf: number = 4,
+  ): Point3dArrayRangeTreeContext | undefined {
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
-      ((index: number): Range3d => { return Range3d.create(points[index]); }),
-      ((index: number): number => { return index; }),
+      (index: number): Range3d => {
+        return Range3d.create(points[index]);
+      },
+      (index: number): number => {
+        return index;
+      },
       points.length,
       maxChildPerNode,
       maxAppDataPerLeaf,
@@ -86,11 +95,14 @@ export class Point3dArrayRangeTreeContext {
    * * detail.point = the point at closest approach
    * * detail.fraction = the index of detail.point in the points array
    * * detail.a = the closest approach distance
-  */
-  public static searchForClosestApproach(contextA: Point3dArrayRangeTreeContext, contextB: Point3dArrayRangeTreeContext, maxDist?: number): CurveLocationDetailPair | CurveLocationDetailPair[] | undefined {
+   */
+  public static searchForClosestApproach(
+    contextA: Point3dArrayRangeTreeContext,
+    contextB: Point3dArrayRangeTreeContext,
+    maxDist?: number,
+  ): CurveLocationDetailPair | CurveLocationDetailPair[] | undefined {
     const handler = new TwoTreeSearchHandlerForPoint3dArrayPoint3dArrayCloseApproach(contextA, contextB, maxDist);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
     return handler.searchState.savedItems.length <= 1 ? handler.getResult() : handler.getSavedItems();
   }
 }
-

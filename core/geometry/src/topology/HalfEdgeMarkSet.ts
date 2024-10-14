@@ -67,7 +67,9 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
     return this._candidates.length;
   }
   /** Read property accessor: return the graph */
-  public get graph(): HalfEdgeGraph { return this._graph; }
+  public get graph(): HalfEdgeGraph {
+    return this._graph;
+  }
 
   /** return borrowed assets (the mask!) to the graph. */
   public teardown() {
@@ -76,7 +78,9 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
     // this._graph = undefined;
   }
   /** (Read property) return the mask used to mark members of the set. */
-  public get mask(): HalfEdgeMask { return this._mask; }
+  public get mask(): HalfEdgeMask {
+    return this._mask;
+  }
 
   /** pop and return the last node out of the array, without testing if it is still marked. */
   protected popAndReturn(): HalfEdge | undefined {
@@ -145,7 +149,7 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
    *  * If unmasked HalfEdges are found in the array, they are removed from the array.
    */
   public chooseAndRemoveAny(): HalfEdge | undefined {
-    for (; ;) {
+    for (;;) {
       const candidate = this.popAndReturn();
       if (!candidate)
         return undefined;
@@ -171,7 +175,9 @@ export abstract class AbstractHalfEdgeGraphMarkSet {
    */
   public abstract countHalfEdgesAroundCandidate(candidate: HalfEdge | undefined): number;
   /** Create an iterator over member HalfEdges */
-  public [Symbol.iterator](): IterableIterator<HalfEdge> { return new IterableHalfEdgeMarkSetIterator(this); }
+  public [Symbol.iterator](): IterableIterator<HalfEdge> {
+    return new IterableHalfEdgeMarkSetIterator(this);
+  }
   /**
    * * visit all half edges around face.
    * * Add each to mark set.
@@ -406,5 +412,7 @@ class IterableHalfEdgeMarkSetIterator implements Iterator<HalfEdge> {
     return { done: true, value: undefined } as any as IteratorResult<HalfEdge>;
   }
 
-  public [Symbol.iterator](): IterableIterator<HalfEdge> { return this; }
+  public [Symbol.iterator](): IterableIterator<HalfEdge> {
+    return this;
+  }
 }

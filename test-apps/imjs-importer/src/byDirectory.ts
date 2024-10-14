@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as yargs from "yargs";
-import * as path from "path";
 import { IModelHost } from "@itwin/core-backend";
+import * as path from "path";
+import * as yargs from "yargs";
 import { ImportIMJS } from "./ImportIMJS";
 
 /* eslint-disable no-console */
@@ -28,8 +28,7 @@ IModelHost.startup().then(async () => {
   if (directoryTail) {
     const fullBimName = path.isAbsolute(outputFileName) ? outputFileName : `d:\\bfiles\\importIMJS\\${directoryTail}.bim`;
     console.log({ outputFile: fullBimName });
-    const importer = ImportIMJS.create(fullBimName,
-      "testSubject");
+    const importer = ImportIMJS.create(fullBimName, "testSubject");
 
     if (!importer) {
       console.log("Failed to create bim file");
@@ -44,7 +43,8 @@ IModelHost.startup().then(async () => {
       for (const group of modelGroups) {
         if (group.modelNames.length > 0) {
           console.log({
-            groupName: group.groupName, numModel: group.modelNames.length,
+            groupName: group.groupName,
+            numModel: group.modelNames.length,
             range: Math.floor(0.999999 + group.range.maxAbs()),
           });
         }
@@ -53,4 +53,4 @@ IModelHost.startup().then(async () => {
   }
   await IModelHost.shutdown();
   console.log("goodbye");
-}).catch(() => { });
+}).catch(() => {});

@@ -24,7 +24,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   /** @internal */
   public static setup = {
     obtainPort: () => 0,
-    checkPlatform: () => typeof (process) !== "undefined" && (process.platform as any) === "ios",
+    checkPlatform: () => typeof process !== "undefined" && (process.platform as any) === "ios",
   };
 
   public abstract override protocol: MobileRpcProtocol;
@@ -46,7 +46,7 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
           }
         }
       }
-    } catch { }
+    } catch {}
     return Object.freeze(queryArgs);
   }
   private static getMobilePlatform(): RpcMobilePlatform {
@@ -73,7 +73,9 @@ export abstract class MobileRpcConfiguration extends RpcConfiguration {
   }
 
   /** Return type of mobile platform using browser userAgent */
-  public static get platform(): RpcMobilePlatform { return MobileRpcConfiguration.getMobilePlatform(); }
+  public static get platform(): RpcMobilePlatform {
+    return MobileRpcConfiguration.getMobilePlatform();
+  }
 }
 
 /** Coordinates usage of RPC interfaces for an Mobile-based application.
@@ -116,4 +118,3 @@ export class MobileRpcManager {
     return MobileRpcManager.performInitialization(interfaces, RpcEndpoint.Backend);
   }
 }
-

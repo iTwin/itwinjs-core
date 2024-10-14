@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@itwin/core-bentley";
-import { createButton, createCheckBox, createLabeledNumericInput, createNestedMenu, LabeledNumericInput } from "@itwin/frontend-devtools";
 import { Atmosphere } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { createButton, createCheckBox, createLabeledNumericInput, createNestedMenu, LabeledNumericInput } from "@itwin/frontend-devtools";
 
 export class AtmosphereEditor {
-
   private readonly _vp: Viewport;
   private readonly _update: (view: ViewState) => void;
 
@@ -83,11 +82,12 @@ export class AtmosphereEditor {
       id: "atmosphere_exposure",
       parent: spanIntensity,
       value: 2.0,
-      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
-        const props = this.getAtmosphereSettingsProps(view);
-        props.exposure = value;
-        return props;
-      }),
+      handler: (value, _) =>
+        this.updateAtmosphere((view): Atmosphere.Props => {
+          const props = this.getAtmosphereSettingsProps(view);
+          props.exposure = value;
+          return props;
+        }),
       min: 0.0,
       max: 1000.0,
       step: 0.1,
@@ -102,11 +102,12 @@ export class AtmosphereEditor {
       id: "atmosphere_atmosphereHeightAboveEarth",
       parent: spanAtmosphereScale,
       value: 100000.0,
-      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
-        const props = this.getAtmosphereSettingsProps(view);
-        props.atmosphereHeightAboveEarth = value;
-        return props;
-      }),
+      handler: (value, _) =>
+        this.updateAtmosphere((view): Atmosphere.Props => {
+          const props = this.getAtmosphereSettingsProps(view);
+          props.atmosphereHeightAboveEarth = value;
+          return props;
+        }),
       min: 0.0,
       max: 1000000.0,
       step: 10000.0,
@@ -117,11 +118,12 @@ export class AtmosphereEditor {
       id: "atmosphere_depthBelowEarthForMaxDensity",
       parent: spanAtmosphereScale,
       value: 0.0,
-      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
-        const props = this.getAtmosphereSettingsProps(view);
-        props.depthBelowEarthForMaxDensity = value;
-        return props;
-      }),
+      handler: (value, _) =>
+        this.updateAtmosphere((view): Atmosphere.Props => {
+          const props = this.getAtmosphereSettingsProps(view);
+          props.depthBelowEarthForMaxDensity = value;
+          return props;
+        }),
       min: 0.0,
       max: 1000000.0,
       step: 10000.0,
@@ -136,11 +138,12 @@ export class AtmosphereEditor {
       id: "atmosphere_scatteringStrength",
       parent: spanScattering,
       value: 100.0,
-      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
-        const props = this.getAtmosphereSettingsProps(view);
-        props.scatteringStrength = value;
-        return props;
-      }),
+      handler: (value, _) =>
+        this.updateAtmosphere((view): Atmosphere.Props => {
+          const props = this.getAtmosphereSettingsProps(view);
+          props.scatteringStrength = value;
+          return props;
+        }),
       min: 0.0,
       max: 1000.0,
       step: 1.0,
@@ -152,13 +155,14 @@ export class AtmosphereEditor {
       id: "atmosphere_wavelengthR",
       parent: spanScattering,
       value: 700.0,
-      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
-        const props = this.getAtmosphereSettingsProps(view);
-        const wavelenghts = props.wavelengths!;
-        wavelenghts.r = value;
-        props.wavelengths = wavelenghts;
-        return props;
-      }),
+      handler: (value, _) =>
+        this.updateAtmosphere((view): Atmosphere.Props => {
+          const props = this.getAtmosphereSettingsProps(view);
+          const wavelenghts = props.wavelengths!;
+          wavelenghts.r = value;
+          props.wavelengths = wavelenghts;
+          return props;
+        }),
       min: 0.0,
       max: 1000.0,
       step: 10,
@@ -171,13 +175,14 @@ export class AtmosphereEditor {
       id: "atmosphere_wavelengthG",
       parent: spanScattering,
       value: 530.0,
-      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
-        const props = this.getAtmosphereSettingsProps(view);
-        const wavelenghts = props.wavelengths!;
-        wavelenghts.g = value;
-        props.wavelengths = wavelenghts;
-        return props;
-      }),
+      handler: (value, _) =>
+        this.updateAtmosphere((view): Atmosphere.Props => {
+          const props = this.getAtmosphereSettingsProps(view);
+          const wavelenghts = props.wavelengths!;
+          wavelenghts.g = value;
+          props.wavelengths = wavelenghts;
+          return props;
+        }),
       min: 0.0,
       max: 1000.0,
       step: 10,
@@ -190,13 +195,14 @@ export class AtmosphereEditor {
       id: "atmosphere_wavelengthB",
       parent: spanScattering,
       value: 400.0,
-      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
-        const props = this.getAtmosphereSettingsProps(view);
-        const wavelenghts = props.wavelengths!;
-        wavelenghts.b = value;
-        props.wavelengths = wavelenghts;
-        return props;
-      }),
+      handler: (value, _) =>
+        this.updateAtmosphere((view): Atmosphere.Props => {
+          const props = this.getAtmosphereSettingsProps(view);
+          const wavelenghts = props.wavelengths!;
+          wavelenghts.b = value;
+          props.wavelengths = wavelenghts;
+          return props;
+        }),
       min: 0.0,
       max: 1000.0,
       step: 10,
@@ -208,11 +214,12 @@ export class AtmosphereEditor {
       id: "atmosphere_densityFalloff",
       parent: atmosphereControlsDiv,
       value: 10.0,
-      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
-        const props = this.getAtmosphereSettingsProps(view);
-        props.densityFalloff = value;
-        return props;
-      }),
+      handler: (value, _) =>
+        this.updateAtmosphere((view): Atmosphere.Props => {
+          const props = this.getAtmosphereSettingsProps(view);
+          props.densityFalloff = value;
+          return props;
+        }),
       min: 0.0,
       max: 1000.0,
       step: 1.0,
@@ -228,11 +235,12 @@ export class AtmosphereEditor {
       id: "atmosphere_numViewRaySamples",
       parent: spanSamplePoints,
       value: 10,
-      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
-        const props = this.getAtmosphereSettingsProps(view);
-        props.numViewRaySamples = value;
-        return props;
-      }),
+      handler: (value, _) =>
+        this.updateAtmosphere((view): Atmosphere.Props => {
+          const props = this.getAtmosphereSettingsProps(view);
+          props.numViewRaySamples = value;
+          return props;
+        }),
       min: 1,
       max: 40,
       step: 1,
@@ -243,11 +251,12 @@ export class AtmosphereEditor {
       id: "atmosphere_numSunRaySamples",
       parent: spanSamplePoints,
       value: 5,
-      handler: (value, _) => this.updateAtmosphere((view): Atmosphere.Props => {
-        const props = this.getAtmosphereSettingsProps(view);
-        props.numSunRaySamples = value;
-        return props;
-      }),
+      handler: (value, _) =>
+        this.updateAtmosphere((view): Atmosphere.Props => {
+          const props = this.getAtmosphereSettingsProps(view);
+          props.numSunRaySamples = value;
+          return props;
+        }),
       min: 1,
       max: 40,
       step: 1,
@@ -305,7 +314,7 @@ export class AtmosphereEditor {
   private updateAtmosphere(updateFunction: (view: ViewState) => Atmosphere.Props) {
     const props = updateFunction(this._vp.view);
     assert(this._vp.view.is3d());
-    const settings = (this._vp.view).getDisplayStyle3d().settings;
+    const settings = this._vp.view.getDisplayStyle3d().settings;
     settings.environment = settings.environment.clone({ atmosphere: Atmosphere.Settings.fromJSON(props) });
     this.sync();
     this.updateAtmosphereUI(this._vp.view);

@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { IModelHost, IModelJsFs } from "@itwin/core-backend";
+import { ProcessDetector } from "@itwin/core-bentley";
+import { RpcManager } from "@itwin/core-common";
+import { Reporter } from "@itwin/perf-tools";
 import { app } from "electron";
 import * as fs from "fs";
 import * as path from "path";
-import { ProcessDetector } from "@itwin/core-bentley";
-import { IModelHost, IModelJsFs } from "@itwin/core-backend";
-import { RpcManager } from "@itwin/core-common";
-import { Reporter } from "@itwin/perf-tools";
+import { DptaEnvConfig, getConfig } from "../common/DisplayPerfEnvConfig";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { addColumnsToCsvFile, addDataToCsvFile, addEndOfTestToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
-import { DptaEnvConfig, getConfig } from "../common/DisplayPerfEnvConfig";
 
 /** The backend implementation of DisplayPerfRpcImpl. */
 export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
@@ -31,7 +31,10 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     }
     let argOutputPath: string | undefined;
     process.argv.forEach((arg, index) => {
-      if (index >= 2 && arg !== "chrome" && arg !== "edge" && arg !== "firefox" && arg !== "safari" && arg !== "headless" && arg !== "no_debug" && arg.split(".").pop() !== "json") {
+      if (
+        index >= 2 && arg !== "chrome" && arg !== "edge" && arg !== "firefox" && arg !== "safari" && arg !== "headless" && arg !== "no_debug" &&
+        arg.split(".").pop() !== "json"
+      ) {
         while (arg.endsWith("\\") || arg.endsWith("\/"))
           arg = arg.slice(0, -1);
         argOutputPath = `"argOutputPath": "${arg}",`;

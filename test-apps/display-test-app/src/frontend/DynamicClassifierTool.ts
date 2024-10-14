@@ -4,8 +4,33 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64 } from "@itwin/core-bentley";
-import { ColorDef, Feature, PlanarClipMaskMode, PlanarClipMaskPriority, SpatialClassifierFlags, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "@itwin/core-common";
-import { BeButtonEvent, DecorateContext, EventHandled, GraphicType, HitDetail, IModelApp, IModelConnection, LocateFilterStatus, LocateResponse, PrimitiveTool, RenderGraphic, SpatialClassifiersState, SpatialModelState, TiledGraphicsProvider, TileTreeReference, Viewport } from "@itwin/core-frontend";
+import {
+  ColorDef,
+  Feature,
+  PlanarClipMaskMode,
+  PlanarClipMaskPriority,
+  SpatialClassifierFlags,
+  SpatialClassifierInsideDisplay,
+  SpatialClassifierOutsideDisplay,
+} from "@itwin/core-common";
+import {
+  BeButtonEvent,
+  DecorateContext,
+  EventHandled,
+  GraphicType,
+  HitDetail,
+  IModelApp,
+  IModelConnection,
+  LocateFilterStatus,
+  LocateResponse,
+  PrimitiveTool,
+  RenderGraphic,
+  SpatialClassifiersState,
+  SpatialModelState,
+  TiledGraphicsProvider,
+  TileTreeReference,
+  Viewport,
+} from "@itwin/core-frontend";
 import { Point3d, Sphere as SpherePrimitive } from "@itwin/core-geometry";
 import { parseArgs } from "@itwin/frontend-devtools";
 
@@ -71,8 +96,12 @@ export class DynamicClassifierTool extends PrimitiveTool {
   private _isVolume = false;
 
   public static override toolId = "DtaClassify";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 4; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 4;
+  }
 
   public override requireWriteableTarget(): boolean {
     return false;
@@ -246,8 +275,12 @@ export class DynamicClipMaskTool extends PrimitiveTool {
   private _priority?: number;
 
   public static override toolId = "DtaClipMask";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 4; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 4;
+  }
 
   public override requireWriteableTarget(): boolean {
     return false;

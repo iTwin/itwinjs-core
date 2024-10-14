@@ -11,7 +11,6 @@ import { Transform, Vector3d, XYZProps, YawPitchRollAngles, YawPitchRollProps } 
 
 /** @public */
 export namespace LineStyle {
-
   /** Modify the line style appearance without changing the line style definition.
    * Applies to the style previously established by a [[GeometryAppearanceProps]] or current [[SubCategoryAppearance]].
    * Most of the modifiers affect the line style stroke pattern, with the orientation and scales being the exception.
@@ -82,10 +81,11 @@ export namespace LineStyle {
 
     /** Compare two LineStyle.Modifier for equivalence */
     public equals(other: Modifier): boolean {
-      if (this === other)   // same pointer
+      if (this === other) // same pointer
         return true;
 
-      if (other.scale !== this.scale ||
+      if (
+        other.scale !== this.scale ||
         other.dashScale !== this.dashScale ||
         other.gapScale !== this.gapScale ||
         other.startWidth !== this.startWidth ||
@@ -94,7 +94,8 @@ export namespace LineStyle {
         other.fractPhase !== this.fractPhase ||
         other.centerPhase !== this.centerPhase ||
         other.segmentMode !== this.segmentMode ||
-        other.physicalWidth !== this.physicalWidth)
+        other.physicalWidth !== this.physicalWidth
+      )
         return false;
 
       if ((this.normal === undefined) !== (other.normal === undefined))

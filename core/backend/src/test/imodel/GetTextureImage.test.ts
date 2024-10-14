@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { TextureLoadProps } from "@itwin/core-common";
+import { expect } from "chai";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -12,7 +12,10 @@ describe("IModelDb.queryTextureData", () => {
   let imodel: SnapshotDb;
 
   before(() => {
-    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("ElementGraphics", "mirukuru.ibim"), IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
+    imodel = IModelTestUtils.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("ElementGraphics", "mirukuru.ibim"),
+      IModelTestUtils.resolveAssetFile("mirukuru.ibim"),
+    );
   });
 
   after(() => imodel.close());
@@ -29,9 +32,15 @@ describe("IModelDb.queryTextureData", () => {
     });
 
     it("if max size is not a positive number", async () => {
-      await expect(imodel.queryTextureData({ name: "0x123", maxTextureSize: "25" } as unknown as TextureLoadProps)).to.be.rejectedWith("maxTextureSize property must be a positive number");
-      await expect(imodel.queryTextureData({ name: "0x123", maxTextureSize: 0 })).to.be.rejectedWith("maxTextureSize property must be a positive number");
-      await expect(imodel.queryTextureData({ name: "0x123", maxTextureSize: -1 })).to.be.rejectedWith("maxTextureSize property must be a positive number");
+      await expect(imodel.queryTextureData({ name: "0x123", maxTextureSize: "25" } as unknown as TextureLoadProps)).to.be.rejectedWith(
+        "maxTextureSize property must be a positive number",
+      );
+      await expect(imodel.queryTextureData({ name: "0x123", maxTextureSize: 0 })).to.be.rejectedWith(
+        "maxTextureSize property must be a positive number",
+      );
+      await expect(imodel.queryTextureData({ name: "0x123", maxTextureSize: -1 })).to.be.rejectedWith(
+        "maxTextureSize property must be a positive number",
+      );
     });
   });
 });

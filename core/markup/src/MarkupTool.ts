@@ -6,9 +6,9 @@
  * @module MarkupTools
  */
 
-import { XAndY } from "@itwin/core-geometry";
 import { BeButton, BeTouchEvent, CoordinateLockOverrides, EventHandled, IModelApp, PrimitiveTool, Viewport } from "@itwin/core-frontend";
-import { G, LinkedHTMLElement, Element as MarkupElement, Text as MarkupText } from "@svgdotjs/svg.js";
+import { XAndY } from "@itwin/core-geometry";
+import { Element as MarkupElement, G, LinkedHTMLElement, Text as MarkupText } from "@svgdotjs/svg.js";
 import { Markup, MarkupApp } from "./Markup";
 
 /** Base class for all tools that operate on Markup elements.
@@ -17,8 +17,12 @@ import { Markup, MarkupApp } from "./Markup";
 export abstract class MarkupTool extends PrimitiveTool {
   public markup!: Markup;
   public static toolKey = "MarkupTools:tools.Markup.";
-  public override requireWriteableTarget(): boolean { return false; }
-  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp === IModelApp.toolAdmin.markupView); }
+  public override requireWriteableTarget(): boolean {
+    return false;
+  }
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
+    return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp === IModelApp.toolAdmin.markupView);
+  }
   public override async onInstall(): Promise<boolean> {
     if (undefined === MarkupApp.markup)
       return false;
@@ -31,15 +35,21 @@ export abstract class MarkupTool extends PrimitiveTool {
     await super.onPostInstall();
     this.setupAndPromptForNextAction();
   }
-  public override async onUnsuspend() { this.showPrompt(); }
-  public async onRestartTool() { return this.exitTool(); }
+  public override async onUnsuspend() {
+    this.showPrompt();
+  }
+  public async onRestartTool() {
+    return this.exitTool();
+  }
 
-  protected showPrompt(): void { }
+  protected showPrompt(): void {}
   protected setupAndPromptForNextAction(): void {
     IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All; // Don't adjust point to ACS or grid...
     this.showPrompt();
   }
-  protected outputMarkupPrompt(msg: string) { IModelApp.notifications.outputPromptByKey(MarkupTool.toolKey + msg); }
+  protected outputMarkupPrompt(msg: string) {
+    IModelApp.notifications.outputPromptByKey(MarkupTool.toolKey + msg);
+  }
 
   public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     if (startEv.isSingleTouch)
@@ -47,9 +57,15 @@ export abstract class MarkupTool extends PrimitiveTool {
     return EventHandled.Yes; // View tools are not allowed during redlining; use touch events to create markup and don't pass event to IdleTool...
   }
 
-  public override async onTouchMove(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+  public override async onTouchMove(ev: BeTouchEvent): Promise<void> {
+    return IModelApp.toolAdmin.convertTouchMoveToMotion(ev);
+  }
+  public override async onTouchComplete(ev: BeTouchEvent): Promise<void> {
+    return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev);
+  }
+  public override async onTouchCancel(ev: BeTouchEvent): Promise<void> {
+    return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset);
+  }
 
   public override async undoPreviousStep(): Promise<boolean> {
     if (await this.onUndoPreviousStep()) // first see if this tool has an "oops" operation.
@@ -84,7 +100,9 @@ export abstract class MarkupTool extends PrimitiveTool {
       element.css({ fill: "none" });
   }
 
-  protected setCurrentTextStyle(element: MarkupElement): void { element.css(MarkupApp.props.active.text); }
+  protected setCurrentTextStyle(element: MarkupElement): void {
+    element.css(MarkupApp.props.active.text);
+  }
 
   /** @internal */
   public createBoxedText(g: G, text: MarkupText) {
@@ -96,5 +114,4 @@ export abstract class MarkupTool extends PrimitiveTool {
     text.addTo(boxedText); // make sure the text is on top
     return boxedText;
   }
-
 }

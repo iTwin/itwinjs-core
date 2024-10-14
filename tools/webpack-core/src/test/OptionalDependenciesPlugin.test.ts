@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
-import { Volume } from "memfs";
 import { expect } from "chai";
-import * as path from "path";
 import * as fs from "fs-extra";
-import { clearCache, clearFileSystem, getTestConfig, runWebpack } from "./TestUtils";
+import { Volume } from "memfs";
+import * as path from "path";
 import { IgnoreOptionalDependenciesPlugin } from "../plugins/OptionalDependenciesPlugin";
 import { resetPaths, setApplicationDir } from "../utils/paths";
+import { clearCache, clearFileSystem, getTestConfig, runWebpack } from "./TestUtils";
 
 describe("OptionalDependenciesPlugin", () => {
   let testConfig: any;
   const vol = new Volume();
 
-  beforeEach(function () {
+  beforeEach(function() {
     setApplicationDir(path.join(__dirname, "assets/optional-dependencies-plugin-test"));
     testConfig = getTestConfig("assets/optional-dependencies-plugin-test/test.js", [new IgnoreOptionalDependenciesPlugin(["foo"])]);
   });
@@ -58,7 +58,8 @@ describe("OptionalDependenciesPlugin", () => {
   it("should ignore non-call use of require", async () => {
     vol.fromJSON({
       "lib/test/assets/optional-dependencies-plugin-test/test.js": `const foo = require("foo");`,
-      "lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/index.js": `const optional = true;let req = (optional) ? require : console.log;const bar = req("./bar");`,
+      "lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/index.js":
+        `const optional = true;let req = (optional) ? require : console.log;const bar = req("./bar");`,
       "lib/test/assets/optional-dependencies-plugin-test/node_modules/foo/bar.js": `console.log("This is bar");`,
     });
 

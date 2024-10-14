@@ -3,12 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, FeatureOverrideType, LinePixels, RgbColor } from "@itwin/core-common";
 import {
-  EmphasizeElements, FeatureSymbology, IModelConnection, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
+  EmphasizeElements,
+  FeatureSymbology,
+  IModelConnection,
+  ScreenViewport,
+  SnapshotConnection,
+  SpatialViewState,
+  StandardViewId,
 } from "@itwin/core-frontend";
+import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
 
 describe("EmphasizeElements tests", () => {
@@ -351,7 +357,10 @@ describe("EmphasizeElements tests", () => {
     EmphasizeElements.clear(vp);
     const emph = EmphasizeElements.getOrCreate(vp);
 
-    interface ColorEntry { color: ColorDef, overrideType: FeatureOverrideType }
+    interface ColorEntry {
+      color: ColorDef;
+      overrideType: FeatureOverrideType;
+    }
     const overrides: ColorEntry[] = [];
     overrides.push({ color: ColorDef.from(200, 150, 100, 50), overrideType: FeatureOverrideType.ColorOnly });
     overrides.push({ color: ColorDef.from(200, 150, 100, 50), overrideType: FeatureOverrideType.AlphaOnly });

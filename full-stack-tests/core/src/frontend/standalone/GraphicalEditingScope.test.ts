@@ -2,15 +2,32 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
+import { BatchType, ChangedEntities, ElementGeometryChange, IModelError, RenderSchedule } from "@itwin/core-common";
+import {
+  BriefcaseConnection,
+  DynamicIModelTile,
+  GeometricModel3dState,
+  GraphicalEditingScope,
+  IModelTileTree,
+  IModelTileTreeParams,
+  OnScreenTarget,
+  TileLoadPriority,
+} from "@itwin/core-frontend";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import { BeDuration, compareStrings, DbOpcode, Guid, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { BatchType, ChangedEntities, ElementGeometryChange, IModelError, RenderSchedule } from "@itwin/core-common";
 import {
-  BriefcaseConnection, DynamicIModelTile, GeometricModel3dState, GraphicalEditingScope, IModelTileTree, IModelTileTreeParams, OnScreenTarget, TileLoadPriority } from "@itwin/core-frontend";
-import { addAllowedChannel, coreFullStackTestIpc, deleteElements, initializeEditTools, insertLineElement, makeLineSegment, makeModelCode, transformElements } from "../Editing";
+  addAllowedChannel,
+  coreFullStackTestIpc,
+  deleteElements,
+  initializeEditTools,
+  insertLineElement,
+  makeLineSegment,
+  makeModelCode,
+  transformElements,
+} from "../Editing";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
 
@@ -147,7 +164,10 @@ describe("GraphicalEditingScope", () => {
 
     it.skip("accumulates geometry changes", async () => {
       imodel = await openWritable();
-      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(
+        imodel.key,
+        await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue()),
+      );
       const dictModelId = await imodel.models.getDictionaryModel();
       const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       await imodel.saveChanges();
@@ -249,7 +269,10 @@ describe("GraphicalEditingScope", () => {
       imodel = await openWritable();
 
       // Initial geometric model contains one line element.
-      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(
+        imodel.key,
+        await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue()),
+      );
       const dictModelId = await imodel.models.getDictionaryModel();
       const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       const elem1 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(10, 0, 0)));
@@ -295,7 +318,12 @@ describe("GraphicalEditingScope", () => {
         return new IModelTileTree(params, { edges: false, type: BatchType.Primary });
       }
 
-      const expectTreeState = async (tree: IModelTileTree | IModelTileTree[], expectedState: "static" | "interactive" | "dynamic" | "disposed", expectedHiddenElementCount: number, expectedRange: Range3d) => {
+      const expectTreeState = async (
+        tree: IModelTileTree | IModelTileTree[],
+        expectedState: "static" | "interactive" | "dynamic" | "disposed",
+        expectedHiddenElementCount: number,
+        expectedRange: Range3d,
+      ) => {
         // ###TODO: After we switch from polling for native events, we should not need to wait for changed events to be fetched here...
         const waitTime = 150;
         await BeDuration.wait(waitTime);
@@ -390,7 +418,10 @@ describe("GraphicalEditingScope", () => {
       imodel = await openWritable();
 
       // Initial geometric model contains one line element.
-      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
+      const modelId = await coreFullStackTestIpc.createAndInsertPhysicalModel(
+        imodel.key,
+        await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue()),
+      );
       const dictModelId = await imodel.models.getDictionaryModel();
       const category = await coreFullStackTestIpc.createAndInsertSpatialCategory(imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       const elem1 = await insertLineElement(imodel, modelId, category, makeLineSegment(new Point3d(0, 0, 0), new Point3d(4, 4, 4)));
@@ -517,7 +548,8 @@ describe("GraphicalEditingScope", () => {
                 green: 0,
                 blue: 0,
               },
-            }],
+            },
+          ],
         }],
       }];
 
@@ -546,5 +578,4 @@ describe("GraphicalEditingScope", () => {
       await scope.exit();
     });
   }
-
 });

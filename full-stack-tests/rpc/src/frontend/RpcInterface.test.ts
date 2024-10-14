@@ -2,20 +2,46 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
+import { BentleyError, ProcessDetector } from "@itwin/core-bentley";
+import {
+  ChangesetIdWithIndex,
+  IModelReadRpcInterface,
+  IModelRpcProps,
+  NoContentError,
+  RpcConfiguration,
+  RpcInterface,
+  RpcInterfaceDefinition,
+  RpcManager,
+  RpcOperation,
+  RpcOperationPolicy,
+  RpcProtocol,
+  RpcProtocolEvent,
+  RpcRequest,
+  RpcRequestEvent,
+  RpcRequestStatus,
+  RpcResponseCacheControl,
+  RpcSerializedValue,
+  SerializedRpcActivity,
+  WebAppRpcRequest,
+  WipRpcInterface,
+} from "@itwin/core-common";
 import { Buffer } from "buffer";
 import { assert } from "chai";
 import * as semver from "semver";
-import { BentleyError, ProcessDetector } from "@itwin/core-bentley";
-import { executeBackendCallback } from "@itwin/certa/lib/utils/CallbackUtils";
-import {
-  ChangesetIdWithIndex, IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager,
-  RpcOperation, RpcOperationPolicy, RpcProtocol, RpcProtocolEvent, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue,
-  SerializedRpcActivity, WebAppRpcRequest, WipRpcInterface,
-} from "@itwin/core-common";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import {
-  AttachedInterface, MultipleClientsInterface, RpcTransportTest, RpcTransportTestImpl, TestNotFoundResponse, TestNotFoundResponseCode, TestOp1Params,
-  TestRpcInterface, TestRpcInterface2, TokenValues, ZeroMajorRpcInterface,
+  AttachedInterface,
+  MultipleClientsInterface,
+  RpcTransportTest,
+  RpcTransportTestImpl,
+  TestNotFoundResponse,
+  TestNotFoundResponseCode,
+  TestOp1Params,
+  TestRpcInterface,
+  TestRpcInterface2,
+  TokenValues,
+  ZeroMajorRpcInterface,
 } from "../common/TestRpcInterface";
 import { currentEnvironment } from "./_Setup.test";
 
@@ -30,13 +56,20 @@ describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
     public static readonly interfaceName = "LocalInterface";
     public static interfaceVersion = "0.0.0";
-    public async op(): Promise<void> { return this.forward(arguments); }
+    public async op(): Promise<void> {
+      return this.forward(arguments);
+    }
   }
 
   const initializeLocalInterface = () => {
-    RpcManager.registerImpl(LocalInterface, class extends RpcInterface {
-      public async op(): Promise<void> { return undefined as any; }
-    });
+    RpcManager.registerImpl(
+      LocalInterface,
+      class extends RpcInterface {
+        public async op(): Promise<void> {
+          return undefined as any;
+        }
+      },
+    );
 
     RpcManager.initializeInterface(LocalInterface);
   };
@@ -237,11 +270,15 @@ describe("RpcInterface", () => {
     const simulateIncompatible = () => {
       const interfaces: string[] = [];
       ((controlChannel as any)._configuration as RpcConfiguration).interfaces().forEach((definition) => {
-        interfaces.push(definition.interfaceName === "IModelReadRpcInterface" ? `${definition.interfaceName}@0.0.0` : `${definition.interfaceName}@${definition.interfaceVersion}`);
+        interfaces.push(
+          definition.interfaceName === "IModelReadRpcInterface"
+            ? `${definition.interfaceName}@0.0.0`
+            : `${definition.interfaceName}@${definition.interfaceVersion}`,
+        );
       });
 
       const id = interfaces.sort().join(",");
-      if (typeof (btoa) !== "undefined") // eslint-disable-line deprecation/deprecation
+      if (typeof btoa !== "undefined") // eslint-disable-line deprecation/deprecation
         return btoa(id); // eslint-disable-line deprecation/deprecation
       return Buffer.from(id, "binary").toString("base64");
     };
@@ -264,7 +301,7 @@ describe("RpcInterface", () => {
     assert.isFalse(endpointsMismatch[0].compatible);
     removeListener();
 
-    controlPolicy.sentCallback = () => { };
+    controlPolicy.sentCallback = () => {};
     Object.defineProperty(controlInterface, "interfaceName", { value: originalName });
     assert(await executeBackendCallback(BackendTestCallbacks.restoreIncompatibleInterfaceVersion));
 
@@ -481,7 +518,7 @@ describe("RpcInterface", () => {
       assert.isTrue((request as any)._request.method === "get", "Expected request to be a get request!");
   });
 
-  it("should set cache-control headers when applicable", async function () {
+  it("should set cache-control headers when applicable", async function() {
     if (currentEnvironment === "websocket") {
       return this.skip();
     }
@@ -566,17 +603,19 @@ describe("RpcInterface", () => {
     class TestInterface extends RpcInterface {
       public static interfaceName = "TestInterface";
       public static interfaceVersion = "0.0.0";
-      public req1() { }
-      public req2() { }
-      public req3() { }
+      public req1() {}
+      public req2() {}
+      public req3() {}
     }
 
     RpcManager.initializeInterface(TestInterface);
 
     class Resolver<T> {
       public promise: Promise<T>;
-      public resolve() { }
-      constructor(private _value: () => T) { this.promise = new Promise((callback, _) => this.resolve = () => callback(this._value())); }
+      public resolve() {}
+      constructor(private _value: () => T) {
+        this.promise = new Promise((callback, _) => this.resolve = () => callback(this._value()));
+      }
     }
 
     const backend: Map<string, Resolver<number>> = new Map();
@@ -586,7 +625,7 @@ describe("RpcInterface", () => {
     let completed = 0;
 
     class TestRequest extends RpcRequest {
-      protected setHeader(_name: string, _value: string): void { }
+      protected setHeader(_name: string, _value: string): void {}
 
       protected async send(): Promise<number> {
         assert.isFalse(backend.has(this.id));

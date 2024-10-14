@@ -3,29 +3,38 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
+import { describe, expect, it } from "vitest";
+import { Atmosphere } from "../Atmosphere";
 import { BackgroundMapType } from "../BackgroundMapProvider";
 import { GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
 import {
-  DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStylePlanarClipMaskProps, DisplayStyleSettings, MonochromeMode,
+  DisplayStyle3dSettings,
+  DisplayStyle3dSettingsProps,
+  DisplayStyleOverridesOptions,
+  DisplayStylePlanarClipMaskProps,
+  DisplayStyleSettings,
+  MonochromeMode,
 } from "../DisplayStyleSettings";
+import { GroundPlane } from "../GroundPlane";
 import { LinePixels } from "../LinePixels";
+import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
+import { SkyGradient } from "../SkyBox";
 import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification";
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
-import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
 import { WhiteOnWhiteReversalProps, WhiteOnWhiteReversalSettings } from "../WhiteOnWhiteReversalSettings";
-import { SkyGradient } from "../SkyBox";
-import { GroundPlane } from "../GroundPlane";
-import { Atmosphere } from "../Atmosphere";
 
 describe("DisplayStyleSettings", () => {
   describe("whiteOnWhiteReversal", () => {
     it("round-trips through JSON", () => {
-      function test(props: WhiteOnWhiteReversalProps | undefined, newSettings: WhiteOnWhiteReversalSettings, expected?: WhiteOnWhiteReversalProps | "input"): void {
+      function test(
+        props: WhiteOnWhiteReversalProps | undefined,
+        newSettings: WhiteOnWhiteReversalSettings,
+        expected?: WhiteOnWhiteReversalProps | "input",
+      ): void {
         const styleProps = { styles: props ? { whiteOnWhiteReversal: props } : {} };
         const style = new DisplayStyle3dSettings(styleProps);
         style.whiteOnWhiteReversal = newSettings;
@@ -70,7 +79,9 @@ describe("DisplayStyleSettings", () => {
   });
 
   describe("plan projection settings", () => {
-    interface SettingsMap { [modelId: string]: PlanProjectionSettingsProps }
+    interface SettingsMap {
+      [modelId: string]: PlanProjectionSettingsProps;
+    }
 
     it("round-trips plan projection settings", () => {
       const roundTrip = (planProjections: SettingsMap | undefined) => {
@@ -95,9 +106,10 @@ describe("DisplayStyleSettings", () => {
           expected = planProjections;
 
         const input = new DisplayStyle3dSettings({});
-        if (undefined !== planProjections)
+        if (undefined !== planProjections) {
           for (const modelId of Object.keys(planProjections))
             input.setPlanProjectionSettings(modelId, PlanProjectionSettings.fromJSON(planProjections[modelId]));
+        }
 
         const output = new DisplayStyle3dSettings({ styles: input.toJSON() });
         const json = output.toJSON();
@@ -121,9 +133,10 @@ describe("DisplayStyleSettings", () => {
       const countSettings = () => {
         let count = 0;
         const iter = settings.planProjectionSettings;
-        if (undefined !== iter)
+        if (undefined !== iter) {
           for (const _entry of iter) // eslint-disable-line @typescript-eslint/naming-convention
             ++count;
+        }
 
         return count;
       };
@@ -252,16 +265,21 @@ describe("DisplayStyleSettings", () => {
       expectMasks([{ modelId: "0x1", mode: PlanarClipMaskMode.None }], []);
 
       expectMasks([makeProps(123, "0x456")], [["0x456", makeSettings(123)]]);
-      expectMasks([makeProps(5, "0x1"), makeProps(1, "0x5"), makeProps(3, "0x3")], [["0x1", makeSettings(5)], ["0x5", makeSettings(1)], ["0x3", makeSettings(3)]]);
+      expectMasks([makeProps(5, "0x1"), makeProps(1, "0x5"), makeProps(3, "0x3")], [["0x1", makeSettings(5)], ["0x5", makeSettings(1)], [
+        "0x3",
+        makeSettings(3),
+      ]]);
 
       expectMasks([makeProps(1, "0x1"), makeProps(2, "0x1")], [["0x1", makeSettings(2)]]);
     });
 
     it("synchronizes JSON and in-memory representations", () => {
-      function expectMasks(initialProps: DisplayStylePlanarClipMaskProps[] | undefined,
+      function expectMasks(
+        initialProps: DisplayStylePlanarClipMaskProps[] | undefined,
         func: (masks: Map<Id64String, PlanarClipMaskSettings>, style: DisplayStyleSettings) => void,
         expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>,
-        expectedProps: DisplayStylePlanarClipMaskProps[] | undefined) {
+        expectedProps: DisplayStylePlanarClipMaskProps[] | undefined,
+      ) {
         const styleProps = initialProps ? { styles: { planarClipOvr: initialProps } } : {};
         const style = new DisplayStyleSettings(styleProps);
 
@@ -271,29 +289,41 @@ describe("DisplayStyleSettings", () => {
         expect(style.toJSON().planarClipOvr).to.deep.equal(expectedProps);
       }
 
-      expectMasks(undefined, (map) => {
-        map.set("0x2", makeSettings(2));
-        map.set("0x1", makeSettings(1));
-        map.set("0x3", makeSettings(3));
-      }, [["0x2", makeSettings(2)], ["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
-      [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")]);
+      expectMasks(
+        undefined,
+        (map) => {
+          map.set("0x2", makeSettings(2));
+          map.set("0x1", makeSettings(1));
+          map.set("0x3", makeSettings(3));
+        },
+        [["0x2", makeSettings(2)], ["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
+        [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")],
+      );
 
-      expectMasks([makeProps(1, "0x1")], (map) => map.set("0x1", makeSettings(2)),
-        [["0x1", makeSettings(2)]], [makeProps(2, "0x1")]);
+      expectMasks([makeProps(1, "0x1")], (map) => map.set("0x1", makeSettings(2)), [["0x1", makeSettings(2)]], [makeProps(2, "0x1")]);
 
-      expectMasks([makeProps(1, "0x1"), makeProps(3, "0x3"), makeProps(2, "0x2")], (map) => {
-        map.delete("0x2");
-        map.delete("0x4");
-      }, [["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
-      [makeProps(1, "0x1"), makeProps(3, "0x3")]);
+      expectMasks(
+        [makeProps(1, "0x1"), makeProps(3, "0x3"), makeProps(2, "0x2")],
+        (map) => {
+          map.delete("0x2");
+          map.delete("0x4");
+        },
+        [["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
+        [makeProps(1, "0x1"), makeProps(3, "0x3")],
+      );
 
       expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => map.clear(), [], undefined);
 
-      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map, style) => {
-        style.toJSON().planarClipOvr = [makeProps(4, "0x4")];
-        expect(typeof (map as any).populate).to.equal("function");
-        (map as any).populate();
-      }, [["0x4", makeSettings(4)]], [makeProps(4, "0x4")]);
+      expectMasks(
+        [makeProps(1, "0x1"), makeProps(2, "0x2")],
+        (map, style) => {
+          style.toJSON().planarClipOvr = [makeProps(4, "0x4")];
+          expect(typeof (map as any).populate).to.equal("function");
+          (map as any).populate();
+        },
+        [["0x4", makeSettings(4)]],
+        [makeProps(4, "0x4")],
+      );
     });
 
     it("dispatches events", () => {
@@ -360,7 +390,7 @@ describe("DisplayStyleSettings overrides", () => {
     },
     contours: {
       displayContours: false,
-      groups: [ ],
+      groups: [],
     },
     hline: {
       transThreshold: 0x7f,
@@ -547,7 +577,13 @@ describe("DisplayStyleSettings overrides", () => {
 
     roundTrip({ includeITwinSpecific: true }, { ...baseProps, ...iTwinProps, viewflags: vfNoMapNoDec });
     roundTrip({ includeIModelSpecific: true }, { ...baseProps, ...iTwinProps, ...iModelProps, viewflags: vfNoMapNoDec });
-    roundTrip({ includeIModelSpecific: true, includeDrawingAids: true, includeBackgroundMap: true }, { ...baseProps, ...mapProps, ...iTwinProps, ...iModelProps, viewflags });
+    roundTrip({ includeIModelSpecific: true, includeDrawingAids: true, includeBackgroundMap: true }, {
+      ...baseProps,
+      ...mapProps,
+      ...iTwinProps,
+      ...iModelProps,
+      viewflags,
+    });
   });
 
   it("overrides selected settings", () => {

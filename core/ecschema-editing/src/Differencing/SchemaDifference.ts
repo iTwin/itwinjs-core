@@ -6,16 +6,34 @@
  * @module Differencing
  */
 
-import { SchemaDifferenceConflict } from "./SchemaConflicts";
-import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
+import {
+  AnyEnumerator,
+  AnyPropertyProps,
+  ConstantProps,
+  CustomAttribute,
+  CustomAttributeClassProps,
+  EntityClassProps,
+  EnumerationProps,
+  InvertedUnitProps,
+  KindOfQuantityProps,
+  MixinProps,
+  PhenomenonProps,
+  PropertyCategoryProps,
+  RelationshipClassProps,
+  RelationshipConstraintProps,
+  type Schema,
+  SchemaItemFormatProps,
+  SchemaItemProps,
+  SchemaItemType,
+  SchemaItemUnitProps,
+  SchemaReferenceProps,
+  StructClassProps,
+  UnitSystemProps,
+} from "@itwin/ecschema-metadata";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
-import {
-  AnyEnumerator, AnyPropertyProps, ConstantProps, CustomAttribute,
-  CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps,
-  MixinProps, PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, RelationshipConstraintProps,
-  type Schema, SchemaItemFormatProps, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
-} from "@itwin/ecschema-metadata";
+import { SchemaDifferenceConflict } from "./SchemaConflicts";
+import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import { validateDifferences } from "./SchemaDifferenceValidator";
 
 /** Utility-Type to remove possible readonly flags on the given type. */
@@ -29,7 +47,7 @@ type PartialEditable<T> = {
  * by removing the readonly flag if present.
  */
 type SchemaItemProperties<T extends SchemaItemProps> = {
-  [P in keyof PartialEditable<Omit<T, keyof Omit<SchemaItemProps, "label" | "description" | "customAttributes">>>]: T[P]
+  [P in keyof PartialEditable<Omit<T, keyof Omit<SchemaItemProps, "label" | "description" | "customAttributes">>>]: T[P];
 };
 
 /**
@@ -81,11 +99,11 @@ export interface SchemaDifferenceResult {
  * @alpha
  */
 export type AnySchemaDifference =
-  SchemaDifference |
-  SchemaReferenceDifference |
-  AnySchemaItemDifference |
-  AnySchemaItemPathDifference |
-  CustomAttributeDifference;
+  | SchemaDifference
+  | SchemaReferenceDifference
+  | AnySchemaItemDifference
+  | AnySchemaItemPathDifference
+  | CustomAttributeDifference;
 
 /**
  * Differencing entry for changes on a Schema.
@@ -115,39 +133,39 @@ export interface SchemaReferenceDifference {
  * @alpha
  */
 export type AnySchemaItemDifference =
-  AnyClassItemDifference |
-  ConstantDifference |
-  EnumerationDifference |
-  EntityClassMixinDifference |
-  FormatDifference |
-  KindOfQuantityDifference |
-  InvertedUnitDifference |
-  PhenomenonDifference |
-  PropertyCategoryDifference |
-  UnitDifference |
-  UnitSystemDifference;
+  | AnyClassItemDifference
+  | ConstantDifference
+  | EnumerationDifference
+  | EntityClassMixinDifference
+  | FormatDifference
+  | KindOfQuantityDifference
+  | InvertedUnitDifference
+  | PhenomenonDifference
+  | PropertyCategoryDifference
+  | UnitDifference
+  | UnitSystemDifference;
 
 /**
  * Union for supported class Schema Items.
  * @alpha
  */
 export type AnyClassItemDifference =
-  EntityClassDifference |
-  MixinClassDifference |
-  StructClassDifference |
-  CustomAttributeClassDifference |
-  RelationshipClassDifference;
+  | EntityClassDifference
+  | MixinClassDifference
+  | StructClassDifference
+  | CustomAttributeClassDifference
+  | RelationshipClassDifference;
 
 /**
  * Union of all differences that have a path pointing inside a schema item.
  * @alpha
  */
 export type AnySchemaItemPathDifference =
-  RelationshipConstraintDifference |
-  RelationshipConstraintClassDifference |
-  CustomAttributePropertyDifference |
-  EnumeratorDifference |
-  ClassPropertyDifference;
+  | RelationshipConstraintDifference
+  | RelationshipConstraintClassDifference
+  | CustomAttributePropertyDifference
+  | EnumeratorDifference
+  | ClassPropertyDifference;
 
 /**
  * Internal base class for all Schema Item differencing entries.
@@ -287,10 +305,10 @@ export interface ClassPropertyDifference {
  * @alpha
  */
 export type CustomAttributeDifference =
-  CustomAttributeSchemaDifference |
-  CustomAttributeSchemaItemDifference |
-  CustomAttributePropertyDifference |
-  CustomAttributeRelationshipConstraintDifference;
+  | CustomAttributeSchemaDifference
+  | CustomAttributeSchemaItemDifference
+  | CustomAttributePropertyDifference
+  | CustomAttributeRelationshipConstraintDifference;
 
 /**
  * Differencing entry for Custom Attributes on Schema.

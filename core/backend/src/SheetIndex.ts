@@ -6,11 +6,29 @@
  * @module Elements
  */
 
-import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, EntityReferenceSet, IModelError, RelatedElementProps, SheetIndexEntryProps, SheetIndexFolderProps, SheetIndexReferenceProps, SheetReferenceProps } from "@itwin/core-common";
+import { Id64String, IModelStatus } from "@itwin/core-bentley";
+import {
+  BisCodeSpec,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  ElementProps,
+  EntityReferenceSet,
+  IModelError,
+  RelatedElementProps,
+  SheetIndexEntryProps,
+  SheetIndexFolderProps,
+  SheetIndexReferenceProps,
+  SheetReferenceProps,
+} from "@itwin/core-common";
 import { InformationReferenceElement, Sheet } from "./Element";
 import { IModelDb } from "./IModelDb";
-import { Id64String, IModelStatus } from "@itwin/core-bentley";
-import { SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "./NavigationRelationship";
+import {
+  SheetIndexFolderOwnsEntries,
+  SheetIndexOwnsEntries,
+  SheetIndexReferenceRefersToSheetIndex,
+  SheetReferenceRefersToSheet,
+} from "./NavigationRelationship";
 
 /** Arguments used to create a [[SheetIndexEntry]].
  * @beta
@@ -50,7 +68,9 @@ export interface SheetReferenceCreateArgs extends SheetIndexEntryCreateArgs {
  * @beta
  */
 export class SheetIndex extends InformationReferenceElement {
-  public static override get className(): string { return "SheetIndex"; }
+  public static override get className(): string {
+    return "SheetIndex";
+  }
 
   /** Create a Code for a SheetIndex given a name that is meant to be unique within the scope of the specified SheetIndexModel.
    * @param iModel  The IModelDb
@@ -95,9 +115,11 @@ export class SheetIndex extends InformationReferenceElement {
 
 /** The base class for all elements that can participate in a [[SheetIndex]] hierarchy.
  * @beta
-*/
+ */
 export abstract class SheetIndexEntry extends InformationReferenceElement {
-  public static override get className(): string { return "SheetIndexEntry"; }
+  public static override get className(): string {
+    return "SheetIndexEntry";
+  }
   /** Can be used to prioritize or order members within a SheetIndex or SheetIndexFolder. */
   public entryPriority: number;
 
@@ -144,7 +166,9 @@ export abstract class SheetIndexEntry extends InformationReferenceElement {
  * @beta
  */
 export class SheetIndexFolder extends SheetIndexEntry {
-  public static override get className(): string { return "SheetIndexFolder"; }
+  public static override get className(): string {
+    return "SheetIndexFolder";
+  }
 
   /** Create a new SheetIndexFolder
    * @returns The newly constructed SheetIndexFolder element.
@@ -169,9 +193,11 @@ export class SheetIndexFolder extends SheetIndexEntry {
 
 /** A node within one [[SheetIndex]] that incorporates another [[SheetIndex]] as a sub-tree.
  * @beta
-*/
+ */
 export class SheetIndexReference extends SheetIndexEntry {
-  public static override get className(): string { return "SheetIndexReference"; }
+  public static override get className(): string {
+    return "SheetIndexReference";
+  }
 
   /** The bis:SheetIndex that this bis:SheetIndexReference is pointing to. */
   public sheetIndex?: SheetIndexReferenceRefersToSheetIndex;
@@ -231,9 +257,11 @@ export class SheetIndexReference extends SheetIndexEntry {
 
 /** A leaf node in a [[SheetIndex]] that refers to a specific [[Sheet]].
  * @beta
-*/
+ */
 export class SheetReference extends SheetIndexEntry {
-  public static override get className(): string { return "SheetReference"; }
+  public static override get className(): string {
+    return "SheetReference";
+  }
 
   /** The bis:Sheet that this bis:SheetReference is pointing to. */
   public sheet: SheetReferenceRefersToSheet | undefined;

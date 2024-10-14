@@ -3,12 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@itwin/core-bentley";
-import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, ColorByName, ColorDef } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, imageElementFromUrl, IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType,
-  MessageBoxType, Tool,
+  BeButton,
+  BeButtonEvent,
+  Cluster,
+  DecorateContext,
+  GraphicType,
+  imageElementFromUrl,
+  IModelApp,
+  Marker,
+  MarkerImage,
+  MarkerSet,
+  MessageBoxIconType,
+  MessageBoxType,
+  Tool,
 } from "@itwin/core-frontend";
+import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 
 // cspell:ignore lerp
 
@@ -26,7 +37,8 @@ class IncidentMarker extends Marker {
 
   /** Get a color based on severity by interpolating Green(0) -> Amber(15) -> Red(30)  */
   public static makeColor(severity: number): ColorDef {
-    return (severity <= 16 ? ColorDef.green.lerp(this._amber, (severity - 1) / 15.) :
+    return (severity <= 16 ?
+      ColorDef.green.lerp(this._amber, (severity - 1) / 15.) :
       this._amber.lerp(ColorDef.red, (severity - 16) / 14.));
   }
 
@@ -59,7 +71,6 @@ class IncidentMarker extends Marker {
    * but that effect isn't always desireable.
    *
    * World decorations for markers are completely optional. If you don't want anything drawn with WorldDecorations, don't follow this example.
-   *
    */
   public override addMarker(context: DecorateContext) {
     super.addMarker(context);
@@ -155,7 +166,9 @@ export class IncidentMarkerDemo {
   private static _numMarkers = 500;
   public static decorator?: IncidentMarkerDemo; // static variable so we can tell if the demo is active.
 
-  public get warningSign() { return this._images[0]; }
+  public get warningSign() {
+    return this._images[0];
+  }
 
   // Load one image, logging if there was an error
   private async loadOne(src: string) {

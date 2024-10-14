@@ -7,9 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {
-  IModelApp, ScreenSpaceEffectBuilder, ScreenSpaceEffectSource, Tool,
-} from "@itwin/core-frontend";
+import { IModelApp, ScreenSpaceEffectBuilder, ScreenSpaceEffectSource, Tool } from "@itwin/core-frontend";
 
 /** Adds a screen-space effect to the selected viewport.
  * @beta
@@ -57,8 +55,12 @@ export abstract class AddEffectTool extends Tool {
  */
 export class ClearEffectsTool extends Tool {
   public static override toolId = "ClearEffects";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 0; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 0;
+  }
 
   public override async run(): Promise<boolean> {
     IModelApp.viewManager.selectedView?.removeScreenSpaceEffects();

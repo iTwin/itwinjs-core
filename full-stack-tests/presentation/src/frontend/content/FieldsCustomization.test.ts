@@ -3,11 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { assert, Guid } from "@itwin/core-bentley";
 import { InstanceKey, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { getFieldByLabel } from "../../Utils";
+import { expect } from "chai";
 import {
   buildTestIModelConnection,
   importSchema,
@@ -15,10 +14,11 @@ import {
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
 } from "../../IModelSetupUtils";
+import { getFieldByLabel } from "../../Utils";
 import { describeContentTestSuite } from "./Utils";
 
 describeContentTestSuite("Fields' customization", () => {
-  it("assigns custom renderer and editor to struct member property", async function () {
+  it("assigns custom renderer and editor to struct member property", async function() {
     let instanceKey: InstanceKey;
     let testSchema!: ReturnType<typeof importSchema>;
     const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
@@ -91,7 +91,7 @@ describeContentTestSuite("Fields' customization", () => {
     expect(structMemberField.editor).to.deep.eq({ name: "test-editor" });
   });
 
-  it("assigns custom renderer and editor to array item property", async function () {
+  it("assigns custom renderer and editor to array item property", async function() {
     let instanceKey: InstanceKey;
     let testSchema!: ReturnType<typeof importSchema>;
     const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
@@ -161,7 +161,7 @@ describeContentTestSuite("Fields' customization", () => {
     expect(arrayItemField.editor).to.deep.eq({ name: "test-editor" });
   });
 
-  it("assigns custom renderer and editor to struct-array member property", async function () {
+  it("assigns custom renderer and editor to struct-array member property", async function() {
     let instanceKey: InstanceKey;
     let testSchema!: ReturnType<typeof importSchema>;
     const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {

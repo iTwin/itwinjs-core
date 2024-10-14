@@ -258,7 +258,7 @@ class WindowHeader {
 
     // assure the window above of the surface boarder
     if (windowBottom >= surfaceBottom)
-      windowTop = (surfaceBottom - windowHeight);
+      windowTop = surfaceBottom - windowHeight;
     if (windowTop < surfaceTop)
       windowTop = surfaceTop;
     style.top = `${windowTop}px`;
@@ -267,7 +267,7 @@ class WindowHeader {
 
     // assure the window left of the surface boarder
     if (windowRight >= surfaceRight)
-      windowLeft = (surfaceRight - windowWidth);
+      windowLeft = surfaceRight - windowWidth;
     if (windowLeft < surfaceLeft)
       windowLeft = surfaceLeft;
     style.left = `${windowLeft}px`;
@@ -299,8 +299,12 @@ class WindowHeader {
     this.applyDock();
   }
 
-  public get isDocked() { return undefined !== this._dockState; }
-  public invalidateDock() { this._dockState = undefined; }
+  public get isDocked() {
+    return undefined !== this._dockState;
+  }
+  public invalidateDock() {
+    this._dockState = undefined;
+  }
 
   public resizeContent(w: number, h: number): void {
     // ###TODO kludge for 2px borders...
@@ -380,7 +384,9 @@ export abstract class Window {
   }
 
   // Do not set directly - use Surface.togglePin(window)
-  public get isPinned(): boolean { return this._isPinned; }
+  public get isPinned(): boolean {
+    return this._isPinned;
+  }
   public set isPinned(value: boolean) {
     this._header.markAsPinned(value);
     this._isPinned = value;
@@ -394,14 +400,30 @@ export abstract class Window {
     this.surface.focus(this);
   }
 
-  public get isDocked() { return this._header.isDocked; }
-  public dock(dock: Dock) { this._header.dock(dock); }
-  public updateDock() { this._header.applyDock(); }
-  public undock() { this._header.undock(); }
-  public ensureInSurface() { this._header.ensureInSurface(); }
-  public invalidateDock() { this._header.invalidateDock(); }
-  public addDock(dock: Dock) { this._header.addDock(dock); }
-  public updateUi(): void { this._header.hideCloseWidget(!this.isCloseable); }
+  public get isDocked() {
+    return this._header.isDocked;
+  }
+  public dock(dock: Dock) {
+    this._header.dock(dock);
+  }
+  public updateDock() {
+    this._header.applyDock();
+  }
+  public undock() {
+    this._header.undock();
+  }
+  public ensureInSurface() {
+    this._header.ensureInSurface();
+  }
+  public invalidateDock() {
+    this._header.invalidateDock();
+  }
+  public addDock(dock: Dock) {
+    this._header.addDock(dock);
+  }
+  public updateUi(): void {
+    this._header.hideCloseWidget(!this.isCloseable);
+  }
 
   public onFocus(): void {
     this.container.classList.add("window-focused");
@@ -413,10 +435,14 @@ export abstract class Window {
     this._header.element.classList.remove("window-header-focused");
   }
 
-  public onClosing(): void { }
-  public onClosed(): void { }
-  public get isCloseable(): boolean { return true; }
-  public get isResizable(): boolean { return true; }
+  public onClosing(): void {}
+  public onClosed(): void {}
+  public get isCloseable(): boolean {
+    return true;
+  }
+  public get isResizable(): boolean {
+    return true;
+  }
 
   public resizeContent(w: number, h: number): void {
     this._header.resizeContent(w, h);
@@ -441,5 +467,7 @@ export class NamedWindow extends Window {
       this._header.setTitle(this.windowId);
   }
 
-  public get windowId() { return this._windowId; }
+  public get windowId() {
+    return this._windowId;
+  }
 }

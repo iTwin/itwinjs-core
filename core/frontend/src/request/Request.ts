@@ -13,7 +13,6 @@ export interface RequestBasicCredentials { // axios: AxiosBasicCredentials
  * @internal
  */
 export class HttpResponseError extends Error {
-
   public constructor(
     public status: number,
     public responseText?: string,

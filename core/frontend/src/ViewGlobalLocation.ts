@@ -6,8 +6,8 @@
  * @module Views
  */
 
-import { Point3d, Range3d } from "@itwin/core-geometry";
 import { Cartographic, GlobeMode } from "@itwin/core-common";
+import { Point3d, Range3d } from "@itwin/core-geometry";
 import { BingElevationProvider } from "./tile/internal";
 import { ScreenViewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
@@ -16,7 +16,10 @@ import { ViewState3d } from "./ViewState";
  * @public
  * @extensions
  */
-export interface GlobalLocationArea { southwest: Cartographic, northeast: Cartographic }
+export interface GlobalLocationArea {
+  southwest: Cartographic;
+  northeast: Cartographic;
+}
 
 /** Describes a location on the earth using cartographic data structures.
  * The viewed area of the location can be optionally specified.
@@ -24,7 +27,10 @@ export interface GlobalLocationArea { southwest: Cartographic, northeast: Cartog
  * @public
  * @extensions
  */
-export interface GlobalLocation { center: Cartographic, area?: GlobalLocationArea }
+export interface GlobalLocation {
+  center: Cartographic;
+  area?: GlobalLocationArea;
+}
 
 /** @internal */
 export class ViewGlobalLocationConstants {
@@ -41,7 +47,12 @@ export class ViewGlobalLocationConstants {
  * A good use of this is to convert meters to some transition duration.
  * @internal
  */
-export function metersToRange(inputMeters: number, minimumOutput: number = 500, maximumOutput: number = 3000, maximumInputMeters = ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters): number {
+export function metersToRange(
+  inputMeters: number,
+  minimumOutput: number = 500,
+  maximumOutput: number = 3000,
+  maximumInputMeters = ViewGlobalLocationConstants.satelliteHeightAboveEarthInMeters,
+): number {
   let output: number;
   if (inputMeters <= 0)
     output = minimumOutput;
@@ -158,7 +169,13 @@ export async function eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, 
 }
 
 /** @internal */
-export function viewGlobalLocation(viewport: ScreenViewport, doAnimate: boolean, eyeHeight = ViewGlobalLocationConstants.birdHeightAboveEarthInMeters, pitchAngleRadians = 0, location?: GlobalLocation): number {
+export function viewGlobalLocation(
+  viewport: ScreenViewport,
+  doAnimate: boolean,
+  eyeHeight = ViewGlobalLocationConstants.birdHeightAboveEarthInMeters,
+  pitchAngleRadians = 0,
+  location?: GlobalLocation,
+): number {
   if (!(viewport.view instanceof ViewState3d))
     return 0;
 

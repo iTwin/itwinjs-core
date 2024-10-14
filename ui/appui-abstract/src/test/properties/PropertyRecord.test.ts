@@ -26,9 +26,7 @@ const getUpdatedPropertyDescription = (): PropertyDescription => {
 };
 
 describe("PropertyRecord", () => {
-
   describe("copyWithNewValue", () => {
-
     it("should have new value", () => {
       const sut = new PropertyRecord(value1, getPropertyDescription());
       const newRecord = sut.copyWithNewValue(value2);
@@ -54,16 +52,14 @@ describe("PropertyRecord", () => {
       src.isReadonly = true;
       src.links = {
         matcher: () => [],
-        onClick: () => { },
+        onClick: () => {},
       };
       const newRecord = src.copyWithNewValue(value2);
       expect(newRecord).to.deep.eq({ ...src, value: value2 });
     });
-
   });
 
   describe("fromString", () => {
-
     it("should create a valid PropertyRecord with provided description name", () => {
       const record = PropertyRecord.fromString("test value", "test description");
       assert(record.property.name === "test description");
@@ -74,7 +70,6 @@ describe("PropertyRecord", () => {
       const record = PropertyRecord.fromString("test");
       expect(record.description).to.be.undefined;
     });
-
   });
 
   describe("getChildrenRecords", () => {

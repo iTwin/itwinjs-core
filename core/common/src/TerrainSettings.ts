@@ -106,12 +106,24 @@ export class TerrainSettings {
   }
 
   /** @deprecated in 4.5.x. Use the overload that takes [[TerrainProps]]. */
-  constructor(providerName?: string, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode);
+  constructor(
+    providerName?: string,
+    exaggeration?: number,
+    applyLighting?: boolean,
+    heightOrigin?: number,
+    heightOriginMode?: TerrainHeightOriginMode,
+  );
 
   constructor(props?: TerrainProps);
 
   /** @internal */
-  constructor(providerNameOrProps: string | TerrainProps | undefined, exaggeration?: number, applyLighting?: boolean, heightOrigin?: number, heightOriginMode?: TerrainHeightOriginMode) {
+  constructor(
+    providerNameOrProps: string | TerrainProps | undefined,
+    exaggeration?: number,
+    applyLighting?: boolean,
+    heightOrigin?: number,
+    heightOriginMode?: TerrainHeightOriginMode,
+  ) {
     let providerName;
     let dataSource;
     let nonLocatable;
@@ -149,7 +161,10 @@ export class TerrainSettings {
    * one of those defined by [[CesiumTerrainAssetId]].
    * @note You must ensure your Cesium ION account has access to the specified asset.
    */
-  public static fromCesiumIonAsset(assetId: string = CesiumTerrainAssetId.Default, options?: Omit<TerrainProps, "providerName" | "dataSource">): TerrainSettings {
+  public static fromCesiumIonAsset(
+    assetId: string = CesiumTerrainAssetId.Default,
+    options?: Omit<TerrainProps, "providerName" | "dataSource">,
+  ): TerrainSettings {
     return TerrainSettings.fromJSON({
       ...options,
       dataSource: assetId,
@@ -175,7 +190,8 @@ export class TerrainSettings {
   }
 
   public equals(other: TerrainSettings): boolean {
-    return this.providerName === other.providerName && this.dataSource === other.dataSource && this.exaggeration === other.exaggeration && this.applyLighting === other.applyLighting
+    return this.providerName === other.providerName && this.dataSource === other.dataSource && this.exaggeration === other.exaggeration &&
+      this.applyLighting === other.applyLighting
       && this.heightOrigin === other.heightOrigin && this.heightOriginMode === other.heightOriginMode && this.nonLocatable === other.nonLocatable;
   }
 

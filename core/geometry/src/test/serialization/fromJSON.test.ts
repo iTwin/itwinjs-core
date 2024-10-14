@@ -276,6 +276,5 @@ describe("SimpleFactory ", () => {
         ck.testTrue(a.isAlmostEqual(b));
       }
     }
-
   });
 });

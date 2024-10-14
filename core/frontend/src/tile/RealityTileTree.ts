@@ -7,10 +7,8 @@
  */
 
 import { assert, BeTimePoint, Id64String, ProcessDetector } from "@itwin/core-bentley";
-import {
-  Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps,
-} from "@itwin/core-geometry";
 import { Cartographic, ColorDef, GeoCoordStatus, ViewFlagOverrides } from "@itwin/core-common";
+import { Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { GeoConverter } from "../GeoServices";
 import { IModelApp } from "../IModelApp";
@@ -18,8 +16,18 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import {
-  GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGeometryCollector,
-  TileGraphicType, TileParams, TileTree, TileTreeParams,
+  GraphicsCollectorDrawArgs,
+  MapTile,
+  RealityTile,
+  RealityTileLoader,
+  RealityTileParams,
+  Tile,
+  TileDrawArgs,
+  TileGeometryCollector,
+  TileGraphicType,
+  TileParams,
+  TileTree,
+  TileTreeParams,
 } from "./internal";
 
 /** @internal */
@@ -70,8 +78,15 @@ export class TraversalChildrenDetails {
 export class TraversalSelectionContext {
   public preloaded = new Set<RealityTile>();
   public missing = new Array<RealityTile>();
-  public get selectionCountExceeded() { return this._maxSelectionCount === undefined ? false : (this.missing.length + this.selected.length) > this._maxSelectionCount; }   // Avoid selecting excessive number of tiles.
-  constructor(public selected: Tile[], public displayedDescendants: Tile[][], public preloadDebugBuilder?: GraphicBuilder, private _maxSelectionCount?: number) { }
+  public get selectionCountExceeded() {
+    return this._maxSelectionCount === undefined ? false : (this.missing.length + this.selected.length) > this._maxSelectionCount;
+  } // Avoid selecting excessive number of tiles.
+  constructor(
+    public selected: Tile[],
+    public displayedDescendants: Tile[][],
+    public preloadDebugBuilder?: GraphicBuilder,
+    private _maxSelectionCount?: number,
+  ) {}
 
   public selectOrQueue(tile: RealityTile, args: TileDrawArgs, traversalDetails: TraversalDetails) {
     tile.selectSecondaryTiles(args, this);
@@ -124,7 +139,7 @@ const scratchMatrix = Matrix3d.createZero(), scratchTransform = Transform.create
 interface ChildReprojection {
   child: RealityTile;
   ecefCenter: Point3d;
-  dbPoints: Point3d[];    // Center, xEnd, yEnd, zEnd
+  dbPoints: Point3d[]; // Center, xEnd, yEnd, zEnd
 }
 
 /** Provides access to per-feature properties within a [[RealityTileTree]].
@@ -197,7 +212,7 @@ export class RealityTileTree extends TileTree {
     this.yAxisUp = true === params.yAxisUp;
     this._rootTile = this.createTile(params.rootTile);
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(this.iModel);
-    this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25;      // Transition distance from elliptical to cartesian.
+    this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25; // Transition distance from elliptical to cartesian.
     this._gcsConverter = params.gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
     if (params.rootToEcef) {
       this._rootToEcef = params.rootToEcef;
@@ -217,27 +232,47 @@ export class RealityTileTree extends TileTree {
   }
 
   /** @internal */
-  public get rootTile(): RealityTile { return this._rootTile; }
+  public get rootTile(): RealityTile {
+    return this._rootTile;
+  }
   /** @internal */
-  public get is3d() { return true; }
+  public get is3d() {
+    return true;
+  }
   /** @internal */
-  public get maxDepth() { return this.loader.maxDepth; }
+  public get maxDepth() {
+    return this.loader.maxDepth;
+  }
   /** @internal */
-  public get minDepth() { return this.loader.minDepth; }
+  public get minDepth() {
+    return this.loader.minDepth;
+  }
   /** @internal */
-  public override get isContentUnbounded() { return this.loader.isContentUnbounded; }
+  public override get isContentUnbounded() {
+    return this.loader.isContentUnbounded;
+  }
   /** @internal */
-  public get isTransparent() { return false; }
+  public get isTransparent() {
+    return false;
+  }
 
   /** @internal */
-  protected _selectTiles(args: TileDrawArgs): Tile[] { return this.selectRealityTiles(args, []); }
+  protected _selectTiles(args: TileDrawArgs): Tile[] {
+    return this.selectRealityTiles(args, []);
+  }
   /** @internal */
-  public get viewFlagOverrides(): ViewFlagOverrides { return this.loader.viewFlagOverrides; }
+  public get viewFlagOverrides(): ViewFlagOverrides {
+    return this.loader.viewFlagOverrides;
+  }
   /** @internal */
-  public override get parentsAndChildrenExclusive() { return this.loader.parentsAndChildrenExclusive; }
+  public override get parentsAndChildrenExclusive() {
+    return this.loader.parentsAndChildrenExclusive;
+  }
 
   /** @internal */
-  public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
+  public createTile(props: TileParams): RealityTile {
+    return new RealityTile(props, this);
+  }
 
   /** Collect tiles from this tile tree based on the criteria implemented by `collector`.
    * @internal
@@ -309,11 +344,12 @@ export class RealityTileTree extends TileTree {
               targetBranch.add(graphics);
             } else {
               clipVector.transformInPlace(args.location);
-              if (!this.isTransparent)
+              if (!this.isTransparent) {
                 for (const primitive of clipVector.clips)
                   for (const clipPlanes of primitive.fetchClipPlanesRef()!.convexSets)
                     for (const plane of clipPlanes.planes)
-                      plane.offsetDistance(-displayedDescendant.radius * .05);     // Overlap with existing (high resolution) tile slightly to avoid cracks.
+                      plane.offsetDistance(-displayedDescendant.radius * .05); // Overlap with existing (high resolution) tile slightly to avoid cracks.
+              }
 
               const branch = new GraphicBranch(false);
               branch.add(graphics);
@@ -344,7 +380,12 @@ export class RealityTileTree extends TileTree {
   protected collectClassifierGraphics(args: TileDrawArgs, selectedTiles: RealityTile[]) {
     const classifier = args.context.planarClassifiers.get(this.modelId);
     if (classifier)
-      classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
+      classifier.collectGraphics(args.context, {
+        modelId: this.modelId,
+        tiles: selectedTiles,
+        location: args.location,
+        isPointCloud: this.isPointCloud,
+      });
   }
 
   /** @internal */
@@ -372,7 +413,7 @@ export class RealityTileTree extends TileTree {
       return;
     }
 
-    const ecefToDb = this._ecefToDb!;       // Tested for undefined in doReprojectChildren
+    const ecefToDb = this._ecefToDb!; // Tested for undefined in doReprojectChildren
     const rootToDb = this.iModelTransform;
     const dbToEcef = ecefToDb.inverse()!;
     const reprojectChildren = new Array<ChildReprojection>();
@@ -395,7 +436,6 @@ export class RealityTileTree extends TileTree {
           const carto = Cartographic.fromEcef(ecefPoint, scratchCarto);
           if (carto)
             requestProps.push({ x: carto.longitudeDegrees, y: carto.latitudeDegrees, z: carto.height });
-
         }
       }
 
@@ -403,7 +443,6 @@ export class RealityTileTree extends TileTree {
         resolve(children);
       else {
         this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps).then((response) => {
-
           const reprojectedCoords = response.iModelCoords;
           const dbToRoot = rootToDb.inverse()!;
           const getReprojectedPoint = (original: Point3d, reprojectedXYZ: XYZProps) => {
@@ -419,9 +458,21 @@ export class RealityTileTree extends TileTree {
           for (const reprojection of reprojectChildren) {
             if (reprojectedCoords.every((coord) => coord.s === GeoCoordStatus.Success)) {
               const reprojectedOrigin = getReprojectedPoint(reprojection.dbPoints[0], reprojectedCoords[responseIndex++].p).clone(scratchOrigin);
-              const xVector = Vector3d.createStartEnd(reprojectedOrigin, getReprojectedPoint(reprojection.dbPoints[1], reprojectedCoords[responseIndex++].p), scratchX);
-              const yVector = Vector3d.createStartEnd(reprojectedOrigin, getReprojectedPoint(reprojection.dbPoints[2], reprojectedCoords[responseIndex++].p), scratchY);
-              const zVector = Vector3d.createStartEnd(reprojectedOrigin, getReprojectedPoint(reprojection.dbPoints[3], reprojectedCoords[responseIndex++].p), scratchZ);
+              const xVector = Vector3d.createStartEnd(
+                reprojectedOrigin,
+                getReprojectedPoint(reprojection.dbPoints[1], reprojectedCoords[responseIndex++].p),
+                scratchX,
+              );
+              const yVector = Vector3d.createStartEnd(
+                reprojectedOrigin,
+                getReprojectedPoint(reprojection.dbPoints[2], reprojectedCoords[responseIndex++].p),
+                scratchY,
+              );
+              const zVector = Vector3d.createStartEnd(
+                reprojectedOrigin,
+                getReprojectedPoint(reprojection.dbPoints[3], reprojectedCoords[responseIndex++].p),
+                scratchZ,
+              );
               const matrix = Matrix3d.createColumns(xVector, yVector, zVector, scratchMatrix);
               if (matrix !== undefined) {
                 const dbReprojection = Transform.createMatrixPickupPutdown(matrix, reprojection.dbPoints[0], reprojectedOrigin, scratchTransform);
@@ -435,20 +486,22 @@ export class RealityTileTree extends TileTree {
 
           resolve(children);
         }).catch(() => {
-          resolve(children);    // Error occured in reprojection - just resolve with unprojected corners.
+          resolve(children); // Error occured in reprojection - just resolve with unprojected corners.
         });
       }
     }
   }
 
   /** @internal */
-  public getBaseRealityDepth(_sceneContext: SceneContext) { return -1; }
+  public getBaseRealityDepth(_sceneContext: SceneContext) {
+    return -1;
+  }
 
   /** Scan the list of currently selected reality tiles, and fire the viewport's 'onMapLayerScaleRangeVisibilityChanged ' event
    * if any scale range visibility change is detected for one more map-layer definition.
    * @internal
    */
-  public reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]) { }
+  public reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]) {}
 
   /** @internal */
   public selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[] {
@@ -464,20 +517,21 @@ export class RealityTileTree extends TileTree {
     const baseDepth = this.getBaseRealityDepth(args.context);
 
     if (IModelApp.tileAdmin.isPreloadingAllowed && 0 === context.missing.length) {
-      if (baseDepth > 0)        // Maps may force loading of low level globe tiles.
+      if (baseDepth > 0) // Maps may force loading of low level globe tiles.
         rootTile.preloadRealityTilesAtDepth(baseDepth, context, args);
 
       if (!freezeTiles)
         rootTile.preloadProtectedTiles(args, context);
     }
 
-    if (!freezeTiles)
+    if (!freezeTiles) {
       for (const tile of context.missing) {
         const loadableTile = tile.loadableTile;
 
         loadableTile.markUsed(args);
         args.insertMissing(loadableTile);
       }
+    }
 
     if (debugControl && debugControl.logRealityTiles) {
       this.logTiles("Selected: ", selected.values());
@@ -491,7 +545,7 @@ export class RealityTileTree extends TileTree {
       const imageryTiles: RealityTile[] = [];
       for (const selectedTile of selected) {
         if (selectedTile instanceof MapTile) {
-          const selectedImageryTiles = (selectedTile).imageryTiles;
+          const selectedImageryTiles = selectedTile.imageryTiles;
           if (selectedImageryTiles)
             selectedImageryTiles.forEach((tile) => imageryTiles.push(tile));
         }

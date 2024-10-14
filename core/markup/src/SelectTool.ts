@@ -7,12 +7,23 @@
  */
 
 import { assert, BeEvent } from "@itwin/core-bentley";
-import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
 import {
-  BeButton, BeButtonEvent, BeModifierKeys, BeTouchEvent, CoreTools, EventHandled, IModelApp, InputSource, ToolAssistance, ToolAssistanceImage,
-  ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection,
+  BeButton,
+  BeButtonEvent,
+  BeModifierKeys,
+  BeTouchEvent,
+  CoreTools,
+  EventHandled,
+  IModelApp,
+  InputSource,
+  ToolAssistance,
+  ToolAssistanceImage,
+  ToolAssistanceInputMethod,
+  ToolAssistanceInstruction,
+  ToolAssistanceSection,
 } from "@itwin/core-frontend";
-import { ArrayXY, Box, Container, G, Line, Element as MarkupElement, Text as MarkupText, Matrix, Point, Polygon } from "@svgdotjs/svg.js";
+import { Point2d, Point3d, Transform, Vector2d, XAndY } from "@itwin/core-geometry";
+import { ArrayXY, Box, Container, Element as MarkupElement, G, Line, Matrix, Point, Polygon, Text as MarkupText } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 import { MarkupTool } from "./MarkupTool";
 import { EditTextTool } from "./TextEdit";
@@ -27,10 +38,10 @@ import { UndoManager } from "./Undo";
 export abstract class ModifyHandle {
   public vbToStartTrn!: Transform;
 
-  constructor(public handles: Handles) { }
+  constructor(public handles: Handles) {}
   /** perform the modification given a current mouse position. */
   public abstract modify(ev: BeButtonEvent): void;
-  public async onClick(_ev: BeButtonEvent): Promise<void> { }
+  public async onClick(_ev: BeButtonEvent): Promise<void> {}
 
   /** set the position for this handle on the screen given the current state of the element */
   public abstract setPosition(): void;
@@ -117,20 +128,20 @@ class StretchHandle extends ModifyHandle {
     const adjusted = ev.isShiftKey ? { x: diff.x, y: diff.y } : { x: diagVec.x, y: diagVec.y };
     let { x, y, h, w } = this.startBox;
     if (this.posNpc.x === 0) {
-      x += adjusted.x;      // left edge
+      x += adjusted.x; // left edge
       w -= adjusted.x;
     } else if (this.posNpc.x === 1) {
-      w += adjusted.x;      // right edge
+      w += adjusted.x; // right edge
     }
     if (this.posNpc.y === 0) {
-      y += adjusted.y;      // top edge
+      y += adjusted.y; // top edge
       h -= adjusted.y;
     } else if (this.posNpc.y === 1) {
-      h += adjusted.y;      // bottom edge
+      h += adjusted.y; // bottom edge
     }
     const mtx = this.startCtm.inverse().scaleO(this.startBox.w / w, this.startBox.h / h, this.opposite.x, this.opposite.y).inverseO();
     const minSize = 10;
-    if (w > minSize && h > minSize)   // don't let element get too small
+    if (w > minSize && h > minSize) // don't let element get too small
       this.handles.el.markupStretch(w, h, x, y, mtx);
   }
 }
@@ -152,8 +163,12 @@ class RotateHandle extends ModifyHandle {
     this._circle = this.addTouchPadding(this._circle, handles);
     this.setMouseHandler(this._circle);
   }
-  public get centerVb() { return this.handles.npcToVb({ x: .5, y: .5 }); }
-  public get anchorVb() { return this.handles.npcToVb({ x: .5, y: 0 }); }
+  public get centerVb() {
+    return this.handles.npcToVb({ x: .5, y: .5 });
+  }
+  public get anchorVb() {
+    return this.handles.npcToVb({ x: .5, y: 0 });
+  }
   public setPosition(): void {
     const anchor = this.anchorVb;
     const dir = this.centerVb.vectorTo(anchor).normalize()!;
@@ -301,8 +316,12 @@ export class Handles {
     return this.vbToBox(pt, pt);
   }
 
-  public npcToVb(p: XAndY, result?: Point2d): Point2d { return this.npcToVbTrn.multiplyPoint2d(p, result); }
-  public vbToBox(p: XAndY, result?: Point2d): Point2d { return this.vbToBoxTrn.multiplyPoint2d(p, result); }
+  public npcToVb(p: XAndY, result?: Point2d): Point2d {
+    return this.npcToVbTrn.multiplyPoint2d(p, result);
+  }
+  public vbToBox(p: XAndY, result?: Point2d): Point2d {
+    return this.vbToBoxTrn.multiplyPoint2d(p, result);
+  }
   public npcToVbArray(pts: Point2d[]): Point2d[] {
     pts.forEach((pt) => this.npcToVb(pt, pt));
     return pts;
@@ -385,9 +404,15 @@ export class MarkupSelected {
   /** Called whenever elements are added or removed from this SelectionSet */
   public readonly onChanged = new BeEvent<(selected: MarkupSelected) => void>();
 
-  public get size() { return this.elements.size; }
-  public get isEmpty() { return this.size === 0; }
-  public has(el: MarkupElement) { return this.elements.has(el); }
+  public get size() {
+    return this.elements.size;
+  }
+  public get isEmpty() {
+    return this.size === 0;
+  }
+  public has(el: MarkupElement) {
+    return this.elements.has(el);
+  }
   public emptyAll(): void {
     this.clearEditors();
     if (this.isEmpty)
@@ -401,7 +426,7 @@ export class MarkupSelected {
     if (el)
       this.add(el);
   }
-  public constructor(public svg: G) { }
+  public constructor(public svg: G) {}
   public clearEditors() {
     if (this.handles) {
       this.handles.remove();
@@ -435,10 +460,11 @@ export class MarkupSelected {
   }
 
   public deleteAll(undo: UndoManager) {
-    undo.performOperation(MarkupApp.getActionName("delete"), () => this.elements.forEach((el) => {
-      undo.onDelete(el);
-      el.remove();
-    }));
+    undo.performOperation(MarkupApp.getActionName("delete"), () =>
+      this.elements.forEach((el) => {
+        undo.onDelete(el);
+        el.remove();
+      }));
 
     this.emptyAll();
   }
@@ -496,12 +522,13 @@ export class MarkupSelected {
 
   /** Move all of the entries to a new position in the DOM via a callback. */
   public reposition(cmdName: string, undo: UndoManager, fn: (el: MarkupElement) => void) {
-    undo.performOperation(cmdName, () => this.elements.forEach((el) => {
-      const oldParent = el.parent() as MarkupElement;
-      const oldPos = el.position();
-      fn(el);
-      undo.onRepositioned(el, oldPos, oldParent);
-    }));
+    undo.performOperation(cmdName, () =>
+      this.elements.forEach((el) => {
+        const oldParent = el.parent() as MarkupElement;
+        const oldPos = el.position();
+        fn(el);
+        undo.onRepositioned(el, oldPos, oldParent);
+      }));
     this.sizeChanged();
   }
 }
@@ -517,7 +544,9 @@ export class SelectTool extends MarkupTool {
   private _anchorPt!: Point3d;
   private _isBoxSelect = false;
 
-  public get flashedElement(): MarkupElement | undefined { return this._flashedElement; }
+  public get flashedElement(): MarkupElement | undefined {
+    return this._flashedElement;
+  }
   public set flashedElement(el: MarkupElement | undefined) {
     if (el === this._flashedElement)
       return;
@@ -544,16 +573,23 @@ export class SelectTool extends MarkupTool {
     this.cancelDrag();
     this.markup.selected.emptyAll();
   }
-  public override async onCleanup() { this.clearSelect(); }
+  public override async onCleanup() {
+    this.clearSelect();
+  }
   public override async onPostInstall() {
     this.initSelect();
     return super.onPostInstall();
   }
 
-  public override async onRestartTool() { this.initSelect(); }
+  public override async onRestartTool() {
+    this.initSelect();
+  }
 
   protected override showPrompt(): void {
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.IdentifyMarkup`));
+    const mainInstruction = ToolAssistance.createInstruction(
+      this.iconSpec,
+      IModelApp.localization.getLocalizedString(`${MarkupTool.toolKey}Select.Prompts.IdentifyMarkup`),
+    );
     const mouseInstructions: ToolAssistanceInstruction[] = [];
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
@@ -561,13 +597,50 @@ export class SelectTool extends MarkupTool {
     touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, acceptMsg, false, ToolAssistanceInputMethod.Touch));
     mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, acceptMsg, false, ToolAssistanceInputMethod.Mouse));
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchDrag, CoreTools.translate("ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClickDrag, CoreTools.translate("ElementSet.Inputs.BoxCorners"), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(
+      ToolAssistance.createInstruction(
+        ToolAssistanceImage.OneTouchDrag,
+        CoreTools.translate("ElementSet.Inputs.BoxCorners"),
+        false,
+        ToolAssistanceInputMethod.Touch,
+      ),
+    );
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(
+        ToolAssistanceImage.LeftClickDrag,
+        CoreTools.translate("ElementSet.Inputs.BoxCorners"),
+        false,
+        ToolAssistanceInputMethod.Mouse,
+      ),
+    );
 
-    mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.shiftKey, ToolAssistanceImage.LeftClickDrag, CoreTools.translate("ElementSet.Inputs.OverlapSelection"), false, ToolAssistanceInputMethod.Mouse));
-    mouseInstructions.push(ToolAssistance.createModifierKeyInstruction(ToolAssistance.ctrlKey, ToolAssistanceImage.LeftClick, CoreTools.translate("ElementSet.Inputs.InvertSelection"), false, ToolAssistanceInputMethod.Mouse));
+    mouseInstructions.push(
+      ToolAssistance.createModifierKeyInstruction(
+        ToolAssistance.shiftKey,
+        ToolAssistanceImage.LeftClickDrag,
+        CoreTools.translate("ElementSet.Inputs.OverlapSelection"),
+        false,
+        ToolAssistanceInputMethod.Mouse,
+      ),
+    );
+    mouseInstructions.push(
+      ToolAssistance.createModifierKeyInstruction(
+        ToolAssistance.ctrlKey,
+        ToolAssistanceImage.LeftClick,
+        CoreTools.translate("ElementSet.Inputs.InvertSelection"),
+        false,
+        ToolAssistanceInputMethod.Mouse,
+      ),
+    );
 
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.CursorClick, CoreTools.translate("ElementSet.Inputs.ClearSelection"), false, ToolAssistanceInputMethod.Mouse));
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(
+        ToolAssistanceImage.CursorClick,
+        CoreTools.translate("ElementSet.Inputs.ClearSelection"),
+        false,
+        ToolAssistanceInputMethod.Mouse,
+      ),
+    );
 
     const sections: ToolAssistanceSection[] = [];
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
@@ -664,18 +737,33 @@ export class SelectTool extends MarkupTool {
     const height = Math.abs(vec.y);
     if (width < 1 || height < 1)
       return true;
-    const rightToLeft = (start.x > end.x);
-    const overlapMode = (ev.isShiftKey ? !rightToLeft : rightToLeft); // Shift inverts inside/overlap selection...
+    const rightToLeft = start.x > end.x;
+    const overlapMode = ev.isShiftKey ? !rightToLeft : rightToLeft; // Shift inverts inside/overlap selection...
     const offset = Point3d.create(vec.x < 0 ? end.x : start.x, vec.y < 0 ? end.y : start.y); // define location by corner points...
     this.markup.svgDynamics!.clear();
-    this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "black", "stroke-opacity": 0.5, "fill": "lightBlue", "fill-opacity": 0.2 });
-    const selectBox = this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({ "stroke-width": 1, "stroke": "white", "stroke-opacity": 1.0, "stroke-dasharray": overlapMode ? "5" : "2", "fill": "none" });
+    this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({
+      "stroke-width": 1,
+      "stroke": "black",
+      "stroke-opacity": 0.5,
+      "fill": "lightBlue",
+      "fill-opacity": 0.2,
+    });
+    const selectBox = this.markup.svgDynamics!.rect(width, height).move(offset.x, offset.y).css({
+      "stroke-width": 1,
+      "stroke": "white",
+      "stroke-opacity": 1.0,
+      "stroke-dasharray": overlapMode ? "5" : "2",
+      "fill": "none",
+    });
     const outlinesG = isDynamics ? this.markup.svgDynamics!.group() : undefined;
     const selectRect = selectBox.node.getBoundingClientRect();
     this.markup.svgMarkup!.forElementsOfGroup((child) => {
       const childRect = child.node.getBoundingClientRect();
-      const inside = (childRect.left >= selectRect.left && childRect.top >= selectRect.top && childRect.right <= selectRect.right && childRect.bottom <= selectRect.bottom);
-      const overlap = !inside && (childRect.left < selectRect.right && childRect.right > selectRect.left && childRect.bottom > selectRect.top && childRect.top < selectRect.bottom);
+      const inside = childRect.left >= selectRect.left && childRect.top >= selectRect.top && childRect.right <= selectRect.right &&
+        childRect.bottom <= selectRect.bottom;
+      const overlap = !inside &&
+        (childRect.left < selectRect.right && childRect.right > selectRect.left && childRect.bottom > selectRect.top &&
+          childRect.top < selectRect.bottom);
       const accept = inside || (overlap && overlapMode);
       if (undefined !== outlinesG) {
         if (inside || overlap) {
@@ -713,7 +801,7 @@ export class SelectTool extends MarkupTool {
       selected.restart(flashed); // we clicked on an element not in the selection set, replace current selection with just this element
 
     selected.clearEditors();
-    this._anchorPt = MarkupApp.convertVpToVb(ev.viewPoint);  // save the starting point. This is the point where the "down" occurred.
+    this._anchorPt = MarkupApp.convertVpToVb(ev.viewPoint); // save the starting point. This is the point where the "down" occurred.
     this.cancelDrag();
 
     selected.elements.forEach((el) => { // add all selected elements to the "dragging" set
@@ -738,7 +826,7 @@ export class SelectTool extends MarkupTool {
       if (this.boxSelect(ev, true))
         return;
       if (InputSource.Touch !== ev.inputSource)
-        this.flashedElement = this.pickElement(ev.viewPoint);  // if we're not dragging, try to find an element under the cursor
+        this.flashedElement = this.pickElement(ev.viewPoint); // if we're not dragging, try to find an element under the cursor
       return;
     }
 
@@ -754,7 +842,7 @@ export class SelectTool extends MarkupTool {
     const markup = this.markup;
     const selected = markup.selected;
     const handles = selected.handles;
-    if (handles && handles.dragging)  // if we have handles up, and if they're in the "dragging" state, send the event to them
+    if (handles && handles.dragging) // if we have handles up, and if they're in the "dragging" state, send the event to them
       return handles.endDrag(markup.undo);
 
     if (this._dragging.length === 0)
@@ -767,18 +855,19 @@ export class SelectTool extends MarkupTool {
       selected.emptyAll();
 
     // move or copy all of the elements in dragged set
-    undo.performOperation(MarkupApp.getActionName("copy"), () => this._dragging.forEach((el) => {
-      el.translate(delta.x, delta.y); // move to final location
-      const original = el.originalEl!; // save original element
-      el.originalEl = undefined; // clear original element
-      if (ev.isShiftKey) {
-        selected.add(el);
-        undo.onAdded(el);  // shift key means copy element
-      } else {
-        original.replace(el);
-        undo.onModified(el, original);
-      }
-    }));
+    undo.performOperation(MarkupApp.getActionName("copy"), () =>
+      this._dragging.forEach((el) => {
+        el.translate(delta.x, delta.y); // move to final location
+        const original = el.originalEl!; // save original element
+        el.originalEl = undefined; // clear original element
+        if (ev.isShiftKey) {
+          selected.add(el);
+          undo.onAdded(el); // shift key means copy element
+        } else {
+          original.replace(el);
+          undo.onModified(el, original);
+        }
+      }));
 
     this._dragging.length = 0; // empty dragging set
     selected.sizeChanged(); // notify that size of selection set changed

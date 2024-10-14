@@ -78,7 +78,7 @@ export function clipShapesAreEqual(clip0: ClipShape, clip1: ClipShape): boolean 
     return false;
   if (clip0.invisible !== clip1.invisible)
     return false;
-  for (let i = 0; i < clip0.polygon.length; i++)  // Polygon points should be in the same order
+  for (let i = 0; i < clip0.polygon.length; i++) // Polygon points should be in the same order
     if (!clip0.polygon[i].isAlmostEqual(clip1.polygon[i]))
       return false;
   if (clip0.isMask !== clip1.isMask)
@@ -87,7 +87,10 @@ export function clipShapesAreEqual(clip0: ClipShape, clip1: ClipShape): boolean 
     return false;
   if ((clip0.zLow !== clip1.zLow) || (clip0.zHigh !== clip1.zHigh))
     return false;
-  if (clip0.transformValid && (!clip0.transformFromClip!.isAlmostEqual(clip1.transformFromClip!) || !clip1.transformToClip!.isAlmostEqual(clip1.transformToClip!)))
+  if (
+    clip0.transformValid &&
+    (!clip0.transformFromClip!.isAlmostEqual(clip1.transformFromClip!) || !clip1.transformToClip!.isAlmostEqual(clip1.transformToClip!))
+  )
     return false;
   return true;
 }
@@ -106,11 +109,10 @@ function compareXYSector1(a: ClipPlane, b: ClipPlane): number {
     return -1;
   else if (a.inwardNormalRef.x > b.inwardNormalRef.x)
     return 1;
-  else
-    if (a.inwardNormalRef.y < a.inwardNormalRef.y)
-      return -1;
-    else if (a.inwardNormalRef.y > b.inwardNormalRef.y)
-      return 1;
+  else if (a.inwardNormalRef.y < a.inwardNormalRef.y)
+    return -1;
+  else if (a.inwardNormalRef.y > b.inwardNormalRef.y)
+    return 1;
   return 0;
 }
 
@@ -120,11 +122,10 @@ function compareXYSector2(a: ClipPlane, b: ClipPlane): number {
     return -1;
   else if (a.inwardNormalRef.x < b.inwardNormalRef.x)
     return 1;
-  else
-    if (a.inwardNormalRef.y < a.inwardNormalRef.y)
-      return -1;
-    else if (a.inwardNormalRef.y > b.inwardNormalRef.y)
-      return 1;
+  else if (a.inwardNormalRef.y < a.inwardNormalRef.y)
+    return -1;
+  else if (a.inwardNormalRef.y > b.inwardNormalRef.y)
+    return 1;
   return 0;
 }
 
@@ -134,11 +135,10 @@ function compareXYSector3(a: ClipPlane, b: ClipPlane): number {
     return -1;
   else if (a.inwardNormalRef.x < b.inwardNormalRef.x)
     return 1;
-  else
-    if (a.inwardNormalRef.y > a.inwardNormalRef.y)
-      return -1;
-    else if (a.inwardNormalRef.y < b.inwardNormalRef.y)
-      return 1;
+  else if (a.inwardNormalRef.y > a.inwardNormalRef.y)
+    return -1;
+  else if (a.inwardNormalRef.y < b.inwardNormalRef.y)
+    return 1;
   return 0;
 }
 
@@ -148,11 +148,10 @@ function compareXYSector4(a: ClipPlane, b: ClipPlane): number {
     return -1;
   else if (a.inwardNormalRef.x > b.inwardNormalRef.x)
     return 1;
-  else
-    if (a.inwardNormalRef.y > a.inwardNormalRef.y)
-      return -1;
-    else if (a.inwardNormalRef.y < b.inwardNormalRef.y)
-      return 1;
+  else if (a.inwardNormalRef.y > a.inwardNormalRef.y)
+    return -1;
+  else if (a.inwardNormalRef.y < b.inwardNormalRef.y)
+    return 1;
   return 0;
 }
 
@@ -220,7 +219,7 @@ function sortConvexSetPlanesToBoundary(convexSet: ConvexClipPlaneSet) {
     if (plane.inwardNormalRef.x < 0 && plane.inwardNormalRef.y > 0)
       tempSortedPlanes.push(plane);
   }
-  tempSortedPlanes.sort(compareXYSector3);  // more negative values less than others
+  tempSortedPlanes.sort(compareXYSector3); // more negative values less than others
   for (const plane of tempSortedPlanes)
     newPlanes.push(plane);
 
@@ -241,7 +240,7 @@ function sortConvexSetPlanesToBoundary(convexSet: ConvexClipPlaneSet) {
     if (plane.inwardNormalRef.x < 0 && plane.inwardNormalRef.y < 0)
       tempSortedPlanes.push(plane);
   }
-  tempSortedPlanes.sort(compareXYSector4);  // more negative values less than others
+  tempSortedPlanes.sort(compareXYSector4); // more negative values less than others
   for (const plane of tempSortedPlanes)
     newPlanes.push(plane);
 
@@ -262,9 +261,15 @@ function getPointIntersectionsOfConvexSetPlanes(convexSet: ConvexClipPlaneSet, c
 
     // Intersection of plane 0 with plane 1
     const planeMatrix = Matrix3d.createRowValues(
-      planeA0.inwardNormalRef.x, planeA0.inwardNormalRef.y, planeA0.inwardNormalRef.z,
-      planeA1.inwardNormalRef.x, planeA1.inwardNormalRef.y, planeA1.inwardNormalRef.z,
-      0, 0, 1,
+      planeA0.inwardNormalRef.x,
+      planeA0.inwardNormalRef.y,
+      planeA0.inwardNormalRef.z,
+      planeA1.inwardNormalRef.x,
+      planeA1.inwardNormalRef.y,
+      planeA1.inwardNormalRef.z,
+      0,
+      0,
+      1,
     ).inverse()!;
     ck.testTrue(planeMatrix !== undefined);
     const planeDistanceVec = Vector3d.create(planeA0.distance, planeA1.distance, 0);
@@ -277,9 +282,15 @@ function getPointIntersectionsOfConvexSetPlanes(convexSet: ConvexClipPlaneSet, c
 
   // Intersection of plane 0 with plane 1
   const plane01Matrix = Matrix3d.createRowValues(
-    plane0.inwardNormalRef.x, plane0.inwardNormalRef.y, plane0.inwardNormalRef.z,
-    plane1.inwardNormalRef.x, plane1.inwardNormalRef.y, plane1.inwardNormalRef.z,
-    0, 0, 1,
+    plane0.inwardNormalRef.x,
+    plane0.inwardNormalRef.y,
+    plane0.inwardNormalRef.z,
+    plane1.inwardNormalRef.x,
+    plane1.inwardNormalRef.y,
+    plane1.inwardNormalRef.z,
+    0,
+    0,
+    1,
   ).inverse()!;
   ck.testTrue(plane01Matrix !== undefined);
   const plane01DistanceVec = Vector3d.create(plane0.distance, plane1.distance, 0);
@@ -393,7 +404,15 @@ describe("ClipPrimitive", () => {
 
     // Exercise check for z-clips
     ck.testTrue(clipPrimitive.containsZClip(), "Expected clip primitive to contain a normal along the z-axis");
-    ClipShape.createShape([Point3d.create(1, 2), Point3d.create(50, 50), Point3d.create(100, -1)], undefined, undefined, undefined, false, false, clipPrimitive);
+    ClipShape.createShape(
+      [Point3d.create(1, 2), Point3d.create(50, 50), Point3d.create(100, -1)],
+      undefined,
+      undefined,
+      undefined,
+      false,
+      false,
+      clipPrimitive,
+    );
     ck.testFalse(clipPrimitive.containsZClip(), "Expected clip primitive of box with open top and bottom to not contain z-clip");
 
     // Exercise invisibility switch
@@ -424,7 +443,11 @@ describe("ClipPrimitive", () => {
     const translation = new Point3d(0, -1, 1);
     clipShape = ClipShape.createEmpty(false, false, Transform.createTranslation(translation));
     clipShape.performTransformFromClip(testPoint);
-    ck.testPoint3d(testPoint, originalPoint.plus(translation), "Point should be translated when transformed with ClipShape containing translation transform");
+    ck.testPoint3d(
+      testPoint,
+      originalPoint.plus(translation),
+      "Point should be translated when transformed with ClipShape containing translation transform",
+    );
     clipShape.performTransformToClip(testPoint);
     ck.testPoint3d(testPoint, originalPoint, "Point should be translated when transformed with ClipShape containing translation transform");
 
@@ -435,14 +458,36 @@ describe("ClipPrimitive", () => {
   it("ClipShape creation (linear) and point classification", () => {
     const ck = new Checker();
     // Create a ClipShape from 3 colinear points (degenerate!)
-    const clipShape = ClipShape.createShape([Point3d.create(-5, 0, 0), Point3d.create(5, 0, 0), Point3d.create(-5, 0, 0)],
-      -3, 3, undefined, false, false)!;
+    const clipShape = ClipShape.createShape(
+      [Point3d.create(-5, 0, 0), Point3d.create(5, 0, 0), Point3d.create(-5, 0, 0)],
+      -3,
+      3,
+      undefined,
+      false,
+      false,
+    )!;
     ck.testPointer(clipShape, "Can create ClipShape that will be parsed into a linear set of planes");
     clipShape.fetchClipPlanesRef();
-    ck.testExactNumber(clipShape.classifyPointContainment([Point3d.create(-5.00001, 0, 0)], true), 3, "Point does not fall on line outside of sides - strongly outside");
-    ck.testExactNumber(clipShape.classifyPointContainment([Point3d.create(0, 3, 0), Point3d.create(2, -5, 0)], true), 2, "Points cross line and within sides - ambiguous");
-    ck.testExactNumber(clipShape.classifyPointContainment([Point3d.create(0, -0.00001, 0), Point3d.create(0, 0.00001, 0)], true), 2, "Points cross line and within sides - ambiguous");
-    ck.testExactNumber(clipShape.classifyPointContainment([Point3d.create(4.999, 0, 2.999), Point3d.create(0, 0, 0)], true), 1, "Points fall on line and is within sides - strongly inside");
+    ck.testExactNumber(
+      clipShape.classifyPointContainment([Point3d.create(-5.00001, 0, 0)], true),
+      3,
+      "Point does not fall on line outside of sides - strongly outside",
+    );
+    ck.testExactNumber(
+      clipShape.classifyPointContainment([Point3d.create(0, 3, 0), Point3d.create(2, -5, 0)], true),
+      2,
+      "Points cross line and within sides - ambiguous",
+    );
+    ck.testExactNumber(
+      clipShape.classifyPointContainment([Point3d.create(0, -0.00001, 0), Point3d.create(0, 0.00001, 0)], true),
+      2,
+      "Points cross line and within sides - ambiguous",
+    );
+    ck.testExactNumber(
+      clipShape.classifyPointContainment([Point3d.create(4.999, 0, 2.999), Point3d.create(0, 0, 0)], true),
+      1,
+      "Points fall on line and is within sides - strongly inside",
+    );
 
     ck.checkpoint();
     expect(ck.getNumErrors()).toBe(0);
@@ -451,7 +496,7 @@ describe("ClipPrimitive", () => {
   it("ClipShapePointTests", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const minZ = undefined;  // EDL Sept 2021 z clip combined with hole is not clear.
+    const minZ = undefined; // EDL Sept 2021 z clip combined with hole is not clear.
     const maxZ = undefined;
     // Test point location
     const clipShape0 = ClipShape.createEmpty(true);
@@ -502,7 +547,10 @@ describe("ClipPrimitive", () => {
     // Test clone method
     const clipShape2 = clipShape1Copy.clone();
     ck.testTrue(clipShapesAreEqual(clipShape2, clipShape1), "clone method produces a copy of ClipShape");
-    const generalTransform = Transform.createFixedPointAndMatrix(Point3d.create(3, 2, 1), Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(24)));
+    const generalTransform = Transform.createFixedPointAndMatrix(
+      Point3d.create(3, 2, 1),
+      Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(24)),
+    );
 
     clipShape2.transformInPlace(generalTransform);
     ck.testFalse(clipShape2.isXYPolygon);
@@ -528,7 +576,10 @@ describe("ClipPrimitive", () => {
         const trianglePoints = getPointIntersectionsOfConvexSetPlanes(convexSet, ck);
         ck.testExactNumber(trianglePoints.length, 3);
         unionRange.extendArray(trianglePoints);
-        ck.testTrue(pointArrayIsSubsetOfOther(trianglePoints, clipShape.polygon), "All points of triangulated convex area of polygon should fall on boundary");
+        ck.testTrue(
+          pointArrayIsSubsetOfOther(trianglePoints, clipShape.polygon),
+          "All points of triangulated convex area of polygon should fall on boundary",
+        );
         unionArea += triangleAreaXY(trianglePoints[0], trianglePoints[1], trianglePoints[2]);
       }
       ck.testRange3d(originalRange, unionRange, "Range extended by all convex regions should match range of entire concave region.");
@@ -577,7 +628,11 @@ describe("ClipPrimitive", () => {
           return true;
         });
       }
-      ck.testCoordinate(clippedPolygonArea, clipShapeArea, "Polygon that completely encompasses clipShape should have same area as clipShape after clipping.");
+      ck.testCoordinate(
+        clippedPolygonArea,
+        clipShapeArea,
+        "Polygon that completely encompasses clipShape should have same area as clipShape after clipping.",
+      );
     }
     ck.checkpoint();
     expect(ck.getNumErrors()).toBe(0);
@@ -614,7 +669,7 @@ describe("ClipPrimitive", () => {
 
   it("ClipPrimitive base class", () => {
     const ck = new Checker();
-    for (const invert of [false]) {   // EDL sept 2021 invert bit on simple plane set has no effect.  Don't test with true.
+    for (const invert of [false]) { // EDL sept 2021 invert bit on simple plane set has no effect.  Don't test with true.
       const clipper = ConvexClipPlaneSet.createXYBox(1, 1, 10, 8);
       const prim0 = ClipPrimitive.createCapture(clipper, invert);
       const prim1 = prim0.clone();
@@ -628,7 +683,6 @@ describe("ClipPrimitive", () => {
         ck.testBoolean(!invert, prim.pointInside(Point3d.create(7, 2, 0)));
         ck.testBoolean(invert, prim.pointInside(Point3d.create(-2, 0, 0)));
       }
-
     }
     ck.checkpoint();
     expect(ck.getNumErrors()).toBe(0);
@@ -679,7 +733,8 @@ describe("ClipPrimitive", () => {
           { dist: -0.09250245365197413, normal: [0.9999999999999999, 0, 0] },
           { dist: -4.620474647250288, normal: [-0.9999999999999999, 0, 0] },
           { dist: -6.984123210872675, normal: [0, -0.9999999999999999, 6.123233995736765e-17] },
-          { dist: -0.09250245365197496, normal: [0, 0.9999999999999999, -6.123233995736765e-17] }]],
+          { dist: -0.09250245365197496, normal: [0, 0.9999999999999999, -6.123233995736765e-17] },
+        ]],
       },
     }];
     const clipper = ClipVector.fromJSON(json);
@@ -738,7 +793,7 @@ describe("ClipPrimitive", () => {
     const outerClip = ClipShape.createBlock(outerRange, ClipMaskXYZRangePlanes.XAndY);
     ck.testFalse(outerClip.isMask);
     const holeRange = outerRange.clone();
-    holeRange.expandInPlace(-4);  // hole xy range corners (3,2), (4,6)
+    holeRange.expandInPlace(-4); // hole xy range corners (3,2), (4,6)
     const holeClip = ClipShape.createBlock(holeRange, ClipMaskXYZRangePlanes.XAndY, true);
     ck.testTrue(holeClip.isMask);
 
@@ -797,7 +852,7 @@ describe("ClipPrimitive", () => {
     const uncappedBoxSetA = ConvexClipPlaneSet.createRange3dPlanes(clipRange, true, true, true, true, false, false);
     const uncappedBoxSetB = ConvexClipPlaneSet.createRange3dPlanes(clipRange); // clip all sides
     const boxPrimitiveA = ClipPrimitive.createCapture(uncappedBoxSetA, false);
-    const boxPrimitiveB = ClipPrimitive.createCapture(uncappedBoxSetB, true);   // invisible flag does nothing
+    const boxPrimitiveB = ClipPrimitive.createCapture(uncappedBoxSetB, true); // invisible flag does nothing
     const builder = PolyfaceBuilder.create();
     const mesh = builder.claimPolyface();
     {
@@ -818,13 +873,18 @@ describe("ClipPrimitive", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPrimitive", "ClipPrimitiveMasking");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 
-function clipAndOutput(allGeometry: GeometryQuery[], clipper: ClipPrimitive,
+function clipAndOutput(
+  allGeometry: GeometryQuery[],
+  clipper: ClipPrimitive,
   mesh: IndexedPolyface,
   clipRange: Range3d | undefined,
-  x0: number, y0: number, yStep: number, buildClosureFaces: boolean = true) {
+  x0: number,
+  y0: number,
+  yStep: number,
+  buildClosureFaces: boolean = true,
+) {
   const unionOfConvexSets = clipper.fetchClipPlanesRef();
   if (unionOfConvexSets) {
     const builders = ClippedPolyfaceBuilders.create(true, true, buildClosureFaces);
@@ -838,8 +898,7 @@ function clipAndOutput(allGeometry: GeometryQuery[], clipper: ClipPrimitive,
   }
 }
 
-function addCone(builder: PolyfaceBuilder, x0: number, y0: number, z0: number,
-  x1: number, y1: number, z1: number, radius0: number, radius1: number) {
+function addCone(builder: PolyfaceBuilder, x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, radius0: number, radius1: number) {
   const cone = Cone.createAxisPoints(Point3d.create(x0, y0, z0), Point3d.create(x1, y1, z1), radius0, radius1, true);
   builder.addCone(cone!);
 }

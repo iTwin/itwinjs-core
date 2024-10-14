@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Point3d } from "@itwin/core-geometry";
+import { expect } from "chai";
+import { GraphicType } from "../../../common/render/GraphicType";
 import { IModelApp } from "../../../IModelApp";
 import { DecorateContext } from "../../../ViewContext";
 import { Viewport } from "../../../Viewport";
 import { readUniquePixelData, testBlankViewport } from "../../openBlankViewport";
-import { GraphicType } from "../../../common/render/GraphicType";
 
 describe("Pickable decorations", () => {
   class Decorator {

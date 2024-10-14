@@ -6,9 +6,7 @@
  * @module Rendering
  */
 
-import {
-  assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap, UintArray,
-} from "@itwin/core-bentley";
+import { assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap, UintArray } from "@itwin/core-bentley";
 import { GeometryClass } from "./GeometryParams";
 
 /** Describes a discrete entity within a batched [RenderGraphic]($frontend) that can be
@@ -25,17 +23,27 @@ export class Feature {
   public readonly subCategoryId: Id64String;
   public readonly geometryClass: GeometryClass;
 
-  public constructor(elementId: Id64String = Id64.invalid, subCategoryId: Id64String = Id64.invalid, geometryClass: GeometryClass = GeometryClass.Primary) {
+  public constructor(
+    elementId: Id64String = Id64.invalid,
+    subCategoryId: Id64String = Id64.invalid,
+    geometryClass: GeometryClass = GeometryClass.Primary,
+  ) {
     this.elementId = elementId;
     this.subCategoryId = subCategoryId;
     this.geometryClass = geometryClass;
   }
 
-  public get isDefined(): boolean { return !Id64.isInvalid(this.elementId) || !Id64.isInvalid(this.subCategoryId) || this.geometryClass !== GeometryClass.Primary; }
-  public get isUndefined(): boolean { return !this.isDefined; }
+  public get isDefined(): boolean {
+    return !Id64.isInvalid(this.elementId) || !Id64.isInvalid(this.subCategoryId) || this.geometryClass !== GeometryClass.Primary;
+  }
+  public get isUndefined(): boolean {
+    return !this.isDefined;
+  }
 
   /** Returns true if this feature is equivalent to the supplied feature. */
-  public equals(other: Feature): boolean { return 0 === this.compare(other); }
+  public equals(other: Feature): boolean {
+    return 0 === this.compare(other);
+  }
 
   /** Performs ordinal comparison of this feature with another.
    * @param rhs The feature to compare with.
@@ -83,7 +91,8 @@ export namespace ModelFeature {
 
   /** Returns `true` if any of `feature`'s properties differ from the defaults (invalid Ids and [[GeometryClass.Primary]]). */
   export function isDefined(feature: ModelFeature): boolean {
-    return !Id64.isInvalid(feature.modelId) || !Id64.isInvalid(feature.elementId) || !Id64.isInvalid(feature.subCategoryId) || feature.geometryClass !== GeometryClass.Primary;
+    return !Id64.isInvalid(feature.modelId) || !Id64.isInvalid(feature.elementId) || !Id64.isInvalid(feature.subCategoryId) ||
+      feature.geometryClass !== GeometryClass.Primary;
   }
 
   /** @alpha */
@@ -184,17 +193,29 @@ export class FeatureTable extends IndexMap<Feature> {
   }
 
   /** Returns the maximum number of [[Feature]]s this FeatureTable can contain. */
-  public get maxFeatures(): number { return this._maximumSize; }
+  public get maxFeatures(): number {
+    return this._maximumSize;
+  }
   /** @internal */
-  public get anyDefined(): boolean { return this.length > 1 || (1 === this.length && this._array[0].value.isDefined); }
+  public get anyDefined(): boolean {
+    return this.length > 1 || (1 === this.length && this._array[0].value.isDefined);
+  }
   /** Returns true if this FeatureTable contains exactly one [[Feature]]. */
-  public get isUniform(): boolean { return 1 === this.length; }
+  public get isUniform(): boolean {
+    return 1 === this.length;
+  }
   /** If this FeatureTable contains exactly one [[Feature]], returns that Feature; otherwise returns undefined. */
-  public get uniform(): Feature | undefined { return 1 === this.length ? this._array[0].value : undefined; }
+  public get uniform(): Feature | undefined {
+    return 1 === this.length ? this._array[0].value : undefined;
+  }
   /** Returns true if this FeatureTable is associated with [[BatchType.VolumeClassifier]] geometry. */
-  public get isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
+  public get isVolumeClassifier(): boolean {
+    return BatchType.VolumeClassifier === this.type;
+  }
   /** Returns true if this FeatureTable is associated with [[BatchType.PlanarClassifier]] geometry. */
-  public get isPlanarClassifier(): boolean { return BatchType.PlanarClassifier === this.type; }
+  public get isPlanarClassifier(): boolean {
+    return BatchType.PlanarClassifier === this.type;
+  }
 
   /** Returns the Feature corresponding to the specified index, or undefined if the index is not present. */
   public findFeature(index: number): Feature | undefined {
@@ -215,7 +236,9 @@ export class FeatureTable extends IndexMap<Feature> {
   }
 
   /** @internal */
-  public getArray(): Array<IndexedValue<Feature>> { return this._array; }
+  public getArray(): Array<IndexedValue<Feature>> {
+    return this._array;
+  }
 
   /** Convert this feature table to a representation that can be supplied to [RenderSystem.createBatch]($frontend). */
   public pack(): RenderFeatureTable {
@@ -319,7 +342,9 @@ export class PackedFeatureTable implements RenderFeatureTable {
   public readonly type: BatchType;
   public animationNodeIds?: UintArray;
 
-  public get byteLength(): number { return this.data.byteLength; }
+  public get byteLength(): number {
+    return this.data.byteLength;
+  }
 
   /** Construct a PackedFeatureTable from the packed binary data.
    * This is used internally when deserializing Tiles in iMdl format.
@@ -373,7 +398,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
 
       let subCategoryIndex = subcategories.get(feature.subCategoryId)!;
       assert(undefined !== subCategoryIndex); // we inserted it above...
-      subCategoryIndex |= (feature.geometryClass << 24);
+      subCategoryIndex |= feature.geometryClass << 24;
 
       uint32s[index + 0] = Id64.getLowerUint32(feature.elementId);
       uint32s[index + 1] = Id64.getUpperUint32(feature.elementId);
@@ -462,16 +487,24 @@ export class PackedFeatureTable implements RenderFeatureTable {
   }
 
   /** Return true if this table contains exactly 1 feature. */
-  public get isUniform(): boolean { return 1 === this.numFeatures; }
+  public get isUniform(): boolean {
+    return 1 === this.numFeatures;
+  }
 
   /** If this table contains exactly 1 feature, return it. */
   public getUniform(result: ModelFeature): ModelFeature | undefined {
     return this.isUniform ? this.getFeature(0, result) : undefined;
   }
 
-  public get isVolumeClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
-  public get isPlanarClassifier(): boolean { return BatchType.VolumeClassifier === this.type; }
-  public get isClassifier(): boolean { return this.isVolumeClassifier || this.isPlanarClassifier; }
+  public get isVolumeClassifier(): boolean {
+    return BatchType.VolumeClassifier === this.type;
+  }
+  public get isPlanarClassifier(): boolean {
+    return BatchType.VolumeClassifier === this.type;
+  }
+  public get isClassifier(): boolean {
+    return this.isVolumeClassifier || this.isPlanarClassifier;
+  }
 
   /** Unpack the features into a [[FeatureTable]]. */
   public unpack(): FeatureTable {
@@ -490,7 +523,7 @@ export class PackedFeatureTable implements RenderFeatureTable {
     this.animationNodeIds = populateAnimationNodeIds(this, computeNodeId, maxNodeId);
   }
 
-  public * iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex> {
+  public *iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex> {
     for (let i = 0; i < this.numFeatures; i++) {
       this.getPackedFeature(i, output);
       output.index = i;
@@ -504,7 +537,9 @@ export class PackedFeatureTable implements RenderFeatureTable {
     };
   }
 
-  private get _subCategoriesOffset(): number { return this.numFeatures * 3; }
+  private get _subCategoriesOffset(): number {
+    return this.numFeatures * 3;
+  }
 
   private readId(offset32: number): Id64String {
     return Id64.fromUint32Pair(this.data[offset32], this.data[offset32 + 1]);
@@ -550,7 +585,7 @@ export class PackedFeatureModelTable {
     return this._data[modelIndex * 3];
   }
 
-  public getEntry(modelIndex: number,  result: PackedFeatureModelEntry): PackedFeatureModelEntry {
+  public getEntry(modelIndex: number, result: PackedFeatureModelEntry): PackedFeatureModelEntry {
     if (modelIndex >= this.length) {
       result.idLower = result.idUpper = 0;
       result.lastFeatureIndex = Number.MAX_SAFE_INTEGER;
@@ -607,7 +642,13 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     this._models = models;
   }
 
-  public static create(data: Uint32Array, batchModelId: Id64String, numFeatures: number, type: BatchType, numSubCategories: number): MultiModelPackedFeatureTable {
+  public static create(
+    data: Uint32Array,
+    batchModelId: Id64String,
+    numFeatures: number,
+    type: BatchType,
+    numSubCategories: number,
+  ): MultiModelPackedFeatureTable {
     const modelTableOffset = 3 * numFeatures + 2 * numSubCategories;
     const featureData = data.subarray(0, modelTableOffset);
     const features = new PackedFeatureTable(featureData, batchModelId, numFeatures, type);
@@ -618,12 +659,24 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     return new MultiModelPackedFeatureTable(features, models);
   }
 
-  public get batchModelId() { return this._features.batchModelId; }
-  public get batchModelIdPair() { return this._features.batchModelIdPair; }
-  public get numFeatures() { return this._features.numFeatures; }
-  public get type() { return this._features.type; }
-  public get animationNodeIds(): UintArray | undefined { return this._features.animationNodeIds; }
-  public set animationNodeIds(ids: UintArray | undefined) { this._features.animationNodeIds = ids; }
+  public get batchModelId() {
+    return this._features.batchModelId;
+  }
+  public get batchModelIdPair() {
+    return this._features.batchModelIdPair;
+  }
+  public get numFeatures() {
+    return this._features.numFeatures;
+  }
+  public get type() {
+    return this._features.type;
+  }
+  public get animationNodeIds(): UintArray | undefined {
+    return this._features.animationNodeIds;
+  }
+  public set animationNodeIds(ids: UintArray | undefined) {
+    this._features.animationNodeIds = ids;
+  }
 
   public get byteLength() {
     return this._features.byteLength + this._models.byteLength;
@@ -657,7 +710,7 @@ export class MultiModelPackedFeatureTable implements RenderFeatureTable {
     return this._features.findElementId(featureIndex);
   }
 
-  public * iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex> {
+  public *iterator(output: PackedFeatureWithIndex): Iterator<PackedFeatureWithIndex> {
     // Rather than perform a binary search on the model table to find each feature's model Id, traverse the model table in parallel with the feature table.
     let modelIndex = 0;
     const modelEntry = this._models.getEntry(modelIndex, scratchPackedFeatureModelEntry);

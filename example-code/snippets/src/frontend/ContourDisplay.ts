@@ -38,7 +38,7 @@ export function setupContourDisplay(viewport: Viewport): boolean {
           minorInterval: 2,
           majorIntervalCount: 8,
         },
-        subCategories: CompressedId64Set.sortAndCompress([ "0x5b", "0x5a" ]),
+        subCategories: CompressedId64Set.sortAndCompress(["0x5b", "0x5a"]),
       },
       {
         contourDef: {
@@ -56,7 +56,7 @@ export function setupContourDisplay(viewport: Viewport): boolean {
           minorInterval: 1,
           majorIntervalCount: 7,
         },
-        subCategories: CompressedId64Set.sortAndCompress([ "0x5c", "0x6a" ]),
+        subCategories: CompressedId64Set.sortAndCompress(["0x5c", "0x6a"]),
       },
     ],
   };

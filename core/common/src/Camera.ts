@@ -37,23 +37,47 @@ export class Camera implements CameraProps {
       val.setRadians(Math.PI / 2.0);
   }
 
-  public invalidateFocus() { this.focusDist = 0.0; }
-  public get isFocusValid() { return this.focusDist > 0.0 && this.focusDist < 1.0e14; }
-  public getFocusDistance() { return this.focusDist; }
-  public setFocusDistance(dist: number) { this.focusDist = dist; }
-  public get isLensValid() { return Camera.isValidLensAngle(this.lens); }
-  public validateLens() { Camera.validateLensAngle(this.lens); }
-  public getLensAngle() { return this.lens; }
-  public setLensAngle(angle: Angle) { this.lens.setFrom(angle); }
-  public getEyePoint() { return this.eye; }
-  public setEyePoint(pt: XYAndZ) { this.eye.setFrom(pt); }
-  public get isValid() { return this.isLensValid && this.isFocusValid; }
+  public invalidateFocus() {
+    this.focusDist = 0.0;
+  }
+  public get isFocusValid() {
+    return this.focusDist > 0.0 && this.focusDist < 1.0e14;
+  }
+  public getFocusDistance() {
+    return this.focusDist;
+  }
+  public setFocusDistance(dist: number) {
+    this.focusDist = dist;
+  }
+  public get isLensValid() {
+    return Camera.isValidLensAngle(this.lens);
+  }
+  public validateLens() {
+    Camera.validateLensAngle(this.lens);
+  }
+  public getLensAngle() {
+    return this.lens;
+  }
+  public setLensAngle(angle: Angle) {
+    this.lens.setFrom(angle);
+  }
+  public getEyePoint() {
+    return this.eye;
+  }
+  public setEyePoint(pt: XYAndZ) {
+    this.eye.setFrom(pt);
+  }
+  public get isValid() {
+    return this.isLensValid && this.isFocusValid;
+  }
   public equals(other: Camera) {
     return Math.abs(this.lens.radians - other.lens.radians) < .01 &&
       Math.abs(this.focusDist - other.focusDist) < .1 &&
       this.eye.isAlmostEqual(other.eye);
   }
-  public clone() { return new Camera(this); }
+  public clone() {
+    return new Camera(this);
+  }
   public setFrom(rhs: Camera) {
     this.lens.setFrom(rhs.lens);
     this.focusDist = rhs.focusDist;

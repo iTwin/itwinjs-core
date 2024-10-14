@@ -13,11 +13,11 @@ import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
 import { Batch, Branch } from "./Graphic";
-import { UniformHandle } from "./UniformHandle";
 import { RenderPass } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueFlags } from "./TechniqueFlags";
+import { UniformHandle } from "./UniformHandle";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -40,7 +40,9 @@ export class Uniform {
   private readonly _name: string;
   protected _handle?: UniformHandle;
 
-  protected constructor(name: string) { this._name = name; }
+  protected constructor(name: string) {
+    this._name = name;
+  }
 
   public compile(prog: ShaderProgram): boolean {
     assert(!this.isValid);
@@ -51,7 +53,9 @@ export class Uniform {
     return this.isValid;
   }
 
-  public get isValid(): boolean { return undefined !== this._handle; }
+  public get isValid(): boolean {
+    return undefined !== this._handle;
+  }
 }
 
 /**
@@ -113,8 +117,8 @@ export class GraphicUniform extends Uniform {
  * @internal
  */
 export const enum CompileStatus {
-  Success,    // The program was successfully compiled.
-  Failure,    // The program failed to compile.
+  Success, // The program was successfully compiled.
+  Failure, // The program failed to compile.
   Uncompiled, // No attempt has yet been made to compile the program.
 }
 
@@ -137,7 +141,14 @@ export class ShaderProgram implements WebGLDisposable {
   private _fragHNdx: number = -1;
   public readonly outputsToPick;
 
-  public constructor(gl: WebGL2RenderingContext, vertSource: string, fragSource: string, attrMap: Map<string, AttributeDetails> | undefined, description: string, fragDescription: string) {
+  public constructor(
+    gl: WebGL2RenderingContext,
+    vertSource: string,
+    fragSource: string,
+    attrMap: Map<string, AttributeDetails> | undefined,
+    description: string,
+    fragDescription: string,
+  ) {
     this.description = description;
     this.outputsToPick = description.includes("Overrides") || description.includes("Pick");
     this._fragDescription = fragDescription;
@@ -149,7 +160,9 @@ export class ShaderProgram implements WebGLDisposable {
     this._glProgram = (null === glProgram) ? undefined : glProgram;
   }
 
-  public get isDisposed(): boolean { return this._glProgram === undefined; }
+  public get isDisposed(): boolean {
+    return this._glProgram === undefined;
+  }
 
   public dispose(): void {
     if (!this.isDisposed) {
@@ -160,9 +173,15 @@ export class ShaderProgram implements WebGLDisposable {
     }
   }
 
-  public get glProgram(): WebGLProgram | undefined { return this._glProgram; }
-  public get isUncompiled() { return CompileStatus.Uncompiled === this._status; }
-  public get isCompiled() { return CompileStatus.Success === this._status; }
+  public get glProgram(): WebGLProgram | undefined {
+    return this._glProgram;
+  }
+  public get isUncompiled() {
+    return CompileStatus.Uncompiled === this._status;
+  }
+  public get isCompiled() {
+    return CompileStatus.Success === this._status;
+  }
 
   private compileShader(type: GL.ShaderType): WebGLShader | undefined {
     const gl = System.instance.context;
@@ -176,7 +195,9 @@ export class ShaderProgram implements WebGLDisposable {
     gl.compileShader(shader);
     const succeeded = gl.getShaderParameter(shader, GL.ShaderParameter.CompileStatus) as boolean;
     if (!succeeded) {
-      const compileLog = `${GL.ShaderType.Vertex === type ? "Vertex" : "Fragment"} shader failed to compile. Errors: ${gl.getShaderInfoLog(shader)} Program description: ${this.description}`;
+      const compileLog = `${GL.ShaderType.Vertex === type ? "Vertex" : "Fragment"} shader failed to compile. Errors: ${
+        gl.getShaderInfoLog(shader)
+      } Program description: ${this.description}`;
       throw new Error(compileLog);
     }
 
@@ -251,8 +272,10 @@ export class ShaderProgram implements WebGLDisposable {
       this.setDebugShaderUsage();
 
     switch (this._status) {
-      case CompileStatus.Failure: return CompileStatus.Failure;
-      case CompileStatus.Success: return CompileStatus.Success;
+      case CompileStatus.Failure:
+        return CompileStatus.Failure;
+      case CompileStatus.Success:
+        return CompileStatus.Success;
       default: {
         if (this.isDisposed) {
           this._status = CompileStatus.Failure;
@@ -266,9 +289,10 @@ export class ShaderProgram implements WebGLDisposable {
 
     const vert = this.compileShader(GL.ShaderType.Vertex);
     const frag = this.compileShader(GL.ShaderType.Fragment);
-    if (undefined !== vert && undefined !== frag)
+    if (undefined !== vert && undefined !== frag) {
       if (this.linkProgram(vert, frag) && this.compileUniforms(this._programUniforms) && this.compileUniforms(this._graphicUniforms))
         this._status = CompileStatus.Success;
+    }
 
     if (System.instance.options.debugShaders && forUse && this._status === CompileStatus.Success)
       this.setDebugShaderUsage();
@@ -670,7 +694,9 @@ export class ShaderProgramExecutor {
   }
 
   private _isDisposed = false;
-  public get isDisposed(): boolean { return this._isDisposed; }
+  public get isDisposed(): boolean {
+    return this._isDisposed;
+  }
 
   /** Clears the current program to be executed. This does not free WebGL resources, since those are owned by Techniques. */
   public dispose() {
@@ -679,10 +705,18 @@ export class ShaderProgramExecutor {
     this._isDisposed = true;
   }
 
-  public setProgram(program: ShaderProgram): boolean { return this.changeProgram(program); }
-  public get isValid() { return undefined !== this._program; }
-  public get target() { return this.params.target; }
-  public get renderPass() { return this.params.renderPass; }
+  public setProgram(program: ShaderProgram): boolean {
+    return this.changeProgram(program);
+  }
+  public get isValid() {
+    return undefined !== this._program;
+  }
+  public get target() {
+    return this.params.target;
+  }
+  public get renderPass() {
+    return this.params.renderPass;
+  }
   public get params() {
     if (undefined === ShaderProgramExecutor._params)
       ShaderProgramExecutor._params = new ShaderProgramParams();
@@ -706,10 +740,18 @@ export class ShaderProgramExecutor {
     }
   }
 
-  public pushBranch(branch: Branch): void { this.target.pushBranch(branch); }
-  public popBranch(): void { this.target.popBranch(); }
-  public pushBatch(batch: Batch): void { this.target.pushBatch(batch); }
-  public popBatch(): void { this.target.popBatch(); }
+  public pushBranch(branch: Branch): void {
+    this.target.pushBranch(branch);
+  }
+  public popBranch(): void {
+    this.target.popBranch();
+  }
+  public pushBatch(batch: Batch): void {
+    this.target.pushBatch(batch);
+  }
+  public popBatch(): void {
+    this.target.popBatch();
+  }
 
   private changeProgram(program?: ShaderProgram): boolean {
     if (this._program === program) {

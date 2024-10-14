@@ -9,14 +9,14 @@ module.exports = [
   {
     files: ["**/*.ts"],
     rules: {
-      "@typescript-eslint/no-non-null-assertion": "error"
-    }
+      "@typescript-eslint/no-non-null-assertion": "error",
+    },
   },
   {
     files: ["**/test/**/*.ts"],
     rules: {
-      "@typescript-eslint/no-non-null-assertion": "off"
-    }
+      "@typescript-eslint/no-non-null-assertion": "off",
+    },
   },
   ...eslintBaseConfig,
 ];

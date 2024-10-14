@@ -12,7 +12,6 @@ import { esriPBuffer } from "../../ArcGisFeature/esriPBuffer.gen";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 
 describe("ArcGisFeatureResponse", () => {
-
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
@@ -20,26 +19,28 @@ describe("ArcGisFeatureResponse", () => {
   });
 
   it("should return undefined if http error", async () => {
-    const response = new ArcGisFeatureResponse("PBF", Promise.resolve({status: 404} as Response));
+    const response = new ArcGisFeatureResponse("PBF", Promise.resolve({ status: 404 } as Response));
     const data = await response.getResponseData();
     expect(data).to.be.undefined;
   });
 
   it("should return undefined if invalid PBF data", async () => {
-    const response = new ArcGisFeatureResponse("PBF", Promise.resolve({
-      status: 404,
-      arrayBuffer: async () => {
-        return Promise.resolve(undefined);
-      },
-    } as unknown as Response));
+    const response = new ArcGisFeatureResponse(
+      "PBF",
+      Promise.resolve({
+        status: 404,
+        arrayBuffer: async () => {
+          return Promise.resolve(undefined);
+        },
+      } as unknown as Response),
+    );
     const data = await response.getResponseData();
     expect(data).to.be.undefined;
   });
 
   it("should create FeatureCollectionPBuffer from PBF data", async () => {
-
-    const fakeResponse  = {
-      headers: { "content-type" : "pbf"},
+    const fakeResponse = {
+      headers: { "content-type": "pbf" },
       arrayBuffer: async () => {
         const byteArray = Base64EncodedString.toUint8Array(PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryEncodedPbf);
         return Promise.resolve(byteArray ? ByteStream.fromUint8Array(byteArray).arrayBuffer : undefined);
@@ -54,11 +55,10 @@ describe("ArcGisFeatureResponse", () => {
   });
 
   it("should report exceededTransferLimit from PBF object", async () => {
-
     const collection = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillyExceededTransferLimitPbf);
 
-    const fakeResponse  = {
-      headers: { "content-type" : "pbf"},
+    const fakeResponse = {
+      headers: { "content-type": "pbf" },
       arrayBuffer: async () => {
         const byteArray = collection.serialize();
         return Promise.resolve(byteArray ? ByteStream.fromUint8Array(byteArray).arrayBuffer : undefined);
@@ -73,37 +73,45 @@ describe("ArcGisFeatureResponse", () => {
   });
 
   it("should return undefined if invalid JSON", async () => {
-    const response = new ArcGisFeatureResponse("JSON", Promise.resolve({
-      status: 404,
-      json: async () => {
-        return undefined;
-      },
-    } as unknown as Response));
+    const response = new ArcGisFeatureResponse(
+      "JSON",
+      Promise.resolve({
+        status: 404,
+        json: async () => {
+          return undefined;
+        },
+      } as unknown as Response),
+    );
     const data = await response.getResponseData();
     expect(data).to.be.undefined;
   });
 
   it("should return JSON data", async () => {
-    const response = new ArcGisFeatureResponse("JSON", Promise.resolve({
-      status: 200,
-      json: async () => {
-        return {exceededTransferLimit: false};
-      },
-    } as unknown as Response));
+    const response = new ArcGisFeatureResponse(
+      "JSON",
+      Promise.resolve({
+        status: 200,
+        json: async () => {
+          return { exceededTransferLimit: false };
+        },
+      } as unknown as Response),
+    );
     const data = await response.getResponseData();
     expect(data?.data).not.to.be.undefined;
     expect(data?.exceedTransferLimit).to.be.false;
   });
 
   it("should report exceededTransferLimit from JSON object", async () => {
-    const response = new ArcGisFeatureResponse("JSON", Promise.resolve({
-      status: 200,
-      json: async () => {
-        return {exceededTransferLimit: true};
-      },
-    } as unknown as Response));
+    const response = new ArcGisFeatureResponse(
+      "JSON",
+      Promise.resolve({
+        status: 200,
+        json: async () => {
+          return { exceededTransferLimit: true };
+        },
+      } as unknown as Response),
+    );
     const data = await response.getResponseData();
     expect(data?.exceedTransferLimit).to.be.true;
   });
-
 });

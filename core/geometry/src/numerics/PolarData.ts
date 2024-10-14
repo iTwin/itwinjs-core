@@ -18,7 +18,6 @@ export enum ConstraintState {
   singlePoint = 1,
   impossibleValues = -1,
   onCurve = 2,
-
 }
 
 /**
@@ -27,7 +26,9 @@ export enum ConstraintState {
  */
 export class PolarData {
   private static _defaultRadius = 1.0;
-  public static get defaultRadius(): number { return PolarData._defaultRadius; }
+  public static get defaultRadius(): number {
+    return PolarData._defaultRadius;
+  }
   /** x coordinate, possibly unknown */
   public x?: number;
   /** y coordinate, possibly unknown */
@@ -81,7 +82,15 @@ export class PolarData {
     // .. "free on curve" has curve filled in, with finite curve range controlled by PolarData.defaultRadius.
     if (known.x !== undefined) {
       if (known.y !== undefined) {
-        result.push(PolarData.createMixedScalars(ConstraintState.singlePoint, known.x, known.y, Geometry.hypotenuseXY(known.x, known.y), Angle.createAtan2(known.y, known.x)));
+        result.push(
+          PolarData.createMixedScalars(
+            ConstraintState.singlePoint,
+            known.x,
+            known.y,
+            Geometry.hypotenuseXY(known.x, known.y),
+            Angle.createAtan2(known.y, known.x),
+          ),
+        );
       } else if (known.r !== undefined) {
         const rr = known.r * known.r;
         const xx = known.x * known.x;
@@ -104,11 +113,11 @@ export class PolarData {
           const y = r * known.theta.sin();
           result.push(PolarData.createMixedScalars(ConstraintState.singlePoint, known.x, y, r, known.theta));
         }
-      } else {  // only x known --- fill out a vertical line
+      } else { // only x known --- fill out a vertical line
         const q = known.cloneScalarsWithState(ConstraintState.onCurve);
         q.geometry = LineSegment3d.createXYZXYZ(known.x, PolarData._defaultRadius, 0, known.x, PolarData._defaultRadius, 0);
       }
-    } else if (known.y !== undefined) {   // and we already know x is undefined .....
+    } else if (known.y !== undefined) { // and we already know x is undefined .....
       if (known.r !== undefined) {
         const rr = known.r * known.r;
         const yy = known.y * known.y;
@@ -131,13 +140,15 @@ export class PolarData {
           const x = r * known.theta.cos();
           result.push(PolarData.createMixedScalars(ConstraintState.singlePoint, x, known.y, r, known.theta));
         }
-      } else {  // only x known --- fill out a horizontal line
+      } else { // only x known --- fill out a horizontal line
         const q = known.cloneScalarsWithState(ConstraintState.onCurve);
         q.geometry = LineSegment3d.createXYZXYZ(PolarData._defaultRadius, known.y, 0, PolarData._defaultRadius, known.y, 0);
       }
     } else if (known.r !== undefined) {
       if (known.theta !== undefined) {
-        result.push(PolarData.createMixedScalars(ConstraintState.singlePoint, known.r * known.theta.cos(), known.r * known.theta.sin(), known.r, known.theta));
+        result.push(
+          PolarData.createMixedScalars(ConstraintState.singlePoint, known.r * known.theta.cos(), known.r * known.theta.sin(), known.r, known.theta),
+        );
       } else {
         const q = known.cloneScalarsWithState(ConstraintState.onCurve);
         q.geometry = Arc3d.createXY(Point3d.create(0, 0, 0), known.r);

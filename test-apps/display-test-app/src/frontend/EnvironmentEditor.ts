@@ -3,13 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  CheckBox, ColorInput, createButton, createCheckBox, createColorInput, createNestedMenu, createRadioBox, createSlider, RadioBox, Slider,
-} from "@itwin/frontend-devtools";
 import { ColorDef, Environment, RenderMode, SkyBox, SkyBoxProps, SkyGradient } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
-import { LightingEditor } from "./LightingEditor";
+import {
+  CheckBox,
+  ColorInput,
+  createButton,
+  createCheckBox,
+  createColorInput,
+  createNestedMenu,
+  createRadioBox,
+  createSlider,
+  RadioBox,
+  Slider,
+} from "@itwin/frontend-devtools";
 import { AtmosphereEditor } from "./Atmosphere";
+import { LightingEditor } from "./LightingEditor";
 
 type UpdateAttribute = (view: ViewState) => void;
 
@@ -199,7 +208,9 @@ export class EnvironmentEditor {
         const env = (this._vp.view as ViewState3d).getDisplayStyle3d().environment.sky.gradient;
         let msg = `Zenith Color: ${env.zenithColor.toRgbString()}\nNadir Color: ${env.nadirColor.toRgbString()}`;
         if (!env.twoColor)
-          msg = msg.concat(`\nSky Color: ${env.skyColor.toRgbString()}\nGround Color: ${env.groundColor.toRgbString()}\nSky Exponent: ${env.skyExponent}\nGround Exponent: ${env.groundExponent}`);
+          msg = msg.concat(
+            `\nSky Color: ${env.skyColor.toRgbString()}\nGround Color: ${env.groundColor.toRgbString()}\nSky Exponent: ${env.skyExponent}\nGround Exponent: ${env.groundExponent}`,
+          );
         alert(msg);
       },
     });
@@ -304,16 +315,21 @@ export class EnvironmentEditor {
   }
 
   private addEnvAttribute(parent: HTMLElement, label: string, which: "sky" | "ground", updateHandler?: (enabled: boolean) => void): void {
-    const elems = this.addCheckbox(label, (enabled: boolean) => {
-      const view3d = this._vp.view as ViewState3d;
-      const style = view3d.getDisplayStyle3d();
-      style.environment = style.environment.withDisplay("sky" === which ? { sky: enabled } : { ground: enabled });
+    const elems = this.addCheckbox(
+      label,
+      (enabled: boolean) => {
+        const view3d = this._vp.view as ViewState3d;
+        const style = view3d.getDisplayStyle3d();
+        style.environment = style.environment.withDisplay("sky" === which ? { sky: enabled } : { ground: enabled });
 
-      if (undefined !== updateHandler)
-        updateHandler(enabled);
+        if (undefined !== updateHandler)
+          updateHandler(enabled);
 
-      this.sync();
-    }, parent, this._nextId);
+        this.sync();
+      },
+      parent,
+      this._nextId,
+    );
 
     const update = (view: ViewState) => {
       const visible = view.is3d();

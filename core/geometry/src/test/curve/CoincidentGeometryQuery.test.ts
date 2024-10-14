@@ -16,7 +16,6 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
 
 describe("CoincidentGeometryQuery", () => {
-
   it("SegmentSegment", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -36,7 +35,7 @@ describe("CoincidentGeometryQuery", () => {
     for (const fA0 of fractionsOnA) {
       let y0 = 0.0;
       for (const fA1 of fractionsOnA) {
-        if (fA1 === fA0)   // only do non trivial
+        if (fA1 === fA0) // only do non trivial
           continue;
         const rangeA = Range1d.createXX(fA0, fA1);
         const rangeA01 = rangeA.intersect(range01);
@@ -109,7 +108,7 @@ describe("CoincidentGeometryQuery", () => {
       for (const fA0 of fractionsOnA) {
         let y0 = 0.0;
         for (const fA1 of fractionsOnA) {
-          if (fA1 === fA0)   // only do non trivial
+          if (fA1 === fA0) // only do non trivial
             continue;
           const arcB = arcA.clone();
           arcB.sweep.setStartEndRadians(arcA.sweep.fractionToRadians(fA0), arcA.sweep.fractionToRadians(fA1));
@@ -150,5 +149,4 @@ describe("CoincidentGeometryQuery", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CoincidentGeometryQuery", "ArcArc");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

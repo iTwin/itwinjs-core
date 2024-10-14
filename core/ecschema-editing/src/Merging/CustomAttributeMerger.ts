@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttribute, CustomAttributeClass, RelationshipClass, SchemaItemKey } from "@itwin/ecschema-metadata";
-import { type SchemaMergeContext } from "./SchemaMerger";
 import { type CustomAttributeDifference } from "../Differencing/SchemaDifference";
+import { type SchemaMergeContext } from "./SchemaMerger";
 import { getClassEditor, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 
 type CustomAttributeSetter = (customAttribute: CustomAttribute) => Promise<void>;
@@ -60,7 +60,11 @@ export async function addCustomAttribute(context: SchemaMergeContext, change: Cu
 /**
  * @internal
  */
-export async function applyCustomAttributes(context: SchemaMergeContext, customAttributes: CustomAttribute[], handler: CustomAttributeSetter): Promise<void> {
+export async function applyCustomAttributes(
+  context: SchemaMergeContext,
+  customAttributes: CustomAttribute[],
+  handler: CustomAttributeSetter,
+): Promise<void> {
   for (const customAttribute of customAttributes) {
     await applyCustomAttribute(context, customAttribute, handler);
   }
@@ -69,7 +73,11 @@ export async function applyCustomAttributes(context: SchemaMergeContext, customA
 /**
  * @internal
  */
-export async function applyCustomAttribute(context: SchemaMergeContext, customAttribute: CustomAttribute, handler: CustomAttributeSetter): Promise<void> {
+export async function applyCustomAttribute(
+  context: SchemaMergeContext,
+  customAttribute: CustomAttribute,
+  handler: CustomAttributeSetter,
+): Promise<void> {
   customAttribute.className = await updateSchemaItemFullName(context, customAttribute.className);
   return handler(customAttribute);
 }

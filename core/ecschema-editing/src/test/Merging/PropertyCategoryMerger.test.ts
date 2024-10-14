@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { PropertyCategory, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
-import { expect } from "chai";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

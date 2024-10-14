@@ -8,29 +8,51 @@
 
 // cspell:ignore cset csets ecchanges
 
-import * as path from "path";
 import {
-  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch,
+  AccessToken,
+  BeDuration,
+  ChangeSetStatus,
+  GuidString,
+  IModelHubStatus,
+  IModelStatus,
+  Logger,
+  OpenMode,
+  Optional,
+  StopWatch,
 } from "@itwin/core-bentley";
 import {
-  BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
-  LocalDirName, LocalFileName, RequestNewBriefcaseProps,
+  BriefcaseId,
+  BriefcaseIdValue,
+  BriefcaseProps,
+  ChangesetFileProps,
+  ChangesetIndex,
+  ChangesetIndexOrId,
+  ChangesetProps,
+  ChangesetRange,
+  ChangesetType,
+  IModelError,
+  IModelVersion,
+  LocalBriefcaseProps,
+  LocalDirName,
+  LocalFileName,
+  RequestNewBriefcaseProps,
 } from "@itwin/core-common";
+import * as path from "path";
 import { AcquireNewBriefcaseIdArg, IModelNameArg } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, CheckpointProps, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { SchemaSync } from "./SchemaSync";
-import { _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 import { IModelNative } from "./internal/NativePlatform";
+import { _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { SchemaSync } from "./SchemaSync";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
 /** The argument for [[BriefcaseManager.downloadBriefcase]]
  * @public
-*/
+ */
 export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcaseProps {
   /** If present, a function called periodically during the download to indicate progress.
    * @note return non-zero from this function to abort the download.
@@ -95,16 +117,24 @@ export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
  */
 export class BriefcaseManager {
   /** Get the local path of the folder storing files that are associated with an imodel */
-  public static getIModelPath(iModelId: GuidString): LocalDirName { return path.join(this._cacheDir, iModelId); }
+  public static getIModelPath(iModelId: GuidString): LocalDirName {
+    return path.join(this._cacheDir, iModelId);
+  }
 
   /** @internal */
-  public static getChangeSetsPath(iModelId: GuidString): LocalDirName { return path.join(this.getIModelPath(iModelId), "changesets"); }
+  public static getChangeSetsPath(iModelId: GuidString): LocalDirName {
+    return path.join(this.getIModelPath(iModelId), "changesets");
+  }
 
   /** @internal */
-  public static getChangeCachePathName(iModelId: GuidString): LocalFileName { return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
+  public static getChangeCachePathName(iModelId: GuidString): LocalFileName {
+    return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges"));
+  }
 
   /** @internal */
-  public static getChangedElementsPathName(iModelId: GuidString): LocalFileName { return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.elems")); }
+  public static getChangedElementsPathName(iModelId: GuidString): LocalFileName {
+    return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.elems"));
+  }
 
   private static _briefcaseSubDir = "briefcases";
   /** Get the local path of the folder storing briefcases associated with the specified iModel. */
@@ -170,7 +200,14 @@ export class BriefcaseManager {
             const fileName = path.join(bcPath, briefcaseName);
             const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
-            briefcaseList.push({ fileName, iTwinId: db.getITwinId(), iModelId: db.getIModelId(), briefcaseId: db.getBriefcaseId(), changeset: db.getCurrentChangeset(), fileSize });
+            briefcaseList.push({
+              fileName,
+              iTwinId: db.getITwinId(),
+              iModelId: db.getIModelId(),
+              briefcaseId: db.getBriefcaseId(),
+              changeset: db.getCurrentChangeset(),
+              fileSize,
+            });
             db.closeFile();
           } catch (_err) {
           }
@@ -182,7 +219,9 @@ export class BriefcaseManager {
 
   private static _cacheDir: LocalDirName;
   /** Get the root directory for the briefcase cache */
-  public static get cacheDir(): LocalDirName { return this._cacheDir; }
+  public static get cacheDir(): LocalDirName {
+    return this._cacheDir;
+  }
 
   /** Determine whether the supplied briefcaseId is in the range of assigned BriefcaseIds issued by iModelHub
    * @note this does check whether the id was actually acquired by the caller.
@@ -388,7 +427,9 @@ export class BriefcaseManager {
     const files = IModelJsFs.readdirSync(folderPathname);
     for (const file of files) {
       const curPath = path.join(folderPathname, file);
-      const locStatus = (IModelJsFs.lstatSync(curPath)?.isDirectory) ? BriefcaseManager.deleteFolderAndContents(curPath) : BriefcaseManager.deleteFile(curPath);
+      const locStatus = (IModelJsFs.lstatSync(curPath)?.isDirectory)
+        ? BriefcaseManager.deleteFolderAndContents(curPath)
+        : BriefcaseManager.deleteFile(curPath);
       if (!locStatus)
         status = false;
     }
@@ -453,7 +494,9 @@ export class BriefcaseManager {
 
     let currentIndex = db.changeset.index;
     if (currentIndex === undefined)
-      currentIndex = (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
+      currentIndex =
+        (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } }))
+          .index;
 
     if (!arg.toIndex) {
       throw new IModelError(ChangeSetStatus.ApplyError, "toIndex must be specified to revert changesets");
@@ -506,7 +549,9 @@ export class BriefcaseManager {
 
     let currentIndex = db.changeset.index;
     if (currentIndex === undefined)
-      currentIndex = (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
+      currentIndex =
+        (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } }))
+          .index;
 
     const reverse = (arg.toIndex && arg.toIndex < currentIndex) ? true : false;
 
@@ -592,10 +637,9 @@ export class BriefcaseManager {
         return await BriefcaseManager.pushChanges(db, arg);
       } catch (err: any) {
         if (retryCount-- <= 0 || err.errorNumber !== IModelHubStatus.PullIsRequired)
-          throw (err);
+          throw err;
         await (arg.mergeRetryDelay ?? BeDuration.fromSeconds(3)).wait();
       }
     }
   }
-
 }

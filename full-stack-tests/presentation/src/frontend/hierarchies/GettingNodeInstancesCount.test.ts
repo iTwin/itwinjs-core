@@ -3,12 +3,20 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as faker from "faker";
 import { using } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, ECInstancesNodeKey, getInstancesCount, KeySet, RegisteredRuleset, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import {
+  ChildNodeSpecificationTypes,
+  ECInstancesNodeKey,
+  getInstancesCount,
+  KeySet,
+  RegisteredRuleset,
+  Ruleset,
+  RuleTypes,
+} from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
+import * as faker from "faker";
 import { initialize, terminate } from "../../IntegrationTests";
 import { collect } from "../../Utils";
 
@@ -51,7 +59,7 @@ describe("Hierarchies", () => {
           },
         ],
       };
-      await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
+      using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
         const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset.id }).then(async (x) => collect(x.items));
         expect(rootNodes).to.matchSnapshot();
         /*

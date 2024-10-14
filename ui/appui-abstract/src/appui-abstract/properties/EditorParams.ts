@@ -295,7 +295,6 @@ export interface ImageCheckBoxParams extends BasePropertyEditorParams {
   type: PropertyEditorParamTypes.CheckBoxImages;
   imageOn: string;
   imageOff: string;
-
 }
 
 // /**

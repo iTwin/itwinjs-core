@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as yargs from "yargs";
-import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
+import { Logger } from "@itwin/core-bentley";
+import * as yargs from "yargs";
 import { GeoJson } from "./GeoJson";
 import { GeoJsonImporter } from "./GeoJsonImporter";
 
@@ -52,9 +52,21 @@ const argv = yargs
   Logger.initializeToConsole();
 
   const geoJson = new GeoJson(argv.input);
-  const importer = new GeoJsonImporter(argv.output, geoJson, argv.append as boolean, argv.model_name as string, argv.label as string, argv.point_radius as number, argv.color as boolean,
-    argv.map as string, argv.mapBias as number,
-    argv.classifiedURL as string, argv.classifiedName as string, argv.classifiedOutside as string, argv.classifiedInside as string);
+  const importer = new GeoJsonImporter(
+    argv.output,
+    geoJson,
+    argv.append as boolean,
+    argv.model_name as string,
+    argv.label as string,
+    argv.point_radius as number,
+    argv.color as boolean,
+    argv.map as string,
+    argv.mapBias as number,
+    argv.classifiedURL as string,
+    argv.classifiedName as string,
+    argv.classifiedOutside as string,
+    argv.classifiedInside as string,
+  );
 
   try {
     await importer.import();

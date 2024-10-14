@@ -16,13 +16,18 @@ interface ArcGisTokenProps {
 
 /** @internal */
 export class ArcGisTokenManager {
-  private static readonly tokenExpiryThreshold = 300000;  // 5 minutes in milliseconds
+  private static readonly tokenExpiryThreshold = 300000; // 5 minutes in milliseconds
   private static _cache = new Map<string, ArcGisToken>();
   private static _oauth2Cache: Map<string, ArcGisOAuth2Token> | undefined;
   private static _generator: ArcGisTokenGenerator | undefined;
   private static readonly _browserStorageKey = "arcGisOAuth";
 
-  public static async getToken(arcGisRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<ArcGisToken | undefined> {
+  public static async getToken(
+    arcGisRestServiceUrl: string,
+    userName: string,
+    password: string,
+    options: ArcGisGenerateTokenOptions,
+  ): Promise<ArcGisToken | undefined> {
     if (!ArcGisTokenManager._generator)
       ArcGisTokenManager._generator = new ArcGisTokenGenerator();
 
@@ -48,7 +53,6 @@ export class ArcGisTokenManager {
   }
 
   public static invalidateToken(token: MapLayerAccessToken): boolean {
-
     for (const [key, value] of ArcGisTokenManager._cache) {
       if (value.token === token.token)
         return ArcGisTokenManager._cache.delete(key);
@@ -75,10 +79,9 @@ export class ArcGisTokenManager {
   }
 
   public static invalidateOAuth2Token(token: MapLayerAccessToken) {
-
     if (ArcGisTokenManager._oauth2Cache) {
       for (const [key, value] of ArcGisTokenManager._oauth2Cache) {
-        if (value.token === token.token){
+        if (value.token === token.token) {
           const deleted = ArcGisTokenManager._oauth2Cache.delete(key);
           ArcGisTokenManager.saveToBrowserStorage();
           return deleted;
@@ -90,10 +93,8 @@ export class ArcGisTokenManager {
   }
 
   public static setOAuth2Token(key: string, token: ArcGisOAuth2Token) {
-
     if (ArcGisTokenManager._oauth2Cache === undefined) {
       ArcGisTokenManager._oauth2Cache = new Map<string, ArcGisOAuth2Token>();
-
     }
     ArcGisTokenManager._oauth2Cache.set(key, token);
 
@@ -121,7 +122,6 @@ export class ArcGisTokenManager {
   }
 
   public static saveToBrowserStorage() {
-
     if (ArcGisTokenManager._oauth2Cache === undefined) {
       return;
     }
@@ -140,5 +140,4 @@ export class ArcGisTokenManager {
     window.sessionStorage.setItem(this._browserStorageKey, JSON.stringify(sessionTokens));
     window.localStorage.setItem(this._browserStorageKey, JSON.stringify(storageTokens));
   }
-
 }

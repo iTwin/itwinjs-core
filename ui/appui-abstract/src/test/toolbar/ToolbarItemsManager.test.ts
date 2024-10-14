@@ -5,22 +5,34 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import {
-  BadgeType, CommonToolbarItem, ConditionalBooleanValue, ConditionalStringValue, CustomButtonDefinition, ToolbarItemsManager, ToolbarItemUtilities,
+  BadgeType,
+  CommonToolbarItem,
+  ConditionalBooleanValue,
+  ConditionalStringValue,
+  CustomButtonDefinition,
+  ToolbarItemsManager,
+  ToolbarItemUtilities,
 } from "../../appui-abstract";
 
 describe("ToolbarItemsManager", () => {
-
   const customSpec: CustomButtonDefinition = {
-    id: "custom", itemPriority: 1,
+    id: "custom",
+    itemPriority: 1,
     isCustom: true,
   };
 
   let isChildVisible = true;
   let isVisible = true;
   let isEnabled = true;
-  const setChildVisibility = (value: boolean) => { isChildVisible = value; };
-  const setVisibility = (value: boolean) => { isVisible = value; };
-  const setEnabled = (value: boolean) => { isEnabled = value; };
+  const setChildVisibility = (value: boolean) => {
+    isChildVisible = value;
+  };
+  const setVisibility = (value: boolean) => {
+    isVisible = value;
+  };
+  const setEnabled = (value: boolean) => {
+    isEnabled = value;
+  };
   const syncId = "test-on-display-changed";
   const childSyncId = "child-test-on-display-changed";
   const hiddenCondition = () => new ConditionalBooleanValue(() => !isVisible, [syncId]);
@@ -32,14 +44,57 @@ describe("ToolbarItemsManager", () => {
   const nestedConditionalLabel = new ConditionalStringValue(() => isVisible ? "nested-Hello" : "nested-Goodbye", [syncId]);
   const nestedConditionalIcon = new ConditionalStringValue(() => isVisible ? "nested-icon-developer" : "nested-icon-home", [syncId]);
 
-  const simpleActionSpec = ToolbarItemUtilities.createActionButton("simple-test-action1-tool", 100, "icon-developer", "simple-test-action-tool", (): void => { });
-  const simpleAction2Spec = ToolbarItemUtilities.createActionButton("simple-test-action2-tool", 100, conditionalIcon, conditionalLabel, (): void => { }, { isHidden: hiddenCondition() });
-  const child1ActionSpec = ToolbarItemUtilities.createActionButton("child1-test-action-tool", 100, "icon-developer", "child1", (): void => { }, { isHidden: childHiddenCondition() });
-  const child2ActionSpec = ToolbarItemUtilities.createActionButton("child2-test-action-tool", 110, conditionalIcon, conditionalLabel, (): void => { }, { isDisabled: disabledCondition() });
-  const nestedChild1ActionSpec = ToolbarItemUtilities.createActionButton("child1-test-action-tool-nested", 100, "icon-developer", "child1", (): void => { }, { isHidden: nestChildHiddenCondition() });
-  const nestedChild2ActionSpec = ToolbarItemUtilities.createActionButton("child2-test-action-tool-nested", 110, nestedConditionalIcon, nestedConditionalLabel, (): void => { }, { isDisabled: disabledCondition() });
-  const nestedGroupItem = ToolbarItemUtilities.createGroupButton("tool-formatting-setting-nested", 110, "icon-placeholder", "set formatting units", [nestedChild1ActionSpec, nestedChild2ActionSpec], { badgeType: BadgeType.New });
-  const groupItem = ToolbarItemUtilities.createGroupButton("tool-formatting-setting", 110, "icon-placeholder", "set formatting units", [child1ActionSpec, child2ActionSpec, nestedGroupItem], { badgeType: BadgeType.New, isDisabled: disabledCondition() });
+  const simpleActionSpec = ToolbarItemUtilities.createActionButton(
+    "simple-test-action1-tool",
+    100,
+    "icon-developer",
+    "simple-test-action-tool",
+    (): void => {},
+  );
+  const simpleAction2Spec = ToolbarItemUtilities.createActionButton(
+    "simple-test-action2-tool",
+    100,
+    conditionalIcon,
+    conditionalLabel,
+    (): void => {},
+    { isHidden: hiddenCondition() },
+  );
+  const child1ActionSpec = ToolbarItemUtilities.createActionButton("child1-test-action-tool", 100, "icon-developer", "child1", (): void => {}, {
+    isHidden: childHiddenCondition(),
+  });
+  const child2ActionSpec = ToolbarItemUtilities.createActionButton(
+    "child2-test-action-tool",
+    110,
+    conditionalIcon,
+    conditionalLabel,
+    (): void => {},
+    { isDisabled: disabledCondition() },
+  );
+  const nestedChild1ActionSpec = ToolbarItemUtilities.createActionButton(
+    "child1-test-action-tool-nested",
+    100,
+    "icon-developer",
+    "child1",
+    (): void => {},
+    { isHidden: nestChildHiddenCondition() },
+  );
+  const nestedChild2ActionSpec = ToolbarItemUtilities.createActionButton(
+    "child2-test-action-tool-nested",
+    110,
+    nestedConditionalIcon,
+    nestedConditionalLabel,
+    (): void => {},
+    { isDisabled: disabledCondition() },
+  );
+  const nestedGroupItem = ToolbarItemUtilities.createGroupButton("tool-formatting-setting-nested", 110, "icon-placeholder", "set formatting units", [
+    nestedChild1ActionSpec,
+    nestedChild2ActionSpec,
+  ], { badgeType: BadgeType.New });
+  const groupItem = ToolbarItemUtilities.createGroupButton("tool-formatting-setting", 110, "icon-placeholder", "set formatting units", [
+    child1ActionSpec,
+    child2ActionSpec,
+    nestedGroupItem,
+  ], { badgeType: BadgeType.New, isDisabled: disabledCondition() });
 
   afterEach(() => sinon.restore());
 
@@ -204,7 +259,14 @@ describe("ToolbarItemsManager", () => {
 
   describe("set active tool", () => {
     it("root tool already active", () => {
-      const initiallyActiveSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool-active", 100, "icon-developer", "simple-test-action-tool", (): void => { }, { isActive: true });
+      const initiallyActiveSpec = ToolbarItemUtilities.createActionButton(
+        "simple-test-action-tool-active",
+        100,
+        "icon-developer",
+        "simple-test-action-tool",
+        (): void => {},
+        { isActive: true },
+      );
       const sut = new ToolbarItemsManager([simpleActionSpec, simpleAction2Spec, groupItem, initiallyActiveSpec]);
 
       const items = sut.items;
@@ -228,5 +290,4 @@ describe("ToolbarItemsManager", () => {
       expect(items).not.to.equal(sut.items);
     });
   });
-
 });

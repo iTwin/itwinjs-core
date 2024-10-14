@@ -28,7 +28,6 @@ import { JsonUtils } from "@itwin/core-bentley";
  * Both of which are inspired by this Nvidia article on atmospheric scattering: https://developer.nvidia.com/gpugems/gpugems2/part-ii-shading-lighting-and-shadows/chapter-16-accurate-atmospheric-scattering.
  */
 export namespace Atmosphere {
-
   /** @internal JSON representation of a [[Wavelengths]] object */
   export interface WavelengthsProps {
     r: number;

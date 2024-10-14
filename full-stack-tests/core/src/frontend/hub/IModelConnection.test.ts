@@ -2,15 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { Id64, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BisCodeSpec, IModelVersion, QueryBinder, QueryRowFormat, RelatedElement } from "@itwin/core-common";
 import {
-  CategorySelectorState, CheckpointConnection, DisplayStyle2dState, DisplayStyle3dState, DrawingViewState, IModelApp, IModelConnection,
-  ModelSelectorState, OrthographicViewState, ViewState,
+  CategorySelectorState,
+  CheckpointConnection,
+  DisplayStyle2dState,
+  DisplayStyle3dState,
+  DrawingViewState,
+  IModelApp,
+  IModelConnection,
+  ModelSelectorState,
+  OrthographicViewState,
+  ViewState,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
 
 async function executeQuery(iModel: IModelConnection, ecsql: string, bindings?: any[] | object): Promise<any[]> {

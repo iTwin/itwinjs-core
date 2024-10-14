@@ -10,7 +10,10 @@
 import { Geometry } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import {
-  IndexedReadWriteXYZCollection, IndexedXYZCollection, LineStringDataVariant, MultiLineStringDataVariant,
+  IndexedReadWriteXYZCollection,
+  IndexedXYZCollection,
+  LineStringDataVariant,
+  MultiLineStringDataVariant,
 } from "../geometry3d/IndexedXYZCollection";
 import { Point3dArrayCarrier } from "../geometry3d/Point3dArrayCarrier";
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -103,7 +106,7 @@ export class RegionOps {
    * Return an area tolerance for a given xy-range and optional distance tolerance.
    * @param range range of planar region to tolerance
    * @param distanceTolerance optional absolute distance tolerance
-  */
+   */
   public static computeXYAreaTolerance(range: Range3d, distanceTolerance: number = Geometry.smallMetricDistance): number {
     // if A = bh and e is distance tolerance, then A' := (b+e/2)(h+e/2) = A + e/2(b+h+e/2), so A'-A = e/2(b+h+e/2).
     const halfDistTol = 0.5 * distanceTolerance;
@@ -164,7 +167,6 @@ export class RegionOps {
           const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(graph, data as LineStringDataVariant);
           if (loopSeed !== undefined)
             announceIsolatedLoop(graph, loopSeed);
-
         } else if (data[0] instanceof IndexedXYZCollection) {
           for (const loop of data) {
             const loopSeed = Triangulator.directCreateFaceLoopFromCoordinates(graph, loop as IndexedXYZCollection);
@@ -186,7 +188,10 @@ export class RegionOps {
    * @internal
    */
   public static addLoopsWithEdgeTagToGraph(
-    graph: HalfEdgeGraph, data: MultiLineStringDataVariant, mask: HalfEdgeMask, edgeTag: any,
+    graph: HalfEdgeGraph,
+    data: MultiLineStringDataVariant,
+    mask: HalfEdgeMask,
+    edgeTag: any,
   ): HalfEdge[] | undefined {
     const loopSeeds: HalfEdge[] = [];
     this.addLoopsToGraph(graph, data, (_graph: HalfEdgeGraph, seed: HalfEdge) => {
@@ -225,7 +230,9 @@ export class RegionOps {
    * @param triangulate whether to triangulate the result
    */
   public static polygonXYAreaIntersectLoopsToPolyface(
-    loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false,
+    loopsA: MultiLineStringDataVariant,
+    loopsB: MultiLineStringDataVariant,
+    triangulate: boolean = false,
   ): Polyface | undefined {
     const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(
       loopsA,
@@ -245,7 +252,9 @@ export class RegionOps {
    * @param triangulate whether to triangulate the result
    */
   public static polygonXYAreaUnionLoopsToPolyface(
-    loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false,
+    loopsA: MultiLineStringDataVariant,
+    loopsB: MultiLineStringDataVariant,
+    triangulate: boolean = false,
   ): Polyface | undefined {
     const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(
       loopsA,
@@ -265,7 +274,9 @@ export class RegionOps {
    * @param triangulate whether to triangulate the result
    */
   public static polygonXYAreaDifferenceLoopsToPolyface(
-    loopsA: MultiLineStringDataVariant, loopsB: MultiLineStringDataVariant, triangulate: boolean = false,
+    loopsA: MultiLineStringDataVariant,
+    loopsB: MultiLineStringDataVariant,
+    triangulate: boolean = false,
   ): Polyface | undefined {
     const graph = RegionOpsFaceToFaceSearch.doPolygonBoolean(
       loopsA,
@@ -336,9 +347,11 @@ export class RegionOps {
     triangulate: boolean = false,
   ): Polyface | undefined {
     const graph = RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
-      inputA, RegionGroupOpType.Union,
+      inputA,
+      RegionGroupOpType.Union,
       operation,
-      inputB, RegionGroupOpType.Union,
+      inputB,
+      RegionGroupOpType.Union,
       true,
     );
     return this.finishGraphToPolyface(graph, triangulate);
@@ -395,7 +408,9 @@ export class RegionOps {
    * object.
    */
   public static constructPolygonWireXYOffset(
-    points: Point3d[], wrap: boolean, offsetDistanceOrOptions: number | JointOptions,
+    points: Point3d[],
+    wrap: boolean,
+    offsetDistanceOrOptions: number | JointOptions,
   ): CurveChain | undefined {
     const context = new PolygonWireOffsetContext();
     return context.constructPolygonWireXYOffset(points, wrap, offsetDistanceOrOptions);
@@ -409,7 +424,8 @@ export class RegionOps {
    * @param offsetDistanceOrOptions offset distance (positive to left of curve, negative to right) or options object.
    */
   public static constructCurveXYOffset(
-    curves: Path | Loop, offsetDistanceOrOptions: number | JointOptions | OffsetOptions,
+    curves: Path | Loop,
+    offsetDistanceOrOptions: number | JointOptions | OffsetOptions,
   ): CurveCollection | undefined {
     const offsetOptions = OffsetOptions.create(offsetDistanceOrOptions);
     return CurveOps.constructCurveXYOffset(curves, offsetOptions);
@@ -435,7 +451,9 @@ export class RegionOps {
    * @param consolidateAdjacentPrimitives whether to simplify the result by calling [[consolidateAdjacentPrimitives]]
    */
   public static createLoopPathOrBagOfCurves(
-    curves: CurvePrimitive[], wrap: boolean = true, consolidateAdjacentPrimitives: boolean = false,
+    curves: CurvePrimitive[],
+    wrap: boolean = true,
+    consolidateAdjacentPrimitives: boolean = false,
   ): CurveCollection | undefined {
     const n = curves.length;
     if (n === 0)
@@ -477,7 +495,8 @@ export class RegionOps {
    * @param cutterCurves input curves to intersect with `curvesToCut`
    */
   public static cloneCurvesWithXYSplits(
-    curvesToCut: AnyCurve | undefined, cutterCurves: CurveCollection,
+    curvesToCut: AnyCurve | undefined,
+    cutterCurves: CurveCollection,
   ): AnyCurve | undefined {
     return CurveSplitContext.cloneCurvesWithXYSplits(curvesToCut, cutterCurves);
   }
@@ -510,7 +529,9 @@ export class RegionOps {
    * @returns object with named chains, insideOffsets, outsideOffsets
    */
   public static collectInsideAndOutsideOffsets(
-    fragments: AnyCurve[], offsetDistance: number, gapTolerance: number,
+    fragments: AnyCurve[],
+    offsetDistance: number,
+    gapTolerance: number,
   ): { insideOffsets: AnyCurve[], outsideOffsets: AnyCurve[], chains?: AnyChain } {
     return CurveOps.collectInsideAndOutsideXYOffsets(fragments, offsetDistance, gapTolerance);
   }
@@ -530,7 +551,8 @@ export class RegionOps {
    * @returns output object with all fragments split among `insideParts`, `outsideParts`, and `coincidentParts`
    */
   public static splitPathsByRegionInOnOutXY(
-    curvesToCut: AnyCurve | undefined, region: AnyRegion,
+    curvesToCut: AnyCurve | undefined,
+    region: AnyRegion,
   ): { insideParts: AnyCurve[], outsideParts: AnyCurve[], coincidentParts: AnyCurve[] } {
     const result = { insideParts: [], outsideParts: [], coincidentParts: [] };
     const pathWithIntersectionMarkup = RegionOps.cloneCurvesWithXYSplits(curvesToCut, region);
@@ -568,7 +590,8 @@ export class RegionOps {
    * normal in z column. If not a rectangle, return undefined.
    */
   public static rectangleEdgeTransform(
-    data: AnyCurve | Point3d[] | IndexedXYZCollection, requireClosurePoint: boolean = true,
+    data: AnyCurve | Point3d[] | IndexedXYZCollection,
+    requireClosurePoint: boolean = true,
   ): Transform | undefined {
     if (data instanceof LineString3d) {
       return this.rectangleEdgeTransform(data.packedPoints);
@@ -592,11 +615,16 @@ export class RegionOps {
       const vector03 = dataToUse.vectorIndexIndex(0, 3)!;
       const vector12 = dataToUse.vectorIndexIndex(1, 2)!;
       const normalVector = vector01.crossProduct(vector03);
-      if (normalVector.normalizeInPlace()
+      if (
+        normalVector.normalizeInPlace()
         && vector12.isAlmostEqual(vector03)
-        && vector01.isPerpendicularTo(vector03)) {
+        && vector01.isPerpendicularTo(vector03)
+      ) {
         return Transform.createOriginAndMatrixColumns(
-          dataToUse.getPoint3dAtUncheckedPointIndex(0), vector01, vector03, normalVector,
+          dataToUse.getPoint3dAtUncheckedPointIndex(0),
+          vector01,
+          vector03,
+          normalVector,
         );
       }
     } else if (Array.isArray(data)) {
@@ -629,7 +657,8 @@ export class RegionOps {
    * @param options options for tolerance and selective simplification.
    */
   public static consolidateAdjacentPrimitives(
-    curves: CurveCollection, options?: ConsolidateAdjacentCurvePrimitivesOptions,
+    curves: CurveCollection,
+    options?: ConsolidateAdjacentCurvePrimitivesOptions,
   ): void {
     const context = new ConsolidateAdjacentCurvePrimitivesContext(options);
     curves.dispatchToGeometryHandler(context);
@@ -679,7 +708,8 @@ export class RegionOps {
    * to the edge and a constituent curve in each.
    */
   public static constructAllXYRegionLoops(
-    curvesAndRegions: AnyCurve | AnyCurve[], tolerance: number = Geometry.smallMetricDistance,
+    curvesAndRegions: AnyCurve | AnyCurve[],
+    tolerance: number = Geometry.smallMetricDistance,
   ): SignedLoops[] {
     const primitives = RegionOps.collectCurvePrimitives(curvesAndRegions, undefined, true, true);
     const range = this.curveArrayRange(primitives);
@@ -871,7 +901,7 @@ export class RegionOps {
    * @param polygon polygon and hole loops, e.g., as returned by [[CurveCollection.cloneStroked]] on a Loop or ParityRegion. All z-coordinates are ignored.
    * @param maximize whether to return maximally convex polygons. If false, triangles are returned.
    * @returns array of convex polygons, or undefined if triangulation failed
-  */
+   */
   public static convexDecomposePolygonXY(polygon: MultiLineStringDataVariant, maximize: boolean = true): GrowableXYZArray[] | undefined {
     const graph = RegionOps.triangulateStrokedRegionComponent(polygon);
     if (!graph)
@@ -881,7 +911,9 @@ export class RegionOps {
     const convexPolygons: GrowableXYZArray[] = [];
     graph.announceFaceLoops((_graph, seed) => {
       if (!seed.isMaskSet(HalfEdgeMask.EXTERIOR))
-        convexPolygons.push(GrowableXYZArray.create(seed.collectAroundFace((node) => { return node.getPoint3d(); })));
+        convexPolygons.push(GrowableXYZArray.create(seed.collectAroundFace((node) => {
+          return node.getPoint3d();
+        })));
       return true;
     });
     return convexPolygons;
@@ -889,7 +921,11 @@ export class RegionOps {
 }
 /** @internal */
 function pushToInOnOutArrays(
-  curve: AnyCurve, select: number, arrayNegative: AnyCurve[], array0: AnyCurve[], arrayPositive: AnyCurve[],
+  curve: AnyCurve,
+  select: number,
+  arrayNegative: AnyCurve[],
+  array0: AnyCurve[],
+  arrayPositive: AnyCurve[],
 ): void {
   if (select > 0)
     arrayPositive.push(curve);

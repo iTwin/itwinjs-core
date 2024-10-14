@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { EntityClassProps, RelationshipClassProps } from "@itwin/ecschema-metadata";
 
-export type ECDynamicEntityClassProps = (EntityClassProps & { name: string, baseClass: string });
-export type ECDynamicElementAspectClassProps = (EntityClassProps & { name: string, baseClass: string });
+export type ECDynamicEntityClassProps = EntityClassProps & { name: string, baseClass: string };
+export type ECDynamicElementAspectClassProps = EntityClassProps & { name: string, baseClass: string };
 export type ECDynamicRelationshipClassProps = RelationshipClassProps;
 
 export enum ItemState {
   New,
   Changed,
-  Unchanged
+  Unchanged,
 }

@@ -3,10 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { concat, concatAll, map, mergeMap, Observable, of, range, scan } from "rxjs";
-import { eachValueFrom } from "rxjs-for-await";
 import { SortedArray } from "@itwin/core-bentley";
 import { PagedResponse, PageOptions } from "@itwin/presentation-common";
+import { concat, concatAll, map, mergeMap, Observable, of, range, scan } from "rxjs";
+import { eachValueFrom } from "rxjs-for-await";
 import { MultipleValuesRequestOptions } from "./PresentationManager";
 
 /**
@@ -26,7 +26,7 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
   constructor(private readonly _props: StreamedResponseGeneratorProps<TPagedResponseItem>) {}
 
   /** Creates a response with the total item count and an async iterator. */
-  public async createAsyncIteratorResponse(): Promise<{ total: number; items: AsyncIterableIterator<TPagedResponseItem> }> {
+  public async createAsyncIteratorResponse(): Promise<{ total: number, items: AsyncIterableIterator<TPagedResponseItem> }> {
     const firstPage = await this.fetchFirstPage();
     return {
       total: firstPage.total,
@@ -127,7 +127,7 @@ export class StreamedResponseGenerator<TPagedResponseItem> {
           },
           {
             lastEmitted: 0,
-            accumulatedBatches: new SortedArray<{ idx: number; items: TPagedResponseItem[] }>((a, b) => a.idx - b.idx),
+            accumulatedBatches: new SortedArray<{ idx: number, items: TPagedResponseItem[] }>((a, b) => a.idx - b.idx),
             itemsToEmit: new Array<TPagedResponseItem>(),
           },
         ),

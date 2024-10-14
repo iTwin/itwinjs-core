@@ -3,14 +3,14 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as faker from "faker";
-import sinon from "sinon";
-import * as moq from "typemoq";
 import { Id64 } from "@itwin/core-bentley";
 import { IpcApp } from "@itwin/core-frontend";
 import { RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import * as faker from "faker";
+import sinon from "sinon";
+import * as moq from "typemoq";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { RulesetVariablesManagerImpl } from "../presentation-frontend/RulesetVariablesManager";
 
@@ -35,7 +35,9 @@ describe("RulesetVariablesManager", () => {
         type: VariableValueTypes.String,
         value: "test-value",
       };
-      ipcHandlerMock.setup(async (x) => x.setRulesetVariable(moq.It.isObjectWith({ rulesetId, variable: testVariable }))).verifiable(moq.Times.once());
+      ipcHandlerMock.setup(async (x) => x.setRulesetVariable(moq.It.isObjectWith({ rulesetId, variable: testVariable }))).verifiable(
+        moq.Times.once(),
+      );
 
       await vars.setString(testVariable.id, testVariable.value);
       ipcHandlerMock.verifyAll();
@@ -49,7 +51,9 @@ describe("RulesetVariablesManager", () => {
       vars = new RulesetVariablesManagerImpl(rulesetId, ipcHandlerMock.object);
       await vars.setString("test-id", "test-value");
 
-      ipcHandlerMock.setup(async (x) => x.unsetRulesetVariable(moq.It.isObjectWith({ rulesetId, variableId: "test-id" }))).verifiable(moq.Times.once());
+      ipcHandlerMock.setup(async (x) => x.unsetRulesetVariable(moq.It.isObjectWith({ rulesetId, variableId: "test-id" }))).verifiable(
+        moq.Times.once(),
+      );
       await vars.unset("test-id");
       ipcHandlerMock.verifyAll();
     });

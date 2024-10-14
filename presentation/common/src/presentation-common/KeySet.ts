@@ -196,8 +196,9 @@ export class KeySet {
     for (const entry of keyset.instanceKeys) {
       const lcClassName = normalizeClassName(entry["0"]);
       const idsJson: string | Id64String[] = entry["1"];
-      const ids: Set<Id64String> =
-        typeof idsJson === "string" ? (idsJson === Id64.invalid ? new Set([Id64.invalid]) : CompressedId64Set.decompressSet(idsJson)) : new Set(idsJson);
+      const ids: Set<Id64String> = typeof idsJson === "string"
+        ? (idsJson === Id64.invalid ? new Set([Id64.invalid]) : CompressedId64Set.decompressSet(idsJson))
+        : new Set(idsJson);
       this._instanceKeys.set(lcClassName, ids);
       this._lowerCaseMap.set(lcClassName, entry["0"]);
     }

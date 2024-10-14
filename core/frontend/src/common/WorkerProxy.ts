@@ -43,8 +43,7 @@ type WorkerResponse = WorkerResult | WorkerError;
 export type WorkerInterface<T> = {
   [P in keyof T]: T[P] extends () => any ? () => Promise<ReturnType<T[P]>> :
     (T[P] extends (arg: any) => any ? (arg: Parameters<T[P]>[0], transfer?: Transferable[]) => Promise<ReturnType<T[P]>> :
-      (T[P] extends (...args: any) => any ? (args: Parameters<T[P]>, transfer?: Transferable[]) => Promise<ReturnType<T[P]>> : never)
-    )
+      (T[P] extends (...args: any) => any ? (args: Parameters<T[P]>, transfer?: Transferable[]) => Promise<ReturnType<T[P]>> : never));
 };
 
 /** Augments each method of `T` with the ability to specify values to be transferred from the worker thread to the main thread.
@@ -52,7 +51,9 @@ export type WorkerInterface<T> = {
  * @see [[WorkerImplementation]].
  * @beta
  */
-export type WorkerReturnType<T extends (...args: any) => any> = MaybePromise<ReturnType<T> | { result: Awaited<ReturnType<T>>, transfer: Transferable[] }>;
+export type WorkerReturnType<T extends (...args: any) => any> = MaybePromise<
+  ReturnType<T> | { result: Awaited<ReturnType<T>>, transfer: Transferable[] }
+>;
 
 /** Given an interface T that defines the operations provided by a worker, produce an interface to which the implementation of those operations must conform.
  * The return type of each function is enhanced to permit supplying a list of values to be transferred from the worker to the main thread.
@@ -68,8 +69,7 @@ export type WorkerReturnType<T extends (...args: any) => any> = MaybePromise<Ret
 export type WorkerImplementation<T> = {
   [P in keyof T]: T[P] extends () => any ? () => WorkerReturnType<T[P]> :
     (T[P] extends (arg: any) => any ? (arg: Parameters<T[P]>[0]) => WorkerReturnType<T[P]> :
-      (T[P] extends (...args: any) => any ? (args: Parameters<T[P]>) => WorkerReturnType<T[P]> : never)
-    )
+      (T[P] extends (...args: any) => any ? (args: Parameters<T[P]>) => WorkerReturnType<T[P]> : never));
 };
 
 /** A proxy for a [web worker](https://developer.mozilla.org/en-US/docs/Web/API/Worker) that provides the operations specified by
@@ -129,11 +129,12 @@ export function createWorkerProxy<T>(workerJsPath: string): WorkerProxy<T> {
       } else if (operation === "isTerminated") {
         return terminated;
       } else {
-        return async (...args: any[]) => new Promise((resolve, reject) => {
-          const msgId = ++curMsgId;
-          tasks.set(msgId, { resolve, reject });
-          worker.postMessage({ operation, payload: args[0], msgId }, args[1] ?? []);
-        });
+        return async (...args: any[]) =>
+          new Promise((resolve, reject) => {
+            const msgId = ++curMsgId;
+            tasks.set(msgId, { resolve, reject });
+            worker.postMessage({ operation, payload: args[0], msgId }, args[1] ?? []);
+          });
       }
     },
   });

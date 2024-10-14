@@ -40,8 +40,14 @@ export class CoincidentGeometryQuery {
    * * Assign both the fraction and fraction1 values in the detail, possibly swapped.
    * * reevaluate the points as simple interpolation between given points.
    */
-  public static assignDetailInterpolatedFractionsAndPoints(detail: CurveLocationDetail, f0: number, f1: number,
-    pointA: Point3d, pointB: Point3d, swap: boolean = false) {
+  public static assignDetailInterpolatedFractionsAndPoints(
+    detail: CurveLocationDetail,
+    f0: number,
+    f1: number,
+    pointA: Point3d,
+    pointB: Point3d,
+    swap: boolean = false,
+  ) {
     if (swap) {
       detail.fraction = f1;
       detail.fraction1 = f0;
@@ -51,7 +57,6 @@ export class CoincidentGeometryQuery {
     }
     detail.point = pointA.interpolate(detail.fraction, pointB, detail.point);
     detail.point1 = pointA.interpolate(detail.fraction1, pointB, detail.point1);
-
   }
 
   /** Return a curve location detail with projection of a `spacePoint` to the line segment with `pointA` and `pointB` */
@@ -61,8 +66,7 @@ export class CoincidentGeometryQuery {
     const uDotU = this._vectorU.dotProductXY(this._vectorU);
     const uDotV = this._vectorU.dotProductXY(this._vectorV);
     const fraction = Geometry.safeDivideFraction(uDotV, uDotU, 0.0);
-    return CurveLocationDetail.createCurveFractionPoint(undefined, fraction,
-      pointA.interpolate(fraction, pointB));
+    return CurveLocationDetail.createCurveFractionPoint(undefined, fraction, pointA.interpolate(fraction, pointB));
   }
   /**
    * Given a detail pair representing the projection of each of two colinear line segments onto the other,
@@ -78,9 +82,16 @@ export class CoincidentGeometryQuery {
    * @param extendB1 whether to extend segment B beyond its end
    * @return reference to the input clamped in place, or undefined (leaving interval untouched) if clamping would result in empty interval.
    */
-  public clampCoincidentOverlapToSegmentBounds(overlap: CurveLocationDetailPair,
-    pointA0: Point3d, pointA1: Point3d, pointB0: Point3d, pointB1: Point3d,
-    extendA0: boolean = false, extendA1: boolean = false, extendB0: boolean = false, extendB1: boolean = false,
+  public clampCoincidentOverlapToSegmentBounds(
+    overlap: CurveLocationDetailPair,
+    pointA0: Point3d,
+    pointA1: Point3d,
+    pointB0: Point3d,
+    pointB1: Point3d,
+    extendA0: boolean = false,
+    extendA1: boolean = false,
+    extendB0: boolean = false,
+    extendB1: boolean = false,
   ): CurveLocationDetailPair | undefined {
     const rangeA = Segment1d.create(overlap.detailA.fraction, overlap.detailA.hasFraction1 ? overlap.detailA.fraction1 : overlap.detailA.fraction);
     const rangeB = Segment1d.create(overlap.detailB.fraction, overlap.detailB.hasFraction1 ? overlap.detailB.fraction1 : overlap.detailB.fraction);
@@ -100,9 +111,9 @@ export class CoincidentGeometryQuery {
     const haveIntervalB = rangeB.clampDirectedTo01(!extendB0, !extendB1, false);
     if (haveIntervalA && haveIntervalB) {
       if (Geometry.isAlmostEqualNumber(rangeA.absoluteDelta(), rangeB.absoluteDelta(), Geometry.smallFraction))
-        return updateIntervalFromRangesAndInterpolatedPoints();  // intersection of partially clamped ranges
+        return updateIntervalFromRangesAndInterpolatedPoints(); // intersection of partially clamped ranges
       else if (rangeA.clampDirectedTo01(true, true, false) && rangeB.clampDirectedTo01(true, true, false))
-        return updateIntervalFromRangesAndInterpolatedPoints();  // intersection of fully clamped ranges
+        return updateIntervalFromRangesAndInterpolatedPoints(); // intersection of fully clamped ranges
     }
 
     const collapseToSingleton = (pointA: Point3d, pointB: Point3d, atStartA: boolean, atStartB: boolean): CurveLocationDetailPair => {
@@ -144,7 +155,13 @@ export class CoincidentGeometryQuery {
    * @param restrictToBounds whether to clip the coincident segment details to the segment bounds
    * @return detail pair for the coincident interval (`detailA` has fractions along segment A, and `detailB` has fractions along segment B), or undefined if no coincidence
    */
-  public coincidentSegmentRangeXY(pointA0: Point3d, pointA1: Point3d, pointB0: Point3d, pointB1: Point3d, restrictToBounds: boolean = true): CurveLocationDetailPair | undefined {
+  public coincidentSegmentRangeXY(
+    pointA0: Point3d,
+    pointA1: Point3d,
+    pointB0: Point3d,
+    pointB1: Point3d,
+    restrictToBounds: boolean = true,
+  ): CurveLocationDetailPair | undefined {
     const detailA0OnB = this.projectPointToSegmentXY(pointA0, pointB0, pointB1);
     if (pointA0.distanceXY(detailA0OnB.point) > this._tolerance)
       return undefined;
@@ -160,7 +177,7 @@ export class CoincidentGeometryQuery {
       return undefined;
 
     detailA0OnB.fraction1 = detailA1OnB.fraction;
-    detailA0OnB.point1 = detailA1OnB.point;  // capture -- detailA1OnB is not reused.
+    detailA0OnB.point1 = detailA1OnB.point; // capture -- detailA1OnB is not reused.
     detailB0OnA.fraction1 = detailB1OnA.fraction;
     detailB0OnA.point1 = detailB1OnA.point;
     const interval = CurveLocationDetailPair.createCapture(detailB0OnA, detailA0OnB);
@@ -176,7 +193,14 @@ export class CoincidentGeometryQuery {
    * @param fractionB1 curveB end in fraction space of curveA
    * @param reverse whether curveB and curveA have opposite direction
    */
-  private createDetailPair(cpA: CurvePrimitive, cpB: CurvePrimitive, fractionsOnA: Segment1d, fractionB0: number, fractionB1: number, reverse: boolean): CurveLocationDetailPair | undefined {
+  private createDetailPair(
+    cpA: CurvePrimitive,
+    cpB: CurvePrimitive,
+    fractionsOnA: Segment1d,
+    fractionB0: number,
+    fractionB1: number,
+    reverse: boolean,
+  ): CurveLocationDetailPair | undefined {
     const deltaB = fractionB1 - fractionB0;
     const g0 = Geometry.conditionalDivideFraction(fractionsOnA.x0 - fractionB0, deltaB);
     const g1 = Geometry.conditionalDivideFraction(fractionsOnA.x1 - fractionB0, deltaB);
@@ -189,7 +213,10 @@ export class CoincidentGeometryQuery {
     }
     return undefined;
   }
-  private appendDetailPair(result: CurveLocationDetailPair[] | undefined, pair: CurveLocationDetailPair | undefined): CurveLocationDetailPair[] | undefined {
+  private appendDetailPair(
+    result: CurveLocationDetailPair[] | undefined,
+    pair: CurveLocationDetailPair | undefined,
+  ): CurveLocationDetailPair[] | undefined {
     if (pair === undefined)
       return result;
     if (result === undefined)
@@ -209,27 +236,31 @@ export class CoincidentGeometryQuery {
     if (arcA.center.isAlmostEqual(arcB.center, this.tolerance)) {
       const matrixBToA = arcA.matrixRef.multiplyMatrixInverseMatrix(arcB.matrixRef);
       if (matrixBToA) {
-        const ux = matrixBToA.at(0, 0); const uy = matrixBToA.at(1, 0);
-        const vx = matrixBToA.at(0, 1); const vy = matrixBToA.at(1, 1);
+        const ux = matrixBToA.at(0, 0);
+        const uy = matrixBToA.at(1, 0);
+        const vx = matrixBToA.at(0, 1);
+        const vy = matrixBToA.at(1, 1);
         const ru = Geometry.hypotenuseXY(ux, uy);
         const rv = Geometry.hypotenuseXY(vx, vy);
         const dot = Geometry.dotProductXYXY(ux, uy, vx, vy);
         const cross = Geometry.crossProductXYXY(ux, uy, vx, vy);
-        if (Geometry.isAlmostEqualNumber(ru, 1.0)
+        if (
+          Geometry.isAlmostEqualNumber(ru, 1.0)
           && Geometry.isAlmostEqualNumber(rv, 1.0)
-          && Geometry.isAlmostEqualNumber(0, dot)) {
-          const alphaB0Radians = Math.atan2(uy, ux);        // angular position of arcB 0 point in arcA sweep
-          const sweepDirection = cross > 0 ? 1.0 : -1.0;    // 1 if arcB parameter space sweeps in same direction as arcA, -1 if opposite
-          const betaStartRadians = alphaB0Radians + sweepDirection * arcB.sweep.startRadians;   // arcB start in arcA parameter space
-          const betaEndRadians = alphaB0Radians + sweepDirection * arcB.sweep.endRadians;       // arcB end in arcA parameter space
+          && Geometry.isAlmostEqualNumber(0, dot)
+        ) {
+          const alphaB0Radians = Math.atan2(uy, ux); // angular position of arcB 0 point in arcA sweep
+          const sweepDirection = cross > 0 ? 1.0 : -1.0; // 1 if arcB parameter space sweeps in same direction as arcA, -1 if opposite
+          const betaStartRadians = alphaB0Radians + sweepDirection * arcB.sweep.startRadians; // arcB start in arcA parameter space
+          const betaEndRadians = alphaB0Radians + sweepDirection * arcB.sweep.endRadians; // arcB end in arcA parameter space
           const fractionSpacesReversed = (sweepDirection * arcA.sweep.sweepRadians * arcB.sweep.sweepRadians) < 0;
           const sweepB = AngleSweep.createStartEndRadians(betaStartRadians, betaEndRadians);
           const sweepA = arcA.sweep;
           const fractionPeriodA = sweepA.fractionPeriod();
-          const fractionB0 = sweepA.radiansToPositivePeriodicFraction(sweepB.startRadians);   // arcB start in arcA fraction space
+          const fractionB0 = sweepA.radiansToPositivePeriodicFraction(sweepB.startRadians); // arcB start in arcA fraction space
           assert(fractionB0 >= 0.0);
-          const fractionSweep = sweepB.sweepRadians / sweepA.sweepRadians;                    // arcB sweep in arcA fraction space
-          const fractionB1 = fractionB0 + fractionSweep;                                      // arcB end in arcA fraction space
+          const fractionSweep = sweepB.sweepRadians / sweepA.sweepRadians; // arcB sweep in arcA fraction space
+          const fractionB1 = fractionB0 + fractionSweep; // arcB end in arcA fraction space
           const fractionSweepB = Segment1d.create(fractionB0, fractionB1);
 
           /** lambda to add a coincident interval or isolated intersection, given inputs in arcA fraction space
@@ -242,8 +273,11 @@ export class CoincidentGeometryQuery {
             const arcBStart = arcBInArcAFractionSpace.x0;
             const arcBEnd = arcBInArcAFractionSpace.x1;
             if (arcBInArcAFractionSpace.clampDirectedTo01() && !Geometry.isSmallRelative(arcBInArcAFractionSpace.absoluteDelta())) {
-              result = this.appendDetailPair(result, this.createDetailPair(arcA, arcB, arcBInArcAFractionSpace, arcBStart, arcBEnd, fractionSpacesReversed));
-            } else {  // test isolated intersection
+              result = this.appendDetailPair(
+                result,
+                this.createDetailPair(arcA, arcB, arcBInArcAFractionSpace, arcBStart, arcBEnd, fractionSpacesReversed),
+              );
+            } else { // test isolated intersection
               const testStartOfArcB = fractionSpacesReversed ? testStartOfArcA : !testStartOfArcA;
               const arcAPt = this._point0 = testStartOfArcA ? arcA.startPoint(this._point0) : arcA.endPoint(this._point0);
               const arcBPt = this._point1 = testStartOfArcB ? arcB.startPoint(this._point1) : arcB.endPoint(this._point1);
@@ -256,7 +290,7 @@ export class CoincidentGeometryQuery {
             return result !== undefined && result.length > size;
           };
 
-          appendCoincidentIntersection(fractionSweepB, false);  // compute overlap in strict interior, or at end of arcA
+          appendCoincidentIntersection(fractionSweepB, false); // compute overlap in strict interior, or at end of arcA
 
           // check overlap at start of arcA with a periodic shift of fractionSweepB
           if (fractionB1 >= fractionPeriodA)

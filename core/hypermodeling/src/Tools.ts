@@ -18,17 +18,25 @@ function parseToggle(arg: string | undefined): string | boolean | undefined {
     return undefined;
 
   switch (arg.toLowerCase()) {
-    case "on": return true;
-    case "off": return false;
-    case "toggle": return undefined;
-    default: return arg;
+    case "on":
+      return true;
+    case "off":
+      return false;
+    case "toggle":
+      return undefined;
+    default:
+      return arg;
   }
 }
 
 class HyperModelingTool extends Tool {
   public static override toolId = "HyperModeling";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(enable?: boolean, vp?: ScreenViewport): Promise<boolean> {
     vp = vp ?? IModelApp.viewManager.selectedView;
@@ -55,8 +63,12 @@ type Writeable<T> = { -readonly [P in keyof T]: T[P] };
  */
 class SectionGraphicsConfigTool extends Tool {
   public static override toolId = "HyperModeling.Graphics.Config";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 4; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 4;
+  }
 
   public override async run(config?: SectionGraphicsConfig): Promise<boolean> {
     if (!config) {
@@ -108,8 +120,12 @@ class SectionGraphicsConfigTool extends Tool {
 }
 
 abstract class SectionMarkerConfigTool extends Tool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 3;
+  }
 
   protected abstract update(config: SectionMarkerConfig): void;
 

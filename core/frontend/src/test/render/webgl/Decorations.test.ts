@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, RenderMode } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
-import { ScreenViewport } from "../../../Viewport";
-import { IModelApp } from "../../../IModelApp";
-import { SpatialViewState } from "../../../SpatialViewState";
-import { createBlankConnection } from "../../createBlankConnection";
-import { BoxDecorator, SphereDecorator, TestDecorator } from "../../TestDecorators";
-import { expectColors } from "../../ExpectColors";
+import { Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ViewRect } from "../../../common/ViewRect";
-import { ViewState } from "../../../ViewState";
+import { IModelApp } from "../../../IModelApp";
+import { IModelConnection } from "../../../IModelConnection";
+import { SpatialViewState } from "../../../SpatialViewState";
 import { StandardViewId } from "../../../StandardView";
+import { ScreenViewport } from "../../../Viewport";
+import { ViewState } from "../../../ViewState";
+import { createBlankConnection } from "../../createBlankConnection";
+import { expectColors } from "../../ExpectColors";
+import { BoxDecorator, SphereDecorator, TestDecorator } from "../../TestDecorators";
 
 describe("Decorations", () => {
   let imodel: IModelConnection;

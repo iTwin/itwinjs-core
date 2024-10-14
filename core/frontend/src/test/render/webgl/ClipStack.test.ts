@@ -2,16 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
-import { ClipVolume } from "../../../render/webgl/ClipVolume";
-import { ClipStack } from "../../../render/webgl/ClipStack";
-import { IModelApp } from "../../../IModelApp";
 import { EmptyLocalization } from "@itwin/core-common";
+import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
+import { IModelApp } from "../../../IModelApp";
+import { ClipStack } from "../../../render/webgl/ClipStack";
+import { ClipVolume } from "../../../render/webgl/ClipVolume";
 
 function createClipVector(offset = 0): ClipVector {
   const clip = ClipVector.createEmpty();
-  clip.appendShape([Point3d.create(offset + 1, 1, 0), Point3d.create(offset + 2, 1, 0), Point3d.create(offset + 2, 2, 0), Point3d.create(offset + 1, 2, 0)]);
+  clip.appendShape([
+    Point3d.create(offset + 1, 1, 0),
+    Point3d.create(offset + 2, 1, 0),
+    Point3d.create(offset + 2, 2, 0),
+    Point3d.create(offset + 1, 2, 0),
+  ]);
   return clip;
 }
 
@@ -54,12 +59,24 @@ describe("ClipStack", async () => {
       };
     }
 
-    public get cpuBuffer() { return this._cpuBuffer; }
-    public get gpuBuffer() { return this._gpuBuffer; }
-    public get numTotalRows() { return this._numTotalRows; }
-    public get numRowsInUse() { return this._numRowsInUse; }
-    public get stack() { return this._stack; }
-    public get isStackDirty() { return this._isStackDirty; }
+    public get cpuBuffer() {
+      return this._cpuBuffer;
+    }
+    public get gpuBuffer() {
+      return this._gpuBuffer;
+    }
+    public get numTotalRows() {
+      return this._numTotalRows;
+    }
+    public get numRowsInUse() {
+      return this._numRowsInUse;
+    }
+    public get stack() {
+      return this._stack;
+    }
+    public get isStackDirty() {
+      return this._isStackDirty;
+    }
 
     public pushClip(offset = 0): void {
       const clip = createClipVector(offset);
@@ -74,7 +91,11 @@ describe("ClipStack", async () => {
     }
 
     public reset() {
-      this.invoked.uploadTexture = this.invoked.allocateGpuBuffer = this.invoked.updateTexture = this.invoked.recomputeTexture = false;
+      this.invoked.uploadTexture =
+        this.invoked.allocateGpuBuffer =
+        this.invoked.updateTexture =
+        this.invoked.recomputeTexture =
+          false;
     }
 
     public expectInvoked(expected: Partial<Invoked>) {

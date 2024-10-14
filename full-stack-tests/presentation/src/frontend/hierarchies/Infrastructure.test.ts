@@ -3,10 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { PresentationManager } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { initialize, resetBackend, terminate } from "../../IntegrationTests";
 import { collect } from "../../Utils";
 

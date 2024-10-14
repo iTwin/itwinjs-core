@@ -3,23 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { AccessToken, Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
+import { Code, IModel, IModelError, LocalBriefcaseProps, LockState, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { AccessToken, Guid, GuidString, Id64, Id64Arg } from "@itwin/core-bentley";
-import { Code, IModel, IModelError, LocalBriefcaseProps, LockState, PhysicalElementProps, RequestNewBriefcaseProps } from "@itwin/core-common";
 import { BriefcaseManager } from "../../BriefcaseManager";
+import { ChannelControl } from "../../core-backend";
 import { PhysicalObject } from "../../domains/GenericElements";
 import { PhysicalElement } from "../../Element";
+import { HubMock } from "../../HubMock";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
-import { ElementOwnsChildElements } from "../../NavigationRelationship";
 import { ServerBasedLocks } from "../../internal/ServerBasedLocks";
-import { HubMock } from "../../HubMock";
+import { _releaseAllLocks } from "../../internal/Symbols";
+import { ElementOwnsChildElements } from "../../NavigationRelationship";
 import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ChannelControl } from "../../core-backend";
-import { _releaseAllLocks } from "../../internal/Symbols";
 
 const expect = chai.expect;
 const assert = chai.assert;

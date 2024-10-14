@@ -9,7 +9,6 @@ import * as Benchmark from "benchmark";
 export async function comparePerformance(...funcs: Array<() => Promise<any>>): Promise<void> {
   const suite = new Benchmark.Suite();
   return new Promise((resolve) => {
-
     funcs.forEach((testFunc, i) => {
       suite.add(testFunc.name || String.fromCharCode(65 + i), {
         defer: true,
@@ -22,7 +21,7 @@ export async function comparePerformance(...funcs: Array<() => Promise<any>>): P
     suite.on("cycle", (event: any) => {
       console.log(String(event.target));
     });
-    suite.on("complete", function (this: any) {
+    suite.on("complete", function(this: any) {
       console.log(`Fastest is ${this.filter("fastest").map("name")}`);
       resolve();
     });
@@ -39,7 +38,7 @@ export function comparePerformanceSync(...funcs: Array<() => any>): void {
   suite.on("cycle", (event: any) => {
     console.log(String(event.target));
   });
-  suite.on("complete", function (this: any) {
+  suite.on("complete", function(this: any) {
     console.log(`Fastest is ${this.filter("fastest").map("name")}`);
   });
   suite.run({ async: false });

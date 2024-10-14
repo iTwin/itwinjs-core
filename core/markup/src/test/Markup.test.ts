@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { Angle, AxisIndex, Matrix3d, Point3d, Transform } from "@itwin/core-geometry";
-import { Element, G, Matrix, Svg, SVG } from "@svgdotjs/svg.js";
+import { Element, G, Matrix, SVG, Svg } from "@svgdotjs/svg.js";
+import { assert } from "chai";
 import { MarkupApp } from "../Markup";
 import { initSvgExt } from "../SvgJsExt";
 
@@ -146,5 +146,4 @@ describe("Markup", () => {
     e1.replace(clone);
     checkColor(clone, red, blue, "clone should turn off hilite");
   });
-
 });

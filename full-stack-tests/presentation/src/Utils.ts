@@ -2,10 +2,10 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import path from "path";
 import { IModelJsFs } from "@itwin/core-backend";
 import { BeDuration, StopWatch } from "@itwin/core-bentley";
 import { Field } from "@itwin/presentation-common";
+import path from "path";
 
 /**
  * Simplified type for `sinon.SinonSpy`.

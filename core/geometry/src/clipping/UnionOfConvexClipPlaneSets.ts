@@ -53,7 +53,8 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   }
   /** Convert json `UnionOfConvexClipPlaneSets`, using `setFromJSON`. */
   public static fromJSON(
-    json: UnionOfConvexClipPlaneSetsProps | undefined, result?: UnionOfConvexClipPlaneSets,
+    json: UnionOfConvexClipPlaneSetsProps | undefined,
+    result?: UnionOfConvexClipPlaneSets,
   ): UnionOfConvexClipPlaneSets {
     result = result ? result : new UnionOfConvexClipPlaneSets();
     result._convexSets.length = 0;
@@ -87,7 +88,8 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   }
   /** Create a `UnionOfConvexClipPlaneSets` with given `ConvexClipPlaneSet` members. */
   public static createConvexSets(
-    convexSets: ConvexClipPlaneSet[], result?: UnionOfConvexClipPlaneSets,
+    convexSets: ConvexClipPlaneSet[],
+    result?: UnionOfConvexClipPlaneSets,
   ): UnionOfConvexClipPlaneSets {
     result = result ? result : new UnionOfConvexClipPlaneSets();
     for (const set of convexSets)
@@ -182,9 +184,13 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
   /** Returns the fractions of the segment that pass through the set region, as 1 dimensional pieces. */
   public appendIntervalsFromSegment(segment: LineSegment3d, intervals: Segment1d[]) {
     for (const convexSet of this._convexSets) {
-      convexSet.announceClippedSegmentIntervals(0.0, 1.0, segment.point0Ref, segment.point1Ref,
-        (fraction0: number, fraction1: number) =>
-          intervals.push(Segment1d.create(fraction0, fraction1)));
+      convexSet.announceClippedSegmentIntervals(
+        0.0,
+        1.0,
+        segment.point0Ref,
+        segment.point1Ref,
+        (fraction0: number, fraction1: number) => intervals.push(Segment1d.create(fraction0, fraction1)),
+      );
     }
   }
   /** Apply `transform` to all the ConvexClipPlaneSet's. */
@@ -230,7 +236,11 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
    * @returns Return true if any announcements are made.
    */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void,
+    f0: number,
+    f1: number,
+    pointA: Point3d,
+    pointB: Point3d,
+    announce?: (fraction0: number, fraction1: number) => void,
   ): boolean {
     let numAnnounce = 0;
     for (const convexSet of this._convexSets) {
@@ -266,7 +276,10 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
    * @returns number of points.
    */
   public computePlanePlanePlaneIntersectionsInAllConvexSets(
-    points: Point3d[] | undefined, rangeToExtend: Range3d | undefined, transform?: Transform, testContainment: boolean = true,
+    points: Point3d[] | undefined,
+    rangeToExtend: Range3d | undefined,
+    transform?: Transform,
+    testContainment: boolean = true,
   ): number {
     let n = 0;
     for (const convexSet of this._convexSets) {
@@ -286,7 +299,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
    * @param matrix matrix to apply
    */
   public multiplyPlanesByMatrix4d(matrix: Matrix4d, invert: boolean = true, transpose: boolean = true): boolean {
-    if (invert) {  // form inverse once here, reuse for all planes
+    if (invert) { // form inverse once here, reuse for all planes
       const inverse = matrix.createInverse();
       if (!inverse)
         return false;
@@ -354,7 +367,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
         arrayCache.dropToCache(shard);
       }
       tempAB = carryForwardB;
-      carryForwardB = carryForwardA;  // and that is empty
+      carryForwardB = carryForwardA; // and that is empty
       carryForwardA = tempAB;
     }
     while (undefined !== (shard = carryForwardA.pop())) {

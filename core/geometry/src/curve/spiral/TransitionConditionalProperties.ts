@@ -45,7 +45,8 @@ export class TransitionConditionalProperties {
     radius1: number | undefined,
     bearing0: Angle | undefined,
     bearing1: Angle | undefined,
-    arcLength: number | undefined) {
+    arcLength: number | undefined,
+  ) {
     this.radius0 = radius0;
     this.radius1 = radius1;
     this.bearing0 = bearing0;
@@ -67,14 +68,20 @@ export class TransitionConditionalProperties {
       this.radius1,
       this.bearing0 === undefined ? undefined : this.bearing0.clone(),
       this.bearing1 === undefined ? undefined : this.bearing1.clone(),
-      this.curveLength);
+      this.curveLength,
+    );
   }
   /** Return true if all components are defined and agree equationally. */
   public getIsValidCompleteSet() {
-    if (this.curveLength !== undefined && this.bearing0 !== undefined && this.bearing1 !== undefined
-      && this.radius0 !== undefined && this.radius1 !== undefined) {
-      const length1 = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(this.radius0, this.radius1,
-        this.bearing1.radians - this.bearing0.radians);
+    if (
+      this.curveLength !== undefined && this.bearing0 !== undefined && this.bearing1 !== undefined
+      && this.radius0 !== undefined && this.radius1 !== undefined
+    ) {
+      const length1 = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(
+        this.radius0,
+        this.radius1,
+        this.bearing1.radians - this.bearing0.radians,
+      );
       return Geometry.isSameCoordinate(this.curveLength, length1);
     }
     return false;
@@ -106,12 +113,16 @@ export class TransitionConditionalProperties {
       return false;
 
     if (this.bearing0) { // bearing 1 is undefined
-      this.bearing1 = Angle.createRadians(this.bearing0.radians + TransitionSpiral3d.radiusRadiusLengthToSweepRadians(this.radius0, this.radius1, this.curveLength));
+      this.bearing1 = Angle.createRadians(
+        this.bearing0.radians + TransitionSpiral3d.radiusRadiusLengthToSweepRadians(this.radius0, this.radius1, this.curveLength),
+      );
       return true;
     }
 
     if (this.bearing1) { // bearing 0 is undefined
-      this.bearing0 = Angle.createRadians(this.bearing1.radians - TransitionSpiral3d.radiusRadiusLengthToSweepRadians(this.radius0, this.radius1, this.curveLength));
+      this.bearing0 = Angle.createRadians(
+        this.bearing1.radians - TransitionSpiral3d.radiusRadiusLengthToSweepRadians(this.radius0, this.radius1, this.curveLength),
+      );
       return true;
     }
     return false;

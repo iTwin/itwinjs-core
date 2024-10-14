@@ -3,11 +3,19 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
+import { assert, BeDuration, BeTimePoint, Id64 } from "@itwin/core-bentley";
+import {
+  ContentSpecificationTypes,
+  InstanceKey,
+  KeySet,
+  PresentationError,
+  PresentationStatus,
+  Ruleset,
+  RuleTypes,
+} from "@itwin/presentation-common";
+import { Presentation } from "@itwin/presentation-frontend";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { assert, BeDuration, BeTimePoint, Id64 } from "@itwin/core-bentley";
-import { ContentSpecificationTypes, InstanceKey, KeySet, PresentationError, PresentationStatus, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { collect } from "../../Utils";
 import { describeContentTestSuite } from "./Utils";
@@ -55,7 +63,9 @@ describeContentTestSuite("Error handling", ({ getDefaultSuiteIModel }) => {
     const keys = new KeySet([key1, key2]);
     const start = BeTimePoint.now();
     await withRejectingPromiseRace(async () => {
-      await expect(Presentation.presentation.getContentDescriptor({ imodel: await getDefaultSuiteIModel(), rulesetOrId: ruleset, keys, displayType: "Grid" }))
+      await expect(
+        Presentation.presentation.getContentDescriptor({ imodel: await getDefaultSuiteIModel(), rulesetOrId: ruleset, keys, displayType: "Grid" }),
+      )
         .to.be.eventually.rejectedWith(PresentationError)
         .and.have.property("errorNumber", PresentationStatus.BackendTimeout);
     });
@@ -85,7 +95,10 @@ describeContentTestSuite("Error handling", ({ getDefaultSuiteIModel }) => {
     });
     assert(!!result);
     await withRejectingPromiseRace(async () => {
-      await expect(collect(result.items)).to.eventually.be.rejectedWith(PresentationError).and.have.property("errorNumber", PresentationStatus.BackendTimeout);
+      await expect(collect(result.items)).to.eventually.be.rejectedWith(PresentationError).and.have.property(
+        "errorNumber",
+        PresentationStatus.BackendTimeout,
+      );
     });
   });
 });

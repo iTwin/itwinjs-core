@@ -2,23 +2,46 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import * as sinon from "sinon";
-import * as path from "path";
+import { OpenMode } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, Code, ConcreteEntityTypes, DefinitionElementProps, ElementAspectProps, ElementProps, EntityMetaData, EntityReferenceSet, ModelProps,
-  RelatedElement, RelatedElementProps, RelationshipProps, SchemaState,
+  BisCodeSpec,
+  Code,
+  ConcreteEntityTypes,
+  DefinitionElementProps,
+  ElementAspectProps,
+  ElementProps,
+  EntityMetaData,
+  EntityReferenceSet,
+  ModelProps,
+  RelatedElement,
+  RelatedElementProps,
+  RelationshipProps,
+  SchemaState,
 } from "@itwin/core-common";
+import { assert, expect } from "chai";
+import * as path from "path";
+import * as sinon from "sinon";
+import { ClassRegistry } from "../../ClassRegistry";
 import {
-  DefinitionElement, DefinitionModel, ElementRefersToElements, EntityReferences, IModelDb, IModelJsFs, Model, RepositoryLink,
-  Schema, SnapshotDb, SpatialViewDefinition, StandaloneDb, UrlLink, ViewDefinition3d,
+  DefinitionElement,
+  DefinitionModel,
+  ElementRefersToElements,
+  EntityReferences,
+  IModelDb,
+  IModelJsFs,
+  Model,
+  RepositoryLink,
+  Schema,
+  SnapshotDb,
+  SpatialViewDefinition,
+  StandaloneDb,
+  UrlLink,
+  ViewDefinition3d,
 } from "../../core-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
 import { Element } from "../../Element";
 import { Schemas } from "../../Schema";
-import { ClassRegistry } from "../../ClassRegistry";
-import { OpenMode } from "@itwin/core-bentley";
+import { IModelTestUtils } from "../IModelTestUtils";
+import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Class Registry", () => {
   let imodel: SnapshotDb;
@@ -172,14 +195,16 @@ describe("Class Registry - getRootMetaData", () => {
   });
 
   it("should get the root metadata", async () => {
-    for (const [testClass, expectedRoot] of [
-      ["TestSchema1.TestBase", "BisCore:Element"],
-      ["TestSchema1.TestDerived", "BisCore:Element"],
-      ["TestSchema1.ITestMixinForAspectsBase", "BisCore:ElementAspect"],
-      ["TestSchema1.ITestMixinForAspectsDerived", "BisCore:ElementAspect"],
-      ["TestSchema1.ITestMixinForElements", "BisCore:Element"],
-      ["TestSchema1.TestMixedInAndDerived", "BisCore:Element"],
-    ] as const) {
+    for (
+      const [testClass, expectedRoot] of [
+        ["TestSchema1.TestBase", "BisCore:Element"],
+        ["TestSchema1.TestDerived", "BisCore:Element"],
+        ["TestSchema1.ITestMixinForAspectsBase", "BisCore:ElementAspect"],
+        ["TestSchema1.ITestMixinForAspectsDerived", "BisCore:ElementAspect"],
+        ["TestSchema1.ITestMixinForElements", "BisCore:Element"],
+        ["TestSchema1.TestMixedInAndDerived", "BisCore:Element"],
+      ] as const
+    ) {
       const rootMetaData = ClassRegistry.getRootEntity(imodel, testClass);
       expect(rootMetaData.replace(".", ":")).to.equal(expectedRoot);
     }
@@ -232,9 +257,21 @@ describe("Class Registry - generated classes", () => {
   }
 
   class TestGeneratedClasses extends Schema {
-    public static override get schemaName(): string { return "TestGeneratedClasses"; }
+    public static override get schemaName(): string {
+      return "TestGeneratedClasses";
+    }
     public static get classes() {
-      return [TestModelWithNavProp, TestElementWithNavProp, LinkTableRelWithNavProp, DerivedWithNavProp, Derived2, Derived3, Derived4, Derived5, Derived6];
+      return [
+        TestModelWithNavProp,
+        TestElementWithNavProp,
+        LinkTableRelWithNavProp,
+        DerivedWithNavProp,
+        Derived2,
+        Derived3,
+        Derived4,
+        Derived5,
+        Derived6,
+      ];
     }
     public static registerSchema() {
       if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
@@ -253,7 +290,9 @@ describe("Class Registry - generated classes", () => {
   }
 
   class TestElementWithNavProp extends DefinitionElement {
-    public static override get className() { return "TestElementWithNavProp"; }
+    public static override get className() {
+      return "TestElementWithNavProp";
+    }
     public static override schema = TestGeneratedClasses;
     public navProp: RelatedElement;
     public constructor(props: TestElementWithNavPropProps, inIModel: IModelDb) {
@@ -263,7 +302,9 @@ describe("Class Registry - generated classes", () => {
   }
 
   class TestModelWithNavProp extends DefinitionModel {
-    public static override get className() { return "TestModelWithNavProp"; }
+    public static override get className() {
+      return "TestModelWithNavProp";
+    }
     public static override schema = TestGeneratedClasses;
     public elemNavProp: RelatedElement;
     public aspectNavProp: RelatedElement;
@@ -277,7 +318,9 @@ describe("Class Registry - generated classes", () => {
   }
 
   class LinkTableRelWithNavProp extends ElementRefersToElements {
-    public static override get className() { return "LinkTableRelWithNavProp"; }
+    public static override get className() {
+      return "LinkTableRelWithNavProp";
+    }
     public static override schema = TestGeneratedClasses;
     public elemNavProp: RelatedElement;
     public aspectNavProp: RelatedElement;
@@ -291,7 +334,9 @@ describe("Class Registry - generated classes", () => {
   }
 
   class DerivedWithNavProp extends TestElementWithNavProp {
-    public static override get className() { return "DerivedWithNavProp"; }
+    public static override get className() {
+      return "DerivedWithNavProp";
+    }
     public static override schema = TestGeneratedClasses;
     public derivedNavProp: RelatedElement;
     public constructor(props: DerivedWithNavPropProps, inIModel: IModelDb) {
@@ -301,19 +346,29 @@ describe("Class Registry - generated classes", () => {
   }
 
   class Derived2 extends DerivedWithNavProp {
-    public static override get className() { return "Derived2"; }
+    public static override get className() {
+      return "Derived2";
+    }
   }
   class Derived3 extends Derived2 {
-    public static override get className() { return "Derived3"; }
+    public static override get className() {
+      return "Derived3";
+    }
   }
   class Derived4 extends Derived3 {
-    public static override get className() { return "Derived4"; }
+    public static override get className() {
+      return "Derived4";
+    }
   }
   class Derived5 extends Derived4 {
-    public static override get className() { return "Derived5"; }
+    public static override get className() {
+      return "Derived5";
+    }
   }
   class Derived6 extends Derived5 {
-    public static override get className() { return "Derived6"; }
+    public static override get className() {
+      return "Derived6";
+    }
   }
 
   // if a single inherited class is not generated, the entire hierarchy is considered not-generated
@@ -409,12 +464,14 @@ describe("Class Registry - generated classes", () => {
       EntityReferences.fromEntityType(testEntityId, ConcreteEntityTypes.Element),
     ].filter((x) => x !== undefined));
 
-    const modelTestEntityIds = new Array(2).fill(undefined).map((_, index) => imodel.elements.insertElement({
-      classFullName: "TestGeneratedClasses:TestEntity",
-      prop: `model-value-${index}`,
-      model: IModelDb.dictionaryId,
-      code: Code.createEmpty(),
-    } as TestEntityProps));
+    const modelTestEntityIds = new Array(2).fill(undefined).map((_, index) =>
+      imodel.elements.insertElement({
+        classFullName: "TestGeneratedClasses:TestEntity",
+        prop: `model-value-${index}`,
+        model: IModelDb.dictionaryId,
+        code: Code.createEmpty(),
+      } as TestEntityProps)
+    );
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedTestAspectWithNavProp = imodel.getJsClass("TestGeneratedClasses:TestAspectWithNavProp");
@@ -455,12 +512,14 @@ describe("Class Registry - generated classes", () => {
       // EntityReferences.fromEntityType(relWithNavPropId, ConcreteEntityTypes.Relationship),
     ].filter((x) => x !== undefined));
 
-    const relTestEntityIds = new Array(3).fill(undefined).map((_, index) => imodel.elements.insertElement({
-      classFullName: "TestGeneratedClasses:TestEntity",
-      prop: `rel-value-${index}`,
-      model: IModelDb.dictionaryId,
-      code: Code.createEmpty(),
-    } as TestEntityProps));
+    const relTestEntityIds = new Array(3).fill(undefined).map((_, index) =>
+      imodel.elements.insertElement({
+        classFullName: "TestGeneratedClasses:TestEntity",
+        prop: `rel-value-${index}`,
+        model: IModelDb.dictionaryId,
+        code: Code.createEmpty(),
+      } as TestEntityProps)
+    );
 
     // eslint-disable-next-line @typescript-eslint/naming-convention
     const GeneratedLinkTableRelWithNavProp = imodel.getJsClass<typeof LinkTableRelWithNavProp>("TestGeneratedClasses:LinkTableRelWithNavProp");
@@ -627,7 +686,7 @@ describe("Class Registry - generated classes", () => {
     expect(ActualDerived5.isGeneratedClass).to.be.true;
     expect(ActualDerived6.isGeneratedClass).to.be.true;
 
-    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds" )); // should have automatic impl
+    assert.isTrue(ActualTestElementWithNavProp.prototype.hasOwnProperty("collectReferenceIds")); // should have automatic impl
     assert.isTrue(ActualDerivedWithNavProp.prototype.hasOwnProperty("collectReferenceIds"));
     assert.isTrue(ActualDerived2.prototype.hasOwnProperty("collectReferenceIds")); // non-generated; manually implements so has method
     assert.isFalse(ActualDerived3.prototype.hasOwnProperty("collectReferenceIds")); // base is non-generated so it shouldn't get the automatic impl
@@ -744,7 +803,9 @@ describe("Class Registry - generated classes", () => {
 
 class Base {
   public static staticProperty: string = "base";
-  public static get sqlName(): string { return `s.${this.staticProperty}`; }
+  public static get sqlName(): string {
+    return `s.${this.staticProperty}`;
+  }
 }
 
 class Derived extends Base {
@@ -754,8 +815,8 @@ describe("Static Properties", () => {
   it("should be inherited, and the subclass should get its own copy", async () => {
     assert.equal(Base.staticProperty, "base");
     assert.equal(Derived.staticProperty, "base"); // Derived inherits Base's staticProperty (via its prototype)
-    Derived.staticProperty = "derived";           // Derived now gets its own copy of staticProperty
-    assert.equal(Base.staticProperty, "base");      // Base's staticProperty remains as it was
+    Derived.staticProperty = "derived"; // Derived now gets its own copy of staticProperty
+    assert.equal(Base.staticProperty, "base"); // Base's staticProperty remains as it was
     assert.equal(Derived.staticProperty, "derived"); // Derived's staticProperty is now different
     assert.equal(Base.sqlName, "s.base");
     const d = new Derived();
@@ -763,7 +824,6 @@ describe("Static Properties", () => {
     const b = new Base();
     assert.equal((b.constructor as any).staticProperty, "base"); // Instances of Base see Base.staticProperty
   });
-
 });
 
 // TODO: add tests on the new model/aspect prefixes

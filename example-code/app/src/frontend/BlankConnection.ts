@@ -2,12 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Range3d } from "@itwin/core-geometry";
 import { Cartographic, ColorDef } from "@itwin/core-common";
 import { BlankConnection, IModelConnection, SpatialViewState } from "@itwin/core-frontend";
+import { Range3d } from "@itwin/core-geometry";
 
 export class BlankConnectionExample {
-
   // __PUBLISH_EXTRACT_START__ BlankConnection.open
 
   // create a new blank connection centered on Exton PA
@@ -16,7 +15,7 @@ export class BlankConnectionExample {
       // call this connection "Exton PA"
       name: "Exton PA",
       // put the center of the connection near Exton, Pennsylvania (Bentley's HQ)
-      location: Cartographic.fromDegrees({longitude: -75.686694, latitude: 40.065757, height: 0}),
+      location: Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 }),
       // create the area-of-interest to be 2000 x 2000 x 200 meters, centered around 0,0.0
       extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
     });

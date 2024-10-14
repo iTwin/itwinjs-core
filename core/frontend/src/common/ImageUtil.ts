@@ -6,8 +6,8 @@
  * @module Rendering
  */
 
-import { Point2d } from "@itwin/core-geometry";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@itwin/core-common";
+import { Point2d } from "@itwin/core-geometry";
 import { ViewRect } from "./ViewRect";
 
 interface Rgba {
@@ -20,7 +20,11 @@ interface Rgba {
 const scratchRgba = { r: 0, g: 0, b: 0, a: 0 };
 
 function rgbaFromAlpha(rgba: Rgba, src: Uint8Array, idx: number): number {
-  rgba.r = rgba.g = rgba.b = rgba.a = src[idx];
+  rgba.r =
+    rgba.g =
+    rgba.b =
+    rgba.a =
+      src[idx];
   return idx + 1;
 }
 
@@ -47,7 +51,12 @@ function rgbaFromRgba(rgba: Rgba, src: Uint8Array, idx: number): number {
  * @public
  * @extensions
  */
-export function canvasToResizedCanvasWithBars(canvasIn: HTMLCanvasElement, targetSize: Point2d, barSize = new Point2d(0, 0), barStyle = "#C0C0C0"): HTMLCanvasElement {
+export function canvasToResizedCanvasWithBars(
+  canvasIn: HTMLCanvasElement,
+  targetSize: Point2d,
+  barSize = new Point2d(0, 0),
+  barStyle = "#C0C0C0",
+): HTMLCanvasElement {
   const canvasOut = document.createElement("canvas");
   canvasOut.width = targetSize.x + barSize.x;
   canvasOut.height = targetSize.y + barSize.y;
@@ -89,7 +98,9 @@ export function imageBufferToCanvas(buffer: ImageBuffer, preserveAlpha: boolean 
     return undefined;
 
   const imageData = context.createImageData(buffer.width, buffer.height);
-  const extractRgba = ImageBufferFormat.Alpha === buffer.format ? rgbaFromAlpha : (ImageBufferFormat.Rgb === buffer.format ? rgbaFromRgb : rgbaFromRgba);
+  const extractRgba = ImageBufferFormat.Alpha === buffer.format
+    ? rgbaFromAlpha
+    : (ImageBufferFormat.Rgb === buffer.format ? rgbaFromRgb : rgbaFromRgba);
 
   const bufferData = buffer.data;
   let i = 0;
@@ -164,7 +175,6 @@ export function canvasToImageBuffer(canvas: HTMLCanvasElement, format = ImageBuf
  * @extensions
  */
 export function getImageSourceMimeType(format: ImageSourceFormat): string {
-
   switch (format) {
     case ImageSourceFormat.Jpeg:
       return "image/jpeg";
@@ -182,12 +192,17 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string {
  */
 export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined {
   switch (mimeType) {
-    case "image/jpeg": return ImageSourceFormat.Jpeg;
+    case "image/jpeg":
+      return ImageSourceFormat.Jpeg;
     // not standard, but people accidentally use it anyway.
-    case "image/jpg": return ImageSourceFormat.Jpeg;
-    case "image/png": return ImageSourceFormat.Png;
-    case "image/svg+xml;charset=utf-8": return ImageSourceFormat.Svg;
-    default: return undefined;
+    case "image/jpg":
+      return ImageSourceFormat.Jpeg;
+    case "image/png":
+      return ImageSourceFormat.Png;
+    case "image/svg+xml;charset=utf-8":
+      return ImageSourceFormat.Svg;
+    default:
+      return undefined;
   }
 }
 

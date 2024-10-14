@@ -5,10 +5,10 @@
 
 import { ColorDef } from "@itwin/core-common";
 import { Point3d, Sphere, Transform } from "@itwin/core-geometry";
+import { GraphicBranch, GraphicType, PickableGraphicOptions } from "../core-frontend";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
-import { GraphicBranch, GraphicType, PickableGraphicOptions } from "../core-frontend";
 
 /** A base class used strictly for `instanceof` checks in tests.
  * @internal
@@ -101,7 +101,14 @@ export class BoxDecorator extends TestDecorator {
  * @internal
  */
 export class SphereDecorator extends TestDecorator {
-  public constructor(public readonly vp: ScreenViewport, public readonly color: ColorDef, public readonly pickable?: PickableGraphicOptions, public readonly placement?: Transform, private _center: Point3d = new Point3d(), private _radius: number = 1) {
+  public constructor(
+    public readonly vp: ScreenViewport,
+    public readonly color: ColorDef,
+    public readonly pickable?: PickableGraphicOptions,
+    public readonly placement?: Transform,
+    private _center: Point3d = new Point3d(),
+    private _radius: number = 1,
+  ) {
     super();
     IModelApp.viewManager.addDecorator(this);
   }

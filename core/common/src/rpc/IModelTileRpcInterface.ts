@@ -6,19 +6,21 @@
  * @module RpcInterface
  */
 
-import type { TransferConfig } from "@itwin/object-storage-core/lib/common";
 import { Id64Array } from "@itwin/core-bentley";
-import { RpcResponseCacheControl } from "./core/RpcConstants";
-import { RpcOperation } from "./core/RpcOperation";
+import type { TransferConfig } from "@itwin/object-storage-core/lib/common";
 import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
 import { IModelTileTreeProps, TileContentIdentifier, TileContentSource, TileVersionInfo } from "../TileProps";
+import { RpcResponseCacheControl } from "./core/RpcConstants";
+import { RpcOperation } from "./core/RpcOperation";
 
 /** @public */
 export abstract class IModelTileRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
-  public static getClient(): IModelTileRpcInterface { return RpcManager.getClientForInterface(IModelTileRpcInterface); }
+  public static getClient(): IModelTileRpcInterface {
+    return RpcManager.getClientForInterface(IModelTileRpcInterface);
+  }
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "IModelTileRpcInterface";
@@ -42,14 +44,21 @@ export abstract class IModelTileRpcInterface extends RpcInterface { // eslint-di
 
   /** @internal */
   @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
-  public async requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps> { return this.forward(arguments); }
+  public async requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps> {
+    return this.forward(arguments);
+  }
 
   /** Ask the backend to generate content for the specified tile. This function, unlike the deprecated `requestTileContent`, does not check the cloud storage tile cache -
    * Use `CloudStorageTileCache.retrieve` for that.
    * @returns TileContentSource - if Backend, use retrieveTileContent. If ExternalCache, use TileAdmin.requestCachedTileContent
    * @internal
    */
-  public async generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource> {
+  public async generateTileContent(
+    _rpcProps: IModelRpcProps,
+    _treeId: string,
+    _contentId: string,
+    _guid: string | undefined,
+  ): Promise<TileContentSource> {
     return this.forward(arguments);
   }
 
@@ -71,7 +80,9 @@ export abstract class IModelTileRpcInterface extends RpcInterface { // eslint-di
    * If no array of model Ids is supplied, it purges *all* tile trees, which can be quite inefficient.
    * @internal
    */
-  public async purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void> { return this.forward(arguments); }
+  public async purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void> {
+    return this.forward(arguments);
+  }
 
   /** Requests graphics for a single element in "iMdl" format.
    * @returns graphics in iMdl format, or `undefined` if the element's geometry produced no graphics or the request was canceled before completion.

@@ -5,20 +5,25 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import * as sinon from "sinon";
-import { NewYorkDataset } from "./NewYorkDataset";
-import { ArcGisClassBreaksSymbologyRenderer, ArcGisDashLineStyle, ArcGisSymbologyCanvasRenderer, ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
-import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
+import {
+  ArcGisClassBreaksSymbologyRenderer,
+  ArcGisDashLineStyle,
+  ArcGisSymbologyCanvasRenderer,
+  ArcGisUniqueValueSymbologyRenderer,
+} from "../../ArcGisFeature/ArcGisSymbologyRenderer";
+import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS, EsriSMS, EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
 import { EarthquakeSince1970Dataset } from "./EarthquakeSince1970Dataset";
-import { EsriPMS, EsriRenderer, EsriSFS, EsriSLS , EsriSMS, EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
 import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
+import { NewYorkDataset } from "./NewYorkDataset";
+import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
 
+import { ColorDef } from "@itwin/core-common";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { TestUtils } from "./TestUtils";
 import * as moq from "typemoq";
-import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery";
-import { ColorDef } from "@itwin/core-common";
 import { DefaultArcGiSymbology } from "../../ArcGisFeature/ArcGisFeatureProvider";
+import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery";
+import { TestUtils } from "./TestUtils";
 
 const expect = chai.expect;
 chai.use(chaiAsPromised);
@@ -26,7 +31,6 @@ chai.use(chaiAsPromised);
 const getRefImageSrc = (markerSymbol: any) => `data:${markerSymbol.contentType};base64,${markerSymbol.imageData}`;
 
 describe("ArcGisSymbologyRenderer", () => {
-
   const sandbox = sinon.createSandbox();
   const contextMock = moq.Mock.ofType<CanvasRenderingContext2D>();
 
@@ -47,10 +51,12 @@ describe("ArcGisSymbologyRenderer", () => {
   };
 
   beforeEach(async () => {
-    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
-      // Simple call the listener in order to resolved the wrapping promise (i.e. EsriRenderer.initialize() is non-blocking )
-      (listener as any)();
-    });
+    sandbox.stub(HTMLImageElement.prototype, "addEventListener").callsFake(
+      function _(_type: string, listener: EventListenerOrEventListenerObject, _options?: boolean | AddEventListenerOptions) {
+        // Simple call the listener in order to resolved the wrapping promise (i.e. EsriRenderer.initialize() is non-blocking )
+        (listener as any)();
+      },
+    );
   });
 
   afterEach(async () => {
@@ -68,56 +74,53 @@ describe("ArcGisSymbologyRenderer", () => {
   });
 
   it("should construct unique value renderer without metadata default symbol (", async () => {
-
     const dataset = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo;
-    const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
+    const renderer = EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
     const defaultSymb = new DefaultArcGiSymbology();
     const symbRender = ArcGisSymbologyCanvasRenderer.create(renderer, defaultSymb);
     symbRender.activeGeometryType = "esriGeometryPolygon";
-    expect (symbRender.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultSFS);
+    expect(symbRender.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultSFS);
   });
 
   it("should construct unique value renderer with default symbol", async () => {
     const dataset = NewYorkDataset.uniqueValueDrawingInfo;
-    const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
+    const renderer = EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
 
     const symbRender = ArcGisSymbologyCanvasRenderer.create(renderer, new DefaultArcGiSymbology(), "esriGeometryPoint");
 
     const activeSymbol = symbRender.symbol as EsriPMS;
     const refSym = EsriPMS.fromJSON(dataset.drawingInfo.renderer.defaultSymbol as any);
-    expect (activeSymbol.imageUrl).to.deep.equals(refSym.imageUrl);
+    expect(activeSymbol.imageUrl).to.deep.equals(refSym.imageUrl);
   });
 
   it("should construct with default symbol if invalid renderer type", async () => {
     const dataset = structuredClone(NewYorkDataset.uniqueValueDrawingInfo);
-    const renderer =  EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
+    const renderer = EsriUniqueValueRenderer.fromJSON(dataset.drawingInfo.renderer as any);
     (renderer as any).type = "someBadType";
     const symbRender = ArcGisSymbologyCanvasRenderer.create(renderer, new DefaultArcGiSymbology(), "esriGeometryPoint");
-    expect (symbRender.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultPMS);
-
+    expect(symbRender.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultPMS);
   });
 
   it("should construct with default symbol if no renderer object", async () => {
     const symbRender = ArcGisSymbologyCanvasRenderer.create(undefined, new DefaultArcGiSymbology(), "esriGeometryPoint");
-    expect (symbRender.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultPMS);
-
+    expect(symbRender.defaultSymbol).to.deep.equals(DefaultArcGiSymbology.defaultPMS);
   });
 
   it("should provide fill color using simple renderer definition", async () => {
-
-    const provider = await TestUtils.createSymbologyRenderer("esriGeometryPolygon", PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer) as ArcGisUniqueValueSymbologyRenderer;
+    const provider = await TestUtils.createSymbologyRenderer(
+      "esriGeometryPolygon",
+      PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer,
+    ) as ArcGisUniqueValueSymbologyRenderer;
     contextMock.setup((x) => x.fillStyle);
 
     provider.applyFillStyle(contextMock.object);
 
     const refSymbol = EsriSFS.fromJSON(PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer.symbol as any);
     contextMock.verify((x) => x.fillStyle = moq.It.isValue(refSymbol.color!.toRgbaString()), moq.Times.once());
-
   });
 
   it("should apply line dash on poly outline  using simple renderer definition", async () => {
-
-    const refRenderer =  PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer;
+    const refRenderer = PhillyLandmarksDataset.polygonDrawingInfo.drawingInfo.renderer;
     refRenderer.symbol.outline.style;
     const provider = await TestUtils.createSymbologyRenderer("esriGeometryPolygon", refRenderer) as ArcGisUniqueValueSymbologyRenderer;
 
@@ -131,7 +134,6 @@ describe("ArcGisSymbologyRenderer", () => {
   });
 
   it("should provide stroke style using simple renderer definition", async () => {
-
     const refRenderer = PhillyLandmarksDataset.lineDrawingInfo.drawingInfo.renderer;
     const provider = await TestUtils.createSymbologyRenderer("esriGeometryLine", refRenderer) as ArcGisUniqueValueSymbologyRenderer;
 
@@ -146,19 +148,17 @@ describe("ArcGisSymbologyRenderer", () => {
   });
 
   it("should provide stroke style using simple renderer definition", async () => {
-
     const refRenderer = PhillyLandmarksDataset.lineDrawingInfo.drawingInfo.renderer;
     const refColor = EsriSLS.fromJSON(refRenderer.symbol as any);
 
     await verifyLineDashes(refRenderer, refRenderer.symbol, refColor.color!, "esriGeometryLine");
-
   });
 
   it("should apply proper fill color using unique value SFS renderer definition", async () => {
     const rendererDef = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer;
     const provider = await TestUtils.createSymbologyRenderer("esriGeometryPolygon", rendererDef) as ArcGisUniqueValueSymbologyRenderer;
 
-    const fakeContext = {fillStyle: ""};
+    const fakeContext = { fillStyle: "" };
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
     provider.applyFillStyle(fakeContext as CanvasRenderingContext2D);
     let refSymbol = provider.defaultSymbol as EsriSFS;
@@ -166,7 +166,7 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // Now set proper attribute
     // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
-    provider.setActiveFeatureAttributes({"LU_2014": "Urban/Built-up"});
+    provider.setActiveFeatureAttributes({ "LU_2014": "Urban/Built-up" });
     provider.applyFillStyle(fakeContext as CanvasRenderingContext2D);
     refSymbol = EsriSFS.fromJSON(rendererDef.uniqueValueInfos[1].symbol as any);
     expect(fakeContext.fillStyle).to.eq(refSymbol.color!.toRgbaString());
@@ -183,7 +183,7 @@ describe("ArcGisSymbologyRenderer", () => {
     const rendererDef = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer;
     const provider = await TestUtils.createSymbologyRenderer("esriGeometryPolygon", rendererDef) as ArcGisUniqueValueSymbologyRenderer;
 
-    const fakeContext = {strokeStyle: ""};
+    const fakeContext = { strokeStyle: "" };
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
     provider.applyStrokeStyle(fakeContext as CanvasRenderingContext2D);
     let refSymbol = provider.defaultSymbol as EsriSFS;
@@ -191,7 +191,7 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // Now set proper attribute
     // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
-    provider.setActiveFeatureAttributes({"LU_2014": "Urban/Built-up"});
+    provider.setActiveFeatureAttributes({ "LU_2014": "Urban/Built-up" });
     provider.applyStrokeStyle(fakeContext as CanvasRenderingContext2D);
     refSymbol = EsriSFS.fromJSON(rendererDef.uniqueValueInfos[1].symbol as any);
     expect(fakeContext.strokeStyle).to.eq(refSymbol.outline!.color!.toRgbaString());
@@ -208,7 +208,7 @@ describe("ArcGisSymbologyRenderer", () => {
     const rendererDef = NeptuneCoastlineDataset.uniqueValueSLSDrawingInfo.drawingInfo.renderer;
     const provider = await TestUtils.createSymbologyRenderer("esriGeometryLine", rendererDef) as ArcGisUniqueValueSymbologyRenderer;
 
-    const fakeContext = {strokeStyle: ""};
+    const fakeContext = { strokeStyle: "" };
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
     provider.applyStrokeStyle(fakeContext as CanvasRenderingContext2D);
     let refSymbol = provider.defaultSymbol as any;
@@ -216,7 +216,7 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // Now set proper attribute
     // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
-    provider.setActiveFeatureAttributes({"LU_2014": "Urban/Built-up"});
+    provider.setActiveFeatureAttributes({ "LU_2014": "Urban/Built-up" });
     provider.applyStrokeStyle(fakeContext as CanvasRenderingContext2D);
     refSymbol = EsriSFS.fromJSON(rendererDef.uniqueValueInfos[1].symbol as any);
     expect(fakeContext.strokeStyle).to.eq(refSymbol.color!.toRgbaString());
@@ -244,26 +244,26 @@ describe("ArcGisSymbologyRenderer", () => {
     const fakeContext = new FakeContext();
 
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
-    provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0 ,0);
+    provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0, 0);
     let refSymbol = provider.defaultSymbol;
     expect(fakeContext.image.src).to.eq(getRefImageSrc(refSymbol));
 
     // Now set proper attribute
     // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
-    provider.setActiveFeatureAttributes({"WEAPON": "gun"});
-    provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0 ,0);
+    provider.setActiveFeatureAttributes({ "WEAPON": "gun" });
+    provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0, 0);
     refSymbol = EsriPMS.fromJSON(rendererDef.uniqueValueInfos[2].symbol as any);
     expect(fakeContext.image.src).to.eq(getRefImageSrc(refSymbol));
 
     // check that we fallback to default symbology if empty attributes are now set
     provider.setActiveFeatureAttributes({});
     fakeContext.image = undefined;
-    provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0 ,0);
+    provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0, 0);
     refSymbol = provider.defaultSymbol;
     expect(fakeContext.image.src).to.eq(getRefImageSrc(refSymbol));
   });
 
-  it ("should draw rotated marker using simple PMS renderer definition", async () => {
+  it("should draw rotated marker using simple PMS renderer definition", async () => {
     // Clone renderer definition and make adjustments for the test purposes.
     const rendererDef = structuredClone(PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
     const angle = 90;
@@ -277,17 +277,26 @@ describe("ArcGisSymbologyRenderer", () => {
     contextMock.setup((x) => x.translate(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
 
     // Make sure appropriate context methods are called.
-    provider.drawPoint(contextMock.object, 0 ,0);
+    provider.drawPoint(contextMock.object, 0, 0);
     const refSymbol = provider.symbol;
     const pms = refSymbol as EsriPMS;
     await pms.loadImage();
-    contextMock.verify((x) => x.rotate(moq.It.isValue(angle*Math.PI/180)), moq.Times.once());
+    contextMock.verify((x) => x.rotate(moq.It.isValue(angle * Math.PI / 180)), moq.Times.once());
     contextMock.verify((x) => x.translate(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
-    contextMock.verify((x) => x.drawImage(moq.It.is<HTMLImageElement>((value: HTMLImageElement) => value.src === pms.image.src), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
-
+    contextMock.verify(
+      (x) =>
+        x.drawImage(
+          moq.It.is<HTMLImageElement>((value: HTMLImageElement) => value.src === pms.image.src),
+          moq.It.isAnyNumber(),
+          moq.It.isAnyNumber(),
+          moq.It.isAnyNumber(),
+          moq.It.isAnyNumber(),
+        ),
+      moq.Times.once(),
+    );
   });
 
-  it ("should draw rotated marker using unique value PMS renderer definition", async () => {
+  it("should draw rotated marker using unique value PMS renderer definition", async () => {
     // Clone renderer definition and make adjustments for the test purposes.
     const rendererDef = structuredClone(NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer);
     const angle = 90;
@@ -303,17 +312,26 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // Now set proper attribute
     // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
-    provider.setActiveFeatureAttributes({"WEAPON": "gun"});
+    provider.setActiveFeatureAttributes({ "WEAPON": "gun" });
 
     // Make sure appropriate context methods are called.
-    provider.drawPoint(contextMock.object, 0 ,0);
+    provider.drawPoint(contextMock.object, 0, 0);
     const refSymbol = provider.symbol;
     const pms = refSymbol as EsriPMS;
     await pms.loadImage();
-    contextMock.verify((x) => x.rotate(moq.It.isValue(angle*Math.PI/180)), moq.Times.once());
+    contextMock.verify((x) => x.rotate(moq.It.isValue(angle * Math.PI / 180)), moq.Times.once());
     contextMock.verify((x) => x.translate(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
-    contextMock.verify((x) => x.drawImage(moq.It.is<HTMLImageElement>((value: HTMLImageElement) => value.src === pms.image.src), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
-
+    contextMock.verify(
+      (x) =>
+        x.drawImage(
+          moq.It.is<HTMLImageElement>((value: HTMLImageElement) => value.src === pms.image.src),
+          moq.It.isAnyNumber(),
+          moq.It.isAnyNumber(),
+          moq.It.isAnyNumber(),
+          moq.It.isAnyNumber(),
+        ),
+      moq.Times.once(),
+    );
   });
 
   it("should draw rotated marker using simple SMS renderer definition", async () => {
@@ -333,11 +351,13 @@ describe("ArcGisSymbologyRenderer", () => {
     const refSms = refSymbol as EsriSMS;
 
     // Make sure appropriate context methods are called.
-    provider.drawPoint(contextMock.object, 0 ,0);
-    contextMock.verify((x) => x.rotate(moq.It.isValue(angle*Math.PI/180)), moq.Times.once());
+    provider.drawPoint(contextMock.object, 0, 0);
+    contextMock.verify((x) => x.rotate(moq.It.isValue(angle * Math.PI / 180)), moq.Times.once());
     contextMock.verify((x) => x.translate(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
-    contextMock.verify((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isValue(refSms.size*0.5), moq.It.isValue(0), moq.It.isValue(2*Math.PI)), moq.Times.once());
-
+    contextMock.verify(
+      (x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isValue(refSms.size * 0.5), moq.It.isValue(0), moq.It.isValue(2 * Math.PI)),
+      moq.Times.once(),
+    );
   });
 
   it("should draw different markers using unique value SMS renderer definition", async () => {
@@ -352,17 +372,27 @@ describe("ArcGisSymbologyRenderer", () => {
     // Make sure appropriate context methods are called.
 
     // Should take default symbology
-    provider.drawPoint(contextMock.object, 0 ,0);
+    provider.drawPoint(contextMock.object, 0, 0);
     const refDefaultSymbol = rendererDef.defaultSymbol;
-    contextMock.verify((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isValue(refDefaultSymbol.size*0.5), moq.It.isValue(0), moq.It.isValue(2*Math.PI)), moq.Times.once());
+    contextMock.verify(
+      (x) =>
+        x.arc(
+          moq.It.isAnyNumber(),
+          moq.It.isAnyNumber(),
+          moq.It.isValue(refDefaultSymbol.size * 0.5),
+          moq.It.isValue(0),
+          moq.It.isValue(2 * Math.PI),
+        ),
+      moq.Times.once(),
+    );
 
     // check esriSMSCross
     contextMock.reset();
-    provider.setActiveFeatureAttributes({WEAPON: " "});
+    provider.setActiveFeatureAttributes({ WEAPON: " " });
     contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.beginPath());
-    provider.drawPoint(contextMock.object, 0 ,0);
+    provider.drawPoint(contextMock.object, 0, 0);
     contextMock.verify((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
     contextMock.verify((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
     contextMock.verify((x) => x.beginPath(), moq.Times.once());
@@ -370,12 +400,12 @@ describe("ArcGisSymbologyRenderer", () => {
     // check esriSMSDiamond
     contextMock.reset();
 
-    provider.setActiveFeatureAttributes({WEAPON: "blunt_instrument"});
+    provider.setActiveFeatureAttributes({ WEAPON: "blunt_instrument" });
     contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.beginPath());
     contextMock.setup((x) => x.closePath());
-    provider.drawPoint(contextMock.object, 0 ,0);
+    provider.drawPoint(contextMock.object, 0, 0);
     contextMock.verify((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
     contextMock.verify((x) => x.beginPath(), moq.Times.once());
     contextMock.verify((x) => x.closePath(), moq.Times.once());
@@ -383,19 +413,19 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // check esriSMSSquare
     contextMock.reset();
-    provider.setActiveFeatureAttributes({WEAPON: "gun"});
+    provider.setActiveFeatureAttributes({ WEAPON: "gun" });
     contextMock.setup((x) => x.fillRect(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()));
-    provider.drawPoint(contextMock.object, 0 ,0);
+    provider.drawPoint(contextMock.object, 0, 0);
     contextMock.verify((x) => x.fillRect(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
 
     // check esriSMSTriangle
     contextMock.reset();
-    provider.setActiveFeatureAttributes({WEAPON: "knife"});
+    provider.setActiveFeatureAttributes({ WEAPON: "knife" });
     contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.beginPath());
     contextMock.setup((x) => x.closePath());
-    provider.drawPoint(contextMock.object, 0 ,0);
+    provider.drawPoint(contextMock.object, 0, 0);
     contextMock.verify((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
     contextMock.verify((x) => x.beginPath(), moq.Times.once());
     contextMock.verify((x) => x.closePath(), moq.Times.once());
@@ -403,32 +433,35 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // check esriSMSX
     contextMock.reset();
-    provider.setActiveFeatureAttributes({WEAPON: "other"});
+    provider.setActiveFeatureAttributes({ WEAPON: "other" });
     contextMock.setup((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()));
     contextMock.setup((x) => x.beginPath());
-    provider.drawPoint(contextMock.object, 0 ,0);
+    provider.drawPoint(contextMock.object, 0, 0);
     contextMock.verify((x) => x.moveTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
     contextMock.verify((x) => x.lineTo(moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.exactly(2));
     contextMock.verify((x) => x.beginPath(), moq.Times.once());
 
     // check esriSMSCircle
     contextMock.reset();
-    provider.setActiveFeatureAttributes({WEAPON: "dummy"});
+    provider.setActiveFeatureAttributes({ WEAPON: "dummy" });
     contextMock.setup((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()));
-    provider.drawPoint(contextMock.object, 0 ,0);
-    contextMock.verify((x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(),moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()), moq.Times.once());
+    provider.drawPoint(contextMock.object, 0, 0);
+    contextMock.verify(
+      (x) => x.arc(moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber(), moq.It.isAnyNumber()),
+      moq.Times.once(),
+    );
   });
 
   it("should apply proper marker using unique value PMS renderer definition", async () => {
-    const rendererDef = {...NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer, defaultSymbol: null};
+    const rendererDef = { ...NewYorkDataset.uniqueValueDrawingInfo.drawingInfo.renderer, defaultSymbol: null };
     const provider = await TestUtils.createSymbologyRenderer("esriGeometryPoint", rendererDef);
 
     await provider.renderer!.initialize();
 
     // When the renderer definition doesn't include its own default symbol we need to loadimage of the default symbol manually
     if (!rendererDef.defaultSymbol)
-      await (provider.defaultSymbol as EsriPMS).loadImage();  // since default symbology is provided by
+      await (provider.defaultSymbol as EsriPMS).loadImage(); // since default symbology is provided by
 
     class FakeContext {
       public image: any;
@@ -439,10 +472,9 @@ describe("ArcGisSymbologyRenderer", () => {
     const fakeContext = new FakeContext();
 
     // Make sure default symbology is applied if 'setActiveFeatureAttributes' has never been called
-    provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0 ,0);
+    provider.drawPoint((fakeContext as unknown) as CanvasRenderingContext2D, 0, 0);
     const refSymbol = provider.defaultSymbol;
     expect(fakeContext.image.src).to.eq(getRefImageSrc(refSymbol));
-
   });
 
   it("should pick the right class based of class breaks", async () => {
@@ -452,25 +484,28 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // Now set proper attribute
     // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
-    provider.setActiveFeatureAttributes({"magnitude": 5.1});
+    provider.setActiveFeatureAttributes({ "magnitude": 5.1 });
 
     let pms = provider.symbol as EsriPMS;
 
     // Make sure the right image was picked after setting the active feature attributes
-    expect(pms.props.imageData).to.equals(EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[1].symbol.imageData);
+    expect(pms.props.imageData).to.equals(
+      EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[1].symbol.imageData,
+    );
 
-    provider.setActiveFeatureAttributes({magnitude: 1.7});
+    provider.setActiveFeatureAttributes({ magnitude: 1.7 });
     pms = provider.symbol as EsriPMS;
-    expect(pms.props.imageData).to.equals(EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[0].symbol.imageData);
+    expect(pms.props.imageData).to.equals(
+      EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[0].symbol.imageData,
+    );
 
-    provider.setActiveFeatureAttributes({magnitude: 0.5});
+    provider.setActiveFeatureAttributes({ magnitude: 0.5 });
     pms = provider.symbol as EsriPMS;
     expect(pms.props.imageData).to.equals((provider.defaultSymbol as EsriPMS).imageData);
 
-    provider.setActiveFeatureAttributes({magnitude: 10});
+    provider.setActiveFeatureAttributes({ magnitude: 10 });
     pms = provider.symbol as EsriPMS;
     expect(pms.props.imageData).to.equals((provider.defaultSymbol as EsriPMS).imageData);
-
   });
 
   it("should pick the right class based of class breaks (classMinValue defined)", async () => {
@@ -481,20 +516,23 @@ describe("ArcGisSymbologyRenderer", () => {
 
     // Now set proper attribute
     // eslint-disable-next-line quote-props, @typescript-eslint/naming-convention
-    provider.setActiveFeatureAttributes({"magnitude": 5.1});
+    provider.setActiveFeatureAttributes({ "magnitude": 5.1 });
 
     let pms = provider.symbol as EsriPMS;
 
     // Make sure the right image was picked after setting the active feature attributes
-    expect(pms.props.imageData).to.equals(EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[1].symbol.imageData);
+    expect(pms.props.imageData).to.equals(
+      EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[1].symbol.imageData,
+    );
 
-    provider.setActiveFeatureAttributes({magnitude: 3.1});
+    provider.setActiveFeatureAttributes({ magnitude: 3.1 });
     pms = provider.symbol as EsriPMS;
-    expect(pms.props.imageData).to.equals(EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[0].symbol.imageData);
+    expect(pms.props.imageData).to.equals(
+      EarthquakeSince1970Dataset.Earthquakes1970LayerCapabilities.drawingInfo.renderer.classBreakInfos[0].symbol.imageData,
+    );
 
-    provider.setActiveFeatureAttributes({magnitude: 2});
+    provider.setActiveFeatureAttributes({ magnitude: 2 });
     pms = provider.symbol as EsriPMS;
     expect(pms.props.imageData).to.equals((provider.defaultSymbol as EsriPMS).imageData);
   });
-
 }); // end test suite

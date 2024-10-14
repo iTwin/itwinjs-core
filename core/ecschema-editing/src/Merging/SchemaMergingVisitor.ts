@@ -2,10 +2,39 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "../Differencing/SchemaDifference";
+import { SchemaItemKey } from "@itwin/ecschema-metadata";
+import {
+  AnyClassItemDifference,
+  AnySchemaDifference,
+  AnySchemaItemDifference,
+  ClassPropertyDifference,
+  ConstantDifference,
+  CustomAttributeClassDifference,
+  CustomAttributeDifference,
+  EntityClassDifference,
+  EntityClassMixinDifference,
+  EnumerationDifference,
+  EnumeratorDifference,
+  FormatDifference,
+  InvertedUnitDifference,
+  KindOfQuantityDifference,
+  MixinClassDifference,
+  PhenomenonDifference,
+  PropertyCategoryDifference,
+  RelationshipClassDifference,
+  RelationshipConstraintClassDifference,
+  RelationshipConstraintDifference,
+  SchemaDifference,
+  SchemaReferenceDifference,
+  StructClassDifference,
+  UnitDifference,
+  UnitSystemDifference,
+} from "../Differencing/SchemaDifference";
+import { SchemaDifferenceVisitor } from "../Differencing/SchemaDifferenceVisitor";
+import { isClassDifference } from "../Differencing/Utils";
 import { addConstant, modifyConstant } from "./ConstantMerger";
-import { addCustomAttribute } from "./CustomAttributeMerger";
 import { addCustomAttributeClass, modifyCustomAttributeClass } from "./CustomAttributeClassMerger";
+import { addCustomAttribute } from "./CustomAttributeMerger";
 import { addClassMixins, addEntityClass, modifyEntityClass } from "./EntityClassMerger";
 import { addEnumeration, modifyEnumeration } from "./EnumerationMerger";
 import { addEnumerator, modifyEnumerator } from "./EnumeratorMerger";
@@ -13,15 +42,17 @@ import { addKindOfQuantity, modifyKindOfQuantity } from "./KindOfQuantityMerger"
 import { addMixinClass, modifyMixinClass } from "./MixinMerger";
 import { addPhenomenon, modifyPhenomenon } from "./PhenomenonMerger";
 import { addPropertyCategory, modifyPropertyCategory } from "./PropertyCategoryMerger";
-import { addRelationshipClass, mergeRelationshipClassConstraint, mergeRelationshipConstraint, modifyRelationshipClass } from "./RelationshipClassMerger";
+import { mergePropertyDifference } from "./PropertyMerger";
+import {
+  addRelationshipClass,
+  mergeRelationshipClassConstraint,
+  mergeRelationshipConstraint,
+  modifyRelationshipClass,
+} from "./RelationshipClassMerger";
+import { SchemaMergeContext } from "./SchemaMerger";
 import { addSchemaReferences, modifySchemaReferences } from "./SchemaReferenceMerger";
 import { addStructClass, modifyStructClass } from "./StructClassMerger";
 import { addUnitSystem, modifyUnitSystem } from "./UnitSystemMerger";
-import { mergePropertyDifference } from "./PropertyMerger";
-import { isClassDifference } from "../Differencing/Utils";
-import { SchemaDifferenceVisitor } from "../Differencing/SchemaDifferenceVisitor";
-import { SchemaItemKey } from "@itwin/ecschema-metadata";
-import { SchemaMergeContext } from "./SchemaMerger";
 
 /** Definition of schema items change type handler array. */
 interface ItemChangeTypeHandler<T extends AnySchemaDifference> {
@@ -35,7 +66,6 @@ interface ItemChangeTypeHandler<T extends AnySchemaDifference> {
  * @internal
  */
 export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
-
   private readonly _context: SchemaMergeContext;
 
   /**
@@ -55,13 +85,18 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
   /**
    * Shared merging logic for all types of ClassItemDifference union.
    */
-  private async visitClassDifference<T extends AnyClassItemDifference>(entry: T, index: number, array: AnySchemaDifference[], handler: ItemChangeTypeHandler<T>) {
+  private async visitClassDifference<T extends AnyClassItemDifference>(
+    entry: T,
+    index: number,
+    array: AnySchemaDifference[],
+    handler: ItemChangeTypeHandler<T>,
+  ) {
     return this.visitSchemaItemDifference(entry, {
       add: async (context) => {
         // To add classes a slightly different approach is done. In fact the class entries gets processed
         // two times. The first time, a stub with the bare minimum is added to the schema. The second time,
         // the class gets completed with all properties, mixins, etc...
-        if(entry.changeType === "add" && !await context.targetSchema.getItem(entry.itemName)) {
+        if (entry.changeType === "add" && !await context.targetSchema.getItem(entry.itemName)) {
           await handler.add(this._context, {
             ...entry,
             difference: {
@@ -105,7 +140,11 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * Visitor implementation for handling CustomAttributeClassDifference.
    * @internal
    */
-  public async visitCustomAttributeClassDifference(entry: CustomAttributeClassDifference, index: number, array: AnySchemaDifference[]): Promise<void> {
+  public async visitCustomAttributeClassDifference(
+    entry: CustomAttributeClassDifference,
+    index: number,
+    array: AnySchemaDifference[],
+  ): Promise<void> {
     return this.visitClassDifference(entry, index, array, {
       add: addCustomAttributeClass,
       modify: modifyCustomAttributeClass,
@@ -117,8 +156,9 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitCustomAttributeInstanceDifference(entry: CustomAttributeDifference): Promise<void> {
-    switch(entry.changeType) {
-      case "add": return addCustomAttribute(this._context, entry);
+    switch (entry.changeType) {
+      case "add":
+        return addCustomAttribute(this._context, entry);
     }
   }
 
@@ -138,8 +178,9 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitEntityClassMixinDifference(entry: EntityClassMixinDifference): Promise<void> {
-    switch(entry.changeType) {
-      case "add": return addClassMixins(this._context, entry);
+    switch (entry.changeType) {
+      case "add":
+        return addClassMixins(this._context, entry);
     }
   }
 
@@ -159,9 +200,11 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitEnumeratorDifference(entry: EnumeratorDifference): Promise<void> {
-    switch(entry.changeType) {
-      case "add": return addEnumerator(this._context, entry);
-      case "modify": return modifyEnumerator(this._context, entry, this.toItemKey(entry.itemName));
+    switch (entry.changeType) {
+      case "add":
+        return addEnumerator(this._context, entry);
+      case "modify":
+        return modifyEnumerator(this._context, entry, this.toItemKey(entry.itemName));
     }
   }
 
@@ -277,17 +320,17 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * Shared merging logic for all types of AnySchemaItemDifference union.
    */
   private async visitSchemaItemDifference<T extends AnySchemaItemDifference>(entry: T, handler: ItemChangeTypeHandler<T>) {
-    switch(entry.changeType) {
+    switch (entry.changeType) {
       case "add": {
         return handler.add(this._context, entry);
       }
       case "modify": {
-        if("schemaItemType" in entry.difference && entry.difference.schemaItemType !== entry.schemaType) {
+        if ("schemaItemType" in entry.difference && entry.difference.schemaItemType !== entry.schemaType) {
           throw new Error(`Changing the type of item '${entry.itemName}' not supported.`);
         }
 
         return handler.modify(this._context, entry, this.toItemKey(entry.itemName));
-      };
+      }
     }
   }
 
@@ -296,9 +339,11 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitSchemaReferenceDifference(entry: SchemaReferenceDifference): Promise<void> {
-    switch(entry.changeType) {
-      case "add": return addSchemaReferences(this._context, entry);
-      case "modify": return modifySchemaReferences(this._context, entry);
+    switch (entry.changeType) {
+      case "add":
+        return addSchemaReferences(this._context, entry);
+      case "modify":
+        return modifySchemaReferences(this._context, entry);
     }
   }
 

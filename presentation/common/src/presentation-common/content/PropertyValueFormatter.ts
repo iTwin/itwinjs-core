@@ -39,7 +39,12 @@ export class ContentFormatter {
     );
   }
 
-  private async formatValues(values: ValuesDictionary<Value>, displayValues: ValuesDictionary<DisplayValue>, fields: Field[], mergedFields: string[]) {
+  private async formatValues(
+    values: ValuesDictionary<Value>,
+    displayValues: ValuesDictionary<DisplayValue>,
+    fields: Field[],
+    mergedFields: string[],
+  ) {
     for (const field of fields) {
       const value = values[field.name];
 
@@ -106,13 +111,13 @@ export class ContentPropertyValueFormatter {
   public async formatPropertyValue(field: Field, value: Value, unitSystem?: UnitSystemKey): Promise<DisplayValue> {
     const doubleFormatter = isFieldWithKoq(field)
       ? async (rawValue: number) => {
-          const koq = field.properties[0].property.kindOfQuantity;
-          const formattedValue = await this._koqValueFormatter.format(rawValue, { koqName: koq.name, unitSystem });
-          if (formattedValue !== undefined) {
-            return formattedValue;
-          }
-          return formatDouble(rawValue);
+        const koq = field.properties[0].property.kindOfQuantity;
+        const formattedValue = await this._koqValueFormatter.format(rawValue, { koqName: koq.name, unitSystem });
+        if (formattedValue !== undefined) {
+          return formattedValue;
         }
+        return formatDouble(rawValue);
+      }
       : async (rawValue: number) => formatDouble(rawValue);
 
     return this.formatValue(field.type, value, { doubleFormatter });
@@ -206,11 +211,11 @@ function isFieldWithKoq(field: Field): field is FieldWithKoq {
   return field.isPropertiesField() && field.properties.length > 0 && field.properties[0].property.kindOfQuantity !== undefined;
 }
 
-function isPoint2d(obj: Value): obj is { x: number; y: number } {
+function isPoint2d(obj: Value): obj is { x: number, y: number } {
   return obj !== undefined && isNumber((obj as any).x) && isNumber((obj as any).y);
 }
 
-function isPoint3d(obj: Value): obj is { x: number; y: number; z: number } {
+function isPoint3d(obj: Value): obj is { x: number, y: number, z: number } {
   return isPoint2d(obj) && isNumber((obj as any).z);
 }
 

@@ -2,23 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import {
-  Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
-} from "@itwin/core-geometry";
 import { ColorByName, ColorIndex, EmptyLocalization, FeatureIndex, FillFlags, QParams3d, QPoint3dList, RenderMode } from "@itwin/core-common";
-import { GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
-import { IModelApp, IModelAppOptions } from "../../IModelApp";
-import { IModelConnection } from "../../IModelConnection";
-import { createBlankConnection } from "../createBlankConnection";
-import { RenderSystem } from "../../render/RenderSystem";
-import { ScreenViewport } from "../../Viewport";
+import { Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
-import { MeshRenderGeometry } from "../../render/webgl/Mesh";
-import { openBlankViewport } from "../openBlankViewport";
 import { GraphicType } from "../../common/render/GraphicType";
+import { IModelApp, IModelAppOptions } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { GraphicBuilder, ViewportGraphicBuilderOptions } from "../../render/GraphicBuilder";
 import { MeshArgs } from "../../render/MeshArgs";
+import { RenderSystem } from "../../render/RenderSystem";
+import { MeshRenderGeometry } from "../../render/webgl/Mesh";
+import { ScreenViewport } from "../../Viewport";
+import { createBlankConnection } from "../createBlankConnection";
+import { openBlankViewport } from "../openBlankViewport";
 
 describe("GraphicBuilder", () => {
   let imodel: IModelConnection;
@@ -51,7 +49,13 @@ describe("GraphicBuilder", () => {
     return IModelApp.renderSystem.createGraphic({ type, viewport, ...options });
   }
 
-  const graphicTypes = [GraphicType.ViewBackground, GraphicType.Scene, GraphicType.WorldDecoration, GraphicType.WorldOverlay, GraphicType.ViewOverlay];
+  const graphicTypes = [
+    GraphicType.ViewBackground,
+    GraphicType.Scene,
+    GraphicType.WorldDecoration,
+    GraphicType.WorldOverlay,
+    GraphicType.ViewOverlay,
+  ];
 
   describe("generates normals", () => {
     function expectNormals(type: GraphicType, options: BuilderOpts, expected: boolean): void {
@@ -181,7 +185,7 @@ describe("GraphicBuilder", () => {
     }
 
     function createTriangle(): Point3d[] {
-      return [ new Point3d(0, 0, 0), new Point3d(100, 0, 0), new Point3d(0, 100, 0) ];
+      return [new Point3d(0, 0, 0), new Point3d(100, 0, 0), new Point3d(0, 100, 0)];
     }
 
     it("should preserve polyface normals", () => {
@@ -197,7 +201,12 @@ describe("GraphicBuilder", () => {
         const pfBuilder = PolyfaceBuilder.create(options);
         pfBuilder.addTriangleFacet(createTriangle());
 
-        const gfBuilder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.WorldDecoration, viewport, wantNormals: requestNormals });
+        const gfBuilder = IModelApp.renderSystem.createGraphic({
+          placement: Transform.createIdentity(),
+          type: GraphicType.WorldDecoration,
+          viewport,
+          wantNormals: requestNormals,
+        });
         gfBuilder.addPolyface(pfBuilder.claimPolyface(), false);
         const gf = gfBuilder.finish();
         gf.dispose();
@@ -215,7 +224,12 @@ describe("GraphicBuilder", () => {
         injectNormalsCheck(wantNormals);
         expect(createMeshInvoked).to.be.false;
 
-        const builder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.WorldDecoration, viewport, wantNormals });
+        const builder = IModelApp.renderSystem.createGraphic({
+          placement: Transform.createIdentity(),
+          type: GraphicType.WorldDecoration,
+          viewport,
+          wantNormals,
+        });
         builder.addShape(createTriangle());
         const gf = builder.finish();
         gf.dispose();
@@ -227,7 +241,11 @@ describe("GraphicBuilder", () => {
     });
 
     it("should produce edges", () => {
-      function expectEdges(expected: "silhouette" | "segment" | "both" | "none", addToGraphic: (builder: GraphicBuilder) => void, generateEdges?: boolean): void {
+      function expectEdges(
+        expected: "silhouette" | "segment" | "both" | "none",
+        addToGraphic: (builder: GraphicBuilder) => void,
+        generateEdges?: boolean,
+      ): void {
         let expectSilhouettes = false;
         let expectSegments = false;
         switch (expected) {
@@ -256,7 +274,12 @@ describe("GraphicBuilder", () => {
         overrideCreateMesh(verifyParams);
         expect(createMeshInvoked).to.be.false;
 
-        const builder = IModelApp.renderSystem.createGraphic({ placement: Transform.createIdentity(), type: GraphicType.Scene, viewport, generateEdges });
+        const builder = IModelApp.renderSystem.createGraphic({
+          placement: Transform.createIdentity(),
+          type: GraphicType.Scene,
+          viewport,
+          generateEdges,
+        });
         expect(builder.wantEdges).to.equal(generateEdges ?? true);
         addToGraphic(builder);
 

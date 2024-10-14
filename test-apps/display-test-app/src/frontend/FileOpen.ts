@@ -74,7 +74,6 @@ export async function selectFileName(selector: BrowserFileSelector | undefined):
       properties: ["openFile"],
       title: "Open iModel",
       filters: [{ name: "iModels", extensions: ["ibim", "bim"] }],
-
     };
     const val = await ElectronApp.dialogIpc.showOpenDialog(opts);
     return val.canceled ? undefined : val.filePaths[0];

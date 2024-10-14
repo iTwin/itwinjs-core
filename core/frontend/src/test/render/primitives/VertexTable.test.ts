@@ -2,14 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import {
+  ColorIndex,
+  FeatureIndex,
+  FeatureIndexType,
+  FillFlags,
+  QParams2d,
+  QParams3d,
+  QPoint3d,
+  QPoint3dList,
+  RenderTexture,
+} from "@itwin/core-common";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
-import { ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
-import { MockRender } from "../../../render/MockRender";
+import { expect } from "chai";
 import { Point3dList } from "../../../common/internal/render/MeshPrimitive";
-import { IModelApp } from "../../../IModelApp";
 import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
+import { IModelApp } from "../../../IModelApp";
 import { MeshArgs } from "../../../render/MeshArgs";
+import { MockRender } from "../../../render/MockRender";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
   const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
@@ -44,9 +54,13 @@ function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: n
 }
 
 class FakeTexture extends RenderTexture {
-  public constructor() { super(RenderTexture.Type.Normal); }
-  public dispose() { }
-  public get bytesUsed(): number { return 0; }
+  public constructor() {
+    super(RenderTexture.Type.Normal);
+  }
+  public dispose() {}
+  public get bytesUsed(): number {
+    return 0;
+  }
 }
 
 describe("VertexLUT", () => {
@@ -71,19 +85,46 @@ describe("VertexLUT", () => {
 
     const expected = [
       [
-        0x00, 0x00, 0x01, 0x00, // pos.x, pos.y
-        0x02, 0x00, 0x00, 0x00, // pos.z, color index
-        0x00, 0x00, 0x00, 0x00, // feature index
+        0x00,
+        0x00,
+        0x01,
+        0x00, // pos.x, pos.y
+        0x02,
+        0x00,
+        0x00,
+        0x00, // pos.z, color index
+        0x00,
+        0x00,
+        0x00,
+        0x00, // feature index
       ],
       [
-        0xff, 0x7f, 0x0d, 0xf0,
-        0x01, 0xc0, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00,
+        0xff,
+        0x7f,
+        0x0d,
+        0xf0,
+        0x01,
+        0xc0,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
       ],
       [
-        0xad, 0xba, 0x00, 0x00,
-        0xff, 0xff, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00,
+        0xad,
+        0xba,
+        0x00,
+        0x00,
+        0xff,
+        0xff,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
       ],
     ];
 
@@ -153,9 +194,18 @@ describe("VertexLUT", () => {
 
     // NB: The color values in VertexLUT.Params have premultiplied alpha, and alpha set to (255 - transparency)
     const expectedColors = [
-      0x00, 0x00, 0x00, 0x00,
-      0x03, 0x02, 0x01, 0xff,
-      0x00, 0x80, 0x00, 0x80,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x03,
+      0x02,
+      0x01,
+      0xff,
+      0x00,
+      0x80,
+      0x00,
+      0x80,
     ];
 
     expectMeshParams(args, args.colors, expected, expectedColors);
@@ -180,25 +230,70 @@ describe("VertexLUT", () => {
 
     const makeExpected = () => [
       [
-        0x00, 0x00, 0x00, 0x00, // pos.x
-        0x00, 0x00, 0x80, 0x3f, // pos.y
-        0x00, 0x00, 0x00, 0x40, // pos.z
-        0x00, 0x00, 0x00, 0x00, // feature index
-        0x00, 0x00, 0x00, 0x00, // color index; unused
+        0x00,
+        0x00,
+        0x00,
+        0x00, // pos.x
+        0x00,
+        0x00,
+        0x80,
+        0x3f, // pos.y
+        0x00,
+        0x00,
+        0x00,
+        0x40, // pos.z
+        0x00,
+        0x00,
+        0x00,
+        0x00, // feature index
+        0x00,
+        0x00,
+        0x00,
+        0x00, // color index; unused
       ],
       [
-        0x00, 0x00, 0x80, 0xbf,
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x80, 0x3f,
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00,
+        0x00,
+        0x00,
+        0x80,
+        0xbf,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x80,
+        0x3f,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
       ],
       [
-        0xa4, 0x70, 0x45, 0x41,
-        0xf3, 0x4f, 0xc3, 0x47,
-        0x1f, 0x85, 0xc5, 0xc2,
-        0x00, 0x00, 0x00, 0x00,
-        0x00, 0x00, 0x00, 0x00,
+        0xa4,
+        0x70,
+        0x45,
+        0x41,
+        0xf3,
+        0x4f,
+        0xc3,
+        0x47,
+        0x1f,
+        0x85,
+        0xc5,
+        0xc2,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
+        0x00,
       ],
     ];
 
@@ -289,9 +384,18 @@ describe("VertexLUT", () => {
 
     // NB: The color values in VertexLUT.Params have premultiplied alpha, and alpha set to (255 - transparency)
     const expectedColors = [
-      0x00, 0x00, 0x00, 0x00,
-      0x03, 0x02, 0x01, 0xff,
-      0x00, 0x80, 0x00, 0x80,
+      0x00,
+      0x00,
+      0x00,
+      0x00,
+      0x03,
+      0x02,
+      0x01,
+      0xff,
+      0x00,
+      0x80,
+      0x00,
+      0x80,
     ];
 
     expectMeshParams(args, args.colors, transpose(exp), expectedColors);

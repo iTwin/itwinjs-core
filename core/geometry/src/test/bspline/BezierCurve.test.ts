@@ -31,7 +31,6 @@ function exercise1dNdBase(ck: Checker, curve: Bezier1dNd) {
   ck.testTrue(pointA === pointB, "reuse buffer");
 }
 describe("BsplineCurve", () => {
-
   it("PoleQueries", () => {
     const ck = new Checker();
     const allPoints: Point3d[] = [
@@ -40,7 +39,8 @@ describe("BsplineCurve", () => {
       Point3d.create(10, 10, 0),
       Point3d.create(10, 0, 0),
       Point3d.create(20, 0, 0),
-      Point3d.create(20, 10, 0)];
+      Point3d.create(20, 10, 0),
+    ];
 
     ck.testUndefined(BezierCurve3d.create([]));
     const bezierCurves = [BezierCurve3d.create(allPoints)!, BezierCurve3dH.create(allPoints)!];
@@ -113,9 +113,9 @@ describe("BsplineCurve", () => {
     const basis1 = new Float64Array(3);
     basis[0] = 10.0;
     basis1[0] = 11.0;
-    zeroDegreeKnots.evaluateBasisFunctions(0, 0, basis);   // nothing happens !
+    zeroDegreeKnots.evaluateBasisFunctions(0, 0, basis); // nothing happens !
     ck.testExactNumber(1.0, basis[0]);
-    zeroDegreeKnots.evaluateBasisFunctions1(0, 0, basis, basis1);   // nothing happens !
+    zeroDegreeKnots.evaluateBasisFunctions1(0, 0, basis, basis1); // nothing happens !
     ck.testExactNumber(1.0, basis[0]);
     ck.testExactNumber(0.0, basis1[0]);
     ck.testFalse(knotVector1.isIndexOfRealSpan(-1));
@@ -146,7 +146,8 @@ describe("BsplineCurve", () => {
       Point3d.create(10, 10, 0),
       Point3d.create(10, 0, 0),
       Point3d.create(20, 0, 0),
-      Point3d.create(20, 10, 0)];
+      Point3d.create(20, 10, 0),
+    ];
     const livePoints = [];
     const uniformKnots = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
     const yShift = 20.0;
@@ -204,7 +205,8 @@ describe("BsplineCurve", () => {
       Point3d.create(10 + a, 0, 0),
       Point3d.create(20, 0, 0),
       Point3d.create(20 + a, 10, 0),
-      Point3d.create(10, 20, 0)];
+      Point3d.create(10, 20, 0),
+    ];
     const dx = 100.0;
     let x0 = 0.0;
     let y0 = 0.0;
@@ -228,10 +230,15 @@ describe("BsplineCurve", () => {
       if (order > 2) {
         for (const u of knots) {
           if (u > 0.0 && u < 1.0) {
-            const curvePoint = bcurve.knotToPointAndDerivative(u);                     // evaluate the knot point
+            const curvePoint = bcurve.knotToPointAndDerivative(u); // evaluate the knot point
             const perp = curvePoint.direction.rotate90CCWXY();
             perp.normalizeInPlace();
-            GeometryCoreTestIO.captureGeometry(geometry, LineSegment3d.create(curvePoint.origin, curvePoint.origin.plusScaled(perp, tickLength)), x0, y0);
+            GeometryCoreTestIO.captureGeometry(
+              geometry,
+              LineSegment3d.create(curvePoint.origin, curvePoint.origin.plusScaled(perp, tickLength)),
+              x0,
+              y0,
+            );
           }
         }
       }
@@ -254,9 +261,9 @@ describe("BsplineCurve", () => {
         GeometryCoreTestIO.captureGeometry(geometry, bezier.clone(), x0, y3);
 
         const bezier4 = bezier.clonePartialCurve(g0, 1.0);
-        const bezier5 = bezier4.clonePartialCurve(0.0, (g1 - g0) / (1 - g0));  // Remark:  This uses the opposite left/right order of what happen in clone partial.  (Same result expected)
+        const bezier5 = bezier4.clonePartialCurve(0.0, (g1 - g0) / (1 - g0)); // Remark:  This uses the opposite left/right order of what happen in clone partial.  (Same result expected)
         const bezier6 = bezier.clonePartialCurve(g0, g1);
-        ck.testTrue(bezier5.isAlmostEqual(bezier6), "bezier subdivision");  // wow, math is right.
+        ck.testTrue(bezier5.isAlmostEqual(bezier6), "bezier subdivision"); // wow, math is right.
         GeometryCoreTestIO.captureGeometry(geometry, bezier4, x0, y4);
         GeometryCoreTestIO.captureGeometry(geometry, bezier5, x0, y4);
         GeometryCoreTestIO.captureGeometry(geometry, bezier6, x0, y4);

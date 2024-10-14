@@ -295,7 +295,12 @@ export class AngleSweep implements BeJSONFunctions {
    * @param zeroSweepDefault return value when the sweep is empty (default 0)
    * @returns nonnegative fraction, or `zeroSweepDefault` if the sweep is empty.
    */
-  public static radiansToPositivePeriodicFractionStartEnd(radians: number, radians0: number, radians1: number, zeroSweepDefault: number = 0.0): number {
+  public static radiansToPositivePeriodicFractionStartEnd(
+    radians: number,
+    radians0: number,
+    radians1: number,
+    zeroSweepDefault: number = 0.0,
+  ): number {
     const zeroSweepMarker = Geometry.largeCoordinateResult;
     let fraction = this.radiansToSignedPeriodicFractionStartEnd(radians, radians0, radians1, zeroSweepMarker);
     if (fraction === zeroSweepMarker)
@@ -430,7 +435,13 @@ export class AngleSweep implements BeJSONFunctions {
    * @param zeroSweepDefault return value when the sweep is empty (default 0).
    * @returns fraction, or `zeroSweepDefault` if the sweep is empty
    */
-  public static radiansToSignedFractionStartEnd(radians: number, radians0: number, radians1: number, toNegativeFraction: boolean = false, zeroSweepDefault: number = 0.0): number {
+  public static radiansToSignedFractionStartEnd(
+    radians: number,
+    radians0: number,
+    radians1: number,
+    toNegativeFraction: boolean = false,
+    zeroSweepDefault: number = 0.0,
+  ): number {
     const zeroSweepMarker = Geometry.largeCoordinateResult;
     let fraction = this.radiansToSignedPeriodicFractionStartEnd(radians, radians0, radians1, zeroSweepMarker);
     if (fraction === zeroSweepMarker)
@@ -481,7 +492,9 @@ export class AngleSweep implements BeJSONFunctions {
     if (delta0 * delta1 <= 0.0)
       return true;
     if (radians0 === radians1)
-      return allowPeriodShift ? Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians0) : Angle.isAlmostEqualRadiansNoPeriodShift(radians, radians0);
+      return allowPeriodShift
+        ? Angle.isAlmostEqualRadiansAllowPeriodShift(radians, radians0)
+        : Angle.isAlmostEqualRadiansNoPeriodShift(radians, radians0);
     return allowPeriodShift ? this.radiansToPositivePeriodicFractionStartEnd(radians, radians0, radians1, 1000.0) <= 1.0 : false;
   }
   /** Test if the given angle (as radians) is within sweep  */

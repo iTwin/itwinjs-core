@@ -11,9 +11,9 @@ import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
-import { AnyRegion } from "../CurveTypes";
 import { CurveIntervalRole, CurveLocationDetail } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
+import { AnyRegion } from "../CurveTypes";
 import { Loop } from "../Loop";
 import { ParityRegion } from "../ParityRegion";
 import { UnionRegion } from "../UnionRegion";
@@ -55,8 +55,10 @@ export class PointInOnOutContext {
       // If there are any tricky ones, go around with a different plane.
       // A intently devious tester could make every plane hit tricky things.
       for (const intersection of intersections) {
-        if (intersection.intervalRole !== CurveIntervalRole.isolated
-          && intersection.intervalRole !== undefined) {
+        if (
+          intersection.intervalRole !== CurveIntervalRole.isolated
+          && intersection.intervalRole !== undefined
+        ) {
           numTricky++;
         }
         wx = intersection.point.x - x;
@@ -94,7 +96,7 @@ export class PointInOnOutContext {
         if (q === 0)
           return 0;
         if (q > 0)
-          result = - result;
+          result = -result;
       }
     }
     return result;
@@ -116,5 +118,4 @@ export class PointInOnOutContext {
       return this.testPointInOnOutUnionRegionXY(parent, x, y);
     return -1;
   }
-
 }

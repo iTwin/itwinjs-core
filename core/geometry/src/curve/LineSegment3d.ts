@@ -100,12 +100,18 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /** Return a (clone of) the start point (This is NOT a reference to the stored start point) */
   public override startPoint(result?: Point3d): Point3d {
-    if (result) { result.setFrom(this._point0); return result; }
+    if (result) {
+      result.setFrom(this._point0);
+      return result;
+    }
     return this._point0.clone();
   }
   /** Return a (clone of) the end point (This is NOT a reference to the stored end point) */
   public override endPoint(result?: Point3d): Point3d {
-    if (result) { result.setFrom(this._point1); return result; }
+    if (result) {
+      result.setFrom(this._point1);
+      return result;
+    }
     return this._point1.clone();
   }
   /** Return the point and derivative vector at fractional position along the line segment. */
@@ -133,7 +139,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     return LineSegment3d.create(this._point0, this._point1);
   }
   /** Clone and apply transform to the clone. */
-  public cloneTransformed(transform: Transform): LineSegment3d {  // we know tryTransformInPlace succeeds.
+  public cloneTransformed(transform: Transform): LineSegment3d { // we know tryTransformInPlace succeeds.
     const c = this.clone();
     c.tryTransformInPlace(transform);
     return c;
@@ -141,7 +147,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   /** Create with start and end points.  The point contents are cloned into the LineSegment3d. */
   public static create(point0: Point3d, point1: Point3d, result?: LineSegment3d): LineSegment3d {
     if (result) {
-      result.set(point0, point1);  // and this will clone them !!
+      result.set(point0, point1); // and this will clone them !!
       return result;
     }
     return new LineSegment3d(point0.clone(), point1.clone());
@@ -177,7 +183,13 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @param result optional existing LineSegment to be reinitialized.
    */
   public static createXYZXYZ(
-    x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: LineSegment3d,
+    x0: number,
+    y0: number,
+    z0: number,
+    x1: number,
+    y1: number,
+    z1: number,
+    result?: LineSegment3d,
   ): LineSegment3d {
     if (result) {
       result._point0.set(x0, y0, z0);
@@ -211,7 +223,9 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    * @returns detail, with `a` field set to the distance from `spacePoint` to the closest point
    */
   public override closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d,
+    extend: VariantCurveExtendParameter,
+    result?: CurveLocationDetail,
   ): CurveLocationDetail {
     let fraction = spacePoint.fractionOfProjectionToLine(this._point0, this._point1, 0.0);
     fraction = CurveExtendOptions.correctFraction(extend, fraction);
@@ -242,7 +256,9 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     const unboundedFractions = Vector2d.create();
     if (result === undefined)
       result = CurveLocationDetailPair.createCapture(CurveLocationDetail.create(), CurveLocationDetail.create());
-    if (SmallSystem.lineSegment3dClosestApproachUnbounded(segmentA._point0, segmentA._point1, segmentB._point0, segmentB._point1, unboundedFractions)) {
+    if (
+      SmallSystem.lineSegment3dClosestApproachUnbounded(segmentA._point0, segmentA._point1, segmentB._point0, segmentB._point1, unboundedFractions)
+    ) {
       // There is a simple approach between the unbounded segments.  Maybe its a really easy case ...
       const fractionA = CurveExtendOptions.correctFraction(extendA, unboundedFractions.x);
       const fractionB = CurveExtendOptions.correctFraction(extendB, unboundedFractions.y);
@@ -387,8 +403,10 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
     } else if (json.startPoint && json.endPoint) { // {startPoint:json point, endPoint:json point}
       this._point0.setFromJSON(json.startPoint);
       this._point1.setFromJSON(json.endPoint);
-    } else if (Array.isArray(json)
-      && json.length > 1) { // [json point, json point]
+    } else if (
+      Array.isArray(json)
+      && json.length > 1
+    ) { // [json point, json point]
       this._point0.setFromJSON(json[0]);
       this._point1.setFromJSON(json[1]);
     }
@@ -454,7 +472,10 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
    */
   public override announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     return clipper.announceClippedSegmentIntervals(
-      0.0, 1.0, this._point0, this._point1,
+      0.0,
+      1.0,
+      this._point0,
+      this._point1,
       announce ? (fraction0: number, fraction1: number) => announce(fraction0, fraction1, this) : undefined,
     );
   }
@@ -498,7 +519,8 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
       offsetVec.rotate90CCWXY(offsetVec);
       const offsetDist = OffsetOptions.getOffsetDistance(offsetDistanceOrOptions);
       return LineSegment3d.create(
-        this._point0.plusScaled(offsetVec, offsetDist), this._point1.plusScaled(offsetVec, offsetDist),
+        this._point0.plusScaled(offsetVec, offsetDist),
+        this._point1.plusScaled(offsetVec, offsetDist),
       );
     }
     return undefined;

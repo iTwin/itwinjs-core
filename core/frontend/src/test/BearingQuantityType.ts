@@ -4,19 +4,31 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  CustomFormatProps, Format, FormatProps, FormatterSpec, Parser, ParserSpec, QuantityParseResult, UnitConversionSpec, UnitProps, UnitsProvider, UnitSystemKey,
+  CustomFormatProps,
+  Format,
+  FormatProps,
+  FormatterSpec,
+  Parser,
+  ParserSpec,
+  QuantityParseResult,
+  UnitConversionSpec,
+  UnitProps,
+  UnitsProvider,
+  UnitSystemKey,
 } from "@itwin/core-quantity";
-import {
-  CheckboxFormatPropEditorSpec, CustomFormatPropEditorSpec,
-  TextInputFormatPropEditorSpec, TextSelectFormatPropEditorSpec,
-} from "../quantity-formatting/QuantityTypesEditorSpecs";
 import { CustomQuantityTypeDefinition } from "../quantity-formatting/QuantityFormatter";
+import {
+  CheckboxFormatPropEditorSpec,
+  CustomFormatPropEditorSpec,
+  TextInputFormatPropEditorSpec,
+  TextSelectFormatPropEditorSpec,
+} from "../quantity-formatting/QuantityTypesEditorSpecs";
 
 interface BearingFormatProps extends CustomFormatProps {
   readonly custom: {
     readonly addDirectionLabelGap: boolean;
-    readonly angleDirection: string;   // "clockwise"|"counter-clockwise"
-    readonly testString: string;   // for testing control creation only
+    readonly angleDirection: string; // "clockwise"|"counter-clockwise"
+    readonly testString: string; // for testing control creation only
   };
 }
 
@@ -30,7 +42,7 @@ const defaultBearingFormat: BearingFormatProps = {
   composite: {
     includeZero: true,
     spacer: "",
-    units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: "\"", name: "Units.ARC_SECOND" }],
+    units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: '"', name: "Units.ARC_SECOND" }],
   },
   formatTraits: ["showUnitLabel"],
   precision: 0,
@@ -89,7 +101,12 @@ class BearingFormatterSpec extends FormatterSpec {
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
    *  @param persistenceUnit The unit of the value to be formatted.
    */
-  public static override async create(name: string, format: Format, unitsProvider: UnitsProvider, persistenceUnit: UnitProps): Promise<FormatterSpec> {
+  public static override async create(
+    name: string,
+    format: Format,
+    unitsProvider: UnitsProvider,
+    persistenceUnit: UnitProps,
+  ): Promise<FormatterSpec> {
     const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format, unitsProvider, persistenceUnit);
     return new BearingFormatterSpec(name, format, conversions, persistenceUnit);
   }
@@ -154,7 +171,7 @@ class BearingParserSpec extends ParserSpec {
 }
 
 export class BearingQuantityType implements CustomQuantityTypeDefinition {
-  private _key = "Bearing";  // key and type should be the same unless a QuantityType enum is specified in _type
+  private _key = "Bearing"; // key and type should be the same unless a QuantityType enum is specified in _type
   private _type = "Bearing";
   private _persistenceUnitName = "Units.RAD";
   private _labelKey = "SampleApp:BearingQuantityType.label";
@@ -163,16 +180,22 @@ export class BearingQuantityType implements CustomQuantityTypeDefinition {
   private _description: string | undefined;
   private _formatProps = defaultBearingFormat;
 
-  constructor(private _persistenceUnit: UnitProps) { }
+  constructor(private _persistenceUnit: UnitProps) {}
 
-  public get key(): string { return this._key; }
-  public get type(): string { return this._type; }
+  public get key(): string {
+    return this._key;
+  }
+  public get type(): string {
+    return this._type;
+  }
 
   public isCompatibleFormatProps(formatProps: FormatProps) {
     return isBearingFormatProps(formatProps);
   }
 
-  public get formatProps(): FormatProps { return this._formatProps; }
+  public get formatProps(): FormatProps {
+    return this._formatProps;
+  }
   public set formatProps(value: FormatProps) {
     if (isBearingFormatProps(value)) {
       this._formatProps = value;

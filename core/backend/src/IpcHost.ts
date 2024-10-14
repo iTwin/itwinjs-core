@@ -9,21 +9,39 @@
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
-  ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
-  OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
+  ChangesetIndex,
+  ChangesetIndexAndId,
+  EditingScopeNotifications,
+  getPullChangesIpcChannel,
+  IModelConnectionProps,
+  IModelError,
+  IModelRpcProps,
+  ipcAppChannels,
+  IpcAppFunctions,
+  IpcAppNotifications,
+  IpcInvokeReturn,
+  IpcListener,
+  IpcSocketBackend,
+  iTwinChannel,
+  OpenBriefcaseProps,
+  OpenCheckpointArgs,
+  PullChangesOptions,
+  RemoveFunction,
+  StandaloneOpenOptions,
+  TileTreeContentIds,
+  TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb, SnapshotDb, StandaloneDb } from "./IModelDb";
 import { IModelHost, IModelHostOptions } from "./IModelHost";
-import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
+import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
-  * Options for [[IpcHost.startup]]
-  * @public
-  */
+ * Options for [[IpcHost.startup]]
+ * @public
+ */
 export interface IpcHostOpts {
   iModelHost?: IModelHostOptions;
   ipcHost?: {
@@ -46,9 +64,13 @@ export class IpcHost {
   public static noStack = false;
   private static _ipc: IpcSocketBackend | undefined;
   /** Get the implementation of the [IpcSocketBackend]($common) interface. */
-  private static get ipc(): IpcSocketBackend { return this._ipc!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+  private static get ipc(): IpcSocketBackend {
+    return this._ipc!;
+  } // eslint-disable-line @typescript-eslint/no-non-null-assertion
   /** Determine whether Ipc is available for this backend. This will only be true if [[startup]] has been called on this class. */
-  public static get isValid(): boolean { return undefined !== this._ipc; }
+  public static get isValid(): boolean {
+    return undefined !== this._ipc;
+  }
 
   /**
    * Send a message to the frontend over an Ipc channel.
@@ -97,12 +119,20 @@ export class IpcHost {
   }
 
   /** @internal */
-  public static notifyTxns<T extends keyof TxnNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<TxnNotifications[T]>) {
+  public static notifyTxns<T extends keyof TxnNotifications>(
+    briefcase: BriefcaseDb | StandaloneDb,
+    methodName: T,
+    ...args: Parameters<TxnNotifications[T]>
+  ) {
     this.notify(ipcAppChannels.txns, briefcase, methodName, ...args);
   }
 
   /** @internal */
-  public static notifyEditingScope<T extends keyof EditingScopeNotifications>(briefcase: BriefcaseDb | StandaloneDb, methodName: T, ...args: Parameters<EditingScopeNotifications[T]>) {
+  public static notifyEditingScope<T extends keyof EditingScopeNotifications>(
+    briefcase: BriefcaseDb | StandaloneDb,
+    methodName: T,
+    ...args: Parameters<EditingScopeNotifications[T]>
+  ) {
     this.notify(ipcAppChannels.editingScope, briefcase, methodName, ...args);
   }
 
@@ -164,7 +194,10 @@ export abstract class IpcHandler {
       try {
         const func = (impl as any)[funcName];
         if (typeof func !== "function")
-          throw new IModelError(IModelStatus.FunctionNotFound, `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`);
+          throw new IModelError(
+            IModelStatus.FunctionNotFound,
+            `Method "${impl.constructor.name}.${funcName}" not found on IpcHandler registered for channel: ${impl.channelName}`,
+          );
 
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
@@ -187,7 +220,9 @@ export abstract class IpcHandler {
  * Implementation  of IpcAppFunctions
  */
 class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
-  public get channelName() { return ipcAppChannels.functions; }
+  public get channelName() {
+    return ipcAppChannels.functions;
+  }
 
   private _iModelKeyToPullStatus = new Map<string, ProgressStatus>();
 

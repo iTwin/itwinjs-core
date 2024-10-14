@@ -6,15 +6,12 @@
  * @module Core
  */
 
-import { forkJoin, from, map, mergeMap, of } from "rxjs";
-import { eachValueFrom } from "rxjs-for-await";
 import { IModelDb } from "@itwin/core-backend";
 import { Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
   buildElementProperties,
-  UnitSystemFormat as CommonUnitSystemFormat,
   ComputeSelectionRequestOptions,
   Content,
   ContentDescriptorRequestOptions,
@@ -62,8 +59,11 @@ import {
   SelectionScope,
   SelectionScopeRequestOptions,
   SingleElementPropertiesRequestOptions,
+  UnitSystemFormat as CommonUnitSystemFormat,
   WithCancelEvent,
 } from "@itwin/presentation-common";
+import { forkJoin, from, map, mergeMap, of } from "rxjs";
+import { eachValueFrom } from "rxjs-for-await";
 import { getBatchedClassElementIds, getClassesWithInstances, getElementsCount, parseFullClassName } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
 import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
@@ -520,7 +520,9 @@ export class PresentationManager {
    * @public
    */
   public async getNodesDescriptor(
-    requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute,
+    requestOptions:
+      & WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>>
+      & BackendDiagnosticsAttribute,
   ): Promise<Descriptor | undefined> {
     const response = await this._detail.getNodesDescriptor(requestOptions);
     const descriptor = Descriptor.fromJSON(JSON.parse(response));
@@ -533,7 +535,9 @@ export class PresentationManager {
    * @public
    */
   public async getNodePaths(
-    requestOptions: WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>> & BackendDiagnosticsAttribute,
+    requestOptions:
+      & WithCancelEvent<Prioritized<FilterByInstancePathsHierarchyRequestOptions<IModelDb, RulesetVariable>>>
+      & BackendDiagnosticsAttribute,
   ): Promise<NodePathElement[]> {
     const result = await this._detail.getNodePaths(requestOptions);
     return result.map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
@@ -579,8 +583,9 @@ export class PresentationManager {
    * @public
    */
   public async getContentSetSize(
-    requestOptions: WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> &
-      BackendDiagnosticsAttribute,
+    requestOptions:
+      & WithCancelEvent<Prioritized<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>
+      & BackendDiagnosticsAttribute,
   ): Promise<number> {
     return this._detail.getContentSetSize(requestOptions);
   }
@@ -590,7 +595,9 @@ export class PresentationManager {
    * @public
    */
   public async getContentSet(
-    requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute,
+    requestOptions:
+      & WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>>
+      & BackendDiagnosticsAttribute,
   ): Promise<Item[]> {
     let items = await this._detail.getContentSet({
       ...requestOptions,
@@ -614,8 +621,9 @@ export class PresentationManager {
    * @public
    */
   public async getContent(
-    requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> &
-      BackendDiagnosticsAttribute,
+    requestOptions:
+      & WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>>
+      & BackendDiagnosticsAttribute,
   ): Promise<Content | undefined> {
     const content = await this._detail.getContent({
       ...requestOptions,
@@ -645,8 +653,9 @@ export class PresentationManager {
    * @public
    */
   public async getPagedDistinctValues(
-    requestOptions: WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>> &
-      BackendDiagnosticsAttribute,
+    requestOptions:
+      & WithCancelEvent<Prioritized<DistinctValuesRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>
+      & BackendDiagnosticsAttribute,
   ): Promise<PagedResponse<DisplayValueGroup>> {
     const result = await this._detail.getPagedDistinctValues(requestOptions);
     return {
@@ -672,10 +681,11 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
   ): Promise<MultiElementPropertiesResponse<TParsedContent>>;
   public async getElementProperties<TParsedContent = ElementProperties>(
-    requestOptions: WithCancelEvent<
-      Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent> | MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>
-    > &
-      BackendDiagnosticsAttribute,
+    requestOptions:
+      & WithCancelEvent<
+        Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent> | MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>
+      >
+      & BackendDiagnosticsAttribute,
   ): Promise<TParsedContent | undefined | MultiElementPropertiesResponse<TParsedContent>> {
     if (isSingleElementPropertiesRequestOptions(requestOptions)) {
       return this.getSingleElementProperties<TParsedContent>(requestOptions);
@@ -841,7 +851,7 @@ export class PresentationManager {
    * @deprecated in 3.x. Use overload with `ComputeSelectionRequestOptions` parameter.
    */
   public async computeSelection(
-    requestOptions: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[]; scopeId: string } & BackendDiagnosticsAttribute,
+    requestOptions: SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string } & BackendDiagnosticsAttribute,
   ): Promise<KeySet>;
   /**
    * Computes selection based on provided element IDs and selection scope.
@@ -850,16 +860,17 @@ export class PresentationManager {
   // eslint-disable-next-line @typescript-eslint/unified-signatures
   public async computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
   public async computeSelection(
-    requestOptions: ((SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[]; scopeId: string }) | ComputeSelectionRequestOptions<IModelDb>) &
-      BackendDiagnosticsAttribute,
+    requestOptions:
+      & ((SelectionScopeRequestOptions<IModelDb> & { ids: Id64String[], scopeId: string }) | ComputeSelectionRequestOptions<IModelDb>)
+      & BackendDiagnosticsAttribute,
   ): Promise<KeySet> {
     return SelectionScopesHelper.computeSelection(
       isComputeSelectionRequestOptions(requestOptions)
         ? requestOptions
-        : (function () {
-            const { ids, scopeId, ...rest } = requestOptions;
-            return { ...rest, elementIds: ids, scope: { id: scopeId } };
-          })(),
+        : (function() {
+          const { ids, scopeId, ...rest } = requestOptions;
+          return { ...rest, elementIds: ids, scope: { id: scopeId } };
+        })(),
     );
   }
 

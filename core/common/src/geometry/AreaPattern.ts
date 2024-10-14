@@ -8,7 +8,17 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
-  Angle, AngleProps, Geometry, Matrix3d, Point2d, Point3d, Transform, XYProps, XYZProps, YawPitchRollAngles, YawPitchRollProps,
+  Angle,
+  AngleProps,
+  Geometry,
+  Matrix3d,
+  Point2d,
+  Point3d,
+  Transform,
+  XYProps,
+  XYZProps,
+  YawPitchRollAngles,
+  YawPitchRollProps,
 } from "@itwin/core-geometry";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 
@@ -130,14 +140,16 @@ export namespace AreaPattern {
 
     public equals(other: Params): boolean {
       if (this === other)
-        return true;    // Same pointer
+        return true; // Same pointer
 
-      if (this.scale !== other.scale ||
+      if (
+        this.scale !== other.scale ||
         this.space1 !== other.space1 ||
         this.space2 !== other.space2 ||
         this.weight !== other.weight ||
         this.invisibleBoundary !== other.invisibleBoundary ||
-        this.snappable !== other.snappable)
+        this.snappable !== other.snappable
+      )
         return false;
 
       if ((this.color === undefined) !== (other.color === undefined))

@@ -41,7 +41,7 @@ export class MaskManager {
         firstFree = testBit;
         break;
       }
-      testBit = (testBit << 1);
+      testBit = testBit << 1;
     }
     if (firstFree === 0)
       return undefined;

@@ -7,12 +7,12 @@
  */
 
 import { Id64 } from "@itwin/core-bentley";
+import { Range3d } from "@itwin/core-geometry";
 import { RenderMemory } from "../RenderMemory";
 import { Graphic } from "./Graphic";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
-import { Range3d } from "@itwin/core-geometry";
 
 abstract class GraphicWrapper extends Graphic {
   public readonly graphic: Graphic;

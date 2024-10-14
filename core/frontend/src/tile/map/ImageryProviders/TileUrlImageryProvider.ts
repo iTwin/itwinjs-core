@@ -13,14 +13,18 @@ const rowToken = "{row}";
 const columnToken = "{column}";
 
 /**  Provide tiles from a url template in the a generic format ... i.e. https://b.tile.openstreetmap.org/{level}/{column}/{row}.png
-* @internal
-*/
+ * @internal
+ */
 export class TileUrlImageryProvider extends MapLayerImageryProvider {
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
   }
   public static validateUrlTemplate(template: string): MapLayerSourceValidation {
-    return { status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0) ? MapLayerSourceStatus.Valid : MapLayerSourceStatus.InvalidUrl };
+    return {
+      status: (template.indexOf(levelToken) > 0 && template.indexOf(columnToken) > 0 && template.indexOf(rowToken) > 0)
+        ? MapLayerSourceStatus.Valid
+        : MapLayerSourceStatus.InvalidUrl,
+    };
   }
 
   // construct the Url from the desired Tile

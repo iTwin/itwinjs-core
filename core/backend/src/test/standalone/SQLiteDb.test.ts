@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { BeDuration, DbResult, OpenMode } from "@itwin/core-bentley";
+import { expect } from "chai";
 import { SQLiteDb } from "../../SQLiteDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("SQLiteDb", () => {
-
   it("should create new SQLiteDb", async () => {
     const fileName = IModelTestUtils.prepareOutputFile("SQLiteDb", "db1.db");
     const db = new SQLiteDb();
@@ -33,7 +32,13 @@ describe("SQLiteDb", () => {
     testDb();
 
     // now test immutable flag
-    db.openDb(fileName, { openMode: OpenMode.Readonly, skipFileCheck: true, immutable: true, defaultTxn: SQLiteDb.DefaultTxnMode.None, rawSQLite: true });
+    db.openDb(fileName, {
+      openMode: OpenMode.Readonly,
+      skipFileCheck: true,
+      immutable: true,
+      defaultTxn: SQLiteDb.DefaultTxnMode.None,
+      rawSQLite: true,
+    });
     testDb();
 
     expect(db.isOpen).false;
@@ -68,5 +73,4 @@ describe("SQLiteDb", () => {
       });
     });
   });
-
 });

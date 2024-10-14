@@ -49,11 +49,11 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
    * @returns                 An array of SchemaKeyProps.
    */
   public async getSchemaKeys(tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]> {
-
     const schemaKeyProps: SchemaKeyProps[] = [];
     const iModelDb = await this.getIModelDatabase(tokenProps);
 
-    const schemaNameQuery = `SELECT Name as schemaName, VersionMajor as read, VersionWrite as write, VersionMinor as minor FROM main.meta.ECSchemaDef`;
+    const schemaNameQuery =
+      `SELECT Name as schemaName, VersionMajor as read, VersionWrite as write, VersionMinor as minor FROM main.meta.ECSchemaDef`;
     for await (const row of iModelDb.createQueryReader(schemaNameQuery, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
       const schemaDefinitionRow = row.toRow() as SchemaNameRow;
       const schemaFullName = schemaDefinitionRow.schemaName;

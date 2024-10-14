@@ -7,11 +7,11 @@
  * @module MapLayersFormats
  */
 import { assert } from "@itwin/core-bentley";
+import { Localization } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { ArcGisFeatureMapLayerFormat } from "./ArcGisFeature/ArcGisFeatureFormat";
-import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool";
-import { Localization } from "@itwin/core-common";
 import { OgcApiFeaturesMapLayerFormat } from "./OgcApiFeatures/OgcApiFeaturesFormat";
+import { MapFeatureInfoTool } from "./Tools/MapFeatureInfoTool";
 
 /** Configuration options.
  * @beta
@@ -24,7 +24,6 @@ export interface MapLayersFormatsConfig {
  * @beta
  */
 export class MapLayersFormats {
-
   private static _defaultNs = "mapLayersFormats";
   public static localization: Localization;
 
@@ -52,5 +51,4 @@ export class MapLayersFormats {
   public static get localizationNamespace(): string {
     return MapLayersFormats._defaultNs;
   }
-
 }

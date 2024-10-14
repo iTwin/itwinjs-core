@@ -33,19 +33,26 @@ export class ImageBuffer {
   public readonly width: number;
 
   /** Return the number of bytes allocated for each pixel. */
-  public get numBytesPerPixel(): number { return ImageBuffer.getNumBytesPerPixel(this.format); }
+  public get numBytesPerPixel(): number {
+    return ImageBuffer.getNumBytesPerPixel(this.format);
+  }
 
   /** Determine the number of bytes allocated to a single pixel for the specified format. */
   public static getNumBytesPerPixel(format: ImageBufferFormat): number {
     switch (format) {
-      case ImageBufferFormat.Alpha: return 1;
-      case ImageBufferFormat.Rgb: return 3;
-      default: return 4;
+      case ImageBufferFormat.Alpha:
+        return 1;
+      case ImageBufferFormat.Rgb:
+        return 3;
+      default:
+        return 4;
     }
   }
 
   /** Get the height of this image in pixels. */
-  public get height(): number { return ImageBuffer.computeHeight(this.data, this.format, this.width); }
+  public get height(): number {
+    return ImageBuffer.computeHeight(this.data, this.format, this.width);
+  }
 
   /** Create a new ImageBuffer.
    * @note The ImageBuffer takes ownership of the input Uint8Array.

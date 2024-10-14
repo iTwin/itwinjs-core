@@ -2,11 +2,11 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as fakeTimers from "@sinonjs/fake-timers";
-import * as sinon from "sinon";
 import { using } from "@itwin/core-bentley";
 import { PresentationError } from "@itwin/presentation-common";
+import * as fakeTimers from "@sinonjs/fake-timers";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { FactoryBasedTemporaryStorage, FactoryBasedTemporaryStorageProps, TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
 describe("TemporaryStorage", () => {

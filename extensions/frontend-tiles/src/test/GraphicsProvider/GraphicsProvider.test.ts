@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Cartographic, EcefLocation } from "@itwin/core-common";
+import { BlankConnection, IModelApp } from "@itwin/core-frontend";
+import { Range3d } from "@itwin/core-geometry";
 import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
-import { Range3d } from "@itwin/core-geometry";
-import { Cartographic, EcefLocation } from "@itwin/core-common";
-import { BlankConnection, IModelApp } from "@itwin/core-frontend";
 import { MeshExport, MeshExports, queryMeshExports } from "../../FrontendTiles";
 import { obtainIModelTilesetUrl } from "../../GraphicsProvider/GraphicsProvider";
 
@@ -20,7 +20,7 @@ class TestConnection extends BlankConnection {
     super({
       rootSubject: { name: "test-subject" },
       projectExtents: new Range3d(0, 0, 0, 1, 1, 1),
-      ecefLocation: EcefLocation.createFromCartographicOrigin(Cartographic.fromDegrees({longitude: -75, latitude: 40, height: 0 })),
+      ecefLocation: EcefLocation.createFromCartographicOrigin(Cartographic.fromDegrees({ longitude: -75, latitude: 40, height: 0 })),
       key: "test-key",
       iTwinId: "test-itwin",
       iModelId: props.id,
@@ -31,7 +31,9 @@ class TestConnection extends BlankConnection {
   }
 
   // BlankConnection overrides to unconditionally return `undefined` and overrides return type to only permit `undefined`.
-  public override get iModelId(): any { return this._id; }
+  public override get iModelId(): any {
+    return this._id;
+  }
 }
 
 async function mockFetch(mock: typeof window.fetch, fn: () => Promise<void>): Promise<void> {
@@ -65,8 +67,8 @@ function makeExport(props: ExportProps): MeshExport {
       iModelId: "",
       changesetId: props.changesetId ?? "",
       exportType: "IMODEL",
-      geometryOptions: { },
-      viewDefinitionFilter: { },
+      geometryOptions: {},
+      viewDefinitionFilter: {},
     },
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
     _links: {
@@ -146,7 +148,7 @@ describe("obtainIModelTilesetUrl", () => {
   }
 
   it("returns undefined if the iModel has no iModelId", async () => {
-    await expectUrl(undefined, { });
+    await expectUrl(undefined, {});
     await expectUrl(undefined, { id: "" });
   });
 

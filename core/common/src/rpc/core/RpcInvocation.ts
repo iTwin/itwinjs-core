@@ -6,7 +6,17 @@
  * @module RpcInterface
  */
 
-import { AccessToken, BentleyError, BentleyStatus, GuidString, IModelStatus, Logger, RpcInterfaceStatus, StatusCategory, Tracing } from "@itwin/core-bentley";
+import {
+  AccessToken,
+  BentleyError,
+  BentleyStatus,
+  GuidString,
+  IModelStatus,
+  Logger,
+  RpcInterfaceStatus,
+  StatusCategory,
+  Tracing,
+} from "@itwin/core-bentley";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -84,11 +94,15 @@ export class RpcInvocation {
 
   /** The status for this request. */
   public get status(): RpcRequestStatus {
-    return this._threw ? RpcRequestStatus.Rejected :
-      this._pending ? RpcRequestStatus.Pending :
-        this._notFound ? RpcRequestStatus.NotFound :
-          this._noContent ? RpcRequestStatus.NoContent :
-            RpcRequestStatus.Resolved;
+    return this._threw ?
+      RpcRequestStatus.Rejected :
+      this._pending ?
+      RpcRequestStatus.Pending :
+      this._notFound ?
+      RpcRequestStatus.NotFound :
+      this._noContent ?
+      RpcRequestStatus.NoContent :
+      RpcRequestStatus.Resolved;
   }
 
   /** The elapsed time for this invocation. */
@@ -117,7 +131,10 @@ export class RpcInvocation {
         const backend = this.operation.interfaceVersion;
         const frontend = this.request.operation.interfaceVersion;
         if (!RpcInterface.isVersionCompatible(backend, frontend)) {
-          throw new IModelError(RpcInterfaceStatus.IncompatibleVersion, `Backend version ${backend} does not match frontend version ${frontend} for RPC interface ${this.operation.operationName}.`);
+          throw new IModelError(
+            RpcInterfaceStatus.IncompatibleVersion,
+            `Backend version ${backend} does not match frontend version ${frontend} for RPC interface ${this.operation.operationName}.`,
+          );
         }
       } catch (error) {
         if (this.handleUnknownOperation(error)) {
@@ -132,7 +149,10 @@ export class RpcInvocation {
       this.result = this.reject(error);
     }
 
-    this.fulfillment = this.result.then(async (value) => this._threw ? this.fulfillRejected(value) : this.fulfillResolved(value), async (reason) => this.fulfillRejected(reason));
+    this.fulfillment = this.result.then(
+      async (value) => this._threw ? this.fulfillRejected(value) : this.fulfillResolved(value),
+      async (reason) => this.fulfillRejected(reason),
+    );
   }
 
   private handleUnknownOperation(error: any): boolean {
@@ -142,9 +162,15 @@ export class RpcInvocation {
 
   public static sanitizeForLog(activity?: RpcActivity) {
     /* eslint-disable @typescript-eslint/naming-convention */
-    return activity ? {
-      ActivityId: activity.activityId, SessionId: activity.sessionId, ApplicationId: activity.applicationId, ApplicationVersion: activity.applicationVersion, rpcMethod: activity.rpcMethod,
-    } : undefined;
+    return activity ?
+      {
+        ActivityId: activity.activityId,
+        SessionId: activity.sessionId,
+        ApplicationId: activity.applicationId,
+        ApplicationVersion: activity.applicationVersion,
+        rpcMethod: activity.rpcMethod,
+      } :
+      undefined;
     /* eslint-enable @typescript-eslint/naming-convention */
   }
 
@@ -169,15 +195,16 @@ export class RpcInvocation {
       (impl as any)[CURRENT_INVOCATION] = this;
       const op = this.lookupOperationFunction(impl);
 
-      return await RpcInvocation.runActivity(activity, async () => op.call(impl, ...parameters)
-        .catch(async (error) => {
-          // this catch block is intentionally placed inside `runActivity` to attach the right logging metadata and use the correct openTelemetry span.
-          if (!(error instanceof RpcPendingResponse)) {
-            Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", { error: BentleyError.getErrorProps(error) });
-            Tracing.recordException(error);
-          }
-          throw error;
-        }));
+      return await RpcInvocation.runActivity(activity, async () =>
+        op.call(impl, ...parameters)
+          .catch(async (error) => {
+            // this catch block is intentionally placed inside `runActivity` to attach the right logging metadata and use the correct openTelemetry span.
+            if (!(error instanceof RpcPendingResponse)) {
+              Logger.logError(CommonLoggerCategory.RpcInterfaceBackend, "Error in RPC operation", { error: BentleyError.getErrorProps(error) });
+              Tracing.recordException(error);
+            }
+            throw error;
+          }));
     } catch (error: unknown) {
       return this.reject(error);
     }
@@ -189,7 +216,8 @@ export class RpcInvocation {
 
     for (let i = 0; i !== parameters.length; ++i) {
       const parameter = parameters[i];
-      const isToken = typeof (parameter) === "object" && parameter !== null && parameter.hasOwnProperty("iModelId") && parameter.hasOwnProperty("iTwinId");
+      const isToken = typeof parameter === "object" && parameter !== null && parameter.hasOwnProperty("iModelId") &&
+        parameter.hasOwnProperty("iTwinId");
       if (isToken && this.protocol.checkToken && !this.operation.policy.allowTokenMismatch) {
         const inflated = this.protocol.inflateToken(parameter, this.request);
         parameters[i] = inflated;
@@ -257,7 +285,8 @@ export class RpcInvocation {
       return false;
     }
 
-    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedNoContent && this.request.protocolVersion >= RpcProtocolVersion.IntroducedNoContent;
+    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedNoContent &&
+      this.request.protocolVersion >= RpcProtocolVersion.IntroducedNoContent;
   }
 
   private supportsStatusCategory() {
@@ -269,7 +298,8 @@ export class RpcInvocation {
       return false;
     }
 
-    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.request.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
+    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory &&
+      this.request.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
   }
 
   private fulfill(result: RpcSerializedValue, rawResult: any): RpcRequestFulfillment {
@@ -289,15 +319,18 @@ export class RpcInvocation {
       if (impl[CURRENT_INVOCATION] === this) {
         impl[CURRENT_INVOCATION] = undefined;
       }
-    } catch (_err) { }
+    } catch (_err) {}
 
     return fulfillment;
   }
 
   private lookupOperationFunction(implementation: RpcInterface): (...args: any[]) => Promise<any> {
     const func = (implementation as any)[this.operation.operationName];
-    if (!func || typeof (func) !== "function")
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`);
+    if (!func || typeof func !== "function")
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        `RPC interface class "${implementation.constructor.name}" does not implement operation "${this.operation.operationName}".`,
+      );
 
     return func;
   }

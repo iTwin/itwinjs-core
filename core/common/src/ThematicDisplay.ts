@@ -72,7 +72,7 @@ export enum ThematicGradientColorScheme {
 /** JSON representation of a [[ThematicGradientSettings]].
  * @public
  * @extensions
- **/
+ */
 export interface ThematicGradientSettingsProps {
   /** See [[ThematicGradientSettings.mode]]. */
   mode?: ThematicGradientMode;
@@ -116,9 +116,15 @@ export class ThematicGradientSettings {
    */
   public readonly transparencyMode: ThematicGradientTransparencyMode;
 
-  public static get margin(): number { return .001; }    // A fixed portion of the gradient for out of range values.
-  public static get contentRange(): number { return 1.0 - 2.0 * ThematicGradientSettings.margin; }
-  public static get contentMax(): number { return 1.0 - ThematicGradientSettings.margin; }
+  public static get margin(): number {
+    return .001;
+  } // A fixed portion of the gradient for out of range values.
+  public static get contentRange(): number {
+    return 1.0 - 2.0 * ThematicGradientSettings.margin;
+  }
+  public static get contentMax(): number {
+    return 1.0 - ThematicGradientSettings.margin;
+  }
 
   public static readonly defaults = new ThematicGradientSettings({});
 
@@ -140,17 +146,20 @@ export class ThematicGradientSettings {
         transp = haveOpaque ? TextureTransparency.Mixed : TextureTransparency.Translucent;
     }
 
-    if (transp !== TextureTransparency.Mixed)
+    if (transp !== TextureTransparency.Mixed) {
       if (this.marginColor.isOpaque !== (transp === TextureTransparency.Opaque))
         transp = TextureTransparency.Mixed;
+    }
 
     return transp;
   }
 
   public equals(other: ThematicGradientSettings): boolean {
-    if (this.mode !== other.mode || this.stepCount !== other.stepCount || !this.marginColor.equals(other.marginColor)
+    if (
+      this.mode !== other.mode || this.stepCount !== other.stepCount || !this.marginColor.equals(other.marginColor)
       || this.colorScheme !== other.colorScheme || this.customKeys.length !== other.customKeys.length
-      || this.colorMix !== other.colorMix || this.transparencyMode !== other.transparencyMode) {
+      || this.colorMix !== other.colorMix || this.transparencyMode !== other.transparencyMode
+    ) {
       return false;
     }
 
@@ -217,7 +226,9 @@ export class ThematicGradientSettings {
       if (this.colorScheme === ThematicGradientColorScheme.Custom && this.customKeys.length < 2) {
         this.customKeys = [];
         for (const keyValue of ThematicGradientSettings._defaultCustomKeys)
-          this.customKeys.push(new Gradient.KeyColor({ value: keyValue[0], color: ColorDef.computeTbgrFromComponents(keyValue[1], keyValue[3], keyValue[2]) }));
+          this.customKeys.push(
+            new Gradient.KeyColor({ value: keyValue[0], color: ColorDef.computeTbgrFromComponents(keyValue[1], keyValue[3], keyValue[2]) }),
+          );
       }
 
       this.colorMix = json.colorMix ?? 0.0;
@@ -251,7 +262,9 @@ export class ThematicGradientSettings {
       props.transparencyMode = this.transparencyMode;
 
     if (this.customKeys.length > 0)
-      props.customKeys = this.customKeys.map((key) => { return { value: key.value, color: key.color.toJSON() }; });
+      props.customKeys = this.customKeys.map((key) => {
+        return { value: key.value, color: key.color.toJSON() };
+      });
 
     return props;
   }
@@ -269,7 +282,9 @@ export class ThematicGradientSettings {
       stepCount: undefined !== changedProps.stepCount ? changedProps.stepCount : this.stepCount,
       marginColor: undefined !== changedProps.marginColor ? changedProps.marginColor : this.marginColor.tbgr,
       colorScheme: undefined !== changedProps.colorScheme ? changedProps.colorScheme : this.colorScheme,
-      customKeys: undefined !== changedProps.customKeys ? changedProps.customKeys : this.customKeys.map((key) => ({ value: key.value, color: key.color.tbgr })),
+      customKeys: undefined !== changedProps.customKeys
+        ? changedProps.customKeys
+        : this.customKeys.map((key) => ({ value: key.value, color: key.color.tbgr })),
       colorMix: undefined !== changedProps.colorMix ? changedProps.colorMix : this.colorMix,
       transparencyMode: changedProps.transparencyMode ?? this.transparencyMode,
     };

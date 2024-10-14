@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import type { SchemaItemKey } from "@itwin/ecschema-metadata";
 import type { UnitSystemDifference } from "../Differencing/SchemaDifference";
 import type { SchemaMergeContext } from "./SchemaMerger";
-import type { SchemaItemKey } from "@itwin/ecschema-metadata";
 
 /**
  * Merges a new UnitSystem into the target schema.
@@ -23,10 +23,10 @@ export async function addUnitSystem(context: SchemaMergeContext, change: UnitSys
  * @internal
  */
 export async function modifyUnitSystem(context: SchemaMergeContext, change: UnitSystemDifference, itemKey: SchemaItemKey) {
-  if(change.difference.label !== undefined) {
+  if (change.difference.label !== undefined) {
     await context.editor.unitSystems.setDisplayLabel(itemKey, change.difference.label);
   }
-  if(change.difference.description !== undefined) {
+  if (change.difference.description !== undefined) {
     await context.editor.unitSystems.setDescription(itemKey, change.difference.description);
   }
 }

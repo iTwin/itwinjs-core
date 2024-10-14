@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ Serialize_Schema_To_XML_Imports
-import * as fs from "fs-extra"; // file system api
-import { DOMParser, XMLSerializer } from "@xmldom/xmldom"; // XML support
-import { SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "@itwin/ecschema-editing"; // For creating a small sample Schema for this tutorial
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { DOMParser, XMLSerializer } from "@xmldom/xmldom"; // XML support
+import * as fs from "fs-extra"; // file system api
 // __PUBLISH_EXTRACT_END__
 
 export class SchemaXmlSerializer {
-
   public async serializeSchemaToXmlSample() {
     // __PUBLISH_EXTRACT_START__ Serialize_Schema_To_XML_Create
     const context = new SchemaContext();

@@ -100,7 +100,9 @@ export class IdleTool extends InteractiveTool {
     return EventHandled.Yes;
   }
 
-  public override async onMouseWheel(ev: BeWheelEvent) { return IModelApp.toolAdmin.processWheelEvent(ev, true); }
+  public override async onMouseWheel(ev: BeWheelEvent) {
+    return IModelApp.toolAdmin.processWheelEvent(ev, true);
+  }
 
   public override async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     const tool = new DefaultViewTouchTool(startEv, ev);
@@ -124,6 +126,8 @@ export class IdleTool extends InteractiveTool {
     return EventHandled.No;
   }
 
-  public async exitTool() { }
-  public override async run() { return true; }
+  public async exitTool() {}
+  public override async run() {
+    return true;
+  }
 }

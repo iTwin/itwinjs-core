@@ -5,10 +5,10 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import * as _ from "lodash";
-import * as https from "https";
-import * as sarequest from "superagent";
 import { BentleyError, GetMetaDataFunction, HttpStatus, Logger, LogLevel } from "@itwin/core-bentley";
+import * as https from "https";
+import * as _ from "lodash";
+import * as sarequest from "superagent";
 
 const loggerCategory: string = "core-mobile-backend.Request";
 
@@ -316,12 +316,12 @@ export async function request(url: string, options: RequestOptions): Promise<Res
   // console.log("%s %s %s", url, options.method, queryStr);
 
   /**
-  * Note:
-  * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
-  * Fetch only rejects if there's some network issue (permissions issue or similar)
-  * Superagent rejects network issues, and errors outside the range of 200-299. We are currently using
-  * superagent, but may eventually switch to JavaScript's fetch library.
-  */
+   * Note:
+   * Javascript's fetch returns status.OK if error is between 200-299 inclusive, and doesn't reject in this case.
+   * Fetch only rejects if there's some network issue (permissions issue or similar)
+   * Superagent rejects network issues, and errors outside the range of 200-299. We are currently using
+   * superagent, but may eventually switch to JavaScript's fetch library.
+   */
   try {
     const response = await sareq;
     const retResponse: Response = {

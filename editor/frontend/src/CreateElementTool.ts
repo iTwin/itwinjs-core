@@ -8,9 +8,36 @@
  */
 
 import { Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
+import {
+  DynamicGraphicsRequest2dProps,
+  DynamicGraphicsRequest3dProps,
+  FlatBufferGeometryStream,
+  GeometricElementProps,
+  IModelError,
+  isPlacement3dProps,
+  JsonGeometryStream,
+  PlacementProps,
+} from "@itwin/core-common";
+import {
+  BeButtonEvent,
+  CoordSystem,
+  CoreTools,
+  DynamicsContext,
+  EventHandled,
+  GraphicBranch,
+  IModelApp,
+  IModelConnection,
+  PrimitiveTool,
+  readElementGraphics,
+  RenderGraphicOwner,
+  ToolAssistance,
+  ToolAssistanceImage,
+  ToolAssistanceInputMethod,
+  ToolAssistanceInstruction,
+  ToolAssistanceSection,
+  Viewport,
+} from "@itwin/core-frontend";
 import { Constant, Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { DynamicGraphicsRequest2dProps, DynamicGraphicsRequest3dProps, FlatBufferGeometryStream, GeometricElementProps, IModelError, isPlacement3dProps, JsonGeometryStream, PlacementProps } from "@itwin/core-common";
-import { BeButtonEvent, CoordSystem, CoreTools, DynamicsContext, EventHandled, GraphicBranch, IModelApp, IModelConnection, PrimitiveTool, readElementGraphics, RenderGraphicOwner, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
 
 function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, radius: number): number {
   if (vp.view.is3d() && vp.view.isCameraOn) {
@@ -35,7 +62,9 @@ function computeChordToleranceFromPointAndRadius(vp: Viewport, center: Point3d, 
 
   const viewPt = vp.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(center);
   const viewPt2 = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
-  const pixelSize = vp.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(vp.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
+  const pixelSize = vp.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(
+    vp.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2),
+  );
 
   // Return size of a physical pixel in meters.
   return (0.0 !== pixelSize ? vp.target.adjustPixelSizeForLOD(pixelSize) : 0.001);
@@ -76,10 +105,18 @@ export class DynamicGraphicsProvider {
     this.prefix = prefix;
   }
 
-  private getRequestId(id: Id64String): string { return `${this.prefix}-${id}`; }
-  private getToleranceLog10(): number { return Math.floor(Math.log10(this.chordTolerance)); }
+  private getRequestId(id: Id64String): string {
+    return `${this.prefix}-${id}`;
+  }
+  private getToleranceLog10(): number {
+    return Math.floor(Math.log10(this.chordTolerance));
+  }
 
-  private async createRequest(categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): Promise<RenderGraphicOwner | undefined> {
+  private async createRequest(
+    categoryId: Id64String,
+    placement: PlacementProps,
+    geometry: JsonGeometryStream | FlatBufferGeometryStream,
+  ): Promise<RenderGraphicOwner | undefined> {
     let graphicData;
     let is3d;
 
@@ -113,7 +150,10 @@ export class DynamicGraphicsProvider {
     if (undefined === graphicData)
       return;
 
-    const graphic = await readElementGraphics(graphicData, this.iModel, this.modelId ? this.modelId : Id64.invalid, is3d, { noFlash: true, noHilite: true });
+    const graphic = await readElementGraphics(graphicData, this.iModel, this.modelId ? this.modelId : Id64.invalid, is3d, {
+      noFlash: true,
+      noHilite: true,
+    });
     if (undefined === graphic)
       return;
 
@@ -123,7 +163,11 @@ export class DynamicGraphicsProvider {
   /** Call to request a RenderGraphic for the supplied geometry and placement.
    * @see [[cleanupGraphic]] Must be called when the tool exits.
    */
-  public async createGraphic(categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): Promise<boolean> {
+  public async createGraphic(
+    categoryId: Id64String,
+    placement: PlacementProps,
+    geometry: JsonGeometryStream | FlatBufferGeometryStream,
+  ): Promise<boolean> {
     try {
       const graphic = await this.createRequest(categoryId, placement, geometry);
       this.cleanupGraphic();
@@ -137,7 +181,12 @@ export class DynamicGraphicsProvider {
    * @note May be useful to update a dynamic preview outside of normal button and motion events, ex. modifier key change.
    * @see [[cleanupGraphic]] Must be called when the tool exits.
    */
-  public createGraphicAndUpdateDynamics(ev: BeButtonEvent, categoryId: Id64String, placement: PlacementProps, geometry: JsonGeometryStream | FlatBufferGeometryStream): void {
+  public createGraphicAndUpdateDynamics(
+    ev: BeButtonEvent,
+    categoryId: Id64String,
+    placement: PlacementProps,
+    geometry: JsonGeometryStream | FlatBufferGeometryStream,
+  ): void {
     const promise = this._graphicPromise = this.createGraphic(categoryId, placement, geometry);
 
     promise.then(() => {
@@ -145,7 +194,7 @@ export class DynamicGraphicsProvider {
         return; // abandoned this request...
 
       IModelApp.toolAdmin.updateDynamics(ev);
-    }).catch((_) => { });
+    }).catch((_) => {});
   }
 
   /** Call to dispose of [[RenderGraphic]] held by [[RenderGraphicOwner]].
@@ -205,17 +254,23 @@ export abstract class CreateElementTool extends PrimitiveTool {
   /** Whether [[setupAndPromptForNextAction]] should call [[AccuSnap.enableSnap]] for current tool phase.
    * @return true to enable snapping to elements.
    */
-  protected get wantAccuSnap(): boolean { return false; }
+  protected get wantAccuSnap(): boolean {
+    return false;
+  }
 
   /** Whether to automatically start element dynamics on button event.
    * @return true if tool will implement [[InteractiveTool.onDynamicFrame]] to show element dynamics.
    */
-  protected get wantDynamics(): boolean { return false; }
+  protected get wantDynamics(): boolean {
+    return false;
+  }
 
   /** Whether tool is ready to insert the new element.
    * @return true to call [[createElement]].
    */
-  protected isComplete(_ev: BeButtonEvent): boolean { return false; }
+  protected isComplete(_ev: BeButtonEvent): boolean {
+    return false;
+  }
 
   /** Insert new element and call [[saveChanges]] */
   protected abstract createElement(): Promise<void>;
@@ -277,11 +332,19 @@ export abstract class CreateElementTool extends PrimitiveTool {
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
-      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse));
+      touchInstructions.push(
+        ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch),
+      );
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse),
+    );
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(
+      ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Touch),
+    );
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Mouse),
+    );
 
     if (undefined !== additionalInstr) {
       for (const instr of additionalInstr) {
@@ -296,7 +359,10 @@ export abstract class CreateElementTool extends PrimitiveTool {
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
     sections.push(ToolAssistance.createSection(touchInstructions, ToolAssistance.inputsLabel));
 
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, undefined !== mainInstrText ? mainInstrText : CoreTools.translate(mainMsg));
+    const mainInstruction = ToolAssistance.createInstruction(
+      this.iconSpec,
+      undefined !== mainInstrText ? mainInstrText : CoreTools.translate(mainMsg),
+    );
     const instructions = ToolAssistance.createInstructions(mainInstruction, sections);
     IModelApp.notifications.setToolAssistance(instructions);
   }
@@ -323,8 +389,12 @@ export abstract class CreateElementTool extends PrimitiveTool {
 export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
   protected _graphicsProvider?: DynamicGraphicsProvider;
 
-  protected override get wantAccuSnap(): boolean { return true; }
-  protected override get wantDynamics(): boolean { return true; }
+  protected override get wantAccuSnap(): boolean {
+    return true;
+  }
+  protected override get wantDynamics(): boolean {
+    return true;
+  }
 
   protected clearGraphics(): void {
     if (undefined === this._graphicsProvider)
@@ -435,7 +505,7 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
   /** Intended to be used to setupAccuSnap.  Is called by [[setupAndPromptForNextAction]].
    * @note Has not checked for [[wantAccuSnap]] at this point. Directly, *after* this method is called in [[setupAndPromptForNextAction]], AccuSnap will be enabled/disabled based on [[wantAccuSnap]].
    */
-  protected setupAccuDraw(): void { }
+  protected setupAccuDraw(): void {}
 
   protected override setupAndPromptForNextAction(): void {
     this.setupAccuDraw();
@@ -464,12 +534,14 @@ export abstract class CreateElementWithDynamicsTool extends CreateElementTool {
   /** Called by [[onResetButtonUp]].
    * @returns return `false` if the event has been handled.
    */
-  protected async cancelPoint(_ev: BeButtonEvent): Promise<boolean> { return true; }
+  protected async cancelPoint(_ev: BeButtonEvent): Promise<boolean> {
+    return true;
+  }
 
   /** Invoked when the reset button is released.
    * Propagates event to [[cancelPoint]].
    * @caution Subclasses typically don't override this.
-  */
+   */
   public override async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> {
     if (!await this.cancelPoint(ev))
       return EventHandled.Yes;

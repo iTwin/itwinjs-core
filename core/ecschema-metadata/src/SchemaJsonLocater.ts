@@ -23,7 +23,7 @@ export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
  * @beta
  */
 export class SchemaJsonLocater implements ISchemaLocater {
-  public constructor(private _getSchema: SchemaPropsGetter) { }
+  public constructor(private _getSchema: SchemaPropsGetter) {}
 
   /** Get a schema by [SchemaKey]
    * @param schemaKey The [SchemaKey] that identifies the schema.
@@ -31,7 +31,11 @@ export class SchemaJsonLocater implements ISchemaLocater {
    * @param context The [SchemaContext] used to facilitate schema location.
    * @throws [ECObjectsError]($ecschema-metadata) if the schema exists, but cannot be loaded.
    */
-  public async getSchema<T extends Schema>(schemaKey: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+  public async getSchema<T extends Schema>(
+    schemaKey: Readonly<SchemaKey>,
+    matchType: SchemaMatchType,
+    context: SchemaContext,
+  ): Promise<T | undefined> {
     await this.getSchemaInfo(schemaKey, matchType, context);
     return await context.getCachedSchema(schemaKey, matchType) as T;
   }
@@ -67,5 +71,4 @@ export class SchemaJsonLocater implements ISchemaLocater {
     context = context ? context : new SchemaContext();
     return Schema.fromJsonSync(schemaProps, context) as T;
   }
-
 }

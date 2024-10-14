@@ -58,7 +58,8 @@ class ChainMergeContextValidatedOptions {
     return vector.normalizeWithDefault(
       ChainMergeContextValidatedOptions._defaultPrimarySortDirection.x,
       ChainMergeContextValidatedOptions._defaultPrimarySortDirection.y,
-      ChainMergeContextValidatedOptions._defaultPrimarySortDirection.z);
+      ChainMergeContextValidatedOptions._defaultPrimarySortDirection.z,
+    );
   }
   /**
    * PRIVATE constructor -- assumes all inputs are validated in public create method !!!!
@@ -101,7 +102,6 @@ class ChainMergeContextValidatedOptions {
  * @internal
  */
 export class ChainMergeContext {
-
   private _graph: HalfEdgeGraph;
   private _options: ChainMergeContextValidatedOptions;
   private _plane?: PlaneAltitudeEvaluator;
@@ -111,14 +111,22 @@ export class ChainMergeContext {
     this._options = options;
   }
   /** Save a reference plane for later use, e.g. in addSegmentsOnPlane */
-  public set plane(value: PlaneAltitudeEvaluator | undefined) { this._plane = value; }
+  public set plane(value: PlaneAltitudeEvaluator | undefined) {
+    this._plane = value;
+  }
   /** Property access for the reference plane. */
-  public get plane(): PlaneAltitudeEvaluator | undefined { return this._plane; }
+  public get plane(): PlaneAltitudeEvaluator | undefined {
+    return this._plane;
+  }
 
   /** Save a reference plane for later use, e.g. in addSegmentsOnPlane */
-  public set convexClipper(value: ConvexClipPlaneSet | undefined) { this._convexClipper = value; }
+  public set convexClipper(value: ConvexClipPlaneSet | undefined) {
+    this._convexClipper = value;
+  }
   /** Property access for the reference plane. */
-  public get convexClipper(): ConvexClipPlaneSet | undefined { return this._convexClipper; }
+  public get convexClipper(): ConvexClipPlaneSet | undefined {
+    return this._convexClipper;
+  }
 
   /**
    * * Construct an empty chain merge graph.
@@ -154,12 +162,19 @@ export class ChainMergeContext {
     let a0 = points.evaluateUncheckedIndexPlaneAltitude(i0, plane);
     let i1 = addClosure ? 0 : 1;
     let a1;
-    for (; i1 < points.length; i0 = i1++ , a0 = a1) {
+    for (; i1 < points.length; i0 = i1++, a0 = a1) {
       a1 = points.evaluateUncheckedIndexPlaneAltitude(i1, plane);
       if (Geometry.isSmallMetricDistance(a0) && Geometry.isSmallMetricDistance(a1))
         this._graph.createEdgeXYZXYZ(
-          points.getXAtUncheckedPointIndex(i0), points.getYAtUncheckedPointIndex(i0), points.getZAtUncheckedPointIndex(i0), 0,
-          points.getXAtUncheckedPointIndex(i1), points.getYAtUncheckedPointIndex(i1), points.getZAtUncheckedPointIndex(i1), 0);
+          points.getXAtUncheckedPointIndex(i0),
+          points.getYAtUncheckedPointIndex(i0),
+          points.getZAtUncheckedPointIndex(i0),
+          0,
+          points.getXAtUncheckedPointIndex(i1),
+          points.getYAtUncheckedPointIndex(i1),
+          points.getZAtUncheckedPointIndex(i1),
+          0,
+        );
     }
   }
   /**
@@ -214,7 +229,7 @@ export class ChainMergeContext {
               break;
             if (node0.distanceXYZ(node1) <= xyzTolerance) {
               HalfEdge.pinch(node0, node1);
-              node1.setXYZFrom(node0);    // force true equal coordinates.
+              node1.setXYZFrom(node0); // force true equal coordinates.
             }
           }
         }
@@ -230,7 +245,7 @@ export class ChainMergeContext {
     if (!node0.isMaskSet(visitMask)) {
       const ls = LineString3d.create();
       ls.addPointXYZ(node0.x, node0.y, node0.z);
-      for (; ;) {
+      for (;;) {
         node0.setMask(visitMask);
         node0.edgeMate.setMask(visitMask);
         node0 = node0.faceSuccessor;
@@ -250,7 +265,7 @@ export class ChainMergeContext {
     if (!node0.isMaskSet(visitMask)) {
       const points = new GrowableXYZArray();
       points.pushXYZ(node0.x, node0.y, node0.z);
-      for (; ;) {
+      for (;;) {
         node0.setMask(visitMask);
         node0.edgeMate.setMask(visitMask);
         node0 = node0.faceSuccessor;
@@ -272,8 +287,10 @@ export class ChainMergeContext {
   private exciseAndMarkSlingEdges(mask: HalfEdgeMask): number {
     let n = 0;
     for (const p of this._graph.allHalfEdges) {
-      if (p.distanceXYZ(p.edgeMate) < this._options.tolerance
-        && !p.isMaskSet(mask)) {
+      if (
+        p.distanceXYZ(p.edgeMate) < this._options.tolerance
+        && !p.isMaskSet(mask)
+      ) {
         const q = p.edgeMate;
         HalfEdge.pinch(p, p.vertexPredecessor);
         HalfEdge.pinch(q, q.vertexPredecessor);

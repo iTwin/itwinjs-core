@@ -57,13 +57,23 @@ export class PolyfaceRangeTreeContext {
    * @param maxAppDataPerLeaf maximum facet indices per leaf node (default 4)
    * @param convexFacets whether all facets are known to be convex (cf. [[PolyfaceQuery.areFacetsConvex]]) (default false)
    */
-  public static createCapture(visitor: Polyface | PolyfaceVisitor, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4, convexFacets: boolean = false): PolyfaceRangeTreeContext | undefined {
+  public static createCapture(
+    visitor: Polyface | PolyfaceVisitor,
+    maxChildPerNode: number = 4,
+    maxAppDataPerLeaf: number = 4,
+    convexFacets: boolean = false,
+  ): PolyfaceRangeTreeContext | undefined {
     if (visitor instanceof Polyface)
       return this.createCapture(visitor.createVisitor(0), maxChildPerNode, maxAppDataPerLeaf, convexFacets);
     const numFacet = PolyfaceQuery.visitorClientFacetCount(visitor);
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
-      (index: number): Range3d => { visitor.moveToReadIndex(index); return visitor.range(); },
-      (index: number): number => { return index; },
+      (index: number): Range3d => {
+        visitor.moveToReadIndex(index);
+        return visitor.range();
+      },
+      (index: number): number => {
+        return index;
+      },
       numFacet,
       maxChildPerNode,
       maxAppDataPerLeaf,
@@ -77,7 +87,11 @@ export class PolyfaceRangeTreeContext {
    * @param searchFacetInterior whether to include facet interiors in search. Default is false: just consider facet boundaries.
    * @return closest point detail(s) with detail.a set to the distance from spacePoint to detail.point
    */
-  public searchForClosestPoint(spacePoint: Point3d, maxDist?: number, searchFacetInterior: boolean = false): FacetLocationDetail | FacetLocationDetail[] | undefined {
+  public searchForClosestPoint(
+    spacePoint: Point3d,
+    maxDist?: number,
+    searchFacetInterior: boolean = false,
+  ): FacetLocationDetail | FacetLocationDetail[] | undefined {
     const handler = new SingleTreeSearchHandlerForClosestPointOnPolyface(spacePoint, this, maxDist, searchFacetInterior);
     this.numSearch++;
     const numFacet = PolyfaceQuery.visitorClientFacetCount(this.visitor);
@@ -98,8 +112,13 @@ export class PolyfaceRangeTreeContext {
    * @param maxDist collect close approaches separated by no more than this distance. If undefined, return only the closest approach.
    * @param searchFacetInterior whether to include facet interiors in search (`context.convexFacets` must be true for both contexts). Default is false: just consider facet boundaries.
    * @return closest approach detail pair(s), one per context, with detail.a set to the approach distance
-  */
-  public static searchForClosestApproach(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior: boolean = false): FacetLocationDetailPair | FacetLocationDetailPair[] | undefined {
+   */
+  public static searchForClosestApproach(
+    contextA: PolyfaceRangeTreeContext,
+    contextB: PolyfaceRangeTreeContext,
+    maxDist?: number,
+    searchFacetInterior: boolean = false,
+  ): FacetLocationDetailPair | FacetLocationDetailPair[] | undefined {
     const handler = new TwoTreeSearchHandlerForFacetFacetCloseApproach(contextA, contextB, maxDist, searchFacetInterior);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
     return handler.searchState.savedItems.length <= 1 ? handler.getResult() : handler.getSavedItems();

@@ -68,4 +68,3 @@ function findRelatedItemEntries({ differences }: SchemaDifferenceResult, itemNam
   });
   return found;
 }
-

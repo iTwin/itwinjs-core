@@ -8,8 +8,31 @@
  */
 
 import { BentleyError, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
-import { GeometricElementProps, IModelStatus, isPlacement2dProps, PersistentGraphicsRequestProps, Placement, Placement2d, Placement3d } from "@itwin/core-common";
-import { AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, ElementSetTool, GraphicBranch, IModelApp, IModelConnection, IpcApp, ModifyElementSource, NotifyMessageDetails, OutputMessagePriority, readElementGraphics, RenderGraphic, RenderGraphicOwner } from "@itwin/core-frontend";
+import {
+  GeometricElementProps,
+  IModelStatus,
+  isPlacement2dProps,
+  PersistentGraphicsRequestProps,
+  Placement,
+  Placement2d,
+  Placement3d,
+} from "@itwin/core-common";
+import {
+  AccuDrawHintBuilder,
+  BeButtonEvent,
+  DynamicsContext,
+  ElementSetTool,
+  GraphicBranch,
+  IModelApp,
+  IModelConnection,
+  IpcApp,
+  ModifyElementSource,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  readElementGraphics,
+  RenderGraphic,
+  RenderGraphicOwner,
+} from "@itwin/core-frontend";
 import { Transform } from "@itwin/core-geometry";
 import { editorBuiltInCmdIds } from "@itwin/editor-common";
 import { EditTools } from "./EditTool";
@@ -42,8 +65,12 @@ export class TransformGraphicsProvider {
     this.pending = new Map<Id64String, string>();
   }
 
-  private getRequestId(id: Id64String): string { return `${this.prefix}-${id}`; }
-  private getToleranceLog10(): number { return Math.floor(Math.log10(this.chordTolerance)); }
+  private getRequestId(id: Id64String): string {
+    return `${this.prefix}-${id}`;
+  }
+  private getToleranceLog10(): number {
+    return Math.floor(Math.log10(this.chordTolerance));
+  }
 
   private async createRequest(id: Id64String): Promise<TransformGraphicsData | undefined> {
     const elementProps = (await this.iModel.elements.getProps(id)) as GeometricElementProps[];
@@ -98,8 +125,8 @@ export class TransformGraphicsProvider {
   }
 
   /** Call to request a RenderGraphic for the supplied element id.
- * @see [[cleanupGraphics]] Must be called when the tool exits.
- */
+   * @see [[cleanupGraphics]] Must be called when the tool exits.
+   */
   public async createSingleGraphic(id: Id64String): Promise<boolean> {
     try {
       const info = await this.createRequest(id);
@@ -139,7 +166,7 @@ export class TransformGraphicsProvider {
             this.data.push(info);
         });
       }
-    } catch { }
+    } catch {}
   }
 
   /** Call to dispose of [[RenderGraphic]] held by [[RenderGraphicOwner]] and cancel requests that are still pending.
@@ -189,14 +216,30 @@ export class TransformGraphicsProvider {
  * @beta
  */
 export abstract class TransformElementsTool extends ElementSetTool {
-  protected override get allowSelectionSet(): boolean { return true; }
-  protected override get allowGroups(): boolean { return true; }
-  protected override get allowDragSelect(): boolean { return true; }
-  protected override get controlKeyContinuesSelection(): boolean { return true; }
-  protected override get wantAccuSnap(): boolean { return true; }
-  protected override get wantDynamics(): boolean { return true; }
-  protected get wantMakeCopy(): boolean { return false; }
-  protected get wantRepeatOperation(): boolean { return this.wantMakeCopy && !this.agenda.isEmpty; }
+  protected override get allowSelectionSet(): boolean {
+    return true;
+  }
+  protected override get allowGroups(): boolean {
+    return true;
+  }
+  protected override get allowDragSelect(): boolean {
+    return true;
+  }
+  protected override get controlKeyContinuesSelection(): boolean {
+    return true;
+  }
+  protected override get wantAccuSnap(): boolean {
+    return true;
+  }
+  protected override get wantDynamics(): boolean {
+    return true;
+  }
+  protected get wantMakeCopy(): boolean {
+    return false;
+  }
+  protected get wantRepeatOperation(): boolean {
+    return this.wantMakeCopy && !this.agenda.isEmpty;
+  }
   protected _graphicsProvider?: TransformGraphicsProvider;
   protected _startedCmd?: string;
 
@@ -299,7 +342,9 @@ export abstract class TransformElementsTool extends ElementSetTool {
       if (IModelStatus.Success === await basicManipulationIpc.transformPlacement(this.agenda.compressIds(), transform.toJSON()))
         await this.saveChanges();
     } catch (err) {
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(OutputMessagePriority.Error, BentleyError.getErrorMessage(err) || "An unknown error occurred."),
+      );
     }
   }
 
@@ -327,4 +372,3 @@ export abstract class TransformElementsTool extends ElementSetTool {
     return super.onCleanup();
   }
 }
-

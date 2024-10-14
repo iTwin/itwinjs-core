@@ -3,13 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { EmptyLocalization, ViewFlags } from "@itwin/core-common";
+import { expect } from "chai";
 import { IModelApp } from "../IModelApp";
 import { StandardViewId } from "../StandardView";
 import { Viewport } from "../Viewport";
 import {
-  connectViewports, synchronizeViewportFrusta, synchronizeViewportViews, TwoWayViewportFrustumSync, TwoWayViewportSync,
+  connectViewports,
+  synchronizeViewportFrusta,
+  synchronizeViewportViews,
+  TwoWayViewportFrustumSync,
+  TwoWayViewportSync,
 } from "../ViewportSync";
 import { openBlankViewport } from "./openBlankViewport";
 
@@ -112,7 +116,6 @@ describe("TwoWayViewportSync", () => {
 
     test(TwoWayViewportSync, true);
     test(TwoWayViewportFrustumSync, false);
-
   });
 
   it("synchronizes selectors", () => {

@@ -11,17 +11,17 @@ import { FillFlags, RenderMode, TextureTransparency, ThematicGradientTransparenc
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
 import { VertexIndices } from "../../common/internal/render/VertexIndices";
 import { RenderMemory } from "../RenderMemory";
+import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { AttributeMap } from "./AttributeMap";
 import { ShaderProgramParams } from "./DrawCommand";
 import { GL } from "./GL";
-import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
 import { MaterialInfo } from "./Material";
+import { MeshData } from "./MeshData";
+import { MeshGeometry } from "./MeshGeometry";
 import { Pass, RenderOrder, RenderPass, SurfaceBitIndex } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { TechniqueId } from "./TechniqueId";
-import { MeshData } from "./MeshData";
-import { MeshGeometry } from "./MeshGeometry";
 
 /** @internal */
 export function wantMaterials(vf: ViewFlags): boolean {
@@ -37,7 +37,9 @@ export class SurfaceGeometry extends MeshGeometry {
   private readonly _buffers: BuffersContainer;
   private readonly _indices: BufferHandle;
 
-  public get lutBuffers() { return this._buffers; }
+  public get lutBuffers() {
+    return this._buffers;
+  }
 
   public static create(mesh: MeshData, indices: VertexIndices): SurfaceGeometry | undefined {
     const indexBuffer = BufferHandle.createArrayBuffer(indices.data);
@@ -58,14 +60,30 @@ export class SurfaceGeometry extends MeshGeometry {
     stats.addSurface(this._indices.bytesUsed);
   }
 
-  public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
-  public get isTexturedType() { return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }
-  public get hasTexture() { return this.isTexturedType && undefined !== this.texture; }
-  public get hasNormalMap() { return this.isLit && this.isTexturedType && undefined !== this.normalMap; }
-  public get isGlyph() { return this.mesh.isGlyph; }
-  public override get alwaysRenderTranslucent() { return this.isGlyph; }
-  public get isTileSection() { return undefined !== this.texture && this.texture.isTileSection; }
-  public get isClassifier() { return SurfaceType.VolumeClassifier === this.surfaceType; }
+  public get isLit() {
+    return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType;
+  }
+  public get isTexturedType() {
+    return SurfaceType.Textured === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType;
+  }
+  public get hasTexture() {
+    return this.isTexturedType && undefined !== this.texture;
+  }
+  public get hasNormalMap() {
+    return this.isLit && this.isTexturedType && undefined !== this.normalMap;
+  }
+  public get isGlyph() {
+    return this.mesh.isGlyph;
+  }
+  public override get alwaysRenderTranslucent() {
+    return this.isGlyph;
+  }
+  public get isTileSection() {
+    return undefined !== this.texture && this.texture.isTileSection;
+  }
+  public get isClassifier() {
+    return SurfaceType.VolumeClassifier === this.surfaceType;
+  }
   public override get supportsThematicDisplay() {
     return !this.isGlyph;
   }
@@ -77,9 +95,15 @@ export class SurfaceGeometry extends MeshGeometry {
     return FillFlags.Blanking !== (this.fillFlags & FillFlags.Blanking);
   }
 
-  public override get asSurface() { return this; }
-  public override get asEdge() { return undefined; }
-  public override get asSilhouette() { return undefined; }
+  public override get asSurface() {
+    return this;
+  }
+  public override get asEdge() {
+    return undefined;
+  }
+  public override get asSilhouette() {
+    return undefined;
+  }
 
   protected _draw(numInstances: number, instanceBuffersContainer?: BuffersContainer): void {
     const system = System.instance;
@@ -105,9 +129,15 @@ export class SurfaceGeometry extends MeshGeometry {
     return !this.isGlyph && (this.isLitSurface || this.wantTextures(target, this.hasTexture));
   }
 
-  public get techniqueId(): TechniqueId { return TechniqueId.Surface; }
-  public override get isLitSurface() { return this.isLit; }
-  public override get hasBakedLighting() { return this.mesh.hasBakedLighting; }
+  public get techniqueId(): TechniqueId {
+    return TechniqueId.Surface;
+  }
+  public override get isLitSurface() {
+    return this.isLit;
+  }
+  public override get hasBakedLighting() {
+    return this.mesh.hasBakedLighting;
+  }
   public get renderOrder(): RenderOrder {
     if (FillFlags.Behind === (this.fillFlags & FillFlags.Behind))
       return RenderOrder.BlankingRegion;
@@ -229,7 +259,9 @@ export class SurfaceGeometry extends MeshGeometry {
     return !this.wantTextures(target, this.hasTexture);
   }
 
-  public override get materialInfo(): MaterialInfo | undefined { return this.mesh.materialInfo; }
+  public override get materialInfo(): MaterialInfo | undefined {
+    return this.mesh.materialInfo;
+  }
 
   public useTexture(params: ShaderProgramParams): boolean {
     return this.wantTextures(params.target, this.hasTexture);

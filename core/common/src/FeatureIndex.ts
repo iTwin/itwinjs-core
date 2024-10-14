@@ -44,17 +44,27 @@ export class ColorIndex {
   private _color: ColorDef | NonUniformColor;
 
   /** Whether the color(s) in this index have transparency. */
-  public get hasAlpha() { return !this._color.isOpaque; }
+  public get hasAlpha() {
+    return !this._color.isOpaque;
+  }
   /** Whether this index specifies a single uniform color for the entire mesh or polyline. */
-  public get isUniform() { return this._color instanceof ColorDef; }
+  public get isUniform() {
+    return this._color instanceof ColorDef;
+  }
   /** The number of colors in this index. */
-  public get numColors(): number { return this.isUniform ? 1 : this.nonUniform!.colors.length; }
+  public get numColors(): number {
+    return this.isUniform ? 1 : this.nonUniform!.colors.length;
+  }
 
   /** Construct a default index specifying a uniform white color. */
-  public constructor() { this._color = ColorDef.white; }
+  public constructor() {
+    this._color = ColorDef.white;
+  }
 
   /** Reset this index to specify a uniform white color. */
-  public reset() { this._color = ColorDef.white; }
+  public reset() {
+    this._color = ColorDef.white;
+  }
 
   /** Returns the single color to be applied to all vertices, if [[isUniform]] is `true`; or `undefined` otherwise. */
   public get uniform(): ColorDef | undefined {
@@ -108,10 +118,14 @@ export class FeatureIndex {
   public featureIDs?: Uint32Array;
 
   /** True if [[type]] is [[FeatureIndexType.Uniform]]. */
-  public get isUniform(): boolean { return FeatureIndexType.Uniform === this.type; }
+  public get isUniform(): boolean {
+    return FeatureIndexType.Uniform === this.type;
+  }
 
   /** True if [[type]] is [[FeatureIndexType.Empty]]. */
-  public get isEmpty(): boolean { return FeatureIndexType.Empty === this.type; }
+  public get isEmpty(): boolean {
+    return FeatureIndexType.Empty === this.type;
+  }
 
   /** Reset to an empty index. */
   public reset(): void {

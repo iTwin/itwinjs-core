@@ -43,7 +43,12 @@ export class CompileShadersTool extends RenderSystemDebugControlTool {
   public static override toolId = "CompileShaders";
   public execute(control: RenderSystemDebugControl): void {
     const compiled = control.compileAllShaders();
-    IModelApp.notifications.outputMessage(new NotifyMessageDetails(compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error, `${compiled ? "No" : "Some"} compilation errors occurred.`));
+    IModelApp.notifications.outputMessage(
+      new NotifyMessageDetails(
+        compiled ? OutputMessagePriority.Info : OutputMessagePriority.Error,
+        `${compiled ? "No" : "Some"} compilation errors occurred.`,
+      ),
+    );
   }
 }
 
@@ -53,8 +58,12 @@ export class CompileShadersTool extends RenderSystemDebugControlTool {
  */
 export class ToggleDPIForLODTool extends RenderSystemDebugControlTool {
   public static override toolId = "ToggleDPIForLOD";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   private _enable?: boolean;
 

@@ -135,7 +135,7 @@ describe("SchemaWalker tests", () => {
     },
   };
 
-  type Mock<T> = { readonly [P in keyof T]: sinon.SinonSpy; };
+  type Mock<T> = { readonly [P in keyof T]: sinon.SinonSpy };
   let mockVisitor: Mock<ISchemaPartVisitor>;
 
   beforeEach(async () => {

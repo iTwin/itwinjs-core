@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyCurve } from "../../curve/CurveTypes";
 import { CurveChain } from "../../curve/CurveCollection";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -30,10 +30,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
  * @param distances offset distances
  * @param distanceFactor factor to apply to distances.
  */
-function testCurveOffset(allPaths: AnyCurve[],
-  caseName: string,
-  distances: number[],
-  distanceFactor: number) {
+function testCurveOffset(allPaths: AnyCurve[], caseName: string, distances: number[], distanceFactor: number) {
   const ck = new Checker();
   const allGeometry: GeometryQuery[] = [];
   let x0 = 0;
@@ -47,11 +44,13 @@ function testCurveOffset(allPaths: AnyCurve[],
       const yStep = 2.0 * range.yLength() + 1;
       y0 = 0.0;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, 0);
-      for (const options of [
-        JointOptions.create(1),
-        new JointOptions(1.0, 180, 30.0),
-        new JointOptions(1.0, 1.0, 30.0),
-      ]) {
+      for (
+        const options of [
+          JointOptions.create(1),
+          new JointOptions(1.0, 180, 30.0),
+          new JointOptions(1.0, 1.0, 30.0),
+        ]
+      ) {
         let dMax = 0;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, 0);
         for (const offsetDistance of distances) {
@@ -71,13 +70,14 @@ function testCurveOffset(allPaths: AnyCurve[],
 }
 
 describe("CurveOffset", () => {
-
   it("SimplePaths", () => {
     let counter = 0;
-    for (const paths of [
-      Sample.createSimplePaths(false),
-      Sample.createLineArcPaths(),
-    ]) {
+    for (
+      const paths of [
+        Sample.createSimplePaths(false),
+        Sample.createLineArcPaths(),
+      ]
+    ) {
       const a = paths[0].range().xLength() * 0.02;
       const offsetDistances = [2 * a, a, -a, -2 * a];
       testCurveOffset(paths, `SimplePaths ${counter++}`, offsetDistances, 1.0);
@@ -86,9 +86,11 @@ describe("CurveOffset", () => {
 
   it("SimpleLoops", () => {
     let counter = 0;
-    for (const paths of [
-      Sample.createSimpleLoops(),
-    ]) {
+    for (
+      const paths of [
+        Sample.createSimpleLoops(),
+      ]
+    ) {
       const a = paths[0].range().xLength() * 0.02;
       const offsetDistances = [2 * a, a, -a, -2 * a];
       testCurveOffset(paths, `SimpleLoops ${counter++}`, offsetDistances, 1.0);
@@ -98,10 +100,13 @@ describe("CurveOffset", () => {
   it("SawtoothPaths", () => {
     let counter = 0;
     const paths = [];
-    for (const pointPath of [
-      Sample.appendVariableSawTooth([], 1, 0, 1, 2, 4, 0.8),
-      Sample.appendVariableSawTooth([], 1, 0.5, 1, 2, 4, 0.8),
-      Sample.appendVariableSawTooth([], 3, -0.5, 1, 2, 4, 0.8)]) {
+    for (
+      const pointPath of [
+        Sample.appendVariableSawTooth([], 1, 0, 1, 2, 4, 0.8),
+        Sample.appendVariableSawTooth([], 1, 0.5, 1, 2, 4, 0.8),
+        Sample.appendVariableSawTooth([], 3, -0.5, 1, 2, 4, 0.8),
+      ]
+    ) {
       paths.push(Path.create(LineString3d.create(pointPath)));
     }
 
@@ -109,15 +114,17 @@ describe("CurveOffset", () => {
     const offsetDistances = [2 * a, a, -a, -2 * a];
     // const offsetDistances = [a];
     testCurveOffset(paths, `SawtoothPaths ${counter++}`, offsetDistances, 1.0);
-
   });
 
   it("FractalPaths", () => {
     let counter = 0;
     const paths = [];
-    for (const pointPath of [
-      Sample.createFractalDiamondConvexPattern(1, -0.5),
-      Sample.createFractalHatReversingPattern(1, 0.25)]) {
+    for (
+      const pointPath of [
+        Sample.createFractalDiamondConvexPattern(1, -0.5),
+        Sample.createFractalHatReversingPattern(1, 0.25),
+      ]
+    ) {
       paths.push(Path.create(LineString3d.create(pointPath)));
     }
 
@@ -125,7 +132,6 @@ describe("CurveOffset", () => {
     const offsetDistances = [2 * a, a, -a, -2 * a];
     // const offsetDistances = [a];
     testCurveOffset(paths, `FractalPaths ${counter++}`, offsetDistances, 1.0);
-
   });
   // cspell:word Daumantas
   it("Daumantas", () => {
@@ -141,7 +147,6 @@ describe("CurveOffset", () => {
     const offsetDistances = [a, -a];
     // const offsetDistances = [a];
     testCurveOffset([path0], `Daumantas ${counter++}`, offsetDistances, 1.0);
-
   });
   it("OffsetGap10", () => {
     let counter = 10;
@@ -151,13 +156,14 @@ describe("CurveOffset", () => {
       // const offsetDistances = [a];
       testCurveOffset([path0], `OffsetGap ${counter++}`, offsetDistances, 1.0);
     }
-
   });
   it("OffsetGap", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const path = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/data/ChainCollector/gapAtSmallShift.imjs", "utf8")))!;
+      "./src/test/data/ChainCollector/gapAtSmallShift.imjs",
+      "utf8",
+    )))!;
     if (ck.testType(path, CurveChain)) {
       const x0 = 0;
       const y0 = 0;
@@ -177,7 +183,7 @@ describe("CurveOffset", () => {
     const allGeometry: GeometryQuery[] = [];
     const offset = 0.5;
     let x0 = 0;
-    const z1 = 0.04;  // to place center geometry above filled loops.
+    const z1 = 0.04; // to place center geometry above filled loops.
     const pointA = Point3d.create(0, 0);
     const pointB = Point3d.create(4, 0);
     const e = 0.1;
@@ -189,12 +195,21 @@ describe("CurveOffset", () => {
     const arcC = arcA.clonePartialCurve(1.0, 0.0);
     arcC.tryTransformInPlace(Transform.createFixedPointAndMatrix(arcA.center, Matrix3d.createScale(sC, sC, sC)));
     const path2 = Loop.create(arcA, arcB);
-    const path3 = Loop.create(LineString3d.create(pointA, pointB, pointA.interpolatePerpendicularXY(1.0, pointB, -f),
-      pointA.interpolatePerpendicularXY(0, pointB, -f), pointA));
-    const path4 = Loop.create(arcA,
+    const path3 = Loop.create(
+      LineString3d.create(
+        pointA,
+        pointB,
+        pointA.interpolatePerpendicularXY(1.0, pointB, -f),
+        pointA.interpolatePerpendicularXY(0, pointB, -f),
+        pointA,
+      ),
+    );
+    const path4 = Loop.create(
+      arcA,
       LineSegment3d.create(arcA.endPoint(), arcC.startPoint()),
       arcC,
-      LineSegment3d.create(arcC.endPoint(), arcA.startPoint()));
+      LineSegment3d.create(arcC.endPoint(), arcA.startPoint()),
+    );
     // construct offset for ...
     // a) primitive (one way only)
     // b) primitive + reversed primitive
@@ -212,5 +227,4 @@ describe("CurveOffset", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveOffset", "TrivialPath");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

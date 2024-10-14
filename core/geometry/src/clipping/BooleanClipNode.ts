@@ -96,7 +96,10 @@ export abstract class BooleanClipNode implements Clipper {
    * * Return 0 if not called, 1 if called.
    */
   protected testedAnnounceNNC(
-    a0: number, a1: number, cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive,
+    a0: number,
+    a1: number,
+    cp: CurvePrimitive,
+    announce?: AnnounceNumberNumberCurvePrimitive,
   ): number {
     if (a0 < a1) {
       if (announce)
@@ -116,7 +119,11 @@ export abstract class BooleanClipNode implements Clipper {
    * * Return true if any intervals announced.
    */
   protected announcePartsNN(
-    keepInside: boolean, intervals: Range1d[], f0: number, f1: number, announce?: AnnounceNumberNumber,
+    keepInside: boolean,
+    intervals: Range1d[],
+    f0: number,
+    f1: number,
+    announce?: AnnounceNumberNumber,
   ): boolean {
     let numAnnounce = 0;
     if (!keepInside) {
@@ -139,7 +146,12 @@ export abstract class BooleanClipNode implements Clipper {
    * * Return true if any intervals announced.
    */
   protected announcePartsNNC(
-    keepInside: boolean, intervals: Range1d[], f0: number, f1: number, cp: CurvePrimitive, announce?: AnnounceNumberNumberCurvePrimitive,
+    keepInside: boolean,
+    intervals: Range1d[],
+    f0: number,
+    f1: number,
+    cp: CurvePrimitive,
+    announce?: AnnounceNumberNumberCurvePrimitive,
   ): boolean {
     let numAnnounce = 0;
     if (!keepInside) {
@@ -164,7 +176,11 @@ export abstract class BooleanClipNode implements Clipper {
   }
   /** Announce "in" portions of a line segment. See `Clipper.announceClippedSegmentIntervals` */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
+    f0: number,
+    f1: number,
+    pointA: Point3d,
+    pointB: Point3d,
+    announce?: AnnounceNumberNumber,
   ): boolean {
     this._intervalsA.length = 0;
     const announceIntervalB = (a0: number, a1: number) => {
@@ -217,7 +233,9 @@ export abstract class BooleanClipNode implements Clipper {
  * @internal
  */
 export class BooleanClipNodeUnion extends BooleanClipNode {
-  public get operationName(): string { return this._keepInside ? "OR" : "NOR"; }
+  public get operationName(): string {
+    return this._keepInside ? "OR" : "NOR";
+  }
   public constructor(keepInside: boolean) {
     super(keepInside);
   }
@@ -257,7 +275,9 @@ export class BooleanClipNodeUnion extends BooleanClipNode {
  * @internal
  */
 export class BooleanClipNodeParity extends BooleanClipNode {
-  public get operationName(): string { return this._keepInside ? "XOR" : "NXOR"; }
+  public get operationName(): string {
+    return this._keepInside ? "XOR" : "NXOR";
+  }
   public constructor(keepInside: boolean) {
     super(keepInside);
   }
@@ -294,7 +314,9 @@ export class BooleanClipNodeParity extends BooleanClipNode {
  * @internal
  */
 export class BooleanClipNodeIntersection extends BooleanClipNode implements PolygonClipper {
-  public get operationName(): string { return this._keepInside ? "AND" : "NAND"; }
+  public get operationName(): string {
+    return this._keepInside ? "AND" : "NAND";
+  }
   public constructor(keepInside: boolean) {
     super(keepInside);
   }
@@ -315,7 +337,6 @@ export class BooleanClipNodeIntersection extends BooleanClipNode implements Poly
     outsideFragments: GrowableXYZArray[],
     arrayCache: GrowableXYZArrayCache,
   ) {
-
     ClipUtilities.doPolygonClipSequence(
       xyz,
       this._clippers,

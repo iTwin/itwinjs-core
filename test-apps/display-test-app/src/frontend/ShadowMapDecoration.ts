@@ -2,10 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { parseToggle } from "@itwin/frontend-devtools";
 import {
-  DecorateContext, GraphicBranch, GraphicType, IModelApp, RenderGraphic, RenderGraphicOwner, Target, Tool, Viewport,
+  DecorateContext,
+  GraphicBranch,
+  GraphicType,
+  IModelApp,
+  RenderGraphic,
+  RenderGraphicOwner,
+  Target,
+  Tool,
+  Viewport,
 } from "@itwin/core-frontend";
+import { parseToggle } from "@itwin/frontend-devtools";
 
 class ShadowMapDecoration {
   private static _instance?: ShadowMapDecoration;
@@ -13,7 +21,9 @@ class ShadowMapDecoration {
   private readonly _graphics: RenderGraphic[] = [];
   private _removeMe?: () => void;
 
-  private get _target(): Target { return this._vp.target as Target; }
+  private get _target(): Target {
+    return this._vp.target as Target;
+  }
 
   private constructor(vp: Viewport) {
     this._vp = vp;
@@ -101,8 +111,12 @@ class ShadowMapDecoration {
 /** Decorates all other viewports with the tiles selected for drawing the selected viewport's shadow map. */
 export class ToggleShadowMapTilesTool extends Tool {
   public static override toolId = "ToggleShadowMapTiles";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;

@@ -81,20 +81,28 @@ function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
           const rangeScaled = Range3d.create();
           s.extendRange(rangeScaled, scaleTransform);
           const rangeScaledExpanded = rangeScaled.clone();
-          rangeScaledExpanded.expandInPlace(0.10 * rangeScaledExpanded.diagonal().magnitude());    // HACK -- ranges are not precise.  Allow fuzz.
+          rangeScaledExpanded.expandInPlace(0.10 * rangeScaledExpanded.diagonal().magnitude()); // HACK -- ranges are not precise.  Allow fuzz.
           const range2 = Range3d.create();
           s2.extendRange(range2);
-          if (!ck.testTrue(rangeScaledExpanded.containsRange(range2), "scaled range of solid commutes with range of scaled solid",
-            rangeScaledExpanded.low.toJSON(),
-            range2.low.toJSON(),
-            range2.high.toJSON(),
-            rangeScaledExpanded.high.toJSON())) {
+          if (
+            !ck.testTrue(
+              rangeScaledExpanded.containsRange(range2),
+              "scaled range of solid commutes with range of scaled solid",
+              rangeScaledExpanded.low.toJSON(),
+              range2.low.toJSON(),
+              range2.high.toJSON(),
+              rangeScaledExpanded.high.toJSON(),
+            )
+          ) {
             const allGeometry: GeometryQuery[] = [];
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry,
-              [s, Box.createRange(range, true)!,
-                Box.createRange(rangeScaled, true)!,
-                Box.createRange(rangeScaledExpanded, true)!,
-                s2, Box.createRange(range2, true)!]);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [
+              s,
+              Box.createRange(range, true)!,
+              Box.createRange(rangeScaled, true)!,
+              Box.createRange(rangeScaledExpanded, true)!,
+              s2,
+              Box.createRange(range2, true)!,
+            ]);
             GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "ExerciseSolids");
             // compute ranges again to debug failure
             const myRangeScaled = Range3d.create();
@@ -139,9 +147,12 @@ describe("Solids", () => {
     // create true cones to allow simple checks ...
     const ck = new Checker();
 
-    for (const cone of [
-      Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1), 1, 0, false)!,
-      Cone.createAxisPoints(Point3d.create(1, 3, 2), Point3d.create(3, 9, 2), 4, 2, false)!]) {
+    for (
+      const cone of [
+        Cone.createAxisPoints(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1), 1, 0, false)!,
+        Cone.createAxisPoints(Point3d.create(1, 3, 2), Point3d.create(3, 9, 2), 4, 2, false)!,
+      ]
+    ) {
       for (const u of [0.0, 0.25, 1.0]) {
         const plane0 = cone.uvFractionToPointAndTangents(u, 0.0);
         const plane1 = cone.uvFractionToPointAndTangents(u, 1.0);
@@ -223,16 +234,41 @@ describe("Solids", () => {
     const allGeometry: GeometryQuery[] = [];
     const origin = Point3d.createZero();
     const radius = 2.0;
-    const spheres = [Sphere.createCenterRadius(origin, radius), Sphere.createCenterRadius(origin, radius, AngleSweep.createStartEndDegrees(0, 45)), Sphere.createCenterRadius(origin, radius, AngleSweep.createStartEndDegrees(0, -45))];
+    const spheres = [
+      Sphere.createCenterRadius(origin, radius),
+      Sphere.createCenterRadius(origin, radius, AngleSweep.createStartEndDegrees(0, 45)),
+      Sphere.createCenterRadius(origin, radius, AngleSweep.createStartEndDegrees(0, -45)),
+    ];
     const options = StrokeOptions.createForFacets();
     options.needNormals = true;
     let x0 = 0;
     const y0 = 0;
     for (const sphere of spheres) {
       transformAndFacet(allGeometry, sphere, Transform.createIdentity(), options, x0, y0);
-      transformAndFacet(allGeometry, sphere, Transform.createFixedPointAndMatrix(Point3d.create(radius, 0, 0), Matrix3d.createDirectionalScale(Vector3d.unitX(), -1.0)), options, x0, y0);
-      transformAndFacet(allGeometry, sphere, Transform.createFixedPointAndMatrix(Point3d.create(0, radius, 0), Matrix3d.createDirectionalScale(Vector3d.unitY(), -1.0)), options, x0, y0);
-      transformAndFacet(allGeometry, sphere, Transform.createFixedPointAndMatrix(Point3d.create(0, 0, radius), Matrix3d.createDirectionalScale(Vector3d.unitZ(), -1.0)), options, x0, y0);
+      transformAndFacet(
+        allGeometry,
+        sphere,
+        Transform.createFixedPointAndMatrix(Point3d.create(radius, 0, 0), Matrix3d.createDirectionalScale(Vector3d.unitX(), -1.0)),
+        options,
+        x0,
+        y0,
+      );
+      transformAndFacet(
+        allGeometry,
+        sphere,
+        Transform.createFixedPointAndMatrix(Point3d.create(0, radius, 0), Matrix3d.createDirectionalScale(Vector3d.unitY(), -1.0)),
+        options,
+        x0,
+        y0,
+      );
+      transformAndFacet(
+        allGeometry,
+        sphere,
+        Transform.createFixedPointAndMatrix(Point3d.create(0, 0, radius), Matrix3d.createDirectionalScale(Vector3d.unitZ(), -1.0)),
+        options,
+        x0,
+        y0,
+      );
       x0 += 5.0 * radius;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TransformedSpheres");
@@ -243,7 +279,11 @@ describe("Solids", () => {
     const ck = new Checker();
     const origin = Point3d.createZero();
     const radii = Point3d.create(1, 3, 4);
-    const ellipsoid = Sphere.createEllipsoid(Transform.createFixedPointAndMatrix(origin, Matrix3d.createScale(radii.x, radii.y, radii.z)), AngleSweep.create(), false);
+    const ellipsoid = Sphere.createEllipsoid(
+      Transform.createFixedPointAndMatrix(origin, Matrix3d.createScale(radii.x, radii.y, radii.z)),
+      AngleSweep.create(),
+      false,
+    );
     testGeometryQueryRoundTrip(ck, ellipsoid);
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -302,13 +342,13 @@ describe("Solids", () => {
     const frameA = Transform.createOriginAndMatrix(Point3d.create(1, 2, 3), Matrix3d.createScale(1, 1, 1));
     const frameB = Transform.createOriginAndMatrix(Point3d.create(1, 2, 3), Matrix3d.createScale(1, 1, -1)); // with negative determinant to trigger reversal logic
     const torusA = TorusPipe.createInFrame(frameA, 3, 1, halfSweep, true);
-    const torusB = TorusPipe.createInFrame(frameB, 3, 1, halfSweep, true);    // z will be reverse so that it matches torusA!
+    const torusB = TorusPipe.createInFrame(frameB, 3, 1, halfSweep, true); // z will be reverse so that it matches torusA!
     ck.testPointer(torusA);
     ck.testPointer(torusB);
     ck.testTrue(torusA!.isAlmostEqual(torusB!));
     const negativeSweep = Angle.createDegrees(-10);
     const torusC = TorusPipe.createInFrame(frameA, 3, 1, negativeSweep, true)!;
-    ck.testTrue(torusC.getSweepAngle().degrees > 0.0);    // confirm that the angle got reversed
+    ck.testTrue(torusC.getSweepAngle().degrees > 0.0); // confirm that the angle got reversed
 
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -316,7 +356,12 @@ describe("Solids", () => {
   it("TorusPipeNonCircular", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const nonCircularArc = Arc3d.create(Point3d.create(-0.003571875), Vector3d.create(-0.001190625, 0.127), Vector3d.create(0.001190625, 0, 0.127), AngleSweep.createStartEndDegrees(0, 90));
+    const nonCircularArc = Arc3d.create(
+      Point3d.create(-0.003571875),
+      Vector3d.create(-0.001190625, 0.127),
+      Vector3d.create(0.001190625, 0, 0.127),
+      AngleSweep.createStartEndDegrees(0, 90),
+    );
     ck.testFalse(nonCircularArc.isCircular, "expect slightly non-circular arc");
     const seg0 = LineSegment3d.create(nonCircularArc.center, Point3d.createAdd2Scaled(nonCircularArc.center, 1, nonCircularArc.vector0, 1));
     const seg1 = LineSegment3d.create(nonCircularArc.center, Point3d.createAdd2Scaled(nonCircularArc.center, 1, nonCircularArc.vector90, 1));
@@ -325,7 +370,10 @@ describe("Solids", () => {
     const solid = TorusPipe.createAlongArc(nonCircularArc, diam / 2, true);
     if (ck.testDefined(solid, "created torus pipe")) {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, solid);
-      ck.testTrue(solid.cloneLocalToWorld().matrix.isRigid(false), "TorusPipe.createAlongArc forced arc circularity by squaring its axes and equating their lengths");
+      ck.testTrue(
+        solid.cloneLocalToWorld().matrix.isRigid(false),
+        "TorusPipe.createAlongArc forced arc circularity by squaring its axes and equating their lengths",
+      );
       const vec0Near = solid.cloneVectorX().scale(solid.getMajorRadius()).isAlmostEqual(nonCircularArc.vector0);
       const vec90Near = solid.cloneVectorY().scale(solid.getMajorRadius()).isAlmostEqual(nonCircularArc.vector90, 0.000012);
       ck.testTrue(vec0Near && vec90Near, "TorusPipe frame is near the original arc's frame");
@@ -358,7 +406,8 @@ describe("Solids", () => {
       Transform.createTranslationXYZ(0, 20, 0),
       Transform.createTranslationXYZ(20, 0, 0), // Maybe harder than first pass because dx changes?
       Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createUniformScale(2)),
-      Transform.createOriginAndMatrix(Point3d.create(0, 10, 0), Matrix3d.createUniformScale(2))];
+      Transform.createOriginAndMatrix(Point3d.create(0, 10, 0), Matrix3d.createUniformScale(2)),
+    ];
     const allGeometry: GeometryQuery[] = [];
     let dy = 0;
     const unitBox = Sample.createRangeEdges(Range3d.createXYZXYZ(0, 0, 0, 1, 3, 0.25))!;
@@ -367,7 +416,7 @@ describe("Solids", () => {
           GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0, 0);
         }
         */
-    for (let sampleIndex = 0; sampleIndex < sweeps.length; sampleIndex += 2) {  // increment by 2 to skip cap variants
+    for (let sampleIndex = 0; sampleIndex < sweeps.length; sampleIndex += 2) { // increment by 2 to skip cap variants
       let dx = 100;
       const s = sweeps[sampleIndex];
       // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0, 0);
@@ -483,12 +532,15 @@ describe("CurveCurve", () => {
 type AnnouncePolyface = (source: GeometryQuery, polyface: IndexedPolyface) => void;
 // output the geometry, then its facets shifted vertically.
 // return the geometry range
-function transformAndFacet(allGeometry: GeometryQuery[],
+function transformAndFacet(
+  allGeometry: GeometryQuery[],
   g: GeometryQuery,
   transform: Transform | undefined,
   options: StrokeOptions | undefined,
-  x0: number, y0: number,
-  announcePolyface?: AnnouncePolyface): Range3d {
+  x0: number,
+  y0: number,
+  announcePolyface?: AnnouncePolyface,
+): Range3d {
   const g1 = transform ? g.cloneTransformed(transform) : g;
   if (g1) {
     const builder = PolyfaceBuilder.create(options);

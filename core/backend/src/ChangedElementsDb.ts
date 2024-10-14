@@ -6,9 +6,9 @@
  * @module ChangedElementsDb
  */
 
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AccessToken, DbResult, IDisposable, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
@@ -19,7 +19,7 @@ import { _nativeDb } from "./internal/Symbols";
 /**
  * Options for processChangesets function
  * @internal
- * */
+ */
 export interface ProcessChangesetOptions {
   startChangesetId: string;
   endChangesetId: string;
@@ -107,7 +107,12 @@ export class ChangedElementsDb implements IDisposable {
     const iModelId = briefcase.iModelId;
     const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, accessToken })).index;
     const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, accessToken })).index;
-    const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+    const changesets = await IModelHost.hubAccess.downloadChangesets({
+      accessToken,
+      iModelId,
+      range: { first, end },
+      targetDir: BriefcaseManager.getChangeSetsPath(iModelId),
+    });
 
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
@@ -136,7 +141,12 @@ export class ChangedElementsDb implements IDisposable {
     const iModelId = briefcase.iModelId;
     const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, accessToken })).index;
     const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, accessToken })).index;
-    const changesets = await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+    const changesets = await IModelHost.hubAccess.downloadChangesets({
+      accessToken,
+      iModelId,
+      range: { first, end },
+      targetDir: BriefcaseManager.getChangeSetsPath(iModelId),
+    });
 
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
@@ -205,10 +215,14 @@ export class ChangedElementsDb implements IDisposable {
   }
 
   /** Returns true if the Changed Elements Db is open */
-  public get isOpen(): boolean { return this.nativeDb.isOpen(); }
+  public get isOpen(): boolean {
+    return this.nativeDb.isOpen();
+  }
 
   /** Returns true if the cache already contains this changeset Id */
-  public isProcessed(changesetId: string): boolean { return this.nativeDb.isProcessed(changesetId); }
+  public isProcessed(changesetId: string): boolean {
+    return this.nativeDb.isProcessed(changesetId);
+  }
 
   /** Close the Db after saving any uncommitted changes.
    * @throws [IModelError]($common) if the database is not open.

@@ -8,7 +8,15 @@
 
 import { AccessToken, assert, BeDuration, BentleyError, IModelStatus, Logger } from "@itwin/core-bentley";
 import {
-  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RpcActivity, RpcPendingResponse, SyncMode,
+  BriefcaseProps,
+  IModelConnectionProps,
+  IModelError,
+  IModelRpcOpenProps,
+  IModelRpcProps,
+  IModelVersion,
+  RpcActivity,
+  RpcPendingResponse,
+  SyncMode,
 } from "@itwin/core-common";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { BriefcaseManager, RequestNewBriefcaseArg } from "../BriefcaseManager";
@@ -33,7 +41,6 @@ export interface DownloadAndOpenArgs {
  * @internal
  */
 export class RpcBriefcaseUtility {
-
   private static async downloadAndOpen(args: DownloadAndOpenArgs): Promise<BriefcaseDb> {
     const { activity, tokenProps } = args;
     const accessToken = activity.accessToken;
@@ -66,7 +73,11 @@ export class RpcBriefcaseUtility {
               if (db.changeset.id !== tokenProps.changeset?.id) {
                 assert(undefined !== tokenProps.changeset);
                 const toIndex = tokenProps.changeset?.index ??
-                  (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset.id) })).index;
+                  (await IModelHost.hubAccess.getChangesetFromVersion({
+                    accessToken,
+                    iModelId,
+                    version: IModelVersion.asOfChangeSet(tokenProps.changeset.id),
+                  })).index;
                 await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
               }
               return db;
@@ -105,7 +116,7 @@ export class RpcBriefcaseUtility {
       this._briefcasePromises.set(key, briefcasePromise);
       return await briefcasePromise;
     } finally {
-      this._briefcasePromises.delete(key);  // the download and open is now done
+      this._briefcasePromises.delete(key); // the download and open is now done
     }
   }
 
@@ -171,7 +182,10 @@ export class RpcBriefcaseUtility {
       db = await SnapshotDb.openCheckpointFromRpc(checkpoint);
       Logger.logTrace(loggerCategory, "using V2 checkpoint", tokenProps);
     } catch (e) {
-      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", { error: BentleyError.getErrorProps(e), ...tokenProps });
+      Logger.logTrace(loggerCategory, "unable to open V2 checkpoint - falling back to V1 checkpoint", {
+        error: BentleyError.getErrorProps(e),
+        ...tokenProps,
+      });
 
       // this isn't a v2 checkpoint. Set up a race between the specified timeout period and the open. Throw an RpcPendingResponse exception if the timeout happens first.
       const request = {
@@ -191,17 +205,31 @@ export class RpcBriefcaseUtility {
     return db;
   }
 
-  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode.FixedVersion, timeout?: number): Promise<IModelConnectionProps>;
+  public static async openWithTimeout(
+    activity: RpcActivity,
+    tokenProps: IModelRpcOpenProps,
+    syncMode: SyncMode.FixedVersion,
+    timeout?: number,
+  ): Promise<IModelConnectionProps>;
   /**
    * @deprecated in 4.4.0 - only `SyncMode.FixedVersion` should be used in RPC backends
    */
   // eslint-disable-next-line @typescript-eslint/unified-signatures -- these are separate to explicitly deprecate some SyncMode members.
-  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: Exclude<SyncMode, "FixedVersion">, timeout?: number): Promise<IModelConnectionProps>;
-  public static async openWithTimeout(activity: RpcActivity, tokenProps: IModelRpcOpenProps, syncMode: SyncMode, timeout: number = 1000): Promise<IModelConnectionProps> { // eslint-disable-line deprecation/deprecation
+  public static async openWithTimeout(
+    activity: RpcActivity,
+    tokenProps: IModelRpcOpenProps,
+    syncMode: Exclude<SyncMode, "FixedVersion">,
+    timeout?: number,
+  ): Promise<IModelConnectionProps>;
+  public static async openWithTimeout(
+    activity: RpcActivity,
+    tokenProps: IModelRpcOpenProps,
+    syncMode: SyncMode,
+    timeout: number = 1000,
+  ): Promise<IModelConnectionProps> { // eslint-disable-line deprecation/deprecation
     if (tokenProps.iModelId)
       await IModelHost.tileStorage?.initialize(tokenProps.iModelId);
     // eslint-disable-next-line deprecation/deprecation
     return (await this.open({ activity, tokenProps, syncMode, timeout })).toJSON();
   }
-
 }

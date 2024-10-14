@@ -7,18 +7,27 @@
  * @module Tools
  */
 
-import { Vector3d } from "@itwin/core-geometry";
 import { RenderSchedule } from "@itwin/core-common";
 import { IModelApp, Tool } from "@itwin/core-frontend";
+import { Vector3d } from "@itwin/core-geometry";
 
-enum FadeMode { X, Y, Z, Transparent }
+enum FadeMode {
+  X,
+  Y,
+  Z,
+  Transparent,
+}
 
 /** This tool applies a transition in X, Y, Z, or transparency.
  * @beta
  */
 export class RealityTransitionTool extends Tool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
   public static override toolId = "RealityTransition";
   /** This method runs the tool, applying a transition in X, Y, Z, or transparency.
    * @param fadeMode whether to apply the transition in X, Y, Z, or transparency
@@ -52,11 +61,27 @@ export class RealityTransitionTool extends Tool {
       default: {
         const direction = directions[fadeMode - FadeMode.X];
         const clipInTimeline = new Array<RenderSchedule.CuttingPlaneEntryProps>();
-        clipInTimeline.push({ time: timeNow, interpolation: 2, value: { position: [range.low.x, range.low.y, range.low.z], direction: [direction.x, direction.y, direction.z] } });
-        clipInTimeline.push({ time: timeEnd, interpolation: 2, value: { position: [range.high.x, range.high.y, range.high.z], direction: [direction.x, direction.y, direction.z] } });
+        clipInTimeline.push({
+          time: timeNow,
+          interpolation: 2,
+          value: { position: [range.low.x, range.low.y, range.low.z], direction: [direction.x, direction.y, direction.z] },
+        });
+        clipInTimeline.push({
+          time: timeEnd,
+          interpolation: 2,
+          value: { position: [range.high.x, range.high.y, range.high.z], direction: [direction.x, direction.y, direction.z] },
+        });
         const clipOutTimeline = new Array<RenderSchedule.CuttingPlaneEntryProps>();
-        clipOutTimeline.push({ time: timeNow, interpolation: 2, value: { position: [range.low.x, range.low.y, range.low.z], direction: [-direction.x, -direction.y, -direction.z] } });
-        clipOutTimeline.push({ time: timeEnd, interpolation: 2, value: { position: [range.high.x, range.high.y, range.high.z], direction: [-direction.x, -direction.y, -direction.z] } });
+        clipOutTimeline.push({
+          time: timeNow,
+          interpolation: 2,
+          value: { position: [range.low.x, range.low.y, range.low.z], direction: [-direction.x, -direction.y, -direction.z] },
+        });
+        clipOutTimeline.push({
+          time: timeEnd,
+          interpolation: 2,
+          value: { position: [range.high.x, range.high.y, range.high.z], direction: [-direction.x, -direction.y, -direction.z] },
+        });
         modelInTimeline.cuttingPlaneTimeline = clipInTimeline;
         modelOutTimeline.cuttingPlaneTimeline = clipOutTimeline;
         break;

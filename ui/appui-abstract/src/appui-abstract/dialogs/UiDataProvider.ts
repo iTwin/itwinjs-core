@@ -12,7 +12,7 @@ import { DialogPropertyItem, DialogPropertySyncItem } from "./DialogItem";
 /** Sync UI Control Properties Event class.
  * @public
  */
-export class SyncPropertiesChangeEvent extends BeUiEvent<SyncPropertiesChangeEventArgs> { }
+export class SyncPropertiesChangeEvent extends BeUiEvent<SyncPropertiesChangeEventArgs> {}
 
 /** [[UiDataProvider]] Abstract class that allows property values to be passed between hosting API and UI.
  * @public
@@ -54,7 +54,9 @@ export abstract class UiDataProvider {
    * properties that will be used to dynamically create and layout control in a Dialog or Widget.
    */
   public supplyAvailableProperties(): DialogPropertyItem[] {
-    throw (new Error("Derived UiDataProvider that want to use DialogPropertyItems must implement this method. Not for use with dynamic UI controls."));
+    throw (new Error(
+      "Derived UiDataProvider that want to use DialogPropertyItems must implement this method. Not for use with dynamic UI controls.",
+    ));
   }
 }
 

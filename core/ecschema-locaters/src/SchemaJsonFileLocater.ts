@@ -6,11 +6,19 @@
  * @module Locaters
  */
 
+import {
+  ECObjectsError,
+  ECObjectsStatus,
+  ECVersion,
+  ISchemaLocater,
+  Schema,
+  SchemaContext,
+  SchemaInfo,
+  SchemaKey,
+  SchemaMatchType,
+} from "@itwin/ecschema-metadata";
 import * as fs from "fs";
 import * as path from "path";
-import {
-  ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType,
-} from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
 
 /**
@@ -19,7 +27,6 @@ import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
  * @beta
  */
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
-
   /**
    * Constructs a SchemaKey based on the information in the Schema JSON
    * @param data The Schema JSON as a string
@@ -58,12 +65,12 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
   }
 
   /**
-    * Gets the schema info which matches the provided SchemaKey.  The schema info may be returned before the schema is fully loaded.
-    * The fully loaded schema can be gotten later from the context using the getCachedSchema method.
-    * @param schemaKey The SchemaKey describing the schema to get from the cache.
-    * @param matchType The match type to use when locating the schema
-    * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
-    */
+   * Gets the schema info which matches the provided SchemaKey.  The schema info may be returned before the schema is fully loaded.
+   * The fully loaded schema can be gotten later from the context using the getCachedSchema method.
+   * @param schemaKey The SchemaKey describing the schema to get from the cache.
+   * @param matchType The match type to use when locating the schema
+   * @param context The SchemaContext that will control the lifetime of the schema and holds the schema's references, if they exist.
+   */
   public async getSchemaInfo(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<SchemaInfo | undefined> {
     // Grab all schema files that match the schema key
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");

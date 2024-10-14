@@ -26,7 +26,7 @@ export function setupIpcTestElectron() {
   orderTest(require("electron").ipcMain); // eslint-disable-line @typescript-eslint/no-var-requires
 }
 
-export async function setupIpcTest(before = async () => { }, socketOverride?: IpcWebSocketBackend) {
+export async function setupIpcTest(before = async () => {}, socketOverride?: IpcWebSocketBackend) {
   let socket: IpcWebSocketBackend;
   let ready: () => void;
   const started = new Promise<void>((resolve) => ready = resolve);

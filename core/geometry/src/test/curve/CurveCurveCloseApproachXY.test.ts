@@ -56,27 +56,38 @@ function testVaryingLineSegments(
             const approachSegment = LineSegment3d.create(start, end);
             const lenSqr = start.distanceSquaredXY(end);
             _ck.testLE(
-              Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+              Math.sqrt(lenSqr),
+              maxDistance,
+              undefined,
+              "approach length must be smaller than maxDistance",
             );
             GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment, x0, y0);
           }
         }
-      } else {  // no intersection and no closest approach between geometries
+      } else { // no intersection and no closest approach between geometries
         const circleA0 = Arc3d.createXY(geometryAStart, maxDistance);
         const circleA1 = Arc3d.createXY(geometryAEnd, maxDistance);
         const circleB0 = Arc3d.createXY(lineB.startPoint(), maxDistance);
         const circleB1 = Arc3d.createXY(lineB.endPoint(), maxDistance);
         _ck.testCoordinate(
-          0, CurveCurve.intersectionXYPairs(circleA0, false, lineB, false).length, "expect no intersection",
+          0,
+          CurveCurve.intersectionXYPairs(circleA0, false, lineB, false).length,
+          "expect no intersection",
         );
         _ck.testCoordinate(
-          0, CurveCurve.intersectionXYPairs(circleA1, false, lineB, false).length, "expect no intersection",
+          0,
+          CurveCurve.intersectionXYPairs(circleA1, false, lineB, false).length,
+          "expect no intersection",
         );
         _ck.testCoordinate(
-          0, CurveCurve.intersectionXYPairs(circleB0, false, geometryA, false).length, "expect no intersection",
+          0,
+          CurveCurve.intersectionXYPairs(circleB0, false, geometryA, false).length,
+          "expect no intersection",
         );
         _ck.testCoordinate(
-          0, CurveCurve.intersectionXYPairs(circleB1, false, geometryA, false).length, "expect no intersection",
+          0,
+          CurveCurve.intersectionXYPairs(circleB1, false, geometryA, false).length,
+          "expect no intersection",
         );
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryAStart, maxDistance, x0, y0);
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryAEnd, maxDistance, x0, y0);
@@ -118,9 +129,13 @@ function testVaryingSubsets(
           for (const p of approaches)
             if (p.detailA.point.isAlmostEqual(p.detailB.point)) // intersection between geometries
               GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p.detailA.point, 0.0625, x0, y0);
-            else // closest approach between geometries
+            // closest approach between geometries
+            else
               GeometryCoreTestIO.captureGeometry(
-                allGeometry, LineSegment3d.create(p.detailA.point, p.detailB.point), x0, y0,
+                allGeometry,
+                LineSegment3d.create(p.detailA.point, p.detailB.point),
+                x0,
+                y0,
               );
         } else {
           const circleA0 = Arc3d.createXY(geometryA.startPoint(), maxDistance);
@@ -128,16 +143,24 @@ function testVaryingSubsets(
           const circleB0 = Arc3d.createXY(partialB.startPoint(), maxDistance);
           const circleB1 = Arc3d.createXY(partialB.endPoint(), maxDistance);
           _ck.testCoordinate(
-            0, CurveCurve.intersectionXYPairs(circleA0, false, partialB, false).length, "expect no intersection",
+            0,
+            CurveCurve.intersectionXYPairs(circleA0, false, partialB, false).length,
+            "expect no intersection",
           );
           _ck.testCoordinate(
-            0, CurveCurve.intersectionXYPairs(circleA1, false, partialB, false).length, "expect no intersection",
+            0,
+            CurveCurve.intersectionXYPairs(circleA1, false, partialB, false).length,
+            "expect no intersection",
           );
           _ck.testCoordinate(
-            0, CurveCurve.intersectionXYPairs(circleB0, false, geometryA, false).length, "expect no intersection",
+            0,
+            CurveCurve.intersectionXYPairs(circleB0, false, geometryA, false).length,
+            "expect no intersection",
           );
           _ck.testCoordinate(
-            0, CurveCurve.intersectionXYPairs(circleB1, false, geometryA, false).length, "expect no intersection",
+            0,
+            CurveCurve.intersectionXYPairs(circleB1, false, geometryA, false).length,
+            "expect no intersection",
           );
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryA.startPoint(), maxDistance, x0, y0);
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, geometryA.endPoint(), maxDistance, x0, y0);
@@ -157,7 +180,12 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const geometryA = LineSegment3d.createXYXY(1, 2, 5, 2);
     testVaryingLineSegments(
-      ck, allGeometry, geometryA, geometryA.startPoint(), geometryA.fractionToPoint(0.5), geometryA.endPoint(),
+      ck,
+      allGeometry,
+      geometryA,
+      geometryA.startPoint(),
+      geometryA.fractionToPoint(0.5),
+      geometryA.endPoint(),
     );
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineLine");
     expect(ck.getNumErrors()).toBe(0);
@@ -178,7 +206,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const lenSqr = start.distanceSquaredXY(end);
     const expectedLenSqr = 0;
     ck.testLE(
-      Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+      Math.sqrt(lenSqr),
+      maxDistance,
+      undefined,
+      "approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(lenSqr, expectedLenSqr);
     GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
@@ -188,7 +219,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     const expectedMinLenSqr = 0;
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineLine1");
@@ -209,7 +243,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const lenSqr = start.distanceSquaredXY(end);
     const expectedLenSqr = 0.5; // (sqrt(2)/2)*(sqrt(2)/2)
     ck.testLE(
-      Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+      Math.sqrt(lenSqr),
+      maxDistance,
+      undefined,
+      "approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(lenSqr, expectedLenSqr, "closest approach has expected length");
     ck.testCoordinate(approaches[0].detailA.fraction, 1.0, "closest approach has expected fraction on curveA");
@@ -225,7 +262,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 0.5; // (sqrt(2)/2)*(sqrt(2)/2)
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineLine2");
@@ -236,7 +276,12 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const geometryA = LineString3d.create([1, 2], [3, 4], [4, 3]);
     testVaryingLineSegments(
-      ck, allGeometry, geometryA, geometryA.startPoint(), geometryA.fractionToPoint(0.5), geometryA.endPoint(),
+      ck,
+      allGeometry,
+      geometryA,
+      geometryA.startPoint(),
+      geometryA.fractionToPoint(0.5),
+      geometryA.endPoint(),
     );
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineLineString");
     expect(ck.getNumErrors()).toBe(0);
@@ -261,7 +306,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -277,7 +325,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 1;
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
 
@@ -304,7 +355,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -320,7 +374,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 0.5;
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineLineString2");
@@ -330,10 +387,17 @@ describe("CurveCurveCloseApproachXY", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const geometryA = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(1, 2), Point3d.create(3, 3.5), Point3d.create(5, 2),
+      Point3d.create(1, 2),
+      Point3d.create(3, 3.5),
+      Point3d.create(5, 2),
     );
     testVaryingLineSegments(
-      ck, allGeometry, geometryA, geometryA.startPoint(), geometryA.fractionToPoint(0.5), geometryA.endPoint(),
+      ck,
+      allGeometry,
+      geometryA,
+      geometryA.startPoint(),
+      geometryA.fractionToPoint(0.5),
+      geometryA.endPoint(),
     );
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineArc");
     expect(ck.getNumErrors()).toBe(0);
@@ -343,7 +407,9 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 2.5;
     const geometryA = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(-2, 0), Point3d.create(0, 2), Point3d.create(2, 0),
+      Point3d.create(-2, 0),
+      Point3d.create(0, 2),
+      Point3d.create(2, 0),
     );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = LineSegment3d.createXYXY(-5, 4, 5, 4);
@@ -354,7 +420,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const approachSegment = LineSegment3d.create(start, end);
     const lenSqr = start.distanceSquaredXY(end);
     ck.testLE(
-      Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+      Math.sqrt(lenSqr),
+      maxDistance,
+      undefined,
+      "approach length must be smaller than maxDistance",
     );
     GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
     // test the convenience method
@@ -367,7 +436,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 4;
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineArc1");
@@ -378,7 +450,9 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 4;
     const geometryA = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(-2, 0, 0), Point3d.create(0, 2, -2), Point3d.create(2, 0, -4),
+      Point3d.create(-2, 0, 0),
+      Point3d.create(0, 2, -2),
+      Point3d.create(2, 0, -4),
     );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = LineSegment3d.createXYZXYZ(0, 3, -3, 0, 6, 3);
@@ -394,7 +468,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -405,7 +482,10 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testDefined(closestApproach);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     const expectedMinLenSqr = 1;
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
@@ -417,7 +497,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 2.5;
     const geometryA = Arc3d.create(
-      Point3d.create(0, 0), Vector3d.create(2, 0), Vector3d.create(0, 3), AngleSweep.createStartEndRadians(0, Math.PI),
+      Point3d.create(0, 0),
+      Vector3d.create(2, 0),
+      Vector3d.create(0, 3),
+      AngleSweep.createStartEndRadians(0, Math.PI),
     );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = LineSegment3d.createXYXY(-5, 3, 5, 3);
@@ -431,7 +514,10 @@ describe("CurveCurveCloseApproachXY", () => {
     else { // closest approach between geometries
       const approachSegment = LineSegment3d.create(start, end);
       ck.testLE(
-        Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+        Math.sqrt(lenSqr),
+        maxDistance,
+        undefined,
+        "approach length must be smaller than maxDistance",
       );
       GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
     }
@@ -447,7 +533,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 0;
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineArc3");
@@ -475,7 +564,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -486,7 +578,10 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testDefined(closestApproach);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     const expectedMinLenSqr = 0.25; // 0.5 * 0.5
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
@@ -504,7 +599,12 @@ describe("CurveCurveCloseApproachXY", () => {
     geometryA.tryAddChild(lineString);
     geometryA.tryAddChild(lineSegment);
     testVaryingLineSegments(
-      ck, allGeometry, geometryA, Point3d.create(1, 2), Point3d.create(5, 2), Point3d.create(10, 0),
+      ck,
+      allGeometry,
+      geometryA,
+      Point3d.create(1, 2),
+      Point3d.create(5, 2),
+      Point3d.create(10, 0),
     );
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LinePath1");
     expect(ck.getNumErrors()).toBe(0);
@@ -550,7 +650,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -568,7 +671,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment, shift, 0);
         }
@@ -590,15 +696,21 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testCoordinate(detailA1.fraction, 2 / 3);
     ck.testCoordinate(detailB1.fraction, 5 / 6); // fraction on line string
     ck.testCoordinate(detailA2.fraction, 2 / 3);
-    ck.testCoordinate(detailB2.fraction, 1);  // fraction on line segment
+    ck.testCoordinate(detailB2.fraction, 1); // fraction on line segment
     const minLenSqr1 = detailA1.point.distanceSquaredXY(detailB1.point);
     const minLenSqr2 = detailA2.point.distanceSquaredXY(detailB2.point);
     const expectedMinLenSqr = 1;
     ck.testLE(
-      Math.sqrt(minLenSqr1), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr1),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testLE(
-      Math.sqrt(minLenSqr2), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr2),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr1, expectedMinLenSqr);
     ck.testCoordinate(minLenSqr2, expectedMinLenSqr);
@@ -618,7 +730,12 @@ describe("CurveCurveCloseApproachXY", () => {
     geometryA.tryAddChild(lineSegment1);
     geometryA.tryAddChild(lineSegment2);
     testVaryingLineSegments(
-      ck, allGeometry, geometryA, Point3d.create(1, 2), Point3d.create(5, 2), Point3d.create(10, 0),
+      ck,
+      allGeometry,
+      geometryA,
+      Point3d.create(1, 2),
+      Point3d.create(5, 2),
+      Point3d.create(10, 0),
     );
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineLoop1");
     expect(ck.getNumErrors()).toBe(0);
@@ -633,7 +750,14 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA, shift, 0);
     // line string
     const geometryB1 = LineString3d.create([
-      [1, 0], [2, 3], [3, 0], [4, 2], [5, 0], [6, 3], [7, -2], [1, 0],
+      [1, 0],
+      [2, 3],
+      [3, 0],
+      [4, 2],
+      [5, 0],
+      [6, 3],
+      [7, -2],
+      [1, 0],
     ]);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB1);
     // same line string create as loop of line segments
@@ -668,7 +792,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -686,7 +813,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment, shift, 0);
         }
@@ -705,10 +835,16 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr2 = closestApproach2!.detailA.point.distanceSquaredXY(closestApproach2!.detailB.point);
     const expectedMinLenSqr = 4;
     ck.testLE(
-      Math.sqrt(minLenSqr1), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr1),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testLE(
-      Math.sqrt(minLenSqr2), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr2),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr1, expectedMinLenSqr);
     ck.testCoordinate(minLenSqr2, expectedMinLenSqr);
@@ -748,11 +884,15 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 2;
     const geometryA = Arc3d.create(
-      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 1),
+      Point3d.create(0, 0),
+      Vector3d.create(1, 0),
+      Vector3d.create(0, 1),
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.create(
-      Point3d.create(1, 0), Vector3d.create(1, 0), Vector3d.create(0, 3),
+      Point3d.create(1, 0),
+      Vector3d.create(1, 0),
+      Vector3d.create(0, 3),
     ); // non-circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
@@ -771,7 +911,11 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -786,11 +930,15 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 2;
     const geometryA = Arc3d.create(
-      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 1),
+      Point3d.create(0, 0),
+      Vector3d.create(1, 0),
+      Vector3d.create(0, 1),
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.create(
-      Point3d.create(6, 0), Vector3d.create(2, 0), Vector3d.create(0, 3),
+      Point3d.create(6, 0),
+      Vector3d.create(2, 0),
+      Vector3d.create(0, 3),
     ); // non-circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
@@ -803,11 +951,15 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 5;
     const geometryA = Arc3d.create(
-      Point3d.create(-1, 0), Vector3d.create(2, 0), Vector3d.create(0, 1),
+      Point3d.create(-1, 0),
+      Vector3d.create(2, 0),
+      Vector3d.create(0, 1),
     ); // non-circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.create(
-      Point3d.create(4, 0), Vector3d.create(2, 0), Vector3d.create(0, 2),
+      Point3d.create(4, 0),
+      Vector3d.create(2, 0),
+      Vector3d.create(0, 2),
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
@@ -816,7 +968,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const approachSegment = LineSegment3d.create(start, end);
     const lenSqr = start.distanceSquaredXY(end);
     ck.testLE(
-      Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+      Math.sqrt(lenSqr),
+      maxDistance,
+      undefined,
+      "approach length must be smaller than maxDistance",
     );
     GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
     // test the convenience method
@@ -829,7 +984,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 1;
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleArcArc3");
@@ -866,7 +1024,11 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -882,7 +1044,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 1;
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleArcArc4");
@@ -903,13 +1068,18 @@ describe("CurveCurveCloseApproachXY", () => {
       return false;
     };
     const existsInApproachSetWithTolerance = (
-      set: Set<[Point3d, Point3d]>, point0: Point3d, point1: Point3d, tolerance: number = 1e-6,
+      set: Set<[Point3d, Point3d]>,
+      point0: Point3d,
+      point1: Point3d,
+      tolerance: number = 1e-6,
     ): boolean => {
       for (const startEnd of set) {
         const start = startEnd[0];
         const end = startEnd[1];
-        if ((start.isAlmostEqual(point0, tolerance) && end.isAlmostEqual(point1, tolerance)) ||
-          (start.isAlmostEqual(point1, tolerance) && end.isAlmostEqual(point0, tolerance)))
+        if (
+          (start.isAlmostEqual(point0, tolerance) && end.isAlmostEqual(point1, tolerance)) ||
+          (start.isAlmostEqual(point1, tolerance) && end.isAlmostEqual(point0, tolerance))
+        )
           return true;
       }
       return false;
@@ -944,14 +1114,20 @@ describe("CurveCurveCloseApproachXY", () => {
             const approachSegment = LineSegment3d.create(start, end);
             const lenSqr = start.distanceSquaredXY(end);
             ck.testLE(
-              Math.sqrt(lenSqr), maxDistance, undefined, undefined, "approach length must be smaller than maxDistance",
+              Math.sqrt(lenSqr),
+              maxDistance,
+              undefined,
+              undefined,
+              "approach length must be smaller than maxDistance",
             );
             const vec1 = Vector3d.createStartEnd(start, end);
             const vec2 = geometryA.fractionToPointAndDerivative(ap.detailA.fraction).direction;
             const vec3 = geometryB.fractionToPointAndDerivative(ap.detailB.fraction).direction;
             GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment, 0, dy);
-            if (vec1.isPerpendicularTo(vec2) && vec1.isPerpendicularTo(vec3) &&
-              !existsInApproachSetWithTolerance(approachSet, start, end, 1e-6)) {
+            if (
+              vec1.isPerpendicularTo(vec2) && vec1.isPerpendicularTo(vec3) &&
+              !existsInApproachSetWithTolerance(approachSet, start, end, 1e-6)
+            ) {
               approachSet.add([start, end]); // add unique close approach to set
               numUniquePerpCloseApproach++;
             }
@@ -1001,11 +1177,15 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 2;
     const geometryA = Arc3d.create(
-      Point3d.create(1, 0), Vector3d.create(1, 0), Vector3d.create(0, 1),
+      Point3d.create(1, 0),
+      Vector3d.create(1, 0),
+      Vector3d.create(0, 1),
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.create(
-      Point3d.create(4, 0), Vector3d.create(2, 0), Vector3d.create(0, 4),
+      Point3d.create(4, 0),
+      Vector3d.create(2, 0),
+      Vector3d.create(0, 4),
     ); // non-circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
@@ -1030,11 +1210,15 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 2;
     const geometryA = Arc3d.create(
-      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 1),
+      Point3d.create(0, 0),
+      Vector3d.create(1, 0),
+      Vector3d.create(0, 1),
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.create(
-      Point3d.create(-0.75, 0), Vector3d.create(1.25, 0), Vector3d.create(0, 1.25),
+      Point3d.create(-0.75, 0),
+      Vector3d.create(1.25, 0),
+      Vector3d.create(0, 1.25),
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
@@ -1061,11 +1245,15 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 2;
     const geometryA = Arc3d.create(
-      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 1),
+      Point3d.create(0, 0),
+      Vector3d.create(1, 0),
+      Vector3d.create(0, 1),
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.create(
-      Point3d.create(-1, 0, 2), Vector3d.create(0, 1, 0), Vector3d.create(0, 0, 2),
+      Point3d.create(-1, 0, 2),
+      Vector3d.create(0, 1, 0),
+      Vector3d.create(0, 0, 2),
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
@@ -1090,11 +1278,15 @@ describe("CurveCurveCloseApproachXY", () => {
     const allGeometry: GeometryQuery[] = [];
     const maxDistance = 2;
     const geometryA = Arc3d.create(
-      Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 1),
+      Point3d.create(0, 0),
+      Vector3d.create(1, 0),
+      Vector3d.create(0, 1),
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     const geometryB = Arc3d.create(
-      Point3d.create(0, 0, 0), Vector3d.create(0, 1, 0), Vector3d.create(0, 0, 2),
+      Point3d.create(0, 0, 0),
+      Vector3d.create(0, 1, 0),
+      Vector3d.create(0, 0, 2),
     ); // circular arc
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
     const approaches = CurveCurve.closeApproachProjectedXYPairs(geometryA, geometryB, maxDistance);
@@ -1166,7 +1358,11 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -1182,7 +1378,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr = detailA.point.distanceSquaredXY(detailB.point);
     const expectedMinLenSqr = 1;
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "SingleLineStringLineString");
@@ -1219,7 +1418,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -1230,7 +1432,10 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testDefined(closestApproach);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     const expectedMinLenSqr = 0.25; // 0.5 * 0.5
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
@@ -1272,7 +1477,9 @@ describe("CurveCurveCloseApproachXY", () => {
       4,
     )!;
     const cpB = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(1, 3), Point3d.create(4, 2.5), Point3d.create(6, 2),
+      Point3d.create(1, 3),
+      Point3d.create(4, 2.5),
+      Point3d.create(6, 2),
     );
     testVaryingSubsets(ck, allGeometry, cpA, cpB, 2, [0, 1]);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineArc");
@@ -1281,7 +1488,9 @@ describe("CurveCurveCloseApproachXY", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "ArcBspline");
     allGeometry.length = 0;
     const cpB1 = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(1, -1), Point3d.create(4, 0), Point3d.create(6, -1),
+      Point3d.create(1, -1),
+      Point3d.create(4, 0),
+      Point3d.create(6, -1),
     );
     testVaryingSubsets(ck, allGeometry, cpA, cpB1, 2, [0, 1]);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "BsplineArcB");
@@ -1341,7 +1550,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -1353,7 +1565,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     const expectedMinLenSqr = 1;
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "PathPath");
@@ -1436,7 +1651,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -1447,7 +1665,10 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testDefined(closestApproach);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     const expectedMinLenSqr = 36; // 6 * 6
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
@@ -1484,7 +1705,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -1495,7 +1719,10 @@ describe("CurveCurveCloseApproachXY", () => {
     ck.testDefined(closestApproach);
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     const expectedMinLenSqr = 36; // 6 * 6
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
@@ -1530,7 +1757,10 @@ describe("CurveCurveCloseApproachXY", () => {
           const approachSegment = LineSegment3d.create(start, end);
           const lenSqr = start.distanceSquaredXY(end);
           ck.testLE(
-            Math.sqrt(lenSqr), maxDistance, undefined, "approach length must be smaller than maxDistance",
+            Math.sqrt(lenSqr),
+            maxDistance,
+            undefined,
+            "approach length must be smaller than maxDistance",
           );
           GeometryCoreTestIO.captureGeometry(allGeometry, approachSegment);
         }
@@ -1542,7 +1772,10 @@ describe("CurveCurveCloseApproachXY", () => {
     const minLenSqr = closestApproach!.detailA.point.distanceSquaredXY(closestApproach!.detailB.point);
     const expectedMinLenSqr = 1;
     ck.testLE(
-      Math.sqrt(minLenSqr), maxDistance, undefined, "closest approach length must be smaller than maxDistance",
+      Math.sqrt(minLenSqr),
+      maxDistance,
+      undefined,
+      "closest approach length must be smaller than maxDistance",
     );
     ck.testCoordinate(minLenSqr, expectedMinLenSqr);
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveCloseApproachXY", "LineBagOfCurves");

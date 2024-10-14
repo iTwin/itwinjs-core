@@ -133,9 +133,12 @@ export enum StrengthDirection {
 export function parseClassModifier(modifier: string): ECClassModifier | undefined {
   const lowerModifier = modifier.toLowerCase();
   switch (lowerModifier) {
-    case "abstract": return ECClassModifier.Abstract;
-    case "none": return ECClassModifier.None;
-    case "sealed": return ECClassModifier.Sealed;
+    case "abstract":
+      return ECClassModifier.Abstract;
+    case "none":
+      return ECClassModifier.None;
+    case "sealed":
+      return ECClassModifier.Sealed;
   }
   return undefined;
 }
@@ -146,10 +149,14 @@ export function parseClassModifier(modifier: string): ECClassModifier | undefine
  */
 export function classModifierToString(modifier: ECClassModifier): string {
   switch (modifier) {
-    case ECClassModifier.Abstract: return "Abstract";
-    case ECClassModifier.None: return "None";
-    case ECClassModifier.Sealed: return "Sealed";
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidModifier, "An invalid ECClassModifier has been provided.");
+    case ECClassModifier.Abstract:
+      return "Abstract";
+    case ECClassModifier.None:
+      return "None";
+    case ECClassModifier.Sealed:
+      return "Sealed";
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidModifier, "An invalid ECClassModifier has been provided.");
   }
 }
 
@@ -161,20 +168,34 @@ export function classModifierToString(modifier: ECClassModifier): string {
  */
 export function parseSchemaItemType(type: string): SchemaItemType | undefined {
   switch (type.toLowerCase()) {
-    case "entityclass": return SchemaItemType.EntityClass;
-    case "mixin": return SchemaItemType.Mixin;
-    case "structclass": return SchemaItemType.StructClass;
-    case "customattributeclass": return SchemaItemType.CustomAttributeClass;
-    case "relationshipclass": return SchemaItemType.RelationshipClass;
-    case "enumeration": return SchemaItemType.Enumeration;
-    case "kindofquantity": return SchemaItemType.KindOfQuantity;
-    case "propertycategory": return SchemaItemType.PropertyCategory;
-    case "unit": return SchemaItemType.Unit;
-    case "invertedunit": return SchemaItemType.InvertedUnit;
-    case "constant": return SchemaItemType.Constant;
-    case "phenomenon": return SchemaItemType.Phenomenon;
-    case "unitsystem": return SchemaItemType.UnitSystem;
-    case "format": return SchemaItemType.Format;
+    case "entityclass":
+      return SchemaItemType.EntityClass;
+    case "mixin":
+      return SchemaItemType.Mixin;
+    case "structclass":
+      return SchemaItemType.StructClass;
+    case "customattributeclass":
+      return SchemaItemType.CustomAttributeClass;
+    case "relationshipclass":
+      return SchemaItemType.RelationshipClass;
+    case "enumeration":
+      return SchemaItemType.Enumeration;
+    case "kindofquantity":
+      return SchemaItemType.KindOfQuantity;
+    case "propertycategory":
+      return SchemaItemType.PropertyCategory;
+    case "unit":
+      return SchemaItemType.Unit;
+    case "invertedunit":
+      return SchemaItemType.InvertedUnit;
+    case "constant":
+      return SchemaItemType.Constant;
+    case "phenomenon":
+      return SchemaItemType.Phenomenon;
+    case "unitsystem":
+      return SchemaItemType.UnitSystem;
+    case "format":
+      return SchemaItemType.Format;
   }
   return undefined;
 }
@@ -193,21 +214,36 @@ export function schemaItemTypeToString(value: SchemaItemType): string {
 /** @internal */
 export function schemaItemTypeToXmlString(value: SchemaItemType): string {
   switch (value) {
-    case SchemaItemType.EntityClass: return "ECEntityClass";
-    case SchemaItemType.Mixin: return "ECEntityClass";
-    case SchemaItemType.StructClass: return "ECStructClass";
-    case SchemaItemType.CustomAttributeClass: return "ECCustomAttributeClass";
-    case SchemaItemType.RelationshipClass: return "ECRelationshipClass";
-    case SchemaItemType.Enumeration: return "ECEnumeration";
-    case SchemaItemType.KindOfQuantity: return "KindOfQuantity";
-    case SchemaItemType.PropertyCategory: return "PropertyCategory";
-    case SchemaItemType.Unit: return "Unit";
-    case SchemaItemType.InvertedUnit: return "InvertedUnit";
-    case SchemaItemType.Constant: return "Constant";
-    case SchemaItemType.Phenomenon: return "Phenomenon";
-    case SchemaItemType.UnitSystem: return "UnitSystem";
-    case SchemaItemType.Format: return "Format";
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
+    case SchemaItemType.EntityClass:
+      return "ECEntityClass";
+    case SchemaItemType.Mixin:
+      return "ECEntityClass";
+    case SchemaItemType.StructClass:
+      return "ECStructClass";
+    case SchemaItemType.CustomAttributeClass:
+      return "ECCustomAttributeClass";
+    case SchemaItemType.RelationshipClass:
+      return "ECRelationshipClass";
+    case SchemaItemType.Enumeration:
+      return "ECEnumeration";
+    case SchemaItemType.KindOfQuantity:
+      return "KindOfQuantity";
+    case SchemaItemType.PropertyCategory:
+      return "PropertyCategory";
+    case SchemaItemType.Unit:
+      return "Unit";
+    case SchemaItemType.InvertedUnit:
+      return "InvertedUnit";
+    case SchemaItemType.Constant:
+      return "Constant";
+    case SchemaItemType.Phenomenon:
+      return "Phenomenon";
+    case SchemaItemType.UnitSystem:
+      return "UnitSystem";
+    case SchemaItemType.Format:
+      return "Format";
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "An invalid SchemaItemType has been provided.");
   }
 }
 
@@ -219,16 +255,27 @@ export function schemaItemTypeToXmlString(value: SchemaItemType): string {
  */
 export function parsePrimitiveType(type: string): PrimitiveType | undefined {
   switch (type.toLowerCase()) {
-    case "binary": return PrimitiveType.Binary;
-    case "boolean": case "bool": return PrimitiveType.Boolean;
-    case "datetime": return PrimitiveType.DateTime;
-    case "double": return PrimitiveType.Double;
-    case "int": return PrimitiveType.Integer;
-    case "long": return PrimitiveType.Long;
-    case "point2d": return PrimitiveType.Point2d;
-    case "point3d": return PrimitiveType.Point3d;
-    case "string": return PrimitiveType.String;
-    case "bentley.geometry.common.igeometry": return PrimitiveType.IGeometry;
+    case "binary":
+      return PrimitiveType.Binary;
+    case "boolean":
+    case "bool":
+      return PrimitiveType.Boolean;
+    case "datetime":
+      return PrimitiveType.DateTime;
+    case "double":
+      return PrimitiveType.Double;
+    case "int":
+      return PrimitiveType.Integer;
+    case "long":
+      return PrimitiveType.Long;
+    case "point2d":
+      return PrimitiveType.Point2d;
+    case "point3d":
+      return PrimitiveType.Point3d;
+    case "string":
+      return PrimitiveType.String;
+    case "bentley.geometry.common.igeometry":
+      return PrimitiveType.IGeometry;
   }
 
   return undefined;
@@ -237,17 +284,28 @@ export function parsePrimitiveType(type: string): PrimitiveType | undefined {
 /** @beta */
 export function primitiveTypeToString(type: PrimitiveType): string {
   switch (type) {
-    case PrimitiveType.Binary: return "binary";
-    case PrimitiveType.Boolean: return "boolean";
-    case PrimitiveType.DateTime: return "dateTime";
-    case PrimitiveType.Double: return "double";
-    case PrimitiveType.Integer: return "int";
-    case PrimitiveType.IGeometry: return "Bentley.Geometry.Common.IGeometry";
-    case PrimitiveType.Long: return "long";
-    case PrimitiveType.Point2d: return "point2d";
-    case PrimitiveType.Point3d: return "point3d";
-    case PrimitiveType.String: return "string";
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, "An invalid PrimitiveType has been provided.");
+    case PrimitiveType.Binary:
+      return "binary";
+    case PrimitiveType.Boolean:
+      return "boolean";
+    case PrimitiveType.DateTime:
+      return "dateTime";
+    case PrimitiveType.Double:
+      return "double";
+    case PrimitiveType.Integer:
+      return "int";
+    case PrimitiveType.IGeometry:
+      return "Bentley.Geometry.Common.IGeometry";
+    case PrimitiveType.Long:
+      return "long";
+    case PrimitiveType.Point2d:
+      return "point2d";
+    case PrimitiveType.Point3d:
+      return "point3d";
+    case PrimitiveType.String:
+      return "string";
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, "An invalid PrimitiveType has been provided.");
   }
 }
 
@@ -331,7 +389,6 @@ export function parseCustomAttributeContainerType(type: string): CustomAttribute
  * @beta
  */
 export function containerTypeToString(type: CustomAttributeContainerType): string {
-
   const testContainerTypeValue = (compareType: CustomAttributeContainerType, otherType: CustomAttributeContainerType) => {
     return (compareType === (compareType & otherType));
   };
@@ -393,8 +450,10 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
 /** @beta */
 export function parseRelationshipEnd(end: string): RelationshipEnd | undefined {
   switch (end.toLowerCase()) {
-    case "source": return RelationshipEnd.Source;
-    case "target": return RelationshipEnd.Target;
+    case "source":
+      return RelationshipEnd.Source;
+    case "target":
+      return RelationshipEnd.Target;
   }
   return undefined;
 }
@@ -402,9 +461,12 @@ export function parseRelationshipEnd(end: string): RelationshipEnd | undefined {
 /** @beta */
 export function relationshipEndToString(end: RelationshipEnd): string {
   switch (end) {
-    case RelationshipEnd.Source: return ECStringConstants.RELATIONSHIP_END_SOURCE;
-    case RelationshipEnd.Target: return ECStringConstants.RELATIONSHIP_END_TARGET;
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidRelationshipEnd, `An invalid RelationshipEnd has been provided.`);
+    case RelationshipEnd.Source:
+      return ECStringConstants.RELATIONSHIP_END_SOURCE;
+    case RelationshipEnd.Target:
+      return ECStringConstants.RELATIONSHIP_END_TARGET;
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidRelationshipEnd, `An invalid RelationshipEnd has been provided.`);
   }
 }
 
@@ -416,9 +478,12 @@ export function relationshipEndToString(end: RelationshipEnd): string {
  */
 export function parseStrength(strength: string): StrengthType | undefined {
   switch (strength.toLowerCase()) {
-    case "referencing": return StrengthType.Referencing;
-    case "holding": return StrengthType.Holding;
-    case "embedding": return StrengthType.Embedding;
+    case "referencing":
+      return StrengthType.Referencing;
+    case "holding":
+      return StrengthType.Holding;
+    case "embedding":
+      return StrengthType.Embedding;
   }
   return undefined;
 }
@@ -426,18 +491,24 @@ export function parseStrength(strength: string): StrengthType | undefined {
 /** @beta */
 export function strengthToString(strength: StrengthType): string {
   switch (strength) {
-    case StrengthType.Embedding: return "Embedding";
-    case StrengthType.Holding: return "Holding";
-    case StrengthType.Referencing: return "Referencing";
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `An invalid Strength has been provided.`);
+    case StrengthType.Embedding:
+      return "Embedding";
+    case StrengthType.Holding:
+      return "Holding";
+    case StrengthType.Referencing:
+      return "Referencing";
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `An invalid Strength has been provided.`);
   }
 }
 
 /** @beta */
 export function parseStrengthDirection(direction: string): StrengthDirection | undefined {
   switch (direction.toLowerCase()) {
-    case "forward": return StrengthDirection.Forward;
-    case "backward": return StrengthDirection.Backward;
+    case "forward":
+      return StrengthDirection.Forward;
+    case "backward":
+      return StrengthDirection.Backward;
   }
   return undefined;
 }
@@ -445,8 +516,11 @@ export function parseStrengthDirection(direction: string): StrengthDirection | u
 /** @beta */
 export function strengthDirectionToString(direction: StrengthDirection): string {
   switch (direction) {
-    case StrengthDirection.Forward: return "Forward";
-    case StrengthDirection.Backward: return "Backward";
-    default: throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `An invalid StrengthDirection has been provided.`);
+    case StrengthDirection.Forward:
+      return "Forward";
+    case StrengthDirection.Backward:
+      return "Backward";
+    default:
+      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `An invalid StrengthDirection has been provided.`);
   }
 }

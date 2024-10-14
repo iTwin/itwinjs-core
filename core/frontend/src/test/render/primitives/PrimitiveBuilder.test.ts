@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { EmptyLocalization } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { GraphicType, IModelApp, RenderGraphic } from "../../../core-frontend";
 import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { Batch, Branch, GraphicsArray, MeshGraphic } from "../../../webgl";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("PrimitiveBuilder", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

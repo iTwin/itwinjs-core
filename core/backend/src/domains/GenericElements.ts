@@ -8,12 +8,31 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import {
-  CalloutProps, DefinitionElementProps, ElementProps, GeometricElement2dProps, GeometricElement3dProps, GeometricModel3dProps, IModel,
-  InformationPartitionElementProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, TypeDefinitionElementProps, ViewAttachmentLabelProps,
+  CalloutProps,
+  DefinitionElementProps,
+  ElementProps,
+  GeometricElement2dProps,
+  GeometricElement3dProps,
+  GeometricModel3dProps,
+  IModel,
+  InformationPartitionElementProps,
+  ModelProps,
+  PhysicalElementProps,
+  PhysicalTypeProps,
+  TypeDefinitionElementProps,
+  ViewAttachmentLabelProps,
 } from "@itwin/core-common";
 import {
-  Document, GraphicalElement2d, GraphicalElement3d, GraphicalPartition3d, GraphicalType2d, GroupInformationElement, GroupInformationPartition,
-  PhysicalElement, PhysicalType, SpatialLocationElement,
+  Document,
+  GraphicalElement2d,
+  GraphicalElement3d,
+  GraphicalPartition3d,
+  GraphicalType2d,
+  GroupInformationElement,
+  GroupInformationPartition,
+  PhysicalElement,
+  PhysicalType,
+  SpatialLocationElement,
 } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { PhysicalMaterial } from "../Material";
@@ -24,7 +43,9 @@ import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
  * @public
  */
 export abstract class DetailingSymbol extends GraphicalElement2d {
-  public static override get className(): string { return "DetailingSymbol"; }
+  public static override get className(): string {
+    return "DetailingSymbol";
+  }
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -34,7 +55,9 @@ export abstract class DetailingSymbol extends GraphicalElement2d {
  * @public
  */
 export class TitleText extends DetailingSymbol {
-  public static override get className(): string { return "TitleText"; }
+  public static override get className(): string {
+    return "TitleText";
+  }
   public constructor(props: GeometricElement2dProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -44,7 +67,9 @@ export class TitleText extends DetailingSymbol {
  * @public
  */
 export class ViewAttachmentLabel extends DetailingSymbol {
-  public static override get className(): string { return "ViewAttachmentLabel"; }
+  public static override get className(): string {
+    return "ViewAttachmentLabel";
+  }
   public constructor(props: ViewAttachmentLabelProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -54,7 +79,9 @@ export class ViewAttachmentLabel extends DetailingSymbol {
  *  @public
  */
 export abstract class Callout extends DetailingSymbol {
-  public static override get className(): string { return "Callout"; }
+  public static override get className(): string {
+    return "Callout";
+  }
   public constructor(props: CalloutProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -64,7 +91,9 @@ export abstract class Callout extends DetailingSymbol {
  * @public
  */
 export class SectionCallout extends Callout {
-  public static override get className(): string { return "SectionCallout"; }
+  public static override get className(): string {
+    return "SectionCallout";
+  }
   public constructor(props: CalloutProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -74,7 +103,9 @@ export class SectionCallout extends Callout {
  * @public
  */
 export class ElevationCallout extends Callout {
-  public static override get className(): string { return "ElevationCallout"; }
+  public static override get className(): string {
+    return "ElevationCallout";
+  }
   public constructor(props: CalloutProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -84,7 +115,9 @@ export class ElevationCallout extends Callout {
  * @public
  */
 export class PlanCallout extends Callout {
-  public static override get className(): string { return "PlanCallout"; }
+  public static override get className(): string {
+    return "PlanCallout";
+  }
   public constructor(props: CalloutProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -94,7 +127,9 @@ export class PlanCallout extends Callout {
  * @public
  */
 export class DetailCallout extends Callout {
-  public static override get className(): string { return "DetailCallout"; }
+  public static override get className(): string {
+    return "DetailCallout";
+  }
   public constructor(props: CalloutProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -104,7 +139,9 @@ export class DetailCallout extends Callout {
  * @public
  */
 export class GenericGraphicalModel3d extends GraphicalModel3d {
-  public static override get className(): string { return "GraphicalModel3d"; }
+  public static override get className(): string {
+    return "GraphicalModel3d";
+  }
   public constructor(props: GeometricModel3dProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -138,7 +175,9 @@ export class GenericGraphicalModel3d extends GraphicalModel3d {
  * @public
  */
 export class Graphic3d extends GraphicalElement3d {
-  public static override get className(): string { return "Graphic3d"; }
+  public static override get className(): string {
+    return "Graphic3d";
+  }
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -149,7 +188,9 @@ export class Graphic3d extends GraphicalElement3d {
  * @public
  */
 export class PhysicalObject extends PhysicalElement {
-  public static override get className(): string { return "PhysicalObject"; }
+  public static override get className(): string {
+    return "PhysicalObject";
+  }
   public constructor(props: PhysicalElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -160,7 +201,9 @@ export class PhysicalObject extends PhysicalElement {
  * @public
  */
 export class SpatialLocation extends SpatialLocationElement {
-  public static override get className(): string { return "SpatialLocation"; }
+  public static override get className(): string {
+    return "SpatialLocation";
+  }
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -170,7 +213,9 @@ export class SpatialLocation extends SpatialLocationElement {
  * @public
  */
 export class GroupModel extends GroupInformationModel {
-  public static override get className(): string { return "GroupModel"; }
+  public static override get className(): string {
+    return "GroupModel";
+  }
   public constructor(props: ModelProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -200,7 +245,9 @@ export class GroupModel extends GroupInformationModel {
  * @public
  */
 export class Group extends GroupInformationElement {
-  public static override get className(): string { return "Group"; }
+  public static override get className(): string {
+    return "Group";
+  }
   public constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -211,7 +258,9 @@ export class Group extends GroupInformationElement {
  * @public
  */
 export class GenericDocument extends Document {
-  public static override get className(): string { return "Document"; }
+  public static override get className(): string {
+    return "Document";
+  }
   public constructor(props: ElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -222,7 +271,9 @@ export class GenericDocument extends Document {
  * @public
  */
 export class GenericPhysicalMaterial extends PhysicalMaterial {
-  public static override get className(): string { return "PhysicalMaterial"; }
+  public static override get className(): string {
+    return "PhysicalMaterial";
+  }
   public constructor(props: DefinitionElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -233,7 +284,9 @@ export class GenericPhysicalMaterial extends PhysicalMaterial {
  * @public
  */
 export class GenericPhysicalType extends PhysicalType {
-  public static override get className(): string { return "PhysicalType"; }
+  public static override get className(): string {
+    return "PhysicalType";
+  }
   public constructor(props: PhysicalTypeProps, iModel: IModelDb) {
     super(props, iModel);
   }
@@ -244,7 +297,9 @@ export class GenericPhysicalType extends PhysicalType {
  * @public
  */
 export class GenericGraphicalType2d extends GraphicalType2d {
-  public static override get className(): string { return "GraphicalType2d"; }
+  public static override get className(): string {
+    return "GraphicalType2d";
+  }
   public constructor(props: TypeDefinitionElementProps, iModel: IModelDb) {
     super(props, iModel);
   }

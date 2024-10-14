@@ -54,9 +54,13 @@ export class SubCategoryAppearance {
    * @note The transparency component of the fill color is ignored.
    * @see [[SubCategoryAppearance.fillTransparency]].
    */
-  public get fillColor(): ColorDef { return (undefined !== this._fillColor ? this._fillColor : this.color); }
+  public get fillColor(): ColorDef {
+    return (undefined !== this._fillColor ? this._fillColor : this.color);
+  }
   /** A value in the range [0, 1] indicating the fill transparency of the geometry where 0.0 means "fully opaque" and 1.0 means "fully transparent". */
-  public get fillTransparency(): number { return (undefined !== this._fillTransparency ? this._fillTransparency : this.transparency); }
+  public get fillTransparency(): number {
+    return (undefined !== this._fillTransparency ? this._fillTransparency : this.transparency);
+  }
 
   constructor(props?: SubCategoryAppearance.Props) {
     if (!props) {
@@ -64,7 +68,11 @@ export class SubCategoryAppearance {
       this.weight = 0;
       this.priority = 0;
       this.transparency = 0;
-      this.invisible = this.dontPlot = this.dontSnap = this.dontLocate = false;
+      this.invisible =
+        this.dontPlot =
+        this.dontSnap =
+        this.dontLocate =
+          false;
       this.styleId = Id64.invalid;
       this.materialId = Id64.invalid;
       return;
@@ -140,7 +148,9 @@ export class SubCategoryAppearance {
     return val;
   }
 
-  public clone(): SubCategoryAppearance { return new SubCategoryAppearance(this.toJSON()); }
+  public clone(): SubCategoryAppearance {
+    return new SubCategoryAppearance(this.toJSON());
+  }
 
   public static defaults = new SubCategoryAppearance();
 }

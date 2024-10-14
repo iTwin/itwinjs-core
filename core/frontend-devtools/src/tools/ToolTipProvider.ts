@@ -57,8 +57,12 @@ class DebugToolTipProvider implements ToolTipProvider {
  */
 export class ToggleToolTipsTool extends Tool {
   public static override toolId = "ToggleToolTips";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(enable?: boolean): Promise<boolean> {
     DebugToolTipProvider.setEnabled(enable);

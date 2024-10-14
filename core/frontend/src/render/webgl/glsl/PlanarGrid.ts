@@ -47,7 +47,7 @@ const drawGridLine = `
    }
 `;
 
-const fwidth2d =  `\nvec2 screenSpaceDeriv(vec2 screenXY) { return fwidth(screenXY); }\n`;
+const fwidth2d = `\nvec2 screenSpaceDeriv(vec2 screenXY) { return fwidth(screenXY); }\n`;
 
 const defaultTransparency = new PlanarGridTransparency();
 /** @internal */
@@ -91,10 +91,14 @@ export default function createPlanarGridProgram(context: WebGL2RenderingContext)
     prog.addGraphicUniform("u_gridProps", (uniform, params) => {
       const planarGridProps = params.geometry.asPlanarGrid!.props;
       const transparency = planarGridProps.transparency ? planarGridProps.transparency : defaultTransparency;
-      uniform.setUniform4fv([planarGridProps.gridsPerRef,  1.0 - transparency.planeTransparency, 1.0 - transparency.lineTransparency, 1.0 - transparency.refTransparency]);
+      uniform.setUniform4fv([
+        planarGridProps.gridsPerRef,
+        1.0 - transparency.planeTransparency,
+        1.0 - transparency.lineTransparency,
+        1.0 - transparency.refTransparency,
+      ]);
     });
   });
 
   return builder.buildProgram(context);
 }
-

@@ -92,7 +92,7 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
     data.id = this.id;
     data.description = this.description;
     /* We prefer to use the default undef instead of false value for deprecated in Json */
-    data.deprecated = (this.deprecated === false ? undefined : true);
+    data.deprecated = this.deprecated === false ? undefined : true;
     data.source = this.source;
     data.epsg = this.epsg;
     data.equatorialRadius = this.equatorialRadius;
@@ -114,4 +114,3 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
       Geometry.isAlmostEqualOptional(this.polarRadius, other.polarRadius, Geometry.smallMetricDistance);
   }
 }
-

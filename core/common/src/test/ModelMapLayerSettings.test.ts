@@ -21,7 +21,6 @@ describe("ModelMapLayerSettings", () => {
 
   it("round-trips through JSON", () => {
     const roundTrip = (input: ModelMapLayerProps, expected: ModelMapLayerProps | "input") => {
-
       if ("input" === expected)
         expected = JSON.parse(JSON.stringify(input)) as ModelMapLayerProps;
 

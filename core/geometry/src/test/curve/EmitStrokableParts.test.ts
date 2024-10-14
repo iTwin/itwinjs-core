@@ -34,7 +34,9 @@ class StrokeVerifier implements IStrokeHandler {
     this._myCP = undefined;
     this.frameBuilder = new FrameBuilder();
   }
-  public startCurvePrimitive(cp: CurvePrimitive): void { this._myCP = cp; }
+  public startCurvePrimitive(cp: CurvePrimitive): void {
+    this._myCP = cp;
+  }
   public announcePointTangent(xyz: Point3d, fraction: number, tangent: Vector3d): void {
     this.frameBuilder.announcePoint(xyz);
     this._ck.testTrue(this.frameBuilder.hasOrigin, "frameBuilder.hasOrigin after a point is announced");
@@ -51,7 +53,8 @@ class StrokeVerifier implements IStrokeHandler {
     _cp: CurvePrimitive,
     _numStrokes: number,
     _fraction0: number,
-    _fraction1: number): void {
+    _fraction1: number,
+  ): void {
     //
   }
   /** Announce numPoints interpolated between point0 and point1, with associated fractions */
@@ -61,16 +64,20 @@ class StrokeVerifier implements IStrokeHandler {
     _point1: Point3d,
     _numStrokes: number,
     _fraction0: number,
-    _fraction1: number): void {
+    _fraction1: number,
+  ): void {
     //
   }
-  public endCurvePrimitive(_cp: CurvePrimitive): void { this._myCP = undefined; }
+  public endCurvePrimitive(_cp: CurvePrimitive): void {
+    this._myCP = undefined;
+  }
   public startParentCurvePrimitive(_cp: CurvePrimitive): void {
     this._ck.testUndefined(this._myParent, "Stroker parentCurve cannot be recursive");
     this._myParent = _cp;
   }
-  public endParentCurvePrimitive(_cp: CurvePrimitive): void { this._myParent = undefined; }
-
+  public endParentCurvePrimitive(_cp: CurvePrimitive): void {
+    this._myParent = undefined;
+  }
 }
 
 describe("EmitStrokableParts", () => {

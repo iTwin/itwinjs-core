@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { RealityDataProvider } from "@itwin/core-common";
+import { expect } from "chai";
 import { RealityDataSourceTilesetUrlImpl } from "../RealityDataSourceTilesetUrlImpl";
 
 describe("RealityDataSourceTilesetUrl", () => {
   it("handle content type of relative urls", async () => {
-    const rdSource = await RealityDataSourceTilesetUrlImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.TilesetUrl }, undefined);
+    const rdSource = await RealityDataSourceTilesetUrlImpl.createFromKey({ format: "", id: "", provider: RealityDataProvider.TilesetUrl }, undefined);
     expect(rdSource).to.not.be.undefined;
     expect(rdSource?.getTileContentType("tileset.json")).to.equal("tileset");
     expect(rdSource?.getTileContentType("tile.glb")).to.equal("tile");
@@ -48,7 +48,7 @@ describe("RealityDataSourceTilesetUrl", () => {
     expect(rdSource?.getTileContentType("models/tile.glb#fragment")).to.equal("tile");
   });
   it("handle content type of absolute urls", async () => {
-    const rdSource = await RealityDataSourceTilesetUrlImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.TilesetUrl }, undefined);
+    const rdSource = await RealityDataSourceTilesetUrlImpl.createFromKey({ format: "", id: "", provider: RealityDataProvider.TilesetUrl }, undefined);
     expect(rdSource).to.not.be.undefined;
     expect(rdSource?.getTileContentType("https://localhost/tilesets/tileset.json")).to.equal("tileset");
     expect(rdSource?.getTileContentType("https://localhost/models/tile.glb")).to.equal("tile");
@@ -60,7 +60,7 @@ describe("RealityDataSourceTilesetUrl", () => {
     expect(rdSource?.getTileContentType("https://localhost/models/tile.glb#fragment")).to.equal("tile");
   });
   it("handle content type of other cases", async () => {
-    const rdSource = await RealityDataSourceTilesetUrlImpl.createFromKey({ format: "", id: "", provider : RealityDataProvider.TilesetUrl }, undefined);
+    const rdSource = await RealityDataSourceTilesetUrlImpl.createFromKey({ format: "", id: "", provider: RealityDataProvider.TilesetUrl }, undefined);
     expect(rdSource).to.not.be.undefined;
     expect(rdSource?.getTileContentType("")).to.not.equal("tileset");
     expect(rdSource?.getTileContentType("tileset.json/")).to.not.equal("tileset");

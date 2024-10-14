@@ -12,7 +12,7 @@ const isProductionLikeMode = (
 };
 
 export class FrontendDefaultsPlugin {
-  constructor(private _enableSourcemaps = true) { }
+  constructor(private _enableSourcemaps = true) {}
   public apply(compiler: Compiler) {
     // Add a loader to remove all asserts in production builds.
     const defaultRules: RuleSetRule[] = [

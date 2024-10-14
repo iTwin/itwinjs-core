@@ -31,10 +31,11 @@ export class TupleKeyedMap<K extends readonly any[], V> {
 
   // argument types match those of Map
   public constructor(entries?: readonly (readonly [K, V])[] | null) {
-    if (entries)
+    if (entries) {
       for (const [k, v] of entries) {
         this.set(k, v);
       }
+    }
   }
 
   public clear(): void {
@@ -85,7 +86,7 @@ export class TupleKeyedMap<K extends readonly any[], V> {
   }
 
   public *[Symbol.iterator](): IterableIterator<[K, V]> {
-    function *impl(map: Map<any, any>, keyPrefix: readonly any[]): IterableIterator<[K, V]> {
+    function* impl(map: Map<any, any>, keyPrefix: readonly any[]): IterableIterator<[K, V]> {
       for (const [k, v] of map) {
         const nextKey = [...keyPrefix, k];
         if (v instanceof Map) {

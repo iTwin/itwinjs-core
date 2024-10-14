@@ -155,11 +155,19 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
       return 0 === diff ? this.lower - rhs.lower : diff;
     }
 
-    public equals(rhs: Uint64): boolean { return 0 === this.compare(rhs); }
-    public isLessThan(rhs: Uint64): boolean { return this.compare(rhs) < 0; }
-    public isGreaterThan(rhs: Uint64): boolean { return this.compare(rhs) > 0; }
+    public equals(rhs: Uint64): boolean {
+      return 0 === this.compare(rhs);
+    }
+    public isLessThan(rhs: Uint64): boolean {
+      return this.compare(rhs) < 0;
+    }
+    public isGreaterThan(rhs: Uint64): boolean {
+      return this.compare(rhs) > 0;
+    }
 
-    public get isZero(): boolean { return 0 === this.lower && 0 === this.upper; }
+    public get isZero(): boolean {
+      return 0 === this.lower && 0 === this.upper;
+    }
 
     public setFromDifference(lhs: Uint64, rhs: Uint64): void {
       assert(!rhs.isGreaterThan(lhs));
@@ -232,7 +240,7 @@ export namespace CompressedId64Set { // eslint-disable-line @typescript-eslint/n
           break; // not a hex digit in [0..9] or [A..F]
 
         value <<= 4;
-        value |= (ch >= 65 ? ch - 65 + 10 : ch - 48); // ch - 'A' + 10 or ch - '0'
+        value |= ch >= 65 ? ch - 65 + 10 : ch - 48; // ch - 'A' + 10 or ch - '0'
         value = value >>> 0; // restore unsignedness because silly javascript.
         ++curIndex;
       }
@@ -360,10 +368,14 @@ export class OrderedId64Array extends SortedArray<Id64String> {
   }
 
   /** An iterable that iterates over the Ids in sorted order. */
-  public get ids(): OrderedId64Iterable { return this._array; }
+  public get ids(): OrderedId64Iterable {
+    return this._array;
+  }
 
   /** The underlying array of Ids. */
-  public get array(): ReadonlyArray<Id64String> { return this._array; }
+  public get array(): ReadonlyArray<Id64String> {
+    return this._array;
+  }
 }
 
 /** A mutable set of valid [[Id64String]]s sorted in ascending order by the 64-bit unsigned integer value of the Ids.

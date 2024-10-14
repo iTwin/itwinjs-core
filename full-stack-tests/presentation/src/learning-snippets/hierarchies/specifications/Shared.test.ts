@@ -2,14 +2,14 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { NodeKey, Ruleset, StandardNodeTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { initialize, terminate } from "../../../IntegrationTests";
-import { printRuleset } from "../../Utils";
 import { collect } from "../../../Utils";
+import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -59,7 +59,9 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify PhysicalModel's class grouping node is displayed, but the instance node - not
-      const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
+      const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) =>
+        collect(x.items)
+      );
       expect(classGroupingNodes)
         .to.have.lengthOf(1)
         .and.to.containSubset([
@@ -479,7 +481,9 @@ describe("Learning Snippets", () => {
       printRuleset(ruleset);
 
       // Verify that instances were not grouped by label
-      const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
+      const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) =>
+        collect(x.items)
+      );
       const classGroupingNode = classGroupingNodes.find((node) => {
         assert(NodeKey.isClassGroupingNodeKey(node.key));
         return node.key.className === "ECDbMeta:ECPropertyDef";

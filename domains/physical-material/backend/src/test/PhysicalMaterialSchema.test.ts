@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { ECSqlStatement, IModelDb, IModelHost, IModelJsFs, PhysicalMaterial, SnapshotDb } from "@itwin/core-backend";
+import { DbResult } from "@itwin/core-bentley";
+import { IModel } from "@itwin/core-common";
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult } from "@itwin/core-bentley";
-import { ECSqlStatement, IModelDb, IModelHost, IModelJsFs, PhysicalMaterial, SnapshotDb } from "@itwin/core-backend";
-import { IModel } from "@itwin/core-common";
 import { Aggregate, Aluminum, Asphalt, Concrete, PhysicalMaterialSchema, Steel } from "../physical-material-backend";
 
 describe("PhysicalMaterialSchema", () => {

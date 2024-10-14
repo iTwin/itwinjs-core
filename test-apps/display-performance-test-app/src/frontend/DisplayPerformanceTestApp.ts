@@ -2,21 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { BrowserAuthorizationClient } from "@itwin/browser-authorization/lib/cjs/Client";
 import { ProcessDetector } from "@itwin/core-bentley";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager,
+  IModelReadRpcInterface,
+  IModelTileRpcInterface,
+  RpcConfiguration,
+  SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
-import { BrowserAuthorizationClient } from "@itwin/browser-authorization/lib/cjs/Client";
 import { IModelApp, IModelAppOptions } from "@itwin/core-frontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { initializeFrontendTiles } from "@itwin/frontend-tiles";
 import { HyperModeling, SectionMarker, SectionMarkerHandler } from "@itwin/hypermodeling-frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
+import { DptaEnvConfig } from "../common/DisplayPerfEnvConfig";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { TestRunner, TestSetsProps } from "./TestRunner";
-import { DptaEnvConfig } from "../common/DisplayPerfEnvConfig";
 
 export const envConfiguration: DptaEnvConfig = {};
 let runner: TestRunner;
@@ -87,9 +91,11 @@ export class DisplayPerfTestApp {
     const config = await DisplayPerfRpcInterface.getClient().getEnvConfig();
     Object.assign(envConfiguration, config);
 
-    const frontendTilesNopFallback = (runner && runner.curConfig && runner.curConfig.frontendTilesNopFallback) ? runner.curConfig.frontendTilesNopFallback : false;
+    const frontendTilesNopFallback = (runner && runner.curConfig && runner.curConfig.frontendTilesNopFallback)
+      ? runner.curConfig.frontendTilesNopFallback
+      : false;
 
-    if(frontendTilesNopFallback){
+    if (frontendTilesNopFallback) {
       await DisplayPerfRpcInterface.getClient().consoleLog("Nop fallback enabled for frontend tiles.");
     }
 
@@ -131,7 +137,8 @@ export class DisplayPerfTestApp {
     if (logFile)
       await client.writeExternalFile(logFile.dir, logFile.name, true, msg);
     // test for exception messages that need to terminate app on and return true for any of those
-    return (msg.toLowerCase().includes("rendering context was lost") ||
+    return (
+      msg.toLowerCase().includes("rendering context was lost") ||
       msg.toLowerCase().includes("enospc") // ENOSPC no space left on device
     );
   }
@@ -181,7 +188,12 @@ window.onload = async () => {
 
   if (!ProcessDetector.isElectronAppFrontend && !ProcessDetector.isMobileAppFrontend) {
     const uriPrefix = "http://localhost:3001";
-    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
+    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [
+      DisplayPerfRpcInterface,
+      IModelTileRpcInterface,
+      SnapshotIModelRpcInterface,
+      IModelReadRpcInterface,
+    ]);
   }
 
   await DisplayPerfTestApp.startup();

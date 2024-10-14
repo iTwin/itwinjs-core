@@ -50,7 +50,6 @@ export interface NativeAppNotifications {
  * @internal
  */
 export interface NativeAppFunctions {
-
   /** If the user is signed in a valid access token will be returned. */
   getAccessToken: () => Promise<AccessToken | undefined>;
 
@@ -67,7 +66,7 @@ export interface NativeAppFunctions {
 
   /** Get the filename in the briefcase cache for the supplied BriefcaseId and iModelId.
    * @note this merely returns the full path fileName. It does not test for the existence of the file.
-    */
+   */
   getBriefcaseFileName(_props: BriefcaseProps): Promise<string>;
 
   /** Download a briefcase file for the supplied briefcase properties. */

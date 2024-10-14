@@ -9,7 +9,14 @@
 import { Point3d, Vector3d } from "@itwin/core-geometry";
 
 /** @internal */
-export function linePlaneIntersect(outP: Point3d, linePt: Point3d, lineNormal: Vector3d | undefined, planePt: Point3d, planeNormal: Vector3d, perpendicular: boolean): void {
+export function linePlaneIntersect(
+  outP: Point3d,
+  linePt: Point3d,
+  lineNormal: Vector3d | undefined,
+  planePt: Point3d,
+  planeNormal: Vector3d,
+  perpendicular: boolean,
+): void {
   let dot = 0;
   if (lineNormal)
     dot = lineNormal.dotProduct(planeNormal);

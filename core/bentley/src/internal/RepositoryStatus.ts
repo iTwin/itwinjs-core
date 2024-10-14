@@ -42,4 +42,3 @@ export enum RepositoryStatus {
   /** Channel write constraint violation, such as an attempt to write outside the designated channel. */
   ChannelConstraintViolation = 0x1500F,
 }
-
