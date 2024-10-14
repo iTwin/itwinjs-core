@@ -119,7 +119,7 @@ describe("EdgeSettings", () => {
         // If color is not explicitly overridden in solid fill mode, the shader will compute a contrasting shade of grey for each element.
         expect(es.wantContrastingColor(renderMode)).toEqual(RenderMode.SolidFill === renderMode);
 
-        expect(es.computeOvrFlags(pass, vf)).toEqual(OvrFlags.Alpha);
+        expect(es.computeOvrFlags(pass, vf)).toEqual(OvrFlags.Alpha | OvrFlags.LineAlpha);
       }
   });
 

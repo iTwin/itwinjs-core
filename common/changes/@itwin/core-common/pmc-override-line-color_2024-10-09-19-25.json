@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Permit FeatureAppearance to independently override line color and transparency.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}

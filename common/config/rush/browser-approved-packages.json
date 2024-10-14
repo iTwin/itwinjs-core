@@ -391,12 +391,8 @@
       "allowedCategories": [ "frontend" ]
     },
     {
-      "name": "@vitest/coverage-istanbul",
-      "allowedCategories": [ "backend", "common", "frontend" ]
-    },
-    {
       "name": "@vitest/coverage-v8",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "common,frontend" ]
     },
     {
       "name": "@xmldom/xmldom",
