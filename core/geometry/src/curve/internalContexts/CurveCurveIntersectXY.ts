@@ -688,7 +688,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
             }
             const bcurveAFraction = bezierA.fractionToParentFraction(bezierAFraction);
             const bcurveBFraction = bezierB.fractionToParentFraction(bezierBFraction);
-            if (!"verify results") {
+            if (false) { // verify results
               const xyzA0 = bezierA.fractionToPoint(bezierAFraction);
               const xyzA1 = bcurveA.fractionToPoint(bcurveAFraction);
               const xyzB0 = bezierB.fractionToPoint(bezierBFraction);
@@ -966,7 +966,7 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
     if (!this._geometryB || !(this._geometryB instanceof CurveChainWithDistanceIndex))
       return;
     if (geomA instanceof CurveChainWithDistanceIndex) {
-      assert(!"call handleCurveChainWithDistanceIndex(geomA) instead");
+      assert(false, "call handleCurveChainWithDistanceIndex(geomA) instead");
       return;
     }
     const index0 = this._results.length;

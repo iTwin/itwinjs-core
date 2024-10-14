@@ -708,3 +708,67 @@ function sphereSnakeGridPoints(center: Point3d, radius: number, thetaArray: numb
   }
   return points;
 }
+
+function captureUnitCircleEllipseIntersections(
+  allGeometry: any[], ck: any,
+  cx: number, cy: number,
+  ux: number, uy: number,
+  vx: number, vy: number,
+  dx: number, expectedIntersections: number,
+) {
+  const unitCircle = Arc3d.create(
+    Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(),
+  );
+  const arc = Arc3d.create(
+    Point3d.create(cx, cy), Vector3d.create(ux, uy), Vector3d.create(vx, vy),
+    AngleSweep.createStartEndDegrees(),
+  );
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, unitCircle, dx);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, dx);
+
+  const ellipseRadians: number[] = [];
+  const circleRadians: number[] = [];
+  TrigPolynomial.solveUnitCircleEllipseIntersection(cx, cy, ux, uy, vx, vy, ellipseRadians, circleRadians);
+  const len = ellipseRadians.length;
+  for (let i = 0; i < len; i++) {
+    const fraction = arc.sweep.radiansToSignedFraction(ellipseRadians[i]);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, arc.fractionToPoint(fraction), 0.2, dx);
+  }
+  ck.testExactNumber(len, expectedIntersections, `${expectedIntersections} intersection(s) expected`);
+}
+
+it("unitCircleEllipseIntersection", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  let dx = 0;
+  // intersection at lower half of the ellipse
+  let cx = 0, cy = 1.5; // ellipse center
+  let ux = 2, uy = 0;   // ellipse vector0
+  let vx = 0, vy = 1;   // ellipse vector90
+  let expectedIntersections = 2;
+  captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
+  // intersection at t = 0
+  dx += 12;
+  cx = 3, cy = 0;
+  ux = 2, uy = 0;
+  vx = 0, vy = 1;
+  expectedIntersections = 1;
+  captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
+  // intersection at t = 1
+  dx += 12;
+  cx = -3, cy = 0;
+  ux = 2, uy = 0;
+  vx = 0, vy = 1;
+  expectedIntersections = 1;
+  captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
+  // intersection at t = infinity
+  dx += 12;
+  cx = 0, cy = 2;
+  ux = 2, uy = 0;
+  vx = 0, vy = 1;
+  expectedIntersections = 1;
+  // captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
+
+  GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "unitCircleEllipseIntersection");
+  expect(ck.getNumErrors()).toBe(0);
+});

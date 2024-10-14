@@ -1262,7 +1262,7 @@ export class PolygonOps {
       const areaOfNormalParallelogram = Math.abs(outwardUnitNormalOfPrevEdge.crossProductXY(outwardUnitNormalOfEdge));
       const coord = Geometry.conditionalDivideCoordinate(areaOfNormalParallelogram, projToPrevEdge.x * projToEdge.x, largestResult);
       if (undefined === coord) {
-        assert(!"unexpectedly small projection distance to an edge");
+        assert(false, "unexpectedly small projection distance to an edge");
         return undefined; // shouldn't happen due to chopping in computeEdgeDataXY: area/(dist*dist) <= 1/tol^2 = largestResult
       }
       coords[i] = coord;
@@ -1273,7 +1273,7 @@ export class PolygonOps {
     }
     const scale = Geometry.conditionalDivideCoordinate(1.0, coordSum);
     if (undefined === scale) {
-      assert(!"unexpected zero barycentric coordinate sum");
+      assert(false, "unexpected zero barycentric coordinate sum");
       return undefined;
     }
     for (let i = 0; i < n; ++i)

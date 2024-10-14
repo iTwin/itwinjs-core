@@ -1852,6 +1852,7 @@ export class ECSqlInsertResult {
 
 // @public
 export interface ECSqlRowArg {
+    classIdsToClassNames?: boolean;
     rowFormat?: QueryRowFormat;
 }
 
@@ -1879,8 +1880,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValues(values: any[] | object): void;
     clearBindings(): void;
     dispose(): void;
-    // @internal (undocumented)
-    formatCurrentRow(currentResp: any, rowFormat?: QueryRowFormat): any[] | object;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
     // @internal
@@ -5276,11 +5275,11 @@ export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 // @beta
 export class SqliteChangesetReader implements IDisposable {
     protected constructor(
-    db?: AnyDb | undefined);
+    db: AnyDb);
     get changeIndex(): number;
     close(): void;
     get columnCount(): number;
-    readonly db?: AnyDb | undefined;
+    readonly db: AnyDb;
     get disableSchemaCheck(): boolean;
     dispose(): void;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
@@ -5305,10 +5304,10 @@ export class SqliteChangesetReader implements IDisposable {
     static openGroup(args: {
         readonly changesetFiles: string[];
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
-    static openLocalChanges(args: {
-        iModel: IModelJsNative.DgnDb;
+    static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & {
+        db: IModelDb;
         includeInMemoryChanges?: true;
-    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    }): SqliteChangesetReader;
     get primaryKeyValues(): SqliteValueArray;
     step(): boolean;
     get tableName(): string;
@@ -5321,7 +5320,7 @@ export class SqliteChangesetReader implements IDisposable {
 
 // @beta
 export interface SqliteChangesetReaderArgs {
-    readonly db?: AnyDb;
+    readonly db: AnyDb;
     readonly disableSchemaCheck?: true;
     readonly invert?: true;
 }

@@ -200,6 +200,7 @@ export namespace GL {
 
   export enum ProgramParameter {
     LinkStatus = WebGLRenderingContext.LINK_STATUS,
+    ActiveUniforms = WebGLRenderingContext.ACTIVE_UNIFORMS,
   }
 
   export enum PrimitiveType {
