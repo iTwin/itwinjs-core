@@ -776,7 +776,6 @@ describe.only("CloudSqlite", () => {
 
       testContainer1.acquireWriteLock(user1);
       await testContainer1.copyDatabase("testBim", "testBimCopy1");
-      console.log("after copy");
       const db1 = await BriefcaseDb.open({ fileName: "testBimCopy1", container: testContainer1 });
       db1.saveFileProperty({ name: "upload", namespace: "uploadTest", id: 1, subId: 1 }, "this is a test");
       db1.close();
