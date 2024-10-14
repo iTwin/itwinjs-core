@@ -21,37 +21,7 @@ import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture"
 import { BatchOptions } from "../../common/render/BatchOptions";
 import { DisplayParams } from "../../common/internal/render/DisplayParams";
 import { OvrFlags } from "../../common/internal/render/OvrFlags";
-
-function computeWidthAndHeight(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number = 0, nTables: number = 1): { width: number, height: number } {
-  const maxSize = System.instance.maxTextureSize;
-  const nRgba = nEntries * nRgbaPerEntry * nTables + nExtraRgba;
-
-  if (nRgba < maxSize)
-    return { width: nRgba, height: 1 };
-
-  // Make roughly square to reduce unused space in last row
-  let width = Math.ceil(Math.sqrt(nRgba));
-
-  // Ensure a given entry's RGBA values all fit on the same row.
-  const remainder = width % nRgbaPerEntry;
-  if (0 !== remainder) {
-    width += nRgbaPerEntry - remainder;
-  }
-
-  // Compute height
-  const height = Math.ceil(nRgba / width);
-
-  assert(height <= maxSize);
-  assert(width <= maxSize);
-  assert(width * height >= nRgba);
-  assert(Math.floor(height) === height);
-  assert(Math.floor(width) === width);
-
-  // Row padding should never be necessary...
-  assert(0 === width % nRgbaPerEntry);
-
-  return { width, height };
-}
+import { computeDimensions } from "../../common/internal/render/VertexTable";
 
 export function isFeatureHilited(feature: PackedFeature, hilites: Hilites, isModelHilited: boolean): boolean {
   if (hilites.isEmpty)
@@ -97,7 +67,7 @@ export class FeatureOverrides implements WebGLDisposable {
   /** For tests. */
   public get lutData(): Uint8Array | undefined { return this._lut?.dataBytes; }
   public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
-  public get isUniform() { return 2 === this._lutParams[0] && 1 === this._lutParams[1]; }
+  public get isUniform() { return 3 === this._lutParams[0] && 1 === this._lutParams[1]; }
 
   private updateUniformSymbologyFlags(): void {
     this._uniformSymbologyFlags = EmphasisFlags.None;
@@ -131,7 +101,7 @@ export class FeatureOverrides implements WebGLDisposable {
 
   private _initialize(map: RenderFeatureTable, ovrs: FeatureSymbology.Overrides, pickExcludes: Id64.Uint32Set, hilite: Hilites, flashed?: Id64.Uint32Pair): Texture2DHandle | undefined {
     const nFeatures = map.numFeatures;
-    const dims = computeWidthAndHeight(nFeatures, 2);
+    const dims = computeDimensions(nFeatures, 3, 0, System.instance.maxTextureSize);
     const width = dims.width;
     const height = dims.height;
     assert(width * height >= nFeatures);
@@ -159,6 +129,27 @@ export class FeatureOverrides implements WebGLDisposable {
     lut.update(updater);
   }
 
+  private setTransparency(transparency: number, viewDependentTransparency: true | undefined, data: Texture2DDataUpdater, transparencyByteIndex: number, curFlags: OvrFlags): OvrFlags {
+    // transparency in range [0, 1]...convert to byte and invert so 0=transparent...
+    let alpha = 1.0 - transparency;
+    alpha = Math.floor(0xff * alpha + 0.5);
+    if ((0xff - alpha) < DisplayParams.minTransparency)
+      alpha = 0xff;
+
+    data.setByteAtIndex(transparencyByteIndex, alpha);
+    if (0xff === alpha) {
+      this._anyOpaque = true;
+    } else {
+      this._anyTranslucent = true;
+      if (!viewDependentTransparency) {
+        curFlags |= OvrFlags.ViewIndependentTransparency;
+        this._anyViewIndependentTranslucent = true;
+      }
+    }
+
+    return curFlags;
+  }
+
   private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, ovr: FeatureSymbology.Overrides, pickExclude: Id64.Uint32Set | undefined, flashedIdParts: Id64.Uint32Pair | undefined, hilites: Hilites) {
     const allowHilite = true !== this._options.noHilite;
     const allowFlash = true !== this._options.noFlash;
@@ -172,7 +163,7 @@ export class FeatureOverrides implements WebGLDisposable {
     let nHidden = 0;
     let nOverridden = 0;
 
-    // NB: We currently use 2 RGBA values per feature as follows:
+    // NB: We currently use 3 RGBA values per feature as follows:
     //  [0]
     //      RG = override flags (see OvrFlags enum)
     //      B = line code
@@ -180,9 +171,12 @@ export class FeatureOverrides implements WebGLDisposable {
     //  [1]
     //      RGB = rgb
     //      A = alpha
+    //  [2]
+    //      RGB = line rgb
+    //      A = line alpha
     for (const feature of map.iterable(scratchPackedFeature)) {
       const i = feature.index;
-      const dataIndex = i * 4 * 2;
+      const dataIndex = i * 4 * 3;
 
       if (prevModelId.lower !== feature.modelId.lower || prevModelId.upper !== feature.modelId.upper) {
         prevModelId.lower = feature.modelId.lower;
@@ -230,23 +224,22 @@ export class FeatureOverrides implements WebGLDisposable {
       }
 
       if (undefined !== app.transparency) {
-        // transparency in range [0, 1]...convert to byte and invert so 0=transparent...
         flags |= OvrFlags.Alpha;
-        let alpha = 1.0 - app.transparency;
-        alpha = Math.floor(0xff * alpha + 0.5);
-        if ((0xff - alpha) < DisplayParams.minTransparency)
-          alpha = 0xff;
+        flags = this.setTransparency(app.transparency, app.viewDependentTransparency, data, dataIndex + 7, flags);
+      }
 
-        data.setByteAtIndex(dataIndex + 7, alpha);
-        if (0xff === alpha) {
-          this._anyOpaque = true;
-        } else {
-          this._anyTranslucent = true;
-          if (!app.viewDependentTransparency) {
-            flags |= OvrFlags.ViewIndependentTransparency;
-            this._anyViewIndependentTranslucent = true;
-          }
-        }
+      const lineRgb = app.getLineRgb();
+      if (lineRgb) {
+        flags |= OvrFlags.LineRgb;
+        data.setByteAtIndex(dataIndex + 8, lineRgb.r);
+        data.setByteAtIndex(dataIndex + 9, lineRgb.g);
+        data.setByteAtIndex(dataIndex + 10, lineRgb.b);
+      }
+
+      const lineTransp = app.getLineTransparency();
+      if (undefined !== lineTransp) {
+        flags |= OvrFlags.LineAlpha;
+        flags = this.setTransparency(lineTransp, app.viewDependentTransparency, data, dataIndex + 11, flags);
       }
 
       if (app.overridesWeight && app.weight) {
@@ -297,7 +290,7 @@ export class FeatureOverrides implements WebGLDisposable {
 
     this._anyOverridden = this._anyHilited = false;
     for (const feature of map.iterable(scratchPackedFeature)) {
-      const dataIndex = feature.index * 4 * 2;
+      const dataIndex = feature.index * 4 * 3;
       const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
       if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
         // If it's invisible, none of the other flags matter. We can't flash it and don't want to hilite it.
@@ -341,7 +334,7 @@ export class FeatureOverrides implements WebGLDisposable {
     this._anyOverridden = false;
     const elemId = { lower: 0, upper: 0 };
     for (let i = 0; i < map.numFeatures; i++) {
-      const dataIndex = i * 4 * 2;
+      const dataIndex = i * 4 * 3;
       const oldFlags = data.getOvrFlagsAtIndex(dataIndex);
       if (OvrFlags.None !== (oldFlags & OvrFlags.Visibility)) {
         // If it's invisible, none of the other flags matter and we can't flash it.
