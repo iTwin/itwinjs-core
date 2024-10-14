@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "properties": {
+    "typescript": {
+      "$ref": "https://plugins.dprint.dev/dprint/dprint-plugin-typescript/latest/schema.json"
+    },
+    "json": {
+      "$ref": "https://plugins.dprint.dev/dprint/dprint-plugin-json/latest/schema.json"
+    },
+    "markdown": {
+      "$ref": "https://plugins.dprint.dev/dprint/dprint-plugin-markdown/latest/schema.json"
+    },
+    "excludes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "plugins": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uri"
+      }
+    }
+  }
+}

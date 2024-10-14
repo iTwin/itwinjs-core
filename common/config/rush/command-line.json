@@ -16,6 +16,13 @@
       "shellCommand": "node common/scripts/copyright-linter.js --fix"
     },
     {
+      "name": "fmt",
+      "commandKind": "global",
+      "summary": "Runs dprint fmt for the entire monorepo",
+      "description": "Runs the dprint code formatter on all TypeScript and JSON files in the monorepo.",
+      "shellCommand": "node tools/build/node_modules/dprint/bin.js fmt"
+    },
+    {
       "name": "clean",
       "commandKind": "bulk",
       "summary": "Cleans build output within each package",

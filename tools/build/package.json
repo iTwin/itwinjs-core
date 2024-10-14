@@ -43,7 +43,8 @@
     "typedoc-plugin-merge-modules": "^5.1.0",
     "typescript": "~5.3.3",
     "wtfnode": "^0.9.1",
-    "yargs": "^17.4.0"
+    "yargs": "^17.4.0",
+    "dprint": "~0.47.2"
   },
   "devDependencies": {
     "@itwin/eslint-plugin": "^4.0.2",

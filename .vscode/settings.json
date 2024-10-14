@@ -1,6 +1,11 @@
 // Place your settings in this file to overwrite default and user settings.
 {
+  "[typescript][typescriptreact][javascript][javascriptreact][json][jsonc]": {
+    "editor.defaultFormatter": "dprint.dprint"
+  },
   "debug.internalConsoleOptions": "openOnSessionStart",
+  "dprint.verbose": true,
+  "dprint.path": "tools/build/node_modules/dprint/dprint",
   "editor.codeActionsOnSave": {
     "editor.action.fixAll": "explicit",
     "source.fixAll.eslint": "explicit",
@@ -10,7 +15,7 @@
   "editor.formatOnSave": true,
   "editor.tabSize": 2,
   "eslint.enable": true,
-  "eslint.format.enable": true,
+  "eslint.format.enable": false,
   "eslint.lintTask.enable": true,
   "eslint.experimental.useFlatConfig": true,
   "eslint.validate": [
@@ -44,40 +49,18 @@
     "common/temp": true
   },
   "files.trimTrailingWhitespace": true,
-  "importSorter.generalConfiguration.sortImportsInDirectory": false,
-  "importSorter.generalConfiguration.sortOnBeforeSave": false,
-  "importSorter.importStringConfiguration.maximumNumberOfImportExpressionsPerLine.count": 150,
-  "importSorter.importStringConfiguration.quoteMark": "double",
-  "importSorter.importStringConfiguration.tabSize": 2,
-  "importSorter.importStringConfiguration.trailingComma": "multiLine",
-  "importSorter.sortConfiguration.customOrderingRules.defaultNumberOfEmptyLinesAfterGroup": 0,
-  "importSorter.sortConfiguration.customOrderingRules.rules": [
-    {
-      "disableSort": true,
-      "orderLevel": 5,
-      "regex": "^$",
-      "type": "importMember"
-    },
-    {
-      "orderLevel": 10,
-      "regex": "^[^.@]"
-    },
-    {
-      "orderLevel": 15,
-      "regex": "^[@]"
-    },
-    {
-      "orderLevel": 30,
-      "regex": "^[.]"
-    }
-  ],
-  "importSorter.sortConfiguration.removeUnusedImports": true,
   "json.schemas": [
     {
       "fileMatch": [
         "certa.json"
       ],
       "url": "./tools/certa/certa.schema.json"
+    },
+    {
+      "fileMatch": [
+        ".dprint.jsonc"
+      ],
+      "url": "./common/config/dprint/dprint.schema.json"
     }
   ],
   "markdownlint.config": {
@@ -103,5 +86,5 @@
   "terminal.integrated.env.windows": {
     "NODE_ENV": "development"
   },
-  "typescript.tsdk": "common/temp/node_modules/typescript/lib",
+  "typescript.tsdk": "common/temp/node_modules/typescript/lib"
 }

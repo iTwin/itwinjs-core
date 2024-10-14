@@ -1,0 +1,28 @@
+{
+  "typescript": {
+    "lineWidth": 150,
+    "quoteStyle": "preferDouble",
+    "newLineKind": "auto",
+    "useBraces": "maintain",
+    "bracePosition": "sameLine",
+    "nextControlFlowPosition": "maintain",
+    "operatorPosition": "maintain",
+    "arrowFunction.useParentheses": "force",
+    "module.sortExportDeclarations": "maintain",
+    "typeLiteral.separatorKind.singleLine": "comma"
+  },
+  "json": {
+    "trailingCommas": "never"
+  },
+  "excludes": [
+    // Note that everything gitignored is already excluded by default.
+    "**/*-lock.json",
+    "common/changes/**/*",
+    "common/config/rush/**/*",
+    "common/scripts/**/*"
+  ],
+  "plugins": [
+    "https://plugins.dprint.dev/typescript-0.93.0.wasm",
+    "https://plugins.dprint.dev/json-0.19.3.wasm"
+  ]
+}

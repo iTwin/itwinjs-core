@@ -2895,6 +2895,7 @@ importers:
       chalk: ^3.0.0
       cpx2: ^3.0.0
       cross-spawn: ^7.0.1
+      dprint: ~0.47.2
       eslint: ^8.56.0
       fs-extra: ^8.1.0
       glob: ^10.3.12
@@ -2912,6 +2913,7 @@ importers:
       chalk: 3.0.0
       cpx2: 3.0.0
       cross-spawn: 7.0.1
+      dprint: 0.47.2
       fs-extra: 8.1.0
       glob: 10.3.12
       mocha: 10.2.0
@@ -3760,6 +3762,70 @@ packages:
     resolution: {integrity: sha512-dBVuXR082gk3jsFp7Rd/JI4kytwGHecnCoTtXFb7DB6CNHp4rg5k1bhg0nWdLGLnOV71lmDzGQaLMy8iPLY0pw==}
     engines: {node: '>=10.0.0'}
     dev: true
+
+  /@dprint/darwin-arm64/0.47.2:
+    resolution: {integrity: sha512-mVPFBJsXxGDKHHCAY8wbqOyS4028g1bN15H9tivCnPAjwaZhkUimZHXWejXADjhGn+Xm2SlakugY9PY/68pH3Q==}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@dprint/darwin-x64/0.47.2:
+    resolution: {integrity: sha512-T7wzlc+rBV+6BRRiBjoqoy5Hj4TR2Nv2p2s9+ycyPGs10Kj/JXOWD8dnEHeBgUr2r4qe/ZdcxmsFQ5Hf2n0WuA==}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@dprint/linux-arm64-glibc/0.47.2:
+    resolution: {integrity: sha512-B0m1vT5LdVtrNOVdkqpLPrSxuCD+l5bTIgRzPaDoIB1ChWQkler9IlX8C+RStpujjPj6SYvwo5vTzjQSvRdQkA==}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@dprint/linux-arm64-musl/0.47.2:
+    resolution: {integrity: sha512-zID6wZZqpg2/Q2Us+ERQkbhLwlW3p3xaeEr00MPf49bpydmEjMiPuSjWPkNv+slQSIyIsVovOxF4lbNZjsdtvw==}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@dprint/linux-x64-glibc/0.47.2:
+    resolution: {integrity: sha512-rB3WXMdINnRd33DItIp7mObS7dzHW90ZzeJSsoKJLPp+Z7wXjjb27UUowfqVI4baa/1pd7sdbX54DPohMtfu/A==}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@dprint/linux-x64-musl/0.47.2:
+    resolution: {integrity: sha512-E0+TNbzYdTXJ/jCVjUctVxkda/faw++aDQLfyWGcmdMJnbM7NZz+W4fUpDXzMPsjy+zTWxXcPK7/q2DZz2gnbg==}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@dprint/win32-arm64/0.47.2:
+    resolution: {integrity: sha512-K1EieTCFjfOCmyIhw9zFSduE6qVCNHEveupqZEfbSkVGw5T9MJQ1I9+n7MDb3RIDYEUk0enJ58/w82q8oDKCyA==}
+    cpu: [arm64]
+    os: [win32]
+    requiresBuild: true
+    dev: false
+    optional: true
+
+  /@dprint/win32-x64/0.47.2:
+    resolution: {integrity: sha512-LhizWr8VrhHvq4ump8HwOERyFmdLiE8C6A42QSntGXzKdaa2nEOq20x/o56ZIiDcesiV+1TmosMKimPcOZHa+Q==}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: false
+    optional: true
 
   /@electron/get/2.0.3:
     resolution: {integrity: sha512-Qkzpg2s9GnVV2I2BjRksUi43U5e6+zaQMcjoJy0C+C5oxaKl+fmckGDQFtRpZpZV0NQekuZZ+tGz7EA9TVnQtQ==}
@@ -7469,6 +7535,21 @@ packages:
 
   /dottie/2.0.6:
     resolution: {integrity: sha512-iGCHkfUc5kFekGiqhe8B/mdaurD+lakO9txNnTvKtA6PISrw86LgqHvRzWYPyoE2Ph5aMIrCw9/uko6XHTKCwA==}
+    dev: false
+
+  /dprint/0.47.2:
+    resolution: {integrity: sha512-geUcVIIrmLaY+YtuOl4gD7J/QCjsXZa5gUqre9sO6cgH0X/Fa9heBN3l/AWVII6rKPw45ATuCSDWz1pyO+HkPQ==}
+    hasBin: true
+    requiresBuild: true
+    optionalDependencies:
+      '@dprint/darwin-arm64': 0.47.2
+      '@dprint/darwin-x64': 0.47.2
+      '@dprint/linux-arm64-glibc': 0.47.2
+      '@dprint/linux-arm64-musl': 0.47.2
+      '@dprint/linux-x64-glibc': 0.47.2
+      '@dprint/linux-x64-musl': 0.47.2
+      '@dprint/win32-arm64': 0.47.2
+      '@dprint/win32-x64': 0.47.2
     dev: false
 
   /draco3d/1.4.1:
@@ -13435,7 +13516,7 @@ packages:
       perfect-debounce: 1.0.0
       picocolors: 1.0.1
       sirv: 2.0.4
-      vite: 5.4.6_@types+node@18.16.20
+      vite: 5.4.6
     transitivePeerDependencies:
       - rollup
       - supports-color
