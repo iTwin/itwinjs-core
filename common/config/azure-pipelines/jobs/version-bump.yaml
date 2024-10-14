@@ -139,7 +139,7 @@ jobs:
     displayName: Bump Version
     dependsOn:
     - CreateBranch
-    - checkPrevCommit
+    - CheckPrevCommit
     condition: and(in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'))
     variables:
       releaseBranchName: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
