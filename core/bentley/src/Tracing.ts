@@ -130,7 +130,6 @@ export class Tracing {
   /**
    * Adds a span event describing a runtime exception, as advised in OpenTelemetry documentation
    * @param e error (exception) object
-   * @internal
    */
   public static recordException(e: Error) {
     Tracing._openTelemetry?.trace.getSpan(Tracing._openTelemetry.context.active())?.recordException(e);

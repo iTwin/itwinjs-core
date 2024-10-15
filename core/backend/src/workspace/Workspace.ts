@@ -13,7 +13,7 @@ import { SQLiteDb } from "../SQLiteDb";
 import { SettingName, Settings, SettingsDictionary, SettingsPriority } from "./Settings";
 import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
-import { implementationProhibited } from "../internal/ImplementationProhibited";
+import { _implementationProhibited } from "../internal/Symbols";
 
 /** The unique identifier of a [[WorkspaceContainer]]. This becomes the base name for a local file directory holding the container's [[WorkspaceDb]]s.
  * A valid `WorkspaceContainerId` must conform to the following constraints:
@@ -213,7 +213,7 @@ export type WorkspaceResourceName = string;
  */
 export interface WorkspaceDb {
   /** @internal */
-  [implementationProhibited]: unknown;
+  [_implementationProhibited]: unknown;
   /** The [[WorkspaceContainer]] in which this db resides. */
   readonly container: WorkspaceContainer;
   /** The base name of this WorkspaceDb, without version */
@@ -317,7 +317,7 @@ export interface GetWorkspaceContainerArgs extends WorkspaceContainerProps {
  */
 export interface Workspace {
   /** @internal */
-  [implementationProhibited]: unknown;
+  [_implementationProhibited]: unknown;
 
   /** The directory for local WorkspaceDb files with the name `${containerId}/${dbId}.itwin-workspace`.
    * @internal
@@ -414,7 +414,7 @@ export interface Workspace {
  */
 export interface WorkspaceContainer {
   /** @internal */
-  [implementationProhibited]: unknown;
+  [_implementationProhibited]: unknown;
   /** the local directory where this WorkspaceContainer will store temporary files extracted for file-resources.
    * @internal
    */

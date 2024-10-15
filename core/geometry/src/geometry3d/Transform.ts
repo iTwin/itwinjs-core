@@ -340,7 +340,7 @@ export class Transform implements BeJSONFunctions {
   }
   /**
    * Create a transform with the specified `matrix` and points `a` and `b`. The returned Transform maps
-   * point `p` to `M*(p-a) + b` (i.e., `Tp = M*(p-a) + b`), so maps `a` to 'b'.
+   * point `p` to `M*(p-a) + b` (i.e., `Tp = M*(p-a) + b`), so maps `a` to `b`.
    */
   public static createMatrixPickupPutdown(
     matrix: Matrix3d, a: Point3d, b: Point3d, result?: Transform,
@@ -365,8 +365,10 @@ export class Transform implements BeJSONFunctions {
     return Transform.createRefs(origin, matrix, result);
   }
   /**
-   * Return a transformation which flattens space onto a plane, sweeping along a direction which may be different from the plane normal.
-   * @param sweepVector vector for the sweep direction
+   * Return a transformation which flattens space onto a plane, sweeping along a direction which may be different
+   * from the plane normal.
+   * * See [Matrix3d.createFlattenAlongVectorToPlane] for math details.
+   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting transformation flattens to the plane.
    * @param planePoint any point on the plane
    * @param planeNormal vector normal to the plane.
    */

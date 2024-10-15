@@ -35,22 +35,22 @@ export interface ISchemaComparer {
   compareSchemas(schemaA: Schema, schemaB: Schema): void;
   compareSchemaProps(schemaA: Schema, schemaB: Schema): void;
   compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): void;
-  compareClasses(classA: AnyClass, classB: AnyClass | undefined): void;
+  compareClasses(classA: AnyClass, classB: AnyClass): void;
   compareProperties(propertyA: AnyProperty, propertyB: AnyProperty | undefined): void;
-  compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): void;
-  compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): void;
-  compareRelationshipClasses(relationshipClassA: RelationshipClass, relationshipClassB: RelationshipClass | undefined): void;
-  compareRelationshipConstraints(relationshipConstraintA: RelationshipConstraint, relationshipConstraintB: RelationshipConstraint | undefined): void;
-  compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): void;
-  compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): void;
-  compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): void;
-  compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): void;
-  comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): void;
-  compareFormats(formatA: Format, formatB: Format | undefined): void;
-  compareUnits(unitA: Unit, unitB: Unit | undefined): void;
-  compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): void;
-  comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): void;
-  compareConstants(constantA: Constant, constantB: Constant | undefined): void;
+  compareEntityClasses(entityA: EntityClass, entityB: EntityClass): void;
+  compareMixins(mixinA: Mixin, mixinB: Mixin): void;
+  compareRelationshipClasses(relationshipClassA: RelationshipClass, relationshipClassB: RelationshipClass): void;
+  compareRelationshipConstraints(relationshipConstraintA: RelationshipConstraint, relationshipConstraintB: RelationshipConstraint): void;
+  compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass): void;
+  compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps): void;
+  compareEnumerations(enumA: Enumeration, enumB: Enumeration): void;
+  compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity): void;
+  comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory): void;
+  compareFormats(formatA: Format, formatB: Format): void;
+  compareUnits(unitA: Unit, unitB: Unit): void;
+  compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit): void;
+  comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon): void;
+  compareConstants(constantA: Constant, constantB: Constant): void;
 }
 
 function labelsMatch(label1?: string, label2?: string) {
@@ -148,17 +148,19 @@ export class SchemaComparer {
     if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
+    if (schemaItemA.schemaItemType !== schemaItemB.schemaItemType) {
+      const aType = schemaItemA.schemaItemType;
+      const bType = schemaItemB.schemaItemType;
+      promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "schemaItemType", aType, bType, this._compareDirection));
+      await Promise.all(promises);
+      return;
+    }
+
     if (schemaItemA.description !== schemaItemB.description)
       promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "description", schemaItemA.description, schemaItemB.description, this._compareDirection));
 
     if (!labelsMatch(schemaItemA.label, schemaItemB.label))
       promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "label", schemaItemA.label, schemaItemB.label, this._compareDirection));
-
-    if (schemaItemA.schemaItemType !== schemaItemB.schemaItemType) {
-      const aType = schemaItemA.schemaItemType;
-      const bType = schemaItemB.schemaItemType;
-      promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "schemaItemType", aType, bType, this._compareDirection));
-    }
 
     await Promise.all(promises);
   }
@@ -168,8 +170,8 @@ export class SchemaComparer {
    * @param classA The first ECClass.
    * @param classB The second ECClass.
    */
-  public async compareClasses(classA: AnyClass, classB: AnyClass | undefined): Promise<void> {
-    if (this._compareDirection === SchemaCompareDirection.Backward || !classB)
+  public async compareClasses(classA: AnyClass, classB: AnyClass): Promise<void> {
+    if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
     const promises: Array<Promise<void>> = [];
@@ -214,6 +216,14 @@ export class SchemaComparer {
     if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
+    const propertyTypeA = propertyTypeToString(propertyA.propertyType);
+    const propertyTypeB = propertyTypeToString(propertyB.propertyType);
+    if (propertyTypeA !== propertyTypeB) {
+      promises.push(this._reporter.reportPropertyDelta(propertyA, "type", propertyTypeA, propertyTypeB, this._compareDirection));
+      await Promise.all(promises);
+      return;
+    }
+
     if (!labelsMatch(propertyA.label, propertyB.label))
       promises.push(this._reporter.reportPropertyDelta(propertyA, "label", propertyA.label, propertyB.label, this._compareDirection));
 
@@ -255,13 +265,11 @@ export class SchemaComparer {
    * @param entityA
    * @param entityB
    */
-  public async compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): Promise<void> {
+  public async compareEntityClasses(entityA: EntityClass, entityB: EntityClass): Promise<void> {
     const promises: Array<Promise<void>> = [];
-    if (entityB) {
-      for (const mixinA of entityA.mixins) {
-        if (-1 === entityB.mixins.findIndex((mixinB) => this.areItemsSameByName(mixinA, mixinB, entityA.schema.name, entityB.schema.name)))
-          promises.push(this._reporter.reportEntityMixinMissing(entityA, await mixinA, this._compareDirection));
-      }
+    for (const mixinA of entityA.mixins) {
+      if (-1 === entityB.mixins.findIndex((mixinB) => this.areItemsSameByName(mixinA, mixinB, entityA.schema.name, entityB.schema.name)))
+        promises.push(this._reporter.reportEntityMixinMissing(entityA, await mixinA, this._compareDirection));
     }
 
     await Promise.all(promises);
@@ -272,8 +280,8 @@ export class SchemaComparer {
    * @param mixinA
    * @param mixinB
    */
-  public async compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): Promise<void> {
-    if (this._compareDirection === SchemaCompareDirection.Backward || !mixinB)
+  public async compareMixins(mixinA: Mixin, mixinB: Mixin): Promise<void> {
+    if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
     if (mixinA.appliesTo || mixinB.appliesTo) {
@@ -292,8 +300,8 @@ export class SchemaComparer {
    * @param relationshipA
    * @param relationshipB
    */
-  public async compareRelationshipClasses(relationshipA: RelationshipClass, relationshipB: RelationshipClass | undefined): Promise<void> {
-    if (this._compareDirection === SchemaCompareDirection.Backward || !relationshipB)
+  public async compareRelationshipClasses(relationshipA: RelationshipClass, relationshipB: RelationshipClass): Promise<void> {
+    if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
     const promises: Array<Promise<void>> = [];
@@ -318,10 +326,10 @@ export class SchemaComparer {
    * @param relationshipConstraintA
    * @param relationshipConstraintB
    */
-  public async compareRelationshipConstraints(constraintA: RelationshipConstraint, constraintB: RelationshipConstraint | undefined): Promise<void> {
+  public async compareRelationshipConstraints(constraintA: RelationshipConstraint, constraintB: RelationshipConstraint): Promise<void> {
     const promises: Array<Promise<void>> = [];
 
-    if (constraintB && constraintA.constraintClasses) {
+    if (constraintA.constraintClasses) {
       for (const classA of constraintA.constraintClasses) {
         if (!constraintB.constraintClasses || -1 === constraintB.constraintClasses.findIndex((classB) =>
           this.areItemsSameByName(classA, classB, constraintA.schema.name, constraintB.schema.name)))
@@ -329,7 +337,7 @@ export class SchemaComparer {
       }
     }
 
-    if (this._compareDirection === SchemaCompareDirection.Backward || !constraintB) {
+    if (this._compareDirection === SchemaCompareDirection.Backward) {
       await Promise.all(promises);
       return;
     }
@@ -366,13 +374,13 @@ export class SchemaComparer {
    * @param customAttributeClassA
    * @param customAttributeClassB
    */
-  public async compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): Promise<void> {
-    if (this._compareDirection === SchemaCompareDirection.Backward || !customAttributeClassB)
+  public async compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass): Promise<void> {
+    if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
-    if (customAttributeClassA.containerType !== customAttributeClassB.containerType) {
-      const typeA = containerTypeToString(customAttributeClassA.containerType);
-      const typeB = containerTypeToString(customAttributeClassB.containerType);
+    if (customAttributeClassA.appliesTo !== customAttributeClassB.appliesTo) {
+      const typeA = containerTypeToString(customAttributeClassA.appliesTo);
+      const typeB = containerTypeToString(customAttributeClassB.appliesTo);
       await this._reporter.reportCustomAttributeClassDelta(customAttributeClassA, "appliesTo", typeA, typeB, this._compareDirection);
     }
   }
@@ -382,10 +390,10 @@ export class SchemaComparer {
    * @param containerA
    * @param containerB
    */
-  public async compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): Promise<void> {
+  public async compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps): Promise<void> {
     const promises: Array<Promise<void>> = [];
 
-    if (containerB && containerA.customAttributes) {
+    if (containerA.customAttributes) {
       for (const ca of containerA.customAttributes) {
         if (!containerB.customAttributes || !this.containerHasClass(ca[1], containerA, containerB))
           promises.push(this._reporter.reportCustomAttributeInstanceClassMissing(containerA, ca[1], this._compareDirection));
@@ -400,21 +408,19 @@ export class SchemaComparer {
    * @param enumA
    * @param enumB
    */
-  public async compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): Promise<void> {
+  public async compareEnumerations(enumA: Enumeration, enumB: Enumeration): Promise<void> {
     const promises: Array<Promise<void>> = [];
 
-    if (enumB) {
-      for (const enumeratorA of enumA.enumerators) {
-        const enumeratorB = enumB.enumerators.find((e) => e.name === enumeratorA.name);
-        if (!enumeratorB) {
-          promises.push(this._reporter.reportEnumeratorMissing(enumA, enumeratorA, this._compareDirection));
-        } else if (this._compareDirection === SchemaCompareDirection.Forward) {
-          promises.push(this.compareEnumerators(enumeratorA, enumeratorB, enumA, enumB));
-        }
+    for (const enumeratorA of enumA.enumerators) {
+      const enumeratorB = enumB.enumerators.find((e) => e.name === enumeratorA.name);
+      if (!enumeratorB) {
+        promises.push(this._reporter.reportEnumeratorMissing(enumA, enumeratorA, this._compareDirection));
+      } else if (this._compareDirection === SchemaCompareDirection.Forward) {
+        promises.push(this.compareEnumerators(enumeratorA, enumeratorB, enumA, enumB));
       }
     }
 
-    if (this._compareDirection === SchemaCompareDirection.Backward || !enumB) {
+    if (this._compareDirection === SchemaCompareDirection.Backward) {
       await Promise.all(promises);
       return;
     }
@@ -435,17 +441,17 @@ export class SchemaComparer {
    * @param koqA
    * @param koqB
    */
-  public async compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): Promise<void> {
+  public async compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity): Promise<void> {
     const promises: Array<Promise<void>> = [];
 
-    if (koqB && koqA.presentationFormats) {
+    if (koqA.presentationFormats) {
       for (const unitA of koqA.presentationFormats) {
         if (-1 === koqB.presentationFormats.findIndex((unitB) => this.areOverrideFormatsSameByName(unitA, unitB, koqA.schema.name, koqB.schema.name)))
           promises.push(this._reporter.reportPresentationUnitMissing(koqA, unitA, this._compareDirection));
       }
     }
 
-    if (this._compareDirection === SchemaCompareDirection.Backward || !koqB) {
+    if (this._compareDirection === SchemaCompareDirection.Backward) {
       await Promise.all(promises);
       return;
     }
@@ -472,8 +478,8 @@ export class SchemaComparer {
    * @param categoryA
    * @param categoryB
    */
-  public async comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): Promise<void> {
-    if (this._compareDirection === SchemaCompareDirection.Backward || !categoryB)
+  public async comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory): Promise<void> {
+    if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
     if (categoryA.priority !== categoryB.priority)
@@ -485,12 +491,12 @@ export class SchemaComparer {
    * @param formatA
    * @param formatB
    */
-  public async compareFormats(formatA: Format, formatB: Format | undefined): Promise<void> {
+  public async compareFormats(formatA: Format, formatB: Format): Promise<void> {
     const promises: Array<Promise<void>> = [];
 
     promises.push(this.compareFormatUnits(formatA, formatB));
 
-    if (this._compareDirection === SchemaCompareDirection.Backward || !formatB) {
+    if (this._compareDirection === SchemaCompareDirection.Backward) {
       await Promise.all(promises);
       return;
     }
@@ -557,8 +563,8 @@ export class SchemaComparer {
    * @param unitA
    * @param unitB
    */
-  public async compareUnits(unitA: Unit, unitB: Unit | undefined): Promise<void> {
-    if (this._compareDirection === SchemaCompareDirection.Backward || !unitB)
+  public async compareUnits(unitA: Unit, unitB: Unit): Promise<void> {
+    if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
     const promises: Array<Promise<void>> = [];
@@ -603,8 +609,8 @@ export class SchemaComparer {
    * @param invertedUnitA
    * @param invertedUnitB
    */
-  public async compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): Promise<void> {
-    if (this._compareDirection === SchemaCompareDirection.Backward || !invertedUnitB)
+  public async compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit): Promise<void> {
+    if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
     const promises: Array<Promise<void>> = [];
@@ -637,8 +643,8 @@ export class SchemaComparer {
    * @param phenomenonA
    * @param phenomenonB
    */
-  public async comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): Promise<void> {
-    if (this._compareDirection === SchemaCompareDirection.Backward || !phenomenonB)
+  public async comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon): Promise<void> {
+    if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
     if (phenomenonA.definition !== phenomenonB.definition)
@@ -650,8 +656,8 @@ export class SchemaComparer {
    * @param constantA
    * @param constantB
    */
-  public async compareConstants(constantA: Constant, constantB: Constant | undefined): Promise<void> {
-    if (this._compareDirection === SchemaCompareDirection.Backward || !constantB)
+  public async compareConstants(constantA: Constant, constantB: Constant): Promise<void> {
+    if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
     const promises: Array<Promise<void>> = [];
@@ -680,12 +686,6 @@ export class SchemaComparer {
 
   private async comparePropertyType(propertyA: AnyProperty, propertyB: AnyProperty): Promise<void> {
     const promises: Array<Promise<void>> = [];
-
-    const propertyTypeA = propertyTypeToString(propertyA.propertyType);
-    const propertyTypeB = propertyTypeToString(propertyB.propertyType);
-    if (propertyTypeA !== propertyTypeB) {
-      promises.push(this._reporter.reportPropertyDelta(propertyA, "type", propertyTypeA, propertyTypeB, this._compareDirection));
-    }
 
     if (propertyA.isArray()) {
       const minOccursB = propertyB.isArray() ? propertyB.minOccurs : undefined;
@@ -802,8 +802,8 @@ export class SchemaComparer {
     await Promise.all(promises);
   }
 
-  private async compareFormatUnits(formatA: Format, formatB: Format | undefined): Promise<void> {
-    if (!formatA.units || !formatB)
+  private async compareFormatUnits(formatA: Format, formatB: Format): Promise<void> {
+    if (!formatA.units)
       return;
 
     const promises: Array<Promise<void>> = [];

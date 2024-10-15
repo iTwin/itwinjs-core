@@ -340,9 +340,9 @@ export class GeometryStreamBuilder {
   public appendTextBlock(block: TextBlockGeometryProps): boolean {
     for (const entry of block.entries) {
       let result: boolean;
-      if (entry.text) {
+      if (undefined !== entry.text) {
         result = this.appendTextString(new TextString(entry.text));
-      } else if (entry.color) {
+      } else if (undefined !== entry.color) {
         if (entry.color === "subcategory") {
           result = this.appendSubCategoryChange(Id64.invalid);
         } else {

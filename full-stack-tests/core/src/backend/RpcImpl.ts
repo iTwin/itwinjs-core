@@ -5,7 +5,7 @@
 
 import * as nock from "nock";
 import * as path from "path";
-import { CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
+import { _nativeDb, CloudSqlite, IModelDb, IModelHost, IModelJsFs, NativeHost, SnapshotDb, StandaloneDb, ViewStore } from "@itwin/core-backend";
 import { V1CheckpointManager } from "@itwin/core-backend/lib/cjs/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@itwin/core-common";
 import { AzuriteUsers, TestRpcInterface } from "../common/RpcInterfaces";
@@ -19,7 +19,7 @@ let saveAuthClient: AzuriteTest.AuthorizationClient;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const accessToken = await CloudSqlite.requestToken({ baseUri: AzuriteTest.baseUri, containerId });
+  const accessToken = await CloudSqlite.requestToken({ containerId });
   await ViewStore.CloudAccess.initializeDb({ baseUri: AzuriteTest.baseUri, storageType, containerId, accessToken });
 }
 
@@ -34,7 +34,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // e
   }
 
   public async executeTest(tokenProps: IModelRpcProps, testName: string, params: any): Promise<any> {
-    return JSON.parse(IModelDb.findByKey(tokenProps.key).nativeDb.executeTest(testName, JSON.stringify(params)));
+    return JSON.parse(IModelDb.findByKey(tokenProps.key)[_nativeDb].executeTest(testName, JSON.stringify(params)));
   }
 
   public async purgeCheckpoints(iModelId: string): Promise<void> {

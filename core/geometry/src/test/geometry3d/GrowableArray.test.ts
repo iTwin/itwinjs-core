@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
@@ -54,7 +54,7 @@ describe("GrowableFloat64Array.HelloWorld", () => {
     ck.testLE(capacityB, arr.capacity(), "adequate ensure capacity");
     ck.testExactNumber(lB, arr.length, "length after expanding capacity");
     ck.checkpoint("GrowableArray.float64");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("FilterToInterval", () => {
     const ck = new Checker();
@@ -65,7 +65,7 @@ describe("GrowableFloat64Array.HelloWorld", () => {
     data.restrictToInterval(9.5, 9.5 + numRemaining);
     ck.testExactNumber(numRemaining, data.length, "restrictToInterval");
     ck.checkpoint("GrowableArray.FilterToInterval");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("move", () => {
@@ -104,7 +104,7 @@ describe("GrowableFloat64Array.HelloWorld", () => {
       ck.testExactNumber(data.atUncheckedIndex(c0 + i), data.atUncheckedIndex(n + i));
 
     ck.checkpoint("GrowableArray.move");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -221,7 +221,7 @@ describe("BlockedArray", () => {
     ck.testUndefined(blocks2.checkedComponent(1, 2));
 
     ck.checkpoint("GrowableArray.annotateClusters");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("HelloWorld", () => {
     // REMARK: GrowableBlockedArray gets significant testing via GrowableXYZArray.
@@ -250,7 +250,7 @@ describe("BlockedArray", () => {
     }
     ck.testExactNumber(numAdd, data0.numBlocks);
     ck.checkpoint("GrowableBlockedArray.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -311,7 +311,7 @@ describe("GrowablePoint3dArray", () => {
       ck.testUndefined(pointA.distanceSquaredIndexIndex(-1, 0));
     }
     ck.checkpoint("GrowablePoint3dArray.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Wrap", () => {
@@ -344,7 +344,7 @@ describe("GrowablePoint3dArray", () => {
       ck.testExactNumber(numWrap, numDup, "confirm numWrap duplicates");
     }
     ck.checkpoint("GrowablePoint3dArray.Wrap");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PolyfaceMoments", () => {
@@ -370,7 +370,7 @@ describe("GrowablePoint3dArray", () => {
         GeometryCoreTestIO.consoleLog("expected IY", IY);
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   /** Basic output testing on appendages, sorting, transforming of a known inverse, and testing recognition of plane proximity within correct tolerance */
   it("BlackBoxTests", () => {
@@ -411,7 +411,7 @@ describe("GrowablePoint3dArray", () => {
     ck.testTrue(arr.isCloseToPlane(closePlane!));
     ck.testFalse(arr.isCloseToPlane(nonClosePlane!));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("IndexedXYZCollection", () => {
@@ -457,7 +457,7 @@ describe("GrowablePoint3dArray", () => {
 
       ck.testPoint3d(Point3dArray.centroid(iPoints), Point3dArray.centroid(gPoints), "centroid");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("resizeAndBoundsChecks", () => {
@@ -525,7 +525,7 @@ describe("GrowablePoint3dArray", () => {
     ck.testFalse(xyzPoints.setAtCheckedPointIndex(100, spacePoint), "huge index for setAt");
     ck.testUndefined(xyzPoints.vectorXYAndZIndex(spacePoint, -5), "negative index for vectorXYAndZIndex");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("transferAndSet", () => {
@@ -589,7 +589,7 @@ describe("GrowablePoint3dArray", () => {
     ck.testFalse(array1.transferFromGrowableXYZArray(-1, array0, 1), "invalid source index transferFromGrowable");
     ck.testFalse(array1.transferFromGrowableXYZArray(100, array0, 1), "invalid source index transferFromGrowable");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Compress", () => {
     const ck = new Checker();
@@ -613,7 +613,7 @@ describe("GrowablePoint3dArray", () => {
     const n1 = data.length;
     data.compressAdjacentDuplicates(0.0001);
     ck.testExactNumber(n0, data.length, "compressed array big length", n1);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Coverage", () => {
@@ -644,7 +644,7 @@ describe("GrowablePoint3dArray", () => {
         ck.testUndefined(GrowableXYZArray.distanceBetweenPointsIn2Arrays(dataA, i, dataB, j));
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("TransformingNormals", () => {
     const ck = new Checker();
@@ -675,7 +675,7 @@ describe("GrowablePoint3dArray", () => {
       ck.testCoordinate(vectorA.magnitude(), 1.0);
       ck.testParallel(vectorA, vectorB);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("pushFrom", () => {
     const ck = new Checker();
@@ -707,7 +707,7 @@ describe("GrowablePoint3dArray", () => {
     ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA, dataC));
     ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA0, dataB0));
     ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA0, dataC0));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("pushFront", () => {
     const ck = new Checker();
@@ -721,7 +721,7 @@ describe("GrowablePoint3dArray", () => {
     }
     dataA.reverseInPlace();
     ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA, dataB));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -899,6 +899,6 @@ describe("GrowableArray", () => {
       ck.testPoint3d(a3.back()!, Point3d.createZero(), "Resize > length fills with zero");
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

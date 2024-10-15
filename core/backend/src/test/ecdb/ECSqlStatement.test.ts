@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@itwin/core-bentley";
 import { NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { ECDb, ECEnumValue, ECSqlColumnInfo, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../core-backend";
+import { _nativeDb, ECDb, ECEnumValue, ECSqlColumnInfo, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
@@ -55,7 +55,7 @@ describe("ECSqlStatement", () => {
   const outDir = KnownTestLocations.outputDir;
   const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
   const blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
-  const abbreviatedBlobVal = `{"bytes":${ blobVal.byteLength }}`;
+  const abbreviatedBlobVal = `{"bytes":${blobVal.byteLength}}`;
 
   it("check asynchronous step and stepForInsert methods", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "asyncmethodtest.ecdb",
@@ -206,7 +206,7 @@ describe("ECSqlStatement", () => {
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       }
       ecdb.saveChanges();
-      ConcurrentQuery.resetConfig(ecdb.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
+      ConcurrentQuery.resetConfig(ecdb[_nativeDb], { globalQuota: { time: 1 }, ignoreDelay: false });
 
       let cancelled = 0;
       let successful = 0;
@@ -2104,7 +2104,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(ecdb.isOpen);
 
       const singleBlobVal = blobVal.slice(0, 1);
-      const abbreviatedSingleBlobVal = `{"bytes":${ singleBlobVal.byteLength }}`;
+      const abbreviatedSingleBlobVal = `{"bytes":${singleBlobVal.byteLength}}`;
       const emptyBlobVal = new Uint8Array();
 
       const fullId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlStatement) => {
@@ -2297,7 +2297,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row["parent.id"], parentId);
         assert.equal(row["parent.relClassName"], "Test.ParentHasChildren");
         assert.equal(row.myParentId, parentId);
-        assert.isTrue(Id64.isValidId64(row.myParentRelClassId));
+        assert.isFalse(Id64.isValidId64(row.myParentRelClassId));
       }), 2);
 
       const childId: Id64String = childIds[0];
@@ -2337,11 +2337,11 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId as MyId,ECClassId as MyClassId,SourceECInstanceId As MySourceId,SourceECClassId As MySourceClassId,TargetECInstanceId As MyTargetId,TargetECClassId As MyTargetClassId FROM test.ParentHasChildren WHERE TargetECInstanceId=?", QueryBinder.from([childId]), undefined, (row: any) => {
         rowCount++;
         assert.equal(row.myId, childId);
-        assert.isTrue(Id64.isValidId64(row.myClassId));
+        assert.isFalse(Id64.isValidId64(row.myClassId));
         assert.equal(row.mySourceId, parentId);
-        assert.isTrue(Id64.isValidId64(row.mySourceClassId));
+        assert.isFalse(Id64.isValidId64(row.mySourceClassId));
         assert.equal(row.myTargetId, childId);
-        assert.isTrue(Id64.isValidId64(row.myTargetClassId));
+        assert.isFalse(Id64.isValidId64(row.myTargetClassId));
       }), 1);
 
     });

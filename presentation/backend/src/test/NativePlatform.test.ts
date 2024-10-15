@@ -7,7 +7,7 @@ import * as faker from "faker";
 import { join } from "path";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { IModelDb, IModelHost, IModelJsNative } from "@itwin/core-backend";
+import { _nativeDb, IModelDb, IModelHost, IModelJsNative, IModelNative } from "@itwin/core-backend";
 import { BeEvent } from "@itwin/core-bentley";
 import { DiagnosticsScopeLogs, PresentationError, PresentationStatus, VariableValueTypes } from "@itwin/presentation-common";
 import { createDefaultNativePlatform, NativePlatformDefinition, PresentationNativePlatformResponseError } from "../presentation-backend/NativePlatform";
@@ -22,7 +22,7 @@ describe("default NativePlatform", () => {
     } catch (e) {
       let isLoaded = false;
       try {
-        IModelHost.platform;
+        IModelNative.platform;
         isLoaded = true;
       } catch (_e) {}
       if (!isLoaded) {
@@ -256,7 +256,7 @@ describe("default NativePlatform", () => {
   it("returns imodel addon from IModelDb", () => {
     const mock = moq.Mock.ofType<IModelDb>();
     mock
-      .setup((x) => x.nativeDb)
+      .setup((x) => x[_nativeDb])
       .returns(() => ({}) as any)
       .verifiable(moq.Times.atLeastOnce());
     expect(nativePlatform.getImodelAddon(mock.object)).be.instanceOf(Object);

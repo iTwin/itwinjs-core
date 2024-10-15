@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { AuxChannel, AuxChannelData, AuxChannelDataType, Geometry, Vector3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
-import { AuxChannelTable } from "../../../common/render/primitives/AuxChannelTable";
+import { AuxChannelTable } from "../../../common/internal/render/AuxChannelTable";
 
 describe("AuxChannelTable", () => {
   class System extends MockRender.System {
@@ -143,7 +143,7 @@ describe("AuxChannelTable", () => {
     test(5, 3, 3);
     test(6, 3, 3);
     test(7, 3, 3);
-    test(8, 3, 3);
+    test(8, 8, 1);
     test(9, 8, 1);
     test(10, 8, 1);
     test(11, 8, 1);

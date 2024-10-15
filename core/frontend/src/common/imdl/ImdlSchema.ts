@@ -10,10 +10,10 @@ import { ClipVectorProps, Range3dProps, TransformProps, XYProps, XYZProps } from
 import {
   ColorDefProps, FeatureIndexType, FillFlags, Gradient, ImageSourceFormat, LinePixels, TextureMapping, TextureTransparency,
 } from "@itwin/core-common";
-import { AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
-import { DisplayParams } from "../render/primitives/DisplayParams";
-import { MeshPrimitiveType } from "../render/primitives/MeshPrimitive";
-import { SurfaceType } from "../render/primitives/SurfaceParams";
+import { AuxChannelTableProps } from "../internal/render/AuxChannelTable";
+import { DisplayParams } from "../internal/render/DisplayParams";
+import { MeshPrimitiveType } from "../internal/render/MeshPrimitive";
+import { SurfaceType } from "../internal/render/SurfaceParams";
 
 /* eslint-disable no-restricted-syntax */
 

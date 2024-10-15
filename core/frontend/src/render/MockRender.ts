@@ -8,26 +8,28 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, EmptyLocalization, RenderFeatureTable } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { MeshParams } from "../common/render/primitives/MeshParams";
-import { PointStringParams } from "../common/render/primitives/PointStringParams";
-import { PolylineParams } from "../common/render/primitives/PolylineParams";
+import { MeshParams } from "../common/internal/render/MeshParams";
+import { PointStringParams } from "../common/internal/render/PointStringParams";
+import { PolylineParams } from "../common/internal/render/PolylineParams";
 import { ViewRect } from "../common/ViewRect";
 import { Decorations } from "./Decorations";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
 import { CustomGraphicBuilderOptions, GraphicBuilder, ViewportGraphicBuilderOptions } from "./GraphicBuilder";
 import { Pixel } from "./Pixel";
-import { PrimitiveBuilder } from "./primitives/geometry/GeometryListBuilder";
-import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
+import { PrimitiveBuilder } from "../internal/render/PrimitiveBuilder";
+import { PointCloudArgs } from "../common/internal/render/PointCloudPrimitive";
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 import { RenderMemory } from "./RenderMemory";
 import { RenderPlan } from "./RenderPlan";
-import { RenderAreaPattern, RenderGeometry, RenderSystem } from "./RenderSystem";
+import { RenderAreaPattern, RenderSystem } from "./RenderSystem";
 import { RenderTarget } from "./RenderTarget";
 import { Scene } from "./Scene";
+import { _implementationProhibited } from "../common/internal/Symbols";
+import { RenderGeometry } from "../internal/render/RenderGeometry";
 
 /** Contains extensible mock implementations of the various components of a RenderSystem, intended for use in tests.
  * Use these for tests instead of the default RenderSystem wherever possible because:
@@ -44,6 +46,8 @@ import { Scene } from "./Scene";
 export namespace MockRender {
   /** @internal */
   export abstract class Target extends RenderTarget {
+    protected override readonly [_implementationProhibited] = undefined;
+
     protected constructor(private readonly _system: RenderSystem) { super(); }
 
     public get renderSystem(): RenderSystem { return this._system; }
@@ -119,12 +123,20 @@ export namespace MockRender {
 
   /** @internal */
   export class Geometry implements RenderGeometry {
-    public dispose(): void { }
+    public noDispose = false;
+    public readonly isInstanceable = true;
+    public isDisposed = false;
+    public constructor(public readonly renderGeometryType: "mesh" | "polyline" | "point-string") {
+
+    }
+    public dispose(): void { this.isDisposed = true; }
     public collectStatistics(): void { }
+    public computeRange() { return new Range3d(); }
   }
 
   /** @internal */
   export class AreaPattern implements RenderAreaPattern {
+    public readonly [_implementationProhibited] = "renderAreaPattern";
     public dispose(): void { }
     public collectStatistics(): void { }
   }
@@ -163,13 +175,15 @@ export namespace MockRender {
     public override createRenderGraphic() { return new Graphic(); }
 
     /** @internal */
-    public override createMeshGeometry() { return new Geometry(); }
+    public override createMeshGeometry() { return new Geometry("mesh"); }
     /** @internal */
-    public override createPolylineGeometry() { return new Geometry(); }
+    public override createPolylineGeometry() { return new Geometry("polyline"); }
     /** @internal */
-    public override createPointStringGeometry() { return new Geometry(); }
+    public override createPointStringGeometry() { return new Geometry("point-string"); }
     /** @internal */
     public override createAreaPattern() { return new AreaPattern(); }
+    /** @internal */
+    public override createGraphicFromTemplate() { return new Graphic(); }
   }
 
   export type SystemFactory = () => RenderSystem;

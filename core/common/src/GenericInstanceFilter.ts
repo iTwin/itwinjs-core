@@ -50,15 +50,38 @@ export type GenericInstanceFilterRuleOperator =
   | "like";
 
 /**
+ * Type definition that describes numeric values of [[GenericInstanceFilterRule]].
+ * @beta
+ */
+interface GenericInstanceFilterRuleNumericValue {
+  displayValue: string;
+  rawValue: number;
+  /**
+   * Rounding error that should be taken into consideration when comparing numeric values. This is useful
+   * when numeric display value is rounded and displayed with less precision than actual value.
+   *
+   * Example: entered value is 0.12 but it should match values like 0.12345. In that case `roundingError` can be set to `0.005` and comparison should be done in `0.115` to `0.125` range.
+   */
+  roundingError?: number;
+}
+
+/**
+ * Type definition that describes non-numeric values of [[GenericInstanceFilterRule]].
+ * @beta
+ */
+interface GenericInstanceFilterRuleNonNumericValue {
+  displayValue: string;
+  rawValue: Exclude<GenericInstanceFilterRuleValue.Values, number>;
+}
+
+/**
  * Type definition that describes value of [[GenericInstanceFilterRule]].
  * @beta
  */
-export interface GenericInstanceFilterRuleValue {
-  displayValue: string;
-  rawValue: GenericInstanceFilterRuleValue.Values;
-}
+export type GenericInstanceFilterRuleValue = GenericInstanceFilterRuleNumericValue | GenericInstanceFilterRuleNonNumericValue;
 
 /** @beta */
+// eslint-disable-next-line @typescript-eslint/no-redeclare
 export namespace GenericInstanceFilterRuleValue {
   export interface Point2d {
     x: number;

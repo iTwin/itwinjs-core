@@ -13,6 +13,8 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
+import { _nativeDb } from "./internal/Symbols";
 
 /**
  * Options for processChangesets function
@@ -40,7 +42,7 @@ export class ChangedElementsDb implements IDisposable {
   private _nativeDb: IModelJsNative.ChangedElementsECDb | undefined;
 
   constructor() {
-    this._nativeDb = new IModelHost.platform.ChangedElementsECDb();
+    this._nativeDb = new IModelNative.platform.ChangedElementsECDb();
   }
 
   public dispose(): void {
@@ -57,7 +59,7 @@ export class ChangedElementsDb implements IDisposable {
    * @throws [IModelError]($common) if the operation failed.
    */
   private _createDb(briefcase: IModelDb, pathName: string): void {
-    const status: DbResult = this.nativeDb.createDb(briefcase.nativeDb, pathName);
+    const status: DbResult = this.nativeDb.createDb(briefcase[_nativeDb], pathName);
     if (status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(status, "Failed to created ECDb");
   }
@@ -110,7 +112,7 @@ export class ChangedElementsDb implements IDisposable {
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
     const status = this.nativeDb.processChangesets(
-      briefcase.nativeDb,
+      briefcase[_nativeDb],
       changesets,
       options.rulesetId,
       options.filterSpatial,

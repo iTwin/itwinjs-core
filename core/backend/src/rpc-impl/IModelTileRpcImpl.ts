@@ -15,6 +15,8 @@ import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { RpcTrace } from "../rpc/tracing";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
+import { IModelNative } from "../internal/NativePlatform";
+import { _nativeDb } from "../internal/Symbols";
 
 interface TileRequestProps {
   accessToken?: AccessToken;
@@ -138,7 +140,7 @@ async function getTileContent(props: TileContentRequestProps): Promise<TileConte
       tileGenerationTime: tile.elapsedSeconds.toString(),
       tileSize: tile.content.byteLength.toString(),
     };
-    await IModelHost.tileStorage?.uploadTile(db.iModelId, db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, tileMetadata);
+    await IModelHost.tileStorage?.uploadTile(props.tokenProps.iModelId ?? db.iModelId, props.tokenProps.changeset?.id ?? db.changeset.id, props.treeId, props.contentId, tile.content, props.guid, tileMetadata);
     const { accessToken: _, ...safeProps } = props;
     Logger.logInfo(BackendLoggerCategory.IModelTileRequestRpc, "Generated and uploaded tile", { tileMetadata, ...safeProps });
 
@@ -205,7 +207,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
       return;
     }
 
-    return db.nativeDb.purgeTileTrees(modelIds);
+    return db[_nativeDb].purgeTileTrees(modelIds);
   }
 
   public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<TileContentSource> {
@@ -225,7 +227,7 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
   }
 
   public async queryVersionInfo(): Promise<TileVersionInfo> {
-    return IModelHost.platform.getTileVersionInfo();
+    return IModelNative.platform.getTileVersionInfo();
   }
 
   /** @internal */
@@ -247,6 +249,6 @@ export async function cancelTileContentRequests(tokenProps: IModelRpcProps, cont
       RequestTileContentMemoizer.instance.deleteMemoized(props);
     }
 
-    iModel.nativeDb.cancelTileContentRequests(entry.treeId, entry.contentIds);
+    iModel[_nativeDb].cancelTileContentRequests(entry.treeId, entry.contentIds);
   }
 }

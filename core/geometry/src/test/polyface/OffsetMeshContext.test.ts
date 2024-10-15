@@ -6,7 +6,7 @@
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { LineString3d } from "../../curve/LineString3d";
 import { Arc3d } from "../../curve/Arc3d";
 import { StrokeOptions } from "../../curve/StrokeOptions";
@@ -92,7 +92,7 @@ describe("OffsetMeshContext", () => {
     }
     OffsetMeshContext.stringDebugFunction = undefined;
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetPyramids");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetsFromFan", () => {
@@ -101,7 +101,7 @@ describe("OffsetMeshContext", () => {
     const options = StrokeOptions.createForFacets();
     options.shouldTriangulate = true;
     const builder = PolyfaceBuilder.create(options);
-    const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0))!;
+    const arc = Arc3d.createCircularStartMiddleEnd(Point3d.create(4, 0, 0), Point3d.create(3, 3, 0), Point3d.create(0, 4, 0));
     const strokes = LineString3d.create();
     arc.emitStrokes(strokes, options);
     const coneA = Point3d.create(0, 0, 5);
@@ -116,7 +116,7 @@ describe("OffsetMeshContext", () => {
     */
     testOffsets(ck, allGeometry, polyface, [0.5, 0.5, 1.0], [1.0, -1.0], 0.0, globalSeparateFaceEdgeAndVertexOutputs);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetsFromFan");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetsFanToLine", () => {
@@ -146,7 +146,7 @@ describe("OffsetMeshContext", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetsFanToLine");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetsWithConeApron", () => {
@@ -180,7 +180,7 @@ describe("OffsetMeshContext", () => {
       x0 += 10.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetsWithConeApron");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetDTM", () => {
@@ -219,7 +219,7 @@ describe("OffsetMeshContext", () => {
       OffsetMeshContext.stringDebugFunction = undefined;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetDTM");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("OffsetSampler", () => {
     const ck = new Checker();
@@ -243,7 +243,7 @@ describe("OffsetMeshContext", () => {
     OffsetMeshContext.stringDebugFunction = undefined;
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetSampler");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetOptionsSampler", () => {
@@ -272,7 +272,7 @@ describe("OffsetMeshContext", () => {
     OffsetMeshContext.stringDebugFunction = undefined;
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "OffsetOptionsSampler");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ChamferExample", () => {
     const ck = new Checker();
@@ -311,7 +311,7 @@ describe("OffsetMeshContext", () => {
     OffsetMeshContext.stringDebugFunction = undefined;
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetMeshContext", "ChamferExample");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

@@ -32,6 +32,7 @@ import { PromiseMemoizer } from "../PromiseMemoizer";
 import { RpcTrace } from "../rpc/tracing";
 import { ViewStateHydrator } from "../ViewStateHydrator";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
+import { _nativeDb } from "../internal/Symbols";
 
 interface ViewStateRequestProps {
   accessToken: AccessToken;
@@ -118,6 +119,11 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return viewHydrater.getHydrateResponseProps(options);
   }
 
+  public async queryAllUsedSpatialSubCategories(tokenProps: IModelRpcProps): Promise<SubCategoryResultRow[]> {
+    const iModelDb = await getIModelForRpc(tokenProps);
+    return iModelDb.queryAllUsedSpatialSubCategories();
+  }
+
   public async querySubCategories(tokenProps: IModelRpcProps, compressedCategoryIds: CompressedId64Set): Promise<SubCategoryResultRow[]> {
     const iModelDb = await getIModelForRpc(tokenProps);
     const decompressedIds = CompressedId64Set.decompressArray(compressedCategoryIds);
@@ -130,7 +136,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       Logger.logWarning(BackendLoggerCategory.IModelDb, "usePrimaryConn is only supported on imodel that is opened in read/write mode. The option will be ignored.", request);
       request.usePrimaryConn = false;
     }
-    return ConcurrentQuery.executeQueryRequest(iModelDb.nativeDb, request);
+    return ConcurrentQuery.executeQueryRequest(iModelDb[_nativeDb], request);
   }
 
   public async queryBlob(tokenProps: IModelRpcProps, request: DbBlobRequest): Promise<DbBlobResponse> {
@@ -139,7 +145,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
       Logger.logWarning(BackendLoggerCategory.IModelDb, "usePrimaryConn is only supported on imodel that is opened in read/write mode. The option will be ignored.", request);
       request.usePrimaryConn = false;
     }
-    return ConcurrentQuery.executeBlobRequest(iModelDb.nativeDb, request);
+    return ConcurrentQuery.executeBlobRequest(iModelDb[_nativeDb], request);
   }
 
   public async queryModelRanges(tokenProps: IModelRpcProps, modelIds: Id64String[]): Promise<Range3dProps[]> {
@@ -254,7 +260,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async readFontJson(tokenProps: IModelRpcProps): Promise<FontMapProps> {
     const iModelDb = await getIModelForRpc(tokenProps);
-    return iModelDb.nativeDb.readFontMap();
+    return iModelDb[_nativeDb].readFontMap();
   }
 
   public async requestSnap(tokenProps: IModelRpcProps, sessionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
@@ -368,7 +374,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async generateElementMeshes(tokenProps: IModelRpcProps, props: ElementMeshRequestProps): Promise<Uint8Array> {
     const db = await getIModelForRpc(tokenProps);
-    return db.nativeDb.generateElementMeshes(props);
+    return db[_nativeDb].generateElementMeshes(props);
   }
 
   /** @internal */

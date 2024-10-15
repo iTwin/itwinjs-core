@@ -6,9 +6,10 @@ import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
 import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
-import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
+import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
+import * as path from "path";
 
 // cspell:ignore mirukuru ibim
 
@@ -29,6 +30,7 @@ describe("ECSql Query", () => {
   let imodel6: SnapshotDb;
 
   before(async () => {
+
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
@@ -47,21 +49,73 @@ describe("ECSql Query", () => {
   });
 
   it("verify return values for system properties", async () => {
+    const doNotConvertClassIdsToClassNamesWhenAliased = true;
+    /* eslint-disable @typescript-eslint/naming-convention  */
     const testQueries = [
+      //
       {
-        query: "SELECT ECInstanceId, ECClassId FROM Bis.Element LIMIT 1", expected: {
+        query: "SELECT a.ECInstanceId, b.ECInstanceId, a.ECClassId, b.ECClassId FROM BisCore.Element a, BisCore.Element b LIMIT 1",
+        statementResult: {
+          id: "0x19",
+          id_1: "0x19",
+          className: "BisCore.DrawingCategory",
+          className_1: "BisCore.DrawingCategory",
+        },
+        readerResult: {
+          id: "0x19",
+          id_1: "0x19",
+          className: "BisCore.DrawingCategory",
+          className_1: "BisCore.DrawingCategory",
+        },
+      },
+      {
+        query: "SELECT Parent.Id,Parent.RelECClassId, Parent.Id myParentId, Parent.RelECClassId myParentRelClassId FROM BisCore.Element WHERE Parent.Id IS NOT NULL LIMIT 1",
+        statementResult: {
+          "myParentId": "0x1",
+          "myParentRelClassId": "0xcf",
+          "parent.id": "0x1",
+          "parent.relClassName": "BisCore.SubjectOwnsPartitionElements",
+        },
+        readerResult: {
+          "myParentId": "0x1",
+          "myParentRelClassId": "BisCore.SubjectOwnsPartitionElements",
+          "parent.id": "0x1",
+          "parent.relClassName": "BisCore.SubjectOwnsPartitionElements",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId, ECClassId FROM Bis.Element LIMIT 1",
+        statementResult: {
+          id: "0x19",
+          className: "BisCore.DrawingCategory",
+        },
+        readerResult: {
           id: "0x19",
           className: "BisCore.DrawingCategory",
         },
       },
       {
-        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId FROM Bis.Element) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId FROM Bis.Element) LIMIT 1",
+        statementResult: {
+          id: "0x19",
+          className: "BisCore.DrawingCategory",
+        },
+        readerResult: {
           id: "0x19",
           className: "BisCore.DrawingCategory",
         },
       },
       {
-        query: "SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements LIMIT 1", expected: {
+        query: "SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements LIMIT 1",
+        statementResult: {
+          id: "0x1",
+          className: "BisCore.PartitionOriginatesFromRepository",
+          sourceId: "0x1c",
+          sourceClassName: "BisCore.PhysicalPartition",
+          targetId: "0x12",
+          targetClassName: "BisCore.RepositoryLink",
+        },
+        readerResult: {
           id: "0x1",
           className: "BisCore.PartitionOriginatesFromRepository",
           sourceId: "0x1c",
@@ -71,7 +125,16 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements) LIMIT 1",
+        statementResult: {
+          id: "0x1",
+          className: "BisCore.PartitionOriginatesFromRepository",
+          sourceId: "0x1c",
+          sourceClassName: "BisCore.PhysicalPartition",
+          targetId: "0x12",
+          targetClassName: "BisCore.RepositoryLink",
+        },
+        readerResult: {
           id: "0x1",
           className: "BisCore.PartitionOriginatesFromRepository",
           sourceId: "0x1c",
@@ -81,39 +144,136 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT ECInstanceId a, ECClassId b FROM Bis.Element LIMIT 1", expected: {
+        query: "SELECT ECInstanceId a, ECClassId b FROM Bis.Element LIMIT 1",
+        statementResult: {
           a: "0x19",
-          b: "0x4c",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0x4c" : "BisCore.DrawingCategory",
         },
-      },
-      {
-        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b FROM Bis.Element) LIMIT 1", expected: {
+        readerResult: {
           a: "0x19",
-          b: "0x4c",
+          b: "BisCore.DrawingCategory",
         },
       },
       {
-        query: "SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b FROM Bis.Element) LIMIT 1",
+        statementResult: {
+          a: "0x19",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0x4c" : "BisCore.DrawingCategory",
+        },
+        readerResult: {
+          a: "0x19",
+          b: "BisCore.DrawingCategory",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId A, ECClassId B FROM Bis.Element LIMIT 1",
+        statementResult: {
+          a: "0x19",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0x4c" : "BisCore.DrawingCategory",
+        },
+        readerResult: {
+          a: "0x19",
+          b: "BisCore.DrawingCategory",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId A, ECClassId B FROM Bis.Element) LIMIT 1",
+        statementResult: {
+          a: "0x19",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0x4c" : "BisCore.DrawingCategory",
+        },
+        readerResult: {
+          a: "0x19",
+          b: "BisCore.DrawingCategory",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements LIMIT 1",
+        statementResult: {
           a: "0x1",
-          b: "0xa8",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
           c: "0x1c",
-          d: "0xb4",
+          d: doNotConvertClassIdsToClassNamesWhenAliased ? "0xb4" : "BisCore.PhysicalPartition",
           e: "0x12",
-          f: "0xa9",
+          f: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa9" : "BisCore.RepositoryLink",
         },
-      },
-      {
-        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
+        readerResult: {
           a: "0x1",
-          b: "0xa8",
+          b: "BisCore.PartitionOriginatesFromRepository",
           c: "0x1c",
-          d: "0xb4",
+          d: "BisCore.PhysicalPartition",
           e: "0x12",
-          f: "0xa9",
+          f: "BisCore.RepositoryLink",
         },
       },
       {
-        query: "SELECT Model, Model.Id, Model.RelECClassId from Bis.Element limit 1", expected: {
+        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements) LIMIT 1",
+        statementResult: {
+          a: "0x1",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: doNotConvertClassIdsToClassNamesWhenAliased ? "0xb4" : "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa9" : "BisCore.RepositoryLink",
+        },
+        readerResult: {
+          a: "0x1",
+          b: "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: "BisCore.RepositoryLink",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements LIMIT 1",
+        statementResult: {
+          a: "0x1",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: doNotConvertClassIdsToClassNamesWhenAliased ? "0xb4" : "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa9" : "BisCore.RepositoryLink",
+        },
+        readerResult: {
+          a: "0x1",
+          b: "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: "BisCore.RepositoryLink",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements) LIMIT 1",
+        statementResult: {
+          a: "0x1",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: doNotConvertClassIdsToClassNamesWhenAliased ? "0xb4" : "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa9" : "BisCore.RepositoryLink",
+        },
+        readerResult: {
+          a: "0x1",
+          b: "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: "BisCore.RepositoryLink",
+        },
+      },
+      {
+        query: "SELECT Model, Model.Id, Model.RelECClassId from Bis.Element limit 1",
+        statementResult: {
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+        readerResult: {
           "model": {
             id: "0x1",
             relClassName: "BisCore.ModelContainsElements",
@@ -123,16 +283,212 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT Model, Model.Id, Model.RelECClassId from Bis.Element) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT Model, Model.Id, Model.RelECClassId from Bis.Element) LIMIT 1",
+        statementResult: {
           "model": {
             id: "0x1",
             relClassName: "BisCore.ModelContainsElements",
           },
           "model.id": "0x1",
           "model.relClassName": "BisCore.ModelContainsElements",
+        },
+        readerResult: {
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
+        statementResult: {
+          "id": "0x1",
+          "className": "BisCore.PartitionOriginatesFromRepository",
+          "sourceId": "0x1c",
+          "sourceClassName": "BisCore.PhysicalPartition",
+          "targetId": "0x12",
+          "targetClassName": "BisCore.RepositoryLink",
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+        readerResult: {
+          "id": "0x1",
+          "className": "BisCore.PartitionOriginatesFromRepository",
+          "sourceId": "0x1c",
+          "sourceClassName": "BisCore.PhysicalPartition",
+          "targetId": "0x12",
+          "targetClassName": "BisCore.RepositoryLink",
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
+        statementResult: {
+          "id": "0x1",
+          "className": "BisCore.PartitionOriginatesFromRepository",
+          "sourceId": "0x1c",
+          "sourceClassName": "BisCore.PhysicalPartition",
+          "targetId": "0x12",
+          "targetClassName": "BisCore.RepositoryLink",
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+        readerResult: {
+          "id": "0x1",
+          "className": "BisCore.PartitionOriginatesFromRepository",
+          "sourceId": "0x1c",
+          "sourceClassName": "BisCore.PhysicalPartition",
+          "targetId": "0x12",
+          "targetClassName": "BisCore.RepositoryLink",
+          "model": {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          "model.id": "0x1",
+          "model.relClassName": "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
+        statementResult: {
+          a: "0x1",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: doNotConvertClassIdsToClassNamesWhenAliased ? "0xb4" : "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa9" : "BisCore.RepositoryLink",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: doNotConvertClassIdsToClassNamesWhenAliased ? "0x40" : "BisCore.ModelContainsElements",
+        },
+        readerResult: {
+          a: "0x1",
+          b: "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: "BisCore.RepositoryLink",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
+        statementResult: {
+          a: "0x1",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: doNotConvertClassIdsToClassNamesWhenAliased ? "0xb4" : "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa9" : "BisCore.RepositoryLink",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: doNotConvertClassIdsToClassNamesWhenAliased ? "0x40" : "BisCore.ModelContainsElements",
+        },
+        readerResult: {
+          a: "0x1",
+          b: "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: "BisCore.RepositoryLink",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
+        statementResult: {
+          a: "0x1",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: doNotConvertClassIdsToClassNamesWhenAliased ? "0xb4" : "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa9" : "BisCore.RepositoryLink",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: doNotConvertClassIdsToClassNamesWhenAliased ? "0x40" : "BisCore.ModelContainsElements",
+        },
+        readerResult: {
+          a: "0x1",
+          b: "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: "BisCore.RepositoryLink",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "BisCore.ModelContainsElements",
+        },
+      },
+      {
+        query: "SELECT * FROM (SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
+        statementResult: {
+          a: "0x1",
+          b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: doNotConvertClassIdsToClassNamesWhenAliased ? "0xb4" : "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa9" : "BisCore.RepositoryLink",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: doNotConvertClassIdsToClassNamesWhenAliased ? "0x40" : "BisCore.ModelContainsElements",
+        },
+        readerResult: {
+          a: "0x1",
+          b: "BisCore.PartitionOriginatesFromRepository",
+          c: "0x1c",
+          d: "BisCore.PhysicalPartition",
+          e: "0x12",
+          f: "BisCore.RepositoryLink",
+          g: {
+            id: "0x1",
+            relClassName: "BisCore.ModelContainsElements",
+          },
+          h: "0x1",
+          i: "BisCore.ModelContainsElements",
         },
       },
     ];
+    /* eslint-enable @typescript-eslint/naming-convention  */
     const builder = new QueryOptionsBuilder();
     builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
     builder.setConvertClassIdsToNames(true);
@@ -140,12 +496,12 @@ describe("ECSql Query", () => {
     for (const testQuery of testQueries) {
       imodel1.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
-        assert.deepEqual(stmt.getRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+        assert.deepEqual(stmt.getRow(), testQuery.statementResult, `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
       });
 
       let hasRow = false;
       for await (const row of imodel1.createQueryReader(testQuery.query, undefined, builder.getOptions())) {
-        assert.deepEqual(row.toRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+        assert.deepEqual(row.toRow(), testQuery.readerResult, `(ECSqlReader) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
         hasRow = true;
       }
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");
@@ -154,11 +510,11 @@ describe("ECSql Query", () => {
     for (const testQuery of testQueries) {
       imodel6.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
-        assert.deepEqual(stmt.getRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+        assert.deepEqual(stmt.getRow(), testQuery.statementResult, `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
       });
       let hasRow = false;
       for await (const row of imodel6.createQueryReader(testQuery.query, undefined, builder.getOptions())) {
-        assert.deepEqual(row.toRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+        assert.deepEqual(row.toRow(), testQuery.readerResult, `(ECSqlReader) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
         hasRow = true;
       }
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");
@@ -216,8 +572,8 @@ describe("ECSql Query", () => {
     let successful = 0;
     let rowCount = 0;
     try {
-      ConcurrentQuery.shutdown(imodel1.nativeDb);
-      ConcurrentQuery.resetConfig(imodel1.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
+      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
+      ConcurrentQuery.resetConfig(imodel1[_nativeDb], { globalQuota: { time: 1 }, ignoreDelay: false });
 
       const scheduleQuery = async (delay: number) => {
         return new Promise<void>(async (resolve, reject) => {
@@ -253,8 +609,8 @@ describe("ECSql Query", () => {
       assert.isAtLeast(successful, 1, "successful should be at least 1");
       assert.isAtLeast(rowCount, 1, "rowCount should be at least 1");
     } finally {
-      ConcurrentQuery.shutdown(imodel1.nativeDb);
-      ConcurrentQuery.resetConfig(imodel1.nativeDb);
+      ConcurrentQuery.shutdown(imodel1[_nativeDb]);
+      ConcurrentQuery.resetConfig(imodel1[_nativeDb]);
     }
   });
   it("concurrent query should retry on timeout", async () => {
@@ -268,10 +624,10 @@ describe("ECSql Query", () => {
     }
 
     // Set time to 1 sec to simulate a timeout scenario
-    ConcurrentQuery.resetConfig(imodel1.nativeDb, { globalQuota: { time: 1 }, ignoreDelay: false });
+    ConcurrentQuery.resetConfig(imodel1[_nativeDb], { globalQuota: { time: 1 }, ignoreDelay: false });
     const executor = {
       execute: async (req: DbQueryRequest) => {
-        return ConcurrentQuery.executeQueryRequest(imodel1.nativeDb, req);
+        return ConcurrentQuery.executeQueryRequest(imodel1[_nativeDb], req);
       },
     };
     const request: DbQueryRequest = {

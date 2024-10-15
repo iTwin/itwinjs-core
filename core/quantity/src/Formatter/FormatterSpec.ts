@@ -22,14 +22,18 @@ export class FormatterSpec {
   protected _conversions: UnitConversionSpec[] = [];  // max four entries
   protected _format: Format;
   protected _persistenceUnit: UnitProps;
+  protected _azimuthBaseConversion?: UnitConversionProps; // converts azimuth base unit to persistence unit
+  protected _revolutionConversion?: UnitConversionProps; // converts revolution unit to persistence unit
 
   /** Constructor
    *  @param name     The name of a format specification.
    *  @param format   Defines the output format for the quantity value.
    *  @param conversions An array of conversion factors necessary to convert from an input unit to the units specified in the format.
    *  @param persistenceUnit The unit the magnitude value is input.
+   *  @param azimuthBaseConversion The conversion used to interpret azimuth base values.
+   *  @param revolutionConversion The conversion used to determine a revolution value (used for bearing and azimuth).
    */
-  constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps) {
+  constructor(name: string, format: Format, conversions?: UnitConversionSpec[], persistenceUnit?: UnitProps, azimuthBaseConversion?: UnitConversionProps, revolutionConversion?: UnitConversionProps) {
     if (!persistenceUnit) {
       if (format.units) {
         const [props] = format.units[0];
@@ -44,6 +48,8 @@ export class FormatterSpec {
     this._persistenceUnit = persistenceUnit;
     if (conversions)
       this._conversions = conversions;
+    this._azimuthBaseConversion = azimuthBaseConversion;
+    this._revolutionConversion = revolutionConversion;
   }
 
   public get name(): string { return this._name; }
@@ -51,6 +57,8 @@ export class FormatterSpec {
   public get unitConversions(): UnitConversionSpec[] { return this._conversions; }
   public get format(): Format { return this._format; }
   public get persistenceUnit(): UnitProps { return this._persistenceUnit; }
+  public get azimuthBaseConversion(): UnitConversionProps | undefined { return this._azimuthBaseConversion; }
+  public get revolutionConversion(): UnitConversionProps | undefined { return this._revolutionConversion; }
 
   /** Get an array of UnitConversionSpecs, one for each unit that is to be shown in the formatted quantity string. */
   public static async getUnitConversions(format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<UnitConversionSpec[]> {
@@ -100,7 +108,24 @@ export class FormatterSpec {
    */
   public static async create(name: string, format: Format, unitsProvider: UnitsProvider, inputUnit?: UnitProps): Promise<FormatterSpec> {
     const conversions: UnitConversionSpec[] = await FormatterSpec.getUnitConversions(format, unitsProvider, inputUnit);
-    return new FormatterSpec(name, format, conversions, inputUnit);
+    let azimuthBaseConversion: UnitConversionProps | undefined;
+    if (format.azimuthBaseUnit !== undefined) {
+      if (inputUnit !== undefined) {
+        azimuthBaseConversion = await unitsProvider.getConversion(format.azimuthBaseUnit, inputUnit);
+      } else {
+        azimuthBaseConversion = { factor: 1.0, offset: 0.0 };
+      }
+    }
+    let revolutionConversion: UnitConversionProps | undefined;
+    if (format.revolutionUnit !== undefined) {
+      if (inputUnit !== undefined) {
+        revolutionConversion = await unitsProvider.getConversion(format.revolutionUnit, inputUnit);
+      } else {
+        revolutionConversion = { factor: 1.0, offset: 0.0 };
+      }
+    }
+
+    return new FormatterSpec(name, format, conversions, inputUnit, azimuthBaseConversion, revolutionConversion);
   }
 
   /** Format a quantity value. */

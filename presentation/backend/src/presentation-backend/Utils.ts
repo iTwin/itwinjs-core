@@ -65,13 +65,13 @@ export function normalizeVersion(version?: string) {
 
 /**
  * A function that received request diagnostics and, optionally, request context.
- * @beta
+ * @public
  */
 export type BackendDiagnosticsHandler<TContext = any> = (logs: Diagnostics, requestContext?: TContext) => void;
 
 /**
  * Data structure for backend diagnostics options.
- * @beta
+ * @public
  */
 export interface BackendDiagnosticsOptions<TContext = any> extends DiagnosticsOptions {
   /**
@@ -95,7 +95,7 @@ export interface BackendDiagnosticsOptions<TContext = any> extends DiagnosticsOp
 export interface BackendDiagnosticsAttribute {
   /**
    * Backend diagnostics options.
-   * @beta
+   * @public
    */
   diagnostics?: BackendDiagnosticsOptions;
 }

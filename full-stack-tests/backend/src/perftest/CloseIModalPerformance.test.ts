@@ -13,6 +13,7 @@ import {
   SubCategoryAppearance,
 } from "@itwin/core-common";
 import {
+  _nativeDb,
   IModelDb,
   IModelHost,
   IModelHostOptions,
@@ -95,7 +96,7 @@ describe("CloseIModalTest", () => {
       rootSubject: { name: "InsertNullStructArrayTest" },
     });
     await rootImodel.importSchemas([testSchemaPath]);
-    rootImodel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+    rootImodel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
       rootImodel,
       Code.createEmpty(),

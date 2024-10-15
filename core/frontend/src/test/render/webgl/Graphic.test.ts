@@ -8,8 +8,9 @@ import { IModelApp } from "../../../IModelApp";
 import { EmptyLocalization, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { GraphicBuilder, GraphicType } from "../../../render/GraphicBuilder";
+import { GraphicBuilder } from "../../../render/GraphicBuilder";
 import { GraphicBranch } from "../../../render/GraphicBranch";
+import { GraphicType } from "../../../common/render/GraphicType";
 
 describe("Graphic", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

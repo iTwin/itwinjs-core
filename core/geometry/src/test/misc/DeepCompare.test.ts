@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { DeepCompare } from "../../serialization/DeepCompare";
 import { Checker } from "../Checker";
@@ -43,7 +43,7 @@ describe("DeepCompare", () => {
     ck.testFalse(compareObj.compare(originalObject, toTestObject), "array length change - testing both");
 
     ck.checkpoint("DeepCompare.BasicTests");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

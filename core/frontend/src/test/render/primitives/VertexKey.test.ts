@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { Point3d } from "@itwin/core-geometry";
 import { OctEncodedNormal } from "@itwin/core-common";
-import { VertexKey } from "../../../render/primitives/VertexKey";
+import { VertexKey } from "../../../common/internal/render/VertexKey";
 
 describe("VertexKey", () => {
   it("comparisons work as expected", () => {

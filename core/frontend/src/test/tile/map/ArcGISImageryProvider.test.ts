@@ -12,6 +12,7 @@ import {
 
 } from "../../../tile/internal";
 import { indexedArrayFromUrlParams } from "./MapLayerTestUtilities";
+import { headersIncludeAuthMethod } from "../../../request/utils";
 
 chai.use(chaiAsPromised);
 
@@ -32,6 +33,7 @@ describe("ArcGISImageryProvider", () => {
   afterEach(async () => {
     sandbox.restore();
   });
+
   it("should inject custom parameters before fetch call", async () => {
     const settings = ImageMapLayerSettings.fromJSON({...sampleSource, subLayers: [{name:"layer1", id: "1", visible:false}, {name:"layer2", id: "2", visible:true}, {name:"layer3", id: "3", visible:true}]});
     if (!settings)
@@ -51,7 +53,10 @@ describe("ArcGISImageryProvider", () => {
     const testUrl = `${settings.url }?testParam=test`;
     await provider.fetch(new URL(testUrl), { method: "GET" });
     chai.expect(fetchStub.called).to.be.true;
-    chai.expect(fetchStub.getCall(0).args[0]).to.equals(testUrl);
+
+    let urlObj = fetchStub.getCall(0).args[0];
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    chai.expect(urlObj.toString()).to.equals(testUrl);
 
     const unsaved = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"], ["testParam", "BAD"]]);
     const saved = new URLSearchParams([["key2_1", "value2_1"], ["key2_2", "value2_2"] ]);
@@ -61,7 +66,16 @@ describe("ArcGISImageryProvider", () => {
     unsaved.delete("testParam");    // check that test'
     await provider.fetch(new URL(testUrl), { method: "GET" });
     chai.expect(fetchStub.called).to.be.true;
-    chai.expect(fetchStub.getCall(1).args[0]).to.equals(`${testUrl}&${saved.toString()}&${unsaved.toString()}`);
+    urlObj = fetchStub.getCall(1).args[0];
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    chai.expect(urlObj.toString()).to.equals(`${testUrl}&${saved.toString()}&${unsaved.toString()}`);
+  });
+
+  it("headersIncludeAuthMethod", async () => {
+    const headers1 = new Headers([["WWW-authenticate", "ntlm"]]);
+    chai.expect(headersIncludeAuthMethod(headers1, ["ntlm", "negotiate"])).to.be.true;
+    const headers2 = new Headers([["www-authenticate", "ntlm"]]);
+    chai.expect(headersIncludeAuthMethod(headers2, ["ntlm", "negotiate"])).to.be.true;
   });
 
 });

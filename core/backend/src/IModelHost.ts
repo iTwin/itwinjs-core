@@ -9,6 +9,7 @@
 // To avoid circular load errors, the "Element" classes must be loaded before IModelHost.
 import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
+import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "os";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
@@ -288,9 +289,12 @@ export class IModelHost {
   private static _settingsSchemas?: SettingsSchemas;
   private static _appWorkspace?: OwnedWorkspace;
 
-  private static _platform?: typeof IModelJsNative;
-  /** @internal */
-  public static get platform(): typeof IModelJsNative { return definedInStartup(this._platform); }
+  /** Provides access to the entirely internal, low-level, unstable APIs provided by @bentley/imodel-native.
+   * Should not be used outside of @itwin/core-backend, and certainly not outside of the itwinjs-core repository
+   * @deprecated in 4.8. This internal API will be removed in 5.0. Use IModelHost's public API instead.
+   * @internal
+   */
+  public static get platform(): typeof IModelJsNative { return IModelNative.platform; }
 
   public static configuration?: IModelHostOptions;
 
@@ -361,8 +365,10 @@ export class IModelHost {
    */
   public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
-  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
-  public static snapshotFileNameResolver?: FileNameResolver;
+  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels.
+   * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+   */
+  public static snapshotFileNameResolver?: FileNameResolver; // eslint-disable-line deprecation/deprecation
 
   /** Get the current access token for this IModelHost, or a blank string if none is available.
    * @note for web backends, this will *always* return a blank string because the backend itself has no token (but never needs one either.)
@@ -379,19 +385,11 @@ export class IModelHost {
     }
   }
 
-  private static syncNativeLogLevels() {
-    this.platform.clearLogLevelCache();
-  }
   private static loadNative(options: IModelHostOptions) {
-    if (undefined !== this._platform)
-      return;
-
-    this._platform = ProcessDetector.isMobileAppBackend ? (process as any)._linkedBinding("iModelJsNative") as typeof IModelJsNative : NativeLibrary.load();
-    this._platform.logger = Logger;
-    Logger.logLevelChangedFn = () => IModelHost.syncNativeLogLevels(); // the arrow function exists only so that it can be spied in tests
+    loadNativePlatform();
 
     if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
-      this.platform.setCrashReporting(options.crashReportingConfig);
+      IModelNative.platform.setCrashReporting(options.crashReportingConfig);
 
       Logger.logTrace(loggerCategory, "Configured crash reporting", {
         enableCrashDumps: options.crashReportingConfig?.enableCrashDumps,
@@ -492,7 +490,7 @@ export class IModelHost {
       IModelReadRpcImpl,
       IModelTileRpcImpl,
       SnapshotIModelRpcImpl,
-      WipRpcImpl,
+      WipRpcImpl, // eslint-disable-line deprecation/deprecation
       DevToolsRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 
@@ -550,7 +548,7 @@ export class IModelHost {
    * @internal
    */
   public static setCrashReportProperty(name: string, value: string): void {
-    this.platform.setCrashReportProperty(name, value);
+    IModelNative.platform.setCrashReportProperty(name, value);
   }
 
   /**
@@ -558,7 +556,7 @@ export class IModelHost {
    * @internal
    */
   public static removeCrashReportProperty(name: string): void {
-    this.platform.setCrashReportProperty(name, undefined);
+    IModelNative.platform.setCrashReportProperty(name, undefined);
   }
 
   /**
@@ -566,7 +564,7 @@ export class IModelHost {
    * @internal
    */
   public static getCrashReportProperties(): CrashReportingConfigNameValuePair[] {
-    return this.platform.getCrashReportProperties();
+    return IModelNative.platform.getCrashReportProperties();
   }
 
   /** The directory where application assets may be found */
@@ -624,11 +622,11 @@ export class IModelHost {
     const credentials = config.tileCacheAzureCredentials;
 
     if (!storage && !credentials) {
-      this.platform.setMaxTileCacheSize(config.maxTileCacheDbSize ?? IModelHostConfiguration.defaultMaxTileCacheDbSize);
+      IModelNative.platform.setMaxTileCacheSize(config.maxTileCacheDbSize ?? IModelHostConfiguration.defaultMaxTileCacheDbSize);
       return;
     }
 
-    this.platform.setMaxTileCacheSize(0);
+    IModelNative.platform.setMaxTileCacheSize(0);
     if (credentials) {
       if (storage)
         throw new IModelError(BentleyStatus.ERROR, "Cannot use both Azure and custom cloud storage providers for tile cache.");
@@ -656,7 +654,7 @@ export class IModelHost {
 
   /** @internal */
   public static computeSchemaChecksum(arg: { schemaXmlPath: string, referencePaths: string[], exactMatch?: boolean }): string {
-    return this.platform.computeSchemaChecksum(arg);
+    return IModelNative.platform.computeSchemaChecksum(arg);
   }
 }
 
@@ -677,7 +675,7 @@ export class KnownLocations {
 
   /** The directory where the imodeljs-native assets are stored. */
   public static get nativeAssetsDir(): LocalDirName {
-    return IModelHost.platform.DgnDb.getAssetsDir();
+    return IModelNative.platform.DgnDb.getAssetsDir();
   }
 
   /** The directory where the core-backend assets are stored. */
@@ -695,6 +693,7 @@ export class KnownLocations {
  * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
  * @see [[IModelHost.snapshotFileNameResolver]]
  * @public
+ * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
  */
 export abstract class FileNameResolver {
   /** Resolve a file name from the specified key.

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Point3d } from "@itwin/core-geometry";
-import { StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
+import { StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes";
 
 describe("StrokesPrimitivePointList", () => {
   it("StrokesPrimitivePointList works as expected", () => {

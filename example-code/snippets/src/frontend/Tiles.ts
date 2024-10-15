@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String } from "@itwin/core-bentley";
-import { ColorDef, SpatialClassifierFlags } from "@itwin/core-common";
+import { ColorDef, PlanarClipMaskMode, SpatialClassifierFlags } from "@itwin/core-common";
 import { ContextRealityModelState, GraphicType, IModelApp, TileTreeReference, Viewport } from "@itwin/core-frontend";
 import { Point3d, Sphere } from "@itwin/core-geometry";
 
@@ -93,6 +93,47 @@ export function classifyRealityModel(model: ContextRealityModelState, regions: C
     name: "Regions",
     flags: new SpatialClassifierFlags(undefined, undefined, classifyByVolume),
   };
+}
+
+// __PUBLISH_EXTRACT_END__
+
+// __PUBLISH_EXTRACT_START__ TileTreeReference_DynamicClipMask
+
+/** Mask out portions of the viewport's background map where it intersects a set of spherical regions. */
+export function maskBackgroundMap(viewport: Viewport, regions: Iterable<Sphere>): void {
+  // Use a GraphicBuilder to define the mask geometry.
+  const builder = IModelApp.renderSystem.createGraphic({
+    type: GraphicType.Scene,
+    computeChordTolerance: () => 0.1,
+  });
+
+  for (const region of regions) {
+    builder.addSolidPrimitive(region);
+  }
+
+  // Create a tile tree reference to provide the graphics defining the mask.
+  const tileTreeReference = TileTreeReference.createFromRenderGraphic({
+    modelId: viewport.iModel.transientIds.getNext(),
+    graphic: builder.finish(),
+    iModel: viewport.iModel,
+    // Set the priority higher than the default of PlanarClipMaskPriority.DesignModel.
+    planarClipMaskPriority: 4100,
+  });
+
+  // Add the tile tree reference to the viewport as a TiledGraphicsProvider.
+  viewport.addTiledGraphicsProvider({
+    forEachTileTreeRef: (_vp, func) => func(tileTreeReference),
+  });
+
+  // Enable masking by priority, with priority set just below that of our TileTreeReference so that the map will only be masked by
+  // our geometry, not by any design models that may be present in the scene.
+  viewport.changeBackgroundMapProps({
+    planarClipMask: {
+      mode: PlanarClipMaskMode.Priority,
+      priority: 4000,
+    },
+  });
+  viewport.invalidateRenderPlan();
 }
 
 // __PUBLISH_EXTRACT_END__

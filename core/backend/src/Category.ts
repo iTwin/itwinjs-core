@@ -18,7 +18,6 @@ import { CategoryOwnsSubCategories } from "./NavigationRelationship";
  * @public
  */
 export class SubCategory extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "SubCategory"; }
   /** The Appearance parameters for this SubCategory */
   public appearance: SubCategoryAppearance;
@@ -31,7 +30,6 @@ export class SubCategory extends DefinitionElement {
     this.description = JsonUtils.asString(props.description);
   }
 
-  /** @internal */
   public override toJSON(): SubCategoryProps {
     const val = super.toJSON() as SubCategoryProps;
     val.appearance = this.appearance.toJSON();
@@ -100,7 +98,6 @@ export class SubCategory extends DefinitionElement {
  * @public
  */
 export class Category extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "Category"; }
   public rank: Rank = Rank.User;
   public description?: string;
@@ -111,7 +108,6 @@ export class Category extends DefinitionElement {
     this.description = JsonUtils.asString(props.description);
   }
 
-  /** @internal */
   public override toJSON(): CategoryProps {
     const val = super.toJSON() as CategoryProps;
     val.rank = this.rank;
@@ -138,7 +134,6 @@ export class Category extends DefinitionElement {
  * @public
  */
 export class DrawingCategory extends Category {
-  /** @internal */
   public static override get className(): string { return "DrawingCategory"; }
 
   protected constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
@@ -201,7 +196,6 @@ export class DrawingCategory extends Category {
  * @public
  */
 export class SpatialCategory extends Category {
-  /** @internal */
   public static override get className(): string { return "SpatialCategory"; }
   protected constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
 

@@ -13,15 +13,16 @@ import { SpatialViewState } from "../../../SpatialViewState";
 import { Branch } from "../../../render/webgl/Graphic";
 import { createBlankConnection } from "../../createBlankConnection";
 import { FakeGeometry } from "./Fake";
-import { DisplayParams } from "../../../common/render/primitives/DisplayParams";
-import { GenerateEdges, GeometryOptions } from "../../../render/primitives/Primitives";
-import { GeometryAccumulator } from "../../../render/primitives/geometry/GeometryAccumulator";
-import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
+import { GraphicType } from "../../../common";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
+import { GeometryAccumulator } from "../../../common/internal/render/GeometryAccumulator";
+import { DisplayParams } from "../../../common/internal/render/DisplayParams";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
+import { _accumulator } from "../../../common/internal/Symbols";
 
 describe("GeometryAccumulator tests", () => {
   let iModel: IModelConnection;
   let spatialView: SpatialViewState;
-  let accum: GeometryAccumulator;
 
   const canvas = document.createElement("canvas");
   assert(null !== canvas);
@@ -43,7 +44,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPath works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -64,7 +65,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addLoop works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -88,7 +89,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addPolyface works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -126,7 +127,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("addGeometry works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     expect(accum.geometries.isEmpty).to.be.true;
     expect(accum.isEmpty).to.be.true;
@@ -136,7 +137,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("clear works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     expect(accum.isEmpty).to.be.true;
     accum.addGeometry(new FakeGeometry());
@@ -146,7 +147,7 @@ describe("GeometryAccumulator tests", () => {
   });
 
   it("toMeshBuilderMap works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -182,12 +183,12 @@ describe("GeometryAccumulator tests", () => {
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     expect(accum.geometries.length).to.equal(2);
-    const map = accum.toMeshBuilderMap(new GeometryOptions(GenerateEdges.No), 0.22, undefined);
+    const map = accum.toMeshBuilderMap({ wantEdges: false, preserveOrder: false }, 0.22, undefined);
     expect(map.size).to.equal(2);
   });
 
   it("toMeshes works as expected", () => {
-    accum = new GeometryAccumulator();
+    const accum = new GeometryAccumulator();
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -223,12 +224,16 @@ describe("GeometryAccumulator tests", () => {
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     expect(accum.geometries.length).to.equal(2);
-    const meshes = accum.toMeshes(new GeometryOptions(GenerateEdges.No), 0.22, undefined);
+    const meshes = accum.toMeshes({ wantEdges: false, preserveOrder: false }, 0.22, undefined);
     expect(meshes.length).to.equal(2);
   });
 
   it("saveToGraphicList works as expected", () => {
-    accum = new GeometryAccumulator();
+    const builder = new PrimitiveBuilder(IModelApp.renderSystem, {
+      type: GraphicType.Scene,
+      computeChordTolerance: () => 0,
+    });
+    const accum = builder[_accumulator];
 
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
@@ -264,7 +269,7 @@ describe("GeometryAccumulator tests", () => {
     accum.addPath(pth, displayParams2, Transform.createIdentity(), false);
 
     const graphics = new Array<RenderGraphic>();
-    accum.saveToGraphicList(graphics, new GeometryOptions(GenerateEdges.No), 0.22, undefined);
+    builder.saveToGraphicList(graphics, { wantEdges: false, preserveOrder: false }, 0.22, undefined);
     expect(graphics.length).to.equal(1);
     const graphic = graphics[0];
     expect(graphic instanceof Branch).to.be.true;

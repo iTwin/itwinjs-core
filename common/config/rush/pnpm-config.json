@@ -3,11 +3,13 @@
   "useWorkspaces": true,
   "strictPeerDependencies": false,
   "globalPeerDependencyRules": {
-    "ignoreMissing": ["@babel/core", "@types/node", "@typescript-eslint/parser"]
+    "ignoreMissing": [
+      "@babel/core",
+      "@types/node",
+      "@typescript-eslint/parser"
+    ]
   },
-  "globalOverrides": {
-    "jsdom@19>ws": "^8.17.1" // https://github.com/advisories/GHSA-3h5v-q93c-6h6q > jsdom@19.0.0 > ws@8.16.0
-  },
+  "globalOverrides": {},
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
   // for development dependencies only.
@@ -17,7 +19,9 @@
   "unsupportedPackageJsonSettings": {
     "pnpm": {
       "auditConfig": {
-        "ignoreCves": []
+        "ignoreCves": [
+          "CVE-2024-45296" // https://github.com/advisories/GHSA-9wv6-86v2-598j sinon>nise>path-to-regexp
+        ]
       }
     }
   }

@@ -15,6 +15,8 @@ import { BackstageItem } from "./BackstageItem";
 
 /** Arguments of [[BackstageItemsManager.onChanged]] event.
  * @internal
+ * @deprecated in 4.10.x. Used internally by `@itwin/appui-react`.
+ * Please note: this internal API will be removed in 5.0.0.
  */
 export interface BackstageItemsChangedArgs {
   readonly items: ReadonlyArray<BackstageItem>;
@@ -29,6 +31,8 @@ const isInstance = <T>(args: InstanceOrArray<T>): args is T => {
 /**
  * Controls backstage items.
  * @internal
+ * @deprecated in 4.10.x. Use `UiFramework.backstage` from `@itwin/appui-react`.
+ * Please note: this internal API will be removed in 5.0.0.
  */
 export class BackstageItemsManager {
   private _items: ReadonlyArray<BackstageItem> = [];

@@ -28,6 +28,7 @@ import {
   CodeSpec,
   DefinitionElementProps,
   ElementProps,
+  IModel,
   InformationPartitionElementProps,
   ModelProps,
   QueryBinder,
@@ -101,6 +102,11 @@ export interface RulesetInsertOptions {
 export interface RulesetEmbedderProps {
   /** iModel to embed rulesets to */
   imodel: IModelDb;
+  /**
+   * An ID of existing subject under which presentation ruleset will be located or created.
+   * Defaults to 'IModel.rootSubjectId'.
+   */
+  parentSubjectId?: Id64String;
 }
 
 /**
@@ -109,6 +115,7 @@ export interface RulesetEmbedderProps {
  */
 export class RulesetEmbedder {
   private _imodel: IModelDb;
+  private _parentSubjectId: Id64String;
   private readonly _schemaPath = path.join(KnownLocations.nativeAssetsDir, "ECSchemas/Domain/PresentationRules.ecschema.xml");
   private readonly _rulesetModelName = "PresentationRules";
   private readonly _rulesetSubjectName = "PresentationRules";
@@ -119,6 +126,7 @@ export class RulesetEmbedder {
   public constructor(props: RulesetEmbedderProps) {
     PresentationRules.registerSchema();
     this._imodel = props.imodel;
+    this._parentSubjectId = props.parentSubjectId ?? IModel.rootSubjectId;
   }
 
   /**
@@ -275,16 +283,16 @@ export class RulesetEmbedder {
     return this._imodel.elements.tryGetElement<DefinitionPartition>(DefinitionPartition.createCode(this._imodel, subject.id, this._rulesetModelName));
   }
 
-  private querySubject(): DefinitionPartition | undefined {
-    const root = this._imodel.elements.getRootSubject();
+  private querySubject(): Subject | undefined {
+    const parent = this._imodel.elements.getElement<Subject>(this._parentSubjectId);
     const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const code = new Code({
       spec: codeSpec.id,
-      scope: root.id,
+      scope: parent.id,
       value: this._rulesetSubjectName,
     });
 
-    return this._imodel.elements.tryGetElement<DefinitionPartition>(code);
+    return this._imodel.elements.tryGetElement<Subject>(code);
   }
 
   private async insertDefinitionModel(definitionPartition: DefinitionPartition, callbacks?: InsertCallbacks): Promise<DefinitionModel> {
@@ -314,18 +322,18 @@ export class RulesetEmbedder {
   }
 
   private async insertSubject(callbacks?: InsertCallbacks): Promise<Subject> {
-    const root = this._imodel.elements.getRootSubject();
+    const parent = this._imodel.elements.getElement<Subject>(this._parentSubjectId);
     const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const subjectCode = new Code({
       spec: codeSpec.id,
-      scope: root.id,
+      scope: parent.id,
       value: this._rulesetSubjectName,
     });
     const subjectProps: SubjectProps = {
       classFullName: Subject.classFullName,
-      model: root.model,
+      model: parent.model,
       parent: {
-        id: root.id,
+        id: parent.id,
         relClassName: "BisCore:SubjectOwnsSubjects",
       },
       code: subjectCode,

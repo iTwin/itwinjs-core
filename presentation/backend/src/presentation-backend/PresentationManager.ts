@@ -13,6 +13,7 @@ import { Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
+  buildElementProperties,
   UnitSystemFormat as CommonUnitSystemFormat,
   ComputeSelectionRequestOptions,
   Content,
@@ -63,7 +64,7 @@ import {
   SingleElementPropertiesRequestOptions,
   WithCancelEvent,
 } from "@itwin/presentation-common";
-import { buildElementProperties, getBatchedClassElementIds, getClassesWithInstances, getElementsCount, parseFullClassName } from "./ElementPropertiesHelper";
+import { getBatchedClassElementIds, getClassesWithInstances, getElementsCount, parseFullClassName } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
 import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
 import { RulesetManager } from "./RulesetManager";
@@ -369,8 +370,6 @@ export interface PresentationManagerProps {
    * requests with high I/O intensity, e.g. filtering large tables on non-indexed columns. No downsides have been noticed.
    *
    * Set to a falsy value to turn off. `true` for memory-mapping the whole iModel. Number value for memory-mapping the specified amount of bytes.
-   *
-   * @beta
    */
   useMmap?: boolean | number;
 
@@ -392,14 +391,12 @@ export interface PresentationManagerProps {
    * data is localized on the frontend). Defaults to English localization.
    *
    * @see [Localization]($docs/presentation/advanced/Localization)
-   * @beta
    */
   getLocalizedString?: (key: string) => string;
 
   /**
    * Callback that provides [SchemaContext]($ecschema-metadata) for supplied [IModelDb]($core-backend).
    * [SchemaContext]($ecschema-metadata) is used for getting metadata required for values formatting.
-   * @alpha
    */
   schemaContextProvider?: (imodel: IModelDb) => SchemaContext;
 
@@ -408,7 +405,6 @@ export interface PresentationManagerProps {
    * made through the manager.
    *
    * @see [Diagnostics documentation page]($docs/presentation/advanced/Diagnostics.md)
-   * @beta
    */
   diagnostics?: BackendDiagnosticsOptions;
 }
@@ -521,7 +517,7 @@ export class PresentationManager {
 
   /**
    * Retrieves hierarchy level descriptor
-   * @beta
+   * @public
    */
   public async getNodesDescriptor(
     requestOptions: WithCancelEvent<Prioritized<HierarchyLevelDescriptorRequestOptions<IModelDb, NodeKey, RulesetVariable>>> & BackendDiagnosticsAttribute,
@@ -591,7 +587,7 @@ export class PresentationManager {
 
   /**
    * Retrieves the content set based on the supplied content descriptor.
-   * @beta
+   * @public
    */
   public async getContentSet(
     requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute,
@@ -664,9 +660,9 @@ export class PresentationManager {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @public
    */
-  public async getElementProperties(
-    requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute,
-  ): Promise<ElementProperties | undefined>;
+  public async getElementProperties<TParsedContent = ElementProperties>(
+    requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
+  ): Promise<TParsedContent | undefined>;
   /**
    * Retrieves property data in simplified format for multiple elements specified by class or all element.
    * @return An object that contains element count and AsyncGenerator to iterate over properties of those elements in batches of undefined size.
@@ -677,26 +673,41 @@ export class PresentationManager {
   ): Promise<MultiElementPropertiesResponse<TParsedContent>>;
   public async getElementProperties<TParsedContent = ElementProperties>(
     requestOptions: WithCancelEvent<
-      Prioritized<SingleElementPropertiesRequestOptions<IModelDb> | MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>
+      Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent> | MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>
     > &
       BackendDiagnosticsAttribute,
-  ): Promise<ElementProperties | undefined | MultiElementPropertiesResponse<TParsedContent>> {
+  ): Promise<TParsedContent | undefined | MultiElementPropertiesResponse<TParsedContent>> {
     if (isSingleElementPropertiesRequestOptions(requestOptions)) {
-      const elementProperties = await this._detail.getElementProperties(requestOptions);
-      // istanbul ignore if
-      if (!elementProperties) {
-        return undefined;
-      }
-      return this._localizationHelper.getLocalizedElementProperties(elementProperties);
+      return this.getSingleElementProperties<TParsedContent>(requestOptions);
     }
-
     return this.getMultipleElementProperties<TParsedContent>(requestOptions);
+  }
+
+  private async getSingleElementProperties<TParsedContent>(
+    requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
+  ): Promise<TParsedContent | undefined> {
+    type TParser = Required<typeof requestOptions>["contentParser"];
+    const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
+    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const content = await this.getContent({
+      ...optionsNoElementId,
+      descriptor: {
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        contentFlags: ContentFlags.ShowLabels,
+      },
+      rulesetOrId: "ElementProperties",
+      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+    });
+    if (!content || content.contentSet.length === 0) {
+      return undefined;
+    }
+    return parser(content.descriptor, content.contentSet[0]);
   }
 
   private async getMultipleElementProperties<TParsedContent>(
     requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
   ): Promise<MultiElementPropertiesResponse<TParsedContent>> {
-    type TParser = Required<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>["contentParser"];
+    type TParser = Required<typeof requestOptions>["contentParser"];
     const { elementClasses, contentParser, batchSize, ...contentOptions } = requestOptions;
     const parser: TParser = contentParser ?? (buildElementProperties as TParser);
     const workerThreadsCount = this._props.workerThreadsCount ?? 2;

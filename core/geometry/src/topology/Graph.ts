@@ -1385,7 +1385,7 @@ export class HalfEdgeGraph {
    * @returns pointer to the new half edge at the vertex of `nodeA`.
    */
   public createEdgeHalfEdgeHalfEdge(nodeA: HalfEdge, idA: number, nodeB: HalfEdge, idB: number = 0): HalfEdge {
-    // Visualization can be found at geometry/internaldocs/Graph.md
+    // visualization can be found at geometry/internaldocs/Graph.md
     const a = HalfEdge.createHalfEdgePairWithCoordinates(
       nodeA.x, nodeA.y, nodeA.z, idA, nodeB.x, nodeB.y, nodeB.z, idB, this.allHalfEdges,
     );
@@ -1628,7 +1628,7 @@ export class HalfEdgeGraph {
    * Visit each half edge (node) of the graph once.
    * * Call the `announceNode` function.
    * * Continue search if `announceNode(graph, node)` returns `true`.
-   * * Terminate search if `announceFace(graph, node)` returns `false`.
+   * * Terminate search if `announceNode(graph, node)` returns `false`.
    * @param announceNode function to apply at each node.
    */
   public announceNodes(announceNode: GraphNodeFunction): void {

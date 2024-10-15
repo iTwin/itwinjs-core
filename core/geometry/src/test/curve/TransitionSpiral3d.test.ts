@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { CurveCollection } from "../../curve/CurveCollection";
@@ -104,7 +104,7 @@ describe("TransitionSpiral3d", () => {
     const c = TransitionSpiral3d.averageCurvatureR0R1(radiusLimits.x1, radiusLimits.x0);
     ck.testCoordinate(a, b, "");
     ck.testCoordinate(a, c, "");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("CreateAndPokeTransitionProperties", () => {
     const ck = new Checker();
@@ -127,7 +127,7 @@ describe("TransitionSpiral3d", () => {
     const spiralD2 = IntegratedSpiral3d.createFrom4OutOf5("clothoid", 0, undefined, Angle.createDegrees(0), undefined, 100.0, undefined, Transform.createIdentity())!;
     ck.testUndefined(spiralD2);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CreateAndTransform", () => {
@@ -155,7 +155,7 @@ describe("TransitionSpiral3d", () => {
     const numStroke = spiralA.computeStrokeCountForOptions(options);
     ck.testBetween((numStroke - 1) * options.maxEdgeLength, spiralA.quickLength(), (numStroke + 1) * options.maxEdgeLength);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("TransitionSpiralRangeBetweenFractions", () => {
     // demonstrate (visually and numerically) the effectiveness of "extrapolation" of sampled ranges to make the (known-to-be small)
@@ -223,7 +223,7 @@ describe("TransitionSpiral3d", () => {
       x0 += dx;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "RangeBetweenFractions");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PartialSpiralPoints", () => {
@@ -245,7 +245,7 @@ describe("TransitionSpiral3d", () => {
     const curvatureB = spiralB.fractionToCurvature(0.0)!;
     ck.testCoordinate(curvatureA, curvatureB, `spiral curvature at fraction [${f0}, 0.0]`);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("PartialSpiralDerivatives", () => {
     const ck = new Checker();
@@ -266,7 +266,7 @@ describe("TransitionSpiral3d", () => {
       ck.testVector3d(planeA.vectorU.scale(delta), planeB.vectorU, "spiral.fractionToPointAnd2Derivatives in partial spiral at partial fraction");
       ck.testVector3d(planeA.vectorV.scale(delta * delta), planeB.vectorV, "spiral.fractionToPointAnd2Derivatives in partial spiral at partial fraction");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClothoidTermInversion", () => {
@@ -285,7 +285,7 @@ describe("TransitionSpiral3d", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClothoidTerms", () => {
@@ -372,7 +372,7 @@ describe("TransitionSpiral3d", () => {
       x0 += 200;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "ClothoidTerms");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("NamedApproximations", () => {
     const ck = new Checker();
@@ -479,7 +479,7 @@ describe("TransitionSpiral3d", () => {
     ck.testTrue(directHalfCosine.isAlmostEqual(directHalfCosine));
     ck.testFalse(directHalfCosine.isAlmostEqual(undefined));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "NamedApproximations");
   });
   it("SnapFunctions", () => {
@@ -540,7 +540,7 @@ describe("TransitionSpiral3d", () => {
       x0 += 5.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "SnapFunctions");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ClothoidSeriesCoverage", () => {
     const ck = new Checker();
@@ -590,7 +590,7 @@ describe("TransitionSpiral3d", () => {
       if (ck.testIsFinite(fraction1))
         ck.testCoordinate(fraction, fraction1, "round trip fraction to x to fraction");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Types", () => {
     const ck = new Checker();
@@ -662,7 +662,7 @@ describe("TransitionSpiral3d", () => {
       }
       y0 += 25;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "Types");
   });
   it("DirectSpiralCoverage", () => {
@@ -681,7 +681,7 @@ describe("TransitionSpiral3d", () => {
     ck.testUndefined(DirectSpiral3d.createFromLengthAndRadius("arema", radius0, radius0, bearing0, bearing1, length1, undefined, transform));
     ck.testUndefined(DirectSpiral3d.createFromLengthAndRadius("arema", radius0, radius1, bearing0, bearing1, undefined, undefined, transform));
     ck.testUndefined(DirectSpiral3d.createFromLengthAndRadius("voodoo", radius0, radius1, bearing0, bearing1, length1, undefined, transform));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("DirectHalfCosineSnap", () => {
     const ck = new Checker();
@@ -752,7 +752,7 @@ describe("TransitionSpiral3d", () => {
       y0 = 0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "DirectHalfCosineSnap");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("SampleConstruction", () => {
     const ck = new Checker();
@@ -774,7 +774,7 @@ describe("TransitionSpiral3d", () => {
     y0 += 20.0;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, lineIn, x0, y0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcOutB, x0, y0);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "SampleConstruction");
   });
   it("LineSpiralSpiralLine", () => {
@@ -800,7 +800,7 @@ describe("TransitionSpiral3d", () => {
       }
       x0 += 1000;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "LineSpiralSpiralLine");
   });
 
@@ -834,7 +834,7 @@ describe("TransitionSpiral3d", () => {
       }
       x0 += 1000;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "LineSpiralArcSpiralLine");
   });
 
@@ -854,7 +854,7 @@ describe("TransitionSpiral3d", () => {
       }
       x0 += 1000;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "LineSpiralArcSpiralLineWithSpiralLength");
   });
 
@@ -887,7 +887,7 @@ describe("TransitionSpiral3d", () => {
         ck.testCoordinate(fraction, inverseFraction.fraction);
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("AlexGStroking", () => {
     // const ck = new Checker();
@@ -950,12 +950,12 @@ describe("TransitionSpiral3d", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PolishSpiralDistanceInversion", () => {
     const ck = new Checker();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     const distanceInversionTolerance = 1.0e-10;
     const nominalL1 = 100.0;
     const nominalR1 = 500.0;
@@ -964,7 +964,7 @@ describe("TransitionSpiral3d", () => {
       const xB = PolishCubicEvaluator.approximateDistanceAlongToX(dA, nominalR1, nominalL1)!;
       ck.testTrue(Math.abs(xA - xB) < distanceInversionTolerance);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("spiralStroking", () => {
@@ -1047,7 +1047,7 @@ describe("TransitionSpiral3d", () => {
       }
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ProjectionFromClaude", () => {
@@ -1080,7 +1080,7 @@ describe("TransitionSpiral3d", () => {
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "ClothoidProjectionFromClaude");
     ck.checkpoint("End ClothoidTest.ProjectionFromClaude");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CreateExtendedSpiral", () => {
@@ -1133,7 +1133,7 @@ describe("TransitionSpiral3d", () => {
 
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "ExtendedSpiral");
   });
 });
@@ -1173,7 +1173,7 @@ it("AlexGProjectPointToChain", () => {
   }
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "TransitionSpiral3d", "AlexGProjectToChain");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 function captureStroked(allGeometry: GeometryQuery[], data: any, dx: number = 0, dy: number = 0, dz: number = 0): number {

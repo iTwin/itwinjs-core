@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 import {
   EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, SettingGroupSchema, SettingsContainer,
-  SettingsDictionaryProps, SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor ,
+  SettingsDictionaryProps, SettingsPriority, StandaloneDb, Workspace, WorkspaceDb, WorkspaceEditor,
 } from "@itwin/core-backend";
 import { assert, Guid, OpenMode } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -165,7 +165,7 @@ describe("Workspace Examples", () => {
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.AddDictionary
       const values: SettingsContainer = {
         "landscapePro/ui/defaultTool": "place-shrub",
-        "landscapePro/ui/availableTools": [ "place-shrub", "place-koi-pond", "apply-mulch" ],
+        "landscapePro/ui/availableTools": ["place-shrub", "place-koi-pond", "apply-mulch"],
       };
 
       const props: SettingsDictionaryProps = {
@@ -269,8 +269,7 @@ describe("Workspace Examples", () => {
 
         container.acquireWriteLock("Lief E. Greene");
 
-        const dbProps = (await container.createNewWorkspaceDbVersion({ versionType: "minor" })).newDb;
-        return container.getEditableDb(dbProps);
+        return container.getEditableDb({});
       }
       // __PUBLISH_EXTRACT_END__
 
@@ -306,9 +305,23 @@ describe("Workspace Examples", () => {
       // them visible to other users.
       cornusDb.close();
       cornusDb.container.releaseWriteLock();
+
+      // We have just created and populated a prerelease version (0.0.0) of the cornusDb.
+      // Let's mint version 1.0.0.
+      // As before, the write lock must be acquired and released, and the db must be opened and closed
+      // to publish the changes to the cloud.
+      cornusDb.container.acquireWriteLock("Lief E. Greene");
+      const cornusMajorProps = (await cornusDb.container.createNewWorkspaceDbVersion({
+        versionType: "major",
+      })).newDb;
+      cornusDb = cornusDb.container.getEditableDb(cornusMajorProps);
+      cornusDb.open();
+      cornusDb.close();
+      cornusDb.container.releaseWriteLock();
+
       // __PUBLISH_EXTRACT_END__
       expect(cornusDb.cloudProps).not.to.be.undefined;
-      expect(cornusDb.cloudProps!.version).to.equal("1.1.0");
+      expect(cornusDb.cloudProps!.version).to.equal("1.0.0");
 
       // __PUBLISH_EXTRACT_START__ WorkspaceExamples.CreatePatch
       cornusDb.container.acquireWriteLock("Lief E. Greene");
@@ -326,7 +339,7 @@ describe("Workspace Examples", () => {
       cornusDb.close();
       cornusDb.container.releaseWriteLock();
 
-      const abiesDb = await createTreeDb("abies");
+      let abiesDb = await createTreeDb("abies");
       abiesDb.open();
       addTree(abiesDb, "amabilis", {
         commonName: "Pacific Silver Fir",
@@ -341,9 +354,19 @@ describe("Workspace Examples", () => {
       abiesDb.close();
       abiesDb.container.releaseWriteLock();
 
+      // Mint 1.0.0 of abiesDb
+      abiesDb.container.acquireWriteLock("Lief E. Greene");
+      const abiesMajorProps = (await abiesDb.container.createNewWorkspaceDbVersion({
+        versionType: "major",
+      })).newDb;
+      abiesDb = abiesDb.container.getEditableDb(abiesMajorProps);
+      abiesDb.open();
+      abiesDb.close();
+      abiesDb.container.releaseWriteLock();
+
       // __PUBLISH_EXTRACT_END__
-      expect(cornusDb.cloudProps!.version).to.equal("1.1.1");
-      expect(abiesDb.cloudProps!.version).to.equal("1.1.0");
+      expect(cornusDb.cloudProps!.version).to.equal("1.0.1");
+      expect(abiesDb.cloudProps!.version).to.equal("1.0.0");
 
       AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
@@ -411,7 +434,7 @@ describe("Workspace Examples", () => {
         "landscapePro/flora/treeDbs": [
           {
             ...cornusDb.cloudProps,
-            version: "1.1.0",
+            version: "1.0.0",
           },
           { ...abiesDb.cloudProps },
         ],

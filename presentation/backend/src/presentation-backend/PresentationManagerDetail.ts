@@ -22,7 +22,6 @@ import {
   DisplayLabelsRequestOptions,
   DisplayValueGroup,
   DistinctValuesRequestOptions,
-  ElementProperties,
   FilterByInstancePathsHierarchyRequestOptions,
   FilterByTextHierarchyRequestOptions,
   FormatsMap,
@@ -44,11 +43,10 @@ import {
   Ruleset,
   RulesetVariable,
   SelectClassInfo,
-  SingleElementPropertiesRequestOptions,
   UpdateInfo,
   WithCancelEvent,
 } from "@itwin/presentation-common";
-import { buildElementProperties } from "./ElementPropertiesHelper";
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import {
   createDefaultNativePlatform,
   NativePlatformDefinition,
@@ -62,7 +60,6 @@ import {
 import { HierarchyCacheConfig, HierarchyCacheMode, PresentationManagerProps } from "./PresentationManager";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
-import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 
 /** @internal */
 export class PresentationManagerDetail implements IDisposable {
@@ -318,25 +315,6 @@ export class PresentationManagerDetail implements IDisposable {
       }
       return item.label;
     });
-  }
-
-  public async getElementProperties(
-    requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute,
-  ): Promise<ElementProperties | undefined> {
-    const { elementId, ...optionsNoElementId } = requestOptions;
-    const content = await this.getContent({
-      ...optionsNoElementId,
-      descriptor: {
-        displayType: DefaultContentDisplayTypes.PropertyPane,
-        contentFlags: ContentFlags.ShowLabels,
-      },
-      rulesetOrId: "ElementProperties",
-      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
-    });
-    if (!content || content.contentSet.length === 0) {
-      return undefined;
-    }
-    return buildElementProperties(content.descriptor, content.contentSet[0]);
   }
 
   /** Registers given ruleset and replaces the ruleset with its ID in the resulting object */

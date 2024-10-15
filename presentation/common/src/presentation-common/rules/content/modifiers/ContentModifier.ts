@@ -70,7 +70,6 @@ export interface ContentModifier extends RuleBase, ContentModifiersList {
    * Specifies whether [`calculatedProperties`]($docs/presentation/content/CalculatedPropertiesSpecification.md) and
    * [`relatedProperties`]($docs/presentation/content/RelatedPropertiesSpecification.md) specifications should also be applied on
    * [nested content]($docs/presentation/content/Terminology.md#nested-content).
-   * @beta
    */
   applyOnNestedContent?: boolean;
 }

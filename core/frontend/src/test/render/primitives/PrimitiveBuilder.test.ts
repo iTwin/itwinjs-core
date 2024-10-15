@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d } from "@itwin/core-geometry";
-import { GraphicType, IModelApp, PrimitiveBuilder, RenderGraphic } from "../../../core-frontend";
+import { GraphicType, IModelApp, RenderGraphic } from "../../../core-frontend";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
 import { Batch, Branch, GraphicsArray, MeshGraphic } from "../../../webgl";
 import { EmptyLocalization } from "@itwin/core-common";
 

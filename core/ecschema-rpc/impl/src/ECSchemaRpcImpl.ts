@@ -78,6 +78,6 @@ export class ECSchemaRpcImpl extends RpcInterface implements ECSchemaRpcInterfac
     }
 
     const iModelDb = await this.getIModelDatabase(tokenProps);
-    return iModelDb.nativeDb.getSchemaProps(schemaName);
+    return iModelDb[backend._nativeDb].getSchemaProps(schemaName);
   }
 }

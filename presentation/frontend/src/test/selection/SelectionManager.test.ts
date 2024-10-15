@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { assert, BeDuration, Id64, Id64Arg, Id64String, StopWatch, using } from "@itwin/core-bentley";
-import { IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
+import { BlankConnection, IModelApp, IModelConnection, SelectionSet, SelectionSetEventType } from "@itwin/core-frontend";
 import { InstanceKey, KeySet, NodeKey, SelectionScope, StandardNodeTypes } from "@itwin/presentation-common";
 import {
   createRandomId,
@@ -431,6 +431,23 @@ describe("SelectionManager", () => {
         selectionManager.removeFromSelection(source, imodel, baseSelection);
         selectionManager.replaceSelection(source, imodel, []);
         expect(raiseEventSpy, "Expected selectionChange.raiseEvent to not be called").to.not.have.been.called;
+      });
+
+      it("fires `selectionChange` event after `addToSelection`, `replaceSelection`, `clearSelection`, `removeFromSelection` with `BlankConnection", async () => {
+        // creating blank connection does not raise `IModelConnection.onOpen` event.
+        const blankImodel = { key: "blank", name: "blankConnection" } as BlankConnection;
+        const raiseEventSpy = sinon.spy(selectionManager.selectionChange, "raiseEvent");
+        selectionManager.addToSelection(source, blankImodel, baseSelection);
+        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(1));
+        selectionManager.removeFromSelection(source, blankImodel, baseSelection);
+        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(2));
+        selectionManager.replaceSelection(source, blankImodel, baseSelection);
+        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(3));
+        selectionManager.clearSelection(source, blankImodel);
+        await waitFor(() => expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(4));
+
+        // simulate connection closing
+        IModelConnection.onClose.raiseEvent(blankImodel);
       });
     });
 

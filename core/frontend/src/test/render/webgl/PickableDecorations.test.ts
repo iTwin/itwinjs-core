@@ -8,8 +8,8 @@ import { Point3d } from "@itwin/core-geometry";
 import { IModelApp } from "../../../IModelApp";
 import { DecorateContext } from "../../../ViewContext";
 import { Viewport } from "../../../Viewport";
-import { GraphicType } from "../../../render/GraphicBuilder";
 import { readUniquePixelData, testBlankViewport } from "../../openBlankViewport";
+import { GraphicType } from "../../../common/render/GraphicType";
 
 describe("Pickable decorations", () => {
   class Decorator {

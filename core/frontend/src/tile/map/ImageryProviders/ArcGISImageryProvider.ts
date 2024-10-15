@@ -113,11 +113,11 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
 
     let response: Response|undefined;
     try {
-      response = await fetch(urlObj.toString(), {...options, credentials: this._includeUserCredentials ?  "include" : undefined});
+      response = await fetch(urlObj, {...options, credentials: this._includeUserCredentials ?  "include" : undefined});
 
       if (response.status === 401 && !this._lastAccessToken && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
       // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-        response = await fetch(url, {...options, credentials: "include" });
+        response = await fetch(urlObj, {...options, credentials: "include" });
         if (response.status === 200) {
           this._includeUserCredentials = true;    // avoid going through 401 challenges over and over
         }
@@ -139,7 +139,10 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
       errorCode = await ArcGisUtilities.checkForResponseErrorCode(response);
 
       if (errorCode !== undefined &&
-       (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.InvalidToken) ) {
+       (   errorCode === ArcGisErrorCode.TokenRequired
+        || errorCode === ArcGisErrorCode.InvalidToken
+        || errorCode === ArcGisErrorCode.MissingPermissions
+       ) ) {
 
         if (this._settings.userName && this._settings.userName.length > 0 && this._lastAccessToken ) {
         // **** Legacy token ONLY ***
@@ -161,7 +164,11 @@ export abstract class ArcGISImageryProvider extends MapLayerImageryProvider {
           errorCode  = await ArcGisUtilities.checkForResponseErrorCode(response);
         }
 
-        if (errorCode === ArcGisErrorCode.TokenRequired || errorCode === ArcGisErrorCode.InvalidToken) {
+        if (errorCode !== undefined &&
+          (   errorCode === ArcGisErrorCode.TokenRequired
+           || errorCode === ArcGisErrorCode.InvalidToken
+           || errorCode === ArcGisErrorCode.MissingPermissions
+          ) ) {
           // Looks like the initially generated token has expired.
 
           if (this.status === MapLayerImageryProviderStatus.Valid ) {

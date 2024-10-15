@@ -10,10 +10,10 @@ import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Tran
 import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { GraphicType } from "./render/GraphicBuilder";
 import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport, Viewport } from "./Viewport";
+import { GraphicType } from "./common/render/GraphicType";
 
 /**
  * @public
@@ -151,6 +151,8 @@ export interface HitDetailProps {
    * @internal
    */
   readonly sourceIModel?: IModelConnection;
+  /** @internal */
+  readonly transformFromSourceIModel?: Transform;
   /** @internal chiefly for debugging */
   readonly tileId?: string;
   /** True if the hit originated from a reality model classifier.
@@ -200,6 +202,8 @@ export class HitDetail {
    * @internal
    */
   public get sourceIModel(): IModelConnection | undefined { return this._props.sourceIModel; }
+  /** @internal */
+  public get transformFromSourceIModel(): Transform | undefined { return this._props.transformFromSourceIModel; }
   /** @internal chiefly for debugging */
   public get tileId(): string | undefined { return this._props.tileId; }
   /** True if the hit originated from a reality model classifier.
@@ -255,6 +259,7 @@ export class HitDetail {
         geometryClass: arg0.geometryClass,
         modelId: arg0.modelId,
         sourceIModel: arg0.sourceIModel,
+        transformFromSourceIModel: arg0.transformFromSourceIModel,
         tileId: arg0.tileId,
         isClassifier: arg0.isClassifier,
         viewAttachment: arg0.viewAttachment,

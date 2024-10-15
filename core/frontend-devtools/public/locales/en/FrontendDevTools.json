@@ -18,6 +18,9 @@
     "ToggleDrapeFrustum": {
       "keyin": "fdt toggle drapefrustum"
     },
+    "ToggleMaskFrustum": {
+      "keyin": "fdt toggle maskfrustum"
+    },
     "ToggleNormalMaps": {
       "keyin": "fdt toggle normalmaps"
     },

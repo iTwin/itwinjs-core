@@ -88,28 +88,33 @@ class ECDbMap {
     const sql = `
       SELECT
         JSON_OBJECT (
-          'id', FORMAT ('0x%x', [t].[id]),
-          'name', [t].[Name],
-          'type', (
-            CASE
-              [t].[type]
-              WHEN 0 THEN 'Primary'
-              WHEN 1 THEN 'Joined'
-              WHEN 2 THEN 'Existing'
-              WHEN 3 THEN 'Overflow'
-              WHEN 4 THEN 'Virtual'
-            END
-          ),
-          'exclusiveRootClassId', FORMAT ('0x%x', [t].[ExclusiveRootClassId]),
-          'isClassIdVirtual', (
-            SELECT
-              [c].[IsVirtual]
-            FROM
-              [ec_Column] [c]
-            WHERE
-              [c].[Name] = 'ECClassId' AND [c].[TableId] = [t].[Id]
-          )
+        'id', FORMAT ('0x%x', [t].[id]),
+        'name', [t].[Name],
+        'type', (
+          CASE
+            [t].[type]
+            WHEN 0 THEN 'Primary'
+            WHEN 1 THEN 'Joined'
+            WHEN 2 THEN 'Existing'
+            WHEN 3 THEN 'Overflow'
+            WHEN 4 THEN 'Virtual'
+          END
+        ),
+        'exclusiveRootClassId', FORMAT ('0x%x',
+          COALESCE (
+            [t].[ExclusiveRootClassId], (
+              SELECT [parent].[ExclusiveRootClassId]
+              FROM [ec_Table] [parent]
+              WHERE [parent].[Id] = [t].[ParentTableId] AND [parent].[Type] = 1))),
+        'isClassIdVirtual', (
+          SELECT
+            [c].[IsVirtual]
+          FROM
+            [ec_Column] [c]
+          WHERE
+            [c].[Name] = 'ECClassId' AND [c].[TableId] = [t].[Id]
         )
+      )
       FROM [ec_Table] [t]
       WHERE
         [t].[Name] = ?;
@@ -626,9 +631,6 @@ export class ChangesetECAdaptor implements IDisposable {
    * @param reader wrap changeset reader.
    */
   public constructor(public readonly reader: SqliteChangesetReader, public readonly disableMetaData = false) {
-    if (!reader.db)
-      throw new Error("SqliteChangesetReader, 'db' param must be set to a valid IModelDb or ECDb.");
-
     if (!reader.disableSchemaCheck)
       throw new Error("SqliteChangesetReader, 'disableSchemaCheck' param must be set to false.");
 

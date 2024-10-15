@@ -277,7 +277,7 @@ export type ComputePriorityFunction<T> = (value: T) => number;
 // @public
 export type Constructor<T> = new (...args: any[]) => T;
 
-// @internal
+// @internal (undocumented)
 export enum DbChangeStage {
     // (undocumented)
     New = 1,
@@ -299,7 +299,7 @@ export enum DbConflictCause {
     NotFound = 2
 }
 
-// @internal
+// @internal (undocumented)
 export enum DbConflictResolution {
     Abort = 2,
     Replace = 1,
@@ -453,7 +453,7 @@ export enum DbResult {
     BE_SQLITE_TOOBIG = 18
 }
 
-// @internal
+// @internal (undocumented)
 export enum DbValueType {
     // (undocumented)
     BlobVal = 4,
@@ -671,6 +671,7 @@ export namespace Id64 {
         delete(low: number, high: number): void;
         deleteId(id: Id64String): void;
         deleteIds(ids: Id64Arg): void;
+        equals(other: Uint32Set): boolean;
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;
@@ -1179,14 +1180,20 @@ export namespace JsonUtils {
 export type Listener = (...arg: any[]) => void;
 
 // @public
+export type ListenerType<TEvent extends {
+    addListener(listener: Listener): () => void;
+}> = TEvent extends {
+    addListener(listener: infer TListener): () => void;
+} ? TListener : never;
+
+// @public
 export type LogFunction = (category: string, message: string, metaData: LoggingMetaData) => void;
 
 // @public
 export class Logger {
-    // @internal (undocumented)
-    static get categoryFilter(): {
-        [x: string]: LogLevel;
-    };
+    static get categoryFilter(): Readonly<{
+        [categoryName: string]: LogLevel | undefined;
+    }>;
     static configureLevels(cfg: LoggerLevelsConfig): void;
     static getLevel(category: string): LogLevel | undefined;
     static getMetaData(metaData?: LoggingMetaData): object;
@@ -1201,21 +1208,17 @@ export class Logger {
     static logInfo(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logInfo: LogFunction | undefined;
-    // @internal (undocumented)
-    static logLevelChangedFn?: VoidFunction;
     static logTrace(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logTrace: LogFunction | undefined;
     static logWarning(category: string, message: string, metaData?: LoggingMetaData): void;
     // (undocumented)
     protected static _logWarning: LogFunction | undefined;
-    // @internal (undocumented)
     static get minLevel(): LogLevel | undefined;
+    static get onLogLevelChanged(): BeEvent<() => void>;
     static parseLogLevel(str: string): LogLevel;
     static setLevel(category: string, minLevel: LogLevel): void;
     static setLevelDefault(minLevel: LogLevel): void;
-    // @internal
-    static staticMetaData: Map<string, LoggingMetaData>;
     static stringifyMetaData(metaData?: LoggingMetaData): string;
     static turnOffCategories(): void;
     static turnOffLevelDefault(): void;
@@ -1296,6 +1299,9 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
 export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
 
 // @public
+export type MaybePromise<T> = T | Promise<T>;
+
+// @public
 export type Mutable<T> = {
     -readonly [K in keyof T]: T[K];
 };
@@ -1327,9 +1333,7 @@ export type NonFunctionPropertyNamesOf<T> = {
 // @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
-    // @internal (undocumented)
     clear(): void;
-    // @internal (undocumented)
     delete(item: T): boolean;
     readonly onAdded: BeEvent<(item: T) => void>;
     readonly onCleared: BeEvent<() => void>;
@@ -1523,6 +1527,9 @@ export enum RealityDataStatus {
     Success = 0
 }
 
+// @public
+export type RemapTransientLocalId = (sourceLocalId: number) => number;
+
 // @internal
 export enum RepositoryStatus {
     CannotCreateChangeSet = 86023,
@@ -1585,6 +1592,9 @@ export enum SpanKind {
     SERVER = 1
 }
 
+// @internal
+export const staticLoggerMetadata: Map<String, LoggingMetaData>;
+
 // @alpha
 export abstract class StatusCategory {
     // (undocumented)
@@ -1601,14 +1611,6 @@ export abstract class StatusCategory {
 
 // @alpha (undocumented)
 export type StatusCategoryHandler = (error: Error) => StatusCategory | undefined;
-
-// @internal
-export interface StatusCodeWithMessage<ErrorCodeType> {
-    // (undocumented)
-    message: string;
-    // (undocumented)
-    status: ErrorCodeType;
-}
 
 // @public
 export class StopWatch {
@@ -1633,7 +1635,6 @@ export abstract class SuccessCategory extends StatusCategory {
 // @public @deprecated
 export class Tracing {
     static enableOpenTelemetry(tracer: Tracer, api: typeof Tracing._openTelemetry): void;
-    // @internal
     static recordException(e: Error): void;
     static setAttributes(attributes: SpanAttributes): void;
     static withSpan<T>(name: string, fn: () => Promise<T>, options?: SpanOptions, parentContext?: SpanContext): Promise<T>;
@@ -1641,10 +1642,23 @@ export class Tracing {
 
 // @public
 export class TransientIdSequence {
+    constructor(initialLocalId?: number);
+    get currentLocalId(): number;
+    fork(): TransientIdSequenceProps;
+    static fromJSON(props: TransientIdSequenceProps): TransientIdSequence;
     getNext(): Id64String;
+    readonly initialLocalId: number;
+    merge(source: TransientIdSequenceProps): (sourceLocalId: number) => number;
     // @deprecated
     get next(): Id64String;
     peekNext(): Id64String;
+    toJSON(): TransientIdSequenceProps;
+}
+
+// @public
+export interface TransientIdSequenceProps {
+    currentLocalId: number;
+    initialLocalId: number;
 }
 
 // @public
@@ -1738,14 +1752,9 @@ export function using<T extends IDisposable, TResult>(resources: T | T[], func: 
 // @public
 export function utf8ToString(utf8: Uint8Array): string | undefined;
 
-// @internal
-export function utf8ToStringPolyfill(utf8: Uint8Array): string | undefined;
-
 // @public
 export class YieldManager {
     constructor(options?: YieldManagerOptions);
-    // @internal (undocumented)
-    protected actualYield(): Promise<void>;
     allowYield(): Promise<void>;
     readonly options: Readonly<Required<YieldManagerOptions>>;
 }

@@ -9,7 +9,7 @@
 import { BeEvent, JSONSchemaType } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
 import { WorkspaceDb } from "./Workspace";
-import { implementationProhibited } from "../internal/ImplementationProhibited";
+import { _implementationProhibited } from "../internal/Symbols";
 
 /** The value of a single named parameter within a [[Workspace.settings]] that configures some aspect of the applications run-time behavior.
  * Settings are stored in a [[SettingsDictionary]]. A setting is described by its [[SettingSchema]].
@@ -145,7 +145,7 @@ export namespace SettingsPriority { // eslint-disable-line @typescript-eslint/no
  */
 export interface SettingsDictionary {
   /** @internal */
-  [implementationProhibited]: unknown;
+  [_implementationProhibited]: unknown;
 
   /** Metadata describing the dictionary. */
   readonly props: SettingsDictionaryProps;
@@ -205,7 +205,7 @@ export interface SettingsDictionaryProps extends SettingsDictionarySource {
  */
 export interface Settings {
   /** @internal */
-  [implementationProhibited]: unknown;
+  [_implementationProhibited]: unknown;
 
   /** @internal */
   close(): void;

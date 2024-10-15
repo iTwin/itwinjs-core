@@ -160,9 +160,11 @@ export interface CustomAttribute {
 export class CustomAttributeClass extends ECClass {
     constructor(schema: Schema, name: string, modifier?: ECClassModifier);
     // (undocumented)
-    get containerType(): CustomAttributeContainerType;
+    get appliesTo(): CustomAttributeContainerType;
     // (undocumented)
-    protected _containerType?: CustomAttributeContainerType;
+    protected _appliesTo?: CustomAttributeContainerType;
+    // @deprecated (undocumented)
+    get containerType(): CustomAttributeContainerType;
     // (undocumented)
     fromJSON(customAttributeProps: CustomAttributeClassProps): Promise<void>;
     // (undocumented)
@@ -170,7 +172,7 @@ export class CustomAttributeClass extends ECClass {
     // (undocumented)
     readonly schemaItemType: SchemaItemType.CustomAttributeClass;
     // @alpha
-    protected setContainerType(containerType: CustomAttributeContainerType): void;
+    protected setAppliesTo(containerType: CustomAttributeContainerType): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): CustomAttributeClassProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -178,7 +180,6 @@ export class CustomAttributeClass extends ECClass {
 
 // @beta (undocumented)
 export interface CustomAttributeClassProps extends ClassProps {
-    // (undocumented)
     readonly appliesTo: string;
 }
 
@@ -1237,6 +1238,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     // @internal
     protected setIsReadOnly(isReadOnly: boolean): void;
     // @internal
+    protected setKindOfQuantity(kindOfQuantity: LazyLoadedKindOfQuantity): void;
+    // @internal
     protected setLabel(label: string): void;
     // (undocumented)
     protected setName(name: ECName): void;
@@ -1663,6 +1666,8 @@ export class Schema implements CustomAttributeContainerProps {
     get schemaKey(): SchemaKey;
     // (undocumented)
     protected _schemaKey?: SchemaKey;
+    // @alpha
+    protected setAlias(alias: string): void;
     // @alpha
     protected setContext(context: SchemaContext): void;
     // @alpha

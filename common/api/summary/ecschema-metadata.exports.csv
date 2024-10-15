@@ -1,154 +1,154 @@
 sep=;
-Release Tag;API Item
-beta;AnyArrayProperty = PrimitiveArrayProperty | EnumerationArrayProperty | StructArrayProperty
-beta;AnyClass = EntityClass | Mixin | StructClass | CustomAttributeClass | RelationshipClass
-beta;AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClassProps | RelationshipClassProps
-beta;AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstraint | CustomAttributeContainerProps | CustomAttribute | OverrideFormat | AnyEnumerator
-beta;AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty
-beta;AnyEnumerator = Enumerator_2
-beta;AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty
-beta;AnyProperty = AnyPrimitiveProperty | AnyEnumerationProperty | AnyStructProperty | NavigationProperty
-beta;AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps
-beta;AnySchemaItem = AnyClass | Enumeration | KindOfQuantity | PropertyCategory | Unit | InvertedUnit | Constant | Phenomenon | UnitSystem | Format
-beta;AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | SchemaItemUnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | SchemaItemFormatProps | SchemaItemOverrideFormatProps
-beta;AnyStructProperty = StructProperty | StructArrayProperty
-beta;class ArrayProperty 
-beta;ArrayPropertyProps 
-beta;classModifierToString(modifier: ECClassModifier): string
-beta;ClassProps 
-beta;Constant 
-beta;ConstantProps 
-beta;containerTypeToString(type: CustomAttributeContainerType): string
-beta;CustomAttribute
-beta;CustomAttributeClass 
-beta;CustomAttributeClassProps 
-beta;CustomAttributeContainerProps
-beta;CustomAttributeContainerType
-beta;DelayedPromise
-beta;DelayedPromiseWithProps: DelayedPromiseWithPropsConstructor
-beta;DelayedPromiseWithProps
-beta;DelayedPromiseWithPropsConstructor
-beta;class ECClass 
-beta;ECClassModifier
-public;ECName
-internal;ECObjectsError 
-beta;ECObjectsStatus
-internal;ECStringConstants
-beta;ECVersion
-beta;EntityClass 
-beta;EntityClassProps 
-beta;Enumeration 
-beta;EnumerationArrayProperty 
-beta;EnumerationProperty 
-beta;EnumerationPropertyProps 
-beta;EnumerationProps 
-beta;EnumeratorProps
-beta;Format 
-internal;getFormatProps(format: Format | OverrideFormat): FormatProps
-beta;InvertedUnit 
-beta;InvertedUnitProps 
-beta;ISchemaItemLocater
-beta;ISchemaLocater
-beta;ISchemaPartVisitor
-beta;KindOfQuantity 
-beta;KindOfQuantityProps 
-beta;LazyLoadedConstant = LazyLoadedSchemaItem
-beta;LazyLoadedCustomAttributeClass = LazyLoadedSchemaItem
-beta;LazyLoadedECClass = LazyLoadedSchemaItem
-beta;LazyLoadedEntityClass = LazyLoadedSchemaItem
-beta;LazyLoadedEnumeration = LazyLoadedSchemaItem
-beta;LazyLoadedFormat = LazyLoadedSchemaItem
-beta;LazyLoadedInvertedUnit = LazyLoadedSchemaItem
-beta;LazyLoadedKindOfQuantity = LazyLoadedSchemaItem
-beta;LazyLoadedMixin = LazyLoadedSchemaItem
-beta;LazyLoadedPhenomenon = LazyLoadedSchemaItem
-beta;LazyLoadedPropertyCategory = LazyLoadedSchemaItem
-beta;LazyLoadedRelationshipClass = LazyLoadedSchemaItem
-beta;LazyLoadedRelationshipConstraintClass = LazyLoadedSchemaItem
-beta;LazyLoadedSchema = Readonly
-beta;LazyLoadedSchemaItem
-beta;LazyLoadedStructClass = LazyLoadedSchemaItem
-beta;LazyLoadedUnit = LazyLoadedSchemaItem
-beta;LazyLoadedUnitSystem = LazyLoadedSchemaItem
-beta;Mixin 
-beta;MixinProps 
-beta;NavigationProperty 
-beta;NavigationPropertyProps 
-beta;NoDelayedPromiseMethods
-beta;OverrideFormat
-beta;parseClassModifier(modifier: string): ECClassModifier | undefined
-beta;parseCustomAttributeContainerType(type: string): CustomAttributeContainerType | undefined
-beta;parsePrimitiveType(type: string): PrimitiveType | undefined
-beta;parseRelationshipEnd(end: string): RelationshipEnd | undefined
-beta;parseSchemaItemType(type: string): SchemaItemType | undefined
-beta;parseStrength(strength: string): StrengthType | undefined
-beta;parseStrengthDirection(direction: string): StrengthDirection | undefined
-beta;Phenomenon 
-beta;PhenomenonProps 
-beta;PrimitiveArrayProperty 
-beta;PrimitiveArrayPropertyProps 
-beta;class PrimitiveOrEnumPropertyBase 
-beta;PrimitiveOrEnumPropertyBaseProps 
-beta;PrimitiveProperty 
-beta;PrimitivePropertyProps 
-beta;PrimitiveType
-beta;primitiveTypeToString(type: PrimitiveType): string
-beta;class Property 
-beta;PropertyCategory 
-beta;PropertyCategoryProps 
-beta;PropertyProps
-beta;PropertyType
-beta;propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty"
-beta;PropertyTypeUtils
-beta;RelationshipClass 
-beta;RelationshipClassProps 
-beta;RelationshipConstraint 
-beta;RelationshipConstraintProps
-beta;RelationshipEnd
-beta;relationshipEndToString(end: RelationshipEnd): string
-beta;RelationshipMultiplicity
-beta;Schema 
-internal;SchemaCache 
-beta;SchemaContext 
-internal;SchemaGraph
-internal;SchemaGraphUtil
-beta;SchemaInfo
-beta;class SchemaItem
-beta;SchemaItemFormatProps = SchemaItemProps & FormatProps
-beta;SchemaItemKey
-beta;SchemaItemOverrideFormatProps 
-beta;SchemaItemProps
-beta;SchemaItemType
-beta;schemaItemTypeToString(value: SchemaItemType): string
-deprecated;schemaItemTypeToString(value: SchemaItemType): string
-internal;schemaItemTypeToXmlString(value: SchemaItemType): string
-beta;SchemaItemUnitProps 
-beta;SchemaJsonLocater 
-beta;SchemaKey
-beta;SchemaKeyProps
-beta;SchemaLoader
-beta;SchemaMatchType
-beta;SchemaPartVisitorDelegate
-beta;SchemaProps
-beta;SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined
-internal;SchemaReadHelper
-beta;SchemaReferenceProps
-beta;SchemaUnitProvider 
-internal;SchemaWalker
-beta;StrengthDirection
-beta;strengthDirectionToString(direction: StrengthDirection): string
-beta;strengthToString(strength: StrengthType): string
-beta;StrengthType
-beta;StructArrayProperty 
-beta;StructArrayPropertyProps 
-beta;StructClass 
-beta;StructClassProps = ClassProps
-beta;StructProperty 
-beta;StructPropertyProps 
-beta;Unit 
-internal;UnitConversion
-internal;UnitConverter
-beta;UnitSystem 
-beta;UnitSystemProps = SchemaItemProps
-beta;WithSchemaKey
-internal;XmlParser 
+Release Tag;API Item Type;API Item Name
+beta;type;AnyArrayProperty
+beta;type;AnyClass
+beta;type;AnyClassProps
+beta;type;AnyECType
+beta;type;AnyEnumerationProperty
+beta;type;AnyEnumerator
+beta;type;AnyPrimitiveProperty
+beta;type;AnyProperty
+beta;type;AnyPropertyProps
+beta;type;AnySchemaItem
+beta;type;AnySchemaItemProps
+beta;type;AnyStructProperty
+beta;class;ArrayProperty
+beta;interface;ArrayPropertyProps
+beta;function;classModifierToString
+beta;interface;ClassProps
+beta;class;Constant
+beta;interface;ConstantProps
+beta;function;containerTypeToString
+beta;interface;CustomAttribute
+beta;class;CustomAttributeClass
+beta;interface;CustomAttributeClassProps
+beta;interface;CustomAttributeContainerProps
+beta;enum;CustomAttributeContainerType
+beta;class;DelayedPromise
+beta;const;DelayedPromiseWithProps
+beta;type;DelayedPromiseWithProps
+beta;interface;DelayedPromiseWithPropsConstructor
+beta;class;ECClass
+beta;enum;ECClassModifier
+public;class;ECName
+internal;class;ECObjectsError
+beta;enum;ECObjectsStatus
+internal;class;ECStringConstants
+beta;class;ECVersion
+beta;class;EntityClass
+beta;interface;EntityClassProps
+beta;class;Enumeration
+beta;class;EnumerationArrayProperty
+beta;class;EnumerationProperty
+beta;interface;EnumerationPropertyProps
+beta;interface;EnumerationProps
+beta;interface;EnumeratorProps
+beta;class;Format
+internal;function;getFormatProps
+beta;class;InvertedUnit
+beta;interface;InvertedUnitProps
+beta;interface;ISchemaItemLocater
+beta;interface;ISchemaLocater
+beta;interface;ISchemaPartVisitor
+beta;class;KindOfQuantity
+beta;interface;KindOfQuantityProps
+beta;type;LazyLoadedConstant
+beta;type;LazyLoadedCustomAttributeClass
+beta;type;LazyLoadedECClass
+beta;type;LazyLoadedEntityClass
+beta;type;LazyLoadedEnumeration
+beta;type;LazyLoadedFormat
+beta;type;LazyLoadedInvertedUnit
+beta;type;LazyLoadedKindOfQuantity
+beta;type;LazyLoadedMixin
+beta;type;LazyLoadedPhenomenon
+beta;type;LazyLoadedPropertyCategory
+beta;type;LazyLoadedRelationshipClass
+beta;type;LazyLoadedRelationshipConstraintClass
+beta;type;LazyLoadedSchema
+beta;type;LazyLoadedSchemaItem
+beta;type;LazyLoadedStructClass
+beta;type;LazyLoadedUnit
+beta;type;LazyLoadedUnitSystem
+beta;class;Mixin
+beta;interface;MixinProps
+beta;class;NavigationProperty
+beta;interface;NavigationPropertyProps
+beta;interface;NoDelayedPromiseMethods
+beta;class;OverrideFormat
+beta;function;parseClassModifier
+beta;function;parseCustomAttributeContainerType
+beta;function;parsePrimitiveType
+beta;function;parseRelationshipEnd
+beta;function;parseSchemaItemType
+beta;function;parseStrength
+beta;function;parseStrengthDirection
+beta;class;Phenomenon
+beta;interface;PhenomenonProps
+beta;class;PrimitiveArrayProperty
+beta;interface;PrimitiveArrayPropertyProps
+beta;class;PrimitiveOrEnumPropertyBase
+beta;interface;PrimitiveOrEnumPropertyBaseProps
+beta;class;PrimitiveProperty
+beta;interface;PrimitivePropertyProps
+beta;enum;PrimitiveType
+beta;function;primitiveTypeToString
+beta;class;Property
+beta;class;PropertyCategory
+beta;interface;PropertyCategoryProps
+beta;interface;PropertyProps
+beta;enum;PropertyType
+beta;function;propertyTypeToString
+beta;namespace;PropertyTypeUtils
+beta;class;RelationshipClass
+beta;interface;RelationshipClassProps
+beta;class;RelationshipConstraint
+beta;interface;RelationshipConstraintProps
+beta;enum;RelationshipEnd
+beta;function;relationshipEndToString
+beta;class;RelationshipMultiplicity
+beta;class;Schema
+internal;class;SchemaCache
+beta;class;SchemaContext
+internal;class;SchemaGraph
+internal;class;SchemaGraphUtil
+beta;interface;SchemaInfo
+beta;class;SchemaItem
+beta;type;SchemaItemFormatProps
+beta;class;SchemaItemKey
+beta;interface;SchemaItemOverrideFormatProps
+beta;interface;SchemaItemProps
+beta;enum;SchemaItemType
+beta;function;schemaItemTypeToString
+deprecated;function;schemaItemTypeToString
+internal;function;schemaItemTypeToXmlString
+beta;interface;SchemaItemUnitProps
+beta;class;SchemaJsonLocater
+beta;class;SchemaKey
+beta;interface;SchemaKeyProps
+beta;class;SchemaLoader
+beta;enum;SchemaMatchType
+beta;class;SchemaPartVisitorDelegate
+beta;interface;SchemaProps
+beta;type;SchemaPropsGetter
+internal;class;SchemaReadHelper
+beta;interface;SchemaReferenceProps
+beta;class;SchemaUnitProvider
+internal;class;SchemaWalker
+beta;enum;StrengthDirection
+beta;function;strengthDirectionToString
+beta;function;strengthToString
+beta;enum;StrengthType
+beta;class;StructArrayProperty
+beta;interface;StructArrayPropertyProps
+beta;class;StructClass
+beta;type;StructClassProps
+beta;class;StructProperty
+beta;interface;StructPropertyProps
+beta;class;Unit
+internal;class;UnitConversion
+internal;class;UnitConverter
+beta;class;UnitSystem
+beta;type;UnitSystemProps
+beta;interface;WithSchemaKey
+internal;class;XmlParser

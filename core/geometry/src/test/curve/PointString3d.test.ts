@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { PointString3d } from "../../curve/PointString3d";
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
@@ -78,7 +78,7 @@ describe("PointString3d", () => {
     const lsC = PointString3d.createFloat64Array(xyz);
     ck.testTrue(lsA.isAlmostEqual(lsC), "createFloat64Array");
     ck.checkpoint("PointString3d.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   }),
     it("reverseInPlace", () => {
       const ck = new Checker();
@@ -99,6 +99,6 @@ describe("PointString3d", () => {
       ck.testPoint3d(ls0.pointAt(1)!, ls1.pointAt(1)!);
       ck.testPoint3d(ls0.pointAt(2)!, ls1.pointAt(2)!);
       ck.testPoint3d(ls0.pointAt(3)!, ls1.pointAt(3)!);
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     });
 });

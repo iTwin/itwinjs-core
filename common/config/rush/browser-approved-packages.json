@@ -387,6 +387,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@vitest/coverage-v8",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "@xmldom/xmldom",
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
@@ -528,10 +532,6 @@
     },
     {
       "name": "esbuild",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "esbuild-plugin-external-global",
       "allowedCategories": [ "internal" ]
     },
     {
@@ -767,6 +767,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "rollup-plugin-external-globals",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "rollup-plugin-ignore",
       "allowedCategories": [ "internal" ]
     },
@@ -885,6 +889,10 @@
     {
       "name": "vite-plugin-inspect",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "vitest",
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "webpack",

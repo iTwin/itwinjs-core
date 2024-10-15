@@ -240,7 +240,7 @@ export interface UpgradeOptions {
 /**
  * The state of the schemas in the Db compared with what the current version of the software expects
  * Note: The state may vary depending on whether the Db is to be opened ReadOnly or ReadWrite.
- * @beta
+ * @public
  */
 export enum SchemaState {
   /** The schemas in the Db are up-to-date, and do not need to be upgraded before opening it with the current version of the software */

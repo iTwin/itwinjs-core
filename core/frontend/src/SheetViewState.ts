@@ -15,7 +15,7 @@ import {
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
 import { IModelConnection } from "./IModelConnection";
-import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
+import { GraphicBuilder } from "./render/GraphicBuilder";
 import { RenderGraphic } from "./render/RenderGraphic";
 import { GraphicBranch } from "./render/GraphicBranch";
 import { Frustum2d } from "./Frustum2d";
@@ -34,6 +34,7 @@ import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./common/ImageUtil";
 import { ViewRect } from "./common/ViewRect";
+import { GraphicType } from "./common/render/GraphicType";
 
 // cSpell:ignore ovrs
 
@@ -552,7 +553,6 @@ export class SheetViewState extends ViewState2d {
     }
   }
 
-  /** @internal */
   public override computeFitRange(): Range3d {
     const size = this.sheetSize;
     if (0 >= size.x || 0 >= size.y)

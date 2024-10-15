@@ -6,13 +6,13 @@ import { expect } from "chai";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
-import { Point3dList } from "../../../common/render/primitives/MeshPrimitive";
-import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { Point3dList } from "../../../common/internal/render/MeshPrimitive";
 import { IModelApp } from "../../../IModelApp";
-import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
+import { MeshArgs } from "../../../render/MeshArgs";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
-  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
+  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
 
   // Compare vertex table bytes
   const data = params.vertices.data;

@@ -13,8 +13,9 @@ import {
   UpgradeOptions,
 } from "@itwin/core-common";
 import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
-import { ChannelControl, ElementDrivesElementProps, IModelHost, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend";
+import { _nativeDb, ChannelControl, ElementDrivesElementProps, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
+import { IModelNative } from "../../internal/NativePlatform";
 
 export function copyFile(newName: string, pathToCopy: string): string {
   const newPath = path.join(path.dirname(pathToCopy), newName);
@@ -65,8 +66,8 @@ class TestHelper {
     assert.isTrue(this.db !== undefined);
     this.db.channels.addAllowedChannel(ChannelControl.sharedChannelName);
 
-    this.db.nativeDb.enableTxnTesting();
-    assert.equal(this.db.nativeDb.addChildPropagatesChangesToParentRelationship("TestBim", "ChildPropagatesChangesToParent"), 0);
+    this.db[_nativeDb].enableTxnTesting();
+    assert.equal(this.db[_nativeDb].addChildPropagatesChangesToParentRelationship("TestBim", "ChildPropagatesChangesToParent"), 0);
     this.setElementDependencyGraphCallbacks();
   }
 
@@ -141,7 +142,7 @@ describe("ElementDependencyGraph", () => {
   let dbInfo: DbInfo;
 
   const performUpgrade = (pathname: string) => {
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     const upgradeOptions: UpgradeOptions = {
       domain: DomainOptions.Upgrade,
       schemaLockHeld: true,
@@ -167,7 +168,7 @@ describe("ElementDependencyGraph", () => {
     const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "EDGTestSpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
     dbInfo = { physicalModelId, codeSpecId, spatialCategoryId, seedFileName: testFileName };
     imodel.saveChanges("");
-    imodel.nativeDb.deleteAllTxns();
+    imodel[_nativeDb].deleteAllTxns();
     imodel.close();
   });
 
@@ -266,7 +267,7 @@ describe("ElementDependencyGraph", () => {
       ede.insert();
     }
 
-    // db.nativeDb.writeFullElementDependencyGraphToFile(`${writeDbFileName}.dot`);
+    // db[_nativeDb].writeFullElementDependencyGraphToFile(`${writeDbFileName}.dot`);
 
     // The full graph:
     //     .-parent-> p2 -EDE-> p3

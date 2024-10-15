@@ -44,7 +44,7 @@ If an IndexedPolyface is defined with only the required data, then it is a compl
 This generates the following graph. Black numbers on the graph are point coordinates and red numbers are point indices.
 ![>](./figs/Polyface/polyfaceDataBeforeCompress.png)
 
-As you can see the shared edge leads to duplicate data in `data.point`. To remove duplicate data, we call `pf.data.compress()` which results into the following graph:
+As you can see, the shared edge leads to duplicate data in `data.point`. To remove duplicate data, we call `pf.data.compress()` which results into the following graph:
 ![>](./figs/Polyface/polyfaceDataAfterCompress.png)
 
 

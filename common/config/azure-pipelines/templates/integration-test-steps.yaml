@@ -3,10 +3,6 @@ parameters:
     type: string # data type of the parameter; required
 
 steps:
-  - checkout: self
-    clean: true
-    fetchDepth: 1
-
   - template: setup-integration-users.yaml
 
   - task: NodeTool@0
