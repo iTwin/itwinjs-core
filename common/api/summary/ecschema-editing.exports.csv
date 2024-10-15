@@ -5,6 +5,7 @@ beta;type;AnyDiagnostic
 alpha;type;AnyEditingError
 alpha;type;AnyIdentifier
 alpha;type;AnySchemaDifference
+alpha;type;AnySchemaDifferenceConflict
 alpha;type;AnySchemaEdits
 alpha;type;AnySchemaItemDifference
 alpha;type;AnySchemaItemPathDifference
@@ -139,7 +140,6 @@ alpha;class;SchemaConflictsError
 alpha;class;SchemaContextEditor
 beta;class;SchemaDiagnostic
 alpha;interface;SchemaDifference
-alpha;interface;SchemaDifferenceConflict
 alpha;interface;SchemaDifferenceResult
 alpha;class;SchemaEditingError
 alpha;class;SchemaEdits

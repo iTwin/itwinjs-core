@@ -89,13 +89,16 @@ export type AnyEditingError = SchemaEditingError | Error;
 export type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumeratorIdentifier;
 
 // @alpha
-export type AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | CustomAttributeDifference;
+export type AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | EntityClassMixinDifference | CustomAttributeDifference;
+
+// @alpha
+export type AnySchemaDifferenceConflict = SchemaDifferenceConflict<ConflictCode.ConflictingItemName, SchemaItemType> | SchemaDifferenceConflict<ConflictCode.ConflictingReferenceAlias, SchemaOtherTypes.SchemaReference> | SchemaDifferenceConflict<ConflictCode.ConflictingBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.RemovingBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.SealedBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.ConflictingClassModifier, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.ConflictingEnumerationType, SchemaItemType.Enumeration> | SchemaDifferenceConflict<ConflictCode.ConflictingEnumeratorValue, SchemaOtherTypes.Enumerator> | SchemaDifferenceConflict<ConflictCode.ConflictingPersistenceUnit, SchemaItemType.KindOfQuantity> | SchemaDifferenceConflict<ConflictCode.MixinAppliedMustDeriveFromConstraint, SchemaOtherTypes.EntityClassMixin> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyName, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantity, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantityUnit, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.AbstractConstraintMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> | SchemaDifferenceConflict<ConflictCode.DerivedConstraintsMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> | SchemaDifferenceConflict<ConflictCode.ConstraintClassesDeriveFromAbstractConstraint, SchemaOtherTypes.RelationshipConstraint>;
 
 // @alpha
 export type AnySchemaEdits = SkipEdit | RenameSchemaItemEdit | RenamePropertyEdit;
 
 // @alpha
-export type AnySchemaItemDifference = AnyClassItemDifference | ConstantDifference | EnumerationDifference | EntityClassMixinDifference | FormatDifference | KindOfQuantityDifference | KoqPresentationFormatDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference;
+export type AnySchemaItemDifference = AnyClassItemDifference | ConstantDifference | EnumerationDifference | FormatDifference | KindOfQuantityDifference | InvertedUnitDifference | PhenomenonDifference | PropertyCategoryDifference | UnitDifference | UnitSystemDifference;
 
 // @alpha
 export type AnySchemaItemPathDifference = RelationshipConstraintDifference | RelationshipConstraintClassDifference | CustomAttributePropertyDifference | EnumeratorDifference | ClassPropertyDifference;
@@ -2030,8 +2033,8 @@ export class SchemaComparer {
 
 // @alpha
 export class SchemaConflictsError extends Error {
-    constructor(message: string, conflicts: SchemaDifferenceConflict[], sourceSchema: SchemaKey, targetSchema: SchemaKey);
-    readonly conflicts: ReadonlyArray<SchemaDifferenceConflict>;
+    constructor(message: string, conflicts: AnySchemaDifferenceConflict[], sourceSchema: SchemaKey, targetSchema: SchemaKey);
+    readonly conflicts: ReadonlyArray<AnySchemaDifferenceConflict>;
     readonly sourceSchema: SchemaKey;
     readonly targetSchema: SchemaKey;
 }
@@ -2109,19 +2112,8 @@ export interface SchemaDifference {
 }
 
 // @alpha
-export interface SchemaDifferenceConflict {
-    readonly code: ConflictCode;
-    readonly description: string;
-    readonly itemName?: string;
-    readonly path?: string;
-    readonly schemaType: SchemaType;
-    readonly source: unknown;
-    readonly target: unknown;
-}
-
-// @alpha
 export interface SchemaDifferenceResult {
-    readonly conflicts?: SchemaDifferenceConflict[];
+    readonly conflicts?: AnySchemaDifferenceConflict[];
     readonly differences: AnySchemaDifference[];
     readonly sourceSchemaName: string;
     readonly targetSchemaName: string;

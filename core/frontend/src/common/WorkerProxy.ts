@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Utils
  */
-import { assert } from "@itwin/core-bentley";
+import { assert, MaybePromise } from "@itwin/core-bentley";
 
 /** Holds callbacks for a Promise produced for a particular call to postMessage. */
 interface Task {
@@ -48,11 +48,11 @@ export type WorkerInterface<T> = {
 };
 
 /** Augments each method of `T` with the ability to specify values to be transferred from the worker thread to the main thread.
- * Each return type `R` is replaced with `R | { result: R; transfer: Transferable[]; }`.
+ * Each return type `R` is replaced with `R | { result: R; transfer: Transferable[]; }`, or a promise that resolves to such a type.
  * @see [[WorkerImplementation]].
  * @beta
  */
-export type WorkerReturnType<T extends (...args: any) => any> = ReturnType<T> | { result: ReturnType<T>, transfer: Transferable[] };
+export type WorkerReturnType<T extends (...args: any) => any> = MaybePromise<ReturnType<T> | { result: Awaited<ReturnType<T>>, transfer: Transferable[] }>;
 
 /** Given an interface T that defines the operations provided by a worker, produce an interface to which the implementation of those operations must conform.
  * The return type of each function is enhanced to permit supplying a list of values to be transferred from the worker to the main thread.
