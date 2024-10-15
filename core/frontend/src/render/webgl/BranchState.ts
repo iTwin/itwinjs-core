@@ -46,6 +46,10 @@ export interface BranchStateOptions {
   forceViewCoords?: boolean;
   readonly viewAttachmentId?: Id64String;
   groupNodeId?: number;
+  /** If true, the view's [DisplayStyleSettings.clipStyle]($common) will be disabled for this branch.
+   * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
+   */
+  disableClipStyle?: true;
 }
 
 /**
@@ -73,6 +77,7 @@ export class BranchState {
   public get realityModelDisplaySettings() { return this._opts.realityModelDisplaySettings; }
   public get viewAttachmentId() { return this._opts.viewAttachmentId; }
   public get groupNodeId() { return this._opts.groupNodeId; }
+  public get disableClipStyle() { return this._opts.disableClipStyle;}
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -108,6 +113,7 @@ export class BranchState {
       realityModelDisplaySettings: branch.branch.realityModelDisplaySettings ?? prev.realityModelDisplaySettings,
       viewAttachmentId: branch.viewAttachmentId ?? prev.viewAttachmentId,
       groupNodeId: branch.branch.groupNodeId ?? prev.groupNodeId,
+      disableClipStyle: branch.disableClipStyle ?? prev.disableClipStyle,
     });
   }
 

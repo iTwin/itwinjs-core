@@ -98,6 +98,11 @@ export type PickAsyncMethods<T> = { [P in keyof T]: T[P] extends AsyncFunction ?
  */
 export type AsyncMethodsOf<T> = { [P in keyof T]: T[P] extends AsyncFunction ? P : never }[keyof T];
 
+/** A type that is either `T` or `Promise<T>`.
+ * @public
+ */
+export type MaybePromise<T> = T | Promise<T>;
+
 /** Extracts the type to which the Promise returned by an async function resolves.
  * @public
  */
