@@ -6,15 +6,15 @@
  * @module Geometry
  */
 
-import { Angle, Constant, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
+import { Angle, Constant, Point3d, Range1d, Range2d, Range3d, Transform, Vector3d, XYAndZ, XYZ } from "@itwin/core-geometry";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 
 /** The JSON representation of a Cartographic object.
  * @public
  * @extensions
- **/
+ */
 export interface CartographicProps {
   /** The longitude, specified in radians. */
   longitude: number;
@@ -33,7 +33,7 @@ export class Cartographic implements CartographicProps {
    * @param latitude latitude, in radians.
    * @param height The height, in meters, above the ellipsoid.
    */
-  private constructor(public longitude: number = 0, public latitude: number = 0, public height: number = 0) { }
+  private constructor(public longitude: number = 0, public latitude: number = 0, public height: number = 0) {}
 
   /** Create a Cartographic object with longitude, latitude, and height of zero. */
   public static createZero() {
@@ -99,7 +99,11 @@ export class Cartographic implements CartographicProps {
    * @param result The object onto which to store the result.
    */
   public static fromDegrees(args: { longitude: number, latitude: number, height?: number }, result?: Cartographic) {
-    return Cartographic.fromRadians({ longitude: Angle.degreesToRadians(args.longitude), latitude: Angle.degreesToRadians(args.latitude), height: args.height }, result);
+    return Cartographic.fromRadians({
+      longitude: Angle.degreesToRadians(args.longitude),
+      latitude: Angle.degreesToRadians(args.latitude),
+      height: args.height,
+    }, result);
   }
 
   /** Create a new Cartographic from longitude and latitude in [Angle]($geometry)s. The values in the resulting object will be in radians.
@@ -114,7 +118,11 @@ export class Cartographic implements CartographicProps {
   private static _cartesianToCartographicP = new Point3d();
   private static _cartesianToCartographicH = new Vector3d();
   private static _wgs84OneOverRadii = new Point3d(1.0 / 6378137.0, 1.0 / 6378137.0, 1.0 / 6356752.3142451793);
-  private static _wgs84OneOverRadiiSquared = new Point3d(1.0 / (6378137.0 * 6378137.0), 1.0 / (6378137.0 * 6378137.0), 1.0 / (6356752.3142451793 * 6356752.3142451793));
+  private static _wgs84OneOverRadiiSquared = new Point3d(
+    1.0 / (6378137.0 * 6378137.0),
+    1.0 / (6378137.0 * 6378137.0),
+    1.0 / (6356752.3142451793 * 6356752.3142451793),
+  );
   private static _wgs84RadiiSquared = new Point3d(6378137.0 * 6378137.0, 6378137.0 * 6378137.0, 6356752.3142451793 * 6356752.3142451793);
   private static _wgs84CenterToleranceSquared = 0.1;
   private static _scratchN = new Vector3d();
@@ -215,11 +223,19 @@ export class Cartographic implements CartographicProps {
   }
 
   /** Create a string representing this cartographic in the format '(longitude, latitude, height)'. */
-  public toString(): string { return `(${this.longitude}, ${this.latitude}, ${this.height})`; }
+  public toString(): string {
+    return `(${this.longitude}, ${this.latitude}, ${this.height})`;
+  }
 
   private static _scaleToGeodeticSurfaceIntersection = new Point3d();
   private static _scaleToGeodeticSurfaceGradient = new Point3d();
-  private static _scaleToGeodeticSurface(cartesian: Point3d, oneOverRadii: XYAndZ, oneOverRadiiSquared: XYAndZ, centerToleranceSquared: number, result?: Point3d) {
+  private static _scaleToGeodeticSurface(
+    cartesian: Point3d,
+    oneOverRadii: XYAndZ,
+    oneOverRadiiSquared: XYAndZ,
+    centerToleranceSquared: number,
+    result?: Point3d,
+  ) {
     const positionX = cartesian.x;
     const positionY = cartesian.y;
     const positionZ = cartesian.z;

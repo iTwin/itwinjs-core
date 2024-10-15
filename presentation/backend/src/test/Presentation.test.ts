@@ -2,15 +2,15 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
+import { assert } from "@itwin/core-bentley";
+import { RpcManager } from "@itwin/core-common";
+import { PresentationError } from "@itwin/presentation-common";
 import { expect } from "chai";
 import * as faker from "faker";
 import { join } from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
-import { assert } from "@itwin/core-bentley";
-import { RpcManager } from "@itwin/core-common";
-import { PresentationError } from "@itwin/presentation-common";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";

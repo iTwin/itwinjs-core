@@ -5,10 +5,10 @@
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
 import { UnitConversionProps, UnitExtraData, UnitProps, UnitsProvider } from "@itwin/core-quantity";
 import { ISchemaLocater, SchemaContext } from "../Context";
-import { SchemaItem } from "../Metadata/SchemaItem";
-import { SchemaItemKey, SchemaKey } from "../SchemaKey";
-import { Unit } from "../Metadata/Unit";
 import { SchemaItemType } from "../ECObjects";
+import { SchemaItem } from "../Metadata/SchemaItem";
+import { Unit } from "../Metadata/Unit";
+import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { UnitConverter } from "../UnitConversion/UnitConverter";
 
 /**
@@ -20,13 +20,12 @@ export class SchemaUnitProvider implements UnitsProvider {
   private _context: SchemaContext;
 
   /**
-   *
    * @param contextOrLocater The SchemaContext or a different ISchemaLocater implementation used to retrieve the schema. The SchemaContext
    * class implements the ISchemaLocater interface. If the provided locater is not a SchemaContext instance a new SchemaContext will be
    * created and the locater will be added.
    * @param _unitExtraData Additional data like alternate display label not found in Units Schema to match with Units; Defaults to empty array.
    */
-  constructor(contextOrLocater: ISchemaLocater, private _unitExtraData: UnitExtraData[] = []){
+  constructor(contextOrLocater: ISchemaLocater, private _unitExtraData: UnitExtraData[] = []) {
     if (contextOrLocater instanceof SchemaContext) {
       this._context = contextOrLocater;
     } else {
@@ -214,10 +213,12 @@ export class SchemaUnitProvider implements UnitsProvider {
       if (Unit.isUnit(value) && value.label?.toLowerCase() === displayLabel) {
         const currPhenomenon = await value.phenomenon;
         const currUnitSystem = await value.unitSystem;
-        if (!schemaName || value.schema.name.toLowerCase() === schemaName)
-          if (!phenomenon || (currPhenomenon && currPhenomenon.key.matchesFullName(phenomenon)))
+        if (!schemaName || value.schema.name.toLowerCase() === schemaName) {
+          if (!phenomenon || (currPhenomenon && currPhenomenon.key.matchesFullName(phenomenon))) {
             if (!unitSystem || (currUnitSystem && currUnitSystem.key.matchesFullName(unitSystem)))
               return value;
+          }
+        }
       }
       ({ value, done } = schemaItems.next());
     }
@@ -239,10 +240,12 @@ export class SchemaUnitProvider implements UnitsProvider {
           const unit = await this.findECUnitByName(entry.name);
           const foundPhenomenon = await unit.phenomenon;
           const foundUnitSystem = await unit.unitSystem;
-          if (!schemaName || unit.schema.name.toLowerCase() === schemaName)
-            if (!phenomenon || (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon)))
+          if (!schemaName || unit.schema.name.toLowerCase() === schemaName) {
+            if (!phenomenon || (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon))) {
               if (!unitSystem || (foundUnitSystem && foundUnitSystem.key.matchesFullName(unitSystem)))
                 return unit;
+            }
+          }
         }
       }
     }

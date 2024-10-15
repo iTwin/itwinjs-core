@@ -3,25 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Id64String, UnexpectedErrors } from "@itwin/core-bentley";
+import { AnalysisStyle, ColorDef, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings } from "@itwin/core-common";
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import {
-  AnalysisStyle, ColorDef, EmptyLocalization, Feature, ImageBuffer, ImageBufferFormat, ImageMapLayerSettings,
-} from "@itwin/core-common";
-import { ViewRect } from "../common/ViewRect";
-import { OffScreenViewport, ScreenViewport, Viewport } from "../Viewport";
-import { DisplayStyle3dState } from "../DisplayStyleState";
-import { SpatialViewState } from "../SpatialViewState";
-import { IModelApp } from "../IModelApp";
-import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
-import { createBlankConnection } from "./createBlankConnection";
-import { DecorateContext } from "../ViewContext";
-import { Pixel } from "../render/Pixel";
+import { expect } from "chai";
 import * as sinon from "sinon";
 import { GraphicType } from "../common/render/GraphicType";
+import { ViewRect } from "../common/ViewRect";
+import { DisplayStyle3dState } from "../DisplayStyleState";
+import { IModelApp } from "../IModelApp";
+import { Pixel } from "../render/Pixel";
 import { RenderGraphic } from "../render/RenderGraphic";
+import { SpatialViewState } from "../SpatialViewState";
+import { DecorateContext } from "../ViewContext";
 import { Decorator } from "../ViewManager";
+import { OffScreenViewport, ScreenViewport, Viewport } from "../Viewport";
+import { createBlankConnection } from "./createBlankConnection";
+import { openBlankViewport, readUniqueFeatures, testBlankViewport, testBlankViewportAsync } from "./openBlankViewport";
 
 describe("Viewport", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -31,7 +29,9 @@ describe("Viewport", () => {
     it("invokes initialize method", () => {
       class ScreenVp extends ScreenViewport {
         public initialized = false;
-        protected override initialize() { this.initialized = true; }
+        protected override initialize() {
+          this.initialized = true;
+        }
 
         public static createVp(view: SpatialViewState): ScreenVp {
           const parentDiv = document.createElement("div");
@@ -45,14 +45,16 @@ describe("Viewport", () => {
 
       class OffScreenVp extends OffScreenViewport {
         public initialized = false;
-        protected override initialize() { this.initialized = true; }
+        protected override initialize() {
+          this.initialized = true;
+        }
 
         public static createVp(view: SpatialViewState): OffScreenVp {
           return this.create({ view, viewRect: new ViewRect(0, 0, 100, 100) }) as OffScreenVp;
         }
       }
 
-      function test(ctor: (typeof ScreenVp | typeof OffScreenVp)): void {
+      function test(ctor: typeof ScreenVp | typeof OffScreenVp): void {
         const iModel = createBlankConnection();
         const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
         const vp = ctor.createVp(view);
@@ -68,7 +70,12 @@ describe("Viewport", () => {
   describe("flashedId", () => {
     type ChangedEvent = [string | undefined, string | undefined];
 
-    function expectFlashedId(viewport: ScreenViewport, expectedId: string | undefined, expectedEvent: ChangedEvent | undefined, func: () => void): void {
+    function expectFlashedId(
+      viewport: ScreenViewport,
+      expectedId: string | undefined,
+      expectedEvent: ChangedEvent | undefined,
+      func: () => void,
+    ): void {
       let event: ChangedEvent | undefined;
       const removeListener = viewport.onFlashedIdChanged.addListener((vp, arg) => {
         expect(vp).to.equal(viewport);
@@ -114,7 +121,10 @@ describe("Viewport", () => {
       testBlankViewport((viewport) => {
         const oldHandler = UnexpectedErrors.setHandler(UnexpectedErrors.reThrowImmediate);
         viewport.onFlashedIdChanged.addOnce(() => viewport.flashedId = "0x12345");
-        expect(() => viewport.flashedId = "0x12345").to.throw(Error, "Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback");
+        expect(() => viewport.flashedId = "0x12345").to.throw(
+          Error,
+          "Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback",
+        );
         UnexpectedErrors.setHandler(oldHandler);
       });
     });
@@ -310,7 +320,9 @@ describe("Viewport", () => {
       const actual: string[] = [];
       for (let i = 0; i < expected.length; i++) {
         const offset = i * 4;
-        actual.push(ColorDef.from(image.data[offset], image.data[offset + 1], image.data[offset + 2], 0xff - image.data[offset + 3]).tbgr.toString(16));
+        actual.push(
+          ColorDef.from(image.data[offset], image.data[offset + 1], image.data[offset + 2], 0xff - image.data[offset + 3]).tbgr.toString(16),
+        );
       }
 
       expect(actual).to.deep.equal(expected);
@@ -319,8 +331,10 @@ describe("Viewport", () => {
     const rgbw2: TestCase = {
       width: 2,
       image: [
-        ColorDef.red, ColorDef.green,
-        ColorDef.blue, ColorDef.white,
+        ColorDef.red,
+        ColorDef.green,
+        ColorDef.blue,
+        ColorDef.white,
       ],
     };
 
@@ -351,9 +365,15 @@ describe("Viewport", () => {
     const square3: TestCase = {
       width: 3,
       image: [
-        ColorDef.red, ColorDef.green, ColorDef.blue,
-        ColorDef.white, ColorDef.black, grey,
-        cyan, purple, yellow,
+        ColorDef.red,
+        ColorDef.green,
+        ColorDef.blue,
+        ColorDef.white,
+        ColorDef.black,
+        grey,
+        cyan,
+        purple,
+        yellow,
       ],
     };
 
@@ -445,7 +465,12 @@ describe("Viewport", () => {
 
       it("resizes", () => {
         test({ ...rgbw2, bgColor: grey }, (viewport) => {
-          const resize = (w: number, h: number, expectedBarPixels?: { top?: number, bottom?: number, left?: number, right?: number }, expectedColors?: ColorDef[]) => {
+          const resize = (
+            w: number,
+            h: number,
+            expectedBarPixels?: { top?: number, bottom?: number, left?: number, right?: number },
+            expectedColors?: ColorDef[],
+          ) => {
             const image = viewport.readImageBuffer({ size: { x: w, y: h } })!;
             expect(image).not.to.be.undefined;
             expect(image.width).to.equal(w);
@@ -471,24 +496,39 @@ describe("Viewport", () => {
           resize(4, 4);
           resize(1, 1);
           resize(4, 2, { left: 1, right: 1 }, [
-            grey, ColorDef.red, ColorDef.green, grey,
-            grey, ColorDef.blue, ColorDef.white, grey,
+            grey,
+            ColorDef.red,
+            ColorDef.green,
+            grey,
+            grey,
+            ColorDef.blue,
+            ColorDef.white,
+            grey,
           ]);
           resize(2, 4, { top: 1, bottom: 1 }, [
-            grey, grey,
-            ColorDef.red, ColorDef.green,
-            ColorDef.blue, ColorDef.white,
-            grey, grey,
+            grey,
+            grey,
+            ColorDef.red,
+            ColorDef.green,
+            ColorDef.blue,
+            ColorDef.white,
+            grey,
+            grey,
           ]);
           resize(8, 4, { left: 2, right: 2 });
           resize(4, 8, { top: 2, bottom: 2 });
           resize(3, 2, { left: 1 });
           resize(2, 5, { top: 1, bottom: 2 }, [
-            grey, grey,
-            ColorDef.red, ColorDef.green,
-            ColorDef.blue, ColorDef.white,
-            grey, grey,
-            grey, grey,
+            grey,
+            grey,
+            ColorDef.red,
+            ColorDef.green,
+            ColorDef.blue,
+            ColorDef.white,
+            grey,
+            grey,
+            grey,
+            grey,
           ]);
         });
       });
@@ -590,7 +630,11 @@ describe("Viewport", () => {
 
         public constructor(z: number, id: string, vp: Viewport) {
           const pts = [
-            new Point3d(-10, -10, z), new Point3d(10, -10, z), new Point3d(10, 10, z), new Point3d(-10, 10, z), new Point3d(-10, -10, z),
+            new Point3d(-10, -10, z),
+            new Point3d(10, -10, z),
+            new Point3d(10, 10, z),
+            new Point3d(-10, 10, z),
+            new Point3d(-10, -10, z),
           ];
           vp.viewToWorldArray(pts);
 
@@ -639,7 +683,11 @@ describe("Viewport", () => {
     it("can filter out specified elements within a single batch", () => {
       testBlankViewport((vp) => {
         const frontPts = [
-          new Point3d(-10, -10, 0), new Point3d(10, -10, 0), new Point3d(10, 10, 0), new Point3d(-10, 10, 0), new Point3d(-10, -10, 0),
+          new Point3d(-10, -10, 0),
+          new Point3d(10, -10, 0),
+          new Point3d(10, 10, 0),
+          new Point3d(-10, 10, 0),
+          new Point3d(-10, -10, 0),
         ];
         const backPts = frontPts.map((pt) => new Point3d(pt.x, pt.y, -10));
 
@@ -712,7 +760,7 @@ describe("Viewport", () => {
         const stub = sinon.stub(Viewport.prototype, "mapLayerFromIds").callsFake(function _(_mapTreeId: Id64String, _layerTreeId: Id64String) {
           return [];
         });
-        const fakePixelData = {modelId: "123", elementId: "456"};
+        const fakePixelData = { modelId: "123", elementId: "456" };
         expect(vp.isPixelSelectable(fakePixelData as any)).to.be.true;
         stub.restore();
       });

@@ -2,36 +2,21 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { Id64String, StopWatch } from "@itwin/core-bentley";
-import {
-  BriefcaseIdValue,
-  Code,
-  ColorDef,
-  GeometricElementProps,
-  IModel,
-  SubCategoryAppearance,
-} from "@itwin/core-common";
-import {
-  _nativeDb,
-  IModelDb,
-  IModelHost,
-  IModelHostOptions,
-  IModelJsFs,
-  SnapshotDb,
-  SpatialCategory,
-} from "@itwin/core-backend";
+import { _nativeDb, IModelDb, IModelHost, IModelHostOptions, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
-import { IModelsClient } from "@itwin/imodels-client-authoring";
+import { Id64String, StopWatch } from "@itwin/core-bentley";
+import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
-import * as path from "path";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { Reporter } from "@itwin/perf-tools";
+import { expect } from "chai";
+import * as path from "path";
 
 interface TestElement extends GeometricElementProps {
-  addresses: [null, {city: "Pune", zip: 28}];
+  addresses: [null, { city: "Pune", zip: 28 }];
 }
 
-function initElemProps( _iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any): GeometricElementProps {
+function initElemProps(_iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any): GeometricElementProps {
   // Create props
   const elementProps: GeometricElementProps = {
     classFullName: "Test:Foo",
@@ -83,7 +68,7 @@ describe("CloseIModalTest", () => {
     const iModelHost: IModelHostOptions = {};
     const iModelClient = new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
     iModelHost.hubAccess = new BackendIModelsAccess(iModelClient);
-    iModelHost.cacheDir = path.join(__dirname, ".cache");  // Set local cache dir
+    iModelHost.cacheDir = path.join(__dirname, ".cache"); // Set local cache dir
     await IModelHost.startup(iModelHost);
     // write schema to disk as we do not have api to import xml directly
     const testSchemaPath = IModelTestUtils.prepareOutputFile(
@@ -125,8 +110,8 @@ describe("CloseIModalTest", () => {
     const imodel = IModelTestUtils.createSnapshotFromSeed(testFileName, iModelPath);
     spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
-    const expectedValue = initElemProps( imodel, newModelId, spatialCategoryId!, {
-      addresses: [null, {city: "Pune", zip: 28}],
+    const expectedValue = initElemProps(imodel, newModelId, spatialCategoryId!, {
+      addresses: [null, { city: "Pune", zip: 28 }],
     }) as TestElement;
     imodel.elements.createElement(expectedValue);
     imodel.close();
@@ -152,9 +137,7 @@ describe("CloseIModalTest", () => {
     ) => {
       const testModel = SnapshotDb.openFile(fileName);
       const opTime = await timeOperation(testModel, operation);
-      const closeTime = await timeOperation(testModel, async (db: IModelDb) =>
-        db.close(),
-      );
+      const closeTime = await timeOperation(testModel, async (db: IModelDb) => db.close());
       return { opTime, closeTime };
     };
     const stat = await withSnapshotDb(testFileName, async () => {

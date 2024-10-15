@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput } from "@itwin/frontend-devtools";
 import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings } from "@itwin/core-common";
 import { Viewport, ViewState } from "@itwin/core-frontend";
+import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput } from "@itwin/frontend-devtools";
 
 // cspell:ignore cels sundir textbox hemi lighteditor
 
@@ -101,7 +101,12 @@ export class LightingEditor {
     const span = document.createElement("span");
     span.style.display = "flex";
     parent.appendChild(span);
-    const intensityInput = this.addIntensityInput(span, "Solar", this._vp.lightSettings?.solar.intensity ?? 0, (intensity) => this.updateSettings({ solar: { intensity } }));
+    const intensityInput = this.addIntensityInput(
+      span,
+      "Solar",
+      this._vp.lightSettings?.solar.intensity ?? 0,
+      (intensity) => this.updateSettings({ solar: { intensity } }),
+    );
     intensityInput.style.marginRight = "0.67em";
 
     createButton({
@@ -134,8 +139,18 @@ export class LightingEditor {
     parent.appendChild(span);
 
     const lights = this._vp.lightSettings;
-    const portrait = this.addIntensityInput(span, "Portrait", lights?.portraitIntensity ?? 0, (intensity) => this.updateSettings({ portrait: { intensity } }));
-    const specular = this.addIntensityInput(span, "Specular", lights?.specularIntensity ?? 0, (specularIntensity) => this.updateSettings({ specularIntensity }));
+    const portrait = this.addIntensityInput(
+      span,
+      "Portrait",
+      lights?.portraitIntensity ?? 0,
+      (intensity) => this.updateSettings({ portrait: { intensity } }),
+    );
+    const specular = this.addIntensityInput(
+      span,
+      "Specular",
+      lights?.specularIntensity ?? 0,
+      (specularIntensity) => this.updateSettings({ specularIntensity }),
+    );
     portrait.style.marginRight = "0.67em";
 
     this._updates.push((_view: ViewState) => {
@@ -152,7 +167,12 @@ export class LightingEditor {
     span.style.display = "flex";
     parent.appendChild(span);
 
-    const intensityInput = this.addIntensityInput(span, "Fresnel", this._vp.lightSettings?.fresnel.intensity ?? 0, (intensity) => this.updateSettings({ fresnel: { intensity } }));
+    const intensityInput = this.addIntensityInput(
+      span,
+      "Fresnel",
+      this._vp.lightSettings?.fresnel.intensity ?? 0,
+      (intensity) => this.updateSettings({ fresnel: { intensity } }),
+    );
     intensityInput.style.marginRight = "0.67em";
 
     const cb = this.addCheckBox("Invert", (invert: boolean) => this.updateSettings({ fresnel: { invert } }), span);
@@ -171,7 +191,12 @@ export class LightingEditor {
     parent.appendChild(span);
 
     const amb = this._vp.lightSettings?.ambient;
-    const intensityInput = this.addIntensityInput(span, "Ambient", amb?.intensity ?? 0, (intensity) => this.updateSettings({ ambient: { intensity } }));
+    const intensityInput = this.addIntensityInput(
+      span,
+      "Ambient",
+      amb?.intensity ?? 0,
+      (intensity) => this.updateSettings({ ambient: { intensity } }),
+    );
     const colorInput = createColorInput({
       parent: span,
       display: "inline",
@@ -196,7 +221,12 @@ export class LightingEditor {
     parent.appendChild(span);
 
     const hemi = this._vp.lightSettings?.hemisphere;
-    const intensityInput = this.addIntensityInput(span, "Hemisphere", hemi?.intensity ?? 0, (intensity) => this.updateSettings({ hemisphere: { intensity } }));
+    const intensityInput = this.addIntensityInput(
+      span,
+      "Hemisphere",
+      hemi?.intensity ?? 0,
+      (intensity) => this.updateSettings({ hemisphere: { intensity } }),
+    );
     intensityInput.style.marginRight = "0.67em";
 
     const skyInput = createColorInput({

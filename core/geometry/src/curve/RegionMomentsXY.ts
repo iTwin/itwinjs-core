@@ -21,8 +21,8 @@ import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { Loop } from "./Loop";
 import { ParityRegion } from "./ParityRegion";
-import { StrokeOptions } from "./StrokeOptions";
 import { TransitionSpiral3d } from "./spiral/TransitionSpiral3d";
+import { StrokeOptions } from "./StrokeOptions";
 import { UnionRegion } from "./UnionRegion";
 
 /**
@@ -114,7 +114,6 @@ export class RegionMomentsXY extends NullGeometryHandler {
             maxAbsArea = q;
             largestChildMoments = childMoments;
           }
-
         }
       }
     }
@@ -166,10 +165,15 @@ export class RegionMomentsXY extends NullGeometryHandler {
     this.handleLineString3d(strokes);
   }
   /** handle strongly typed  BSplineCurve3d  as generic curve primitive */
-  public override handleBSplineCurve3d(g: BSplineCurve3d) { return this.handleCurvePrimitive(g); }
+  public override handleBSplineCurve3d(g: BSplineCurve3d) {
+    return this.handleCurvePrimitive(g);
+  }
   /** handle strongly typed  BSplineCurve3dH  as generic curve primitive */
-  public override handleBSplineCurve3dH(g: BSplineCurve3dH) { return this.handleCurvePrimitive(g); }
+  public override handleBSplineCurve3dH(g: BSplineCurve3dH) {
+    return this.handleCurvePrimitive(g);
+  }
   /** handle strongly typed  TransitionSpiral as generic curve primitive  */
-  public override handleTransitionSpiral(g: TransitionSpiral3d) { return this.handleCurvePrimitive(g); }
-
+  public override handleTransitionSpiral(g: TransitionSpiral3d) {
+    return this.handleCurvePrimitive(g);
+  }
 }

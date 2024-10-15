@@ -19,7 +19,6 @@ import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtil
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Mixin", () => {
-
   function createSchemaJson(mixinJson: any): any {
     return createSchemaJsonWithItems({
       TestMixin: {
@@ -160,7 +159,10 @@ describe("Mixin", () => {
       const json = createSchemaJson({
         appliesTo: 0,
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Mixin TestSchema.TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(
+        ECObjectsError,
+        `The Mixin TestSchema.TestMixin has an invalid 'appliesTo' attribute. It should be of type 'string'.`,
+      );
     });
 
     it("applicableTo, wrong entity, fails", async () => {

@@ -17,11 +17,9 @@ class CallbackDisposable implements IDisposable {
 }
 
 describe("Disposable", () => {
-
   describe("isIDisposable", () => {
-
     it("returns true when given an object with `dispose` function", () => {
-      assert.isTrue(isIDisposable({ dispose: () => { } }));
+      assert.isTrue(isIDisposable({ dispose: () => {} }));
     });
 
     it("returns false when given an object without `dispose` function", () => {
@@ -39,11 +37,9 @@ describe("Disposable", () => {
       assert.isFalse(isIDisposable("123"));
       assert.isFalse(isIDisposable([]));
     });
-
   });
 
   describe("using IDisposable", () => {
-
     it("Calls dispose on success and returns result", () => {
       let disposed = false;
       const disposable = new CallbackDisposable(() => {
@@ -76,7 +72,7 @@ describe("Disposable", () => {
       const disposable = new CallbackDisposable(() => {
         disposed = true;
       });
-      await using(disposable, async (_r) => {
+      using(disposable, async (_r) => {
         return new Promise<void>((resolve: () => void, _reject: () => void) => {
           setTimeout(() => {
             resolve();
@@ -102,7 +98,7 @@ describe("Disposable", () => {
       });
       await result.then(() => {
         assert.fail(undefined, undefined, "Expected result to be rejected");
-      }, () => { });
+      }, () => {});
       assert.isTrue(disposed);
     });
 
@@ -124,17 +120,17 @@ describe("Disposable", () => {
       assert.isTrue(disposed1);
       assert.isTrue(disposed2);
     });
-
   });
 
   describe("DisposableList", () => {
-
     it("Calls dispose on registered IDisposable", () => {
       let disposed = false;
       const disposableList = new DisposableList();
-      disposableList.add(new CallbackDisposable(() => {
-        disposed = true;
-      }));
+      disposableList.add(
+        new CallbackDisposable(() => {
+          disposed = true;
+        }),
+      );
       disposableList.dispose();
       assert.isTrue(disposed);
     });
@@ -160,7 +156,5 @@ describe("Disposable", () => {
       disposableList.dispose();
       assert.isTrue(disposed);
     });
-
   });
-
 });

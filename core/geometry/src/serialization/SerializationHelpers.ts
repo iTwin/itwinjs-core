@@ -62,13 +62,33 @@ export namespace SerializationHelpers {
   }
 
   /** Constructor for BSplineCurveData that populates the required data. Inputs are captured, not copied. */
-  export function createBSplineCurveData(poles: number[][] | Float64Array, dim: number, knots: number[] | Float64Array, numPoles: number, order: number): BSplineCurveData {
+  export function createBSplineCurveData(
+    poles: number[][] | Float64Array,
+    dim: number,
+    knots: number[] | Float64Array,
+    numPoles: number,
+    order: number,
+  ): BSplineCurveData {
     return { poles, dim, params: { numPoles, order, knots } };
   }
 
   /** Constructor for BSplineSurfaceData that populates the required data. Inputs are captured, not copied. */
-  export function createBSplineSurfaceData(poles: number[][][] | Float64Array, dim: number, uKnots: number[] | Float64Array, uNumPoles: number, uOrder: number, vKnots: number[] | Float64Array, vNumPoles: number, vOrder: number): BSplineSurfaceData {
-    return { poles, dim, uParams: { numPoles: uNumPoles, order: uOrder, knots: uKnots }, vParams: { numPoles: vNumPoles, order: vOrder, knots: vKnots } };
+  export function createBSplineSurfaceData(
+    poles: number[][][] | Float64Array,
+    dim: number,
+    uKnots: number[] | Float64Array,
+    uNumPoles: number,
+    uOrder: number,
+    vKnots: number[] | Float64Array,
+    vNumPoles: number,
+    vOrder: number,
+  ): BSplineSurfaceData {
+    return {
+      poles,
+      dim,
+      uParams: { numPoles: uNumPoles, order: uOrder, knots: uKnots },
+      vParams: { numPoles: vNumPoles, order: vOrder, knots: vKnots },
+    };
   }
 
   /** Clone B-spline curve data */
@@ -111,7 +131,7 @@ export namespace SerializationHelpers {
   }
 
   /** Copy B-spline curve data from source to dest */
-  function copyBSplineCurveDataPoles(source: BSplineCurveData): {poles?: number[][], weights?: number[]} {
+  function copyBSplineCurveDataPoles(source: BSplineCurveData): { poles?: number[][], weights?: number[] } {
     let nPole = 0;
     let nCoordPerPole = 0;
     let nPoleCoords = 0;
@@ -155,11 +175,11 @@ export namespace SerializationHelpers {
       poles = NumberArray.copy2d(source.poles);
     if (poles && source.weights)
       weights = NumberArray.create(source.weights);
-    return {poles, weights};
+    return { poles, weights };
   }
 
   /** Copy B-spline surface data from source to dest */
-  function copyBSplineSurfaceDataPoles(source: BSplineSurfaceData): {poles?: number[][][], weights?: number[][]} {
+  function copyBSplineSurfaceDataPoles(source: BSplineSurfaceData): { poles?: number[][][], weights?: number[][] } {
     let nPoleRow = 0;
     let nPolePerRow = 0;
     let nCoordPerPole = 0;
@@ -215,7 +235,7 @@ export namespace SerializationHelpers {
       else
         weights = NumberArray.copy2d(source.weights);
     }
-    return {poles, weights};
+    return { poles, weights };
   }
 
   /** Convert B-spline curve data arrays to the types specified by options. */
@@ -282,7 +302,7 @@ export namespace SerializationHelpers {
    * @param numPerBlock index blocking: fixed blocks of size numPerBlock > 1, possibly 0-padded; otherwise, variable-sized blocks terminated by 0
    * @param announceZeroBasedIndex callback to receive a 0-based index and optional flag indicating whether the sign of the source index is positive
    * @param terminateBlock optional callback called after each index block has been announced
-  */
+   */
   export function announceZeroBasedIndicesFromSignedOneBasedIndices(
     sourceIndices: Int32Array,
     numPerBlock: number,
@@ -296,7 +316,7 @@ export namespace SerializationHelpers {
       numIndices -= sourceIndices.length % numPerBlock;
       for (let i = 0; i < numIndices; i++) {
         const p = sourceIndices[i];
-        if (p !== 0)  // skip padding
+        if (p !== 0) // skip padding
           announceZeroBasedIndex(Math.abs(p) - 1, p > 0);
         if (terminateBlock && ((i + 1) % numPerBlock) === 0)
           terminateBlock();
@@ -304,14 +324,14 @@ export namespace SerializationHelpers {
     } else {
       for (let i = 0; i < numIndices; i++) {
         const p = sourceIndices[i];
-        if (p !== 0)  // skip terminator
+        if (p !== 0) // skip terminator
           announceZeroBasedIndex(Math.abs(p) - 1, p > 0);
         if (terminateBlock) {
           if (p === 0) {
-            if (i + 1 === numIndices || sourceIndices[i + 1] !== 0)  // skip extra terminators
+            if (i + 1 === numIndices || sourceIndices[i + 1] !== 0) // skip extra terminators
               terminateBlock();
           } else {
-            if (i + 1 === numIndices)  // missing last terminator
+            if (i + 1 === numIndices) // missing last terminator
               terminateBlock();
           }
         }
@@ -326,7 +346,7 @@ export namespace SerializationHelpers {
    * @param numPerBlock index blocking: fixed blocks of size numPerBlock > 1, possibly 0-padded; otherwise, variable-sized blocks terminated by 0
    * @param announceZeroBasedIndex callback to receive a 0-based index
    * @param terminateBlock optional callback called after each index block has been announced
-  */
+   */
   export function announceZeroBasedIndicesWithExternalBlocking(
     sourceIndices: Int32Array,
     blockingIndices: Int32Array,
@@ -345,7 +365,7 @@ export namespace SerializationHelpers {
       numBlocking -= blockingIndices.length % numPerBlock;
       for (let iBlocking = 0; iBlocking < numBlocking && iSource < sourceIndices.length; iBlocking++) {
         const p = blockingIndices[iBlocking];
-        if (p !== 0)  // skip padding
+        if (p !== 0) // skip padding
           announceZeroBasedIndex(sourceIndices[iSource++]);
         if (terminateBlock && ((iBlocking + 1) % numPerBlock) === 0)
           terminateBlock();
@@ -353,14 +373,14 @@ export namespace SerializationHelpers {
     } else {
       for (let iBlocking = 0; iBlocking < numBlocking && iSource < sourceIndices.length; iBlocking++) {
         const p = blockingIndices[iBlocking];
-        if (p !== 0)  // skip terminator
+        if (p !== 0) // skip terminator
           announceZeroBasedIndex(sourceIndices[iSource++]);
         if (terminateBlock) {
           if (p === 0) {
-            if (iBlocking + 1 === numBlocking || blockingIndices[iBlocking + 1] !== 0)  // skip extra terminators
+            if (iBlocking + 1 === numBlocking || blockingIndices[iBlocking + 1] !== 0) // skip extra terminators
               terminateBlock();
           } else {
-            if (iBlocking + 1 === numBlocking)  // missing last terminator
+            if (iBlocking + 1 === numBlocking) // missing last terminator
               terminateBlock();
           }
         }
@@ -371,14 +391,14 @@ export namespace SerializationHelpers {
   /** Helper class for preparing geometry data for import. */
   export class Import {
     /** copy knots, with options to control destination type and extraneous knot removal */
-    private static copyKnots(knots: Float64Array | number[], options?: BSplineDataOptions, iStart?: number, iEnd?: number): Float64Array| number[] {
+    private static copyKnots(knots: Float64Array | number[], options?: BSplineDataOptions, iStart?: number, iEnd?: number): Float64Array | number[] {
       if (undefined === iStart)
         iStart = 0;
       if (undefined === iEnd)
         iEnd = knots.length;
       if (options?.removeExtraKnots) {
         ++iStart; // ignore start knot
-        --iEnd;   // ignore end knot
+        --iEnd; // ignore end knot
       }
       let newNumKnots = iEnd - iStart;
       if (newNumKnots < 0)
@@ -403,21 +423,26 @@ export namespace SerializationHelpers {
      * @returns open knots if legacy periodic B-spline input data is recognized; otherwise, undefined
      * @see Export.closeLegacyPeriodicKnots
      */
-    private static openLegacyPeriodicKnots(knots: Float64Array | number[], numPoles: number, order: number, options?: BSplineDataOptions): Float64Array | number[] | undefined {
+    private static openLegacyPeriodicKnots(
+      knots: Float64Array | number[],
+      numPoles: number,
+      order: number,
+      options?: BSplineDataOptions,
+    ): Float64Array | number[] | undefined {
       const numKnots = knots.length;
       if (order < 2 || numPoles + 2 * order - 1 !== numKnots)
-        return undefined;   // not legacy periodic knots
+        return undefined; // not legacy periodic knots
 
       const startKnot = knots[order - 1];
       const endKnot = knots[numKnots - order];
-      const iStart0 = Math.floor(order / 2);  // index of first expected multiple of the start knot
-      const iEnd0 = iStart0 + numPoles;       // index of first expected multiple of the end knot
-      const iEnd1 = iEnd0 + order;            // one past index of last expected multiple of the end knot
+      const iStart0 = Math.floor(order / 2); // index of first expected multiple of the start knot
+      const iEnd0 = iStart0 + numPoles; // index of first expected multiple of the end knot
+      const iEnd1 = iEnd0 + order; // one past index of last expected multiple of the end knot
       for (let i = 0; i < order; ++i) {
         if (Math.abs(knots[iStart0 + i] - startKnot) >= KnotVector.knotTolerance)
-          return undefined;   // start knot multiplicity too small
+          return undefined; // start knot multiplicity too small
         if (Math.abs(knots[iEnd0 + i] - endKnot) >= KnotVector.knotTolerance)
-          return undefined;   // end knot multiplicity too small
+          return undefined; // end knot multiplicity too small
       }
       return this.copyKnots(knots, options, iStart0, iEnd1);
     }
@@ -454,7 +479,7 @@ export namespace SerializationHelpers {
             const wraparoundPt = [];
             for (let j = 0; j < data.dim; ++j)
               wraparoundPt.push(polesExpanded[i][j]);
-            polesExpanded.push(wraparoundPt);  // append degree wraparound poles
+            polesExpanded.push(wraparoundPt); // append degree wraparound poles
           }
           if (weightsExpanded) {
             for (let i = 0; i < data.params.order - 1; ++i)
@@ -470,7 +495,7 @@ export namespace SerializationHelpers {
           data.params.knots = this.copyKnots(data.params.knots, options);
       }
 
-      data.params.closed = undefined;  // we are open
+      data.params.closed = undefined; // we are open
 
       convertBSplineCurveDataArrays(data, options);
       return true;
@@ -505,16 +530,16 @@ export namespace SerializationHelpers {
             data.poles = polesExpanded = arrays.poles;
             data.weights = weightsExpanded = arrays.weights;
           }
-          for (let i = 0; i < data.vParams.numPoles; ++i) {     // #rows
+          for (let i = 0; i < data.vParams.numPoles; ++i) { // #rows
             for (let j = 0; j < data.uParams.order - 1; ++j) {
               const wraparoundPt = [];
               for (let k = 0; k < data.dim; ++k)
                 wraparoundPt.push(polesExpanded[i][j][k]);
-              polesExpanded[i].push(wraparoundPt);  // append degreeU wraparound poles to each row
+              polesExpanded[i].push(wraparoundPt); // append degreeU wraparound poles to each row
             }
           }
           if (weightsExpanded) {
-            for (let i = 0; i < data.vParams.numPoles; ++i)     // #rows
+            for (let i = 0; i < data.vParams.numPoles; ++i) // #rows
               for (let j = 0; j < data.uParams.order - 1; ++j)
                 weightsExpanded[i].push(weightsExpanded[i][j]); // append degreeU wraparound weights to each row
           }
@@ -540,20 +565,20 @@ export namespace SerializationHelpers {
           }
           for (let i = 0; i < data.vParams.order - 1; ++i) {
             const wrapAroundRow = [];
-            for (let j = 0; j < data.uParams.numPoles; ++j) {    // #cols
+            for (let j = 0; j < data.uParams.numPoles; ++j) { // #cols
               const wrapAroundPt = [];
               for (let k = 0; k < data.dim; ++k)
                 wrapAroundPt.push(polesExpanded[i][j][k]);
               wrapAroundRow.push(wrapAroundPt);
             }
-            polesExpanded.push(wrapAroundRow);  // append degreeV wraparound rows of poles
+            polesExpanded.push(wrapAroundRow); // append degreeV wraparound rows of poles
           }
           if (weightsExpanded) {
             for (let i = 0; i < data.vParams.order - 1; ++i) {
               const wrapAroundRow = [];
-              for (let j = 0; j < data.uParams.numPoles; ++j)   // #cols
+              for (let j = 0; j < data.uParams.numPoles; ++j) // #cols
                 wrapAroundRow.push(weightsExpanded[i][j]);
-              weightsExpanded.push(wrapAroundRow);  // append degreeV wraparound rows of weights
+              weightsExpanded.push(wrapAroundRow); // append degreeV wraparound rows of weights
             }
           }
           data.vParams.numPoles += data.vParams.order - 1;
@@ -568,7 +593,7 @@ export namespace SerializationHelpers {
           data.vParams.knots = this.copyKnots(data.vParams.knots, options);
       }
 
-      data.uParams.closed = data.vParams.closed = undefined;  // we are open
+      data.uParams.closed = data.vParams.closed = undefined; // we are open
 
       convertBSplineSurfaceDataArrays(data, options);
       return true;
@@ -586,7 +611,12 @@ export namespace SerializationHelpers {
      * @returns legacy periodic knots (with classic extraneous start/end knot) if wrapMode recognized; otherwise, undefined
      * @see Import.openLegacyPeriodicKnots
      */
-    private static closeLegacyPeriodicKnots(knots: Float64Array | number[], order: number, options?: BSplineDataOptions, wrapMode?: BSplineWrapMode): Float64Array | number[] | undefined {
+    private static closeLegacyPeriodicKnots(
+      knots: Float64Array | number[],
+      order: number,
+      options?: BSplineDataOptions,
+      wrapMode?: BSplineWrapMode,
+    ): Float64Array | number[] | undefined {
       if (wrapMode === undefined || wrapMode !== BSplineWrapMode.OpenByRemovingKnots)
         return undefined;
 
@@ -602,10 +632,10 @@ export namespace SerializationHelpers {
       let k = 0;
       for (let i = Math.floor(order / 2); i > 0; --i)
         newKnots[k++] = knots[rightIndex - i] - knotPeriod;
-      newKnots[k++] = leftKnot;   // extraneous start knot
+      newKnots[k++] = leftKnot; // extraneous start knot
       for (const knot of knots)
         newKnots[k++] = knot;
-      newKnots[k++] = rightKnot;  // extraneous end knot
+      newKnots[k++] = rightKnot; // extraneous end knot
       for (let i = 1; i <= Math.floor(degree / 2); ++i)
         newKnots[k++] = knots[leftIndex + i] + knotPeriod;
 
@@ -699,11 +729,11 @@ export namespace SerializationHelpers {
             data.poles = polesTrimmed = arrays.poles;
             data.weights = weightsTrimmed = arrays.weights;
           }
-          for (let i = 0; i < data.vParams.numPoles; ++i)    // #rows
+          for (let i = 0; i < data.vParams.numPoles; ++i) // #rows
             for (let j = 0; j < data.uParams.order - 1; ++j)
               polesTrimmed[i].pop(); // remove last degreeU poles from each row
           if (weightsTrimmed) {
-            for (let i = 0; i < data.vParams.numPoles; ++i)  // #rows
+            for (let i = 0; i < data.vParams.numPoles; ++i) // #rows
               for (let j = 0; j < data.uParams.order - 1; ++j)
                 weightsTrimmed[i].pop(); // remove last degreeU weights from each row
           }
@@ -733,7 +763,7 @@ export namespace SerializationHelpers {
             data.weights = weightsTrimmed = arrays.weights;
           }
           for (let i = 0; i < data.vParams.order - 1; ++i)
-            polesTrimmed.pop();  // remove last degreeV rows of poles
+            polesTrimmed.pop(); // remove last degreeV rows of poles
           if (weightsTrimmed) {
             for (let i = 0; i < data.vParams.order - 1; ++i)
               weightsTrimmed.pop(); // remove last degreeV rows of weights

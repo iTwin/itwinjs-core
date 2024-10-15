@@ -70,7 +70,7 @@ describe("UnionFind", () => {
 
       ck.testExactNumber(numRoot0, numRoot1, "Leaf queries do not change root count");
       ck.testLE(numLongPath1, numLongPath0, "Leaf queries can reduce number of long paths");
-      ck.testExactNumber(0, numLongPath1, "Leaf queries eliminate long paths");    // is this really certain?
+      ck.testExactNumber(0, numLongPath1, "Leaf queries eliminate long paths"); // is this really certain?
     }
     expect(ck.getNumErrors()).toBe(0);
   });

@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
@@ -20,8 +19,9 @@ import {
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
+import { expect } from "chai";
 import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
+import { initialize, terminate } from "../../IntegrationTests";
 import { NodeValidators, validateHierarchy } from "./HierarchyValidation";
 
 describe("Hierarchies", () => {
@@ -34,7 +34,7 @@ describe("Hierarchies", () => {
   });
 
   describe("Hierarchy level filtering", () => {
-    it("filters root instance nodes hierarchy level", async function () {
+    it("filters root instance nodes hierarchy level", async function() {
       // set up imodel with 2 DocumentPartition elements "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
       const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
@@ -118,7 +118,7 @@ describe("Hierarchies", () => {
       });
     });
 
-    it("filters child instance nodes hierarchy level", async function () {
+    it("filters child instance nodes hierarchy level", async function() {
       // set up imodel with 2 DocumentPartition elements "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
       const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
@@ -255,7 +255,7 @@ describe("Hierarchies", () => {
       });
     });
 
-    it("filters guid properties", async function () {
+    it("filters guid properties", async function() {
       const imodelElementKeys: InstanceKey[] = [];
       const guidA = "814f3e14-63f2-4511-89a8-43ff3b527492";
       const guidB = "182238d2-e836-4640-9b40-38be6ca49623";
@@ -352,7 +352,7 @@ describe("Hierarchies", () => {
       });
     });
 
-    it("filters grouped hierarchy levels", async function () {
+    it("filters grouped hierarchy levels", async function() {
       // set up imodel with 3 DocumentPartition elements: "a", "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
       const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
@@ -504,7 +504,7 @@ describe("Hierarchies", () => {
       });
     });
 
-    it("filters hierarchy levels that use `parent` ECExpression symbol in instance filter", async function () {
+    it("filters hierarchy levels that use `parent` ECExpression symbol in instance filter", async function() {
       // set up imodel with 2 DocumentPartition elements "a" and "b"
       const imodelElementKeys: InstanceKey[] = [];
       const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
@@ -637,7 +637,7 @@ describe("Hierarchies", () => {
       });
     });
 
-    it("throws when attempting to filter non-filterable hierarchy level", async function () {
+    it("throws when attempting to filter non-filterable hierarchy level", async function() {
       // set up an empty imodel - we'll use the root Subject for this test
       const imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (_) => {});
 

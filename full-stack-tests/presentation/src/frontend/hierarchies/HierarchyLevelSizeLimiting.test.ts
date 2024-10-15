@@ -3,7 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { IModel } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
@@ -17,8 +16,9 @@ import {
   RuleTypes,
 } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { initialize, terminate } from "../../IntegrationTests";
+import { expect } from "chai";
 import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
+import { initialize, terminate } from "../../IntegrationTests";
 import { collect } from "../../Utils";
 import { NodeValidators, validateHierarchy } from "./HierarchyValidation";
 
@@ -37,7 +37,7 @@ describe("Hierarchies", () => {
       let ruleset: Ruleset;
       let expectedInstanceKeys: InstanceKey[];
 
-      before(async function () {
+      before(async function() {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
         imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
@@ -99,7 +99,7 @@ describe("Hierarchies", () => {
       let ruleset: Ruleset;
       let expectedInstanceKeys: InstanceKey[];
 
-      before(async function () {
+      before(async function() {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
         imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
@@ -180,7 +180,12 @@ describe("Hierarchies", () => {
       it("throws when result set size exceeds given limit", async () => {
         const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
         const rootSubject = rootNodes[0];
-        const iteratorPromise = Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset, parentKey: rootSubject.key, sizeLimit: 1 });
+        const iteratorPromise = Presentation.presentation.getNodesIterator({
+          imodel,
+          rulesetOrId: ruleset,
+          parentKey: rootSubject.key,
+          sizeLimit: 1,
+        });
         await expect(iteratorPromise).to.eventually.be.rejectedWith(PresentationError);
       });
     });
@@ -190,7 +195,7 @@ describe("Hierarchies", () => {
       let ruleset: Ruleset;
       let expectedInstanceKeys: InstanceKey[];
 
-      before(async function () {
+      before(async function() {
         // set up imodel with 2 DocumentPartition elements "a" and "b"
         expectedInstanceKeys = [];
         imodel = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {
@@ -293,7 +298,9 @@ describe("Hierarchies", () => {
       });
 
       it("throws when result set size exceeds given limit", async () => {
-        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
+        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) =>
+          collect(x.items)
+        );
         const classGroupingNode = classGroupingNodes[0];
         await expect(
           Presentation.presentation

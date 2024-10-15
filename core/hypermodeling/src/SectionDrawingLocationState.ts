@@ -135,7 +135,7 @@ export class SectionDrawingLocationState {
       if (str) {
         try {
           clip = ClipVector.fromJSON(JSON.parse(str));
-        } catch { }
+        } catch {}
       }
 
       return clip;
@@ -170,7 +170,7 @@ export class SectionDrawingLocationState {
       const view = await this.iModel.views.load(this.drawingViewId);
       if (view instanceof DrawingViewState)
         return view;
-    } catch { }
+    } catch {}
 
     return undefined;
   }
@@ -181,7 +181,7 @@ export class SectionDrawingLocationState {
       const view = await this.iModel.views.load(this.spatialViewId);
       if (view instanceof SpatialViewState)
         return view;
-    } catch { }
+    } catch {}
 
     return undefined;
   }
@@ -195,7 +195,7 @@ export class SectionDrawingLocationState {
       const view = await this.iModel.views.load(this.viewAttachment.viewId);
       if (view instanceof SheetViewState)
         return view;
-    } catch { }
+    } catch {}
 
     return undefined;
   }
@@ -204,7 +204,9 @@ export class SectionDrawingLocationState {
   public static async queryAll(iModel: IModelConnection): Promise<SectionDrawingLocationState[]> {
     const states: SectionDrawingLocationState[] = [];
     try {
-      for await (const row of iModel.createQueryReader(selectSectionDrawingLocationStatesECSql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+      for await (
+        const row of iModel.createQueryReader(selectSectionDrawingLocationStatesECSql, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })
+      )
         states.push(new SectionDrawingLocationState(row.toRow() as SectionDrawingLocationStateData, iModel));
     } catch {
       // If the iModel contains a version of BisCore schema older than 1.12.0, the query will produce an exception due to missing SectionDrawingLocation class. That's fine.

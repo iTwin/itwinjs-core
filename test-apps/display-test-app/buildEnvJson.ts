@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 /* eslint-disable no-console */
-import * as fs from "fs";
-import * as path from "path";
 import * as dotenv from "dotenv";
 import dotenvExpand from "dotenv-expand";
+import * as fs from "fs";
+import * as path from "path";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {

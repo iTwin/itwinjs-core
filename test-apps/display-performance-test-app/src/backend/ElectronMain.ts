@@ -8,7 +8,6 @@ import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { initializeBackend } from "./backend";
 
 const dptaElectronMain = async () => {
-
   // Start the backend
   await initializeBackend();
 
@@ -21,7 +20,7 @@ const dptaElectronMain = async () => {
   });
 
   const autoOpenDevTools = (undefined === process.env.IMJS_NO_DEV_TOOLS) && debug;
-  const maximizeWindow = (undefined === process.env.IMJS_NO_MAXIMIZE_WINDOW); // Make max window the default
+  const maximizeWindow = undefined === process.env.IMJS_NO_MAXIMIZE_WINDOW; // Make max window the default
 
   await ElectronHost.openMainWindow({ width: 1280, height: 800, show: !maximizeWindow });
   assert(ElectronHost.mainWindow !== undefined);

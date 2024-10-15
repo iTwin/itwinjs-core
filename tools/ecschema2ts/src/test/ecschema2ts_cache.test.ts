@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECSchemaToTs } from "../ecschema2ts";
-import { assert } from "chai";
-import * as utils from "./utilities/utils";
-import { SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { assert } from "chai";
+import { ECSchemaToTs } from "../ecschema2ts";
+import * as utils from "./utilities/utils";
 
 describe("BisCore Cache test", () => {
   it("For ECEntity class with BaseClass in BisCore, find the correct BisCore props interface to extend", () => {
@@ -22,8 +22,7 @@ describe("BisCore Cache test", () => {
         </ECEntityClass>
       </ECSchema>`;
 
-    const expectedSchemaString =
-      `import { ClassRegistry, Schema, Schemas } from "@itwin/core-backend";
+    const expectedSchemaString = `import { ClassRegistry, Schema, Schemas } from "@itwin/core-backend";
 import * as elementsModule from "./MyDomainElements";
 
 export class MyDomain extends Schema {
@@ -40,8 +39,7 @@ export class MyDomain extends Schema {
   }
 }\n\n`;
 
-    const expectedElementString =
-      `import { SpatialLocationElement, IModelDb } from "@itwin/core-backend";
+    const expectedElementString = `import { SpatialLocationElement, IModelDb } from "@itwin/core-backend";
 import { GeometricElement3dProps } from "@itwin/core-common";
 
 export class Building extends SpatialLocationElement {

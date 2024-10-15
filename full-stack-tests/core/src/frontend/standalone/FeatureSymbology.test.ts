@@ -2,24 +2,45 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import {
-  ColorDef, Feature, FeatureAppearance, FeatureAppearanceProps, GeometryClass, LinePixels, RgbColor, SubCategoryOverride,
+  ColorDef,
+  Feature,
+  FeatureAppearance,
+  FeatureAppearanceProps,
+  GeometryClass,
+  LinePixels,
+  RgbColor,
+  SubCategoryOverride,
   ViewFlags,
 } from "@itwin/core-common";
 import { FeatureSymbology, IModelConnection, SnapshotConnection, SpatialViewState, ViewState } from "@itwin/core-frontend";
+import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
 
 class Overrides extends FeatureSymbology.Overrides {
-  public constructor(view?: ViewState) { super(view); }
+  public constructor(view?: ViewState) {
+    super(view);
+  }
 
-  public override get neverDrawn() { return this._neverDrawn; }
-  public override get alwaysDrawn() { return this._alwaysDrawn; }
-  public get modelOverrides() { return this._modelOverrides; }
-  public get elementOverrides() { return this._elementOverrides; }
-  public get subCategoryOverrides() { return this._subCategoryOverrides; }
-  public get visibleSubCategories() { return this._visibleSubCategories; }
+  public override get neverDrawn() {
+    return this._neverDrawn;
+  }
+  public override get alwaysDrawn() {
+    return this._alwaysDrawn;
+  }
+  public get modelOverrides() {
+    return this._modelOverrides;
+  }
+  public get elementOverrides() {
+    return this._elementOverrides;
+  }
+  public get subCategoryOverrides() {
+    return this._subCategoryOverrides;
+  }
+  public get visibleSubCategories() {
+    return this._visibleSubCategories;
+  }
 
   public expectSubCategory(id: string, expectVisible: boolean): void {
     expect(this.visibleSubCategories.hasId(id)).to.equal(expectVisible);
@@ -110,7 +131,10 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.isAlwaysDrawnExclusive = true;
 
     // doesn't sound right... but this is how it works in the native code
-    assert.isFalse(overrides.isFeatureVisible(feature), "if alwaysDrawnExclusive flag is set, but element not in always drawn set, feature isn't visible");
+    assert.isFalse(
+      overrides.isFeatureVisible(feature),
+      "if alwaysDrawnExclusive flag is set, but element not in always drawn set, feature isn't visible",
+    );
 
     overrides = new Overrides();
     overrides.setVisibleSubCategory(subCategoryId);
@@ -129,7 +153,13 @@ describe("FeatureSymbology.Overrides", () => {
     const subCategoryId = Id64.fromString("0x129");
     const geometryClass = GeometryClass.Construction;
     const feature = new Feature(elementId, subCategoryId, geometryClass);
-    const props = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureAppearanceProps;
+    const props = {
+      rgb: new RgbColor(100, 100, 100),
+      weight: 1,
+      transparency: 100 / 255,
+      linePixels: LinePixels.Solid,
+      ignoresMaterial: true,
+    } as FeatureAppearanceProps;
     const modelProps = { ...props, transparency: 200 / 255 } as FeatureAppearanceProps;
     const badModelProps = { ...props, transparency: 356 / 255 } as FeatureAppearanceProps;
     const elemProps = { transparency: 200 / 255, linePixels: LinePixels.HiddenLine } as FeatureAppearanceProps;
@@ -163,18 +193,25 @@ describe("FeatureSymbology.Overrides", () => {
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isDefined(appearance, "return true if either elementId is in always drawn set or subCategoryId is visible as well as geometryClass is visible");
+    assert.isDefined(
+      appearance,
+      "return true if either elementId is in always drawn set or subCategoryId is visible as well as geometryClass is visible",
+    );
 
     overrides = new Overrides();
     appearance = FeatureAppearance.fromJSON(props);
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isUndefined(appearance, "if neither elementId is in alwaysDrawn set nor subCategoryId in visibleSubCategory set nor id in modelOverrides map, then app is reset");
+    assert.isUndefined(
+      appearance,
+      "if neither elementId is in alwaysDrawn set nor subCategoryId in visibleSubCategory set nor id in modelOverrides map, then app is reset",
+    );
 
     overrides = new Overrides();
     appearance = FeatureAppearance.fromJSON(props);
     overrides.setAlwaysDrawn(elementId);
     appearance = overrides.getFeatureAppearance(feature, id);
-    const msg = "if elementId in alwaysDrawn set, but id not in ModelOverrides map, nor elementId in elementOverrides map, nor subCategoryId in subCategoryOverrides, then app will be set to default overrides";
+    const msg =
+      "if elementId in alwaysDrawn set, but id not in ModelOverrides map, nor elementId in elementOverrides map, nor subCategoryId in subCategoryOverrides, then app will be set to default overrides";
     assert.isTrue(appearance!.equals(overrides.defaultOverrides), msg);
 
     overrides = new Overrides();
@@ -182,7 +219,10 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.setAlwaysDrawn(elementId);
     overrides.override({ modelId: id, appearance: modelApp });
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isTrue(appearance!.equals(modelApp), "if elementId in alwaysDrawn set and overrides has Model corresponding to id, then appearance will be set to the ModelApp");
+    assert.isTrue(
+      appearance!.equals(modelApp),
+      "if elementId in alwaysDrawn set and overrides has Model corresponding to id, then appearance will be set to the ModelApp",
+    );
 
     overrides = new Overrides();
     appearance = FeatureAppearance.fromJSON(props);
@@ -190,7 +230,10 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.setAlwaysDrawn(elementId);
     overrides.override({ modelId: id, appearance: modelApp });
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isUndefined(appearance, "if appearance is set from model app and that app has an invalid transparency value, then getFeatureAppearance returns false");
+    assert.isUndefined(
+      appearance,
+      "if appearance is set from model app and that app has an invalid transparency value, then getFeatureAppearance returns false",
+    );
     // NOTE: The above assertion appears to have assumed that getFeatureAppearance() returns undefined because it rejects the "invalid" transparency value.
     // In reality it detects that transparency is above the threshold considered "fully transparent" and therefore not visible.
 
@@ -199,14 +242,20 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.override({ elementId, appearance: elemApp });
     overrides.setAlwaysDrawn(elementId);
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isTrue(appearance!.equals(elemApp), "if elementId in alwaysDrawn set and overrides has Element corresponding to id but not Model nor SubCategory, then the app is set to the elemApp");
+    assert.isTrue(
+      appearance!.equals(elemApp),
+      "if elementId in alwaysDrawn set and overrides has Element corresponding to id but not Model nor SubCategory, then the app is set to the elemApp",
+    );
 
     overrides = new Overrides(viewState);
     appearance = FeatureAppearance.fromJSON(props);
     overrides.setVisibleSubCategory(subCategoryId);
     overrides.override({ subCategoryId, appearance: subCatApp });
     appearance = overrides.getFeatureAppearance(feature, id);
-    assert.isTrue(appearance!.equals(subCatApp), "if subCategoryId is in visible set and SubCategoryApp is found, absent element or model apps, the result app is equal to the app extended by the subCategoryApp");
+    assert.isTrue(
+      appearance!.equals(subCatApp),
+      "if subCategoryId is in visible set and SubCategoryApp is found, absent element or model apps, the result app is equal to the app extended by the subCategoryApp",
+    );
 
     overrides = new Overrides(viewState);
     appearance = FeatureAppearance.fromJSON(props);
@@ -216,7 +265,10 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.override({ subCategoryId, appearance: subCatApp });
     appearance = overrides.getFeatureAppearance(feature, id);
     let expected = subCatApp.extendAppearance(modelApp);
-    assert.isTrue(appearance!.equals(expected), "if subCat and modelApp are found then the appearance is the extension of the subCatApp with the ModelApp");
+    assert.isTrue(
+      appearance!.equals(expected),
+      "if subCat and modelApp are found then the appearance is the extension of the subCatApp with the ModelApp",
+    );
     overrides = new Overrides(viewState);
     appearance = FeatureAppearance.fromJSON(props);
     modelApp = FeatureAppearance.fromJSON(modelProps);
@@ -248,13 +300,22 @@ describe("FeatureSymbology.Overrides", () => {
     overrides.setAlwaysDrawn(elementId2);
 
     assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in display style's excludedElements, feature isn't visible");
-    assert.isTrue(overrides.isFeatureVisible(feature2), "if elementId is in always drawn set and not in the neverDrawn set and not in display style's excludedElements, feature is visible");
+    assert.isTrue(
+      overrides.isFeatureVisible(feature2),
+      "if elementId is in always drawn set and not in the neverDrawn set and not in display style's excludedElements, feature is visible",
+    );
 
     viewState.displayStyle.viewFlags = new ViewFlags({ constructions: true });
     overrides = new Overrides(viewState);
     overrides.setVisibleSubCategory(subCategoryId);
-    assert.isFalse(overrides.isFeatureVisible(feature), "if elementId is in excludedElements and if geometryClass and subCategory are visible, feature isn't visible");
-    assert.isTrue(overrides.isFeatureVisible(feature2), "if elementId is not in excludedElements and if geometryClass and subCategory are visible, feature is visible");
+    assert.isFalse(
+      overrides.isFeatureVisible(feature),
+      "if elementId is in excludedElements and if geometryClass and subCategory are visible, feature isn't visible",
+    );
+    assert.isTrue(
+      overrides.isFeatureVisible(feature2),
+      "if elementId is not in excludedElements and if geometryClass and subCategory are visible, feature is visible",
+    );
   });
 
   it("model appearance overrides work as expected", () => {
@@ -265,7 +326,13 @@ describe("FeatureSymbology.Overrides", () => {
     const subCategoryId = Id64.fromString("0x129");
     const geometryClass = GeometryClass.Construction;
     const feature = new Feature(elementId, subCategoryId, geometryClass);
-    const modelOverride1 = FeatureAppearance.fromJSON({ rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true });
+    const modelOverride1 = FeatureAppearance.fromJSON({
+      rgb: new RgbColor(100, 100, 100),
+      weight: 1,
+      transparency: 100 / 255,
+      linePixels: LinePixels.Solid,
+      ignoresMaterial: true,
+    });
     const modelOverride2 = FeatureAppearance.fromJSON({ ...modelOverride1, transparency: 200 / 255 });
 
     const displayStyle = viewState.displayStyle;

@@ -3,8 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { Presentation } from "@itwin/presentation-frontend";
-import { describeContentTestSuite } from "./Utils";
+import { Guid } from "@itwin/core-bentley";
+import { IModelConnection } from "@itwin/core-frontend";
 import {
   ContentSpecificationTypes,
   DefaultContentDisplayTypes,
@@ -16,8 +16,8 @@ import {
   RuleTypes,
   Value,
 } from "@itwin/presentation-common";
-import { Guid } from "@itwin/core-bentley";
-import { IModelConnection } from "@itwin/core-frontend";
+import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import {
   buildTestIModelConnection,
   importSchema,
@@ -26,8 +26,8 @@ import {
   insertPhysicalModelWithPartition,
   insertSpatialCategory,
 } from "../../IModelSetupUtils";
-import { expect } from "chai";
 import { collect } from "../../Utils";
+import { describeContentTestSuite } from "./Utils";
 
 describeContentTestSuite("Content Display Labels", () => {
   const EMPTY_LABEL = LabelDefinition.fromLabelString("@Presentation:label.notSpecified@");
@@ -37,7 +37,7 @@ describeContentTestSuite("Content Display Labels", () => {
     let schemaName: string;
     const elementClassName = "Generic.PhysicalObject";
 
-    before(async function () {
+    before(async function() {
       const schemaXml = `
         <ECSchemaReference name="BisCore" version="1.0.0" alias="bis"/>
         <ECEntityClass typeName="Color">
@@ -250,7 +250,10 @@ describeContentTestSuite("Content Display Labels", () => {
       };
     }
 
-    function validateDeeplyNestedContent(nestedContent: Pick<NestedContentValue, "labelDefinition" | "values">, expectedDisplayLabelsStack: Array<string>) {
+    function validateDeeplyNestedContent(
+      nestedContent: Pick<NestedContentValue, "labelDefinition" | "values">,
+      expectedDisplayLabelsStack: Array<string>,
+    ) {
       const expectedLabel = LabelDefinition.fromLabelString(expectedDisplayLabelsStack.pop()!);
 
       expect(nestedContent.labelDefinition).to.deep.eq(expectedLabel);
@@ -262,7 +265,7 @@ describeContentTestSuite("Content Display Labels", () => {
       validateDeeplyNestedContent(next[0], expectedDisplayLabelsStack);
     }
 
-    it("applies class name label override on nested content values", async function () {
+    it("applies class name label override on nested content values", async function() {
       imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
         const { id: modelId } = insertPhysicalModelWithPartition({ db, codeValue: "Model" });
         const { id: categoryId } = insertSpatialCategory({ db, codeValue: "Category" });
@@ -306,7 +309,7 @@ describeContentTestSuite("Content Display Labels", () => {
       );
     });
 
-    it("applies specific property label override on nested content values", async function () {
+    it("applies specific property label override on nested content values", async function() {
       imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
         const { id: modelId } = insertPhysicalModelWithPartition({ db, codeValue: "Model" });
         const { id: categoryId } = insertSpatialCategory({ db, codeValue: "Category" });

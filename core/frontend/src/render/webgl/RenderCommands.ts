@@ -7,18 +7,28 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import { Frustum, FrustumPlanes, RenderMode, ViewFlags } from "@itwin/core-common";
-import { Decorations } from "../Decorations";
+import { Range3d } from "@itwin/core-geometry";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
-import { GraphicList, RenderGraphic } from "../RenderGraphic";
+import { Decorations } from "../Decorations";
 import { AnimationBranchState } from "../GraphicBranch";
-import { BranchStack } from "./BranchStack";
+import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { BatchState } from "./BatchState";
+import { BranchStack } from "./BranchStack";
 import { BranchState } from "./BranchState";
+import { ClipVolume } from "./ClipVolume";
 import {
-  DrawCommands, PopBatchCommand, PopBranchCommand, PopClipCommand, PopCommand, PrimitiveCommand, PushBatchCommand,
-  PushBranchCommand, PushClipCommand, PushCommand, PushStateCommand,
+  DrawCommands,
+  PopBatchCommand,
+  PopBranchCommand,
+  PopClipCommand,
+  PopCommand,
+  PrimitiveCommand,
+  PushBatchCommand,
+  PushBranchCommand,
+  PushClipCommand,
+  PushCommand,
+  PushStateCommand,
 } from "./DrawCommand";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
 import { Layer, LayerContainer } from "./Layer";
@@ -26,9 +36,8 @@ import { LayerCommandLists } from "./LayerCommands";
 import { MeshGraphic } from "./Mesh";
 import { Primitive } from "./Primitive";
 import { CompositeFlags, Pass, RenderOrder, RenderPass } from "./RenderFlags";
-import { TargetGraphics } from "./TargetGraphics";
 import { Target } from "./Target";
-import { ClipVolume } from "./ClipVolume";
+import { TargetGraphics } from "./TargetGraphics";
 
 /** A list of DrawCommands to be rendered, ordered by render pass.
  * @internal
@@ -48,7 +57,9 @@ export class RenderCommands implements Iterable<DrawCommands> {
   private _addTranslucentAsOpaque = false; // true when rendering for _ReadPixels to force translucent items to be drawn in opaque pass.
   private readonly _layers: LayerCommandLists;
 
-  public get target(): Target { return this._target; }
+  public get target(): Target {
+    return this._target;
+  }
 
   public [Symbol.iterator](): Iterator<DrawCommands> {
     return this._commands[Symbol.iterator]();
@@ -73,13 +84,18 @@ export class RenderCommands implements Iterable<DrawCommands> {
     }
   }
 
-  public get currentViewFlags(): ViewFlags { return this._stack.top.viewFlags; }
+  public get currentViewFlags(): ViewFlags {
+    return this._stack.top.viewFlags;
+  }
   public get compositeFlags(): CompositeFlags {
     let flags = CompositeFlags.None;
     if (this.hasCommands(RenderPass.Translucent))
       flags |= CompositeFlags.Translucent;
 
-    if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteClassification) || this.hasCommands(RenderPass.HilitePlanarClassification))
+    if (
+      this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteClassification) ||
+      this.hasCommands(RenderPass.HilitePlanarClassification)
+    )
       flags |= CompositeFlags.Hilite;
 
     if (this.target.wantAmbientOcclusion)
@@ -88,10 +104,16 @@ export class RenderCommands implements Iterable<DrawCommands> {
     return flags;
   }
 
-  private get _curBatch(): Batch | undefined { return this._batchState.currentBatch; }
+  private get _curBatch(): Batch | undefined {
+    return this._batchState.currentBatch;
+  }
 
-  public hasCommands(pass: RenderPass): boolean { return 0 !== this.getCommands(pass).length; }
-  public isOpaquePass(pass: RenderPass): boolean { return pass >= RenderPass.OpaqueLinear && pass <= RenderPass.OpaqueGeneral; }
+  public hasCommands(pass: RenderPass): boolean {
+    return 0 !== this.getCommands(pass).length;
+  }
+  public isOpaquePass(pass: RenderPass): boolean {
+    return pass >= RenderPass.OpaqueLinear && pass <= RenderPass.OpaqueGeneral;
+  }
 
   constructor(target: Target, stack: BranchStack, batchState: BatchState) {
     this._target = target;
@@ -492,7 +514,11 @@ export class RenderCommands implements Iterable<DrawCommands> {
     }
   }
 
-  public initForPickOverlays(sceneOverlays: GraphicList, worldOverlayDecorations: GraphicList | undefined, viewOverlayDecorations: GraphicList | undefined): void {
+  public initForPickOverlays(
+    sceneOverlays: GraphicList,
+    worldOverlayDecorations: GraphicList | undefined,
+    viewOverlayDecorations: GraphicList | undefined,
+  ): void {
     this._clearCommands();
 
     this._addTranslucentAsOpaque = true;
@@ -691,8 +717,10 @@ export class RenderCommands implements Iterable<DrawCommands> {
       const anyHilited = overrides.anyHilited;
       const planarClassifierHilited = undefined !== classifier && classifier.anyHilited;
       if (anyHilited || planarClassifierHilited)
-        (batch.graphic as Graphic).addHiliteCommands(this, planarClassifierHilited ? RenderPass.HilitePlanarClassification : this.computeBatchHiliteRenderPass(batch));
-
+        (batch.graphic as Graphic).addHiliteCommands(
+          this,
+          planarClassifierHilited ? RenderPass.HilitePlanarClassification : this.computeBatchHiliteRenderPass(batch),
+        );
     });
 
     this._opaqueOverrides = this._translucentOverrides = false;
@@ -700,9 +728,13 @@ export class RenderCommands implements Iterable<DrawCommands> {
   }
 
   // Define a culling frustum. Commands associated with Graphics whose ranges do not intersect the frustum will be skipped.
-  public setCheckRange(frustum: Frustum) { this._frustumPlanes = FrustumPlanes.fromFrustum(frustum); }
+  public setCheckRange(frustum: Frustum) {
+    this._frustumPlanes = FrustumPlanes.fromFrustum(frustum);
+  }
   // Clear the culling frustum.
-  public clearCheckRange(): void { this._frustumPlanes = undefined; }
+  public clearCheckRange(): void {
+    this._frustumPlanes = undefined;
+  }
 
   private setupClassificationByVolume(): void {
     // To make it easier to process the classifiers individually, set up a secondary command list for them where they
@@ -726,7 +758,8 @@ export class RenderCommands implements Iterable<DrawCommands> {
           for (let i = pushCommands.length - 1; i >= 0; --i) {
             if ("pushBatch" === pushCommands[i].opcode)
               byIndexCmds.push(PopBatchCommand.instance);
-            else // should be eith pushBranch or pushState opcode
+            // should be eith pushBranch or pushState opcode
+            else
               byIndexCmds.push(PopBranchCommand.instance);
           }
           break;

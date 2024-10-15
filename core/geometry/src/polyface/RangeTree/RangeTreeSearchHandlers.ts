@@ -276,10 +276,14 @@ export class TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach extend
   /** Compute and test the closest approach between two segments, given their indices. */
   public override processAppDataPair(indexA: number, indexB: number): void {
     this.contextA.numPointTest++;
-    const segA = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA =
-      this.contextA.lineString.getIndexedSegment(indexA, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA)!;
-    const segB = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB =
-      this.contextB.lineString.getIndexedSegment(indexB, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB)!;
+    const segA = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA = this.contextA.lineString.getIndexedSegment(
+      indexA,
+      TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentA,
+    )!;
+    const segB = TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB = this.contextB.lineString.getIndexedSegment(
+      indexB,
+      TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach._workSegmentB,
+    )!;
     const cldPair = LineSegment3d.closestApproach(segA, false, segB, false);
     if (cldPair && this.searchState.isNewMinOrTrigger(cldPair.detailA.a)) {
       LineString3d.convertLocalToGlobalDetail(cldPair.detailA, indexA, this.contextA.lineString.numEdges(), this.contextA.lineString);
@@ -388,7 +392,7 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
    * @param contextB captured
    * @param maxDist collect points at no more than this separation distance
    * @param searchFacetInterior true: search facet interior + boundary; false: just boundary
-  */
+   */
   public constructor(contextA: PolyfaceRangeTreeContext, contextB: PolyfaceRangeTreeContext, maxDist?: number, searchFacetInterior: boolean = false) {
     super();
     this.contextA = contextA;
@@ -419,7 +423,7 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
   }
   /** Compute and test the closest approach between two facets, given their indices. */
   public override processAppDataPair(indexA: number, indexB: number): void {
-    this.contextA.visitor.setNumWrap(1);  // closed polygons are more efficient for PolygonOps.closestApproach
+    this.contextA.visitor.setNumWrap(1); // closed polygons are more efficient for PolygonOps.closestApproach
     this.contextB.visitor.setNumWrap(1);
     if (this.contextA.visitor.moveToReadIndex(indexA) && this.contextB.visitor.moveToReadIndex(indexB)) {
       // ASSUME: not worth sending in maxDist here...
@@ -429,12 +433,15 @@ export class TwoTreeSearchHandlerForFacetFacetCloseApproach extends TwoTreeDista
         const edgeCountA = this.contextA.visitor.pointCount - 1;
         const edgeCountB = this.contextB.visitor.pointCount - 1;
         const fldPair = FacetLocationDetailPair.create(
-          this.contextA.convexFacets ? ConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.detailA) : NonConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.detailA),
-          this.contextB.convexFacets ? ConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.detailB) : NonConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.detailB),
+          this.contextA.convexFacets
+            ? ConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.detailA)
+            : NonConvexFacetLocationDetail.createCapture(indexA, edgeCountA, pldPair.detailA),
+          this.contextB.convexFacets
+            ? ConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.detailB)
+            : NonConvexFacetLocationDetail.createCapture(indexB, edgeCountB, pldPair.detailB),
         );
         this.searchState.testAndSave(fldPair, fldPair.detailA.a);
       }
     }
   }
 }
-

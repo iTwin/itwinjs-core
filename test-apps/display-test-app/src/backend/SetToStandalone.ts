@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { IModelHost, IModelNative } from "@itwin/core-backend";
+import { Guid, OpenMode } from "@itwin/core-bentley";
+import { BriefcaseIdValue } from "@itwin/core-common";
 import * as fs from "fs";
 import * as path from "path";
-import { Guid, OpenMode } from "@itwin/core-bentley";
-import { IModelHost, IModelNative } from "@itwin/core-backend";
-import { BriefcaseIdValue } from "@itwin/core-common";
 
 let prefix = "";
 

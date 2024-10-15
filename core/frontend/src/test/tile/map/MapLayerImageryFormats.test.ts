@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { EmptyLocalization, ImageMapLayerSettings } from "@itwin/core-common";
-import * as sinon from "sinon";
 import { assert, expect } from "chai";
+import * as sinon from "sinon";
+import { IModelApp } from "../../../IModelApp";
 import {
   ArcGISMapLayerImageryProvider,
   ArcGisUtilities,
@@ -19,13 +20,14 @@ import {
   WmsMapLayerImageryProvider,
   WmtsMapLayerImageryProvider,
 } from "../../../tile/internal";
-import { IModelApp } from "../../../IModelApp";
 
-const getSampleLayerSettings = ((formatId: string) => {
+const getSampleLayerSettings = (formatId: string) => {
   return ImageMapLayerSettings.fromJSON({
-    formatId, url: "https://localhost/service", name: `Test ${formatId}`,
+    formatId,
+    url: "https://localhost/service",
+    name: `Test ${formatId}`,
   });
-});
+};
 
 describe("MapLayerImageryFormats", () => {
   const sandbox = sinon.createSandbox();
@@ -43,7 +45,6 @@ describe("MapLayerImageryFormats", () => {
   it("should create proper provider", () => {
     const registry = new MapLayerFormatRegistry({});
     internalMapLayerImageryFormats.forEach((imageryFormat) => {
-
       const layerSettings = getSampleLayerSettings(imageryFormat.formatId);
       expect(layerSettings).to.not.undefined;
       if (!layerSettings)
@@ -84,11 +85,11 @@ describe("MapLayerImageryFormats", () => {
     });
 
     const testValidateSource = async (source: MapLayerSource, url: string) => {
-      const stub = sandbox.stub(window, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
+      const stub = sandbox.stub(window, "fetch").callsFake(async function(_input: RequestInfo | URL, _init?: RequestInit) {
         return new Response();
       });
       const urlObj = new URL(url);
-      await IModelApp.mapLayerFormatRegistry.validateSource({source});
+      await IModelApp.mapLayerFormatRegistry.validateSource({ source });
       expect(stub.called).to.be.true;
       expect(stub.getCall(0).args[0]).to.equals(urlObj.toString());
 
@@ -98,14 +99,14 @@ describe("MapLayerImageryFormats", () => {
       source.unsavedQueryParams = {};
       param1.forEach((value: string, key: string) => source.savedQueryParams![key] = value);
       param2.forEach((value: string, key: string) => source.unsavedQueryParams![key] = value);
-      await IModelApp.mapLayerFormatRegistry.validateSource({source, ignoreCache: true});
+      await IModelApp.mapLayerFormatRegistry.validateSource({ source, ignoreCache: true });
       expect(stub.called).to.be.true;
       expect(stub.getCall(1).args[0]).to.equals(urlObj.toString());
     };
 
     it("validate WMS source with proper URL", async () => {
       const url = "https://sub.service.com/service";
-      const source = MapLayerSource.fromJSON({formatId:"WMS", name: "", url});
+      const source = MapLayerSource.fromJSON({ formatId: "WMS", name: "", url });
       if (!source) {
         assert.fail("Failed to create source");
         return;
@@ -115,7 +116,7 @@ describe("MapLayerImageryFormats", () => {
 
     it("validate WMTS source with proper URL", async () => {
       const url = "https://sub.service.com/service";
-      const source = MapLayerSource.fromJSON({formatId:"WMTS", name: "", url});
+      const source = MapLayerSource.fromJSON({ formatId: "WMTS", name: "", url });
       if (!source) {
         assert.fail("Failed to create source");
         return;
@@ -126,7 +127,7 @@ describe("MapLayerImageryFormats", () => {
 
     it("validate ArcGIS source with proper URL", async () => {
       const url = "https://sub.service.com/service";
-      const source = MapLayerSource.fromJSON({formatId:"ArcGIS", name: "", url});
+      const source = MapLayerSource.fromJSON({ formatId: "ArcGIS", name: "", url });
       if (!source) {
         assert.fail("Failed to create source");
         return;

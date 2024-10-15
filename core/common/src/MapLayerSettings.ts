@@ -15,7 +15,7 @@ import { DeprecatedBackgroundMapProps } from "./BackgroundMapSettings";
  * In order to be displayed, a corresponding format must have been registered in the [MapLayerFormatRegistry]($frontend)
  * @public
  */
-export type ImageryMapLayerFormatId  = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS";
+export type ImageryMapLayerFormatId = "ArcGIS" | "BingMaps" | "MapboxImagery" | "TileURL" | "WMS" | "WMTS";
 
 /** @public */
 export type SubLayerId = string | number;
@@ -111,16 +111,24 @@ export class MapSubLayerSettings {
   }
 
   /** return true if this sublayer is named. */
-  public get isNamed(): boolean { return this.name.length > 0; }
+  public get isNamed(): boolean {
+    return this.name.length > 0;
+  }
 
   /** return true if this sublayer is a leaf (has no children) */
-  public get isLeaf(): boolean { return this.children === undefined || this.children.length === 0; }
+  public get isLeaf(): boolean {
+    return this.children === undefined || this.children.length === 0;
+  }
 
   /** return true if this sublayer is an unnamed group */
-  public get isUnnamedGroup(): boolean { return !this.isLeaf && !this.isNamed; }
+  public get isUnnamedGroup(): boolean {
+    return !this.isLeaf && !this.isNamed;
+  }
 
   /** return a string representing this sublayer id (converting to string if underlying id is number) */
-  public get idString(): string { return (typeof this.id === "number") ? this.id.toString(10) : this.id; }
+  public get idString(): string {
+    return (typeof this.id === "number") ? this.id.toString(10) : this.id;
+  }
 }
 
 /** JSON representation of properties common to both [[ImageMapLayerProps]] and [[ModelMapLayerProps]].
@@ -167,9 +175,8 @@ export interface ImageMapLayerProps extends CommonMapLayerProps {
 
   /** List of query parameters that will get appended to the source.
    * @beta
-  */
+   */
   queryParams?: { [key: string]: string };
-
 }
 
 /** JSON representation of a [[ModelMapLayerSettings]].
@@ -262,7 +269,8 @@ export abstract class MapLayerSettings {
 
   /** @internal */
   public displayMatches(other: MapLayerSettings): boolean {
-    return this.name === other.name && this.visible === other.visible && this.transparency === other.transparency && this.transparentBackground === other.transparentBackground;
+    return this.name === other.name && this.visible === other.visible && this.transparency === other.transparency &&
+      this.transparentBackground === other.transparentBackground;
   }
 
   /** Return a unique string identifying the layers source... The URL for image layer or modelID for model layer  */
@@ -291,15 +299,17 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   /** List of query parameters to append to the settings URL and persisted as part of the JSON representation.
    * @note Sensitive information like user credentials should be provided in [[unsavedQueryParams]] to ensure it is never persisted.
    * @beta
-  */
+   */
   public savedQueryParams?: { [key: string]: string };
 
   /** List of query parameters that will get appended to the settings URL that should *not* be be persisted part of the JSON representation.
    * @beta
-  */
+   */
   public unsavedQueryParams?: { [key: string]: string };
   public readonly subLayers: MapSubLayerSettings[];
-  public override get source(): string { return this.url; }
+  public override get source(): string {
+    return this.url;
+  }
 
   /** @internal */
   protected constructor(props: ImageMapLayerProps) {
@@ -310,7 +320,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     this.url = props.url;
     this.accessKey = props.accessKey;
     if (props.queryParams) {
-      this.savedQueryParams = {...props.queryParams};
+      this.savedQueryParams = { ...props.queryParams };
     }
     this.subLayers = [];
     if (!props.subLayers)
@@ -337,7 +347,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
       props.subLayers = this.subLayers.map((x) => x.toJSON());
 
     if (this.savedQueryParams)
-      props.queryParams = {...this.savedQueryParams};
+      props.queryParams = { ...this.savedQueryParams };
 
     return props;
   }
@@ -354,9 +364,9 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     clone.password = this.password;
     clone.accessKey = this.accessKey;
     if (this.unsavedQueryParams)
-      clone.unsavedQueryParams = {...this.unsavedQueryParams};
+      clone.unsavedQueryParams = { ...this.unsavedQueryParams };
     if (this.savedQueryParams)
-      clone.savedQueryParams = {...this.savedQueryParams};
+      clone.savedQueryParams = { ...this.savedQueryParams };
 
     return clone;
   }
@@ -370,9 +380,9 @@ export class ImageMapLayerSettings extends MapLayerSettings {
     props.accessKey = changedProps.accessKey ?? this.accessKey;
     props.subLayers = changedProps.subLayers ?? this.subLayers;
     if (changedProps.queryParams) {
-      props.queryParams = {...changedProps.queryParams};
+      props.queryParams = { ...changedProps.queryParams };
     } else if (this.savedQueryParams) {
-      props.queryParams = {...this.savedQueryParams};
+      props.queryParams = { ...this.savedQueryParams };
     }
 
     return props;
@@ -380,7 +390,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
 
   /** @internal */
   public override displayMatches(other: MapLayerSettings): boolean {
-    if (! (other instanceof ImageMapLayerSettings) || !super.displayMatches(other))
+    if (!(other instanceof ImageMapLayerSettings) || !super.displayMatches(other))
       return false;
 
     if (this.userName !== other.userName || this.password !== other.password || this.subLayers.length !== other.subLayers.length) {
@@ -444,7 +454,7 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   }
 
   /** @internal */
-  protected static mapTypeName(type: BackgroundMapType) {   // TBD.. Localization.
+  protected static mapTypeName(type: BackgroundMapType) { // TBD.. Localization.
     switch (type) {
       case BackgroundMapType.Aerial:
         return "Aerial Imagery";
@@ -462,15 +472,15 @@ export class ImageMapLayerSettings extends MapLayerSettings {
   }
 
   /** Collect all query parameters
- * @beta
- */
+   * @beta
+   */
   public collectQueryParams() {
-    let queryParams: {[key: string]: string} = {};
+    let queryParams: { [key: string]: string } = {};
     if (this.savedQueryParams)
-      queryParams = {...this.savedQueryParams};
+      queryParams = { ...this.savedQueryParams };
 
     if (this.unsavedQueryParams)
-      queryParams = {...queryParams, ...this.unsavedQueryParams};
+      queryParams = { ...queryParams, ...this.unsavedQueryParams };
 
     return queryParams;
   }
@@ -485,11 +495,12 @@ export class ImageMapLayerSettings extends MapLayerSettings {
  */
 export class ModelMapLayerSettings extends MapLayerSettings {
   public readonly modelId: Id64String;
-  public override get source(): string { return this.modelId; }
+  public override get source(): string {
+    return this.modelId;
+  }
 
   /** @internal */
-  protected constructor(modelId: Id64String,  name: string, visible = true,
-    transparency: number = 0, transparentBackground = true) {
+  protected constructor(modelId: Id64String, name: string, visible = true, transparency: number = 0, transparentBackground = true) {
     super(name, visible, transparency, transparentBackground);
     this.modelId = modelId;
   }
@@ -555,7 +566,9 @@ export class BaseMapLayerSettings extends ImageMapLayerSettings {
   private _provider?: BackgroundMapProvider;
 
   /** The provider from which this base layer was configured, if any. */
-  public get provider(): BackgroundMapProvider | undefined { return this._provider; }
+  public get provider(): BackgroundMapProvider | undefined {
+    return this._provider;
+  }
 
   /** Create a base layer from its JSON representation.
    * TODO: This, MapLayerSettings.fromJSON, and MapSubLayerSettings.fromJSON should never return undefined.

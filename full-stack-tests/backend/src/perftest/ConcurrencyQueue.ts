@@ -32,7 +32,7 @@ export class ConcurrencyQueue<T> {
   private async pushPending(pending: Promise<T>): Promise<T> {
     const wrapped = pending.then((resolvedValue) => {
       // Remove this promise from the _pending array, and replace it with the next task in the queue.
-      this._pending = this._pending.filter((p) => p !== wrapped);  // eslint-disable-line @typescript-eslint/no-floating-promises
+      this._pending = this._pending.filter((p) => p !== wrapped); // eslint-disable-line @typescript-eslint/no-floating-promises
       this.startNextInQueue();
 
       // Need to pass through the task's original return value.
@@ -44,13 +44,19 @@ export class ConcurrencyQueue<T> {
   }
 
   /** The number of currently started tasks that are still pending completion. */
-  public get pendingCount() { return this._pending.length; }
+  public get pendingCount() {
+    return this._pending.length;
+  }
 
   /** The number of queued tasks that have not yet started. */
-  public get queuedCount() { return this._queue.length; }
+  public get queuedCount() {
+    return this._queue.length;
+  }
 
   /** True if there are no tasks currently pending or queued. */
-  public get isEmpty() { return (this.pendingCount === 0 && this.queuedCount === 0); }
+  public get isEmpty() {
+    return (this.pendingCount === 0 && this.queuedCount === 0);
+  }
 
   /**
    * Adds a task to the queue. Tasks are automatically started on a FIFO basis whenever there are less than `maxParallel` currently started/pending.

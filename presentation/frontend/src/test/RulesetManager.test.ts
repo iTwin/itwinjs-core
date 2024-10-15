@@ -3,11 +3,11 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
+import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { RegisteredRuleset, Rule, Ruleset, RuleTypes } from "@itwin/presentation-common";
-import { createRandomRuleset } from "@itwin/presentation-common/lib/cjs/test";
 import { RulesetManagerImpl } from "../presentation-frontend/RulesetManager";
 
 describe("RulesetManager", () => {

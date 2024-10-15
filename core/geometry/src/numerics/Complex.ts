@@ -15,23 +15,44 @@ import { Angle } from "../geometry3d/Angle";
 export class Complex implements BeJSONFunctions {
   private _x: number;
   /** Real part */
-  public get x(): number { return this._x; }
-  public set x(value: number) { this._x = value; }
+  public get x(): number {
+    return this._x;
+  }
+  public set x(value: number) {
+    this._x = value;
+  }
 
   private _y: number;
   /** Imaginary part */
-  public get y(): number { return this._y; }
-  public set y(value: number) { this._y = value; }
+  public get y(): number {
+    return this._y;
+  }
+  public set y(value: number) {
+    this._y = value;
+  }
 
-  public constructor(x: number = 0, y: number = 0) { this._x = x; this._y = y; }
+  public constructor(x: number = 0, y: number = 0) {
+    this._x = x;
+    this._y = y;
+  }
   /** set x and y parts from args. */
-  public set(x: number = 0, y: number = 0): void { this.x = x; this.y = y; }
+  public set(x: number = 0, y: number = 0): void {
+    this.x = x;
+    this.y = y;
+  }
   /** set `this.x` and `this.y` from `other.x` and `other.y` */
-  public setFrom(other: Complex) { this.x = other.x; this.y = other.y; }
+  public setFrom(other: Complex) {
+    this.x = other.x;
+    this.y = other.y;
+  }
   /** clone the complex x,y */
-  public clone(): Complex { return new Complex(this.x, this.y); }
+  public clone(): Complex {
+    return new Complex(this.x, this.y);
+  }
   /** test for near equality using coordinate tolerances */
-  public isAlmostEqual(other: Complex): boolean { return Geometry.isAlmostEqualNumber(this.x, other.x) && Geometry.isAlmostEqualNumber(this.x, other.x); }
+  public isAlmostEqual(other: Complex): boolean {
+    return Geometry.isAlmostEqualNumber(this.x, other.x) && Geometry.isAlmostEqualNumber(this.x, other.x);
+  }
   /** Create a new Complex instance from given x and y. */
   public static create(x: number = 0, y: number = 0, result?: Complex): Complex {
     if (result) {
@@ -42,33 +63,45 @@ export class Complex implements BeJSONFunctions {
     return new Complex(x, y);
   }
   /** Return the complex sum `this+other` */
-  public plus(other: Complex, result?: Complex): Complex { return Complex.create(this.x + other.x, this.y + other.y, result); }
+  public plus(other: Complex, result?: Complex): Complex {
+    return Complex.create(this.x + other.x, this.y + other.y, result);
+  }
   /** Return the complex difference  `this-other` */
-  public minus(other: Complex, result?: Complex): Complex { return Complex.create(this.x - other.x, this.y - other.y, result); }
+  public minus(other: Complex, result?: Complex): Complex {
+    return Complex.create(this.x - other.x, this.y - other.y, result);
+  }
   /** Return the complex product  `this * other` */
   public times(other: Complex, result?: Complex): Complex {
     return Complex.create(
       this.x * other.x - this.y * other.y,
       this.x * other.y + this.y * other.x,
-      result);
+      result,
+    );
   }
   /** Return the complex product `this * x+i*y`. That is, the second Complex value exists via the args without being formally created as an instance. */
   public timesXY(x: number, y: number, result?: Complex): Complex {
     return Complex.create(
       this.x * x - this.y * y,
       this.x * y + this.y * x,
-      result);
+      result,
+    );
   }
   /** Return the mangitude of the complex number */
-  public magnitude(): number { return Geometry.hypotenuseXY(this.x, this.y); }
+  public magnitude(): number {
+    return Geometry.hypotenuseXY(this.x, this.y);
+  }
   /** Return the angle from x axis to the vector (x,y) */
-  public angle(): Angle { return Angle.createAtan2(this.y, this.x); }
+  public angle(): Angle {
+    return Angle.createAtan2(this.y, this.x);
+  }
   /** Return the xy plane distance between this and other */
   public distance(other: Complex) {
     return Geometry.hypotenuseXY(this.x - other.x, this.y - other.y);
   }
   /** Return the squared xy plane distance between this and other. */
-  public magnitudeSquared(): number { return this.x * this.x + this.y * this.y; }
+  public magnitudeSquared(): number {
+    return this.x * this.x + this.y * this.y;
+  }
   /** Return the complex division `this / other` */
   public divide(other: Complex, result?: Complex): Complex | undefined {
     const bb = other.magnitudeSquared();
@@ -78,7 +111,8 @@ export class Complex implements BeJSONFunctions {
     return Complex.create(
       (this.x * other.x + this.y * other.y) * divbb,
       (this.y * other.x - this.x * other.y) * divbb,
-      result);
+      result,
+    );
   }
   /** Return the complex square root of this. */
   public sqrt(result?: Complex): Complex {
@@ -118,12 +152,17 @@ export class Complex implements BeJSONFunctions {
     }
   }
   /** Create a `Complex` instance from a json object. */
-  public static fromJSON(json?: any): Complex { const result = new Complex(); result.setFromJSON(json); return result; }
+  public static fromJSON(json?: any): Complex {
+    const result = new Complex();
+    result.setFromJSON(json);
+    return result;
+  }
 
   /**
    * Convert an Complex to a JSON object.
    * @return {*} [x,y]
    */
-  public toJSON(): any { return [this.x, this.y]; }
-
+  public toJSON(): any {
+    return [this.x, this.y];
+  }
 }

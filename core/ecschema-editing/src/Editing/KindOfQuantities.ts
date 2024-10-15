@@ -8,12 +8,19 @@
 
 import {
   DelayedPromiseWithProps,
-  Format, InvertedUnit, KindOfQuantity, KindOfQuantityProps, OverrideFormat,
-  SchemaItemKey, SchemaItemType, SchemaKey, Unit,
+  Format,
+  InvertedUnit,
+  KindOfQuantity,
+  KindOfQuantityProps,
+  OverrideFormat,
+  SchemaItemKey,
+  SchemaItemType,
+  SchemaKey,
+  Unit,
 } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
-import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
 import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
 import { SchemaItems } from "./SchemaItems";
 
 /**
@@ -27,7 +34,12 @@ export class KindOfQuantities extends SchemaItems {
 
   public async create(schemaKey: SchemaKey, name: string, persistenceUnitKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemKey> {
     try {
-      const koqItem = await this.createSchemaItem<KindOfQuantity>(schemaKey, this.schemaItemType, (schema) => schema.createKindOfQuantity.bind(schema), name) as MutableKindOfQuantity;
+      const koqItem = await this.createSchemaItem<KindOfQuantity>(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createKindOfQuantity.bind(schema),
+        name,
+      ) as MutableKindOfQuantity;
       const persistenceUnit = await koqItem.schema.lookupItem<Unit | InvertedUnit>(persistenceUnitKey);
       if (persistenceUnit === undefined)
         throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new SchemaItemId(SchemaItemType.Unit, persistenceUnitKey));
@@ -52,7 +64,12 @@ export class KindOfQuantities extends SchemaItems {
 
   public async createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemKey> {
     try {
-      const koqItem = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createKindOfQuantity.bind(schema), koqProps);
+      const koqItem = await this.createSchemaItemFromProps(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createKindOfQuantity.bind(schema),
+        koqProps,
+      );
       return koqItem.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, koqProps.name!, schemaKey), e);
@@ -60,7 +77,6 @@ export class KindOfQuantities extends SchemaItems {
   }
 
   /**
-   *
    * @param koqKey A schemaItemKey of the editing KindOfQuantity.
    * @param format A schemaItemKey of a Format.
    * @param isDefault .is set to false when not explicitly passed.
@@ -70,7 +86,7 @@ export class KindOfQuantities extends SchemaItems {
       const kindOfQuantity = await this.getSchemaItem<MutableKindOfQuantity>(koqKey);
       const presentationFormat = await this.getSchemaItem<Format>(format, SchemaItemType.Format);
       kindOfQuantity.addPresentationFormat(presentationFormat, isDefault);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddPresentationUnit, new SchemaItemId(this.schemaItemType, koqKey), e);
     }
   }
@@ -79,7 +95,7 @@ export class KindOfQuantities extends SchemaItems {
     try {
       const kindOfQuantity = await this.getSchemaItem<MutableKindOfQuantity>(koqKey);
       kindOfQuantity.addPresentationFormat(overrideFormat, isDefault);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddPresentationOverride, new SchemaItemId(this.schemaItemType, koqKey), e);
     }
   }
@@ -89,13 +105,18 @@ export class KindOfQuantities extends SchemaItems {
    * @param parent A SchemaItemKey of the parent Format.
    * @param unitLabelOverrides The list of Unit (or InvertedUnit) and label overrides. The length of list should be equal to the number of units in the parent Format.
    */
-  public async createFormatOverride(koqKey: SchemaItemKey, parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat> {
+  public async createFormatOverride(
+    koqKey: SchemaItemKey,
+    parent: SchemaItemKey,
+    precision?: number,
+    unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>,
+  ): Promise<OverrideFormat> {
     try {
       await this.getSchemaItem<MutableKindOfQuantity>(koqKey);
 
       const parentFormat = await this.getSchemaItem<Format>(parent, SchemaItemType.Format);
       return new OverrideFormat(parentFormat, precision, unitLabelOverrides);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddPresentationOverride, new SchemaItemId(this.schemaItemType, koqKey), e);
     }
   }

@@ -7,17 +7,30 @@
  */
 import { compareNumbers, comparePossiblyUndefined, compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, ClassifierTileTreeId, iModelTileTreeIdToString, RenderMode, RenderSchedule, SpatialClassifier, ViewFlagsProperties,
+  BatchType,
+  ClassifierTileTreeId,
+  iModelTileTreeIdToString,
+  RenderMode,
+  RenderSchedule,
+  SpatialClassifier,
+  ViewFlagsProperties,
 } from "@itwin/core-common";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
+import { ActiveSpatialClassifier, SpatialClassifiersState } from "../SpatialClassifiersState";
 import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
-import { ActiveSpatialClassifier, SpatialClassifiersState } from "../SpatialClassifiersState";
 import {
-  DisclosedTileTreeSet, IModelTileTree, iModelTileTreeParamsFromJSON, TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  DisclosedTileTreeSet,
+  IModelTileTree,
+  iModelTileTreeParamsFromJSON,
+  TileTree,
+  TileTreeLoadStatus,
+  TileTreeOwner,
+  TileTreeReference,
+  TileTreeSupplier,
 } from "./internal";
 
 interface ClassifierTreeId extends ClassifierTileTreeId {
@@ -69,7 +82,11 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     return Id64.isValid(id.modelId) ? iModel.tiles.getTileTreeOwner(id, this) : this._nonexistentTreeOwner;
   }
 
-  public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>): void {
+  public addModelsAnimatedByScript(
+    modelIds: Set<Id64String>,
+    scriptSourceId: Id64String,
+    trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>,
+  ): void {
     // Note: This is invoked when an element hosting a schedule script is updated - it doesn't care about frontend schedule scripts.
     for (const tree of trees)
       if (scriptSourceId === tree.id.animationId)
@@ -89,7 +106,9 @@ export abstract class SpatialClassifierTileTreeReference extends TileTreeReferen
   public abstract get isPlanar(): boolean;
   public abstract get activeClassifier(): ActiveSpatialClassifier | undefined;
   public abstract get viewFlags(): Partial<ViewFlagsProperties>;
-  public get transparency(): number | undefined { return undefined; }
+  public get transparency(): number | undefined {
+    return undefined;
+  }
 }
 
 /** @internal */
@@ -101,7 +120,12 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   private readonly _classifiedTree: TileTreeReference;
   private _owner: TileTreeOwner;
 
-  public constructor(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState) {
+  public constructor(
+    classifiers: SpatialClassifiersState,
+    classifiedTree: TileTreeReference,
+    iModel: IModelConnection,
+    source: ViewState | DisplayStyleState,
+  ) {
     super();
     this._id = createClassifierId(classifiers.active, source);
     this._source = source;
@@ -111,8 +135,12 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     this._owner = classifierTreeSupplier.getOwner(this._id, iModel);
   }
 
-  public get classifiers(): SpatialClassifiersState { return this._classifiers; }
-  public get activeClassifier(): ActiveSpatialClassifier | undefined { return this.classifiers.activeClassifier; }
+  public get classifiers(): SpatialClassifiersState {
+    return this._classifiers;
+  }
+  public get activeClassifier(): ActiveSpatialClassifier | undefined {
+    return this.classifiers.activeClassifier;
+  }
 
   public override get castsShadows() {
     return false;
@@ -149,7 +177,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   public get viewFlags(): Partial<ViewFlagsProperties> {
     return {
       renderMode: RenderMode.SmoothShade,
-      transparency: true,      // Igored for point clouds as they don't support transparency.
+      transparency: true, // Igored for point clouds as they don't support transparency.
       textures: false,
       lighting: false,
       shadows: false,
@@ -181,11 +209,15 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     context.setVolumeClassifier(classifier, classifiedTree.modelId);
     super.addToScene(context);
   }
-
 }
 
 /** @internal */
-export function createClassifierTileTreeReference(classifiers: SpatialClassifiersState, classifiedTree: TileTreeReference, iModel: IModelConnection, source: ViewState | DisplayStyleState): SpatialClassifierTileTreeReference {
+export function createClassifierTileTreeReference(
+  classifiers: SpatialClassifiersState,
+  classifiedTree: TileTreeReference,
+  iModel: IModelConnection,
+  source: ViewState | DisplayStyleState,
+): SpatialClassifierTileTreeReference {
   return new ClassifierTreeReference(classifiers, classifiedTree, iModel, source);
 }
 

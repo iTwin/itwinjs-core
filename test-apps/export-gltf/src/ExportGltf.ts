@@ -2,16 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import {
+  ECSqlStatement,
+  ExportGraphics,
+  ExportGraphicsInfo,
+  ExportGraphicsLines,
+  ExportGraphicsMesh,
+  ExportLinesInfo,
+  ExportPartInfo,
+  ExportPartInstanceInfo,
+  ExportPartLinesInfo,
+  IModelHost,
+  SnapshotDb,
+  Texture,
+} from "@itwin/core-backend";
+import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
+import { ColorDef, ImageSourceFormat } from "@itwin/core-common";
+import { Angle, Geometry, Matrix3d, Point3d } from "@itwin/core-geometry";
 import * as fs from "fs";
 import * as path from "path";
 import * as yargs from "yargs";
-import { DbResult, Id64Array, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
-import { Angle, Geometry, Matrix3d, Point3d } from "@itwin/core-geometry";
-import {
-  ECSqlStatement, ExportGraphics, ExportGraphicsInfo, ExportGraphicsLines, ExportGraphicsMesh, ExportLinesInfo, ExportPartInfo,
-  ExportPartInstanceInfo, ExportPartLinesInfo, IModelHost, SnapshotDb, Texture,
-} from "@itwin/core-backend";
-import { ColorDef, ImageSourceFormat } from "@itwin/core-common";
 
 const exportGraphicsDetailOptions = {
   chordTol: 0.001,
@@ -75,7 +85,7 @@ function findOrAddMaterialIndexForTexture(textureId: Id64String): number {
   const textureInfo = GltfGlobals.iModel.elements.getElement<Texture>(textureId);
   const textureName = textureId + (textureInfo.format === ImageSourceFormat.Jpeg ? ".jpg" : ".png");
   const texturePath = path.join(GltfGlobals.texturesDir, textureName);
-  fs.writeFile(texturePath, textureInfo.data, () => { }); // async is fine
+  fs.writeFile(texturePath, textureInfo.data, () => {}); // async is fine
 
   const texture: GltfTexture = { source: GltfGlobals.gltf.images!.length, sampler: 0 };
   GltfGlobals.gltf.textures.push(texture);
@@ -87,7 +97,7 @@ function findOrAddMaterialIndexForTexture(textureId: Id64String): number {
     metallicFactor: 0,
     roughnessFactor: 1,
   };
-  const material: GltfMaterial = ({ pbrMetallicRoughness, doubleSided: true });
+  const material: GltfMaterial = { pbrMetallicRoughness, doubleSided: true };
 
   result = GltfGlobals.gltf.materials.length;
   GltfGlobals.gltf.materials.push(material);
@@ -106,7 +116,7 @@ function findOrAddMaterialIndexForColor(color: number): number {
     metallicFactor: 0,
     roughnessFactor: 1,
   };
-  const material: GltfMaterial = ({ pbrMetallicRoughness, doubleSided: true });
+  const material: GltfMaterial = { pbrMetallicRoughness, doubleSided: true };
   if (rgb.t > 10)
     material.alphaMode = "BLEND";
 
@@ -216,7 +226,8 @@ function addMeshParams(params: Float32Array) {
 }
 
 function addMesh(mesh: ExportGraphicsMesh, translation: Point3d, color: number, textureId?: Id64String) {
-  const material = textureId !== undefined ? findOrAddMaterialIndexForTexture(textureId) :
+  const material = textureId !== undefined ?
+    findOrAddMaterialIndexForTexture(textureId) :
     findOrAddMaterialIndexForColor(color);
 
   const primitive: GltfMeshPrimitive = {
@@ -358,9 +369,16 @@ class TranslationRotationScale {
 
     const invScale = 1.0 / xColumnMagnitude;
     const matrix = Matrix3d.createRowValues(
-      xform[0] * invScale, xform[1] * invScale, xform[2] * invScale,
-      xform[4] * invScale, xform[5] * invScale, xform[6] * invScale,
-      xform[8] * invScale, xform[9] * invScale, xform[10] * invScale);
+      xform[0] * invScale,
+      xform[1] * invScale,
+      xform[2] * invScale,
+      xform[4] * invScale,
+      xform[5] * invScale,
+      xform[6] * invScale,
+      xform[8] * invScale,
+      xform[9] * invScale,
+      xform[10] * invScale,
+    );
     if (!matrix.isIdentity) {
       const q = matrix.toQuaternion();
       this.rotation = [q.x, q.z, -q.y, -q.w]; // GLTF = RHS Y-up, iModel.js = RHS Z-up
@@ -437,7 +455,8 @@ const exportGltfArgs = yargs
 
   const elementIdArray: Id64Array = [];
   // Get all 3D elements that aren't part of template definitions or in private models.
-  const sql = "SELECT e.ECInstanceId FROM bis.GeometricElement3d e JOIN bis.Model m ON e.Model.Id=m.ECInstanceId WHERE m.isTemplate=false AND m.isPrivate=false";
+  const sql =
+    "SELECT e.ECInstanceId FROM bis.GeometricElement3d e JOIN bis.Model m ON e.Model.Id=m.ECInstanceId WHERE m.isTemplate=false AND m.isPrivate=false";
   GltfGlobals.iModel.withPreparedStatement(sql, (stmt: ECSqlStatement) => {
     while (stmt.step() === DbResult.BE_SQLITE_ROW)
       elementIdArray.push(stmt.getValue(0).getId());

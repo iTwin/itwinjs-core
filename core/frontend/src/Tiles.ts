@@ -19,9 +19,15 @@ class TreeOwner implements TileTreeOwner {
 
   public readonly id: any;
 
-  public get tileTree(): TileTree | undefined { return this._tileTree; }
-  public get loadStatus(): TileTreeLoadStatus { return this._loadStatus; }
-  public get iModel(): IModelConnection { return this._iModel; }
+  public get tileTree(): TileTree | undefined {
+    return this._tileTree;
+  }
+  public get loadStatus(): TileTreeLoadStatus {
+    return this._loadStatus;
+  }
+  public get iModel(): IModelConnection {
+    return this._iModel;
+  }
 
   public constructor(id: any, supplier: TileTreeSupplier, iModel: IModelConnection) {
     this.id = id;
@@ -80,7 +86,9 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
   private _disposed = false;
 
   /** @internal */
-  public get isDisposed() { return this._disposed; }
+  public get isDisposed() {
+    return this._disposed;
+  }
 
   /** @internal */
   constructor(iModel: IModelConnection) {
@@ -208,7 +216,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
   }
 
   /** Iterate over all of the TileTreeOwners. */
-  public * [Symbol.iterator](): Iterator<{ supplier: TileTreeSupplier, id: any, owner: TileTreeOwner }> {
+  public *[Symbol.iterator](): Iterator<{ supplier: TileTreeSupplier, id: any, owner: TileTreeOwner }> {
     for (const [supplier, dict] of this._treesBySupplier) {
       for (const entry of dict)
         yield { supplier, id: entry.key, owner: entry.value };
@@ -218,9 +226,10 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
   /** Obtain the TileTreeOwners supplied by the specified supplier. */
   public getTreeOwnersForSupplier(supplier: TileTreeSupplier): Iterable<{ id: any, owner: TileTreeOwner }> {
     function* iterator(trees: Dictionary<any, TreeOwner> | undefined) {
-      if (trees)
+      if (trees) {
         for (const entry of trees)
           yield { id: entry.key, owner: entry.value };
+      }
     }
 
     return {
@@ -237,9 +246,10 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
       const dict = entry[1];
       dict.forEach((_treeId, owner) => {
         const tree = owner.tileTree;
-        if (undefined !== tree && tree.lastSelectedTime.milliseconds < olderThan.milliseconds)
+        if (undefined !== tree && tree.lastSelectedTime.milliseconds < olderThan.milliseconds) {
           if (undefined === exclude || !exclude.has(tree))
             owner.dispose();
+        }
       });
     }
   }

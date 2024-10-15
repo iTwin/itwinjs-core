@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { IModelApp } from "../../../IModelApp";
 import { EmptyLocalization, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
-import { RenderGraphic } from "../../../render/RenderGraphic";
 import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
-import { GraphicBuilder } from "../../../render/GraphicBuilder";
-import { GraphicBranch } from "../../../render/GraphicBranch";
+import { expect } from "chai";
 import { GraphicType } from "../../../common/render/GraphicType";
+import { IModelApp } from "../../../IModelApp";
+import { GraphicBranch } from "../../../render/GraphicBranch";
+import { GraphicBuilder } from "../../../render/GraphicBuilder";
+import { RenderGraphic } from "../../../render/RenderGraphic";
 
 describe("Graphic", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

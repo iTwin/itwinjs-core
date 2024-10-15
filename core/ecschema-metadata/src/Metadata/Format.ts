@@ -6,14 +6,23 @@
  * @module Metadata
  */
 
+import {
+  BaseFormat,
+  DecimalPrecision,
+  FormatTraits,
+  formatTraitsToArray,
+  FormatType,
+  formatTypeToString,
+  FractionalPrecision,
+  ScientificType,
+  scientificTypeToString,
+  ShowSignOption,
+  showSignOptionToString,
+} from "@itwin/core-quantity";
 import { SchemaItemFormatProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import { SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import {
-  BaseFormat, DecimalPrecision, FormatTraits, formatTraitsToArray, FormatType, formatTypeToString, FractionalPrecision,
-  ScientificType, scientificTypeToString, ShowSignOption, showSignOptionToString,
-} from "@itwin/core-quantity";
 import { InvertedUnit } from "./InvertedUnit";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
@@ -34,21 +43,51 @@ export class Format extends SchemaItem {
     this._base = new BaseFormat(name);
   }
 
-  public get roundFactor(): number { return this._base.roundFactor; }
-  public get type(): FormatType { return this._base.type; }
-  public get precision(): DecimalPrecision | FractionalPrecision { return this._base.precision; }
-  public get minWidth(): number | undefined { return this._base.minWidth; }
-  public get scientificType(): ScientificType | undefined { return this._base.scientificType; }
-  public get showSignOption(): ShowSignOption { return this._base.showSignOption; }
-  public get decimalSeparator(): string { return this._base.decimalSeparator; }
-  public get thousandSeparator(): string { return this._base.thousandSeparator; }
-  public get uomSeparator(): string { return this._base.uomSeparator; }
-  public get stationSeparator(): string { return this._base.stationSeparator; }
-  public get stationOffsetSize(): number | undefined { return this._base.stationOffsetSize; }
-  public get formatTraits(): FormatTraits { return this._base.formatTraits; }
-  public get spacer(): string | undefined { return this._base.spacer; }
-  public get includeZero(): boolean | undefined { return this._base.includeZero; }
-  public get units(): Array<[Unit | InvertedUnit, string | undefined]> | undefined { return this._units; }
+  public get roundFactor(): number {
+    return this._base.roundFactor;
+  }
+  public get type(): FormatType {
+    return this._base.type;
+  }
+  public get precision(): DecimalPrecision | FractionalPrecision {
+    return this._base.precision;
+  }
+  public get minWidth(): number | undefined {
+    return this._base.minWidth;
+  }
+  public get scientificType(): ScientificType | undefined {
+    return this._base.scientificType;
+  }
+  public get showSignOption(): ShowSignOption {
+    return this._base.showSignOption;
+  }
+  public get decimalSeparator(): string {
+    return this._base.decimalSeparator;
+  }
+  public get thousandSeparator(): string {
+    return this._base.thousandSeparator;
+  }
+  public get uomSeparator(): string {
+    return this._base.uomSeparator;
+  }
+  public get stationSeparator(): string {
+    return this._base.stationSeparator;
+  }
+  public get stationOffsetSize(): number | undefined {
+    return this._base.stationOffsetSize;
+  }
+  public get formatTraits(): FormatTraits {
+    return this._base.formatTraits;
+  }
+  public get spacer(): string | undefined {
+    return this._base.spacer;
+  }
+  public get includeZero(): boolean | undefined {
+    return this._base.includeZero;
+  }
+  public get units(): Array<[Unit | InvertedUnit, string | undefined]> | undefined {
+    return this._units;
+  }
 
   private parseFormatTraits(formatTraitsFromJson: string | string[]) {
     return this._base.parseFormatTraits(formatTraitsFromJson);
@@ -76,7 +115,9 @@ export class Format extends SchemaItem {
     this._units.push([unit, label]);
   }
 
-  protected setPrecision(precision: number) { this._base.precision = precision; }
+  protected setPrecision(precision: number) {
+    this._base.precision = precision;
+  }
 
   private typecheck(formatProps: SchemaItemFormatProps) {
     this._base.loadFormatProperties(formatProps);
@@ -87,13 +128,19 @@ export class Format extends SchemaItem {
 
       if (undefined !== formatProps.composite.spacer) {
         if (formatProps.composite.spacer.length > 1)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has a composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
+          throw new ECObjectsError(
+            ECObjectsStatus.InvalidECJson,
+            `The Format ${this.fullName} has a composite with an invalid 'spacer' attribute. It should be an empty or one character string.`,
+          );
         this._base.spacer = formatProps.composite.spacer;
       }
 
       // Composite requires 1-4 units
       if (formatProps.composite.units.length <= 0 || formatProps.composite.units.length > 4)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'Composite' attribute. It should have 1-4 units.`);
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `The Format ${this.fullName} has an invalid 'Composite' attribute. It should have 1-4 units.`,
+        );
     }
   }
 

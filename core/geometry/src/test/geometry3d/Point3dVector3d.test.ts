@@ -110,11 +110,13 @@ describe("Point3d", () => {
         ck.testAngleNoShift(
           vectorI.angleTo(vectorJ),
           signedAngle,
-          "cross product used consistently for signed angle");
+          "cross product used consistently for signed angle",
+        );
         ck.testCoordinate(
           vectorJ.angleTo(vectorI).radians,
           signedAngle.radians,
-          "cross product used consistently for reverse order signed angle");
+          "cross product used consistently for reverse order signed angle",
+        );
 
         const vectorQ = vectorIJcross.plus(vectorI.scale(0.219));
         ck.testVector3d(vectorJ, vectorI.plus(vectorI.vectorTo(vectorJ)));
@@ -630,26 +632,14 @@ describe("Geometry", () => {
     const axisX: AxisIndex = AxisIndex.X;
     const axisY: AxisIndex = AxisIndex.Y;
     const axisZ: AxisIndex = AxisIndex.Z;
-    ck.testExactNumber(AxisOrder.XYZ,
-      Geometry.axisIndexToRightHandedAxisOrder(axisX), "X==>XYZ",
-    );
-    ck.testExactNumber(AxisOrder.YZX,
-      Geometry.axisIndexToRightHandedAxisOrder(axisY), "Y==>YZX",
-    );
-    ck.testExactNumber(AxisOrder.ZXY,
-      Geometry.axisIndexToRightHandedAxisOrder(axisZ), "X==>ZXY",
-    );
+    ck.testExactNumber(AxisOrder.XYZ, Geometry.axisIndexToRightHandedAxisOrder(axisX), "X==>XYZ");
+    ck.testExactNumber(AxisOrder.YZX, Geometry.axisIndexToRightHandedAxisOrder(axisY), "Y==>YZX");
+    ck.testExactNumber(AxisOrder.ZXY, Geometry.axisIndexToRightHandedAxisOrder(axisZ), "X==>ZXY");
 
     for (const phase of [0, 1, 2, 500, -10, -8, -2, -1]) {
-      ck.testExactNumber(AxisOrder.XYZ,
-        Geometry.axisIndexToRightHandedAxisOrder(3 * phase), "X==>XYZ",
-      );
-      ck.testExactNumber(AxisOrder.YZX,
-        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 1), "Y==>YZX",
-      );
-      ck.testExactNumber(AxisOrder.ZXY,
-        Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 2), "X==>ZXY",
-      );
+      ck.testExactNumber(AxisOrder.XYZ, Geometry.axisIndexToRightHandedAxisOrder(3 * phase), "X==>XYZ");
+      ck.testExactNumber(AxisOrder.YZX, Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 1), "Y==>YZX");
+      ck.testExactNumber(AxisOrder.ZXY, Geometry.axisIndexToRightHandedAxisOrder(3 * phase + 2), "X==>ZXY");
       for (const baseAxis of [0, 1, 2]) {
         const axis = phase * 3 + baseAxis;
         ck.testExactNumber(baseAxis, Geometry.cyclic3dAxis(axis), "Cyclic axis reduction");

@@ -6,10 +6,16 @@
  * @module IModelHost
  */
 
-import * as ws from "ws";
 import {
-  InterceptedRpcRequest, IpcWebSocket, IpcWebSocketBackend, IpcWebSocketMessage, IpcWebSocketTransport, rpcOverIpcStrings, RpcSessionInvocation,
+  InterceptedRpcRequest,
+  IpcWebSocket,
+  IpcWebSocketBackend,
+  IpcWebSocketMessage,
+  IpcWebSocketTransport,
+  rpcOverIpcStrings,
+  RpcSessionInvocation,
 } from "@itwin/core-common";
+import * as ws from "ws";
 import { IModelHostOptions } from "./IModelHost";
 import { IpcHandler, IpcHost } from "./IpcHost";
 

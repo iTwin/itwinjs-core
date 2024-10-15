@@ -27,7 +27,9 @@ export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRend
   }
 
   public abstract hasSymbologyRenderer(): this is FeatureSymbolizedRenderer;
-  public get transform() { return this._transform; }
+  public get transform() {
+    return this._transform;
+  }
 
   protected abstract beginPath(): void;
   protected abstract closePath(): void;
@@ -45,7 +47,7 @@ export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRend
    * @param geometryCoords Array that linearly encodes the vertices of each sub-path of a polyline / ring of a polygon
    * @param fill Indicates if the path should be filled or not.
    * @param stride Dimension of each vertices (i.e. 2 or 3.  3 could be X,Y,Z, X,YM) Currently 3rd dimension is ignored.
-  */
+   */
   public async renderPath(geometryLengths: number[], geometryCoords: number[], fill: boolean, stride: number, relativeCoords: boolean) {
     if (stride < 2 || stride > 3) {
       return;
@@ -80,7 +82,6 @@ export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRend
 
           this.moveTo(pX, pY);
         } else {
-
           // Following vertices are relative to the previous one (sadly not really well documented by ESRI)
           // typically this happens when 'coordinates quantization' is active (i.e. no client side transformation is needed)
           if (relativeCoords) {
@@ -95,7 +96,6 @@ export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRend
           }
           this.lineTo(pX, pY);
         }
-
       }
       coordsOffset += stride * vertexCount;
       if (fill) {
@@ -108,7 +108,7 @@ export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRend
       await this.fill();
     }
 
-    await this.stroke();  // draw line path or polygon outline
+    await this.stroke(); // draw line path or polygon outline
   }
 
   /**
@@ -117,9 +117,8 @@ export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRend
    * @param geometryLengths  Array be used to determine the start and end of each multi-point array, empty for single point.
    * @param geometryCoords Array that linearly encodes vertices.
    * @param stride Dimension of each vertices (i.e. 2 or 3.  3 could be X,Y,Z, X,YM) Currently 3rd dimension is ignored.
-  */
+   */
   public async renderPoint(geometryLengths: number[], geometryCoords: number[], stride: number, relativeCoords: boolean) {
-
     if (stride < 2 || stride > 3) {
       return;
     }
@@ -127,7 +126,6 @@ export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRend
     if (geometryLengths.length === 0) {
       // Strangely, for points, 'lengths' array is empty, so we assume there is a single vertex in 'coords' array.
       if (geometryCoords.length >= stride) {
-
         if (this._transform) {
           const transformedPoint = this._transform.multiplyPoint2d({ x: geometryCoords[0], y: geometryCoords[1] });
           this.drawPoint(transformedPoint.x, transformedPoint.y);
@@ -156,7 +154,6 @@ export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRend
           }
 
           this.drawPoint(pX, pY);
-
         }
         coordsOffset += stride * vertexCount;
       }
@@ -164,4 +161,3 @@ export abstract class FeatureGeometryBaseRenderer implements FeatureGeometryRend
     await this.finishPoints();
   }
 }
-

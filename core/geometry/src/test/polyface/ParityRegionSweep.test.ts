@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { CurveCollection } from "../../curve/CurveCollection";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { ParityRegion } from "../../curve/ParityRegion";
@@ -31,11 +31,17 @@ describe("ParityRegionSweep", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const regionC = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/data/curve/parityRegionSweep/ParityRegionC.imjs", "utf8")));
+      "./src/test/data/curve/parityRegionSweep/ParityRegionC.imjs",
+      "utf8",
+    )));
     const regionA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/data/curve/parityRegionSweep/ParityRegionA.imjs", "utf8")));
+      "./src/test/data/curve/parityRegionSweep/ParityRegionA.imjs",
+      "utf8",
+    )));
     let regionB = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/data/curve/parityRegionSweep/ParityRegionB.imjs", "utf8")));
+      "./src/test/data/curve/parityRegionSweep/ParityRegionB.imjs",
+      "utf8",
+    )));
     if (Array.isArray(regionB)) {
       const regionB1 = ParityRegion.create();
       for (const loop of regionB) {
@@ -75,7 +81,12 @@ describe("ParityRegionSweep", () => {
             const slab = LinearSweep.create(region, sweepDirection, true);
             let y2 = y1 + diagonal;
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, slab, x1, y2);
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [rawMomentData.origin, rawMomentData.origin.plusScaled(sweepDirection, 4.0)], x1, y2);
+            GeometryCoreTestIO.captureCloneGeometry(
+              allGeometry,
+              [rawMomentData.origin, rawMomentData.origin.plusScaled(sweepDirection, 4.0)],
+              x1,
+              y2,
+            );
             const builder = PolyfaceBuilder.create();
             builder.addGeometryQuery(slab!);
             const polyfaceA = builder.claimPolyface();
@@ -108,16 +119,17 @@ describe("ParityRegionSweep", () => {
     }
     for (const dy of [0.1, 0.3]) {
       let y0 = 0.0;
-      for (const transform of [
-        Transform.createIdentity(),
-        Transform.createFixedPointAndMatrix(Point3d.create(3.24234898, 1.9798789),
-          Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(25.69898234))),
-      ]) {
+      for (
+        const transform of [
+          Transform.createIdentity(),
+          Transform.createFixedPointAndMatrix(
+            Point3d.create(3.24234898, 1.9798789),
+            Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(25.69898234)),
+          ),
+        ]
+      ) {
         let x0 = x0A;
-        for (const yShifts of [[dy, dy, dy],
-        [0, 0, 0], [dy, 0, 0], [0, dy, 0], [dy, dy, 0],
-        [0, 0, dy], [dy, 0, dy], [0, dy, dy],
-        ]) {
+        for (const yShifts of [[dy, dy, dy], [0, 0, 0], [dy, 0, 0], [0, dy, 0], [dy, dy, 0], [0, 0, dy], [dy, 0, dy], [0, dy, dy]]) {
           const loop1 = GrowableXYZArray.create([
             [0, 0, 0],
             [10, 0, 0],
@@ -194,14 +206,16 @@ describe("ParityRegionSweep", () => {
     const dy = 50;
     let shiftX = 0;
     let shiftY = 0;
-    const inputs = IModelJson.Reader.parse(JSON.parse(fs.readFileSync("./src/test/data/curve/parityRegionSweep/karolisParityRegionSweep.imjs", "utf8"))) as GeometryQuery[];
+    const inputs = IModelJson.Reader.parse(
+      JSON.parse(fs.readFileSync("./src/test/data/curve/parityRegionSweep/karolisParityRegionSweep.imjs", "utf8")),
+    ) as GeometryQuery[];
     ck.testDefined(inputs, "linearSweep imported");
 
     const boundaryEdges: SortableEdgeCluster[] = [];
     const nullEdges: SortableEdgeCluster[] = [];
     const otherClusteredEdges: SortableEdgeCluster[] = [];
     let boundaryEdgeCount = 0, nullEdgeCount = 0, otherClusteredEdgeCount = 0;
-    const expectedBoundaryEdgeCount = 0, expectedNullEdgeCount = 0, expectedOtherClusteredEdgeCount = 3;  // we know there are 3 singular vertices in the parity regions
+    const expectedBoundaryEdgeCount = 0, expectedNullEdgeCount = 0, expectedOtherClusteredEdgeCount = 3; // we know there are 3 singular vertices in the parity regions
 
     for (const input of inputs) {
       const solid = input as LinearSweep;
@@ -235,5 +249,4 @@ describe("ParityRegionSweep", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "ParityRegionSweep", "KarolisRegion");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

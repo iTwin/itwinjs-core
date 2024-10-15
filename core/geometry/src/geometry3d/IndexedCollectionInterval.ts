@@ -116,5 +116,4 @@ export class IndexedCollectionInterval<T extends CollectionWithLength> {
  * @public
  */
 export class IndexedXYZCollectionInterval extends IndexedCollectionInterval<IndexedXYZCollection> {
-
 }

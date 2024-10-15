@@ -7,8 +7,8 @@
  */
 
 import { ScreenSpaceEffectBuilderParams } from "../../ScreenSpaceEffectBuilder";
-import { TextureUnit } from "../RenderFlags";
 import { AttributeMap } from "../AttributeMap";
+import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
 import { assignFragColor } from "./Fragment";
 

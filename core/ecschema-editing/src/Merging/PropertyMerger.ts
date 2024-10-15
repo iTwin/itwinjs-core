@@ -2,12 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { SchemaMergeContext } from "./SchemaMerger";
+import {
+  AnyProperty,
+  AnyPropertyProps,
+  ArrayPropertyProps,
+  CustomAttribute,
+  ECClass,
+  Enumeration,
+  EnumerationPropertyProps,
+  NavigationPropertyProps,
+  parsePrimitiveType,
+  PrimitivePropertyProps,
+  RelationshipClass,
+  SchemaItemKey,
+  SchemaItemType,
+  StructClass,
+  StructPropertyProps,
+} from "@itwin/ecschema-metadata";
 import type { AnyClassItemDifference, ClassPropertyDifference, DifferenceType } from "../Differencing/SchemaDifference";
-import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
-import { getClassEditor, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 import { MutableProperty } from "../Editing/Mutable/MutableProperty";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
+import type { SchemaMergeContext } from "./SchemaMerger";
+import { getClassEditor, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 
 type PartialEditable<T> = {
   -readonly [P in keyof T]: T[P];
@@ -39,7 +55,12 @@ export async function mergeClassProperties(context: SchemaMergeContext, change: 
   }
 }
 
-async function mergeClassProperty(context: SchemaMergeContext, change: { changeType: DifferenceType }, itemKey: SchemaItemKey, property: AnyPropertyProps) {
+async function mergeClassProperty(
+  context: SchemaMergeContext,
+  change: { changeType: DifferenceType },
+  itemKey: SchemaItemKey,
+  property: AnyPropertyProps,
+) {
   return change.changeType === "add"
     ? addClassProperty(context, itemKey, property)
     : modifyClassProperty(context, itemKey, property);

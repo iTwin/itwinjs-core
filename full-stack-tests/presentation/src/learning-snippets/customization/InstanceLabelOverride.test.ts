@@ -2,13 +2,13 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { initialize, terminate, testLocalization } from "../../IntegrationTests";
-import { printRuleset } from "../Utils";
 import { collect } from "../../Utils";
+import { printRuleset } from "../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -659,7 +659,9 @@ describe("Learning Snippets", () => {
           .then(async (x) => collect(x.items));
         expect(nodes)
           .to.be.lengthOf(2)
-          .and.to.containSubset([{ label: { displayValue: "Properties_60InstancesWithUrl2" } }, { label: { displayValue: "Properties_60InstancesWithUrl2" } }]);
+          .and.to.containSubset([{ label: { displayValue: "Properties_60InstancesWithUrl2" } }, {
+            label: { displayValue: "Properties_60InstancesWithUrl2" },
+          }]);
       });
     });
   });

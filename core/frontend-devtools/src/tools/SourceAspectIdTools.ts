@@ -19,8 +19,12 @@ import { parseArgs } from "./parseArgs";
  * @beta
  */
 export abstract class SourceAspectIdTool extends Tool {
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   protected abstract getECSql(queryId: string): string;
 
@@ -43,7 +47,12 @@ export abstract class SourceAspectIdTool extends Tool {
 
     let resultId;
     try {
-      for await (const row of imodel.createQueryReader(this.getECSql(queryId), undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: 1 } }))
+      for await (
+        const row of imodel.createQueryReader(this.getECSql(queryId), undefined, {
+          rowFormat: QueryRowFormat.UseJsPropertyNames,
+          limit: { count: 1 },
+        })
+      )
         resultId = row.resultId;
     } catch (ex) {
       resultId = BentleyError.getErrorMessage(ex);

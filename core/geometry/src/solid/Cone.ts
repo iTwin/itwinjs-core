@@ -35,16 +35,16 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   /** String name for schema properties */
   public readonly solidPrimitiveType = "cone";
 
-  private _localToWorld: Transform;       // Transform from local to global.
-  private _radiusA: number;    // nominal radius at z=0.  skewed axes may make it an ellipse
-  private _radiusB: number;    // radius at z=1.  skewed axes may make it an ellipse
+  private _localToWorld: Transform; // Transform from local to global.
+  private _radiusA: number; // nominal radius at z=0.  skewed axes may make it an ellipse
+  private _radiusB: number; // radius at z=1.  skewed axes may make it an ellipse
   private _maxRadius: number; // maximum radius anywhere on the cone.
   protected constructor(map: Transform, radiusA: number, radiusB: number, capped: boolean) {
     super(capped);
     this._localToWorld = map;
     this._radiusA = radiusA;
     this._radiusB = radiusB;
-    this._maxRadius = Math.max(this._radiusA, this._radiusB);  // um... should resolve elliptical sections
+    this._maxRadius = Math.max(this._radiusA, this._radiusB); // um... should resolve elliptical sections
   }
   /** Return a clone of this Cone. */
   public clone(): Cone {
@@ -100,7 +100,15 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   /** create a cylinder or cone from axis start and end with cross section defined by vectors that do not need to be perpendicular to each other or
    * to the axis.
    */
-  public static createBaseAndTarget(centerA: Point3d, centerB: Point3d, vectorX: Vector3d, vectorY: Vector3d, radiusA: number, radiusB: number, capped: boolean) {
+  public static createBaseAndTarget(
+    centerA: Point3d,
+    centerB: Point3d,
+    vectorX: Vector3d,
+    vectorY: Vector3d,
+    radiusA: number,
+    radiusB: number,
+    capped: boolean,
+  ) {
     radiusA = Math.abs(Geometry.correctSmallMetricDistance(radiusA));
     radiusB = Math.abs(Geometry.correctSmallMetricDistance(radiusB));
     const vectorZ = centerA.vectorTo(centerB);
@@ -108,23 +116,41 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     return new Cone(localToWorld, radiusA, radiusB, capped);
   }
   /** (Property accessor) Return the center point at the base plane */
-  public getCenterA(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 0); }
+  public getCenterA(): Point3d {
+    return this._localToWorld.multiplyXYZ(0, 0, 0);
+  }
   /** (Property accessor) */
-  public getCenterB(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 1); }
+  public getCenterB(): Point3d {
+    return this._localToWorld.multiplyXYZ(0, 0, 1);
+  }
   /** (Property accessor) Return the x vector in the local frame */
-  public getVectorX(): Vector3d { return this._localToWorld.matrix.columnX(); }
+  public getVectorX(): Vector3d {
+    return this._localToWorld.matrix.columnX();
+  }
   /** (Property accessor) Return the y vector in the local frame */
-  public getVectorY(): Vector3d { return this._localToWorld.matrix.columnY(); }
+  public getVectorY(): Vector3d {
+    return this._localToWorld.matrix.columnY();
+  }
   /** (Property accessor) return the radius at the base plane */
-  public getRadiusA(): number { return this._radiusA; }
+  public getRadiusA(): number {
+    return this._radiusA;
+  }
   /** (Property accessor) return the radius at the top plane */
-  public getRadiusB(): number { return this._radiusB; }
+  public getRadiusB(): number {
+    return this._radiusB;
+  }
   /** (Property accessor) return the larger of the base and top plane radii */
-  public getMaxRadius(): number { return this._maxRadius; }
+  public getMaxRadius(): number {
+    return this._maxRadius;
+  }
   /** (Property accessor) return the radius at fraction `v` along the axis */
-  public vFractionToRadius(v: number): number { return Geometry.interpolate(this._radiusA, v, this._radiusB); }
+  public vFractionToRadius(v: number): number {
+    return Geometry.interpolate(this._radiusA, v, this._radiusB);
+  }
   /** (Property accessor) test if `other` is an instance of `Cone` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof Cone; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof Cone;
+  }
   /** (Property accessor) Test for nearly equal coordinate data. */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof Cone) {
@@ -156,7 +182,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     if (fixedStrokeCount !== undefined)
       strokeCount = fixedStrokeCount;
     else if (options !== undefined)
-      strokeCount = options.defaultCircleStrokes;   // NEEDS WORK -- get circle stroke count with this.maxRadius !!!
+      strokeCount = options.defaultCircleStrokes; // NEEDS WORK -- get circle stroke count with this.maxRadius !!!
     else {
       // accept the local default
     }
@@ -166,7 +192,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const twoPi = Math.PI * 2.0;
     const deltaRadians = twoPi / strokeCount;
     let radians = 0;
-    const fractions = result.fractions;     // possibly undefined !!!
+    const fractions = result.fractions; // possibly undefined !!!
     const derivatives = result.packedDerivatives; // possibly undefined !!!
     const uvParams = result.packedUVParams; // possibly undefined !!
     const surfaceNormals = result.packedSurfaceNormals;
@@ -254,7 +280,8 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
       this._localToWorld.multiplyXYZ(r * cosTheta, r * sinTheta, vFraction),
       this._localToWorld.multiplyVectorXYZ(-r * sinTheta * fTheta, r * cosTheta * fTheta, 0),
       this._localToWorld.multiplyVectorXYZ(drdv * cosTheta, drdv * sinTheta, 1.0),
-      result);
+      result,
+    );
   }
   /**
    * @return true if this is a closed volume.
@@ -276,7 +303,9 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     const hZ = xyNormal.dotProduct(columnZ);
     const zSkewVector = columnZ.plusScaled(xyNormal, hZ);
     const zSkewDistance = zSkewVector.magnitudeXY();
-    return Vector2d.create(Math.PI * 2 * Math.max(this._radiusA, this._radiusB),
-      Geometry.hypotenuseXY(Math.abs(this._radiusB - this._radiusA) + zSkewDistance, hZ));
+    return Vector2d.create(
+      Math.PI * 2 * Math.max(this._radiusA, this._radiusB),
+      Geometry.hypotenuseXY(Math.abs(this._radiusB - this._radiusA) + zSkewDistance, hZ),
+    );
   }
 }

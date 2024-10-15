@@ -8,7 +8,15 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import {
-  IModelError, IpcWebSocket, RpcEndpoint, RpcProtocol, RpcPushChannel, RpcPushConnection, RpcRequest, RpcRequestFulfillment, RpcSerializedValue,
+  IModelError,
+  IpcWebSocket,
+  RpcEndpoint,
+  RpcProtocol,
+  RpcPushChannel,
+  RpcPushConnection,
+  RpcRequest,
+  RpcRequestFulfillment,
+  RpcSerializedValue,
   SerializedRpcRequest,
 } from "@itwin/core-common";
 import { MobileEventLoop } from "./MobileEventLoop";
@@ -48,7 +56,9 @@ export class MobileRpcProtocol extends RpcProtocol {
   private _port: number = 0;
   private _transport?: MobilePushTransport;
   private _ipc: MobileIpcTransport;
-  public static obtainInterop(): MobileRpcGateway { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
+  public static obtainInterop(): MobileRpcGateway {
+    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+  }
 
   public static async encodeRequest(request: MobileRpcRequest): Promise<MobileRpcChunks> {
     const serialized = await request.protocol.serialize(request);
@@ -81,7 +91,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private initializeFrontend() {
-    if (typeof (WebSocket) === "undefined") {
+    if (typeof WebSocket === "undefined") {
       throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol on frontend require websocket to work");
     }
     if (!MobileRpcConfiguration.args.port) {
@@ -199,7 +209,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private handleMessageFromBackend(data: string | ArrayBuffer) {
-    if (typeof (data) === "string") {
+    if (typeof data === "string") {
       this.handleStringFromBackend(data);
     } else {
       this.handleBinaryFromBackend(data);
@@ -274,7 +284,7 @@ export class MobileRpcProtocol extends RpcProtocol {
   }
 
   private handleMessageFromFrontend(data: string | ArrayBuffer, connectionId: number) {
-    if (typeof (data) === "string") {
+    if (typeof data === "string") {
       this.handleStringFromFrontend(data, connectionId);
     } else {
       this.handleBinaryFromFrontend(data, connectionId);
@@ -336,7 +346,7 @@ export class MobileRpcProtocol extends RpcProtocol {
     const mobilegateway = MobileRpcProtocol.obtainInterop();
 
     for (const chunk of message) {
-      if (typeof (chunk) === "string") {
+      if (typeof chunk === "string") {
         mobilegateway.sendString(chunk, connection || mobilegateway.connectionId);
       } else {
         mobilegateway.sendBinary(chunk, connection || mobilegateway.connectionId);

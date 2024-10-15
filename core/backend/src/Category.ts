@@ -8,7 +8,15 @@
 
 import { Id64, Id64String, JsonUtils } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps,
+  BisCodeSpec,
+  CategoryProps,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  ElementProps,
+  Rank,
+  SubCategoryAppearance,
+  SubCategoryProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -18,7 +26,9 @@ import { CategoryOwnsSubCategories } from "./NavigationRelationship";
  * @public
  */
 export class SubCategory extends DefinitionElement {
-  public static override get className(): string { return "SubCategory"; }
+  public static override get className(): string {
+    return "SubCategory";
+  }
   /** The Appearance parameters for this SubCategory */
   public appearance: SubCategoryAppearance;
   /** Optional description of this SubCategory. */
@@ -39,13 +49,21 @@ export class SubCategory extends DefinitionElement {
   }
 
   /** Get the SubCategory's name (its Code value). */
-  public getSubCategoryName(): string { return this.code.value; }
+  public getSubCategoryName(): string {
+    return this.code.value;
+  }
   /** Get the Id of the SubCategory. */
-  public getSubCategoryId(): Id64String { return this.id; }
+  public getSubCategoryId(): Id64String {
+    return this.id;
+  }
   /** Get the Id of this SubCategory's parent Category. */
-  public getCategoryId(): Id64String { return this.parent ? this.parent.id : Id64.invalid; }
+  public getCategoryId(): Id64String {
+    return this.parent ? this.parent.id : Id64.invalid;
+  }
   /** Check if this is the default SubCategory of its parent Category. */
-  public get isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId(); }
+  public get isDefaultSubCategory(): boolean {
+    return IModelDb.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId();
+  }
 
   /** Create a Code for a SubCategory given a name that is meant to be unique within the scope of the specified parent Category.
    * @param iModel  The IModel
@@ -65,7 +83,12 @@ export class SubCategory extends DefinitionElement {
    * @returns The newly constructed SubCategory element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): SubCategory {
+  public static create(
+    iModelDb: IModelDb,
+    parentCategoryId: Id64String,
+    name: string,
+    appearance: SubCategoryAppearance.Props | SubCategoryAppearance,
+  ): SubCategory {
     if (appearance instanceof SubCategoryAppearance)
       appearance = appearance.toJSON();
 
@@ -88,7 +111,12 @@ export class SubCategory extends DefinitionElement {
    * @returns The Id of the newly inserted SubCategory element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
+  public static insert(
+    iModelDb: IModelDb,
+    parentCategoryId: Id64String,
+    name: string,
+    appearance: SubCategoryAppearance.Props | SubCategoryAppearance,
+  ): Id64String {
     const subCategory = this.create(iModelDb, parentCategoryId, name, appearance);
     return iModelDb.elements.insertElement(subCategory.toJSON());
   }
@@ -98,7 +126,9 @@ export class SubCategory extends DefinitionElement {
  * @public
  */
 export class Category extends DefinitionElement {
-  public static override get className(): string { return "Category"; }
+  public static override get className(): string {
+    return "Category";
+  }
   public rank: Rank = Rank.User;
   public description?: string;
 
@@ -117,7 +147,9 @@ export class Category extends DefinitionElement {
   }
 
   /** Get the Id of the default SubCategory for this Category. */
-  public myDefaultSubCategoryId(): Id64String { return IModelDb.getDefaultSubCategoryId(this.id); }
+  public myDefaultSubCategoryId(): Id64String {
+    return IModelDb.getDefaultSubCategoryId(this.id);
+  }
 
   /** Set the appearance of the default SubCategory for this Category */
   public setDefaultAppearance(props: SubCategoryAppearance.Props | SubCategoryAppearance): void {
@@ -134,12 +166,18 @@ export class Category extends DefinitionElement {
  * @public
  */
 export class DrawingCategory extends Category {
-  public static override get className(): string { return "DrawingCategory"; }
+  public static override get className(): string {
+    return "DrawingCategory";
+  }
 
-  protected constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
+  protected constructor(opts: ElementProps, iModel: IModelDb) {
+    super(opts, iModel);
+  }
 
   /** Get the name of the CodeSpec that is used by DrawingCategory objects. */
-  public static getCodeSpecName(): string { return BisCodeSpec.drawingCategory; }
+  public static getCodeSpecName(): string {
+    return BisCodeSpec.drawingCategory;
+  }
 
   /** Looks up the CategoryId of a DrawingCategory by model and name */
   public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined {
@@ -183,7 +221,12 @@ export class DrawingCategory extends Category {
    * @returns The Id of the newly inserted DrawingCategory element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
+  public static insert(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance,
+  ): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
     const elements = iModelDb.elements;
     category.id = elements.insertElement(category.toJSON());
@@ -196,11 +239,17 @@ export class DrawingCategory extends Category {
  * @public
  */
 export class SpatialCategory extends Category {
-  public static override get className(): string { return "SpatialCategory"; }
-  protected constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
+  public static override get className(): string {
+    return "SpatialCategory";
+  }
+  protected constructor(opts: ElementProps, iModel: IModelDb) {
+    super(opts, iModel);
+  }
 
   /** Get the name of the CodeSpec that is used by SpatialCategory objects. */
-  public static getCodeSpecName(): string { return BisCodeSpec.spatialCategory; }
+  public static getCodeSpecName(): string {
+    return BisCodeSpec.spatialCategory;
+  }
 
   /** Looks up the CategoryId of a SpatialCategory by model and name */
   public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined {
@@ -244,7 +293,12 @@ export class SpatialCategory extends Category {
    * @returns The Id of the newly inserted SpatialCategory element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
+  public static insert(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    name: string,
+    defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance,
+  ): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
     category.id = iModelDb.elements.insertElement(category.toJSON());
     category.setDefaultAppearance(defaultAppearance);

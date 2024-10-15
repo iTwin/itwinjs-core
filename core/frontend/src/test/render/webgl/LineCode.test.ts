@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { LinePixels } from "@itwin/core-common";
+import { expect } from "chai";
 import { LineCode } from "../../../render/webgl/LineCode";
 
 describe("LineCode", () => {

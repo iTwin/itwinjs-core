@@ -19,7 +19,7 @@ function setupAsyncHooks() {
   const init = (asyncId: number, type: string, triggerAsyncId: number, _resource: any) => {
     const eid = async_hooks.executionAsyncId(); // (An executionAsyncId() of 0 means that it is being executed from C++ with no JavaScript stack above it.)
     const stack = new Error().stack;
-    asyncResourceStats.set(asyncId, {type, eid, triggerAsyncId, initStack: stack});
+    asyncResourceStats.set(asyncId, { type, eid, triggerAsyncId, initStack: stack });
   };
   const destroy = (asyncId: number) => {
     if (asyncResourceStats.get(asyncId) === undefined) {
@@ -28,7 +28,7 @@ function setupAsyncHooks() {
     asyncResourceStats.delete(asyncId);
   };
 
-  const asyncHook = async_hooks.createHook({init, destroy});
+  const asyncHook = async_hooks.createHook({ init, destroy });
   asyncHook.enable();
 }
 const fs = require("fs-extra");
@@ -52,7 +52,7 @@ const isCI = process.env.CI || process.env.TF_BUILD;
 // Force rush test to fail CI builds if describe.only or it.only is used.
 // These should only be used for debugging and must not be committed, otherwise we may be accidentally skipping lots of tests.
 if (isCI) {
-  if (typeof (mocha) !== "undefined")
+  if (typeof mocha !== "undefined")
     mocha.forbidOnly();
   else
     require.cache[require.resolve("mocha/lib/mocharc.json", { paths: require.main?.paths ?? module.paths })]!.exports.forbidOnly = true;
@@ -61,7 +61,7 @@ if (isCI) {
 // This is necessary to enable colored output when running in rush test:
 Object.defineProperty(Base, "color", {
   get: () => process.env.FORCE_COLOR !== "false" && process.env.FORCE_COLOR !== "0",
-  set: () => { },
+  set: () => {},
 });
 
 class BentleyMochaReporter extends Spec {
@@ -80,9 +80,11 @@ class BentleyMochaReporter extends Spec {
       super.epilogue(...args);
 
       if (0 === this.stats.passes) {
-        logBuildError("There were 0 passing tests.  That doesn't seem right."
-          + "\nIf there are really no passing tests and no failures, then what was even the point?"
-          + "\nIt seems likely that tests were skipped by it.only, it.skip, or grep filters, so I'm going to fail now.");
+        logBuildError(
+          "There were 0 passing tests.  That doesn't seem right."
+            + "\nIf there are really no passing tests and no failures, then what was even the point?"
+            + "\nIt seems likely that tests were skipped by it.only, it.skip, or grep filters, so I'm going to fail now.",
+        );
         failBuild();
       }
     }
@@ -105,7 +107,9 @@ class BentleyMochaReporter extends Spec {
           // asyncResourceStats.set(asyncId, {before: 0, after: 0, type, eid, triggerAsyncId, initStack: stack});
           asyncResourceStats.forEach((value, key) => {
             if (activeResourcesInfo.includes(value.type.toLowerCase())) {
-              console.error(`asyncId: ${key}: type: ${value.type}, eid: ${value.eid},triggerAsyncId: ${value.triggerAsyncId}, initStack: ${value.initStack}`);
+              console.error(
+                `asyncId: ${key}: type: ${value.type}, eid: ${value.eid},triggerAsyncId: ${value.triggerAsyncId}, initStack: ${value.initStack}`,
+              );
             }
           });
         } else {

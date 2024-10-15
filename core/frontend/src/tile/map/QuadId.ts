@@ -7,8 +7,8 @@
  */
 
 import { assert, compareNumbers } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Range2d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
+import { Angle, AngleSweep, Range2d } from "@itwin/core-geometry";
 import { MapTilingScheme } from "../internal";
 
 const scratchCartographic1 = Cartographic.createZero();
@@ -44,7 +44,7 @@ export class QuadId {
 
   /** @alpha */
   public get contentId(): string {
-    return  QuadId.getTileContentId(this.level, this.column, this.row);
+    return QuadId.getTileContentId(this.level, this.column, this.row);
   }
 
   /** @alpha */

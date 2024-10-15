@@ -13,7 +13,8 @@ function mockRequestHandler(mock: sinon.SinonMock, method: string, status: numbe
   return mock.expects(method).callsFake(
     (_req: HttpServerRequest, res: HttpServerResponse) => { // eslint-disable-line deprecation/deprecation
       res.status(status).send(result);
-    });
+    },
+  );
 }
 
 describe("IModelJsExpressServer", () => {

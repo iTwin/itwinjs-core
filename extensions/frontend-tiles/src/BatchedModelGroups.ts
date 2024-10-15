@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
-import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup";
-import { RenderClipVolume, SpatialViewState } from "@itwin/core-frontend";
 import { assert, CompressedId64Set, Id64Set, Id64String } from "@itwin/core-bentley";
 import { PlanProjectionSettings, RenderSchedule, ViewFlagOverrides } from "@itwin/core-common";
+import { RenderClipVolume, SpatialViewState } from "@itwin/core-frontend";
 import { ModelMetadata } from "./BatchedTilesetReader";
+import { groupModels, ModelGroup, ModelGroupingContext } from "./ModelGroup";
+import { ModelGroupDisplayTransforms } from "./ModelGroupDisplayTransforms";
 
 /** Groups the set of spatial models included in a [[BatchedSpatialTileTreeReferences]] based on their display settings.
  * This ensures that models are displayed correctly, while using batching to reduce the number of draw calls to a minimum.
@@ -34,7 +34,12 @@ export class BatchedModelGroups implements ModelGroupingContext {
   public groups: ModelGroup[] = [];
   public modelGroupDisplayTransforms: ModelGroupDisplayTransforms;
 
-  public constructor(view: SpatialViewState, script: RenderSchedule.Script | undefined, includedModelIds: Id64Set, metadata: Map<Id64String, ModelMetadata>) {
+  public constructor(
+    view: SpatialViewState,
+    script: RenderSchedule.Script | undefined,
+    includedModelIds: Id64Set,
+    metadata: Map<Id64String, ModelMetadata>,
+  ) {
     this._script = script;
     this._view = view;
     this._includedModelIds = includedModelIds;
@@ -53,7 +58,9 @@ export class BatchedModelGroups implements ModelGroupingContext {
     this._scriptValid = false;
   }
 
-  public invalidateTransforms(): void { this._transformsValid = false; }
+  public invalidateTransforms(): void {
+    this._transformsValid = false;
+  }
 
   private listenForDisplayStyleEvents(): void {
     const removeListener = this._view.displayStyle.settings.onPlanProjectionSettingsChanged.addListener(() => this._groupsValid = false);

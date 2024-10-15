@@ -2,15 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils } from "@itwin/core-backend/lib/cjs/test/index";
 import { Id64String } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, Code, ColorDef, DbResult, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
+  BriefcaseIdValue,
+  Code,
+  ColorDef,
+  DbResult,
+  GeometricElementProps,
+  GeometryStreamProps,
+  IModel,
+  SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Arc3d, IModelJson as GeomJson, Point2d, Point3d } from "@itwin/core-geometry";
+import { assert } from "chai";
+import * as path from "path";
 
 export class PerfTestDataMgr {
   public db: SnapshotDb | undefined;
@@ -40,7 +47,12 @@ export class PerfTestDataMgr {
       this.modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(this.db, Code.createEmpty(), true);
       this.catId = SpatialCategory.queryCategoryIdByName(this.db, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === this.catId) {
-        this.catId = SpatialCategory.insert(this.db, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+        this.catId = SpatialCategory.insert(
+          this.db,
+          IModel.dictionaryId,
+          "MySpatialCategory",
+          new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+        );
       }
       this.db[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
       this.db.saveChanges();
@@ -53,10 +65,18 @@ export class PerfTestDataMgr {
 }
 
 const values: any = {
-  baseStr: "PerfElement - InitValue", sub1Str: "PerfElementSub1 - InitValue",
-  sub2Str: "PerfElementSub2 - InitValue", sub3Str: "PerfElementSub3 - InitValue",
-  baseLong: "0x989680", sub1Long: "0x1312d00", sub2Long: "0x1c9c380", sub3Long: "0x2625a00",
-  baseDouble: -3.1416, sub1Double: 2.71828, sub2Double: 1.414121, sub3Double: 1.61803398874,
+  baseStr: "PerfElement - InitValue",
+  sub1Str: "PerfElementSub1 - InitValue",
+  sub2Str: "PerfElementSub2 - InitValue",
+  sub3Str: "PerfElementSub3 - InitValue",
+  baseLong: "0x989680",
+  sub1Long: "0x1312d00",
+  sub2Long: "0x1c9c380",
+  sub3Long: "0x2625a00",
+  baseDouble: -3.1416,
+  sub1Double: 2.71828,
+  sub2Double: 1.414121,
+  sub3Double: 1.61803398874,
 };
 
 function camelize(text: string) {
@@ -83,7 +103,8 @@ function genPropValue(prop: string): any {
     return new Point2d(1.034, 2.034);
   if (prop.toLowerCase().includes("point3d"))
     return new Point3d(-1.0, 2.3, 3.0001);
-  else // could not find type
+  // could not find type
+  else
     return undefined;
 }
 
@@ -130,7 +151,6 @@ export class PerfTestUtility {
             <ECProperty propertyName="${i === 0 ? "BaseStr" : `Sub${i}Str`}" typeName="string"/>
             <ECProperty propertyName="${i === 0 ? "BaseLong" : `Sub${i}Long`}" typeName="long"/>
             <ECProperty propertyName="${i === 0 ? "BaseDouble" : `Sub${i}Double`}" typeName="double"/>`;
-
       } else {
         for (const prop of props) {
           const propType = prop.split("Test")[0];

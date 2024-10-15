@@ -7,12 +7,12 @@ const customLanguageOptions = {
     project: [
       "./tsconfig.json",
       "./tsconfig.backend.json",
-      "./vite.config.ts"
+      "./vite.config.ts",
     ],
     ecmaVersion: "latest",
     ecmaFeatures: {
       jsx: true,
-      modules: true
+      modules: true,
     },
   },
 };
@@ -21,6 +21,6 @@ module.exports = [
   {
     files: ["**/*.ts"],
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
-    languageOptions: customLanguageOptions
-  }
+    languageOptions: customLanguageOptions,
+  },
 ];

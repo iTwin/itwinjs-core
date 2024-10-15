@@ -10,9 +10,9 @@ import { BeDuration } from "@itwin/core-bentley";
 import { _callIpcChannel, IModelApp, IpcApp } from "@itwin/core-frontend";
 import { editorIpcStrings } from "@itwin/editor-common";
 
-import * as UndoRedoTools from "./UndoRedoTool";
 import * as ProjectLocation from "./ProjectLocation/ProjectExtentsDecoration";
 import * as ProjectGeoLocation from "./ProjectLocation/ProjectGeolocation";
+import * as UndoRedoTools from "./UndoRedoTool";
 
 /** @beta */
 export namespace EditTools {
@@ -42,7 +42,13 @@ export class EditTools {
     let attempt = 0;
     while (true) {
       try {
-        return await (IpcApp[_callIpcChannel](editorIpcStrings.channel, "startCommand", startArg.commandId, startArg.iModelKey, ...cmdArgs) as Promise<T>);
+        return await (IpcApp[_callIpcChannel](
+          editorIpcStrings.channel,
+          "startCommand",
+          startArg.commandId,
+          startArg.iModelKey,
+          ...cmdArgs,
+        ) as Promise<T>);
       } catch (e: any) {
         if (e.name !== editorIpcStrings.commandBusy)
           throw e; // unknown backend error

@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Guid } from "@itwin/core-bentley";
 import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { Guid } from "@itwin/core-bentley";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
 import { _nativeDb, IModelHost } from "../../core-backend";
+import { HubMock } from "../../HubMock";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { HubMock } from "../../HubMock";
 
 describe("V1 Checkpoint Manager", () => {
   it("empty props", async () => {
@@ -59,7 +59,7 @@ describe("V1 Checkpoint Manager", () => {
   it("should fix invalid dbGuid during download", async () => {
     const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
-    const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
+    const iModelId = Guid.createValue(); // This is wrong - it should be `snapshot.getGuid()`!
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
     snapshot[_nativeDb].setITwinId(iTwinId);
@@ -85,7 +85,6 @@ describe("V1 Checkpoint Manager", () => {
 });
 
 describe("Checkpoint Manager", () => {
-
   afterEach(() => {
     sinon.restore();
   });

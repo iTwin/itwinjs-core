@@ -32,8 +32,15 @@ import { GraphChecker } from "./Graph.test";
  *   * Edge: tick mark from edge position into its face.
  * * At end, copy all data fro newDetail to oldDetail.
  */
-function showPosition(allGeometry: GeometryQuery[], oldDetail: HalfEdgePositionDetail, newDetail: HalfEdgePositionDetail, markerSize: number,
-  x0: number, y0: number, z0: number = 0) {
+function showPosition(
+  allGeometry: GeometryQuery[],
+  oldDetail: HalfEdgePositionDetail,
+  newDetail: HalfEdgePositionDetail,
+  markerSize: number,
+  x0: number,
+  y0: number,
+  z0: number = 0,
+) {
   if (!oldDetail.isUnclassified && !newDetail.isUnclassified) {
     const point0 = oldDetail.clonePoint();
     const point1 = newDetail.clonePoint();
@@ -69,7 +76,6 @@ function showPosition(allGeometry: GeometryQuery[], oldDetail: HalfEdgePositionD
 }
 
 describe("InsertAndRetriangulateContext", () => {
-
   it("MoveInGrid", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -90,46 +96,46 @@ describe("InsertAndRetriangulateContext", () => {
       for (let j = 0; j + 1 < numY; j++)
         graph.addEdgeXY(i, j, i, j + 1);
     }
-    const z1 = 0.05;   // draw linework a little above the polyface.
+    const z1 = 0.05; // draw linework a little above the polyface.
     HalfEdgeGraphMerge.clusterAndMergeXYTheta(graph);
     const context = InsertAndRetriangulateContext.create(graph);
     const position = HalfEdgePositionDetail.create();
     const oldPosition = HalfEdgePositionDetail.create();
     GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y0);
 
-    for (const point of [
-      Point3d.create(0.5, 1.0),     // jump onto an edge
-      Point3d.create(1.5, 1.0),     // move along a grid line, through a vertex to middle of next edge
-      Point3d.create(3.5, 1.0),     // further along the grid line, jumping along an entire edge
-      Point3d.create(1.5, 0.5),     // back cross some edges into a face
-      Point3d.create(0.5, 1.5),
-      Point3d.create(1.2, 2.8),
-      Point3d.create(1.8, 2.0),
-      Point3d.create(1.8, 1.0),
-      Point3d.create(2.0, 2.0),
-      Point3d.create(2.5, 0.5),
-      Point3d.create(0.2, 0.6),
-      Point3d.create(0.3, 0.4),
-      Point3d.create(1.2, 0.4),
-      Point3d.create(0.5, 1.0),
-      Point3d.create(2.5, 1.0),
-      Point3d.create(2.2, 1.0),
-      Point3d.create(2.8, 1.0),
-      Point3d.create(2.0, 1.0),
-      Point3d.create(1.5, 1.0),
-      Point3d.create(1.0, 1.0),
-      Point3d.create(0.0, 1.0),
-      Point3d.create(6.0, 1.0),
-
-    ]) {
+    for (
+      const point of [
+        Point3d.create(0.5, 1.0), // jump onto an edge
+        Point3d.create(1.5, 1.0), // move along a grid line, through a vertex to middle of next edge
+        Point3d.create(3.5, 1.0), // further along the grid line, jumping along an entire edge
+        Point3d.create(1.5, 0.5), // back cross some edges into a face
+        Point3d.create(0.5, 1.5),
+        Point3d.create(1.2, 2.8),
+        Point3d.create(1.8, 2.0),
+        Point3d.create(1.8, 1.0),
+        Point3d.create(2.0, 2.0),
+        Point3d.create(2.5, 0.5),
+        Point3d.create(0.2, 0.6),
+        Point3d.create(0.3, 0.4),
+        Point3d.create(1.2, 0.4),
+        Point3d.create(0.5, 1.0),
+        Point3d.create(2.5, 1.0),
+        Point3d.create(2.2, 1.0),
+        Point3d.create(2.8, 1.0),
+        Point3d.create(2.0, 1.0),
+        Point3d.create(1.5, 1.0),
+        Point3d.create(1.0, 1.0),
+        Point3d.create(0.0, 1.0),
+        Point3d.create(6.0, 1.0),
+      ]
+    ) {
       y0 += yStep;
       const polyface = PolyfaceBuilder.graphToPolyface(graph);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyface, x0, y0);
-      context.moveToPoint(position, point,
-        (positionA: HalfEdgePositionDetail) => {
-          showPosition(allGeometry, oldPosition, positionA, aa * 0.5, x0, y0, z1);
-          return true;
-        });
+      context.moveToPoint(position, point, (positionA: HalfEdgePositionDetail) => {
+        showPosition(allGeometry, oldPosition, positionA, aa * 0.5, x0, y0, z1);
+        return true;
+      });
       // GraphChecker.captureAnnotatedGraph(allGeometry, graph, x0, y0);
       showPosition(allGeometry, oldPosition, position, aa, x0, y0, z1);
     }
@@ -152,7 +158,7 @@ describe("InsertAndRetriangulateContext", () => {
     const graph1 = new HalfEdgeGraph();
     const numX = 4;
     const numY = 4;
-    let x0 = 10;    // keep right to allow side by side with "just move"
+    let x0 = 10; // keep right to allow side by side with "just move"
     let y0 = 0;
     const yStep = numY + 5;
     const xStep = numX + 5;
@@ -184,31 +190,33 @@ describe("InsertAndRetriangulateContext", () => {
     for (const context of [context1, context2]) {
       y0 = 0;
       let numPointsInserted = 0;
-      for (const point of [
-        Point3d.create(0.5, 0.6),  // in face
-        Point3d.create(1.0, 0.6),  // move to edge
-        Point3d.create(1.5, 0.6),  // cross one edge into a face
-        Point3d.create(0.5, 0.7),  // back to first face
-        Point3d.create(0.5, 1.0),  // up to an edge
-        Point3d.create(1, 1), // directly to a vertex
-        Point3d.create(0.5, 1.0),  // back to edge
-        Point3d.create(1.5, 1.0),  // through vertex to mid edge
-        Point3d.create(0.5, 2.0), // up to a higher edge
-        Point3d.create(2.5, 2.0),  // along edge, through 2 vertices
+      for (
+        const point of [
+          Point3d.create(0.5, 0.6), // in face
+          Point3d.create(1.0, 0.6), // move to edge
+          Point3d.create(1.5, 0.6), // cross one edge into a face
+          Point3d.create(0.5, 0.7), // back to first face
+          Point3d.create(0.5, 1.0), // up to an edge
+          Point3d.create(1, 1), // directly to a vertex
+          Point3d.create(0.5, 1.0), // back to edge
+          Point3d.create(1.5, 1.0), // through vertex to mid edge
+          Point3d.create(0.5, 2.0), // up to a higher edge
+          Point3d.create(2.5, 2.0), // along edge, through 2 vertices
 
-        Point3d.create(2, 2),   // back up to a vertex
-        Point3d.create(2, 1), // move to another
-        Point3d.create(1, 1), // and another
-        Point3d.create(0.5, 1.5), // face interior
-        Point3d.create(1, 1), // back to vertex
-        Point3d.create(0.5, 2), // mid edge
-        Point3d.create(0.5, 2), // sit there again
-        Point3d.create(0.2, 2), // same edge
-        Point3d.create(0.5, 1.5), // in face
-        Point3d.create(0.5, 1.5), // stay
-        Point3d.create(1.0, 1.0), // at vertex
-        Point3d.create(1.0, 1.0), // stay
-      ]) {
+          Point3d.create(2, 2), // back up to a vertex
+          Point3d.create(2, 1), // move to another
+          Point3d.create(1, 1), // and another
+          Point3d.create(0.5, 1.5), // face interior
+          Point3d.create(1, 1), // back to vertex
+          Point3d.create(0.5, 2), // mid edge
+          Point3d.create(0.5, 2), // sit there again
+          Point3d.create(0.2, 2), // same edge
+          Point3d.create(0.5, 1.5), // in face
+          Point3d.create(0.5, 1.5), // stay
+          Point3d.create(1.0, 1.0), // at vertex
+          Point3d.create(1.0, 1.0), // stay
+        ]
+      ) {
         context.insertAndRetriangulate(point, InsertedVertexZOptions.Replace);
         numPointsInserted++;
         if (numPointsInserted < 4) {
@@ -299,7 +307,6 @@ describe("InsertAndRetriangulateContext", () => {
           GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hull), x0, y0);
           GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, interior, r, x0, y0);
           y0 += yShiftDisplay;
-
         }
 
         GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(hull), x0, y0);
@@ -323,5 +330,4 @@ describe("InsertAndRetriangulateContext", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "InsertAndRetriangulateContext", "TriangulateInHull");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

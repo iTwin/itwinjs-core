@@ -2,16 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { Id64, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
-import { Angle, Point3d } from "@itwin/core-geometry";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@itwin/core-backend";
+import { Id64, Id64String, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, EmptyLocalization, GeometricElement3dProps, IModel, IModelReadRpcInterface,
-  RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager,
+  BentleyCloudRpcManager,
+  BentleyCloudRpcParams,
+  EmptyLocalization,
+  GeometricElement3dProps,
+  IModel,
+  IModelReadRpcInterface,
+  RpcInterfaceDefinition,
+  SnapshotIModelRpcInterface,
+  TestRpcManager,
 } from "@itwin/core-common";
+import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BriefcaseConnection, NullRenderSystem } from "@itwin/core-frontend";
+import { Angle, Point3d } from "@itwin/core-geometry";
+import { assert } from "chai";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { RobotWorld } from "../RobotWorldSchema";
@@ -41,12 +48,11 @@ async function setUpTest() {
 
 if (ProcessDetector.isElectronAppFrontend) {
   describe("RobotWorldRpc", () => {
-
     it("should run robotWorld through Ipc as a client", async () => {
       // Simulate the deployment of the backend server
       await simulateBackendDeployment();
 
-      await setUpTest();  // tricky: do this after simulateBackendDeployment, as that function has the side effect of initializing IModelHost
+      await setUpTest(); // tricky: do this after simulateBackendDeployment, as that function has the side effect of initializing IModelHost
 
       await ElectronApp.startup({
         iModelApp: {
@@ -56,7 +62,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       });
 
       // expose interfaces using a direct call mechanism
-      TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);// eslint-disable-line deprecation/deprecation
+      TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]); // eslint-disable-line deprecation/deprecation
       const roWrite = RobotWorldWriteRpcInterface.getClient();
       const roRead = RobotWorldReadRpcInterface.getClient();
 

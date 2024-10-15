@@ -9,7 +9,7 @@
 /** @internal */
 export enum DbChangeStage {
   Old = 0,
-  New = 1
+  New = 1,
 }
 
 /** @internal */
@@ -18,7 +18,7 @@ export enum DbValueType {
   FloatVal = 2,
   TextVal = 3,
   BlobVal = 4,
-  NullVal = 5
+  NullVal = 5,
 }
 
 /** Cause of conflict when applying a changeset.
@@ -41,4 +41,3 @@ export enum DbConflictResolution {
   /** Abort apply changeset */
   Abort = 2,
 }
-

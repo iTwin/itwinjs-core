@@ -6,12 +6,30 @@
  * @module Editing
  */
 
-import { AccuDrawHintBuilder, AngleDescription, BeButtonEvent, CanvasDecoration, CoreTools, DecorateContext, EventHandled, GraphicType, IModelApp, LengthDescription, PrimitiveTool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection, Viewport } from "@itwin/core-frontend";
-import { Angle, Matrix3d, Point3d, Ray3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
-import { Cartographic, ColorDef, LinePixels } from "@itwin/core-common";
-import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
 import { DialogItem, DialogProperty, DialogPropertySyncItem } from "@itwin/appui-abstract";
+import { Cartographic, ColorDef, LinePixels } from "@itwin/core-common";
+import {
+  AccuDrawHintBuilder,
+  AngleDescription,
+  BeButtonEvent,
+  CanvasDecoration,
+  CoreTools,
+  DecorateContext,
+  EventHandled,
+  GraphicType,
+  IModelApp,
+  LengthDescription,
+  PrimitiveTool,
+  ToolAssistance,
+  ToolAssistanceImage,
+  ToolAssistanceInputMethod,
+  ToolAssistanceInstruction,
+  ToolAssistanceSection,
+  Viewport,
+} from "@itwin/core-frontend";
+import { Angle, Matrix3d, Point3d, Ray3d, Vector3d, XYAndZ } from "@itwin/core-geometry";
 import { EditTools } from "../EditTool";
+import { ProjectExtentsClipDecoration } from "./ProjectExtentsDecoration";
 
 function translatePrompt(key: string) {
   return EditTools.translate(`ProjectLocation:Prompts.${key}`);
@@ -72,8 +90,12 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   public static override toolId = "ProjectLocation.Geolocation.Point";
   public static override iconSpec = "icon-globe"; // <== Tool button should use whatever icon you have here...
 
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 4; } // latitude, longitude, altitude, north direction...
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 4;
+  } // latitude, longitude, altitude, north direction...
 
   protected _haveToolSettings = false;
   protected _cartographicFromArgs = false;
@@ -83,9 +105,15 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   protected _origin?: Point3d;
   protected _labelDeco?: LabelDecoration;
 
-  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
-  public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; } // Allow snapping to terrain, etc. outside project extents...
-  public override requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
+    return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView());
+  }
+  public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean {
+    return true;
+  } // Allow snapping to terrain, etc. outside project extents...
+  public override requireWriteableTarget(): boolean {
+    return false;
+  } // Tool doesn't modify the imodel...
   public override async onPostInstall() {
     await super.onPostInstall();
     this.setupAndPromptForNextAction();
@@ -96,8 +124,12 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     this.unsuspendDecorations();
   }
 
-  public async onRestartTool() { return this.exitTool(); }
-  public override async onUnsuspend() { this.provideToolAssistance(); }
+  public async onRestartTool() {
+    return this.exitTool();
+  }
+  public override async onUnsuspend() {
+    this.provideToolAssistance();
+  }
 
   private _latitudeProperty: DialogProperty<number> | undefined;
   public get latitudeProperty() {
@@ -106,8 +138,12 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     return this._latitudeProperty;
   }
 
-  public get latitude(): number { return this.latitudeProperty.value; }
-  public set latitude(value: number) { this.latitudeProperty.value = value; }
+  public get latitude(): number {
+    return this.latitudeProperty.value;
+  }
+  public set latitude(value: number) {
+    this.latitudeProperty.value = value;
+  }
 
   private _longitudeProperty: DialogProperty<number> | undefined;
   public get longitudeProperty() {
@@ -116,8 +152,12 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     return this._longitudeProperty;
   }
 
-  public get longitude(): number { return this.longitudeProperty.value; }
-  public set longitude(value: number) { this.longitudeProperty.value = value; }
+  public get longitude(): number {
+    return this.longitudeProperty.value;
+  }
+  public set longitude(value: number) {
+    this.longitudeProperty.value = value;
+  }
 
   private _altitudeProperty: DialogProperty<number> | undefined;
   public get altitudeProperty() {
@@ -126,8 +166,12 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     return this._altitudeProperty;
   }
 
-  public get altitude(): number { return this.altitudeProperty.value; }
-  public set altitude(value: number) { this.altitudeProperty.value = value; }
+  public get altitude(): number {
+    return this.altitudeProperty.value;
+  }
+  public set altitude(value: number) {
+    this.altitudeProperty.value = value;
+  }
 
   private _northProperty: DialogProperty<number> | undefined;
   public get northProperty() {
@@ -136,11 +180,20 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     return this._northProperty;
   }
 
-  public get north(): number { return this.northProperty.value; }
-  public set north(value: number) { this.northProperty.value = value; }
+  public get north(): number {
+    return this.northProperty.value;
+  }
+  public set north(value: number) {
+    this.northProperty.value = value;
+  }
 
   private syncToolSettingsCoordinates(): void {
-    this.syncToolSettingsProperties([this.latitudeProperty.syncItem, this.longitudeProperty.syncItem, this.altitudeProperty.syncItem, this.northProperty.syncItem]);
+    this.syncToolSettingsProperties([
+      this.latitudeProperty.syncItem,
+      this.longitudeProperty.syncItem,
+      this.altitudeProperty.syncItem,
+      this.northProperty.syncItem,
+    ]);
   }
 
   public override async applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): Promise<boolean> {
@@ -160,7 +213,10 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
   protected provideToolAssistance(): void {
     const acceptMsg = CoreTools.translate(undefined === this._origin ? "ElementSet.Inputs.AcceptPoint" : "ElementSet.Inputs.Accept");
     const rejectMsg = CoreTools.translate("ElementSet.Inputs.Cancel");
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, translatePrompt(undefined === this._origin ? "IdentifyKnownLocation" : "ConfirmCoordinates"));
+    const mainInstruction = ToolAssistance.createInstruction(
+      this.iconSpec,
+      translatePrompt(undefined === this._origin ? "IdentifyKnownLocation" : "ConfirmCoordinates"),
+    );
     const sections: ToolAssistanceSection[] = [];
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
@@ -346,7 +402,9 @@ export class ProjectGeolocationPointTool extends PrimitiveTool {
     return this.run();
   }
 
-  public static async startTool(): Promise<boolean> { return new ProjectGeolocationPointTool().run(); }
+  public static async startTool(): Promise<boolean> {
+    return new ProjectGeolocationPointTool().run();
+  }
 }
 
 /** Change or update geolocation direction to true north.
@@ -358,9 +416,15 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
   protected _origin?: Point3d;
   protected _northDir?: Ray3d;
 
-  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
-  public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; } // Allow snapping to terrain, etc. outside project extents...
-  public override requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
+    return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView());
+  }
+  public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean {
+    return true;
+  } // Allow snapping to terrain, etc. outside project extents...
+  public override requireWriteableTarget(): boolean {
+    return false;
+  } // Tool doesn't modify the imodel...
   public override async onPostInstall() {
     await super.onPostInstall();
     this.setupAndPromptForNextAction();
@@ -369,13 +433,20 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     await super.onCleanup();
     this.unsuspendDecorations();
   }
-  public async onRestartTool() { return this.exitTool(); }
-  public override async onUnsuspend() { this.provideToolAssistance(); }
+  public async onRestartTool() {
+    return this.exitTool();
+  }
+  public override async onUnsuspend() {
+    this.provideToolAssistance();
+  }
 
   protected provideToolAssistance(): void {
     const acceptMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
     const rejectMsg = CoreTools.translate("ElementSet.Inputs.Cancel");
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, translatePrompt(undefined === this._origin ? "IdentifyRefPoint" : "DefineAngle"));
+    const mainInstruction = ToolAssistance.createInstruction(
+      this.iconSpec,
+      translatePrompt(undefined === this._origin ? "IdentifyRefPoint" : "DefineAngle"),
+    );
     const sections: ToolAssistanceSection[] = [];
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
@@ -489,9 +560,13 @@ export class ProjectGeolocationNorthTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override async onInstall(): Promise<boolean> { return ProjectExtentsClipDecoration.allowEcefLocationChange(true); }
+  public override async onInstall(): Promise<boolean> {
+    return ProjectExtentsClipDecoration.allowEcefLocationChange(true);
+  }
 
-  public static async startTool() { return new ProjectGeolocationNorthTool().run(); }
+  public static async startTool() {
+    return new ProjectGeolocationNorthTool().run();
+  }
 }
 
 /** Move a geolocated model by specifying two points to define the offset.
@@ -503,9 +578,15 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
   protected _origin?: Point3d;
   protected _current?: Point3d;
 
-  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
-  public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean { return true; } // Allow snapping to terrain, etc. outside project extents...
-  public override requireWriteableTarget(): boolean { return false; } // Tool doesn't modify the imodel...
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
+    return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView());
+  }
+  public override isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean {
+    return true;
+  } // Allow snapping to terrain, etc. outside project extents...
+  public override requireWriteableTarget(): boolean {
+    return false;
+  } // Tool doesn't modify the imodel...
   public override async onPostInstall() {
     await super.onPostInstall();
     this.setupAndPromptForNextAction();
@@ -520,12 +601,17 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
       return this.exitTool();
   }
 
-  public override async onUnsuspend() { this.provideToolAssistance(); }
+  public override async onUnsuspend() {
+    this.provideToolAssistance();
+  }
 
   protected provideToolAssistance(): void {
     const acceptMsg = CoreTools.translate("ElementSet.Inputs.AcceptPoint");
     const rejectMsg = CoreTools.translate("ElementSet.Inputs.Cancel");
-    const mainInstruction = ToolAssistance.createInstruction(this.iconSpec, translatePrompt(undefined === this._origin ? "IdentifyRefPoint" : "DefineOffset"));
+    const mainInstruction = ToolAssistance.createInstruction(
+      this.iconSpec,
+      translatePrompt(undefined === this._origin ? "IdentifyRefPoint" : "DefineOffset"),
+    );
     const sections: ToolAssistanceSection[] = [];
 
     const mouseInstructions: ToolAssistanceInstruction[] = [];
@@ -637,8 +723,11 @@ export class ProjectGeolocationMoveTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public override async onInstall(): Promise<boolean> { return ProjectExtentsClipDecoration.allowEcefLocationChange(true); }
+  public override async onInstall(): Promise<boolean> {
+    return ProjectExtentsClipDecoration.allowEcefLocationChange(true);
+  }
 
-  public static async startTool() { return new ProjectGeolocationMoveTool().run(); }
+  public static async startTool() {
+    return new ProjectGeolocationMoveTool().run();
+  }
 }
-

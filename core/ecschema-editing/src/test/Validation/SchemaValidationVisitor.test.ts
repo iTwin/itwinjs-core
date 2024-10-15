@@ -3,16 +3,43 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { AnyProperty, Constant, CustomAttributeClass, ECClass, EntityClass, Enumeration, Format,
-  InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveType, PropertyCategory, RelationshipClass,
-  RelationshipConstraint, RelationshipEnd, Schema, SchemaContext, StructClass, Unit, UnitSystem,
+import {
+  AnyProperty,
+  Constant,
+  CustomAttributeClass,
+  ECClass,
+  EntityClass,
+  Enumeration,
+  Format,
+  InvertedUnit,
+  KindOfQuantity,
+  Mixin,
+  Phenomenon,
+  PrimitiveType,
+  PropertyCategory,
+  RelationshipClass,
+  RelationshipConstraint,
+  RelationshipEnd,
+  Schema,
+  SchemaContext,
+  StructClass,
+  Unit,
+  UnitSystem,
 } from "@itwin/ecschema-metadata";
-import { MutableClass } from "../../Editing/Mutable/MutableClass";
 import { MutableProperty } from "@itwin/ecschema-metadata/src/Metadata/Property";
+import { expect } from "chai";
+import { MutableClass } from "../../Editing/Mutable/MutableClass";
 import { DiagnosticCategory } from "../../Validation/Diagnostic";
 import { SchemaValidationVisitor } from "../../Validation/SchemaValidationVisitor";
-import { ApplySuppressionSet, EmptyRuleSet, IgnoreSuppressionSet, TestDiagnostics, TestReporter, TestRuleSet, TestRuleSetB } from "../TestUtils/DiagnosticHelpers";
+import {
+  ApplySuppressionSet,
+  EmptyRuleSet,
+  IgnoreSuppressionSet,
+  TestDiagnostics,
+  TestReporter,
+  TestRuleSet,
+  TestRuleSetB,
+} from "../TestUtils/DiagnosticHelpers";
 
 import sinon = require("sinon");
 
@@ -916,7 +943,9 @@ describe("SchemaValidationVisitor tests", () => {
       await visitor.visitCustomAttributeContainer(entityClass);
 
       ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.calledOnceWithExactly(entityClass)).to.be.true);
-      ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.calledOnceWithExactly(entityClass, entityClass.customAttributes!.get("TestSchema.TestCA")!)).to.be.true);
+      ruleSet.customAttributeInstanceRules.forEach((spy) =>
+        expect(spy.calledOnceWithExactly(entityClass, entityClass.customAttributes!.get("TestSchema.TestCA")!)).to.be.true
+      );
     });
 
     it("No rules, visit does not fail", async () => {
@@ -938,7 +967,9 @@ describe("SchemaValidationVisitor tests", () => {
       await visitor.visitCustomAttributeContainer(properties[0] as AnyProperty);
 
       ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.calledOnceWithExactly(properties[0])).to.be.true);
-      ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.calledOnceWithExactly(properties[0], property.customAttributes!.get("TestSchema.TestCA")!)).to.be.true);
+      ruleSet.customAttributeInstanceRules.forEach((spy) =>
+        expect(spy.calledOnceWithExactly(properties[0], property.customAttributes!.get("TestSchema.TestCA")!)).to.be.true
+      );
     });
 
     it("Property, exclude TestSchema, does not call CustomAttributeContainer rules", async () => {
@@ -964,7 +995,9 @@ describe("SchemaValidationVisitor tests", () => {
       await visitor.visitCustomAttributeContainer(relationshipClass);
 
       ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.calledOnceWithExactly(relationshipClass)).to.be.true);
-      ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.calledOnceWithExactly(relationshipClass, relationshipClass.customAttributes!.get("TestSchema.TestCA")!)).to.be.true);
+      ruleSet.customAttributeInstanceRules.forEach((spy) =>
+        expect(spy.calledOnceWithExactly(relationshipClass, relationshipClass.customAttributes!.get("TestSchema.TestCA")!)).to.be.true
+      );
     });
 
     it("RelationshipClass, exclude TestSchema, does not call CustomAttributeContainer rules", async () => {
@@ -989,7 +1022,9 @@ describe("SchemaValidationVisitor tests", () => {
       await visitor.visitCustomAttributeContainer(constraint);
 
       ruleSet.customAttributeContainerRules.forEach((spy) => expect(spy.calledOnceWithExactly(constraint)).to.be.true);
-      ruleSet.customAttributeInstanceRules.forEach((spy) => expect(spy.calledOnceWithExactly(constraint, constraint.customAttributes!.get("TestSchema.TestCA")!)).to.be.true);
+      ruleSet.customAttributeInstanceRules.forEach((spy) =>
+        expect(spy.calledOnceWithExactly(constraint, constraint.customAttributes!.get("TestSchema.TestCA")!)).to.be.true
+      );
     });
 
     it("RelationshipConstraint, exclude TestSchema, does not call CustomAttributeContainer rules", async () => {

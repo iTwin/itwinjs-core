@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
-import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, IModelHost, IModelJsFs, KnownLocations, StandaloneDb } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import * as fs from "fs";
 import { OpenMode } from "@itwin/core-bentley";
+import { Reporter } from "@itwin/perf-tools";
+import * as fs from "fs";
+import * as path from "path";
 
 describe("SchemaLoaderPerformance", () => {
   let iModelFilepath: string;
@@ -36,7 +36,7 @@ describe("SchemaLoaderPerformance", () => {
     const bisSchemaPaths = getBisSchemaPaths();
 
     try {
-      await iModelDb.importSchemas(bisSchemaPaths);   // will throw an exception if import fails
+      await iModelDb.importSchemas(bisSchemaPaths); // will throw an exception if import fails
     } catch (error) {
       throw new Error(`Failed to import schemas`);
     }
@@ -92,27 +92,60 @@ describe("SchemaLoaderPerformance", () => {
 
     fs.copyFileSync(getSchemaPath("Dgn", "BisCore.ecschema.xml"), path.join(assetDir, "BisCore.ecschema.xml"));
 
-    fs.copyFileSync(getSchemaPathFromPackage("process-functional-schema", "ProcessFunctional.ecschema.xml"), path.join(assetDir, "ProcessFunctional.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("process-physical-schema", "ProcessPhysical.ecschema.xml"), path.join(assetDir, "ProcessPhysical.ecschema.xml"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("process-functional-schema", "ProcessFunctional.ecschema.xml"),
+      path.join(assetDir, "ProcessFunctional.ecschema.xml"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("process-physical-schema", "ProcessPhysical.ecschema.xml"),
+      path.join(assetDir, "ProcessPhysical.ecschema.xml"),
+    );
 
     fs.copyFileSync(getSchemaPathFromPackage("cif-bridge-schema", "CifBridge.ecschema.xml"), path.join(assetDir, "CifBridge.ecschema.xml"));
     fs.copyFileSync(getSchemaPathFromPackage("cif-common-schema", "CifCommon.ecschema.xml"), path.join(assetDir, "CifCommon.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("cif-geometric-rules-schema", "CifGeometricRules.ecschema.xml"), path.join(assetDir, "CifGeometricRules.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("cif-hydraulic-analysis-schema", "CifHydraulicAnalysis.ecschema.xml"), path.join(assetDir, "CifHydraulicAnalysis.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("cif-hydraulic-results-schema", "CifHydraulicResults.ecschema.xml"), path.join(assetDir, "CifHydraulicResults.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("cif-quantity-takeoffs-schema", "CifQuantityTakeoffs.ecschema.xml"), path.join(assetDir, "CifQuantityTakeoffs.ecschema.xml"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("cif-geometric-rules-schema", "CifGeometricRules.ecschema.xml"),
+      path.join(assetDir, "CifGeometricRules.ecschema.xml"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("cif-hydraulic-analysis-schema", "CifHydraulicAnalysis.ecschema.xml"),
+      path.join(assetDir, "CifHydraulicAnalysis.ecschema.xml"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("cif-hydraulic-results-schema", "CifHydraulicResults.ecschema.xml"),
+      path.join(assetDir, "CifHydraulicResults.ecschema.xml"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("cif-quantity-takeoffs-schema", "CifQuantityTakeoffs.ecschema.xml"),
+      path.join(assetDir, "CifQuantityTakeoffs.ecschema.xml"),
+    );
     fs.copyFileSync(getSchemaPathFromPackage("cif-rail-schema", "CifRail.ecschema.xml"), path.join(assetDir, "CifRail.ecschema.xml"));
     fs.copyFileSync(getSchemaPathFromPackage("cif-roads-schema", "CifRoads.ecschema.xml"), path.join(assetDir, "CifRoads.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("cif-subsurface-schema", "CifSubsurface.ecschema.xml"), path.join(assetDir, "CifSubsurface.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("cif-subsurface-conflict-analysis-schema", "CifSubsurfaceConflictAnalysis.ecschema.xml"), path.join(assetDir, "CifSubsurfaceConflictAnalysis.ecschema.xml"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("cif-subsurface-schema", "CifSubsurface.ecschema.xml"),
+      path.join(assetDir, "CifSubsurface.ecschema.xml"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("cif-subsurface-conflict-analysis-schema", "CifSubsurfaceConflictAnalysis.ecschema.xml"),
+      path.join(assetDir, "CifSubsurfaceConflictAnalysis.ecschema.xml"),
+    );
     fs.copyFileSync(getSchemaPathFromPackage("cif-units-schema", "CifUnits.ecschema.xml"), path.join(assetDir, "CifUnits.ecschema.xml"));
 
     // Copy the required reference schemas
     fs.copyFileSync(getSchemaPath("Domain", "Functional.ecschema.xml"), path.join(assetDir, "Functional.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("plant-custom-attributes-schema", "PlantCustomAttributes.ecschema.xml"), path.join(assetDir, "PlantCustomAttributes.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("quantity-takeoffs-aspects-schema", "QuantityTakeoffsAspects.ecschema.xml"), path.join(assetDir, "QuantityTakeoffsAspects.ecschema.xml"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("plant-custom-attributes-schema", "PlantCustomAttributes.ecschema.xml"),
+      path.join(assetDir, "PlantCustomAttributes.ecschema.xml"),
+    );
+    fs.copyFileSync(
+      getSchemaPathFromPackage("quantity-takeoffs-aspects-schema", "QuantityTakeoffsAspects.ecschema.xml"),
+      path.join(assetDir, "QuantityTakeoffsAspects.ecschema.xml"),
+    );
     fs.copyFileSync(getSchemaPathFromPackage("aec-units-schema", "AecUnits.ecschema.xml"), path.join(assetDir, "AecUnits.ecschema.xml"));
-    fs.copyFileSync(getSchemaPathFromPackage("road-rail-units-schema", "RoadRailUnits.ecschema.xml"), path.join(assetDir, "RoadRailUnits.ecschema.xml"));
+    fs.copyFileSync(
+      getSchemaPathFromPackage("road-rail-units-schema", "RoadRailUnits.ecschema.xml"),
+      path.join(assetDir, "RoadRailUnits.ecschema.xml"),
+    );
   }
 
   function timeBisSchemasLoading(schemaName: string) {
@@ -131,7 +164,7 @@ describe("SchemaLoaderPerformance", () => {
     const imodel: StandaloneDb = StandaloneDb.openFile(iModelFilepath, OpenMode.Readonly);
 
     const startTime: number = new Date().getTime();
-    const schemaResult =  await imodel[_nativeDb].getSchemaPropsAsync(schemaName);
+    const schemaResult = await imodel[_nativeDb].getSchemaPropsAsync(schemaName);
     const endTime: number = new Date().getTime();
 
     if (schemaResult === undefined) {

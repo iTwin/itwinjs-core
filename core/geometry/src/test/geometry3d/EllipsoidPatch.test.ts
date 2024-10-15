@@ -48,16 +48,33 @@ describe("Ellipsoid", () => {
     const degreeStep = 22.5;
     const phiRadiansArray = [-pole, -0.4 * pole, 0.0, 0.2 * pole, pole];
     // const phiRadiansArray = [-pole, pole];
-    const thetaRadiansArray = [-halfCircle, -0.6 * halfCircle, -0.2 * halfCircle, 0.0, 0.45 * halfCircle, 0.9 * halfCircle, halfCircle, 1.3 * halfCircle, 2.8 * halfCircle];
+    const thetaRadiansArray = [
+      -halfCircle,
+      -0.6 * halfCircle,
+      -0.2 * halfCircle,
+      0.0,
+      0.45 * halfCircle,
+      0.9 * halfCircle,
+      halfCircle,
+      1.3 * halfCircle,
+      2.8 * halfCircle,
+    ];
     // const thetaRadiansArray = [-halfCircle, 0.0, halfCircle];
     let x0 = 0;
     const xStep = 4.0 * maxRadius;
-    for (const ellipsoid of [
-      // Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusX, radiusX),
-      Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusY, radiusZ),
-      Ellipsoid.createCenterMatrixRadii(center,
-        Matrix3d.createRowValues(1.0, 0.2, 0.3, -0.2, 1.0, 0.4, 0.1, -0.5, 1.2),    // true skewed ellipsoid
-        radiusX, radiusY, radiusZ)]) {
+    for (
+      const ellipsoid of [
+        // Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusX, radiusX),
+        Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusY, radiusZ),
+        Ellipsoid.createCenterMatrixRadii(
+          center,
+          Matrix3d.createRowValues(1.0, 0.2, 0.3, -0.2, 1.0, 0.4, 0.1, -0.5, 1.2), // true skewed ellipsoid
+          radiusX,
+          radiusY,
+          radiusZ,
+        ),
+      ]
+    ) {
       let y0 = 0;
       const yStep = 4.0 * maxRadius;
       for (const theta0Radians of thetaRadiansArray) {
@@ -70,13 +87,12 @@ describe("Ellipsoid", () => {
               const patch = EllipsoidPatch.createCapture(
                 ellipsoid.clone(),
                 AngleSweep.createStartEndRadians(theta0Radians, theta1Radians),
-                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians));
+                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians),
+              );
               const builder = PolyfaceBuilder.create();
               const numU = Geometry.stepCount(degreeStep, patch.longitudeSweep.sweepDegrees, 1, 16);
               const numV = Geometry.stepCount(degreeStep, patch.latitudeSweep.sweepDegrees, 1, 16);
-              builder.addUVGridBody(patch,
-                numU,
-                numV);
+              builder.addUVGridBody(patch, numU, numV);
               const mesh = builder.claimPolyface();
               const patchRange = patch.range();
               const expandedPatchRange = patchRange.clone();
@@ -85,8 +101,18 @@ describe("Ellipsoid", () => {
               const pointRange = mesh.range();
               const expandedPointRange = pointRange.clone();
               expandedPointRange.expandInPlace(0.10 * maxRadius);
-              const ok1 = ck.testTrue(expandedPatchRange.containsRange(pointRange), "points in patch range", { theta0: theta0Radians, theta1: theta1Radians, phi0: phi0Radians, phi1: phi1Radians });
-              const ok2 = ck.testTrue(expandedPointRange.containsRange(patchRange), "patch in expanded point range", { theta0: theta0Radians, theta1: theta1Radians, phi0: phi0Radians, phi1: phi1Radians });
+              const ok1 = ck.testTrue(expandedPatchRange.containsRange(pointRange), "points in patch range", {
+                theta0: theta0Radians,
+                theta1: theta1Radians,
+                phi0: phi0Radians,
+                phi1: phi1Radians,
+              });
+              const ok2 = ck.testTrue(expandedPointRange.containsRange(patchRange), "patch in expanded point range", {
+                theta0: theta0Radians,
+                theta1: theta1Radians,
+                phi0: phi0Radians,
+                phi1: phi1Radians,
+              });
               if (!ok1 || !ok2)
                 patch.range();
               GeometryCoreTestIO.captureGeometry(allGeometry, mesh, x0, y0);
@@ -97,7 +123,7 @@ describe("Ellipsoid", () => {
         }
         x0 += 2.0 * xStep;
       }
-      x0 += 10.0 * xStep;  // extra gap per ellipsoid
+      x0 += 10.0 * xStep; // extra gap per ellipsoid
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "PatchRange");
     expect(ck.getNumErrors()).toBe(0);
@@ -127,16 +153,32 @@ describe("Ellipsoid", () => {
     const distantRay = Ray3d.createXYZUVW(12, 0, 1, 0.1, 0.1, 5.0);
     const nullRay = Ray3d.createXYZUVW(1, 2, 3, 0, 0, 0);
     const transform2 = Transform.createRowValues(
-      1.2, 0, 2, 3,
-      0.2, 4, 2, 1,
-      -0.2, 3, 4, 2);
-    for (const ellipsoid of [
-      // Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusX, radiusX),
-      Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusY, radiusZ),
-      Ellipsoid.createCenterMatrixRadii(center,
-        Matrix3d.createRowValues(1.0, 0.2, 0.3, -0.2, 1.0, 0.4, 0.1, -0.5, 1.2),    // true skewed ellipsoid
-        radiusX, radiusY, radiusZ)]) {
-
+      1.2,
+      0,
+      2,
+      3,
+      0.2,
+      4,
+      2,
+      1,
+      -0.2,
+      3,
+      4,
+      2,
+    );
+    for (
+      const ellipsoid of [
+        // Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusX, radiusX),
+        Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusY, radiusZ),
+        Ellipsoid.createCenterMatrixRadii(
+          center,
+          Matrix3d.createRowValues(1.0, 0.2, 0.3, -0.2, 1.0, 0.4, 0.1, -0.5, 1.2), // true skewed ellipsoid
+          radiusX,
+          radiusY,
+          radiusZ,
+        ),
+      ]
+    ) {
       // confirm no intersections for distant ray . . .
       ck.testExactNumber(0, ellipsoid.intersectRay(distantRay, undefined, undefined, undefined), "confirm zero-intersection case");
       ck.testExactNumber(0, ellipsoid.intersectRay(nullRay, undefined, undefined, undefined));
@@ -168,13 +210,12 @@ describe("Ellipsoid", () => {
               const patch = EllipsoidPatch.createCapture(
                 ellipsoid.clone(),
                 AngleSweep.createStartEndRadians(theta0Radians, theta1Radians),
-                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians));
+                AngleSweep.createStartEndRadians(phi0Radians, phi1Radians),
+              );
               const builder = PolyfaceBuilder.create();
               const numU = Geometry.stepCount(degreeStep, patch.longitudeSweep.sweepDegrees, 1, 16);
               const numV = Geometry.stepCount(degreeStep, patch.latitudeSweep.sweepDegrees, 1, 16);
-              builder.addUVGridBody(patch,
-                numU,
-                numV);
+              builder.addUVGridBody(patch, numU, numV);
               const mesh = builder.claimPolyface();
 
               const thetaA = Geometry.interpolate(theta0Radians, thetaFractionA, theta1Radians);
@@ -185,8 +226,7 @@ describe("Ellipsoid", () => {
               const pointB = ellipsoid.radiansToPoint(thetaB, phiB);
               // Create the ray with start/end spread outside the sphere points .....
               const rayAB = Ray3d.createStartEnd(pointA.interpolate(-1, pointB), pointA.interpolate(3, pointB));
-              GeometryCoreTestIO.captureGeometry(allGeometry,
-                LineString3d.create(rayAB.fractionToPoint(0.0), rayAB.fractionToPoint(1.0)), x0, y0);
+              GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(rayAB.fractionToPoint(0.0), rayAB.fractionToPoint(1.0)), x0, y0);
               const hits = patch.intersectRay(rayAB, true, true);
               ck.testExactNumber(2, hits.length, "Expect 2 intersections");
               for (const hit of hits) {
@@ -204,7 +244,7 @@ describe("Ellipsoid", () => {
         }
         x0 += 2.0 * xStep;
       }
-      x0 += 10.0 * xStep;  // extra gap per ellipsoid
+      x0 += 10.0 * xStep; // extra gap per ellipsoid
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "IntersectRay");
     expect(ck.getNumErrors()).toBe(0);
@@ -215,9 +255,17 @@ describe("Ellipsoid", () => {
     let x0 = 0;
     let y0 = 0;
     const center = Point3d.create(19476.688224632293, 9394.94304587366, -6369311.983587892);
-    const matrix = Matrix3d.createRowValues(2230956.046389774, 4218075.517914913, 4217984.8981983,
-      -5853439.760676313, 635312.655431714, 2444174.054179583,
-      1200294.0430858273, -4741818.686714196, 4079572.590348847);
+    const matrix = Matrix3d.createRowValues(
+      2230956.046389774,
+      4218075.517914913,
+      4217984.8981983,
+      -5853439.760676313,
+      635312.655431714,
+      2444174.054179583,
+      1200294.0430858273,
+      -4741818.686714196,
+      4079572.590348847,
+    );
     const referenceSize = matrix.columnXMagnitude();
     const markerSizeA = 0.1 * referenceSize;
     const markerSizeB = 0.2 * referenceSize;
@@ -226,13 +274,25 @@ describe("Ellipsoid", () => {
           7946521.137480825, 8906977.42125833, -677213.3181646094,
         );
      */
-    for (const ray of
-      [Ray3d.createXYZUVW(38729632.01074491, -5490050.664369064, 12881295.636822795,
-        0.09684505394456912, 0.9848250824825425, 0.1440159450884755),
-        /* */ Ray3d.createXYZUVW(38729632.01074491, -5490050.664369064, 12881295.636822795,
-          0.09684505394456912, 0.9848250824825425, 0.1440159450884755)]) {
+    for (
+      const ray of [
+        Ray3d.createXYZUVW(38729632.01074491, -5490050.664369064, 12881295.636822795, 0.09684505394456912, 0.9848250824825425, 0.1440159450884755),
+        /* */ Ray3d.createXYZUVW(
+          38729632.01074491,
+          -5490050.664369064,
+          12881295.636822795,
+          0.09684505394456912,
+          0.9848250824825425,
+          0.1440159450884755,
+        ),
+      ]
+    ) {
       const builder = PolyfaceBuilder.create();
-      const patch = EllipsoidPatch.createCapture(Ellipsoid.createCenterMatrixRadii(center, matrix, 1.0, 1.0, 1.0), AngleSweep.create360(), AngleSweep.createFullLatitude());
+      const patch = EllipsoidPatch.createCapture(
+        Ellipsoid.createCenterMatrixRadii(center, matrix, 1.0, 1.0, 1.0),
+        AngleSweep.create360(),
+        AngleSweep.createFullLatitude(),
+      );
       builder.addUVGridBody(patch, 32, 32);
       const mesh = builder.claimPolyface();
       for (const rayScale of [1.0, Math.sqrt(referenceSize), referenceSize]) {
@@ -242,8 +302,12 @@ describe("Ellipsoid", () => {
           const ray1 = Ray3d.create(ray.origin.interpolate(placementFraction, center), ray.direction);
           ray1.direction.scaleInPlace(rayScale);
           const displayScale = referenceSize / ray1.direction.magnitude();
-          GeometryCoreTestIO.captureGeometry(allGeometry,
-            LineSegment3d.create(ray1.fractionToPoint(-3.0 * displayScale), ray1.fractionToPoint(3.0 * displayScale)), x0, y0);
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
+            LineSegment3d.create(ray1.fractionToPoint(-3.0 * displayScale), ray1.fractionToPoint(3.0 * displayScale)),
+            x0,
+            y0,
+          );
           const hits = patch.intersectRay(ray1, true, true);
           if (hits.length === 0) {
             GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, ray1.origin, markerSizeB, x0, y0);
@@ -279,23 +343,26 @@ describe("Ellipsoid", () => {
     const y0 = 0;
     const thetaFractionB0 = 0.45;
     const phiFractionB0 = 0.55;
-    for (const ellipsoid of [
-      // Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusX, radiusX),
-      // Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusY, radiusZ),
-      Ellipsoid.createCenterMatrixRadii(center,
-        Matrix3d.createRowValues(1.0, 0.2, 0.3, -0.2, 1.0, 0.4, 0.1, -0.5, 1.2),    // true skewed ellipsoid
-        radiusX, radiusY, radiusZ)]) {
+    for (
+      const ellipsoid of [
+        // Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusX, radiusX),
+        // Ellipsoid.createCenterMatrixRadii(center, Matrix3d.createIdentity(), radiusX, radiusY, radiusZ),
+        Ellipsoid.createCenterMatrixRadii(
+          center,
+          Matrix3d.createRowValues(1.0, 0.2, 0.3, -0.2, 1.0, 0.4, 0.1, -0.5, 1.2), // true skewed ellipsoid
+          radiusX,
+          radiusY,
+          radiusZ,
+        ),
+      ]
+    ) {
       // Create a fairly small patch so "outside fractions" do not wrap into the patch . ..
-      const patch = EllipsoidPatch.createCapture(ellipsoid,
-        AngleSweep.createStartEndDegrees(-20, 80),
-        AngleSweep.createStartEndDegrees(-10, 30));
+      const patch = EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(-20, 80), AngleSweep.createStartEndDegrees(-10, 30));
 
       const builder = PolyfaceBuilder.create();
       const numU = Geometry.stepCount(degreeStep, patch.longitudeSweep.sweepDegrees, 1, 16);
       const numV = Geometry.stepCount(degreeStep, patch.latitudeSweep.sweepDegrees, 1, 16);
-      builder.addUVGridBody(patch,
-        numU,
-        numV);
+      builder.addUVGridBody(patch, numU, numV);
       const mesh = builder.claimPolyface();
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
 
@@ -307,12 +374,11 @@ describe("Ellipsoid", () => {
           const phiFractionB = Geometry.interpolate(phiFractionB0, 0.2, phiFractionA);
           if (!Geometry.isIn01(thetaFractionB) || !Geometry.isIn01(phiFractionB))
             continue;
-          const pointA = patch.uvFractionToPoint(thetaFractionA, phiFractionA);   // OUTSIDE
-          const pointB = patch.uvFractionToPoint(thetaFractionB, phiFractionB);   // INSIDE
+          const pointA = patch.uvFractionToPoint(thetaFractionA, phiFractionA); // OUTSIDE
+          const pointB = patch.uvFractionToPoint(thetaFractionB, phiFractionB); // INSIDE
           // Create the ray with start/end spread outside the sphere points .....
           const rayAB = Ray3d.createStartEnd(pointA.interpolate(-0.01, pointB), pointA.interpolate(1.05, pointB));
-          GeometryCoreTestIO.captureGeometry(allGeometry,
-            LineString3d.create(rayAB.fractionToPoint(0.0), rayAB.fractionToPoint(1.0)), x0, y0);
+          GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(rayAB.fractionToPoint(0.0), rayAB.fractionToPoint(1.0)), x0, y0);
           const hits = patch.intersectRay(rayAB, true, true);
           ck.testExactNumber(1, hits.length, "Expect 1 intersections");
           for (const hit of hits) {
@@ -330,9 +396,19 @@ describe("Ellipsoid", () => {
     // flatten to the equator.
     // normal is bad at phi = 0
     const flatten = Transform.createRowValues(
-      1, 0, 0, 1,
-      0, 1, 0, 2,
-      0, 0, 0, 3);
+      1,
+      0,
+      0,
+      1,
+      0,
+      1,
+      0,
+      2,
+      0,
+      0,
+      0,
+      3,
+    );
     const ellipsoid = Ellipsoid.create(flatten);
     const patch = EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(0, 180), AngleSweep.createStartEndDegrees(0, 90));
     ck.testUndefined(patch.anglesToUnitNormalRay(LongitudeLatitudeNumber.createDegrees(0, 0, 0)));
@@ -368,11 +444,19 @@ describe("Ellipsoid", () => {
     const polarRadius = 1.0;
     const center = Point3d.create(1, 2, 3);
     // Ellipsoid something like the earth  -- center at 0, polar declination 23.45, a little fatter at equator than poles.
-    const earthEllipsoid = Ellipsoid.createCenterMatrixRadii(center,
+    const earthEllipsoid = Ellipsoid.createCenterMatrixRadii(
+      center,
       Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7)),
-      equatorRadius, equatorRadius, polarRadius);
+      equatorRadius,
+      equatorRadius,
+      polarRadius,
+    );
     // package the whole earth with a bit less than a full octant patch
-    const earthPatch = EllipsoidPatch.createCapture(earthEllipsoid, AngleSweep.createStartEndDegrees(-10, 70), AngleSweep.createStartEndDegrees(0, 80));
+    const earthPatch = EllipsoidPatch.createCapture(
+      earthEllipsoid,
+      AngleSweep.createStartEndDegrees(-10, 70),
+      AngleSweep.createStartEndDegrees(0, 80),
+    );
     // create a grid mesh
     const builder = PolyfaceBuilder.create();
     builder.addUVGridBody(earthPatch, 10, 10);
@@ -388,8 +472,7 @@ describe("Ellipsoid", () => {
     const hits = earthPatch.intersectRay(ray, true, false);
     GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(ray.fractionToPoint(0), ray.fractionToPoint(1.0)));
     for (const hit of hits) {
-      GeometryCoreTestIO.captureGeometry(allGeometry,
-        Sphere.createCenterRadius(hit.surfaceDetail.point, 0.03));
+      GeometryCoreTestIO.captureGeometry(allGeometry, Sphere.createCenterRadius(hit.surfaceDetail.point, 0.03));
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "EarthLikeExample");
     expect(ck.getNumErrors()).toBe(0);
@@ -402,12 +485,9 @@ describe("Ellipsoid", () => {
     const center = Point3d.create(1, 2, 3);
     const degrees = [0, 10, 45, 80, -85, -60]; // use one set of angle samples -- double it for theta to go all the way around
     const unitSphere = Ellipsoid.create();
-    for (const matrix of [Matrix3d.createIdentity(),
-      /* */ Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
+    for (const matrix of [Matrix3d.createIdentity(), /* */ Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
       for (const e of [1.0, 2.0, 0.5]) {
-        const ellipsoid = Ellipsoid.createCenterMatrixRadii(center,
-          matrix,
-          e, e, 1);
+        const ellipsoid = Ellipsoid.createCenterMatrixRadii(center, matrix, e, e, 1);
         for (const phiDegrees of degrees) {
           for (const thetaDegreesA of degrees) {
             const thetaDegrees = 2.0 * thetaDegreesA;
@@ -441,12 +521,9 @@ describe("Ellipsoid", () => {
     const degrees = [0, 10, 45, 80, -85, -60]; // use one set of angle samples -- double it for theta to go all the way around
     const fractions = [-0.3, 0.2, 0.8, 1.1];
     const frame0 = Transform.createIdentity();
-    for (const matrix of [Matrix3d.createIdentity(),
-      /* */ Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
+    for (const matrix of [Matrix3d.createIdentity(), /* */ Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
       for (const e of [1.0, 2.0, 0.5]) {
-        const ellipsoid = Ellipsoid.createCenterMatrixRadii(center,
-          matrix,
-          e, e * e, 1);
+        const ellipsoid = Ellipsoid.createCenterMatrixRadii(center, matrix, e, e * e, 1);
         for (const phiDegrees of degrees) {
           for (const thetaDegreesA of degrees) {
             const thetaDegrees = 2.0 * thetaDegreesA;
@@ -484,40 +561,55 @@ describe("Ellipsoid", () => {
     const center = Point3d.create(0, 0, 0);
     const fractions = [-0.1, 0, 0.5, 0.9, 1.0, 1.1];
     for (const distanceFromSurface of [0.1, 0.2, -0.05]) {
-      for (const matrix of [
-        Matrix3d.createIdentity(),
-        Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7))])
+      for (
+        const matrix of [
+          Matrix3d.createIdentity(),
+          Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(23.7)),
+        ]
+      )
         for (const e of [1.0, 2.0, 0.5]) {
-          const ellipsoid = Ellipsoid.createCenterMatrixRadii(center,
-            matrix,
-            e, e, 1);
+          const ellipsoid = Ellipsoid.createCenterMatrixRadii(center, matrix, e, e, 1);
           x0 += 8.0;
           const builder = PolyfaceBuilder.create();
-          const patch = EllipsoidPatch.createCapture(ellipsoid,
-            AngleSweep.createStartEndDegrees(0, 50),
-            AngleSweep.createStartEndDegrees(0, 90));
+          const patch = EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(0, 50), AngleSweep.createStartEndDegrees(0, 90));
           builder.addUVGridBody(patch, 5, 9);
           GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x0);
-          GeometryCoreTestIO.captureGeometry(allGeometry,
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
             ellipsoid.constantLatitudeArc(
               patch.longitudeSweep,
-              patch.latitudeSweep.startAngle),
-            x0, y1);
-          GeometryCoreTestIO.captureGeometry(allGeometry,
+              patch.latitudeSweep.startAngle,
+            ),
+            x0,
+            y1,
+          );
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
             ellipsoid.constantLatitudeArc(
               patch.longitudeSweep,
-              patch.latitudeSweep.endAngle),
-            x0, y1);
-          GeometryCoreTestIO.captureGeometry(allGeometry,
+              patch.latitudeSweep.endAngle,
+            ),
+            x0,
+            y1,
+          );
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
             ellipsoid.constantLongitudeArc(
               patch.longitudeSweep.startAngle,
-              patch.latitudeSweep),
-            x0, y1);
-          GeometryCoreTestIO.captureGeometry(allGeometry,
+              patch.latitudeSweep,
+            ),
+            x0,
+            y1,
+          );
+          GeometryCoreTestIO.captureGeometry(
+            allGeometry,
             ellipsoid.constantLongitudeArc(
               patch.longitudeSweep.endAngle,
-              patch.latitudeSweep),
-            x0, y1);
+              patch.latitudeSweep,
+            ),
+            x0,
+            y1,
+          );
           // GeometryCoreTestIO.consoleLog({ eccentricity: e });
           for (const thetaFraction of fractions) {
             for (const phiFraction of fractions) {
@@ -530,10 +622,17 @@ describe("Ellipsoid", () => {
                 GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.create(rayA.origin, planeB.origin), x0);
                 const vectorAB = Vector3d.createStartEnd(planeB.origin, rayA.origin);
                 if (!Geometry.isSameCoordinate(0, Math.abs(distanceFromSurface))) {
-                  ck.testPerpendicular(vectorAB, planeB.vectorU, rayA.origin, anglesA.toJSON(),
-                    planeB.origin, anglesB.toJSON());
-                  ck.testPerpendicular(vectorAB, planeB.vectorV, rayA.origin, anglesA.toJSON(),
-                    planeB.origin, anglesB.toJSON(), planeB.origin, anglesB.toJSON());
+                  ck.testPerpendicular(vectorAB, planeB.vectorU, rayA.origin, anglesA.toJSON(), planeB.origin, anglesB.toJSON());
+                  ck.testPerpendicular(
+                    vectorAB,
+                    planeB.vectorV,
+                    rayA.origin,
+                    anglesA.toJSON(),
+                    planeB.origin,
+                    anglesB.toJSON(),
+                    planeB.origin,
+                    anglesB.toJSON(),
+                  );
                 }
                 ck.testCoordinate(Math.abs(distanceFromSurface), planeB.origin.distance(rayA.origin));
               }
@@ -575,9 +674,7 @@ describe("Ellipsoid", () => {
       const xShift = 2.0 * matrix.maxAbs();
       x0 += xShift; // shift both before and after
       let y0 = 0;
-      const patch = EllipsoidPatch.createCapture(ellipsoid,
-        AngleSweep.create360(),
-        AngleSweep.createStartEndDegrees(-89, 89));
+      const patch = EllipsoidPatch.createCapture(ellipsoid, AngleSweep.create360(), AngleSweep.createStartEndDegrees(-89, 89));
       if (Checker.noisy.ellipsoid)
         GeometryCoreTestIO.consoleLog(" ELLIPSOID", prettyPrint(ellipsoid));
       GeometryCoreTestIO.captureMesh(allGeometry, patch, 48, 16, x0, y0);
@@ -632,15 +729,14 @@ describe("Ellipsoid", () => {
       // LongitudeLatitudeNumber.createDegrees(290, -30),
     ];
 
-    for (const matrixNamePair of [
-      // Matrix3d.createIdentity(),
-      [Matrix3d.createRowValues(6378136.695200001, 0, 0,
-        0, 6378136.695200001, 0,
-        0, 0, 6378136.695200001), "Sphere with Earth Equator Radius"],
-      [Matrix3d.createRowValues(6378136.695200001, 0, 0,
-        0, 6378136.695200001, 0,
-        0, 0, 6356751.995200001), "Earth no tip"],
-      [tippedEarthEllipsoidMatrix(), "Tipped earth"]]) {
+    for (
+      const matrixNamePair of [
+        // Matrix3d.createIdentity(),
+        [Matrix3d.createRowValues(6378136.695200001, 0, 0, 0, 6378136.695200001, 0, 0, 0, 6378136.695200001), "Sphere with Earth Equator Radius"],
+        [Matrix3d.createRowValues(6378136.695200001, 0, 0, 0, 6378136.695200001, 0, 0, 0, 6356751.995200001), "Earth no tip"],
+        [tippedEarthEllipsoidMatrix(), "Tipped earth"],
+      ]
+    ) {
       const matrix = matrixNamePair[0] as Matrix3d;
       const name = matrixNamePair[1] as string;
       if (Checker.noisy.ellipsoid)
@@ -648,7 +744,7 @@ describe("Ellipsoid", () => {
       const y0 = 0.0;
       const dy = 2.0 * (matrix.columnXMagnitude() + matrix.columnYMagnitude());
       const dx = 3.0 * dy;
-      x0 += dx;     // dx shifts both before and after, to catch larger
+      x0 += dx; // dx shifts both before and after, to catch larger
       if (Checker.noisy.ellipsoid) {
         GeometryCoreTestIO.consoleLog();
         GeometryCoreTestIO.consoleLog("*****************************************************************");
@@ -662,16 +758,39 @@ describe("Ellipsoid", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "EllipsoidPatch", "GreatArcsFullSizeEarth");
     allGeometry.length = 0;
     x0 = 0;
-    for (const matrixNamePair of [
-      // Matrix3d.createIdentity(),
-      [Matrix3d.createRowValues(
-        1, 0, -0.5,
-        0, 1, 0,
-        0, 0, 1), "mild x skew"],
-      [Matrix3d.createRowValues(
-        2, 0.1, 0.2,
-        -0.1, 4, 0.3,
-        0.1, 0.2, 3.0), "3-axis Skew"]]) {
+    for (
+      const matrixNamePair of [
+        // Matrix3d.createIdentity(),
+        [
+          Matrix3d.createRowValues(
+            1,
+            0,
+            -0.5,
+            0,
+            1,
+            0,
+            0,
+            0,
+            1,
+          ),
+          "mild x skew",
+        ],
+        [
+          Matrix3d.createRowValues(
+            2,
+            0.1,
+            0.2,
+            -0.1,
+            4,
+            0.3,
+            0.1,
+            0.2,
+            3.0,
+          ),
+          "3-axis Skew",
+        ],
+      ]
+    ) {
       const matrix = matrixNamePair[0] as Matrix3d;
       const name = matrixNamePair[1] as string;
       if (Checker.noisy.ellipsoid)
@@ -679,7 +798,7 @@ describe("Ellipsoid", () => {
       const y0 = 0.0;
       const dy = 2.0 * (matrix.columnXMagnitude() + matrix.columnYMagnitude());
       const dx = 3.0 * dy;
-      x0 += dx;     // dx shifts both before and after, to catch larger
+      x0 += dx; // dx shifts both before and after, to catch larger
       if (Checker.noisy.ellipsoid) {
         GeometryCoreTestIO.consoleLog();
         GeometryCoreTestIO.consoleLog("*****************************************************************");
@@ -718,13 +837,26 @@ describe("Ellipsoid", () => {
       }
     }
 
-    for (const matrixNamePair of [
-      // Matrix3d.createIdentity(),
-      [Matrix3d.createIdentity(), "sphere"],
-      [Matrix3d.createRowValues(
-        1, 0, 0,
-        0, 1, 0,
-        0, 0, 0.25), "4:4:1"]]) {
+    for (
+      const matrixNamePair of [
+        // Matrix3d.createIdentity(),
+        [Matrix3d.createIdentity(), "sphere"],
+        [
+          Matrix3d.createRowValues(
+            1,
+            0,
+            0,
+            0,
+            1,
+            0,
+            0,
+            0,
+            0.25,
+          ),
+          "4:4:1",
+        ],
+      ]
+    ) {
       const matrix = matrixNamePair[0] as Matrix3d;
       //      const name = matrixNamePair[1] as string;
       const ellipsoid = Ellipsoid.create(matrix);
@@ -743,19 +875,23 @@ describe("Ellipsoid", () => {
         GeometryCoreTestIO.captureGeometry(allGeometry, arc, x0, y0);
       }
       for (const fraction of [0, 0.5, 1.0]) {
-        const arc031 = ellipsoid.createSectionArcPointPointVectorInPlane(angles[0], angles[3],
-          normal1.direction.interpolate(-fraction, normal2.direction))!;
-        const arc032 = ellipsoid.createSectionArcPointPointVectorInPlane(angles[0], angles[3],
-          normal1.direction.interpolate(1.0 + fraction, normal2.direction))!;
+        const arc031 = ellipsoid.createSectionArcPointPointVectorInPlane(
+          angles[0],
+          angles[3],
+          normal1.direction.interpolate(-fraction, normal2.direction),
+        )!;
+        const arc032 = ellipsoid.createSectionArcPointPointVectorInPlane(
+          angles[0],
+          angles[3],
+          normal1.direction.interpolate(1.0 + fraction, normal2.direction),
+        )!;
         GeometryCoreTestIO.captureGeometry(allGeometry, [arc031, arc032], x0, y0);
       }
       // save the ellipsoid scaled into it towards its center to there is no chatter among strokes of the arc and the ellipsoid mesh
       const displayScale = 0.99;
       ellipsoid.transformRef.matrix.scaleColumnsInPlace(displayScale, displayScale, displayScale);
       // GeometryCoreTestIO.captureMesh(allGeometry, patch, 16, 12, x0, y0);
-      const patch1 = EllipsoidPatch.createCapture(ellipsoid.clone(),
-        AngleSweep.create360(),
-        AngleSweep.createStartEndDegrees(-89.9, 89.9));
+      const patch1 = EllipsoidPatch.createCapture(ellipsoid.clone(), AngleSweep.create360(), AngleSweep.createStartEndDegrees(-89.9, 89.9));
       GeometryCoreTestIO.captureMesh(allGeometry, patch1, 48, 24, x0, y0);
       x0 += 10;
     }
@@ -771,10 +907,19 @@ describe("Ellipsoid", () => {
       const realEyePoint = eyePoint.realPointOrVector();
       if (realEyePoint instanceof Point3d)
         GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, realEyePoint, x0, y0);
-      for (const ellipsoid of [Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 0, 0), Matrix3d.createIdentity(), 1, 1, 1),
-        /* */ Ellipsoid.createCenterMatrixRadii(Point3d.create(3, 5, 1), Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(32)), 1, 1.2, 2.0),
-        /* */ Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 5, 0), Matrix3d.createRowValues(1, 0, 0.2, 0.1, 3, 0.2, -0.3, 0.1, 2), 1, 1, 1),
-      ]) {
+      for (
+        const ellipsoid of [
+          Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 0, 0), Matrix3d.createIdentity(), 1, 1, 1),
+          /* */ Ellipsoid.createCenterMatrixRadii(
+            Point3d.create(3, 5, 1),
+            Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(32)),
+            1,
+            1.2,
+            2.0,
+          ),
+          /* */ Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 5, 0), Matrix3d.createRowValues(1, 0, 0.2, 0.1, 3, 0.2, -0.3, 0.1, 2), 1, 1, 1),
+        ]
+      ) {
         GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0);
         const arc = ellipsoid.silhouetteArc(eyePoint);
         if (arc) {
@@ -805,9 +950,16 @@ describe("Ellipsoid", () => {
     const x0 = 0;
     const y0 = 0;
     const matrix = Matrix3d.createRowValues(
-      2230955.696607988, 4218074.856581404, 4217984.23465426,
-      -5853438.842941238, 635312.5558238369, 2444173.6696791253,
-      1200293.8548970034, -4741817.943265299, 4079571.948578869);
+      2230955.696607988,
+      4218074.856581404,
+      4217984.23465426,
+      -5853438.842941238,
+      635312.5558238369,
+      2444173.6696791253,
+      1200293.8548970034,
+      -4741817.943265299,
+      4079571.948578869,
+    );
     const eye = Point4d.create(0.3901908903099731, 0.2662862131349449, 0.8813868173585089, 0);
     const ellipsoid = Ellipsoid.create(matrix);
     const silhouette = ellipsoid.silhouetteArc(eye);
@@ -827,13 +979,20 @@ describe("Ellipsoid", () => {
     const x0 = 0;
     const y0 = 0;
     const matrix = Matrix3d.createRowValues(
-      2230955.696607988, 4218074.856581404, 4217984.23465426,
-      -5853438.842941238, 635312.5558238369, 2444173.6696791253,
-      1200293.8548970034, -4741817.943265299, 4079571.948578869);
+      2230955.696607988,
+      4218074.856581404,
+      4217984.23465426,
+      -5853438.842941238,
+      635312.5558238369,
+      2444173.6696791253,
+      1200293.8548970034,
+      -4741817.943265299,
+      4079571.948578869,
+    );
 
     const ellipsoid = Ellipsoid.create(matrix);
-    const pointA = ellipsoid.localToWorld({ x: 0.2, y: 0.5, z: 0.6 });    // definitely inside !
-    const pointB = ellipsoid.localToWorld({ x: 1.2, y: 0.5, z: 0.6 });    // definitely outside !
+    const pointA = ellipsoid.localToWorld({ x: 0.2, y: 0.5, z: 0.6 }); // definitely inside !
+    const pointB = ellipsoid.localToWorld({ x: 1.2, y: 0.5, z: 0.6 }); // definitely outside !
     GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0);
     expect(ck.getNumErrors()).toBe(0);
     ck.testTrue(ellipsoid.isPointOnOrInside(pointA));
@@ -877,9 +1036,12 @@ describe("Ellipsoid", () => {
     const z0 = 0.0;
     for (const ellipsoidRadius of [1.0, 2.0]) {
       GeometryCoreTestIO.consoleLog({ "*** ellipsoid radius ": ellipsoidRadius });
-      for (const ellipsoid of [
-        Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 0, 0), undefined, ellipsoidRadius, ellipsoidRadius, ellipsoidRadius),
-        Ellipsoid.createCenterMatrixRadii(Point3d.create(3, 1, 0), undefined, ellipsoidRadius, ellipsoidRadius, 0.6 * ellipsoidRadius)]) {
+      for (
+        const ellipsoid of [
+          Ellipsoid.createCenterMatrixRadii(Point3d.create(0, 0, 0), undefined, ellipsoidRadius, ellipsoidRadius, ellipsoidRadius),
+          Ellipsoid.createCenterMatrixRadii(Point3d.create(3, 1, 0), undefined, ellipsoidRadius, ellipsoidRadius, 0.6 * ellipsoidRadius),
+        ]
+      ) {
         GeometryCoreTestIO.captureGeometry(allGeometry, facetEllipsoid(ellipsoid), x0, y0, z0);
         const announceArc: AnnounceNumberNumberCurvePrimitive = (f0: number, f1: number, arc: CurvePrimitive) => {
           GeometryCoreTestIO.captureGeometry(allGeometry, arc.clonePartialCurve(f0, f1), x0, y0, z0);
@@ -887,12 +1049,14 @@ describe("Ellipsoid", () => {
           ck.testTrue(ellipsoid.isPointOnOrInside(arc.fractionToPoint(Geometry.interpolate(f0, 0.3, f1))));
         };
 
-        for (const arcA of [
-          Arc3d.createXY(Point3d.create(2, 0, 0), 1.1),
-          Arc3d.createXY(Point3d.create(2, 0, 0), 1.5),
-          Arc3d.createXY(Point3d.create(2, 0, 0), 1.2),
-          Arc3d.createXYZXYZXYZ(2, 3, 1, 3, 0, 0.24, 0.2, 3, 1),
-        ]) {
+        for (
+          const arcA of [
+            Arc3d.createXY(Point3d.create(2, 0, 0), 1.1),
+            Arc3d.createXY(Point3d.create(2, 0, 0), 1.5),
+            Arc3d.createXY(Point3d.create(2, 0, 0), 1.2),
+            Arc3d.createXYZXYZXYZ(2, 3, 1, 3, 0, 0.24, 0.2, 3, 1),
+          ]
+        ) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, arcA, x0, y0);
           ellipsoid.announceClippedArcIntervals(arcA, announceArc);
         }
@@ -902,7 +1066,6 @@ describe("Ellipsoid", () => {
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipsoid", "ArcClip");
     expect(ck.getNumErrors()).toBe(0);
-
   });
   it("EarthClip", () => {
     const ck = new Checker();
@@ -939,11 +1102,13 @@ describe("Ellipsoid", () => {
     const ck = new Checker();
     const ellipsoid = Ellipsoid.create(tippedEarthEllipsoidMatrix());
     // this shares the ellipsoid ... should work fine ...
-    for (const patch of [
-      EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(10, 62), AngleSweep.createStartEndDegrees(-20, 20)),
-      EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(220, 340), AngleSweep.createStartEndDegrees(-80, -20)),
-      EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(-180, 180), AngleSweep.createStartEndDegrees(-90, 90)),
-    ]) {
+    for (
+      const patch of [
+        EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(10, 62), AngleSweep.createStartEndDegrees(-20, 20)),
+        EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(220, 340), AngleSweep.createStartEndDegrees(-80, -20)),
+        EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(-180, 180), AngleSweep.createStartEndDegrees(-90, 90)),
+      ]
+    ) {
       const range = patch.range();
       range.expandInPlace(1.0e-8);
       const range20 = UVSurfaceOps.sampledRangeOfOffsetPatch(patch, 0.0, 80, 40);
@@ -973,11 +1138,13 @@ describe("Ellipsoid", () => {
       const sphereB = Ellipsoid.create(Matrix3d.createScale(b, b, b));
       // patchB is offset.  It's range can be directly computed.
       // offset of patchA is sampled.
-      for (const patchB of [
-        EllipsoidPatch.createCapture(sphereB, AngleSweep.createStartEndDegrees(10, 62), AngleSweep.createStartEndDegrees(-20, 20)),
-        EllipsoidPatch.createCapture(sphereB, AngleSweep.createStartEndDegrees(220, 340), AngleSweep.createStartEndDegrees(-80, -20)),
-        EllipsoidPatch.createCapture(sphereB, AngleSweep.createStartEndDegrees(-180, 180), AngleSweep.createStartEndDegrees(-90, 90)),
-      ]) {
+      for (
+        const patchB of [
+          EllipsoidPatch.createCapture(sphereB, AngleSweep.createStartEndDegrees(10, 62), AngleSweep.createStartEndDegrees(-20, 20)),
+          EllipsoidPatch.createCapture(sphereB, AngleSweep.createStartEndDegrees(220, 340), AngleSweep.createStartEndDegrees(-80, -20)),
+          EllipsoidPatch.createCapture(sphereB, AngleSweep.createStartEndDegrees(-180, 180), AngleSweep.createStartEndDegrees(-90, 90)),
+        ]
+      ) {
         const patchA = EllipsoidPatch.createCapture(sphereA, patchB.longitudeSweep, patchB.latitudeSweep);
         const rangeB = patchB.range();
         const rangeA4 = UVSurfaceOps.sampledRangeOfOffsetEllipsoidPatch(patchA, offsetDistance, options4);
@@ -997,12 +1164,28 @@ describe("Ellipsoid", () => {
 });
 
 function tippedEarthEllipsoidMatrix(): Matrix3d {
-  return Matrix3d.createRowValues(2230956.046389774, 4218075.517914913, 4217984.8981983,
-    -5853439.760676313, 635312.655431714, 2444174.054179583,
-    1200294.0430858273, -4741818.686714196, 4079572.590348847);
+  return Matrix3d.createRowValues(
+    2230956.046389774,
+    4218075.517914913,
+    4217984.8981983,
+    -5853439.760676313,
+    635312.655431714,
+    2444174.054179583,
+    1200294.0430858273,
+    -4741818.686714196,
+    4079572.590348847,
+  );
 }
 
-function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid: Ellipsoid, anglePoints: LongitudeLatitudeNumber[], delta: number, x0: number, y0: number) {
+function testEllipsoidPaths(
+  ck: Checker,
+  allGeometry: GeometryQuery[],
+  ellipsoid: Ellipsoid,
+  anglePoints: LongitudeLatitudeNumber[],
+  delta: number,
+  x0: number,
+  y0: number,
+) {
   const fullCircle = AngleSweep.createStartEndDegrees(-180, 180);
   const tropic = AngleSweep.createStartEndDegrees(0, 30);
   const dy = delta;
@@ -1010,9 +1193,7 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
   const optionalResultEllipsoid = Ellipsoid.create(Transform.createIdentity());
   const center = ellipsoid.transformRef.getOrigin();
   const builder = PolyfaceBuilder.create();
-  const patch = EllipsoidPatch.createCapture(ellipsoid,
-    AngleSweep.createStartEndDegrees(0, 120),
-    AngleSweep.createStartEndDegrees(0, 85));
+  const patch = EllipsoidPatch.createCapture(ellipsoid, AngleSweep.createStartEndDegrees(0, 120), AngleSweep.createStartEndDegrees(0, 85));
   ck.testUndefined(ellipsoid.radiansPairToEquatorialEllipsoid(1, 1, 1, 1));
   builder.addUVGridBody(patch, 32, 16);
   GeometryCoreTestIO.captureGeometry(allGeometry, builder.claimPolyface(), x0, y0);
@@ -1021,10 +1202,13 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
     const angleB = anglePoints[i];
     const startPoint = patch.ellipsoid.radiansToPoint(angleA.longitudeRadians, angleA.latitudeRadians);
     const endPoint = patch.ellipsoid.radiansToPoint(angleB.longitudeRadians, angleB.latitudeRadians);
-    const arc = ellipsoid.radiansPairToGreatArc(angleA.longitudeRadians, angleA.latitudeRadians,
-      angleB.longitudeRadians, angleB.latitudeRadians);
-    GeometryCoreTestIO.captureGeometry(allGeometry,
-      LineString3d.create(center.interpolate(1.4, startPoint), center, center.interpolate(1.4, endPoint)), x0, y0);
+    const arc = ellipsoid.radiansPairToGreatArc(angleA.longitudeRadians, angleA.latitudeRadians, angleB.longitudeRadians, angleB.latitudeRadians);
+    GeometryCoreTestIO.captureGeometry(
+      allGeometry,
+      LineString3d.create(center.interpolate(1.4, startPoint), center, center.interpolate(1.4, endPoint)),
+      x0,
+      y0,
+    );
     if (ck.testDefined(arc)) {
       const arc1 = arc.clone();
       arc1.scaleAboutCenterInPlace(1.4);
@@ -1033,10 +1217,19 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
       // arc1.sweep.cloneComplement(false, arc1.sweep);
       // GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc1, x0, y0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, x0, y0);
-      const ellipsoid1 = ellipsoid.radiansPairToEquatorialEllipsoid(angleA.longitudeRadians, angleA.latitudeRadians,
-        angleB.longitudeRadians, angleB.latitudeRadians)!;
-      ellipsoid.radiansPairToEquatorialEllipsoid(angleA.longitudeRadians, angleA.latitudeRadians,
-        angleB.longitudeRadians, angleB.latitudeRadians, optionalResultEllipsoid);
+      const ellipsoid1 = ellipsoid.radiansPairToEquatorialEllipsoid(
+        angleA.longitudeRadians,
+        angleA.latitudeRadians,
+        angleB.longitudeRadians,
+        angleB.latitudeRadians,
+      )!;
+      ellipsoid.radiansPairToEquatorialEllipsoid(
+        angleA.longitudeRadians,
+        angleA.latitudeRadians,
+        angleB.longitudeRadians,
+        angleB.latitudeRadians,
+        optionalResultEllipsoid,
+      );
       ck.testTrue(ellipsoid1.isAlmostEqual(optionalResultEllipsoid), "optional ellipsoid");
       GeometryCoreTestIO.captureMesh(allGeometry, EllipsoidPatch.createCapture(ellipsoid1, fullCircle, tropic), 32, 4, x0, y1);
       const arcLength = arc.curveLength();
@@ -1074,9 +1267,18 @@ function testEllipsoidPaths(ck: Checker, allGeometry: GeometryQuery[], ellipsoid
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, minLengthArcDataA.minLengthArc, x0, y1);
           const lA = minLengthArcDataA.minLengthArc.curveLength();
           if (Checker.noisy.ellipsoid)
-            GeometryCoreTestIO.consoleLog({ "approximate min section lengthA ": minLengthArcDataA.minLengthArc.curveLength(), "fraction ": minLengthArcDataA.minLengthNormalInterpolationFraction });
-          const minLengthArcDataB = GeodesicPathSolver.approximateMinimumLengthSectionArc(ellipsoid, angleA, angleB, numSample,
-            minLengthArcDataA.minLengthNormalInterpolationFraction - 0.10, minLengthArcDataA.minLengthNormalInterpolationFraction + 0.10);
+            GeometryCoreTestIO.consoleLog({
+              "approximate min section lengthA ": minLengthArcDataA.minLengthArc.curveLength(),
+              "fraction ": minLengthArcDataA.minLengthNormalInterpolationFraction,
+            });
+          const minLengthArcDataB = GeodesicPathSolver.approximateMinimumLengthSectionArc(
+            ellipsoid,
+            angleA,
+            angleB,
+            numSample,
+            minLengthArcDataA.minLengthNormalInterpolationFraction - 0.10,
+            minLengthArcDataA.minLengthNormalInterpolationFraction + 0.10,
+          );
           if (minLengthArcDataB) {
             const lB = minLengthArcDataB.minLengthArc.curveLength();
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, minLengthArcDataB.minLengthArc, x0, y1);
@@ -1099,14 +1301,13 @@ function facetEllipsoid(ellipsoid: Ellipsoid, degreeStep: number = 15.0): Indexe
   const patch = EllipsoidPatch.createCapture(
     ellipsoid.clone(),
     AngleSweep.create360(),
-    AngleSweep.createFullLatitude());
+    AngleSweep.createFullLatitude(),
+  );
 
   const builder = PolyfaceBuilder.create();
   const numU = Geometry.stepCount(degreeStep, patch.longitudeSweep.sweepDegrees, 1, 16);
   const numV = Geometry.stepCount(degreeStep, patch.latitudeSweep.sweepDegrees, 1, 16);
-  builder.addUVGridBody(patch,
-    numU,
-    numV);
+  builder.addUVGridBody(patch, numU, numV);
   const mesh = builder.claimPolyface();
   return mesh;
 }

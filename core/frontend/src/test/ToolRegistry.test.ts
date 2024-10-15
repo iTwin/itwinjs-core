@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { ITwinLocalization } from "@itwin/core-i18n";
+import { assert, expect } from "chai";
 import { FuzzySearchResult, FuzzySearchResults } from "../FuzzySearch";
 import { IModelApp } from "../IModelApp";
 import { MockRender } from "../render/MockRender";
@@ -22,8 +22,12 @@ class TestImmediate extends Tool {
     testVal2 = v2;
     return true;
   }
-  public static override get minArgs() { return 2; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 2;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
   public override async parseAndRun(v1: string, v2: string): Promise<boolean> {
     if (arguments.length !== 2)
       return false;
@@ -42,7 +46,9 @@ class TestCommandApp extends MockRender.App {
     TestImmediate.register(this.testNamespace);
   }
 
-  protected static supplyI18NOptions() { return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` }; }
+  protected static supplyI18NOptions() {
+    return { urlTemplate: `${window.location.origin}/locales/{{lng}}/{{ns}}.json` };
+  }
 }
 
 async function setupToolRegistryTests() {
@@ -233,8 +239,9 @@ function registerTestClass(id: string, keyin: string, ns: string) {
       return true;
     }
 
-    public static override get keyin(): string { return keyin; }
-
+    public static override get keyin(): string {
+      return keyin;
+    }
   }).register(ns);
 }
 

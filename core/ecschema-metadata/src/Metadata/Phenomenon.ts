@@ -23,7 +23,9 @@ export class Phenomenon extends SchemaItem {
     this._definition = "";
   }
 
-  public get definition(): string { return this._definition; }
+  public get definition(): string {
+    return this._definition;
+  }
 
   /**
    * Save this Phenomenon's properties to an object for serializing to JSON.

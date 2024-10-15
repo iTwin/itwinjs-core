@@ -7,7 +7,6 @@ import { expect } from "chai";
 import { IconSpecUtilities } from "../../appui-abstract/utils/IconSpecUtilities";
 
 describe("IconSpecUtilities", () => {
-
   it("should correctly create iconSpec for svg", () => {
     const iconSpec = IconSpecUtilities.createSvgIconSpec("test");
     expect(iconSpec).to.eq(`${IconSpecUtilities.SVG_PREFIX}test`);

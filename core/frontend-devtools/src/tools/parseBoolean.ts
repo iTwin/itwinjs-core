@@ -16,10 +16,15 @@ export function parseBoolean(arg: string | undefined): boolean | undefined {
     return undefined;
 
   switch (arg.toLowerCase()) {
-    case "on": return true;
-    case "true": return true;
-    case "off": return false;
-    case "false": return false;
-    default: return undefined;
+    case "on":
+      return true;
+    case "true":
+      return true;
+    case "off":
+      return false;
+    case "false":
+      return false;
+    default:
+      return undefined;
   }
 }

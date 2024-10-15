@@ -8,7 +8,14 @@
 
 import { assert, compareNumbers, compareStrings, SortedArray } from "@itwin/core-bentley";
 import {
-  DrawCommand, DrawCommands, PopBatchCommand, PopBranchCommand, PopCommand, PushBatchCommand, PushBranchCommand, PushCommand,
+  DrawCommand,
+  DrawCommands,
+  PopBatchCommand,
+  PopBranchCommand,
+  PopCommand,
+  PushBatchCommand,
+  PushBranchCommand,
+  PushCommand,
 } from "./DrawCommand";
 import { Layer, LayerContainer } from "./Layer";
 import { RenderCommands } from "./RenderCommands";
@@ -32,7 +39,7 @@ abstract class State {
     this.map.state = this;
   }
 
-  protected exit(): void { }
+  protected exit(): void {}
 
   protected throwStateError(operation: string): void {
     // Using assert because these are intended for developers.
@@ -70,7 +77,9 @@ abstract class State {
 }
 
 class IdleState extends State {
-  protected get opcode(): OpCode { return "Idle"; }
+  protected get opcode(): OpCode {
+    return "Idle";
+  }
 
   public constructor(map: LayerCommandMap) {
     super(map);
@@ -83,7 +92,9 @@ class IdleState extends State {
 
 class ContainerState extends State {
   public readonly elevation: number;
-  protected get opcode(): OpCode { return "Container"; }
+  protected get opcode(): OpCode {
+    return "Container";
+  }
 
   public constructor(idle: IdleState, container: LayerContainer) {
     super(idle.map);
@@ -100,7 +111,9 @@ class BranchState extends State {
   public readonly containerState: ContainerState;
   private readonly _layerCommands = new Set<LayerCommands>();
 
-  protected get opcode(): OpCode { return "Branch"; }
+  protected get opcode(): OpCode {
+    return "Branch";
+  }
 
   public constructor(containerState: ContainerState, pushCommand: PushBranchCommand) {
     super(containerState.map);
@@ -129,7 +142,9 @@ class BatchState extends State {
   public readonly branchState: BranchState;
   public readonly pushCommand: PushBatchCommand;
 
-  protected get opcode(): OpCode { return "Batch"; }
+  protected get opcode(): OpCode {
+    return "Batch";
+  }
 
   public constructor(branchState: BranchState, pushCommand: PushBatchCommand) {
     super(branchState.map);
@@ -149,7 +164,9 @@ class LayerState extends State {
   private readonly _batchState: BatchState;
   public readonly commands: LayerCommands;
 
-  protected get opcode(): OpCode { return "Layer"; }
+  protected get opcode(): OpCode {
+    return "Layer";
+  }
 
   public constructor(batchState: BatchState, layer: Layer) {
     super(batchState.map);

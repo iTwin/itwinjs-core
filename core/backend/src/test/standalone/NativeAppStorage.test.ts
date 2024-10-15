@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { IModelJsFs } from "../../IModelJsFs";
-import { NativeHost } from "../../NativeHost";
 import { NativeAppStorage } from "../../NativeAppStorage";
+import { NativeHost } from "../../NativeHost";
 
 describe("NativeApp storage backend", () => {
   before(async () => {

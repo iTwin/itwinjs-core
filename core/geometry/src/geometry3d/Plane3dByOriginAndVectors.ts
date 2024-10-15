@@ -7,13 +7,13 @@
  * @module CartesianGeometry
  */
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
-import { Plane3d } from "./Plane3d";
 import { Point4d } from "../geometry4d/Point4d";
+import { Matrix3d } from "./Matrix3d";
+import { Plane3d } from "./Plane3d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Ray3d } from "./Ray3d";
 import { Transform } from "./Transform";
 import { XYAndZ } from "./XYZProps";
-import { Matrix3d } from "./Matrix3d";
 
 /**
  * A Plane3dByOriginAndVectors is an origin and a pair of vectors.
@@ -45,7 +45,10 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
   }
   /** Create a new plane from origin and 2 in-plane vectors. */
   public static createOriginAndVectors(
-    origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors,
+    origin: Point3d,
+    vectorU: Vector3d,
+    vectorV: Vector3d,
+    result?: Plane3dByOriginAndVectors,
   ): Plane3dByOriginAndVectors {
     if (result) {
       result.origin.setFrom(origin);
@@ -92,7 +95,10 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
    * @param result optional preexisting result
    */
   public static createFromTransformColumnsXYAndLengths(
-    transform: Transform, xLength: number | undefined, yLength: number | undefined, result?: Plane3dByOriginAndVectors,
+    transform: Transform,
+    xLength: number | undefined,
+    yLength: number | undefined,
+    result?: Plane3dByOriginAndVectors,
   ): Plane3dByOriginAndVectors {
     if (result) {
       result.origin.setFrom(transform.getOrigin());
@@ -102,7 +108,8 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
       result = new Plane3dByOriginAndVectors(
         transform.getOrigin(),
         transform.matrix.columnX(),
-        transform.matrix.columnY());
+        transform.matrix.columnY(),
+      );
     }
     if (xLength !== undefined)
       result.vectorU.scaleToLength(xLength, result.vectorU);
@@ -112,7 +119,10 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
   }
   /** Capture origin and directions in a new plane. */
   public static createCapture(
-    origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors,
+    origin: Point3d,
+    vectorU: Vector3d,
+    vectorV: Vector3d,
+    result?: Plane3dByOriginAndVectors,
   ): Plane3dByOriginAndVectors {
     if (!result)
       return new Plane3dByOriginAndVectors(origin, vectorU, vectorV);
@@ -124,7 +134,15 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
 
   /** Set all origin and both vectors from direct numeric parameters */
   public setOriginAndVectorsXYZ(
-    x0: number, y0: number, z0: number, ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
+    x0: number,
+    y0: number,
+    z0: number,
+    ux: number,
+    uy: number,
+    uz: number,
+    vx: number,
+    vy: number,
+    vz: number,
   ): Plane3dByOriginAndVectors {
     this.origin.set(x0, y0, z0);
     this.vectorU.set(ux, uy, uz);
@@ -143,15 +161,23 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
   }
   /** Create a new plane from direct numeric parameters */
   public static createOriginAndVectorsXYZ(
-    x0: number, y0: number, z0: number,
-    ux: number, uy: number, uz: number,
-    vx: number, vy: number, vz: number,
+    x0: number,
+    y0: number,
+    z0: number,
+    ux: number,
+    uy: number,
+    uz: number,
+    vx: number,
+    vy: number,
+    vz: number,
     result?: Plane3dByOriginAndVectors,
   ): Plane3dByOriginAndVectors {
     if (result)
       return result.setOriginAndVectorsXYZ(x0, y0, z0, ux, uy, uz, vx, vy, vz);
     return new Plane3dByOriginAndVectors(
-      Point3d.create(x0, y0, z0), Vector3d.create(ux, uy, uz), Vector3d.create(vx, vy, vz),
+      Point3d.create(x0, y0, z0),
+      Vector3d.create(ux, uy, uz),
+      Vector3d.create(vx, vy, vz),
     );
   }
   /**
@@ -162,12 +188,21 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
    * @param result optional result.
    */
   public static createOriginAndTargets(
-    origin: Point3d, targetU: Point3d, targetV: Point3d, result?: Plane3dByOriginAndVectors,
+    origin: Point3d,
+    targetU: Point3d,
+    targetV: Point3d,
+    result?: Plane3dByOriginAndVectors,
   ): Plane3dByOriginAndVectors {
     return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(
-      origin.x, origin.y, origin.z,
-      targetU.x - origin.x, targetU.y - origin.y, targetU.z - origin.z,
-      targetV.x - origin.x, targetV.y - origin.y, targetV.z - origin.z,
+      origin.x,
+      origin.y,
+      origin.z,
+      targetU.x - origin.x,
+      targetU.y - origin.y,
+      targetU.z - origin.z,
+      targetV.x - origin.x,
+      targetV.y - origin.y,
+      targetV.z - origin.z,
       result,
     );
   }
@@ -182,12 +217,21 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
    * @param vectorV x,y,z of vectorV
    */
   public static createOriginAndVectorsArrays(
-    origin: Float64Array, vectorU: Float64Array, vectorV: Float64Array, result?: Plane3dByOriginAndVectors,
+    origin: Float64Array,
+    vectorU: Float64Array,
+    vectorV: Float64Array,
+    result?: Plane3dByOriginAndVectors,
   ): Plane3dByOriginAndVectors {
     return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(
-      origin[0], origin[1], origin[2],
-      vectorU[0], vectorU[1], vectorU[2],
-      vectorV[0], vectorV[1], vectorV[2],
+      origin[0],
+      origin[1],
+      origin[2],
+      vectorU[0],
+      vectorU[1],
+      vectorU[2],
+      vectorV[0],
+      vectorV[1],
+      vectorV[2],
       result,
     );
   }
@@ -198,7 +242,10 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
    * @param vectorV x,y,z,w of vectorV
    */
   public static createOriginAndVectorsWeightedArrays(
-    originW: Float64Array, vectorUw: Float64Array, vectorVw: Float64Array, result?: Plane3dByOriginAndVectors,
+    originW: Float64Array,
+    vectorUw: Float64Array,
+    vectorVw: Float64Array,
+    result?: Plane3dByOriginAndVectors,
   ): Plane3dByOriginAndVectors {
     const w = originW[3];
     result = Plane3dByOriginAndVectors.createXYPlane(result);
@@ -216,10 +263,26 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     // Here the X' and its w' are taken from each vectorUw and vectorVw
     result.origin.set(originW[0] * dw, originW[1] * dw, originW[2] * dw);
     Vector3d.createAdd2ScaledXYZ(
-      vectorUw[0], vectorUw[1], vectorUw[2], dw, originW[0], originW[1], originW[2], -au, result.vectorU,
+      vectorUw[0],
+      vectorUw[1],
+      vectorUw[2],
+      dw,
+      originW[0],
+      originW[1],
+      originW[2],
+      -au,
+      result.vectorU,
     );
     Vector3d.createAdd2ScaledXYZ(
-      vectorVw[0], vectorVw[1], vectorVw[2], dw, originW[0], originW[1], originW[2], -av, result.vectorV,
+      vectorVw[0],
+      vectorVw[1],
+      vectorVw[2],
+      dw,
+      originW[0],
+      originW[1],
+      originW[2],
+      -av,
+      result.vectorV,
     );
     return result;
   }
@@ -358,8 +421,13 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     if (unitNormal === undefined)
       return 0.0;
     return Geometry.dotProductXYZXYZ(
-      (xyz.x - this.origin.x), (xyz.y - this.origin.y), (xyz.z - this.origin.z),
-      unitNormal.x, unitNormal.y, unitNormal.z);
+      xyz.x - this.origin.x,
+      xyz.y - this.origin.y,
+      xyz.z - this.origin.z,
+      unitNormal.x,
+      unitNormal.y,
+      unitNormal.z,
+    );
   }
   /** Return signed cartesian altitude perpendicular to the plane. This uses the normalized cross product as normal. */
   public altitudeXYZ(x: number, y: number, z: number): number {
@@ -367,8 +435,13 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     if (unitNormal === undefined)
       return 0.0;
     return Geometry.dotProductXYZXYZ(
-      (x - this.origin.x), (y - this.origin.y), (z - this.origin.z),
-      unitNormal.x, unitNormal.y, unitNormal.z);
+      x - this.origin.x,
+      y - this.origin.y,
+      z - this.origin.z,
+      unitNormal.x,
+      unitNormal.y,
+      unitNormal.z,
+    );
   }
   /** Return signed projection of the input vector to the plane normal. This uses the normalized cross product as normal. */
   public velocity(xyzVector: XYAndZ): number {
@@ -376,8 +449,13 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     if (unitNormal === undefined)
       return 0.0;
     return Geometry.dotProductXYZXYZ(
-      xyzVector.x, xyzVector.y, xyzVector.z,
-      unitNormal.x, unitNormal.y, unitNormal.z);
+      xyzVector.x,
+      xyzVector.y,
+      xyzVector.z,
+      unitNormal.x,
+      unitNormal.y,
+      unitNormal.z,
+    );
   }
   /** Return signed projection of the input vector to the plane normal. This uses the normalized cross product as normal. */
   public velocityXYZ(x: number, y: number, z: number): number {
@@ -385,8 +463,13 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
     if (unitNormal === undefined)
       return 0.0;
     return Geometry.dotProductXYZXYZ(
-      x, y, z,
-      unitNormal.x, unitNormal.y, unitNormal.z);
+      x,
+      y,
+      z,
+      unitNormal.x,
+      unitNormal.y,
+      unitNormal.z,
+    );
   }
   /**
    * Return triple product of homogeneous difference {(xyzw - w * origin)} with vectorU and vectorV.
@@ -396,9 +479,16 @@ export class Plane3dByOriginAndVectors extends Plane3d implements BeJSONFunction
   public weightedAltitude(xyzw: Point4d) {
     const w = xyzw.w;
     return Geometry.tripleProduct(
-      (xyzw.x - this.origin.x * w), (xyzw.y - this.origin.y * w), (xyzw.z - this.origin.z * w),
-      this.vectorU.x, this.vectorU.y, this.vectorU.z,
-      this.vectorV.x, this.vectorV.y, this.vectorV.z);
+      xyzw.x - this.origin.x * w,
+      xyzw.y - this.origin.y * w,
+      xyzw.z - this.origin.z * w,
+      this.vectorU.x,
+      this.vectorU.y,
+      this.vectorU.z,
+      this.vectorV.x,
+      this.vectorV.y,
+      this.vectorV.z,
+    );
   }
   /**
    * Return the projection of spacePoint onto the plane.

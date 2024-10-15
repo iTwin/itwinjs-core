@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaItemType, UnitSystem } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
+import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 describe("Unit system merger tests", () => {

@@ -2,20 +2,32 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { DbResult, Id64 } from "@itwin/core-bentley";
-import { DbQueryRequest, DbQueryResponse, DbRequestExecutor, DbRequestKind, ECSqlReader, QueryBinder, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
+import {
+  DbQueryRequest,
+  DbQueryResponse,
+  DbRequestExecutor,
+  DbRequestKind,
+  ECSqlReader,
+  QueryBinder,
+  QueryOptionsBuilder,
+  QueryPropertyMetaData,
+  QueryRowFormat,
+} from "@itwin/core-common";
+import { assert } from "chai";
+import * as path from "path";
 import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
-import * as path from "path";
 
 // cspell:ignore mirukuru ibim
 
 async function executeQuery(iModel: IModelDb, ecsql: string, bindings?: any[] | object, abbreviateBlobs?: boolean): Promise<any[]> {
   const rows: any[] = [];
-  for await (const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })) {
+  for await (
+    const queryRow of iModel.createQueryReader(ecsql, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs })
+  ) {
     rows.push(queryRow.toRow());
   }
   return rows;
@@ -30,7 +42,6 @@ describe("ECSql Query", () => {
   let imodel6: SnapshotDb;
 
   before(async () => {
-
     imodel1 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("test.bim"));
     imodel2 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
     imodel3 = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim"));
@@ -69,7 +80,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT Parent.Id,Parent.RelECClassId, Parent.Id myParentId, Parent.RelECClassId myParentRelClassId FROM BisCore.Element WHERE Parent.Id IS NOT NULL LIMIT 1",
+        query:
+          "SELECT Parent.Id,Parent.RelECClassId, Parent.Id myParentId, Parent.RelECClassId myParentRelClassId FROM BisCore.Element WHERE Parent.Id IS NOT NULL LIMIT 1",
         statementResult: {
           "myParentId": "0x1",
           "myParentRelClassId": "0xcf",
@@ -106,7 +118,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements LIMIT 1",
+        query:
+          "SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements LIMIT 1",
         statementResult: {
           id: "0x1",
           className: "BisCore.PartitionOriginatesFromRepository",
@@ -125,7 +138,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements) LIMIT 1",
+        query:
+          "SELECT * FROM (SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements) LIMIT 1",
         statementResult: {
           id: "0x1",
           className: "BisCore.PartitionOriginatesFromRepository",
@@ -188,7 +202,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements LIMIT 1",
+        query:
+          "SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements LIMIT 1",
         statementResult: {
           a: "0x1",
           b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
@@ -207,7 +222,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements) LIMIT 1",
+        query:
+          "SELECT * FROM (SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements) LIMIT 1",
         statementResult: {
           a: "0x1",
           b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
@@ -226,7 +242,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements LIMIT 1",
+        query:
+          "SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements LIMIT 1",
         statementResult: {
           a: "0x1",
           b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
@@ -245,7 +262,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements) LIMIT 1",
+        query:
+          "SELECT * FROM (SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements) LIMIT 1",
         statementResult: {
           a: "0x1",
           b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
@@ -302,7 +320,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
+        query:
+          "SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
         statementResult: {
           "id": "0x1",
           "className": "BisCore.PartitionOriginatesFromRepository",
@@ -333,7 +352,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
+        query:
+          "SELECT * FROM (SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
         statementResult: {
           "id": "0x1",
           "className": "BisCore.PartitionOriginatesFromRepository",
@@ -364,7 +384,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
+        query:
+          "SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
         statementResult: {
           a: "0x1",
           b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
@@ -395,7 +416,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
+        query:
+          "SELECT * FROM (SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
         statementResult: {
           a: "0x1",
           b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
@@ -426,7 +448,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
+        query:
+          "SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
         statementResult: {
           a: "0x1",
           b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
@@ -457,7 +480,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
+        query:
+          "SELECT * FROM (SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
         statementResult: {
           a: "0x1",
           b: doNotConvertClassIdsToClassNamesWhenAliased ? "0xa8" : "BisCore.PartitionOriginatesFromRepository",
@@ -496,12 +520,20 @@ describe("ECSql Query", () => {
     for (const testQuery of testQueries) {
       imodel1.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
-        assert.deepEqual(stmt.getRow(), testQuery.statementResult, `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
+        assert.deepEqual(
+          stmt.getRow(),
+          testQuery.statementResult,
+          `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`,
+        );
       });
 
       let hasRow = false;
       for await (const row of imodel1.createQueryReader(testQuery.query, undefined, builder.getOptions())) {
-        assert.deepEqual(row.toRow(), testQuery.readerResult, `(ECSqlReader) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
+        assert.deepEqual(
+          row.toRow(),
+          testQuery.readerResult,
+          `(ECSqlReader) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`,
+        );
         hasRow = true;
       }
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");
@@ -510,11 +542,19 @@ describe("ECSql Query", () => {
     for (const testQuery of testQueries) {
       imodel6.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
-        assert.deepEqual(stmt.getRow(), testQuery.statementResult, `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
+        assert.deepEqual(
+          stmt.getRow(),
+          testQuery.statementResult,
+          `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`,
+        );
       });
       let hasRow = false;
       for await (const row of imodel6.createQueryReader(testQuery.query, undefined, builder.getOptions())) {
-        assert.deepEqual(row.toRow(), testQuery.readerResult, `(ECSqlReader) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
+        assert.deepEqual(
+          row.toRow(),
+          testQuery.readerResult,
+          `(ECSqlReader) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`,
+        );
         hasRow = true;
       }
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");
@@ -536,7 +576,12 @@ describe("ECSql Query", () => {
     rows = await executeQuery(imodel1, "SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
     assert.equal(rows.length, 1);
 
-    rows = await executeQuery(imodel1, "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1", undefined, true);
+    rows = await executeQuery(
+      imodel1,
+      "SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1",
+      undefined,
+      true,
+    );
     assert.equal(rows.length, 1);
     assert.isTrue(Id64.isValidId64(rows[0].id));
     assert.isDefined(rows[0].geometryStream);
@@ -545,26 +590,26 @@ describe("ECSql Query", () => {
     const ecdb = imodel1;
     // expect log message when statement fails
     let slm = new SequentialLogMatcher();
-    slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
-    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }), "no such table: def (BE_SQLITE_ERROR)");
+    slm.append().error().category("BeSQLite").message('Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def');
+    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => {}), "no such table: def (BE_SQLITE_ERROR)");
     assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
     // now pass suppress log error which mean we should not get the error
     slm = new SequentialLogMatcher();
-    slm.append().error().category("BeSQLite").message("Error \"no such table: def (BE_SQLITE_ERROR)\" preparing SQL: SELECT abc FROM def");
-    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => { }, /* logErrors = */ false), "no such table: def (BE_SQLITE_ERROR)");
+    slm.append().error().category("BeSQLite").message('Error "no such table: def (BE_SQLITE_ERROR)" preparing SQL: SELECT abc FROM def');
+    assert.throw(() => ecdb.withSqliteStatement("SELECT abc FROM def", () => {}, /* logErrors = */ false), "no such table: def (BE_SQLITE_ERROR)");
     assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
 
     // expect log message when statement fails
     slm = new SequentialLogMatcher();
     slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
-    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }), "ECClass 'abc.def' does not exist or could not be loaded.");
+    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => {}), "ECClass 'abc.def' does not exist or could not be loaded.");
     assert.isTrue(slm.finishAndDispose(), "logMatcher should detect log");
 
     // now pass suppress log error which mean we should not get the error
     slm = new SequentialLogMatcher();
     slm.append().error().category("ECDb").message("ECClass 'abc.def' does not exist or could not be loaded.");
-    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => { }, /* logErrors = */ false), "");
+    assert.throw(() => ecdb.withPreparedStatement("SELECT abc FROM abc.def", () => {}, /* logErrors = */ false), "");
     assert.isFalse(slm.finishAndDispose(), "logMatcher should not detect log");
   });
   it("restart query", async () => {
@@ -581,7 +626,11 @@ describe("ECSql Query", () => {
             const options = new QueryOptionsBuilder();
             options.setDelay(delay);
             options.setRestartToken("tag");
-            const reader = imodel1.createQueryReader("SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element", undefined, options.getOptions());
+            const reader = imodel1.createQueryReader(
+              "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element",
+              undefined,
+              options.getOptions(),
+            );
             while (await reader.step()) {
               rowCount++;
             }
@@ -633,11 +682,11 @@ describe("ECSql Query", () => {
     const request: DbQueryRequest = {
       kind: DbRequestKind.ECSql,
       query: "SELECT * FROM BisCore.element",
-      delay: 5000,  // Set delay to a value > timeout
+      delay: 5000, // Set delay to a value > timeout
     };
     try {
       await new MockECSqlReader(executor, request.query).mockReadRows(request);
-      assert(false);  // We expect this scenario to always throw
+      assert(false); // We expect this scenario to always throw
     } catch (error: any) {
       // Query should give up after max retry count has been reached
       assert(error.message === "query too long to execute or server is too busy");
@@ -773,7 +822,10 @@ describe("ECSql Query", () => {
       const i = dbs.indexOf(db);
       const rowPerPage = getRowPerPage(pageSize, expected[i]);
       for (let k = 0; k < rowPerPage.length; k++) {
-        const rs = await db.createQueryReader(query, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames, limit: { count: pageSize, offset: k * pageSize } }).toArray();
+        const rs = await db.createQueryReader(query, undefined, {
+          rowFormat: QueryRowFormat.UseJsPropertyNames,
+          limit: { count: pageSize, offset: k * pageSize },
+        }).toArray();
         assert.equal(rs.length, rowPerPage[k]);
       }
     }

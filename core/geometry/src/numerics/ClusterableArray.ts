@@ -24,7 +24,7 @@ export class ClusterableArray extends GrowableBlockedArray {
   // The sort vector is (1,c, c*c, ...)
   // Setting c = 1 makes it 1,1,1 which may be useful for visual scans during debug.
   // c with some non-obvious digits makes it unlikely that there will be multiple points on a perpendicular to the sort vector.
-  private static readonly _vectorFactor = 0.8732;  // use 1.0 to rig easy tests.
+  private static readonly _vectorFactor = 0.8732; // use 1.0 to rig easy tests.
   /** Return a component of the sort vector. */
   public static sortVectorComponent(index: number): number {
     let c = 1.0;
@@ -124,7 +124,9 @@ export class ClusterableArray extends GrowableBlockedArray {
   /** this value is used as cluster terminator in the Uint232Array of indices. */
   public static readonly clusterTerminator = 0xFFffFFff;
   /** Test if `x` is the cluster terminator value. */
-  public static isClusterTerminator(x: number): boolean { return x === ClusterableArray.clusterTerminator; }
+  public static isClusterTerminator(x: number): boolean {
+    return x === ClusterableArray.clusterTerminator;
+  }
   /** Return an array giving clusters of blocks with similar coordinates.
    *
    * * The contents of each block is assumed to be set up so the primary sort coordinate is first.
@@ -142,8 +144,8 @@ export class ClusterableArray extends GrowableBlockedArray {
     this.setupPrimaryClusterSort();
     // presort by all coordinates ....
     const firstSort = this.sortIndicesLexical();
-    const clusterIndices = new Uint32Array(2 * firstSort.length);  // worst case: no duplicates, each index goes in followed by terminator.
-    let m = 0;  // number of cluster indices
+    const clusterIndices = new Uint32Array(2 * firstSort.length); // worst case: no duplicates, each index goes in followed by terminator.
+    let m = 0; // number of cluster indices
     const n = this.numBlocks; // and this must match firstSort.length !!
     let clusterStartBlockIndex = 0;
     let candidateBlockIndex = 0;
@@ -151,7 +153,7 @@ export class ClusterableArray extends GrowableBlockedArray {
     let i = 0;
     let j = 0;
 
-    const k0 = 1;   // beginning of active column for distance
+    const k0 = 1; // beginning of active column for distance
     const k1 = 1 + this._numCoordinatePerPoint;
     for (i = 0; i < n; i++) {
       clusterStartBlockIndex = firstSort[i];
@@ -165,8 +167,8 @@ export class ClusterableArray extends GrowableBlockedArray {
           if (candidateBlockIndex === ClusterableArray.clusterTerminator) continue; // nearby in sort direction but already in a cluster.
           if (this.component(candidateBlockIndex, 0) >= barrierU) break;
           if (this.distanceBetweenSubBlocks(clusterStartBlockIndex, candidateBlockIndex, k0, k1) < clusterTolerance) {
-            clusterIndices[m++] = candidateBlockIndex;            // The candidate is in the block
-            firstSort[j] = ClusterableArray.clusterTerminator;  // and it will not be reused as future block base
+            clusterIndices[m++] = candidateBlockIndex; // The candidate is in the block
+            firstSort[j] = ClusterableArray.clusterTerminator; // and it will not be reused as future block base
           }
         }
         clusterIndices[m++] = ClusterableArray.clusterTerminator;
@@ -203,7 +205,7 @@ export class ClusterableArray extends GrowableBlockedArray {
       let i = this.blockIndexToDoubleIndex(b);
       const chunk: any[] = [b, this._data[i++]];
       const coordinates = [];
-      for (let c = 0; c < this._numCoordinatePerPoint; c++)coordinates.push(this._data[i++]);
+      for (let c = 0; c < this._numCoordinatePerPoint; c++) coordinates.push(this._data[i++]);
       chunk.push(coordinates);
       for (let c = 0; c < this._numExtraDataPerPoint; c++)
         chunk.push(this._data[i++]);
@@ -316,8 +318,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * Returns packed points with indices mapping old to new.
    * @param data points to cluster.
    */
-  public static clusterPoint3dArray(data: Point3d[], tolerance: number = Geometry.smallMetricDistance):
-    PackedPointsWithIndex {
+  public static clusterPoint3dArray(data: Point3d[], tolerance: number = Geometry.smallMetricDistance): PackedPointsWithIndex {
     const clusterArray = new ClusterableArray(3, 0, data.length);
     data.forEach((p: Point3d) => {
       clusterArray.addDirect(p.x, p.y, p.z);
@@ -346,7 +347,9 @@ export class ClusterableArray extends GrowableBlockedArray {
    */
   public static clusterNumberArray(data: number[], tolerance: number = Geometry.smallMetricDistance): PackedNumbersWithIndex {
     const clusterArray = new ClusterableArray(1, 0, data.length);
-    data.forEach((x: number) => {clusterArray.addDirect(x);});
+    data.forEach((x: number) => {
+      clusterArray.addDirect(x);
+    });
     const order = clusterArray.clusterIndicesLexical(tolerance);
     const result = new PackedNumbersWithIndex(data.length);
     let currentClusterIndex = 0;
@@ -400,8 +403,7 @@ export class ClusterableArray extends GrowableBlockedArray {
    * Returns packed points with indices mapping old to new.
    * @param data points to cluster.
    */
-  public static clusterGrowablePoint3dArray(source: GrowableXYZArray, tolerance: number = Geometry.smallMetricDistance):
-    PackedPointsWithIndex {
+  public static clusterGrowablePoint3dArray(source: GrowableXYZArray, tolerance: number = Geometry.smallMetricDistance): PackedPointsWithIndex {
     const clusterArray = new ClusterableArray(3, 0, source.length);
     const p = Point3d.create();
     const numSourcePoint = source.length;
@@ -515,7 +517,7 @@ class PackedPoint2dsWithIndex {
 /**
  * @internal
  */
- class PackedNumbersWithIndex {
+class PackedNumbersWithIndex {
   /** Array of numbers */
   public packedNumbers: number[];
   /** mapping from old point index to new point index. */

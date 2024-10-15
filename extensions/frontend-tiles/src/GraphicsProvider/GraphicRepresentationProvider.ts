@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { AccessToken, Logger } from "@itwin/core-bentley";
-import { loggerCategory } from "../LoggerCategory";
 import { IModelApp, ITWINJS_CORE_VERSION } from "@itwin/core-frontend";
+import { loggerCategory } from "../LoggerCategory";
 
 /** The expected format of the Graphic Representation
  * @beta
@@ -40,7 +40,7 @@ export interface DataSource {
   id: string;
   /** The unique identifier for a specific version of a DataSource.
    * For example, if a specific version of an iModel is desired, the iModel's changesetId would be attributed to this value.
-  */
+   */
   changeId?: string;
   /** The type of the data source. For example, a DataSource can be of type "IMODEL" or "RealityData" */
   type: string;
@@ -51,37 +51,41 @@ export interface DataSource {
  * @see [[queryGraphicRepresentations]] for its construction as a representation of the data produced by a query of data sources.
  * @beta
  */
-export type GraphicRepresentation = {
-  /** The display name of the Graphic Representation */
-  displayName: string;
-  /** The unique identifier for the Graphic Representation */
-  representationId: string;
-  /** The status of the generation of the Graphic Representation from its Data Source.
-   * @see [[GraphicRepresentationStatus]] for possible values.
-   */
-  status: GraphicRepresentationStatus;
-  /** The expected format of the Graphic Representation
-   * @see [[GraphicRepresentationFormat]] for possible values.
-   */
-  format: GraphicRepresentationFormat;
-  /** The data source that the representation originates from.
-   * For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset.
-   */
-  dataSource: DataSource;
-  /** The url of the graphic representation
-   * @note The url can only be guaranteed to be valid if the status is complete.
-   * Therefore, the url is optional if the status is not complete, and required if the status is complete.
-   */
-} & ({
-  status: Omit<GraphicRepresentationStatus, GraphicRepresentationStatus.Complete>;
-  url?: string;
-} | {
-  status: GraphicRepresentationStatus.Complete;
-  url: string;
-});
+export type GraphicRepresentation =
+  & {
+    /** The display name of the Graphic Representation */
+    displayName: string;
+    /** The unique identifier for the Graphic Representation */
+    representationId: string;
+    /** The status of the generation of the Graphic Representation from its Data Source.
+     * @see [[GraphicRepresentationStatus]] for possible values.
+     */
+    status: GraphicRepresentationStatus;
+    /** The expected format of the Graphic Representation
+     * @see [[GraphicRepresentationFormat]] for possible values.
+     */
+    format: GraphicRepresentationFormat;
+    /** The data source that the representation originates from.
+     * For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset.
+     */
+    dataSource: DataSource;
+    /** The url of the graphic representation
+     * @note The url can only be guaranteed to be valid if the status is complete.
+     * Therefore, the url is optional if the status is not complete, and required if the status is complete.
+     */
+  }
+  & ({
+    status: Omit<GraphicRepresentationStatus, GraphicRepresentationStatus.Complete>;
+    url?: string;
+  } | {
+    status: GraphicRepresentationStatus.Complete;
+    url: string;
+  });
 
 /** Creates a URL used to query for Graphic Representations */
-function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
+function createGraphicRepresentationsQueryUrl(
+  args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean },
+): string {
   const prefix = args.urlPrefix ?? "";
   let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc&$top=5`;
   if (args.changeId)
@@ -166,7 +170,13 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
     SessionId: args.sessionId,
   };
 
-  let url: string | undefined = createGraphicRepresentationsQueryUrl({ sourceId: args.dataSource.id, sourceType: args.dataSource.type, urlPrefix: args.urlPrefix, changeId: args.dataSource.changeId, enableCDN: args.enableCDN });
+  let url: string | undefined = createGraphicRepresentationsQueryUrl({
+    sourceId: args.dataSource.id,
+    sourceType: args.dataSource.type,
+    urlPrefix: args.urlPrefix,
+    changeId: args.dataSource.changeId,
+    enableCDN: args.enableCDN,
+  });
   while (url) {
     let result;
     try {
@@ -178,7 +188,9 @@ export async function* queryGraphicRepresentations(args: QueryGraphicRepresentat
       break;
     }
 
-    const foundSources = result.exports.filter((x) => x.request.exportType === args.dataSource.type && (args.includeIncomplete || x.status === GraphicRepresentationStatus.Complete));
+    const foundSources = result.exports.filter((x) =>
+      x.request.exportType === args.dataSource.type && (args.includeIncomplete || x.status === GraphicRepresentationStatus.Complete)
+    );
     for (const foundSource of foundSources) {
       const graphicRepresentation: GraphicRepresentation = {
         displayName: foundSource.displayName,
@@ -258,7 +270,10 @@ export async function obtainGraphicRepresentationUrl(args: ObtainGraphicRepresen
     queryArgs.dataSource.changeId = undefined;
     for await (const data of queryGraphicRepresentations(queryArgs)) {
       selectedData = data;
-      Logger.logInfo(loggerCategory, `No data for Data Source ${args.dataSource.id} for version ${args.dataSource.changeId}; falling back to most recent`);
+      Logger.logInfo(
+        loggerCategory,
+        `No data for Data Source ${args.dataSource.id} for version ${args.dataSource.changeId}; falling back to most recent`,
+      );
       break;
     }
   }

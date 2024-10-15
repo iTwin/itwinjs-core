@@ -71,7 +71,10 @@ export class CurveCurve {
    * @returns array of intersections structured as CurveLocationDetailPair[]
    */
   public static intersectionXYZPairs(
-    curveA: AnyCurve, extendA: boolean, curveB: AnyCurve, extendB: boolean,
+    curveA: AnyCurve,
+    extendA: boolean,
+    curveB: AnyCurve,
+    extendB: boolean,
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXYZ(extendA, curveB, extendB);
     curveA.dispatchToGeometryHandler(handler);
@@ -83,7 +86,8 @@ export class CurveCurve {
    * @param tolerance optional distance tolerance for coincidence
    */
   public static allIntersectionsAmongPrimitivesXY(
-    primitives: CurvePrimitive[], tolerance: number = Geometry.smallMetricDistance,
+    primitives: CurvePrimitive[],
+    tolerance: number = Geometry.smallMetricDistance,
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveIntersectXY(undefined, false, undefined, false, tolerance);
     for (let i = 0; i < primitives.length; i++) {
@@ -109,7 +113,9 @@ export class CurveCurve {
    * Close approaches further than this xy-distance are not returned.
    */
   public static closeApproachProjectedXYPairs(
-    curveA: AnyCurve, curveB: AnyCurve, maxDistance: number,
+    curveA: AnyCurve,
+    curveB: AnyCurve,
+    maxDistance: number,
   ): CurveLocationDetailPair[] {
     const handler = new CurveCurveCloseApproachXY(curveB);
     handler.maxDistanceToAccept = maxDistance;

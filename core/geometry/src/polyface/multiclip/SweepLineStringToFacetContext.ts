@@ -6,18 +6,18 @@
  * @module Polyface
  */
 
-import { Transform } from "../../geometry3d/Transform";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Segment1d } from "../../geometry3d/Segment1d";
-import { AnnounceDrapePanel } from "../PolyfaceQuery";
-import { Range3d } from "../../geometry3d/Range";
-import { Geometry } from "../../Geometry";
-import { Polyface } from "../Polyface";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { IndexedXYZCollectionPolygonOps, Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
+import { Geometry } from "../../Geometry";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { IndexedXYZCollectionPolygonOps, Point3dArrayPolygonOps } from "../../geometry3d/PolygonOps";
+import { Range3d } from "../../geometry3d/Range";
+import { Segment1d } from "../../geometry3d/Segment1d";
+import { Transform } from "../../geometry3d/Transform";
+import { Polyface } from "../Polyface";
+import { AnnounceDrapePanel } from "../PolyfaceQuery";
 
 export class SweepLineStringToFacetContext {
   private _spacePoints: GrowableXYZArray;
@@ -69,11 +69,14 @@ export class SweepLineStringToFacetContext {
           frame.multiplyInversePoint3d(this._segmentPoint1, this._localSegmentPoint1);
           this._clipFractions.set(0, 1);
           /** (x,y,1-x-y) are barycentric coordinates in the triangle !!! */
-          if (this._clipFractions.clipBy01FunctionValuesPositive(this._localSegmentPoint0.x, this._localSegmentPoint1.x)
+          if (
+            this._clipFractions.clipBy01FunctionValuesPositive(this._localSegmentPoint0.x, this._localSegmentPoint1.x)
             && this._clipFractions.clipBy01FunctionValuesPositive(this._localSegmentPoint0.y, this._localSegmentPoint1.y)
             && this._clipFractions.clipBy01FunctionValuesPositive(
               1 - this._localSegmentPoint0.x - this._localSegmentPoint0.y,
-              1 - this._localSegmentPoint1.x - this._localSegmentPoint1.y)) {
+              1 - this._localSegmentPoint1.x - this._localSegmentPoint1.y,
+            )
+          ) {
             /* project the local segment point to the plane. */
             workCounter++;
             const localClippedPointA = this._localSegmentPoint0.interpolate(this._clipFractions.x0, this._localSegmentPoint1);
@@ -87,12 +90,14 @@ export class SweepLineStringToFacetContext {
             if (splitParameter !== undefined && splitParameter > this._clipFractions.x0 && splitParameter < this._clipFractions.x1) {
               workCounter++;
               const piercePointX = this._segmentPoint0.interpolate(splitParameter, this._segmentPoint1);
-              const piercePointY = piercePointX.clone();   // so points are distinct for the two triangle announcements.
+              const piercePointY = piercePointX.clone(); // so points are distinct for the two triangle announcements.
               announce(this._spacePoints, i1 - 1, polyface, readIndex, [worldClippedPointA, piercePointX, planePointA], 2, 1);
               announce(this._spacePoints, i1 - 1, polyface, readIndex, [worldClippedPointB, piercePointY, planePointB], 1, 2);
-            } else if (this._localSegmentPoint0.z > 0) {  // segment is entirely above
+            } else if (this._localSegmentPoint0.z > 0) { // segment is entirely above
               announce(this._spacePoints, i1 - 1, polyface, readIndex, [worldClippedPointA, worldClippedPointB, planePointB, planePointA], 3, 2);
-            } else // segment is entirely under
+            }
+            // segment is entirely under
+            else
               announce(this._spacePoints, i1 - 1, polyface, readIndex, [worldClippedPointB, worldClippedPointA, planePointA, planePointB], 2, 3);
           }
         }
@@ -147,12 +152,12 @@ export class EdgeClipData {
       IndexedXYZCollectionPolygonOps.polygonPlaneCrossings(this.edgePlane, polygon, this._crossingPoints);
     if (this._crossingPoints.length === 2) {
       // use the end planes to clip the [0,1] swept edge to [f0,f1]
-      this.clip.announceClippedSegmentIntervals(0, 1, this._crossingPoints[0], this._crossingPoints[1],
-        (f0: number, f1: number) => {
-          announceEdge(this._crossingPoints[0].interpolate(f0, this._crossingPoints[1]),
-            this._crossingPoints[0].interpolate(f1, this._crossingPoints[1]));
-        },
-      );
+      this.clip.announceClippedSegmentIntervals(0, 1, this._crossingPoints[0], this._crossingPoints[1], (f0: number, f1: number) => {
+        announceEdge(
+          this._crossingPoints[0].interpolate(f0, this._crossingPoints[1]),
+          this._crossingPoints[0].interpolate(f1, this._crossingPoints[1]),
+        );
+      });
     }
   }
 }

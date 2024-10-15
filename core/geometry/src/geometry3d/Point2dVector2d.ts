@@ -158,7 +158,8 @@ export class XY implements XAndY {
     return Vector2d.create(
       other.x - this.x,
       other.y - this.y,
-      result);
+      result,
+    );
   }
   /** Return a unit vector from this point to other */
   public unitVectorTo(other: XAndY, result?: Vector2d): Vector2d | undefined {
@@ -167,7 +168,11 @@ export class XY implements XAndY {
   /** Cross product of vectors from origin to targets */
   public static crossProductToPoints(origin: XAndY, targetA: XAndY, targetB: XAndY): number {
     return Geometry.crossProductXYXY(
-      targetA.x - origin.x, targetA.y - origin.y, targetB.x - origin.x, targetB.y - origin.y);
+      targetA.x - origin.x,
+      targetA.y - origin.y,
+      targetB.x - origin.x,
+      targetB.y - origin.y,
+    );
   }
 }
 
@@ -288,7 +293,8 @@ export class Point2d extends XY implements BeJSONFunctions {
   public plusXY(dx: number = 0, dy: number = 0, result?: Point2d): Point2d {
     return Point2d.create(
       this.x + dx,
-      this.y + dy, result,
+      this.y + dy,
+      result,
     );
   }
   /** Return point + vector * scalar */
@@ -308,8 +314,7 @@ export class Point2d extends XY implements BeJSONFunctions {
     );
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB + vectorC * scalarC */
-  public plus3Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number,
-    vectorC: XAndY, scalarC: number, result?: Point2d): Point2d {
+  public plus3Scaled(vectorA: XAndY, scalarA: number, vectorB: XAndY, scalarB: number, vectorC: XAndY, scalarC: number, result?: Point2d): Point2d {
     return Point2d.create(
       this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC,
       this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC,
@@ -533,11 +538,11 @@ export class Vector2d extends XY implements BeJSONFunctions {
   }
   /**
    * Return a vector computed at fractional position between this vector and vectorB
-  * @param fraction fractional position.  0 is at `this`.  1 is at `vectorB`.
-  *                 True fractions are "between", negatives are "before this", beyond 1 is "beyond vectorB".
-  * @param vectorB second vector
-  * @param result optional preallocated result.
-  */
+   * @param fraction fractional position.  0 is at `this`.  1 is at `vectorB`.
+   *                 True fractions are "between", negatives are "before this", beyond 1 is "beyond vectorB".
+   * @param vectorB second vector
+   * @param result optional preallocated result.
+   */
   public interpolate(fraction: number, vectorB: Vector2d, result?: Vector2d): Vector2d {
     result = result ? result : new Vector2d();
     /*
@@ -637,8 +642,12 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * @param oppositeIsParallel whether to consider diametrically opposed vectors as parallel.
    * @param options optional radian and distance tolerances.
    */
-  public isParallelTo(other: Vector2d, oppositeIsParallel: boolean = false,
-    returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+  public isParallelTo(
+    other: Vector2d,
+    oppositeIsParallel: boolean = false,
+    returnValueIfAnInputIsZeroLength: boolean = false,
+    options?: PerpParallelOptions,
+  ): boolean {
     const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
     const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const a2 = this.magnitudeSquared();
@@ -663,7 +672,9 @@ export class Vector2d extends XY implements BeJSONFunctions {
    * @param options optional radian and distance tolerances.
    */
   public isPerpendicularTo(
-    other: Vector2d, returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions,
+    other: Vector2d,
+    returnValueIfAnInputIsZeroLength: boolean = false,
+    options?: PerpParallelOptions,
   ): boolean {
     const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
     const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Phenomenon, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
-import { expect } from "chai";
 
 describe("Phenomenon merger tests", () => {
   const targetJson = {

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64Set, Id64String } from "@itwin/core-bentley";
-import { Matrix3d, Point3d, Transform, TransformProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import { IModelApp, ModelDisplayTransform, ModelDisplayTransformProvider, Tool, Viewport } from "@itwin/core-frontend";
+import { Matrix3d, Point3d, Transform, TransformProps, YawPitchRollAngles } from "@itwin/core-geometry";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 export interface DisplayTransformProps {
@@ -19,7 +19,7 @@ export type DisplayTransformProviderProps = DisplayTransformProps[];
 export class DisplayTransformProvider implements ModelDisplayTransformProvider {
   private readonly _transforms = new Map<Id64String, ModelDisplayTransform>();
 
-  private constructor() { }
+  private constructor() {}
 
   public static get(vp: Viewport): DisplayTransformProvider | undefined {
     return vp.view.modelDisplayTransformProvider instanceof DisplayTransformProvider ? vp.view.modelDisplayTransformProvider : undefined;
@@ -34,7 +34,7 @@ export class DisplayTransformProvider implements ModelDisplayTransformProvider {
     return provider;
   }
 
-  public getModelDisplayTransform(modelId: string): ModelDisplayTransform | undefined{
+  public getModelDisplayTransform(modelId: string): ModelDisplayTransform | undefined {
     return this._transforms.get(modelId);
   }
 
@@ -82,18 +82,24 @@ export class DisplayTransformProvider implements ModelDisplayTransformProvider {
 /** Apply a display transform to all currently displayed models. */
 export class ApplyModelTransformTool extends Tool {
   public static override toolId = "ApplyModelTransform";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 7; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 7;
+  }
 
   public override async run(origin?: Point3d, ypr?: YawPitchRollAngles, scale?: number, premultiply?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
     if (!vp)
       return false;
 
-    if (!origin || origin.isAlmostZero)
-      if (!ypr || ypr.isIdentity())
+    if (!origin || origin.isAlmostZero) {
+      if (!ypr || ypr.isIdentity()) {
         if (!scale)
           return false;
+      }
+    }
 
     const models = new Set<string>();
     vp.view.forEachModel((model) => models.add(model.id));

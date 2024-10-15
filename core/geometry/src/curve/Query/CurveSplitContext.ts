@@ -8,11 +8,11 @@
  */
 
 import { Geometry } from "../../Geometry";
-import { AnyCurve } from "../CurveTypes";
 import { CurveChain, CurveCollection } from "../CurveCollection";
 import { CurveCurve } from "../CurveCurve";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
+import { AnyCurve } from "../CurveTypes";
 import { Path } from "../Path";
 
 /**
@@ -75,8 +75,11 @@ export class CurveSplitContext {
   /** Collect fragments from an intersections array, with the array detailA entries all referencing to curveToCut.
    * * The `intersections` array is sorted on its detailA field.
    */
-  private collectSinglePrimitiveFragments(curveToCut: CurvePrimitive, intersections: CurveLocationDetailPair[] | undefined, fragments: CurvePrimitive[]) {
-
+  private collectSinglePrimitiveFragments(
+    curveToCut: CurvePrimitive,
+    intersections: CurveLocationDetailPair[] | undefined,
+    fragments: CurvePrimitive[],
+  ) {
     if (intersections === undefined || !CurveSplitContext.hasInteriorDetailAIntersections(intersections)) {
       fragments.push(curveToCut.clone());
       return;

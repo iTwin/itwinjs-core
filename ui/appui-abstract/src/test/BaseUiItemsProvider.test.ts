@@ -6,25 +6,48 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import {
-  AbstractStatusBarItemUtilities, AbstractWidgetProps, BackstageItem, BackstageItemUtilities, BaseUiItemsProvider, CommonStatusBarItem, CommonToolbarItem,
-  StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage, UiItemsManager,
+  AbstractStatusBarItemUtilities,
+  AbstractWidgetProps,
+  BackstageItem,
+  BackstageItemUtilities,
+  BaseUiItemsProvider,
+  CommonStatusBarItem,
+  CommonToolbarItem,
+  StagePanelLocation,
+  StagePanelSection,
+  StageUsage,
+  StatusBarSection,
+  ToolbarItemUtilities,
+  ToolbarOrientation,
+  ToolbarUsage,
+  UiItemsManager,
 } from "../appui-abstract";
 
 const testStageUsage = StageUsage.General;
 
 /** TestDerivedUiItemsProvider that provides tools and status bar items */
 class TestUiItemsProvider extends BaseUiItemsProvider {
-  constructor(providerId: string, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean)) {
+  constructor(providerId: string, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean) {
     super(providerId, isSupportedStage);
   }
 
-  public override provideToolbarButtonItemsInternal(_stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+  public override provideToolbarButtonItemsInternal(
+    _stageId: string,
+    _stageUsage: string,
+    toolbarUsage: ToolbarUsage,
+    toolbarOrientation: ToolbarOrientation,
+  ): CommonToolbarItem[] {
     if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
-      const simpleActionSpec = ToolbarItemUtilities.createActionButton("simple-test-action-tool", 200, "icon-developer", "simple-test-action-tool",
+      const simpleActionSpec = ToolbarItemUtilities.createActionButton(
+        "simple-test-action-tool",
+        200,
+        "icon-developer",
+        "simple-test-action-tool",
         (): void => {
           // eslint-disable-next-line no-console
           console.log("Got Here!");
-        });
+        },
+      );
       return [simpleActionSpec];
     }
     return [];
@@ -35,13 +58,29 @@ class TestUiItemsProvider extends BaseUiItemsProvider {
     const statusBarItems: CommonStatusBarItem[] = [];
 
     statusBarItems.push(
-      AbstractStatusBarItemUtilities.createActionItem("UiItemsProviderTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension",
+      AbstractStatusBarItemUtilities.createActionItem(
+        "UiItemsProviderTest:StatusBarItem1",
+        StatusBarSection.Center,
+        100,
+        "icon-developer",
+        "test status bar from extension",
         () => {
           // eslint-disable-next-line no-console
           console.log("Got Here!");
-        }));
+        },
+      ),
+    );
 
-    statusBarItems.push(AbstractStatusBarItemUtilities.createLabelItem("UiItemsProviderTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello", undefined));
+    statusBarItems.push(
+      AbstractStatusBarItemUtilities.createLabelItem(
+        "UiItemsProviderTest:StatusBarLabel1",
+        StatusBarSection.Center,
+        100,
+        "icon-hand-2",
+        "Hello",
+        undefined,
+      ),
+    );
     return statusBarItems;
   }
 
@@ -49,11 +88,19 @@ class TestUiItemsProvider extends BaseUiItemsProvider {
 
   public override provideBackstageItems(): BackstageItem[] {
     return [
-      BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage1", 500, 50, () => { }, "Dynamic Action", undefined, undefined, { isHidden: !TestUiItemsProvider.sampleStatusVisible }),
+      BackstageItemUtilities.createActionItem("UiItemsProviderTest:backstage1", 500, 50, () => {}, "Dynamic Action", undefined, undefined, {
+        isHidden: !TestUiItemsProvider.sampleStatusVisible,
+      }),
     ];
   }
 
-  public override provideWidgetsInternal(_stageId: string, _stageUsage: string, _location: StagePanelLocation, _section?: StagePanelSection, _stageAppData?: any): AbstractWidgetProps[] {
+  public override provideWidgetsInternal(
+    _stageId: string,
+    _stageUsage: string,
+    _location: StagePanelLocation,
+    _section?: StagePanelSection,
+    _stageAppData?: any,
+  ): AbstractWidgetProps[] {
     const widgets: AbstractWidgetProps[] = [];
     widgets.push({
       id: "test",
@@ -199,5 +246,4 @@ describe("UiItemsManager", () => {
     expect(backstageItems.length).to.be.eq(1);
     UiItemsManager.unregister(testUiProvider.id);
   });
-
 });

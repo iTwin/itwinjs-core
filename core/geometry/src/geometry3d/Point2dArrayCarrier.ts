@@ -17,7 +17,7 @@ import { XAndY } from "./XYZProps";
  * * The actual array may be replaced by the user as needed.
  * * When replaced, there is no cached data to be updated.
  * @public
-*/
+ */
 export class Point2dArrayCarrier extends IndexedXYCollection {
   /** reference to array being queried. */
   public data: Point2d[];

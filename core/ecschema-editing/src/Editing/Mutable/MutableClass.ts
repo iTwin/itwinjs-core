@@ -3,8 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  CustomAttribute, ECClass, ECClassModifier, Enumeration, EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty,
-  PrimitiveProperty, PrimitiveType, Property, StructArrayProperty, StructClass, StructProperty,
+  CustomAttribute,
+  ECClass,
+  ECClassModifier,
+  Enumeration,
+  EnumerationArrayProperty,
+  EnumerationProperty,
+  PrimitiveArrayProperty,
+  PrimitiveProperty,
+  PrimitiveType,
+  Property,
+  StructArrayProperty,
+  StructClass,
+  StructProperty,
 } from "@itwin/ecschema-metadata";
 
 /**

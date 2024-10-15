@@ -2,8 +2,8 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
+import { expect } from "chai";
 import { InstanceKey, RelationshipPath } from "../presentation-common";
 import {
   RelatedClassInfo,

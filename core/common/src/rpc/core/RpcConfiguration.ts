@@ -21,7 +21,9 @@ import { RpcRoutingToken } from "./RpcRoutingToken";
 export type RpcConfigurationSupplier = (routing?: RpcRoutingToken) => { new(): RpcConfiguration }; // eslint-disable-line @typescript-eslint/prefer-function-type
 
 /** @internal */
-export interface RpcRoutingMap extends RpcConfigurationSupplier { configurations: Map<number, RpcConfigurationSupplier> }
+export interface RpcRoutingMap extends RpcConfigurationSupplier {
+  configurations: Map<number, RpcConfigurationSupplier>;
+}
 
 /** @internal */
 export namespace RpcRoutingMap {
@@ -68,7 +70,11 @@ export abstract class RpcConfiguration {
   }
 
   /** Sets the configuration supplier for an RPC interface class for a given routing. */
-  public static assignWithRouting<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken, configuration: new () => RpcConfiguration): void {
+  public static assignWithRouting<T extends RpcInterface>(
+    definition: RpcInterfaceDefinition<T>,
+    routing: RpcRoutingToken,
+    configuration: new() => RpcConfiguration,
+  ): void {
     if (!definition.prototype.configurationSupplier) {
       RpcConfiguration.assign(definition, RpcRoutingMap.create());
     }
@@ -86,7 +92,7 @@ export abstract class RpcConfiguration {
   }
 
   /** Obtains the instance of an RPC configuration class. */
-  public static obtain<T extends RpcConfiguration>(configurationConstructor: new () => T): T {
+  public static obtain<T extends RpcConfiguration>(configurationConstructor: new() => T): T {
     let instance = (configurationConstructor as any)[INSTANCE] as T;
     if (!instance)
       instance = (configurationConstructor as any)[INSTANCE] = new configurationConstructor();
@@ -121,7 +127,9 @@ export abstract class RpcConfiguration {
   public allowAttachedInterfaces: boolean = true;
 
   /** @internal */
-  public get attachedInterfaces(): ReadonlyArray<RpcInterfaceDefinition> { return this.attached; }
+  public get attachedInterfaces(): ReadonlyArray<RpcInterfaceDefinition> {
+    return this.attached;
+  }
 
   /** The target interval (in milliseconds) between connection attempts for pending RPC operation requests. */
   public pendingOperationRetryInterval = 10000;

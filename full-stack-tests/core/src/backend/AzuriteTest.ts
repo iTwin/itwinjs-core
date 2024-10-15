@@ -3,25 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { emptyDirSync, mkdirsSync } from "fs-extra";
-import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
 import { BlobContainer, CloudSqlite, IModelHost, SettingsContainer } from "@itwin/core-backend";
 import { AccessToken, Guid } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
+import { expect } from "chai";
+import { emptyDirSync, mkdirsSync } from "fs-extra";
+import { join } from "path";
 
 // spell:ignore imodelid itwinid mkdirs devstoreaccount racwdl
 
 export namespace AzuriteTest {
-
   export const storageType = "azure" as const;
   export const httpAddr = "127.0.0.1:10000";
   export const accountName = "devstoreaccount1";
   export const baseUri = `http://${httpAddr}/${accountName}`;
 
   export const getContainerUri = (id: string) => `${baseUri}/${id}`;
-  const pipeline = azureBlob.newPipeline(new azureBlob.StorageSharedKeyCredential(accountName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="));
+  const pipeline = azureBlob.newPipeline(
+    new azureBlob.StorageSharedKeyCredential(accountName, "Eby8vdM02xNOcqFlqUwJPLlmEtlCDXJ1OUzFT50uSRZ6IFsuFq2UVErCz4I6tq/K1SZFPTOtr/KBHBeksoGMGw=="),
+  );
   export const createAzClient = (id: string) => new azureBlob.ContainerClient(getContainerUri(id), pipeline);
 
   export let userToken: AccessToken;
@@ -74,7 +75,12 @@ export namespace AzuriteTest {
       emptyDirSync(name);
     };
 
-    export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }
+    export interface TestContainerProps {
+      containerId: string;
+      logId?: string;
+      isPublic?: boolean;
+      writeable?: boolean;
+    }
 
     export const makeContainer = async (arg: TestContainerProps): Promise<TestContainer> => {
       const containerProps = { ...arg, writeable: true, baseUri, storageType };
@@ -95,7 +101,6 @@ export namespace AzuriteTest {
       const cacheDir = join(IModelHost.cacheDir, cacheName);
       makeEmptyDir(cacheDir);
       return CloudSqlite.CloudCaches.getCache({ cacheName, cacheDir });
-
     };
     export const makeCaches = (names: string[]) => {
       const caches = [];
@@ -104,7 +109,12 @@ export namespace AzuriteTest {
       return caches;
     };
 
-    export const uploadFile = async (container: CloudSqlite.CloudContainer, cache: CloudSqlite.CloudCache, dbName: string, localFileName: LocalFileName) => {
+    export const uploadFile = async (
+      container: CloudSqlite.CloudContainer,
+      cache: CloudSqlite.CloudCache,
+      dbName: string,
+      localFileName: LocalFileName,
+    ) => {
       expect(container.isConnected).false;
       container.connect(cache);
       expect(container.isConnected);

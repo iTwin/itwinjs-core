@@ -8,14 +8,14 @@
 
 import { assert, Uint32ArrayBuilder, Uint8ArrayBuilder } from "@itwin/core-bentley";
 import { ColorDef, RenderFeatureTable, RenderMaterial } from "@itwin/core-common";
-import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } from "./EdgeParams";
-import { computeDimensions, VertexTable } from "./VertexTable";
-import { VertexIndices } from "./VertexIndices";
-import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
 import { MaterialParams } from "../../render/MaterialParams";
+import { calculateEdgeTableParams, EdgeParams, EdgeTable, IndexedEdgeParams } from "./EdgeParams";
 import { MeshParams } from "./MeshParams";
 import { PointStringParams } from "./PointStringParams";
 import { PolylineParams, TesselatedPolyline } from "./PolylineParams";
+import { createSurfaceMaterial, SurfaceMaterial } from "./SurfaceParams";
+import { VertexIndices } from "./VertexIndices";
+import { computeDimensions, VertexTable } from "./VertexTable";
 
 /** @internal */
 export interface VertexTableWithIndices {
@@ -253,11 +253,16 @@ class Node {
   public constructor(vertexTable: VertexTable, atlas?: AtlasInfo) {
     this.vertices = new VertexBuffer(vertexTable);
     if (undefined === vertexTable.uniformColor)
-      this.colors = new ColorTableRemapper(new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + 4 * vertexTable.numVertices * vertexTable.numRgbaPerVertex));
+      this.colors = new ColorTableRemapper(
+        new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + 4 * vertexTable.numVertices * vertexTable.numRgbaPerVertex),
+      );
 
     if (atlas) {
       const atlasOffset = (vertexTable.numVertices * vertexTable.numRgbaPerVertex + atlas.offset) * 4;
-      this.atlas = new MaterialAtlasRemapper(new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + atlasOffset), atlas.createMaterial);
+      this.atlas = new MaterialAtlasRemapper(
+        new Uint32Array(vertexTable.data.buffer, vertexTable.data.byteOffset + atlasOffset),
+        atlas.createMaterial,
+      );
     }
 
     this.usesUnquantizedPositions = vertexTable.usesUnquantizedPositions;
@@ -342,7 +347,11 @@ class VertexTableSplitter {
 
     const vertSize = this._input.vertices.numRgbaPerVertex;
     const vertex = new Uint32Array(vertSize);
-    const vertexTable = new Uint32Array(this._input.vertices.data.buffer, this._input.vertices.data.byteOffset, this._input.vertices.numVertices * vertSize);
+    const vertexTable = new Uint32Array(
+      this._input.vertices.data.buffer,
+      this._input.vertices.data.byteOffset,
+      this._input.vertices.numVertices * vertSize,
+    );
 
     let extractFeatureIndex: () => number;
     if (this._input.vertices.usesUnquantizedPositions) {
@@ -469,11 +478,15 @@ function remapSegmentEdges(type: "segments" | "silhouettes", source: EdgeParams,
   let srcNormalPairs;
   if (type === "silhouettes") {
     assert(undefined !== source.silhouettes);
-    srcNormalPairs = new Uint32Array(source.silhouettes.normalPairs.buffer, source.silhouettes.normalPairs.byteOffset, source.silhouettes.normalPairs.length / 4);
+    srcNormalPairs = new Uint32Array(
+      source.silhouettes.normalPairs.buffer,
+      source.silhouettes.normalPairs.byteOffset,
+      source.silhouettes.normalPairs.length / 4,
+    );
   }
 
   let curIndexIndex = 0;
-  const remappedIndex = { } as unknown as RemappedIndex;
+  const remappedIndex = {} as unknown as RemappedIndex;
   for (const srcIndex of src.indices) {
     if (remapIndex(remappedIndex, srcIndex, nodes)) {
       let endPointAndQuad = srcEndPts[curIndexIndex];
@@ -484,7 +497,7 @@ function remapSegmentEdges(type: "segments" | "silhouettes", source: EdgeParams,
 
       let entry = edges.get(remappedIndex.id);
       if (!entry)
-        edges.set(remappedIndex.id, entry = { });
+        edges.set(remappedIndex.id, entry = {});
 
       if (srcNormalPairs) {
         if (!entry.silhouettes)
@@ -510,7 +523,7 @@ function remapPolylineEdges(src: TesselatedPolyline, nodes: Map<number, Node>, e
   const srcNextAndParam = new Uint32Array(src.nextIndicesAndParams.buffer, src.nextIndicesAndParams.byteOffset, src.nextIndicesAndParams.length / 4);
   const prevIter = src.prevIndices[Symbol.iterator]();
   let curIndexIndex = 0;
-  const remappedIndex = { } as unknown as RemappedIndex;
+  const remappedIndex = {} as unknown as RemappedIndex;
   for (const srcIndex of src.indices) {
     if (remapIndex(remappedIndex, srcIndex, nodes)) {
       const prevIndex = prevIter.next().value;
@@ -526,7 +539,7 @@ function remapPolylineEdges(src: TesselatedPolyline, nodes: Map<number, Node>, e
 
       let entry = edges.get(remappedIndex.id);
       if (!entry)
-        edges.set(remappedIndex.id, entry = { });
+        edges.set(remappedIndex.id, entry = {});
 
       if (!entry.polylines)
         entry.polylines = new RemappedPolylineEdges();
@@ -546,8 +559,10 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
   const silhouetteStartByteIndex = numSegments * 6 + src.edges.silhouettePadding;
 
   function getUint24EdgePair(byteIndex: number): [number, number] {
-    return [srcEdgeData[byteIndex + 0] | (srcEdgeData[byteIndex + 1] << 8) | srcEdgeData[byteIndex + 2] << 16,
-      srcEdgeData[byteIndex + 3] | (srcEdgeData[byteIndex + 4] << 8) | srcEdgeData[byteIndex + 5] << 16];
+    return [
+      srcEdgeData[byteIndex + 0] | (srcEdgeData[byteIndex + 1] << 8) | srcEdgeData[byteIndex + 2] << 16,
+      srcEdgeData[byteIndex + 3] | (srcEdgeData[byteIndex + 4] << 8) | srcEdgeData[byteIndex + 5] << 16,
+    ];
   }
 
   function setUint24EdgePair(indEdges: RemappedIndexEdges, value1: number, value2: number): void {
@@ -560,9 +575,12 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
   }
 
   function getUint24SilPair(byteIndex: number): [number, number, number, number] {
-    return [srcEdgeData[byteIndex + 0] | (srcEdgeData[byteIndex + 1] << 8) | srcEdgeData[byteIndex + 2] << 16,
+    return [
+      srcEdgeData[byteIndex + 0] | (srcEdgeData[byteIndex + 1] << 8) | srcEdgeData[byteIndex + 2] << 16,
       srcEdgeData[byteIndex + 3] | (srcEdgeData[byteIndex + 4] << 8) | srcEdgeData[byteIndex + 5] << 16,
-      srcEdgeData[byteIndex + 6] | (srcEdgeData[byteIndex + 7] << 8), srcEdgeData[byteIndex + 8] | (srcEdgeData[byteIndex + 9] << 8)];
+      srcEdgeData[byteIndex + 6] | (srcEdgeData[byteIndex + 7] << 8),
+      srcEdgeData[byteIndex + 8] | (srcEdgeData[byteIndex + 9] << 8),
+    ];
   }
 
   function setUint24SilPair(indSil: RemappedIndexEdges, value1: number, value2: number, norm1: number, norm2: number): void {
@@ -580,15 +598,15 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
 
   let maxIndex = 0;
   for (const srcIndex of src.indices)
-    maxIndex = Math.max (srcIndex, maxIndex);
+    maxIndex = Math.max(srcIndex, maxIndex);
 
-  const remappedIndex = { } as unknown as RemappedIndex;
+  const remappedIndex = {} as unknown as RemappedIndex;
   let es1Index = 0, es2Index = 0, n1 = 0, n2 = 0;
   for (let curSegment = 0, byteIndex = 0; curSegment <= maxIndex; ++curSegment) {
-    if (curSegment < numSegments) {  // edges
+    if (curSegment < numSegments) { // edges
       [es1Index, es2Index] = getUint24EdgePair(byteIndex);
       byteIndex += 6;
-    } else {  // silhouettes
+    } else { // silhouettes
       byteIndex = silhouetteStartByteIndex + (curSegment - numSegments) * 10;
       [es1Index, es2Index, n1, n2] = getUint24SilPair(byteIndex);
     }
@@ -596,18 +614,18 @@ function remapIndexedEdges(src: IndexedEdgeParams, nodes: Map<number, Node>, edg
     if (remapIndex(remappedIndex, es1Index, nodes)) {
       let entry = edges.get(remappedIndex.id);
       if (!entry)
-        edges.set(remappedIndex.id, entry = { });
+        edges.set(remappedIndex.id, entry = {});
 
       if (!entry.indexed)
         entry.indexed = { edges: new Uint8ArrayBuilder(), silhouettes: new Uint8ArrayBuilder() };
 
-      if (curSegment < numSegments) {  // edges
+      if (curSegment < numSegments) { // edges
         const newE1Index = remappedIndex.node.remappedIndices.get(es1Index);
         assert(undefined !== newE1Index);
         const newE2Index = remappedIndex.node.remappedIndices.get(es2Index);
         assert(undefined !== newE2Index);
         setUint24EdgePair(entry.indexed, newE1Index, newE2Index);
-      } else {  // silhouettes
+      } else { // silhouettes
         const newS1Index = remappedIndex.node.remappedIndices.get(es1Index);
         assert(undefined !== newS1Index);
         const newS2Index = remappedIndex.node.remappedIndices.get(es2Index);
@@ -634,8 +652,8 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>, maxDimension: 
     if (!remappedEdges.segments && !remappedEdges.silhouettes && !remappedEdges.indexed)
       continue;
 
-    let edgeTable = { } as unknown as EdgeTable;
-    let edgeIndices = { } as unknown as VertexIndices;
+    let edgeTable = {} as unknown as EdgeTable;
+    let edgeIndices = {} as unknown as VertexIndices;
     if (remappedEdges.indexed) {
       const numSegmentEdges = remappedEdges.indexed.edges.length / 6;
       const numSilhouettes = remappedEdges.indexed.silhouettes.length / 10;
@@ -663,24 +681,32 @@ function splitEdges(source: EdgeParams, nodes: Map<number, Node>, maxDimension: 
     result.set(id, {
       weight: source.weight,
       linePixels: source.linePixels,
-      segments: remappedEdges.segments ? {
-        indices: remappedEdges.segments.indices.toVertexIndices(),
-        endPointAndQuadIndices: remappedEdges.segments.endPointAndQuadIndices.toUint8Array(),
-      } : undefined,
-      silhouettes: remappedEdges.silhouettes ? {
-        indices: remappedEdges.silhouettes.indices.toVertexIndices(),
-        endPointAndQuadIndices: remappedEdges.silhouettes.endPointAndQuadIndices.toUint8Array(),
-        normalPairs: remappedEdges.silhouettes.normalPairs.toUint8Array(),
-      } : undefined,
-      polylines: remappedEdges.polylines ? {
-        indices: remappedEdges.polylines.indices.toVertexIndices(),
-        prevIndices: remappedEdges.polylines.prevIndices.toVertexIndices(),
-        nextIndicesAndParams: remappedEdges.polylines.nextIndicesAndParams.toUint8Array(),
-      } : undefined,
-      indexed: remappedEdges.indexed ? {
-        indices: edgeIndices,
-        edges: edgeTable,
-      } : undefined,
+      segments: remappedEdges.segments ?
+        {
+          indices: remappedEdges.segments.indices.toVertexIndices(),
+          endPointAndQuadIndices: remappedEdges.segments.endPointAndQuadIndices.toUint8Array(),
+        } :
+        undefined,
+      silhouettes: remappedEdges.silhouettes ?
+        {
+          indices: remappedEdges.silhouettes.indices.toVertexIndices(),
+          endPointAndQuadIndices: remappedEdges.silhouettes.endPointAndQuadIndices.toUint8Array(),
+          normalPairs: remappedEdges.silhouettes.normalPairs.toUint8Array(),
+        } :
+        undefined,
+      polylines: remappedEdges.polylines ?
+        {
+          indices: remappedEdges.polylines.indices.toVertexIndices(),
+          prevIndices: remappedEdges.polylines.prevIndices.toVertexIndices(),
+          nextIndicesAndParams: remappedEdges.polylines.nextIndicesAndParams.toUint8Array(),
+        } :
+        undefined,
+      indexed: remappedEdges.indexed ?
+        {
+          indices: edgeIndices,
+          edges: edgeTable,
+        } :
+        undefined,
     });
   }
 
@@ -755,7 +781,7 @@ export function splitPolylineParams(args: SplitPolylineArgs): Map<number, Polyli
   const src = args.params.polyline;
   const srcNextAndParam = new Uint32Array(src.nextIndicesAndParams.buffer, src.nextIndicesAndParams.byteOffset, src.nextIndicesAndParams.length / 4);
   let curIndexIndex = 0;
-  const remappedIndex = { } as unknown as RemappedIndex;
+  const remappedIndex = {} as unknown as RemappedIndex;
   for (const prevIndex of src.prevIndices) {
     if (remapIndex(remappedIndex, prevIndex, nodes)) {
       const node = remappedIndex.node as PolylineNode;

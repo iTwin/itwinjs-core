@@ -7,18 +7,24 @@ import { Id64String, Logger, OrderedId64Iterable } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
 import {
   AnimationNodeId,
-  AttachToViewportArgs, createSpatialTileTreeReferences, IModelConnection, SpatialTileTreeReferences, SpatialViewState,
-  TileTreeLoadStatus, TileTreeOwner, TileTreeReference,
+  AttachToViewportArgs,
+  createSpatialTileTreeReferences,
+  IModelConnection,
+  SpatialTileTreeReferences,
+  SpatialViewState,
+  TileTreeLoadStatus,
+  TileTreeOwner,
+  TileTreeReference,
   Viewport,
 } from "@itwin/core-frontend";
-import {  BatchedTileTreeReference, BatchedTileTreeReferenceArgs  } from "./BatchedTileTreeReference";
-import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
-import { BatchedModels } from "./BatchedModels";
-import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles";
-import { BatchedTilesetSpec } from "./BatchedTilesetReader";
-import { loggerCategory } from "./LoggerCategory";
-import { BatchedModelGroups } from "./BatchedModelGroups";
 import { Range3d } from "@itwin/core-geometry";
+import { BatchedModelGroups } from "./BatchedModelGroups";
+import { BatchedModels } from "./BatchedModels";
+import { BatchedTilesetSpec } from "./BatchedTilesetReader";
+import { BatchedTileTreeReference, BatchedTileTreeReferenceArgs } from "./BatchedTileTreeReference";
+import { getBatchedTileTreeOwner } from "./BatchedTileTreeSupplier";
+import { ComputeSpatialTilesetBaseUrl } from "./FrontendTiles";
+import { loggerCategory } from "./LoggerCategory";
 
 // Obtains tiles pre-published by mesh export service.
 class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
@@ -76,9 +82,10 @@ class BatchedSpatialTileTreeReferences implements SpatialTileTreeReferences {
       const currentScript = this._currentScript;
       this._currentScript = newScript;
 
-      if (newScript !== currentScript)
+      if (newScript !== currentScript) {
         if (!newScript || !currentScript || !newScript.equals(currentScript))
           this._groups.setScript(newScript);
+      }
     };
 
     let rmListener = this._view.displayStyle.onScheduleScriptChanged.addListener((newScript) => onScriptChanged(newScript));
@@ -206,7 +213,7 @@ class ProxyTileTreeReference extends TileTreeReference {
       tileTree: undefined,
       loadStatus: TileTreeLoadStatus.NotLoaded,
       load: () => undefined,
-      dispose: () => { },
+      dispose: () => {},
       loadTree: async () => Promise.resolve(undefined),
     };
   }
@@ -235,15 +242,15 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
     getSpec.then((spec: BatchedTilesetSpec | null) => {
       if (spec) {
         this.setTreeRefs(new BatchedSpatialTileTreeReferences(spec, view));
-      } else if(nopFallback) {
+      } else if (nopFallback) {
         this.setTreeRefs(new EmptySpatialTileTreeReferences());
-      }else {
+      } else {
         this.setTreeRefs(createSpatialTileTreeReferences(view));
       }
     }).catch(() => {
-      if(nopFallback) {
+      if (nopFallback) {
         this.setTreeRefs(new EmptySpatialTileTreeReferences());
-      }else {
+      } else {
         this.setTreeRefs(createSpatialTileTreeReferences(view));
       }
     });
@@ -276,7 +283,7 @@ class ProxySpatialTileTreeReferences implements SpatialTileTreeReferences {
       this._attachArgs = undefined;
   }
 
-  public setDeactivated(): void { }
+  public setDeactivated(): void {}
 
   public *[Symbol.iterator](): Iterator<TileTreeReference> {
     if (this._impl) {
@@ -321,13 +328,17 @@ async function fetchTilesetSpec(iModel: IModelConnection, computeBaseUrl: Comput
 class EmptySpatialTileTreeReferences implements SpatialTileTreeReferences {
   public update(): void {}
 
-  public setDeactivated(_modelIds: string | string[] | undefined, _deactivated: boolean | undefined, _refs: "all" | "animated" | "primary" | "section" | number[]): void {}
+  public setDeactivated(
+    _modelIds: string | string[] | undefined,
+    _deactivated: boolean | undefined,
+    _refs: "all" | "animated" | "primary" | "section" | number[],
+  ): void {}
 
   public attachToViewport(_args: Viewport): void {}
 
   public detachFromViewport(): void {}
 
-  public collectMaskRefs(_modelIds: OrderedId64Iterable, _maskTreeRefs: TileTreeReference[]): void {};
+  public collectMaskRefs(_modelIds: OrderedId64Iterable, _maskTreeRefs: TileTreeReference[]): void {}
 
   public getModelsNotInMask(_maskModels: OrderedId64Iterable | undefined, _useVisible: boolean): string[] | undefined {
     return undefined;
@@ -337,7 +348,11 @@ class EmptySpatialTileTreeReferences implements SpatialTileTreeReferences {
 }
 
 /** @internal */
-export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, computeBaseUrl: ComputeSpatialTilesetBaseUrl, nopFallback: boolean = false): SpatialTileTreeReferences {
+export function createBatchedSpatialTileTreeReferences(
+  view: SpatialViewState,
+  computeBaseUrl: ComputeSpatialTilesetBaseUrl,
+  nopFallback: boolean = false,
+): SpatialTileTreeReferences {
   const iModel = view.iModel;
   let entry = iModelToTilesetSpec.get(iModel);
   if (undefined === entry) {
@@ -369,4 +384,3 @@ export function createBatchedSpatialTileTreeReferences(view: SpatialViewState, c
 
   return new BatchedSpatialTileTreeReferences(entry, view);
 }
-

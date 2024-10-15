@@ -8,20 +8,20 @@
 
 import { assert, dispose } from "@itwin/core-bentley";
 import { RenderMode } from "@itwin/core-common";
+import { EdgeTable, IndexedEdgeParams } from "../../common/internal/render/EdgeParams";
 import { RenderMemory } from "../RenderMemory";
-import { TextureHandle } from "./Texture";
 import { BufferHandle, BufferParameters, BuffersContainer } from "./AttributeBuffers";
+import { AttributeMap } from "./AttributeMap";
 import { WebGLDisposable } from "./Disposable";
+import { ShaderProgramParams } from "./DrawCommand";
+import { GL } from "./GL";
 import { MeshData } from "./MeshData";
 import { MeshGeometry } from "./MeshGeometry";
-import { AttributeMap } from "./AttributeMap";
-import { TechniqueId } from "./TechniqueId";
-import { GL } from "./GL";
+import { RenderOrder } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
-import { ShaderProgramParams } from "./DrawCommand";
-import { RenderOrder } from "./RenderFlags";
-import { EdgeTable, IndexedEdgeParams } from "../../common/internal/render/EdgeParams";
+import { TechniqueId } from "./TechniqueId";
+import { TextureHandle } from "./Texture";
 
 /** @see [[EdgeTable]]
  * @internal
@@ -63,8 +63,12 @@ export class IndexedEdgeGeometry extends MeshGeometry {
   private readonly _indices: BufferHandle;
   public readonly edgeLut: EdgeLUT;
 
-  public get lutBuffers() { return this._buffers; }
-  public override get asIndexedEdge() { return this; }
+  public get lutBuffers() {
+    return this._buffers;
+  }
+  public override get asIndexedEdge() {
+    return this;
+  }
 
   private constructor(mesh: MeshData, indices: BufferHandle, numIndices: number, lut: EdgeLUT) {
     super(mesh, numIndices);
@@ -104,12 +108,26 @@ export class IndexedEdgeGeometry extends MeshGeometry {
     bufs.unbind();
   }
 
-  protected _wantWoWReversal(): boolean { return true; }
-  protected override _getLineCode(params: ShaderProgramParams): number { return this.computeEdgeLineCode(params); }
+  protected _wantWoWReversal(): boolean {
+    return true;
+  }
+  protected override _getLineCode(params: ShaderProgramParams): number {
+    return this.computeEdgeLineCode(params);
+  }
 
-  public get techniqueId() { return TechniqueId.IndexedEdge; }
-  public override getPass(target: Target) { return this.computeEdgePass(target); }
-  public get renderOrder() { return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge; }
-  public override getColor(target: Target) { return this.computeEdgeColor(target); }
-  public override wantMonochrome(target: Target) { return target.currentViewFlags.renderMode === RenderMode.Wireframe; }
+  public get techniqueId() {
+    return TechniqueId.IndexedEdge;
+  }
+  public override getPass(target: Target) {
+    return this.computeEdgePass(target);
+  }
+  public get renderOrder() {
+    return this.isPlanar ? RenderOrder.PlanarEdge : RenderOrder.Edge;
+  }
+  public override getColor(target: Target) {
+    return this.computeEdgeColor(target);
+  }
+  public override wantMonochrome(target: Target) {
+    return target.currentViewFlags.renderMode === RenderMode.Wireframe;
+  }
 }

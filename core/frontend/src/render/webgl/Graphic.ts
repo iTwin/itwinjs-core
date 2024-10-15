@@ -9,12 +9,15 @@
 import { assert, dispose, Id64String } from "@itwin/core-bentley";
 import { ElementAlignedBox3d, FeatureAppearanceProvider, RenderFeatureTable, ThematicDisplayMode, ViewFlags } from "@itwin/core-common";
 import { Range3d, Transform } from "@itwin/core-geometry";
+import { BatchOptions } from "../../common/render/BatchOptions";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
+import { BranchState } from "./BranchState";
 import { ClipVolume } from "./ClipVolume";
+import { Contours } from "./Contours";
 import { WebGLDisposable } from "./Disposable";
 import { EdgeSettings } from "./EdgeSettings";
 import { FeatureOverrides } from "./FeatureOverrides";
@@ -25,17 +28,18 @@ import { RenderPass } from "./RenderFlags";
 import { Target } from "./Target";
 import { TextureDrape } from "./TextureDrape";
 import { ThematicSensors } from "./ThematicSensors";
-import { BranchState } from "./BranchState";
-import { BatchOptions } from "../../common/render/BatchOptions";
-import { Contours } from "./Contours";
 
 /** @internal */
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
   public abstract addCommands(_commands: RenderCommands): void;
   public abstract get isDisposed(): boolean;
   public abstract get isPickable(): boolean;
-  public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void { assert(false); }
-  public toPrimitive(): Primitive | undefined { return undefined; }
+  public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void {
+    assert(false);
+  }
+  public toPrimitive(): Primitive | undefined {
+    return undefined;
+  }
 }
 
 export class GraphicOwner extends Graphic {
@@ -46,11 +50,17 @@ export class GraphicOwner extends Graphic {
     this._graphic = graphic;
   }
 
-  public get graphic(): RenderGraphic { return this._graphic; }
+  public get graphic(): RenderGraphic {
+    return this._graphic;
+  }
 
   private _isDisposed = false;
-  public get isDisposed(): boolean { return this._isDisposed; }
-  public dispose(): void { this._isDisposed = true; }
+  public get isDisposed(): boolean {
+    return this._isDisposed;
+  }
+  public dispose(): void {
+    this._isDisposed = true;
+  }
   public disposeGraphic(): void {
     this.graphic.dispose();
   }
@@ -155,7 +165,9 @@ export class PerTargetBatchData {
   }
 
   /** Exposed strictly for tests. */
-  public get featureOverrides() { return this._featureOverrides; }
+  public get featureOverrides() {
+    return this._featureOverrides;
+  }
 
   private onSourceDisposed(source: FeatureSymbology.Source): void {
     const ovrs = this._featureOverrides.get(source);
@@ -189,7 +201,9 @@ export class PerTargetData {
   }
 
   /** Exposed strictly for tests. */
-  public get data(): PerTargetBatchData[] { return this._data; }
+  public get data(): PerTargetBatchData[] {
+    return this._data;
+  }
 
   public onTargetDisposed(target: Target): void {
     const index = this._data.findIndex((x) => x.target === target);
@@ -249,10 +263,18 @@ export class Batch extends Graphic {
   }
 
   /** The following are valid only during a draw and reset afterward. */
-  public get batchId() { return this._context.batchId; }
-  public get batchIModel() { return this._context.iModel; }
-  public get transformFromBatchIModel() { return this._context.transformFromIModel; }
-  public get viewAttachmentId() { return this._context.viewAttachmentId; }
+  public get batchId() {
+    return this._context.batchId;
+  }
+  public get batchIModel() {
+    return this._context.iModel;
+  }
+  public get transformFromBatchIModel() {
+    return this._context.transformFromIModel;
+  }
+  public get viewAttachmentId() {
+    return this._context.viewAttachmentId;
+  }
 
   public setContext(batchId: number, branch: BranchState) {
     this._context.batchId = batchId;
@@ -492,9 +514,13 @@ export class WorldDecorations extends Branch {
 /** @internal */
 export class GraphicsArray extends Graphic {
   // Note: We assume the graphics array we get contains undisposed graphics to start
-  constructor(public graphics: RenderGraphic[]) { super(); }
+  constructor(public graphics: RenderGraphic[]) {
+    super();
+  }
 
-  public get isDisposed(): boolean { return 0 === this.graphics.length; }
+  public get isDisposed(): boolean {
+    return 0 === this.graphics.length;
+  }
 
   public override get isPickable(): boolean {
     return this.graphics.some((x) => (x as Graphic).isPickable);

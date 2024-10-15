@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import chai, { expect } from "chai";
-import { ExtensionManifest, RemoteExtensionProvider } from "../core-frontend";
-import { ExtensionAdmin } from "../extension/ExtensionAdmin";
 import chaiAsPromised from "chai-as-promised";
 import sinon from "sinon";
+import { ExtensionManifest, RemoteExtensionProvider } from "../core-frontend";
+import { ExtensionAdmin } from "../extension/ExtensionAdmin";
 
 describe("ExtensionAdmin", () => {
   const extensions = [
@@ -23,12 +23,14 @@ describe("ExtensionAdmin", () => {
       manifestUrl: "https://anotherdomain.com/package.json",
     }),
   ];
-  const stubManifest: Promise<ExtensionManifest> = new Promise((res) => res({
-    name: "mock-extension",
-    version: "1.0.0",
-    main: "index.js",
-    activationEvents: [],
-  }));
+  const stubManifest: Promise<ExtensionManifest> = new Promise((res) =>
+    res({
+      name: "mock-extension",
+      version: "1.0.0",
+      main: "index.js",
+      activationEvents: [],
+    })
+  );
 
   before(async () => {
     chai.use(chaiAsPromised);

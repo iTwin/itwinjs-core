@@ -5,8 +5,8 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { deflateCoordinates, FeatureGeometryRenderer } from "@itwin/core-frontend";
-import { Coord, GeoJSONGeometryUtils, MultiPath, MultiRingCoords, RingCoords } from "./GeoJSONGeometry";
 import * as GeoJson from "geojson";
+import { Coord, GeoJSONGeometryUtils, MultiPath, MultiRingCoords, RingCoords } from "./GeoJSONGeometry";
 
 const loggerCategory = "MapLayersFormats.GeoJSONGeometryReader";
 
@@ -19,18 +19,17 @@ export class GeoJSONGeometryReader {
   }
 
   public async readGeometry(geometry: GeoJson.Geometry) {
-
     if (GeoJSONGeometryUtils.isRingOrPath(geometry)) {
       await this.readRingsAndPaths(geometry, this._renderer, GeoJSONGeometryUtils.isFilled(geometry), false /* relativeCoords*/);
     } else if (GeoJSONGeometryUtils.isPoint(geometry)) {
-      await this.readPoints(geometry, this._renderer, false/* relativeCoords*/);
+      await this.readPoints(geometry, this._renderer, false /* relativeCoords*/);
     } else {
       Logger.logError(loggerCategory, `GeoJSONGeometryReader:readGeometry - Unknown geometry type '${geometry.type}'`);
     }
   }
 
   private async readRingsAndPaths(geometry: GeoJson.Geometry, renderer: FeatureGeometryRenderer, fill: boolean, relativeCoords: boolean) {
-    const multiPath: MultiPath = {coords: [], lengths: []};
+    const multiPath: MultiPath = { coords: [], lengths: [] };
     let polys: MultiPath[] | undefined;
 
     const readPath = (ring: RingCoords, offset: number, result: MultiPath) => {
@@ -53,7 +52,7 @@ export class GeoJSONGeometryReader {
     } else if (geometry.type === "MultiPolygon") {
       polys = [];
       for (const poly of geometry.coordinates) {
-        const tmpMultiPath: MultiPath = {coords: [], lengths: [] };
+        const tmpMultiPath: MultiPath = { coords: [], lengths: [] };
         readMultiPath(poly, tmpMultiPath);
         polys.push(tmpMultiPath);
       }
@@ -66,11 +65,9 @@ export class GeoJSONGeometryReader {
     } else {
       await renderer.renderPath(multiPath.lengths, multiPath.coords, fill, 2, relativeCoords);
     }
-
   }
 
   private async readPoints(geom: GeoJson.Geometry, renderer: FeatureGeometryRenderer, relativeCoords: boolean) {
-
     const lengths: Coord = [];
     const coords: Coord = [];
     const readPoint = (coord: Coord) => {

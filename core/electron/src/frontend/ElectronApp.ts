@@ -56,7 +56,9 @@ export type ElectronAppOpts = NativeAppOpts;
  */
 export class ElectronApp {
   private static _ipc?: ElectronIpc;
-  public static get isValid(): boolean { return undefined !== this._ipc; }
+  public static get isValid(): boolean {
+    return undefined !== this._ipc;
+  }
 
   /**
    * Start the frontend of an Electron application.

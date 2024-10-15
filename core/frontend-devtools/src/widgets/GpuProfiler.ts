@@ -7,8 +7,8 @@
  * @module Widgets
  */
 
-import { saveAs } from "file-saver";
 import { GLTimerResult, IModelApp, RenderSystemDebugControl } from "@itwin/core-frontend";
+import { saveAs } from "file-saver";
 import { createCheckBox } from "../ui/CheckBox";
 
 /** Trace Event Format, viewable with chrome://tracing
@@ -33,7 +33,9 @@ interface ChromeTraceEvent {
   args: ChromeTraceEventArgs;
 }
 
-interface ChromeTraceEventArgs { 0: 0 }
+interface ChromeTraceEventArgs {
+  0: 0;
+}
 const dummyArgs: ChromeTraceEventArgs = { 0: 0 }; // Reuse instead of allocating for each entry
 
 /**

@@ -2,12 +2,12 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { using } from "@itwin/core-bentley";
 import { Presentation, PresentationManager } from "@itwin/presentation-backend";
 import { ChildNodeSpecificationTypes, Diagnostics, DiagnosticsLogEntry, PresentationError, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Diagnostics", async () => {
@@ -40,7 +40,7 @@ describe("Diagnostics", async () => {
 
   it("includes diagnostics if request takes longer than minimum duration", async () => {
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager(), async (manager) => {
+    using(new PresentationManager(), async (manager) => {
       await manager.getNodes({
         imodel,
         rulesetOrId: ruleset,
@@ -55,7 +55,7 @@ describe("Diagnostics", async () => {
 
   it("doesn't include diagnostics if request takes less time than minimum duration", async () => {
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager(), async (manager) => {
+    using(new PresentationManager(), async (manager) => {
       await manager.getNodes({
         imodel,
         rulesetOrId: ruleset,
@@ -89,7 +89,7 @@ describe("Diagnostics", async () => {
   it("doesn't report request diagnostics if not requested when manager diagnostics requested", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager({ diagnostics: { dev: true, editor: true, perf: true, handler: managerDiagnosticsSpy } }), async (manager) => {
+    using(new PresentationManager({ diagnostics: { dev: true, editor: true, perf: true, handler: managerDiagnosticsSpy } }), async (manager) => {
       await manager.getNodes({
         imodel,
         rulesetOrId: ruleset,
@@ -105,7 +105,7 @@ describe("Diagnostics", async () => {
   it("doesn't report manager diagnostics if not requested when request diagnostics requested", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsSpy = sinon.spy();
-    await using(new PresentationManager({ diagnostics: { handler: managerDiagnosticsSpy } }), async (manager) => {
+    using(new PresentationManager({ diagnostics: { handler: managerDiagnosticsSpy } }), async (manager) => {
       await manager.getNodes({
         imodel,
         rulesetOrId: ruleset,
@@ -126,7 +126,7 @@ describe("Diagnostics", async () => {
     const managerDiagnosticsSpy = sinon.spy();
     const requestDiagnosticsContext = {};
     const requestDiagnosticsSpy = sinon.spy();
-    await using(
+    using(
       new PresentationManager({
         diagnostics: { perf: true, dev: "trace", handler: managerDiagnosticsSpy, requestContextSupplier: () => managerDiagnosticsContext },
       }),

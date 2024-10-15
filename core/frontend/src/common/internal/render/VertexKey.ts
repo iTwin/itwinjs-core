@@ -7,8 +7,8 @@
  */
 
 import { assert, comparePossiblyUndefined, compareWithTolerance, IndexMap } from "@itwin/core-bentley";
-import { Point2d, Point3d, XYAndZ } from "@itwin/core-geometry";
 import { Feature, OctEncodedNormal } from "@itwin/core-common";
+import { Point2d, Point3d, XYAndZ } from "@itwin/core-geometry";
 
 /** @internal */
 export interface VertexKeyProps {

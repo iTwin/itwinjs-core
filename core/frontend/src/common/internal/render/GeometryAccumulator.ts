@@ -6,14 +6,14 @@
  * @module Rendering
  */
 
-import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
 import { AnalysisStyleDisplacement, Feature } from "@itwin/core-common";
+import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@itwin/core-geometry";
 import { DisplayParams } from "./DisplayParams";
+import { GeometryList } from "./GeometryList";
+import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
 import { MeshBuilderMap } from "./MeshBuilderMap";
 import { MeshList } from "./MeshPrimitives";
 import { GeometryOptions } from "./Primitives";
-import { GeometryList } from "./GeometryList";
-import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
 
 /** @internal */
 export class GeometryAccumulator {
@@ -25,10 +25,18 @@ export class GeometryAccumulator {
   public readonly geometries: GeometryList = new GeometryList();
   public currentFeature?: Feature;
 
-  public get surfacesOnly(): boolean { return this._surfacesOnly; }
-  public get transform(): Transform { return this._transform; }
-  public get isEmpty(): boolean { return this.geometries.isEmpty; }
-  public get haveTransform(): boolean { return !this._transform.isIdentity; }
+  public get surfacesOnly(): boolean {
+    return this._surfacesOnly;
+  }
+  public get transform(): Transform {
+    return this._transform;
+  }
+  public get isEmpty(): boolean {
+    return this.geometries.isEmpty;
+  }
+  public get haveTransform(): boolean {
+    return !this._transform.isIdentity;
+  }
 
   public constructor(options?: {
     surfacesOnly?: boolean;
@@ -136,7 +144,9 @@ export class GeometryAccumulator {
     return true;
   }
 
-  public clear(): void { this.geometries.clear(); }
+  public clear(): void {
+    this.geometries.clear();
+  }
 
   /**
    * Generates a MeshBuilderMap
@@ -144,7 +154,11 @@ export class GeometryAccumulator {
    * note  : removed featureTable, ViewContext
    * @param tolerance should derive from Viewport.getPixelSizeAtPoint
    */
-  public toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined): MeshBuilderMap {
+  public toMeshBuilderMap(
+    options: GeometryOptions,
+    tolerance: number,
+    pickable: { isVolumeClassifier?: boolean, modelId?: string } | undefined,
+  ): MeshBuilderMap {
     const { geometries } = this; // declare internal dependencies
 
     const range = geometries.computeRange();

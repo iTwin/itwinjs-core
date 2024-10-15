@@ -7,8 +7,8 @@
  */
 
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
-import { FloatRgb } from "./FloatRGBA";
 import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/internal/render/SurfaceParams";
+import { FloatRgb } from "./FloatRGBA";
 
 /** Parameters describing a single material. The parameters used are:
  *  - diffuse color rgb (vec3).
@@ -47,9 +47,15 @@ export class Material extends RenderMaterial {
   public readonly fragUniforms = new Float32Array(4);
   public readonly rgba = new Float32Array(4);
 
-  public get overridesRgb() { return this.rgba[0] >= 0; }
-  public get overridesAlpha() { return this.rgba[3] >= 0; }
-  public get hasTranslucency() { return this.overridesAlpha && this.rgba[3] < 1; }
+  public get overridesRgb() {
+    return this.rgba[0] >= 0;
+  }
+  public get overridesAlpha() {
+    return this.rgba[3] >= 0;
+  }
+  public get hasTranslucency() {
+    return this.overridesAlpha && this.rgba[3] < 1;
+  }
 
   /** Strictly for testing. */
   public static preserveParams = false;
@@ -90,7 +96,7 @@ export class Material extends RenderMaterial {
   }
 
   private setInteger(loByte: number, hiByte: number, index: number): void {
-    const clamp = (x: number) => Math.floor(Math.min(255, (Math.max(x, 0))));
+    const clamp = (x: number) => Math.floor(Math.min(255, Math.max(x, 0)));
 
     loByte = clamp(loByte);
     hiByte = clamp(hiByte);

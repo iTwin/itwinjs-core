@@ -93,7 +93,8 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * * The input array itself is NOT taken into the result.
    */
   public static createPlanes(
-    planes: (ClipPlane | Plane3dByOriginAndUnitNormal)[], result?: ConvexClipPlaneSet,
+    planes: (ClipPlane | Plane3dByOriginAndUnitNormal)[],
+    result?: ConvexClipPlaneSet,
   ): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
     for (const plane of planes) {
@@ -164,7 +165,11 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * * More details can be found at docs/learning/geometry/Clipping.md
    */
   public static createXYBox(
-    x0: number, y0: number, x1: number, y1: number, result?: ConvexClipPlaneSet,
+    x0: number,
+    y0: number,
+    x1: number,
+    y1: number,
+    result?: ConvexClipPlaneSet,
   ): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
     result._planes.length = 0;
@@ -186,7 +191,10 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param leftIsInside if true, the interior is "to the left" of the segments. If false, interior is "to the right".
    */
   public static createXYPolyLine(
-    points: Point3d[], interior: boolean[] | undefined, leftIsInside: boolean, result?: ConvexClipPlaneSet,
+    points: Point3d[],
+    interior: boolean[] | undefined,
+    leftIsInside: boolean,
+    result?: ConvexClipPlaneSet,
   ): ConvexClipPlaneSet {
     result = result ? result : new ConvexClipPlaneSet();
     result._planes.length = 0;
@@ -243,7 +251,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     let y0 = points.getYAtUncheckedPointIndex(i0);
     let x1, y1, nx, ny;
     frustum._planes.length = 0;
-    const z0 = points.getZAtUncheckedPointIndex(i0);  // z for planes can stay fixed
+    const z0 = points.getZAtUncheckedPointIndex(i0); // z for planes can stay fixed
     const planeNormal = points.crossProductIndexIndexIndex(0, 2, 1)!;
     ClipPlane.createNormalAndPointXYZXYZ(planeNormal.x, planeNormal.y, planeNormal.z, x0, y0, z0, false, false, planeOfPolygon);
     if (planeNormal.normalizeInPlace()) {
@@ -293,9 +301,9 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
       if (Math.abs(vD) <= velocityTolerance) {
         // Ray is parallel... No need to continue testing if outside halfspace.
         if (vN < -tolerance)
-          return false;   // and result is a null range.
+          return false; // and result is a null range.
       } else {
-        const rayFraction = - vN / vD;
+        const rayFraction = -vN / vD;
         if (vD < 0.0) {
           if (rayFraction < t1)
             t1 = rayFraction;
@@ -306,7 +314,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
       }
     }
     if (t1 < t0)
-      return false;   // and result is a null range.
+      return false; // and result is a null range.
     if (result) {
       result.extendX(t0);
       result.extendX(t1);
@@ -325,7 +333,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param matrix matrix to apply
    */
   public multiplyPlanesByMatrix4d(matrix: Matrix4d, invert: boolean = true, transpose: boolean = true): boolean {
-    if (invert) {  // form inverse once here, reuse for all planes
+    if (invert) { // form inverse once here, reuse for all planes
       const inverse = matrix.createInverse();
       if (!inverse)
         return false;
@@ -348,9 +356,9 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
 
   /** Return true if `point` satisfies `point.isPointOnOrInside` for all planes */
   public isPointOnOrInside(point: Point3d, tolerance: number = Geometry.smallMetricDistance): boolean {
-    const interiorTolerance = Math.abs(tolerance);  // Interior tolerance should always be positive. (TFS# 246598).
+    const interiorTolerance = Math.abs(tolerance); // Interior tolerance should always be positive. (TFS# 246598).
     for (const plane of this._planes) {
-      if (!plane.isPointOnOrInside(point, (plane.interior ? interiorTolerance : tolerance)))
+      if (!plane.isPointOnOrInside(point, plane.interior ? interiorTolerance : tolerance))
         return false;
     }
     return true;
@@ -384,7 +392,11 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @returns true if a segment was announced, false if entirely outside.
    */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
+    f0: number,
+    f1: number,
+    pointA: Point3d,
+    pointB: Point3d,
+    announce?: AnnounceNumberNumber,
   ): boolean {
     let fraction: number | undefined;
     if (f1 < f0)
@@ -392,7 +404,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     for (const plane of this._planes) {
       const hA = -plane.altitude(pointA);
       const hB = -plane.altitude(pointB);
-      fraction = Geometry.conditionalDivideFraction(-hA, (hB - hA));
+      fraction = Geometry.conditionalDivideFraction(-hA, hB - hA);
       if (fraction === undefined) {
         // Line parallel to the plane. If positive, it is all OUT
         if (hA > 0.0)
@@ -459,7 +471,9 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param tolerance tolerance for "on plane" decision.
    */
   public clipConvexPolygonInPlace(
-    xyz: GrowableXYZArray, work: GrowableXYZArray, tolerance: number = Geometry.smallMetricDistance,
+    xyz: GrowableXYZArray,
+    work: GrowableXYZArray,
+    tolerance: number = Geometry.smallMetricDistance,
   ): void {
     for (const plane of this._planes) {
       plane.clipConvexPolygonInPlace(xyz, work, true, tolerance);
@@ -475,23 +489,29 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @return the surviving inside part (if any)
    */
   public clipInsidePushOutside(
-    xyz: IndexedXYZCollection, outsideFragments: GrowableXYZArray[] | undefined, arrayCache: GrowableXYZArrayCache,
+    xyz: IndexedXYZCollection,
+    outsideFragments: GrowableXYZArray[] | undefined,
+    arrayCache: GrowableXYZArrayCache,
   ): GrowableXYZArray | undefined {
     const perpendicularRange = Range1d.createNull();
     let newInside = arrayCache.grabFromCache();
     let newOutside = arrayCache.grabFromCache();
-    let insidePart = arrayCache.grabFromCache();  // this is empty ...
+    let insidePart = arrayCache.grabFromCache(); // this is empty ...
     insidePart.pushFrom(xyz);
     // While looping through planes . .
     // the outside part for the current plane is definitely outside and can be stashed to the final outside
     // the inside part for the current plane passes forward to be further split by the remaining planes.
     for (const plane of this._planes) {
       IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(
-        plane, insidePart, newInside, newOutside, perpendicularRange,
+        plane,
+        insidePart,
+        newInside,
+        newOutside,
+        perpendicularRange,
       );
       if (newOutside.length > 0) {
         // the newOutside fragment is definitely outside the ConvexClipPlaneSet
-        if (outsideFragments)   // save the definitely outside part as return data.
+        if (outsideFragments) // save the definitely outside part as return data.
           ClipUtilities.captureOrDrop(newOutside, 3, outsideFragments, arrayCache);
         newOutside = arrayCache.grabFromCache();
         if (newInside.length === 0) {
@@ -528,7 +548,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
   public classifyPointContainment(points: Point3d[], onIsOutside: boolean): ClipPlaneContainment {
     let allInside = true;
     const onTolerance = onIsOutside ? 1.0e-8 : -1.0e-8;
-    const interiorTolerance = 1.0e-8;   // Interior tolerance should always be positive
+    const interiorTolerance = 1.0e-8; // Interior tolerance should always be positive
 
     for (const plane of this._planes) {
       let nOutside = 0;
@@ -554,7 +574,9 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param tiltAngle angle to tilt sweep planes away from the sweep direction.
    */
   public static createSweptPolyline(
-    points: Point3d[], upVector: Vector3d, tiltAngle?: Angle,
+    points: Point3d[],
+    upVector: Vector3d,
+    tiltAngle?: Angle,
   ): ConvexClipPlaneSet | undefined {
     const result = ConvexClipPlaneSet.createEmpty();
     let reverse = false;
@@ -567,14 +589,14 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
     for (let i = 0; (i + 1) < points.length; i++) {
       if (reverse) {
         const toAdd = ClipPlane.createEdgeAndUpVector(points[i + 1], points[i], upVector, tiltAngle);
-        if (toAdd) {   // clipPlane creation could result in undefined
+        if (toAdd) { // clipPlane creation could result in undefined
           result.addPlaneToConvexSet(toAdd);
         } else {
           return undefined;
         }
       } else {
         const toAdd = ClipPlane.createEdgeAndUpVector(points[i], points[i + 1], upVector, tiltAngle);
-        if (toAdd) {   // clipPlane creation could result in undefined
+        if (toAdd) { // clipPlane creation could result in undefined
           result.addPlaneToConvexSet(toAdd);
         } else {
           return undefined;
@@ -623,7 +645,10 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param containingPlane if this plane is found in the convex set, it is NOT applied.
    */
   public polygonClip(
-    input: GrowableXYZArray | Point3d[], output: GrowableXYZArray, work: GrowableXYZArray, planeToSkip?: ClipPlane,
+    input: GrowableXYZArray | Point3d[],
+    output: GrowableXYZArray,
+    work: GrowableXYZArray,
+    planeToSkip?: ClipPlane,
   ): void {
     if (input instanceof GrowableXYZArray)
       input.clone(output);
@@ -663,14 +688,20 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
       if (xyz0.isAlmostEqual(xyz1))
         continue;
       const edgeVector: Vector3d = Vector3d.createStartEnd(xyz0, xyz1);
-      const inwardNormal: Vector3d = Vector3d.createCrossProduct(sweepDirection.x, sweepDirection.y, sweepDirection.z,
-        edgeVector.x, edgeVector.y, edgeVector.z);
+      const inwardNormal: Vector3d = Vector3d.createCrossProduct(
+        sweepDirection.x,
+        sweepDirection.y,
+        sweepDirection.z,
+        edgeVector.x,
+        edgeVector.y,
+        edgeVector.z,
+      );
       const inwardNormalNormalized = inwardNormal.normalize();
       let distance;
       if (inwardNormalNormalized) { // should never fail... simply a check due to the format of the normalize function return
         distance = inwardNormalNormalized.dotProduct(xyz0);
         const clipToAdd = ClipPlane.createNormalAndDistance(inwardNormalNormalized, distance, false, false);
-        if (clipToAdd) { this._planes.push(clipToAdd); }  // clipPlane creation could result in undefined
+        if (clipToAdd) { this._planes.push(clipToAdd); } // clipPlane creation could result in undefined
       }
     }
     if (sideSelect !== 0.0) {
@@ -682,7 +713,7 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
         const xyz0: Point3d = points[0];
         const distance = planeNormalNormalized.dotProduct(xyz0);
         const clipToAdd = ClipPlane.createNormalAndDistance(planeNormalNormalized, distance, false, false);
-        if (clipToAdd) { this._planes.push(clipToAdd); }  // clipPlane creation could result in undefined
+        if (clipToAdd) { this._planes.push(clipToAdd); } // clipPlane creation could result in undefined
       }
     }
     return isCCW ? 1 : -1;
@@ -718,10 +749,17 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
       for (let j = i + 1; j < n; j++)
         for (let k = j + 1; k < n; k++) {
           Matrix3d.createRowValues(
-            allPlanes[i].inwardNormalRef.x, allPlanes[i].inwardNormalRef.y, allPlanes[i].inwardNormalRef.z,
-            allPlanes[j].inwardNormalRef.x, allPlanes[j].inwardNormalRef.y, allPlanes[j].inwardNormalRef.z,
-            allPlanes[k].inwardNormalRef.x, allPlanes[k].inwardNormalRef.y, allPlanes[k].inwardNormalRef.z,
-            normalRows);
+            allPlanes[i].inwardNormalRef.x,
+            allPlanes[i].inwardNormalRef.y,
+            allPlanes[i].inwardNormalRef.z,
+            allPlanes[j].inwardNormalRef.x,
+            allPlanes[j].inwardNormalRef.y,
+            allPlanes[j].inwardNormalRef.z,
+            allPlanes[k].inwardNormalRef.x,
+            allPlanes[k].inwardNormalRef.y,
+            allPlanes[k].inwardNormalRef.z,
+            normalRows,
+          );
           if (normalRows.computeCachedInverse(false)) {
             const xyz = normalRows.multiplyInverseXYZAsPoint3d(allPlanes[i].distance, allPlanes[j].distance, allPlanes[k].distance)!;
             if (!testContainment || this.isPointOnOrInside(xyz, Geometry.smallMetricDistance)) {
@@ -788,9 +826,10 @@ export class ConvexClipPlaneSet implements Clipper, PolygonClipper {
    * @param convexMesh input mesh. For best results, the mesh should be closed and convex.
    * @param result optional preallocated result to reuse and return
    * @return clipper and volume (zero if mesh is not closed)
-  */
+   */
   public static createConvexPolyface(
-    convexMesh: Polyface | PolyfaceVisitor, result?: ConvexClipPlaneSet,
+    convexMesh: Polyface | PolyfaceVisitor,
+    result?: ConvexClipPlaneSet,
   ): { clipper: ConvexClipPlaneSet, volume: number } {
     result = this.createEmpty(result);
     let vol = 0;

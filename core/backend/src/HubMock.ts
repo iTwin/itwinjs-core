@@ -3,21 +3,38 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { join } from "path";
 import { Guid, GuidString } from "@itwin/core-bentley";
 import {
-  ChangesetFileProps, ChangesetIndex, ChangesetIndexAndId, ChangesetProps, ChangesetRange, IModelVersion, LocalDirName,
+  ChangesetFileProps,
+  ChangesetIndex,
+  ChangesetIndexAndId,
+  ChangesetProps,
+  ChangesetRange,
+  IModelVersion,
+  LocalDirName,
 } from "@itwin/core-common";
+import { join } from "path";
 import {
   AcquireNewBriefcaseIdArg,
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, CheckpointArg, CreateNewIModelProps, DownloadChangesetArg, DownloadChangesetRangeArg, IModelIdArg, IModelNameArg,
-  LockMap, LockProps, V2CheckpointAccessProps,
+  BackendHubAccess,
+  BriefcaseDbArg,
+  BriefcaseIdArg,
+  ChangesetArg,
+  CheckpointArg,
+  CreateNewIModelProps,
+  DownloadChangesetArg,
+  DownloadChangesetRangeArg,
+  IModelIdArg,
+  IModelNameArg,
+  LockMap,
+  LockProps,
+  V2CheckpointAccessProps,
 } from "./BackendHubAccess";
 import { CheckpointProps, ProgressFunction, ProgressStatus } from "./CheckpointManager";
+import { TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { LocalHub } from "./LocalHub";
-import { TokenArg } from "./IModelDb";
 
 function wasStarted(val: string | undefined): asserts val is string {
   if (undefined === val)
@@ -63,7 +80,9 @@ export class HubMock {
   private static _iTwinId: GuidString | undefined;
 
   /** Determine whether a test us currently being run under HubMock */
-  public static get isValid() { return undefined !== this.mockRoot; }
+  public static get isValid() {
+    return undefined !== this.mockRoot;
+  }
   public static get iTwinId() {
     wasStarted(this._iTwinId);
     return this._iTwinId;
@@ -76,7 +95,9 @@ export class HubMock {
    */
   public static startup(mockName: LocalDirName, outputDir: string) {
     if (this.isValid)
-      throw new Error("Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed");
+      throw new Error(
+        "Either a previous test did not call HubMock.shutdown() properly, or more than one test is simultaneously attempting to use HubMock, which is not allowed",
+      );
 
     this.hubs.clear();
     this.mockRoot = join(outputDir, "HubMock", mockName);
@@ -254,7 +275,7 @@ export class HubMock {
 
       const mockProgress = (index: number) => {
         const bytesDownloaded = Math.floor(totalSize * (index / 4));
-        if (!rejected && progressCallback(bytesDownloaded, totalSize) === ProgressStatus.Abort){
+        if (!rejected && progressCallback(bytesDownloaded, totalSize) === ProgressStatus.Abort) {
           rejected = true;
           reject(new Error("AbortError"));
         }

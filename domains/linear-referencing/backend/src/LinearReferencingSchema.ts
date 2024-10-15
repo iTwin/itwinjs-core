@@ -6,8 +6,8 @@
  * @module LinearReferencing
  */
 
-import * as path from "path";
 import { ClassRegistry, KnownLocations, Schema, Schemas } from "@itwin/core-backend";
+import * as path from "path";
 import * as aspectsModule from "./LinearReferencingElementAspects";
 import * as elementsModule from "./LinearReferencingElements";
 import * as relationshipsModule from "./LinearReferencingRelationships";
@@ -17,8 +17,12 @@ import * as relationshipsModule from "./LinearReferencingRelationships";
  * @beta
  */
 export class LinearReferencingSchema extends Schema {
-  public static override get schemaName(): string { return "LinearReferencing"; }
-  public static get schemaFilePath(): string { return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", "LinearReferencing.ecschema.xml"); }
+  public static override get schemaName(): string {
+    return "LinearReferencing";
+  }
+  public static get schemaFilePath(): string {
+    return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", "LinearReferencing.ecschema.xml");
+  }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);

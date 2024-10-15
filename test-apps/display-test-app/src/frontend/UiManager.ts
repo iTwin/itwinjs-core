@@ -4,9 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  XAndY,
-} from "@itwin/core-geometry";
-import {
   AbstractToolbarProps,
   ActionButton,
   CommonToolbarItem,
@@ -15,14 +12,10 @@ import {
   RelativePosition,
   UiAdmin,
 } from "@itwin/appui-abstract";
-import {
-  IModelApp,
-} from "@itwin/core-frontend";
-import {
-  Window,
-  WindowProps,
-} from "./Window";
+import { IModelApp } from "@itwin/core-frontend";
+import { XAndY } from "@itwin/core-geometry";
 import { Surface } from "./Surface";
+import { Window, WindowProps } from "./Window";
 
 interface ToolbarWindowProps extends WindowProps {
   items: CommonToolbarItem[];
@@ -30,8 +23,12 @@ interface ToolbarWindowProps extends WindowProps {
 }
 
 class ToolbarWindow extends Window {
-  public override get isCloseable() { return false; }
-  public get windowId() { return "toolbar"; }
+  public override get isCloseable() {
+    return false;
+  }
+  public get windowId() {
+    return "toolbar";
+  }
 
   public constructor(surface: Surface, props: ToolbarWindowProps) {
     super(surface, props);
@@ -81,7 +78,15 @@ export class UiManager extends UiAdmin {
     return super.cursorPosition;
   }
 
-  public override showToolbar(tbProps: AbstractToolbarProps, location: XAndY, offset: XAndY, onItemExecuted: OnItemExecutedFunc, _onCancel: OnCancelFunc, _relPos?: RelativePosition, _elem?: HTMLElement): boolean {
+  public override showToolbar(
+    tbProps: AbstractToolbarProps,
+    location: XAndY,
+    offset: XAndY,
+    onItemExecuted: OnItemExecutedFunc,
+    _onCancel: OnCancelFunc,
+    _relPos?: RelativePosition,
+    _elem?: HTMLElement,
+  ): boolean {
     const surface = Surface.instance;
     if (undefined !== surface.findWindowById("toolbar"))
       return false;

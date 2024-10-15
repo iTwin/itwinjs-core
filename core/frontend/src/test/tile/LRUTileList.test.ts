@@ -14,10 +14,18 @@ function mockTile(bytesUsed: number): Tile {
 }
 
 class List extends LRUTileList {
-  public get sentinel() { return this._sentinel; }
-  public get head() { return this._head; }
-  public get tail() { return this._tail; }
-  public override get totalBytesUsed() { return this._totalBytesUsed; }
+  public get sentinel() {
+    return this._sentinel;
+  }
+  public get head() {
+    return this._head;
+  }
+  public get tail() {
+    return this._tail;
+  }
+  public override get totalBytesUsed() {
+    return this._totalBytesUsed;
+  }
 
   public expectOrder(...expected: LRUTileListNode[]): void {
     expect(this.head.previous).to.be.undefined;
@@ -39,9 +47,15 @@ class List extends LRUTileList {
     expect(j).to.equal(0);
   }
 
-  public moveTileToEnd(tile: Tile) { this.moveToEnd(tile); }
-  public moveTileBeforeSentinel(tile: Tile) { this.moveBeforeSentinel(tile); }
-  public moveTileAfterSentinel(tile: Tile) { this.moveAfterSentinel(tile); }
+  public moveTileToEnd(tile: Tile) {
+    this.moveToEnd(tile);
+  }
+  public moveTileBeforeSentinel(tile: Tile) {
+    this.moveBeforeSentinel(tile);
+  }
+  public moveTileAfterSentinel(tile: Tile) {
+    this.moveAfterSentinel(tile);
+  }
 }
 
 function expectUnlinked(node: LRUTileListNode): void {

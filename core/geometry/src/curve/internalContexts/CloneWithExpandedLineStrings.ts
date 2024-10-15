@@ -29,7 +29,9 @@ export class CloneWithExpandedLineStrings extends CloneCurvesContext {
       const n = packedPoints.length;
       const segments = [];
       for (let i = 0; i + 1 < n; i++) {
-        segments.push(LineSegment3d.createCapture(packedPoints.getPoint3dAtUncheckedPointIndex(i), packedPoints.getPoint3dAtUncheckedPointIndex(i + 1)));
+        segments.push(
+          LineSegment3d.createCapture(packedPoints.getPoint3dAtUncheckedPointIndex(i), packedPoints.getPoint3dAtUncheckedPointIndex(i + 1)),
+        );
       }
       return segments;
     }

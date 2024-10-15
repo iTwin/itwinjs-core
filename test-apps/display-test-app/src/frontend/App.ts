@@ -3,76 +3,105 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
-import { GuidString, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { BrowserAuthorizationClient } from "@itwin/browser-authorization";
-import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
-import { IModelsClient } from "@itwin/imodels-client-management";
+import { GuidString, ProcessDetector } from "@itwin/core-bentley";
+import {
+  BentleyCloudRpcManager,
+  BentleyCloudRpcParams,
+  IModelReadRpcInterface,
+  IModelTileRpcInterface,
+  SnapshotIModelRpcInterface,
+} from "@itwin/core-common";
+import { ElectronApp, ElectronAppOpts } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
+import {
+  AccuDrawHintBuilder,
+  AccuDrawShortcuts,
+  AccuSnap,
+  IModelApp,
+  IpcApp,
+  LocalhostIpcApp,
+  LocalHostIpcAppOpts,
+  RenderSystem,
+  SelectionTool,
+  SnapMode,
+  TileAdmin,
+  Tool,
+  ToolAdmin,
+} from "@itwin/core-frontend";
+import { ITwinLocalization } from "@itwin/core-i18n";
+import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { EditTools } from "@itwin/editor-frontend";
+import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
-import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
-} from "@itwin/core-common";
-import { EditTools } from "@itwin/editor-frontend";
-import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, IModelApp, IpcApp, LocalhostIpcApp, LocalHostIpcAppOpts, RenderSystem, SelectionTool, SnapMode,
-  TileAdmin, Tool, ToolAdmin,
-} from "@itwin/core-frontend";
-import { MobileApp, MobileAppOpts } from "@itwin/core-mobile/lib/cjs/MobileFrontend";
+import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { IModelsClient } from "@itwin/imodels-client-management";
+import { MapLayersFormats } from "@itwin/map-layers-formats";
 import { RealityDataAccessClient, RealityDataClientOptions } from "@itwin/reality-data-client";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { ToggleAspectRatioSkewDecoratorTool } from "./AspectRatioSkewDecorator";
+import { BingTerrainMeshProvider } from "./BingTerrainProvider";
+import { CreateSectionDrawingTool } from "./CreateSectionDrawingTool";
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
+import { getConfigurationString } from "./DisplayTestApp";
 import { ApplyModelTransformTool, ClearModelTransformsTool, DisableModelTransformsTool } from "./DisplayTransform";
-import { ApplyModelClipTool } from "./ModelClipTools";
-import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
-import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
-import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
 import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
+import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { FrameStatsTool } from "./FrameStatsTool";
+import { GltfDecorationTool } from "./GltfDecoration";
 import { ChangeGridSettingsTool } from "./Grid";
 import { IncidentMarkerDemoTool } from "./IncidentMarkerDemo";
+import { MacroTool } from "./MacroTools";
 import { MarkupSelectTestTool } from "./MarkupSelectTestTool";
+import { ApplyModelClipTool } from "./ModelClipTools";
 import { Notifications } from "./Notifications";
 import { OutputShadersTool } from "./OutputShadersTool";
 import { PathDecorationTestTool } from "./PathDecorationTest";
-import { GltfDecorationTool } from "./GltfDecoration";
-import { TextDecorationTool } from "./TextDecoration";
+import { AddSeequentRealityModel } from "./RealityDataModel";
+import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
+import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
+import { SaveImageTool } from "./SaveImageTool";
 import { ToggleShadowMapTilesTool } from "./ShadowMapDecoration";
 import { signIn, signOut } from "./signIn";
 import {
-  CloneViewportTool, CloseIModelTool, CloseWindowTool, CreateWindowTool, DockWindowTool, FocusWindowTool, MaximizeWindowTool, OpenIModelTool,
-  ReopenIModelTool, ResizeWindowTool, RestoreWindowTool, Surface,
+  CloneViewportTool,
+  CloseIModelTool,
+  CloseWindowTool,
+  CreateWindowTool,
+  DockWindowTool,
+  FocusWindowTool,
+  MaximizeWindowTool,
+  OpenIModelTool,
+  ReopenIModelTool,
+  ResizeWindowTool,
+  RestoreWindowTool,
+  Surface,
 } from "./Surface";
-import { CreateSectionDrawingTool } from "./CreateSectionDrawingTool";
 import { SyncViewportFrustaTool, SyncViewportsTool } from "./SyncViewportsTool";
+import { TerrainDrapeTool } from "./TerrainDrapeTool";
+import { TextDecorationTool } from "./TextDecoration";
+import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileContentTool";
+import { ToggleSecondaryIModelTool } from "./TiledGraphics";
+import { RecordTileSizesTool } from "./TileSizeRecorder";
 import { TimePointComparisonTool } from "./TimePointComparison";
 import { UiManager } from "./UiManager";
+import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { MarkupTool, ModelClipTool, ZoomToSelectedElementsTool } from "./Viewer";
-import { MacroTool } from "./MacroTools";
-import { RecordTileSizesTool } from "./TileSizeRecorder";
-import { TerrainDrapeTool } from "./TerrainDrapeTool";
-import { SaveImageTool } from "./SaveImageTool";
-import { ToggleSecondaryIModelTool } from "./TiledGraphics";
-import { BingTerrainMeshProvider } from "./BingTerrainProvider";
-import { AttachCustomRealityDataTool, registerRealityDataSourceProvider } from "./RealityDataProvider";
-import { MapLayersFormats } from "@itwin/map-layers-formats";
-import { OpenRealityModelSettingsTool } from "./RealityModelDisplaySettingsWidget";
-import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
-import { ITwinLocalization } from "@itwin/core-i18n";
-import { getConfigurationString } from "./DisplayTestApp";
-import { AddSeequentRealityModel } from "./RealityDataModel";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
 
-  public override get keypointDivisor() { return 2; }
-  public override getActiveSnapModes(): SnapMode[] { return this._activeSnaps; }
+  public override get keypointDivisor() {
+    return 2;
+  }
+  public override getActiveSnapModes(): SnapMode[] {
+    return this._activeSnaps;
+  }
   public setActiveSnapModes(snaps: SnapMode[]): void {
     this._activeSnaps.length = snaps.length;
     for (let i = 0; i < snaps.length; i++)
@@ -117,8 +146,12 @@ class SignOutTool extends Tool {
 
 class PushChangesTool extends Tool {
   public static override toolId = "PushChanges";
-  public static override get maxArgs() { return 1; }
-  public static override get minArgs() { return 1; }
+  public static override get maxArgs() {
+    return 1;
+  }
+  public static override get minArgs() {
+    return 1;
+  }
 
   public override async run(description?: string): Promise<boolean> {
     if (!description || "string" !== typeof description)
@@ -154,7 +187,9 @@ export const dtaIpc = IpcApp.makeIpcProxy<DtaIpcInterface>(dtaChannel);
 
 class RefreshTilesTool extends Tool {
   public static override toolId = "RefreshTiles";
-  public static override get maxArgs() { return undefined; }
+  public static override get maxArgs() {
+    return undefined;
+  }
 
   public override async run(changedModelIds?: string[]): Promise<boolean> {
     if (undefined !== changedModelIds && 0 === changedModelIds.length)
@@ -171,8 +206,12 @@ class RefreshTilesTool extends Tool {
 
 class PurgeTileTreesTool extends Tool {
   public static override toolId = "PurgeTileTrees";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return undefined; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return undefined;
+  }
 
   public override async run(modelIds?: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -226,10 +265,16 @@ function createHubAccess(configuration: DtaConfiguration) {
 
 export class DisplayTestApp {
   private static _surface?: Surface;
-  public static get surface() { return this._surface!; }
-  public static set surface(surface: Surface) { this._surface = surface; }
+  public static get surface() {
+    return this._surface!;
+  }
+  public static set surface(surface: Surface) {
+    this._surface = surface;
+  }
   private static _iTwinId?: GuidString;
-  public static get iTwinId(): GuidString | undefined { return this._iTwinId; }
+  public static get iTwinId(): GuidString | undefined {
+    return this._iTwinId;
+  }
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
     let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
@@ -299,14 +344,17 @@ export class DisplayTestApp {
         await client.handleSigninCallback();
       }
 
-      const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
+      const rpcParams: BentleyCloudRpcParams = {
+        info: { title: "ui-test-app", version: "v1.0" },
+        uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001",
+      };
       if (opts.iModelApp?.rpcInterfaces) // eslint-disable-line deprecation/deprecation
         BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line deprecation/deprecation
       await LocalhostIpcApp.startup(opts);
     }
 
-    IModelApp.applicationLogoCard =
-      () => IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
+    IModelApp.applicationLogoCard = () =>
+      IModelApp.makeLogoCard({ iconSrc: "DTA.png", iconWidth: 100, heading: "Display Test App", notice: "For internal testing" });
 
     const svtToolNamespace = "SVTTools";
     await IModelApp.localization.registerNamespace(svtToolNamespace);
@@ -394,5 +442,7 @@ export class DisplayTestApp {
     (IModelApp.accuSnap as DisplayTestAppAccuSnap).setActiveSnapModes(snaps);
   }
 
-  public static setActiveSnapMode(snap: SnapMode): void { this.setActiveSnapModes([snap]); }
+  public static setActiveSnapMode(snap: SnapMode): void {
+    this.setActiveSnapModes([snap]);
+  }
 }

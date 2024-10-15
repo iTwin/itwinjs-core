@@ -3,23 +3,65 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import {
+  AuxCoordSystem2d,
+  CategorySelector,
+  CloudSqlite,
+  DefinitionModel,
+  DisplayStyle2d,
+  DisplayStyle3d,
+  DocumentListModel,
+  Drawing,
+  DrawingCategory,
+  DrawingGraphic,
+  DrawingViewDefinition,
+  GroupModel,
+  IModelDb,
+  IModelHost,
+  InformationRecordModel,
+  ModelSelector,
+  OrthographicViewDefinition,
+  PhysicalModel,
+  RenderMaterialElement,
+  SpatialCategory,
+  SpatialLocationModel,
+  SpatialViewDefinition,
+  StandaloneDb,
+  SubCategory,
+  Subject,
+  ViewStore,
+} from "@itwin/core-backend";
+import { CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
+import {
+  AuxCoordSystem2dProps,
+  Camera,
+  Code,
+  CodeScopeSpec,
+  ColorByName,
+  ColorDef,
+  DefinitionElementProps,
+  DisplayStyle3dProps,
+  DisplayStyle3dSettingsProps,
+  Environment,
+  GeometricElement2dProps,
+  GeometryStreamBuilder,
+  GeometryStreamProps,
+  IModel,
+  LocalFileName,
+  PlanProjectionSettings,
+  SkyBoxImageType,
+  SpatialViewDefinitionProps,
+  SubCategoryAppearance,
+  SubCategoryOverride,
+  ViewDefinition2dProps,
+  ViewDefinitionProps,
+} from "@itwin/core-common";
+import { LineString3d, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { assert, expect } from "chai";
 import { existsSync, mkdirSync, unlinkSync } from "fs-extra";
 import { Suite } from "mocha";
 import { join } from "path";
 import * as sinon from "sinon";
-import {
-  AuxCoordSystem2d, CategorySelector, CloudSqlite, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
-  DrawingGraphic, DrawingViewDefinition, GroupModel, IModelDb, IModelHost, InformationRecordModel, ModelSelector, OrthographicViewDefinition,
-  PhysicalModel, RenderMaterialElement, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, StandaloneDb, SubCategory, Subject, ViewStore,
-} from "@itwin/core-backend";
-import { CompressedId64Set, Guid, GuidString, Id64, Id64String } from "@itwin/core-bentley";
-import {
-  AuxCoordSystem2dProps, Camera, Code, CodeScopeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyle3dProps, DisplayStyle3dSettingsProps,
-  Environment, GeometricElement2dProps, GeometryStreamBuilder, GeometryStreamProps, IModel, LocalFileName, PlanProjectionSettings, SkyBoxImageType,
-  SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, ViewDefinition2dProps, ViewDefinitionProps,
-} from "@itwin/core-common";
-import { LineString3d, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import { AzuriteTest } from "./AzuriteTest";
 
 const iTwinId = Guid.createValue();
@@ -116,7 +158,10 @@ function populateDb(sourceDb: IModelDb) {
   assert.isTrue(Id64.isValidId64(subCategoryId));
   const drawingCategoryId = DrawingCategory.insert(sourceDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
   assert.isTrue(Id64.isValidId64(drawingCategoryId));
-  const spatialCategorySelectorId = CategorySelector.insert(sourceDb, definitionModelId, "SpatialCategories", [spatialCategoryId, sourcePhysicalCategoryId]);
+  const spatialCategorySelectorId = CategorySelector.insert(sourceDb, definitionModelId, "SpatialCategories", [
+    spatialCategoryId,
+    sourcePhysicalCategoryId,
+  ]);
   assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
   const drawingCategorySelectorId = CategorySelector.insert(sourceDb, definitionModelId, "DrawingCategories", [drawingCategoryId]);
   assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
@@ -171,14 +216,31 @@ function populateDb(sourceDb: IModelDb) {
   const displayStyle3dId = displayStyle3d.insert();
   assert.isTrue(Id64.isValidId64(displayStyle3dId));
   // Insert ViewDefinitions
-  const viewId = OrthographicViewDefinition.insert(sourceDb, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, projectExtents, StandardViewIndex.Iso);
+  const viewId = OrthographicViewDefinition.insert(
+    sourceDb,
+    definitionModelId,
+    "Orthographic View",
+    modelSelectorId,
+    spatialCategorySelectorId,
+    displayStyle3dId,
+    projectExtents,
+    StandardViewIndex.Iso,
+  );
   assert.isTrue(Id64.isValidId64(viewId));
   const drawingViewRange = new Range2d(0, 0, 100, 100);
-  drawingViewId = DrawingViewDefinition.insert(sourceDb, definitionModelId, "Drawing View", drawingId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+  drawingViewId = DrawingViewDefinition.insert(
+    sourceDb,
+    definitionModelId,
+    "Drawing View",
+    drawingId,
+    drawingCategorySelectorId,
+    displayStyle2dId,
+    drawingViewRange,
+  );
   assert.isTrue(Id64.isValidId64(drawingViewId));
 }
 
-describe("ViewStore", function (this: Suite) {
+describe("ViewStore", function(this: Suite) {
   this.timeout(0);
 
   class FakeGuids {
@@ -232,23 +294,20 @@ describe("ViewStore", function (this: Suite) {
 
     const displayStyleProps: DisplayStyle3dSettingsProps = {
       backgroundColor: ColorDef.fromString("rgb(255,20,10)").toJSON(),
-      subCategoryOvr:
-        [{
-          subCategory: "0x40",
-          color: ColorByName.fuchsia,
-          invisible: true,
-          style: "0xaaa",
-          weight: 10,
-          transp: 0.5,
-        },
-        {
-          subCategory: "0x41",
-          color: ColorByName.darkBlue,
-          invisible: false,
-          style: "0xaa3",
-          weight: 10,
-        },
-        ],
+      subCategoryOvr: [{
+        subCategory: "0x40",
+        color: ColorByName.fuchsia,
+        invisible: true,
+        style: "0xaaa",
+        weight: 10,
+        transp: 0.5,
+      }, {
+        subCategory: "0x41",
+        color: ColorByName.darkBlue,
+        invisible: false,
+        style: "0xaa3",
+        weight: 10,
+      }],
 
       excludedElements: CompressedId64Set.compressArray(["0x8", "0x12", "0x22"]),
       scheduleScript: [{
@@ -268,7 +327,11 @@ describe("ViewStore", function (this: Suite) {
     const dsEl = DisplayStyle3d.create(iModel, IModel.dictionaryId, "test style 1", displayStyleProps);
     const styleProps = dsEl.toJSON() as DisplayStyle3dProps;
     const dsId = iModel.elements.insertElement(styleProps);
-    const ds1Row = await vs1locker.addDisplayStyle({ className: dsEl.classFullName, name: dsEl.code.value, settings: styleProps.jsonProperties!.styles! });
+    const ds1Row = await vs1locker.addDisplayStyle({
+      className: dsEl.classFullName,
+      name: dsEl.code.value,
+      settings: styleProps.jsonProperties!.styles!,
+    });
     expect(ds1Row).equals("@1");
     expect(Id64.isValid(dsId)).true;
 
@@ -403,7 +466,10 @@ describe("ViewStore", function (this: Suite) {
     // now test Drawing views.
     const dv = await iModel.views.getViewStateProps(drawingViewId); // this was added in the populateDb function.
     const dcs = await vs1locker.addCategorySelector({ selector: { ids: dv.categorySelectorProps.categories } });
-    const dds = await vs1locker.addDisplayStyle({ className: dv.displayStyleProps.classFullName, settings: dv.displayStyleProps.jsonProperties!.styles! });
+    const dds = await vs1locker.addDisplayStyle({
+      className: dv.displayStyleProps.classFullName,
+      settings: dv.displayStyleProps.jsonProperties!.styles!,
+    });
     dv.viewDefinitionProps.categorySelectorId = dcs;
     dv.viewDefinitionProps.displayStyleId = dds;
     const dvId = await vs1locker.addView({ viewDefinition: dv.viewDefinitionProps, owner: "owner1" });
@@ -426,4 +492,3 @@ describe("ViewStore", function (this: Suite) {
     sinon.restore();
   });
 });
-

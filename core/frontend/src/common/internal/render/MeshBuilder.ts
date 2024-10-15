@@ -7,13 +7,13 @@
  */
 
 import { assert, Dictionary } from "@itwin/core-bentley";
-import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d, Vector3d } from "@itwin/core-geometry";
 import { Feature, MeshEdge, MeshEdges, MeshPolyline, OctEncodedNormal, OctEncodedNormalPair, QPoint3dList, TextureMapping } from "@itwin/core-common";
+import { Angle, IndexedPolyface, Point2d, Point3d, Polyface, PolyfaceVisitor, Range3d, Vector3d } from "@itwin/core-geometry";
 import { DisplayParams } from "./DisplayParams";
+import { Mesh } from "./MeshPrimitives";
 import { Triangle, TriangleKey, TriangleSet } from "./Primitives";
 import { StrokesPrimitivePointLists } from "./Strokes";
 import { VertexKey, VertexKeyProps, VertexMap } from "./VertexKey";
-import { Mesh } from "./MeshPrimitives";
 
 // Describes a vertex along with the index of the source vertex in the source PolyfaceVisitor.
 type VertexKeyPropsWithIndex = VertexKeyProps & { sourceIndex: number };
@@ -27,9 +27,15 @@ export class MeshBuilder {
   public readonly tolerance: number;
   public readonly areaTolerance: number;
   public readonly tileRange: Range3d;
-  public get currentPolyface(): MeshBuilderPolyface | undefined { return this._currentPolyface; }
-  public get displayParams(): DisplayParams { return this.mesh.displayParams; }
-  public set displayParams(params: DisplayParams) { this.mesh.displayParams = params; }
+  public get currentPolyface(): MeshBuilderPolyface | undefined {
+    return this._currentPolyface;
+  }
+  public get displayParams(): DisplayParams {
+    return this.mesh.displayParams;
+  }
+  public set displayParams(params: DisplayParams) {
+    this.mesh.displayParams = params;
+  }
 
   /** create reference for triangleSet on demand */
   public get triangleSet(): TriangleSet {
@@ -124,7 +130,12 @@ export class MeshBuilder {
     }
   }
 
-  public createTriangleVertices(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions, feature: Feature | undefined): VertexKeyPropsWithIndex[] | undefined {
+  public createTriangleVertices(
+    triangleIndex: number,
+    visitor: PolyfaceVisitor,
+    options: MeshBuilder.PolyfaceVisitorOptions,
+    feature: Feature | undefined,
+  ): VertexKeyPropsWithIndex[] | undefined {
     const { point, requireNormals } = visitor;
     const { fillColor, haveParam } = options;
 
@@ -151,15 +162,22 @@ export class MeshBuilder {
     // Previously we would add all 3 vertices to our map, then detect degenerate triangles in AddTriangle().
     // This led to unused vertex data, and caused mismatch in # of vertices when recreating the MeshBuilder from the data in the tile cache.
     // Detect beforehand instead.
-    if (this.vertexMap.arePositionsAlmostEqual(vertices[0], vertices[1])
+    if (
+      this.vertexMap.arePositionsAlmostEqual(vertices[0], vertices[1])
       || this.vertexMap.arePositionsAlmostEqual(vertices[0], vertices[2])
-      || this.vertexMap.arePositionsAlmostEqual(vertices[1], vertices[2]))
+      || this.vertexMap.arePositionsAlmostEqual(vertices[1], vertices[2])
+    )
       return undefined;
 
     return vertices;
   }
 
-  public createTriangle(triangleIndex: number, visitor: PolyfaceVisitor, options: MeshBuilder.PolyfaceVisitorOptions, feature: Feature | undefined): Triangle | undefined {
+  public createTriangle(
+    triangleIndex: number,
+    visitor: PolyfaceVisitor,
+    options: MeshBuilder.PolyfaceVisitorOptions,
+    feature: Feature | undefined,
+  ): Triangle | undefined {
     // generate vertex key properties for each of the three sides of the triangle
     const vertices = this.createTriangleVertices(triangleIndex, visitor, options, feature);
 
@@ -276,12 +294,22 @@ export namespace MeshBuilder { // eslint-disable-line no-redeclare
 export class MeshEdgeCreationOptions {
   public readonly type: MeshEdgeCreationOptions.Type;
   public readonly minCreaseAngle = 20.0 * Angle.radiansPerDegree;
-  public get generateAllEdges(): boolean { return this.type === MeshEdgeCreationOptions.Type.AllEdges; }
-  public get generateNoEdges(): boolean { return this.type === MeshEdgeCreationOptions.Type.NoEdges; }
-  public get generateCreaseEdges(): boolean { return 0 !== (this.type & MeshEdgeCreationOptions.Type.CreaseEdges); }
+  public get generateAllEdges(): boolean {
+    return this.type === MeshEdgeCreationOptions.Type.AllEdges;
+  }
+  public get generateNoEdges(): boolean {
+    return this.type === MeshEdgeCreationOptions.Type.NoEdges;
+  }
+  public get generateCreaseEdges(): boolean {
+    return 0 !== (this.type & MeshEdgeCreationOptions.Type.CreaseEdges);
+  }
   /** Create edge chains for polyfaces that do not already have them. */
-  public get createEdgeChains(): boolean { return 0 !== (this.type & MeshEdgeCreationOptions.Type.CreateChains); }
-  constructor(type = MeshEdgeCreationOptions.Type.NoEdges) { this.type = type; }
+  public get createEdgeChains(): boolean {
+    return 0 !== (this.type & MeshEdgeCreationOptions.Type.CreateChains);
+  }
+  constructor(type = MeshEdgeCreationOptions.Type.NoEdges) {
+    this.type = type;
+  }
 }
 
 /** @internal */
@@ -317,7 +345,8 @@ class EdgeInfo {
     public faceIndex0: number,
     public edge: MeshEdge,
     public point0: Point3d,
-    public point1: Point3d) {
+    public point1: Point3d,
+  ) {
   }
 
   public addFace(visible: boolean, faceIndex: number) {

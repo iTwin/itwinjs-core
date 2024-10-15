@@ -11,13 +11,13 @@
 import type { BrowserWindow, BrowserWindowConstructorOptions, WebPreferences } from "electron";
 import type * as ElectronModule from "electron";
 
+import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
+import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
+import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
 import * as fs from "fs";
 import * as path from "path";
-import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
-import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
-import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
-import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
+import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -70,7 +70,7 @@ export interface ElectronHostOpts extends NativeHostOpts {
 export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptions {
   storeWindowName?: string;
   /** The style of window title bar. Default is `default`. */
-  titleBarStyle?: ("default" | "hidden" | "hiddenInset" | "customButtonsOnHover");
+  titleBarStyle?: "default" | "hidden" | "hiddenInset" | "customButtonsOnHover";
 }
 
 /** the size and position of a window as stored in the settings file.
@@ -100,11 +100,17 @@ export class ElectronHost {
   public static appIconPath: string;
   public static frontendURL: string;
   public static rpcConfig: RpcConfiguration;
-  public static get ipcMain() { return this._electron?.ipcMain; }
-  public static get app() { return this._electron?.app; }
-  public static get electron() { return this._electron; }
+  public static get ipcMain() {
+    return this._electron?.ipcMain;
+  }
+  public static get app() {
+    return this._electron?.app;
+  }
+  public static get electron() {
+    return this._electron;
+  }
 
-  private constructor() { }
+  private constructor() {}
 
   /**
    * Converts an "electron://frontend/" URL to an absolute file path.
@@ -137,7 +143,7 @@ export class ElectronHost {
       ...options?.webPreferences,
 
       // These web preference variables should not be overriden by the ElectronHostWindowOptions
-      preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
+      preload: require.resolve(/* webpack: copyfile */ "./ElectronPreload.js"),
       experimentalFeatures: false,
       nodeIntegration: false,
       contextIsolation: true,
@@ -187,7 +193,9 @@ export class ElectronHost {
   }
 
   /** The "main" BrowserWindow for this application. */
-  public static get mainWindow() { return this._mainWindow; }
+  public static get mainWindow() {
+    return this._mainWindow;
+  }
 
   /**
    * Gets window size and position for a window, by name, from settings file, if present.
@@ -257,7 +265,9 @@ export class ElectronHost {
     this._openWindow(windowOptions);
   }
 
-  public static get isValid() { return this._ipc !== undefined; }
+  public static get isValid() {
+    return this._ipc !== undefined;
+  }
 
   /**
    * Initialize the backend of an Electron app.
@@ -304,7 +314,9 @@ export class ElectronHost {
 }
 
 class ElectronDialogHandler extends IpcHandler {
-  public get channelName() { return electronIpcStrings.dialogChannel; }
+  public get channelName() {
+    return electronIpcStrings.dialogChannel;
+  }
   public async callDialog(method: DialogModuleMethod, ...args: any) {
     const dialog = ElectronHost.electron.dialog;
     const dialogMethod = dialog[method] as Function;
@@ -317,7 +329,7 @@ class ElectronDialogHandler extends IpcHandler {
 
 function debounce(func: Function, ms: number = 200) {
   let timeout: NodeJS.Timeout;
-  return function (this: any, ...args: any[]) {
+  return function(this: any, ...args: any[]) {
     clearTimeout(timeout);
     timeout = setTimeout(() => {
       func.apply(this, args);

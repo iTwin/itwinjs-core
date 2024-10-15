@@ -5,8 +5,8 @@
 
 import { ImageMapLayerSettings } from "@itwin/core-common";
 import { FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeatureInfo } from "@itwin/core-frontend";
-import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 import { FeatureInfoReader } from "../Feature/FeatureInfoReader";
+import { ArcGisResponseData } from "./ArcGisFeatureResponse";
 
 /** Interface defining minimal implementation needed to create an ArcGIS geometry reader,
  * needed by the [[ArcGisFeatureProvider]].
@@ -21,7 +21,6 @@ export interface ArcGisFeatureReader {
  * @internal
  */
 export abstract class ArcGisBaseFeatureReader extends FeatureInfoReader implements ArcGisFeatureReader {
-
   protected _settings: ImageMapLayerSettings;
   protected _layerMetadata: any;
 
@@ -32,6 +31,9 @@ export abstract class ArcGisBaseFeatureReader extends FeatureInfoReader implemen
   }
 
   public abstract readAndRender(response: ArcGisResponseData, renderer: FeatureGeometryRenderer): Promise<void>;
-  public abstract readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer: GraphicsGeometryRenderer): Promise<void>;
-
+  public abstract readFeatureInfo(
+    response: ArcGisResponseData,
+    featureInfos: MapLayerFeatureInfo[],
+    renderer: GraphicsGeometryRenderer,
+  ): Promise<void>;
 }

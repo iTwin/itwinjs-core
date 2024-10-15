@@ -6,6 +6,8 @@
  * @module MapLayersFormats
  */
 
+import { BeEvent } from "@itwin/core-bentley";
+import { ImageMapLayerSettings, MapImageryProps, MapImagerySettings, MapLayerProps } from "@itwin/core-common";
 import {
   BeButtonEvent,
   EventHandled,
@@ -25,10 +27,8 @@ import {
   ToolAssistanceSection,
   Viewport,
 } from "@itwin/core-frontend";
-import { BeEvent } from "@itwin/core-bentley";
-import { ImageMapLayerSettings, MapImageryProps, MapImagerySettings, MapLayerProps } from "@itwin/core-common";
-import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 import { mapInfoIcon } from "../Icons/MapInfoIcon";
+import { MapFeatureInfoDecorator } from "./MapFeatureInfoDecorator";
 
 /**
  * Data provided every time [[MapFeatureInfoTool]] retrieves feature information.
@@ -41,36 +41,38 @@ export interface MapFeatureInfoToolData {
 }
 
 class ActiveMapLayerState {
-  private _activeMapLayers: MapLayerInfoFromTileTree[]|undefined;
-  public get activeMapLayers()  {return this._activeMapLayers;}
-  public set activeMapLayers(active: MapLayerInfoFromTileTree[]|undefined)  {
+  private _activeMapLayers: MapLayerInfoFromTileTree[] | undefined;
+  public get activeMapLayers() {
+    return this._activeMapLayers;
+  }
+  public set activeMapLayers(active: MapLayerInfoFromTileTree[] | undefined) {
     this._activeMapLayers = active;
     this.isVisible = true;
     this.isInRange = true;
     this.existsInDisplayStyle = true;
-
   }
   public isVisible: boolean = true;
   public isInRange: boolean = true;
   public existsInDisplayStyle: boolean = true;
 
-  public get hasMapLayers() { return (this.activeMapLayers && this.activeMapLayers.length > 0);}
+  public get hasMapLayers() {
+    return (this.activeMapLayers && this.activeMapLayers.length > 0);
+  }
 
   public updateWithImagerySettings(imagery: MapImageryProps) {
-    const result = {exists: false, hidden: false};
+    const result = { exists: false, hidden: false };
     this.existsInDisplayStyle = false;
     this.isVisible = false;
     if (this.hasMapLayers) {
-      const oldMls = this._activeMapLayers![0];    // consider only first layer for now
+      const oldMls = this._activeMapLayers![0]; // consider only first layer for now
 
-      let newMls: MapLayerProps|undefined;
+      let newMls: MapLayerProps | undefined;
       if (oldMls.isBaseLayer) {
         if (typeof (imagery.backgroundBase) !== "number") {
           newMls = imagery.backgroundBase;
         }
       } else if (oldMls.index?.isOverlay && imagery.overlayLayers && imagery.overlayLayers.length > oldMls.index.index) {
         newMls = imagery.overlayLayers[oldMls.index.index];
-
       } else if ((oldMls.index !== undefined) && imagery.backgroundLayers && imagery.backgroundLayers.length > oldMls.index.index) {
         newMls = imagery.backgroundLayers[oldMls.index.index];
       }
@@ -79,31 +81,30 @@ class ActiveMapLayerState {
       // by using the serialized JSON object
       let tmpNewMls = newMls;
       if (newMls && newMls.visible !== oldMls.settings.visible) {
-        tmpNewMls = {...newMls, visible: oldMls.settings.visible};
+        tmpNewMls = { ...newMls, visible: oldMls.settings.visible };
       }
       const newJson = tmpNewMls ? JSON.stringify(tmpNewMls) : "";
       const oldJson = JSON.stringify(oldMls.settings.toJSON());
 
-      if (newJson === oldJson ) {
+      if (newJson === oldJson) {
         // We consider newMls and OldMls to be the same mapLayer instance.
         this.existsInDisplayStyle = true;
         this.isVisible = newMls!.visible ? true : false;
       }
-
     }
     return result;
   }
 
   public updateWithScaleRangeVisibility(layerIndexes: MapLayerScaleRangeVisibility[]) {
     if (this.hasMapLayers) {
-      const currentMls = this.activeMapLayers![0];    // consider only first layer for now
+      const currentMls = this.activeMapLayers![0]; // consider only first layer for now
       for (const scaleRangeVisibility of layerIndexes) {
         if (currentMls.index?.index === scaleRangeVisibility.index) {
-          this.isInRange = scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Visible || scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Partial;
+          this.isInRange = scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Visible ||
+            scaleRangeVisibility.visibility === MapTileTreeScaleRangeVisibility.Partial;
         }
       }
     }
-
   }
 }
 
@@ -115,7 +116,7 @@ class ActiveMapLayerState {
  */
 export class MapFeatureInfoTool extends PrimitiveTool {
   public readonly onInfoReady = new BeEvent<(data: MapFeatureInfoToolData) => void>();
-  public readonly onInfoCleared =  new BeEvent();
+  public readonly onInfoCleared = new BeEvent();
 
   public static override toolId = "MapFeatureInfoTool";
   public static override iconSpec = mapInfoIcon.dataUri;
@@ -125,7 +126,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
 
   private _state: ActiveMapLayerState = new ActiveMapLayerState();
   private readonly _detachListeners: VoidFunction[] = [];
-  private  _detachOnMapImageryChanged: VoidFunction|undefined;
+  private _detachOnMapImageryChanged: VoidFunction | undefined;
 
   public override requireWriteableTarget(): boolean {
     return false;
@@ -171,7 +172,6 @@ export class MapFeatureInfoTool extends PrimitiveTool {
       };
 
       this._detachListeners.push(vp.onChangeView.addListener((viewport, _previousViewState) => {
-
         // When a saved view is loaded, 'onMapImageryChanged' events are no longer handled, we have to re-attach.
         if (this._detachOnMapImageryChanged) {
           this._detachOnMapImageryChanged();
@@ -192,7 +192,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
       this._detachOnMapImageryChanged = vp.displayStyle.settings.onMapImageryChanged.addListener(mapImageryChangeHandler);
 
       // Every time a layer goes out of range it, its associated decoration should be hidden (and restore if enter again the range)
-      this._detachListeners.push(vp.onMapLayerScaleRangeVisibilityChanged.addListener(((layerIndexes: MapLayerScaleRangeVisibility[]) => {
+      this._detachListeners.push(vp.onMapLayerScaleRangeVisibilityChanged.addListener((layerIndexes: MapLayerScaleRangeVisibility[]) => {
         if (this._state.hasMapLayers) {
           this._state.updateWithScaleRangeVisibility(layerIndexes);
           if (this._state.existsInDisplayStyle && this._state.isVisible) {
@@ -201,12 +201,10 @@ export class MapFeatureInfoTool extends PrimitiveTool {
           }
         }
         this._layerSettingsCache.clear();
-      })));
-
+      }));
     }
 
     IModelApp.viewManager.addDecorator(this._decorator);
-
   }
 
   public override async onCleanup() {
@@ -231,7 +229,9 @@ export class MapFeatureInfoTool extends PrimitiveTool {
     if (fromCache) {
       mapLayerFromHit = fromCache;
     } else if (this.targetView) {
-      mapLayerFromHit = this.targetView?.mapLayerFromHit(hit).filter(((info) => info.settings instanceof ImageMapLayerSettings && info.provider?.supportsMapFeatureInfo));
+      mapLayerFromHit = this.targetView?.mapLayerFromHit(hit).filter(
+        (info) => info.settings instanceof ImageMapLayerSettings && info.provider?.supportsMapFeatureInfo,
+      );
       this._layerSettingsCache.set(hit.sourceId, mapLayerFromHit);
     }
 
@@ -271,7 +271,7 @@ export class MapFeatureInfoTool extends PrimitiveTool {
         try {
           const aperture = (hit.viewport.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
           const pixelRadius = Math.floor(aperture + 0.5);
-          mapInfo = await hit.viewport.getMapFeatureInfo(hit, {tolerance: pixelRadius});
+          mapInfo = await hit.viewport.getMapFeatureInfo(hit, { tolerance: pixelRadius });
           if (mapInfo) {
             this._decorator.setData({ hit, mapInfo });
           } else {
@@ -305,15 +305,18 @@ export class MapFeatureInfoTool extends PrimitiveTool {
 
   /** @internal */
   protected showPrompt(): void {
-
     const promptEnterPoint = IModelApp.localization.getLocalizedString("mapLayersFormats:tools.MapFeatureInfoTool.Prompts.EnterPoint");
-    const promptClickIdentify= IModelApp.localization.getLocalizedString("mapLayersFormats:tools.MapFeatureInfoTool.Prompts.clickToIdentify");
+    const promptClickIdentify = IModelApp.localization.getLocalizedString("mapLayersFormats:tools.MapFeatureInfoTool.Prompts.clickToIdentify");
     const promptClickClear = IModelApp.localization.getLocalizedString("mapLayersFormats:tools.MapFeatureInfoTool.Prompts.clickToClear");
 
     // Mouse Instructions
     const mouseInstructions: ToolAssistanceInstruction[] = [];
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, promptClickIdentify, false, ToolAssistanceInputMethod.Mouse));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, promptClickClear, false, ToolAssistanceInputMethod.Mouse));
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, promptClickIdentify, false, ToolAssistanceInputMethod.Mouse),
+    );
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, promptClickClear, false, ToolAssistanceInputMethod.Mouse),
+    );
     const sections: ToolAssistanceSection[] = [];
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
 

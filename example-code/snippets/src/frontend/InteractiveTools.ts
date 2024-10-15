@@ -2,12 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, EventHandled, HitDetail, IModelApp, LocateFilterStatus, LocateResponse, PrimitiveTool,
+  AccuDrawHintBuilder,
+  BeButtonEvent,
+  DynamicsContext,
+  EventHandled,
+  HitDetail,
+  IModelApp,
+  LocateFilterStatus,
+  LocateResponse,
+  PrimitiveTool,
   Viewport,
 } from "@itwin/core-frontend";
+import { Point3d, Vector3d } from "@itwin/core-geometry";
 
 export class SamplePrimitiveTool extends PrimitiveTool {
   public static override toolId = "Sample.Run";
@@ -74,12 +82,16 @@ export class SampleSnapTool extends PrimitiveTool {
   }
   // __PUBLISH_EXTRACT_END__
 
-  public async onRestartTool() { return this.exitTool(); }
+  public async onRestartTool() {
+    return this.exitTool();
+  }
 }
 
 export class SampleLocateTool extends PrimitiveTool {
   public static override toolId = "Sample.Locate";
-  public async onRestartTool() { return this.exitTool(); }
+  public async onRestartTool() {
+    return this.exitTool();
+  }
 
   // __PUBLISH_EXTRACT_START__ PrimitiveTool_Locate
   public override async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {

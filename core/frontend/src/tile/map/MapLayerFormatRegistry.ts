@@ -10,7 +10,16 @@ import { assert, Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@itwin/core-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAccessClient, MapLayerAuthenticationInfo, MapLayerImageryProvider, MapLayerSource, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
+import {
+  ImageryMapLayerTreeReference,
+  internalMapLayerImageryFormats,
+  MapLayerAccessClient,
+  MapLayerAuthenticationInfo,
+  MapLayerImageryProvider,
+  MapLayerSource,
+  MapLayerSourceStatus,
+  MapLayerTileTreeReference,
+} from "../internal";
 const loggerCategory = "ArcGISFeatureProvider";
 
 /**
@@ -26,7 +35,9 @@ export class MapLayerFormat {
   public static formatId: string;
 
   /** Register the current format in the [[MapLayerFormatRegistry]]. */
-  public static register() { IModelApp.mapLayerFormatRegistry.register(this); }
+  public static register() {
+    IModelApp.mapLayerFormatRegistry.register(this);
+  }
 
   /**
    * Allow a source of a specific format to be validated before being attached as a map-layer.
@@ -36,11 +47,19 @@ export class MapLayerFormat {
    * @param _ignoreCache Flag to skip cache lookup (i.e. force a new server request).
    * @returns Validation Status. If successful, a list of available sub-layers may also be returned.
    */
-  public static async validateSource(_url: string, _userName?: string, _password?: string, _ignoreCache?: boolean, _accesKey?: MapLayerKey): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
+  public static async validateSource(
+    _url: string,
+    _userName?: string,
+    _password?: string,
+    _ignoreCache?: boolean,
+    _accesKey?: MapLayerKey,
+  ): Promise<MapLayerSourceValidation> {
+    return { status: MapLayerSourceStatus.Valid };
+  }
 
   /** Allow a source object to be validated before being attached as a map-layer.
-    * @beta
-  */
+   * @beta
+   */
   public static async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
     return this.validateSource(args.source.url, args.source.userName, args.source.password, args.ignoreCache);
   }
@@ -51,7 +70,9 @@ export class MapLayerFormat {
    * @returns Returns the new imagery provider.
    * @beta
    */
-  public static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined { assert(false); }
+  public static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined {
+    assert(false);
+  }
 
   /**
    * Creates a MapLayerTileTreeReference for this map layer format.
@@ -61,11 +82,14 @@ export class MapLayerFormat {
    * @returns Returns the new tile tree reference.
    * @beta
    */
-  public static createMapLayerTree(_layerSettings: MapLayerSettings, _layerIndex: number, _iModel: IModelConnection): MapLayerTileTreeReference | undefined {
+  public static createMapLayerTree(
+    _layerSettings: MapLayerSettings,
+    _layerIndex: number,
+    _iModel: IModelConnection,
+  ): MapLayerTileTreeReference | undefined {
     assert(false);
     return undefined;
   }
-
 }
 
 /** Options for validating sources
@@ -131,7 +155,9 @@ export class MapLayerFormatRegistry {
   }
   private _formats = new Map<string, MapLayerFormatEntry>();
 
-  public isRegistered(formatId: string) { return this._formats.get(formatId) !== undefined; }
+  public isRegistered(formatId: string) {
+    return this._formats.get(formatId) !== undefined;
+  }
 
   public register(formatClass: MapLayerFormatType) {
     if (formatClass.formatId.length === 0)
@@ -163,7 +189,11 @@ export class MapLayerFormatRegistry {
   }
 
   /** @internal */
-  public createImageryMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): ImageryMapLayerTreeReference | undefined {
+  public createImageryMapLayerTree(
+    layerSettings: ImageMapLayerSettings,
+    layerIndex: number,
+    iModel: IModelConnection,
+  ): ImageryMapLayerTreeReference | undefined {
     const entry = this._formats.get(layerSettings.formatId);
     const format = entry?.type;
     if (format === undefined) {
@@ -191,10 +221,22 @@ export class MapLayerFormatRegistry {
   /** @beta*/
   public async validateSource(opts: ValidateSourceArgs): Promise<MapLayerSourceValidation>;
 
-  public async validateSource(formatId: string, url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
+  public async validateSource(
+    formatId: string,
+    url: string,
+    userName?: string,
+    password?: string,
+    ignoreCache?: boolean,
+  ): Promise<MapLayerSourceValidation>;
 
   /** @internal*/
-  public async validateSource(formatIdOrArgs: string|ValidateSourceArgs, url?: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
+  public async validateSource(
+    formatIdOrArgs: string | ValidateSourceArgs,
+    url?: string,
+    userName?: string,
+    password?: string,
+    ignoreCache?: boolean,
+  ): Promise<MapLayerSourceValidation> {
     let format: typeof MapLayerFormat | undefined;
     let args: ValidateSourceArgs | undefined;
 
@@ -203,13 +245,12 @@ export class MapLayerFormatRegistry {
       const entry = this._formats.get(formatId);
       format = entry?.type;
       if (format !== undefined) {
-        const source =  MapLayerSource.fromJSON({name: "", formatId, url});
+        const source = MapLayerSource.fromJSON({ name: "", formatId, url });
         if (source !== undefined) {
-          args = {source, ignoreCache};
+          args = { source, ignoreCache };
           source.userName = userName;
           source.password = password;
         }
-
       }
     } else if (typeof formatIdOrArgs !== "string") {
       const entry = this._formats.get(formatIdOrArgs.source.formatId);
@@ -223,4 +264,3 @@ export class MapLayerFormatRegistry {
     return format.validate(args);
   }
 }
-

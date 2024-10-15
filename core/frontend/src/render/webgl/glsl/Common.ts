@@ -8,9 +8,9 @@
 
 import { RenderType } from "@itwin/webgl-compatibility";
 import { DrawParams } from "../DrawCommand";
-import { UniformHandle } from "../UniformHandle";
 import { ProgramBuilder, ShaderBuilder, ShaderType, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
+import { UniformHandle } from "../UniformHandle";
 import { addModelViewMatrix } from "./Vertex";
 
 // These are not used anywhere currently, but will leave them here commented out in case we want them later.

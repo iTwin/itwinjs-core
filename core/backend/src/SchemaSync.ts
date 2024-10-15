@@ -7,14 +7,14 @@
  * @module SQLiteDb
  */
 
-import { CloudSqlite } from "./CloudSqlite";
-import { VersionedSqliteDb } from "./SQLiteDb";
-import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { IModelError, LocalFileName } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { CloudSqlite } from "./CloudSqlite";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
+import { VersionedSqliteDb } from "./SQLiteDb";
 
 /** @internal */
 export namespace SchemaSync {
@@ -23,7 +23,7 @@ export namespace SchemaSync {
   /** A CloudSqlite database for synchronizing schema changes across briefcases.  */
   export class SchemaSyncDb extends VersionedSqliteDb {
     public override readonly myVersion = "4.0.0";
-    protected override createDDL() { }
+    protected override createDDL() {}
   }
 
   const syncProperty = { namespace: "itwinjs", name: "SchemaSync" };
@@ -66,7 +66,11 @@ export namespace SchemaSync {
     }
   };
 
-  export const withLockedAccess = async (iModel: IModelDb | { readonly fileName: LocalFileName }, args: { operationName: string, openMode?: OpenMode, user?: string }, operation: (access: CloudAccess) => Promise<void>): Promise<void> => {
+  export const withLockedAccess = async (
+    iModel: IModelDb | { readonly fileName: LocalFileName },
+    args: { operationName: string, openMode?: OpenMode, user?: string },
+    operation: (access: CloudAccess) => Promise<void>,
+  ): Promise<void> => {
     const access = await getCloudAccess(iModel);
     try {
       await access.withLockedDb(args, async () => operation(access));
@@ -75,7 +79,10 @@ export namespace SchemaSync {
     }
   };
 
-  export const withReadonlyAccess = async (iModel: IModelDb | { readonly fileName: LocalFileName }, operation: (access: CloudAccess) => Promise<void>): Promise<void> => {
+  export const withReadonlyAccess = async (
+    iModel: IModelDb | { readonly fileName: LocalFileName },
+    operation: (access: CloudAccess) => Promise<void>,
+  ): Promise<void> => {
     const access = await getCloudAccess(iModel);
     access.synchronizeWithCloud();
     access.openForRead();
@@ -143,13 +150,12 @@ export namespace SchemaSync {
       return `${this.getCloudDb()[_nativeDb].getFilePath()}?vfs=${this.container.cache?.name}&writable=${this.container.isWriteable ? 1 : 0}`;
     }
     /**
-   * Initialize a cloud container for use as a SchemaSync. The container must first be created via its storage supplier api (e.g. Azure, or AWS).
-   * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty ChannelDb into the container.
-   * @note this deletes any existing content in the container.
-   */
+     * Initialize a cloud container for use as a SchemaSync. The container must first be created via its storage supplier api (e.g. Azure, or AWS).
+     * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty ChannelDb into the container.
+     * @note this deletes any existing content in the container.
+     */
     public static async initializeDb(props: CloudSqlite.ContainerProps) {
       return super._initializeDb({ props, dbType: SchemaSyncDb, dbName: defaultDbName });
     }
   }
 }
-

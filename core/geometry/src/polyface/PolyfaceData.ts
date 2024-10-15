@@ -36,7 +36,7 @@ export class PolyfaceData {
   /**
    * Relative tolerance used in tests for planar facets.
    * @internal
-  */
+   */
   public static readonly planarityLocalRelTol = 1.0e-13;
   /** Coordinate data for points in the facets (packed as numbers in a contiguous array). */
   public point: GrowableXYZArray;
@@ -92,7 +92,10 @@ export class PolyfaceData {
    * @param twoSided `true` if the facets are to be considered viewable from the back; `false` (default) if not.
    */
   public constructor(
-    needNormals: boolean = false, needParams: boolean = false, needColors: boolean = false, twoSided: boolean = false,
+    needNormals: boolean = false,
+    needParams: boolean = false,
+    needColors: boolean = false,
+    twoSided: boolean = false,
   ) {
     this.point = new GrowableXYZArray();
     this.pointIndex = [];
@@ -393,24 +396,30 @@ export class PolyfaceData {
         this.point.push(Point3d.create());
       while (this.pointIndex.length < length)
         this.pointIndex.push(-1);
-      if (this.normal)
+      if (this.normal) {
         while (this.normal.length < length)
           this.normal.push(Vector3d.create());
-      if (this.normalIndex)
+      }
+      if (this.normalIndex) {
         while (this.normalIndex.length < length)
           this.normalIndex.push(-1);
-      if (this.param)
+      }
+      if (this.param) {
         while (this.param.length < length)
           this.param.push(Point2d.create());
-      if (this.paramIndex)
+      }
+      if (this.paramIndex) {
         while (this.paramIndex.length < length)
           this.paramIndex.push(-1);
-      if (this.color)
+      }
+      if (this.color) {
         while (this.color.length < length)
           this.color.push(0);
-      if (this.colorIndex)
+      }
+      if (this.colorIndex) {
         while (this.colorIndex.length < length)
           this.colorIndex.push(-1);
+      }
       while (this.edgeVisible.length < length)
         this.edgeVisible.push(false);
       if (this.auxData) {
@@ -458,12 +467,15 @@ export class PolyfaceData {
       while (this.point.length < length) this.point.push(Point3d.create());
       while (this.pointIndex.length < length) this.pointIndex.push(-1);
       while (this.edgeVisible.length < length) this.edgeVisible.push(false);
-      if (this.normal)
+      if (this.normal) {
         while (this.normal.length < length) this.normal.push(Vector3d.create());
-      if (this.param)
+      }
+      if (this.param) {
         while (this.param.length < length) this.param.push(Point2d.create());
-      if (this.color)
+      }
+      if (this.color) {
         while (this.color.length < length) this.color.push(0);
+      }
       if (this.auxData) {
         for (const channel of this.auxData.channels) {
           for (const channelData of channel.data) {
@@ -616,13 +628,18 @@ export class PolyfaceData {
    * `false` to reverse all indices (e.g., facet [1,2,3,4] becomes [4,3,2,1]).
    */
   public static reverseIndicesSingleFacet<T>(
-    facetIndex: number, facetStartIndex: number[], indices: T[] | undefined, preserveStart: boolean,
+    facetIndex: number,
+    facetStartIndex: number[],
+    indices: T[] | undefined,
+    preserveStart: boolean,
   ): boolean {
     if (!indices || indices.length === 0)
       return true; // empty case
     if (indices.length > 0) {
-      if (facetStartIndex[facetStartIndex.length - 1] === indices.length
-        && facetIndex >= 0 && facetIndex + 1 < facetStartIndex.length) {
+      if (
+        facetStartIndex[facetStartIndex.length - 1] === indices.length
+        && facetIndex >= 0 && facetIndex + 1 < facetStartIndex.length
+      ) {
         let index0 = facetStartIndex[facetIndex];
         let index1 = facetStartIndex[facetIndex + 1];
         if (preserveStart) { // leave "index0" as is so reversed facet starts at same vertex
@@ -655,7 +672,7 @@ export class PolyfaceData {
    * * The indices for facet k are `facetStartIndex[k]` up to (but not including) `facetStartIndex[k + 1]`.
    * * This implies `facetStartIndex[k + 1]` is both the upper limit of facet k's indices, and the start index of facet k+1.
    * * For example, passing an IndexedPolyface's _facetStart array into this method reverses every facet.
-  */
+   */
   public reverseIndices(facetStartIndex?: number[]): void {
     if (facetStartIndex && PolyfaceData.isValidFacetStartIndexArray(facetStartIndex)) {
       PolyfaceData.reverseIndices(facetStartIndex, this.pointIndex, true);

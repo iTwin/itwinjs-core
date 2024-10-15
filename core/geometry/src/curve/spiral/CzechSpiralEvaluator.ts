@@ -7,8 +7,8 @@
  * @module Curve
  */
 import { Geometry } from "../../Geometry";
-import { CubicEvaluator } from "./CubicEvaluator";
 import { SimpleNewton } from "../../numerics/Newton";
+import { CubicEvaluator } from "./CubicEvaluator";
 /**
  * Czech cubic.
  * This is y= m*x^3 with
@@ -50,7 +50,7 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
     if (gamma === undefined)
       return undefined;
     // If radius is negative, it shows up in gamma.  But the a signed denominator undoes it.  So take abs of denominator.
-    return gamma / Math.abs((6.0 * radius1 * length1));
+    return gamma / Math.abs(6.0 * radius1 * length1);
   }
 
   public static create(length1: number, radius1: number): CzechSpiralEvaluator | undefined {
@@ -66,7 +66,9 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
     super.scaleInPlace(scaleFactor);
   }
   /** return a deep copy of the evaluator */
-  public clone(): CzechSpiralEvaluator { return new CzechSpiralEvaluator(this.nominalLength1, this.nominalRadius1, this.cubicM); }
+  public clone(): CzechSpiralEvaluator {
+    return new CzechSpiralEvaluator(this.nominalLength1, this.nominalRadius1, this.cubicM);
+  }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof CzechSpiralEvaluator) {
@@ -89,16 +91,15 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
    * Return the inverse of the `forwardL2R2Map` function.
    * * The undefined result can only occur for distances outside the usual spirals.
    * @param s (approximate) distance along the spiral.
-   *
    */
   public czechApproximateDistanceToX(d: number): number | undefined {
     return CzechSpiralEvaluator.inverseL2R2Map(d, 1.0, this.nominalLength1, this.nominalRadius1);
   }
 
   /**
-     * evaluate a series expansion that is used with varying signs (plus or minus 1) in czech and italian spirals.
-     * @param x distance along the x axis.
-     */
+   * evaluate a series expansion that is used with varying signs (plus or minus 1) in czech and italian spirals.
+   * @param x distance along the x axis.
+   */
   public static forwardL2R2Map(x: number, sign: number, length: number, radius: number): number {
     const l2 = length * length;
     const r2 = radius * radius;
@@ -110,22 +111,19 @@ export class CzechSpiralEvaluator extends CubicEvaluator {
    * Return the inverse of the `forwardL2R2Map` function.
    * * The undefined result can only occur for distances outside the usual spirals.
    * @param s (approximate) distance along the spiral.
-   *
    */
   public static inverseL2R2Map(b: number, sign: number, length: number, radius: number): number | undefined {
     const l2 = length * length;
     const r2 = radius * radius;
     const Q = 4.0 * r2 - l2;
     const a = sign / (10.0 * Q * l2);
-    return SimpleNewton.runNewton1D(b,
-      (x: number) => {
-        const xx = x * x;
-        return x * (1.0 + xx * xx * a) - b;
-      },
-      (x: number) => {
-        const xx = x * x;
-        return 1.0 + 5 * xx * xx * a;
-      });
+    return SimpleNewton.runNewton1D(b, (x: number) => {
+      const xx = x * x;
+      return x * (1.0 + xx * xx * a) - b;
+    }, (x: number) => {
+      const xx = x * x;
+      return 1.0 + 5 * xx * xx * a;
+    });
   }
 }
 /**
@@ -155,7 +153,7 @@ export class ItalianSpiralEvaluator extends CubicEvaluator {
     if (gamma === undefined)
       return undefined;
     // If radius is negative, it shows up in gamma.  But the a signed denominator undoes it.  So take abs of denominator.
-    return gamma / Math.abs((6.0 * radius1 * lengthXByForward));
+    return gamma / Math.abs(6.0 * radius1 * lengthXByForward);
   }
 
   /** Constructor is private.  Caller responsible for cubicM validity. */
@@ -182,7 +180,9 @@ export class ItalianSpiralEvaluator extends CubicEvaluator {
     super.scaleInPlace(scaleFactor);
   }
   /** return a deep copy of the evaluator */
-  public clone(): ItalianSpiralEvaluator { return new ItalianSpiralEvaluator(this.nominalLength1, this.nominalRadius1, super.axisLength, this.cubicM); }
+  public clone(): ItalianSpiralEvaluator {
+    return new ItalianSpiralEvaluator(this.nominalLength1, this.nominalRadius1, super.axisLength, this.cubicM);
+  }
   /** Member by member matchup ... */
   public isAlmostEqual(other: any): boolean {
     if (other instanceof ItalianSpiralEvaluator) {
@@ -192,11 +192,11 @@ export class ItalianSpiralEvaluator extends CubicEvaluator {
     return false;
   }
   /**
-     * Return a (fast but mediocre) approximation of spiral length as a function of x axis position.
-     * * This x-to-distance relation is not as precise as the CurvePrimitive method moveSignedDistanceFromFraction.
-     * * It is supported here for users interested in replicating the Czech distance mapping rather than the more accurate CurvePrimitive measurements.
-     * @param x distance along the x axis.
-     */
+   * Return a (fast but mediocre) approximation of spiral length as a function of x axis position.
+   * * This x-to-distance relation is not as precise as the CurvePrimitive method moveSignedDistanceFromFraction.
+   * * It is supported here for users interested in replicating the Czech distance mapping rather than the more accurate CurvePrimitive measurements.
+   * @param x distance along the x axis.
+   */
   public distanceToItalianApproximateX(x: number): number {
     return CzechSpiralEvaluator.forwardL2R2Map(x, -1.0, this.nominalLength1, this.nominalRadius1);
   }
@@ -204,7 +204,6 @@ export class ItalianSpiralEvaluator extends CubicEvaluator {
    * Return the inverse of the `forwardL2R2Map` function.
    * * The undefined result can only occur for distances outside the usual spirals.
    * @param s (approximate) distance along the spiral.
-   *
    */
   public xToItalianApproximateDistance(d: number): number | undefined {
     return CzechSpiralEvaluator.inverseL2R2Map(d, -1.0, this.nominalLength1, this.nominalRadius1);

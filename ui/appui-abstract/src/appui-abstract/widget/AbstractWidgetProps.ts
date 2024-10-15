@@ -6,8 +6,8 @@
  * @module Widget
  */
 
-import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { BadgeType } from "../items/BadgeType";
+import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { ProvidedItem } from "../items/ProvidedItem";
 import { WidgetState } from "./WidgetState";
 
@@ -32,7 +32,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
   readonly tooltip?: string | ConditionalStringValue;
   /** Indicates whether the Widget is free-form or rectangular. Defaults to false for rectangular. The default is false.
    * @deprecated in 3.0. Free-form widgets are obsolete.
-   * */
+   */
   readonly isFreeform?: boolean;
   /** Application data attached to the Widget. */
   readonly applicationData?: any;
@@ -62,7 +62,7 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
   /** Function executed to determine the state of the widget.
    *  Used by UI 1.0 widgets ONLY.
    * @deprecated in 3.3. UI 1.0 support will be removed in AppUi 4.0.
-  */
+   */
   readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState; // eslint-disable-line deprecation/deprecation
   /** Badge to be overlaid on the widget tab. */
   readonly badgeType?: BadgeType;
@@ -82,5 +82,5 @@ export interface AbstractWidgetProps extends ProvidedItem { // eslint-disable-li
   hideWithUiWhenFloating?: boolean;
   /** Optional prop specifying which Panel sides can be docking targets for this widget. If this prop is not specified, all sides are allowed.
    *  An empty array is treated the same as an undefined prop, allowing all targets. */
-  readonly allowedPanelTargets?:  ReadonlyArray<"left"|"right"|"bottom"|"top">;
+  readonly allowedPanelTargets?: ReadonlyArray<"left" | "right" | "bottom" | "top">;
 }

@@ -5,12 +5,7 @@
 /* eslint-disable @typescript-eslint/naming-convention, no-console */
 
 // __PUBLISH_EXTRACT_START__ ExtensionSample-SmartDeviceMarker.example-code
-import {
-  BeButtonEvent,
-  ExtensionHost,
-  Marker,
-  StandardViewId,
-} from "@itwin/core-extension";
+import { BeButtonEvent, ExtensionHost, Marker, StandardViewId } from "@itwin/core-extension";
 import { XAndY, XYAndZ } from "@itwin/core-geometry";
 
 import Bed from "../assets/Bed.png";

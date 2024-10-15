@@ -15,9 +15,9 @@ import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range2d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
+import { XAndY } from "../../geometry3d/XYZProps";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
-import { XAndY } from "../../geometry3d/XYZProps";
 
 describe("GrowableXYArray", () => {
   it("PointMoments", () => {
@@ -74,7 +74,7 @@ describe("GrowableXYArray", () => {
     const pointBXY = pointAXY.clone();
     const pointC = pointAXY.getPoint2dArray();
     const pointD = GrowableXYArray.create(pointC);
-    const eps = 1.0e-16;  // ugh ..
+    const eps = 1.0e-16; // ugh ..
     ck.testTrue(pointAXY.isAlmostEqual(pointBXY, eps));
     ck.testTrue(pointAXY.isAlmostEqual(pointD, eps));
     expect(ck.getNumErrors()).toBe(0);
@@ -82,7 +82,9 @@ describe("GrowableXYArray", () => {
     const xyBuffer = pointAXY.float64Data();
     for (let i = 0; i < n; i++) {
       ck.testTrue(Geometry.isSamePoint2d(
-        pointAXY.getPoint2dAtUncheckedPointIndex(i), Point2d.create(xyBuffer[2 * i], xyBuffer[2 * i + 1])));
+        pointAXY.getPoint2dAtUncheckedPointIndex(i),
+        Point2d.create(xyBuffer[2 * i], xyBuffer[2 * i + 1]),
+      ));
     }
 
     pointD.clear();
@@ -147,9 +149,19 @@ describe("GrowableXYArray", () => {
     const rangeA = Range2d.createNull();
     pointA.extendRange(rangeA);
     const transform = Transform.createRowValues(
-      1, 2, 4, 3,
-      2, 5, 4, -3,
-      0.2, 0.3, 0.4, 0.5);
+      1,
+      2,
+      4,
+      3,
+      2,
+      5,
+      4,
+      -3,
+      0.2,
+      0.3,
+      0.4,
+      0.5,
+    );
     const rangeB = Range2d.createNull();
     const rangeC = Range2d.createNull();
     pointB.multiplyTransformInPlace(transform);
@@ -237,16 +249,34 @@ describe("GrowableXYArray", () => {
     ck.testTrue(point.isAlmostEqual(vector));
     ck.testPoint2d(point, Point2d.create(4, 5));
 
-    const transform = Transform.createOriginAndMatrix(Point3d.create(0, 0), Matrix3d.createRowValues(
-      2, 1, 0,
-      2, 0, 0,
-      2, 0, 1,
-    ));
-    const noInverseTransform = Transform.createOriginAndMatrix(Point3d.create(0, 0), Matrix3d.createRowValues(
-      1, 6, 4,
-      2, 4, -1,
-      -1, 2, 5,
-    ));
+    const transform = Transform.createOriginAndMatrix(
+      Point3d.create(0, 0),
+      Matrix3d.createRowValues(
+        2,
+        1,
+        0,
+        2,
+        0,
+        0,
+        2,
+        0,
+        1,
+      ),
+    );
+    const noInverseTransform = Transform.createOriginAndMatrix(
+      Point3d.create(0, 0),
+      Matrix3d.createRowValues(
+        1,
+        6,
+        4,
+        2,
+        4,
+        -1,
+        -1,
+        2,
+        5,
+      ),
+    );
 
     ck.testTrue(arr.tryTransformInverseInPlace(transform));
     ck.testFalse(arr.tryTransformInverseInPlace(noInverseTransform));
@@ -260,8 +290,10 @@ describe("GrowableXYArray", () => {
   it("IndexedXYCollection", () => {
     const ck = new Checker();
     const points = Sample.createFractalDiamondConvexPattern(1, -0.5);
-    const frame = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 0),
-      Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(15.7))!);
+    const frame = Transform.createFixedPointAndMatrix(
+      Point3d.create(1, 2, 0),
+      Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(15.7))!,
+    );
     frame.multiplyPoint3dArrayInPlace(points);
 
     const points2d = [];
@@ -292,16 +324,18 @@ describe("GrowableXYArray", () => {
       ck.testVector2d(vectorGA, pointIA.vectorTo(pointGB));
       ck.testCoordinate(
         iPoints.crossProductIndexIndexIndex(0, i, j)!,
-        gPoints.crossProductIndexIndexIndex(0, i, j)!);
+        gPoints.crossProductIndexIndexIndex(0, i, j)!,
+      );
       ck.testCoordinate(
         iPoints.crossProductXAndYIndexIndex(iOrigin, i, j)!,
-        gPoints.crossProductXAndYIndexIndex(gOrigin, i, j)!);
+        gPoints.crossProductXAndYIndexIndex(gOrigin, i, j)!,
+      );
 
       ck.testVector2d(
         iPoints.getVector2dAtCheckedVectorIndex(i)!,
         gPoints.getVector2dAtCheckedVectorIndex(i)!,
-        "atVector2dIndex");
-
+        "atVector2dIndex",
+      );
     }
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -310,7 +344,7 @@ describe("GrowableXYArray", () => {
     const ck = new Checker();
     const points = Sample.createFractalDiamondConvexPattern(1, -0.5);
 
-    const xyPoints = new GrowableXYArray(points.length);    // just enough so we know the initial capacity.
+    const xyPoints = new GrowableXYArray(points.length); // just enough so we know the initial capacity.
     for (const p of points)
       xyPoints.push(p);
 
@@ -328,7 +362,7 @@ describe("GrowableXYArray", () => {
     ck.testExactNumber(n1, xyPoints.length);
 
     const n2 = n0 - deltaN;
-    xyPoints.resize(n2);  // blow away some points.
+    xyPoints.resize(n2); // blow away some points.
 
     ck.testUndefined(xyPoints.getVector2dAtCheckedVectorIndex(-4));
     ck.testUndefined(xyPoints.getVector2dAtCheckedVectorIndex(n2));
@@ -378,7 +412,7 @@ describe("GrowableXYArray", () => {
     const ck = new Checker();
     const points = Sample.createFractalDiamondConvexPattern(1, -0.5);
 
-    const array0 = new GrowableXYArray(points.length);    // just enough so we know the initial capacity.
+    const array0 = new GrowableXYArray(points.length); // just enough so we know the initial capacity.
     for (const p of points)
       array0.push(p);
     const n0 = array0.length;
@@ -411,9 +445,13 @@ describe("GrowableXYArray", () => {
 
       ck.testUndefined(array1.interpolate(k, 0.3, n0 + 1), "interpolate with bad index");
       ck.testUndefined(array1.interpolate(k, 0.3, n0 + 3), "interpolate with bad index");
-      const k1 = (2 * k) % n0;    // this should be a valid index !!!
-      if (ck.testTrue(array0.isIndexValid(k1)
-        && ck.testPointer(array0.interpolate(k, interpolationFraction, k1, resultA)))) {
+      const k1 = (2 * k) % n0; // this should be a valid index !!!
+      if (
+        ck.testTrue(
+          array0.isIndexValid(k1)
+            && ck.testPointer(array0.interpolate(k, interpolationFraction, k1, resultA)),
+        )
+      ) {
         const k2 = (2 * k + 1) % n0;
 
         const point0 = array0.getPoint2dAtUncheckedPointIndex(k);
@@ -497,7 +535,7 @@ describe("GrowableXYArray", () => {
   it("removeClosurePoints", () => {
     const ck = new Checker();
     const origin = Point3d.create(1, 2, 3);
-    const points = Sample.createSquareWave(origin, 2, 1, 3, 3, 5);    // This has a single closure point !!
+    const points = Sample.createSquareWave(origin, 2, 1, 3, 3, 5); // This has a single closure point !!
     const wrapper = new Point3dArrayCarrier(points);
     const originalCount = wrapper.length;
     const originalTrim = originalCount - 1;
@@ -569,7 +607,7 @@ describe("GrowableXYArray", () => {
       ck.testExactNumber(xyzArray.length, 2, "variant XYZ input ctor: outer length");
       ck.testExactNumber(xyzArray[0].length, 1, "variant XYZ input ctor: first array length");
       ck.testExactNumber(xyzArray[1].length, 2, "variant XYZ input ctor: second array length");
-      const a2 = GrowableXYArray.createFromGrowableXYZArray(xyzArray[0], undefined, a0);   // clears a0 first
+      const a2 = GrowableXYArray.createFromGrowableXYZArray(xyzArray[0], undefined, a0); // clears a0 first
       ck.testTrue(a0 === a2, "create from pre-allocated object returns same object");
       if (ck.testExactNumber(a0.length, 1, "create from GrowableXYZArray: count")) {
         ck.testExactNumber(a0.getXAtUncheckedPointIndex(0), xyzArray[0].getXAtUncheckedPointIndex(0), "create from GrowableXYZArray: x-value");

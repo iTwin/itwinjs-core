@@ -21,8 +21,12 @@ describe("BaseQuantityDescription", () => {
         return { value: 10 };
       }
 
-      public get quantityType(): string { return "MockType"; }
-      public get parseError(): string { return "MockError"; }
+      public get quantityType(): string {
+        return "MockType";
+      }
+      public get parseError(): string {
+        return "MockError";
+      }
     }
     const sut = new QuantityDescription("mockQuantity", "Mock Quantity", "icon-placeholder");
     const formattedValue = sut.format(5);

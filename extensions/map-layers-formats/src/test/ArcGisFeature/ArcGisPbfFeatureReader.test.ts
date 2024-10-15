@@ -8,14 +8,14 @@ import { MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { ArcGisPbfFeatureReader } from "../../ArcGisFeature/ArcGisPbfFeatureReader";
-import { FeatureCanvasRenderer } from "../../Feature/FeatureCanvasRenderer";
-import { esriPBuffer } from "../../ArcGisFeature/esriPBuffer.gen";
-import { esriFeatureSampleSource, fakeContext } from "./Mocks";
-import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
-import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
-import { EsriSFS } from "../../ArcGisFeature/EsriSymbology";
-import { TestUtils } from "./TestUtils";
 import { ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
+import { esriPBuffer } from "../../ArcGisFeature/esriPBuffer.gen";
+import { EsriSFS } from "../../ArcGisFeature/EsriSymbology";
+import { FeatureCanvasRenderer } from "../../Feature/FeatureCanvasRenderer";
+import { esriFeatureSampleSource, fakeContext } from "./Mocks";
+import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
+import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
+import { TestUtils } from "./TestUtils";
 
 const createFeaturePBF = () => {
   const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
@@ -29,7 +29,6 @@ const createFeaturePBF = () => {
 };
 
 describe("ArcGisPbfFeatureReader", () => {
-
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
@@ -37,31 +36,35 @@ describe("ArcGisPbfFeatureReader", () => {
   });
 
   it("should convert pbf geometry type to Esri types", async () => {
-
     expect(
-      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipatch))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipatch),
+    )
       .to.equals("esriGeometryMultiPatch");
 
     expect(
-      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipoint))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypeMultipoint),
+    )
       .to.equals("esriGeometryMultipoint");
 
     expect(
-      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePoint))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePoint),
+    )
       .to.equals("esriGeometryPoint");
 
     expect(
-      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolygon))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolygon),
+    )
       .to.equals("esriGeometryPolygon");
 
     expect(
-      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolyline))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(esriPBuffer.FeatureCollectionPBuffer.GeometryType.esriGeometryTypePolyline),
+    )
       .to.equals("esriGeometryPolyline");
 
     expect(
-      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType("" as unknown as esriPBuffer.FeatureCollectionPBuffer.GeometryType))
+      ArcGisPbfFeatureReader.getArcGisFeatureGeometryType("" as unknown as esriPBuffer.FeatureCollectionPBuffer.GeometryType),
+    )
       .to.equals("esriGeometryNull");
-
   });
 
   it("should read FeatureInfo in PBF", async () => {
@@ -77,11 +80,9 @@ describe("ArcGisPbfFeatureReader", () => {
     const results: MapLayerFeatureInfo[] = [];
     await featurePbf.readFeatureInfo({ data: featureCollection, exceedTransferLimit: false }, results);
     assert.deepEqual(results, PhillyLandmarksDataset.phillyAirportGetFeatureInfoResultRef);
-
   });
 
   it("should read FeatureInfo from PBF (philly transportation)", async () => {
-
     const byteArray = Base64EncodedString.toUint8Array(PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryEncodedPbf);
     const featureCollection = esriPBuffer.FeatureCollectionPBuffer.deserialize(byteArray);
     const featurePbf = createFeaturePBF();
@@ -92,11 +93,9 @@ describe("ArcGisPbfFeatureReader", () => {
     const results: MapLayerFeatureInfo[] = [];
     await featurePbf.readFeatureInfo({ data: featureCollection, exceedTransferLimit: false }, results);
     assert.deepEqual(results, PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef);
-
   });
 
   it("should read all data types from FeatureInfo ", async () => {
-
     // In this test we use a synthetic PBuffer object to initialize a feature collection object.
     // The is to ensure we cover correctly all possible attribute value types.
     const featureCollection = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.fieldsCoveragePbufferCollection);
@@ -113,7 +112,9 @@ describe("ArcGisPbfFeatureReader", () => {
     const featurePbf = createFeaturePBF();
 
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePolyQueryPbf);
-    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.geometryType);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(
+      PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.geometryType,
+    );
     const symbolRenderer = await TestUtils.createSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
 
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
@@ -123,15 +124,17 @@ describe("ArcGisPbfFeatureReader", () => {
 
     const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.features[0].geometry.lengths); // geometryLengths
-    expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.features[0].geometry.coords);              // geometryCoords
-    expect(firstCall.args[2]).to.eql(true);           // fill
-    expect(firstCall.args[3]).to.eql(2);              // stride
+    expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.features[0].geometry.coords); // geometryCoords
+    expect(firstCall.args[2]).to.eql(true); // fill
+    expect(firstCall.args[3]).to.eql(2); // stride
   });
 
   it("should readAndRender multiple ring polygon feature", async () => {
     const featurePbf = createFeaturePBF();
 
-    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.geometryType);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(
+      PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.geometryType,
+    );
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf);
 
     const symbolRenderer = await TestUtils.createSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
@@ -143,9 +146,9 @@ describe("ArcGisPbfFeatureReader", () => {
 
     const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.features[0].geometry.lengths); // geometryLengths
-    expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.features[0].geometry.coords);              // geometryCoords
-    expect(firstCall.args[2]).to.eql(true);                        // fill
-    expect(firstCall.args[3]).to.eql(2);              // stride
+    expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.features[0].geometry.coords); // geometryCoords
+    expect(firstCall.args[2]).to.eql(true); // fill
+    expect(firstCall.args[3]).to.eql(2); // stride
   });
 
   it("should readAndRender simple path", async () => {
@@ -153,7 +156,8 @@ describe("ArcGisPbfFeatureReader", () => {
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePathQueryPbf);
     const symbolRenderer = await TestUtils.createSymbologyRenderer(
       ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillySimplePathQueryPbf.queryResult.featureResult.geometryType),
-      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer,
+    );
 
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
@@ -162,16 +166,18 @@ describe("ArcGisPbfFeatureReader", () => {
 
     const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall).to.not.undefined;
-    expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillySimplePathQueryPbf.queryResult.featureResult.features[0].geometry.lengths);          // geometryLengths
+    expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillySimplePathQueryPbf.queryResult.featureResult.features[0].geometry.lengths); // geometryLengths
     expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillySimplePathQueryPbf.queryResult.featureResult.features[0].geometry.coords); // geometryCoords
-    expect(firstCall.args[2]).to.eql(false);           // fill
-    expect(firstCall.args[3]).to.eql(2);              // stride
+    expect(firstCall.args[2]).to.eql(false); // fill
+    expect(firstCall.args[3]).to.eql(2); // stride
   });
 
   it("should readAndRender multi path", async () => {
     const featurePbf = createFeaturePBF();
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillyMultiPathQueryPbf);
-    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(
+      PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType,
+    );
     const symbolRenderer = await TestUtils.createSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
@@ -179,17 +185,22 @@ describe("ArcGisPbfFeatureReader", () => {
     expect(renderPathSpy.calledOnce);
 
     const firstCall = renderPathSpy.getCalls()[0];
-    expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.features[0].geometry.lengths);          // geometryLengths
+    expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.features[0].geometry.lengths); // geometryLengths
     expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.features[0].geometry.coords); // geometryCoords
-    expect(firstCall.args[2]).to.eql(false);           // fill
-    expect(firstCall.args[3]).to.eql(2);              // stride
+    expect(firstCall.args[2]).to.eql(false); // fill
+    expect(firstCall.args[3]).to.eql(2); // stride
   });
 
   it("should readAndRender simple point", async () => {
     const featurePbf = createFeaturePBF();
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillySimplePointQueryPbf);
-    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType);
-    const symbolRenderer = await TestUtils.createSymbologyRenderer(geomType, PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(
+      PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.geometryType,
+    );
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      geomType,
+      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer,
+    );
 
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const spy = sinon.spy(featureRenderer, "renderPoint");
@@ -199,26 +210,31 @@ describe("ArcGisPbfFeatureReader", () => {
     // Pbf contains already the right output format expect, lets rely on that.
     const geometryCoords = PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult.features[0].geometry.coords;
     const firstCall = spy.getCalls()[0];
-    expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult.features[0].geometry.lengths);          // geometryLengths
+    expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult.features[0].geometry.lengths); // geometryLengths
     expect(firstCall.args[1]).to.eql(geometryCoords); // geometryCoords
-    expect(firstCall.args[2]).to.eql(2);              // stride
+    expect(firstCall.args[2]).to.eql(2); // stride
   });
 
   it("should call setActiveFeatureAttributes when attribute driven symbology", async () => {
     const featurePbf = createFeaturePBF();
     const dataset = NeptuneCoastlineDataset.singlePolyPbf;
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(dataset);
-    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(NeptuneCoastlineDataset.singlePolyPbf.queryResult.featureResult.geometryType);
-    const symbolRenderer = await TestUtils.createSymbologyRenderer(geomType, NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer) as ArcGisUniqueValueSymbologyRenderer;
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(
+      NeptuneCoastlineDataset.singlePolyPbf.queryResult.featureResult.geometryType,
+    );
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      geomType,
+      NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer,
+    ) as ArcGisUniqueValueSymbologyRenderer;
 
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
-    const spy = sinon.spy(symbolRenderer , "setActiveFeatureAttributes");
+    const spy = sinon.spy(symbolRenderer, "setActiveFeatureAttributes");
     await featurePbf.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
 
     // Make sure 'setActiveFeatureAttributes' was called with the proper argument
     expect(spy.calledOnce);
     const firstCall = spy.getCalls()[0];
-    const featureAttr: {[key: string]: any} = {};
+    const featureAttr: { [key: string]: any } = {};
     featureAttr.LU_2014 = "Open Countryside";
     expect(firstCall.args[0]).to.eql(featureAttr);
   });
@@ -228,7 +244,9 @@ describe("ArcGisPbfFeatureReader", () => {
     const dataset = NeptuneCoastlineDataset.singlePolyPbf;
     const rendererDef = NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer;
     const data = esriPBuffer.FeatureCollectionPBuffer.fromObject(dataset);
-    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(NeptuneCoastlineDataset.singlePolyPbf.queryResult.featureResult.geometryType);
+    const geomType = ArcGisPbfFeatureReader.getArcGisFeatureGeometryType(
+      NeptuneCoastlineDataset.singlePolyPbf.queryResult.featureResult.geometryType,
+    );
     const symbolRenderer = await TestUtils.createSymbologyRenderer(geomType, rendererDef);
 
     const context = fakeContext;
@@ -238,5 +256,4 @@ describe("ArcGisPbfFeatureReader", () => {
     const refSymbol = EsriSFS.fromJSON(rendererDef.uniqueValueInfos[8].symbol as any);
     expect(context.fillStyle).to.eql(refSymbol.color?.toRgbaString());
   });
-
 });

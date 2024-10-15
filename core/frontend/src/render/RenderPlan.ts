@@ -7,8 +7,23 @@
  */
 
 import {
-  AmbientOcclusion, AnalysisStyle, Atmosphere, ClipStyle, ColorDef, ContourDisplay, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc,
-  RenderTexture, ThematicDisplay, ViewFlags, WhiteOnWhiteReversalSettings,
+  AmbientOcclusion,
+  AnalysisStyle,
+  Atmosphere,
+  ClipStyle,
+  ColorDef,
+  ContourDisplay,
+  Frustum,
+  GlobeMode,
+  HiddenLine,
+  Hilite,
+  LightSettings,
+  MonochromeMode,
+  Npc,
+  RenderTexture,
+  ThematicDisplay,
+  ViewFlags,
+  WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
 import { ClipVector, Constant, Matrix3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { FlashSettings } from "../FlashSettings";
@@ -131,7 +146,9 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   const analysisStyle = style.settings.analysisStyle;
   const thematic = (style.is3d() && view.displayStyle.viewFlags.thematicDisplay) ? style.settings.thematic : undefined;
   const contours = (style.is3d() && style.settings.contours.groups.length > 0) ? style.settings.contours : undefined;
-  const shouldDisplayAtmosphere = (style.is3d() && GlobeMode.Ellipsoid === view.globeMode && vp.iModel.isGeoLocated && style.viewFlags.backgroundMap) ? (vp.view as ViewState3d).getDisplayStyle3d().environment.displayAtmosphere : false;
+  const shouldDisplayAtmosphere = (style.is3d() && GlobeMode.Ellipsoid === view.globeMode && vp.iModel.isGeoLocated && style.viewFlags.backgroundMap)
+    ? (vp.view as ViewState3d).getDisplayStyle3d().environment.displayAtmosphere
+    : false;
   const atmosphere = shouldDisplayAtmosphere ? (vp.view as ViewState3d).getDisplayStyle3d().environment.atmosphere : undefined;
 
   let upVector;

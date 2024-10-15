@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
 import { CurveCurve } from "../../curve/CurveCurve";
@@ -130,9 +130,17 @@ describe("CurveChainWithDistanceIndex", () => {
       ck.testLE(detail0.fraction, 1, "Point off path start has projection fraction <= 0");
       ck.testLE(1, detail1.fraction, "Point off path end has projection fraction >= 1");
       ck.testPoint3d(detail0.point, path0.startPoint(), "Point projected off path start equals start of clonedPartialCurve at projection fraction");
-      ck.testPoint3d(detail0.point, path.fractionToPoint(detail0.fraction), "Point projected off path start equals fractionToPoint at projection fraction");
+      ck.testPoint3d(
+        detail0.point,
+        path.fractionToPoint(detail0.fraction),
+        "Point projected off path start equals fractionToPoint at projection fraction",
+      );
       ck.testPoint3d(detail1.point, path1.endPoint(), "Point projected off path end equals end of clonedPartialCurve at projection fraction");
-      ck.testPoint3d(detail1.point, path.fractionToPoint(detail1.fraction), "Point projected off path end equals fractionToPoint at projection fraction");
+      ck.testPoint3d(
+        detail1.point,
+        path.fractionToPoint(detail1.fraction),
+        "Point projected off path end equals fractionToPoint at projection fraction",
+      );
 
       x0 += path.range().xLength() + 2;
     }
@@ -231,14 +239,18 @@ describe("CurveChainWithDistanceIndex", () => {
     const arcDerivC = LineSegment3d.create(planeC.origin, Point3d.createAdd2Scaled(planeC.origin, 1, planeC.vectorU, 1));
     const arcDeriv2C = LineSegment3d.create(planeC.origin, Point3d.createAdd2Scaled(planeC.origin, 1, planeC.vectorV, 1));
     const pathC = new Path();
-    pathC.children.push(arcC);  // ellipse, not arc length parameterized
+    pathC.children.push(arcC); // ellipse, not arc length parameterized
     const indexedC = CurveChainWithDistanceIndex.createCapture(pathC);
     const pathFracC = indexedC.chainDistanceToChainFraction(distanceAlongArcC);
     const pathPlaneC = indexedC.fractionToPointAnd2Derivatives(pathFracC)!;
     const pathDerivC = LineSegment3d.create(pathPlaneC.origin, Point3d.createAdd2Scaled(pathPlaneC.origin, 1, pathPlaneC.vectorU, 1));
     const pathDeriv2C = LineSegment3d.create(pathPlaneC.origin, Point3d.createAdd2Scaled(pathPlaneC.origin, 1, pathPlaneC.vectorV, 1));
     ck.testPoint3d(planeC.origin, pathPlaneC?.origin, "comparing same points along arc and path containing the arc");
-    ck.testAngleNoShift(Angle.createRadians(0), planeC.vectorU.angleTo(pathPlaneC.vectorU), "arc and path containing the arc have same 1st derivative direction");
+    ck.testAngleNoShift(
+      Angle.createRadians(0),
+      planeC.vectorU.angleTo(pathPlaneC.vectorU),
+      "arc and path containing the arc have same 1st derivative direction",
+    );
     ck.testFalse(planeC.vectorV.angleTo(pathPlaneC.vectorV).isAlmostZero, "arc and path containing the arc have different 2nd derivative directions");
 
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcC, arcDerivC, arcDeriv2C]);
@@ -261,7 +273,8 @@ describe("CurveChainWithDistanceIndex", () => {
     // AB
     ck.testDefined(closestApproachAB);
     const closestApproachSegmentAB = LineSegment3d.create(
-      closestApproachAB!.detailA.point, closestApproachAB!.detailB.point,
+      closestApproachAB!.detailA.point,
+      closestApproachAB!.detailB.point,
     );
     GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentAB);
     ck.testCoordinate(closestApproachAB!.detailA.fraction, 0.2, "AB detailA");
@@ -269,7 +282,8 @@ describe("CurveChainWithDistanceIndex", () => {
     // BA
     ck.testDefined(closestApproachAB);
     const closestApproachSegmentBA = LineSegment3d.create(
-      closestApproachBA!.detailA.point, closestApproachBA!.detailB.point,
+      closestApproachBA!.detailA.point,
+      closestApproachBA!.detailB.point,
     );
     GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentBA);
     ck.testCoordinate(closestApproachBA!.detailA.fraction, 0, "BA detailA");
@@ -294,7 +308,8 @@ describe("CurveChainWithDistanceIndex", () => {
     // AB
     ck.testDefined(closestApproachAB);
     const closestApproachSegmentAB = LineSegment3d.create(
-      closestApproachAB!.detailA.point, closestApproachAB!.detailB.point,
+      closestApproachAB!.detailA.point,
+      closestApproachAB!.detailB.point,
     );
     GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentAB);
     ck.testCoordinate(closestApproachAB!.detailA.fraction, 1 / 3, "AB detailA");
@@ -302,7 +317,8 @@ describe("CurveChainWithDistanceIndex", () => {
     // BA
     ck.testDefined(closestApproachAB);
     const closestApproachSegmentBA = LineSegment3d.create(
-      closestApproachBA!.detailA.point, closestApproachBA!.detailB.point,
+      closestApproachBA!.detailA.point,
+      closestApproachBA!.detailB.point,
     );
     GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentBA);
     ck.testCoordinate(closestApproachBA!.detailA.fraction, 1 / 4, "BA detailA");
@@ -324,7 +340,9 @@ describe("CurveChainWithDistanceIndex", () => {
     path.tryAddChild(lineString2);
     const geometryA = CurveChainWithDistanceIndex.createCapture(path);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(4, 0), Point3d.create(6, 2), Point3d.create(8, 0),
+      Point3d.create(4, 0),
+      Point3d.create(6, 2),
+      Point3d.create(8, 0),
     );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
@@ -334,7 +352,8 @@ describe("CurveChainWithDistanceIndex", () => {
     // AB
     ck.testDefined(closestApproachAB);
     const closestApproachSegmentAB = LineSegment3d.create(
-      closestApproachAB!.detailA.point, closestApproachAB!.detailB.point,
+      closestApproachAB!.detailA.point,
+      closestApproachAB!.detailB.point,
     );
     GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentAB);
     ck.testCoordinate(closestApproachAB!.detailA.fraction, 0.4, "AB detailA");
@@ -342,7 +361,8 @@ describe("CurveChainWithDistanceIndex", () => {
     // BA
     ck.testDefined(closestApproachAB);
     const closestApproachSegmentBA = LineSegment3d.create(
-      closestApproachBA!.detailA.point, closestApproachBA!.detailB.point,
+      closestApproachBA!.detailA.point,
+      closestApproachBA!.detailB.point,
     );
     GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentBA);
     ck.testCoordinate(closestApproachBA!.detailA.fraction, 0.5, "BA detailA");
@@ -381,7 +401,8 @@ describe("CurveChainWithDistanceIndex", () => {
     // AB
     ck.testDefined(closestApproachAB);
     const closestApproachSegmentAB = LineSegment3d.create(
-      closestApproachAB!.detailA.point, closestApproachAB!.detailB.point,
+      closestApproachAB!.detailA.point,
+      closestApproachAB!.detailB.point,
     );
     GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentAB);
     ck.testCoordinate(closestApproachAB!.detailA.fraction, 0.4, "AB detailA");
@@ -389,7 +410,8 @@ describe("CurveChainWithDistanceIndex", () => {
     // BA
     ck.testDefined(closestApproachAB);
     const closestApproachSegmentBA = LineSegment3d.create(
-      closestApproachBA!.detailA.point, closestApproachBA!.detailB.point,
+      closestApproachBA!.detailA.point,
+      closestApproachBA!.detailB.point,
     );
     GeometryCoreTestIO.captureGeometry(allGeometry, closestApproachSegmentBA);
     ck.testCoordinate(closestApproachBA!.detailA.fraction, 1 / 3, "BA detailA");
@@ -431,7 +453,12 @@ describe("CurveChainWithDistanceIndex", () => {
         else
           ck.announceError("unexpected close approach");
       }
-      GeometryCoreTestIO.captureGeometry(allGeometry, [chainA, chainB, LineSegment3d.create(pairs[0].detailA.point, pairs[0].detailB.point), LineSegment3d.create(pairs[1].detailA.point, pairs[1].detailB.point)]);
+      GeometryCoreTestIO.captureGeometry(allGeometry, [
+        chainA,
+        chainB,
+        LineSegment3d.create(pairs[0].detailA.point, pairs[0].detailB.point),
+        LineSegment3d.create(pairs[1].detailA.point, pairs[1].detailB.point),
+      ]);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveChainWithDistanceIndex", "closestApproachChainLoops");
     expect(ck.getNumErrors()).toBe(0);
@@ -502,7 +529,9 @@ describe("CurveChainWithDistanceIndex", () => {
     path.tryAddChild(lineString2);
     const geometryA = CurveChainWithDistanceIndex.createCapture(path);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(4, 0), Point3d.create(6, 2), Point3d.create(8, 0),
+      Point3d.create(4, 0),
+      Point3d.create(6, 2),
+      Point3d.create(8, 0),
     );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
@@ -639,7 +668,9 @@ describe("CurveChainWithDistanceIndex", () => {
     path.tryAddChild(lineString2);
     const geometryA = CurveChainWithDistanceIndex.createCapture(path);
     const geometryB = Arc3d.createCircularStartMiddleEnd(
-      Point3d.create(4, 2, 1), Point3d.create(6, 2, -1), Point3d.create(8, 2, 1),
+      Point3d.create(4, 2, 1),
+      Point3d.create(6, 2, -1),
+      Point3d.create(8, 2, 1),
     );
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryA);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, geometryB);
@@ -712,7 +743,9 @@ describe("CurveChainWithDistanceIndex", () => {
   });
   it("recursionAvoidance", () => {
     const ck = new Checker();
-    const pts: Point3d[] = Array(7).fill(null).map((_v: Point3d, i: number) => { return Point3d.create(i, i, i); });
+    const pts: Point3d[] = Array(7).fill(null).map((_v: Point3d, i: number) => {
+      return Point3d.create(i, i, i);
+    });
     const childChain0 = CurveChainWithDistanceIndex.createCapture(Path.create([pts[1], pts[2], pts[3]]));
     const childChain1 = CurveChainWithDistanceIndex.createCapture(Path.create([pts[4], pts[5], pts[6]]));
     const path = Path.create(LineSegment3d.create(pts[0], pts[1]), childChain0, LineSegment3d.create(pts[3], pts[4]), childChain1);

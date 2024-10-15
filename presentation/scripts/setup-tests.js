@@ -29,13 +29,13 @@ chai.use(chaiAsPromised);
 chai.use(chaiJestSnapshot);
 chai.use(sinonChai);
 
-before(function () {
+before(function() {
   chaiJestSnapshot.resetSnapshotRegistry();
 });
-after(function () {
+after(function() {
   delete require.cache[__filename];
 });
-beforeEach(function () {
+beforeEach(function() {
   const currentTest = this.currentTest;
 
   // we want snapshot tests to use the same random data between runs

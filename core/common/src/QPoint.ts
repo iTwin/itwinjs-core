@@ -7,9 +7,7 @@
  */
 
 import { assert, Uint16ArrayBuilder } from "@itwin/core-bentley";
-import {
-  Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d, XAndY, XYAndZ,
-} from "@itwin/core-geometry";
+import { Point2d, Point3d, Range2d, Range3d, Vector2d, Vector3d, XAndY, XYAndZ } from "@itwin/core-geometry";
 
 /**
  * Provides facilities for quantizing floating point values within a specified range into 16-bit unsigned integers.
@@ -79,7 +77,9 @@ export class QParams2d {
   /** The scale applied to coordinates to quantize them. */
   public readonly scale = new Point2d();
 
-  private constructor(ox = 0, oy = 0, sx = 0, sy = 0) { this.setFrom(ox, oy, sx, sy); }
+  private constructor(ox = 0, oy = 0, sx = 0, sy = 0) {
+    this.setFrom(ox, oy, sx, sy);
+  }
 
   private setFrom(ox: number, oy: number, sx: number, sy: number) {
     this.origin.x = ox;
@@ -105,9 +105,18 @@ export class QParams2d {
   /** Initialize these parameters to support quantization of values within the specified range. */
   public setFromRange(range: Range2d, rangeScale = Quantization.rangeScale16) {
     if (!range.isNull) {
-      this.setFrom(range.low.x, range.low.y, Quantization.computeScale(range.high.x - range.low.x, rangeScale), Quantization.computeScale(range.high.y - range.low.y, rangeScale));
+      this.setFrom(
+        range.low.x,
+        range.low.y,
+        Quantization.computeScale(range.high.x - range.low.x, rangeScale),
+        Quantization.computeScale(range.high.y - range.low.y, rangeScale),
+      );
     } else {
-      this.origin.x = this.origin.y = this.scale.x = this.scale.y = 0;
+      this.origin.x =
+        this.origin.y =
+        this.scale.x =
+        this.scale.y =
+          0;
     }
   }
 
@@ -143,7 +152,10 @@ export class QParams2d {
 
   /** @internal */
   public get rangeDiagonal(): Vector2d {
-    return Vector2d.createFrom({ x: 0 === this.scale.x ? 0 : Quantization.rangeScale16 / this.scale.x, y: 0 === this.scale.y ? 0 : Quantization.rangeScale16 / this.scale.y });
+    return Vector2d.createFrom({
+      x: 0 === this.scale.x ? 0 : Quantization.rangeScale16 / this.scale.x,
+      y: 0 === this.scale.y ? 0 : Quantization.rangeScale16 / this.scale.y,
+    });
   }
 
   /** Return true if the point point is quantizable using these parameters. */
@@ -177,21 +189,25 @@ export class QPoint2d {
   private _y: number = 0;
 
   /** The quantized x component. */
-  public get x() { return this._x; }
+  public get x() {
+    return this._x;
+  }
   public set x(x: number) {
     assert(Quantization.isQuantized(x));
     this._x = x;
   }
 
   /** The quantized y component. */
-  public get y() { return this._y; }
+  public get y() {
+    return this._y;
+  }
   public set y(y: number) {
     assert(Quantization.isQuantized(y));
     this._y = y;
   }
 
   /** Construct with `x` and `y` initialized to zero. */
-  public constructor() { }
+  public constructor() {}
 
   /** Initialize this point by quantizing the supplied { x, y } using the specified params */
   public init(pos: XAndY, params: QParams2d) {
@@ -466,8 +482,14 @@ export class QParams3d {
   /** Initialize these parameters to support quantization of values within the specified range. */
   public setFromRange(range: Range3d, rangeScale = Quantization.rangeScale16) {
     if (!range.isNull) {
-      this.setFrom(range.low.x, range.low.y, range.low.z,
-        Quantization.computeScale(range.high.x - range.low.x, rangeScale), Quantization.computeScale(range.high.y - range.low.y, rangeScale), Quantization.computeScale(range.high.z - range.low.z, rangeScale));
+      this.setFrom(
+        range.low.x,
+        range.low.y,
+        range.low.z,
+        Quantization.computeScale(range.high.x - range.low.x, rangeScale),
+        Quantization.computeScale(range.high.y - range.low.y, rangeScale),
+        Quantization.computeScale(range.high.z - range.low.z, rangeScale),
+      );
     } else {
       this.origin.x = this.origin.y = this.origin.z = 0;
       this.scale.x = this.scale.y = this.scale.z = 0;
@@ -524,7 +546,8 @@ export class QParams3d {
 
   /** Return true if the point point is quantizable using these parameters. */
   public isQuantizable(point: Point3d) {
-    return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y) && Quantization.isQuantizable(point.z, this.origin.z, this.scale.z);
+    return Quantization.isQuantizable(point.x, this.origin.x, this.scale.x) && Quantization.isQuantizable(point.y, this.origin.y, this.scale.y) &&
+      Quantization.isQuantizable(point.z, this.origin.z, this.scale.z);
   }
 
   /** Compute the range to which these parameters quantize. */
@@ -562,28 +585,34 @@ export class QPoint3d {
   private _z: number = 0;
 
   /** The quantized x component. */
-  public get x() { return this._x; }
+  public get x() {
+    return this._x;
+  }
   public set x(x: number) {
     assert(Quantization.isQuantized(x));
     this._x = x;
   }
 
   /** The quantized y component. */
-  public get y() { return this._y; }
+  public get y() {
+    return this._y;
+  }
   public set y(y: number) {
     assert(Quantization.isQuantized(y));
     this._y = y;
   }
 
   /** The quantized z component. */
-  public get z() { return this._z; }
+  public get z() {
+    return this._z;
+  }
   public set z(z: number) {
     assert(Quantization.isQuantized(z));
     this._z = z;
   }
 
   /** Construct with all components initialized to zero. */
-  public constructor() { }
+  public constructor() {}
 
   /** Initialize this point by quantizing the supplied { x, y, z } using the specified params */
   public init(pos: XYAndZ, params: QParams3d): void {

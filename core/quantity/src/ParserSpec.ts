@@ -15,7 +15,7 @@ import { Parser, QuantityParseResult } from "./Parser";
  */
 export class ParserSpec {
   private _outUnit: UnitProps;
-  private _conversions: UnitConversionSpec[] = [];  // max four entries
+  private _conversions: UnitConversionSpec[] = []; // max four entries
   private _format: Format;
   protected _azimuthBaseConversion?: UnitConversionProps; // converts azimuth base unit to persistence unit
   protected _revolutionConversion?: UnitConversionProps; // converts revolution unit to persistence unit
@@ -32,11 +32,21 @@ export class ParserSpec {
   }
 
   /** Returns an array of UnitConversionSpecs for each unit label that may be used in the input string. */
-  public get unitConversions(): UnitConversionSpec[] { return this._conversions; }
-  public get format(): Format { return this._format; }
-  public get outUnit(): UnitProps { return this._outUnit; }
-  public get azimuthBaseConversion(): UnitConversionProps | undefined { return this._azimuthBaseConversion; }
-  public get revolutionConversion(): UnitConversionProps | undefined { return this._revolutionConversion; }
+  public get unitConversions(): UnitConversionSpec[] {
+    return this._conversions;
+  }
+  public get format(): Format {
+    return this._format;
+  }
+  public get outUnit(): UnitProps {
+    return this._outUnit;
+  }
+  public get azimuthBaseConversion(): UnitConversionProps | undefined {
+    return this._azimuthBaseConversion;
+  }
+  public get revolutionConversion(): UnitConversionProps | undefined {
+    return this._revolutionConversion;
+  }
 
   /** Static async method to create a ParserSpec given the format and unit of the quantity that will be passed to the Parser. The input unit will
    * be used to generate conversion information for each unit specified in the Format. This method is async due to the fact that the units provider must make
@@ -45,7 +55,12 @@ export class ParserSpec {
    *  @param unitsProvider The units provider is used to look up unit definitions and provide conversion information for converting between units.
    *  @param outUnit The unit the value to be formatted. This unit is often referred to as persistence unit.
    */
-  public static async create(format: Format, unitsProvider: UnitsProvider, outUnit: UnitProps, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<ParserSpec> {
+  public static async create(
+    format: Format,
+    unitsProvider: UnitsProvider,
+    outUnit: UnitProps,
+    altUnitLabelsProvider?: AlternateUnitLabelsProvider,
+  ): Promise<ParserSpec> {
     const conversions = await Parser.createUnitConversionSpecsForUnit(unitsProvider, outUnit, altUnitLabelsProvider);
     const spec = new ParserSpec(outUnit, format, conversions);
     if (format.azimuthBaseUnit !== undefined) {
@@ -70,4 +85,3 @@ export class ParserSpec {
     return Parser.parseQuantityString(inString, this);
   }
 }
-

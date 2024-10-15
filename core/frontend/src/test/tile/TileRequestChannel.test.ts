@@ -2,18 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { BeDuration } from "@itwin/core-bentley";
-import { Range3d, Transform } from "@itwin/core-geometry";
 import { ServerTimeoutError } from "@itwin/core-common";
-import { IModelConnection } from "../../IModelConnection";
+import { Range3d, Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { IModelApp } from "../../IModelApp";
-import { Viewport } from "../../Viewport";
+import { IModelConnection } from "../../IModelConnection";
 import { MockRender } from "../../render/MockRender";
-import { createBlankConnection } from "../createBlankConnection";
 import {
-  Tile, TileContent, TileContentDecodingStatistics, TileLoadPriority, TileLoadStatus, TileRequest, TileRequestChannel, TileRequestChannelStatistics, TileTree,
+  Tile,
+  TileContent,
+  TileContentDecodingStatistics,
+  TileLoadPriority,
+  TileLoadStatus,
+  TileRequest,
+  TileRequestChannel,
+  TileRequestChannelStatistics,
+  TileTree,
 } from "../../tile/internal";
+import { Viewport } from "../../Viewport";
+import { createBlankConnection } from "../createBlankConnection";
 
 async function runMicroTasks(): Promise<void> {
   return BeDuration.wait(1);
@@ -156,20 +164,30 @@ class TestTree extends TileTree {
     this._rootTile = new TestTile(this, channel);
   }
 
-  public get rootTile(): TestTile { return this._rootTile; }
-  public get is3d() { return true; }
-  public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return {}; }
-  protected _selectTiles(): Tile[] { return []; }
-  public draw() { }
-  public prune() { }
+  public get rootTile(): TestTile {
+    return this._rootTile;
+  }
+  public get is3d() {
+    return true;
+  }
+  public get maxDepth() {
+    return undefined;
+  }
+  public get viewFlagOverrides() {
+    return {};
+  }
+  protected _selectTiles(): Tile[] {
+    return [];
+  }
+  public draw() {}
+  public prune() {}
 }
 
 function mockViewport(iModel: IModelConnection, viewportId = 1): Viewport {
   return {
     viewportId,
     iModel,
-    invalidateScene: () => { },
+    invalidateScene: () => {},
   } as Viewport;
 }
 
@@ -768,13 +786,18 @@ describe("TileRequestChannel", () => {
     await processOnce();
     channel1.expectRequests(0, 0);
     channel2.expectRequests(0, 0);
-    expect(tiles.map((x) => x.loadStatus)).to.deep.equal([TileLoadStatus.NotFound, TileLoadStatus.Ready, TileLoadStatus.Ready, TileLoadStatus.NotFound]);
+    expect(tiles.map((x) => x.loadStatus)).to.deep.equal([
+      TileLoadStatus.NotFound,
+      TileLoadStatus.Ready,
+      TileLoadStatus.Ready,
+      TileLoadStatus.NotFound,
+    ]);
   });
 
   it("records decoding time statistics", () => {
     const channel = new TileRequestChannel("test", 100);
     const tile = { isEmpty: false, isUndisplayable: false } as unknown as Tile;
-    const content = { };
+    const content = {};
 
     const expectStats = (expected: TileContentDecodingStatistics) => {
       const actual = channel.statistics.decoding;

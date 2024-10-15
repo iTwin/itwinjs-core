@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Range3d } from "@itwin/core-geometry";
-import { Instance } from "../../render/RenderInstancesParams";
 import { Feature, FeatureTable } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { InstancedGraphicProps } from "../../render/InstancedGraphicParams";
-import { OvrFlags } from "./OvrFlags";
+import { Instance } from "../../render/RenderInstancesParams";
 import { lineCodeFromLinePixels } from "./LineCode";
+import { OvrFlags } from "./OvrFlags";
 
 const invalidFeature = new Feature();
 
@@ -28,7 +28,9 @@ export class InstancedGraphicPropsBuilder {
     }
   }
 
-  public get length() { return this._instances.length; }
+  public get length() {
+    return this._instances.length;
+  }
 
   public finish(featureTable: FeatureTable | undefined): InstancedGraphicProps {
     const count = this.length;
@@ -108,4 +110,3 @@ export class InstancedGraphicPropsBuilder {
     };
   }
 }
-

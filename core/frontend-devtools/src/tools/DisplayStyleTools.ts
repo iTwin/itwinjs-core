@@ -8,25 +8,68 @@
  */
 
 import {
-  ColorDef, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SkyCube, SkySphere,
-  SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties, WhiteOnWhiteReversalSettings,
+  ColorDef,
+  DisplayStyle3dSettingsProps,
+  DisplayStyleOverridesOptions,
+  RenderMode,
+  SkyCube,
+  SkySphere,
+  SubCategoryAppearance,
+  SubCategoryOverride,
+  ViewFlags,
+  ViewFlagsProperties,
+  WhiteOnWhiteReversalSettings,
 } from "@itwin/core-common";
-import {
-  DisplayStyle3dState, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
-} from "@itwin/core-frontend";
+import { DisplayStyle3dState, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseArgs } from "./parseArgs";
 import { parseToggle } from "./parseToggle";
 
 type BooleanFlagName =
-  "dimensions" | "patterns" | "weights" | "styles" | "transparency" | "fill" | "textures" | "materials" | "acsTriad" | "grid" | "visibleEdges" |
-  "hiddenEdges" | "lighting" | "shadows" | "clipVolume" | "constructions" | "monochrome" | "backgroundMap" | "ambientOcclusion" | "forceSurfaceDiscard"
+  | "dimensions"
+  | "patterns"
+  | "weights"
+  | "styles"
+  | "transparency"
+  | "fill"
+  | "textures"
+  | "materials"
+  | "acsTriad"
+  | "grid"
+  | "visibleEdges"
+  | "hiddenEdges"
+  | "lighting"
+  | "shadows"
+  | "clipVolume"
+  | "constructions"
+  | "monochrome"
+  | "backgroundMap"
+  | "ambientOcclusion"
+  | "forceSurfaceDiscard"
   | "wiremesh";
 
 // Compiler has the info to construct this array for us, but we have no access to it...
 const booleanFlagNames: BooleanFlagName[] = [
-  "dimensions", "patterns", "weights", "styles", "transparency", "fill", "textures", "materials", "acsTriad", "grid", "visibleEdges",
-  "hiddenEdges", "lighting", "shadows", "clipVolume", "constructions", "monochrome", "backgroundMap", "ambientOcclusion", "forceSurfaceDiscard",
+  "dimensions",
+  "patterns",
+  "weights",
+  "styles",
+  "transparency",
+  "fill",
+  "textures",
+  "materials",
+  "acsTriad",
+  "grid",
+  "visibleEdges",
+  "hiddenEdges",
+  "lighting",
+  "shadows",
+  "clipVolume",
+  "constructions",
+  "monochrome",
+  "backgroundMap",
+  "ambientOcclusion",
+  "forceSurfaceDiscard",
   "wiremesh",
 ];
 
@@ -36,7 +79,9 @@ const lowercaseBooleanFlagNames = booleanFlagNames.map((name) => name.toLowerCas
  * @beta
  */
 export abstract class DisplayStyleTool extends Tool {
-  protected get require3d() { return false; }
+  protected get require3d() {
+    return false;
+  }
   // Return true if the display style was modified - we will invalidate the viewport's render plan.
   protected abstract execute(vp: Viewport): Promise<boolean>;
   // Return false if failed to parse.
@@ -69,8 +114,12 @@ export abstract class DisplayStyleTool extends Tool {
  */
 export class ChangeViewFlagsTool extends Tool {
   public static override toolId = "ChangeViewFlags";
-  public static override get maxArgs() { return undefined; }
-  public static override get minArgs() { return 1; }
+  public static override get maxArgs() {
+    return undefined;
+  }
+  public static override get minArgs() {
+    return 1;
+  }
 
   public override async run(vf: ViewFlags, vp?: Viewport): Promise<boolean> {
     if (undefined !== vf && undefined !== vp)
@@ -130,9 +179,13 @@ export class ChangeViewFlagsTool extends Tool {
 export class ToggleSkyboxTool extends DisplayStyleTool {
   public static override toolId = "ToggleSkybox";
 
-  public override get require3d() { return true; }
+  public override get require3d() {
+    return true;
+  }
 
-  public async parse(_args: string[]): Promise<boolean> { return true; } // no arguments
+  public async parse(_args: string[]): Promise<boolean> {
+    return true;
+  } // no arguments
 
   public async execute(vp: Viewport) {
     const style = vp.view.displayStyle as DisplayStyle3dState;
@@ -148,10 +201,16 @@ export class SkySphereTool extends DisplayStyleTool {
   private _image?: string;
 
   public static override toolId = "SetSkySphere";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
-  public override get require3d() { return true; }
+  public override get require3d() {
+    return true;
+  }
 
   public async parse(args: string[]) {
     this._image = args[0];
@@ -177,10 +236,16 @@ export class SkyCubeTool extends DisplayStyleTool {
   private _images: string[] = [];
 
   public static override toolId = "SetSkyCube";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 6; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 6;
+  }
 
-  public override get require3d() { return true; }
+  public override get require3d() {
+    return true;
+  }
 
   public async parse(args: string[]) {
     this._images = [...args];
@@ -195,11 +260,21 @@ export class SkyCubeTool extends DisplayStyleTool {
     let top, bottom, left, right, front, back;
     switch (imgs.length) {
       case 1:
-        top = bottom = left = right = front = back = imgs[0];
+        top =
+          bottom =
+          left =
+          right =
+          front =
+          back =
+            imgs[0];
         break;
       case 2:
         top = bottom = imgs[0];
-        left = right = front = back = imgs[1];
+        left =
+          right =
+          front =
+          back =
+            imgs[1];
         break;
       case 3:
         top = bottom = imgs[0];
@@ -259,8 +334,12 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
 
   public static override toolId = "SaveRenderingStyle";
 
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 7; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 7;
+  }
 
   public async parse(inputArgs: string[]) {
     const args = parseArgs(inputArgs);
@@ -301,8 +380,12 @@ export class ApplyRenderingStyleTool extends DisplayStyleTool {
 
   public static override toolId = "ApplyRenderingStyle";
 
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public async parse(args: string[]) {
     try {
@@ -330,8 +413,12 @@ export class OverrideSubCategoryTool extends DisplayStyleTool {
   private _subcategoryIds: string[] = [];
 
   public static override toolId = "OverrideSubCategory";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 7; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 7;
+  }
 
   public async parse(inArgs: string[]) {
     const args = parseArgs(inArgs);
@@ -367,8 +454,12 @@ export class WoWIgnoreBackgroundTool extends DisplayStyleTool {
   private _ignore?: boolean;
 
   public static override toolId = "WoWIgnoreBackground";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public async parse(args: string[]) {
     const ignore = parseToggle(args[0]);
@@ -394,8 +485,12 @@ export class ToggleWiremeshTool extends DisplayStyleTool {
   private _enable?: boolean;
 
   public static override toolId = "ToggleWiremesh";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public async parse(args: string[]) {
     const enable = parseToggle(args[0]);
@@ -419,8 +514,12 @@ export class ChangeBackgroundColorTool extends DisplayStyleTool {
   private _color?: ColorDef;
 
   public static override toolId = "ChangeBackgroundColor";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public async parse(args: string[]) {
     this._color = ColorDef.fromString(args[0]);

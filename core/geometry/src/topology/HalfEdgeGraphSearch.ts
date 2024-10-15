@@ -84,7 +84,8 @@ export class HalfEdgeGraphSearch {
    * @returns node on the negative area face with largest absolute area, or `undefined` if no negative area face.
    */
   public static findMinimumAreaFace(
-    oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[], faceAreaFunction?: NodeToNumberFunction,
+    oneCandidateNodePerFace: HalfEdgeGraph | HalfEdge[],
+    faceAreaFunction?: NodeToNumberFunction,
   ): HalfEdge | undefined {
     const summary = HalfEdgeGraphSearch.collectFaceAreaSummary(oneCandidateNodePerFace, false, faceAreaFunction);
     return summary.largestNegativeItem;
@@ -137,7 +138,10 @@ export class HalfEdgeGraphSearch {
    * @param onePerFaceStack array appended with `faceSeed`.
    */
   private static pushAndMaskAllNodesInFace(
-    faceSeed: HalfEdge, mask: number, allNodeStack: HalfEdge[], onePerFaceStack: HalfEdge[],
+    faceSeed: HalfEdge,
+    mask: number,
+    allNodeStack: HalfEdge[],
+    onePerFaceStack: HalfEdge[],
   ): void {
     onePerFaceStack.push(faceSeed);
     faceSeed.collectAroundFace((node: HalfEdge) => {
@@ -332,8 +336,10 @@ export class HalfEdgeGraphSearch {
     // Starting all floods at the boundary reduces the chance of ending up with a ring-shaped component at the boundary.
     const findNextFloodSeed = (index: number) => {
       for (let i = index; i < graph.countNodes(); ++i) {
-        if (!graph.allHalfEdges[i].isMaskSet(boundaryMask)
-          && graph.allHalfEdges[i].edgeMate.isMaskSet(boundaryMask)) {
+        if (
+          !graph.allHalfEdges[i].isMaskSet(boundaryMask)
+          && graph.allHalfEdges[i].edgeMate.isMaskSet(boundaryMask)
+        ) {
           index = i;
           break;
         }
@@ -368,7 +374,7 @@ export class HalfEdgeGraphSearch {
     // walk around looking for an accepted node to start the search (seedNode is usually ok)
     let nodeA = seedNode;
     let nodeB = seedNode.faceSuccessor;
-    for (; ; nodeA = nodeB) {
+    for (;; nodeA = nodeB) {
       if (context.tryStartEdge(nodeA.x, nodeA.y, nodeB.x, nodeB.y))
         break;
       if (nodeB === seedNode) {
@@ -380,7 +386,7 @@ export class HalfEdgeGraphSearch {
     }
     // nodeB is the real start node for search, so stop when we revisit it. For each edge, accumulate parity and hits
     let nodeC = nodeB.faceSuccessor;
-    for (; ;) {
+    for (;;) {
       if (!context.advance(nodeC.x, nodeC.y)) {
         return context.classifyCounts();
       }
@@ -411,7 +417,7 @@ export class HalfEdgeGraphSearch {
       seed.setMask(visitMask);
       const vertexBase = seed.faceSuccessor;
       let candidateAroundVertex = vertexBase;
-      for (; ;) {
+      for (;;) {
         if (candidateAroundVertex.getMask(visitMask)) // end of boundary loop
           return;
         if (isBoundaryEdge(candidateAroundVertex)) {

@@ -11,7 +11,7 @@ sourceMapSupport.install();
 // The source-map-support package does not correctly format stack traces from the browser.
 // It gets pretty close though, so we'll just monkey-patch here to fix them.
 const originalPrepareStackTrace = Error.prepareStackTrace;
-Error.prepareStackTrace = function (...args) {
+Error.prepareStackTrace = function(...args) {
   const res = originalPrepareStackTrace!.call(this, ...args);
   return res.replace(/\(.*file:(\/|\\)/g, "(").replace(/at .*file:(\/|\\)/g, "at ");
 };

@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { type SchemaMergeContext } from "./SchemaMerger";
-import { AnyClassItemDifference } from "../Differencing/SchemaDifference";
-import { updateSchemaItemKey } from "./Utils";
-import { type MutableClass } from "../Editing/Mutable/MutableClass";
 import { CustomAttribute, ECClass, ECClassModifier, parseClassModifier, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
-import { mergeClassProperties } from "./PropertyMerger";
+import { AnyClassItemDifference } from "../Differencing/SchemaDifference";
+import { type MutableClass } from "../Editing/Mutable/MutableClass";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
+import { mergeClassProperties } from "./PropertyMerger";
+import { type SchemaMergeContext } from "./SchemaMerger";
+import { updateSchemaItemKey } from "./Utils";
 
 /**
  * Shared modify merger of all ECClass based items.
@@ -28,7 +28,7 @@ export async function modifyClass(context: SchemaMergeContext, change: AnyClassI
     // If the entry difference have a property baseClass and it is explicitly set to undefined,
     // it is expected to remove the base class, which is not allowed in this case.
     // TODO: We should consider using null for this case.
-    if(change.difference.baseClass === undefined) {
+    if (change.difference.baseClass === undefined) {
       throw new Error(`Changing the class '${item.key.name}' baseClass is not supported.`);
     }
     await setBaseClass(context, item, change.difference.baseClass, change.changeType === "add");
@@ -72,11 +72,16 @@ async function setClassModifier(item: MutableClass, modifierValue: string): Prom
 function getBaseClassSetter(context: SchemaMergeContext, item: ECClass) {
   return async (itemKey: SchemaItemKey, baseClassKey: SchemaItemKey) => {
     switch (item.schemaItemType) {
-      case SchemaItemType.CustomAttributeClass: return context.editor.customAttributes.setBaseClass(itemKey, baseClassKey);
-      case SchemaItemType.EntityClass: return context.editor.entities.setBaseClass(itemKey, baseClassKey);
-      case SchemaItemType.Mixin: return context.editor.mixins.setBaseClass(itemKey, baseClassKey);
-      case SchemaItemType.RelationshipClass: return context.editor.relationships.setBaseClass(itemKey, baseClassKey);
-      case SchemaItemType.StructClass: return context.editor.structs.setBaseClass(itemKey, baseClassKey);
+      case SchemaItemType.CustomAttributeClass:
+        return context.editor.customAttributes.setBaseClass(itemKey, baseClassKey);
+      case SchemaItemType.EntityClass:
+        return context.editor.entities.setBaseClass(itemKey, baseClassKey);
+      case SchemaItemType.Mixin:
+        return context.editor.mixins.setBaseClass(itemKey, baseClassKey);
+      case SchemaItemType.RelationshipClass:
+        return context.editor.relationships.setBaseClass(itemKey, baseClassKey);
+      case SchemaItemType.StructClass:
+        return context.editor.structs.setBaseClass(itemKey, baseClassKey);
     }
     throw new Error(`Changing the base class '${item.name}' is not supported.`);
   };

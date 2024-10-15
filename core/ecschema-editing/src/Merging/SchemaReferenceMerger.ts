@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { SchemaMergeContext } from "./SchemaMerger";
+import { ECVersion, Schema, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import type { SchemaReferenceDifference } from "../Differencing/SchemaDifference";
 import type { SchemaContextEditor } from "../Editing/Editor";
-import { ECVersion, Schema, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import type { SchemaMergeContext } from "./SchemaMerger";
 
 /**
  * Merges a new reference to an external schema into the target schema.
@@ -21,13 +21,16 @@ export async function addSchemaReferences(context: SchemaMergeContext, change: S
  * @internal
  */
 export async function modifySchemaReferences(context: SchemaMergeContext, change: SchemaReferenceDifference) {
-  const existingSchema  = await context.targetSchema.getReference(change.difference.name) as Schema;
-  const [older, latest] = sortSchemas(existingSchema.schemaKey, new SchemaKey(change.difference.name, ECVersion.fromString(change.difference.version)));
-  if(latest === existingSchema.schemaKey) {
+  const existingSchema = await context.targetSchema.getReference(change.difference.name) as Schema;
+  const [older, latest] = sortSchemas(
+    existingSchema.schemaKey,
+    new SchemaKey(change.difference.name, ECVersion.fromString(change.difference.version)),
+  );
+  if (latest === existingSchema.schemaKey) {
     return;
   }
 
-  if(!latest.matches(older, SchemaMatchType.LatestWriteCompatible)) {
+  if (!latest.matches(older, SchemaMatchType.LatestWriteCompatible)) {
     throw new Error(`Schemas references of ${change.difference.name} have incompatible versions: ${older.version} and ${latest.version}`);
   }
 
@@ -46,13 +49,13 @@ export async function modifySchemaReferences(context: SchemaMergeContext, change
  * @returns           The schema found in the context.
  */
 async function locateSchema(editor: SchemaContextEditor, schemaName?: string, version?: string): Promise<Schema> {
-  if(schemaName === undefined || version === undefined) {
+  if (schemaName === undefined || version === undefined) {
     throw new Error("Schema name and version must not be undefined.");
   }
 
   const schemaKey = new SchemaKey(schemaName, ECVersion.fromString(version));
   const schema = await editor.schemaContext.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
-  if(schema === undefined) {
+  if (schema === undefined) {
     throw new Error(`Referenced schema ${schemaKey.toString()} could not be found in target context`);
   }
   return schema;

@@ -42,7 +42,6 @@ describe("SchemaKey", () => {
   });
 
   describe("compareByName", () => {
-
     it("should compare against a string", () => {
       const key = new SchemaKey("SchemaName", 1, 2, 3);
       expect(key.compareByName("SchemaName")).to.be.true;
@@ -136,20 +135,18 @@ describe("SchemaKey", () => {
         expect(new SchemaKey("SchemaTest", 1, 0, 0).matches(new SchemaKey("SchemaTest", 1, 0, 0), -1 as SchemaMatchType)).false;
       });
     });
-
   });
 
   describe("fromJSON", () => {
     let testKey2: SchemaKey;
 
     it("should return a SchemaKey given a SchemaKeyProp using fromJson", async () => {
-      testKey2 = SchemaKey.fromJSON({name: "testKey2", read: 1, write: 0, minor: 12});
+      testKey2 = SchemaKey.fromJSON({ name: "testKey2", read: 1, write: 0, minor: 12 });
       expect(testKey2).to.not.eql(undefined);
       expect(testKey2.name).to.eql("testKey2");
       expect(testKey2.readVersion).to.eql(1);
       expect(testKey2.writeVersion).to.eql(0);
       expect(testKey2.minorVersion).to.eql(12);
-
     });
   });
 
@@ -164,7 +161,7 @@ describe("SchemaKey", () => {
     });
 
     it("should return a schemaKeyProps given a different test key", () => {
-      const testKey2 = new SchemaKey("testKey2", new ECVersion(4,16,25));
+      const testKey2 = new SchemaKey("testKey2", new ECVersion(4, 16, 25));
       schemaKeyProps = testKey2.toJSON();
       expect(schemaKeyProps.name).to.eql("testKey2");
       expect(schemaKeyProps.read).to.eql(4);

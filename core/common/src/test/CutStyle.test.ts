@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
 import { CutStyle, CutStyleProps } from "../ClipStyle";
-import { HiddenLine } from "../HiddenLine";
 import { FeatureAppearance } from "../FeatureSymbology";
+import { HiddenLine } from "../HiddenLine";
 
 describe("CutStyle", () => {
   it("should round-trip through JSON", () => {
@@ -24,7 +24,7 @@ describe("CutStyle", () => {
     roundTrip({}, undefined);
     roundTrip({ viewflags: undefined, hiddenLine: undefined, appearance: undefined }, undefined);
     roundTrip(CutStyle.create().toJSON(), undefined);
-    roundTrip(CutStyle.create({ }, HiddenLine.Settings.defaults, FeatureAppearance.defaults).toJSON(), undefined);
+    roundTrip(CutStyle.create({}, HiddenLine.Settings.defaults, FeatureAppearance.defaults).toJSON(), undefined);
 
     const hiddenLine = {
       ...HiddenLine.Settings.defaults.toJSON(),

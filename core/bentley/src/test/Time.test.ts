@@ -7,7 +7,6 @@ import { assert, describe, it } from "vitest";
 import { BeDuration } from "../Time";
 
 describe("BeDuration", () => {
-
   class Test {
     private _a = 33;
     public doTest(arg1: number, arg2: string) {
@@ -25,5 +24,4 @@ describe("BeDuration", () => {
     assert.equal(val, 33);
     assert.isAtLeast(Date.now(), start + 400); // use 400ms to avoid false failures if precision of timing is reduced
   });
-
 });

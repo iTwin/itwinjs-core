@@ -2,16 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
-import {
-  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
-} from "@itwin/core-common";
-import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, DrawingCategory, ECSqlStatement, IModelDb, IModelHost, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
+import { Reporter } from "@itwin/perf-tools";
+import { assert } from "chai";
+import * as path from "path";
 
 // @ts-expect-error package.json will resolve from the lib/{cjs,esm} dir without copying it into the build output we deliver
 // eslint-disable-next-line @itwin/import-within-package
@@ -24,10 +22,19 @@ const CORE_MAJ_MIN = `${ITWINJS_CORE_VERSION.split(".")[0]}.${ITWINJS_CORE_VERSI
 /* eslint-disable @typescript-eslint/naming-convention */
 
 const values: any = {
-  baseStr: "PerfElement - InitValue", baseStr2: "PerfElement - InitValue2", sub1Str: "PerfElementSub1 - InitValue",
-  sub2Str: "PerfElementSub2 - InitValue", sub3Str: "PerfElementSub3 - InitValue",
-  baseLong: "0x989680", sub1Long: "0x1312d00", sub2Long: "0x1c9c380", sub3Long: "0x2625a00",
-  baseDouble: -3.1416, sub1Double: 2.71828, sub2Double: 1.414121, sub3Double: 1.61803398874,
+  baseStr: "PerfElement - InitValue",
+  baseStr2: "PerfElement - InitValue2",
+  sub1Str: "PerfElementSub1 - InitValue",
+  sub2Str: "PerfElementSub2 - InitValue",
+  sub3Str: "PerfElementSub3 - InitValue",
+  baseLong: "0x989680",
+  sub1Long: "0x1312d00",
+  sub2Long: "0x1c9c380",
+  sub3Long: "0x2625a00",
+  baseDouble: -3.1416,
+  sub1Double: 2.71828,
+  sub2Double: 1.414121,
+  sub3Double: 1.61803398874,
 };
 
 interface TestElementProps extends GeometricElementProps {
@@ -139,7 +146,9 @@ describe("ECSqlRowPerformanceTests", () => {
         if (IModelJsFs.existsSync(pathname))
           continue;
 
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlRowPerformance", fileName), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlRowPerformance", fileName), {
+          rootSubject: { name: "PerfTest" },
+        });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -148,7 +157,12 @@ describe("ECSqlRowPerformanceTests", () => {
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          spatialCategoryId = SpatialCategory.insert(
+            seedIModel,
+            IModel.dictionaryId,
+            "MySpatialCategory",
+            new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+          );
 
         for (let m = 0; m < size; ++m) {
           const elementProps = createElemProps(name, seedIModel, newModelId, spatialCategoryId);
@@ -182,7 +196,11 @@ describe("ECSqlRowPerformanceTests", () => {
         const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
         const elapsedTime = measureGetRowTime(perfimodel, `PerfTestDomain:${name}`);
-        reporter.addEntry("ECSqlRowPerformanceTests", "GetElements", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN });
+        reporter.addEntry("ECSqlRowPerformanceTests", "GetElements", "Execution time(s)", elapsedTime, {
+          ElementClassName: name,
+          InitialCount: size,
+          CoreVersion: CORE_MAJ_MIN,
+        });
         perfimodel.close();
       }
     }
@@ -209,7 +227,9 @@ describe("ECSqlRowPerformanceTests2d", () => {
         if (IModelJsFs.existsSync(pathname))
           continue;
 
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlRowPerformance2d", fileName), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ECSqlRowPerformance2d", fileName), {
+          rootSubject: { name: "PerfTest" },
+        });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas([testSchemaName]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -220,7 +240,12 @@ describe("ECSqlRowPerformanceTests2d", () => {
         const [, newModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(seedIModel, codeProps, true);
         let drawingCategoryId = DrawingCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MyDrawingCategory");
         if (undefined === drawingCategoryId)
-          drawingCategoryId = DrawingCategory.insert(seedIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          drawingCategoryId = DrawingCategory.insert(
+            seedIModel,
+            IModel.dictionaryId,
+            "MyDrawingCategory",
+            new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+          );
 
         for (let m = 0; m < size; ++m) {
           const elementProps = createElemProps(name, seedIModel, newModelId, drawingCategoryId);
@@ -254,7 +279,11 @@ describe("ECSqlRowPerformanceTests2d", () => {
         const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
 
         const elapsedTime = measureGetRowTime(perfimodel, `PerfTestDomain:${name}`);
-        reporter.addEntry("ECSqlRowPerformanceTests2d", "GetElements2d", "Execution time(s)", elapsedTime, { ElementClassName: name, InitialCount: size, CoreVersion: CORE_MAJ_MIN });
+        reporter.addEntry("ECSqlRowPerformanceTests2d", "GetElements2d", "Execution time(s)", elapsedTime, {
+          ElementClassName: name,
+          InitialCount: size,
+          CoreVersion: CORE_MAJ_MIN,
+        });
         perfimodel.close();
       }
     }

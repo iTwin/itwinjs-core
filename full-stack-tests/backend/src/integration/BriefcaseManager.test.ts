@@ -3,14 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import {
+  BriefcaseDb,
+  BriefcaseManager,
+  CheckpointManager,
+  IModelHost,
+  IModelJsFs,
+  RequestNewBriefcaseArg,
+  V2CheckpointManager,
+} from "@itwin/core-backend";
+import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
+import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
+import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import * as os from "os";
 import * as readline from "readline";
 import * as sinon from "sinon";
-import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
-import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
-import { BriefcaseDb, BriefcaseManager, CheckpointManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
-import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -54,7 +62,7 @@ describe("BriefcaseManager", () => {
       iTwinId: testITwinId,
       iModelId: testIModelId,
       briefcaseId: BriefcaseIdValue.Unassigned,
-      asOf: {afterChangeSetId: changesetId},
+      asOf: { afterChangeSetId: changesetId },
     };
     const props = await BriefcaseManager.downloadBriefcase(args);
     const iModel = await BriefcaseDb.open({
@@ -78,13 +86,23 @@ describe("BriefcaseManager", () => {
   });
 
   it("should open and close an iModel from the Hub", async () => {
-    const iModel = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
+    const iModel = await HubWrappers.openCheckpointUsingRpc({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: readOnlyTestIModelId,
+      asOf: IModelVersion.first().toJSON(),
+      deleteFirst: true,
+    });
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
 
     // Validate that the IModelDb is readonly
     assert(iModel.isReadonly, "iModel not set to Readonly mode");
 
-    const expectedChangeSet = await IModelHost.hubAccess.getChangesetFromVersion({ version: IModelVersion.first(), accessToken, iModelId: readOnlyTestIModelId });
+    const expectedChangeSet = await IModelHost.hubAccess.getChangesetFromVersion({
+      version: IModelVersion.first(),
+      accessToken,
+      iModelId: readOnlyTestIModelId,
+    });
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
 
@@ -97,14 +115,29 @@ describe("BriefcaseManager", () => {
   });
 
   it("should reuse checkpoints", async () => {
-    const iModel1 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
+    const iModel1 = await HubWrappers.openCheckpointUsingRpc({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: readOnlyTestIModelId,
+      asOf: IModelVersion.named("FirstVersion").toJSON(),
+    });
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
-    const iModel2 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
+    const iModel2 = await HubWrappers.openCheckpointUsingRpc({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: readOnlyTestIModelId,
+      asOf: IModelVersion.named("FirstVersion").toJSON(),
+    });
     assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel1, iModel2, "previously open briefcase was expected to be shared");
 
-    const iModel3 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("SecondVersion").toJSON() });
+    const iModel3 = await HubWrappers.openCheckpointUsingRpc({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: readOnlyTestIModelId,
+      asOf: IModelVersion.named("SecondVersion").toJSON(),
+    });
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
     assert.notEqual(iModel3, iModel2, "opening two different versions should not cause briefcases to be shared when the older one is open");
 
@@ -116,11 +149,21 @@ describe("BriefcaseManager", () => {
     iModel3.close();
     assert.isTrue(IModelJsFs.existsSync(pathname3));
 
-    const iModel4 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("FirstVersion").toJSON() });
+    const iModel4 = await HubWrappers.openCheckpointUsingRpc({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: readOnlyTestIModelId,
+      asOf: IModelVersion.named("FirstVersion").toJSON(),
+    });
     assert.exists(iModel4, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel4.pathName, pathname2, "previously closed briefcase was expected to be shared");
 
-    const iModel5 = await HubWrappers.openCheckpointUsingRpc({ accessToken, iTwinId: testITwinId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named("SecondVersion").toJSON() });
+    const iModel5 = await HubWrappers.openCheckpointUsingRpc({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: readOnlyTestIModelId,
+      asOf: IModelVersion.named("SecondVersion").toJSON(),
+    });
     assert.exists(iModel5, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel5.pathName, pathname3, "previously closed briefcase was expected to be shared");
 
@@ -170,7 +213,11 @@ describe("BriefcaseManager", () => {
     console.log(`download took ${watch.elapsedSeconds} seconds`);
     const iModel = await BriefcaseDb.open({ fileName: props.fileName });
 
-    await expect(BriefcaseManager.downloadBriefcase(args)).to.be.rejectedWith(IModelError, "already exists", "should not be able to download a briefcase if a file with that name already exists");
+    await expect(BriefcaseManager.downloadBriefcase(args)).to.be.rejectedWith(
+      IModelError,
+      "already exists",
+      "should not be able to download a briefcase if a file with that name already exists",
+    );
 
     await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
     assert.isAbove(numProgressCalls, 0, "download progress called");
@@ -207,10 +254,9 @@ describe("BriefcaseManager", () => {
     const fileName = BriefcaseManager.getFileName(args);
     await BriefcaseManager.deleteBriefcaseFiles(fileName);
     sinon.stub(CheckpointManager, "downloadCheckpoint").throws(new Error("testError"));
-    const downloadPromise = BriefcaseManager.downloadBriefcase({...args, fileName});
+    const downloadPromise = BriefcaseManager.downloadBriefcase({ ...args, fileName });
     await expect(downloadPromise).to.eventually.be.rejectedWith("testError");
     expect(IModelJsFs.existsSync(fileName)).to.be.false;
     sinon.restore();
   });
-
 });

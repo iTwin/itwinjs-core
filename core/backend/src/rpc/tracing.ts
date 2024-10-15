@@ -28,14 +28,14 @@ export class RpcTrace {
 
   /** Get the [RpcActivity]($common) for the currently executing async, or `undefined` if there is no
    * RpcActivity in the current call stack.
-   * */
+   */
   public static get currentActivity(): RpcActivity | undefined {
     return RpcTrace._storage.getStore() as RpcActivity | undefined;
   }
 
   /** Get the [RpcActivity]($common) for the currently executing async. Asserts that the RpcActivity
    * exists in the current call stack.
-   * */
+   */
   public static get expectCurrentActivity(): RpcActivity {
     assert(undefined !== RpcTrace.currentActivity);
     return RpcTrace.currentActivity;

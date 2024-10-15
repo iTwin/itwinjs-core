@@ -8,10 +8,10 @@
  */
 
 import { PointCloudDisplaySettings, RealityModelDisplaySettings } from "@itwin/core-common";
-import { UniformHandle } from "./UniformHandle";
-import { desync, sync } from "./Sync";
 import { Range3d, Transform, Vector3d } from "@itwin/core-geometry";
+import { desync, sync } from "./Sync";
 import { Target } from "./Target";
+import { UniformHandle } from "./UniformHandle";
 
 /** A Target keeps track of the current settings for drawing point clouds.
  * Pushing a Branch may *replace* the current settings. Popping the Branch does not reset them. It is expected that every Branch containing
@@ -54,7 +54,7 @@ export class PointCloudUniforms {
   }
 
   public updateRange(range: Range3d | undefined, target: Target, xform: Transform, is3d: boolean): void {
-    let rangeFactor = 8.0;  // default to min scale factor of 8
+    let rangeFactor = 8.0; // default to min scale factor of 8
     const near = target.uniforms.frustum.nearPlane;
     const far = target.uniforms.frustum.farPlane;
     const viewDepth = far - near;
@@ -63,12 +63,13 @@ export class PointCloudUniforms {
       // calculate a "normalized" strength factor based on the size of the point cloud versus the current viewing depth
       //   from the matrix, only care about scaling factor here (entries 0,4,8) to scale the range lengths
       //   then use the largest length component as the reference for the size of the point cloud
-      const rangeScale = Vector3d.create(scale.coffs[0] * range.xLength(), scale.coffs[4] * range.xLength(), scale.coffs[8] * range.xLength()).maxAbs();
+      const rangeScale = Vector3d.create(scale.coffs[0] * range.xLength(), scale.coffs[4] * range.xLength(), scale.coffs[8] * range.xLength())
+        .maxAbs();
       // limit the viewDepth/rangeScale ratio to min of 10 to still get reasonable factors when close to and inside the model
-      rangeFactor = Math.log (Math.max (10, viewDepth / rangeScale));
+      rangeFactor = Math.log(Math.max(10, viewDepth / rangeScale));
     }
-    const zoomFactor = Math.log (far / near); // compensate for zoom level
-    const winSizeFactor = Math.pow (1.8440033, Math.log2 (2226 / target.uniforms.viewRect.width)); // compensate for window size
+    const zoomFactor = Math.log(far / near); // compensate for zoom level
+    const winSizeFactor = Math.pow(1.8440033, Math.log2(2226 / target.uniforms.viewRect.width)); // compensate for window size
     const scaleFactor = (rangeFactor + zoomFactor) / winSizeFactor;
 
     if (this._scaleFactor === scaleFactor && this._is3d === is3d)

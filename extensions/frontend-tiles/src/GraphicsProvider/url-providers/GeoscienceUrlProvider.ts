@@ -67,7 +67,7 @@ export async function getGeoscienceTilesetUrl(args: GetGeoscienceTilesetArgs): P
   const url = `${baseUrl}/visualization/orgs/${args.organizationId}/workspaces/${args.workspaceId}/geoscience-object/${args.geoscienceObjectId}`;
   const response = await fetch(url, { headers });
 
-  if(!response.ok) {
+  if (!response.ok) {
     Logger.logError(loggerCategory, `Received invalid response from ${baseUrl}, status: ${response.status}, text: ${response.statusText}`);
     return undefined;
   }

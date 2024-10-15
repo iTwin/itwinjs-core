@@ -23,7 +23,7 @@ export interface RunLayoutResult {
   /**
    * The number of characters from the source [[Run]] that have already appeared in the layout.
    * @note A single source [[TextRun]] can be split into multiple lines to respect the [[TextBlock.width]].
-  */
+   */
   characterOffset: number;
   /** The number of characters in the RunLayoutResult. */
   characterCount: number;

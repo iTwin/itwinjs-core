@@ -8,10 +8,10 @@
 
 import { DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { ChannelRootAspectProps, IModel, IModelError } from "@itwin/core-common";
+import { ChannelControl, ChannelKey } from "../ChannelControl";
 import { Subject } from "../Element";
 import { IModelDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
-import { ChannelControl, ChannelKey } from "../ChannelControl";
 import { _implementationProhibited, _nativeDb, _verifyChannel } from "./Symbols";
 
 class ChannelAdmin implements ChannelControl {
@@ -125,7 +125,6 @@ class ChannelAdmin implements ChannelControl {
       // In that case all data in such iModel is assumed to be in the shared channel.
       return undefined;
     }
-
   }
 }
 

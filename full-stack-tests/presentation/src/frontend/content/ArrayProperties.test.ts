@@ -3,11 +3,11 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Guid, using } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { Content, ContentSpecificationTypes, DefaultContentDisplayTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { PresentationManager } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import {
   buildTestIModelConnection,
   importSchema,
@@ -29,7 +29,7 @@ describeContentTestSuite("Array properties", () => {
     ],
   };
 
-  it("returns content for arrays with null items", async function () {
+  it("returns content for arrays with null items", async function() {
     let elementKey!: InstanceKey;
     const imodel = await buildTestIModelConnection(this.test!.title, async (db) => {
       const schema = importSchema(

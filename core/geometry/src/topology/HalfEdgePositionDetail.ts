@@ -24,8 +24,8 @@ export enum HalfEdgeTopo {
   /**
    * Exterior point (after hitting barrier edge at fraction).
    * Fraction is 0 if exterior point "in sweep around exterior corner".
-  */
-  ExteriorFace = 4
+   */
+  ExteriorFace = 4,
 }
 /**
  * Description of a generalized position within a graph, categorized as:
@@ -56,7 +56,9 @@ export class HalfEdgePositionDetail {
    */
   private constructor(
     node: HalfEdge | undefined,
-    x: number, y: number, z: number,
+    x: number,
+    y: number,
+    z: number,
     topo: HalfEdgeTopo,
     edgeFraction?: number,
     iTag?: number,
@@ -64,7 +66,9 @@ export class HalfEdgePositionDetail {
     isExteriorTarget?: boolean,
   ) {
     this._node = node;
-    this.x = x; this.y = y; this.z = z;
+    this.x = x;
+    this.y = y;
+    this.z = z;
     this._topo = topo;
     this._edgeFraction = edgeFraction;
     this._iTag = iTag;

@@ -30,7 +30,6 @@ describe("ArcGisUrl", () => {
     const sampleUrl3 = new URL("https://dtlgeoarcgis.adtl.com/server/");
     const extractedBaseUrl3 = ArcGisUrl.extractRestBaseUrl(sampleUrl3);
     chai.assert.isTrue(extractedBaseUrl3 === undefined);
-
   });
 
   it("should extract RestUrl From GenerateToken Url", async () => {
@@ -44,7 +43,6 @@ describe("ArcGisUrl", () => {
     try {
       restUrl = await ArcGisUrl.getRestUrlFromGenerateTokenUrl(new URL(sampleRestUrl));
     } catch {
-
     }
 
     // The returned URL should match
@@ -56,5 +54,4 @@ describe("ArcGisUrl", () => {
     const urlArg = fetchJsonStub.getCalls()[0].args[0] as URL;
     chai.expect(urlArg?.toString()).to.equals(`${sampleRestUrl}info?f=json`);
   });
-
 });

@@ -5,15 +5,43 @@
 
 import { assert, BentleyError, Id64Array, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  AkimaCurve3d, AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
-  InterpolationCurve3d,
-  LinearSweep, LineSegment3d, LineString3d, Loop, Path, Range3d, RotationalSweep, RuledSweep, SolidPrimitive, Sphere, TorusPipe, Transform,
-  TransitionSpiral3d, UVSelect,
-} from "@itwin/core-geometry";
-import {
-  BRepEntity, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
-  IModelError, TextStringPrimitive,
+  BRepEntity,
+  GeometryParams,
+  GeometryStreamIterator,
+  GeometrySummaryRequestProps,
+  GeometrySummaryVerbosity,
+  ImagePrimitive,
+  IModelError,
+  TextStringPrimitive,
 } from "@itwin/core-common";
+import {
+  AkimaCurve3d,
+  AnyGeometryQuery,
+  Arc3d,
+  BezierCurveBase,
+  Box,
+  BSplineCurve3d,
+  Cone,
+  CurveChainWithDistanceIndex,
+  CurveCollection,
+  CurvePrimitive,
+  IModelJson,
+  InterpolationCurve3d,
+  LinearSweep,
+  LineSegment3d,
+  LineString3d,
+  Loop,
+  Path,
+  Range3d,
+  RotationalSweep,
+  RuledSweep,
+  SolidPrimitive,
+  Sphere,
+  TorusPipe,
+  Transform,
+  TransitionSpiral3d,
+  UVSelect,
+} from "@itwin/core-geometry";
 import { Element, GeometricElement, GeometryPart } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { _nativeDb } from "./internal/Symbols";
@@ -34,7 +62,9 @@ class ResponseGenerator {
   public elementIds: Id64Array;
   public iModel: IModelDb;
 
-  public get wantSquish() { return GeometrySummaryVerbosity.Full !== this.verbosity; }
+  public get wantSquish() {
+    return GeometrySummaryVerbosity.Full !== this.verbosity;
+  }
 
   public constructor(request: GeometrySummaryRequestProps, iModel: IModelDb) {
     this.elementIds = request.elementIds;
@@ -283,7 +313,7 @@ class ResponseGenerator {
     const summary: string = solid.capped ? " capped" : " uncapped";
     switch (solid.solidPrimitiveType) {
       case "box":
-        const box: Box = (solid as Box);
+        const box: Box = solid as Box;
         return `${summary}'
         ' origin: ${JSON.stringify(box.getBaseOrigin().toJSON())}'
         ' topOrigin: ${JSON.stringify(box.getTopOrigin().toJSON())}'

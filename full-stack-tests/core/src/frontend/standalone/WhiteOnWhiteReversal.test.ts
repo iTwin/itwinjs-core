@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ColorDef, FeatureAppearance, RenderMode, ViewFlags, WhiteOnWhiteReversalSettings } from "@itwin/core-common";
 import { DecorateContext, FeatureSymbology, GraphicType, IModelApp, IModelConnection, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
 import { Color, testOnScreenViewport } from "../TestViewport";
 
@@ -22,7 +22,11 @@ describe("White-on-white reversal", async () => {
     await TestUtility.shutdownFrontend();
   });
 
-  async function test(expectedColors: Color[], setup: (vp: Viewport, vf: ViewFlags) => ViewFlags | undefined, cleanup?: (vp: Viewport) => void): Promise<void> {
+  async function test(
+    expectedColors: Color[],
+    setup: (vp: Viewport, vf: ViewFlags) => ViewFlags | undefined,
+    cleanup?: (vp: Viewport) => void,
+  ): Promise<void> {
     await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
       const vf = vp.viewFlags.copy({ renderMode: RenderMode.Wireframe, acsTriad: false });
       const newVf = setup(vp, vf);

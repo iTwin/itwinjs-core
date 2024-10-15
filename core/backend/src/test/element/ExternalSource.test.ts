@@ -3,20 +3,37 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
 import { Id64String } from "@itwin/core-bentley";
 import {
-  Code, ExternalSourceAttachmentProps, ExternalSourceProps, IModel, RepositoryLinkProps, SynchronizationConfigLinkProps,
+  Code,
+  ExternalSourceAttachmentProps,
+  ExternalSourceProps,
+  IModel,
+  RepositoryLinkProps,
+  SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
+import { assert } from "chai";
 import {
-  ExternalSource, ExternalSourceAttachment, ExternalSourceAttachmentAttachesSource, ExternalSourceGroup, ExternalSourceGroupGroupsSources,
-  ExternalSourceIsInRepository, ExternalSourceOwnsAttachments, FolderContainsRepositories, FolderLink, IModelDb, LinkElement, RepositoryLink,
-  SnapshotDb, SynchronizationConfigLink, SynchronizationConfigProcessesSources, SynchronizationConfigSpecifiesRootSources,
+  ExternalSource,
+  ExternalSourceAttachment,
+  ExternalSourceAttachmentAttachesSource,
+  ExternalSourceGroup,
+  ExternalSourceGroupGroupsSources,
+  ExternalSourceIsInRepository,
+  ExternalSourceOwnsAttachments,
+  FolderContainsRepositories,
+  FolderLink,
+  IModelDb,
+  LinkElement,
+  RepositoryLink,
+  SnapshotDb,
+  SynchronizationConfigLink,
+  SynchronizationConfigProcessesSources,
+  SynchronizationConfigSpecifiesRootSources,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("ExternalSource", () => {
-
   it("should create elements and relationships like an iModel Connector would", () => {
     const iModelFileName = IModelTestUtils.prepareOutputFile("ExternalSource", "ExternalSource.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFileName, { rootSubject: { name: "ExternalSource Test" } });
@@ -41,10 +58,26 @@ describe("ExternalSource", () => {
     const modelB = insertExternalSource(iModelDb, repositoryB, "B");
     const modelC = insertExternalSource(iModelDb, repositoryC, "C");
 
-    iModelDb.relationships.insertInstance({ classFullName: SynchronizationConfigSpecifiesRootSources.classFullName, sourceId: syncJob, targetId: modelM });
-    iModelDb.relationships.insertInstance({ classFullName: SynchronizationConfigProcessesSources.classFullName, sourceId: syncJob, targetId: modelA });
-    iModelDb.relationships.insertInstance({ classFullName: SynchronizationConfigProcessesSources.classFullName, sourceId: syncJob, targetId: modelB });
-    iModelDb.relationships.insertInstance({ classFullName: SynchronizationConfigProcessesSources.classFullName, sourceId: syncJob, targetId: modelC });
+    iModelDb.relationships.insertInstance({
+      classFullName: SynchronizationConfigSpecifiesRootSources.classFullName,
+      sourceId: syncJob,
+      targetId: modelM,
+    });
+    iModelDb.relationships.insertInstance({
+      classFullName: SynchronizationConfigProcessesSources.classFullName,
+      sourceId: syncJob,
+      targetId: modelA,
+    });
+    iModelDb.relationships.insertInstance({
+      classFullName: SynchronizationConfigProcessesSources.classFullName,
+      sourceId: syncJob,
+      targetId: modelB,
+    });
+    iModelDb.relationships.insertInstance({
+      classFullName: SynchronizationConfigProcessesSources.classFullName,
+      sourceId: syncJob,
+      targetId: modelC,
+    });
 
     const group1 = insertExternalSourceGroup(iModelDb, "Group1");
     iModelDb.relationships.insertInstance({ classFullName: ExternalSourceGroupGroupsSources.classFullName, sourceId: group1, targetId: modelA });

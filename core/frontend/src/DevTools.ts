@@ -23,7 +23,6 @@ export interface PingTestResult {
  * @internal
  */
 export class DevTools {
-
   /** Create a new connection with a specific backend instance.
    * @param tokenProps The iModelToken that identifies that backend instance.
    * Supply a dummy token if contacting the backend without the Orchestrator.
@@ -34,7 +33,8 @@ export class DevTools {
 
   /** Constructor */
   private constructor(
-    private readonly _tokenProps: IModelRpcProps) {
+    private readonly _tokenProps: IModelRpcProps,
+  ) {
   }
 
   /** Measures the round trip times for one or more pings to the backend

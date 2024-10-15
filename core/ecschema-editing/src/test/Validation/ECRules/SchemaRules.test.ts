@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { MutableSchema } from "../../../Editing/Mutable/MutableSchema";
-import * as Rules from "../../../Validation/ECRules";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
+import * as Rules from "../../../Validation/ECRules";
 
 describe("Schema rules tests", () => {
   let context: SchemaContext;
@@ -63,7 +63,7 @@ describe("Schema rules tests", () => {
           version: "1.0.0",
           alias: "ca",
           items: {
-            SupplementalSchema: {  // eslint-disable-line @typescript-eslint/naming-convention
+            SupplementalSchema: { // eslint-disable-line @typescript-eslint/naming-convention
               schemaItemType: "CustomAttributeClass",
               label: "Supplemental Schema",
               description: "Mock Supplemental Schema CustomAttributeClass",
@@ -88,7 +88,9 @@ describe("Schema rules tests", () => {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).to.equal(schemaA);
           expect(diagnostic.messageArgs).to.eql([schemaA.name, "SchemaB"]);
-          expect(diagnostic.messageText).to.eql("Referenced schema 'SchemaB' of schema 'SchemaA' is a supplemental schema. Supplemental schemas are not allowed to be referenced.");
+          expect(diagnostic.messageText).to.eql(
+            "Referenced schema 'SchemaB' of schema 'SchemaA' is a supplemental schema. Supplemental schemas are not allowed to be referenced.",
+          );
           expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
           expect(diagnostic.code).to.equal(Rules.Diagnostics.SupplementalSchemasCannotBeReferenced.code);
           expect(diagnostic.diagnosticType).to.equal(DiagnosticType.Schema);
@@ -134,7 +136,9 @@ describe("Schema rules tests", () => {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).to.equal(schemaA);
           expect(diagnostic.messageArgs).to.eql([schemaA.name, "b", "SchemaB", "SchemaC"]);
-          expect(diagnostic.messageText).to.eql("Schema 'SchemaA' has multiple schema references (SchemaB, SchemaC) with the same alias 'b', which is not allowed.");
+          expect(diagnostic.messageText).to.eql(
+            "Schema 'SchemaA' has multiple schema references (SchemaB, SchemaC) with the same alias 'b', which is not allowed.",
+          );
           expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
           expect(diagnostic.code).to.equal(Rules.Diagnostics.SchemaRefAliasMustBeUnique.code);
           expect(diagnostic.diagnosticType).to.equal(DiagnosticType.Schema);
@@ -229,7 +233,9 @@ describe("Schema rules tests", () => {
           resultHasEntries = true;
           expect(diagnostic.ecDefinition).to.equal(schemaA);
           expect(diagnostic.messageArgs).to.eql([schemaA.name, "SchemaC --> SchemaA, SchemaA --> SchemaC, SchemaD --> SchemaA, SchemaA --> SchemaD"]);
-          expect(diagnostic.messageText).to.eql("Schema 'SchemaA' has reference cycles: SchemaC --> SchemaA, SchemaA --> SchemaC, SchemaD --> SchemaA, SchemaA --> SchemaD");
+          expect(diagnostic.messageText).to.eql(
+            "Schema 'SchemaA' has reference cycles: SchemaC --> SchemaA, SchemaA --> SchemaC, SchemaD --> SchemaA, SchemaA --> SchemaD",
+          );
           expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
           expect(diagnostic.code).to.equal(Rules.Diagnostics.ReferenceCyclesNotAllowed.code);
           expect(diagnostic.diagnosticType).to.equal(DiagnosticType.Schema);

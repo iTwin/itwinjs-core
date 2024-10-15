@@ -99,7 +99,8 @@ class Keyframe {
       Point3d.fromJSON(json.target),
       Vector3d.fromJSON(json.up),
       json.lensAngle !== undefined ? Angle.fromJSON(json.lensAngle) : undefined,
-      json.extents !== undefined ? Vector3d.fromJSON(json.extents) : undefined);
+      json.extents !== undefined ? Vector3d.fromJSON(json.extents) : undefined,
+    );
   }
 
   public toJSON(): KeyframeProps {
@@ -161,21 +162,27 @@ class CameraPath {
     let i = 1;
     while (i < this.keyframes.length - 1) {
       const [before, current, after] = this.keyframes.slice(i - 1, i + 2);
-      const fraction =  (current.time - before.time) / (after.time - before.time);
+      const fraction = (current.time - before.time) / (after.time - before.time);
       const interpolated = before.interpolate(fraction, after);
 
       // Check if the distances between the reconstructed keyframe and the original is acceptable
       const sameCameraType = (interpolated.lensAngle === undefined) === (current.lensAngle === undefined);
       const locationDistance = interpolated.location.distance(current.location);
       const targetDistance = interpolated.target.distance(current.target);
-      const lensAngleDistance = (interpolated.lensAngle === undefined || !sameCameraType) ? 0 : Math.abs(interpolated.lensAngle.degrees - current.lensAngle!.degrees);
-      const extentDistance = (interpolated.extents !== undefined && current.extents !== undefined) ? interpolated.extents.distance(current.extents) : 0;
+      const lensAngleDistance = (interpolated.lensAngle === undefined || !sameCameraType)
+        ? 0
+        : Math.abs(interpolated.lensAngle.degrees - current.lensAngle!.degrees);
+      const extentDistance = (interpolated.extents !== undefined && current.extents !== undefined)
+        ? interpolated.extents.distance(current.extents)
+        : 0;
 
-      if (sameCameraType
+      if (
+        sameCameraType
         && locationDistance < distanceThreshold
         && targetDistance < distanceThreshold
         && lensAngleDistance < lensAngleThreshold.degrees
-        && extentDistance < extentThreshold) {
+        && extentDistance < extentThreshold
+      ) {
         this.keyframes.splice(i, 1);
       } else {
         i++;
@@ -189,7 +196,7 @@ class CameraPath {
    * @returns the interpolated keyframe.
    */
   public getKeyframeAtTime(time: number): Keyframe {
-    const {before, after} = this.getKeyframeRangeAtTime(time);
+    const { before, after } = this.getKeyframeRangeAtTime(time);
 
     // Only one keyframe, use it directly
     if (after === undefined)
@@ -207,23 +214,23 @@ class CameraPath {
    * @param time In ms, the location in the timeline to get the keyframe at.
    * @returns an object with the keyframes. ``before`` will always be set, but ``after`` can be missing.
    */
-  private getKeyframeRangeAtTime(time: number): {before: Keyframe, after?: Keyframe} {
+  private getKeyframeRangeAtTime(time: number): { before: Keyframe, after?: Keyframe } {
     if (this.keyframes.length <= 0)
       throw new Error("Selected path has no keyframes.");
 
     // Only one keyframe or before first keyframe
     if (this.keyframes.length === 1 || time < this.keyframes[0].time) {
-      return {before: this.keyframes[0]};
+      return { before: this.keyframes[0] };
     }
 
     // Between two keyframes
     for (let i = 1; i < this.keyframes.length; i++) {
       if (time < this.keyframes[i].time)
-        return {before: this.keyframes[i - 1], after: this.keyframes[i]};
+        return { before: this.keyframes[i - 1], after: this.keyframes[i] };
     }
 
     // After the last keyframe
-    return {before: this.keyframes[this.keyframes.length - 1]};
+    return { before: this.keyframes[this.keyframes.length - 1] };
   }
 
   public static fromJSON(json?: CameraPathProps): CameraPath {
@@ -296,9 +303,15 @@ export class CameraPathsMenu extends ToolBarDropDown {
     parent.appendChild(this._element);
   }
 
-  public get isOpen() { return "none" !== this._element.style.display; }
-  protected _open() { this._element.style.display = "block"; }
-  protected _close() { this._element.style.display = "none"; }
+  public get isOpen() {
+    return "none" !== this._element.style.display;
+  }
+  protected _open() {
+    this._element.style.display = "block";
+  }
+  protected _close() {
+    this._element.style.display = "none";
+  }
 
   public override get onViewChanged(): Promise<void> | undefined {
     if (this._imodel !== this._viewport.iModel) {
@@ -433,7 +446,11 @@ export class CameraPathsMenu extends ToolBarDropDown {
 
     this._onStateChanged = () => {
       if (this.selectedPath === undefined) {
-        playButton.disabled = recordButton.disabled = stopButton.disabled = deletePathButton.disabled = true;
+        playButton.disabled =
+          recordButton.disabled =
+          stopButton.disabled =
+          deletePathButton.disabled =
+            true;
         pathsList.disabled = false;
       } else {
         const canRecord = this.selectedPath.duration === 0 || this.selectedPath.keyframes.length === 0;
@@ -510,7 +527,6 @@ export class CameraPathsMenu extends ToolBarDropDown {
   private findPath(name: string): CameraPath | undefined {
     const index = this._paths.findIndex((path) => name === path.name);
     return -1 !== index ? this._paths[index] : undefined;
-
   }
 
   public prepareView(record = false): void {
@@ -561,7 +577,6 @@ export class CameraPathsMenu extends ToolBarDropDown {
   }
 
   public stop(): void {
-
     if (this._animID) {
       cancelAnimationFrame(this._animID);
     }
@@ -602,7 +617,6 @@ export class CameraPathsMenu extends ToolBarDropDown {
       if (this._currentAnimationTime > this.selectedPath.duration)
         this.endAnimation();
     }
-
   }
 
   private playAnimationFrame(): void {
@@ -664,7 +678,6 @@ export class CameraPathsMenu extends ToolBarDropDown {
           lensAngle,
         },
       );
-
     } else {
       if (keyframe.extents === undefined)
         throw new Error("Invalid keyframe for camera: path should specifies either lensAngle or extents.");
@@ -680,6 +693,6 @@ export class CameraPathsMenu extends ToolBarDropDown {
       );
     }
 
-    this._viewport.synchWithView({noSaveInUndo: true});
+    this._viewport.synchWithView({ noSaveInUndo: true });
   }
 }

@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { LogLevel } from "@itwin/core-bentley";
 import { DevTools, IModelConnection } from "@itwin/core-frontend";
+import { assert } from "chai";
 import { TestContext } from "./setup/TestContext";
 
 describe("DevTools", () => {
   let iModel: IModelConnection;
   let devTools: DevTools;
 
-  before(async function () {
+  before(async function() {
     const testContext = await TestContext.instance();
 
     if (!testContext.settings.runDevToolsRpcTests)

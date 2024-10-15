@@ -13,7 +13,8 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { RangeTreeNode, RangeTreeOps } from "./RangeTreeNode";
 import {
-  SingleTreeSearchHandlerForClosestPointOnLineString3d, TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach,
+  SingleTreeSearchHandlerForClosestPointOnLineString3d,
+  TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach,
 } from "./RangeTreeSearchHandlers";
 
 /**
@@ -54,12 +55,20 @@ export class LineString3dRangeTreeContext {
    * @param maxChildPerNode maximum children per range tree node (default 4)
    * @param maxAppDataPerLeaf maximum segment indices per leaf node (default 4)
    */
-  public static createCapture(points: Point3d[] | LineString3d, maxChildPerNode: number = 4, maxAppDataPerLeaf: number = 4): LineString3dRangeTreeContext | undefined {
+  public static createCapture(
+    points: Point3d[] | LineString3d,
+    maxChildPerNode: number = 4,
+    maxAppDataPerLeaf: number = 4,
+  ): LineString3dRangeTreeContext | undefined {
     const linestring = points instanceof LineString3d ? points : LineString3d.createPoints(points);
     const rangeTreeRoot = RangeTreeOps.createByIndexSplits<number>(
-      ((index: number): Range3d => { return Range3d.create(linestring.pointAt(index)!, linestring.pointAt(index + 1)!); }),
-      ((index: number): number => { return index; }),
-      linestring.numPoints() - 1,   // number of segments
+      (index: number): Range3d => {
+        return Range3d.create(linestring.pointAt(index)!, linestring.pointAt(index + 1)!);
+      },
+      (index: number): number => {
+        return index;
+      },
+      linestring.numPoints() - 1, // number of segments
       maxChildPerNode,
       maxAppDataPerLeaf,
     );
@@ -90,8 +99,12 @@ export class LineString3dRangeTreeContext {
    * @param contextB second polyline context
    * @param maxDist collect close approaches separated by no more than this distance. If undefined, return only the closest approach.
    * @return closest approach detail pair(s), one per context, with detail.a set to the approach distance
-  */
-  public static searchForClosestApproach(contextA: LineString3dRangeTreeContext, contextB: LineString3dRangeTreeContext, maxDist?: number): CurveLocationDetailPair | CurveLocationDetailPair[] | undefined {
+   */
+  public static searchForClosestApproach(
+    contextA: LineString3dRangeTreeContext,
+    contextB: LineString3dRangeTreeContext,
+    maxDist?: number,
+  ): CurveLocationDetailPair | CurveLocationDetailPair[] | undefined {
     const handler = new TwoTreeSearchHandlerForLineString3dLineString3dCloseApproach(contextA, contextB, maxDist);
     RangeTreeNode.searchTwoTreesTopDown(contextA._rangeTreeRoot, contextB._rangeTreeRoot, handler);
     return handler.searchState.savedItems.length <= 1 ? handler.getResult() : handler.getSavedItems();

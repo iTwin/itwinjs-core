@@ -6,14 +6,14 @@
  * @module Rendering
  */
 
-import { LinePixels, PolylineIndices, PolylineTypeFlags, QPoint3dList } from "@itwin/core-common";
-import { VertexIndices } from "./VertexIndices";
-import { VertexTable } from "./VertexTable";
-import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { assert } from "@itwin/core-bentley";
-import { VertexTableBuilder } from "./VertexTableBuilder";
+import { LinePixels, PolylineIndices, PolylineTypeFlags, QPoint3dList } from "@itwin/core-common";
+import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { MeshArgs } from "../../../render/MeshArgs";
 import { PolylineArgs } from "../../../render/PolylineArgs";
+import { VertexIndices } from "./VertexIndices";
+import { VertexTable } from "./VertexTable";
+import { VertexTableBuilder } from "./VertexTableBuilder";
 
 /** Represents a tesselated polyline.
  * Given a polyline as a line string, each segment of the line string is triangulated into a quad.
@@ -64,7 +64,7 @@ class PolylineVertex {
   public prevIndex: number = 0;
   public nextIndex: number = 0;
 
-  public constructor() { }
+  public constructor() {}
 
   public init(isSegmentStart: boolean, isPolylineStartOrEnd: boolean, vertexIndex: number, prevIndex: number, nextIndex: number) {
     this.isSegmentStart = isSegmentStart;
@@ -164,8 +164,8 @@ class PolylineTesselator {
       for (let i = 0; i < last; ++i) {
         const idx0 = line[i];
         const idx1 = line[i + 1];
-        const isStart: boolean = (0 === i);
-        const isEnd: boolean = (last - 1 === i);
+        const isStart: boolean = 0 === i;
+        const isEnd: boolean = last - 1 === i;
         const prevIdx0 = isStart ? (isClosed ? line[last - 1] : idx0) : line[i - 1];
         const nextIdx1 = isEnd ? (isClosed ? line[1] : idx1) : line[i + 2];
 

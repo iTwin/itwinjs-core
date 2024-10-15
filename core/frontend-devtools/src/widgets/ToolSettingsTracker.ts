@@ -219,5 +219,5 @@ export class ToolSettingsTracker {
     });
   }
 
-  public dispose(): void { }
+  public dispose(): void {}
 }

@@ -2,26 +2,53 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { Angle, Point2d, Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, FillFlags, GeometryClass, Gradient, GraphicParams, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, LinePixels, ModelFeature, RenderFeatureTable, RenderMaterial, RenderTexture, TextureTransparency } from "@itwin/core-common";
-import { createWorkerProxy } from "../../common/WorkerProxy";
-import { TestWorker } from "../worker/test-worker";
-import { IModelApp } from "../../IModelApp";
-import { MeshGraphic } from "../../render/webgl/Mesh";
-import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, imageBufferToPngDataUrl } from "../../common";
-import { GraphicType } from "../../common/render/GraphicType";
-import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
-import { Batch, Branch, GraphicsArray } from "../../webgl";
-import { ImdlModel } from "../../common/imdl/ImdlModel";
 import { Id64, Id64String, TransientIdSequence } from "@itwin/core-bentley";
-import { GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
+import {
+  ColorDef,
+  EmptyLocalization,
+  Feature,
+  FillFlags,
+  GeometryClass,
+  Gradient,
+  GraphicParams,
+  ImageBuffer,
+  ImageBufferFormat,
+  ImageSource,
+  ImageSourceFormat,
+  LinePixels,
+  ModelFeature,
+  RenderFeatureTable,
+  RenderMaterial,
+  RenderTexture,
+  TextureTransparency,
+} from "@itwin/core-common";
+import { Angle, Point2d, Point3d, Range3d, Transform, XYAndZ } from "@itwin/core-geometry";
+import { expect } from "chai";
+import { GraphicDescriptionBuilder, GraphicDescriptionBuilderOptions, imageBufferToPngDataUrl } from "../../common";
+import { ImdlModel } from "../../common/imdl/ImdlModel";
+import { GraphicDescriptionImpl, isGraphicDescription } from "../../common/internal/render/GraphicDescriptionBuilderImpl";
 import { WorkerTexture } from "../../common/internal/render/GraphicDescriptionContextImpl";
 import { _textures } from "../../common/internal/Symbols";
-import { Material } from "../../render/webgl/Material";
+import { GraphicDescriptionContext, WorkerGraphicDescriptionContext } from "../../common/render/GraphicDescriptionContext";
+import { GraphicType } from "../../common/render/GraphicType";
+import { createWorkerProxy } from "../../common/WorkerProxy";
+import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
+import { Material } from "../../render/webgl/Material";
+import { MeshGraphic } from "../../render/webgl/Mesh";
+import { Batch, Branch, GraphicsArray } from "../../webgl";
+import { TestWorker } from "../worker/test-worker";
 
-function expectRange(range: Readonly<Range3d>, translation: XYAndZ | undefined, lx: number, ly: number, lz: number, hx: number, hy: number, hz: number): void {
+function expectRange(
+  range: Readonly<Range3d>,
+  translation: XYAndZ | undefined,
+  lx: number,
+  ly: number,
+  lz: number,
+  hx: number,
+  hy: number,
+  hz: number,
+): void {
   if (!translation) {
     translation = { x: 0, y: 0, z: 0 };
   }
@@ -55,18 +82,31 @@ describe("GraphicDescriptionBuilder", () => {
     await IModelApp.shutdown();
   });
 
-  async function createContexts(): Promise<{ iModel: IModelConnection, workerContext: WorkerGraphicDescriptionContext, mainContext: GraphicDescriptionContext }> {
+  async function createContexts(): Promise<
+    { iModel: IModelConnection, workerContext: WorkerGraphicDescriptionContext, mainContext: GraphicDescriptionContext }
+  > {
     const iModel = createIModel();
-    const contextProps  = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
+    const contextProps = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
     const workerContext = WorkerGraphicDescriptionContext.fromProps(contextProps);
     const mainContext = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), iModel);
     return { iModel, workerContext, mainContext };
   }
 
   const computeChordTolerance = () => 0;
-  const graphicTypes = [GraphicType.ViewBackground, GraphicType.Scene, GraphicType.WorldDecoration, GraphicType.WorldOverlay, GraphicType.ViewOverlay];
+  const graphicTypes = [
+    GraphicType.ViewBackground,
+    GraphicType.Scene,
+    GraphicType.WorldDecoration,
+    GraphicType.WorldOverlay,
+    GraphicType.ViewOverlay,
+  ];
 
-  function expectOption(workerContext: WorkerGraphicDescriptionContext, options: Omit<GraphicDescriptionBuilderOptions, "context" | "computeChordTolerance">, option: "wantEdges" | "wantNormals" | "preserveOrder", expected: boolean): void {
+  function expectOption(
+    workerContext: WorkerGraphicDescriptionContext,
+    options: Omit<GraphicDescriptionBuilderOptions, "context" | "computeChordTolerance">,
+    option: "wantEdges" | "wantNormals" | "preserveOrder",
+    expected: boolean,
+  ): void {
     const builder = GraphicDescriptionBuilder.create({ ...options, context: workerContext, computeChordTolerance });
     expect(builder[option]).to.equal(expected);
   }
@@ -74,7 +114,12 @@ describe("GraphicDescriptionBuilder", () => {
   it("preserves order for overlay and background graphics", async () => {
     const { workerContext } = await createContexts();
     for (const type of graphicTypes) {
-      expectOption(workerContext, { type }, "preserveOrder", type === GraphicType.ViewOverlay || type === GraphicType.WorldOverlay || type === GraphicType.ViewBackground);
+      expectOption(
+        workerContext,
+        { type },
+        "preserveOrder",
+        type === GraphicType.ViewOverlay || type === GraphicType.WorldOverlay || type === GraphicType.ViewBackground,
+      );
     }
   });
 
@@ -111,7 +156,10 @@ describe("GraphicDescriptionBuilder", () => {
     expect(builder.wantEdges).to.be.false;
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
     builder.addShape2d([
-      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+      new Point2d(0, 0),
+      new Point2d(10, 0),
+      new Point2d(10, 5),
+      new Point2d(0, 5),
     ], 2);
 
     const descr = finish(builder);
@@ -153,7 +201,10 @@ describe("GraphicDescriptionBuilder", () => {
     expect(builder.wantEdges).to.be.true;
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
     builder.addShape2d([
-      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+      new Point2d(0, 0),
+      new Point2d(10, 0),
+      new Point2d(10, 5),
+      new Point2d(0, 5),
     ], 2);
 
     const descr = finish(builder);
@@ -213,7 +264,10 @@ describe("GraphicDescriptionBuilder", () => {
 
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
     builder.addShape2d([
-      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+      new Point2d(0, 0),
+      new Point2d(10, 0),
+      new Point2d(10, 5),
+      new Point2d(0, 5),
     ], 2);
 
     const descr = finish(builder);
@@ -239,7 +293,10 @@ describe("GraphicDescriptionBuilder", () => {
 
     builder.setSymbology(ColorDef.blue, ColorDef.blue, 3, LinePixels.HiddenLine);
     builder.addShape2d([
-      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+      new Point2d(0, 0),
+      new Point2d(10, 0),
+      new Point2d(10, 5),
+      new Point2d(0, 5),
     ], 2);
 
     const descr = finish(builder);
@@ -270,7 +327,10 @@ describe("GraphicDescriptionBuilder", () => {
     });
 
     builder.addShape2d([
-      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+      new Point2d(0, 0),
+      new Point2d(10, 0),
+      new Point2d(10, 5),
+      new Point2d(0, 5),
     ], 2);
 
     const descr = finish(builder);
@@ -326,7 +386,10 @@ describe("GraphicDescriptionBuilder", () => {
     });
 
     builder.addShape2d([
-      new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+      new Point2d(0, 0),
+      new Point2d(10, 0),
+      new Point2d(10, 5),
+      new Point2d(0, 5),
     ], 2);
 
     const descr = finish(builder);
@@ -406,7 +469,139 @@ describe("GraphicDescriptionBuilder", () => {
 
   // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
   // bottom right pixel.  The rest of the square is red.
-  const pngData: Uint8Array = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
+  const pngData: Uint8Array = new Uint8Array([
+    137,
+    80,
+    78,
+    71,
+    13,
+    10,
+    26,
+    10,
+    0,
+    0,
+    0,
+    13,
+    73,
+    72,
+    68,
+    82,
+    0,
+    0,
+    0,
+    3,
+    0,
+    0,
+    0,
+    3,
+    8,
+    2,
+    0,
+    0,
+    0,
+    217,
+    74,
+    34,
+    232,
+    0,
+    0,
+    0,
+    1,
+    115,
+    82,
+    71,
+    66,
+    0,
+    174,
+    206,
+    28,
+    233,
+    0,
+    0,
+    0,
+    4,
+    103,
+    65,
+    77,
+    65,
+    0,
+    0,
+    177,
+    143,
+    11,
+    252,
+    97,
+    5,
+    0,
+    0,
+    0,
+    9,
+    112,
+    72,
+    89,
+    115,
+    0,
+    0,
+    14,
+    195,
+    0,
+    0,
+    14,
+    195,
+    1,
+    199,
+    111,
+    168,
+    100,
+    0,
+    0,
+    0,
+    24,
+    73,
+    68,
+    65,
+    84,
+    24,
+    87,
+    99,
+    248,
+    15,
+    4,
+    12,
+    12,
+    64,
+    4,
+    198,
+    64,
+    46,
+    132,
+    5,
+    162,
+    254,
+    51,
+    0,
+    0,
+    195,
+    90,
+    10,
+    246,
+    127,
+    175,
+    154,
+    145,
+    0,
+    0,
+    0,
+    0,
+    73,
+    69,
+    78,
+    68,
+    174,
+    66,
+    96,
+    130,
+  ]);
 
   const gradient = Gradient.Symb.fromJSON({
     mode: 3,
@@ -419,7 +614,12 @@ describe("GraphicDescriptionBuilder", () => {
 
   it("creates and resolves textures", async () => {
     const { workerContext } = await createContexts();
-    function expectWorkerTexture(texture: WorkerTexture, type: RenderTexture.Type, source: ImageSource | ImageBuffer | URL | Gradient.Symb, transparency: TextureTransparency | undefined): void {
+    function expectWorkerTexture(
+      texture: WorkerTexture,
+      type: RenderTexture.Type,
+      source: ImageSource | ImageBuffer | URL | Gradient.Symb,
+      transparency: TextureTransparency | undefined,
+    ): void {
       expect(texture.type).to.equal(type);
       expect(texture.source.transparency).to.equal(transparency);
       if (source instanceof ImageSource) {
@@ -508,7 +708,10 @@ describe("GraphicDescriptionBuilder", () => {
     const builder = GraphicDescriptionBuilder.create({ type: GraphicType.WorldDecoration, context: workerContext, computeChordTolerance });
     const addShape = () => {
       builder.addShape2d([
-        new Point2d(0, 0), new Point2d(10, 0), new Point2d(10, 5), new Point2d(0, 5),
+        new Point2d(0, 0),
+        new Point2d(10, 0),
+        new Point2d(10, 5),
+        new Point2d(0, 5),
       ], 2);
     };
 
@@ -644,7 +847,7 @@ describe("GraphicDescriptionBuilder", () => {
           break;
         case 3:
         case 4:
-          expectMaterial(mat, { });
+          expectMaterial(mat, {});
           break;
       }
     }
@@ -655,7 +858,7 @@ describe("GraphicDescriptionBuilder", () => {
 
     it("throws on invalid context", async () => {
       const worker = createWorker();
-      await expect(worker.createGraphic({ } as any)).to.be.eventually.rejectedWith("Invalid WorkerGraphicDescriptionContextProps");
+      await expect(worker.createGraphic({} as any)).to.be.eventually.rejectedWith("Invalid WorkerGraphicDescriptionContextProps");
       worker.terminate();
       expect(worker.isTerminated).to.be.true;
     });

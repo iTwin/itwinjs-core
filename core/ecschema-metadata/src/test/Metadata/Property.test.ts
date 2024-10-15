@@ -15,8 +15,15 @@ import { EntityClass } from "../../Metadata/EntityClass";
 import { Enumeration } from "../../Metadata/Enumeration";
 import { KindOfQuantity } from "../../Metadata/KindOfQuantity";
 import {
-  EnumerationArrayProperty, EnumerationProperty, MutableProperty, NavigationProperty, PrimitiveArrayProperty, PrimitiveProperty, Property,
-  StructArrayProperty, StructProperty,
+  EnumerationArrayProperty,
+  EnumerationProperty,
+  MutableProperty,
+  NavigationProperty,
+  PrimitiveArrayProperty,
+  PrimitiveProperty,
+  Property,
+  StructArrayProperty,
+  StructProperty,
 } from "../../Metadata/Property";
 import { PropertyCategory } from "../../Metadata/PropertyCategory";
 import { RelationshipClass } from "../../Metadata/RelationshipClass";
@@ -161,8 +168,10 @@ describe("Property", () => {
         category: "TestSchema.NonExistentPropertyCategory",
       };
       await testProp.fromJSON(propertyJson);
-      await expect(testProp.category).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`);
-
+      await expect(testProp.category).to.be.rejectedWith(
+        ECObjectsError,
+        `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`,
+      );
     });
 
     it("should throw for non-existent kindOfQuantity", async () => {
@@ -173,7 +182,10 @@ describe("Property", () => {
         kindOfQuantity: "TestSchema.NonExistentKindOfQuantity",
       };
       await testProp.fromJSON(propertyJson);
-      await expect(testProp.kindOfQuantity).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
+      await expect(testProp.kindOfQuantity).to.be.rejectedWith(
+        ECObjectsError,
+        `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`,
+      );
     });
   });
 
@@ -531,7 +543,7 @@ describe("Property", () => {
 
       property.addCustomAttribute(ca);
       const serialized = await property.toXml(newDom);
-      const expectedTimeFromString  = new Date("2021-08-19T16:37:42.278").getTime();
+      const expectedTimeFromString = new Date("2021-08-19T16:37:42.278").getTime();
 
       let element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TrueBoolean");
       expect(element.textContent).to.equal("True");
@@ -1408,4 +1420,3 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
     });
   });
 });
-

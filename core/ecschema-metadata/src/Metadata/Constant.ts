@@ -34,12 +34,24 @@ export class Constant extends SchemaItem {
     this._definition = "";
   }
 
-  public get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
-  public get definition(): string { return this._definition; }
-  public get numerator(): number { return this._numerator ?? 1.0; }
-  public get denominator(): number { return this._denominator ?? 1.0; }
-  public get hasNumerator(): boolean { return (this._numerator !== undefined); }
-  public get hasDenominator(): boolean { return (this._denominator !== undefined); }
+  public get phenomenon(): LazyLoadedPhenomenon | undefined {
+    return this._phenomenon;
+  }
+  public get definition(): string {
+    return this._definition;
+  }
+  public get numerator(): number {
+    return this._numerator ?? 1.0;
+  }
+  public get denominator(): number {
+    return this._denominator ?? 1.0;
+  }
+  public get hasNumerator(): boolean {
+    return (this._numerator !== undefined);
+  }
+  public get hasDenominator(): boolean {
+    return (this._denominator !== undefined);
+  }
 
   /**
    * Save this Constants properties to an object for serializing to JSON.
@@ -82,13 +94,12 @@ export class Constant extends SchemaItem {
     const schemaItemKey = this.schema.getSchemaItemKey(constantProps.phenomenon);
     if (!schemaItemKey)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
-    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey,
-      async () => {
-        const phenom = await this.schema.lookupItem<Phenomenon>(schemaItemKey);
-        if (undefined === phenom)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
-        return phenom;
-      });
+    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(schemaItemKey, async () => {
+      const phenom = await this.schema.lookupItem<Phenomenon>(schemaItemKey);
+      if (undefined === phenom)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${constantProps.phenomenon}.`);
+      return phenom;
+    });
 
     if (this._definition !== "" && constantProps.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Constant ${this.name} has an invalid 'definition' attribute.`);

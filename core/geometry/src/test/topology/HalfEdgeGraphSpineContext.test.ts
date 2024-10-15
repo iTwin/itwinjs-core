@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Loop } from "../../curve/Loop";
@@ -43,7 +43,6 @@ function loadSpineGraph(context: HalfEdgeGraphSpineContext, data: any) {
       loadSpineGraph(context, child);
     }
   }
-
 }
 function testSpineLoop(allGeometry: GeometryQuery[], loopPoints: any, x0: number, y0: number) {
   const range = RegionOps.curveArrayRange(loopPoints);
@@ -51,7 +50,12 @@ function testSpineLoop(allGeometry: GeometryQuery[], loopPoints: any, x0: number
   const yStep = Math.floor(range.yLength()) + 2;
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, loopPoints, x0, y0, 0);
   RegularizationContext.announceEdge = (_graph: HalfEdgeGraph, nodeA: HalfEdge, nodeB: HalfEdge, scale: number) => {
-    GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(nodeA.x * scale, nodeA.y * scale, nodeB.x * scale, nodeB.y * scale), x0, y0);
+    GeometryCoreTestIO.captureGeometry(
+      allGeometry,
+      LineSegment3d.createXYXY(nodeA.x * scale, nodeA.y * scale, nodeB.x * scale, nodeB.y * scale),
+      x0,
+      y0,
+    );
   };
   const context = new HalfEdgeGraphSpineContext();
   loadSpineGraph(context, loopPoints);
@@ -71,7 +75,6 @@ function testSpineLoop(allGeometry: GeometryQuery[], loopPoints: any, x0: number
 }
 
 describe("HalfEdgeGraphSpineContext", () => {
-
   it("SmallGraph", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -80,13 +83,14 @@ describe("HalfEdgeGraphSpineContext", () => {
     const ax = 8;
     const ay = 4;
     const bx = 4;
-    testSpineLoop(allGeometry,
+    testSpineLoop(
+      allGeometry,
       [Point3d.create(0, 0), Point3d.create(ax, 0), Point3d.create(ax, ay), Point3d.create(0, ay), Point3d.create(0, 0)],
-      x0, 0);
+      x0,
+      0,
+    );
     x0 += ax + 2;
-    testSpineLoop(allGeometry,
-      [Point3d.create(0, 0), Point3d.create(ax, 0), Point3d.create(bx, ay), Point3d.create(0, 0)],
-      x0, 0);
+    testSpineLoop(allGeometry, [Point3d.create(0, 0), Point3d.create(ax, 0), Point3d.create(bx, ay), Point3d.create(0, 0)], x0, 0);
     x0 += ax + 2;
 
     for (const cornerY of [0, 1, 0.2]) {
@@ -119,17 +123,29 @@ describe("HalfEdgeGraphSpineContext", () => {
     let x0 = 0.0;
     const allGeometry: GeometryQuery[] = [];
     const inner = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/data/intersections/MBContainmentBoolean/inner.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/inner.imjs",
+      "utf8",
+    )));
     const innerA = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedA.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedA.imjs",
+      "utf8",
+    )));
     const innerB = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedB.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedB.imjs",
+      "utf8",
+    )));
     const innerC = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedC.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedC.imjs",
+      "utf8",
+    )));
     const innerD = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedD.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/innerSimplifiedD.imjs",
+      "utf8",
+    )));
     const outer = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
-      "./src/test/data/intersections/MBContainmentBoolean/outer.imjs", "utf8")));
+      "./src/test/data/intersections/MBContainmentBoolean/outer.imjs",
+      "utf8",
+    )));
     for (const data of [innerD, innerC, innerB, inner, outer, innerA, innerB]) {
       // testSpineLoop(allGeometry, data, x0, 0);
       const flatData = flattenRegions(data as any[]);
@@ -139,7 +155,6 @@ describe("HalfEdgeGraphSpineContext", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "HalfEdgeGraphSpineContext", "XYBoundaryFiles");
   });
-
 });
 
 function flattenRegions(data: any[]): MultiLineStringDataVariant[] {

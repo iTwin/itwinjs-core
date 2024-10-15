@@ -16,37 +16,61 @@ import { Target } from "./Target";
  * @internal
  */
 export const enum FeatureMode {
-  None,       // no features
-  Pick,       // feature table only
-  Overrides,  // feature table with symbology overrides
+  None, // no features
+  Pick, // feature table only
+  Overrides, // feature table with symbology overrides
 }
 
 /** @internal */
-export const enum IsInstanced { No, Yes }
+export const enum IsInstanced {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsAnimated { No, Yes }
+export const enum IsAnimated {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsClassified { No, Yes }
+export const enum IsClassified {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsEdgeTestNeeded { No, Yes }
+export const enum IsEdgeTestNeeded {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsShadowable { No, Yes }
+export const enum IsShadowable {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsThematic { No, Yes }
+export const enum IsThematic {
+  No,
+  Yes,
+}
 
 /** @internal */
-export const enum IsWiremesh { No, Yes }
+export const enum IsWiremesh {
+  No,
+  Yes,
+}
 
 /** @internal */
 export type PositionType = "quantized" | "unquantized";
 
 /** @internal */
-export const enum EnableAtmosphere { No, Yes }
+export const enum EnableAtmosphere {
+  No,
+  Yes,
+}
 
 /** Flags used to control which shader program is used by a rendering Technique.
  * @internal
@@ -78,7 +102,18 @@ export class TechniqueFlags {
     return "quantized" === this.positionType;
   }
 
-  public init(target: Target, pass: RenderPass, instanced: IsInstanced, animated: IsAnimated = IsAnimated.No, classified = IsClassified.No, shadowable = IsShadowable.No, thematic = IsThematic.No, wiremesh = IsWiremesh.No, posType: PositionType = "quantized", enableAtmosphere = EnableAtmosphere.No): void {
+  public init(
+    target: Target,
+    pass: RenderPass,
+    instanced: IsInstanced,
+    animated: IsAnimated = IsAnimated.No,
+    classified = IsClassified.No,
+    shadowable = IsShadowable.No,
+    thematic = IsThematic.No,
+    wiremesh = IsWiremesh.No,
+    posType: PositionType = "quantized",
+    enableAtmosphere = EnableAtmosphere.No,
+  ): void {
     const clipStack = target.uniforms.branch.clipStack;
     const numClipPlanes = clipStack.hasClip ? clipStack.textureHeight : 0;
     this.positionType = posType;
@@ -140,15 +175,23 @@ export class TechniqueFlags {
     this.numClipPlanes = 0;
   }
 
-  public get hasFeatures() { return FeatureMode.None !== this.featureMode; }
+  public get hasFeatures() {
+    return FeatureMode.None !== this.featureMode;
+  }
 
-  public setAnimated(animated: boolean) { this.isAnimated = animated ? IsAnimated.Yes : IsAnimated.No; }
-  public setInstanced(instanced: boolean) { this.isInstanced = instanced ? IsInstanced.Yes : IsInstanced.No; }
+  public setAnimated(animated: boolean) {
+    this.isAnimated = animated ? IsAnimated.Yes : IsAnimated.No;
+  }
+  public setInstanced(instanced: boolean) {
+    this.isInstanced = instanced ? IsInstanced.Yes : IsInstanced.No;
+  }
   public setClassified(classified: boolean) {
     this.isClassified = classified ? IsClassified.Yes : IsClassified.No;
   }
 
-  public get isHilite() { return this._isHilite; }
+  public get isHilite() {
+    return this._isHilite;
+  }
   public initForHilite(numClipPlanes: number, instanced: IsInstanced, classified: IsClassified, posType: PositionType) {
     this.featureMode = classified ? FeatureMode.None : FeatureMode.Overrides;
     this._isHilite = true;

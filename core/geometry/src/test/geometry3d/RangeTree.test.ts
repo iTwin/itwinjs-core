@@ -18,7 +18,10 @@ import { Point3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import {
-  ConvexFacetLocationDetail, FacetLocationDetail, FacetLocationDetailPair, NonConvexFacetLocationDetail,
+  ConvexFacetLocationDetail,
+  FacetLocationDetail,
+  FacetLocationDetailPair,
+  NonConvexFacetLocationDetail,
 } from "../../polyface/FacetLocationDetail";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
@@ -236,16 +239,26 @@ describe("IndexedRangeHeap", () => {
     let numCase = 0;
     for (const pointBFactor of [1, 4]) {
       for (const uz of [0, -3]) {
-        const distanceSequence: number[] = [];  // min-distance for a sequence of searches with differing tree structures. They should all produce the same result!
+        const distanceSequence: number[] = []; // min-distance for a sequence of searches with differing tree structures. They should all produce the same result!
         for (const treeFlare of [2, 4, 6]) {
           // a patch of a sphere, facing along the x axis
           const pointsA = Sample.createGridPointsOnEllipsoid(
             Transform.createRowValues(
-              5, 0, 0, 0,
-              0, 2, 0, 0,
-              0, 0, 3, 0,
+              5,
+              0,
+              0,
+              0,
+              0,
+              2,
+              0,
+              0,
+              0,
+              0,
+              3,
+              0,
             ),
-            6, 8,
+            6,
+            8,
             AngleSweep.createStartEndDegrees(-40, 60),
             AngleSweep.createStartEndDegrees(-30, 30),
           );
@@ -256,31 +269,52 @@ describe("IndexedRangeHeap", () => {
 
           const pointsB = Sample.createGridPointsOnEllipsoid(
             Transform.createRowValues(
-              -1, -1, 0, 8,
-              0, 2, 0.5, 1,
-              -uz, 0, 2, 3 + 1.3 * uz,
+              -1,
+              -1,
+              0,
+              8,
+              0,
+              2,
+              0.5,
+              1,
+              -uz,
+              0,
+              2,
+              3 + 1.3 * uz,
             ),
-            pointBFactor * 5, pointBFactor * 7,
+            pointBFactor * 5,
+            pointBFactor * 7,
             AngleSweep.createStartEndDegrees(-40, 80),
             AngleSweep.createStartEndDegrees(-75, 120),
           );
 
           const treeA = RangeTreeOps.createByIndexSplits<Point3d>(
-            ((index: number): Range3d => { return Range3d.create(pointsA[index]); }),
+            (index: number): Range3d => {
+              return Range3d.create(pointsA[index]);
+            },
             pointsA,
             pointsA.length,
-            treeFlare, treeFlare)!;
+            treeFlare,
+            treeFlare,
+          )!;
           const treeB = RangeTreeOps.createByIndexSplits<Point3d>(
-            ((index: number): Range3d => { return Range3d.create(pointsB[index]); }),
+            (index: number): Range3d => {
+              return Range3d.create(pointsB[index]);
+            },
             pointsB,
             pointsB.length,
-            treeFlare, treeFlare)!;
+            treeFlare,
+            treeFlare,
+          )!;
           ck.testExactNumber(pointsA.length, RangeTreeOps.getRecursiveAppDataCount<Point3d>(treeA), "point count in range tree");
           GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsA, 0.05, x0, 0);
 
           GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, pointsB, 0.05, x0, 0);
           const allRanges: Range3d[] = [];
-          const rangeAccumulatorFunction = (node: RangeTreeNode<Point3d>): boolean => { allRanges.push(node.getRange()); return true; };
+          const rangeAccumulatorFunction = (node: RangeTreeNode<Point3d>): boolean => {
+            allRanges.push(node.getRange());
+            return true;
+          };
           treeA?.recurseIntoTree(rangeAccumulatorFunction);
           treeB?.recurseIntoTree(rangeAccumulatorFunction);
           if (numCase === 0) {
@@ -331,17 +365,27 @@ describe("IndexedRangeHeap", () => {
 
     const pointsA = Sample.createGridPointsOnEllipsoid(
       Transform.createRowValues(
-        5, 0, 0, 0,
-        0, 2, 0, 0,
-        0, 0, 3, 0,
+        5,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
       ),
-      36, 52,
+      36,
+      52,
       AngleSweep.createStartEndDegrees(-40, 60),
       AngleSweep.createStartEndDegrees(-30, 195),
     );
 
     const path = BezierCurve3d.create([Point3d.create(6, 0, 0), Point3d.create(3, 3, 1), Point3d.create(0, 8, 5), Point3d.create(-1, -6, -2)])!;
-    const distanceSequence: number[][] = [];  // min-distance for a sequence of searches with differing tree structures. They should all produce the same result!
+    const distanceSequence: number[][] = []; // min-distance for a sequence of searches with differing tree structures. They should all produce the same result!
     let numCase = 0;
 
     for (const treeWidth of [2, 4, 8]) {
@@ -383,7 +427,12 @@ describe("IndexedRangeHeap", () => {
     for (let i = 1; i < distanceSequence.length; i++)
       for (let j = 0; j < numSearchesPerCase; j++)
         if (ck.testExactNumber(numSearchesPerCase, distanceSequence[i].length, "same number of searches per test case"))
-          ck.testExactNumber(distanceSequence[0][j], distanceSequence[i][j], { distance0J: distanceSequence[0][j], i, j, distanceIJ: distanceSequence[i][j] });
+          ck.testExactNumber(distanceSequence[0][j], distanceSequence[i][j], {
+            distance0J: distanceSequence[0][j],
+            i,
+            j,
+            distanceIJ: distanceSequence[i][j],
+          });
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "IndexedRangeTree", "PointCloudMultiSearch");
     expect(ck.getNumErrors()).toBe(0);
@@ -397,11 +446,21 @@ describe("IndexedRangeHeap", () => {
 
     const pointsA = Sample.createGridPointsOnEllipsoid(
       Transform.createRowValues(
-        5, 0, 0, 0,
-        0, 2, 0, 0,
-        0, 0, 3, 0,
+        5,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
       ),
-      36, 52,
+      36,
+      52,
       AngleSweep.createStartEndDegrees(-40, 60),
       AngleSweep.createStartEndDegrees(-30, 195),
     );
@@ -479,7 +538,11 @@ describe("IndexedRangeHeap", () => {
               const localFraction = cld.childDetail.fraction;
               if (ck.testType(cld.curve, LineString3d, "cld.curve defined") && cld.curve) {
                 ck.testPoint3d(cld.point, cld.curve.fractionToPoint(cld.fraction), "cld.fraction is global linestring param");
-                ck.testCoordinate(cld.fraction, cld.curve.segmentIndexAndLocalFractionToGlobalFraction(segmentIndex, localFraction), "cld.childDetail has segment index and param");
+                ck.testCoordinate(
+                  cld.fraction,
+                  cld.curve.segmentIndexAndLocalFractionToGlobalFraction(segmentIndex, localFraction),
+                  "cld.childDetail has segment index and param",
+                );
               }
               const i1 = Math.min(segmentIndex + 4, wavePoints.length);
               for (let i = Math.max(segmentIndex - 4, 0); i < i1; i++)
@@ -579,7 +642,12 @@ describe("IndexedRangeHeap", () => {
     //             10 looks good for lots of tests.
     const frankeSize = 20;
     const polyface = Sample.createMeshFromFrankeSurface(frankeSize, strokeOptions)!;
-    const path = BezierCurve3d.create([Point3d.create(0, 0, 1), Point3d.create(1.6, 0, 0.2), Point3d.create(1, 0.5, 0.5), Point3d.create(0, 1, 0.5)])!;
+    const path = BezierCurve3d.create([
+      Point3d.create(0, 0, 1),
+      Point3d.create(1.6, 0, 0.2),
+      Point3d.create(1, 0.5, 0.5),
+      Point3d.create(0, 1, 0.5),
+    ])!;
 
     for (const treeWidth of [2, 4, 8]) {
       const visitor = polyface.createVisitor(0);
@@ -609,7 +677,9 @@ describe("IndexedRangeHeap", () => {
           frankeSize,
           numFacets: polyface.facetCount,
           treeWidth,
-          numRangeTestTrue: searcher.numRangeTestTrue, numRangeTestFalse: searcher.numRangeTestFalse, numPointTest: searcher.numFacetTest,
+          numRangeTestTrue: searcher.numRangeTestTrue,
+          numRangeTestFalse: searcher.numRangeTestFalse,
+          numPointTest: searcher.numFacetTest,
           searches: searcher.numSearch,
           searchesTimesPoints: searchesTimesFacets,
           fraction: searcher.numFacetTest / searchesTimesFacets,
@@ -630,7 +700,12 @@ describe("IndexedRangeHeap", () => {
     strokeOptions.shouldTriangulate = true;
     const frankeSize = 20;
     const polyface = Sample.createMeshFromFrankeSurface(frankeSize, strokeOptions)!;
-    const path = BezierCurve3d.create([Point3d.create(0, 0, 1), Point3d.create(1.6, 0, 0.2), Point3d.create(1, 0.5, 0.5), Point3d.create(0, 1, 0.5)])!;
+    const path = BezierCurve3d.create([
+      Point3d.create(0, 0, 1),
+      Point3d.create(1.6, 0, 0.2),
+      Point3d.create(1, 0.5, 0.5),
+      Point3d.create(0, 1, 0.5),
+    ])!;
 
     // test and cover the trigger arrays
     const context = PolyfaceRangeTreeContext.createCapture(polyface, undefined, undefined, true);
@@ -691,7 +766,11 @@ describe("IndexedRangeHeap", () => {
       if (ck.testType(polyface1, IndexedPolyface)) {
         const xyScale = 1.5;
         const translation = Point3d.create(0.75, 0.75, -1);
-        let helixPts = Sample.createHelixPoints(5, 60, Transform.createRowValues(xyScale, 0, 0, translation.x, 0, xyScale, 0, translation.y, 0, 0, 1, translation.z));
+        let helixPts = Sample.createHelixPoints(
+          5,
+          60,
+          Transform.createRowValues(xyScale, 0, 0, translation.x, 0, xyScale, 0, translation.y, 0, 0, 1, translation.z),
+        );
         helixPts = [Point3d.create(0.25, 0.25, -1), ...helixPts, Point3d.create(0.45, 0.45, sweepHeight + 1)];
         const curveOptions = InterpolationCurve3dOptions.create({ fitPoints: helixPts });
         const helix = InterpolationCurve3d.create(curveOptions);
@@ -700,7 +779,7 @@ describe("IndexedRangeHeap", () => {
           let nonConvexHits = 0;
           for (const convexFacets of [true, false]) {
             if (!convexFacets)
-              polyface1 = PolyfaceQuery.cloneWithMaximalPlanarFacets(polyface1)!;  // non-convex top and bottom facets!
+              polyface1 = PolyfaceQuery.cloneWithMaximalPlanarFacets(polyface1)!; // non-convex top and bottom facets!
             const context1 = PolyfaceRangeTreeContext.createCapture(polyface1, undefined, undefined, convexFacets);
             if (ck.testType(context1, PolyfaceRangeTreeContext)) {
               GeometryCoreTestIO.captureCloneGeometry(allGeometry, [polyface1, helix], x0, y0, z0);
@@ -764,9 +843,18 @@ describe("IndexedRangeHeap", () => {
     const polyfaceA = Sample.createMeshFromFrankeSurface(frankeSizeA, strokeOptions, [0.5, 0.5, 0.5, 1])!;
     const polyfaceB = Sample.createMeshFromFrankeSurface(frankeSizeB, strokeOptions, [0, 0, 0, 4])!;
     const transform = Transform.createRowValues(
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 1.5,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1.5,
     );
     polyfaceB.tryTransformInPlace(transform);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, polyfaceA, x0, y0, z0);
@@ -802,9 +890,18 @@ describe("IndexedRangeHeap", () => {
     const polyfaceA = Sample.createMeshFromFrankeSurface(frankeSizeA, undefined, [0.5, 0.5, 0.5, 1])!;
     const polyfaceB = Sample.createMeshFromFrankeSurface(frankeSizeB, undefined, [0, 0, 0, 4])!;
     const transform = Transform.createRowValues(
-      1, 0, 0, 0,
-      0, 1, 0, 0,
-      0, 0, 1, 1.5,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0,
+      0,
+      0,
+      1,
+      1.5,
     );
     polyfaceB.tryTransformInPlace(transform);
     const contextA = PolyfaceRangeTreeContext.createCapture(polyfaceA.createVisitor(), 3, 3)!;
@@ -859,18 +956,42 @@ describe("IndexedRangeHeap", () => {
     let x0 = 0;
     const y0 = 0;
     const z0 = 0;
-    const pointsA = Sample.createHelixPoints(5.0, 129,
+    const pointsA = Sample.createHelixPoints(
+      5.0,
+      129,
       Transform.createRowValues(
-        1, 0, 0, 0,
-        0, 1, 0, 0,
-        0, 0, 3, 0,
-      ));
-    const pointsB = Sample.createHelixPoints(9.0, 257,
+        1,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        3,
+        0,
+      ),
+    );
+    const pointsB = Sample.createHelixPoints(
+      9.0,
+      257,
       Transform.createRowValues(
-        2, 0, -2, 5,
-        0, 2, 0, 0,
-        1, 0.1, 1, 0,
-      ));
+        2,
+        0,
+        -2,
+        5,
+        0,
+        2,
+        0,
+        0,
+        1,
+        0.1,
+        1,
+        0,
+      ),
+    );
     const treeWidth = 3;
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsA, x0, y0, z0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsB, x0, y0, z0);

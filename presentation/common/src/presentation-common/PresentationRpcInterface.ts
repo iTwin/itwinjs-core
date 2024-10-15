@@ -127,13 +127,17 @@ export interface ContentSourcesRpcResult {
  * Data structure for content descriptor RPC request options.
  * @public
  */
-export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<ContentDescriptorRequestOptions<never, KeySetJSON, RulesetVariableJSON>>;
+export type ContentDescriptorRpcRequestOptions = PresentationRpcRequestOptions<
+  ContentDescriptorRequestOptions<never, KeySetJSON, RulesetVariableJSON>
+>;
 
 /**
  * Data structure for content RPC request options.
  * @public
  */
-export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequestOptions<never, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>>;
+export type ContentRpcRequestOptions = PresentationRpcRequestOptions<
+  ContentRequestOptions<never, DescriptorOverrides, KeySetJSON, RulesetVariableJSON>
+>;
 
 /**
  * Data structure for single element properties RPC request options.
@@ -155,7 +159,9 @@ export type DistinctValuesRpcRequestOptions = PresentationRpcRequestOptions<
  * Data structure for content instance keys' request options.
  * @public
  */
-export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions<ContentInstanceKeysRequestOptions<never, KeySetJSON, RulesetVariableJSON>>;
+export type ContentInstanceKeysRpcRequestOptions = PresentationRpcRequestOptions<
+  ContentInstanceKeysRequestOptions<never, KeySetJSON, RulesetVariableJSON>
+>;
 
 /**
  * Data structure for label request options.
@@ -216,21 +222,33 @@ export class PresentationRpcInterface extends RpcInterface {
 
   // TODO: add paged version of this (#387280)
   // eslint-disable-next-line deprecation/deprecation
-  public async getNodePaths(_token: IModelRpcProps, _options: FilterByInstancePathsHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> {
+  public async getNodePaths(
+    _token: IModelRpcProps,
+    _options: FilterByInstancePathsHierarchyRpcRequestOptions,
+  ): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.forward(arguments);
   }
 
   // TODO: add paged version of this (#387280)
   // eslint-disable-next-line deprecation/deprecation
-  public async getFilteredNodePaths(_token: IModelRpcProps, _options: FilterByTextHierarchyRpcRequestOptions): PresentationRpcResponse<NodePathElementJSON[]> {
+  public async getFilteredNodePaths(
+    _token: IModelRpcProps,
+    _options: FilterByTextHierarchyRpcRequestOptions,
+  ): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.forward(arguments);
   }
 
-  public async getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult> {
+  public async getContentSources(
+    _token: IModelRpcProps,
+    _options: ContentSourcesRpcRequestOptions,
+  ): PresentationRpcResponse<ContentSourcesRpcResult> {
     return this.forward(arguments);
   }
 
-  public async getContentDescriptor(_token: IModelRpcProps, _options: ContentDescriptorRpcRequestOptions): PresentationRpcResponse<DescriptorJSON | undefined> {
+  public async getContentDescriptor(
+    _token: IModelRpcProps,
+    _options: ContentDescriptorRpcRequestOptions,
+  ): PresentationRpcResponse<DescriptorJSON | undefined> {
     arguments[1] = { ...arguments[1], transport: "unparsed-json" };
     const response: PresentationRpcResponseData<DescriptorJSON | string | undefined> = await this.forward(arguments);
     if (response.statusCode === PresentationStatus.Success && typeof response.result === "string") {
@@ -246,11 +264,14 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getPagedContent(
     _token: IModelRpcProps,
     _options: Paged<ContentRpcRequestOptions>,
-  ): PresentationRpcResponse<{ descriptor: DescriptorJSON; contentSet: PagedResponse<ItemJSON> } | undefined> {
+  ): PresentationRpcResponse<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined> {
     return this.forward(arguments);
   }
 
-  public async getPagedContentSet(_token: IModelRpcProps, _options: Paged<ContentRpcRequestOptions>): PresentationRpcResponse<PagedResponse<ItemJSON>> {
+  public async getPagedContentSet(
+    _token: IModelRpcProps,
+    _options: Paged<ContentRpcRequestOptions>,
+  ): PresentationRpcResponse<PagedResponse<ItemJSON>> {
     return this.forward(arguments);
   }
 
@@ -272,7 +293,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public async getContentInstanceKeys(
     _token: IModelRpcProps,
     _options: ContentInstanceKeysRpcRequestOptions,
-  ): PresentationRpcResponse<{ total: number; items: KeySetJSON }> {
+  ): PresentationRpcResponse<{ total: number, items: KeySetJSON }> {
     return this.forward(arguments);
   }
 

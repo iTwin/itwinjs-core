@@ -12,13 +12,13 @@ const rootPackageJson = path.join(
   process.env.NODE_PROJECT_ROOT_DIRECTORY ||
     process.env.RUSHSTACK_FILE_ERROR_BASE_FOLDER ||
     "../../../../",
-  "package.json"
+  "package.json",
 );
 
 // Check if path to root package.json is valid.
 const rootPackageJsonPath = require.resolve(rootPackageJson);
 
-//Find the package.json of the project and retrieve the version and repository URL
+// Find the package.json of the project and retrieve the version and repository URL
 const packageJsonPath = path.join(process.cwd(), "package.json");
 const packageJson = JSON.parse(FS.readFileSync(packageJsonPath));
 const version = packageJson.version;

@@ -56,7 +56,7 @@ export abstract class GeometryHandler {
   /** Handle strongly typed  [[Arc3d]]  */
   public abstract handleArc3d(g: Arc3d): any;
   /** Handle strongly typed  [[CurveCollection]]  */
-  public handleCurveCollection(_g: CurveCollection): any { }
+  public handleCurveCollection(_g: CurveCollection): any {}
   /** Handle strongly typed  [[BSplineCurve3d]]  */
   public abstract handleBSplineCurve3d(g: BSplineCurve3d): any;
   /** Handle strongly typed  [[InterpolationCurve3d]]  */
@@ -98,7 +98,7 @@ export abstract class GeometryHandler {
   /** Handle strongly typed [[CurveChainWithDistanceIndex]] (base class method calls [[handlePath]] or [[handleLoop]]) */
   public handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex): any {
     return this.handlePath(g.path);
-   }
+  }
   /** Handle strongly typed  Sphere */
   public abstract handleSphere(g: Sphere): any;
   /** Handle strongly typed  Cone */
@@ -307,10 +307,11 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   /** Invoke `child.dispatchToGeometryHandler(this)` for each child in the array returned by the query `g.children` */
   public handleChildren(g: GeometryQuery): any {
     const children = g.children;
-    if (children)
+    if (children) {
       for (const child of children) {
         child.dispatchToGeometryHandler(this);
       }
+    }
   }
   /** Recurse to children */
   public override handleCurveCollection(g: CurveCollection): any {
@@ -398,18 +399,26 @@ export interface IStrokeHandler {
    * * Note that this method is permitted (expected) to provide pre-stroked data if available.
    * * In th pre-stroked case, the cp passed to the handler will be the stroked image, not the original.
    * * Callers that want summary data should implement (and return true from) needPrimaryDataForStrokes
-  */
+   */
   announceIntervalForUniformStepStrokes(
-    cp: CurvePrimitive, numStrokes: number, fraction0: number, fraction1: number,
+    cp: CurvePrimitive,
+    numStrokes: number,
+    fraction0: number,
+    fraction1: number,
   ): void;
   /**
    * OPTIONAL method for a handler to indicate that it wants primary geometry (e.g. spirals) rather than strokes.
    * @returns true if primary geometry should be passed (rather than stroked or otherwise simplified)
-  */
+   */
   needPrimaryGeometryForStrokes?(): boolean;
   /** Announce numPoints interpolated between point0 and point1, with associated fractions */
   announceSegmentInterval(
-    cp: CurvePrimitive, point0: Point3d, point1: Point3d, numStrokes: number, fraction0: number, fraction1: number,
+    cp: CurvePrimitive,
+    point0: Point3d,
+    point1: Point3d,
+    numStrokes: number,
+    fraction0: number,
+    fraction1: number,
   ): void;
   /** Announce that all data about `cp` has been announced. */
   endCurvePrimitive(cp: CurvePrimitive): void;
@@ -457,7 +466,9 @@ export interface UVSurface {
    * @param result optional pre-allocated carrier for point and vectors
    */
   uvFractionToPointAndTangents(
-    uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors,
+    uFraction: number,
+    vFraction: number,
+    result?: Plane3dByOriginAndVectors,
   ): Plane3dByOriginAndVectors;
 }
 /**

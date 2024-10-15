@@ -25,7 +25,7 @@ export enum DialogButtonType {
   No = "no",
   Retry = "retry",
   Next = "next",
-  Previous = "previous"
+  Previous = "previous",
 }
 
 /** Enum for button style.
@@ -144,7 +144,9 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   /** Determines if a dialog item editor wants a label */
   public static editorWantsLabel(item: DialogItem): boolean {
     if (item.property.editor && item.property.editor.params) {
-      const params = item.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.SuppressEditorLabel) as SuppressLabelEditorParams;
+      const params = item.property.editor.params.find((param: PropertyEditorParams) =>
+        param.type === PropertyEditorParamTypes.SuppressEditorLabel
+      ) as SuppressLabelEditorParams;
       // istanbul ignore else
       if (params)
         return false;
@@ -183,7 +185,10 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
   public static onlyContainButtonGroupEditors(row: DialogRow): boolean {
     for (const item of row.items) {
       // istanbul ignore else
-      if (UiLayoutDataProvider.hasAssociatedLockProperty(item) || undefined === item.property.editor || "enum-buttongroup" !== item.property.editor.name || UiLayoutDataProvider.editorWantsLabel(item))
+      if (
+        UiLayoutDataProvider.hasAssociatedLockProperty(item) || undefined === item.property.editor ||
+        "enum-buttongroup" !== item.property.editor.name || UiLayoutDataProvider.editorWantsLabel(item)
+      )
         return false;
     }
     return true;
@@ -206,9 +211,9 @@ export abstract class DialogLayoutDataProvider extends UiLayoutDataProvider {
     // Derived class should override
     const buttons: DialogButtonDef[] = [];
     // istanbul ignore next
-    buttons.push({ type: DialogButtonType.OK, onClick: () => { } });
+    buttons.push({ type: DialogButtonType.OK, onClick: () => {} });
     // istanbul ignore next
-    buttons.push({ type: DialogButtonType.Cancel, onClick: () => { } });
+    buttons.push({ type: DialogButtonType.Cancel, onClick: () => {} });
     return buttons;
   }
 }

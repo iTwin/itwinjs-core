@@ -7,15 +7,22 @@
  */
 
 import { UintArray } from "@itwin/core-bentley";
-import { XYAndZ } from "@itwin/core-geometry";
 import {
-  ColorDefProps, FeatureIndexType, FillFlags, Gradient, LinePixels, PolylineTypeFlags, QParams2dProps, QParams3dProps,
+  ColorDefProps,
+  FeatureIndexType,
+  FillFlags,
+  Gradient,
+  LinePixels,
+  PolylineTypeFlags,
+  QParams2dProps,
+  QParams3dProps,
 } from "@itwin/core-common";
+import { XYAndZ } from "@itwin/core-geometry";
+import { AuxChannelTableProps } from "../internal/render/AuxChannelTable";
 import { EdgeTable } from "../internal/render/EdgeParams";
 import { SurfaceMaterialAtlas, SurfaceType } from "../internal/render/SurfaceParams";
-import { AuxChannelTableProps } from "../internal/render/AuxChannelTable";
-import { ImdlAreaPattern, ImdlDocument } from "./ImdlSchema";
 import { InstancedGraphicProps } from "../render/InstancedGraphicParams";
+import { ImdlAreaPattern, ImdlDocument } from "./ImdlSchema";
 
 /** Types comprising the parsed representation of an ImdlDocument, produced by [[parseImdlDocument]] and consumed by [[decodeImdlGraphics]].
  * All of the types are required to support [structured cloning](https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm) so that they

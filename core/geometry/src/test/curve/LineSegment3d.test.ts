@@ -20,8 +20,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
   const a = 4.2;
-  const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(4, 3),
-    Matrix3d.createScale(a, a, a));
+  const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(4, 3), Matrix3d.createScale(a, a, a));
 
   const segment0 = LineSegment3d.create(Point3d.create(), Point3d.create());
   const segmentB = segment0.clone(); // zeros!!
@@ -67,7 +66,7 @@ function exerciseLineSegment3d(ck: Checker, segmentA: LineSegment3d) {
 describe("LineSegment3d", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
-    const result = LineSegment3d.createXYXY(0, 0, 0, 0);  // cover result arg in next line
+    const result = LineSegment3d.createXYXY(0, 0, 0, 0); // cover result arg in next line
     const segmentA = LineSegment3d.createXYXY(1, 2, 6, 3, 1, result);
 
     exerciseLineSegment3d(ck, segmentA);
@@ -81,19 +80,28 @@ describe("LineSegment3d", () => {
     ck.testFalse(coordinate.isAlmostEqual(segmentB));
 
     const segmentD = LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 6);
-    const segmentE = LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 6, segmentC);  // overwrite the default segmentC.
+    const segmentE = LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 6, segmentC); // overwrite the default segmentC.
     ck.testPointer(segmentE, segmentC, "reuse of optional arg");
     ck.testTrue(segmentD.isAlmostEqual(segmentE));
 
-    const segmentF = LineSegment3d.create(segmentA.endPoint(), segmentA.startPoint(), segmentD);  // another optional
+    const segmentF = LineSegment3d.create(segmentA.endPoint(), segmentA.startPoint(), segmentD); // another optional
     ck.testFalse(segmentF.isAlmostEqual(segmentA));
     segmentF.reverseInPlace();
     ck.testTrue(segmentF.isAlmostEqual(segmentA));
 
     const fraction = 0.27;
-    const worldToLocal = Transform.createRigidFromOriginAndColumns(segmentA.point0Ref, Vector3d.createStartEnd(segmentA.point0Ref, segmentA.point1Ref), Vector3d.createFrom([0, 1, 0]), AxisOrder.XYZ);
+    const worldToLocal = Transform.createRigidFromOriginAndColumns(
+      segmentA.point0Ref,
+      Vector3d.createStartEnd(segmentA.point0Ref, segmentA.point1Ref),
+      Vector3d.createFrom([0, 1, 0]),
+      AxisOrder.XYZ,
+    );
     const localRangeFirstHalf = segmentA.rangeBetweenFractions(0, fraction, worldToLocal?.inverse());
-    ck.testRange3d(localRangeFirstHalf, Range3d.createXYZXYZ(0, 0, 0, fraction * segmentA.curveLength(), 0, 0), "rangeBetweenFractions with Transform");
+    ck.testRange3d(
+      localRangeFirstHalf,
+      Range3d.createXYZXYZ(0, 0, 0, fraction * segmentA.curveLength(), 0, 0),
+      "rangeBetweenFractions with Transform",
+    );
 
     const xRange = segmentA.projectedParameterRange(Vector3d.create(1, 0, 0));
     if (ck.testType(xRange, Range1d, "projectedParameterRange returns a range"))
@@ -227,8 +235,10 @@ describe("LineSegment3d", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, segmentB, x0, y0);
       if (approach) {
         numNonParallel++;
-        if (Math.abs(approach.detailA.fraction - 0.5) < interiorFractionTrigger
-          && Math.abs(approach.detailB.fraction - 0.5) < interiorFractionTrigger)
+        if (
+          Math.abs(approach.detailA.fraction - 0.5) < interiorFractionTrigger
+          && Math.abs(approach.detailB.fraction - 0.5) < interiorFractionTrigger
+        )
           numSimple++;
         verifyAVectorsAtA(ck, approach.detailA, approach.detailB);
         verifyAVectorsAtA(ck, approach.detailB, approach.detailA);
@@ -289,6 +299,5 @@ function verifyAVectorsAtA(ck: Checker, detailA: CurveLocationDetail, detailB: C
         ck.testLE(d, curveA.fractionToPoint(fractionA).distance(detailB.curve!.fractionToPoint(fractionB)));
       }
     }
-
   }
 }

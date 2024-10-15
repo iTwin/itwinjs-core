@@ -155,7 +155,6 @@ export interface RequestNewBriefcaseProps {
    * After downloading, you can merely delete unassigned briefcase files when they are no longer needed. Assigned BriefcaseIds should be released (via [BriefcaseManager.releaseBriefcase]($backend) )
    * when you are done with them.
    * @note this member is both an input and an output.
-   *
    */
   briefcaseId?: BriefcaseId;
 

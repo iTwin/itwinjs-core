@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { IModelApp, PrimitiveTool, SnapshotConnection, Viewport } from "@itwin/core-frontend";
 import { EditTools, makeEditToolIpc } from "@itwin/editor-frontend";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import { testCmdIds, TestCmdOjb1, TestCmdResult, TestCommandIpc } from "../../common/TestEditCommandIpc";
 import { TestUtility } from "../TestUtility";
 
@@ -22,8 +22,12 @@ let cmdStr: string;
 
 class TestEditTool1 extends PrimitiveTool {
   public static override toolId = "TestEditTool1";
-  public override isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean { return true; }
-  public async onRestartTool() { return this.exitTool(); }
+  public override isCompatibleViewport(_vp: Viewport | undefined, _isSelectedViewChange: boolean): boolean {
+    return true;
+  }
+  public async onRestartTool() {
+    return this.exitTool();
+  }
 
   public testIpc = makeEditToolIpc<TestCommandIpc>();
 
@@ -35,7 +39,6 @@ class TestEditTool1 extends PrimitiveTool {
 
 if (!ProcessDetector.isMobileAppFrontend) {
   describe("EditTools", () => {
-
     let busyCalls = 0;
     before(async () => {
       await TestUtility.startFrontend(undefined, undefined, true);
@@ -48,7 +51,6 @@ if (!ProcessDetector.isMobileAppFrontend) {
         return 0;
       };
       iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-
     });
 
     after(async () => {
@@ -85,8 +87,6 @@ if (!ProcessDetector.isMobileAppFrontend) {
       busyCalls = 0;
       await EditTools.startCommand({ commandId: "", iModelKey: "" });
       expect(busyCalls).equal(4);
-
     });
-
   });
 }

@@ -11,8 +11,8 @@ module.exports = [
     rules: {
       "@typescript-eslint/indent": "off",
       "max-statements-per-line": "off",
-      "nonblock-statement-body-position": "off"
-    }
+      "nonblock-statement-body-position": "off",
+    },
   },
   ...eslintBaseConfig,
 ];

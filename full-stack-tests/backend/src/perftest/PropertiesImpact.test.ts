@@ -2,19 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
-import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
-import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
-import {
-  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
-} from "@itwin/core-common";
-import { Reporter } from "@itwin/perf-tools";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "@itwin/core-backend";
 import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
+import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { Arc3d, IModelJson as GeomJson, Point3d } from "@itwin/core-geometry";
+import { Reporter } from "@itwin/perf-tools";
+import { assert } from "chai";
+import * as path from "path";
 import { PerfTestUtility } from "./PerfTestUtils";
 
-function createElemProps(_imodel: IModelDb, modId: Id64String, catId: Id64String, className: string = "TestPropsSchema:PropElement"): GeometricElementProps {
+function createElemProps(
+  _imodel: IModelDb,
+  modId: Id64String,
+  catId: Id64String,
+  className: string = "TestPropsSchema:PropElement",
+): GeometricElementProps {
   // add Geometry
   const geomArray: Arc3d[] = [
     Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -94,14 +97,21 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, `props_${pCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", `props_${pCount}.bim`), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("PropPerformance", `props_${pCount}.bim`), {
+          rootSubject: { name: "PerfTest" },
+        });
         await seedIModel.importSchemas([st]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData("TestPropsSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          spatialCategoryId = SpatialCategory.insert(
+            seedIModel,
+            IModel.dictionaryId,
+            "MySpatialCategory",
+            new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+          );
         // create elements that can be used in tests
         for (let i = 0; i < seedCount; ++i) {
           const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId);
@@ -131,7 +141,12 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+        spatialCategoryId = SpatialCategory.insert(
+          perfimodel,
+          IModel.dictionaryId,
+          "MySpatialCategory",
+          new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+        );
 
       for (let i = 0; i < opCount; ++i) {
         const elementProps = createElemProps(perfimodel, newModelId, spatialCategoryId);
@@ -176,7 +191,6 @@ describe("SchemaDesignPerf Impact of Properties", () => {
 
       reporter.addEntry("PropPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
-
   });
   it("Read", async () => {
     for (const propCount of propCounts) {
@@ -253,7 +267,6 @@ describe("SchemaDesignPerf Impact of Properties", () => {
       perfimodel.close();
       reporter.addEntry("PropPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, properties: propCount });
     }
-
   });
 });
 describe("SchemaDesignPerf Number of Indices", () => {
@@ -345,14 +358,21 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, `index_${iCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", `index_${iCount}.bim`), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", `index_${iCount}.bim`), {
+          rootSubject: { name: "PerfTest" },
+        });
         await seedIModel.importSchemas([st]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          spatialCategoryId = SpatialCategory.insert(
+            seedIModel,
+            IModel.dictionaryId,
+            "MySpatialCategory",
+            new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+          );
         // create elements that can be used in tests
         for (let i = 0; i < seedCount; ++i) {
           const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestIndexSchema:PropElement");
@@ -372,14 +392,21 @@ describe("SchemaDesignPerf Number of Indices", () => {
       assert(IModelJsFs.existsSync(st));
       const seedName = path.join(outDir, `index_perclass_${iCount}.bim`);
       if (!IModelJsFs.existsSync(seedName)) {
-        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", `index_perclass_${iCount}.bim`), { rootSubject: { name: "PerfTest" } });
+        const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("IndexPerformance", `index_perclass_${iCount}.bim`), {
+          rootSubject: { name: "PerfTest" },
+        });
         await seedIModel.importSchemas([st]);
         seedIModel[_nativeDb].resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData("TestIndexSchema:PropElement0"), "PropsClass is present in iModel.");
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
         if (undefined === spatialCategoryId)
-          spatialCategoryId = SpatialCategory.insert(seedIModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+          spatialCategoryId = SpatialCategory.insert(
+            seedIModel,
+            IModel.dictionaryId,
+            "MySpatialCategory",
+            new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+          );
         // create elements that can be used in tests
         for (let i = 0; i < seedCount; ++i) {
           const elementProps = createElemProps(seedIModel, newModelId, spatialCategoryId, "TestIndexSchema:PropElement0");
@@ -395,7 +422,6 @@ describe("SchemaDesignPerf Number of Indices", () => {
         seedIModel.close();
       }
     }
-
   });
 
   after(() => {
@@ -412,7 +438,12 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+        spatialCategoryId = SpatialCategory.insert(
+          perfimodel,
+          IModel.dictionaryId,
+          "MySpatialCategory",
+          new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+        );
 
       for (let i = 0; i < opCount; ++i) {
         const elementProps = createElemProps(perfimodel, newModelId, spatialCategoryId, "TestIndexSchema:PropElement");
@@ -440,7 +471,12 @@ describe("SchemaDesignPerf Number of Indices", () => {
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(perfimodel, IModel.dictionaryId, "MySpatialCategory");
       if (undefined === spatialCategoryId)
-        spatialCategoryId = SpatialCategory.insert(perfimodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+        spatialCategoryId = SpatialCategory.insert(
+          perfimodel,
+          IModel.dictionaryId,
+          "MySpatialCategory",
+          new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+        );
 
       for (let i = 0; i < opCount; ++i) {
         const elementProps = createElemProps(perfimodel, newModelId, spatialCategoryId, "TestIndexSchema:PropElement0");
@@ -508,7 +544,11 @@ describe("SchemaDesignPerf Number of Indices", () => {
 
       perfimodel.close();
 
-      reporter.addEntry("IndexPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
+      reporter.addEntry("IndexPerfTest", "ElementsDelete", "Execution time(s)", elapsedTime, {
+        count: opCount,
+        indices: indexCount,
+        perClass: "Yes",
+      });
     }
   });
   it("Read", async () => {
@@ -648,7 +688,11 @@ describe("SchemaDesignPerf Number of Indices", () => {
       }
       const elapsedTime = (endTime - startTime) / 1000.0;
       perfimodel.close();
-      reporter.addEntry("IndexPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, { count: opCount, indices: indexCount, perClass: "Yes" });
+      reporter.addEntry("IndexPerfTest", "ElementsUpdate", "Execution time(s)", elapsedTime, {
+        count: opCount,
+        indices: indexCount,
+        perClass: "Yes",
+      });
     }
   });
 });

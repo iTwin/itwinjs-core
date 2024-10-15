@@ -2,10 +2,6 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import faker from "faker";
-import sinon from "sinon";
-import * as moq from "typemoq";
 import {
   BisCoreSchema,
   CodeSpecs,
@@ -33,6 +29,10 @@ import {
 } from "@itwin/core-common";
 import { Ruleset } from "@itwin/presentation-common";
 import { configureForPromiseResult } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import faker from "faker";
+import sinon from "sinon";
+import * as moq from "typemoq";
 import { PresentationRules } from "../presentation-backend/domain/PresentationRulesDomain";
 import * as RulesetElements from "../presentation-backend/domain/RulesetElements";
 import { RulesetEmbedder } from "../presentation-backend/RulesetEmbedder";
@@ -203,7 +203,7 @@ describe("RulesetEmbedder", () => {
     modelsMock.setup((x) => x.createModel(createModelProps)).returns(() => rulesetModelMock.object);
   }
 
-  function setupMocksForQueryingExistingRulesets(rulesetId: string, rulesets: Array<{ ruleset: Ruleset; elementId: Id64String }>) {
+  function setupMocksForQueryingExistingRulesets(rulesetId: string, rulesets: Array<{ ruleset: Ruleset, elementId: Id64String }>) {
     const results = rulesets.map((entry) => ({
       id: entry.elementId,
       jsonProperties: JSON.stringify({ jsonProperties: entry.ruleset }),
@@ -510,7 +510,7 @@ describe("RulesetEmbedder", () => {
   });
 
   describe("getRulesets", () => {
-    function setupMocksForQueryingAllRulesets(rulesets: Array<{ ruleset: Ruleset; elementId: Id64String }>) {
+    function setupMocksForQueryingAllRulesets(rulesets: Array<{ ruleset: Ruleset, elementId: Id64String }>) {
       imodelMock
         .setup((x) => x.withPreparedStatement(moq.It.isAny(), moq.It.isAny()))
         .callback((_ecsql, callbackFun) => {

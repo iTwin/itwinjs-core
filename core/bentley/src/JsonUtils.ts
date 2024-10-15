@@ -147,5 +147,4 @@ export namespace JsonUtils {
 
     return out;
   }
-
 }

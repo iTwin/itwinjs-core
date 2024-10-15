@@ -3,11 +3,33 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BaselineShift, ColorDef, FractionRun, GeometryStreamBuilder, IModelTileRpcInterface, LineBreakRun, TextAnnotation, TextAnnotationAnchor, TextBlock, TextBlockJustification, TextRun, TextStyleSettingsProps } from "@itwin/core-common";
-import { DecorateContext, Decorator, GraphicType, IModelApp, IModelConnection, readElementGraphics, RenderGraphicOwner, Tool } from "@itwin/core-frontend";
-import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import {
+  BaselineShift,
+  ColorDef,
+  FractionRun,
+  GeometryStreamBuilder,
+  IModelTileRpcInterface,
+  LineBreakRun,
+  TextAnnotation,
+  TextAnnotationAnchor,
+  TextBlock,
+  TextBlockJustification,
+  TextRun,
+  TextStyleSettingsProps,
+} from "@itwin/core-common";
+import {
+  DecorateContext,
+  Decorator,
+  GraphicType,
+  IModelApp,
+  IModelConnection,
+  readElementGraphics,
+  RenderGraphicOwner,
+  Tool,
+} from "@itwin/core-frontend";
 import { Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
 
 class TextEditor implements Decorator {
   // Geometry properties
@@ -140,7 +162,9 @@ class TextEditor implements Decorator {
     IModelApp.viewManager.invalidateCachedDecorationsAllViews(this);
   }
 
-  public get useCachedDecorations(): true { return true; }
+  public get useCachedDecorations(): true {
+    return true;
+  }
   public decorate(context: DecorateContext): void {
     if (this._graphic) {
       context.addDecoration(GraphicType.Scene, this._graphic);
@@ -152,8 +176,12 @@ const editor = new TextEditor();
 
 export class TextDecorationTool extends Tool {
   public static override toolId = "AddTextDecoration";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return undefined; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return undefined;
+  }
 
   public override async parseAndRun(...inArgs: string[]): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;

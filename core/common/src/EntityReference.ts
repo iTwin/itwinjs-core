@@ -57,10 +57,18 @@ export type EntityReference = `${ConcreteEntityTypes}${Id64String}`;
  * @alpha
  */
 export class EntityReferenceSet extends Set<EntityReference> {
-  public addElement(id: Id64String) { this.add(`e${id}`); }
-  public addModel(id: Id64String) { this.add(`m${id}`); }
-  public addAspect(id: Id64String) { this.add(`a${id}`); }
-  public addRelationship(id: Id64String) { this.add(`r${id}`); }
+  public addElement(id: Id64String) {
+    this.add(`e${id}`);
+  }
+  public addModel(id: Id64String) {
+    this.add(`m${id}`);
+  }
+  public addAspect(id: Id64String) {
+    this.add(`a${id}`);
+  }
+  public addRelationship(id: Id64String) {
+    this.add(`r${id}`);
+  }
 }
 
 /** @internal entity reference type information of a relationship */

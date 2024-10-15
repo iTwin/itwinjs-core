@@ -8,12 +8,20 @@
  */
 
 import {
-  ClipIntersectionStyle, ClipStyle, ClipStyleProps, ColorByName, ColorDef, CutStyleProps, LinePixels, RenderMode, RgbColor,
+  ClipIntersectionStyle,
+  ClipStyle,
+  ClipStyleProps,
+  ColorByName,
+  ColorDef,
+  CutStyleProps,
+  LinePixels,
+  RenderMode,
+  RgbColor,
 } from "@itwin/core-common";
 import { IModelApp, Tool, Viewport } from "@itwin/core-frontend";
-import { parseToggle } from "./parseToggle";
-import { parseBoolean } from "./parseBoolean";
 import { DisplayStyleTool } from "./DisplayStyleTools";
+import { parseBoolean } from "./parseBoolean";
+import { parseToggle } from "./parseToggle";
 
 /** This tool specifies or un-specifies a clip color to use for pixels inside or outside the clip region.
  * Arguments can be:
@@ -32,8 +40,12 @@ import { DisplayStyleTool } from "./DisplayStyleTools";
  */
 export class ClipColorTool extends Tool {
   public static override toolId = "ClipColorTool";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   private _clearClipColors() {
     const vp = IModelApp.viewManager.selectedView;
@@ -101,8 +113,12 @@ export class ClipColorTool extends Tool {
  */
 export class ClipIntersectionTool extends Tool {
   public static override toolId = "ClipIntersectionTool";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 4; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 4;
+  }
 
   private _toggleIntersectionStyle(toggle: boolean) {
     const vp = IModelApp.viewManager.selectedView;
@@ -183,8 +199,12 @@ export class ClipIntersectionTool extends Tool {
  */
 export class ToggleSectionCutTool extends Tool {
   public static override toolId = "ToggleSectionCut";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   /** This method runs the tool, controlling a view state's view details' flag for producing cut geometry for a clip style.
    * @param produceCutGeometry whether to produce cut geometry
@@ -225,13 +245,19 @@ export class ToggleSectionCutTool extends Tool {
  */
 export class TestClipStyleTool extends DisplayStyleTool {
   public static override toolId = "TestClipStyle";
-  public static override get maxArgs() { return 2; }
-  public static override get minArgs() { return 1; }
+  public static override get maxArgs() {
+    return 2;
+  }
+  public static override get minArgs() {
+    return 1;
+  }
 
   private _useStyle = false;
   private _style?: CutStyleProps;
 
-  protected override get require3d() { return true; }
+  protected override get require3d() {
+    return true;
+  }
 
   protected async parse(args: string[]): Promise<boolean> {
     this._useStyle = parseBoolean(args[0]) ?? false;

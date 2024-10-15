@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { EmptyLocalization } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("IModelConnection", () => {
   describe("displayed extents", () => {

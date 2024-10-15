@@ -29,7 +29,9 @@ export class ConnectivityInformationProvider implements IConnectivityInformation
 
   public constructor() {
     if (NativeApp.isValid) {
-      this._unsubscribeFromInternetConnectivityChangedEvent = NativeApp.onInternetConnectivityChanged.addListener(this.onNativeAppInternetConnectivityChanged);
+      this._unsubscribeFromInternetConnectivityChangedEvent = NativeApp.onInternetConnectivityChanged.addListener(
+        this.onNativeAppInternetConnectivityChanged,
+      );
       // eslint-disable-next-line @typescript-eslint/no-floating-promises
       NativeApp.checkInternetConnectivity().then((status: InternetConnectivityStatus) => {
         if (undefined === this._currentStatus) {

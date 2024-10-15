@@ -1,4 +1,5 @@
-{  "geometryCategory": "polyface",
+{
+  "geometryCategory": "polyface",
   "data": {
     "point": {
       "_data": {

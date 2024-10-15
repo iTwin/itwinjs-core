@@ -14,12 +14,18 @@ import { AddEffectTool } from "./EffectTools";
  * @beta
  */
 export abstract class ConvolutionEffect extends AddEffectTool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 0; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 0;
+  }
 
   protected abstract get matrix(): number[];
 
-  protected get textureCoordFromPosition() { return true; }
+  protected get textureCoordFromPosition() {
+    return true;
+  }
 
   protected get source() {
     return {
@@ -85,12 +91,20 @@ export abstract class ConvolutionEffect extends AddEffectTool {
  */
 export class GaussianBlurEffect extends ConvolutionEffect {
   public static override toolId = "GaussianBlurEffect";
-  protected get effectName() { return "blur"; }
+  protected get effectName() {
+    return "blur";
+  }
   protected get matrix() {
     return [
-      0.045, 0.122, 0.045,
-      0.122, 0.332, 0.122,
-      0.045, 0.122, 0.045,
+      0.045,
+      0.122,
+      0.045,
+      0.122,
+      0.332,
+      0.122,
+      0.045,
+      0.122,
+      0.045,
     ];
   }
 }
@@ -100,12 +114,20 @@ export class GaussianBlurEffect extends ConvolutionEffect {
  */
 export class UnsharpenEffect extends ConvolutionEffect {
   public static override toolId = "UnsharpenEffect";
-  protected get effectName() { return "unsharpen"; }
+  protected get effectName() {
+    return "unsharpen";
+  }
   protected get matrix() {
     return [
-      -1, -1, -1,
-      -1, 9, -1,
-      -1, -1, -1,
+      -1,
+      -1,
+      -1,
+      -1,
+      9,
+      -1,
+      -1,
+      -1,
+      -1,
     ];
   }
 }
@@ -115,12 +137,20 @@ export class UnsharpenEffect extends ConvolutionEffect {
  */
 export class EmbossEffect extends ConvolutionEffect {
   public static override toolId = "EmbossEffect";
-  protected get effectName() { return "emboss"; }
+  protected get effectName() {
+    return "emboss";
+  }
   protected get matrix() {
     return [
-      -2, -1, 0,
-      -1, 1, 1,
-      0, 1, 2,
+      -2,
+      -1,
+      0,
+      -1,
+      1,
+      1,
+      0,
+      1,
+      2,
     ];
   }
 }
@@ -130,12 +160,20 @@ export class EmbossEffect extends ConvolutionEffect {
  */
 export class SharpenEffect extends ConvolutionEffect {
   public static override toolId = "SharpenEffect";
-  protected get effectName() { return "sharpen"; }
+  protected get effectName() {
+    return "sharpen";
+  }
   protected get matrix() {
     return [
-      0, -1, 0,
-      -1, 5, -1,
-      0, -1, 0,
+      0,
+      -1,
+      0,
+      -1,
+      5,
+      -1,
+      0,
+      -1,
+      0,
     ];
   }
 }
@@ -145,12 +183,20 @@ export class SharpenEffect extends ConvolutionEffect {
  */
 export class SharpnessEffect extends ConvolutionEffect {
   public static override toolId = "SharpnessEffect";
-  protected get effectName() { return "sharpness"; }
+  protected get effectName() {
+    return "sharpness";
+  }
   protected get matrix() {
     return [
-      0, -1, 0,
-      -1, 5, -1,
-      0, -1, 0,
+      0,
+      -1,
+      0,
+      -1,
+      5,
+      -1,
+      0,
+      -1,
+      0,
     ];
   }
 }
@@ -160,12 +206,20 @@ export class SharpnessEffect extends ConvolutionEffect {
  */
 export class EdgeDetectionEffect extends ConvolutionEffect {
   public static override toolId = "EdgeDetectionEffect";
-  protected get effectName() { return "edgedetect"; }
+  protected get effectName() {
+    return "edgedetect";
+  }
   protected get matrix() {
     return [
-      -5, 0, 0,
-      0, 0, 0,
-      0, 0, 5,
+      -5,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      5,
     ];
   }
 }

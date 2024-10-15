@@ -4,5 +4,5 @@ module.exports = [
   {
     files: ["**/*.ts"],
     ...iTwinPlugin.configs.iTwinjsRecommendedConfig,
-  }
+  },
 ];

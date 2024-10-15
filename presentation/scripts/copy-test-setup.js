@@ -6,7 +6,15 @@
 // Node 15+ using MessageChannel prevents node.js process from exiting
 // This becomes an issue when testing React code within JSDOM environment, as the test process cannot exit properly.
 // https://github.com/facebook/react/issues/20756
-const commonjsGlobal = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
+const commonjsGlobal = typeof globalThis !== "undefined"
+  ? globalThis
+  : typeof window !== "undefined"
+  ? window
+  : typeof global !== "undefined"
+  ? global
+  : typeof self !== "undefined"
+  ? self
+  : {};
 if (commonjsGlobal.MessageChannel)
   delete commonjsGlobal.MessageChannel;
 

@@ -7,18 +7,26 @@
  */
 
 import { JsonUtils } from "@itwin/core-bentley";
-import { Angle, AngleSweep, Arc3d, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Code, ColorDef, IModel, LinePixels, Npc,
+  AuxCoordSystem2dProps,
+  AuxCoordSystem3dProps,
+  AuxCoordSystemProps,
+  BisCodeSpec,
+  Code,
+  ColorDef,
+  IModel,
+  LinePixels,
+  Npc,
 } from "@itwin/core-common";
+import { Angle, AngleSweep, Arc3d, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, YawPitchRollAngles } from "@itwin/core-geometry";
+import { GraphicType } from "./common/render/GraphicType";
+import { CoordSystem } from "./CoordSystem";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { DecorateContext } from "./ViewContext";
-import { CoordSystem } from "./CoordSystem";
 import { Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
-import { GraphicType } from "./common/render/GraphicType";
 
 /**
  * @public
@@ -63,7 +71,9 @@ const enum ACSDisplaySizes { // eslint-disable-line no-restricted-syntax
  * @extensions
  */
 export abstract class AuxCoordSystemState extends ElementState implements AuxCoordSystemProps {
-  public static override get className() { return "AuxCoordSystem"; }
+  public static override get className() {
+    return "AuxCoordSystem";
+  }
   public type: number;
   public description?: string;
 
@@ -111,7 +121,9 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   /** get a *copy of* the rotation matrix for this ACS. */
   public abstract getRotation(result?: Matrix3d): Matrix3d;
   public abstract setRotation(val: Matrix3d): void;
-  public get is3d(): boolean { return this instanceof AuxCoordSystem3dState; }
+  public get is3d(): boolean {
+    return this instanceof AuxCoordSystem3dState;
+  }
 
   public drawGrid(context: DecorateContext): void {
     // Called for active ACS when grid orientation is GridOrientationType::ACS.
@@ -121,7 +133,9 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   }
 
   /** Returns the value, clamped to the supplied range. */
-  private static limitRange(min: number, max: number, val: number): number { return Math.max(min, Math.min(max, val)); }
+  private static limitRange(min: number, max: number, val: number): number {
+    return Math.max(min, Math.min(max, val));
+  }
 
   /**
    * Given an origin point, returns whether the point falls within the view or not. If adjustOrigin is set to true, a point outside
@@ -136,7 +150,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     screenRange.z = frustum.points[Npc._000].distance(frustum.points[Npc._001]);
 
     // Check if current acs origin is outside view...
-    const inView = (!((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y)));
+    const inView = !((testPtView.x < 0 || testPtView.x > screenRange.x) || (testPtView.y < 0 || testPtView.y > screenRange.y));
 
     if (!adjustOrigin)
       return inView;
@@ -171,7 +185,9 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     color = color.adjustedForContrast(viewport.view.backgroundColor);
 
     if (isFill)
-      color = color.withTransparency((options & (ACSDisplayOptions.Deemphasized | ACSDisplayOptions.Dynamics)) !== ACSDisplayOptions.None ? 225 : 200);
+      color = color.withTransparency(
+        (options & (ACSDisplayOptions.Deemphasized | ACSDisplayOptions.Dynamics)) !== ACSDisplayOptions.None ? 225 : 200,
+      );
     else
       color = color.withTransparency((options & ACSDisplayOptions.Deemphasized) !== ACSDisplayOptions.None ? 150 : 75);
 
@@ -206,7 +222,7 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
   }
 
   private addAxis(builder: GraphicBuilder, axis: number, options: ACSDisplayOptions, vp: Viewport) {
-    const color = (0 === axis ? ColorDef.red : (1 === axis ? ColorDef.green : ColorDef.blue));
+    const color = 0 === axis ? ColorDef.red : (1 === axis ? ColorDef.green : ColorDef.blue);
     const lineColor = this.getAdjustedColor(color, false, vp, options);
     const fillColor = this.getAdjustedColor(color, true, vp, options);
 
@@ -216,7 +232,12 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
 
       const linePts2: Point3d[] = [Point3d.create(), Point3d.create()]; // NOTE: Don't use same point array, addPointString/addLineString don't deep copy...
       linePts2[1].z = ACSDisplaySizes.ZAxisLength;
-      builder.setSymbology(lineColor, lineColor, 1, (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2);
+      builder.setSymbology(
+        lineColor,
+        lineColor,
+        1,
+        (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2,
+      );
       builder.addLineString(linePts2);
 
       const scale = ACSDisplaySizes.ArrowTipWidth / 2;
@@ -232,7 +253,13 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
       xVec.normalize(xVec);
       yVec.normalize(yVec);
 
-      const ellipse = Arc3d.createScaledXYColumns(center, Matrix3d.createColumns(xVec, yVec, Vector3d.create()), scale, scale, AngleSweep.createStartEnd(Angle.createRadians(0), Angle.createRadians(Math.PI * 2)));
+      const ellipse = Arc3d.createScaledXYColumns(
+        center,
+        Matrix3d.createColumns(xVec, yVec, Vector3d.create()),
+        scale,
+        scale,
+        AngleSweep.createStartEnd(Angle.createRadians(0), Angle.createRadians(Math.PI * 2)),
+      );
       builder.addArc(ellipse, false, false);
 
       builder.setBlankingFill(fillColor);
@@ -252,7 +279,12 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
     if (1 === axis)
       shapePts.forEach((tmpPt) => tmpPt.set(tmpPt.y, tmpPt.x));
 
-    builder.setSymbology(lineColor, lineColor, 1, (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2);
+    builder.setSymbology(
+      lineColor,
+      lineColor,
+      1,
+      (options & ACSDisplayOptions.Dynamics) === ACSDisplayOptions.None ? LinePixels.Solid : LinePixels.Code2,
+    );
     builder.addLineString(shapePts);
 
     this.addAxisLabel(builder, axis, options, vp);
@@ -304,7 +336,9 @@ export abstract class AuxCoordSystemState extends ElementState implements AuxCoo
  * @extensions
  */
 export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoordSystem2dProps {
-  public static override get className() { return "AuxCoordSystem2d"; }
+  public static override get className() {
+    return "AuxCoordSystem2d";
+  }
   public readonly origin: Point2d;
   public angle: number; // in degrees
   private readonly _rMatrix: Matrix3d;
@@ -323,13 +357,19 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
     return val;
   }
 
-  public getOrigin(result?: Point3d): Point3d { return Point3d.createFrom(this.origin, result); }
-  public setOrigin(val: XYAndZ | XAndY): void { this.origin.setFrom(val); }
-  public getRotation(result?: Matrix3d): Matrix3d { return this._rMatrix.clone(result); }
+  public getOrigin(result?: Point3d): Point3d {
+    return Point3d.createFrom(this.origin, result);
+  }
+  public setOrigin(val: XYAndZ | XAndY): void {
+    this.origin.setFrom(val);
+  }
+  public getRotation(result?: Matrix3d): Matrix3d {
+    return this._rMatrix.clone(result);
+  }
   public setRotation(val: Matrix3d): void {
     this._rMatrix.setFrom(val);
     const angle = YawPitchRollAngles.createFromMatrix3d(val);
-    this.angle = (undefined !== angle ? angle.yaw.degrees : 0.0);
+    this.angle = undefined !== angle ? angle.yaw.degrees : 0.0;
   }
 }
 
@@ -338,7 +378,9 @@ export class AuxCoordSystem2dState extends AuxCoordSystemState implements AuxCoo
  * @extensions
  */
 export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoordSystem3dProps {
-  public static override get className() { return "AuxCoordSystem3d"; }
+  public static override get className() {
+    return "AuxCoordSystem3d";
+  }
   public readonly origin: Point3d;
   public yaw: number; // in degrees
   public pitch: number; // in degrees
@@ -364,15 +406,21 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
     return val;
   }
 
-  public getOrigin(result?: Point3d): Point3d { return Point3d.createFrom(this.origin, result); }
-  public setOrigin(val: XYAndZ | XAndY): void { this.origin.setFrom(val); }
-  public getRotation(result?: Matrix3d): Matrix3d { return this._rMatrix.clone(result); }
+  public getOrigin(result?: Point3d): Point3d {
+    return Point3d.createFrom(this.origin, result);
+  }
+  public setOrigin(val: XYAndZ | XAndY): void {
+    this.origin.setFrom(val);
+  }
+  public getRotation(result?: Matrix3d): Matrix3d {
+    return this._rMatrix.clone(result);
+  }
   public setRotation(rMatrix: Matrix3d): void {
     this._rMatrix.setFrom(rMatrix);
     const angles = YawPitchRollAngles.createFromMatrix3d(rMatrix);
-    this.yaw = (undefined !== angles ? angles.yaw.degrees : 0.0);
-    this.pitch = (undefined !== angles ? angles.pitch.degrees : 0.0);
-    this.roll = (undefined !== angles ? angles.roll.degrees : 0.0);
+    this.yaw = undefined !== angles ? angles.yaw.degrees : 0.0;
+    this.pitch = undefined !== angles ? angles.pitch.degrees : 0.0;
+    this.roll = undefined !== angles ? angles.roll.degrees : 0.0;
   }
 }
 
@@ -381,5 +429,7 @@ export class AuxCoordSystem3dState extends AuxCoordSystemState implements AuxCoo
  * @extensions
  */
 export class AuxCoordSystemSpatialState extends AuxCoordSystem3dState {
-  public static override get className() { return "AuxCoordSystemSpatial"; }
+  public static override get className() {
+    return "AuxCoordSystemSpatial";
+  }
 }

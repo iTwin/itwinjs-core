@@ -5,7 +5,19 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ColorDef } from "@itwin/core-common";
-import { createWorkerProxy, GraphicDescription, GraphicDescriptionBuilder, GraphicDescriptionContextProps, GraphicType, IModelApp, IModelConnection, registerWorker, RenderGraphic, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps } from "@itwin/core-frontend";
+import {
+  createWorkerProxy,
+  GraphicDescription,
+  GraphicDescriptionBuilder,
+  GraphicDescriptionContextProps,
+  GraphicType,
+  IModelApp,
+  IModelConnection,
+  registerWorker,
+  RenderGraphic,
+  WorkerGraphicDescriptionContext,
+  WorkerGraphicDescriptionContextProps,
+} from "@itwin/core-frontend";
 import { Arc3d, Point3d } from "@itwin/core-geometry";
 
 // __PUBLISH_EXTRACT_START__ Worker_CalculatorInterface
@@ -89,7 +101,7 @@ async function testCalculator() {
   // __PUBLISH_EXTRACT_START__ Worker_TerminateCalculatorProxy
   calculator.terminate();
   assert(calculator.isTerminated);
-// __PUBLISH_EXTRACT_END__
+  // __PUBLISH_EXTRACT_END__
 }
 
 // __PUBLISH_EXTRACT_START__ Worker_GraphicCreatorInterface
@@ -194,7 +206,12 @@ async function testGraphicCreator() {
   const worker = createWorkerProxy<GraphicCreator>("./graphic-creator.js");
 
   // Create a render graphic from a description of a large number of circles, using a WorkerProxy.
-  async function createCircleGraphic(xyzRadius: Float64Array, color: Uint32Array, chordTolerance: number, iModel: IModelConnection): Promise<RenderGraphic | undefined> {
+  async function createCircleGraphic(
+    xyzRadius: Float64Array,
+    color: Uint32Array,
+    chordTolerance: number,
+    iModel: IModelConnection,
+  ): Promise<RenderGraphic | undefined> {
     // Package up the RenderSystem's context to be sent to the Worker.
     const workerContext = IModelApp.renderSystem.createWorkerGraphicDescriptionContextProps(iModel);
 

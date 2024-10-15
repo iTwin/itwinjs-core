@@ -50,4 +50,3 @@ export interface PickableGraphicOptions extends BatchOptions {
   /** True if the graphic is to be used as a [[DynamicSpatialClassifier]] to classify volumes of a reality model. */
   isVolumeClassifier?: boolean;
 }
-

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, describe, it } from "vitest";
 import { Vector3d, XYZ } from "@itwin/core-geometry";
+import { assert, describe, it } from "vitest";
 import { OctEncodedNormal } from "../OctEncodedNormal";
 
 function _expectSignsEqual(a: number, b: number) {

@@ -21,10 +21,14 @@ const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({ iModelId: "undefi
  */
 export abstract class SnapshotIModelRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   /** Returns the SnapshotIModelRpcInterface client instance for the frontend. */
-  public static getClient(): SnapshotIModelRpcInterface { return RpcManager.getClientForInterface(SnapshotIModelRpcInterface); }
+  public static getClient(): SnapshotIModelRpcInterface {
+    return RpcManager.getClientForInterface(SnapshotIModelRpcInterface);
+  }
 
   /** Returns the SnapshotIModelRpcInterface client instance for a custom RPC routing configuration. */
-  public static getClientForRouting(token: RpcRoutingToken): SnapshotIModelRpcInterface { return RpcManager.getClientForInterface(SnapshotIModelRpcInterface, token); }
+  public static getClientForRouting(token: RpcRoutingToken): SnapshotIModelRpcInterface {
+    return RpcManager.getClientForInterface(SnapshotIModelRpcInterface, token);
+  }
 
   /** The immutable name of the interface. */
   public static readonly interfaceName = "SnapshotIModelRpcInterface";
@@ -38,13 +42,19 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface { // eslin
   ===========================================================================================*/
 
   @RpcOperation.setRoutingProps(unknownIModelId)
-  public async openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
+    return this.forward(arguments);
+  }
 
   /**
    * @deprecated in 4.10. Use [[CheckpointConnection.openRemote]].
    */
   @RpcOperation.setRoutingProps(unknownIModelId)
-  public async openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> { return this.forward(arguments); }
+  public async openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps> {
+    return this.forward(arguments);
+  }
 
-  public async close(_iModelRpcProps: IModelRpcProps): Promise<boolean> { return this.forward(arguments); }
+  public async close(_iModelRpcProps: IModelRpcProps): Promise<boolean> {
+    return this.forward(arguments);
+  }
 }

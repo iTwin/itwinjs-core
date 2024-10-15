@@ -3,27 +3,28 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, DbResult, DbValueType, Guid, GuidString, Id64String, Logger, LogLevel } from "@itwin/core-bentley";
 import {
-  ElementAspectProps,
-  FilePropertyProps,
-  IModel,
-  SubCategoryAppearance,
-} from "@itwin/core-common";
+  DbChangeStage,
+  DbConflictCause,
+  DbConflictResolution,
+  DbOpcode,
+  DbResult,
+  DbValueType,
+  Guid,
+  GuidString,
+  Id64String,
+  Logger,
+  LogLevel,
+} from "@itwin/core-bentley";
+import { ElementAspectProps, FilePropertyProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "../";
+import { BriefcaseDb, ChannelControl, DictionaryModel, SpatialCategory, SqliteChangesetReader } from "../../core-backend";
 import { HubMock } from "../../HubMock";
-import {
-  BriefcaseDb,
-  ChannelControl,
-  DictionaryModel,
-  SpatialCategory,
-  SqliteChangesetReader,
-} from "../../core-backend";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
+import { HubWrappers, KnownTestLocations } from "../";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
 import sinon = require("sinon");
 
@@ -40,7 +41,12 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
 }
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
-  const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
+  const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(
+    rwIModel,
+    IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"),
+    true,
+    parent,
+  );
 
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
@@ -110,7 +116,13 @@ describe("Changeset conflict handler", () => {
     accessToken1 = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     accessToken2 = await HubWrappers.getAccessToken(TestUserType.Regular);
     accessToken3 = await HubWrappers.getAccessToken(TestUserType.Super);
-    const rwIModelId = await HubMock.createNewIModel({ accessToken: accessToken1, iTwinId, iModelName, description: "TestSubject", noLocks: undefined });
+    const rwIModelId = await HubMock.createNewIModel({
+      accessToken: accessToken1,
+      iTwinId,
+      iModelName,
+      description: "TestSubject",
+      noLocks: undefined,
+    });
     assert.isNotEmpty(rwIModelId);
     b1 = await HubWrappers.downloadAndOpenBriefcase({ accessToken: accessToken1, iTwinId, iModelId: rwIModelId, noLock: true });
     b1.channels.addAllowedChannel(ChannelControl.sharedChannelName);
@@ -123,7 +135,8 @@ describe("Changeset conflict handler", () => {
     [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
       b1,
       IModelTestUtils.getUniqueModelCode(b1, "newPhysicalModel"),
-      true);
+      true,
+    );
     const dictionary: DictionaryModel = b1.models.getModel<DictionaryModel>(IModel.dictionaryId);
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
     spatialCategoryId = SpatialCategory.insert(
@@ -157,7 +170,11 @@ describe("Changeset conflict handler", () => {
     }
   });
 
-  async function spyChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>) => void) {
+  async function spyChangesetConflictHandler(
+    b: BriefcaseDb,
+    cb: () => Promise<void>,
+    test: (s: sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>) => void,
+  ) {
     const s1 = sinon.spy(b, "onChangesetConflict" as any) as sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>;
     try {
       await cb();
@@ -167,7 +184,11 @@ describe("Changeset conflict handler", () => {
     }
   }
 
-  async function stubChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>) => void) {
+  async function stubChangesetConflictHandler(
+    b: BriefcaseDb,
+    cb: () => Promise<void>,
+    test: (s: sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>) => void,
+  ) {
     const s1 = sinon.stub(b as any, "onChangesetConflict" as any);
     try {
       test(s1 as sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>);
@@ -176,7 +197,11 @@ describe("Changeset conflict handler", () => {
       s1.restore();
     }
   }
-  async function fakeChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, interceptMethod: (arg: ChangesetConflictArgs) => DbConflictResolution | undefined) {
+  async function fakeChangesetConflictHandler(
+    b: BriefcaseDb,
+    cb: () => Promise<void>,
+    interceptMethod: (arg: ChangesetConflictArgs) => DbConflictResolution | undefined,
+  ) {
     const s1 = sinon.stub<ChangesetConflictArgs[], DbConflictResolution>(b as any, "onChangesetConflict" as any);
     s1.callsFake(interceptMethod);
     try {
@@ -218,9 +243,11 @@ describe("Changeset conflict handler", () => {
 
     await spyChangesetConflictHandler(
       b1,
-      async () => assertThrowsAsync(
-        async () => b1.pushChanges({ accessToken: accessToken1, description: "" }),
-        "PRIMARY KEY INSERT CONFLICT - rejecting this changeset"),
+      async () =>
+        assertThrowsAsync(
+          async () => b1.pushChanges({ accessToken: accessToken1, description: "" }),
+          "PRIMARY KEY INSERT CONFLICT - rejecting this changeset",
+        ),
       (spy) => {
         expect(spy.callCount).eq(1);
         expect(spy.alwaysReturned(DbConflictResolution.Abort)).true;
@@ -286,9 +313,11 @@ describe("Changeset conflict handler", () => {
 
     await spyChangesetConflictHandler(
       b1,
-      async () => assertThrowsAsync(
-        async () => b1.pushChanges({ accessToken: accessToken1, description: "" }),
-        "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered."),
+      async () =>
+        assertThrowsAsync(
+          async () => b1.pushChanges({ accessToken: accessToken1, description: "" }),
+          "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.",
+        ),
       (spy) => {
         expect(spy.callCount).eq(1);
         expect(spy.alwaysReturned(DbConflictResolution.Abort)).true;
@@ -368,9 +397,11 @@ describe("Changeset conflict handler", () => {
 
     await spyChangesetConflictHandler(
       b2,
-      async () => assertThrowsAsync(
-        async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
-        "Error in native callback"),
+      async () =>
+        assertThrowsAsync(
+          async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
+          "Error in native callback",
+        ),
       (spy) => {
         expect(spy.callCount).eq(2);
         expect(spy.returnValues[0]).eq(DbConflictResolution.Skip);
@@ -413,9 +444,11 @@ describe("Changeset conflict handler", () => {
 
     await spyChangesetConflictHandler(
       b2,
-      async () => assertThrowsAsync(
-        async () => b2.pullChanges({ accessToken: accessToken1 }),
-        "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered."),
+      async () =>
+        assertThrowsAsync(
+          async () => b2.pullChanges({ accessToken: accessToken1 }),
+          "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.",
+        ),
       (spy) => {
         expect(spy.callCount).eq(1);
         expect(spy.alwaysReturned(DbConflictResolution.Abort)).true;
@@ -430,7 +463,6 @@ describe("Changeset conflict handler", () => {
       b2,
       async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
       (arg: ChangesetConflictArgs) => {
-
         // *** SqliteChangeReader API test ***
         const reader = SqliteChangesetReader.openFile({ fileName: arg.changesetFile!, db: b2 });
         expect(reader.step()).is.true;
@@ -591,4 +623,3 @@ describe("Changeset conflict handler", () => {
     );
   });
 });
-

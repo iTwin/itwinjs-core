@@ -4,7 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  IModelApp, NotifyMessageDetails, OutputMessagePriority, PerformanceMetrics, ScreenViewport, Target, Tool, Viewport,
+  IModelApp,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  PerformanceMetrics,
+  ScreenViewport,
+  Target,
+  Tool,
+  Viewport,
 } from "@itwin/core-frontend";
 
 export interface FpsMonitorProps {
@@ -35,7 +42,9 @@ export class FpsMonitor {
       vp.continuousRendering = true;
   }
 
-  public get enabled() { return this._enabled; }
+  public get enabled() {
+    return this._enabled;
+  }
   public set enabled(enabled: boolean) {
     if (enabled === this.enabled)
       return;
@@ -73,8 +82,12 @@ export class FpsMonitor {
 
 export class RecordFpsTool extends Tool {
   public static override toolId = "RecordFps";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   private _hadContinuousRendering = false;
   private _numFramesToRecord = 0;

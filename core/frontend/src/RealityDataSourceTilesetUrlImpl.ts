@@ -8,8 +8,8 @@
 import { assert, BentleyStatus, GuidString } from "@itwin/core-bentley";
 import { IModelError, RealityData, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, RealityDataSourceProps } from "@itwin/core-common";
 
-import { request } from "./request/Request";
 import { PublisherProductInfo, RealityDataSource, SpatialLocationAndExtents } from "./RealityDataSource";
+import { request } from "./request/Request";
 import { ThreeDTileFormatInterpreter } from "./tile/internal";
 
 /** This class provides access to the reality data provider services.
@@ -17,8 +17,8 @@ import { ThreeDTileFormatInterpreter } from "./tile/internal";
  * The key provided at the creation determines if this is ProjectWise Context Share reference.
  * If not then it is considered local (ex: C:\temp\TileRoot.json) or plain http access (http://someserver.com/data/TileRoot.json)
  * There is a one to one relationship between a reality data and the instances of present class.
-* @internal
-*/
+ * @internal
+ */
 export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   public readonly key: RealityDataSourceKey;
   /** The URL that supplies the 3d tiles for displaying the reality model. */
@@ -50,7 +50,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   }
   /**
    * Returns Reality Data if available
-  */
+   */
   public get realityData(): RealityData | undefined {
     return undefined;
   }
@@ -96,7 +96,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return request(url, "json");
   }
 
-  private isValidURL(url: string){
+  private isValidURL(url: string) {
     try {
       new URL(url);
     } catch (_) {
@@ -106,7 +106,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   }
 
   /** Returns the tile URL. If the tile path is a full URL, it is returned as is. Otherwise, the base URL is prepended to the tile path. */
-  private getTileUrl(tilePath: string){
+  private getTileUrl(tilePath: string) {
     return this.isValidURL(tilePath) ? tilePath : this._baseUrl + tilePath;
   }
 
@@ -152,4 +152,3 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return publisherInfo;
   }
 }
-

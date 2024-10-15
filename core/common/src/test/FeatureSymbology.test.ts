@@ -2,18 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, describe, expect, it } from "vitest";
 import { Id64, Id64String } from "@itwin/core-bentley";
+import { assert, describe, expect, it } from "vitest";
 import { ColorDef } from "../ColorDef";
-import { RgbColor } from "../RgbColor";
+import { FeatureAppearance, FeatureAppearanceProps, FeatureAppearanceProvider, FeatureAppearanceSource, FeatureOverrides } from "../FeatureSymbology";
 import { BatchType, Feature } from "../FeatureTable";
 import { GeometryClass } from "../GeometryParams";
 import { LinePixels } from "../LinePixels";
+import { RgbColor } from "../RgbColor";
 import { SubCategoryAppearance } from "../SubCategoryAppearance";
 import { SubCategoryOverride } from "../SubCategoryOverride";
-import {
-  FeatureAppearance, FeatureAppearanceProps, FeatureAppearanceProvider, FeatureAppearanceSource, FeatureOverrides,
-} from "../FeatureSymbology";
 
 describe("FeatureAppearance", () => {
   it("default constructor works as expected", () => {
@@ -26,7 +24,13 @@ describe("FeatureAppearance", () => {
   });
 
   it("AppearanceProps passed in constructor works as expected", () => {
-    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 200 / 255, linePixels: LinePixels.Code2, ignoresMaterial: true } as FeatureAppearanceProps;
+    const props1 = {
+      rgb: new RgbColor(100, 100, 100),
+      weight: 1,
+      transparency: 200 / 255,
+      linePixels: LinePixels.Code2,
+      ignoresMaterial: true,
+    } as FeatureAppearanceProps;
     const props2 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 200 / 255, linePixels: LinePixels.Code2 } as FeatureAppearanceProps;
     let app = FeatureAppearance.fromJSON(props1);
     assert.isTrue(app.overridesRgb);
@@ -42,7 +46,13 @@ describe("FeatureAppearance", () => {
   it("extend works as expected", () => {
     const props1 = { rgb: new RgbColor(100, 100, 100), linePixels: LinePixels.Code2, ignoresMaterial: true } as FeatureAppearanceProps;
     const props2 = { rgb: new RgbColor(250, 180, 150), weight: 1, transparency: 200 / 255, linePixels: LinePixels.Code3 } as FeatureAppearanceProps;
-    const expectedProps = { rgb: new RgbColor(100, 100, 100), linePixels: LinePixels.Code2, ignoresMaterial: true, weight: 1, transparency: 200 / 255 } as FeatureAppearanceProps;
+    const expectedProps = {
+      rgb: new RgbColor(100, 100, 100),
+      linePixels: LinePixels.Code2,
+      ignoresMaterial: true,
+      weight: 1,
+      transparency: 200 / 255,
+    } as FeatureAppearanceProps;
     let app1 = FeatureAppearance.fromJSON(props1);
     const app2 = FeatureAppearance.fromJSON(props2);
     app1 = app2.extendAppearance(app1);
@@ -92,10 +102,10 @@ describe("FeatureAppearance", () => {
       expect(app.toJSON().viewDependentTransparency).to.equal(expected);
     }
 
-    test({ }, false);
+    test({}, false);
     test({ transparency: undefined }, false);
     test({ transparency: 1 }, false);
-    test({ transparency: 0 }, false );
+    test({ transparency: 0 }, false);
 
     test({ transparency: 1, viewDependentTransparency: true }, true);
     test({ transparency: 0, viewDependentTransparency: true }, true);
@@ -115,21 +125,37 @@ describe("FeatureAppearance", () => {
     test({ transp: 0.5 }, true);
     test({ transp: 0 }, true);
     test({ transp: undefined }, false);
-    test({ }, false);
+    test({}, false);
     test({ color: ColorDef.blue.toJSON() }, false);
   });
 });
 
 describe("FeatureOverrides", () => {
   class Overrides extends FeatureOverrides {
-    public constructor() { super(); }
-    public override get neverDrawn() { return this._neverDrawn; }
-    public override get alwaysDrawn() { return this._alwaysDrawn; }
-    public get modelOverrides() { return this._modelOverrides; }
-    public get elementOverrides() { return this._elementOverrides; }
-    public get subCategoryOverrides() { return this._subCategoryOverrides; }
-    public get visibleSubCategories() { return this._visibleSubCategories; }
-    public get modelSubCategoryOverrides() { return this._modelSubCategoryOverrides; }
+    public constructor() {
+      super();
+    }
+    public override get neverDrawn() {
+      return this._neverDrawn;
+    }
+    public override get alwaysDrawn() {
+      return this._alwaysDrawn;
+    }
+    public get modelOverrides() {
+      return this._modelOverrides;
+    }
+    public get elementOverrides() {
+      return this._elementOverrides;
+    }
+    public get subCategoryOverrides() {
+      return this._subCategoryOverrides;
+    }
+    public get visibleSubCategories() {
+      return this._visibleSubCategories;
+    }
+    public get modelSubCategoryOverrides() {
+      return this._modelSubCategoryOverrides;
+    }
   }
 
   it("default constructor works as expected", () => {
@@ -159,7 +185,13 @@ describe("FeatureOverrides", () => {
   it("overrideModel works as expected", () => {
     const overrides = new Overrides();
     const id = Id64.fromString("0x111");
-    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureAppearanceProps;
+    const props1 = {
+      rgb: new RgbColor(100, 100, 100),
+      weight: 1,
+      transparency: 100 / 255,
+      linePixels: LinePixels.Solid,
+      ignoresMaterial: true,
+    } as FeatureAppearanceProps;
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureAppearanceProps;
     const modelApp1 = FeatureAppearance.fromJSON(props1);
     const modelApp2 = FeatureAppearance.fromJSON(props2);
@@ -167,19 +199,31 @@ describe("FeatureOverrides", () => {
     assert.exists(overrides.getModelOverridesById(id));
 
     overrides.overrideModel(id, modelApp2); // eslint-disable-line deprecation/deprecation
-    assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp2), "overrideModel will override prexisting model associated with given id if replaceExisting is not set to false explicitly");
+    assert.isTrue(
+      overrides.getModelOverridesById(id)!.equals(modelApp2),
+      "overrideModel will override prexisting model associated with given id if replaceExisting is not set to false explicitly",
+    );
 
     overrides.overrideModel(id, modelApp1, false); // eslint-disable-line deprecation/deprecation
     assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp2), "overrides will not replace model if replace existing is set to false");
 
     overrides.overrideModel(id, modelApp1); // eslint-disable-line deprecation/deprecation
-    assert.isTrue(overrides.getModelOverridesById(id)!.equals(modelApp1), "overrides will replace model if replace existing isn't set to false (test 2)");
+    assert.isTrue(
+      overrides.getModelOverridesById(id)!.equals(modelApp1),
+      "overrides will replace model if replace existing isn't set to false (test 2)",
+    );
   });
 
   it("overrideSubCategory works as expected", () => {
     const overrides = new Overrides();
     const id = Id64.fromString("0x111");
-    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureAppearanceProps;
+    const props1 = {
+      rgb: new RgbColor(100, 100, 100),
+      weight: 1,
+      transparency: 100 / 255,
+      linePixels: LinePixels.Solid,
+      ignoresMaterial: true,
+    } as FeatureAppearanceProps;
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureAppearanceProps;
     const subCatApp1 = FeatureAppearance.fromJSON(props1);
     const subCatApp2 = FeatureAppearance.fromJSON(props2);
@@ -195,16 +239,28 @@ describe("FeatureOverrides", () => {
     assert.exists(overrides.getSubCategoryOverridesById(id), "if subCategoryId is in subCategoryVisible set, then subCategoryApp set");
 
     overrides.overrideSubCategory(id, subCatApp1, false); // eslint-disable-line deprecation/deprecation
-    assert.isTrue(overrides.getSubCategoryOverridesById(id)!.equals(subCatApp2), "overrides will not replace subCatApp if replace existing is set to false");
+    assert.isTrue(
+      overrides.getSubCategoryOverridesById(id)!.equals(subCatApp2),
+      "overrides will not replace subCatApp if replace existing is set to false",
+    );
 
     overrides.overrideSubCategory(id, subCatApp1); // eslint-disable-line deprecation/deprecation
-    assert.isTrue(overrides.getSubCategoryOverridesById(id)!.equals(subCatApp1), "overrides will replace subCatApp if replace existing isn't set to false");
+    assert.isTrue(
+      overrides.getSubCategoryOverridesById(id)!.equals(subCatApp1),
+      "overrides will replace subCatApp if replace existing isn't set to false",
+    );
   });
 
   it("overrideElement works as expected", () => {
     let overrides = new Overrides();
     const id = Id64.fromString("0x111");
-    const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureAppearanceProps;
+    const props1 = {
+      rgb: new RgbColor(100, 100, 100),
+      weight: 1,
+      transparency: 100 / 255,
+      linePixels: LinePixels.Solid,
+      ignoresMaterial: true,
+    } as FeatureAppearanceProps;
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureAppearanceProps;
     const elemApp1 = FeatureAppearance.fromJSON(props1);
     const elemApp2 = FeatureAppearance.fromJSON(props2);
@@ -226,9 +282,18 @@ describe("FeatureOverrides", () => {
 
   it("setDefaultOverrides works as expected", () => {
     const overrides = new Overrides();
-    assert.isTrue(overrides.defaultOverrides.equals(FeatureAppearance.fromJSON()), "initial default overrides are equivalent to default appearance instance");
+    assert.isTrue(
+      overrides.defaultOverrides.equals(FeatureAppearance.fromJSON()),
+      "initial default overrides are equivalent to default appearance instance",
+    );
 
-    const props = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureAppearanceProps;
+    const props = {
+      rgb: new RgbColor(100, 100, 100),
+      weight: 1,
+      transparency: 100 / 255,
+      linePixels: LinePixels.Solid,
+      ignoresMaterial: true,
+    } as FeatureAppearanceProps;
     const app = FeatureAppearance.fromJSON(props);
     overrides.setDefaultOverrides(app);
     assert.isTrue(overrides.defaultOverrides.equals(app), "default overrides can be overriden");
@@ -423,7 +488,11 @@ describe("FeatureOverrides", () => {
     const elementId = "0x1";
     const ovrs = new Overrides();
 
-    const test = (appearance: FeatureAppearance, onConflict: "subsume" | "extend" | "replace" | "skip" = "extend", expected: FeatureAppearance | undefined) => {
+    const test = (
+      appearance: FeatureAppearance,
+      onConflict: "subsume" | "extend" | "replace" | "skip" = "extend",
+      expected: FeatureAppearance | undefined,
+    ) => {
       ovrs.override({ elementId, appearance, onConflict });
       const actual = ovrs.getElementOverridesById(elementId);
       if (!expected) {
@@ -466,17 +535,38 @@ describe("FeatureOverrides", () => {
 
 describe("FeatureAppearanceProvider", () => {
   class Source implements FeatureAppearanceSource {
-    public constructor(public readonly appearance: FeatureAppearance | undefined) { }
+    public constructor(public readonly appearance: FeatureAppearance | undefined) {}
 
-    public getAppearance(_elemLo: number, _elemHi: number, _subcatLo: number, _subcatHi: number, _geomClass: GeometryClass, _modelLo: number, _modelHi: number, _type: BatchType, _animationNodeId: number) {
+    public getAppearance(
+      _elemLo: number,
+      _elemHi: number,
+      _subcatLo: number,
+      _subcatHi: number,
+      _geomClass: GeometryClass,
+      _modelLo: number,
+      _modelHi: number,
+      _type: BatchType,
+      _animationNodeId: number,
+    ) {
       return this.appearance;
     }
   }
 
   class Provider implements FeatureAppearanceProvider {
-    public constructor(public readonly modifyAppearance: (app: FeatureAppearance) => FeatureAppearance) { }
+    public constructor(public readonly modifyAppearance: (app: FeatureAppearance) => FeatureAppearance) {}
 
-    public getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number) {
+    public getFeatureAppearance(
+      source: FeatureAppearanceSource,
+      elemLo: number,
+      elemHi: number,
+      subcatLo: number,
+      subcatHi: number,
+      geomClass: GeometryClass,
+      modelLo: number,
+      modelHi: number,
+      type: BatchType,
+      animationNodeId: number,
+    ) {
       const app = source.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
       return app ? this.modifyAppearance(app) : undefined;
     }

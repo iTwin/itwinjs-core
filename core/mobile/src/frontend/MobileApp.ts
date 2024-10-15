@@ -16,7 +16,9 @@ export type MobileAppOpts = NativeAppOpts & { iModelApp: { authorizationClient?:
 
 /** receive notifications from backend */
 class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifications {
-  public get channelName() { return mobileAppStrings.mobileAppNotify; }
+  public get channelName() {
+    return mobileAppStrings.mobileAppNotify;
+  }
 
   public notifyMemoryWarning() {
     Logger.logWarning("mobileApp", "Low memory warning");
@@ -25,8 +27,12 @@ class MobileAppNotifyHandler extends NotificationHandler implements MobileNotifi
     }
     MobileApp.onMemoryWarning.raiseEvent();
   }
-  public notifyOrientationChanged() { MobileApp.onOrientationChanged.raiseEvent(); }
-  public notifyWillTerminate() { MobileApp.onWillTerminate.raiseEvent(); }
+  public notifyOrientationChanged() {
+    MobileApp.onOrientationChanged.raiseEvent();
+  }
+  public notifyWillTerminate() {
+    MobileApp.onWillTerminate.raiseEvent();
+  }
   public notifyAuthAccessTokenChanged(accessToken: string | undefined, expirationDate: string | undefined) {
     MobileApp.onAuthAccessTokenChanged.raiseEvent(accessToken, expirationDate);
   }
@@ -45,7 +51,9 @@ export class MobileApp {
   }
 
   private static _isValid = false;
-  public static get isValid() { return this._isValid; }
+  public static get isValid() {
+    return this._isValid;
+  }
   /** @beta */
   public static async startup(opts?: MobileAppOpts) {
     attachDirectEventCallbacks();

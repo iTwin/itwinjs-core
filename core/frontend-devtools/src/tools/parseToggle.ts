@@ -16,9 +16,13 @@ export function parseToggle(arg: string | undefined): string | boolean | undefin
     return undefined;
 
   switch (arg.toLowerCase()) {
-    case "on": return true;
-    case "off": return false;
-    case "toggle": return undefined;
-    default: return arg;
+    case "on":
+      return true;
+    case "off":
+      return false;
+    case "toggle":
+      return undefined;
+    default:
+      return arg;
   }
 }

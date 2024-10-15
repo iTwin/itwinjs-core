@@ -7,16 +7,41 @@
  */
 
 import {
-  assert, BeTimePoint, ByteStream, compareStrings, DbOpcode, Id64, Id64Array, Id64String, partitionArray, SortedArray,
+  assert,
+  BeTimePoint,
+  ByteStream,
+  compareStrings,
+  DbOpcode,
+  Id64,
+  Id64Array,
+  Id64String,
+  partitionArray,
+  SortedArray,
 } from "@itwin/core-bentley";
-import { Range3d, Transform } from "@itwin/core-geometry";
 import {
-  BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
+  BatchType,
+  ElementGeometryChange,
+  ElementGraphicsRequestProps,
+  FeatureAppearance,
+  FeatureAppearanceProvider,
+  FeatureAppearanceSource,
+  GeometryClass,
+  TileFormat,
 } from "@itwin/core-common";
-import { RenderSystem } from "../render/RenderSystem";
+import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelApp } from "../IModelApp";
+import { RenderSystem } from "../render/RenderSystem";
 import {
-  ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
+  ImdlReader,
+  IModelTileTree,
+  RootIModelTile,
+  Tile,
+  TileContent,
+  TileDrawArgs,
+  TileParams,
+  TileRequest,
+  TileRequestChannel,
+  TileTree,
 } from "./internal";
 
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
@@ -66,7 +91,9 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   public readonly transformToTree: Transform;
   private readonly _elements: ElementTiles;
 
-  private get _imodelRoot() { return this.parent as RootIModelTile; }
+  private get _imodelRoot() {
+    return this.parent as RootIModelTile;
+  }
 
   private get _elementChildren(): ElementTile[] {
     assert(undefined !== this.children);
@@ -107,7 +134,18 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     return this;
   }
 
-  public getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
+  public getFeatureAppearance(
+    source: FeatureAppearanceSource,
+    elemLo: number,
+    elemHi: number,
+    subcatLo: number,
+    subcatHi: number,
+    geomClass: GeometryClass,
+    modelLo: number,
+    modelHi: number,
+    type: BatchType,
+    animationNodeId: number,
+  ): FeatureAppearance | undefined {
     if (this._hiddenElements.has(elemLo, elemHi))
       return undefined;
 
@@ -390,7 +428,13 @@ class GraphicsTile extends Tile {
     assert(tree instanceof IModelTileTree);
     const { iModel, modelId, is3d, containsTransformNodes } = tree;
     const reader = ImdlReader.create({
-      stream, iModel, modelId, is3d, system, isCanceled, containsTransformNodes,
+      stream,
+      iModel,
+      modelId,
+      is3d,
+      system,
+      isCanceled,
+      containsTransformNodes,
       type: tree.batchType,
       loadEdges: false !== tree.edgeOptions,
       options: { tileId: this.contentId },

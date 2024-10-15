@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { EmptyLocalization } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import { Debug } from "../../../render/webgl/Diagnostics";
@@ -10,7 +11,6 @@ import { FrameBuffer } from "../../../render/webgl/FrameBuffer";
 import { GL } from "../../../render/webgl/GL";
 import { RenderBuffer } from "../../../render/webgl/RenderBuffer";
 import { TextureHandle } from "../../../render/webgl/Texture";
-import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FrameBuffer tests", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));

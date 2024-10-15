@@ -9,8 +9,8 @@
 import { IModelRpcProps } from "./IModel";
 import { RpcOperation } from "./rpc/core/RpcOperation";
 import { RpcRegistry } from "./rpc/core/RpcRegistry";
-import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";
 import { RpcRoutingToken } from "./rpc/core/RpcRoutingToken";
+import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "./RpcInterface";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -41,17 +41,26 @@ export class RpcManager {
   }
 
   /** Returns the RPC client instance for the frontend. */
-  public static getClientForInterface<T extends RpcInterface>(definition: RpcInterfaceDefinition<T>, routing: RpcRoutingToken = RpcRoutingToken.default): T {
+  public static getClientForInterface<T extends RpcInterface>(
+    definition: RpcInterfaceDefinition<T>,
+    routing: RpcRoutingToken = RpcRoutingToken.default,
+  ): T {
     return RpcRegistry.instance.getClientForInterface(definition, routing);
   }
 
   /** Register the RPC implementation class for the backend. */
-  public static registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, implementation: RpcInterfaceImplementation<TImplementation>): void {
+  public static registerImpl<TDefinition extends RpcInterface, TImplementation extends TDefinition>(
+    definition: RpcInterfaceDefinition<TDefinition>,
+    implementation: RpcInterfaceImplementation<TImplementation>,
+  ): void {
     RpcRegistry.instance.registerImpl(definition, implementation);
   }
 
   /** Supply the instance of the RPC interface implementation class for the backend (optional). */
-  public static supplyImplInstance<TDefinition extends RpcInterface, TImplementation extends TDefinition>(definition: RpcInterfaceDefinition<TDefinition>, instance: TImplementation): void {
+  public static supplyImplInstance<TDefinition extends RpcInterface, TImplementation extends TDefinition>(
+    definition: RpcInterfaceDefinition<TDefinition>,
+    instance: TImplementation,
+  ): void {
     RpcRegistry.instance.supplyImplInstance(definition, instance);
   }
 

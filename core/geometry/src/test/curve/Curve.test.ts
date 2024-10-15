@@ -63,13 +63,27 @@ class StrokeCountSearch extends NullGeometryHandler {
       return this.emitPackedStrokeCountMap(g.strokeData);
     return undefined;
   }
-  public override handleLineString3d(g: LineString3d) { return { numLineString3d: this.emitCountData(g) }; }
-  public override handleArc3d(g: Arc3d) { return { numArc3d: this.emitCountData(g) }; }
-  public override handleLineSegment3d(g: LineSegment3d) { return { numLineSegment3d: this.emitCountData(g) }; }
-  public override handleBSplineCurve3d(g: BSplineCurve3d) { return { numBSplineCurve3d: this.emitCountData(g) }; }
-  public override handleBSplineCurve3dH(g: BSplineCurve3dH) { return { numBSplineCurve3dH: this.emitCountData(g) }; }
-  public override handleBezierCurve3d(g: BezierCurve3d) { return { numBezierCurve3d: this.emitCountData(g) }; }
-  public override handleBezierCurve3dH(g: BezierCurve3dH) { return { numBezierCurve3dH: this.emitCountData(g) }; }
+  public override handleLineString3d(g: LineString3d) {
+    return { numLineString3d: this.emitCountData(g) };
+  }
+  public override handleArc3d(g: Arc3d) {
+    return { numArc3d: this.emitCountData(g) };
+  }
+  public override handleLineSegment3d(g: LineSegment3d) {
+    return { numLineSegment3d: this.emitCountData(g) };
+  }
+  public override handleBSplineCurve3d(g: BSplineCurve3d) {
+    return { numBSplineCurve3d: this.emitCountData(g) };
+  }
+  public override handleBSplineCurve3dH(g: BSplineCurve3dH) {
+    return { numBSplineCurve3dH: this.emitCountData(g) };
+  }
+  public override handleBezierCurve3d(g: BezierCurve3d) {
+    return { numBezierCurve3d: this.emitCountData(g) };
+  }
+  public override handleBezierCurve3dH(g: BezierCurve3dH) {
+    return { numBezierCurve3dH: this.emitCountData(g) };
+  }
   public override handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex) {
     const data = { numCurveVectorWithDistanceIndex: this.emitCountData(g) };
     const children = g.children;
@@ -113,7 +127,6 @@ function curvePrimitiveHasInstanceOf<T extends Function>(cp: CurvePrimitive, cla
 }
 class ExerciseCurve {
   public static exerciseStrokeData(ck: Checker, curve: CurvePrimitive) {
-
     const curveA = curve.clone();
     const count0 = curveA.computeStrokeCountForOptions();
     curveA.computeAndAttachRecursiveStrokeCounts();
@@ -146,11 +159,13 @@ class ExerciseCurve {
       ck.testCoordinate(scaleFactor * pointA0.distance(pointA1), pointB0.distance(pointB1));
       const frameA0 = curveA.fractionToFrenetFrame(u0);
       const frameB0 = curveB.fractionToFrenetFrame(u0);
-      if (frameA0 && frameB0
+      if (
+        frameA0 && frameB0
         /* ck.testPointer(frameA0)
         && ck.testPointer(frameB0)
         && frameA0
-        && frameB0*/ ) {
+        && frameB0*/
+      ) {
         ck.testTransform(frameA0, frameB0);
         const frameA0Inverse = frameA0.inverse();
         if (ck.testPointer(frameA0Inverse)) {
@@ -158,14 +173,17 @@ class ExerciseCurve {
           curveA.extendRange(rangeA2, frameA0Inverse);
           const planeA2 = Plane3dByOriginAndUnitNormal.create(
             Point3d.createFrom(frameA0.origin),
-            frameA0.matrix.columnZ());
-          ck.testBoolean(curveA.isInPlane(planeA2!),
+            frameA0.matrix.columnZ(),
+          );
+          ck.testBoolean(
+            curveA.isInPlane(planeA2!),
             Geometry.isSmallMetricDistance(rangeA2.zLength()),
-            "Surface planarity test versus range in frame");
+            "Surface planarity test versus range in frame",
+          );
         }
       }
     }
-    const upperFractions = [0.3, 0.5, 0.912312, 1.0];  // do NOT include 0.0 ...
+    const upperFractions = [0.3, 0.5, 0.912312, 1.0]; // do NOT include 0.0 ...
     let fraction0 = 0;
     const totalLength = curveA.curveLength();
     const totalRange = curveA.range();
@@ -194,8 +212,10 @@ class ExerciseCurve {
     if (curvePrimitiveHasInstanceOf(curveA, InterpolationCurve3d)) {
       // just skip it -- ranges are wonky.
       // bug in interpolation curve? distance index confused by proxy?
-    } else if (curvePrimitiveHasInstanceOf(curveA, BSplineCurve3dBase)
-      || curvePrimitiveHasInstanceOf(curveA, TransitionSpiral3d)) {
+    } else if (
+      curvePrimitiveHasInstanceOf(curveA, BSplineCurve3dBase)
+      || curvePrimitiveHasInstanceOf(curveA, TransitionSpiral3d)
+    ) {
       // ugh.  bspline are pole boundaries that are not tight
       ck.testTrue(totalRange1.containsPoint(summedRange.low), "range low by parts");
       ck.testTrue(totalRange1.containsPoint(summedRange.high), "range high by parts");
@@ -220,7 +240,7 @@ class ExerciseCurve {
     }
   }
   public static exerciseCurvePlaneIntersections(ck: Checker, curve: CurvePrimitive) {
-    if (curve instanceof BSplineCurve3d) return;  // TODO
+    if (curve instanceof BSplineCurve3d) return; // TODO
     // if (curve instanceof TransitionSpiral3d) return;  // TODO
     for (const fractionA of [0.421, 0.421, 0.45, 0.45]) {
       const tangentA = curve.fractionToPointAndDerivative(fractionA);
@@ -234,22 +254,26 @@ class ExerciseCurve {
               return Geometry.isAlmostEqualNumber(detail.fraction, fractionA);
             // Different curve -- maybe a constituent?  accept based on points
             return plane.getOriginRef().isAlmostEqual(detail.point);
-          });
+          },
+        );
         ck.testTrue(foundAt.length >= 1, "planeCurveIntersections", curve, plane, fractionA);
       }
     }
   }
 
   public static exerciseMoveSignedDistance(ck: Checker, curve: CurvePrimitive) {
-    for (const segment of [
-      Segment1d.create(0.0, 0.5),
-      Segment1d.create(0.5, 1.0),
-      Segment1d.create(0.1, 0.35),
-      Segment1d.create(0.38, 0.92),
-      Segment1d.create(-0.1, 0.2),
-      Segment1d.create(-0.1, 0.2),
-      Segment1d.create(0.9, 1.2),
-      Segment1d.create(0.9, 1.2)]) {
+    for (
+      const segment of [
+        Segment1d.create(0.0, 0.5),
+        Segment1d.create(0.5, 1.0),
+        Segment1d.create(0.1, 0.35),
+        Segment1d.create(0.38, 0.92),
+        Segment1d.create(-0.1, 0.2),
+        Segment1d.create(-0.1, 0.2),
+        Segment1d.create(0.9, 1.2),
+        Segment1d.create(0.9, 1.2),
+      ]
+    ) {
       const a = segment.x0;
       const b = segment.x1;
       const distanceAB = curve.curveLengthBetweenFractions(a, b);
@@ -260,14 +284,18 @@ class ExerciseCurve {
       }
       let detailAtoB = curve.moveSignedDistanceFromFraction(a, distanceAB, true);
       let detailBtoA = curve.moveSignedDistanceFromFraction(b, -distanceAB, true);
-      if (!segment.isIn01 &&
+      if (
+        !segment.isIn01 &&
         (detailAtoB.curveSearchStatus === CurveSearchStatus.stoppedAtBoundary
-          || detailBtoA.curveSearchStatus === CurveSearchStatus.stoppedAtBoundary)) {
+          || detailBtoA.curveSearchStatus === CurveSearchStatus.stoppedAtBoundary)
+      ) {
         // um .. not sure what to test for
-      } else if (detailAtoB.curveSearchStatus === undefined
+      } else if (
+        detailAtoB.curveSearchStatus === undefined
         || detailBtoA.curveSearchStatus === undefined
         || detailAtoB.curveSearchStatus !== CurveSearchStatus.success
-        || detailBtoA.curveSearchStatus !== CurveSearchStatus.success) {
+        || detailBtoA.curveSearchStatus !== CurveSearchStatus.success
+      ) {
         detailAtoB = curve.moveSignedDistanceFromFraction(a, distanceAB, true);
         detailBtoA = curve.moveSignedDistanceFromFraction(b, -distanceAB, true);
         ck.announceError("Incomplete moveSignedDistanceFromFraction", a, b, curve);
@@ -276,13 +304,17 @@ class ExerciseCurve {
           ck.testCoordinate(b, detailAtoB.fraction);
           ck.testCoordinate(a, detailBtoA.fraction);
         } else {
-
         }
       }
     }
   }
 
-  public static exerciseFractionToPoint(ck: Checker, curve: CurvePrimitive | undefined, expectProportionalDistance: boolean, expectEqualChordLength: boolean) {
+  public static exerciseFractionToPoint(
+    ck: Checker,
+    curve: CurvePrimitive | undefined,
+    expectProportionalDistance: boolean,
+    expectEqualChordLength: boolean,
+  ) {
     if (!curve) {
       ck.announceError("Null CurvePrimitive provided to exerciseFractionAndPoint");
       return;
@@ -332,8 +364,14 @@ class ExerciseCurve {
         ck.testPoint3d(pointA1, derivativeRay.origin);
         const approximateDerivative = delta02.scale(0.5 / derivativeIncrement);
         const approximateDerivative2 = delta012.scale(1.0 / (derivativeIncrement * derivativeIncrement));
-        ck.testTrue(approximateDerivative.distance(derivativeRay.direction) < derivativeTolerance * (1 + derivativeRay.direction.magnitude()),
-          "approximate derivative", derivativeRay.direction, approximateDerivative, curve, fraction);
+        ck.testTrue(
+          approximateDerivative.distance(derivativeRay.direction) < derivativeTolerance * (1 + derivativeRay.direction.magnitude()),
+          "approximate derivative",
+          derivativeRay.direction,
+          approximateDerivative,
+          curve,
+          fraction,
+        );
         if (plane1) { //  curve instanceof TransitionSpiral3d
           ck.testPoint3d(derivativeRay.origin, plane1.origin, "points with derivatives");
           if (!(curve instanceof TransitionSpiral3d) && !plane1.vectorV.isAlmostZero) {
@@ -345,12 +383,14 @@ class ExerciseCurve {
               curve.fractionToPointAnd2Derivatives(fraction);
             const q = approximateDerivative2.distance(plane1.vectorV);
             if (!ck.testTrue(q < derivative2Tolerance * (1 + plane1.vectorV.magnitude()))) {
-              curve.fractionToPointAnd2Derivatives(fraction);   // for debug
+              curve.fractionToPointAnd2Derivatives(fraction); // for debug
               const magU = plane1.vectorU.magnitude();
               const magV = plane1.vectorV.magnitude();
               const magV2 = approximateDerivative2.magnitude();
               const ratio = magV / magV2;
-              GeometryCoreTestIO.consoleLog(` (magU  ${magU} (magV  ${magV} (magV2  ${magV2} (magV/magV2  ${ratio} (L  ${curve.curveLength()} (radians  ${radians}`);
+              GeometryCoreTestIO.consoleLog(
+                ` (magU  ${magU} (magV  ${magV} (magV2  ${magV2} (magV/magV2  ${ratio} (L  ${curve.curveLength()} (radians  ${radians}`,
+              );
               curve.fractionToPointAnd2Derivatives(fraction);
             }
           }
@@ -383,12 +423,21 @@ class ExerciseCurve {
     }
   }
 
-  public static exerciseClosestPointDetail(ck: Checker, detail: CurveLocationDetail | undefined, curve: CurvePrimitive, resultPt: Point3d, testPt: Point3d, testFraction: number): boolean {
+  public static exerciseClosestPointDetail(
+    ck: Checker,
+    detail: CurveLocationDetail | undefined,
+    curve: CurvePrimitive,
+    resultPt: Point3d,
+    testPt: Point3d,
+    testFraction: number,
+  ): boolean {
     let succeeded = true;
     if (ck.testPointer(detail) && ck.testPointer(detail.curve)) {
       if (detail.curve === curve) {
-        if (!ck.testCoordinate(testFraction, detail.fraction, "fraction round trip", curve)
-          || !ck.testPoint3d(resultPt, detail.point, "round trip point")) {
+        if (
+          !ck.testCoordinate(testFraction, detail.fraction, "fraction round trip", curve)
+          || !ck.testPoint3d(resultPt, detail.point, "round trip point")
+        ) {
           succeeded = false;
           detail = curve.closestPoint(testPt, false);
         }
@@ -402,7 +451,15 @@ class ExerciseCurve {
     return succeeded;
   }
 
-  public static exerciseClosestPoint(ck: Checker, curve: CurvePrimitive, fractionA: number, allGeometry?: GeometryQuery[], x0: number = 0, y0: number = 0, z0: number = 0): boolean {
+  public static exerciseClosestPoint(
+    ck: Checker,
+    curve: CurvePrimitive,
+    fractionA: number,
+    allGeometry?: GeometryQuery[],
+    x0: number = 0,
+    y0: number = 0,
+    z0: number = 0,
+  ): boolean {
     // test point on curve projects to itself
     const pointA = curve.fractionToPoint(fractionA);
     let detail = curve.closestPoint(pointA, false);
@@ -451,8 +508,10 @@ class ExerciseCurve {
     curve.emitStrokes(strokesB, options);
     // add slop to pass CurveChainWithDistanceIndex with 2-pt InterpolationCurve3d inside, for which quickLength is smaller by 9.0e-16
     ck.testLE(strokeLength, curveLength + Geometry.smallMetricDistanceSquared, "strokeLength cannot exceed curveLength");
-    if (!ck.testLE(chordFraction * curveLength, strokeLength, "strokes appear accurate")
-      || Checker.noisy.stroke) {
+    if (
+      !ck.testLE(chordFraction * curveLength, strokeLength, "strokes appear accurate")
+      || Checker.noisy.stroke
+    ) {
       GeometryCoreTestIO.consoleLog(" CURVE", curve);
       const curveLength1 = curve.curveLength();
       GeometryCoreTestIO.consoleLog("computed length", curveLength1);
@@ -475,10 +534,7 @@ class ExerciseCurve {
     }
 
     { // a circular arc . . .
-      const arc = Arc3d.create(Point3d.create(1, 2, 3),
-        Vector3d.create(2, 0, 0),
-        Vector3d.create(0, 2, 0),
-        AngleSweep.createStartEndDegrees(0, 180));
+      const arc = Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(2, 0, 0), Vector3d.create(0, 2, 0), AngleSweep.createStartEndDegrees(0, 180));
       if (arc) {
         ExerciseCurve.exerciseFractionToPoint(ck, arc, false, true);
         ExerciseCurve.exerciseMoveSignedDistance(ck, arc);
@@ -491,10 +547,7 @@ class ExerciseCurve {
     }
 
     { // a non-circular arc . . .  (much harder computations!!)
-      const arc = Arc3d.create(Point3d.create(1, 2, 3),
-        Vector3d.create(3, 0, 0),
-        Vector3d.create(0, 2, 0),
-        AngleSweep.createStartEndDegrees(0, 180));
+      const arc = Arc3d.create(Point3d.create(1, 2, 3), Vector3d.create(3, 0, 0), Vector3d.create(0, 2, 0), AngleSweep.createStartEndDegrees(0, 180));
       if (arc) {
         ExerciseCurve.exerciseFractionToPoint(ck, arc, false, false);
         ExerciseCurve.exerciseMoveSignedDistance(ck, arc);
@@ -510,7 +563,8 @@ class ExerciseCurve {
       const linestring = LineString3d.createPoints([
         Point3d.create(0, 0, 0),
         Point3d.create(1, 0, 0),
-        Point3d.create(1, 1, 0)]);
+        Point3d.create(1, 1, 0),
+      ]);
       ExerciseCurve.exerciseFractionToPoint(ck, linestring, false, false);
       ExerciseCurve.exerciseMoveSignedDistance(ck, linestring);
       ExerciseCurve.exerciseStroke(ck, linestring);
@@ -523,7 +577,8 @@ class ExerciseCurve {
       const linestring = LineString3d.create(
         Point3d.create(0, 0, 0),
         Point3d.create(1, 0, 0),
-        Point3d.create(2, 1, 0));
+        Point3d.create(2, 1, 0),
+      );
       ExerciseCurve.exerciseFractionToPoint(ck, linestring, false, false);
       ExerciseCurve.exerciseMoveSignedDistance(ck, linestring);
       ExerciseCurve.exerciseStroke(ck, linestring);
@@ -588,7 +643,8 @@ class ExerciseCurve {
         Point4d.create(5, 0, 0, 0.8),
         Point4d.create(10, 4, 0, 1),
         Point4d.create(15, 4, 0, 1),
-        Point4d.create(20, 0, 0, 1)];
+        Point4d.create(20, 0, 0, 1),
+      ];
       for (let order = 3; order <= poles4d.length; order++) {
         const bcurveH = BSplineCurve3dH.createUniformKnots(poles4d, order);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, bcurveH, dx);
@@ -657,7 +713,11 @@ class ExerciseCurve {
 
     {
       const bezierCurve3d = BezierCurve3dH.create([
-        Point3d.create(0, 0), Point3d.create(0.5, 0.0), Point3d.create(1, 1), Point3d.create(2, 1, 1)])!;
+        Point3d.create(0, 0),
+        Point3d.create(0.5, 0.0),
+        Point3d.create(1, 1),
+        Point3d.create(2, 1, 1),
+      ])!;
       ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve3d, false, false);
       ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve3d);
       ExerciseCurve.exerciseStroke(ck, bezierCurve3d);
@@ -668,15 +728,22 @@ class ExerciseCurve {
 
     {
       if (Checker.noisy.testTransitionSpiral) {
-        for (const spiral of [
-          IntegratedSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 10), Segment1d.create(0, 1), Transform.createIdentity()),
-          DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), 100, 300, undefined),
-          DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), 100, 300, undefined),
-          DirectSpiral3d.createArema(Transform.createIdentity(), 100, 300, undefined),
-        ]) {
+        for (
+          const spiral of [
+            IntegratedSpiral3d.createRadiusRadiusBearingBearing(
+              Segment1d.create(0, 1000),
+              AngleSweep.createStartEndDegrees(0, 10),
+              Segment1d.create(0, 1),
+              Transform.createIdentity(),
+            ),
+            DirectSpiral3d.createDirectHalfCosine(Transform.createIdentity(), 100, 300, undefined),
+            DirectSpiral3d.createJapaneseCubic(Transform.createIdentity(), 100, 300, undefined),
+            DirectSpiral3d.createArema(Transform.createIdentity(), 100, 300, undefined),
+          ]
+        ) {
           if (ck.testPointer(spiral)) {
             ExerciseCurve.exerciseCurvePlaneIntersections(ck, spiral);
-            ExerciseCurve.exerciseFractionToPoint(ck, spiral, (spiral instanceof IntegratedSpiral3d), false);
+            ExerciseCurve.exerciseFractionToPoint(ck, spiral, spiral instanceof IntegratedSpiral3d, false);
             ExerciseCurve.exerciseStroke(ck, spiral);
             ExerciseCurve.exerciseClosestPoint(ck, spiral, 0.3, allGeometry, dx);
             GeometryCoreTestIO.captureGeometry(allGeometry, spiral, dx);
@@ -781,7 +848,7 @@ describe("Curves", () => {
       }
       const c0x = p.closestPoint(p0, CurveExtendMode.OnCurve);
       const c1x = p.closestPoint(p1, CurveExtendMode.OnCurve);
-      const proximityFactor = 0.01;   // WE TRUST THAT THE CURVE DOES NOT BEND MUCH IN SMALL EXTRAPOLATION -- projected point should be closer than extension distance.
+      const proximityFactor = 0.01; // WE TRUST THAT THE CURVE DOES NOT BEND MUCH IN SMALL EXTRAPOLATION -- projected point should be closer than extension distance.
       if (ck.testPointer(c0x)) {
         if (c0x.childDetail && c0x.childDetail.curve!.isExtensibleFractionSpace)
           ck.testLT(p0.distance(c0x.point), proximityFactor * e, "small distance from curve");
@@ -804,10 +871,10 @@ describe("Curves", () => {
 
   it("DistanceIndexMismatches", () => {
     const ck = new Checker();
-    const pathA = Sample.createSquareWavePath(4, 1, 1, 0, 1, 0);   // 4 waves as one linestring
-    const pathB = Sample.createSquareWavePath(1, 1, 1, 0, 1, 0);   // 1 wave as one linestring
-    const pathC = Sample.createSquareWavePath(1, 1, 1, 0, 0, 1);    // 1 wave as 4 line segments
-    const pathD = Sample.createSquareWavePath(4, 1, 1, 0, 0, 2);    // 4 wave as 4 linestrings
+    const pathA = Sample.createSquareWavePath(4, 1, 1, 0, 1, 0); // 4 waves as one linestring
+    const pathB = Sample.createSquareWavePath(1, 1, 1, 0, 1, 0); // 1 wave as one linestring
+    const pathC = Sample.createSquareWavePath(1, 1, 1, 0, 0, 1); // 1 wave as 4 line segments
+    const pathD = Sample.createSquareWavePath(4, 1, 1, 0, 0, 2); // 4 wave as 4 linestrings
     const emptyBag = BagOfCurves.create();
     const bag1 = BagOfCurves.create();
     const bagWithPath = BagOfCurves.create(pathA.clone());
@@ -836,9 +903,18 @@ describe("Curves", () => {
     ck.testUndefined(RuledSweep.mutatePartners(bag1, bag1, returnUndefined), "mutatePartners notices failed mutator");
     ck.testUndefined(emptyBag.getChild(0));
     ck.testUndefined(bag1.getChild(4));
-    ck.testUndefined(RuledSweep.mutatePartners(pathA, (lineSegment as any) as CurveCollection, returnUndefined), "mutatePartners rejects non-collection");
-    ck.testUndefined(RuledSweep.mutatePartners((lineSegment as any) as CurveCollection, (lineSegment as any) as CurveCollection, returnUndefined), "mutatePartners rejects non-collection");
-    ck.testUndefined(RuledSweep.mutatePartners(bagWithPath, bagWithPath, returnUndefined), "mutatePartners sees undefined step for collection in bag");
+    ck.testUndefined(
+      RuledSweep.mutatePartners(pathA, (lineSegment as any) as CurveCollection, returnUndefined),
+      "mutatePartners rejects non-collection",
+    );
+    ck.testUndefined(
+      RuledSweep.mutatePartners((lineSegment as any) as CurveCollection, (lineSegment as any) as CurveCollection, returnUndefined),
+      "mutatePartners rejects non-collection",
+    );
+    ck.testUndefined(
+      RuledSweep.mutatePartners(bagWithPath, bagWithPath, returnUndefined),
+      "mutatePartners sees undefined step for collection in bag",
+    );
     ck.checkpoint("CurvePrimitive.DistanceIndexMismatches");
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurvePrimitive", "CurveChainWithDistanceIndex");
 
@@ -871,10 +947,12 @@ describe("Curves", () => {
             if (ck.testDefined(detail)) {
               const unitTangent = indexedPath.fractionToPointAndUnitTangent(detail.fraction);
               // strokes .. space point to new evaluation to short step on tangent back to nearby point on line from space point to detail point
-              GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(spacePoint, unitTangent.origin,
-                unitTangent.fractionToPoint(0.05),
-                spacePoint.interpolate(0.95, detail.point)), x0, y0);
-
+              GeometryCoreTestIO.captureGeometry(
+                allGeometry,
+                LineString3d.create(spacePoint, unitTangent.origin, unitTangent.fractionToPoint(0.05), spacePoint.interpolate(0.95, detail.point)),
+                x0,
+                y0,
+              );
             }
           }
         }
@@ -887,7 +965,6 @@ describe("Curves", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 
 class NewtonEvaluatorClosestPointOnCurve extends NewtonEvaluatorRtoR {
@@ -911,7 +988,6 @@ class NewtonEvaluatorClosestPointOnCurve extends NewtonEvaluatorRtoR {
     // GeometryCoreTestIO.consoleLog("evaluate ", this.lastFraction, this.lastEvaluationA, this.currentF);
     return true;
   }
-
 }
 describe("CurvePrimitive.Newton", () => {
   it("CurvePrimitive.Newton", () => {
@@ -923,7 +999,7 @@ describe("CurvePrimitive.Newton", () => {
         const xyz = c.fractionToPoint(f);
         const evaluator = new NewtonEvaluatorClosestPointOnCurve(c, xyz);
         const searcher = new Newton1dUnboundedApproximateDerivative(evaluator);
-        searcher.setX(f + initialShift);  // start searching from a fraction close to the known result.
+        searcher.setX(f + initialShift); // start searching from a fraction close to the known result.
         // the step cannot be too big for nasty curves !!!
         // GeometryCoreTestIO.consoleLog("search at fraction " + f);
         if (ck.testBoolean(true, searcher.runIterations(), "Newton finish")) {
@@ -943,7 +1019,8 @@ describe("CurvePrimitive.TransitionSpiral", () => {
       Segment1d.create(0, 100),
       AngleSweep.createStartEndDegrees(0, 5),
       Segment1d.create(0, 1),
-      Transform.createIdentity())!;
+      Transform.createIdentity(),
+    )!;
     const point0 = c.fractionToPointAndDerivative(0);
     const point1 = Ray3d.createZero();
     const numStroke = 50;
@@ -1047,7 +1124,8 @@ function findPointInCLDArray(point: Point3d, data: CurveLocationDetail[], startI
 function testCurveIntervalRole(
   ck: Checker,
   cld: CurveLocationDetail,
-  values: CurveIntervalRole[]): boolean {
+  values: CurveIntervalRole[],
+): boolean {
   const value = cld.intervalRole;
   for (const v of values)
     if (v === value) return true;
@@ -1062,25 +1140,33 @@ describe("Linestring3dSpecials", () => {
     const ay = a;
     const az = a;
     const geometry = [];
-    for (const linestring of [
-      LineString3d.create(
-        Point3d.create(0, 0, 0),
-        Point3d.create(1, 0, 0),  // pure X
-        Point3d.create(1, 1, 0),  // pure Y
-        Point3d.create(4, 2, 1),  // everything tilts
-        Point3d.create(8, 1, 0)), // dive down
-      LineString3d.createRegularPolygonXY(Point3d.create(0, 10, 0), 7, 3.0, true)]) {
+    for (
+      const linestring of [
+        LineString3d.create(
+          Point3d.create(0, 0, 0),
+          Point3d.create(1, 0, 0), // pure X
+          Point3d.create(1, 1, 0), // pure Y
+          Point3d.create(4, 2, 1), // everything tilts
+          Point3d.create(8, 1, 0),
+        ), // dive down
+        LineString3d.createRegularPolygonXY(Point3d.create(0, 10, 0), 7, 3.0, true),
+      ]
+    ) {
       geometry.push(linestring);
       const df = 0.125 / (linestring.numPoints() - 1);
       for (let fraction = 0; fraction <= 1.0000001; fraction += df) {
         const frame0 = linestring.fractionToFrenetFrame(fraction);
-        geometry.push(LineString3d.create(frame0.origin,
-          frame0.multiplyXYZ(ax, 0, 0),
-          frame0.multiplyXYZ(0, ay, 0),
-          frame0.multiplyXYZ(0, -ay, 0),
-          frame0.multiplyXYZ(ax, 0, 0),
-          frame0.multiplyXYZ(0, 0, az),
-          frame0.origin));
+        geometry.push(
+          LineString3d.create(
+            frame0.origin,
+            frame0.multiplyXYZ(ax, 0, 0),
+            frame0.multiplyXYZ(0, ay, 0),
+            frame0.multiplyXYZ(0, -ay, 0),
+            frame0.multiplyXYZ(ax, 0, 0),
+            frame0.multiplyXYZ(0, 0, az),
+            frame0.origin,
+          ),
+        );
         const tangent = linestring.fractionToPointAndUnitTangent(fraction);
         ck.testPerpendicular(tangent.direction, frame0.matrix.columnZ());
       }
@@ -1104,9 +1190,11 @@ describe("Linestring3dSpecials", () => {
       const plane = Plane3dByOriginAndUnitNormal.create(pointOnSegment.origin, pointOnSegment.direction);
       const intersections = new Array<CurveLocationDetail>();
       linestring.appendPlaneIntersectionPoints(plane!, intersections);
-      if (ck.testExactNumber(1, intersections.length, `Expect single intersection ${i}`)
+      if (
+        ck.testExactNumber(1, intersections.length, `Expect single intersection ${i}`)
         && ck.testCoordinate(globalFraction, intersections[0].fraction, `intersection fraction on segment ${i}`)
-        && ck.testPoint3d(plane!.getOriginRef(), intersections[0].point, `intersection point on segment ${i}`)) {
+        && ck.testPoint3d(plane!.getOriginRef(), intersections[0].point, `intersection point on segment ${i}`)
+      ) {
         // all ok!!
       } else {
         intersections.length = 0;
@@ -1128,8 +1216,10 @@ describe("Linestring3dSpecials", () => {
           const index0 = findPointInCLDArray(point0, intersections, 0);
           const index1 = findPointInCLDArray(point1, intersections, index0);
           const index2 = findPointInCLDArray(point2, intersections, index1);
-          if (ck.testExactNumber(index0 + 1, index1, "consecutive points in intersection list.")
-            && ck.testExactNumber(index1 + 1, index2, "consecutive points in intersection list.")) {
+          if (
+            ck.testExactNumber(index0 + 1, index1, "consecutive points in intersection list.")
+            && ck.testExactNumber(index1 + 1, index2, "consecutive points in intersection list.")
+          ) {
             // when inspecting the intervalRole, allow for ends to be subsumed by larger intervals.
             testCurveIntervalRole(ck, intersections[index0], [CurveIntervalRole.intervalStart, CurveIntervalRole.intervalInterior]);
             testCurveIntervalRole(ck, intersections[index1], [CurveIntervalRole.intervalInterior]);
@@ -1202,7 +1292,8 @@ describe("IsomorphicCurves", () => {
         Point3d.create(0, 0, 0),
         Point3d.create(1, 0, 0),
         Point3d.create(2, 0, 0),
-        Point3d.create(2, 1, 0)];
+        Point3d.create(2, 1, 0),
+      ];
       for (let numPoints = 2; numPoints <= allPoints.length; numPoints++) {
         // GeometryCoreTestIO.consoleLog("Isomorphic LineString (" + numPoints + ")");
         // assemble leading numPoints part of allPoints ...
@@ -1221,7 +1312,6 @@ describe("IsomorphicCurves", () => {
     }
     ck.checkpoint("IsomorphicCurves.Hello");
     expect(ck.getNumErrors()).toBe(0);
-
   });
 });
 
@@ -1233,9 +1323,12 @@ describe("CylindricalRange", () => {
     const curves = Sample.createSimplePaths(false);
     for (const c of curves) {
       const strokes = c.cloneStroked();
-      for (const ray of [
-        Ray3d.createXYZUVW(0, 0, 0, 1, 0, 0),
-        Ray3d.createXYZUVW(1, 2, 4, 3, 1, 5)]) {
+      for (
+        const ray of [
+          Ray3d.createXYZUVW(0, 0, 0, 1, 0, 0),
+          Ray3d.createXYZUVW(1, 2, 4, 3, 1, 5),
+        ]
+      ) {
         const vector1 = CylindricalRangeQuery.computeMaxVectorFromRay(ray, c);
         ck.testPointer(vector1);
         const vector2 = CylindricalRangeQuery.computeMaxVectorFromRay(ray, strokes);
@@ -1258,7 +1351,7 @@ describe("GeometryQuery", () => {
     ck.testUndefined(ls.children, "linestring has no children -- expected undefined from base class");
     const pathA = Path.create(sg);
     const pathB = Path.create(ls, sg);
-    const pathC = Path.create();   // empty !!!
+    const pathC = Path.create(); // empty !!!
     ck.testFalse(pathA.isAlmostEqual(pathB));
     ck.testFalse(pathA.isAlmostEqual(ls));
     ck.testFalse(pathA.isAlmostEqual(pathC));

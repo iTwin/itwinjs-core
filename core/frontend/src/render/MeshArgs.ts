@@ -7,8 +7,8 @@
  */
 
 import { ColorIndex, FeatureIndex, FillFlags, OctEncodedNormal, QPoint3dList, RenderMaterial, RenderTexture } from "@itwin/core-common";
-import { MeshArgsEdges } from "../common/internal/render/MeshPrimitives";
 import { AuxChannel, Point2d, Point3d, Range3d } from "@itwin/core-geometry";
+import { MeshArgsEdges } from "../common/internal/render/MeshPrimitives";
 
 /** Arguments supplied to [[RenderSystem.createTriMesh]] describing a triangle mesh.
  * @public
@@ -57,4 +57,3 @@ export interface MeshArgs {
     uvParams: Point2d[];
   };
 }
-

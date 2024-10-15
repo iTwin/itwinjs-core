@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { DelayedPromiseWithProps, EntityClass, Mixin, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { MutableEntityClass } from "../../../Editing/Mutable/MutableEntityClass";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 import * as Rules from "../../../Validation/ECRules";

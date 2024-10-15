@@ -2,13 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, Code, ColorDef, ElementAspectProps, ElementGeometry, GeometricElementProps, GeometryStreamProps, IModel, PhysicalElementProps,
-  Placement3dProps, QueryRowFormat, SubCategoryAppearance,
+  BriefcaseIdValue,
+  Code,
+  ColorDef,
+  ElementAspectProps,
+  ElementGeometry,
+  GeometricElementProps,
+  GeometryStreamProps,
+  IModel,
+  PhysicalElementProps,
+  Placement3dProps,
+  QueryRowFormat,
+  SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Angle, Arc3d, Cone, IModelJson as GeomJson, LineSegment3d, Point2d, Point3d } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import { _nativeDb, ECSqlStatement, IModelDb, IModelJsFs, PhysicalModel, PhysicalObject, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -50,13 +60,13 @@ interface IPrimitiveArray extends IPrimitiveArrayBase {
   array_st?: ComplexStruct[];
 }
 
-interface ComplexStruct extends IPrimitiveArrayBase, IPrimitiveBase { }
+interface ComplexStruct extends IPrimitiveArrayBase, IPrimitiveBase {}
 
-interface TestElement extends IPrimitive, IPrimitiveArray, GeometricElementProps { }
+interface TestElement extends IPrimitive, IPrimitiveArray, GeometricElementProps {}
 
-interface TestElementAspect extends IPrimitive, IPrimitiveArray, ElementAspectProps { }
+interface TestElementAspect extends IPrimitive, IPrimitiveArray, ElementAspectProps {}
 
-interface TestElementRefersToElements extends IPrimitive, IPrimitiveArray, ElementRefersToElements { }
+interface TestElementRefersToElements extends IPrimitive, IPrimitiveArray, ElementRefersToElements {}
 
 function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimitiveBase) {
   if (expectedValue.i !== undefined)
@@ -74,24 +84,24 @@ function verifyPrimitiveBase(actualValue: IPrimitiveBase, expectedValue: IPrimit
   if (expectedValue.p2d) {
     assert.equal(actualValue.p2d?.x, expectedValue.p2d.x, "'Point2d.x' type property did not roundtrip as expected");
     assert.equal(actualValue.p2d?.y, expectedValue.p2d.y, "'Point2d.y' type property did not roundtrip as expected");
-  } else if(expectedValue.p2d === null) {
+  } else if (expectedValue.p2d === null) {
     assert.equal(actualValue.p2d, expectedValue.p2d, "'Point2d' type property did not roundtrip as expected.");
   }
   if (expectedValue.p3d) {
     assert.equal(actualValue.p3d?.x, expectedValue.p3d.x, "'Point3d.x' type property did not roundtrip as expected");
     assert.equal(actualValue.p3d?.y, expectedValue.p3d.y, "'Point3d.y' type property did not roundtrip as expected");
     assert.equal(actualValue.p3d?.z, expectedValue.p3d.z, "'Point3d.z' type property did not roundtrip as expected");
-  } else if(expectedValue.p3d === null) {
+  } else if (expectedValue.p3d === null) {
     assert.equal(actualValue.p3d, expectedValue.p3d, "'Point3d' type property did not roundtrip as expected.");
   }
   if (expectedValue.bin) {
     assert.isTrue(blobEqual(actualValue.bin, expectedValue.bin), "'binary' type property did not roundtrip as expected");
-  } else if(expectedValue.bin === null) {
+  } else if (expectedValue.bin === null) {
     assert.equal(actualValue.bin, expectedValue.bin, "'binary' type property did not roundtrip as expected.");
   }
   if (expectedValue.g) {
     expect(actualValue.g, "'geometry' type property did not roundtrip as expected.").to.deep.equal(expectedValue.g);
-  } else if(expectedValue.g === null) {
+  } else if (expectedValue.g === null) {
     assert.equal(actualValue.g, expectedValue.g, "'geometry' type property did not roundtrip as expected.");
   }
 }
@@ -100,13 +110,13 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
   if (expectedValue.array_bin) {
     assert.equal(actualValue.array_bin!.length, expectedValue.array_bin.length, "'binary[].length' array length mismatch");
     expectedValue.array_bin.forEach((value, index) => {
-      if(value) {
+      if (value) {
         assert.isTrue(blobEqual(actualValue.array_bin![index], value), "'binary[]' type property did not roundtrip as expected");
-      } else if(value === null) {
+      } else if (value === null) {
         assert.equal(actualValue.array_bin![index], value, "'binary[]' type property did not roundtrip as expected");
       }
     });
-  } else if(expectedValue.array_bin === null) {
+  } else if (expectedValue.array_bin === null) {
     assert.equal(actualValue.array_bin, expectedValue.array_bin, "'binary[]' type property did not roundtrip as expected.");
   }
 
@@ -115,7 +125,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_i.forEach((value, index) => {
       assert.equal(actualValue.array_i![index], value, "'integer[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_i === null) {
+  } else if (expectedValue.array_i === null) {
     assert.equal(actualValue.array_i, expectedValue.array_i, "'integer[]' type property did not roundtrip as expected.");
   }
 
@@ -124,7 +134,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_l.forEach((value, index) => {
       assert.equal(actualValue.array_l![index], value, "'long[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_l === null) {
+  } else if (expectedValue.array_l === null) {
     assert.equal(actualValue.array_l, expectedValue.array_l, "'long[]' type property did not roundtrip as expected.");
   }
 
@@ -133,7 +143,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_d.forEach((value, index) => {
       assert.equal(actualValue.array_d![index], value, "'double[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_d === null) {
+  } else if (expectedValue.array_d === null) {
     assert.equal(actualValue.array_d, expectedValue.array_d, "'double[]' type property did not roundtrip as expected.");
   }
 
@@ -142,7 +152,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_b.forEach((value, index) => {
       assert.equal(actualValue.array_b![index], value, "'boolean[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_b === null) {
+  } else if (expectedValue.array_b === null) {
     assert.equal(actualValue.array_b, expectedValue.array_b, "'boolean[]' type property did not roundtrip as expected.");
   }
 
@@ -151,20 +161,20 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_dt.forEach((value, index) => {
       assert.equal(actualValue.array_dt![index], value, "'dateTime[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_dt === null) {
+  } else if (expectedValue.array_dt === null) {
     assert.equal(actualValue.array_dt, expectedValue.array_dt, "'dateTime[]' type property did not roundtrip as expected.");
   }
 
   if (expectedValue.array_g) {
     assert.equal(actualValue.array_g!.length, expectedValue.array_g.length, "'geometry[].length' array length mismatch");
     expectedValue.array_g.forEach((value, index) => {
-      if(value) {
+      if (value) {
         expect(actualValue.array_g![index], "'geometry[]' type property did not roundtrip as expected").to.deep.equal(value);
-      } else if(value === null) {
+      } else if (value === null) {
         assert.equal(actualValue.array_g![index], value, "'geometry[]' type property did not roundtrip as expected");
       }
     });
-  } else if(expectedValue.array_g === null) {
+  } else if (expectedValue.array_g === null) {
     assert.equal(actualValue.array_g, expectedValue.array_g, "'geometry[]' type property did not roundtrip as expected.");
   }
 
@@ -173,7 +183,7 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
     expectedValue.array_s.forEach((value, index) => {
       assert.equal(actualValue.array_s![index], value, "'string[]' type property did not roundtrip as expected");
     });
-  } else if(expectedValue.array_s === null) {
+  } else if (expectedValue.array_s === null) {
     assert.equal(actualValue.array_s, expectedValue.array_s, "'string[]' type property did not roundtrip as expected.");
   }
 
@@ -187,22 +197,22 @@ function verifyPrimitiveArrayBase(actualValue: IPrimitiveArrayBase, expectedValu
         assert.equal(actualValue.array_p2d![index], value, "'point2d[]' type property did not roundtrip as expected.");
       }
     });
-  } else if(expectedValue.array_p2d === null) {
+  } else if (expectedValue.array_p2d === null) {
     assert.equal(actualValue.array_p2d, expectedValue.array_p2d, "'point2d[]' type property did not roundtrip as expected.");
   }
 
   if (expectedValue.array_p3d) {
     assert.equal(actualValue.array_p3d!.length, expectedValue.array_p3d.length, "'point3d[].length' array length mismatch");
     expectedValue.array_p3d.forEach((value, index) => {
-      if(value) {
+      if (value) {
         assert.equal(actualValue.array_p3d![index].x, value.x, "'point3d[].x' type property did not roundtrip as expected");
         assert.equal(actualValue.array_p3d![index].y, value.y, "'point3d[].y' type property did not roundtrip as expected");
         assert.equal(actualValue.array_p3d![index].z, value.z, "'point3d[].z' type property did not roundtrip as expected");
-      } else if(value === null) {
+      } else if (value === null) {
         assert.equal(actualValue.array_p3d![index], value, "'point3d[]' type property did not roundtrip as expected.");
       }
     });
-  } else if(expectedValue.array_p3d === null) {
+  } else if (expectedValue.array_p3d === null) {
     assert.equal(actualValue.array_p3d, expectedValue.array_p3d, "'point3d[]' type property did not roundtrip as expected.");
   }
 }
@@ -212,7 +222,7 @@ function verifyPrimitive(actualValue: IPrimitive, expectedValue: IPrimitive) {
   if (expectedValue.st) {
     verifyPrimitive(actualValue.st!, expectedValue.st);
     verifyPrimitiveArray(actualValue.st!, expectedValue.st);
-  } else if(expectedValue.st === null) {
+  } else if (expectedValue.st === null) {
     assert.equal(actualValue.st, expectedValue.st, "'ComplexStruct' type property did not roundtrip as expected.");
   }
 }
@@ -225,7 +235,7 @@ function verifyPrimitiveArray(actualValue: IPrimitiveArray, expectedValue: IPrim
       verifyPrimitiveBase(lhs, expectedValue.array_st![i]);
       verifyPrimitiveArrayBase(lhs, expectedValue.array_st![i]);
     });
-  } else if(expectedValue.array_st === null) {
+  } else if (expectedValue.array_st === null) {
     assert.equal(actualValue.array_st, expectedValue.array_st, "'ComplexStruct[]' type property did not roundtrip as expected.");
   }
 }
@@ -294,7 +304,13 @@ function blobEqual(lhs: any, rhs: any) {
   return true;
 }
 
-function initElementRefersToElementsProps(className: string, _iModelName: IModelDb, elId1: Id64String, elId2: Id64String, autoHandledProp: any): TestElementRefersToElements {
+function initElementRefersToElementsProps(
+  className: string,
+  _iModelName: IModelDb,
+  elId1: Id64String,
+  elId2: Id64String,
+  autoHandledProp: any,
+): TestElementRefersToElements {
   // Create props
   const result: TestElementRefersToElements = {
     classFullName: `ElementRoundTripTest:${className}`,
@@ -525,8 +541,12 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     if (undefined === spatialCategoryId)
-      spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, categoryName,
-        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }));
+      spatialCategoryId = SpatialCategory.insert(
+        imodel,
+        IModel.dictionaryId,
+        categoryName,
+        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }),
+      );
 
     imodel.saveChanges();
     imodel.close();
@@ -605,7 +625,12 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     imodel.close();
   });
 
-  async function verifyElementAspect(elementAspect: ElementAspectProps, elementId: string, expectedAspectFullName: string, iModel: SnapshotDb): Promise<ElementAspectProps[]>{
+  async function verifyElementAspect(
+    elementAspect: ElementAspectProps,
+    elementId: string,
+    expectedAspectFullName: string,
+    iModel: SnapshotDb,
+  ): Promise<ElementAspectProps[]> {
     // Verify updated values
     const updatedAspectValue: ElementAspectProps[] = iModel.elements.getAspects(elementId, expectedAspectFullName).map((x) => x.toJSON());
     assert.equal(updatedAspectValue.length, 1);
@@ -613,7 +638,9 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // Verify via a concurrent query
     let rowCount = 0;
-    for await (const row of iModel.createQueryReader("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (
+      const row of iModel.createQueryReader("SELECT * FROM ts.TestElementAspect", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })
+    ) {
       verifyTestElementAspect(row.toRow() as TestElementAspect, elementAspect);
       rowCount++;
     }
@@ -712,14 +739,21 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
     imodel.saveChanges();
 
     // verify inserted properties
-    const actualRelationshipValue = imodel.relationships.getInstance<TestElementRefersToElements>(expectedRelationshipValue.classFullName, relationshipId);
+    const actualRelationshipValue = imodel.relationships.getInstance<TestElementRefersToElements>(
+      expectedRelationshipValue.classFullName,
+      relationshipId,
+    );
     assert.exists(actualRelationshipValue);
 
     verifyTestElementRefersToElements(actualRelationshipValue, expectedRelationshipValue);
 
     // verify via concurrent query
     let rowCount = 0;
-    for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (
+      const row of imodel.createQueryReader("SELECT * FROM ts.TestElementRefersToElements", undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })
+    ) {
       const val = row.toRow() as TestElementRefersToElements;
       verifyTestElementRefersToElements(val, expectedRelationshipValue);
       rowCount++;
@@ -752,7 +786,11 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     // verify via concurrent query
     rowCount = 0;
-    for await (const row of imodel.createQueryReader("SELECT * FROM ts.TestElementRefersToElements", undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (
+      const row of imodel.createQueryReader("SELECT * FROM ts.TestElementRefersToElements", undefined, {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+      })
+    ) {
       verifyTestElementRefersToElements(row.toRow() as TestElementRefersToElements, updatedExpectedValue);
       rowCount++;
     }

@@ -43,7 +43,7 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
   }
 
   public get getDerivativeB() {
-    return this._derivativeB;    // <--- _derivativeB is not currently used anywhere. Provided getter to suppress lint error
+    return this._derivativeB; // <--- _derivativeB is not currently used anywhere. Provided getter to suppress lint error
   }
 
   public constructor(plane: PlaneAltitudeEvaluator, intersections: CurveLocationDetail[]) {
@@ -70,7 +70,8 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
     cp: CurvePrimitive,
     numStrokes: number,
     fraction0: number,
-    fraction1: number): void {
+    fraction1: number,
+  ): void {
     this.startCurvePrimitive(cp);
     if (numStrokes < 1) numStrokes = 1;
     const df = 1.0 / numStrokes;
@@ -87,7 +88,8 @@ export class AppendPlaneIntersectionStrokeHandler extends NewtonRtoRStrokeHandle
     point1: Point3d,
     _numStrokes: number,
     fraction0: number,
-    fraction1: number): void {
+    fraction1: number,
+  ): void {
     const h0 = this._plane.altitude(point0);
     const h1 = this._plane.altitude(point1);
     if (h0 * h1 > 0.0)

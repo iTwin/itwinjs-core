@@ -7,16 +7,26 @@
  */
 
 import { LocalFileName } from "@itwin/core-common";
+import { BlobContainer } from "../BlobContainerService";
+import { _implementationProhibited } from "../internal/Symbols";
+import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
+import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
 import { SQLiteDb } from "../SQLiteDb";
 import { SettingsContainer } from "./Settings";
-import { BlobContainer } from "../BlobContainerService";
 import {
-  GetWorkspaceContainerArgs, Workspace, WorkspaceContainer, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbCloudProps, WorkspaceDbManifest, WorkspaceDbName, WorkspaceDbNameAndVersion,
-  WorkspaceDbProps, WorkspaceDbVersion, WorkspaceResourceName,
+  GetWorkspaceContainerArgs,
+  Workspace,
+  WorkspaceContainer,
+  WorkspaceContainerProps,
+  WorkspaceDb,
+  WorkspaceDbCloudProps,
+  WorkspaceDbManifest,
+  WorkspaceDbName,
+  WorkspaceDbNameAndVersion,
+  WorkspaceDbProps,
+  WorkspaceDbVersion,
+  WorkspaceResourceName,
 } from "./Workspace";
-import { WorkspaceSqliteDb } from "../internal/workspace/WorkspaceSqliteDb";
-import { constructWorkspaceEditor } from "../internal/workspace/WorkspaceImpl";
-import { _implementationProhibited } from "../internal/Symbols";
 
 /** @beta */
 export namespace WorkspaceEditor {
@@ -73,7 +83,9 @@ export interface EditableWorkspaceContainer extends WorkspaceContainer {
    * @param props - The properties that determine the source WorkspaceDb to serve as the basis for the new version.
    * @returns A promise that resolves to an object containing the old and new WorkspaceDb names and versions.
    */
-  createNewWorkspaceDbVersion(props: CreateNewWorkspaceDbVersionArgs): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }>;
+  createNewWorkspaceDbVersion(
+    props: CreateNewWorkspaceDbVersionArgs,
+  ): Promise<{ oldDb: WorkspaceDbNameAndVersion, newDb: WorkspaceDbNameAndVersion }>;
 
   /**
    * Create a new, empty [[WorkspaceDb]].

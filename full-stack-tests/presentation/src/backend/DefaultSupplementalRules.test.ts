@@ -3,15 +3,15 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { IModelDb } from "@itwin/core-backend";
 import { assert, Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, Code, ElementAspectProps, ElementProps, IModel } from "@itwin/core-common";
 import { Presentation } from "@itwin/presentation-backend";
 import { DefaultContentDisplayTypes, InstanceKey, KeySet, Ruleset } from "@itwin/presentation-common";
+import { expect } from "chai";
+import { buildTestIModelDb } from "../IModelSetupUtils";
 import { initialize, terminate } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
-import { buildTestIModelDb } from "../IModelSetupUtils";
 
 describe("Default supplemental rules", async () => {
   before(async () => {
@@ -25,7 +25,7 @@ describe("Default supplemental rules", async () => {
   describe("Content modifiers", () => {
     describe("bis.Element", () => {
       describe("Related properties", () => {
-        it("loads `Element -> ExternalSourceAspect.Identifier` property into 'Source Information' group", async function () {
+        it("loads `Element -> ExternalSourceAspect.Identifier` property into 'Source Information' group", async function() {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             elementKey = insertPhysicalElement(db);
@@ -76,7 +76,7 @@ describe("Default supplemental rules", async () => {
           });
         });
 
-        it("loads `Element -> ExternalSourceAspect -> ExternalSource -> RepositoryLink` properties into 'Source Information' group", async function () {
+        it("loads `Element -> ExternalSourceAspect -> ExternalSource -> RepositoryLink` properties into 'Source Information' group", async function() {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             const schema = `<?xml version="1.0" encoding="UTF-8"?>
@@ -175,7 +175,7 @@ describe("Default supplemental rules", async () => {
           });
         });
 
-        it("allows removing 'Source Element ID' property", async function () {
+        it("allows removing 'Source Element ID' property", async function() {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             elementKey = insertPhysicalElement(db);
@@ -239,7 +239,7 @@ describe("Default supplemental rules", async () => {
           expect(() => getFieldByLabel(descriptor.fields, "Source Element ID")).to.throw();
         });
 
-        it("allows removing 'Source Information -> Model Source' properties", async function () {
+        it("allows removing 'Source Information -> Model Source' properties", async function() {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             const partitionId = db.elements.insertElement({
@@ -343,7 +343,7 @@ describe("Default supplemental rules", async () => {
           expect(() => getFieldByLabel(descriptor.fields, "Name")).to.throw();
         });
 
-        it("allows removing 'Source Information' ExternalSource properties", async function () {
+        it("allows removing 'Source Information' ExternalSource properties", async function() {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             elementKey = insertPhysicalElement(db);
@@ -449,7 +449,7 @@ describe("Default supplemental rules", async () => {
           expect(() => getFieldByLabel(descriptor.fields, "Path")).to.throw();
         });
 
-        it("allows removing 'Source Information -> Secondary Sources' properties", async function () {
+        it("allows removing 'Source Information -> Secondary Sources' properties", async function() {
           let elementKey: InstanceKey | undefined;
           const { db: imodel } = await buildTestIModelDb(this.test!.fullTitle(), async (db) => {
             elementKey = insertPhysicalElement(db);

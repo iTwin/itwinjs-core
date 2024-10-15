@@ -7,9 +7,9 @@
  */
 
 import { AuxChannelTable } from "./AuxChannelTable";
-import { VertexTable } from "./VertexTable";
-import { SurfaceParams } from "./SurfaceParams";
 import { EdgeParams } from "./EdgeParams";
+import { SurfaceParams } from "./SurfaceParams";
+import { VertexTable } from "./VertexTable";
 
 /** Describes mesh geometry to be submitted to the rendering system.
  * A mesh consists of a surface and its edges, which may include any combination of silhouettes, polylines, and single segments.

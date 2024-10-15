@@ -2,12 +2,12 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as sinon from "sinon";
-import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { combineDiagnosticsOptions, getElementKey, getLocalizedStringEN, normalizeVersion, reportDiagnostics } from "../presentation-backend/Utils";
 
 describe("getElementKey", () => {
@@ -102,8 +102,12 @@ describe("combineDiagnosticsOptions", () => {
     expect(combineDiagnosticsOptions({ perf: true, handler }, undefined)).to.deep.eq({ perf: true });
     expect(combineDiagnosticsOptions({ perf: true, handler }, { perf: false, handler })).to.deep.eq({ perf: true });
     expect(combineDiagnosticsOptions({ perf: false, handler }, { perf: true, handler })).to.deep.eq({ perf: true });
-    expect(combineDiagnosticsOptions({ perf: { minimumDuration: 123 }, handler }, { perf: false, handler })).to.deep.eq({ perf: { minimumDuration: 123 } });
-    expect(combineDiagnosticsOptions({ perf: false, handler }, { perf: { minimumDuration: 456 }, handler })).to.deep.eq({ perf: { minimumDuration: 456 } });
+    expect(combineDiagnosticsOptions({ perf: { minimumDuration: 123 }, handler }, { perf: false, handler })).to.deep.eq({
+      perf: { minimumDuration: 123 },
+    });
+    expect(combineDiagnosticsOptions({ perf: false, handler }, { perf: { minimumDuration: 456 }, handler })).to.deep.eq({
+      perf: { minimumDuration: 456 },
+    });
   });
 
   it("sets `perf` to lower requirement", () => {

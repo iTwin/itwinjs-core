@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as chai from "chai";
 import { Id64Set, Id64String } from "@itwin/core-bentley";
 import { ElementProps, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection, SpatialModelState } from "@itwin/core-frontend";
+import * as chai from "chai";
 import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;
@@ -15,7 +15,7 @@ describe("IModel Elements", () => {
   let iModel: IModelConnection;
   let elements: IModelConnection.Elements;
 
-  before(async function () {
+  before(async function() {
     const testContext = await TestContext.instance();
 
     if (!testContext.settings.runiModelReadRpcTests)
@@ -46,7 +46,7 @@ describe("IModel Elements", () => {
 });
 
 describe("Operational: Execute Query", () => {
-  it("should successfully execute a simple query", async function () {
+  it("should successfully execute a simple query", async function() {
     const testContext = await TestContext.instance();
 
     if (!testContext.settings.runiModelReadRpcTests)
@@ -62,4 +62,3 @@ describe("Operational: Execute Query", () => {
     expect(rows).to.be.not.empty;
   });
 });
-

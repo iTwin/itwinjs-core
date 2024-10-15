@@ -3,8 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
+import { expect } from "chai";
 import { PropertyValueFormat } from "../presentation-common/content/TypeDescription";
 import { buildElementProperties } from "../presentation-common/ElementProperties";
 import {
@@ -82,7 +82,6 @@ describe("buildElementProperties", () => {
             createTestSimpleContentField({ name: "prop2", label: "Prop Two", category: childCategory }),
           ],
         }),
-
         createTestContentItem({
           values: {
             prop1: "value1",
@@ -133,7 +132,6 @@ describe("buildElementProperties", () => {
             createTestSimpleContentField({ name: "prop", label: "Prop", category }),
           ],
         }),
-
         createTestContentItem({
           values: {
             emptyProp: undefined,
@@ -179,9 +177,10 @@ describe("buildElementProperties", () => {
       buildElementProperties(
         createTestContentDescriptor({
           categories: [category],
-          fields: [createTestNestedContentField({ name: "nestedField", category, nestedFields: [createTestSimpleContentField({ name: "primitiveField" })] })],
+          fields: [
+            createTestNestedContentField({ name: "nestedField", category, nestedFields: [createTestSimpleContentField({ name: "primitiveField" })] }),
+          ],
         }),
-
         createTestContentItem({
           values: {
             nestedField: [],
@@ -207,7 +206,6 @@ describe("buildElementProperties", () => {
           categories: [category],
           fields: [createTestSimpleContentField({ name: "prop", label: "Prop", category })],
         }),
-
         createTestContentItem({
           values: {
             prop: "anything",
@@ -272,7 +270,6 @@ describe("buildElementProperties", () => {
             }),
           ],
         }),
-
         createTestContentItem({
           values: {
             prop: {
@@ -337,7 +334,6 @@ describe("buildElementProperties", () => {
             }),
           ],
         }),
-
         createTestContentItem({
           values: {
             prop: ["value1", "value2"],

@@ -94,7 +94,10 @@ export type LowAndHighXY = Readonly<WritableLowAndHighXY>;
 /** JSON representation of [[LowAndHighXY]].
  * @public
  */
-export interface LowAndHighXYProps { low: XYProps, high: XYProps }
+export interface LowAndHighXYProps {
+  low: XYProps;
+  high: XYProps;
+}
 
 /**
  * Interface for type with readable `low` and `high` members which have `x`, `y`, and `z` number members.
@@ -105,7 +108,10 @@ export type LowAndHighXYZ = Readonly<WritableLowAndHighXYZ>;
 /** JSON representation of [[LowAndHighXYZ]].
  * @public
  */
-export interface LowAndHighXYZProps { low: XYZProps, high: XYZProps }
+export interface LowAndHighXYZProps {
+  low: XYZProps;
+  high: XYZProps;
+}
 
 /**
  * Interface for variant json (one of)

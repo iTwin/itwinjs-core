@@ -15,8 +15,12 @@ import { IModelApp, Tool } from "@itwin/core-frontend";
  */
 export class AnimationIntervalTool extends Tool {
   public static override toolId = "AnimationInterval";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(interval?: BeDuration): Promise<boolean> {
     IModelApp.animationInterval = interval;

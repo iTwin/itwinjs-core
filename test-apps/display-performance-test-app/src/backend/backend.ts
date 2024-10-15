@@ -2,16 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
-import * as path from "path";
+import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { ProcessDetector } from "@itwin/core-bentley";
+import { AuthorizationClient, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
-import { IModelHost, IModelHostOptions } from "@itwin/core-backend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { AuthorizationClient, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@itwin/core-common";
 import { TestBrowserAuthorizationClient } from "@itwin/oidc-signin-tool";
+import * as fs from "fs";
+import * as path from "path";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
 
@@ -56,13 +56,15 @@ export async function initializeBackend() {
 
 async function initializeAuthorizationClient(): Promise<AuthorizationClient | undefined> {
   if (process.env.IMJS_OIDC_HEADLESS) {
-    if (!checkEnvVars(
-      "IMJS_OIDC_CLIENT_ID",
-      "IMJS_OIDC_REDIRECT_URI",
-      "IMJS_OIDC_SCOPE",
-      "IMJS_OIDC_EMAIL",
-      "IMJS_OIDC_PASSWORD",
-    ))
+    if (
+      !checkEnvVars(
+        "IMJS_OIDC_CLIENT_ID",
+        "IMJS_OIDC_REDIRECT_URI",
+        "IMJS_OIDC_SCOPE",
+        "IMJS_OIDC_EMAIL",
+        "IMJS_OIDC_PASSWORD",
+      )
+    )
       return undefined;
     return new TestBrowserAuthorizationClient({
       clientId: process.env.IMJS_OIDC_CLIENT_ID!,
@@ -80,7 +82,9 @@ async function initializeAuthorizationClient(): Promise<AuthorizationClient | un
       return new ElectronMainAuthorization({
         clientId: process.env.IMJS_OIDC_CLIENT_ID!,
         scopes: process.env.IMJS_OIDC_SCOPE!,
-        redirectUris: process.env.IMJS_OIDC_REDIRECT_URI !== undefined ? [process.env.IMJS_OIDC_REDIRECT_URI] : ["http://localhost:3000/signin-callback"],
+        redirectUris: process.env.IMJS_OIDC_REDIRECT_URI !== undefined
+          ? [process.env.IMJS_OIDC_REDIRECT_URI]
+          : ["http://localhost:3000/signin-callback"],
       });
     }
   }

@@ -2,8 +2,6 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import path from "path";
-import sanitize from "sanitize-filename";
 import { IModelDb, IModelJsFs, SnapshotDb } from "@itwin/core-backend";
 import { GuidString, Id64String } from "@itwin/core-bentley";
 import {
@@ -19,6 +17,8 @@ import {
 } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { XMLParser } from "fast-xml-parser";
+import path from "path";
+import sanitize from "sanitize-filename";
 
 export function createValidIModelFileName(imodelName: string) {
   return sanitize(imodelName.replace(/[ ]+/g, "-").replaceAll("`", "").replaceAll("'", "")).toLocaleLowerCase();
@@ -76,7 +76,7 @@ export function importSchema(mochaContext: Mocha.Context, imodel: { importSchema
   return {
     schemaName,
     schemaAlias,
-    items: schemaItems.reduce<{ [className: string]: { name: string; fullName: string; label: string } }>((classesObj, schemaItemDef) => {
+    items: schemaItems.reduce<{ [className: string]: { name: string, fullName: string, label: string } }>((classesObj, schemaItemDef) => {
       const name = schemaItemDef.typeName;
       return {
         ...classesObj,
@@ -103,14 +103,14 @@ export function insertDocumentPartition(db: IModelDb, code: string, label?: stri
   return { className: "BisCore:DocumentPartition", id };
 }
 
-export function insertPhysicalModelWithPartition(props: { db: IModelDb; codeValue: string; partitionParentId?: Id64String }) {
+export function insertPhysicalModelWithPartition(props: { db: IModelDb, codeValue: string, partitionParentId?: Id64String }) {
   const { codeValue, partitionParentId, ...baseProps } = props;
   const partitionKey = insertPhysicalPartition({ ...baseProps, codeValue, parentId: partitionParentId ?? IModel.rootSubjectId });
   return insertPhysicalSubModel({ ...baseProps, modeledElementId: partitionKey.id });
 }
 
 export function insertPhysicalPartition(
-  props: { db: IModelDb; codeValue: string; parentId: Id64String } & Partial<Omit<InformationPartitionElementProps, "id" | "parent" | "code">>,
+  props: { db: IModelDb, codeValue: string, parentId: Id64String } & Partial<Omit<InformationPartitionElementProps, "id" | "parent" | "code">>,
 ) {
   const { db, classFullName, codeValue, parentId, ...partitionProps } = props;
   const defaultModelClassName = `BisCore:PhysicalPartition`;
@@ -129,7 +129,7 @@ export function insertPhysicalPartition(
 }
 
 export function insertPhysicalSubModel(
-  props: { db: IModelDb; modeledElementId: Id64String } & Partial<Omit<GeometricModel3dProps, "id" | "modeledElement" | "parentModel">>,
+  props: { db: IModelDb, modeledElementId: Id64String } & Partial<Omit<GeometricModel3dProps, "id" | "modeledElement" | "parentModel">>,
 ) {
   const { db, classFullName, modeledElementId, ...modelProps } = props;
   const defaultModelClassName = `BisCore:PhysicalModel`;
@@ -144,7 +144,7 @@ export function insertPhysicalSubModel(
 
 /** Insert a spatial category element into created imodel. Return created element's className and Id. */
 export function insertSpatialCategory(
-  props: { db: IModelDb; codeValue: string; modelId?: Id64String } & Partial<Omit<CategoryProps, "id" | "model" | "parent" | "code">>,
+  props: { db: IModelDb, codeValue: string, modelId?: Id64String } & Partial<Omit<CategoryProps, "id" | "model" | "parent" | "code">>,
 ) {
   const { db, classFullName, modelId, codeValue, ...categoryProps } = props;
   const defaultClassName = `BisCore:SpatialCategory`;
@@ -161,10 +161,12 @@ export function insertSpatialCategory(
 
 /** Insert a physical element into created imodel. Return created element's className and Id. */
 export function insertPhysicalElement<TAdditionalProps extends {}>(
-  props: { db: IModelDb; modelId: Id64String; categoryId: Id64String; parentId?: Id64String } & Partial<
-    Omit<PhysicalElementProps, "id" | "model" | "category" | "parent">
-  > &
-    TAdditionalProps,
+  props:
+    & { db: IModelDb, modelId: Id64String, categoryId: Id64String, parentId?: Id64String }
+    & Partial<
+      Omit<PhysicalElementProps, "id" | "model" | "category" | "parent">
+    >
+    & TAdditionalProps,
 ) {
   const { db, classFullName, modelId, categoryId, parentId, ...elementProps } = props;
   const defaultClassName = "Generic:PhysicalObject";
@@ -176,11 +178,11 @@ export function insertPhysicalElement<TAdditionalProps extends {}>(
     code: Code.createEmpty(),
     ...(parentId
       ? {
-          parent: {
-            id: parentId,
-            relClassName: `BisCore:PhysicalElementAssemblesElements`,
-          },
-        }
+        parent: {
+          id: parentId,
+          relClassName: `BisCore:PhysicalElementAssemblesElements`,
+        },
+      }
       : undefined),
     ...elementProps,
   } as PhysicalElementProps);
@@ -189,7 +191,7 @@ export function insertPhysicalElement<TAdditionalProps extends {}>(
 
 /** Insert an aspect into created imodel, return its key */
 export function insertElementAspect<TAdditionalProps extends {}>(
-  props: { db: IModelDb; elementId: Id64String } & Partial<Omit<ElementAspectProps, "element">> & TAdditionalProps,
+  props: { db: IModelDb, elementId: Id64String } & Partial<Omit<ElementAspectProps, "element">> & TAdditionalProps,
 ) {
   const { db, classFullName, elementId, ...aspectProps } = props;
   const defaultClassName = "BisCore:ElementMultiAspect";

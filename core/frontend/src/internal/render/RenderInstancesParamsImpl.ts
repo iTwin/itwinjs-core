@@ -7,11 +7,16 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
+import { FeatureTable, PackedFeatureTable } from "@itwin/core-common";
+import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
 import { _implementationProhibited } from "../../common/internal/Symbols";
 import { InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
-import { CreateRenderInstancesParamsBuilderArgs, Instance, RenderInstancesParams, RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
-import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
-import { FeatureTable, PackedFeatureTable } from "@itwin/core-common";
+import {
+  CreateRenderInstancesParamsBuilderArgs,
+  Instance,
+  RenderInstancesParams,
+  RenderInstancesParamsBuilder,
+} from "../../common/render/RenderInstancesParams";
 
 /** Intermediate representation of `RenderInstances[_batch]`. */
 export interface InstancedFeaturesParams {

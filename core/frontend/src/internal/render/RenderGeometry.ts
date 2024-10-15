@@ -7,8 +7,8 @@
  */
 
 import { IDisposable } from "@itwin/core-bentley";
-import { RenderMemory } from "../../render/RenderMemory";
 import { Range3d } from "@itwin/core-geometry";
+import { RenderMemory } from "../../render/RenderMemory";
 
 /** An opaque representation of geometry allocated by a [[RenderSystem]] to be supplied to [[RenderSystem.createRenderGraphic]]. */
 export interface RenderGeometry extends IDisposable, RenderMemory.Consumer {
@@ -23,4 +23,3 @@ export interface RenderGeometry extends IDisposable, RenderMemory.Consumer {
   /** @internal */
   computeRange(out?: Range3d): Range3d;
 }
-

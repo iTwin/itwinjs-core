@@ -9,12 +9,12 @@ import { assert, expect } from "chai";
 import * as path from "node:path";
 import { DrawingCategory } from "../../Category";
 import { ChangesetECAdaptor as ECChangesetAdaptor, PartialECChangeUnifier } from "../../ChangesetECAdaptor";
+import { _nativeDb, ChannelControl } from "../../core-backend";
 import { HubMock } from "../../HubMock";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { SqliteChangeOp, SqliteChangesetReader } from "../../SqliteChangesetReader";
 import { HubWrappers, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { _nativeDb, ChannelControl } from "../../core-backend";
 
 describe("Changeset Reader API", async () => {
   let iTwinId: GuidString;
@@ -60,7 +60,12 @@ describe("Changeset Reader API", async () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(
+        rwIModel,
+        IModel.dictionaryId,
+        "MyDrawingCategory",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+      );
 
     // Insert element with 100 properties
     const geomArray: Arc3d[] = [
@@ -103,7 +108,8 @@ describe("Changeset Reader API", async () => {
         return { [`p${i}`]: `updated_${i}` };
       }).reduce((acc, curr) => {
         return { ...acc, ...curr };
-      }, {}));
+      }, {}),
+    );
 
     await rwIModel.locks.acquireLocks({ exclusive: id });
     rwIModel.elements.updateElement(updatedElementProps);
@@ -124,7 +130,9 @@ describe("Changeset Reader API", async () => {
     const reader = SqliteChangesetReader.openFile({ fileName: changesets[1].pathname, db: rwIModel, disableSchemaCheck: true });
 
     // Set ExclusiveRootClassId to NULL for overflow table to simulate the issue
-    expect(rwIModel[_nativeDb].executeSql("UPDATE ec_Table SET ExclusiveRootClassId=NULL WHERE Name='bis_GeometricElement2d_Overflow'")).to.be.eq(DbResult.BE_SQLITE_OK);
+    expect(rwIModel[_nativeDb].executeSql("UPDATE ec_Table SET ExclusiveRootClassId=NULL WHERE Name='bis_GeometricElement2d_Overflow'")).to.be.eq(
+      DbResult.BE_SQLITE_OK,
+    );
 
     const adaptor = new ECChangesetAdaptor(reader);
     let assertOnOverflowTable = false;
@@ -202,7 +210,12 @@ describe("Changeset Reader API", async () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(
+        rwIModel,
+        IModel.dictionaryId,
+        "MyDrawingCategory",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+      );
 
     rwIModel.saveChanges("user 1: create drawing partition");
     if ("push changes") {
@@ -532,7 +545,12 @@ describe("Changeset Reader API", async () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(
+        rwIModel,
+        IModel.dictionaryId,
+        "MyDrawingCategory",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+      );
 
     rwIModel.saveChanges();
     await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
@@ -559,7 +577,7 @@ describe("Changeset Reader API", async () => {
         geom: geometryStream,
         ...args,
       };
-      return rwIModel.elements.insertElement(e1);;
+      return rwIModel.elements.insertElement(e1);
     };
     const updateEl = async (id: Id64String, args: { [key: string]: any }) => {
       await rwIModel.locks.acquireLocks({ exclusive: id });
@@ -682,7 +700,12 @@ describe("Changeset Reader API", async () => {
     const [, drawingModelId] = IModelTestUtils.createAndInsertDrawingPartitionAndModel(rwIModel, codeProps, true);
     let drawingCategoryId = DrawingCategory.queryCategoryIdByName(rwIModel, IModel.dictionaryId, "MyDrawingCategory");
     if (undefined === drawingCategoryId)
-      drawingCategoryId = DrawingCategory.insert(rwIModel, IModel.dictionaryId, "MyDrawingCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
+      drawingCategoryId = DrawingCategory.insert(
+        rwIModel,
+        IModel.dictionaryId,
+        "MyDrawingCategory",
+        new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }),
+      );
 
     rwIModel.saveChanges();
     await rwIModel.pushChanges({ description: "setup category", accessToken: adminToken });
@@ -736,9 +759,19 @@ describe("Changeset Reader API", async () => {
       const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
       while (adaptor.step()) {
         if (adaptor.inserted) {
-          instances.push({ id: adaptor.inserted?.ECInstanceId, classId: adaptor.inserted.ECClassId, op: adaptor.op, classFullName: adaptor.inserted.$meta?.classFullName });
+          instances.push({
+            id: adaptor.inserted?.ECInstanceId,
+            classId: adaptor.inserted.ECClassId,
+            op: adaptor.op,
+            classFullName: adaptor.inserted.$meta?.classFullName,
+          });
         } else if (adaptor.deleted) {
-          instances.push({ id: adaptor.deleted?.ECInstanceId, classId: adaptor.deleted.ECClassId, op: adaptor.op, classFullName: adaptor.deleted.$meta?.classFullName });
+          instances.push({
+            id: adaptor.deleted?.ECInstanceId,
+            classId: adaptor.deleted.ECClassId,
+            op: adaptor.op,
+            classFullName: adaptor.deleted.$meta?.classFullName,
+          });
         }
       }
       expect(instances.length).to.eq(1);
@@ -749,14 +782,28 @@ describe("Changeset Reader API", async () => {
     }
 
     if ("Grouping changeset [3,4] should contain update+delete=delete TestDomain:Test2dElement") {
-      const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.slice(1).map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true });
+      const reader = SqliteChangesetReader.openGroup({
+        changesetFiles: changesets.slice(1).map((c) => c.pathname),
+        db: rwIModel,
+        disableSchemaCheck: true,
+      });
       const adaptor = new ECChangesetAdaptor(reader);
       const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
       while (adaptor.step()) {
         if (adaptor.inserted) {
-          instances.push({ id: adaptor.inserted?.ECInstanceId, classId: adaptor.inserted.ECClassId, op: adaptor.op, classFullName: adaptor.inserted.$meta?.classFullName });
+          instances.push({
+            id: adaptor.inserted?.ECInstanceId,
+            classId: adaptor.inserted.ECClassId,
+            op: adaptor.op,
+            classFullName: adaptor.inserted.$meta?.classFullName,
+          });
         } else if (adaptor.deleted) {
-          instances.push({ id: adaptor.deleted?.ECInstanceId, classId: adaptor.deleted.ECClassId, op: adaptor.op, classFullName: adaptor.deleted.$meta?.classFullName });
+          instances.push({
+            id: adaptor.deleted?.ECInstanceId,
+            classId: adaptor.deleted.ECClassId,
+            op: adaptor.op,
+            classFullName: adaptor.deleted.$meta?.classFullName,
+          });
         }
       }
       expect(instances.length).to.eq(3);
@@ -781,14 +828,28 @@ describe("Changeset Reader API", async () => {
     }
     const groupCsFile = path.join(KnownTestLocations.outputDir, "changeset_grouping.ec");
     if ("Grouping changeset [2,3] should contain insert+update=insert TestDomain:Test2dElement") {
-      const reader = SqliteChangesetReader.openGroup({ changesetFiles: changesets.slice(0, 2).map((c) => c.pathname), db: rwIModel, disableSchemaCheck: true });
+      const reader = SqliteChangesetReader.openGroup({
+        changesetFiles: changesets.slice(0, 2).map((c) => c.pathname),
+        db: rwIModel,
+        disableSchemaCheck: true,
+      });
       const adaptor = new ECChangesetAdaptor(reader);
       const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
       while (adaptor.step()) {
         if (adaptor.inserted) {
-          instances.push({ id: adaptor.inserted?.ECInstanceId, classId: adaptor.inserted.ECClassId, op: adaptor.op, classFullName: adaptor.inserted.$meta?.classFullName });
+          instances.push({
+            id: adaptor.inserted?.ECInstanceId,
+            classId: adaptor.inserted.ECClassId,
+            op: adaptor.op,
+            classFullName: adaptor.inserted.$meta?.classFullName,
+          });
         } else if (adaptor.deleted) {
-          instances.push({ id: adaptor.deleted?.ECInstanceId, classId: adaptor.deleted.ECClassId, op: adaptor.op, classFullName: adaptor.deleted.$meta?.classFullName });
+          instances.push({
+            id: adaptor.deleted?.ECInstanceId,
+            classId: adaptor.deleted.ECClassId,
+            op: adaptor.op,
+            classFullName: adaptor.deleted.$meta?.classFullName,
+          });
         }
       }
       expect(instances.length).to.eq(3);
@@ -819,9 +880,19 @@ describe("Changeset Reader API", async () => {
       const instances: ({ id: string, classId?: string, op: SqliteChangeOp, classFullName?: string })[] = [];
       while (adaptor.step()) {
         if (adaptor.inserted) {
-          instances.push({ id: adaptor.inserted?.ECInstanceId, classId: adaptor.inserted.ECClassId, op: adaptor.op, classFullName: adaptor.inserted.$meta?.classFullName });
+          instances.push({
+            id: adaptor.inserted?.ECInstanceId,
+            classId: adaptor.inserted.ECClassId,
+            op: adaptor.op,
+            classFullName: adaptor.inserted.$meta?.classFullName,
+          });
         } else if (adaptor.deleted) {
-          instances.push({ id: adaptor.deleted?.ECInstanceId, classId: adaptor.deleted.ECClassId, op: adaptor.op, classFullName: adaptor.deleted.$meta?.classFullName });
+          instances.push({
+            id: adaptor.deleted?.ECInstanceId,
+            classId: adaptor.deleted.ECClassId,
+            op: adaptor.op,
+            classFullName: adaptor.deleted.$meta?.classFullName,
+          });
         }
       }
       expect(instances.length).to.eq(3);

@@ -52,8 +52,8 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   public readonly solidPrimitiveType = "torusPipe";
 
   private _localToWorld: Transform; // nominally rigid, but x,z column scales contribute to radiusA,radiusB
-  private _radiusA: number;  // radius of (large) circle in xy plane
-  private _radiusB: number;  // radius of (small) circle in xz plane.
+  private _radiusA: number; // radius of (large) circle in xy plane
+  private _radiusB: number; // radius of (small) circle in xz plane.
   private _sweep: Angle;
   private _isReversed: boolean;
 
@@ -128,7 +128,15 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   }
 
   /** Create a TorusPipe from the typical parameters of the Dgn file */
-  public static createDgnTorusPipe(center: Point3d, vectorX: Vector3d, vectorY: Vector3d, majorRadius: number, minorRadius: number, sweep: Angle, capped: boolean) {
+  public static createDgnTorusPipe(
+    center: Point3d,
+    vectorX: Vector3d,
+    vectorY: Vector3d,
+    majorRadius: number,
+    minorRadius: number,
+    sweep: Angle,
+    capped: boolean,
+  ) {
     const vectorZ = vectorX.unitCrossProductWithDefault(vectorY, 0, 0, 1);
     const frame = Transform.createOriginAndMatrixColumns(center, vectorX, vectorY, vectorZ);
     return TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped);
@@ -160,7 +168,9 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     return this._localToWorld.cloneRigid();
   }
   /** Return the center of the torus pipe (inside the donut hole) */
-  public cloneCenter(): Point3d { return this._localToWorld.getOrigin(); }
+  public cloneCenter(): Point3d {
+    return this._localToWorld.getOrigin();
+  }
   /** return unit vector along the x axis (in the major hoop plane) */
   public cloneVectorX(): Vector3d {
     const xAxis = this._localToWorld.matrix.columnX();
@@ -177,19 +187,33 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     return zAxis.normalizeWithDefault(0, 0, 1, zAxis);
   }
   /** get the major hoop radius (`radiusA`) in world coordinates */
-  public getMajorRadius(): number { return this._radiusA * this._localToWorld.matrix.columnXMagnitude(); }
+  public getMajorRadius(): number {
+    return this._radiusA * this._localToWorld.matrix.columnXMagnitude();
+  }
   /** get the minor hoop radius (`radiusB`) in world coordinates */
-  public getMinorRadius(): number { return this._radiusB * this._localToWorld.matrix.columnZMagnitude(); }
+  public getMinorRadius(): number {
+    return this._radiusB * this._localToWorld.matrix.columnZMagnitude();
+  }
   /** get the sweep angle along the major circle. */
-  public getSweepAngle(): Angle { return this._sweep.clone(); }
+  public getSweepAngle(): Angle {
+    return this._sweep.clone();
+  }
   /** Ask if this TorusPipe is labeled as reversed */
-  public getIsReversed(): boolean { return this._isReversed; }
+  public getIsReversed(): boolean {
+    return this._isReversed;
+  }
   /** Return the sweep angle as a fraction of full 360 degrees (2PI radians) */
-  public getThetaFraction(): number { return this._sweep.radians / (Math.PI * 2.0); }
+  public getThetaFraction(): number {
+    return this._sweep.radians / (Math.PI * 2.0);
+  }
   /** Return a (clone of) the TorusPipe's local to world transformation. */
-  public cloneLocalToWorld(): Transform { return this._localToWorld.clone(); }
+  public cloneLocalToWorld(): Transform {
+    return this._localToWorld.clone();
+  }
   /** ask if `other` is an instance of `TorusPipe` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof TorusPipe; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof TorusPipe;
+  }
 
   /** test if `this` and `other` have nearly equal geometry */
   public override isAlmostEqual(other: GeometryQuery): boolean {
@@ -219,7 +243,9 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   }
   /** Return the angle (in radians) for given fractional position around the major hoop.
    */
-  public vFractionToRadians(v: number): number { return this._sweep.radians * v; }
+  public vFractionToRadians(v: number): number {
+    return this._sweep.radians * v;
+  }
   /** Second step of double dispatch:  call `handler.handleTorusPipe(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleTorusPipe(this);
@@ -291,17 +317,13 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
         for (j = 0; j <= numPhiSample; j++) {
           phi = phi0 + j * dPhi;
           rxy = majorRadius + minorRadius * Math.cos(phi);
-          rangeToExtend.extendTransformTransformedXYZ(transform, transform0,
-            cosTheta * rxy, sinTheta * rxy,
-            Math.sin(phi) * minorRadius);
+          rangeToExtend.extendTransformTransformedXYZ(transform, transform0, cosTheta * rxy, sinTheta * rxy, Math.sin(phi) * minorRadius);
         }
       } else {
         for (j = 0; j <= numPhiSample; j++) {
           phi = phi0 + j * dPhi;
           rxy = majorRadius + minorRadius * Math.cos(phi);
-          rangeToExtend.extendTransformedXYZ(transform0,
-            cosTheta * rxy, sinTheta * rxy,
-            Math.sin(phi) * minorRadius);
+          rangeToExtend.extendTransformedXYZ(transform0, cosTheta * rxy, sinTheta * rxy, Math.sin(phi) * minorRadius);
         }
       }
     }
@@ -337,12 +359,13 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
     const minorRadius = this._radiusB;
     const rxy = majorRadius + Math.cos(phiRadians) * minorRadius;
     const rSinPhi = minorRadius * sinPhi;
-    const rCosPhi = minorRadius * cosPhi;   // appears only as derivative of rSinPhi.
+    const rCosPhi = minorRadius * cosPhi; // appears only as derivative of rSinPhi.
     return Plane3dByOriginAndVectors.createOriginAndVectors(
       this._localToWorld.multiplyXYZ(cosTheta * rxy, sinTheta * rxy, rSinPhi),
       this._localToWorld.multiplyVectorXYZ(-cosTheta * rSinPhi * fPhi, -sinTheta * rSinPhi * fPhi, rCosPhi * fPhi),
       this._localToWorld.multiplyVectorXYZ(-rxy * sinTheta * fTheta, rxy * cosTheta * fTheta, 0),
-      result);
+      result,
+    );
   }
   /**
    * Directional distance query
@@ -360,5 +383,4 @@ export class TorusPipe extends SolidPrimitive implements UVSurface, UVSurfaceIso
   public get isClosedVolume(): boolean {
     return this.capped || this._sweep.isFullCircle;
   }
-
 }

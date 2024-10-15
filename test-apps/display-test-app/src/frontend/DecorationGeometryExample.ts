@@ -3,9 +3,31 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "@itwin/core-bentley";
+import {
+  ColorDef,
+  Feature,
+  GeometryClass,
+  GraphicParams,
+  RenderMode,
+  RenderTexture,
+  SkyBox,
+  TextureMapping,
+  TextureTransparency,
+} from "@itwin/core-common";
+import {
+  CreateRenderMaterialArgs,
+  DecorateContext,
+  GraphicBranch,
+  GraphicBuilder,
+  GraphicType,
+  imageElementFromUrl,
+  IModelApp,
+  IModelConnection,
+  MaterialTextureMappingProps,
+  StandardViewId,
+  Viewport,
+} from "@itwin/core-frontend";
 import { Box, Cone, Point3d, Range3d, Sphere, Transform } from "@itwin/core-geometry";
-import { ColorDef, Feature, GeometryClass, GraphicParams, RenderMode, RenderTexture, SkyBox, TextureMapping, TextureTransparency } from "@itwin/core-common";
-import { CreateRenderMaterialArgs, DecorateContext, GraphicBranch, GraphicBuilder, GraphicType, imageElementFromUrl, IModelApp, IModelConnection, MaterialTextureMappingProps, StandardViewId, Viewport } from "@itwin/core-frontend";
 import { Viewer } from "./Viewer";
 
 class GeometryDecorator {
@@ -94,7 +116,7 @@ class GeometryDecorator {
 
       builder.setSymbology(color, color, 1);
 
-      const ndx = Math.floor(textureIndex++/4);
+      const ndx = Math.floor(textureIndex++ / 4);
       const tx = textures[ndx];
       const nm = nMaps[ndx];
       let textureMapping: MaterialTextureMappingProps | undefined;
@@ -103,9 +125,9 @@ class GeometryDecorator {
           textureMapping = { texture: tx, transform, mode, worldMapping };
       } else {
         if (undefined !== tx)
-          textureMapping = { texture:tx, transform, mode, worldMapping, normalMapParams: { normalMap: nm }};
+          textureMapping = { texture: tx, transform, mode, worldMapping, normalMapParams: { normalMap: nm } };
         else
-          textureMapping = { texture:nm, transform, mode, worldMapping, normalMapParams: {}};
+          textureMapping = { texture: nm, transform, mode, worldMapping, normalMapParams: {} };
       }
 
       const gp = GraphicParams.fromSymbology(color, color, 1);
@@ -133,7 +155,11 @@ class GeometryDecorator {
 
   private addShape(ox: number, oy: number = 0): void {
     const points = [
-      new Point3d(ox, oy, 0), new Point3d(ox + 1, oy, 0), new Point3d(ox + 1, oy + 1, 1), new Point3d(ox, oy + 1, 1), new Point3d(ox, oy, 0),
+      new Point3d(ox, oy, 0),
+      new Point3d(ox + 1, oy, 0),
+      new Point3d(ox + 1, oy + 1, 1),
+      new Point3d(ox, oy + 1, 1),
+      new Point3d(ox, oy, 0),
     ];
     this._decorators.set(this._iModel.transientIds.getNext(), (builder) => builder.addShape(points));
   }
@@ -166,7 +192,7 @@ class GeometryDecorator {
       coneId = this._iModel.transientIds.getNext();
 
     this._decorators.set(this._iModel.transientIds.getNext(), (builder) => {
-      builder.addShape([ new Point3d(0, y, 0), new Point3d(1, y, 0), new Point3d(1, y + 1, 1), new Point3d(0, y + 1, 1), new Point3d(0, y, 0) ]);
+      builder.addShape([new Point3d(0, y, 0), new Point3d(1, y, 0), new Point3d(1, y + 1, 1), new Point3d(0, y + 1, 1), new Point3d(0, y, 0)]);
 
       builder.activatePickableId(boxId);
       const box = Box.createRange(new Range3d(3, y, 0, 4, y + 1, 1), true);
@@ -213,7 +239,10 @@ export async function openDecorationGeometryExample(viewer: Viewer) {
   const texture = IModelApp.renderSystem.createTexture({ image: { source: txrEl, transparency: TextureTransparency.Opaque }, ownership: "external" });
 
   const nMapEl = await imageElementFromUrl("brick05normal.jpg");
-  const normalMap = IModelApp.renderSystem.createTexture({ image: { source: nMapEl, transparency: TextureTransparency.Opaque }, ownership: "external" });
+  const normalMap = IModelApp.renderSystem.createTexture({
+    image: { source: nMapEl, transparency: TextureTransparency.Opaque },
+    ownership: "external",
+  });
 
   gd.setTextures(texture, normalMap);
 }

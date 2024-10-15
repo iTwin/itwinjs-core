@@ -5,9 +5,9 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
-import { SchemaItem } from "../../Metadata/SchemaItem";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Schema } from "../../Metadata/Schema";
+import { SchemaItem } from "../../Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "../../SchemaKey";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
 

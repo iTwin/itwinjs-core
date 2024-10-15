@@ -34,7 +34,8 @@ describe("Property Inheritance", () => {
           ],
         },
         MiddleClass: {
-          schemaItemType: "StructClass", baseClass: "TestSchema.RootClass",
+          schemaItemType: "StructClass",
+          baseClass: "TestSchema.RootClass",
           properties: [
             { name: "P2", type: "PrimitiveProperty", typeName: "string" },
             { name: "P1", type: "PrimitiveProperty", typeName: "string" },
@@ -42,10 +43,12 @@ describe("Property Inheritance", () => {
           ],
         },
         TestClass: {
-          schemaItemType: "StructClass", baseClass: "TestSchema.MiddleClass",
+          schemaItemType: "StructClass",
+          baseClass: "TestSchema.MiddleClass",
           properties: [
             { name: "P4", type: "PrimitiveProperty", typeName: "string" },
-            { name: "P3", type: "PrimitiveProperty", typeName: "string" }],
+            { name: "P3", type: "PrimitiveProperty", typeName: "string" },
+          ],
         },
       },
     };
@@ -89,7 +92,8 @@ describe("Property Inheritance", () => {
           ],
         },
         MiddleClass: {
-          schemaItemType: "EntityClass", baseClass: "TestSchema.RootClass",
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.RootClass",
           properties: [
             { name: "P2", type: "PrimitiveProperty", typeName: "string" },
             { name: "P1", type: "PrimitiveProperty", typeName: "string" },
@@ -97,7 +101,8 @@ describe("Property Inheritance", () => {
           ],
         },
         TestClass: {
-          schemaItemType: "EntityClass", baseClass: "TestSchema.MiddleClass",
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.MiddleClass",
           properties: [
             { name: "P4", type: "PrimitiveProperty", typeName: "string" },
             { name: "P3", type: "PrimitiveProperty", typeName: "string" },
@@ -142,7 +147,8 @@ describe("Property Inheritance", () => {
           properties: [{ name: "P1", type: "PrimitiveProperty", typeName: "string" }],
         },
         Mixin: {
-          schemaItemType: "Mixin", appliesTo: "TestSchema.RootClass",
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.RootClass",
           properties: [{ name: "P5", type: "PrimitiveProperty", typeName: "string" }],
         },
         TestClass: { schemaItemType: "EntityClass", baseClass: "TestSchema.RootClass", mixins: ["TestSchema.Mixin"] },
@@ -328,13 +334,15 @@ describe("Property Inheritance", () => {
         },
         B: { schemaItemType: "Mixin", appliesTo: "TestSchema.A" },
         C: {
-          schemaItemType: "Mixin", appliesTo: "TestSchema.A",
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.A",
           properties: [
             { name: "P3", type: "PrimitiveProperty", typeName: "string" },
           ],
         },
         D: {
-          schemaItemType: "Mixin", appliesTo: "TestSchema.A",
+          schemaItemType: "Mixin",
+          appliesTo: "TestSchema.A",
           properties: [
             { name: "P4", type: "PrimitiveProperty", typeName: "string" },
           ],
@@ -342,11 +350,15 @@ describe("Property Inheritance", () => {
         E: { schemaItemType: "Mixin", appliesTo: "TestSchema.A", baseClass: "TestSchema.C" },
         F: { schemaItemType: "Mixin", appliesTo: "TestSchema.A", baseClass: "TestSchema.D" },
         G: {
-          schemaItemType: "EntityClass", baseClass: "TestSchema.A", mixins: ["TestSchema.B"],
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.A",
+          mixins: ["TestSchema.B"],
           properties: [{ name: "P1", type: "PrimitiveProperty", typeName: "string" }],
         },
         H: {
-          schemaItemType: "EntityClass", baseClass: "TestSchema.G", mixins: ["TestSchema.E", "TestSchema.F"],
+          schemaItemType: "EntityClass",
+          baseClass: "TestSchema.G",
+          mixins: ["TestSchema.E", "TestSchema.F"],
           properties: [{ name: "P2", type: "PrimitiveProperty", typeName: "string" }],
         },
       },

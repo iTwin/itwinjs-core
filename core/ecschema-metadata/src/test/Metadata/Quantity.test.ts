@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Format as QFormat, Formatter, FormatterSpec, Parser, ParserSpec, UnitProps } from "@itwin/core-quantity";
 import { assert } from "chai";
-import { SchemaContext } from "../../Context";
-import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
-import { Format } from "../../Metadata/Format";
-import { MutableSchema, Schema } from "../../Metadata/Schema";
-import { Formatter, FormatterSpec, Parser, ParserSpec, Format as QFormat, UnitProps } from "@itwin/core-quantity";
-import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
-import { SchemaKey, SchemaMatchType, SchemaUnitProvider } from "../../ecschema-metadata";
 import * as fs from "fs";
 import * as path from "path";
+import { SchemaContext } from "../../Context";
+import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
+import { SchemaKey, SchemaMatchType, SchemaUnitProvider } from "../../ecschema-metadata";
+import { Format } from "../../Metadata/Format";
+import { MutableSchema, Schema } from "../../Metadata/Schema";
+import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 
 describe("Quantity", () => {
   let schema: Schema;
@@ -35,7 +35,7 @@ describe("Quantity", () => {
         units: [
           { name: "Units.ARC_DEG", label: "°" },
           { name: "Units.ARC_MINUTE", label: "'" },
-          { name: "Units.ARC_SECOND", label: "\"" },
+          { name: "Units.ARC_SECOND", label: '"' },
         ],
       },
     };
@@ -76,8 +76,6 @@ describe("Quantity", () => {
 
       const formatterResult = Formatter.formatQuantity(value, bearingDMSFormatter);
       assert.equal(formatterResult, inputString);
-
     });
-
   });
 });

@@ -16,7 +16,7 @@ export enum IpcWebSocketMessageType {
   Invoke,
   Response,
   Internal,
-  Duplicate
+  Duplicate,
 }
 
 /** @internal */
@@ -84,7 +84,7 @@ export abstract class IpcWebSocket implements IpcSocket {
       return;
 
     let arg = message.data;
-    if (typeof (arg) === "undefined")
+    if (typeof arg === "undefined")
       arg = [];
 
     for (const handler of handlers)
@@ -169,7 +169,7 @@ export class IpcWebSocketBackend extends IpcWebSocket implements IpcSocketBacken
       const handler = this._handlers.get(message.channel);
       if (handler) {
         let args = message.data;
-        if (typeof (args) === "undefined")
+        if (typeof args === "undefined")
           args = [];
 
         const response = await handler({} as any, message.method, ...args);

@@ -9,8 +9,8 @@
 import { assert, Id64String } from "@itwin/core-bentley";
 import { GeometryClass } from "@itwin/core-common";
 import { ViewRect } from "../common/ViewRect";
-import { Viewport } from "../Viewport";
 import { IModelConnection } from "../IModelConnection";
+import { Viewport } from "../Viewport";
 import { Pixel } from "./Pixel";
 
 /** Represents a [Feature]($common) determined to be visible within a [[Viewport]].
@@ -149,7 +149,12 @@ export function queryVisibleFeatures(viewport: Viewport, options: QueryVisibleFe
   switch (options.source) {
     case "screen":
       const rect = options.rect ?? viewport.viewRect;
-      viewport.readPixels(rect, Pixel.Selector.Feature, (pixels) => invokeCallback(pixels ? new ScreenFeatures(pixels, rect, viewport) : [], callback), true !== options.includeNonLocatable);
+      viewport.readPixels(
+        rect,
+        Pixel.Selector.Feature,
+        (pixels) => invokeCallback(pixels ? new ScreenFeatures(pixels, rect, viewport) : [], callback),
+        true !== options.includeNonLocatable,
+      );
       break;
     case "tiles":
       viewport.target.queryVisibleTileFeatures(options, viewport.iModel, (features) => invokeCallback(features, callback));

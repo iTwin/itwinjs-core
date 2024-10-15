@@ -8,8 +8,8 @@
 
 import { PropertyCategory, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
-import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
 import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
 import { SchemaItems } from "./SchemaItems";
 
 /**
@@ -23,7 +23,12 @@ export class PropertyCategories extends SchemaItems {
 
   public async create(schemaKey: SchemaKey, name: string, priority: number, displayLabel?: string): Promise<SchemaItemKey> {
     try {
-      const newPropCategory = await this.createSchemaItem<PropertyCategory>(schemaKey, this.schemaItemType, (schema) => schema.createPropertyCategory.bind(schema), name) as MutablePropertyCategory;
+      const newPropCategory = await this.createSchemaItem<PropertyCategory>(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createPropertyCategory.bind(schema),
+        name,
+      ) as MutablePropertyCategory;
       newPropCategory.setPriority(priority);
       if (displayLabel)
         newPropCategory.setDisplayLabel(displayLabel);
@@ -36,10 +41,19 @@ export class PropertyCategories extends SchemaItems {
 
   public async createFromProps(schemaKey: SchemaKey, propertyCategoryProps: PropertyCategoryProps): Promise<SchemaItemKey> {
     try {
-      const newPropCategory = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createPropertyCategory.bind(schema), propertyCategoryProps);
+      const newPropCategory = await this.createSchemaItemFromProps(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createPropertyCategory.bind(schema),
+        propertyCategoryProps,
+      );
       return newPropCategory.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, propertyCategoryProps.name!, schemaKey), e);
+      throw new SchemaEditingError(
+        ECEditingStatus.CreateSchemaItemFromProps,
+        new SchemaItemId(this.schemaItemType, propertyCategoryProps.name!, schemaKey),
+        e,
+      );
     }
   }
 
@@ -47,7 +61,7 @@ export class PropertyCategories extends SchemaItems {
     try {
       const propertyCategory = await this.getSchemaItem<MutablePropertyCategory>(propCategoryKey);
       propertyCategory.setPriority(priority);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.SetPropertyCategoryPriority, new SchemaItemId(this.schemaItemType, propCategoryKey), e);
     }
   }

@@ -31,7 +31,7 @@ describe("UsageSums", () => {
     ck.testTrue(usageSumsFromA.isAlmostEqual(cloneA0));
     const cloneA1 = usageSumsFromA.clone();
     const cloneA2 = usageSumsFromA.clone();
-    cloneA0.accumulate(a);  // changes count, not sums, not minMax
+    cloneA0.accumulate(a); // changes count, not sums, not minMax
     ck.testFalse(usageSumsFromA.isAlmostEqual(cloneA0));
     cloneA1.accumulate(a + 1);
     ck.testFalse(cloneA0.isAlmostEqual(cloneA1), "matched count, minMax, different sums");

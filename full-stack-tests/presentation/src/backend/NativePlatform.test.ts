@@ -2,11 +2,11 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { SnapshotDb } from "@itwin/core-backend";
 import { HierarchyCacheMode } from "@itwin/presentation-backend";
 import { createDefaultNativePlatform, NativePlatformDefinition } from "@itwin/presentation-backend/lib/cjs/presentation-backend/NativePlatform";
 import { PresentationError } from "@itwin/presentation-common";
+import { expect } from "chai";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("NativePlatform", () => {
@@ -54,7 +54,10 @@ describe("NativePlatform", () => {
 
   it("throws on empty request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
-    await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
+    await expect(nativePlatform.handleRequest(db, JSON.stringify({ requestId: "" }))).to.eventually.be.rejectedWith(
+      PresentationError,
+      "request.requestId",
+    );
   });
 
   it("throws on not handled request id", async () => {

@@ -64,7 +64,7 @@ export namespace PerModelCategoryVisibility {
   /** Describes a set of [[PerModelCategoryVisibility.Overrides]].
    * @see [[PerModelCategoryVisibility.Overrides.setOverrides]].
    * @beta
-  */
+   */
   export interface Props {
     /** The id of the model to which the overrides apply. */
     modelId: string;
@@ -175,7 +175,7 @@ class PerModelCategoryVisibilityOverrides extends SortedArray<PerModelCategoryVi
         this._array.splice(index, 1);
         changed = true;
       } else if (this._array[index].visible !== (PerModelCategoryVisibility.Override.Show === override)) {
-        this._array[index].visible = (PerModelCategoryVisibility.Override.Show === override);
+        this._array[index].visible = PerModelCategoryVisibility.Override.Show === override;
         changed = true;
       }
     }

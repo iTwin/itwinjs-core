@@ -7,20 +7,20 @@
  */
 // cspell:ignore NAVD, NGVD, NSRS, Helmert
 
+import { AdditionalTransform, AdditionalTransformProps } from "./AdditionalTransform";
 import { GeodeticDatum, GeodeticDatumProps } from "./GeodeticDatum";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "./GeodeticEllipsoid";
 import { Carto2DDegrees, Carto2DDegreesProps, Projection, ProjectionProps } from "./Projection";
-import { AdditionalTransform, AdditionalTransformProps } from "./AdditionalTransform";
 /** This type indicates possible linear and angular units supported.
  *  @public
  *  @extensions
-*/
+ */
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 /** The extent in latitude, longitude bounds where a horizontal CRS is applicable
  *  @public
  *  @extensions
-*/
+ */
 export interface HorizontalCRSExtentProps {
   /** The South West point in latitude and longitude in degrees for the user-defined extent of the CRS */
   southWest: Carto2DDegreesProps;
@@ -105,7 +105,7 @@ export interface HorizontalCRSProps {
   datum?: GeodeticDatumProps;
   /** The identifier of the geodetic ellipsoid as stored in the dictionary or the service database. This property is exclusive
    * of having datumId and datum properties undefined.
-  */
+   */
   ellipsoidId?: string;
   /** The complete definition of the geodetic datum referred to by datumId. It can also be used if the datum is not stored
    *  in either service or dictionary
@@ -171,12 +171,12 @@ export class HorizontalCRS implements HorizontalCRSProps {
 
   /** The identifier of the geodetic ellipsoid as stored in the dictionary or the service database. This property is exclusive
    *  of having datumId and datum properties undefined.
-  */
+   */
   public readonly ellipsoidId?: string;
   /** The complete definition of the geodetic ellipsoid referred to by ellipsoidId. It can also be used if the ellipsoid is not stored
    *  in either service or dictionary. This property is exclusive
    *  of having datumId and datum properties undefined.
-  */
+   */
   public readonly ellipsoid?: GeodeticEllipsoid;
   /** The text indicating the unit used. */
   public readonly unit?: UnitType;
@@ -245,14 +245,16 @@ export class HorizontalCRS implements HorizontalCRSProps {
    * but number compares are applied a minuscule tolerance.
    *  @public */
   public equals(other: HorizontalCRS): boolean {
-    if (this.id !== other.id ||
+    if (
+      this.id !== other.id ||
       this.description !== other.description ||
       this.source !== other.source ||
       this.deprecated !== other.deprecated ||
       this.epsg !== other.epsg ||
       this.datumId !== other.datumId ||
       this.ellipsoidId !== other.ellipsoidId ||
-      this.unit !== other.unit)
+      this.unit !== other.unit
+    )
       return false;
 
     if ((this.datum === undefined) !== (other.datum === undefined))
@@ -300,7 +302,7 @@ export interface VerticalCRSProps {
  *  we expect to support a broader set in the future including, eventually, user defined vertical CRS
  *  which will require additional parameters to be added.
  *  @public
-*/
+ */
 export class VerticalCRS implements VerticalCRSProps {
   /** Vertical CRS Key name. The only supported values are currently "GEOID", "ELLIPSOID", "NAVD88", "NGVD29" and "LOCAL_ELLIPSOID".
    *  GEOID indicates elevations are to be interpreted relative to the local Geoid of the dataset. It can also be considered to be Mean Sea Level.
@@ -311,7 +313,7 @@ export class VerticalCRS implements VerticalCRSProps {
    *  ELLIPSOID indicates that elevations are relative to the surface of the WGS84(or current coincident) ellipsoid.
    *  LOCAL_ELLIPSOID indicates that elevations are relative to the surface of the local ellipsoid used by the horizontal CRS. It can only
    *         be used for datums that are not considered coincident vertically with WGS84. Use of this vertical datum is strongly discouraged.
-  */
+   */
   public readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88" | "LOCAL_ELLIPSOID";
 
   public constructor(data?: VerticalCRSProps) {
@@ -380,7 +382,7 @@ export interface GeographicCRSProps {
  *        expressed coordinates relative to the Earth Center. Since there is no horizontal portion independent from
  *        the vertical portion this system cannot be represented by a GeographicCRS and remains a separate concept.
  *  @public
-*/
+ */
 export class GeographicCRS implements GeographicCRSProps {
   /** The horizontal portion of the geographic coordinate reference system. */
   public readonly horizontalCRS?: HorizontalCRS;
@@ -446,4 +448,3 @@ export class GeographicCRS implements GeographicCRSProps {
     return true;
   }
 }
-

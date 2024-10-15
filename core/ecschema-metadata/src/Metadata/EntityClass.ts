@@ -40,7 +40,7 @@ export class EntityClass extends ECClass {
 
   public *getMixinsSync(): Iterable<Mixin> {
     if (!this._mixins)
-      return function* (): Iterable<Mixin> { }(); // empty iterable
+      return function*(): Iterable<Mixin> {}(); // empty iterable
 
     for (const mixin of this._mixins) {
       const mObj = this.schema.lookupItemSync<Mixin>(mixin);
@@ -51,7 +51,6 @@ export class EntityClass extends ECClass {
   }
 
   /**
-   *
    * @param mixin
    */
   protected addMixin(mixin: Mixin) {
@@ -106,7 +105,11 @@ export class EntityClass extends ECClass {
     return undefined;
   }
 
-  protected override async buildPropertyCache(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): Promise<void> {
+  protected override async buildPropertyCache(
+    result: Property[],
+    existingValues?: Map<string, number>,
+    resetBaseCaches: boolean = false,
+  ): Promise<void> {
     if (!existingValues) {
       existingValues = new Map<string, number>();
     }
@@ -146,22 +149,28 @@ export class EntityClass extends ECClass {
   }
 
   /**
-   *
    * @param name
    * @param relationship
    * @param direction
    */
-  protected async createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
+  protected async createNavigationProperty(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): Promise<NavigationProperty> {
     return this.addProperty(await createNavigationProperty(this, name, relationship, direction));
   }
 
   /**
-   *
    * @param name
    * @param relationship
    * @param direction
    */
-  protected createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
+  protected createNavigationPropertySync(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): NavigationProperty {
     return this.addProperty(createNavigationPropertySync(this, name, relationship, direction));
   }
 
@@ -204,13 +213,14 @@ export class EntityClass extends ECClass {
         const mixinSchemaItemKey = this.schema.getSchemaItemKey(name);
         if (!mixinSchemaItemKey)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
-        this._mixins.push(new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey,
-          async () => {
+        this._mixins.push(
+          new DelayedPromiseWithProps<SchemaItemKey, Mixin>(mixinSchemaItemKey, async () => {
             const mixin = await this.schema.lookupItem<Mixin>(mixinSchemaItemKey);
             if (undefined === mixin)
               throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);
             return mixin;
-          }));
+          }),
+        );
       }
     }
   }
@@ -222,29 +232,48 @@ export class EntityClass extends ECClass {
  */
 export abstract class MutableEntityClass extends EntityClass {
   public abstract override addMixin(mixin: Mixin): any;
-  public abstract override createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
-  public abstract override createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
+  public abstract override createNavigationProperty(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): Promise<NavigationProperty>;
+  public abstract override createNavigationPropertySync(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): NavigationProperty;
   public abstract override setDisplayLabel(displayLabel: string): void;
 }
 
 /** @internal */
-export async function createNavigationProperty(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty> {
+export async function createNavigationProperty(
+  ecClass: ECClass,
+  name: string,
+  relationship: string | RelationshipClass,
+  direction: string | StrengthDirection,
+): Promise<NavigationProperty> {
   if (await ecClass.getProperty(name))
     throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;
-  if (typeof (relationship) === "string") {
+  if (typeof relationship === "string") {
     resolvedRelationship = await ecClass.schema.lookupItem<RelationshipClass>(relationship);
   } else
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
+    throw new ECObjectsError(
+      ECObjectsStatus.InvalidType,
+      `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`,
+    ); // eslint-disable-line @typescript-eslint/no-base-to-string
 
-  if (typeof (direction) === "string") {
+  if (typeof direction === "string") {
     const tmpDirection = parseStrengthDirection(direction);
     if (undefined === tmpDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidStrengthDirection,
+        `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`,
+      );
     direction = tmpDirection;
   }
 
@@ -253,23 +282,34 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
 }
 
 /** @internal */
-export function createNavigationPropertySync(ecClass: ECClass, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty {
+export function createNavigationPropertySync(
+  ecClass: ECClass,
+  name: string,
+  relationship: string | RelationshipClass,
+  direction: string | StrengthDirection,
+): NavigationProperty {
   if (ecClass.getPropertySync(name))
     throw new ECObjectsError(ECObjectsStatus.DuplicateProperty, `An ECProperty with the name ${name} already exists in the class ${ecClass.name}.`);
 
   let resolvedRelationship: RelationshipClass | undefined;
-  if (typeof (relationship) === "string") {
+  if (typeof relationship === "string") {
     resolvedRelationship = ecClass.schema.lookupItemSync<RelationshipClass>(relationship);
   } else
     resolvedRelationship = relationship;
 
   if (!resolvedRelationship)
-    throw new ECObjectsError(ECObjectsStatus.InvalidType, `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`);  // eslint-disable-line @typescript-eslint/no-base-to-string
+    throw new ECObjectsError(
+      ECObjectsStatus.InvalidType,
+      `The provided RelationshipClass, ${relationship}, is not a valid RelationshipClassInterface.`,
+    ); // eslint-disable-line @typescript-eslint/no-base-to-string
 
-  if (typeof (direction) === "string") {
+  if (typeof direction === "string") {
     const tmpDirection = parseStrengthDirection(direction);
     if (undefined === tmpDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidStrengthDirection,
+        `The provided StrengthDirection, ${direction}, is not a valid StrengthDirection.`,
+      );
     direction = tmpDirection;
   }
 

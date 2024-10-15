@@ -4,11 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelHost } from "../../IModelHost";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("SettingsSchemas", () => {
-
   // SettingsSchema tests change the state of the IModelHost object. They should always clear
   // the current state before and after they run so they're not affected by, nor influence, other tests running in the same process.
   const restartSession = async () => {
@@ -32,5 +31,4 @@ describe("SettingsSchemas", () => {
     expect(schemas.settingDefs.get("testApp/list/openMode")!.default).equals("singleClick");
     expect(schemas.settingDefs.get("testApp/tree/blah")!.default).equals(true);
   });
-
 });

@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECSchemaToTs } from "../ecschema2ts";
-import { assert } from "chai";
-import * as utils from "./utilities/utils";
-import { SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
+import { SchemaContext } from "@itwin/ecschema-metadata";
+import { assert } from "chai";
+import { ECSchemaToTs } from "../ecschema2ts";
+import * as utils from "./utilities/utils";
 
 describe("BisCore test correct inheritance", () => {
   let ecschema2ts: ECSchemaToTs;
@@ -43,8 +43,7 @@ describe("BisCore test correct inheritance", () => {
   </ECEnumeration>
 </ECSchema>`;
 
-    const expectedElementSchemaString =
-      `import { Entity, IModelDb } from "@itwin/core-backend";
+    const expectedElementSchemaString = `import { Entity, IModelDb } from "@itwin/core-backend";
 import { EntityProps } from "@itwin/core-common";
 import { DerivedElementProps } from "./BisCoreElementProps";
 
@@ -74,8 +73,7 @@ export class DerivedElement extends Element implements DerivedElementProps {
   }
 }\n\n`;
 
-    const expectedPropsSchemaString =
-      `import { ElementProps } from "@itwin/core-common";
+    const expectedPropsSchemaString = `import { ElementProps } from "@itwin/core-common";
 
 export interface DerivedElementProps extends ElementProps {
   derivedTestProp?: string;
@@ -90,8 +88,7 @@ export interface DerivedElementProps extends ElementProps {
   });
 
   it("of class that subclasses Element without additional properties", () => {
-    const schemaXml =
-      `<?xml version="1.0" encoding="UTF-8"?>
+    const schemaXml = `<?xml version="1.0" encoding="UTF-8"?>
 <ECSchema schemaName="BisCore" alias="bis" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
   <ECEntityClass typeName="Element" modifier="Abstract">
     <ECCustomAttributes>
@@ -117,8 +114,7 @@ export interface DerivedElementProps extends ElementProps {
   </ECEnumeration>
 </ECSchema>`;
 
-    const expectedElementSchemaString =
-      `import { Entity, IModelDb } from "@itwin/core-backend";
+    const expectedElementSchemaString = `import { Entity, IModelDb } from "@itwin/core-backend";
 import { EntityProps, ElementProps } from "@itwin/core-common";
 
 export abstract class Element extends Entity {
@@ -201,8 +197,7 @@ export class DerivedElement extends Element {
   </ECEnumeration>
 </ECSchema>`;
 
-    const expectedElementSchemaString =
-      `import { Entity, IModelDb } from "@itwin/core-backend";
+    const expectedElementSchemaString = `import { Entity, IModelDb } from "@itwin/core-backend";
 import { EntityProps, ElementProps } from "@itwin/core-common";
 import { SubjectProps } from "./BisCoreElementProps";
 
@@ -248,8 +243,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
   }
 }\n\n`;
 
-    const expectedPropSchemaString =
-      `import { ElementProps } from "@itwin/core-common";
+    const expectedPropSchemaString = `import { ElementProps } from "@itwin/core-common";
 
 export interface IParentElement {
 }
@@ -283,8 +277,7 @@ describe("Referencing BisCore", () => {
   </ECEntityClass>
 </ECSchema>`;
 
-    const expectedElementSchemaString =
-      `import { DefinitionModel, IModelDb } from "@itwin/core-backend";
+    const expectedElementSchemaString = `import { DefinitionModel, IModelDb } from "@itwin/core-backend";
 import { ModelProps } from "@itwin/core-common";
 
 /**

@@ -6,10 +6,17 @@
  * @module Tiles
  */
 
-import { ClipVectorProps, Range3dProps, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import {
-  ColorDefProps, FeatureIndexType, FillFlags, Gradient, ImageSourceFormat, LinePixels, TextureMapping, TextureTransparency,
+  ColorDefProps,
+  FeatureIndexType,
+  FillFlags,
+  Gradient,
+  ImageSourceFormat,
+  LinePixels,
+  TextureMapping,
+  TextureTransparency,
 } from "@itwin/core-common";
+import { ClipVectorProps, Range3dProps, TransformProps, XYProps, XYZProps } from "@itwin/core-geometry";
 import { AuxChannelTableProps } from "../internal/render/AuxChannelTable";
 import { DisplayParams } from "../internal/render/DisplayParams";
 import { MeshPrimitiveType } from "../internal/render/MeshPrimitive";

@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 
 /* eslint-disable no-console */
-import * as path from "path";
-import * as commander from "commander";
 import * as chalk from "chalk";
+import * as commander from "commander";
 import * as fs from "fs-extra";
+import * as path from "path";
 
-import { ECSchemaToTsXmlWriter } from "./ecschema2ts_io";
 import { SchemaContext } from "@itwin/ecschema-metadata";
+import { ECSchemaToTsXmlWriter } from "./ecschema2ts_io";
 
 function commaSeparatedList(value: string): string[] {
   return value.split(",");

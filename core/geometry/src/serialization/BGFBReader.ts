@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { flatbuffers } from "flatbuffers";
 import { assert } from "@itwin/core-bentley";
+import { flatbuffers } from "flatbuffers";
 import { AkimaCurve3d, AkimaCurve3dOptions } from "../bspline/AkimaCurve3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
@@ -83,11 +83,28 @@ export class BGFBReader {
           if (closedV)
             myData.vParams.closed = true;
 
-          if (SerializationHelpers.Import.prepareBSplineSurfaceData(myData, {jsonPoles: false})) {
+          if (SerializationHelpers.Import.prepareBSplineSurfaceData(myData, { jsonPoles: false })) {
             if (undefined === myData.weights)
-              newSurface = BSplineSurface3d.create(myData.poles as Float64Array, myData.uParams.numPoles, myData.uParams.order, myData.uParams.knots, myData.vParams.numPoles, myData.vParams.order, myData.vParams.knots);
+              newSurface = BSplineSurface3d.create(
+                myData.poles as Float64Array,
+                myData.uParams.numPoles,
+                myData.uParams.order,
+                myData.uParams.knots,
+                myData.vParams.numPoles,
+                myData.vParams.order,
+                myData.vParams.knots,
+              );
             else
-              newSurface = BSplineSurface3dH.create(myData.poles as Float64Array, myData.weights as Float64Array, myData.uParams.numPoles, myData.uParams.order, myData.uParams.knots, myData.vParams.numPoles, myData.vParams.order, myData.vParams.knots);
+              newSurface = BSplineSurface3dH.create(
+                myData.poles as Float64Array,
+                myData.weights as Float64Array,
+                myData.uParams.numPoles,
+                myData.uParams.order,
+                myData.uParams.knots,
+                myData.vParams.numPoles,
+                myData.vParams.order,
+                myData.vParams.knots,
+              );
 
             if (undefined !== newSurface) {
               if (undefined !== myData.uParams.wrapMode)
@@ -102,13 +119,13 @@ export class BGFBReader {
     return newSurface;
   }
 
- /**
- * Extract an interpolating curve
- * @param variant read position in the flat buffer.
- */
+  /**
+   * Extract an interpolating curve
+   * @param variant read position in the flat buffer.
+   */
   public readInterpolationCurve3d(header: BGFBAccessors.InterpolationCurve): InterpolationCurve3d | undefined {
     const xyzArray = header.fitPointsArray();
-    if (xyzArray instanceof Float64Array){
+    if (xyzArray instanceof Float64Array) {
       const knots = header.knotsArray();
       const options = new InterpolationCurve3dOptions(Point3dArray.clonePoint3dArray(xyzArray), knots ? NumberArray.create(knots) : undefined);
       const startTangent = header.startTangent();
@@ -119,27 +136,28 @@ export class BGFBReader {
         header.isChordLenKnots(),
         header.isColinearTangents(),
         header.isChordLenTangents(),
-        header.isNaturalTangents (),
+        header.isNaturalTangents(),
         startTangent !== null ? Vector3d.create(startTangent.x(), startTangent.y(), startTangent.z()) : undefined,
-        endTangent !== null ? Vector3d.create(endTangent.x(), endTangent.y(), endTangent.z()) : undefined);
+        endTangent !== null ? Vector3d.create(endTangent.x(), endTangent.y(), endTangent.z()) : undefined,
+      );
       return InterpolationCurve3d.createCapture(options);
     }
-  return undefined;
-}
-
-/**
- * Extract an akima curve
- * @param variant read position in the flat buffer.
- */
- public readAkimaCurve3d(header: BGFBAccessors.AkimaCurve): AkimaCurve3d | undefined {
-  const xyzArray = header.pointsArray();
-  if (xyzArray instanceof Float64Array){
-    const options = new AkimaCurve3dOptions(Point3dArray.clonePoint3dArray(xyzArray));
-    return AkimaCurve3d.createCapture(options);
+    return undefined;
   }
-return undefined;
-}
-/**
+
+  /**
+   * Extract an akima curve
+   * @param variant read position in the flat buffer.
+   */
+  public readAkimaCurve3d(header: BGFBAccessors.AkimaCurve): AkimaCurve3d | undefined {
+    const xyzArray = header.pointsArray();
+    if (xyzArray instanceof Float64Array) {
+      const options = new AkimaCurve3dOptions(Point3dArray.clonePoint3dArray(xyzArray));
+      return AkimaCurve3d.createCapture(options);
+    }
+    return undefined;
+  }
+  /**
    * Extract a bspline curve
    * @param variant read position in the flat buffer.
    */
@@ -162,7 +180,7 @@ return undefined;
           newCurve = BSplineCurve3d.create(myData.poles, myData.params.knots, myData.params.order);
       } else {
         myData.weights = weightsArray;
-        if (SerializationHelpers.Import.prepareBSplineCurveData(myData, {jsonPoles: false}))
+        if (SerializationHelpers.Import.prepareBSplineCurveData(myData, { jsonPoles: false }))
           newCurve = BSplineCurve3dH.create({ xyz: myData.poles as Float64Array, weights: myData.weights }, myData.params.knots, myData.params.order);
       }
 
@@ -188,33 +206,47 @@ return undefined;
       const bearing0Radians = detailHeader.bearing0Radians();
       const bearing1Radians = detailHeader.bearing1Radians();
       const fbTransform = detailHeader.transform();
-      const localToWorld = fbTransform ? Transform.createRowValues(
-        fbTransform.axx(), fbTransform.axy(), fbTransform.axz(), fbTransform.axw(),
-        fbTransform.ayx(), fbTransform.ayy(), fbTransform.ayz(), fbTransform.ayw(),
-        fbTransform.azx(), fbTransform.azy(), fbTransform.azz(), fbTransform.azw()) :
+      const localToWorld = fbTransform ?
+        Transform.createRowValues(
+          fbTransform.axx(),
+          fbTransform.axy(),
+          fbTransform.axz(),
+          fbTransform.axw(),
+          fbTransform.ayx(),
+          fbTransform.ayy(),
+          fbTransform.ayz(),
+          fbTransform.ayw(),
+          fbTransform.azx(),
+          fbTransform.azy(),
+          fbTransform.azz(),
+          fbTransform.azw(),
+        ) :
         Transform.createIdentity();
 
-      const activeFractionInterval = Segment1d.create(detailHeader.fractionA(),
-        detailHeader.fractionB());
+      const activeFractionInterval = Segment1d.create(detailHeader.fractionA(), detailHeader.fractionB());
       if (!directDetailHeader) {
         const integratedSpiral = IntegratedSpiral3d.createRadiusRadiusBearingBearing(
           Segment1d.create(IntegratedSpiral3d.curvatureToRadius(curvature0), IntegratedSpiral3d.curvatureToRadius(curvature1)),
           AngleSweep.createStartEndRadians(bearing0Radians, bearing1Radians),
-          activeFractionInterval, localToWorld, spiralTypeName);
+          activeFractionInterval,
+          localToWorld,
+          spiralTypeName,
+        );
         if (integratedSpiral)
           return integratedSpiral;
         const radius0 = TransitionSpiral3d.curvatureToRadius(curvature0);
         const radius1 = TransitionSpiral3d.curvatureToRadius(curvature1);
-        const arcLength = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(radius0, radius1,
-          bearing1Radians - bearing0Radians);
+        const arcLength = TransitionSpiral3d.radiusRadiusSweepRadiansToArcLength(radius0, radius1, bearing1Radians - bearing0Radians);
         const directSpiral = DirectSpiral3d.createFromLengthAndRadius(
           spiralTypeName!,
-          radius0, radius1,
+          radius0,
+          radius1,
           Angle.createRadians(bearing0Radians),
-          Angle.createRadians (bearing1Radians),
+          Angle.createRadians(bearing1Radians),
           arcLength,
           activeFractionInterval,
-          localToWorld);
+          localToWorld,
+        );
         if (directSpiral)
           return directSpiral;
       }
@@ -231,16 +263,28 @@ return undefined;
       const offsetToLineSegment = variant.geometry(new BGFBAccessors.LineSegment());
       const offsetToCoordinates = offsetToLineSegment!.segment();
       return LineSegment3d.createXYZXYZ(
-        offsetToCoordinates!.point0X(), offsetToCoordinates!.point0Y(), offsetToCoordinates!.point0Z(),
-        offsetToCoordinates!.point1X(), offsetToCoordinates!.point1Y(), offsetToCoordinates!.point1Z());
+        offsetToCoordinates!.point0X(),
+        offsetToCoordinates!.point0Y(),
+        offsetToCoordinates!.point0Z(),
+        offsetToCoordinates!.point1X(),
+        offsetToCoordinates!.point1Y(),
+        offsetToCoordinates!.point1Z(),
+      );
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagEllipticArc) {
       const offsetToEllipticArc = variant.geometry(new BGFBAccessors.EllipticArc());
       const offsetToCoordinates = offsetToEllipticArc!.arc()!;
       return Arc3d.createXYZXYZXYZ(
-        offsetToCoordinates.centerX(), offsetToCoordinates.centerY(), offsetToCoordinates.centerZ(),
-        offsetToCoordinates.vector0X(), offsetToCoordinates.vector0Y(), offsetToCoordinates.vector0Z(),
-        offsetToCoordinates.vector90X(), offsetToCoordinates.vector90Y(), offsetToCoordinates.vector90Z(),
-        AngleSweep.createStartSweepRadians(offsetToCoordinates.startRadians(), offsetToCoordinates?.sweepRadians()));
+        offsetToCoordinates.centerX(),
+        offsetToCoordinates.centerY(),
+        offsetToCoordinates.centerZ(),
+        offsetToCoordinates.vector0X(),
+        offsetToCoordinates.vector0Y(),
+        offsetToCoordinates.vector0Z(),
+        offsetToCoordinates.vector90X(),
+        offsetToCoordinates.vector90Y(),
+        offsetToCoordinates.vector90Z(),
+        AngleSweep.createStartSweepRadians(offsetToCoordinates.startRadians(), offsetToCoordinates?.sweepRadians()),
+      );
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagLineString) {
       const offsetToLineString = variant.geometry(new BGFBAccessors.LineString())!;
       const numCoordinates = offsetToLineString.pointsLength();
@@ -351,7 +395,7 @@ return undefined;
       if (0 === i)
         ++numZeroes;
     }
-    return {min, max, numZeroes};
+    return { min, max, numZeroes };
   }
 
   /**
@@ -361,7 +405,10 @@ return undefined;
    * Typescript API previously wrote FlatBuffer PolyfaceAuxData indices as 0-based, unterminated;
    * heuristics are used herein to identify this legacy format so it can still be read.
    */
-  public readPolyfaceAuxData(fbPolyface: BGFBAccessors.Polyface | null, fbAuxData: BGFBAccessors.PolyfaceAuxData | null): PolyfaceAuxData | undefined {
+  public readPolyfaceAuxData(
+    fbPolyface: BGFBAccessors.Polyface | null,
+    fbAuxData: BGFBAccessors.PolyfaceAuxData | null,
+  ): PolyfaceAuxData | undefined {
     if (!fbPolyface || !fbAuxData)
       return undefined;
 
@@ -397,9 +444,13 @@ return undefined;
 
     const indices: number[] = [];
     if (isLegacy)
-      SerializationHelpers.announceZeroBasedIndicesWithExternalBlocking(fbAuxIndices, fbPointIndices, numPerFace, (i0: number) => { indices.push(i0); });
+      SerializationHelpers.announceZeroBasedIndicesWithExternalBlocking(fbAuxIndices, fbPointIndices, numPerFace, (i0: number) => {
+        indices.push(i0);
+      });
     else
-      SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(fbAuxIndices, numPerFace, (i0: number) => { indices.push(i0); });
+      SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(fbAuxIndices, numPerFace, (i0: number) => {
+        indices.push(i0);
+      });
     if (indices.length + pointIndicesPadCount !== fbPointIndices.length)
       return undefined;
     const maxIndex = Math.max(...indices);
@@ -430,7 +481,6 @@ return undefined;
         taggedNumericData.intData = [];
         for (const c of intDataArray)
           taggedNumericData.intData.push(c);
-
       }
       if (doubleDataArray) {
         taggedNumericData.doubleData = [];
@@ -479,27 +529,32 @@ return undefined;
           if (normalF64 && normalIndexI32) {
             for (let i = 0; i + 2 < normalF64.length; i += 3)
               polyface.addNormalXYZ(normalF64[i], normalF64[i + 1], normalF64[i + 2]);
-            SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(normalIndexI32, numPerFace,
-              (i: number) => { polyface.addNormalIndex(i); });
+            SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(normalIndexI32, numPerFace, (i: number) => {
+              polyface.addNormalIndex(i);
+            });
           }
           if (paramF64 && paramIndexI32) {
             for (let i = 0; i + 1 < paramF64.length; i += 2)
               polyface.addParamUV(paramF64[i], paramF64[i + 1]);
-            SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(paramIndexI32, numPerFace,
-              (i: number) => { polyface.addParamIndex(i); });
+            SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(paramIndexI32, numPerFace, (i: number) => {
+              polyface.addParamIndex(i);
+            });
           }
           if (intColorU32 && colorIndexI32) {
             for (const c of intColorU32)
               polyface.addColor(c);
-            SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(colorIndexI32, numPerFace,
-              (i: number) => { polyface.addColorIndex(i); });
+            SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(colorIndexI32, numPerFace, (i: number) => {
+              polyface.addColorIndex(i);
+            });
           }
 
           for (let i = 0; i + 2 < pointF64.length; i += 3)
             polyface.addPointXYZ(pointF64[i], pointF64[i + 1], pointF64[i + 2]);
-          SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(pointIndexI32, numPerFace,
-            (i: number, v?: boolean) => { polyface.addPointIndex(i, v); },
-            () => { polyface.terminateFacet(false); });
+          SerializationHelpers.announceZeroBasedIndicesFromSignedOneBasedIndices(pointIndexI32, numPerFace, (i: number, v?: boolean) => {
+            polyface.addPointIndex(i, v);
+          }, () => {
+            polyface.terminateFacet(false);
+          });
 
           if (!polyface.validateAllIndices())
             return undefined;
@@ -507,11 +562,11 @@ return undefined;
           polyface.data.auxData = this.readPolyfaceAuxData(polyfaceHeader, polyfaceHeader.auxData());
 
           if (taggedNumericDataOffset) {
-              const taggedNumericDataAccessor = nullToUndefined<BGFBAccessors.TaggedNumericData>(taggedNumericDataOffset);
-              if (taggedNumericDataAccessor !== undefined) {
-                const taggedNumericData = this.readTaggedNumericData(taggedNumericDataAccessor);
-                if (taggedNumericData !== undefined)
-                  polyface.data.setTaggedNumericData(taggedNumericData);
+            const taggedNumericDataAccessor = nullToUndefined<BGFBAccessors.TaggedNumericData>(taggedNumericDataOffset);
+            if (taggedNumericDataAccessor !== undefined) {
+              const taggedNumericData = this.readTaggedNumericData(taggedNumericDataAccessor);
+              if (taggedNumericData !== undefined)
+                polyface.data.setTaggedNumericData(taggedNumericData);
             }
           }
           return polyface;
@@ -541,9 +596,9 @@ return undefined;
     return collection;
   }
   /**
- * Extract a curve collection
- * @param variant read position in the flat buffer.
- */
+   * Extract a curve collection
+   * @param variant read position in the flat buffer.
+   */
   public readCurveCollectionFromVariantGeometry(variant: BGFBAccessors.VariantGeometry): CurveCollection | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagCurveVector) {
@@ -553,9 +608,9 @@ return undefined;
     return undefined;
   }
   /**
- * Extract a curve collection
- * @param variant read position in the flat buffer.
- */
+   * Extract a curve collection
+   * @param variant read position in the flat buffer.
+   */
   public readSolidPrimitiveFromVariant(variant: BGFBAccessors.VariantGeometry): SolidPrimitive | undefined {
     const geometryType = variant.geometryType();
     if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnBox) {
@@ -566,20 +621,38 @@ return undefined;
         Vector3d.create(detail.vectorXX(), detail.vectorXY(), detail.vectorXZ()),
         Vector3d.create(detail.vectorYX(), detail.vectorYY(), detail.vectorYZ()),
         Point3d.create(detail.topOriginX(), detail.topOriginY(), detail.topOriginZ()),
-        detail.baseX(), detail.baseY(), detail.topX(), detail.topY(),
-        detail.capped());
-    } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnSphere) {
+        detail.baseX(),
+        detail.baseY(),
+        detail.topX(),
+        detail.topY(),
+        detail.capped(),
+      );
+    }
+    if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnSphere) {
       const header = variant.geometry(new BGFBAccessors.DgnSphere());
       const detail = header!.detail()!;
       const lToWDetail = detail.localToWorld()!;
       const localToWorld = Transform.createRowValues(
-        lToWDetail.axx(), lToWDetail.axy(), lToWDetail.axz(), lToWDetail.axw(),
-        lToWDetail.ayx(), lToWDetail.ayy(), lToWDetail.ayz(), lToWDetail.ayw(),
-        lToWDetail.azx(), lToWDetail.azy(), lToWDetail.azz(), lToWDetail.azw());
-      return Sphere.createEllipsoid(localToWorld,
+        lToWDetail.axx(),
+        lToWDetail.axy(),
+        lToWDetail.axz(),
+        lToWDetail.axw(),
+        lToWDetail.ayx(),
+        lToWDetail.ayy(),
+        lToWDetail.ayz(),
+        lToWDetail.ayw(),
+        lToWDetail.azx(),
+        lToWDetail.azy(),
+        lToWDetail.azz(),
+        lToWDetail.azw(),
+      );
+      return Sphere.createEllipsoid(
+        localToWorld,
         AngleSweep.createStartSweepRadians(detail.startLatitudeRadians(), detail.latitudeSweepRadians()),
-        detail.capped());
-    } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnCone) {
+        detail.capped(),
+      );
+    }
+    if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnCone) {
       const header = variant.geometry(new BGFBAccessors.DgnCone());
       const detail = header!.detail()!;
       const centerA = Point3d.create(detail.centerAX(), detail.centerAY(), detail.centerAZ());
@@ -589,7 +662,8 @@ return undefined;
       const radiusA = detail.radiusA();
       const radiusB = detail.radiusB();
       return Cone.createBaseAndTarget(centerA, centerB, vector0, vector90, radiusA, radiusB, detail.capped());
-    } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnTorusPipe) {
+    }
+    if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnTorusPipe) {
       const header = variant.geometry(new BGFBAccessors.DgnTorusPipe())!;
       const detail = header.detail()!;
       const center = Point3d.create(detail.centerX(), detail.centerY(), detail.centerZ());
@@ -599,7 +673,8 @@ return undefined;
       const majorRadius = detail.majorRadius();
       const minorRadius = detail.minorRadius();
       return TorusPipe.createDgnTorusPipe(center, vectorX, vectorY, majorRadius, minorRadius, Angle.createRadians(sweepRadians), detail.capped());
-    } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnExtrusion) {
+    }
+    if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnExtrusion) {
       const header = variant.geometry(new BGFBAccessors.DgnExtrusion())!;
       const dVector = new BGFBAccessors.DVector3d();
       header.extrusionVector(dVector);
@@ -609,7 +684,8 @@ return undefined;
         const contour = this.readCurveCollectionFromCurveVectorTable(baseCurve);
         return LinearSweep.create(contour, extrusionVector, header.capped());
       }
-    } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnRotationalSweep) {
+    }
+    if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnRotationalSweep) {
       const header = variant.geometry(new BGFBAccessors.DgnRotationalSweep())!;
       const dAxis = new BGFBAccessors.DRay3d();
       header.axis(dAxis);
@@ -621,7 +697,8 @@ return undefined;
         const contour = this.readCurveCollectionFromCurveVectorTable(baseCurve);
         return RotationalSweep.create(contour, axis, sweepAngle, header.capped());
       }
-    } if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnRuledSweep) {
+    }
+    if (geometryType === BGFBAccessors.VariantGeometryUnion.tagDgnRuledSweep) {
       const header = variant.geometry(new BGFBAccessors.DgnRuledSweep())!;
       const numCurves = header.curvesLength();
       const contours: CurveCollection[] = [];
@@ -652,52 +729,46 @@ return undefined;
       case BGFBAccessors.VariantGeometryUnion.tagBsplineCurve:
       case BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral:
       case BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve:
-        case BGFBAccessors.VariantGeometryUnion.tagAkimaCurve:
-          {
-          return this.readCurvePrimitiveFromVariant(variant);
-        }
-      case BGFBAccessors.VariantGeometryUnion.tagCurveVector:
-        {
-          return this.readCurveCollectionFromVariantGeometry(variant);
-        }
-      case BGFBAccessors.VariantGeometryUnion.tagPolyface:
-        {
-          return this.readPolyfaceFromVariant(variant);
-        }
+      case BGFBAccessors.VariantGeometryUnion.tagAkimaCurve: {
+        return this.readCurvePrimitiveFromVariant(variant);
+      }
+      case BGFBAccessors.VariantGeometryUnion.tagCurveVector: {
+        return this.readCurveCollectionFromVariantGeometry(variant);
+      }
+      case BGFBAccessors.VariantGeometryUnion.tagPolyface: {
+        return this.readPolyfaceFromVariant(variant);
+      }
       case BGFBAccessors.VariantGeometryUnion.tagDgnBox:
       case BGFBAccessors.VariantGeometryUnion.tagDgnCone:
       case BGFBAccessors.VariantGeometryUnion.tagDgnTorusPipe:
       case BGFBAccessors.VariantGeometryUnion.tagDgnSphere:
       case BGFBAccessors.VariantGeometryUnion.tagDgnExtrusion:
       case BGFBAccessors.VariantGeometryUnion.tagDgnRotationalSweep:
-      case BGFBAccessors.VariantGeometryUnion.tagDgnRuledSweep:
-        {
-          return this.readSolidPrimitiveFromVariant(variant);
-        }
-      case BGFBAccessors.VariantGeometryUnion.tagVectorOfVariantGeometry:
-        {
-          const geometry: GeometryQuery[] = [];
-          const offsetToVectorOfVariantGeometry = variant.geometry(new BGFBAccessors.VectorOfVariantGeometry());
-          for (let i = 0; i < offsetToVectorOfVariantGeometry!.membersLength(); i++) {
-            const child = offsetToVectorOfVariantGeometry!.members(i);
-            if (child !== null) {
-              const childGeometry = this.readGeometryQueryFromVariant(child);
-              if (childGeometry instanceof GeometryQuery) {
-                geometry.push(childGeometry);
-              } else if (Array.isArray(childGeometry)) {
-                geometry.push(...childGeometry);
-              }
+      case BGFBAccessors.VariantGeometryUnion.tagDgnRuledSweep: {
+        return this.readSolidPrimitiveFromVariant(variant);
+      }
+      case BGFBAccessors.VariantGeometryUnion.tagVectorOfVariantGeometry: {
+        const geometry: GeometryQuery[] = [];
+        const offsetToVectorOfVariantGeometry = variant.geometry(new BGFBAccessors.VectorOfVariantGeometry());
+        for (let i = 0; i < offsetToVectorOfVariantGeometry!.membersLength(); i++) {
+          const child = offsetToVectorOfVariantGeometry!.members(i);
+          if (child !== null) {
+            const childGeometry = this.readGeometryQueryFromVariant(child);
+            if (childGeometry instanceof GeometryQuery) {
+              geometry.push(childGeometry);
+            } else if (Array.isArray(childGeometry)) {
+              geometry.push(...childGeometry);
             }
           }
-          return geometry;
         }
+        return geometry;
+      }
       case BGFBAccessors.VariantGeometryUnion.tagBsplineSurface: {
         return this.readBSplineSurfaceFromVariant(variant);
       }
-      case BGFBAccessors.VariantGeometryUnion.tagPointString:
-        {
-          return this.readPointStringFromVariant(variant);
-        }
+      case BGFBAccessors.VariantGeometryUnion.tagPointString: {
+        return this.readPointStringFromVariant(variant);
+      }
     }
     return undefined;
   }
@@ -719,7 +790,6 @@ return undefined;
     const reader = new BGFBReader();
     return reader.readGeometryQueryFromVariant(root);
   }
-
 }
 /**
  * if data is "null" (the deprecated javascript idiom!) return undefined.  Otherwise return the data as its own type.

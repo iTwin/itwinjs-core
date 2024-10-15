@@ -145,7 +145,7 @@ export class ConvexPolygon2d {
    * * Range has extreme values if less than 3 points, distanceA > distanceB, or if cross product < 0.
    */
   public clipRay(ray: Ray2d): Range1d {
-    let distanceA = - Number.MAX_VALUE;
+    let distanceA = -Number.MAX_VALUE;
     let distanceB = Number.MAX_VALUE;
 
     const n = this._hullPoints.length;

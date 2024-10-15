@@ -132,7 +132,8 @@ const scratchMatrix4d1 = Matrix4d.createIdentity();
 const scratchMatrix4d2 = Matrix4d.createIdentity();
 const scratchMatrix = new Matrix4();
 
-const overrideFeatureId = `return (classifierId == vec4(0)) ? (addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0) : classifierId;`;
+const overrideFeatureId =
+  `return (classifierId == vec4(0)) ? (addUInt32s(feature_id * 255.0, vec4(featureIncrement, 0.0, 0.0, 0.0)) / 255.0) : classifierId;`;
 
 function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
   builder.vert.addFunction(unquantize2d);
@@ -156,7 +157,14 @@ function addTextures(builder: ProgramBuilder, maxTexturesPerMesh: number) {
     const textureLabel = `s_texture${i}`;
     builder.frag.addUniform(textureLabel, VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform(textureLabel, (uniform, params) => {
-        const textureUnits = [TextureUnit.RealityMesh0, TextureUnit.RealityMesh1, params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder, TextureUnit.RealityMesh3, TextureUnit.RealityMesh4, TextureUnit.RealityMesh5];
+        const textureUnits = [
+          TextureUnit.RealityMesh0,
+          TextureUnit.RealityMesh1,
+          params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder,
+          TextureUnit.RealityMesh3,
+          TextureUnit.RealityMesh4,
+          TextureUnit.RealityMesh5,
+        ];
         const realityMesh = params.geometry.asRealityMesh!;
         const realityTexture = realityMesh.textureParams ? realityMesh.textureParams.params[i].texture : undefined;
         if (realityTexture !== undefined) {
@@ -245,7 +253,10 @@ function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: 
   });
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
-      params.target.uniforms.thematic.bindTexture(uniform, gradientTextureUnit >= 0 ? gradientTextureUnit : (params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder));
+      params.target.uniforms.thematic.bindTexture(
+        uniform,
+        gradientTextureUnit >= 0 ? gradientTextureUnit : (params.target.drawForReadPixels ? TextureUnit.ShadowMap : TextureUnit.PickDepthAndOrder),
+      );
     });
   });
 }
@@ -266,7 +277,6 @@ function createRealityMeshHiliterBuilder(): ProgramBuilder {
   addModelViewProjectionMatrix(vert);
   builder.frag.set(FragmentShaderComponent.AssignFragData, assignFragColor);
   return builder;
-
 }
 
 /** @internal */

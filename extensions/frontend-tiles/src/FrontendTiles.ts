@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { AccessToken } from "@itwin/core-bentley";
 import { IModelApp, IModelConnection, SpatialTileTreeReferences, SpatialViewState } from "@itwin/core-frontend";
 import { createBatchedSpatialTileTreeReferences } from "./BatchedSpatialTileTreeRefs";
 import { queryGraphicRepresentations } from "./GraphicsProvider/GraphicRepresentationProvider";
-import { AccessToken } from "@itwin/core-bentley";
 import { obtainIModelTilesetUrl, ObtainIModelTilesetUrlArgs } from "./GraphicsProvider/GraphicsProvider";
 
 /** A function that can provide the base URL where a tileset representing all of the spatial models in a given iModel are stored.
@@ -165,9 +165,9 @@ export interface FrontendTilesOptions {
    */
   enableCDN?: boolean;
   /** Specifies whether to enable an IndexedDB database for use as a local cache.
-  * Requested tiles will then first be search for in the database, and if not found, fetched as normal.
-  * @internal
-  */
+   * Requested tiles will then first be search for in the database, and if not found, fetched as normal.
+   * @internal
+   */
   useIndexedDBCache?: boolean;
 
   /** If true, an empty tile tree will be used as fallback if the tileset is not found or invalid.
@@ -200,14 +200,16 @@ export function initializeFrontendTiles(options: FrontendTilesOptions): void {
     frontendTilesOptions.useIndexedDBCache = true;
 
   const computeUrl = options.computeSpatialTilesetBaseUrl ?? (
-    async (iModel: IModelConnection) => obtainMeshExportTilesetUrl({
-      iTwinId: iModel.iTwinId,
-      iModelId: iModel.iModelId,
-      changesetId: iModel.changeset.id,
-      accessToken: await IModelApp.getAccessToken(),
-      enableCDN: options.enableCDN,
-    })
+    async (iModel: IModelConnection) =>
+      obtainMeshExportTilesetUrl({
+        iTwinId: iModel.iTwinId,
+        iModelId: iModel.iModelId,
+        changesetId: iModel.changeset.id,
+        accessToken: await IModelApp.getAccessToken(),
+        enableCDN: options.enableCDN,
+      })
   );
 
-  SpatialTileTreeReferences.create = (view: SpatialViewState) => createBatchedSpatialTileTreeReferences(view, computeUrl, options.nopFallback ?? false);
+  SpatialTileTreeReferences.create = (view: SpatialViewState) =>
+    createBatchedSpatialTileTreeReferences(view, computeUrl, options.nopFallback ?? false);
 }

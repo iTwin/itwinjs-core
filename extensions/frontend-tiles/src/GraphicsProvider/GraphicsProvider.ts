@@ -5,8 +5,8 @@
 
 import { AccessToken, Logger } from "@itwin/core-bentley";
 import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl } from "./GraphicRepresentationProvider";
 import { loggerCategory } from "../LoggerCategory";
+import { obtainGraphicRepresentationUrl } from "./GraphicRepresentationProvider";
 
 /** Arguments supplied  to [[obtainIModelTilesetUrl]].
  * @beta
@@ -36,8 +36,7 @@ export interface ObtainIModelTilesetUrlArgs {
  * @returns A URL from which the tileset can be loaded, or `undefined` if no appropriate URL could be obtained.
  * @beta
  */
-export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs):
-Promise<URL|undefined> {
+export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promise<URL | undefined> {
   if (!args.iModelId) {
     Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data for an iModel with no iModelId");
     return undefined;

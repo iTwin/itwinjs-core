@@ -12,7 +12,9 @@ import { DisplayParams } from "./DisplayParams";
 /** @internal */
 export class StrokesPrimitivePointList {
   public points: Point3d[];
-  constructor(points: Point3d[] = []) { this.points = [...points]; }
+  constructor(points: Point3d[] = []) {
+    this.points = [...points];
+  }
 }
 
 /** @internal */

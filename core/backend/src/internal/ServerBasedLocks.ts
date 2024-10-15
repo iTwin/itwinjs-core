@@ -11,8 +11,8 @@ import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@it
 import { IModel, IModelError, LockState } from "@itwin/core-common";
 import { LockMap } from "../BackendHubAccess";
 import { BriefcaseDb } from "../IModelDb";
-import { LockControl } from "../LockControl";
 import { IModelHost } from "../IModelHost";
+import { LockControl } from "../LockControl";
 import { SQLiteDb } from "../SQLiteDb";
 import { _close, _elementWasCreated, _implementationProhibited, _nativeDb, _releaseAllLocks } from "./Symbols";
 
@@ -36,7 +36,9 @@ const enum LockOrigin {
 export class ServerBasedLocks implements LockControl {
   public readonly [_implementationProhibited] = undefined;
 
-  public get isServerBased() { return true; }
+  public get isServerBased() {
+    return true;
+  }
   protected readonly lockDb = new SQLiteDb();
   protected readonly briefcase: BriefcaseDb;
 
@@ -69,10 +71,12 @@ export class ServerBasedLocks implements LockControl {
   }
 
   private getLockState(id?: Id64String): LockState | undefined {
-    return (id === undefined || !Id64.isValid(id)) ? undefined : this.lockDb.withPreparedSqliteStatement("SELECT state FROM locks WHERE id=?", (stmt) => {
-      stmt.bindId(1, id);
-      return (DbResult.BE_SQLITE_ROW === stmt.step()) ? stmt.getValueInteger(0) : undefined;
-    });
+    return (id === undefined || !Id64.isValid(id)) ?
+      undefined :
+      this.lockDb.withPreparedSqliteStatement("SELECT state FROM locks WHERE id=?", (stmt) => {
+        stmt.bindId(1, id);
+        return (DbResult.BE_SQLITE_ROW === stmt.step()) ? stmt.getValueInteger(0) : undefined;
+      });
   }
 
   /** Clear the cache of locally held locks.
@@ -106,14 +110,17 @@ export class ServerBasedLocks implements LockControl {
   }
 
   private insertLock(id: Id64String, state: LockState, origin: LockOrigin): true {
-    this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,origin) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin", (stmt) => {
-      stmt.bindId(1, id);
-      stmt.bindInteger(2, state);
-      stmt.bindInteger(3, origin);
-      const rc = stmt.step();
-      if (DbResult.BE_SQLITE_DONE !== rc)
-        throw new IModelError(rc, "can't insert lock into database");
-    });
+    this.lockDb.withPreparedSqliteStatement(
+      "INSERT INTO locks(id,state,origin) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,origin=excluded.origin",
+      (stmt) => {
+        stmt.bindId(1, id);
+        stmt.bindInteger(2, state);
+        stmt.bindInteger(3, origin);
+        const rc = stmt.step();
+        if (DbResult.BE_SQLITE_DONE !== rc)
+          throw new IModelError(rc, "can't insert lock into database");
+      },
+    );
     return true;
   }
 
@@ -207,7 +214,9 @@ export class ServerBasedLocks implements LockControl {
   }
 
   /** locks are not necessary during change propagation. */
-  private get _locksAreRequired() { return !this.briefcase.txns.isIndirectChanges; }
+  private get _locksAreRequired() {
+    return !this.briefcase.txns.isIndirectChanges;
+  }
 
   /** throw if locks are currently required and the exclusive lock is not held on the supplied element */
   public checkExclusiveLock(id: Id64String, type: string, operation: string) {
@@ -220,7 +229,6 @@ export class ServerBasedLocks implements LockControl {
     if (this._locksAreRequired && !this.holdsSharedLock(id))
       throw new IModelError(IModelStatus.LockNotHeld, `shared lock not held on ${type} for ${operation} (id=${id})`);
   }
-
 }
 
 export function createServerBasedLocks(iModel: BriefcaseDb): LockControl {

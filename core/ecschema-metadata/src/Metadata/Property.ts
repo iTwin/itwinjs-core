@@ -8,16 +8,22 @@
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
 import {
-  ArrayPropertyProps, EnumerationPropertyProps, NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,
-  PrimitivePropertyProps, PropertyProps, StructPropertyProps,
+  ArrayPropertyProps,
+  EnumerationPropertyProps,
+  NavigationPropertyProps,
+  PrimitiveArrayPropertyProps,
+  PrimitiveOrEnumPropertyBaseProps,
+  PrimitivePropertyProps,
+  PropertyProps,
+  StructPropertyProps,
 } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
+import { ECName } from "../ECName";
 import { parsePrimitiveType, PrimitiveType, primitiveTypeToString, StrengthDirection, strengthDirectionToString } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, LazyLoadedEnumeration, LazyLoadedKindOfQuantity, LazyLoadedPropertyCategory, LazyLoadedRelationshipClass } from "../Interfaces";
 import { PropertyType, propertyTypeToString, PropertyTypeUtils } from "../PropertyTypes";
 import { SchemaItemKey } from "../SchemaKey";
-import { ECName } from "../ECName";
 import { ECClass, StructClass } from "./Class";
 import { CustomAttribute, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
 import { Enumeration } from "./Enumeration";
@@ -49,37 +55,71 @@ export abstract class Property implements CustomAttributeContainerProps {
     this._type = type;
   }
 
-  public isArray(): this is AnyArrayProperty { return PropertyTypeUtils.isArray(this._type); }
-  public isPrimitive(): this is AnyPrimitiveProperty { return PropertyTypeUtils.isPrimitive(this._type); }
-  public isStruct(): this is AnyStructProperty { return PropertyTypeUtils.isStruct(this._type); }
-  public isEnumeration(): this is AnyEnumerationProperty { return PropertyTypeUtils.isEnumeration(this._type); }
-  public isNavigation(): this is NavigationProperty { return PropertyTypeUtils.isNavigation(this._type); }
+  public isArray(): this is AnyArrayProperty {
+    return PropertyTypeUtils.isArray(this._type);
+  }
+  public isPrimitive(): this is AnyPrimitiveProperty {
+    return PropertyTypeUtils.isPrimitive(this._type);
+  }
+  public isStruct(): this is AnyStructProperty {
+    return PropertyTypeUtils.isStruct(this._type);
+  }
+  public isEnumeration(): this is AnyEnumerationProperty {
+    return PropertyTypeUtils.isEnumeration(this._type);
+  }
+  public isNavigation(): this is NavigationProperty {
+    return PropertyTypeUtils.isNavigation(this._type);
+  }
 
-  public get name() { return this._name.name; }
+  public get name() {
+    return this._name.name;
+  }
 
-  public get class() { return this._class; }
+  public get class() {
+    return this._class;
+  }
 
-  public get label() { return this._label; }
+  public get label() {
+    return this._label;
+  }
 
-  public get description() { return this._description; }
+  public get description() {
+    return this._description;
+  }
 
-  public get isReadOnly() { return this._isReadOnly || false; }
+  public get isReadOnly() {
+    return this._isReadOnly || false;
+  }
 
-  public get priority() { return this._priority || 0; }
+  public get priority() {
+    return this._priority || 0;
+  }
 
-  public get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
+  public get category(): LazyLoadedPropertyCategory | undefined {
+    return this._category;
+  }
 
-  public get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
+  public get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined {
+    return this._kindOfQuantity;
+  }
 
-  public get propertyType() { return this._type; }
+  public get propertyType() {
+    return this._type;
+  }
 
-  public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
+  public get customAttributes(): CustomAttributeSet | undefined {
+    return this._customAttributes;
+  }
 
   /** Returns the name in the format 'ClassName.PropertyName'. */
-  public get fullName(): string { return `${this._class.name}.${this.name}`; }
+  public get fullName(): string {
+    return `${this._class.name}.${this.name}`;
+  }
 
   /** Returns the schema of the class holding the property. */
-  public get schema(): Schema { return this._class.schema; }
+  public get schema(): Schema {
+    return this._class.schema;
+  }
 
   public getCategorySync(): PropertyCategory | undefined {
     if (!this._category)
@@ -179,27 +219,37 @@ export abstract class Property implements CustomAttributeContainerProps {
     if (undefined !== propertyProps.category) {
       const propertyCategorySchemaItemKey = this.class.schema.getSchemaItemKey(propertyProps.category);
       if (!propertyCategorySchemaItemKey)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
-      this._category = new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(propertyCategorySchemaItemKey,
-        async () => {
-          const category = await this.class.schema.lookupItem<PropertyCategory>(propertyCategorySchemaItemKey);
-          if (undefined === category)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`);
-          return category;
-        });
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`,
+        );
+      this._category = new DelayedPromiseWithProps<SchemaItemKey, PropertyCategory>(propertyCategorySchemaItemKey, async () => {
+        const category = await this.class.schema.lookupItem<PropertyCategory>(propertyCategorySchemaItemKey);
+        if (undefined === category)
+          throw new ECObjectsError(
+            ECObjectsStatus.InvalidECJson,
+            `The Property ${this.name} has a 'category' ("${propertyProps.category}") that cannot be found.`,
+          );
+        return category;
+      });
     }
 
     if (undefined !== propertyProps.kindOfQuantity) {
       const koqSchemaItemKey = this.class.schema.getSchemaItemKey(propertyProps.kindOfQuantity);
       if (!koqSchemaItemKey)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
-      this._kindOfQuantity = new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(koqSchemaItemKey,
-        async () => {
-          const koq = await this.class.schema.lookupItem<KindOfQuantity>(koqSchemaItemKey);
-          if (undefined === koq)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`);
-          return koq;
-        });
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`,
+        );
+      this._kindOfQuantity = new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(koqSchemaItemKey, async () => {
+        const koq = await this.class.schema.lookupItem<KindOfQuantity>(koqSchemaItemKey);
+        if (undefined === koq)
+          throw new ECObjectsError(
+            ECObjectsStatus.InvalidECJson,
+            `The Property ${this.name} has a 'kindOfQuantity' ("${propertyProps.kindOfQuantity}") that cannot be found.`,
+          );
+        return koq;
+      });
     }
   }
 
@@ -306,11 +356,21 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
   protected _minValue?: number;
   protected _maxValue?: number;
 
-  public get extendedTypeName() { return this._extendedTypeName; }
-  public get minLength() { return this._minLength; }
-  public get maxLength() { return this._maxLength; }
-  public get minValue() { return this._minValue; }
-  public get maxValue() { return this._maxValue; }
+  public get extendedTypeName() {
+    return this._extendedTypeName;
+  }
+  public get minLength() {
+    return this._minLength;
+  }
+  public get maxLength() {
+    return this._maxLength;
+  }
+  public get minValue() {
+    return this._minValue;
+  }
+  public get maxValue() {
+    return this._maxValue;
+  }
 
   constructor(ecClass: ECClass, name: string, type: PropertyType) {
     super(ecClass, name, type);
@@ -416,7 +476,9 @@ export abstract class PrimitiveOrEnumPropertyBase extends Property {
 
 /** @beta */
 export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
-  public get primitiveType(): PrimitiveType { return PropertyTypeUtils.getPrimitiveType(this._type); }
+  public get primitiveType(): PrimitiveType {
+    return PropertyTypeUtils.getPrimitiveType(this._type);
+  }
 
   constructor(ecClass: ECClass, name: string, primitiveType: PrimitiveType = PrimitiveType.Integer) {
     super(ecClass, name, PropertyTypeUtils.fromPrimitiveType(primitiveType));
@@ -455,7 +517,9 @@ export class PrimitiveProperty extends PrimitiveOrEnumPropertyBase {
 export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   protected _enumeration?: LazyLoadedEnumeration;
 
-  public get enumeration(): LazyLoadedEnumeration | undefined { return this._enumeration; }
+  public get enumeration(): LazyLoadedEnumeration | undefined {
+    return this._enumeration;
+  }
 
   /**
    * Save this EnumerationProperty's properties to an object for serializing to JSON.
@@ -475,18 +539,17 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   public override fromJSONSync(enumerationPropertyProps: EnumerationPropertyProps) {
     super.fromJSONSync(enumerationPropertyProps);
     if (undefined !== enumerationPropertyProps.typeName) {
-      if (!(this.enumeration!.fullName).match(enumerationPropertyProps.typeName)) // need to match {schema}.{version}.{itemName} on typeName
+      if (!this.enumeration!.fullName.match(enumerationPropertyProps.typeName)) // need to match {schema}.{version}.{itemName} on typeName
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
       const enumSchemaItemKey = this.class.schema.getSchemaItemKey(this.enumeration!.fullName);
       if (!enumSchemaItemKey)
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
-      this._enumeration = new DelayedPromiseWithProps<SchemaItemKey, Enumeration>(enumSchemaItemKey,
-        async () => {
-          const enumeration = await this.class.schema.lookupItem<Enumeration>(enumSchemaItemKey);
-          if (undefined === enumeration)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
-          return enumeration;
-        });
+      this._enumeration = new DelayedPromiseWithProps<SchemaItemKey, Enumeration>(enumSchemaItemKey, async () => {
+        const enumeration = await this.class.schema.lookupItem<Enumeration>(enumSchemaItemKey);
+        if (undefined === enumeration)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the enumeration ${enumerationPropertyProps.typeName}.`);
+        return enumeration;
+      });
     }
   }
 
@@ -502,14 +565,15 @@ export class EnumerationProperty extends PrimitiveOrEnumPropertyBase {
   public override async fromJSON(enumerationPropertyProps: EnumerationPropertyProps) {
     this.fromJSONSync(enumerationPropertyProps);
   }
-
 }
 
 /** @beta */
 export class StructProperty extends Property {
   protected _structClass: StructClass;
 
-  public get structClass(): StructClass { return this._structClass; }
+  public get structClass(): StructClass {
+    return this._structClass;
+  }
 
   constructor(ecClass: ECClass, name: string, type: StructClass) {
     super(ecClass, name, PropertyType.Struct);
@@ -551,7 +615,9 @@ export class NavigationProperty extends Property {
   protected _relationshipClass: LazyLoadedRelationshipClass;
   protected _direction: StrengthDirection;
 
-  public get relationshipClass(): LazyLoadedRelationshipClass { return this._relationshipClass; }
+  public get relationshipClass(): LazyLoadedRelationshipClass {
+    return this._relationshipClass;
+  }
 
   public getRelationshipClassSync(): RelationshipClass | undefined {
     if (!this._relationshipClass) // eslint-disable-line @typescript-eslint/no-misused-promises
@@ -560,7 +626,9 @@ export class NavigationProperty extends Property {
     return this.class.schema.lookupItemSync(this._relationshipClass);
   }
 
-  public get direction() { return this._direction; }
+  public get direction() {
+    return this._direction;
+  }
 
   /**
    * Save this NavigationProperty's properties to an object for serializing to JSON.
@@ -591,7 +659,7 @@ export class NavigationProperty extends Property {
   }
 }
 
-type Constructor<T> = new (...args: any[]) => T;
+type Constructor<T> = new(...args: any[]) => T;
 
 // TODO: Consolidate all of the INT32_MAX variables.
 const INT32_MAX = 2147483647;
@@ -601,8 +669,12 @@ export abstract class ArrayProperty extends Property {
   protected _minOccurs: number = 0;
   protected _maxOccurs?: number = INT32_MAX;
 
-  public get minOccurs() { return this._minOccurs; }
-  public get maxOccurs() { return this._maxOccurs; }
+  public get minOccurs() {
+    return this._minOccurs;
+  }
+  public get maxOccurs() {
+    return this._maxOccurs;
+  }
 
   /**
    * @internal Used in schema editing.
@@ -625,8 +697,12 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
     protected _minOccurs: number = 0;
     protected _maxOccurs: number = INT32_MAX;
 
-    public get minOccurs() { return this._minOccurs; }
-    public get maxOccurs() { return this._maxOccurs; }
+    public get minOccurs() {
+      return this._minOccurs;
+    }
+    public get maxOccurs() {
+      return this._maxOccurs;
+    }
 
     constructor(...args: any[]) {
       super(...args);
@@ -678,7 +754,7 @@ const ArrayPropertyMixin = <T extends Constructor<Property>>(Base: T) => {
 
     /**
      * @internal Used in schema editing.
-    */
+     */
     protected setMaxOccurs(maxOccurs: number) {
       this._maxOccurs = maxOccurs;
     }
@@ -697,7 +773,6 @@ export class PrimitiveArrayProperty extends ArrayPropertyMixin(PrimitiveProperty
   public override toJSON(): PrimitiveArrayPropertyProps {
     return super.toJSON();
   }
-
 }
 
 /** @beta */

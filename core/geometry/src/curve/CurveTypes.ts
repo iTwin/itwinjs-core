@@ -10,8 +10,8 @@
 import type { BagOfCurves, CurveCollection } from "./CurveCollection";
 import type { CurvePrimitive } from "./CurvePrimitive";
 import type { Loop } from "./Loop";
-import type { Path } from "./Path";
 import type { ParityRegion } from "./ParityRegion";
+import type { Path } from "./Path";
 import type { UnionRegion } from "./UnionRegion";
 
 /**

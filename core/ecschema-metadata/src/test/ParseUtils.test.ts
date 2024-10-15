@@ -5,9 +5,25 @@
 
 import { expect } from "chai";
 import {
-  classModifierToString, containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseClassModifier, parseCustomAttributeContainerType,
-  parsePrimitiveType, parseRelationshipEnd, parseSchemaItemType, parseStrength, parseStrengthDirection, PrimitiveType, primitiveTypeToString,
-  RelationshipEnd, relationshipEndToString, SchemaItemType, StrengthDirection, strengthDirectionToString, strengthToString,
+  classModifierToString,
+  containerTypeToString,
+  CustomAttributeContainerType,
+  ECClassModifier,
+  parseClassModifier,
+  parseCustomAttributeContainerType,
+  parsePrimitiveType,
+  parseRelationshipEnd,
+  parseSchemaItemType,
+  parseStrength,
+  parseStrengthDirection,
+  PrimitiveType,
+  primitiveTypeToString,
+  RelationshipEnd,
+  relationshipEndToString,
+  SchemaItemType,
+  StrengthDirection,
+  strengthDirectionToString,
+  strengthToString,
   StrengthType,
 } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -77,7 +93,10 @@ describe("Parsing/ToString Functions", () => {
     expect(parseCustomAttributeContainerType("TarGETreLATIoNShIPCOnSTrAInT")).to.equal(CustomAttributeContainerType.TargetRelationshipConstraint);
     expect(parseCustomAttributeContainerType("AnyRELaTioNShiPCoNSTrAInt")).to.equal(CustomAttributeContainerType.AnyRelationshipConstraint);
     expect(parseCustomAttributeContainerType("aNy")).to.equal(CustomAttributeContainerType.Any);
-    expect(() => parseCustomAttributeContainerType("invalid type")).to.throw(ECObjectsError, "invalid type is not a valid CustomAttributeContainerType value.");
+    expect(() => parseCustomAttributeContainerType("invalid type")).to.throw(
+      ECObjectsError,
+      "invalid type is not a valid CustomAttributeContainerType value.",
+    );
 
     const combo = CustomAttributeContainerType.Schema
       | CustomAttributeContainerType.AnyClass
@@ -189,7 +208,9 @@ describe("ECObjectsError ", () => {
     expect(new ECObjectsError(ECObjectsStatus.InvalidPrimitiveType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidPrimitiveType: msg");
     expect(new ECObjectsError(ECObjectsStatus.InvalidSchemaItemType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidSchemaItemType: msg");
     expect(new ECObjectsError(ECObjectsStatus.InvalidStrength, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidStrength: msg");
-    expect(new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidStrengthDirection: msg");
+    expect(new ECObjectsError(ECObjectsStatus.InvalidStrengthDirection, "msg").toDebugString()).to.equal(
+      "ECObjectsStatus.InvalidStrengthDirection: msg",
+    );
     expect(new ECObjectsError(ECObjectsStatus.InvalidRelationshipEnd, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidRelationshipEnd: msg");
     expect(new ECObjectsError(ECObjectsStatus.InvalidType, "msg").toDebugString()).to.equal("ECObjectsStatus.InvalidType: msg");
     expect(new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, "msg").toDebugString()).to.equal("ECObjectsStatus.MissingSchemaUrl: msg");

@@ -7,7 +7,12 @@
  */
 
 import {
-  BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, RangeEditorParams,
+  BasePropertyEditorParams,
+  ColorEditorParams,
+  ImageCheckBoxParams,
+  PropertyEditorParams,
+  PropertyEditorParamTypes,
+  RangeEditorParams,
   SuppressLabelEditorParams,
 } from "./EditorParams";
 import { StandardEditorNames } from "./StandardEditorNames";
@@ -116,7 +121,12 @@ export class PropertyDescriptionHelper {
   /** Builds an editor that uses [NumberInput]($core-react) control
    * @public
    */
-  public static buildNumberEditorDescription(name: string, label: string, overrideParams?: RangeEditorParams, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
+  public static buildNumberEditorDescription(
+    name: string,
+    label: string,
+    overrideParams?: RangeEditorParams,
+    additionalParams: BasePropertyEditorParams[] = [],
+  ): PropertyDescription {
     const editorParams = [{
       type: PropertyEditorParamTypes.Range,
       step: 1,
@@ -156,12 +166,17 @@ export class PropertyDescriptionHelper {
   /** Builds an enum description
    * @public
    */
-  public static buildEnumPicklistEditorDescription(name: string, label: string,
+  public static buildEnumPicklistEditorDescription(
+    name: string,
+    label: string,
     choices: Promise<EnumerationChoice[]> | EnumerationChoice[],
-    additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
-    const editor = additionalParams.length ? {
-      params: additionalParams,
-    } : undefined;
+    additionalParams: BasePropertyEditorParams[] = [],
+  ): PropertyDescription {
+    const editor = additionalParams.length ?
+      {
+        params: additionalParams,
+      } :
+      undefined;
 
     return {
       name,
@@ -177,8 +192,13 @@ export class PropertyDescriptionHelper {
   /** Builds a number description for a tool settings or dialog property that will display a "color-picker" control.
    * @public
    */
-  public static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number,
-    additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
+  public static buildColorPickerDescription(
+    name: string,
+    label: string,
+    colorValues: number[],
+    numColumns: number,
+    additionalParams: BasePropertyEditorParams[] = [],
+  ): PropertyDescription {
     const editorParams = [
       {
         type: PropertyEditorParamTypes.ColorData,
@@ -217,7 +237,13 @@ export class PropertyDescriptionHelper {
   /** Builds a boolean description for a tool settings or dialog property that will display a "image-check-box" control.
    * @public
    */
-  public static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
+  public static buildImageCheckBoxDescription(
+    name: string,
+    label: string,
+    imageOff: string,
+    imageOn: string,
+    additionalParams: BasePropertyEditorParams[] = [],
+  ): PropertyDescription {
     const editorParams = [{
       type: PropertyEditorParamTypes.CheckBoxImages,
       imageOff,

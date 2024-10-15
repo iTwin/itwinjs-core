@@ -17,7 +17,7 @@ const codeGenOpeningComment = "// BEGIN GENERATED CODE";
 const codeGenClosingComment = "// END GENERATED CODE";
 // select all of generated block, including comments
 const codeGenBlock = RegExp(
-  `${codeGenOpeningComment}(\\s|\\S)*${codeGenClosingComment}`
+  `${codeGenOpeningComment}(\\s|\\S)*${codeGenClosingComment}`,
 );
 
 // Convert extension linter's output file to a set of lists separated by export type
@@ -40,7 +40,7 @@ function interpretCsv(csvString) {
       }
       const [exportName, exportType, releaseTag] = line.split(",");
       apiByType[`${releaseTag.toLocaleLowerCase()}Api`][exportType].add(
-        exportName
+        exportName,
       );
     });
   } catch (error) {
@@ -76,8 +76,7 @@ function generateDeclarationCode(exportList) {
 
     reals = reals ? `\n\t${reals}` : "";
     types = types ? `\n\t${types}` : "";
-    exportCode +=
-      realExports + reals + exportTrailer + typeExports + types + exportTrailer;
+    exportCode += realExports + reals + exportTrailer + typeExports + types + exportTrailer;
   }
 
   return exportCode;
@@ -110,8 +109,7 @@ function generateRuntimeCode(exportList) {
   let exportsApi = `const extensionExports = {\n${tab}`;
   const _exports = [];
   const exportTrailer = `\n};\n\n`;
-  const addComment = (packageName, release, kind) =>
-    `  // @${release} ${kind}(s) from ${packageName}\n`;
+  const addComment = (packageName, release, kind) => `  // @${release} ${kind}(s) from ${packageName}\n`;
 
   for (const packageName in exportList) {
     let imports = "import {\n";
@@ -120,19 +118,17 @@ function generateRuntimeCode(exportList) {
     if (packageName === "@itwin/core-frontend")
       importTrailer = `} from "../core-frontend";\n\n`;
 
-    imports +=
-      exportList[packageName].enum.size > 0
-        ? addComment(packageName, "public", "enum")
-        : "";
+    imports += exportList[packageName].enum.size > 0
+      ? addComment(packageName, "public", "enum")
+      : "";
     [...exportList[packageName].enum].sort().forEach((enumExport) => {
       imports += `${tab}${enumExport},\n`;
       _exports.push(enumExport);
     });
 
-    imports +=
-      exportList[packageName].real.size > 0
-        ? addComment(packageName, "public", "real")
-        : "";
+    imports += exportList[packageName].real.size > 0
+      ? addComment(packageName, "public", "real")
+      : "";
     [...exportList[packageName].real].sort().forEach((realExport) => {
       imports += `${tab}${realExport},\n`;
       _exports.push(realExport);
@@ -160,7 +156,7 @@ function collectExports(packagePath) {
   } catch (error) {
     throw Error(
       "Failed to read extension api csv, it may not exist or has no content.\n" +
-        error
+        error,
     );
   }
 
@@ -176,7 +172,7 @@ function addToFile(filePath, generatedCode) {
 
   if (!codeGenBlock.test(fileContents))
     throw Error(
-      `No block for generated code found in '${filePath}. A block with the code gen opening and closing comments is required.`
+      `No block for generated code found in '${filePath}. A block with the code gen opening and closing comments is required.`,
     );
 
   // Embed generated code in codeGen block

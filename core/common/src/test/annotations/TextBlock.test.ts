@@ -3,7 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { beforeEach, describe, expect, it } from "vitest";
-import { FractionRunProps, Paragraph, ParagraphProps, RunProps, TextBlock, TextBlockProps, TextRun, TextRunProps, TextStyleSettingsProps } from "../../core-common";
+import {
+  FractionRunProps,
+  Paragraph,
+  ParagraphProps,
+  RunProps,
+  TextBlock,
+  TextBlockProps,
+  TextRun,
+  TextRunProps,
+  TextStyleSettingsProps,
+} from "../../core-common";
 
 function makeTextRun(content?: string, styleName = "", styleOverrides?: TextStyleSettingsProps): TextRunProps {
   return {
@@ -39,8 +49,8 @@ describe("TextBlockComponent", () => {
     let run: TextRun;
 
     beforeEach(() => {
-      block = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 1234 }});
-      paragraph = Paragraph.create({ styleName: "paragraph", styleOverrides: { lineHeight: 42 }});
+      block = TextBlock.create({ styleName: "block", styleOverrides: { widthFactor: 1234 } });
+      paragraph = Paragraph.create({ styleName: "paragraph", styleOverrides: { lineHeight: 42 } });
       run = TextRun.create({ styleName: "run", styleOverrides: { fontName: "Consolas" } });
       paragraph.runs.push(run);
       block.paragraphs.push(paragraph);

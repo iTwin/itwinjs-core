@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Logger, LogLevel } from "@itwin/core-bentley";
+import { RpcInterfaceEndpoints } from "@itwin/core-common";
 import * as os from "os";
 import * as process from "process";
-import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 import { IModelNative } from "./internal/NativePlatform";
-import { RpcInterfaceEndpoints } from "@itwin/core-common";
 
 // cspell:ignore ppid elap
 
@@ -90,7 +90,6 @@ export class DevToolsStatsFormatter {
  * @internal
  */
 export class DevTools {
-
   /** Receives a ping and returns true */
   public static ping(): boolean {
     Logger.logInfo(loggerCategory, "Received ping at backend");
@@ -113,8 +112,7 @@ export class DevTools {
 
     // spin the CPU for 500 milliseconds
     const now = Date.now();
-    while (Date.now() - now < 500)
-      ;
+    while (Date.now() - now < 500);
 
     const elapTime = process.hrtime(startTime);
     const elapUsage = process.cpuUsage(startUsage);
@@ -123,7 +121,7 @@ export class DevTools {
 
     const elapUserMS = elapUsage.user / 1000; // microseconds to milliseconds
     const elapSystMS = elapUsage.system / 1000;
-    const cpuPercent = Math.round((100 * (elapUserMS + elapSystMS) / elapTimeMS / NUMBER_OF_CPUS));
+    const cpuPercent = Math.round(100 * (elapUserMS + elapSystMS) / elapTimeMS / NUMBER_OF_CPUS);
 
     return cpuPercent;
   }

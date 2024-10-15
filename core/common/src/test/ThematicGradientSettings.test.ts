@@ -6,7 +6,11 @@ import { describe, expect, it } from "vitest";
 import { ColorDef } from "../ColorDef";
 import { TextureTransparency } from "../TextureProps";
 import {
-  ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettings, ThematicGradientSettingsProps, ThematicGradientTransparencyMode,
+  ThematicGradientColorScheme,
+  ThematicGradientMode,
+  ThematicGradientSettings,
+  ThematicGradientSettingsProps,
+  ThematicGradientTransparencyMode,
 } from "../ThematicDisplay";
 
 describe("ThematicGradientSettings", () => {
@@ -17,9 +21,9 @@ describe("ThematicGradientSettings", () => {
       marginColor: ColorDef.blue.toJSON(),
       colorScheme: ThematicGradientColorScheme.Topographic,
       customKeys: [
-        {value: 0.0, color: ColorDef.green.toJSON()},
-        {value: 0.5, color: ColorDef.red.toJSON()},
-        {value: 1.0, color: ColorDef.white.toJSON()},
+        { value: 0.0, color: ColorDef.green.toJSON() },
+        { value: 0.5, color: ColorDef.red.toJSON() },
+        { value: 1.0, color: ColorDef.white.toJSON() },
       ],
       colorMix: 0.5,
       transparencyMode: ThematicGradientTransparencyMode.MultiplySurfaceAndGradient,
@@ -82,11 +86,10 @@ describe("ThematicGradientSettings", () => {
     // Make sure A !== B when B changes the customKeys.
     propsB = settingsA.toJSON();
     propsB.customKeys = [
-      {value: 0.0, color: ColorDef.black.toJSON()},
-      {value: 0.5, color: ColorDef.white.toJSON()},
-      {value: 1.0, color: ColorDef.green.toJSON()},
-    ],
-    expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.not.equal(0);
+      { value: 0.0, color: ColorDef.black.toJSON() },
+      { value: 0.5, color: ColorDef.white.toJSON() },
+      { value: 1.0, color: ColorDef.green.toJSON() },
+    ], expect(ThematicGradientSettings.compare(settingsA, ThematicGradientSettings.fromJSON(propsB))).to.not.equal(0);
   });
 
   it("computes texture transparency", () => {
@@ -97,7 +100,11 @@ describe("ThematicGradientSettings", () => {
       const props: ThematicGradientSettingsProps = {
         colorScheme: undefined !== custom ? ThematicGradientColorScheme.Custom : ThematicGradientColorScheme.BlueRed,
         marginColor: margin.toJSON(),
-        customKeys: custom ? custom.map((x) => { return { value: 0.5, color: x.toJSON() }; }) : undefined,
+        customKeys: custom
+          ? custom.map((x) => {
+            return { value: 0.5, color: x.toJSON() };
+          })
+          : undefined,
       };
 
       const remap = { opaque: TextureTransparency.Opaque, transparent: TextureTransparency.Translucent, mixed: TextureTransparency.Mixed };

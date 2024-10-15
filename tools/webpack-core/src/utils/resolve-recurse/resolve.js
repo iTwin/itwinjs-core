@@ -18,7 +18,7 @@ const usedDeps = new Set();
 // given the name of a module, and the directory of the module which referenced
 //  it, resolve to the module base directory
 function moduleDirectory(name, dir) {
-  return resolve(`${name}/package.json`, { basedir: dir }).then(function (filePath) {
+  return resolve(`${name}/package.json`, { basedir: dir }).then(function(filePath) {
     return findup(path.dirname(filePath), "package.json");
   });
 }
@@ -26,7 +26,6 @@ function moduleDirectory(name, dir) {
 // given use-input options, it will resolve an options object
 //  with the defaults in place, and options.path resolved
 function mergeDefaultOptions(options) {
-
   // apply simple defaults
   const trueOptions = {
     filter: options.filter || null,
@@ -45,7 +44,7 @@ function mergeDefaultOptions(options) {
   }
 
   // return a promise that resolves to the true path
-  return modulePromise.then(function (modPath) {
+  return modulePromise.then(function(modPath) {
     trueOptions.path = modPath;
     return trueOptions;
   });
@@ -57,7 +56,7 @@ function mergeDefaultOptions(options) {
 // return acc
 // for use with _.reduce
 function unzipObject(acc, value) {
-  _.each(value, function (val, key) {
+  _.each(value, function(val, key) {
     acc.push({ name: key, version: val });
   });
   return acc;
@@ -97,15 +96,15 @@ async function dependentModules(dir, allowedVersion, options) {
   });
   // for each dependency, make a promise that calls dependentModules
   // on its directory
-  const depPromises = _.map(deps, function (dep) {
-    return moduleDirectory(dep.name, dir).then(async function (directory) {
+  const depPromises = _.map(deps, function(dep) {
+    return moduleDirectory(dep.name, dir).then(async function(directory) {
       return dependentModules(directory, dep.version, options);
     });
   });
 
   // return a promise that will give an array of objects representing each dep
   // call _.compact because filtered-out dependencies return null
-  return Promise.all(depPromises).then(function (depObjects) {
+  return Promise.all(depPromises).then(function(depObjects) {
     return {
       name: pkg.name,
       path: dir,
@@ -127,7 +126,7 @@ async function resolveRecurse(options) {
 
   // get the default options, and then get the dependent modules
   // nodify it, to conform to a typical node API but still return a promise
-  return mergeDefaultOptions(options).then(async function (opts) {
+  return mergeDefaultOptions(options).then(async function(opts) {
     return dependentModules(opts.path, null, opts);
   });
 }

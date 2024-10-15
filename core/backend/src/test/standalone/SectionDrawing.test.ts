@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
 import { RelatedElement, SectionDrawingProps, SectionType } from "@itwin/core-common";
+import { Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { Drawing, SectionDrawing } from "../../Element";
-import { DocumentListModel, DrawingModel, SectionDrawingModel } from "../../Model";
 import { SnapshotDb } from "../../IModelDb";
+import { DocumentListModel, DrawingModel, SectionDrawingModel } from "../../Model";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("SectionDrawing", () => {

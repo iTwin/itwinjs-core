@@ -62,7 +62,7 @@ export enum UnitConversionInvert {
   /** Invert value before applying the other conversion steps (the from-unit is the inverted unit) */
   InvertPreConversion = "InvertPreConversion",
   /** Invert value after applying the other conversion steps (the to-unit is the inverted unit) */
-  InvertPostConversion = "InvertPostConversion"
+  InvertPostConversion = "InvertPostConversion",
 }
 
 /** This interface defines the properties required to convert a quantity value from one unit to another such as from meters to feet

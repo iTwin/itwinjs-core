@@ -9,8 +9,8 @@ import { PrimitiveType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { Enumeration, MutableEnumeration } from "../../Metadata/Enumeration";
 import { Schema } from "../../Metadata/Schema";
-import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+import { createEmptyXmlDocument, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
 describe("Enumeration", () => {
   it("should get fullName", async () => {
@@ -63,13 +63,25 @@ describe("Enumeration", () => {
     it("Add duplicate enumerator", async () => {
       const newEnum = testStringEnum.createEnumerator("Enum1", "Val1");
       (testStringEnum as MutableEnumeration).addEnumerator(newEnum);
-      assert.throws(() => testStringEnum.createEnumerator("Enum1", "Val1"), ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'Enum1'.`);
+      assert.throws(
+        () => testStringEnum.createEnumerator("Enum1", "Val1"),
+        ECObjectsError,
+        `The Enumeration TestEnumeration has a duplicate Enumerator with name 'Enum1'.`,
+      );
     });
     it("Add int enumerator to string enumeration", async () => {
-      assert.throws(() => testStringEnum.createEnumerator("Enum1", 1), ECObjectsError, `The Enumeration TestEnumeration has a backing type 'string' and an enumerator with value of type 'integer'.`);
+      assert.throws(
+        () => testStringEnum.createEnumerator("Enum1", 1),
+        ECObjectsError,
+        `The Enumeration TestEnumeration has a backing type 'string' and an enumerator with value of type 'integer'.`,
+      );
     });
     it("Add string enumerator to int enumeration", async () => {
-      assert.throws(() => testEnum.createEnumerator("Enum1", "Value1"), ECObjectsError, `The Enumeration TestEnumeration has a backing type 'integer' and an enumerator with value of type 'string'.`);
+      assert.throws(
+        () => testEnum.createEnumerator("Enum1", "Value1"),
+        ECObjectsError,
+        `The Enumeration TestEnumeration has a backing type 'integer' and an enumerator with value of type 'string'.`,
+      );
     });
   });
 
@@ -146,19 +158,19 @@ describe("Enumeration", () => {
       expect(enumeration.enumerators.length).to.eql(2);
     }
     function assertValidEnumerator(enumeration: Enumeration, enumVal: number | string, label?: string, description?: string) {
-      if (typeof (enumVal) === "number") {
+      if (typeof enumVal === "number") {
         expect(enumeration.isInt).to.be.true;
         expect(enumeration.isString).to.be.false;
-        if (typeof (label) !== undefined)
+        if (typeof label !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
-        if (typeof (description) !== undefined)
+        if (typeof description !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
       } else {
         expect(enumeration.isInt).to.be.false;
         expect(enumeration.isString).to.be.true;
-        if (typeof (label) !== undefined)
+        if (typeof label !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
-        if (typeof (description) !== undefined)
+        if (typeof description !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
       }
     }
@@ -224,7 +236,10 @@ describe("Enumeration", () => {
           { name: "SixValue", value: 8, label: "An enumerator label" },
         ],
       };
-      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'SixValue'.`);
+      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(
+        ECObjectsError,
+        `The Enumeration TestEnumeration has a duplicate Enumerator with name 'SixValue'.`,
+      );
     });
 
     it("Duplicate value", async () => {
@@ -239,7 +254,10 @@ describe("Enumeration", () => {
           { name: "EightValue", value: 6 },
         ],
       };
-      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`);
+      await expect(testEnum.fromJSON(json)).to.be.rejectedWith(
+        ECObjectsError,
+        `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`,
+      );
     });
 
     it("Basic test with number values", async () => {
@@ -300,7 +318,10 @@ describe("Enumeration", () => {
           { name: "onevalue", value: "two", label: "Label for the second value", description: "description for the second value" },
         ],
       };
-      await expect(testStringEnum.fromJSON(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'onevalue'.`);
+      await expect(testStringEnum.fromJSON(json)).to.be.rejectedWith(
+        ECObjectsError,
+        `The Enumeration TestEnumeration has a duplicate Enumerator with name 'onevalue'.`,
+      );
     });
 
     it("Get enumerator by name", async () => {

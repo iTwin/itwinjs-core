@@ -5,9 +5,9 @@
 import { Logger } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { GrowableXYZArray, LineString3d, Loop, Point3d, Point3dArray, RegionOps } from "@itwin/core-geometry";
-import { FeatureGeometryBaseRenderer, FeatureGeometryRenderer, FeatureSymbolizedRenderer, WebMercator } from "../../internal";
-import { Viewport } from "../../../Viewport";
 import { GraphicPrimitive } from "../../../common/render/GraphicPrimitive";
+import { Viewport } from "../../../Viewport";
+import { FeatureGeometryBaseRenderer, FeatureGeometryRenderer, FeatureSymbolizedRenderer, WebMercator } from "../../internal";
 
 const loggerCategory = "MapLayerImageryProvider.FeatureGraphicsRenderer";
 
@@ -34,8 +34,9 @@ export interface GraphicsGeometryRenderer extends FeatureGeometryRenderer {
  * @internal
  */
 export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer implements GraphicsGeometryRenderer {
-
-  public override hasSymbologyRenderer(): this is FeatureSymbolizedRenderer {return false;}
+  public override hasSymbologyRenderer(): this is FeatureSymbolizedRenderer {
+    return false;
+  }
 
   private _scratchPointsArray = new GrowableXYZArray();
   private _scratchPaths: Point3d[][] = [];
@@ -72,7 +73,6 @@ export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer impleme
   }
 
   protected async moveTo(x: number, y: number) {
-
     if (this._scratchPointsArray.length > 0) {
       this._scratchPaths.push(this._scratchPointsArray.getArray());
       this._scratchPointsArray.clear();
@@ -131,7 +131,6 @@ export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer impleme
 
   protected override async finishPoints() {
     if (this._scratchPointsArray.length > 0) {
-
       // Backend reprojection
       const pointsArray = this._scratchPointsArray.getArray();
       try {
@@ -148,11 +147,13 @@ export class FeatureGraphicsRenderer extends FeatureGeometryBaseRenderer impleme
   private async toSpatial(geoPoints: Point3d[]) {
     const bgMapGeom = this._viewport.displayStyle.getBackgroundMapGeometry();
     if (bgMapGeom) {
-      const cartoPts = geoPoints.map((pt) => Cartographic.fromDegrees({
-        longitude: this._crs === "webMercator" ?  WebMercator.getEPSG4326Lon(pt.x) : pt.x,
-        latitude: this._crs === "webMercator" ?  WebMercator.getEPSG4326Lat(pt.y) : pt.y,
-        height: pt.z,
-      }));
+      const cartoPts = geoPoints.map((pt) =>
+        Cartographic.fromDegrees({
+          longitude: this._crs === "webMercator" ? WebMercator.getEPSG4326Lon(pt.x) : pt.x,
+          latitude: this._crs === "webMercator" ? WebMercator.getEPSG4326Lat(pt.y) : pt.y,
+          height: pt.z,
+        })
+      );
       return bgMapGeom.cartographicToDbFromWgs84Gcs(cartoPts);
     }
 

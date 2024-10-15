@@ -2,15 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import {
-  CachedDecoration, CanvasDecoration, DecorateContext, DecorationsCache, Decorator, GraphicType, IModelApp, IModelConnection, ScreenViewport,
+  CachedDecoration,
+  CanvasDecoration,
+  DecorateContext,
+  DecorationsCache,
+  Decorator,
+  GraphicType,
+  IModelApp,
+  IModelConnection,
+  ScreenViewport,
   SnapshotConnection,
 } from "@itwin/core-frontend";
+import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/webgl";
 import { Point3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
 import { ScreenTestViewport, testOnScreenViewport } from "../TestViewport";
-import { Graphic, GraphicOwner } from "@itwin/core-frontend/lib/cjs/webgl";
 
 describe("Cached decorations", () => {
   let imodel: IModelConnection;
@@ -28,13 +36,15 @@ describe("Cached decorations", () => {
   });
 
   class TestCanvasDecoration implements CanvasDecoration {
-    public drawDecoration(_ctx: CanvasRenderingContext2D): void { }
+    public drawDecoration(_ctx: CanvasRenderingContext2D): void {}
   }
 
   class TestDecorator implements Decorator {
     private _type: "graphic" | "html" | "canvas";
     private _useCachedDecorations: boolean;
-    public get useCachedDecorations() { return this._useCachedDecorations ? true : undefined; }
+    public get useCachedDecorations() {
+      return this._useCachedDecorations ? true : undefined;
+    }
     public decorate(context: DecorateContext) {
       switch (this._type) {
         case "graphic":

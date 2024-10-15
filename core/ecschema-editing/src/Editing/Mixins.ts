@@ -7,15 +7,23 @@
  */
 
 import {
-  DelayedPromiseWithProps, EntityClass, Mixin, MixinProps, NavigationPropertyProps, RelationshipClass,
-  SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
+  DelayedPromiseWithProps,
+  EntityClass,
+  Mixin,
+  MixinProps,
+  NavigationPropertyProps,
+  RelationshipClass,
+  SchemaItemKey,
+  SchemaItemType,
+  SchemaKey,
+  StrengthDirection,
 } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor } from "./Editor";
 import { ECClasses } from "./ECClasses";
-import { MutableMixin } from "./Mutable/MutableMixin";
-import { MutableEntityClass } from "./Mutable/MutableEntityClass";
-import { NavigationProperties } from "./Properties";
+import { SchemaContextEditor } from "./Editor";
 import { ClassId, ECEditingStatus, SchemaEditingError } from "./Exception";
+import { MutableEntityClass } from "./Mutable/MutableEntityClass";
+import { MutableMixin } from "./Mutable/MutableMixin";
+import { NavigationProperties } from "./Properties";
 
 /**
  * @alpha
@@ -31,9 +39,21 @@ export class Mixins extends ECClasses {
    */
   public readonly navigationProperties = new NavigationProperties(SchemaItemType.Mixin, this.schemaEditor);
 
-  public async create(schemaKey: SchemaKey, name: string, appliesTo: SchemaItemKey, displayLabel?: string, baseClassKey?: SchemaItemKey): Promise<SchemaItemKey> {
+  public async create(
+    schemaKey: SchemaKey,
+    name: string,
+    appliesTo: SchemaItemKey,
+    displayLabel?: string,
+    baseClassKey?: SchemaItemKey,
+  ): Promise<SchemaItemKey> {
     try {
-      const newClass = await this.createClass<Mixin>(schemaKey, this.schemaItemType, (schema) => schema.createMixinClass.bind(schema), name, baseClassKey) as MutableMixin;
+      const newClass = await this.createClass<Mixin>(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createMixinClass.bind(schema),
+        name,
+        baseClassKey,
+      ) as MutableMixin;
       const newAppliesTo = await this.getSchemaItem<EntityClass>(appliesTo, SchemaItemType.EntityClass);
       newClass.setAppliesTo(new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(newAppliesTo.key, async () => newAppliesTo));
 
@@ -53,7 +73,12 @@ export class Mixins extends ECClasses {
    */
   public async createFromProps(schemaKey: SchemaKey, mixinProps: MixinProps): Promise<SchemaItemKey> {
     try {
-      const newClass = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createMixinClass.bind(schema), mixinProps);
+      const newClass = await this.createSchemaItemFromProps(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createMixinClass.bind(schema),
+        mixinProps,
+      );
       return newClass.key;
     } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new ClassId(this.schemaItemType, mixinProps.name!, schemaKey), e);
@@ -65,16 +90,21 @@ export class Mixins extends ECClasses {
       const entity = await this.getSchemaItem<MutableEntityClass>(entityKey, SchemaItemType.EntityClass);
       const mixin = await this.getSchemaItem<Mixin>(mixinKey);
       entity.addMixin(mixin);
-    } catch(e: any){
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.AddMixin, new ClassId(SchemaItemType.EntityClass, entityKey), e);
     }
   }
 
-  public async createNavigationProperty(mixinKey: SchemaItemKey, name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<void> {
+  public async createNavigationProperty(
+    mixinKey: SchemaItemKey,
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): Promise<void> {
     try {
       const mixin = await this.getSchemaItem<MutableMixin>(mixinKey);
       await mixin.createNavigationProperty(name, relationship, direction);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateNavigationProperty, new ClassId(SchemaItemType.Mixin, mixinKey), e);
     }
   }
@@ -89,7 +119,7 @@ export class Mixins extends ECClasses {
       const mixin = await this.getSchemaItem<MutableMixin>(classKey);
       const property = await mixin.createNavigationProperty(navigationProps.name, navigationProps.relationshipName, navigationProps.direction);
       await property.fromJSON(navigationProps);
-    } catch(e: any) {
+    } catch (e: any) {
       throw new SchemaEditingError(ECEditingStatus.CreateNavigationPropertyFromProps, new ClassId(SchemaItemType.RelationshipClass, classKey), e);
     }
   }

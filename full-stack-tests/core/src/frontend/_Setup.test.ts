@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, Assertion, util } from "chai";
 import { ProcessDetector, UnexpectedErrors } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcConfiguration } from "@itwin/core-common";
-import { rpcInterfaces } from "../common/RpcInterfaces";
 import { Geometry } from "@itwin/core-geometry";
+import { assert, Assertion, util } from "chai";
+import { rpcInterfaces } from "../common/RpcInterfaces";
 
 RpcConfiguration.developmentMode = true;
 RpcConfiguration.disableRoutingValidation = true;
@@ -95,10 +95,8 @@ Assertion.addMethod(
       isDeep
         ? deepEqualWithFpTolerance(expected, actual, options)
         : isAlmostEqualNumber(expected, actual, options.tolerance),
-      `expected ${isDeep ? "deep equality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
-      `expected ${isDeep ? "deep inequality of " : " "
-      }#{exp} and #{act} with a tolerance of ${options.tolerance}`,
+      `expected ${isDeep ? "deep equality of " : " "}#{exp} and #{act} with a tolerance of ${options.tolerance}`,
+      `expected ${isDeep ? "deep inequality of " : " "}#{exp} and #{act} with a tolerance of ${options.tolerance}`,
       expected,
       actual,
     );

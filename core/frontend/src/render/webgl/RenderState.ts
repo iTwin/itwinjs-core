@@ -103,8 +103,11 @@ export class RenderStateBlend {
     if (previousBlend === undefined || previousBlend.equationRgb !== this.equationRgb || previousBlend.equationAlpha !== this.equationAlpha) {
       gl.blendEquationSeparate(this.equationRgb, this.equationAlpha);
     }
-    if (previousBlend === undefined || previousBlend.functionSourceRgb !== this.functionSourceRgb || previousBlend.functionSourceAlpha !== this.functionSourceAlpha
-      || previousBlend.functionDestRgb !== this.functionDestRgb || previousBlend.functionDestAlpha !== this.functionDestAlpha) {
+    if (
+      previousBlend === undefined || previousBlend.functionSourceRgb !== this.functionSourceRgb ||
+      previousBlend.functionSourceAlpha !== this.functionSourceAlpha
+      || previousBlend.functionDestRgb !== this.functionDestRgb || previousBlend.functionDestAlpha !== this.functionDestAlpha
+    ) {
       gl.blendFuncSeparate(this.functionSourceRgb, this.functionDestRgb, this.functionSourceAlpha, this.functionDestAlpha);
     }
   }

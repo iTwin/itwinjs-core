@@ -357,7 +357,11 @@ describe("ContentPropertyValueFormatter", () => {
               valueFormat: PropertyValueFormat.Struct,
               typeName: "struct",
               members: [
-                { name: "nestedDoubleProp", label: "Nested Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } },
+                {
+                  name: "nestedDoubleProp",
+                  label: "Nested Double Property",
+                  type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+                },
                 { name: "nestedIntProp", label: "Nested Int Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "int" } },
               ],
             },

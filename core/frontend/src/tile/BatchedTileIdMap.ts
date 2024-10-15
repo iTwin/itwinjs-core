@@ -49,7 +49,7 @@ export class BatchedTileIdMap implements BatchTableProperties {
     return typeof props === "object" ? props : undefined;
   }
 
-  public * entries(): Iterable<{ id: Id64String, properties: Record<string, any> }> {
+  public *entries(): Iterable<{ id: Id64String, properties: Record<string, any> }> {
     if (this._idMap) {
       for (const [id, properties] of this._idMap) {
         if (typeof properties === "object") {

@@ -36,10 +36,18 @@ export class BatchState {
     this._stack = stack;
   }
 
-  public get currentBatch(): Batch | undefined { return this._curBatch; }
-  public get currentBatchId(): number { return undefined !== this._curBatch ? this._curBatch.batchId : 0; }
-  public get currentBatchIModel(): IModelConnection | undefined { return undefined !== this._curBatch ? this._curBatch.batchIModel : undefined; }
-  public get isEmpty(): boolean { return 0 === this._batches.length; }
+  public get currentBatch(): Batch | undefined {
+    return this._curBatch;
+  }
+  public get currentBatchId(): number {
+    return undefined !== this._curBatch ? this._curBatch.batchId : 0;
+  }
+  public get currentBatchIModel(): IModelConnection | undefined {
+    return undefined !== this._curBatch ? this._curBatch.batchIModel : undefined;
+  }
+  public get isEmpty(): boolean {
+    return 0 === this._batches.length;
+  }
 
   public push(batch: Batch, allowAdd: boolean): void {
     assert(undefined === this.currentBatch, "batches cannot nest");
@@ -85,8 +93,12 @@ export class BatchState {
     return batch.featureTable.findFeature(featureIndex, result);
   }
 
-  public get numFeatureIds() { return this.nextBatchId; }
-  public get numBatches() { return this._batches.length; }
+  public get numFeatureIds() {
+    return this.nextBatchId;
+  }
+  public get numBatches() {
+    return this._batches.length;
+  }
 
   public findBatchId(featureId: number) {
     const batch = this.find(featureId);

@@ -9,9 +9,8 @@ import { Primitives, StandardTypeNames } from "@itwin/appui-abstract";
  * @internal
  */
 export abstract class FeatureInfoReader {
-
   // Optionally you can set the floating precision
-  public floatPrecision: number|undefined;
+  public floatPrecision: number | undefined;
 
   // Force display value of date to ISO 8601 format.
   // Turning this ON, will disable display value in end-user's locale
@@ -21,15 +20,14 @@ export abstract class FeatureInfoReader {
     return (this.floatPrecision === undefined ? value : parseFloat(value.toFixed(this.floatPrecision)));
   };
 
-  protected getDisplayValue = (typename: StandardTypeNames, value: Primitives.Value|undefined) => {
+  protected getDisplayValue = (typename: StandardTypeNames, value: Primitives.Value | undefined) => {
     if (value === undefined) {
-      return  "";
-    } else if ( typename === StandardTypeNames.DateTime && this.forceDateDisplayValueToIso) {
+      return "";
+    } else if (typename === StandardTypeNames.DateTime && this.forceDateDisplayValueToIso) {
       return (value as Date).toISOString();
     } else {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
       return `${value}`;
     }
   };
-
 }

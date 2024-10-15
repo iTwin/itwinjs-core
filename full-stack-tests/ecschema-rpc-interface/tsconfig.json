@@ -2,7 +2,7 @@
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "resolveJsonModule": true,
-    "outDir": "./lib",
+    "outDir": "./lib"
   },
   "include": [
     "src/**/*.ts",

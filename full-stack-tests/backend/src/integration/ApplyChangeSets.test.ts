@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import * as path from "path";
 import { IModelHost, IModelJsFs, IModelJsNative, IModelNative } from "@itwin/core-backend";
 import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { ChangesetFileProps, ChangesetType } from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { assert } from "chai";
+import * as path from "path";
 import { HubUtility } from "../HubUtility";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -94,7 +94,11 @@ function applyChangesetsToNativeDb(nativeDb: IModelJsNative.DgnDb, changeSets: C
   let count = 0;
   for (const changeSet of changeSets) {
     ++count;
-    Logger.logInfo(HubUtility.logCategory, `Started applying Changeset: ${count} of ${changeSets.length} (${new Date(Date.now()).toString()})`, () => ({ ...changeSet }));
+    Logger.logInfo(
+      HubUtility.logCategory,
+      `Started applying Changeset: ${count} of ${changeSets.length} (${new Date(Date.now()).toString()})`,
+      () => ({ ...changeSet }),
+    );
     try {
       nativeDb.applyChangeset(changeSet);
       Logger.logInfo(HubUtility.logCategory, "Successfully applied Changeset", () => ({ ...changeSet, status }));

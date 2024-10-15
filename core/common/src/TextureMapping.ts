@@ -6,9 +6,15 @@
  * @module Rendering
  */
 
+import {
+  compareBooleans,
+  compareBooleansOrUndefined,
+  compareNumbers,
+  compareNumbersOrUndefined,
+  comparePossiblyUndefined,
+} from "@itwin/core-bentley";
 import { IndexedPolyfaceVisitor, Matrix3d, Point2d, Point3d, PolyfaceVisitor, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { RenderTexture } from "./RenderTexture";
-import { compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, comparePossiblyUndefined } from "@itwin/core-bentley";
 
 /** Defines normal map parameters.
  * @beta
@@ -120,7 +126,8 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
         return 0;
       }
 
-      const originDiff = compareNumbers(this.transform.origin.x, other.transform.origin.x) || compareNumbers(this.transform.origin.y, other.transform.origin.y);
+      const originDiff = compareNumbers(this.transform.origin.x, other.transform.origin.x) ||
+        compareNumbers(this.transform.origin.y, other.transform.origin.y);
       if (originDiff !== 0) {
         return originDiff;
       }
@@ -162,7 +169,8 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
   }
 
   function compareConstantLodParams(lhs: ConstantLodParams, rhs: ConstantLodParams): number {
-    return compareNumbers(lhs.repetitions, rhs.repetitions) || compareNumbers(lhs.offset.x, rhs.offset.x) || compareNumbers(lhs.offset.y, rhs.offset.y)
+    return compareNumbers(lhs.repetitions, rhs.repetitions) || compareNumbers(lhs.offset.x, rhs.offset.x) ||
+      compareNumbers(lhs.offset.y, rhs.offset.y)
       || compareNumbers(lhs.minDistClamp, rhs.minDistClamp) || compareNumbers(lhs.maxDistClamp, rhs.maxDistClamp);
   }
 
@@ -225,7 +233,8 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
         return 0;
       }
 
-      return compareNumbers(this.weight, other.weight) || compareNumbers(this.mode, other.mode) || compareBooleans(this.worldMapping, other.worldMapping)
+      return compareNumbers(this.weight, other.weight) || compareNumbers(this.mode, other.mode) ||
+        compareBooleans(this.worldMapping, other.worldMapping)
         || compareBooleans(this.useConstantLod, other.useConstantLod) || this.textureMatrix.compare(other.textureMatrix)
         || compareConstantLodParams(this.constantLodParams, other.constantLodParams);
     }
@@ -236,7 +245,7 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
      */
     public computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined {
       switch (this.mode) {
-        default:  // Fall through to parametric in default case
+        default: // Fall through to parametric in default case
         case TextureMapping.Mode.Parametric: {
           return this.computeParametricUVParams(visitor, this.textureMatrix.transform, !this.worldMapping);
         }
@@ -246,7 +255,10 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
             return undefined;
 
           // Ignore planar mode unless master or sub units for scaleMode and facet is planar
-          if (!this.worldMapping || (visitor.normalIndex !== undefined && (normalIndices[0] !== normalIndices[1] || normalIndices[0] !== normalIndices[2]))) {
+          if (
+            !this.worldMapping ||
+            (visitor.normalIndex !== undefined && (normalIndices[0] !== normalIndices[1] || normalIndices[0] !== normalIndices[2]))
+          ) {
             return this.computeParametricUVParams(visitor, this.textureMatrix.transform, !this.worldMapping);
           } else {
             return this.computePlanarUVParams(visitor, this.textureMatrix.transform);
@@ -283,7 +295,10 @@ export namespace TextureMapping { // eslint-disable-line no-redeclare
       let normal: Vector3d;
 
       if (visitor.normal === undefined)
-        normal = points.getPoint3dAtUncheckedPointIndex(0).crossProductToPoints(points.getPoint3dAtUncheckedPointIndex(1), points.getPoint3dAtUncheckedPointIndex(2));
+        normal = points.getPoint3dAtUncheckedPointIndex(0).crossProductToPoints(
+          points.getPoint3dAtUncheckedPointIndex(1),
+          points.getPoint3dAtUncheckedPointIndex(2),
+        );
       else
         normal = visitor.normal.getVector3dAtCheckedVectorIndex(0)!;
 

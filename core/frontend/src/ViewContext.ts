@@ -7,11 +7,9 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import {
-  Matrix3d, Point2d,
-  Point3d, Range1d, Transform, XAndY,
-} from "@itwin/core-geometry";
 import { Frustum, FrustumPlanes, ViewFlags } from "@itwin/core-common";
+import { Matrix3d, Point2d, Point3d, Range1d, Transform, XAndY } from "@itwin/core-geometry";
+import { GraphicType } from "./common/render/GraphicType";
 import { CachedDecoration, DecorationsCache } from "./DecorationsCache";
 import { IModelApp } from "./IModelApp";
 import { PlanarClipMaskState } from "./PlanarClipMaskState";
@@ -24,11 +22,10 @@ import { RenderPlanarClassifier } from "./render/RenderPlanarClassifier";
 import { RenderSystem, RenderTextureDrape } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
 import { Scene } from "./render/Scene";
+import { ActiveSpatialClassifier } from "./SpatialClassifiersState";
 import { SpatialClassifierTileTreeReference, Tile, TileGraphicType, TileLoadStatus, TileTreeReference } from "./tile/internal";
 import { ViewingSpace } from "./ViewingSpace";
 import { ELEMENT_MARKED_FOR_REMOVAL, ScreenViewport, Viewport, ViewportDecorator } from "./Viewport";
-import { ActiveSpatialClassifier } from "./SpatialClassifiersState";
-import { GraphicType } from "./common/render/GraphicType";
 
 /** Provides context for producing [[RenderGraphic]]s for drawing within a [[Viewport]].
  * @public
@@ -66,7 +63,9 @@ export class RenderContext {
   }
 
   /** @internal */
-  public get target(): RenderTarget { return this.viewport.target; }
+  public get target(): RenderTarget {
+    return this.viewport.target;
+  }
 
   /** @internal */
   protected _createGraphicBuilder(options: Omit<ViewportGraphicBuilderOptions, "viewport">): GraphicBuilder {
@@ -92,7 +91,9 @@ export class RenderContext {
    * @returns A RenderGraphic suitable for drawing the scene graph node within this context's [[Viewport]].
    * @see [[RenderSystem.createBranch]]
    */
-  public createBranch(branch: GraphicBranch, location: Transform): RenderGraphic { return this.createGraphicBranch(branch, location); }
+  public createBranch(branch: GraphicBranch, location: Transform): RenderGraphic {
+    return this.createGraphicBranch(branch, location);
+  }
 
   /** Given the size of a logical pixel in meters, convert it to the size of a physical pixel in meters, if [[RenderSystem.dpiAwareLOD]] is `true`.
    * Used when computing LOD for graphics.
@@ -319,14 +320,27 @@ export class DecorateContext extends RenderContext {
   }
 
   /** @internal */
-  public drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid: boolean = false, _fixedRepetitions?: Point2d): void {
+  public drawStandardGrid(
+    gridOrigin: Point3d,
+    rMatrix: Matrix3d,
+    spacing: XAndY,
+    gridsPerRef: number,
+    _isoGrid: boolean = false,
+    _fixedRepetitions?: Point2d,
+  ): void {
     const vp = this.viewport;
 
     if (vp.viewingGlobe)
       return;
 
     const color = vp.getContrastToBackgroundColor();
-    const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(), { origin: gridOrigin, rMatrix, spacing, gridsPerRef, color });
+    const planarGrid = this.viewport.target.renderSystem.createPlanarGrid(vp.getFrustum(), {
+      origin: gridOrigin,
+      rMatrix,
+      spacing,
+      gridsPerRef,
+      color,
+    });
     if (planarGrid) {
       this.addDecoration(GraphicType.WorldDecoration, planarGrid);
     }
@@ -381,7 +395,9 @@ export class SceneContext extends RenderContext {
   }
 
   /** @internal */
-  public get graphicType() { return this._graphicType; }
+  public get graphicType() {
+    return this._graphicType;
+  }
 
   /** Add the specified graphic to the scene. */
   public outputGraphic(graphic: RenderGraphic): void {
@@ -415,7 +431,11 @@ export class SceneContext extends RenderContext {
   }
 
   /** @internal */
-  public addPlanarClassifier(classifiedModelId: Id64String, classifierTree?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): RenderPlanarClassifier | undefined {
+  public addPlanarClassifier(
+    classifiedModelId: Id64String,
+    classifierTree?: SpatialClassifierTileTreeReference,
+    planarClipMask?: PlanarClipMaskState,
+  ): RenderPlanarClassifier | undefined {
     // Target may have the classifier from a previous frame; if not we must create one.
     let classifier = this.viewport.target.getPlanarClassifier(classifiedModelId);
     if (undefined === classifier)
@@ -472,15 +492,25 @@ export class SceneContext extends RenderContext {
   }
 
   /** The graphics in the scene that will be drawn with depth. */
-  public get graphics() { return this.scene.foreground; }
+  public get graphics() {
+    return this.scene.foreground;
+  }
   /** The graphics that will be drawn behind everything else in the scene. */
-  public get backgroundGraphics() { return this.scene.background; }
+  public get backgroundGraphics() {
+    return this.scene.background;
+  }
   /** The graphics that will be drawn in front of everything else in the scene. */
-  public get overlayGraphics() { return this.scene.overlay; }
+  public get overlayGraphics() {
+    return this.scene.overlay;
+  }
   /** @internal */
-  public get planarClassifiers() { return this.scene.planarClassifiers; }
+  public get planarClassifiers() {
+    return this.scene.planarClassifiers;
+  }
   /** @internal */
-  public get textureDrapes() { return this.scene.textureDrapes; }
+  public get textureDrapes() {
+    return this.scene.textureDrapes;
+  }
 
   /** @internal */
   public setVolumeClassifier(classifier: ActiveSpatialClassifier, modelId: Id64String): void {

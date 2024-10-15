@@ -24,9 +24,15 @@ export class AustralianRailCorpXYEvaluator extends CubicEvaluator {
     this._nominalLength1 = nominalLength1;
     this._nominalRadius1 = nominalRadius1;
   }
-  public get nominalLength1() { return this._nominalLength1; }
-  public get nominalRadius1() { return this._nominalRadius1; }
-  public clone(): AustralianRailCorpXYEvaluator { return new AustralianRailCorpXYEvaluator(this._nominalLength1, this._nominalRadius1, this._axisLength, this._cubicM); }
+  public get nominalLength1() {
+    return this._nominalLength1;
+  }
+  public get nominalRadius1() {
+    return this._nominalRadius1;
+  }
+  public clone(): AustralianRailCorpXYEvaluator {
+    return new AustralianRailCorpXYEvaluator(this._nominalLength1, this._nominalRadius1, this._axisLength, this._cubicM);
+  }
   public static create(nominalLength1: number, nominalRadius1: number): AustralianRailCorpXYEvaluator | undefined {
     const axisLength = AustralianRailCorpXYEvaluator.radiusAndNominalLengthToAxisLength(nominalRadius1, nominalLength1);
     const phi = this.radiusAndAxisLengthToPhi(nominalRadius1, axisLength);
@@ -41,8 +47,8 @@ export class AustralianRailCorpXYEvaluator extends CubicEvaluator {
    */
   public static radiusAndAxisLengthToPhi(nominalRadius1: number, axisLength: number): number {
     const xc = axisLength;
-    const expr1 = (2. / Math.sqrt(3.));
-    let expr2 = (-(3. / 4.) * Math.sqrt(3.) * xc / nominalRadius1);
+    const expr1 = 2. / Math.sqrt(3.);
+    let expr2 = -(3. / 4.) * Math.sqrt(3.) * xc / nominalRadius1;
     if (expr2 < -1.0)
       expr2 = -1.0;
     if (expr2 > 1.0)
@@ -59,10 +65,13 @@ export class AustralianRailCorpXYEvaluator extends CubicEvaluator {
     super.scaleInPlace(scaleFactor);
   }
   /** Compute length along axis for AustralianRail spiral nominal radius and length.
-   *
    */
-  public static radiusAndNominalLengthToAxisLength(nominalRadius1: number, nominalLength1: number, tolerance: number = 1.0e-5,
-    requiredConvergenceCount: number = 2) {
+  public static radiusAndNominalLengthToAxisLength(
+    nominalRadius1: number,
+    nominalLength1: number,
+    tolerance: number = 1.0e-5,
+    requiredConvergenceCount: number = 2,
+  ) {
     const R = nominalRadius1;
     let idx = 0;
     let m, phi, xc2;
@@ -84,9 +93,12 @@ export class AustralianRailCorpXYEvaluator extends CubicEvaluator {
       const m2x4 = m * m * xc2 * xc2;
       const correction = xc * m2x4 * (
         (9. / 10) + m2x4 * (
-          -(9. / 8.) + m2x4 * (
-            +(729. / 208.) + m2x4 *
-            -(32805. / 2176.))));
+            -(9. / 8.) + m2x4 * (
+                +(729. / 208.) + m2x4 *
+                  -(32805. / 2176.)
+              )
+          )
+      );
       const correctedLength = xc + correction;
       xc = (nominalLength1 / correctedLength) * xc;
 

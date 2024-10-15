@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { copyFile } from 'fs/promises';
+import { copyFile } from "fs/promises";
 
 // Can't use import here otherwise Typescript complains: Could not find a declaration file for module 'node-simctl'.
 const Simctl = require("node-simctl").default;
 
 // Constants used in the script for convenience
-const appName = "imodeljs-test-app"
+const appName = "imodeljs-test-app";
 const bundleId = `bentley.${appName}`;
 const assetsPath = `${__dirname}/test-models`;
 const bimFile = "JoesHouse.bim";
@@ -17,16 +17,16 @@ const bimFile = "JoesHouse.bim";
 const numericCompareDescending = (a: string, b: string) => b.localeCompare(a, undefined, { numeric: true });
 
 // Similar to the launchApp function but doesn't retry, adds options before the launch command, and allows for args.
-Simctl.prototype.launchAppWithOptions = async function (bundleId: string, options: [string], args: [string]) {
-  const { stdout } = await this.exec('launch', {
-    args: [...options, this.requireUdid('launch'), bundleId, ...args],
+Simctl.prototype.launchAppWithOptions = async function(bundleId: string, options: [string], args: [string]) {
+  const { stdout } = await this.exec("launch", {
+    args: [...options, this.requireUdid("launch"), bundleId, ...args],
     architectures: "x86_64",
   });
   return stdout.trim();
-}
+};
 
-Simctl.prototype.getLatestRuntimeVersion = async function (majorVersion: string, platform = 'iOS') {
-  const { stdout } = await this.exec('list', { args: ['runtimes', '--json'] });
+Simctl.prototype.getLatestRuntimeVersion = async function(majorVersion: string, platform = "iOS") {
+  const { stdout } = await this.exec("list", { args: ["runtimes", "--json"] });
   const runtimes: [{ version: string, identifier: string, name: string }] = JSON.parse(stdout).runtimes;
   runtimes.sort((a, b) => numericCompareDescending(a.version, b.version));
   for (const { version, name } of runtimes) {
@@ -49,10 +49,10 @@ async function main() {
 
   // get all iOS devices
   log("Getting iOS devices");
-  const allResults = await simctl.getDevices(undefined, 'iOS');
+  const allResults = await simctl.getDevices(undefined, "iOS");
   // If xcode-select picks an earlier Xcode, allResults can contain entries for newer iOS versions with
   // no actual data. The below filters out the empty entries.
-  const results = Object.assign({}, ...Object.entries(allResults).filter(([_k, v]) => (v as [any]).length > 0).map(([k, v]) => ({[k]:v})));
+  const results = Object.assign({}, ...Object.entries(allResults).filter(([_k, v]) => (v as [any]).length > 0).map(([k, v]) => ({ [k]: v })));
   var keys = Object.keys(results).sort(numericCompareDescending);
 
   // determine desired device and runtime
@@ -60,18 +60,18 @@ async function main() {
   var desiredDevice = `${deviceBaseName} (2nd generation)`;
   var desiredRuntime = keys.length > 0 ? keys[0] : "16";
 
-  keys = keys.filter(key => key.startsWith(desiredRuntime));
-  var device: { name: string; sdk: string; udid: string; state: string; } | undefined;
+  keys = keys.filter((key) => key.startsWith(desiredRuntime));
+  var device: { name: string, sdk: string, udid: string, state: string } | undefined;
   if (keys.length) {
     // Look for a booted simulator
     for (const key of keys) {
-      device = results[key].find((curr: { state: string; }) => curr.state === "Booted");
+      device = results[key].find((curr: { state: string }) => curr.state === "Booted");
       if (device)
         break;
     }
     // If none are booted, use the deviceBaseName or fall back to the first one
     if (!device) {
-      device = results[keys[0]].find((device: { name: string; }) => device.name.startsWith(deviceBaseName)) ?? results[keys[0]][0];
+      device = results[keys[0]].find((device: { name: string }) => device.name.startsWith(deviceBaseName)) ?? results[keys[0]][0];
     }
   } else {
     // try to create a simulator
@@ -83,12 +83,12 @@ async function main() {
     log(`Creating simulator: ${desiredDevice} sdk: ${sdk}`);
     const udid = await simctl.createDevice(desiredDevice, desiredDevice, sdk);
     if (udid) {
-      device = { name: desiredDevice, sdk, udid, state: 'Inactive' };
+      device = { name: desiredDevice, sdk, udid, state: "Inactive" };
     }
   }
 
   if (!device) {
-    log(`Unable to find an iOS ${desiredRuntime} simulator.`)
+    log(`Unable to find an iOS ${desiredRuntime} simulator.`);
     return;
   }
 

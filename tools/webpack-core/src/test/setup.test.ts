@@ -7,11 +7,11 @@ import * as chaiJestSnapshot from "chai-jest-snapshot";
 
 chai.use(chaiJestSnapshot);
 
-before(function () {
+before(function() {
   chaiJestSnapshot.resetSnapshotRegistry();
 });
 
-beforeEach(function () {
+beforeEach(function() {
   const currentTest = (this as any).currentTest;
   const sourceFilePath = currentTest.file.replace("lib\\test", "src\\test").replace(/\.(jsx?|tsx?)$/, "");
   const snapPath = `${sourceFilePath}.snap`;

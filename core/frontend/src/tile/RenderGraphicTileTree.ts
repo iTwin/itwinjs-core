@@ -8,12 +8,12 @@
 
 import { compareStrings, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 import { ViewFlagOverrides } from "@itwin/core-common";
-import { Tile, TileDrawArgs, TileLoadPriority, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "./internal";
-import { RenderGraphic } from "../render/RenderGraphic";
-import { IModelConnection } from "../IModelConnection";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { IModelApp } from "../IModelApp";
 import { HitDetail } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { RenderGraphic } from "../render/RenderGraphic";
+import { Tile, TileDrawArgs, TileLoadPriority, TileTree, TileTreeOwner, TileTreeReference, TileTreeSupplier } from "./internal";
 
 /** Arguments supplied to [[TileTreeReference.createFromRenderGraphic]].
  * @beta
@@ -89,22 +89,30 @@ class GraphicTree extends TileTree {
     });
 
     this._rootTile = new GraphicTile(this, args.graphic);
-    this._viewFlagOverrides = args.viewFlags ?? { };
+    this._viewFlagOverrides = args.viewFlags ?? {};
   }
 
-  public override get rootTile() { return this._rootTile; }
+  public override get rootTile() {
+    return this._rootTile;
+  }
 
   // ###TODO rm TileTree.is3d - only iModel tiles care about it.
-  public override get is3d() { return true; }
-  public override get maxDepth() { return undefined; }
-  public override get viewFlagOverrides() { return this._viewFlagOverrides; }
+  public override get is3d() {
+    return true;
+  }
+  public override get maxDepth() {
+    return undefined;
+  }
+  public override get viewFlagOverrides() {
+    return this._viewFlagOverrides;
+  }
 
   protected override _selectTiles(args: TileDrawArgs) {
     args.markUsed(this.rootTile);
     return [this.rootTile];
   }
 
-  public override prune() { }
+  public override prune() {}
 
   public override draw(args: TileDrawArgs) {
     const tiles = this.selectTiles(args);
@@ -141,8 +149,12 @@ class GraphicRef extends TileTreeReference {
     this._planarClipMaskPriority = args.planarClipMaskPriority;
   }
 
-  public override get treeOwner() { return this._owner; }
-  public override get planarClipMaskPriority(): number { return this._planarClipMaskPriority ?? super.planarClipMaskPriority; }
+  public override get treeOwner() {
+    return this._owner;
+  }
+  public override get planarClipMaskPriority(): number {
+    return this._planarClipMaskPriority ?? super.planarClipMaskPriority;
+  }
 
   public override canSupplyToolTip(hit: HitDetail): boolean {
     return undefined !== this._getToolTip && this._modelId === hit.modelId;

@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
 import { EmptyLocalization, RpcInterface, RpcRegistry } from "@itwin/core-common";
 import { IModelApp, NativeApp } from "@itwin/core-frontend";
+import { assert } from "chai";
 import { ElectronApp } from "../../ElectronFrontend";
 
 describe("ElectronApp tests.", () => {

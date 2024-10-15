@@ -2,18 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ElementMeshOptions, readElementMeshes } from "@itwin/core-common";
+import { BeButtonEvent, CoordinateLockOverrides, EventHandled, IModelApp, LocateResponse, ViewClipTool, Viewport } from "@itwin/core-frontend";
 import {
-  ClipPrimitive, ClipVector, ConvexClipPlaneSet, IndexedPolyface, Point3d, PolyfaceBuilder, PolyfaceQuery, UnionOfConvexClipPlaneSets,
+  ClipPrimitive,
+  ClipVector,
+  ConvexClipPlaneSet,
+  IndexedPolyface,
+  Point3d,
+  PolyfaceBuilder,
+  PolyfaceQuery,
+  UnionOfConvexClipPlaneSets,
 } from "@itwin/core-geometry";
-import {
-  ElementMeshOptions, readElementMeshes,
-} from "@itwin/core-common";
-import {
-  BeButtonEvent, CoordinateLockOverrides, EventHandled, IModelApp, LocateResponse, ViewClipTool, Viewport,
-} from "@itwin/core-frontend";
-import {
-  ConvexMeshDecomposition, Options as DecompositionOptions,
-} from "vhacd-js";
+import { ConvexMeshDecomposition, Options as DecompositionOptions } from "vhacd-js";
 
 /** Settings that control the behavior of the ViewClipByElementGeometryTool. */
 interface Settings extends ElementMeshOptions {

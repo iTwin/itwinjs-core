@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { getItemNamesFromFormatString } from "@itwin/core-quantity";
 import { SchemaContext } from "../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -22,10 +23,9 @@ import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { ECVersion, SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { ISchemaPartVisitor, SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
-import { getItemNamesFromFormatString } from "@itwin/core-quantity";
+import { SchemaGraph } from "../utils/SchemaGraph";
 import { AbstractParser, AbstractParserConstructor, CAProviderTuple } from "./AbstractParser";
 import { ClassProps, PropertyProps, RelationshipConstraintProps, SchemaReferenceProps } from "./JsonProps";
-import { SchemaGraph } from "../utils/SchemaGraph";
 
 type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
@@ -63,7 +63,10 @@ export class SchemaReadHelper<T = unknown> {
     // Ensure context matches schema context
     if (schema.context) {
       if (this._context !== schema.context)
-        throw new ECObjectsError(ECObjectsStatus.DifferentSchemaContexts, "The SchemaContext of the schema must be the same SchemaContext held by the SchemaReadHelper.");
+        throw new ECObjectsError(
+          ECObjectsStatus.DifferentSchemaContexts,
+          "The SchemaContext of the schema must be the same SchemaContext held by the SchemaReadHelper.",
+        );
     } else {
       (schema as Schema as MutableSchema).setContext(this._context);
     }
@@ -194,7 +197,10 @@ export class SchemaReadHelper<T = unknown> {
   private async loadSchemaReference(schemaInfo: SchemaInfo, refKey: Readonly<SchemaKey>): Promise<void> {
     const refSchema = await this._context.getSchema(refKey, SchemaMatchType.LatestWriteCompatible);
     if (undefined === refSchema)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${refKey.name}.${refKey.version.toString()}, of ${schemaInfo.schemaKey.name}`);
+      throw new ECObjectsError(
+        ECObjectsStatus.UnableToLocateSchema,
+        `Could not locate the referenced schema, ${refKey.name}.${refKey.version.toString()}, of ${schemaInfo.schemaKey.name}`,
+      );
 
     await (this._schema as MutableSchema).addReference(refSchema);
     const results = this.validateSchemaReferences(this._schema!);
@@ -217,7 +223,10 @@ export class SchemaReadHelper<T = unknown> {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
     const refSchema = this._context.getSchemaSync(schemaKey, SchemaMatchType.LatestWriteCompatible);
     if (!refSchema)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
+      throw new ECObjectsError(
+        ECObjectsStatus.UnableToLocateSchema,
+        `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`,
+      );
 
     (this._schema as MutableSchema).addReferenceSync(refSchema);
 
@@ -328,7 +337,7 @@ export class SchemaReadHelper<T = unknown> {
         const enumerationProps = this._parser.parseEnumeration(schemaItemObject);
         await schemaItem.fromJSON(enumerationProps);
         break;
-      // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
+        // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
     }
 
     return schemaItem;
@@ -406,7 +415,7 @@ export class SchemaReadHelper<T = unknown> {
         const enumerationProps = this._parser.parseEnumeration(schemaItemObject);
         schemaItem.fromJSONSync(enumerationProps);
         break;
-      // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
+        // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
     }
     return schemaItem;
   }
@@ -425,7 +434,10 @@ export class SchemaReadHelper<T = unknown> {
     if (undefined !== schema && -1 !== fullOrQualifiedName.indexOf(":")) {
       const refName = schema.getReferenceNameByAlias(schemaName);
       if (undefined === refName)
-        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not resolve schema alias '${schemaName}' for schema item '${itemName}.`);
+        throw new ECObjectsError(
+          ECObjectsStatus.UnableToLocateSchema,
+          `Could not resolve schema alias '${schemaName}' for schema item '${itemName}.`,
+        );
       return [refName, itemName];
     }
 
@@ -444,7 +456,7 @@ export class SchemaReadHelper<T = unknown> {
     let schemaItem: SchemaItem | undefined;
     // TODO: A better solution should be investigated for handling both an alias and the schema name.
     const [schemaName, itemName] = SchemaReadHelper.resolveSchemaAndItemName(name, this._schema);
-    const isInThisSchema = (this._schema && this._schema.name.toLowerCase() === schemaName.toLowerCase());
+    const isInThisSchema = this._schema && this._schema.name.toLowerCase() === schemaName.toLowerCase();
 
     if (undefined === schemaName || 0 === schemaName.length)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${name} is invalid without a schema name`);
@@ -487,7 +499,7 @@ export class SchemaReadHelper<T = unknown> {
     let schemaItem: SchemaItem | undefined;
     // TODO: A better solution should be investigated for handling both an alias and the schema name.
     const [schemaName, itemName] = SchemaReadHelper.resolveSchemaAndItemName(name, this._schema);
-    const isInThisSchema = (this._schema && this._schema.name.toLowerCase() === schemaName.toLowerCase());
+    const isInThisSchema = this._schema && this._schema.name.toLowerCase() === schemaName.toLowerCase();
 
     if (undefined === schemaName || schemaName.length === 0)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${name} is invalid without a schema name`);
@@ -869,7 +881,6 @@ export class SchemaReadHelper<T = unknown> {
    * @param rawProperty The serialized property data.
    */
   private async loadPropertyTypes(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): Promise<void> {
-
     const loadTypeName = async (typeName: string) => {
       if (undefined === parsePrimitiveType(typeName))
         await this.findSchemaItem(typeName);
@@ -903,12 +914,22 @@ export class SchemaReadHelper<T = unknown> {
         return this.loadProperty(structArrProp, structArrPropertyProps, rawProperty);
 
       case "navigationproperty":
-        if (classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass && classObj.schemaItemType !== SchemaItemType.Mixin)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
+        if (
+          classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass &&
+          classObj.schemaItemType !== SchemaItemType.Mixin
+        )
+          throw new ECObjectsError(
+            ECObjectsStatus.InvalidECJson,
+            `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`,
+          );
 
         const navPropertyProps = this._parser.parseNavigationProperty(rawProperty);
         await this.findSchemaItem(navPropertyProps.relationshipName);
-        const navProp = await (classObj as MutableEntityClass).createNavigationProperty(propName, navPropertyProps.relationshipName, navPropertyProps.direction);
+        const navProp = await (classObj as MutableEntityClass).createNavigationProperty(
+          propName,
+          navPropertyProps.relationshipName,
+          navPropertyProps.direction,
+        );
         return this.loadProperty(navProp, navPropertyProps, rawProperty);
     }
   }
@@ -954,12 +975,22 @@ export class SchemaReadHelper<T = unknown> {
         return this.loadPropertySync(structArrProp, structArrPropertyProps, rawProperty);
 
       case "navigationproperty":
-        if (classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass && classObj.schemaItemType !== SchemaItemType.Mixin)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
+        if (
+          classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass &&
+          classObj.schemaItemType !== SchemaItemType.Mixin
+        )
+          throw new ECObjectsError(
+            ECObjectsStatus.InvalidECJson,
+            `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`,
+          );
 
         const navPropertyProps = this._parser.parseNavigationProperty(rawProperty);
         this.findSchemaItemSync(navPropertyProps.relationshipName);
-        const navProp = (classObj as MutableEntityClass).createNavigationPropertySync(propName, navPropertyProps.relationshipName, navPropertyProps.direction);
+        const navProp = (classObj as MutableEntityClass).createNavigationPropertySync(
+          propName,
+          navPropertyProps.relationshipName,
+          navPropertyProps.direction,
+        );
         return this.loadPropertySync(navProp, navPropertyProps, rawProperty);
     }
   }
@@ -1014,9 +1045,14 @@ export class SchemaReadHelper<T = unknown> {
       const caClass = await this.findSchemaItem(providerTuple[0]);
 
       // If custom attribute exist within the context and is referenced, validate the reference is defined in the container's schema
-      if (caClass && caClass.key.schemaName !== container.schema.name &&
-        !container.schema.getReferenceSync(caClass.key.schemaName)) {
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to load custom attribute ${caClass.fullName} from container ${container.fullName}, ${caClass.key.schemaName} reference not defined`);
+      if (
+        caClass && caClass.key.schemaName !== container.schema.name &&
+        !container.schema.getReferenceSync(caClass.key.schemaName)
+      ) {
+        throw new ECObjectsError(
+          ECObjectsStatus.InvalidECJson,
+          `Unable to load custom attribute ${caClass.fullName} from container ${container.fullName}, ${caClass.key.schemaName} reference not defined`,
+        );
       }
 
       // Second tuple entry ia a function that provides the CA instance.

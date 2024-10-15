@@ -7,10 +7,10 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
+import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
 import { RenderGraphic } from "./RenderGraphic";
 import { RenderPlanarClassifier } from "./RenderPlanarClassifier";
 import { RenderTextureDrape } from "./RenderSystem";
-import { ActiveSpatialClassifier } from "../SpatialClassifiersState";
 
 /** Describes the spatial classification applied to a [[Scene]].
  * @internal

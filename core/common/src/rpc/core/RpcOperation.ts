@@ -13,7 +13,10 @@ import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcResponseCacheControl } from "./RpcConstants";
 import { OPERATION, POLICY, RpcRegistry } from "./RpcRegistry";
 import {
-  RpcRequestCallback_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestTokenSupplier_T, RpcResponseCachingCallback_T,
+  RpcRequestCallback_T,
+  RpcRequestInitialRetryIntervalSupplier_T,
+  RpcRequestTokenSupplier_T,
+  RpcResponseCachingCallback_T,
 } from "./RpcRequest";
 
 /* eslint-disable deprecation/deprecation */
@@ -29,10 +32,10 @@ export class RpcOperationPolicy {
   public retryInterval: RpcRequestInitialRetryIntervalSupplier_T = (configuration) => configuration.pendingOperationRetryInterval;
 
   /** Called before every operation request on the frontend is sent. */
-  public requestCallback: RpcRequestCallback_T = (_request) => { };
+  public requestCallback: RpcRequestCallback_T = (_request) => {};
 
   /** Called after every operation request on the frontend is sent. */
-  public sentCallback: RpcRequestCallback_T = (_request) => { };
+  public sentCallback: RpcRequestCallback_T = (_request) => {};
 
   /**
    * Determines if caching is permitted for an operation response.
@@ -59,12 +62,15 @@ export class RpcOperation {
 
   /** Looks up an RPC operation by name. */
   public static lookup(target: string | RpcInterfaceDefinition, operationName: string): RpcOperation {
-    const definition = typeof (target) === "string" ? RpcRegistry.instance.lookupInterfaceDefinition(target) : target;
+    const definition = typeof target === "string" ? RpcRegistry.instance.lookupInterfaceDefinition(target) : target;
     const propertyName: string | symbol = RpcOperation.computeOperationName(operationName);
 
-    const proto = (definition.prototype as any);
+    const proto = definition.prototype as any;
     if (!proto.hasOwnProperty(propertyName))
-      throw new IModelError(BentleyStatus.ERROR, `RPC interface class "${definition.interfaceName}" does not does not declare operation "${operationName}"`);
+      throw new IModelError(
+        BentleyStatus.ERROR,
+        `RPC interface class "${definition.interfaceName}" does not does not declare operation "${operationName}"`,
+      );
 
     return proto[propertyName][OPERATION];
   }
@@ -87,7 +93,9 @@ export class RpcOperation {
   public readonly operationName: string;
 
   /** The version of this operation. */
-  public get interfaceVersion(): string { return this.interfaceDefinition.interfaceVersion; }
+  public get interfaceVersion(): string {
+    return this.interfaceDefinition.interfaceVersion;
+  }
 
   /** The policy for this operation. */
   public policy: RpcOperationPolicy;
@@ -134,18 +142,26 @@ export namespace RpcOperation { // eslint-disable-line no-redeclare
   /** Convenience decorator for setting an RPC operation policy that allows response caching. */
   export function allowResponseCaching(control: RpcResponseCacheControl = RpcResponseCacheControl.Immutable) {
     return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
-      descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, new class extends RpcOperationPolicy {
-        public override allowResponseCaching = () => control;
-      }());
+      descriptor.value[OPERATION] = new RpcOperation(
+        target.constructor as any,
+        propertyKey,
+        new class extends RpcOperationPolicy {
+          public override allowResponseCaching = () => control;
+        }(),
+      );
     };
   }
 
   /** Convenience decorator for setting an RPC operation policy that supplies the IModelRpcProps for an operation. */
   export function setRoutingProps(handler: RpcRequestTokenSupplier_T) {
     return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
-      descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, new class extends RpcOperationPolicy {
-        public override token = handler;
-      }());
+      descriptor.value[OPERATION] = new RpcOperation(
+        target.constructor as any,
+        propertyKey,
+        new class extends RpcOperationPolicy {
+          public override token = handler;
+        }(),
+      );
     };
   }
 

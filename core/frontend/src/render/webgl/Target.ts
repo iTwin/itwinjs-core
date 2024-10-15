@@ -7,19 +7,32 @@
  */
 
 import { assert, dispose, Id64, Id64String, IDisposable } from "@itwin/core-bentley";
-import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import {
-  AmbientOcclusion, AnalysisStyle, Frustum, ImageBuffer, ImageBufferFormat, Npc, RenderMode, RenderTexture, ThematicDisplayMode, ViewFlags,
+  AmbientOcclusion,
+  AnalysisStyle,
+  Frustum,
+  ImageBuffer,
+  ImageBufferFormat,
+  Npc,
+  RenderMode,
+  RenderTexture,
+  ThematicDisplayMode,
+  ViewFlags,
 } from "@itwin/core-common";
-import { ViewRect } from "../../common/ViewRect";
+import { Point2d, Point3d, Range3d, Transform, XAndY, XYZ } from "@itwin/core-geometry";
 import { canvasToImageBuffer, canvasToResizedCanvasWithBars, imageBufferToCanvas } from "../../common/ImageUtil";
+import { AnimationNodeId } from "../../common/internal/render/AnimationNodeId";
+import { _implementationProhibited } from "../../common/internal/Symbols";
+import { ViewRect } from "../../common/ViewRect";
+import { IModelConnection } from "../../IModelConnection";
 import { HiliteSet, ModelSubCategoryHiliteMode } from "../../SelectionSet";
+import { ActiveSpatialClassifier } from "../../SpatialClassifiersState";
 import { SceneContext } from "../../ViewContext";
 import { ReadImageBufferArgs, Viewport } from "../../Viewport";
-import { IModelConnection } from "../../IModelConnection";
 import { CanvasDecoration } from "../CanvasDecoration";
 import { Decorations } from "../Decorations";
 import { FeatureSymbology } from "../FeatureSymbology";
+import { FrameStatsCollector } from "../FrameStats";
 import { AnimationBranchStates } from "../GraphicBranch";
 import { Pixel } from "../Pixel";
 import { GraphicList } from "../RenderGraphic";
@@ -28,14 +41,15 @@ import { createEmptyRenderPlan, RenderPlan } from "../RenderPlan";
 import { PlanarClassifierMap, RenderPlanarClassifier } from "../RenderPlanarClassifier";
 import { RenderTextureDrape, TextureDrapeMap } from "../RenderSystem";
 import { PrimitiveVisibility, RenderTarget, RenderTargetDebugControl } from "../RenderTarget";
-import { ScreenSpaceEffectContext } from "../ScreenSpaceEffectBuilder";
 import { Scene } from "../Scene";
+import { ScreenSpaceEffectContext } from "../ScreenSpaceEffectBuilder";
 import { QueryTileFeaturesOptions, QueryVisibleFeaturesCallback } from "../VisibleFeature";
 import { BranchState } from "./BranchState";
 import { CachedGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
 import { DrawParams, ShaderProgramParams } from "./DrawCommand";
+import { EdgeSettings } from "./EdgeSettings";
 import { FrameBuffer } from "./FrameBuffer";
 import { GL } from "./GL";
 import { Batch, Branch, WorldDecorations } from "./Graphic";
@@ -52,18 +66,13 @@ import { ShaderProgramExecutor } from "./ShaderProgram";
 import { SolarShadowMap } from "./SolarShadowMap";
 import { desync, SyncTarget } from "./Sync";
 import { System } from "./System";
+import { TargetGraphics } from "./TargetGraphics";
 import { TargetUniforms } from "./TargetUniforms";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
 import { Texture2DHandle, TextureHandle } from "./Texture";
 import { TextureDrape } from "./TextureDrape";
-import { EdgeSettings } from "./EdgeSettings";
-import { TargetGraphics } from "./TargetGraphics";
 import { VisibleTileFeatures } from "./VisibleTileFeatures";
-import { FrameStatsCollector } from "../FrameStats";
-import { ActiveSpatialClassifier } from "../../SpatialClassifiersState";
-import { AnimationNodeId } from "../../common/internal/render/AnimationNodeId";
-import { _implementationProhibited } from "../../common/internal/Symbols";
 
 function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   const tmp = image.data[i0];
@@ -162,7 +171,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return map.isEnabled && map.isReady ? map.frustum : undefined;
   }
 
-  public override get debugControl(): RenderTargetDebugControl { return this; }
+  public override get debugControl(): RenderTargetDebugControl {
+    return this;
+  }
 
   public get viewRect(): ViewRect {
     return this.renderRect;
@@ -175,32 +186,58 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._overlayRenderState.flags.depthMask = false;
     this._overlayRenderState.flags.blend = true;
     this._overlayRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
-    this._compositor = SceneCompositor.create(this);  // compositor is created but not yet initialized... we are still undisposed
-    this.renderRect = rect ? rect : new ViewRect();  // if the rect is undefined, expect that it will be updated dynamically in an OnScreenTarget
+    this._compositor = SceneCompositor.create(this); // compositor is created but not yet initialized... we are still undisposed
+    this.renderRect = rect ? rect : new ViewRect(); // if the rect is undefined, expect that it will be updated dynamically in an OnScreenTarget
     if (undefined !== System.instance.antialiasSamples)
       this._antialiasSamples = System.instance.antialiasSamples;
     else
-      this._antialiasSamples = (undefined !== System.instance.options.antialiasSamples ? System.instance.options.antialiasSamples : 1);
+      this._antialiasSamples = undefined !== System.instance.options.antialiasSamples ? System.instance.options.antialiasSamples : 1;
   }
 
-  public get compositor() { return this._compositor; }
-  public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
-  public get readPixelsSelector(): Pixel.Selector { return this._readPixelsSelector; }
-  public get drawNonLocatable(): boolean { return this._drawNonLocatable; }
+  public get compositor() {
+    return this._compositor;
+  }
+  public get isReadPixelsInProgress(): boolean {
+    return this._isReadPixelsInProgress;
+  }
+  public get readPixelsSelector(): Pixel.Selector {
+    return this._readPixelsSelector;
+  }
+  public get drawNonLocatable(): boolean {
+    return this._drawNonLocatable;
+  }
 
-  public get techniques(): Techniques { return this.renderSystem.techniques; }
+  public get techniques(): Techniques {
+    return this.renderSystem.techniques;
+  }
 
-  public get hilites(): Hilites { return this._hilites; }
-  public get hiliteSyncTarget(): SyncTarget { return this._hiliteSyncTarget; }
+  public get hilites(): Hilites {
+    return this._hilites;
+  }
+  public get hiliteSyncTarget(): SyncTarget {
+    return this._hiliteSyncTarget;
+  }
 
-  public get pickExclusions(): Id64.Uint32Set { return this._currPickExclusions; }
+  public get pickExclusions(): Id64.Uint32Set {
+    return this._currPickExclusions;
+  }
 
-  public get flashed(): Id64.Uint32Pair | undefined { return Id64.isValid(this._flashedId) ? this._flashed : undefined; }
-  public get flashedId(): Id64String { return this._flashedId; }
-  public get flashIntensity(): number { return this._flashIntensity; }
+  public get flashed(): Id64.Uint32Pair | undefined {
+    return Id64.isValid(this._flashedId) ? this._flashed : undefined;
+  }
+  public get flashedId(): Id64String {
+    return this._flashedId;
+  }
+  public get flashIntensity(): number {
+    return this._flashIntensity;
+  }
 
-  public get analysisFraction(): number { return this._analysisFraction; }
-  public set analysisFraction(fraction: number) { this._analysisFraction = fraction; }
+  public get analysisFraction(): number {
+    return this._analysisFraction;
+  }
+  public set analysisFraction(fraction: number) {
+    this._analysisFraction = fraction;
+  }
 
   public override get animationBranches(): AnimationBranchStates | undefined {
     return this._animationBranches;
@@ -214,11 +251,19 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this._animationBranches = undefined;
   }
 
-  public override get antialiasSamples(): number { return this._antialiasSamples; }
-  public override set antialiasSamples(numSamples: number) { this._antialiasSamples = numSamples; }
+  public override get antialiasSamples(): number {
+    return this._antialiasSamples;
+  }
+  public override set antialiasSamples(numSamples: number) {
+    this._antialiasSamples = numSamples;
+  }
 
-  public get solarShadowMap(): SolarShadowMap { return this.compositor.solarShadowMap; }
-  public get isDrawingShadowMap(): boolean { return this.solarShadowMap.isEnabled && this.solarShadowMap.isDrawing; }
+  public get solarShadowMap(): SolarShadowMap {
+    return this.compositor.solarShadowMap;
+  }
+  public get isDrawingShadowMap(): boolean {
+    return this.solarShadowMap.isEnabled && this.solarShadowMap.isDrawing;
+  }
   public override getPlanarClassifier(id: Id64String): RenderPlanarClassifier | undefined {
     return undefined !== this._planarClassifiers ? this._planarClassifiers.get(id) : undefined;
   }
@@ -247,14 +292,30 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this._worldDecorations;
   }
 
-  public get currentBranch(): BranchState { return this.uniforms.branch.top; }
-  public get currentViewFlags(): ViewFlags { return this.currentBranch.viewFlags; }
-  public get currentTransform(): Transform { return this.currentBranch.transform; }
-  public get currentTransparencyThreshold(): number { return this.currentEdgeSettings.transparencyThreshold; }
-  public get currentEdgeSettings(): EdgeSettings { return this.currentBranch.edgeSettings; }
-  public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this.currentBranch.symbologyOverrides; }
-  public get currentPlanarClassifier(): PlanarClassifier | undefined { return this.currentBranch.planarClassifier; }
-  public get currentlyDrawingClassifier(): PlanarClassifier | undefined { return this._currentlyDrawingClassifier; }
+  public get currentBranch(): BranchState {
+    return this.uniforms.branch.top;
+  }
+  public get currentViewFlags(): ViewFlags {
+    return this.currentBranch.viewFlags;
+  }
+  public get currentTransform(): Transform {
+    return this.currentBranch.transform;
+  }
+  public get currentTransparencyThreshold(): number {
+    return this.currentEdgeSettings.transparencyThreshold;
+  }
+  public get currentEdgeSettings(): EdgeSettings {
+    return this.currentBranch.edgeSettings;
+  }
+  public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides {
+    return this.currentBranch.symbologyOverrides;
+  }
+  public get currentPlanarClassifier(): PlanarClassifier | undefined {
+    return this.currentBranch.planarClassifier;
+  }
+  public get currentlyDrawingClassifier(): PlanarClassifier | undefined {
+    return this._currentlyDrawingClassifier;
+  }
   public get currentTextureDrape(): TextureDrape | undefined {
     const drape = this.currentBranch.textureDrape;
     return undefined !== drape && drape.isReady ? drape : undefined;
@@ -268,8 +329,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return this.uniforms.branch.modelViewMatrix.multiplyPoint3dQuietNormalize(modelPt, result);
   }
 
-  public get is2d(): boolean { return this.uniforms.frustum.is2d; }
-  public get is3d(): boolean { return !this.is2d; }
+  public get is2d(): boolean {
+    return this.uniforms.frustum.is2d;
+  }
+  public get is3d(): boolean {
+    return !this.is2d;
+  }
 
   private _isDisposed = false;
   public get isDisposed(): boolean {
@@ -401,7 +466,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   public get wantThematicSensors(): boolean {
     const thematic = this.plan.thematic;
-    return this.wantThematicDisplay && undefined !== thematic && ThematicDisplayMode.InverseDistanceWeightedSensors === thematic.displayMode && thematic.sensorSettings.sensors.length > 0;
+    return this.wantThematicDisplay && undefined !== thematic && ThematicDisplayMode.InverseDistanceWeightedSensors === thematic.displayMode &&
+      thematic.sensorSettings.sensors.length > 0;
   }
 
   public override updateSolarShadows(context: SceneContext | undefined): void {
@@ -410,10 +476,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   // ---- Implementation of RenderTarget interface ---- //
 
-  public get renderSystem(): System { return System.instance; }
+  public get renderSystem(): System {
+    return System.instance;
+  }
 
-  public get planFraction() { return this.uniforms.frustum.planFraction; }
-  public get planFrustum() { return this.uniforms.frustum.planFrustum; }
+  public get planFraction() {
+    return this.uniforms.frustum.planFraction;
+  }
+  public get planFrustum() {
+    return this.uniforms.frustum.planFrustum;
+  }
 
   public changeDecorations(decs: Decorations): void {
     this.graphics.decorations = decs;
@@ -443,9 +515,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<String, T> | undefined, newMap: Map<String, T> | undefined): void {
     if (undefined === newMap) {
-      if (undefined !== oldMap)
+      if (undefined !== oldMap) {
         for (const value of oldMap.values())
           value.dispose();
+      }
 
       return;
     }
@@ -549,7 +622,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     assert(this.renderSystem.frameBufferStack.isEmpty);
   }
 
-  protected drawOverlayDecorations(): void { }
+  protected drawOverlayDecorations(): void {}
 
   /**
    * Invoked via Viewport.changeView() when the owning Viewport is changed to look at a different view.
@@ -580,7 +653,9 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     Primitive.freeParams();
   }
 
-  public get wantInvertBlackBackground(): boolean { return false; }
+  public get wantInvertBlackBackground(): boolean {
+    return false;
+  }
 
   public computeEdgeWeight(pass: RenderPass, baseWeight: number): number {
     return this.currentEdgeSettings.getWeight(pass, this.currentViewFlags) ?? baseWeight;
@@ -635,9 +710,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private _frameStatsCollector = new FrameStatsCollector();
 
-  public get frameStatsCollector(): FrameStatsCollector { return this._frameStatsCollector; }
+  public get frameStatsCollector(): FrameStatsCollector {
+    return this._frameStatsCollector;
+  }
 
-  public override assignFrameStatsCollector(collector: FrameStatsCollector) { this._frameStatsCollector = collector; }
+  public override assignFrameStatsCollector(collector: FrameStatsCollector) {
+    this._frameStatsCollector = collector;
+  }
 
   private paintScene(sceneMilSecElapsed?: number): void {
     if (!this._dcAssigned)
@@ -657,7 +736,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     // Set this to true to visualize the output of readPixels()...useful for debugging pick.
     if (this.drawForReadPixels) {
       this.beginReadPixels(Pixel.Selector.Feature);
-      this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay, this.graphics.decorations?.viewOverlay);
+      this.compositor.drawForReadPixels(
+        this._renderCommands,
+        this.graphics.overlays,
+        this.graphics.decorations?.worldOverlay,
+        this.graphics.decorations?.viewOverlay,
+      );
       this.endReadPixels();
     } else {
       // After the Target is first created or any time its dimensions change, SceneCompositor.preDraw() must update
@@ -750,7 +834,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return true;
   }
 
-  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void {
+  public readPixels(
+    rect: ViewRect,
+    selector: Pixel.Selector,
+    receiver: Pixel.Receiver,
+    excludeNonLocatable: boolean,
+    excludedElements?: Iterable<Id64String>,
+  ): void {
     if (!this.assignDC())
       return;
 
@@ -811,7 +901,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
   private createOrReuseReadPixelResources(rect: ViewRect): ReadPixelResources | undefined {
     if (this._readPixelReusableResources !== undefined) {
-
       // To reuse a texture, we need it to be the same size or bigger than what we need
       if (this._readPixelReusableResources.texture.width >= rect.width && this._readPixelReusableResources.texture.height >= rect.height) {
         const resources = this._readPixelReusableResources;
@@ -842,7 +931,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     let reuseResources = !isTooBigToReuse;
 
     if (reuseResources && this._readPixelReusableResources !== undefined) {
-
       // Keep the biggest texture
       if (this._readPixelReusableResources.texture.width > texture.width && this._readPixelReusableResources.texture.height > texture.height) {
         reuseResources = false; // The current resources being reused are better
@@ -948,7 +1036,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.beginReadPixels(selector, rectFrust);
 
     // Draw the scene
-    this.compositor.drawForReadPixels(this._renderCommands, this.graphics.overlays, this.graphics.decorations?.worldOverlay, this.graphics.decorations?.viewOverlay);
+    this.compositor.drawForReadPixels(
+      this._renderCommands,
+      this.graphics.overlays,
+      this.graphics.decorations?.worldOverlay,
+      this.graphics.decorations?.viewOverlay,
+    );
 
     if (this.performanceMetrics && !this.performanceMetrics.gatherCurPerformanceMetrics) { // Only collect readPixels data if in disp-perf-test-app
       this.performanceMetrics.endOperation(); // End the 'CPU Total Time' operation
@@ -985,7 +1078,11 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     return result;
   }
 
-  public override queryVisibleTileFeatures(options: QueryTileFeaturesOptions, iModel: IModelConnection, callback: QueryVisibleFeaturesCallback): void {
+  public override queryVisibleTileFeatures(
+    options: QueryTileFeaturesOptions,
+    iModel: IModelConnection,
+    callback: QueryVisibleFeaturesCallback,
+  ): void {
     this.beginReadPixels(Pixel.Selector.Feature);
     callback(new VisibleTileFeatures(this._renderCommands, options, this, iModel));
     this.endReadPixels();
@@ -1076,7 +1173,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         return undefined;
 
       const adjustedTargetSize = Target._applyAspectRatioCorrection(new Point2d(wantRect.width, wantRect.height), targetSize);
-      const resizedCanvas = canvasToResizedCanvasWithBars(canvas, adjustedTargetSize, new Point2d(targetSize.x - adjustedTargetSize.x, targetSize.y - adjustedTargetSize.y), this.uniforms.style.backgroundHexString);
+      const resizedCanvas = canvasToResizedCanvasWithBars(
+        canvas,
+        adjustedTargetSize,
+        new Point2d(targetSize.x - adjustedTargetSize.x, targetSize.y - adjustedTargetSize.y),
+        this.uniforms.style.backgroundHexString,
+      );
 
       const resizedImage = canvasToImageBuffer(resizedCanvas);
       if (undefined !== resizedImage)
@@ -1150,7 +1252,12 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
         return undefined;
 
       const adjustedSize = Target._applyAspectRatioCorrection({ x: captureRect.width, y: captureRect.height }, args.size);
-      canvas = canvasToResizedCanvasWithBars(canvas, adjustedSize, new Point2d(args.size.x - adjustedSize.x, args.size.y - adjustedSize.y), this.uniforms.style.backgroundHexString);
+      canvas = canvasToResizedCanvasWithBars(
+        canvas,
+        adjustedSize,
+        new Point2d(args.size.x - adjustedSize.x, args.size.y - adjustedSize.y),
+        this.uniforms.style.backgroundHexString,
+      );
       image = canvasToImageBuffer(canvas);
       if (!image)
         return undefined;
@@ -1257,7 +1364,8 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       Math.floor(rect.left * ratio),
       Math.floor(rect.top * ratio),
       Math.floor(rect.right * ratio),
-      Math.floor(rect.bottom * ratio));
+      Math.floor(rect.bottom * ratio),
+    );
   }
 
   public getRenderCommands(): Array<{ name: string, count: number }> {
@@ -1300,8 +1408,12 @@ class CanvasState {
     return true;
   }
 
-  public get width() { return this.canvas.width; }
-  public get height() { return this.canvas.height; }
+  public get width() {
+    return this.canvas.width;
+  }
+  public get height() {
+    return this.canvas.height;
+  }
 }
 
 /** A Target that renders to a canvas on the screen
@@ -1316,7 +1428,9 @@ export class OnScreenTarget extends Target {
   private _scratchDrawParams?: DrawParams;
   private _devicePixelRatioOverride?: number;
 
-  private get _curCanvas() { return this._usingWebGLCanvas ? this._webglCanvas : this._2dCanvas; }
+  private get _curCanvas() {
+    return this._usingWebGLCanvas ? this._webglCanvas : this._2dCanvas;
+  }
 
   public constructor(canvas: HTMLCanvasElement) {
     super();
@@ -1344,8 +1458,12 @@ export class OnScreenTarget extends Target {
       this._blitGeom.collectStatistics(stats);
   }
 
-  public get devicePixelRatioOverride(): number | undefined { return this._devicePixelRatioOverride; }
-  public set devicePixelRatioOverride(ovr: number | undefined) { this._devicePixelRatioOverride = ovr; }
+  public get devicePixelRatioOverride(): number | undefined {
+    return this._devicePixelRatioOverride;
+  }
+  public set devicePixelRatioOverride(ovr: number | undefined) {
+    this._devicePixelRatioOverride = ovr;
+  }
   public override get devicePixelRatio(): number {
     if (undefined !== this.devicePixelRatioOverride)
       return this.devicePixelRatioOverride;
@@ -1527,7 +1645,9 @@ export class OffScreenTarget extends Target {
     assert(false); // offscreen viewport's dimensions are set once, in constructor.
   }
 
-  public updateViewRect(): boolean { return false; } // offscreen target does not dynamically resize the view rect
+  public updateViewRect(): boolean {
+    return false;
+  } // offscreen target does not dynamically resize the view rect
 
   public setViewRect(rect: ViewRect, temporary: boolean): void {
     if (this.renderRect.equals(rect))

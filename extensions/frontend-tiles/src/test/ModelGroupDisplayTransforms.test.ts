@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ModelDisplayTransform, ModelDisplayTransformProvider } from "@itwin/core-frontend";
-import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms";
 import { Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
+import { ModelGroupDisplayTransforms } from "../ModelGroupDisplayTransforms";
 
 describe("ModelGroupDisplayTransforms", () => {
   it("detects whether groupings have changed", () => {
@@ -33,7 +33,7 @@ describe("ModelGroupDisplayTransforms", () => {
     expect(update(undefined)).to.be.false;
     expect(update(createProvider([]))).to.be.false;
 
-    let provider = createProvider([ createTransform("0x1", 1) ]);
+    let provider = createProvider([createTransform("0x1", 1)]);
     expect(update(provider)).to.be.true;
     expect(update(provider)).to.be.false;
     expect(update(undefined)).to.be.true;

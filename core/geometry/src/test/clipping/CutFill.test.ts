@@ -4,18 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
+import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
 import { GeometryQuery } from "../../curve/GeometryQuery";
-import { Checker } from "../Checker";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
-import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { Sample } from "../../serialization/GeometrySamples";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
+import { Sample } from "../../serialization/GeometrySamples";
+import { Checker } from "../Checker";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 function clipMeshToRange(range: Range3d, mesh: Polyface): { inside: Polyface | undefined, outside: Polyface | undefined } {
   const clipper = ConvexClipPlaneSet.createRange3dPlanes(range);
@@ -88,7 +88,17 @@ function createVolumeBelowSurfaceMeshInRange(mesh: IndexedPolyface, clipRange: R
 }
 
 function createSampleUndulatingSurface(numX: number, numY: number): IndexedPolyface {
-  const mesh = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 1), Vector3d.create(1, 0.1, 0.3), Vector3d.create(-0.2, 1, 0.5), numX, numY, false, false, false, true);
+  const mesh = Sample.createTriangularUnitGridPolyface(
+    Point3d.create(0, 0, 1),
+    Vector3d.create(1, 0.1, 0.3),
+    Vector3d.create(-0.2, 1, 0.5),
+    numX,
+    numY,
+    false,
+    false,
+    false,
+    true,
+  );
   PolyfaceQuery.markAllEdgeVisibility(mesh, true);
   // introduce some wobble in the z direction to make the surface more interesting ...
   const workPoint = Point3d.create();
@@ -124,7 +134,6 @@ describe("CutFill", () => {
       GeometryCoreTestIO.saveGeometry(allGeometry, "CutFill", "RangeBoxClipA");
       expect(ck.getNumErrors()).toBe(0);
     }
-
   });
   it("RangeBoxClipB", () => {
     const ck = new Checker();
@@ -135,10 +144,12 @@ describe("CutFill", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0);
     y0 += 12.0;
     const allRanges = [];
-    allRanges.push(Range3d.createXYZXYZ(-2, -2, -1, 10, 10, 5),
+    allRanges.push(
+      Range3d.createXYZXYZ(-2, -2, -1, 10, 10, 5),
       Range3d.createXYZXYZ(1, 2, -3, 5, 10, 10),
       Range3d.createXYZXYZ(0.5, 0.5, -1, 5.2, 5.8, 10),
-      Range3d.createXYZXYZ(-1, -1, 1, 10, 8, 3.0));
+      Range3d.createXYZXYZ(-1, -1, 1, 10, 8, 3.0),
+    );
     for (const clipRange of allRanges) {
       x0 += 20.0;
       GeometryCoreTestIO.captureRangeEdges(allGeometry, clipRange, x0, y0);
@@ -152,5 +163,4 @@ describe("CutFill", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "CutFill", "RangeBoxClipB");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

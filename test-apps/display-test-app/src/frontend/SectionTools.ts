@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent } from "@itwin/core-bentley";
-import { createButton, createComboBox } from "@itwin/frontend-devtools";
-import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vector3d } from "@itwin/core-geometry";
 import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import { AccuDrawHintBuilder, IModelApp, ScreenViewport, ViewClipDecorationProvider, Viewport } from "@itwin/core-frontend";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vector3d } from "@itwin/core-geometry";
+import { createButton, createComboBox } from "@itwin/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 
@@ -82,7 +82,7 @@ export class SectionsPanel extends ToolBarDropDown {
           bounds: vp.getClientRect(),
           buffer: 10,
           parent: vp.canvas.parentElement!,
-          onDragged: (left, _right) => ModelClipTool.applyModelClipping(vp, new Point3d(left, (vp.getClientRect().height / 2), 0), negate),
+          onDragged: (left, _right) => ModelClipTool.applyModelClipping(vp, new Point3d(left, vp.getClientRect().height / 2, 0), negate),
         };
         const divider = new TwoPanelDivider(props);
         divider.dividerElem.style.zIndex = "10";
@@ -93,16 +93,24 @@ export class SectionsPanel extends ToolBarDropDown {
     });
     createButton({
       value: "Negate Plane",
-      handler: () => { negate = !negate; },
+      handler: () => {
+        negate = !negate;
+      },
       parent: div,
       inline: true,
       tooltip: "Negate Plane",
     });
   }
 
-  protected _open(): void { this._element.style.display = "block"; }
-  protected _close(): void { this._element.style.display = "none"; }
-  public get isOpen(): boolean { return "block" === this._element.style.display; }
+  protected _open(): void {
+    this._element.style.display = "block";
+  }
+  protected _close(): void {
+    this._element.style.display = "none";
+  }
+  public get isOpen(): boolean {
+    return "block" === this._element.style.display;
+  }
 }
 
 class ModelClipTool {
@@ -191,7 +199,10 @@ export class TwoPanelDivider {
       left = props.bounds.width / 2;
 
     this.dividerElem = IModelApp.makeHTMLElement("div");
-    this.dividerElem.setAttribute("style", "width: 4px; position: fixed; display: flex; background-color: #f1f1f1; border: 1px solid #d3d3d3; /*dde0e3*/ pointer-events: visible;");
+    this.dividerElem.setAttribute(
+      "style",
+      "width: 4px; position: fixed; display: flex; background-color: #f1f1f1; border: 1px solid #d3d3d3; /*dde0e3*/ pointer-events: visible;",
+    );
 
     if (props.id !== undefined)
       this.dividerElem.id = props.id;
@@ -203,7 +214,10 @@ export class TwoPanelDivider {
       props.parent.appendChild(this.dividerElem);
 
     const handle = IModelApp.makeHTMLElement("div");
-    handle.setAttribute("style", "position: relative;  box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 0.25);  left: -10px;  padding: 12px;  height: 32px;  border-radius: 1.5px;  cursor: col-resize;  align-self: center;  background-color: #69ade3; /* dde0e3 */  /* dots c8ccd0*/  color: #fff;");
+    handle.setAttribute(
+      "style",
+      "position: relative;  box-shadow: 0px 1px 5px 0px rgba(0, 0, 0, 0.25);  left: -10px;  padding: 12px;  height: 32px;  border-radius: 1.5px;  cursor: col-resize;  align-self: center;  background-color: #69ade3; /* dde0e3 */  /* dots c8ccd0*/  color: #fff;",
+    );
     this.dividerElem.appendChild(handle);
 
     if (props.onDragged)

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterface } from "../RpcInterface";
 import { describe, expect, it } from "vitest";
+import { RpcInterface } from "../RpcInterface";
 
 describe("isVersionCompatible", () => {
   it("pass when versions match exactly with prerelease tags", () => {

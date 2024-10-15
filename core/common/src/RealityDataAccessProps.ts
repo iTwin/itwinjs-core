@@ -17,7 +17,7 @@ export enum DefaultSupportedTypes {
   OPC = "OPC", // Web Ready Orbit Point Cloud
   Terrain3dTiles = "Terrain3DTiles", // Web Ready Terrain Scalable Mesh
   OMR = "OMR", // Orbit Mapping Resource
-  Cesium3dTiles = "Cesium3DTiles" // Cesium 3D Tiles
+  Cesium3dTiles = "Cesium3DTiles", // Cesium 3D Tiles
 }
 
 /** RealityData

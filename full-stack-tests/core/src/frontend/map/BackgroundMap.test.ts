@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef } from "@itwin/core-common";
 import { IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
+import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
@@ -49,7 +49,14 @@ describe("Background map (#integration)", () => {
   it("obscures model based on settings", async () => {
     type PixelType = "model" | "bg" | "map";
 
-    async function expectPixelTypes(vp: TestViewport, mapProps: BackgroundMapProps | undefined, expectedCenterColor: PixelType, expectedCornerColor: PixelType, expectedCenterFeature: PixelType, expectedCornerFeature: PixelType): Promise<void> {
+    async function expectPixelTypes(
+      vp: TestViewport,
+      mapProps: BackgroundMapProps | undefined,
+      expectedCenterColor: PixelType,
+      expectedCornerColor: PixelType,
+      expectedCenterFeature: PixelType,
+      expectedCornerFeature: PixelType,
+    ): Promise<void> {
       if (mapProps) {
         vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
         vp.backgroundMapSettings = BackgroundMapSettings.fromJSON(mapProps);
@@ -105,7 +112,6 @@ describe("Background map (#integration)", () => {
       [{ groundBias: -10 }, "model", "map", "model", "map"],
       [{ useDepthBuffer: true, groundBias: 10 }, "map", "map", "map", "map"],
       [{ useDepthBuffer: true, groundBias: -10 }, "model", "map", "model", "map"],
-
       // ###TODO: Can't test with applyTerrain=true because ApproximateTerrainHeights.json not found...
     ];
 

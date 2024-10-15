@@ -7,17 +7,24 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
 import {
-  BatchType, FeatureAppearance, FeatureAppearanceProvider, GeometryClass, HiddenLine, RealityModelDisplaySettings, RenderMode, ViewFlags,
+  BatchType,
+  FeatureAppearance,
+  FeatureAppearanceProvider,
+  GeometryClass,
+  HiddenLine,
+  RealityModelDisplaySettings,
+  RenderMode,
+  ViewFlags,
 } from "@itwin/core-common";
+import { Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { ClipVolume } from "./ClipVolume";
+import { EdgeSettings } from "./EdgeSettings";
 import { Branch } from "./Graphic";
 import { PlanarClassifier } from "./PlanarClassifier";
 import { TextureDrape } from "./TextureDrape";
-import { EdgeSettings } from "./EdgeSettings";
 
 /** Options used to construct a BranchState.
  * @internal
@@ -60,24 +67,60 @@ export interface BranchStateOptions {
 export class BranchState {
   private readonly _opts: BranchStateOptions;
 
-  public get transform() { return this._opts.transform; }
-  public get viewFlags() { return this._opts.viewFlags; }
-  public set viewFlags(vf: ViewFlags) { this._opts.viewFlags = vf.normalize(); }
-  public get clipVolume() { return this._opts.clipVolume; }
-  public get forceViewCoords(): boolean { return true === this._opts.forceViewCoords; }
-  public get planarClassifier() { return this._opts.planarClassifier; }
-  public get textureDrape() { return this._opts.textureDrape; }
-  public get edgeSettings() { return this._opts.edgeSettings; }
-  public get iModel() { return this._opts.iModel; }
-  public get transformFromIModel() { return this._opts.transformFromIModel; }
-  public get is3d() { return this._opts.is3d; }
-  public get frustumScale() { return this._opts.frustumScale!; }
-  public get appearanceProvider() { return this._opts.appearanceProvider; }
-  public get secondaryClassifiers() { return this._opts.secondaryClassifiers; }
-  public get realityModelDisplaySettings() { return this._opts.realityModelDisplaySettings; }
-  public get viewAttachmentId() { return this._opts.viewAttachmentId; }
-  public get groupNodeId() { return this._opts.groupNodeId; }
-  public get disableClipStyle() { return this._opts.disableClipStyle;}
+  public get transform() {
+    return this._opts.transform;
+  }
+  public get viewFlags() {
+    return this._opts.viewFlags;
+  }
+  public set viewFlags(vf: ViewFlags) {
+    this._opts.viewFlags = vf.normalize();
+  }
+  public get clipVolume() {
+    return this._opts.clipVolume;
+  }
+  public get forceViewCoords(): boolean {
+    return true === this._opts.forceViewCoords;
+  }
+  public get planarClassifier() {
+    return this._opts.planarClassifier;
+  }
+  public get textureDrape() {
+    return this._opts.textureDrape;
+  }
+  public get edgeSettings() {
+    return this._opts.edgeSettings;
+  }
+  public get iModel() {
+    return this._opts.iModel;
+  }
+  public get transformFromIModel() {
+    return this._opts.transformFromIModel;
+  }
+  public get is3d() {
+    return this._opts.is3d;
+  }
+  public get frustumScale() {
+    return this._opts.frustumScale!;
+  }
+  public get appearanceProvider() {
+    return this._opts.appearanceProvider;
+  }
+  public get secondaryClassifiers() {
+    return this._opts.secondaryClassifiers;
+  }
+  public get realityModelDisplaySettings() {
+    return this._opts.realityModelDisplaySettings;
+  }
+  public get viewAttachmentId() {
+    return this._opts.viewAttachmentId;
+  }
+  public get groupNodeId() {
+    return this._opts.groupNodeId;
+  }
+  public get disableClipStyle() {
+    return this._opts.disableClipStyle;
+  }
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -100,14 +143,16 @@ export class BranchState {
       symbologyOverrides: branch.branch.symbologyOverrides ?? prev.symbologyOverrides,
       iModel: branch.iModel ?? prev.iModel,
       transformFromIModel: branch.transformFromExternalIModel ?? prev.transformFromIModel,
-      planarClassifier: (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier,
+      planarClassifier: (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture)
+        ? branch.planarClassifier
+        : prev.planarClassifier,
       textureDrape: branch.textureDrape ?? prev.textureDrape,
       clipVolume: branch.clips,
       forceViewCoords: prev.forceViewCoords,
       edgeSettings: branch.edgeSettings ?? prev.edgeSettings,
       is3d: branch.frustum?.is3d ?? prev.is3d,
       frustumScale: branch.frustum?.scale ?? prev.frustumScale,
-      secondaryClassifiers: branch.secondaryClassifiers?? prev.secondaryClassifiers,
+      secondaryClassifiers: branch.secondaryClassifiers ?? prev.secondaryClassifiers,
       // The branch can augment the symbology overrides. If it doesn't want to, allow its parent to do so, unless this branch supplies its own symbology overrides.
       appearanceProvider: branch.appearanceProvider ?? (branch.branch.symbologyOverrides ? undefined : prev.appearanceProvider),
       realityModelDisplaySettings: branch.branch.realityModelDisplaySettings ?? prev.realityModelDisplaySettings,
@@ -117,9 +162,31 @@ export class BranchState {
     });
   }
 
-  public getFeatureAppearance(overrides: FeatureSymbology.Overrides, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
+  public getFeatureAppearance(
+    overrides: FeatureSymbology.Overrides,
+    elemLo: number,
+    elemHi: number,
+    subcatLo: number,
+    subcatHi: number,
+    geomClass: GeometryClass,
+    modelLo: number,
+    modelHi: number,
+    type: BatchType,
+    animationNodeId: number,
+  ): FeatureAppearance | undefined {
     if (this._opts.appearanceProvider)
-      return this._opts.appearanceProvider.getFeatureAppearance(overrides, elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
+      return this._opts.appearanceProvider.getFeatureAppearance(
+        overrides,
+        elemLo,
+        elemHi,
+        subcatLo,
+        subcatHi,
+        geomClass,
+        modelLo,
+        modelHi,
+        type,
+        animationNodeId,
+      );
 
     return overrides.getAppearance(elemLo, elemHi, subcatLo, subcatHi, geomClass, modelLo, modelHi, type, animationNodeId);
   }

@@ -5,13 +5,28 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import {
-  AbstractStatusBarCustomItem, AbstractStatusBarItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue,
-  isAbstractStatusBarActionItem, isAbstractStatusBarCustomItem, isAbstractStatusBarLabelItem, StatusBarItemsManager, StatusBarSection,
+  AbstractStatusBarCustomItem,
+  AbstractStatusBarItemUtilities,
+  CommonStatusBarItem,
+  ConditionalBooleanValue,
+  ConditionalStringValue,
+  isAbstractStatusBarActionItem,
+  isAbstractStatusBarCustomItem,
+  isAbstractStatusBarLabelItem,
+  StatusBarItemsManager,
+  StatusBarSection,
 } from "../../appui-abstract";
 
 describe("StatusBarItemsManager", () => {
-  const createCustomItem = (id: string, section: StatusBarSection, itemPriority: number, itemProps?: Partial<AbstractStatusBarCustomItem>): AbstractStatusBarCustomItem => ({
-    id, section, itemPriority,
+  const createCustomItem = (
+    id: string,
+    section: StatusBarSection,
+    itemPriority: number,
+    itemProps?: Partial<AbstractStatusBarCustomItem>,
+  ): AbstractStatusBarCustomItem => ({
+    id,
+    section,
+    itemPriority,
     isCustom: true,
     ...itemProps ? itemProps : {},
   });
@@ -27,7 +42,15 @@ describe("StatusBarItemsManager", () => {
 
   describe("type guards", () => {
     it("should identify label item", () => {
-      const item = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello", undefined, { isDisabled: true, isHidden: true });
+      const item = AbstractStatusBarItemUtilities.createLabelItem(
+        "ExtensionTest:StatusBarLabel1",
+        StatusBarSection.Center,
+        100,
+        "icon-hand-2",
+        "Hello",
+        undefined,
+        { isDisabled: true, isHidden: true },
+      );
       expect(isAbstractStatusBarLabelItem(item)).to.be.true;
       expect(isAbstractStatusBarActionItem(item)).to.be.false;
       expect(isAbstractStatusBarCustomItem(item)).to.be.false;
@@ -36,7 +59,14 @@ describe("StatusBarItemsManager", () => {
     });
 
     it("should identify action item", () => {
-      const item = AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem1", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension", () => { });
+      const item = AbstractStatusBarItemUtilities.createActionItem(
+        "ExtensionTest:StatusBarItem1",
+        StatusBarSection.Center,
+        100,
+        "icon-developer",
+        "test status bar from extension",
+        () => {},
+      );
       expect(isAbstractStatusBarActionItem(item)).to.be.true;
       expect(isAbstractStatusBarLabelItem(item)).to.be.false;
       expect(isAbstractStatusBarCustomItem(item)).to.be.false;
@@ -52,13 +82,25 @@ describe("StatusBarItemsManager", () => {
 
   describe("add & remove", () => {
     it("should instantiate with item", () => {
-      const item = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
+      const item = AbstractStatusBarItemUtilities.createLabelItem(
+        "ExtensionTest:StatusBarLabel1",
+        StatusBarSection.Center,
+        100,
+        "icon-hand-2",
+        "Hello",
+      );
       const sut = new StatusBarItemsManager([item]);
       expect(sut.items.length).to.eq(1);
     });
 
     it("should add item without callback", () => {
-      const item = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
+      const item = AbstractStatusBarItemUtilities.createLabelItem(
+        "ExtensionTest:StatusBarLabel1",
+        StatusBarSection.Center,
+        100,
+        "icon-hand-2",
+        "Hello",
+      );
       const sut = new StatusBarItemsManager();
 
       const spy = sinon.spy();
@@ -72,7 +114,13 @@ describe("StatusBarItemsManager", () => {
     it("should add & remove one item", () => {
       const sut = new StatusBarItemsManager();
 
-      const item = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
+      const item = AbstractStatusBarItemUtilities.createLabelItem(
+        "ExtensionTest:StatusBarLabel1",
+        StatusBarSection.Center,
+        100,
+        "icon-hand-2",
+        "Hello",
+      );
       expect(isAbstractStatusBarLabelItem(item)).to.be.true;
       expect(isAbstractStatusBarActionItem(item)).to.be.false;
 
@@ -86,7 +134,13 @@ describe("StatusBarItemsManager", () => {
     it("attempt to set duplicate items ignores it", () => {
       const sut = new StatusBarItemsManager();
 
-      const item = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
+      const item = AbstractStatusBarItemUtilities.createLabelItem(
+        "ExtensionTest:StatusBarLabel1",
+        StatusBarSection.Center,
+        100,
+        "icon-hand-2",
+        "Hello",
+      );
 
       sut.add(item);
       expect(sut.items.length).to.eq(1);
@@ -98,8 +152,20 @@ describe("StatusBarItemsManager", () => {
     it("add ignores duplicate items", () => {
       const sut = new StatusBarItemsManager();
 
-      const item1 = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
-      const item2 = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
+      const item1 = AbstractStatusBarItemUtilities.createLabelItem(
+        "ExtensionTest:StatusBarLabel1",
+        StatusBarSection.Center,
+        100,
+        "icon-hand-2",
+        "Hello",
+      );
+      const item2 = AbstractStatusBarItemUtilities.createLabelItem(
+        "ExtensionTest:StatusBarLabel1",
+        StatusBarSection.Center,
+        100,
+        "icon-hand-2",
+        "Hello",
+      );
       sut.add([item1, item2]);
       expect(sut.items.length).to.eq(1);
     });
@@ -107,7 +173,13 @@ describe("StatusBarItemsManager", () => {
     it("attempt to add duplicate item ignores it", () => {
       const sut = new StatusBarItemsManager();
 
-      const item = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello");
+      const item = AbstractStatusBarItemUtilities.createLabelItem(
+        "ExtensionTest:StatusBarLabel1",
+        StatusBarSection.Center,
+        100,
+        "icon-hand-2",
+        "Hello",
+      );
 
       sut.add(item);
       expect(sut.items.length).to.eq(1);
@@ -121,7 +193,14 @@ describe("StatusBarItemsManager", () => {
 
       const items: CommonStatusBarItem[] = [
         AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello"),
-        AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem2", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension", () => { }),
+        AbstractStatusBarItemUtilities.createActionItem(
+          "ExtensionTest:StatusBarItem2",
+          StatusBarSection.Center,
+          100,
+          "icon-developer",
+          "test status bar from extension",
+          () => {},
+        ),
         createCustomItem("ExtensionTest:StatusBarItem3", StatusBarSection.Center, 100),
       ];
 
@@ -138,7 +217,14 @@ describe("StatusBarItemsManager", () => {
 
       const items: CommonStatusBarItem[] = [
         AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", "Hello"),
-        AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem2", StatusBarSection.Center, 100, "icon-developer", "test status bar from extension", () => { }),
+        AbstractStatusBarItemUtilities.createActionItem(
+          "ExtensionTest:StatusBarItem2",
+          StatusBarSection.Center,
+          100,
+          "icon-developer",
+          "test status bar from extension",
+          () => {},
+        ),
         createCustomItem("ExtensionTest:StatusBarItem3", StatusBarSection.Center, 100),
       ];
 
@@ -159,8 +245,12 @@ describe("StatusBarItemsManager", () => {
   describe("uisync", () => {
     let isVisible = true;
     let isEnabled = true;
-    const setVisibility = (value: boolean) => { isVisible = value; };
-    const setEnabled = (value: boolean) => { isEnabled = value; };
+    const setVisibility = (value: boolean) => {
+      isVisible = value;
+    };
+    const setEnabled = (value: boolean) => {
+      isEnabled = value;
+    };
     const syncId = "test-on-display-changed";
     const hiddenCondition = new ConditionalBooleanValue(() => !isVisible, [syncId]);
     const disabledCondition = new ConditionalBooleanValue(() => !isEnabled, [syncId]);
@@ -170,11 +260,32 @@ describe("StatusBarItemsManager", () => {
 
     const sut = new StatusBarItemsManager();
 
-    const item1 = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 100, "icon-hand-2", conditionalLabel, undefined,
-      { isHidden: hiddenCondition });  // try to init isVisible to false but this should be reset when loaded due to condition function
-    const item2 = AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel2", StatusBarSection.Center, 110, conditionalIcon, "Hello", undefined,
-      { isDisabled: disabledCondition });
-    const sb3 = AbstractStatusBarItemUtilities.createActionItem("ExtensionTest:StatusBarItem3", StatusBarSection.Center, 120, "icon-developer", toolTipConditional, () => { });
+    const item1 = AbstractStatusBarItemUtilities.createLabelItem(
+      "ExtensionTest:StatusBarLabel1",
+      StatusBarSection.Center,
+      100,
+      "icon-hand-2",
+      conditionalLabel,
+      undefined,
+      { isHidden: hiddenCondition },
+    ); // try to init isVisible to false but this should be reset when loaded due to condition function
+    const item2 = AbstractStatusBarItemUtilities.createLabelItem(
+      "ExtensionTest:StatusBarLabel2",
+      StatusBarSection.Center,
+      110,
+      conditionalIcon,
+      "Hello",
+      undefined,
+      { isDisabled: disabledCondition },
+    );
+    const sb3 = AbstractStatusBarItemUtilities.createActionItem(
+      "ExtensionTest:StatusBarItem3",
+      StatusBarSection.Center,
+      120,
+      "icon-developer",
+      toolTipConditional,
+      () => {},
+    );
 
     sut.add([item1, item2, sb3]);
 
@@ -223,7 +334,5 @@ describe("StatusBarItemsManager", () => {
     if (isAbstractStatusBarActionItem(item3!)) {
       expect(ConditionalStringValue.getValue(item3.tooltip)).to.be.equal("new tooltip");
     }
-
   });
-
 });

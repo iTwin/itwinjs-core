@@ -36,7 +36,11 @@ import {
  */
 export class ImageryMapLayerFormat extends MapLayerFormat {
   /** @internal */
-  public static override createMapLayerTree(layerSettings: ImageMapLayerSettings, layerIndex: number, iModel: IModelConnection): MapLayerTileTreeReference | undefined {
+  public static override createMapLayerTree(
+    layerSettings: ImageMapLayerSettings,
+    layerIndex: number,
+    iModel: IModelConnection,
+  ): MapLayerTileTreeReference | undefined {
     return new ImageryMapLayerTreeReference({ layerSettings, layerIndex, iModel });
   }
 }
@@ -47,23 +51,33 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
     return new WmsMapLayerImageryProvider(settings);
   }
-  public static override async validateSource(url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    const source =  MapLayerSource.fromJSON({name: "", formatId: WmsMapLayerFormat.formatId, url});
+  public static override async validateSource(
+    url: string,
+    userName?: string,
+    password?: string,
+    ignoreCache?: boolean,
+  ): Promise<MapLayerSourceValidation> {
+    const source = MapLayerSource.fromJSON({ name: "", formatId: WmsMapLayerFormat.formatId, url });
     if (source === undefined)
       return { status: MapLayerSourceStatus.InvalidFormat };
     source.userName = userName;
     source.password = password;
-    return WmsMapLayerFormat.validate({source, ignoreCache});
+    return WmsMapLayerFormat.validate({ source, ignoreCache });
   }
 
   public static override async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
-    const {source, ignoreCache} = args;
+    const { source, ignoreCache } = args;
     const { url, userName, password } = source;
 
     try {
       let subLayers: MapSubLayerProps[] | undefined;
       const maxVisibleSubLayers = 50;
-      const capabilities = await WmsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, source.collectQueryParams());
+      const capabilities = await WmsCapabilities.create(
+        url,
+        userName && password ? { user: userName, password } : undefined,
+        ignoreCache,
+        source.collectQueryParams(),
+      );
       if (capabilities !== undefined) {
         subLayers = capabilities.getSubLayers(false);
         const rootsSubLayer = subLayers?.find((sublayer) => sublayer.parent === undefined);
@@ -76,10 +90,12 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
           // In general for WMS, we prefer to have the children of root node visible, but not the root itself.
           // Thats simply to give more flexibility in the UI.
           // Two exceptions to this rule: If there are too many layers or the root node is not named.
-          if (subLayer.id && subLayer.id === rootsSubLayer?.id
-            && (!(subLayer.name && subLayer.name.length > 0) || hasTooManyLayers)) {
+          if (
+            subLayer.id && subLayer.id === rootsSubLayer?.id
+            && (!(subLayer.name && subLayer.name.length > 0) || hasTooManyLayers)
+          ) {
             subLayer.visible = true;
-            break;  // if root node is visible, don't bother turning ON any other layers
+            break; // if root node is visible, don't bother turning ON any other layers
           }
 
           // Make children of the root node visible.
@@ -112,12 +128,11 @@ class WmsMapLayerFormat extends ImageryMapLayerFormat {
     } catch (err: any) {
       let status = MapLayerSourceStatus.InvalidUrl;
       if (err?.status === 401) {
-        status = ((userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
+        status = (userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth;
       }
-      return { status};
+      return { status };
     }
   }
-
 }
 
 class WmtsMapLayerFormat extends ImageryMapLayerFormat {
@@ -127,26 +142,36 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
     return new WmtsMapLayerImageryProvider(settings);
   }
 
-  public static override async validateSource(url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    const source =  MapLayerSource.fromJSON({name: "", formatId: WmtsMapLayerFormat.formatId, url});
+  public static override async validateSource(
+    url: string,
+    userName?: string,
+    password?: string,
+    ignoreCache?: boolean,
+  ): Promise<MapLayerSourceValidation> {
+    const source = MapLayerSource.fromJSON({ name: "", formatId: WmtsMapLayerFormat.formatId, url });
     if (source === undefined)
       return { status: MapLayerSourceStatus.InvalidFormat };
     source.userName = userName;
     source.password = password;
-    return WmtsMapLayerFormat.validate({source, ignoreCache});
+    return WmtsMapLayerFormat.validate({ source, ignoreCache });
   }
 
   public static override async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
-    const {source, ignoreCache} = args;
+    const { source, ignoreCache } = args;
     const { url, userName, password } = source;
     try {
       const subLayers: MapSubLayerProps[] = [];
-      const capabilities = await WmtsCapabilities.create(url, (userName && password ? {user: userName, password} : undefined), ignoreCache, source.collectQueryParams());
+      const capabilities = await WmtsCapabilities.create(
+        url,
+        userName && password ? { user: userName, password } : undefined,
+        ignoreCache,
+        source.collectQueryParams(),
+      );
       if (!capabilities)
         return { status: MapLayerSourceStatus.InvalidUrl };
 
       // Only returns layer that can be published in the Google maps or WGS84 aligned tile trees.
-      let supportedTms: WmtsCapability.TileMatrixSet[]  = [];
+      let supportedTms: WmtsCapability.TileMatrixSet[] = [];
       const googleMapsTms = capabilities?.contents?.getGoogleMapsCompatibleTileMatrixSet();
       if (googleMapsTms) {
         supportedTms = googleMapsTms;
@@ -170,7 +195,7 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
           subLayers.push({
             name: layer.identifier,
             title: layer.title ?? layer.identifier,
-            visible: (subLayers.length === 0),   // Make the first layer visible.
+            visible: (subLayers.length === 0), // Make the first layer visible.
             parent: undefined,
             children: undefined,
             id: subLayerId++,
@@ -186,32 +211,36 @@ class WmtsMapLayerFormat extends ImageryMapLayerFormat {
     } catch (err: any) {
       let status = MapLayerSourceStatus.InvalidUrl;
       if (err?.status === 401) {
-        status = ((userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth);
+        status = (userName && password) ? MapLayerSourceStatus.InvalidCredentials : MapLayerSourceStatus.RequireAuth;
       }
-      return { status};
+      return { status };
     }
   }
-
 }
 
 class ArcGISMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "ArcGIS";
-  public static override async validateSource(url: string, userName?: string, password?: string, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
-    const source =  MapLayerSource.fromJSON({name: "", formatId: WmtsMapLayerFormat.formatId, url});
+  public static override async validateSource(
+    url: string,
+    userName?: string,
+    password?: string,
+    ignoreCache?: boolean,
+  ): Promise<MapLayerSourceValidation> {
+    const source = MapLayerSource.fromJSON({ name: "", formatId: WmtsMapLayerFormat.formatId, url });
     if (source === undefined)
       return { status: MapLayerSourceStatus.InvalidFormat };
     source.userName = userName;
     source.password = password;
-    return WmtsMapLayerFormat.validate({source, ignoreCache});
+    return WmtsMapLayerFormat.validate({ source, ignoreCache });
   }
 
   public static override async validate(args: ValidateSourceArgs): Promise<MapLayerSourceValidation> {
     const urlValidation = ArcGisUtilities.validateUrl(args.source.url, "MapServer");
     if (urlValidation !== MapLayerSourceStatus.Valid)
-      return {status: urlValidation};
+      return { status: urlValidation };
 
     // Some Map service supporting only tiles don't include the 'Map' capabilities, thus we can't make it mandatory.
-    return ArcGisUtilities.validateSource({...args, capabilitiesFilter: []});
+    return ArcGisUtilities.validateSource({ ...args, capabilitiesFilter: [] });
   }
 
   public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
@@ -241,8 +270,17 @@ class MapBoxImageryMapLayerFormat extends ImageryMapLayerFormat {
 }
 class TileUrlMapLayerFormat extends ImageryMapLayerFormat {
   public static override formatId = "TileURL";
-  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined { return new TileUrlImageryProvider(settings); }
+  public static override createImageryProvider(settings: ImageMapLayerSettings): MapLayerImageryProvider | undefined {
+    return new TileUrlImageryProvider(settings);
+  }
 }
 
 /** @internal */
-export const internalMapLayerImageryFormats = [WmsMapLayerFormat, WmtsMapLayerFormat, ArcGISMapLayerFormat, /* AzureMapsMapLayerFormat, */ BingMapsMapLayerFormat, MapBoxImageryMapLayerFormat, TileUrlMapLayerFormat];
+export const internalMapLayerImageryFormats = [
+  WmsMapLayerFormat,
+  WmtsMapLayerFormat,
+  ArcGISMapLayerFormat,
+  /* AzureMapsMapLayerFormat, */ BingMapsMapLayerFormat,
+  MapBoxImageryMapLayerFormat,
+  TileUrlMapLayerFormat,
+];

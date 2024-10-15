@@ -28,23 +28,22 @@ import { TransitionSpiral3d } from "./TransitionSpiral3d";
 import { XYCurveEvaluator } from "./XYCurveEvaluator";
 
 /**
-* DirectSpiral3d acts like a TransitionSpiral3d for serialization purposes, but implements spiral types that have "direct" xy calculations without the integrations required
-* for IntegratedSpiral3d.
-* * Each DirectSpiral3d carries an XYCurveEvaluator to give it specialized behavior.
-* * Direct spirals that flow through serialization to native imodel02 are create with these static methods:
-*   * createArema
-*   * createJapaneseCubic
-*   * createAustralianRail
-*   * createDirectHalfCosine
-*   * createChineseCubic
-*   * createCzechCubic
-*   * createPolishCubic
-*   * createItalian
-*   * createWesternAustralian
-* @public
-*/
+ * DirectSpiral3d acts like a TransitionSpiral3d for serialization purposes, but implements spiral types that have "direct" xy calculations without the integrations required
+ * for IntegratedSpiral3d.
+ * * Each DirectSpiral3d carries an XYCurveEvaluator to give it specialized behavior.
+ * * Direct spirals that flow through serialization to native imodel02 are create with these static methods:
+ *   * createArema
+ *   * createJapaneseCubic
+ *   * createAustralianRail
+ *   * createDirectHalfCosine
+ *   * createChineseCubic
+ *   * createCzechCubic
+ *   * createPolishCubic
+ *   * createItalian
+ *   * createWesternAustralian
+ * @public
+ */
 export class DirectSpiral3d extends TransitionSpiral3d {
-
   /** String name for schema properties */
 
   public readonly curvePrimitiveType = "transitionSpiral";
@@ -57,22 +56,32 @@ export class DirectSpiral3d extends TransitionSpiral3d {
    */
   private _activeStrokes?: LineString3d;
   /** Return the internal stroked form of the (possibly partial) spiral   */
-  public get activeStrokes(): LineString3d { return this._activeStrokes !== undefined ? this._activeStrokes : this._globalStrokes; }
+  public get activeStrokes(): LineString3d {
+    return this._activeStrokes !== undefined ? this._activeStrokes : this._globalStrokes;
+  }
 
   private _nominalL1: number;
   private _nominalR1: number;
   private _evaluator: XYCurveEvaluator;
 
   /** Return the nominal end radius. */
-  public get nominalR1(): number { return this._nominalR1; }
+  public get nominalR1(): number {
+    return this._nominalR1;
+  }
   /** Return the nominal distance from inflection to endpoint. */
-  public get nominalL1(): number { return this._nominalL1; }
+  public get nominalL1(): number {
+    return this._nominalL1;
+  }
   /** Return the nominal end curvature */
-  public get nominalCurvature1(): number { return TransitionSpiral3d.radiusToCurvature(this._nominalR1); }
+  public get nominalCurvature1(): number {
+    return TransitionSpiral3d.radiusToCurvature(this._nominalR1);
+  }
   /** Return the low level evaluator
    * @internal
    */
-  public get evaluator(): XYCurveEvaluator { return this._evaluator; }
+  public get evaluator(): XYCurveEvaluator {
+    return this._evaluator;
+  }
 
   // constructor demands radius1 and distance1 for nominal construction.
   // caller is responsible for managing intervals of partial spiral
@@ -83,7 +92,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     nominalL1: number,
     nominalR1: number,
     activeFractionInterval: Segment1d | undefined,
-    evaluator: XYCurveEvaluator) {
+    evaluator: XYCurveEvaluator,
+  ) {
     super(spiralType, localToWorld, activeFractionInterval, originalProperties);
     this._nominalL1 = nominalL1;
     this._nominalR1 = nominalR1;
@@ -110,12 +120,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     for (let i = 0; i <= numInterval; i++) {
       const fraction = Geometry.interpolate(fractionA, i / numInterval, fractionB);
       const nominalDistanceAlong = fraction * nominalIntervalLength;
-      strokes.packedPoints.pushXYZ(this._evaluator.fractionToX(fraction),
-        this._evaluator.fractionToY(fraction), 0);
+      strokes.packedPoints.pushXYZ(this._evaluator.fractionToX(fraction), this._evaluator.fractionToY(fraction), 0);
       distances.pushXY(fraction, nominalDistanceAlong); // the second distance will be updated below
     }
     if (applyLocalToWorld)
-      strokes.tryTransformInPlace (this._localToWorld);
+      strokes.tryTransformInPlace(this._localToWorld);
     let fraction0 = distances.getXAtUncheckedPointIndex(0);
     let trueDistance0 = distances.getYAtUncheckedPointIndex(0); // whatever was assigned as start distance is fine
     let trueDistance1, fraction1;
@@ -126,7 +135,6 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       fraction0 = fraction1;
       trueDistance0 = trueDistance1;
     }
-
   }
   /** Recompute strokes */
   public override refreshComputedProperties() {
@@ -136,8 +144,7 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     this.computeStrokes(this._globalStrokes, 0, 1, numInterval);
     const numActiveInterval = Math.ceil(this._activeFractionInterval.absoluteDelta() * numInterval);
     this._activeStrokes = LineString3d.create();
-    this.computeStrokes(this._activeStrokes, this._activeFractionInterval.x0, this._activeFractionInterval.x1,
-      numActiveInterval);
+    this.computeStrokes(this._activeStrokes, this._activeFractionInterval.x0, this._activeFractionInterval.x1, numActiveInterval);
   }
   /**
    * Create a spiral object which uses numXTerm terms from the clothoid X series and numYTerm from the clothoid Y series.
@@ -151,10 +158,13 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   public static createTruncatedClothoid(
     spiralType: string,
     localToWorld: Transform,
-    numXTerm: number, numYTerm: number,
+    numXTerm: number,
+    numYTerm: number,
     originalProperties: TransitionConditionalProperties | undefined,
-    nominalL1: number, nominalR1: number,
-    activeInterval: Segment1d | undefined): DirectSpiral3d | undefined {
+    nominalL1: number,
+    nominalR1: number,
+    activeInterval: Segment1d | undefined,
+  ): DirectSpiral3d | undefined {
     if (numXTerm < 1)
       numXTerm = 1;
     if (numYTerm < 1)
@@ -164,8 +174,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       localToWorld.clone(),
       spiralType,
       originalProperties,
-      nominalL1, nominalR1,
-      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
+      nominalL1,
+      nominalR1,
+      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1),
+      evaluator,
+    );
   }
   /**
    * Create an Japanese spiral clothoid approximation
@@ -181,7 +194,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform,
     nominalL1: number,
     nominalR1: number,
-    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
     return this.createTruncatedClothoid("JapaneseCubic", localToWorld, 1, 1, undefined, nominalL1, nominalR1, activeInterval);
   }
   /**
@@ -201,7 +215,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform,
     nominalLx: number,
     nominalR1: number,
-    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
     const evaluator = CzechSpiralEvaluator.create(nominalLx, nominalR1);
     if (evaluator === undefined)
       return undefined;
@@ -209,8 +224,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       localToWorld.clone(),
       "Czech",
       undefined,
-      nominalLx, nominalR1,
-      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
+      nominalLx,
+      nominalR1,
+      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1),
+      evaluator,
+    );
   }
   /**
    * Create an italian spiral
@@ -230,7 +248,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform,
     nominalL1: number,
     nominalR1: number,
-    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
     const evaluator = ItalianSpiralEvaluator.create(nominalL1, nominalR1);
     if (evaluator === undefined)
       return undefined;
@@ -238,8 +257,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       localToWorld.clone(),
       "Italian",
       undefined,
-      nominalL1, nominalR1,
-      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
+      nominalL1,
+      nominalR1,
+      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1),
+      evaluator,
+    );
   }
 
   /**
@@ -259,7 +281,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform,
     nominalL1: number,
     nominalR1: number,
-    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
     const evaluator = MXCubicAlongArcEvaluator.create(nominalL1, nominalR1);
     if (evaluator === undefined)
       return undefined;
@@ -267,8 +290,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       localToWorld.clone(),
       "MXCubicAlongArc",
       undefined,
-      nominalL1, nominalR1,
-      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
+      nominalL1,
+      nominalR1,
+      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1),
+      evaluator,
+    );
   }
 
   /**
@@ -285,7 +311,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform,
     nominalL1: number,
     nominalR1: number,
-    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
     const evaluator = PolishCubicEvaluator.create(nominalL1, nominalR1);
     if (evaluator === undefined)
       return undefined;
@@ -293,8 +320,11 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       localToWorld.clone(),
       "PolishCubic",
       undefined,
-      nominalL1, nominalR1,
-      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
+      nominalL1,
+      nominalR1,
+      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1),
+      evaluator,
+    );
   }
 
   /**
@@ -314,7 +344,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform,
     nominalL1: number,
     nominalR1: number,
-    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
     const evaluator = AustralianRailCorpXYEvaluator.create(nominalL1, nominalR1);
     if (evaluator === undefined)
       return undefined;
@@ -322,17 +353,28 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       localToWorld.clone(),
       "AustralianRailCorp",
       undefined,
-      nominalL1, nominalR1,
-      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1), evaluator);
+      nominalL1,
+      nominalR1,
+      activeInterval ? activeInterval.clone() : Segment1d.create(0, 1),
+      evaluator,
+    );
   }
 
   public static createDirectHalfCosine(
     localToWorld: Transform,
     nominalL1: number,
     nominalR1: number,
-    activeInterval?: Segment1d): DirectSpiral3d | undefined {
-    return new this(localToWorld, "HalfCosine", undefined, nominalL1, nominalR1, activeInterval,
-      new DirectHalfCosineSpiralEvaluator(nominalL1, nominalR1));
+    activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
+    return new this(
+      localToWorld,
+      "HalfCosine",
+      undefined,
+      nominalL1,
+      nominalR1,
+      activeInterval,
+      new DirectHalfCosineSpiralEvaluator(nominalL1, nominalR1),
+    );
   }
   /**
    * Create an Arema spiral clothoid approximation
@@ -348,7 +390,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform,
     nominalL1: number,
     nominalR1: number,
-    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
     return this.createTruncatedClothoid("Arema", localToWorld, 2, 2, undefined, nominalL1, nominalR1, activeInterval);
   }
 
@@ -366,7 +409,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform,
     nominalL1: number,
     nominalR1: number,
-    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
     return this.createTruncatedClothoid("ChineseCubic", localToWorld, 2, 2, undefined, nominalL1, nominalR1, activeInterval);
   }
   /**
@@ -382,7 +426,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     localToWorld: Transform,
     nominalL1: number,
     nominalR1: number,
-    activeInterval?: Segment1d): DirectSpiral3d | undefined {
+    activeInterval?: Segment1d,
+  ): DirectSpiral3d | undefined {
     return this.createTruncatedClothoid("WesternAustralian", localToWorld, 2, 1, undefined, nominalL1, nominalR1, activeInterval);
   }
   /**
@@ -412,7 +457,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
     _bearing1: Angle | undefined,
     arcLength: number | undefined,
     activeInterval: undefined | Segment1d,
-    localToWorld: Transform): TransitionSpiral3d | undefined {
+    localToWorld: Transform,
+  ): TransitionSpiral3d | undefined {
     if (bearing0 !== undefined && !bearing0.isAlmostZero)
       return undefined;
     if (radius0 !== undefined && !Geometry.isSmallMetricDistance(radius0))
@@ -452,7 +498,8 @@ export class DirectSpiral3d extends TransitionSpiral3d {
       this._nominalL1,
       this._nominalR1,
       this._activeFractionInterval?.clone(),
-      this._evaluator.clone());
+      this._evaluator.clone(),
+    );
   }
 
   /** apply `transform` to this spiral's local to world transform. */
@@ -468,9 +515,13 @@ export class DirectSpiral3d extends TransitionSpiral3d {
   }
 
   /** Return the spiral start point. */
-  public override startPoint(): Point3d { return this.activeStrokes.startPoint(); }
+  public override startPoint(): Point3d {
+    return this.activeStrokes.startPoint();
+  }
   /** return the spiral end point. */
-  public override endPoint(): Point3d { return this.activeStrokes.endPoint(); }
+  public override endPoint(): Point3d {
+    return this.activeStrokes.endPoint();
+  }
   /** test if the local to world transform places the spiral xy plane into `plane` */
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return plane.isPointInPlane(this.localToWorld.origin as Point3d)
@@ -490,12 +541,16 @@ export class DirectSpiral3d extends TransitionSpiral3d {
    */
   //   use the generic integrator ... public override curveLength() { return this.quickLength(); }
   /** Test if `other` is an instance of `TransitionSpiral3d` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof DirectSpiral3d; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof DirectSpiral3d;
+  }
   /** Add strokes from this spiral to `dest`.
    * * Linestrings will usually stroke as just their points.
    * * If maxEdgeLength is given, this will sub-stroke within the linestring -- not what we want.
    */
-  public emitStrokes(dest: LineString3d, options?: StrokeOptions): void { this.activeStrokes.emitStrokes(dest, options); }
+  public emitStrokes(dest: LineString3d, options?: StrokeOptions): void {
+    this.activeStrokes.emitStrokes(dest, options);
+  }
   /** emit stroke fragments to `dest` handler. */
   public emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void {
     const n = this.computeStrokeCountForOptions(options);

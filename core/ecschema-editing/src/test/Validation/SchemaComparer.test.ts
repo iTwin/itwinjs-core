@@ -3,10 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { AnyECType, AnyProperty, Constant, CustomAttributeClass, ECClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PropertyCategory,
-  RelationshipClass, Schema, SchemaContext, StructClass, Unit,
+import {
+  AnyECType,
+  AnyProperty,
+  Constant,
+  CustomAttributeClass,
+  ECClass,
+  EntityClass,
+  Enumeration,
+  Format,
+  InvertedUnit,
+  KindOfQuantity,
+  Mixin,
+  Phenomenon,
+  PropertyCategory,
+  RelationshipClass,
+  Schema,
+  SchemaContext,
+  StructClass,
+  Unit,
 } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { AnyDiagnostic, DiagnosticCategory, DiagnosticType } from "../../Validation/Diagnostic";
 import { ISchemaChanges, SchemaChanges } from "../../Validation/SchemaChanges";
 import { SchemaCompareCodes } from "../../Validation/SchemaCompareDiagnostics";
@@ -100,7 +117,14 @@ describe("Schema comparison tests", () => {
     });
   }
 
-  function validateDiagnostic(diagnostic: AnyDiagnostic, expectedCode: string, expectedType: DiagnosticType, expectedObject: AnyECType | undefined, expectedArgs: any[], expectedSchema: Schema | undefined) {
+  function validateDiagnostic(
+    diagnostic: AnyDiagnostic,
+    expectedCode: string,
+    expectedType: DiagnosticType,
+    expectedObject: AnyECType | undefined,
+    expectedArgs: any[],
+    expectedSchema: Schema | undefined,
+  ) {
     expect(diagnostic.category).to.equal(DiagnosticCategory.Error);
     expect(diagnostic.code).to.equal(expectedCode);
     expect(diagnostic.diagnosticType).to.equal(expectedType);
@@ -125,7 +149,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaDelta, DiagnosticType.Schema, schemaA, ["schemaKey", schemaA.schemaKey.toString(), schemaB.schemaKey.toString()], schemaA);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaDelta, DiagnosticType.Schema, schemaA, [
+        "schemaKey",
+        schemaA.schemaKey.toString(),
+        schemaB.schemaKey.toString(),
+      ], schemaA);
     });
 
     it("Different version, diagnostic reported", async () => {
@@ -137,7 +165,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaDelta, DiagnosticType.Schema, schemaA, ["schemaKey", schemaA.schemaKey.toString(), schemaB.schemaKey.toString()], schemaA);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaDelta, DiagnosticType.Schema, schemaA, [
+        "schemaKey",
+        schemaA.schemaKey.toString(),
+        schemaB.schemaKey.toString(),
+      ], schemaA);
     });
 
     it("Different alias, diagnostic reported", async () => {
@@ -161,7 +193,14 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaDelta, DiagnosticType.Schema, schemaA, ["label", "labelA", "labelB"], schemaA);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.SchemaDelta,
+        DiagnosticType.Schema,
+        schemaA,
+        ["label", "labelA", "labelB"],
+        schemaA,
+      );
     });
 
     it("Different description, diagnostic reported", async () => {
@@ -173,7 +212,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaDelta, DiagnosticType.Schema, schemaA, ["description", "descriptionA", "descriptionB"], schemaA);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaDelta, DiagnosticType.Schema, schemaA, [
+        "description",
+        "descriptionA",
+        "descriptionB",
+      ], schemaA);
     });
 
     it("Different references, diagnostic reported for each schema", async () => {
@@ -228,8 +271,16 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaA, [refSchemaA, "01.00.00", "02.00.00"], schemaA);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaB, [refSchemaA2, "02.00.00", "01.00.00"], schemaB);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaA, [
+        refSchemaA,
+        "01.00.00",
+        "02.00.00",
+      ], schemaA);
+      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaB, [
+        refSchemaA2,
+        "02.00.00",
+        "01.00.00",
+      ], schemaB);
     });
 
     it("Reference missing from Schema B, diagnostic reported", async () => {
@@ -356,7 +407,14 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaItemDelta, DiagnosticType.SchemaItem, itemA, ["label", "labelA", "labelB"], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.SchemaItemDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["label", "labelA", "labelB"],
+        itemA.schema,
+      );
     });
 
     it("Undefined and empty label are considered equivalent, diagnostic not reported", async () => {
@@ -406,7 +464,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaItemDelta, DiagnosticType.SchemaItem, itemA, ["description", "descriptionA", "descriptionB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaItemDelta, DiagnosticType.SchemaItem, itemA, [
+        "description",
+        "descriptionA",
+        "descriptionB",
+      ], itemA.schema);
     });
 
     it("Different SchemaItemType, diagnostic reported", async () => {
@@ -443,7 +505,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaItemDelta, DiagnosticType.SchemaItem, itemA, ["schemaItemType", "EntityClass", "Mixin"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaItemDelta, DiagnosticType.SchemaItem, itemA, [
+        "schemaItemType",
+        "EntityClass",
+        "Mixin",
+      ], itemA.schema);
     });
 
     it("Same SchemaItemType, diagnostic not reported", async () => {
@@ -474,8 +540,7 @@ describe("Schema comparison tests", () => {
           schemaItemType: "EntityClass",
         },
       };
-      const bItems = {
-      };
+      const bItems = {};
       const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
       const bJson = getSchemaJsonWithItems(schemaAJson, bItems);
       const schemaA = await Schema.fromJson(aJson, contextA);
@@ -513,7 +578,14 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.ClassDelta, DiagnosticType.SchemaItem, itemA, ["modifier", "Sealed", "None"], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.ClassDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["modifier", "Sealed", "None"],
+        itemA.schema,
+      );
     });
 
     it("Same modifier, diagnostic reported", async () => {
@@ -564,7 +636,10 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.BaseClassDelta, DiagnosticType.SchemaItem, itemA, [await itemA.baseClass, undefined], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.BaseClassDelta, DiagnosticType.SchemaItem, itemA, [
+        await itemA.baseClass,
+        undefined,
+      ], itemA.schema);
     });
 
     it("Different baseClass, Schema A has undefined base class, diagnostic reported", async () => {
@@ -596,7 +671,10 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.BaseClassDelta, DiagnosticType.SchemaItem, itemA, [undefined, await itemB.baseClass], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.BaseClassDelta, DiagnosticType.SchemaItem, itemA, [
+        undefined,
+        await itemB.baseClass,
+      ], itemA.schema);
     });
 
     it("Different baseClass, diagnostic reported", async () => {
@@ -636,7 +714,14 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.BaseClassDelta, DiagnosticType.SchemaItem, itemA, [baseClassA, baseClassB], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.BaseClassDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        [baseClassA, baseClassB],
+        itemA.schema,
+      );
     });
 
     it("Same baseClass, diagnostic not reported", async () => {
@@ -768,7 +853,6 @@ describe("Schema comparison tests", () => {
               typeName: "int",
             },
           ],
-
         },
       };
       const aJson = getSchemaJsonWithItems(schemaAJson, aItems);
@@ -781,7 +865,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaItemDelta, DiagnosticType.SchemaItem, itemA, ["schemaItemType", "StructClass", "EntityClass"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaItemDelta, DiagnosticType.SchemaItem, itemA, [
+        "schemaItemType",
+        "StructClass",
+        "EntityClass",
+      ], itemA.schema);
     });
   });
 
@@ -1151,7 +1239,14 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["label", "labelA", "labelB"], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.PropertyDelta,
+        DiagnosticType.Property,
+        itemAProp,
+        ["label", "labelA", "labelB"],
+        itemA.schema,
+      );
     });
 
     it("Undefined and empty label are considered equivalent, diagnostic not reported", async () => {
@@ -1229,7 +1324,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["description", "descriptionA", "descriptionB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "description",
+        "descriptionA",
+        "descriptionB",
+      ], itemA.schema);
     });
 
     it("Different isReadOnly, diagnostic reported", async () => {
@@ -1270,7 +1369,14 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["isReadOnly", true, false], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.PropertyDelta,
+        DiagnosticType.Property,
+        itemAProp,
+        ["isReadOnly", true, false],
+        itemA.schema,
+      );
     });
 
     it("Different priority, diagnostic reported", async () => {
@@ -1311,7 +1417,14 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["priority", 1, 2], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.PropertyDelta,
+        DiagnosticType.Property,
+        itemAProp,
+        ["priority", 1, 2],
+        itemA.schema,
+      );
     });
 
     it("Different category, diagnostic reported", async () => {
@@ -1376,7 +1489,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["category", "SchemaA.CategoryA", "SchemaA.CategoryB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "category",
+        "SchemaA.CategoryA",
+        "SchemaA.CategoryB",
+      ], itemA.schema);
     });
 
     it("Schema A category undefined, diagnostic reported", async () => {
@@ -1428,7 +1545,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["category", undefined, "SchemaA.CategoryA"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "category",
+        undefined,
+        "SchemaA.CategoryA",
+      ], itemA.schema);
     });
 
     it("Schema B category undefined, diagnostic reported", async () => {
@@ -1480,7 +1601,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["category", "SchemaA.CategoryA", undefined], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "category",
+        "SchemaA.CategoryA",
+        undefined,
+      ], itemA.schema);
     });
 
     it("Different kindOfQuantity, diagnostic reported", async () => {
@@ -1595,7 +1720,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["kindOfQuantity", "SchemaA.KindOfQuantityA", "SchemaA.KindOfQuantityB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "kindOfQuantity",
+        "SchemaA.KindOfQuantityA",
+        "SchemaA.KindOfQuantityB",
+      ], itemA.schema);
     });
 
     it("Schema A kindOfQuantity undefined, diagnostic reported", async () => {
@@ -1691,7 +1820,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["kindOfQuantity", undefined, "SchemaA.KindOfQuantityA"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "kindOfQuantity",
+        undefined,
+        "SchemaA.KindOfQuantityA",
+      ], itemA.schema);
     });
 
     it("Schema B kindOfQuantity undefined, diagnostic reported", async () => {
@@ -1787,7 +1920,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["kindOfQuantity", "SchemaA.KindOfQuantityA", undefined], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "kindOfQuantity",
+        "SchemaA.KindOfQuantityA",
+        undefined,
+      ], itemA.schema);
     });
 
     it("Different propertyType, diagnostic reported", async () => {
@@ -1834,7 +1971,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["type", "PrimitiveProperty", "PrimitiveArrayProperty"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "type",
+        "PrimitiveProperty",
+        "PrimitiveArrayProperty",
+      ], itemA.schema);
     });
 
     it("Different property minLength, maxLength, extendedTypeName, diagnostic reported", async () => {
@@ -1879,9 +2020,27 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(3, "Expected 3 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["minLength", 10, 50], itemA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["maxLength", 150, 450], itemA.schema);
-      validateDiagnostic(reporter.diagnostics[2], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["extendedTypeName", "Json", "XML"], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.PropertyDelta,
+        DiagnosticType.Property,
+        itemAProp,
+        ["minLength", 10, 50],
+        itemA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.PropertyDelta,
+        DiagnosticType.Property,
+        itemAProp,
+        ["maxLength", 150, 450],
+        itemA.schema,
+      );
+      validateDiagnostic(reporter.diagnostics[2], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "extendedTypeName",
+        "Json",
+        "XML",
+      ], itemA.schema);
     });
 
     it("Different property minValue, maxValue, diagnostic reported", async () => {
@@ -1924,8 +2083,22 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["minValue", 1, 5], itemA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["maxValue", 100, 95], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.PropertyDelta,
+        DiagnosticType.Property,
+        itemAProp,
+        ["minValue", 1, 5],
+        itemA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.PropertyDelta,
+        DiagnosticType.Property,
+        itemAProp,
+        ["maxValue", 100, 95],
+        itemA.schema,
+      );
     });
 
     it("Different array minOccurs, diagnostic reported", async () => {
@@ -1966,7 +2139,14 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["minOccurs", 0, 1], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.PropertyDelta,
+        DiagnosticType.Property,
+        itemAProp,
+        ["minOccurs", 0, 1],
+        itemA.schema,
+      );
     });
 
     it("Different array maxOccurs, diagnostic reported", async () => {
@@ -2007,7 +2187,14 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["maxOccurs", 0, 1], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.PropertyDelta,
+        DiagnosticType.Property,
+        itemAProp,
+        ["maxOccurs", 0, 1],
+        itemA.schema,
+      );
     });
 
     it("Different enumeration, diagnostic reported", async () => {
@@ -2086,7 +2273,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["enumeration", "SchemaA.EnumA", "SchemaA.EnumB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "enumeration",
+        "SchemaA.EnumA",
+        "SchemaA.EnumB",
+      ], itemA.schema);
     });
 
     it("Same enumeration, diagnostic not reported", async () => {
@@ -2272,7 +2463,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["relationshipClass", "SchemaA.RelationshipA", "SchemaA.RelationshipB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "relationshipClass",
+        "SchemaA.RelationshipA",
+        "SchemaA.RelationshipB",
+      ], itemA.schema);
     });
 
     it("Different navigation property direction, diagnostic reported", async () => {
@@ -2357,7 +2552,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["direction", "Forward", "Backward"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "direction",
+        "Forward",
+        "Backward",
+      ], itemA.schema);
     });
 
     it("Same navigation property relationship, diagnostic not reported", async () => {
@@ -2479,7 +2678,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["primitiveType", "string", "int"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "primitiveType",
+        "string",
+        "int",
+      ], itemA.schema);
     });
 
     it("Different struct class, diagnostic reported", async () => {
@@ -2558,7 +2761,11 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, ["structClass", "SchemaA.StructA", "SchemaA.StructB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyDelta, DiagnosticType.Property, itemAProp, [
+        "structClass",
+        "SchemaA.StructA",
+        "SchemaA.StructB",
+      ], itemA.schema);
     });
 
     it("Same struct class, diagnostic not reported", async () => {
@@ -2832,7 +3039,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("MixinA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.MixinDelta, DiagnosticType.SchemaItem, itemA, ["appliesTo", "SchemaA.TestClassA", "SchemaA.TestClassB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.MixinDelta, DiagnosticType.SchemaItem, itemA, [
+        "appliesTo",
+        "SchemaA.TestClassA",
+        "SchemaA.TestClassB",
+      ], itemA.schema);
     });
 
     it("Same appliesTo, diagnostic not reported", async () => {
@@ -3030,7 +3241,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("TestRelationship") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.RelationshipDelta, DiagnosticType.SchemaItem, itemA, ["strength", "Referencing", "Embedding"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.RelationshipDelta, DiagnosticType.SchemaItem, itemA, [
+        "strength",
+        "Referencing",
+        "Embedding",
+      ], itemA.schema);
     });
 
     it("Same strength, diagnostic reported", async () => {
@@ -3161,7 +3376,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("TestRelationship") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.RelationshipDelta, DiagnosticType.SchemaItem, itemA, ["strengthDirection", "Forward", "Backward"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.RelationshipDelta, DiagnosticType.SchemaItem, itemA, [
+        "strengthDirection",
+        "Forward",
+        "Backward",
+      ], itemA.schema);
     });
 
     it("Same strengthDirection, diagnostic not reported", async () => {
@@ -3292,7 +3511,8 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      expect(reporter.diagnostics.find((d) => d.code === SchemaCompareCodes.SchemaItemMissing && d.ecDefinition === relationship)).to.not.be.undefined;
+      expect(reporter.diagnostics.find((d) => d.code === SchemaCompareCodes.SchemaItemMissing && d.ecDefinition === relationship)).to.not.be
+        .undefined;
     });
 
     it("Different multiplicities, diagnostic reported for each constraint", async () => {
@@ -3343,8 +3563,22 @@ describe("Schema comparison tests", () => {
       const relA = await schemaA.getItem("TestRelationship") as RelationshipClass;
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.source, ["multiplicity", "(0..*)", "(0..1)"], relA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.target, ["multiplicity", "(0..1)", "(0..*)"], relA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.source,
+        ["multiplicity", "(0..*)", "(0..1)"],
+        relA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.target,
+        ["multiplicity", "(0..1)", "(0..*)"],
+        relA.schema,
+      );
     });
 
     it("Different roleLabel, diagnostic reported for each constraint", async () => {
@@ -3395,8 +3629,22 @@ describe("Schema comparison tests", () => {
       const relA = await schemaA.getItem("TestRelationship") as RelationshipClass;
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.source, ["roleLabel", "LabelA", "LabelB"], relA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.target, ["roleLabel", "LabelB", "LabelA"], relA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.source,
+        ["roleLabel", "LabelA", "LabelB"],
+        relA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.target,
+        ["roleLabel", "LabelB", "LabelA"],
+        relA.schema,
+      );
     });
 
     it("Different polymorphic, diagnostic reported for each constraint", async () => {
@@ -3447,8 +3695,22 @@ describe("Schema comparison tests", () => {
       const relA = await schemaA.getItem("TestRelationship") as RelationshipClass;
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.source, ["polymorphic", true, false], relA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.target, ["polymorphic", false, true], relA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.source,
+        ["polymorphic", true, false],
+        relA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.target,
+        ["polymorphic", false, true],
+        relA.schema,
+      );
     });
 
     it("Different abstractConstraint, diagnostic reported for each constraint", async () => {
@@ -3503,8 +3765,22 @@ describe("Schema comparison tests", () => {
       const relA = await schemaA.getItem("TestRelationship") as RelationshipClass;
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.source, ["abstractConstraint", "SchemaA.TestClassA", "SchemaA.TestClassB"], relA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.target, ["abstractConstraint", "SchemaA.TestClassB", "SchemaA.TestClassA"], relA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.source,
+        ["abstractConstraint", "SchemaA.TestClassA", "SchemaA.TestClassB"],
+        relA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.target,
+        ["abstractConstraint", "SchemaA.TestClassB", "SchemaA.TestClassA"],
+        relA.schema,
+      );
     });
 
     it("Schema A abstractConstraints undefined, diagnostic reported for each constraint", async () => {
@@ -3563,8 +3839,22 @@ describe("Schema comparison tests", () => {
       const relA = await schemaA.getItem("TestRelationship") as RelationshipClass;
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.source, ["abstractConstraint", undefined, "SchemaA.TestClassA"], relA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.target, ["abstractConstraint", undefined, "SchemaA.TestClassA"], relA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.source,
+        ["abstractConstraint", undefined, "SchemaA.TestClassA"],
+        relA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.target,
+        ["abstractConstraint", undefined, "SchemaA.TestClassA"],
+        relA.schema,
+      );
     });
 
     it("Schema B abstractConstraints undefined, diagnostic reported for each constraint", async () => {
@@ -3620,8 +3910,22 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.source, ["abstractConstraint", "SchemaA.TestClassA", undefined], relA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.RelationshipConstraintDelta, DiagnosticType.RelationshipConstraint, relA.target, ["abstractConstraint", "SchemaA.TestClassA", undefined], relA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.source,
+        ["abstractConstraint", "SchemaA.TestClassA", undefined],
+        relA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.RelationshipConstraintDelta,
+        DiagnosticType.RelationshipConstraint,
+        relA.target,
+        ["abstractConstraint", "SchemaA.TestClassA", undefined],
+        relA.schema,
+      );
     });
 
     it("Different constraints, diagnostic reported for each constraint", async () => {
@@ -3678,10 +3982,38 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(4, "Expected 4 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.RelationshipConstraintClassMissing, DiagnosticType.RelationshipConstraint, relA.source, [classB], relA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.RelationshipConstraintClassMissing, DiagnosticType.RelationshipConstraint, relA.target, [classB], relA.schema);
-      validateDiagnostic(reporter.diagnostics[2], SchemaCompareCodes.RelationshipConstraintClassMissing, DiagnosticType.RelationshipConstraint, relB.source, [classC], relB.schema);
-      validateDiagnostic(reporter.diagnostics[3], SchemaCompareCodes.RelationshipConstraintClassMissing, DiagnosticType.RelationshipConstraint, relB.target, [classC], relB.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.RelationshipConstraintClassMissing,
+        DiagnosticType.RelationshipConstraint,
+        relA.source,
+        [classB],
+        relA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.RelationshipConstraintClassMissing,
+        DiagnosticType.RelationshipConstraint,
+        relA.target,
+        [classB],
+        relA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[2],
+        SchemaCompareCodes.RelationshipConstraintClassMissing,
+        DiagnosticType.RelationshipConstraint,
+        relB.source,
+        [classC],
+        relB.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[3],
+        SchemaCompareCodes.RelationshipConstraintClassMissing,
+        DiagnosticType.RelationshipConstraint,
+        relB.target,
+        [classC],
+        relB.schema,
+      );
     });
   });
 
@@ -3737,7 +4069,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("TestCustomAttribute") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.CustomAttributeClassDelta, DiagnosticType.SchemaItem, itemA, ["appliesTo", "Schema, AnyProperty", "AnyClass"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.CustomAttributeClassDelta, DiagnosticType.SchemaItem, itemA, [
+        "appliesTo",
+        "Schema, AnyProperty",
+        "AnyClass",
+      ], itemA.schema);
     });
   });
 
@@ -3996,8 +4332,22 @@ describe("Schema comparison tests", () => {
       const caB = itemB.customAttributes!.get("SchemaA.CustomAttributeB");
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.CustomAttributeInstanceClassMissing, DiagnosticType.CustomAttributeContainer, itemA, [caA], itemA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.CustomAttributeInstanceClassMissing, DiagnosticType.CustomAttributeContainer, itemB, [caB], itemB.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.CustomAttributeInstanceClassMissing,
+        DiagnosticType.CustomAttributeContainer,
+        itemA,
+        [caA],
+        itemA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.CustomAttributeInstanceClassMissing,
+        DiagnosticType.CustomAttributeContainer,
+        itemB,
+        [caB],
+        itemB.schema,
+      );
     });
 
     it("Different CA properties, diagnostic reported", async () => {
@@ -4075,8 +4425,22 @@ describe("Schema comparison tests", () => {
       const caB = propertyB!.customAttributes!.get("SchemaA.CustomAttribute");
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.CustomAttributeInstanceClassMissing, DiagnosticType.CustomAttributeContainer, propertyA, [caA], itemA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.CustomAttributeInstanceClassMissing, DiagnosticType.CustomAttributeContainer, propertyB, [caB], itemB.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.CustomAttributeInstanceClassMissing,
+        DiagnosticType.CustomAttributeContainer,
+        propertyA,
+        [caA],
+        itemA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.CustomAttributeInstanceClassMissing,
+        DiagnosticType.CustomAttributeContainer,
+        propertyB,
+        [caB],
+        itemB.schema,
+      );
     });
 
     it("Same custom attribute from updated schema reference, no ca diagnostic reported", async () => {
@@ -4147,8 +4511,16 @@ describe("Schema comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(reporter.diagnostics.length).to.equal(2, "Expected 2 differences.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaA, [refSchemaA, "01.00.00", "01.00.01"], schemaA);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaB, [refSchemaB, "01.00.01", "01.00.00"], schemaB);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaA, [
+        refSchemaA,
+        "01.00.00",
+        "01.00.01",
+      ], schemaA);
+      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.SchemaReferenceDelta, DiagnosticType.Schema, schemaB, [
+        refSchemaB,
+        "01.00.01",
+        "01.00.00",
+      ], schemaB);
     });
 
     it("Same custom attribute different property order, no diagnostic reported", async () => {
@@ -4164,8 +4536,7 @@ describe("Schema comparison tests", () => {
               name: "from",
               type: "PrimitiveProperty",
               typeName: "string",
-            },
-            {
+            }, {
               name: "to",
               type: "PrimitiveProperty",
               typeName: "string",
@@ -4310,7 +4681,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("TestEnumeration") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.EnumerationDelta, DiagnosticType.SchemaItem, itemA, ["type", "string", "int"], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.EnumerationDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["type", "string", "int"],
+        itemA.schema,
+      );
     });
 
     it("Different isStrict, diagnostic reported", async () => {
@@ -4351,7 +4729,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("TestEnumeration") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.EnumerationDelta, DiagnosticType.SchemaItem, itemA, ["isStrict", true, false], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.EnumerationDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["isStrict", true, false],
+        itemA.schema,
+      );
     });
 
     it("Different enumerators missing, diagnostic reported for each schema", async () => {
@@ -4437,7 +4822,12 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("TestEnumeration") as Enumeration;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.EnumeratorDelta, DiagnosticType.SchemaItem, itemA, [itemA.enumerators[0], "description", "A", "B"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.EnumeratorDelta, DiagnosticType.SchemaItem, itemA, [
+        itemA.enumerators[0],
+        "description",
+        "A",
+        "B",
+      ], itemA.schema);
     });
 
     it("Different enumerator label, diagnostic reported", async () => {
@@ -4478,7 +4868,12 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("TestEnumeration") as Enumeration;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.EnumeratorDelta, DiagnosticType.SchemaItem, itemA, [itemA.enumerators[0], "label", "A", "B"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.EnumeratorDelta, DiagnosticType.SchemaItem, itemA, [
+        itemA.enumerators[0],
+        "label",
+        "A",
+        "B",
+      ], itemA.schema);
     });
 
     it("Undefined and empty label are considered equivalent, diagnostic not reported", async () => {
@@ -4554,7 +4949,12 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("TestEnumeration") as Enumeration;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.EnumeratorDelta, DiagnosticType.SchemaItem, itemA, [itemA.enumerators[0], "value", "A", "B"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.EnumeratorDelta, DiagnosticType.SchemaItem, itemA, [
+        itemA.enumerators[0],
+        "value",
+        "A",
+        "B",
+      ], itemA.schema);
     });
   });
 
@@ -4621,7 +5021,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("KoqA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.KoqDelta, DiagnosticType.SchemaItem, itemA, ["relativeError", 1, 2], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.KoqDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["relativeError", 1, 2],
+        itemA.schema,
+      );
     });
 
     it("Different persistenceUnit, diagnostic reported", async () => {
@@ -4652,7 +5059,11 @@ describe("Schema comparison tests", () => {
       const unitB = await schemaB.getItem("UnitB") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.KoqDelta, DiagnosticType.SchemaItem, itemA, ["persistenceUnit", unitA.fullName, unitB.fullName], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.KoqDelta, DiagnosticType.SchemaItem, itemA, [
+        "persistenceUnit",
+        unitA.fullName,
+        unitB.fullName,
+      ], itemA.schema);
     });
 
     it("Different presentation units, diagnostic reported for each schema", async () => {
@@ -4771,7 +5182,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("CategoryA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PropertyCategoryDelta, DiagnosticType.SchemaItem, itemA, ["priority", 1, 2], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.PropertyCategoryDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["priority", 1, 2],
+        itemA.schema,
+      );
     });
   });
 
@@ -4829,7 +5247,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["roundFactor", 1, 2], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.FormatDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["roundFactor", 1, 2],
+        itemA.schema,
+      );
     });
 
     it("Different type, diagnostic reported", async () => {
@@ -4856,7 +5281,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["type", "Decimal", "Fractional"], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.FormatDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["type", "Decimal", "Fractional"],
+        itemA.schema,
+      );
     });
 
     it("Different precision, diagnostic reported", async () => {
@@ -4885,7 +5317,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["precision", 1, 2], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.FormatDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["precision", 1, 2],
+        itemA.schema,
+      );
     });
 
     it("Different minWidth, diagnostic reported", async () => {
@@ -4943,7 +5382,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["scientificType", "Normalized", "ZeroNormalized"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, [
+        "scientificType",
+        "Normalized",
+        "ZeroNormalized",
+      ], itemA.schema);
     });
 
     it("Different showSignOption, diagnostic reported", async () => {
@@ -4972,7 +5415,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["showSignOption", "NoSign", "SignAlways"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, [
+        "showSignOption",
+        "NoSign",
+        "SignAlways",
+      ], itemA.schema);
     });
 
     it("Different decimalSeparator, diagnostic reported", async () => {
@@ -5001,7 +5448,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["decimalSeparator", "-", "."], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.FormatDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["decimalSeparator", "-", "."],
+        itemA.schema,
+      );
     });
 
     it("Different thousandSeparator, diagnostic reported", async () => {
@@ -5030,7 +5484,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["thousandSeparator", "-", "."], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.FormatDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["thousandSeparator", "-", "."],
+        itemA.schema,
+      );
     });
 
     it("Different uomSeparator, diagnostic reported", async () => {
@@ -5059,7 +5520,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["uomSeparator", "-", "."], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.FormatDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["uomSeparator", "-", "."],
+        itemA.schema,
+      );
     });
 
     it("Different stationSeparator, diagnostic reported", async () => {
@@ -5088,7 +5556,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["stationSeparator", "-", "."], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.FormatDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["stationSeparator", "-", "."],
+        itemA.schema,
+      );
     });
 
     it("Different stationOffsetSize, diagnostic reported", async () => {
@@ -5117,7 +5592,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["stationOffsetSize", 1, 2], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.FormatDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["stationOffsetSize", 1, 2],
+        itemA.schema,
+      );
     });
 
     it("Different formatTraits, diagnostic reported", async () => {
@@ -5146,7 +5628,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["formatTraits", "TrailZeroes,KeepSingleZero", "KeepSingleZero"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, [
+        "formatTraits",
+        "TrailZeroes,KeepSingleZero",
+        "KeepSingleZero",
+      ], itemA.schema);
     });
 
     it("Different spacer, diagnostic reported", async () => {
@@ -5187,7 +5673,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["spacer", "A", "B"], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.FormatDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["spacer", "A", "B"],
+        itemA.schema,
+      );
     });
 
     it("Different includeZero, diagnostic reported", async () => {
@@ -5228,7 +5721,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("FormatA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.FormatDelta, DiagnosticType.SchemaItem, itemA, ["includeZero", true, false], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.FormatDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["includeZero", true, false],
+        itemA.schema,
+      );
     });
 
     it("Different units, diagnostic reported for each schema", async () => {
@@ -5315,7 +5815,14 @@ describe("Schema comparison tests", () => {
       const unit = await schemaB.getItem("UnitA");
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.UnitLabelOverrideDelta, DiagnosticType.SchemaItem, itemA, [unit, "A", "B"], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.UnitLabelOverrideDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        [unit, "A", "B"],
+        itemA.schema,
+      );
     });
 
     it("Null and Empty unit labels, diagnostic reported", async () => {
@@ -5327,7 +5834,10 @@ describe("Schema comparison tests", () => {
             includeZero: true,
             spacer: "A",
             units: [
-              { name: "SchemaA.UnitA" }, { name: "SchemaA.UnitB", label: "" }, { name: "SchemaA.UnitC" }, { name: "SchemaA.UnitD", label: "tango" },
+              { name: "SchemaA.UnitA" },
+              { name: "SchemaA.UnitB", label: "" },
+              { name: "SchemaA.UnitC" },
+              { name: "SchemaA.UnitD", label: "tango" },
             ],
           },
         },
@@ -5340,7 +5850,10 @@ describe("Schema comparison tests", () => {
             includeZero: true,
             spacer: "A",
             units: [
-              { name: "SchemaA.UnitA", label: "" }, { name: "SchemaA.UnitB" }, { name: "SchemaA.UnitC", label: "bravo" }, { name: "SchemaA.UnitD" },
+              { name: "SchemaA.UnitA", label: "" },
+              { name: "SchemaA.UnitB" },
+              { name: "SchemaA.UnitC", label: "bravo" },
+              { name: "SchemaA.UnitD" },
             ],
           },
         },
@@ -5360,10 +5873,32 @@ describe("Schema comparison tests", () => {
       const unitD = await schemaB.getItem("UnitD") as Unit;
 
       expect(reporter.diagnostics.length).to.equal(4, "Expected total of 4 differences, one for each unit label.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.UnitLabelOverrideDelta, DiagnosticType.SchemaItem, itemA, [unitA, undefined, ""], itemA.schema);
-      validateDiagnostic(reporter.diagnostics[1], SchemaCompareCodes.UnitLabelOverrideDelta, DiagnosticType.SchemaItem, itemA, [unitB, "", undefined], itemA.schema);
-      validateDiagnostic(reporter.diagnostics[2], SchemaCompareCodes.UnitLabelOverrideDelta, DiagnosticType.SchemaItem, itemA, [unitC, undefined, "bravo"], itemA.schema);
-      validateDiagnostic(reporter.diagnostics[3], SchemaCompareCodes.UnitLabelOverrideDelta, DiagnosticType.SchemaItem, itemA, [unitD, "tango", undefined], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.UnitLabelOverrideDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        [unitA, undefined, ""],
+        itemA.schema,
+      );
+      validateDiagnostic(
+        reporter.diagnostics[1],
+        SchemaCompareCodes.UnitLabelOverrideDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        [unitB, "", undefined],
+        itemA.schema,
+      );
+      validateDiagnostic(reporter.diagnostics[2], SchemaCompareCodes.UnitLabelOverrideDelta, DiagnosticType.SchemaItem, itemA, [
+        unitC,
+        undefined,
+        "bravo",
+      ], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[3], SchemaCompareCodes.UnitLabelOverrideDelta, DiagnosticType.SchemaItem, itemA, [
+        unitD,
+        "tango",
+        undefined,
+      ], itemA.schema);
     });
   });
 
@@ -5423,7 +5958,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("UnitA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.UnitDelta, DiagnosticType.SchemaItem, itemA, ["phenomenon", "SchemaA.PhenomenonA", "SchemaA.PhenomenonB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.UnitDelta, DiagnosticType.SchemaItem, itemA, [
+        "phenomenon",
+        "SchemaA.PhenomenonA",
+        "SchemaA.PhenomenonB",
+      ], itemA.schema);
     });
 
     it("Different unitSystem, diagnostic reported", async () => {
@@ -5440,7 +5979,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("UnitA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.UnitDelta, DiagnosticType.SchemaItem, itemA, ["unitSystem", "SchemaA.UnitSystemA", "SchemaA.UnitSystemB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.UnitDelta, DiagnosticType.SchemaItem, itemA, [
+        "unitSystem",
+        "SchemaA.UnitSystemA",
+        "SchemaA.UnitSystemB",
+      ], itemA.schema);
     });
 
     it("Different definition, diagnostic reported", async () => {
@@ -5457,7 +6000,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("UnitA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.UnitDelta, DiagnosticType.SchemaItem, itemA, ["definition", "A", "B"], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.UnitDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["definition", "A", "B"],
+        itemA.schema,
+      );
     });
 
     it("Different numerator, diagnostic reported", async () => {
@@ -5508,7 +6058,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("UnitA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.UnitDelta, DiagnosticType.SchemaItem, itemA, ["denominator", 1, 2], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.UnitDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["denominator", 1, 2],
+        itemA.schema,
+      );
     });
   });
 
@@ -5560,7 +6117,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("InvertedUnitA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.InvertedUnitDelta, DiagnosticType.SchemaItem, itemA, ["invertsUnit", "SchemaA.UnitA", "SchemaA.UnitB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.InvertedUnitDelta, DiagnosticType.SchemaItem, itemA, [
+        "invertsUnit",
+        "SchemaA.UnitA",
+        "SchemaA.UnitB",
+      ], itemA.schema);
     });
 
     it("Different unitSystem, diagnostic reported", async () => {
@@ -5589,7 +6150,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("InvertedUnitA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.InvertedUnitDelta, DiagnosticType.SchemaItem, itemA, ["unitSystem", "SchemaA.UnitSystemA", "SchemaA.UnitSystemB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.InvertedUnitDelta, DiagnosticType.SchemaItem, itemA, [
+        "unitSystem",
+        "SchemaA.UnitSystemA",
+        "SchemaA.UnitSystemB",
+      ], itemA.schema);
     });
   });
 
@@ -5638,7 +6203,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("PhenomenonA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.PhenomenonDelta, DiagnosticType.SchemaItem, itemA, ["definition", "A", "B"], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.PhenomenonDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["definition", "A", "B"],
+        itemA.schema,
+      );
     });
   });
 
@@ -5716,7 +6288,11 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("ConstantA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.ConstantDelta, DiagnosticType.SchemaItem, itemA, ["phenomenon", "SchemaA.PhenomenonA", "SchemaA.PhenomenonB"], itemA.schema);
+      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.ConstantDelta, DiagnosticType.SchemaItem, itemA, [
+        "phenomenon",
+        "SchemaA.PhenomenonA",
+        "SchemaA.PhenomenonB",
+      ], itemA.schema);
     });
 
     it("Different definition, diagnostic reported", async () => {
@@ -5753,7 +6329,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("ConstantA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.ConstantDelta, DiagnosticType.SchemaItem, itemA, ["definition", "A", "B"], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.ConstantDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["definition", "A", "B"],
+        itemA.schema,
+      );
     });
 
     it("Different numerator, diagnostic reported", async () => {
@@ -5792,7 +6375,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("ConstantA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.ConstantDelta, DiagnosticType.SchemaItem, itemA, ["numerator", 1, 2], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.ConstantDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["numerator", 1, 2],
+        itemA.schema,
+      );
     });
 
     it("Different denominator, diagnostic reported", async () => {
@@ -5831,7 +6421,14 @@ describe("Schema comparison tests", () => {
       const itemA = await schemaA.getItem("ConstantA") as ECClass;
 
       expect(reporter.diagnostics.length).to.equal(1, "Expected 1 difference.");
-      validateDiagnostic(reporter.diagnostics[0], SchemaCompareCodes.ConstantDelta, DiagnosticType.SchemaItem, itemA, ["denominator", 1, 2], itemA.schema);
+      validateDiagnostic(
+        reporter.diagnostics[0],
+        SchemaCompareCodes.ConstantDelta,
+        DiagnosticType.SchemaItem,
+        itemA,
+        ["denominator", 1, 2],
+        itemA.schema,
+      );
     });
   });
 });

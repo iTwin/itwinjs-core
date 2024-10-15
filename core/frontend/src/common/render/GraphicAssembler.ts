@@ -7,17 +7,31 @@
  */
 
 import { assert, Id64String } from "@itwin/core-bentley";
-import {
-  AnyCurvePrimitive, Arc3d, Box, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
-} from "@itwin/core-geometry";
 import { AnalysisStyle, ColorDef, Feature, Frustum, Gradient, GraphicParams, LinePixels, Npc, RenderTexture } from "@itwin/core-common";
+import {
+  AnyCurvePrimitive,
+  Arc3d,
+  Box,
+  CurvePrimitive,
+  IndexedPolyface,
+  LineSegment3d,
+  LineString3d,
+  Loop,
+  Path,
+  Point2d,
+  Point3d,
+  Polyface,
+  Range3d,
+  SolidPrimitive,
+  Transform,
+} from "@itwin/core-geometry";
+import { DisplayParams } from "../internal/render/DisplayParams";
+import { GeometryAccumulator } from "../internal/render/GeometryAccumulator";
+import { Geometry } from "../internal/render/GeometryPrimitives";
 import { _accumulator, _implementationProhibited } from "../internal/Symbols";
-import { GraphicType } from "./GraphicType";
 import { PickableGraphicOptions } from "./BatchOptions";
 import { GraphicPrimitive } from "./GraphicPrimitive";
-import { GeometryAccumulator } from "../internal/render/GeometryAccumulator";
-import { DisplayParams } from "../internal/render/DisplayParams";
-import { Geometry } from "../internal/render/GeometryPrimitives";
+import { GraphicType } from "./GraphicType";
 
 /** @internal Used by GraphicAssembler's internal constructor. Subclasses define their own constructor arguments. */
 export interface GraphicAssemblerOptions {
@@ -32,7 +46,7 @@ export interface GraphicAssemblerOptions {
   wantNormals: boolean;
   wantEdges: boolean;
   analysisStyle?: AnalysisStyle;
-};
+}
 
 /** Provides methods for assembling geometric primitives and symbology into a graphical representation.
  * Two concrete implementations are provided:
@@ -392,37 +406,43 @@ export abstract class GraphicAssembler {
       p[Npc.LeftTopFront].clone(),
       p[Npc.RightTopFront].clone(),
       p[Npc.RightBottomFront].clone(),
-      p[Npc.LeftBottomFront].clone()]);
+      p[Npc.LeftBottomFront].clone(),
+    ]);
     this.addShape([
       p[Npc.RightTopRear].clone(),
       p[Npc.LeftTopRear].clone(),
       p[Npc.LeftBottomRear].clone(),
       p[Npc.RightBottomRear].clone(),
-      p[Npc.RightTopRear].clone()]);
+      p[Npc.RightTopRear].clone(),
+    ]);
     this.addShape([
       p[Npc.RightTopRear].clone(),
       p[Npc.LeftTopRear].clone(),
       p[Npc.LeftTopFront].clone(),
       p[Npc.RightTopFront].clone(),
-      p[Npc.RightTopRear].clone()]);
+      p[Npc.RightTopRear].clone(),
+    ]);
     this.addShape([
       p[Npc.RightTopRear].clone(),
       p[Npc.RightBottomRear].clone(),
       p[Npc.RightBottomFront].clone(),
       p[Npc.RightTopFront].clone(),
-      p[Npc.RightTopRear].clone()]);
+      p[Npc.RightTopRear].clone(),
+    ]);
     this.addShape([
       p[Npc.LeftBottomRear].clone(),
       p[Npc.RightBottomRear].clone(),
       p[Npc.RightBottomFront].clone(),
       p[Npc.LeftBottomFront].clone(),
-      p[Npc.LeftBottomRear].clone()]);
+      p[Npc.LeftBottomRear].clone(),
+    ]);
     this.addShape([
       p[Npc.LeftBottomRear].clone(),
       p[Npc.LeftTopRear].clone(),
       p[Npc.LeftTopFront].clone(),
       p[Npc.LeftBottomFront].clone(),
-      p[Npc.LeftBottomRear].clone()]);
+      p[Npc.LeftBottomRear].clone(),
+    ]);
   }
 
   /** Sets the current active symbology for this builder. Any new geometry subsequently added will be drawn using the specified symbology.
@@ -442,15 +462,23 @@ export abstract class GraphicAssembler {
    * An example would be to add a line to a graphic containing a shape with blanking fill so that the line is always shown in front of the fill.
    * @param fillColor The color in which to draw filled regions.
    */
-  public setBlankingFill(fillColor: ColorDef) { this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor)); }
+  public setBlankingFill(fillColor: ColorDef) {
+    this.activateGraphicParams(GraphicParams.fromBlankingFill(fillColor));
+  }
 
-  private getMeshDisplayParams(): DisplayParams { return DisplayParams.createForMesh(this._graphicParams, !this.wantNormals, (grad) => this.resolveGradient(grad)); }
-  private getLinearDisplayParams(): DisplayParams { return DisplayParams.createForLinear(this._graphicParams); }
+  private getMeshDisplayParams(): DisplayParams {
+    return DisplayParams.createForMesh(this._graphicParams, !this.wantNormals, (grad) => this.resolveGradient(grad));
+  }
+  private getLinearDisplayParams(): DisplayParams {
+    return DisplayParams.createForLinear(this._graphicParams);
+  }
 
   /** @internal */
   protected abstract resolveGradient(gradient: Gradient.Symb): RenderTexture | undefined;
 
-  public add(geom: Geometry): void { this[_accumulator].addGeometry(geom); }
+  public add(geom: Geometry): void {
+    this[_accumulator].addGeometry(geom);
+  }
 }
 
 function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {

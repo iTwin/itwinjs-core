@@ -32,9 +32,15 @@ export class Quantity implements QuantityProps {
   protected _unit: UnitProps;
   protected _isValid: boolean = false;
 
-  public get unit(): UnitProps { return this._unit; }
-  public get magnitude(): number { return this._magnitude; }
-  public get isValid(): boolean { return this._isValid; }
+  public get unit(): UnitProps {
+    return this._unit;
+  }
+  public get magnitude(): number {
+    return this._magnitude;
+  }
+  public get isValid(): boolean {
+    return this._isValid;
+  }
 
   /** Constructor. The Quantity will only be set as valid if a unit is specified.
    *  @param unit     Defines the quantity's unit.

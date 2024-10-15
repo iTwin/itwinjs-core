@@ -4,8 +4,8 @@
  *--------------------------------------------------------------------------------------------*/
 
 import { Point2d, Point3d } from "@itwin/core-geometry";
-import { assert, describe, it } from "vitest";
 import { Base64 } from "js-base64";
+import { assert, describe, it } from "vitest";
 import { QueryBinder, QueryParamType } from "../ConcurrentQuery";
 
 describe("QueryBinder", () => {

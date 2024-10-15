@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Range3d } from "@itwin/core-geometry";
 import { RealityMeshParams, RealityMeshParamsBuilder } from "@itwin/core-frontend";
+import { Range3d } from "@itwin/core-geometry";
 
 // __PUBLISH_EXTRACT_START__ Build_Reality_Mesh_Params
 export function buildRealityMeshParams(): RealityMeshParams {
@@ -18,10 +18,10 @@ export function buildRealityMeshParams(): RealityMeshParams {
   });
 
   // Add the 4 corners of the rectangle.
-  builder.addVertex({x:0, y:0, z:0}, {x:0, y:0});
-  builder.addVertex({x:10, y:0, z:0}, {x:1, y:0});
-  builder.addVertex({x:10, y:5, z:0}, {x:1, y:1});
-  builder.addVertex({x:0, y:5, z:0}, {x:0, y:1});
+  builder.addVertex({ x: 0, y: 0, z: 0 }, { x: 0, y: 0 });
+  builder.addVertex({ x: 10, y: 0, z: 0 }, { x: 1, y: 0 });
+  builder.addVertex({ x: 10, y: 5, z: 0 }, { x: 1, y: 1 });
+  builder.addVertex({ x: 0, y: 5, z: 0 }, { x: 0, y: 1 });
 
   // Add the two triangles describing the rectangle.
   builder.addTriangle(0, 1, 2);

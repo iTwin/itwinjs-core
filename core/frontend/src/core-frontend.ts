@@ -110,9 +110,9 @@ export * from "./render/webgl/Target";
 export type {
   TxnEntityChange,
   TxnEntityChangeIterable,
-  TxnEntityChangeType,
   TxnEntityChanges,
   TxnEntityChangesFilterOptions,
+  TxnEntityChangeType,
   TxnEntityMetadata,
   TxnEntityMetadataCriterion,
 } from "./TxnEntityChanges";
@@ -247,4 +247,4 @@ import "./extension/ExtensionRuntime";
 /**
  * @docs-group-description TileStorage
  * Class for working with cloud storage using iTwin/object-storage cloud providers
-*/
+ */

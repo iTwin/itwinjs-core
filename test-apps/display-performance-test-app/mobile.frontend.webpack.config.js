@@ -10,8 +10,8 @@ module.exports = {
   entry: "./lib/frontend/DisplayPerformanceTestApp.js",
   output: {
     path: path.resolve(__dirname, "./lib/mobile/public"),
-    filename: '[name].bundle.js',
-    devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
+    filename: "[name].bundle.js",
+    devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]",
   },
   devtool: "cheap-module-source-map",
   module: {
@@ -19,13 +19,13 @@ module.exports = {
       {
         test: /\.js$/,
         use: "source-map-loader",
-        enforce: "pre"
+        enforce: "pre",
       },
       {
         test: /azure-storage|AzureFileHandler|UrlFileHandler/,
-        use: "null-loader"
-      }
-    ]
+        use: "null-loader",
+      },
+    ],
   },
   stats: "errors-only",
   externals: {
@@ -34,6 +34,6 @@ module.exports = {
     "./IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "../IModelJsFs": "{IModelJsFs: IModelJsFs}",
     "fs": "IModelJsFs",
-    "fs-extra": "IModelJsFs"
+    "fs-extra": "IModelJsFs",
   },
 };

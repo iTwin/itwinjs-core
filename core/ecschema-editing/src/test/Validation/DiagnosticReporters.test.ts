@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
 import { BentleyError, Logger } from "@itwin/core-bentley";
 import { EmptyLocalization } from "@itwin/core-common";
 import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext } from "@itwin/ecschema-metadata";
+import { assert, expect } from "chai";
 import { FormatDiagnosticReporter } from "../../ecschema-editing";
 import { MutableClass } from "../../Editing/Mutable/MutableClass";
 import { AnyDiagnostic, createPropertyDiagnosticClass, DiagnosticCategory } from "../../Validation/Diagnostic";
@@ -23,7 +23,6 @@ class TestDiagnosticReporter extends FormatDiagnosticReporter {
 }
 
 describe("DiagnosticReporters tests", () => {
-
   let testSchema: Schema;
   let testSchemaItem: EntityClass;
   let testProperty: PrimitiveProperty;
@@ -93,7 +92,6 @@ describe("DiagnosticReporters tests", () => {
 
       expect(reportDiagnostic.notCalled).to.be.true;
     });
-
   });
 
   describe("LoggingDiagnosticReporter tests", () => {
@@ -202,4 +200,3 @@ describe("DiagnosticReporters tests", () => {
     });
   });
 });
-

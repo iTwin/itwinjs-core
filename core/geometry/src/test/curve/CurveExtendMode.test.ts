@@ -9,7 +9,6 @@ import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Checker } from "../Checker";
 
 describe("CurveExtendMode", () => {
-
   it("HelloWorld", () => {
     const ck = new Checker();
     ck.testExactNumber(CurveExtendMode.None, CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(false, 0));
@@ -17,8 +16,14 @@ describe("CurveExtendMode", () => {
     ck.testExactNumber(CurveExtendMode.None, CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(CurveExtendMode.None, 0));
     ck.testExactNumber(CurveExtendMode.None, CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(CurveExtendMode.None, 1));
 
-    ck.testExactNumber(CurveExtendMode.OnTangent, CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(CurveExtendMode.OnTangent, 0));
-    ck.testExactNumber(CurveExtendMode.OnTangent, CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(CurveExtendMode.OnTangent, 1));
+    ck.testExactNumber(
+      CurveExtendMode.OnTangent,
+      CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(CurveExtendMode.OnTangent, 0),
+    );
+    ck.testExactNumber(
+      CurveExtendMode.OnTangent,
+      CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(CurveExtendMode.OnTangent, 1),
+    );
 
     const qTangentNone: [CurveExtendMode, CurveExtendMode] = [CurveExtendMode.OnTangent, CurveExtendMode.None];
     ck.testExactNumber(CurveExtendMode.OnTangent, CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(qTangentNone, 0));

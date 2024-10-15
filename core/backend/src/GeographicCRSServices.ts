@@ -45,6 +45,8 @@ export interface GetAvailableCoordinateReferenceSystemsArgs {
  * @returns The list of Geographic Coordinate Reference Systems, according to the supplied parameters.
  * @beta
  */
-export async function getAvailableCoordinateReferenceSystems(args: GetAvailableCoordinateReferenceSystemsArgs): Promise<AvailableCoordinateReferenceSystemProps[]> {
+export async function getAvailableCoordinateReferenceSystems(
+  args: GetAvailableCoordinateReferenceSystemsArgs,
+): Promise<AvailableCoordinateReferenceSystemProps[]> {
   return IModelNative.platform.GeoServices.getListOfCRS(args.extent);
 }

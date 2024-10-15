@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64String } from "@itwin/core-bentley";
-import { Angle, AxisIndex, LineSegment3d, Matrix3d, Point3d, Transform, XYZ, XYZProps } from "@itwin/core-geometry";
 import { EmptyLocalization, GeometryClass, RenderSchedule, SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { HitDetail, HitPriority, HitSource, SnapDetail, SnapMode } from "../HitDetail";
-import { LocateResponse, SnapStatus } from "../ElementLocateManager";
-import { ScreenViewport } from "../Viewport";
+import { Angle, AxisIndex, LineSegment3d, Matrix3d, Point3d, Transform, XYZ, XYZProps } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { AccuSnap } from "../AccuSnap";
-import { IModelApp } from "../IModelApp";
-import { testBlankViewportAsync } from "./openBlankViewport";
 import { _requestSnap } from "../common/internal/Symbols";
+import { LocateResponse, SnapStatus } from "../ElementLocateManager";
+import { HitDetail, HitPriority, HitSource, SnapDetail, SnapMode } from "../HitDetail";
+import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
+import { ScreenViewport } from "../Viewport";
+import { testBlankViewportAsync } from "./openBlankViewport";
 
 interface HitDetailProps {
   hitPoint?: XYZProps; // defaults to [0, 0, 0]
@@ -27,7 +27,7 @@ interface HitDetailProps {
 }
 
 function makeHitDetail(vp: ScreenViewport, props?: HitDetailProps): HitDetail {
-  const hitPoint = props?.hitPoint ?? [ 0, 0, 0 ];
+  const hitPoint = props?.hitPoint ?? [0, 0, 0];
   return new HitDetail({
     testPoint: Point3d.fromJSON(props?.testPoint ?? hitPoint),
     viewport: vp,
@@ -51,13 +51,16 @@ describe("AccuSnap", () => {
 
   describe("requestSnap", () => {
     function overrideRequestSnap(iModel: IModelConnection, impl?: (props: SnapRequestProps) => SnapResponseProps): void {
-      iModel[_requestSnap] = async (props) => Promise.resolve(impl ? impl(props) : {
-        status: SnapStatus.Success,
-        hitPoint: props.testPoint,
-        snapPoint: props.testPoint,
-        normal: [0, 1, 0],
-        curve: { lineSegment: [[0, 0, 0], [1, 0, 0]] },
-      });
+      iModel[_requestSnap] = async (props) =>
+        Promise.resolve(
+          impl ? impl(props) : {
+            status: SnapStatus.Success,
+            hitPoint: props.testPoint,
+            snapPoint: props.testPoint,
+            normal: [0, 1, 0],
+            curve: { lineSegment: [[0, 0, 0], [1, 0, 0]] },
+          },
+        );
     }
 
     type SnapResponse = SnapStatus | SnapDetail;
@@ -106,7 +109,12 @@ describe("AccuSnap", () => {
       }
     }
 
-    async function testSnap(hit: HitDetailProps, verify: (response: SnapResponse) => void, snapModes: SnapMode[] = [], configureViewport?: (vp: ScreenViewport) => void): Promise<void> {
+    async function testSnap(
+      hit: HitDetailProps,
+      verify: (response: SnapResponse) => void,
+      snapModes: SnapMode[] = [],
+      configureViewport?: (vp: ScreenViewport) => void,
+    ): Promise<void> {
       await testBlankViewportAsync(async (vp) => {
         overrideRequestSnap(vp.iModel);
         if (configureViewport)
@@ -125,7 +133,10 @@ describe("AccuSnap", () => {
         { sourceId: "0x123", modelId: "0x123" },
         (response) => expect(response).to.equal(SnapStatus.NoSnapPossible),
         modes,
-        (vp) => vp.mapLayerFromHit = () => { return [] as any; },
+        (vp) =>
+          vp.mapLayerFromHit = () => {
+            return [] as any;
+          },
       );
     });
 
@@ -146,7 +157,7 @@ describe("AccuSnap", () => {
     });
 
     class Transformer {
-      public constructor(public readonly transform: Transform, public readonly premultiply = false) { }
+      public constructor(public readonly transform: Transform, public readonly premultiply = false) {}
 
       public getModelDisplayTransform() {
         return { transform: this.transform, premultiply: this.premultiply };
@@ -172,7 +183,10 @@ describe("AccuSnap", () => {
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
         (response) => expectSnapDetail(response, { point: [2, -1, 3], normal: [1, 0, 0], curve: [[0, 0, 0], [0, -1, 0]] }),
         [],
-        (vp) => vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90)))),
+        (vp) =>
+          vp.view.modelDisplayTransformProvider = new Transformer(
+            Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))),
+          ),
       );
     });
 
@@ -206,7 +220,10 @@ describe("AccuSnap", () => {
         { sourceId: "0x123", modelId: "0x456", hitPoint: [1, 2, 3] },
         (response) => expectSnapDetail(response, { point: [2, -1, 3], normal: [1, 0, 0], curve: [[0, 0, 0], [0, -1, 0]] }),
         [],
-        (vp) => vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90)))),
+        (vp) =>
+          vp.view.displayStyle.scheduleScript = makeElementTransformScript(
+            Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))),
+          ),
       );
     });
 
@@ -217,7 +234,9 @@ describe("AccuSnap", () => {
         [],
         (vp) => {
           vp.view.getModelElevation = () => 10;
-          vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))));
+          vp.view.modelDisplayTransformProvider = new Transformer(
+            Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createDegrees(-90))),
+          );
           vp.view.displayStyle.scheduleScript = makeElementTransformScript(Transform.createTranslationXYZ(0, 0, -4));
         },
       );
@@ -242,7 +261,9 @@ describe("AccuSnap", () => {
         [],
         (vp) => {
           vp.view.getModelElevation = () => 10;
-          vp.view.modelDisplayTransformProvider = new Transformer(Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.X, Angle.createDegrees(-90))));
+          vp.view.modelDisplayTransformProvider = new Transformer(
+            Transform.createRefs(undefined, Matrix3d.createRotationAroundAxisIndex(AxisIndex.X, Angle.createDegrees(-90))),
+          );
         },
       );
     });

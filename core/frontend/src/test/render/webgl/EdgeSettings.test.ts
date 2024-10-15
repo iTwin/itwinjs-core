@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { ColorDef, HiddenLine, LinePixels, RenderMode, ViewFlags } from "@itwin/core-common";
-import { EdgeSettings } from "../../../render/webgl/EdgeSettings";
-import { RenderPass } from "../../../render/webgl/RenderFlags";
-import { LineCode } from "../../../render/webgl/LineCode";
+import { expect } from "chai";
 import { OvrFlags } from "../../../common/internal/render/OvrFlags";
+import { EdgeSettings } from "../../../render/webgl/EdgeSettings";
+import { LineCode } from "../../../render/webgl/LineCode";
+import { RenderPass } from "../../../render/webgl/RenderFlags";
 
 describe("EdgeSettings", () => {
   it("defaults to overriding nothing", () => {
     const es = EdgeSettings.create(undefined);
-    for (const renderMode of [ RenderMode.Wireframe, RenderMode.SmoothShade ]) {
+    for (const renderMode of [RenderMode.Wireframe, RenderMode.SmoothShade]) {
       const vf = ViewFlags.fromJSON({ renderMode });
-      for (const pass of [ RenderPass.OpaqueLinear, RenderPass.HiddenEdge ]) {
+      for (const pass of [RenderPass.OpaqueLinear, RenderPass.HiddenEdge]) {
         expect(es.computeOvrFlags(pass, vf)).to.equal(OvrFlags.None);
         es.init(undefined);
         expect(es.computeOvrFlags(pass, vf)).to.equal(OvrFlags.None);
@@ -106,14 +106,14 @@ describe("EdgeSettings", () => {
     ];
 
     for (const vf of vfs)
-      for (const pass of [ RenderPass.OpaqueLinear, RenderPass.HiddenEdge ])
+      for (const pass of [RenderPass.OpaqueLinear, RenderPass.HiddenEdge])
         expect(es.computeOvrFlags(pass, vf)).to.equal(OvrFlags.None);
   });
 
   it("overrides defaults for certain render modes", () => {
     const es = EdgeSettings.create(undefined);
-    for (const renderMode of [ RenderMode.HiddenLine, RenderMode.SolidFill ])
-      for (const pass of [ RenderPass.OpaqueLinear, RenderPass.HiddenEdge ]) {
+    for (const renderMode of [RenderMode.HiddenLine, RenderMode.SolidFill])
+      for (const pass of [RenderPass.OpaqueLinear, RenderPass.HiddenEdge]) {
         const vf = ViewFlags.fromJSON({ renderMode });
 
         // If color is not explicitly overridden in solid fill mode, the shader will compute a contrasting shade of grey for each element.
@@ -125,7 +125,11 @@ describe("EdgeSettings", () => {
 
   it("clamps and inverts transparency threshold", () => {
     const inputsOutputs = [
-      [ 0, 1 ], [ 1, 0 ], [ 0.75, 0.25 ], [ -1, 1 ], [ 2, 0 ],
+      [0, 1],
+      [1, 0],
+      [0.75, 0.25],
+      [-1, 1],
+      [2, 0],
     ];
 
     for (const inputOutput of inputsOutputs) {
@@ -143,7 +147,7 @@ describe("EdgeSettings", () => {
     expect(es.getWeight(RenderPass.HiddenEdge, vf)).to.equal(es.getWeight(RenderPass.OpaqueLinear, vf));
     expect(es.getLineCode(RenderPass.HiddenEdge, vf)).to.equal(hiddenPattern);
 
-    es.init(HiddenLine.Settings.fromJSON({ visible: { width: 4, pattern: LinePixels.Code3 }, hidden: { } }));
+    es.init(HiddenLine.Settings.fromJSON({ visible: { width: 4, pattern: LinePixels.Code3 }, hidden: {} }));
     expect(es.getWeight(RenderPass.HiddenEdge, vf)).to.equal(es.getWeight(RenderPass.OpaqueLinear, vf));
     expect(es.getLineCode(RenderPass.HiddenEdge, vf)).to.equal(hiddenPattern);
   });

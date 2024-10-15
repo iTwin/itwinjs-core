@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Logger } from "@itwin/core-bentley";
+import { ChangesetIdWithIndex } from "@itwin/core-common";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ChangesetIdWithIndex } from "@itwin/core-common";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
-import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { Logger } from "@itwin/core-bentley";
-import { IModelHost } from "../../IModelHost";
 import { HubMock } from "../../HubMock";
+import { IModelDb, SnapshotDb } from "../../IModelDb";
+import { IModelHost } from "../../IModelHost";
 import { _nativeDb } from "../../internal/Symbols";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
@@ -40,10 +40,10 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     getIModelId: () => iModelId,
     getITwinId: () => iTwinId,
     getCurrentChangeset: () => changeset,
-    setIModelDb: () => { },
-    closeIModel: () => { },
-    restartDefaultTxn: () => { },
-    closeFile: () => { },
+    setIModelDb: () => {},
+    closeIModel: () => {},
+    restartDefaultTxn: () => {},
+    closeFile: () => {},
     getFilePath: () => "fakeFilePath",
   };
 
@@ -63,7 +63,13 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
     const userAccessToken = "token";
-    const checkpoint = await SnapshotDb.openCheckpointFromRpc({ accessToken: userAccessToken, iTwinId, iModelId, changeset, reattachSafetySeconds: 60 });
+    const checkpoint = await SnapshotDb.openCheckpointFromRpc({
+      accessToken: userAccessToken,
+      iTwinId,
+      iModelId,
+      changeset,
+      reattachSafetySeconds: 60,
+    });
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
 
@@ -111,13 +117,19 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
     const userAccessToken = "token";
-    const checkpoint = await SnapshotDb.openCheckpointFromRpc({ accessToken: userAccessToken, iTwinId, iModelId, changeset, reattachSafetySeconds: 60 });
+    const checkpoint = await SnapshotDb.openCheckpointFromRpc({
+      accessToken: userAccessToken,
+      iTwinId,
+      iModelId,
+      changeset,
+      reattachSafetySeconds: 60,
+    });
     expect(checkpoint[_nativeDb].cloudContainer?.accessToken).equal(mockCheckpointV2.sasToken);
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
 
-    const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => { });
-    const infoLogStub = sinon.stub(Logger, "logInfo").callsFake(() => { });
+    const errorLogStub = sinon.stub(Logger, "logError").callsFake(() => {});
+    const infoLogStub = sinon.stub(Logger, "logInfo").callsFake(() => {});
 
     clock.setSystemTime(Date.parse("2021-01-01T00:58:10Z")); // within safety period
     void expect(checkpoint.refreshContainerForRpc("")).to.be.fulfilled;

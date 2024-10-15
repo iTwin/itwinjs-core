@@ -4,7 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
-import { Newton1dUnbounded, Newton1dUnboundedApproximateDerivative, Newton2dUnboundedWithDerivative, NewtonEvaluatorRRtoRRD, NewtonEvaluatorRtoR, NewtonEvaluatorRtoRD, SimpleNewton } from "../../numerics/Newton";
+import {
+  Newton1dUnbounded,
+  Newton1dUnboundedApproximateDerivative,
+  Newton2dUnboundedWithDerivative,
+  NewtonEvaluatorRRtoRRD,
+  NewtonEvaluatorRtoR,
+  NewtonEvaluatorRtoRD,
+  SimpleNewton,
+} from "../../numerics/Newton";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
@@ -58,10 +66,12 @@ describe("Newton", () => {
     const r1 = 10.0;
     const l1 = 1.0;
     const gamma = 1.0 / (40.0 * r1 * r1 * l1 * l1);
-    for (const f of [
-      new HornerEvaluator([0, 1, 0, 0, 0, gamma]),
-      new ClothoidCosineEvaluator(1.0, r1, l1),
-    ]) {
+    for (
+      const f of [
+        new HornerEvaluator([0, 1, 0, 0, 0, gamma]),
+        new ClothoidCosineEvaluator(1.0, r1, l1),
+      ]
+    ) {
       const iterator = new Newton1dUnbounded(f);
       for (const fraction of [0.2, 0.8]) {
         const x = fraction * l1;
@@ -103,9 +113,15 @@ export class Simple1DFunctionEvaluator2 extends NewtonEvaluatorRtoR {
 export class Simple2DFunctionEvaluator1 extends NewtonEvaluatorRRtoRRD {
   public evaluate(u: number, v: number): boolean {
     this.currentF.setOriginAndVectorsXYZ(
-      u - v + 1, u * u - v + 1, 0.0, // x(u,v), y(u,v), 0
-      1, 2 * u, 0.0,                 // dx/du,  dy/du,  0
-      -1, -1, 0.0,                   // dx/dv,  dy/dv,  0
+      u - v + 1,
+      u * u - v + 1,
+      0.0, // x(u,v), y(u,v), 0
+      1,
+      2 * u,
+      0.0, // dx/du,  dy/du,  0
+      -1,
+      -1,
+      0.0, // dx/dv,  dy/dv,  0
     );
     return true;
   }
@@ -114,9 +130,15 @@ export class Simple2DFunctionEvaluator1 extends NewtonEvaluatorRRtoRRD {
 export class Simple2DFunctionEvaluator2 extends NewtonEvaluatorRRtoRRD {
   public evaluate(u: number, v: number): boolean {
     this.currentF.setOriginAndVectorsXYZ(
-      u * u + v * v - 5, 3 * u - v - 5, 0.0, // x(u,v), y(u,v), 0
-      2 * u, 3, 0.0,                         // dx/du,  dy/du,  0
-      2 * v, -1, 0.0,                        // dx/dv,  dy/dv,  0
+      u * u + v * v - 5,
+      3 * u - v - 5,
+      0.0, // x(u,v), y(u,v), 0
+      2 * u,
+      3,
+      0.0, // dx/du,  dy/du,  0
+      2 * v,
+      -1,
+      0.0, // dx/dv,  dy/dv,  0
     );
     return true;
   }
@@ -250,8 +272,12 @@ describe("Newton", () => {
   });
   it("SimpleNewton", () => {
     const ck = new Checker();
-    const func = (x: number): number => { return x * x - 2; };
-    const derivative = (x: number): number => { return 2 * x; };
+    const func = (x: number): number => {
+      return x * x - 2;
+    };
+    const derivative = (x: number): number => {
+      return 2 * x;
+    };
     const initialCondition1 = 1;
     let solution = SimpleNewton.runNewton1D(initialCondition1, func, derivative)!;
     const expectedSolution1 = Math.sqrt(2);

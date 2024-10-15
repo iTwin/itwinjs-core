@@ -73,15 +73,27 @@ describe("DelayedPromise", () => {
 
 describe("DelayedPromiseWithProps", () => {
   class Base {
-    public get inheritedGetter() { return "value"; }
-    public inheritedMethod() { return "something"; }
-    public overriddenMethod() { return "this"; }
+    public get inheritedGetter() {
+      return "value";
+    }
+    public inheritedMethod() {
+      return "something";
+    }
+    public overriddenMethod() {
+      return "this";
+    }
   }
   class PropsClass extends Base {
     public realProp = true;
-    public get getterProp() { return 5; }
-    public classMethod() { return 42; }
-    public override overriddenMethod() { return "that"; }
+    public get getterProp() {
+      return 5;
+    }
+    public classMethod() {
+      return 42;
+    }
+    public override overriddenMethod() {
+      return "that";
+    }
   }
 
   it("should contain getters for all added properties", async () => {

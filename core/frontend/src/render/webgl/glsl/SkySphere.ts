@@ -6,20 +6,20 @@
  * @module WebGL
  */
 
-import { Angle, Point3d, Vector3d } from "@itwin/core-geometry";
 import { Npc } from "@itwin/core-common";
+import { Angle, Point3d, Vector3d } from "@itwin/core-geometry";
 import { AttributeMap } from "../AttributeMap";
 import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
 import { fromSumOf, FrustumUniformType } from "../FrustumUniforms";
 import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, ShaderType, VariableType } from "../ShaderBuilder";
 import { System } from "../System";
+import { TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
+import { addAtmosphericScatteringEffect } from "./Atmosphere";
 import { assignFragColor } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { addAtmosphericScatteringEffect } from "./Atmosphere";
-import { TechniqueFlags } from "../TechniqueFlags";
 
 const computeGradientValue = `
   // For the gradient sky it's good enough to calculate these in the vertex shader.
@@ -256,7 +256,15 @@ export function createSkySphereBuilder(isGradient: boolean, flags: TechniqueFlag
         let zScale = focalLength / delta.magnitude();
         if (zScale < 1.000001)
           zScale = 1.000001; // prevent worldEye front being on or inside the frustum front plane
-        const worldEye = Point3d.createAdd3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, zScale, scratchPoint3);
+        const worldEye = Point3d.createAdd3Scaled(
+          frustum.getCorner(Npc.LeftBottomRear),
+          .5,
+          frustum.getCorner(Npc.RightTopRear),
+          .5,
+          delta,
+          zScale,
+          scratchPoint3,
+        );
         scratch3Floats[0] = worldEye.x;
         scratch3Floats[1] = worldEye.y;
         scratch3Floats[2] = worldEye.z;

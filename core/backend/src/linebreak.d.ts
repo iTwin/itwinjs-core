@@ -10,4 +10,3 @@ declare module "linebreak" {
     public nextBreak(): { position: number, required: boolean };
   }
 }
-

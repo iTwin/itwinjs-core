@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { describe, expect, it } from "vitest";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { BilinearPatch } from "../../geometry3d/BilinearPatch";
@@ -13,14 +15,15 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range3d } from "../../geometry3d/Range";
 import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { StrokeOptions } from "../../curve/StrokeOptions";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 
 function verifyPatch(ck: Checker, patch: BilinearPatch) {
-  const transform = Transform.createOriginAndMatrix(Point3d.create(10, 20, 10), Matrix3d.createRotationAroundVector(Vector3d.create(1, 4, 2), Angle.createDegrees(20)));
+  const transform = Transform.createOriginAndMatrix(
+    Point3d.create(10, 20, 10),
+    Matrix3d.createRotationAroundVector(Vector3d.create(1, 4, 2), Angle.createDegrees(20)),
+  );
   const patch1 = patch.cloneTransformed(transform)!;
   const range = Range3d.createNull();
   patch.extendRange(range);
@@ -80,10 +83,13 @@ describe("BilinearPatch", () => {
 
   it("IntersectRay", () => {
     const ck = new Checker();
-    for (const patch of [
-      BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0),
-      BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1),
-      BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 1, 1)]) {
+    for (
+      const patch of [
+        BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 0),
+        BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 1, 1),
+        BilinearPatch.createXYZ(0, 0, 0, 1, 0, 0, 0, 1, 0, 2, 1, 1),
+      ]
+    ) {
       const uv = Point2d.create(0.2, 0.4);
       const tangentPlane = patch.uvFractionToPointAndTangents(uv.x, uv.y);
       const perp = tangentPlane.vectorU.crossProduct(tangentPlane.vectorV);
@@ -94,14 +100,15 @@ describe("BilinearPatch", () => {
       if (intersections) {
         let numMatch = 0;
         for (const detail of intersections) {
-          ck.testPoint3d(ray.fractionToPoint(detail.curveDetail.fraction),
-            patch.uvFractionToPoint(detail.surfaceDetail.uv.x, detail.surfaceDetail.uv.y));
+          ck.testPoint3d(
+            ray.fractionToPoint(detail.curveDetail.fraction),
+            patch.uvFractionToPoint(detail.surfaceDetail.uv.x, detail.surfaceDetail.uv.y),
+          );
           if (Geometry.isSameCoordinate(expectedFraction, detail.curveDetail.fraction)) {
             numMatch++;
           }
         }
         if (!ck.testExactNumber(1, numMatch, "number of ray patch intersections", intersections)) {
-
           GeometryCoreTestIO.consoleLog("\n PATCH", patch);
           GeometryCoreTestIO.consoleLog("RAY", ray);
           for (const detail of intersections)
@@ -116,5 +123,4 @@ describe("BilinearPatch", () => {
     ck.checkpoint("BilinearPatch.IntersectRay");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

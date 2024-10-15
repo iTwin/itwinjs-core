@@ -104,4 +104,3 @@ export interface MaterialParams {
   /** Maps [RenderTexture]($common) images to the surfaces to which the material is applied to customize their appearance. */
   textureMapping?: MaterialTextureMappingProps;
 }
-

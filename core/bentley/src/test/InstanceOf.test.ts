@@ -21,7 +21,9 @@ describe("InstanceOf", () => {
         this.stuff = "private";
       }
 
-      public static create() { return new PrivateThing(); }
+      public static create() {
+        return new PrivateThing();
+      }
     }
 
     const test = (value: any, expectInstanceOf = false) => {

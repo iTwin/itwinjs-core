@@ -5,9 +5,9 @@
 import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
-import { AnyRegion } from "../../curve/CurveTypes";
 import { CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurvePrimitive } from "../../curve/CurvePrimitive";
+import { AnyRegion } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -74,7 +74,8 @@ describe("MomentData", () => {
     const regions: AnyRegion[] = [];
     const regionD0 = Loop.create(
       LineString3d.create([[1, 4], [0, 4], [0, 0], [1, 0]]),
-      Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 0), Point3d.create(3, 2), Point3d.create(1, 4)));
+      Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 0), Point3d.create(3, 2), Point3d.create(1, 4)),
+    );
     const mirrorX = Transform.createFixedPointAndMatrix(undefined, Matrix3d.createScale(-1, 1, 1));
     const regionD1 = regionD0.cloneTransformed(mirrorX)!;
     regions.push(regionD0, regionD1 as Loop);
@@ -83,19 +84,39 @@ describe("MomentData", () => {
     regions.push(regionD0.cloneTransformed(skew)! as AnyRegion);
     regions.push(regionD1.cloneTransformed(skew)! as AnyRegion);
     const poles = new Float64Array([
-      1, 0, 0,
-      4, 0, 0,
-      4, 1, 0,
-      1, 1, 0,
-      2, 2, 0,
-      5, 2, 0,
-      6, 3, 0,
-      5, 4, 0,
-      1, 4, 0]);
+      1,
+      0,
+      0,
+      4,
+      0,
+      0,
+      4,
+      1,
+      0,
+      1,
+      1,
+      0,
+      2,
+      2,
+      0,
+      5,
+      2,
+      0,
+      6,
+      3,
+      0,
+      5,
+      4,
+      0,
+      1,
+      4,
+      0,
+    ]);
     for (const order of [3, 4, 5]) {
       const regionE0 = Loop.create(
         LineString3d.create([[1, 4], [0, 4], [0, 0], [1, 0]]),
-        BSplineCurve3d.createUniformKnots(poles, order)!);
+        BSplineCurve3d.createUniformKnots(poles, order)!,
+      );
       regions.push(regionE0);
     }
     for (const r0 of regions) {
@@ -190,10 +211,13 @@ describe("MomentData", () => {
     const strokeOptions = StrokeOptions.createForCurves();
     strokeOptions.maxEdgeLength = 0.1;
     let x0 = 0;
-    for (const sampleSet of [
-      Sample.createSmoothCurvePrimitives(),
-      Sample.createBsplineCurves(true),
-      Sample.createSimpleParityRegions()]) {
+    for (
+      const sampleSet of [
+        Sample.createSmoothCurvePrimitives(),
+        Sample.createBsplineCurves(true),
+        Sample.createSimpleParityRegions(),
+      ]
+    ) {
       for (const g of sampleSet) {
         const range = g.range();
         const dy = range.yLength() * 2.0;
@@ -219,5 +243,4 @@ describe("MomentData", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "WireMoments");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
 import { Point3d, Range3d } from "@itwin/core-geometry";
+import { describe, expect, it } from "vitest";
 import { QParams3d, QPoint3d } from "../QPoint";
 
 function expectPointsEqual(lhs: Point3d, rhs: Point3d, tolerance: number) {

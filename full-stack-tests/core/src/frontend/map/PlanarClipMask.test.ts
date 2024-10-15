@@ -2,13 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { CompressedId64Set, Guid, Id64 } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorDef, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps } from "@itwin/core-common";
-import { GraphicType, IModelApp, IModelConnection, Pixel, readElementGraphics, SnapshotConnection, TileTreeReference, Viewport } from "@itwin/core-frontend";
+import {
+  GraphicType,
+  IModelApp,
+  IModelConnection,
+  Pixel,
+  readElementGraphics,
+  SnapshotConnection,
+  TileTreeReference,
+  Viewport,
+} from "@itwin/core-frontend";
+import { Point2d } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
-import { Point2d } from "@itwin/core-geometry";
 
 // The view used by these tests consists of a white rectangle in the center of a top view - smooth-shaded mode.
 // Map initially off. Map is coplanar with top of rectangle.
@@ -51,7 +60,11 @@ describe("Planar clip mask (#integration)", () => {
   // dynamic is blue. model is white. background is black. map is multi-colored.
   type PixelType = "map" | "model" | "bg" | "dynamic";
 
-  async function expectPixels(planarClipMask: PlanarClipMaskProps | undefined, expectedCenter: PixelType, setup?: (vp: Viewport) => void): Promise<void> {
+  async function expectPixels(
+    planarClipMask: PlanarClipMaskProps | undefined,
+    expectedCenter: PixelType,
+    setup?: (vp: Viewport) => void,
+  ): Promise<void> {
     return testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
       vp.viewFlags = vp.viewFlags.copy({ backgroundMap: true, lighting: false });
       vp.backgroundMapSettings = BackgroundMapSettings.fromJSON({
@@ -156,7 +169,11 @@ describe("Planar clip mask (#integration)", () => {
     const maxX = 289160;
     const maxY = 3803959;
     builder.addShape2d([
-      new Point2d(minX, minY), new Point2d(maxX, minY), new Point2d(maxX, maxY), new Point2d(minX, maxY), new Point2d(minX, minY),
+      new Point2d(minX, minY),
+      new Point2d(maxX, minY),
+      new Point2d(maxX, maxY),
+      new Point2d(minX, maxY),
+      new Point2d(minX, minY),
     ], 10); // put it under the map
 
     const treeRef = TileTreeReference.createFromRenderGraphic({
@@ -192,23 +209,31 @@ describe("Planar clip mask (#integration)", () => {
       modelId: "0x1c",
     });
 
-    await expectPixels({
-      mode: PlanarClipMaskMode.Priority,
-      priority: PlanarClipMaskPriority.BackgroundMap,
-    }, "model", (vp) => {
-      vp.changeViewedModels([]);
-      vp.addTiledGraphicsProvider({
-        forEachTileTreeRef: (_, func) => {
-          func(treeRef);
-        },
-      });
-    });
+    await expectPixels(
+      {
+        mode: PlanarClipMaskMode.Priority,
+        priority: PlanarClipMaskPriority.BackgroundMap,
+      },
+      "model",
+      (vp) => {
+        vp.changeViewedModels([]);
+        vp.addTiledGraphicsProvider({
+          forEachTileTreeRef: (_, func) => {
+            func(treeRef);
+          },
+        });
+      },
+    );
   });
 
   it("is masked by priority by dynamic geometry", async () => {
-    await expectPixels({
-      mode: PlanarClipMaskMode.Priority,
-      priority: PlanarClipMaskPriority.BackgroundMap,
-    }, "dynamic", addDynamicGeometry);
+    await expectPixels(
+      {
+        mode: PlanarClipMaskMode.Priority,
+        priority: PlanarClipMaskPriority.BackgroundMap,
+      },
+      "dynamic",
+      addDynamicGeometry,
+    );
   });
 });

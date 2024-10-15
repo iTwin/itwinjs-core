@@ -9,12 +9,23 @@
 import { assert, BeEvent } from "@itwin/core-bentley";
 import { Cartographic, ImageMapLayerSettings, ImageSource, ImageSourceFormat } from "@itwin/core-common";
 import { Angle } from "@itwin/core-geometry";
+import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
-import { ScreenViewport } from "../../Viewport";
-import { appendQueryParams, GeographicTilingScheme, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapTilingScheme, QuadId, WebMercatorTilingScheme } from "../internal";
-import { HitDetail } from "../../HitDetail";
 import { headersIncludeAuthMethod, setBasicAuthorization, setRequestTimeout } from "../../request/utils";
+import { ScreenViewport } from "../../Viewport";
+import {
+  appendQueryParams,
+  GeographicTilingScheme,
+  ImageryMapTile,
+  ImageryMapTileTree,
+  MapCartoRectangle,
+  MapFeatureInfoOptions,
+  MapLayerFeatureInfo,
+  MapTilingScheme,
+  QuadId,
+  WebMercatorTilingScheme,
+} from "../internal";
 
 /** @internal */
 const tileImageSize = 256, untiledImageSize = 256;
@@ -30,8 +41,7 @@ export enum MapLayerImageryProviderStatus {
 }
 
 /** @internal */
-export interface WGS84Extent
-{
+export interface WGS84Extent {
   longitudeLeft: number;
   longitudeRight: number;
   latitudeTop: number;
@@ -62,37 +72,57 @@ export abstract class MapLayerImageryProvider {
   protected readonly onFirstRequestCompleted = new BeEvent<() => void>();
 
   /** @internal */
-  protected _firstRequestPromise: Promise<void>|undefined;
+  protected _firstRequestPromise: Promise<void> | undefined;
 
   /** @internal */
-  public get status() { return this._status; }
+  public get status() {
+    return this._status;
+  }
 
   /** Determine if this provider supports map feature info.
    * For example, this can be used to show the map feature info tool only when a provider is registered to support it.
    * @returns true if provider supports map feature info else return false.
    * @public
    */
-  public get supportsMapFeatureInfo(): boolean { return false; }
+  public get supportsMapFeatureInfo(): boolean {
+    return false;
+  }
 
-  public resetStatus() { this.setStatus(MapLayerImageryProviderStatus.Valid); }
-
-  /** @internal */
-  public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
-
-  /** @internal */
-  public get maximumScreenSize() { return 2 * this.tileSize; }
-
-  public get minimumZoomLevel(): number { return this.defaultMinimumZoomLevel; }
-
-  public get maximumZoomLevel(): number { return this.defaultMaximumZoomLevel; }
+  public resetStatus() {
+    this.setStatus(MapLayerImageryProviderStatus.Valid);
+  }
 
   /** @internal */
-  public get usesCachedTiles() { return this._usesCachedTiles; }
-
-  public get mutualExclusiveSubLayer(): boolean { return false; }
+  public get tileSize(): number {
+    return this._usesCachedTiles ? tileImageSize : untiledImageSize;
+  }
 
   /** @internal */
-  public get useGeographicTilingScheme() { return false; }
+  public get maximumScreenSize() {
+    return 2 * this.tileSize;
+  }
+
+  public get minimumZoomLevel(): number {
+    return this.defaultMinimumZoomLevel;
+  }
+
+  public get maximumZoomLevel(): number {
+    return this.defaultMaximumZoomLevel;
+  }
+
+  /** @internal */
+  public get usesCachedTiles() {
+    return this._usesCachedTiles;
+  }
+
+  public get mutualExclusiveSubLayer(): boolean {
+    return false;
+  }
+
+  /** @internal */
+  public get useGeographicTilingScheme() {
+    return false;
+  }
 
   public cartoRange?: MapCartoRectangle;
 
@@ -109,7 +139,9 @@ export abstract class MapLayerImageryProvider {
   protected readonly defaultMaximumZoomLevel = 22;
 
   /** @internal */
-  protected get _filterByCartoRange() { return true; }
+  protected get _filterByCartoRange() {
+    return true;
+  }
 
   constructor(protected readonly _settings: ImageMapLayerSettings, protected _usesCachedTiles: boolean) {
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
@@ -129,7 +161,9 @@ export abstract class MapLayerImageryProvider {
 
   public abstract constructUrl(row: number, column: number, zoomLevel: number): Promise<string>;
 
-  public get tilingScheme(): MapTilingScheme { return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme; }
+  public get tilingScheme(): MapTilingScheme {
+    return this.useGeographicTilingScheme ? this._geographicTilingScheme : this._mercatorTilingScheme;
+  }
 
   /**
    * Add attribution logo cards for the data supplied by this provider to the [[Viewport]]'s logo div.
@@ -137,16 +171,20 @@ export abstract class MapLayerImageryProvider {
    * @param _viewport Viewport to add logo cards to.
    * @beta
    */
-  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void { }
+  public addLogoCards(_cards: HTMLTableElement, _viewport: ScreenViewport): void {}
 
   /** @internal */
   protected _missingTileData?: Uint8Array;
 
   /** @internal */
-  public get transparentBackgroundString(): string { return this._settings.transparentBackground ? "true" : "false"; }
+  public get transparentBackgroundString(): string {
+    return this._settings.transparentBackground ? "true" : "false";
+  }
 
   /** @internal */
-  protected async _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean> { return true; }
+  protected async _areChildrenAvailable(_tile: ImageryMapTile): Promise<boolean> {
+    return true;
+  }
 
   /** @internal */
   public getPotentialChildIds(quadId: QuadId): QuadId[] {
@@ -167,7 +205,10 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   public generateChildIds(tile: ImageryMapTile, resolveChildren: (childIds: QuadId[]) => void) {
-    if (tile.depth >= this.maximumZoomLevel || (undefined !== this.cartoRange && this._filterByCartoRange && !this.cartoRange.intersectsRange(tile.rectangle))) {
+    if (
+      tile.depth >= this.maximumZoomLevel ||
+      (undefined !== this.cartoRange && this._filterByCartoRange && !this.cartoRange.intersectsRange(tile.rectangle))
+    ) {
       tile.setLeaf();
       return;
     }
@@ -190,7 +231,14 @@ export abstract class MapLayerImageryProvider {
   }
 
   /** @internal */
-  public async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], _quadId: QuadId, _carto: Cartographic, _tree: ImageryMapTileTree, _hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<void> {
+  public async getFeatureInfo(
+    featureInfos: MapLayerFeatureInfo[],
+    _quadId: QuadId,
+    _carto: Cartographic,
+    _tree: ImageryMapTileTree,
+    _hit: HitDetail,
+    _options?: MapFeatureInfoOptions,
+  ): Promise<void> {
     // default implementation; simply return an empty feature info
     featureInfos.push({ layerName: this._settings.name });
   }
@@ -238,7 +286,7 @@ export abstract class MapLayerImageryProvider {
   /** Method called whenever the status changes, giving the opportunity to sub-classes to have a custom behavior.
    *  @internal
    */
-  protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus) { }
+  protected onStatusUpdated(_newStatus: MapLayerImageryProviderStatus) {}
 
   /** @internal */
   protected setRequestAuthorization(headers: Headers) {
@@ -249,15 +297,14 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   public async makeTileRequest(url: string, timeoutMs?: number): Promise<Response> {
-
     // We want to complete the first request before letting other requests go;
     // this done to avoid flooding server with requests missing credentials
     if (!this._firstRequestPromise)
-      this._firstRequestPromise  = new Promise<void>((resolve: any) => this.onFirstRequestCompleted.addOnce(()=>resolve()));
+      this._firstRequestPromise = new Promise<void>((resolve: any) => this.onFirstRequestCompleted.addOnce(() => resolve()));
     else
       await this._firstRequestPromise;
 
-    let response: Response|undefined;
+    let response: Response | undefined;
     try {
       response = await this.makeRequest(url, timeoutMs);
     } finally {
@@ -272,8 +319,7 @@ export abstract class MapLayerImageryProvider {
 
   /** @internal */
   public async makeRequest(url: string, timeoutMs?: number) {
-
-    let response: Response|undefined;
+    let response: Response | undefined;
 
     let headers: Headers | undefined;
     let hasCreds = false;
@@ -293,19 +339,20 @@ export abstract class MapLayerImageryProvider {
 
     response = await fetch(url, opts);
 
-    if (response.status === 401
-          && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
-          && !this._includeUserCredentials
-          && !hasCreds
+    if (
+      response.status === 401
+      && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])
+      && !this._includeUserCredentials
+      && !hasCreds
     ) {
       // Removed the previous headers and make sure "include" credentials is set
       opts.headers = undefined;
       opts.credentials = "include";
 
       // We got a http 401 challenge, lets try again with SSO enabled (i.e. Windows Authentication)
-      response = await fetch(url,  opts);
+      response = await fetch(url, opts);
       if (response.status === 200) {
-        this._includeUserCredentials = true;    // avoid going through 401 challenges over and over
+        this._includeUserCredentials = true; // avoid going through 401 challenges over and over
       }
     }
 
@@ -314,7 +361,6 @@ export abstract class MapLayerImageryProvider {
 
   /** Returns a map layer tile at the specified settings. */
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-
     try {
       const tileUrl: string = await this.constructUrl(row, column, zoomLevel);
       if (tileUrl.length === 0)
@@ -338,7 +384,6 @@ export abstract class MapLayerImageryProvider {
           const msg = IModelApp.localization.getLocalizedString("iModelJs:MapLayers.Messages.LoadTileTokenError", { layerName: this._settings.name });
           IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, msg));
         }
-
       }
       return undefined;
     }
@@ -470,16 +515,18 @@ export abstract class MapLayerImageryProvider {
   public getEPSG4326TileExtentString(row: number, column: number, zoomLevel: number, latLongAxisOrdering: boolean) {
     const tileExtent = this.getEPSG4326Extent(row, column, zoomLevel);
     return this.getEPSG4326ExtentString(tileExtent, latLongAxisOrdering);
-
   }
 
   /** @internal */
   public getEPSG4326ExtentString(tileExtent: WGS84Extent, latLongAxisOrdering: boolean) {
-
     if (latLongAxisOrdering) {
-      return `${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)}`;
+      return `${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)},${
+        tileExtent.longitudeRight.toFixed(8)
+      }`;
     } else {
-      return `${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)},${tileExtent.latitudeTop.toFixed(8)}`;
+      return `${tileExtent.longitudeLeft.toFixed(8)},${tileExtent.latitudeBottom.toFixed(8)},${tileExtent.longitudeRight.toFixed(8)},${
+        tileExtent.latitudeTop.toFixed(8)
+      }`;
     }
   }
 

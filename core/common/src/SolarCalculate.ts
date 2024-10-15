@@ -33,17 +33,17 @@ function calcGeomMeanLongSun(t: number) {
   while (L0 < 0.0) {
     L0 += 360.0;
   }
-  return L0;		// in degrees
+  return L0; // in degrees
 }
 
 function calcGeomMeanAnomalySun(t: number) {
   const M = 357.52911 + t * (35999.05029 - 0.0001537 * t);
-  return M;		// in degrees
+  return M; // in degrees
 }
 
 function calcEccentricityEarthOrbit(t: number) {
   const e = 0.016708634 - t * (0.000042037 + 0.0000001267 * t);
-  return e;		// unitless
+  return e; // unitless
 }
 
 function calcSunEqOfCenter(t: number) {
@@ -53,34 +53,34 @@ function calcSunEqOfCenter(t: number) {
   const sin2m = Math.sin(mrad + mrad);
   const sin3m = Math.sin(mrad + mrad + mrad);
   const C = sinm * (1.914602 - t * (0.004817 + 0.000014 * t)) + sin2m * (0.019993 - 0.000101 * t) + sin3m * 0.000289;
-  return C;		// in degrees
+  return C; // in degrees
 }
 
 function calcSunTrueLong(t: number) {
   const l0 = calcGeomMeanLongSun(t);
   const c = calcSunEqOfCenter(t);
   const O = l0 + c;
-  return O;		// in degrees
+  return O; // in degrees
 }
 
 function calcSunApparentLong(t: number) {
   const o = calcSunTrueLong(t);
   const omega = 125.04 - 1934.136 * t;
   const lambda = o - 0.00569 - 0.00478 * Math.sin(degToRad(omega));
-  return lambda;		// in degrees
+  return lambda; // in degrees
 }
 
 function calcMeanObliquityOfEcliptic(t: number) {
   const seconds = 21.448 - t * (46.8150 + t * (0.00059 - t * (0.001813)));
   const e0 = 23.0 + (26.0 + (seconds / 60.0)) / 60.0;
-  return e0;		// in degrees
+  return e0; // in degrees
 }
 
 function calcObliquityCorrection(t: number) {
   const e0 = calcMeanObliquityOfEcliptic(t);
   const omega = 125.04 - 1934.136 * t;
   const e = e0 + 0.00256 * Math.cos(degToRad(omega));
-  return e;		// in degrees
+  return e; // in degrees
 }
 
 function calcSunDeclination(t: number) {
@@ -89,7 +89,7 @@ function calcSunDeclination(t: number) {
 
   const sint = Math.sin(degToRad(e)) * Math.sin(degToRad(lambda));
   const theta = radToDeg(Math.asin(sint));
-  return theta;		// in degrees
+  return theta; // in degrees
 }
 
 function calcEquationOfTime(t: number) {
@@ -108,7 +108,7 @@ function calcEquationOfTime(t: number) {
   const sin2m = Math.sin(2.0 * degToRad(m));
 
   const eTime = y * sin2l0 - 2.0 * e * sinm + 4.0 * e * y * sinm * cos2l0 - 0.5 * y * y * sin4l0 - 1.25 * e * e * sin2m;
-  return radToDeg(eTime) * 4.0;	// in minutes of time
+  return radToDeg(eTime) * 4.0; // in minutes of time
 }
 
 function calcAzEl(t: number, localTime: number, latitude: number, longitude: number, zone: number): { azimuth: number, elevation: number } {
@@ -131,7 +131,7 @@ function calcAzEl(t: number, localTime: number, latitude: number, longitude: num
     csz = -1.0;
   }
   const zenith = radToDeg(Math.acos(csz));
-  const azDenom = (Math.cos(degToRad(latitude)) * Math.sin(degToRad(zenith)));
+  const azDenom = Math.cos(degToRad(latitude)) * Math.sin(degToRad(zenith));
   let azimuth;
   if (Math.abs(azDenom) > 0.001) {
     let azRad = ((Math.sin(degToRad(latitude)) * Math.cos(degToRad(zenith))) - Math.sin(degToRad(theta))) / azDenom;
@@ -160,7 +160,7 @@ function calcAzEl(t: number, localTime: number, latitude: number, longitude: num
 }
 
 function calculateJulianDay(date: Date) {
-  return Math.floor(date.getTime() / 86400000) + 2440587.5;    // https://stackoverflow.com/questions/11759992/calculating-jdayjulian-day-in-javascript
+  return Math.floor(date.getTime() / 86400000) + 2440587.5; // https://stackoverflow.com/questions/11759992/calculating-jdayjulian-day-in-javascript
 }
 
 /** @public
@@ -211,10 +211,10 @@ function calcSunriseUtcMinutes(rise: boolean, lat: number, longitude: number, jD
   const solarDec = calcSunDeclination(t);
   const latRad = degToRad(lat);
   const sdRad = degToRad(solarDec);
-  const hAarg = (Math.cos(degToRad(90.833)) / (Math.cos(latRad) * Math.cos(sdRad)) - Math.tan(latRad) * Math.tan(sdRad));
+  const hAarg = Math.cos(degToRad(90.833)) / (Math.cos(latRad) * Math.cos(sdRad)) - Math.tan(latRad) * Math.tan(sdRad);
   const hourAngle = Math.acos(hAarg);
-  const delta = longitude + radToDeg(rise ? hourAngle : - hourAngle);
-  return 720 - (4.0 * delta) - eqTime;	// in UTC minutes
+  const delta = longitude + radToDeg(rise ? hourAngle : -hourAngle);
+  return 720 - (4.0 * delta) - eqTime; // in UTC minutes
 }
 
 /** @public
@@ -225,5 +225,7 @@ export function calculateSunriseOrSunset(date: Date, location: Cartographic, sun
   const longitude = location.longitudeDegrees;
   const latitude = location.latitudeDegrees;
   const utcMinutes = calcSunriseUtcMinutes(sunrise, latitude, longitude, jDay);
-  return sunrise ? dateFromUtcMinutes(date, utcMinutes) : dateFromUtcMinutes(date, calcSunriseUtcMinutes(sunrise, latitude, longitude, jDay + utcMinutes / 1440));
+  return sunrise
+    ? dateFromUtcMinutes(date, utcMinutes)
+    : dateFromUtcMinutes(date, calcSunriseUtcMinutes(sunrise, latitude, longitude, jDay + utcMinutes / 1440));
 }

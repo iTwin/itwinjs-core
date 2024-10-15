@@ -6,13 +6,13 @@
  * @module Tools
  */
 
-import { AbandonedError, assert, BeEvent, BeTimePoint, IModelStatus, Logger } from "@itwin/core-bentley";
-import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
-import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
 import { DialogItemValue, DialogPropertyItem, DialogPropertySyncItem } from "@itwin/appui-abstract";
+import { AbandonedError, assert, BeEvent, BeTimePoint, IModelStatus, Logger } from "@itwin/core-bentley";
+import { Easing, GeometryStreamProps, NpcCenter } from "@itwin/core-common";
+import { Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@itwin/core-geometry";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
-import { LocateOptions } from "../ElementLocateManager";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
+import { LocateOptions } from "../ElementLocateManager";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { linePlaneIntersect } from "../LinePlaneIntersect";
@@ -25,8 +25,19 @@ import { ScreenViewport, Viewport } from "../Viewport";
 import { ViewStatus } from "../ViewStatus";
 import { PrimitiveTool } from "./PrimitiveTool";
 import {
-  BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordinateLockOverrides, CoordSource, EventHandled,
-  InputCollector, InputSource, InteractiveTool, Tool,
+  BeButton,
+  BeButtonEvent,
+  BeButtonState,
+  BeModifierKeys,
+  BeTouchEvent,
+  BeWheelEvent,
+  CoordinateLockOverrides,
+  CoordSource,
+  EventHandled,
+  InputCollector,
+  InputSource,
+  InteractiveTool,
+  Tool,
 } from "./Tool";
 import { ToolSettings } from "./ToolSettings";
 import { ViewTool } from "./ViewTool";
@@ -35,15 +46,27 @@ import { ViewTool } from "./ViewTool";
  * @public
  * @extensions
  */
-export enum StartOrResume { Start = 1, Resume = 2 }
+export enum StartOrResume {
+  Start = 1,
+  Resume = 2,
+}
 
 /**
  * @public
  * @extensions
  */
-export enum ManipulatorToolEvent { Start = 1, Stop = 2, Suspend = 3, Unsuspend = 4 }
+export enum ManipulatorToolEvent {
+  Start = 1,
+  Stop = 2,
+  Suspend = 3,
+  Unsuspend = 4,
+}
 
-const enum MouseButton { Left = 0, Middle = 1, Right = 2 } // eslint-disable-line no-restricted-syntax
+const enum MouseButton {
+  Left = 0,
+  Middle = 1,
+  Right = 2,
+} // eslint-disable-line no-restricted-syntax
 
 /** Maintains the state of tool settings properties for the current session.
  * @see [[ToolAdmin.toolSettingsState]] to access the state for the current session.
@@ -157,31 +180,57 @@ export class CurrentInputState {
   public touchTapTimer?: number;
   public touchTapCount?: number;
 
-  public get rawPoint() { return this._rawPoint; }
-  public set rawPoint(pt: Point3d) { this._rawPoint.setFrom(pt); }
-  public get point() { return this._point; }
-  public set point(pt: Point3d) { this._point.setFrom(pt); }
-  public get viewPoint() { return this._viewPoint; }
-  public set viewPoint(pt: Point3d) { this._viewPoint.setFrom(pt); }
-  public get isShiftDown() { return 0 !== (this.qualifiers & BeModifierKeys.Shift); }
-  public get isControlDown() { return 0 !== (this.qualifiers & BeModifierKeys.Control); }
-  public get isAltDown() { return 0 !== (this.qualifiers & BeModifierKeys.Alt); }
+  public get rawPoint() {
+    return this._rawPoint;
+  }
+  public set rawPoint(pt: Point3d) {
+    this._rawPoint.setFrom(pt);
+  }
+  public get point() {
+    return this._point;
+  }
+  public set point(pt: Point3d) {
+    this._point.setFrom(pt);
+  }
+  public get viewPoint() {
+    return this._viewPoint;
+  }
+  public set viewPoint(pt: Point3d) {
+    this._viewPoint.setFrom(pt);
+  }
+  public get isShiftDown() {
+    return 0 !== (this.qualifiers & BeModifierKeys.Shift);
+  }
+  public get isControlDown() {
+    return 0 !== (this.qualifiers & BeModifierKeys.Control);
+  }
+  public get isAltDown() {
+    return 0 !== (this.qualifiers & BeModifierKeys.Alt);
+  }
 
-  public isDragging(button: BeButton) { return this.button[button].isDragging; }
-  public onStartDrag(button: BeButton) { this.button[button].isDragging = true; }
+  public isDragging(button: BeButton) {
+    return this.button[button].isDragging;
+  }
+  public onStartDrag(button: BeButton) {
+    this.button[button].isDragging = true;
+  }
   public onInstallTool() {
     this.clearKeyQualifiers();
     this.lastWheelEvent = undefined;
     this.lastTouchStart = this.touchTapTimer = this.touchTapCount = undefined;
   }
 
-  public clearKeyQualifiers() { this.qualifiers = BeModifierKeys.None; }
+  public clearKeyQualifiers() {
+    this.qualifiers = BeModifierKeys.None;
+  }
   public clearViewport(vp: Viewport) {
     if (vp === this.viewport)
       this.viewport = undefined;
   }
 
-  private isAnyDragging() { return this.button.some((button) => button.isDragging); }
+  private isAnyDragging() {
+    return this.button.some((button) => button.isDragging);
+  }
   private setKeyQualifier(qual: BeModifierKeys, down: boolean) {
     this.qualifiers = down ? (this.qualifiers | qual) : (this.qualifiers & (~qual));
   }
@@ -205,7 +254,9 @@ export class CurrentInputState {
       ev.viewPoint = ev.viewport.worldToView(ev.rawPoint);
   }
 
-  public updateDownPoint(ev: BeButtonEvent) { this.button[ev.button].downUorPt = ev.point; }
+  public updateDownPoint(ev: BeButtonEvent) {
+    this.button[ev.button].downUorPt = ev.point;
+  }
 
   public onButtonDown(button: BeButton) {
     const viewPt = this.viewport!.worldToView(this.button[button].downRawPt);
@@ -213,7 +264,8 @@ export class CurrentInputState {
     viewPt.z = center.z;
 
     const now = Date.now();
-    const isDoubleClick = ((now - this.button[button].downTime) < ToolSettings.doubleClickTimeout.milliseconds) && (viewPt.distance(this.viewPoint) < this.viewport!.pixelsFromInches(ToolSettings.doubleClickToleranceInches));
+    const isDoubleClick = ((now - this.button[button].downTime) < ToolSettings.doubleClickTimeout.milliseconds) &&
+      (viewPt.distance(this.viewPoint) < this.viewport!.pixelsFromInches(ToolSettings.doubleClickToleranceInches));
 
     this.button[button].init(this.point, this.rawPoint, now, true, isDoubleClick, false, this.inputSource);
     this.lastButton = button;
@@ -245,9 +297,16 @@ export class CurrentInputState {
 
     const buttonState = this.button[this.lastButton];
     ev.init({
-      point, rawPoint: this.rawPoint, viewPoint: this.viewPoint, viewport, coordsFrom,
-      keyModifiers: this.qualifiers, button: this.lastButton, isDown: buttonState.isDown,
-      isDoubleClick: buttonState.isDoubleClick, isDragging: buttonState.isDragging,
+      point,
+      rawPoint: this.rawPoint,
+      viewPoint: this.viewPoint,
+      viewport,
+      coordsFrom,
+      keyModifiers: this.qualifiers,
+      button: this.lastButton,
+      isDown: buttonState.isDown,
+      isDoubleClick: buttonState.isDoubleClick,
+      isDragging: buttonState.isDragging,
       inputSource: this.inputSource,
     });
   }
@@ -265,9 +324,17 @@ export class CurrentInputState {
     const rawPoint = state.downRawPt;
     const viewPoint = this.viewport ? this.viewport.worldToView(rawPoint) : Point3d.create(); // BeButtonEvent is invalid when viewport is undefined
     ev.init({
-      point, rawPoint, viewPoint, viewport: this.viewport!, coordsFrom: CoordSource.User,
-      keyModifiers: this.qualifiers, button: BeButton.Data, isDown: state.isDown,
-      isDoubleClick: state.isDoubleClick, isDragging: state.isDragging, inputSource: state.inputSource,
+      point,
+      rawPoint,
+      viewPoint,
+      viewport: this.viewport!,
+      coordsFrom: CoordSource.User,
+      keyModifiers: this.qualifiers,
+      button: BeButton.Data,
+      isDown: state.isDown,
+      isDoubleClick: state.isDoubleClick,
+      isDragging: state.isDragging,
+      inputSource: state.inputSource,
     });
   }
 
@@ -440,18 +507,22 @@ export class ToolAdmin {
   private _toolSettingsChangeHandler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined = undefined;
 
   /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool. */
-  public get toolSettingsChangeHandler() { return this._toolSettingsChangeHandler; }
+  public get toolSettingsChangeHandler() {
+    return this._toolSettingsChangeHandler;
+  }
   public set toolSettingsChangeHandler(handler: ((toolId: string, syncProperties: DialogPropertySyncItem[]) => void) | undefined) {
     this._toolSettingsChangeHandler = handler;
   }
 
   /** The registered handler method that will inform the UI to reload tool setting with properties from active tool.
- *  @internal
- */
+   *  @internal
+   */
   private _reloadToolSettingsHandler: (() => void) | undefined = undefined;
 
   /** Returns the handler registered by the UI layer that allows it to display property changes made by the active Tool. */
-  public get reloadToolSettingsHandler() { return this._reloadToolSettingsHandler; }
+  public get reloadToolSettingsHandler() {
+    return this._reloadToolSettingsHandler;
+  }
   public set reloadToolSettingsHandler(handler: (() => void) | undefined) {
     this._reloadToolSettingsHandler = handler;
   }
@@ -462,7 +533,9 @@ export class ToolAdmin {
   private _toolSyncUiEventDispatcher: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined = undefined;
 
   /** Returns the handler registered by the UI layer that will trigger UiSyncEvent processing that informs UI component to refresh their state. */
-  public get toolSyncUiEventDispatcher() { return this._toolSyncUiEventDispatcher; }
+  public get toolSyncUiEventDispatcher() {
+    return this._toolSyncUiEventDispatcher;
+  }
   public set toolSyncUiEventDispatcher(handler: ((syncEventId: string, useImmediateDispatch?: boolean) => void) | undefined) {
     this._toolSyncUiEventDispatcher = handler;
   }
@@ -476,7 +549,7 @@ export class ToolAdmin {
   /** @internal */
   public onInitialized() {
     if (typeof document === "undefined")
-      return;    // if document isn't defined, we're probably running in a test environment. At any rate, we can't have interactive tools.
+      return; // if document isn't defined, we're probably running in a test environment. At any rate, we can't have interactive tools.
 
     this._idleTool = IModelApp.tools.create("Idle") as InteractiveTool;
 
@@ -498,7 +571,9 @@ export class ToolAdmin {
   }
 
   /** Get the ScreenViewport where the cursor is currently, if any. */
-  public get cursorView(): ScreenViewport | undefined { return this.currentInputState.viewport; }
+  public get cursorView(): ScreenViewport | undefined {
+    return this.currentInputState.viewport;
+  }
 
   /** Called from ViewManager.dropViewport to prevent tools from continuing to operate on the dropped viewport.
    * @internal
@@ -524,9 +599,12 @@ export class ToolAdmin {
 
   private getMouseButton(button: number) {
     switch (button) {
-      case MouseButton.Middle: return BeButton.Middle;
-      case MouseButton.Right: return BeButton.Reset;
-      default: return BeButton.Data;
+      case MouseButton.Middle:
+        return BeButton.Middle;
+      case MouseButton.Right:
+        return BeButton.Reset;
+      default:
+        return BeButton.Data;
     }
   }
 
@@ -604,8 +682,8 @@ export class ToolAdmin {
       return;
 
     const touchEv = current.lastTouchStart;
-    const numTouches = (undefined !== current.lastTouchStart ? current.lastTouchStart.touchCount : 0);
-    const numTaps = (undefined !== current.touchTapCount ? current.touchTapCount : 0);
+    const numTouches = undefined !== current.lastTouchStart ? current.lastTouchStart.touchCount : 0;
+    const numTaps = undefined !== current.touchTapCount ? current.touchTapCount : 0;
 
     current.touchTapTimer = current.touchTapCount = current.lastTouchStart = undefined;
     if (undefined === touchEv || 0 > numTouches || 0 > numTaps)
@@ -784,18 +862,30 @@ export class ToolAdmin {
       return; // nothing in queue
 
     switch (event.ev.type) {
-      case "mousedown": return this.onMouseButton(event, true);
-      case "mouseup": return this.onMouseButton(event, false);
-      case "mousemove": return this.onMouseMove(event);
-      case "mouseover": return this.onMouseEnter(event);
-      case "mouseout": return this.onMouseLeave(event.vp!);
-      case "wheel": return this.onWheel(event);
-      case "keydown": return this.onKeyTransition(event, true);
-      case "keyup": return this.onKeyTransition(event, false);
-      case "touchstart": return this.onTouch(event);
-      case "touchend": return this.onTouch(event);
-      case "touchcancel": return this.onTouch(event);
-      case "touchmove": return this.onTouch(event);
+      case "mousedown":
+        return this.onMouseButton(event, true);
+      case "mouseup":
+        return this.onMouseButton(event, false);
+      case "mousemove":
+        return this.onMouseMove(event);
+      case "mouseover":
+        return this.onMouseEnter(event);
+      case "mouseout":
+        return this.onMouseLeave(event.vp!);
+      case "wheel":
+        return this.onWheel(event);
+      case "keydown":
+        return this.onKeyTransition(event, true);
+      case "keyup":
+        return this.onKeyTransition(event, false);
+      case "touchstart":
+        return this.onTouch(event);
+      case "touchend":
+        return this.onTouch(event);
+      case "touchcancel":
+        return this.onTouch(event);
+      case "touchmove":
+        return this.onTouch(event);
     }
   }
 
@@ -809,7 +899,7 @@ export class ToolAdmin {
       return; // we're still working on the previous event.
 
     try {
-      this._processingEvent = true;  // we can't allow any further event processing until the current event completes.
+      this._processingEvent = true; // we can't allow any further event processing until the current event completes.
       await this.processNextEvent();
     } catch (exception) {
       await ToolAdmin.exceptionHandler(exception); // we don't attempt to exit here
@@ -843,10 +933,16 @@ export class ToolAdmin {
   }
 
   /** @internal */
-  public async onPostInstallTool(tool: InteractiveTool) { return tool.onPostInstall(); }
+  public async onPostInstallTool(tool: InteractiveTool) {
+    return tool.onPostInstall();
+  }
 
-  public get viewTool(): ViewTool | undefined { return this._viewTool; }
-  public get primitiveTool(): PrimitiveTool | undefined { return this._primitiveTool; }
+  public get viewTool(): ViewTool | undefined {
+    return this._viewTool;
+  }
+  public get primitiveTool(): PrimitiveTool | undefined {
+    return this._primitiveTool;
+  }
 
   /** The currently active InteractiveTool. May be ViewTool, InputCollector, PrimitiveTool, undefined - in that priority order. */
   public get activeTool(): InteractiveTool | undefined {
@@ -854,13 +950,19 @@ export class ToolAdmin {
   }
 
   /** The current tool. May be ViewTool, InputCollector, PrimitiveTool, or IdleTool - in that priority order. */
-  public get currentTool(): InteractiveTool { return this.activeTool ? this.activeTool : this.idleTool; }
+  public get currentTool(): InteractiveTool {
+    return this.activeTool ? this.activeTool : this.idleTool;
+  }
 
   /** Allow applications to inhibit specific tooltips, such as for maps. */
-  public wantToolTip(_hit: HitDetail): boolean { return true; }
+  public wantToolTip(_hit: HitDetail): boolean {
+    return true;
+  }
 
   /** Ask the current tool to provide tooltip contents for the supplied HitDetail. */
-  public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> { return this.currentTool.getToolTip(hit); }
+  public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    return this.currentTool.getToolTip(hit);
+  }
 
   /**
    * Event raised whenever the active tool changes. This includes PrimitiveTool, ViewTool, and InputCollector.
@@ -950,7 +1052,7 @@ export class ToolAdmin {
       const context = new DynamicsContext(vp);
       tool.onDynamicFrame(motion, context);
       context.changeDynamics();
-    }).catch((_) => { });
+    }).catch((_) => {});
   }
 
   public async sendEndDragEvent(ev: BeButtonEvent): Promise<any> {
@@ -1089,7 +1191,7 @@ export class ToolAdmin {
       IModelApp.accuDraw.onMotion(ev);
 
       let tool = this.activeTool;
-      const isValidLocation = (undefined !== tool ? tool.isValidLocation(ev, false) : true);
+      const isValidLocation = undefined !== tool ? tool.isValidLocation(ev, false) : true;
       this.setIncompatibleViewportCursor(isValidLocation);
 
       if (forceStartDrag || current.isStartDrag(ev.button)) {
@@ -1130,7 +1232,7 @@ export class ToolAdmin {
       if (!snapOk || snapPromise !== this._snapMotionPromise)
         return;
       return processMotion();
-    }).catch((_) => { });
+    }).catch((_) => {});
   }
 
   // Called when we detect that the motion stopped
@@ -1379,9 +1481,12 @@ export class ToolAdmin {
 
   private static getModifierKey(event: KeyboardEvent): BeModifierKeys {
     switch (event.key) {
-      case "Alt": return BeModifierKeys.Alt;
-      case "Shift": return BeModifierKeys.Shift;
-      case "Control": return BeModifierKeys.Control;
+      case "Alt":
+        return BeModifierKeys.Alt;
+      case "Shift":
+        return BeModifierKeys.Shift;
+      case "Control":
+        return BeModifierKeys.Control;
     }
     return BeModifierKeys.None;
   }
@@ -1572,7 +1677,6 @@ export class ToolAdmin {
 
   /** @internal */
   public async startViewTool(newTool: ViewTool) {
-
     IModelApp.notifications.outputPrompt("");
     IModelApp.accuDraw.onViewToolInstall();
 
@@ -1747,10 +1851,14 @@ export class ToolAdmin {
   }
 
   /** @internal */
-  public testDecorationHit(id: string): boolean { return this.currentTool.testDecorationHit(id); }
+  public testDecorationHit(id: string): boolean {
+    return this.currentTool.testDecorationHit(id);
+  }
 
   /** @internal */
-  public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined { return this.currentTool.getDecorationGeometry(hit); }
+  public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined {
+    return this.currentTool.getDecorationGeometry(hit);
+  }
 
   /** @internal */
   public decorate(context: DecorateContext): void {
@@ -1801,11 +1909,17 @@ export class ToolAdmin {
   }
 
   /** Fill the supplied button event from the current cursor location. */
-  public fillEventFromCursorLocation(ev: BeButtonEvent, useSnap = true) { this.currentInputState.toEvent(ev, useSnap); }
+  public fillEventFromCursorLocation(ev: BeButtonEvent, useSnap = true) {
+    this.currentInputState.toEvent(ev, useSnap);
+  }
   /** Fill the supplied button event from the last data button location. */
-  public fillEventFromLastDataButton(ev: BeButtonEvent) { this.currentInputState.toEventFromLastDataPoint(ev); }
+  public fillEventFromLastDataButton(ev: BeButtonEvent) {
+    this.currentInputState.toEventFromLastDataPoint(ev);
+  }
   /** @internal */
-  public setAdjustedDataPoint(ev: BeButtonEvent) { this.currentInputState.adjustLastDataPoint(ev); }
+  public setAdjustedDataPoint(ev: BeButtonEvent) {
+    this.currentInputState.adjustLastDataPoint(ev);
+  }
 
   /** Can be called by tools that wish to emulate mouse button down/up events for onTouchTap. */
   public async convertTouchTapToButtonDownAndUp(ev: BeTouchEvent, button: BeButton = BeButton.Data): Promise<void> {
@@ -1905,8 +2019,12 @@ export class ToolAdmin {
   }
 
   /** Controls how the button event location is adjusted for the active tool */
-  public get coordinateLockOverrides(): CoordinateLockOverrides { return this.toolState.coordLockOvr; }
-  public set coordinateLockOverrides(coordLockOvr: CoordinateLockOverrides) { this.toolState.coordLockOvr = coordLockOvr; }
+  public get coordinateLockOverrides(): CoordinateLockOverrides {
+    return this.toolState.coordLockOvr;
+  }
+  public set coordinateLockOverrides(coordLockOvr: CoordinateLockOverrides) {
+    this.toolState.coordLockOvr = coordLockOvr;
+  }
 
   /** @internal */
   public async callOnCleanup() {
@@ -1978,9 +2096,11 @@ export class WheelEventProcessor {
     if (view.is3d() && view.isCameraOn) {
       if (!isSnapOrPrecision) {
         let lastEvent = currentInputState.lastWheelEvent;
-        if (undefined !== lastEvent && lastEvent.viewport &&
+        if (
+          undefined !== lastEvent && lastEvent.viewport &&
           now - lastEvent.time < ToolSettings.doubleClickTimeout.milliseconds &&
-          lastEvent.viewport.view.equals(view) && lastEvent.viewPoint.distanceSquaredXY(ev.viewPoint) < 10) {
+          lastEvent.viewport.view.equals(view) && lastEvent.viewPoint.distanceSquaredXY(ev.viewPoint) < 10
+        ) {
           target.setFrom(lastEvent.point);
           lastEvent.time = now;
         } else {
@@ -2012,7 +2132,16 @@ export class WheelEventProcessor {
       const zDir = view.getZVector();
       target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
 
-      if (ViewStatus.Success === (status = view.lookAt({ eyePoint: newEye, targetPoint: target, upVector: view.getYVector(), lensAngle: view.camera.lens, opts: animationOptions })))
+      if (
+        ViewStatus.Success ===
+          (status = view.lookAt({
+            eyePoint: newEye,
+            targetPoint: target,
+            upVector: view.getYVector(),
+            lensAngle: view.camera.lens,
+            opts: animationOptions,
+          }))
+      )
         vp.synchWithView(animationOptions);
     } else {
       const targetNpc = vp.worldToNpc(target);

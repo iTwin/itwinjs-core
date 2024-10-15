@@ -6,14 +6,39 @@
  * @module Views
  */
 import { assert, BeEvent, Id64, Id64Arg, Id64String } from "@itwin/core-bentley";
-import { Range1d, Vector3d } from "@itwin/core-geometry";
 import {
-  BackgroundMapProps, BackgroundMapProvider, BackgroundMapProviderProps, BackgroundMapSettings,
-  BaseLayerSettings, BaseMapLayerSettings, ColorDef, ContextRealityModelProps, DisplayStyle3dSettings, DisplayStyle3dSettingsProps,
-  DisplayStyleProps, DisplayStyleSettings, Environment, FeatureAppearance, GlobeMode, ImageMapLayerSettings, LightSettings, MapLayerProps,
-  MapLayerSettings, MapSubLayerProps, RenderSchedule, RenderTimelineProps,
-  SolarShadowSettings, SubCategoryOverride, SubLayerId, TerrainHeightOriginMode, ThematicDisplay, ThematicDisplayMode, ThematicGradientMode, ViewFlags,
+  BackgroundMapProps,
+  BackgroundMapProvider,
+  BackgroundMapProviderProps,
+  BackgroundMapSettings,
+  BaseLayerSettings,
+  BaseMapLayerSettings,
+  ColorDef,
+  ContextRealityModelProps,
+  DisplayStyle3dSettings,
+  DisplayStyle3dSettingsProps,
+  DisplayStyleProps,
+  DisplayStyleSettings,
+  Environment,
+  FeatureAppearance,
+  GlobeMode,
+  ImageMapLayerSettings,
+  LightSettings,
+  MapLayerProps,
+  MapLayerSettings,
+  MapSubLayerProps,
+  RenderSchedule,
+  RenderTimelineProps,
+  SolarShadowSettings,
+  SubCategoryOverride,
+  SubLayerId,
+  TerrainHeightOriginMode,
+  ThematicDisplay,
+  ThematicDisplayMode,
+  ThematicGradientMode,
+  ViewFlags,
 } from "@itwin/core-common";
+import { Range1d, Vector3d } from "@itwin/core-geometry";
 import { ApproximateTerrainHeights } from "./ApproximateTerrainHeights";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
 import { ContextRealityModelState } from "./ContextRealityModelState";
@@ -47,7 +72,9 @@ export interface OsmBuildingDisplayOptions {
  * @extensions
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
-  public static override get className() { return "DisplayStyle"; }
+  public static override get className() {
+    return "DisplayStyle";
+  }
   private _scriptReference?: RenderSchedule.ScriptReference;
   private _ellipsoidMapGeometry: BackgroundMapGeometry | undefined;
   private _attachedRealityModelPlanarClipMasks = new Map<Id64String, PlanarClipMaskState>();
@@ -84,10 +111,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
     if (styles) {
       // ###TODO Use DisplayStyleSettings.planarClipMasks
-      if (styles.planarClipOvr)
+      if (styles.planarClipOvr) {
         for (const planarClipOvr of styles.planarClipOvr)
           if (Id64.isValid(planarClipOvr.modelId))
             this._attachedRealityModelPlanarClipMasks.set(planarClipOvr.modelId, PlanarClipMaskState.fromJSON(planarClipOvr));
+      }
     }
   }
 
@@ -179,7 +207,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public get globeMode(): GlobeMode { return this.settings.backgroundMap.globeMode; }
+  public get globeMode(): GlobeMode {
+    return this.settings.backgroundMap.globeMode;
+  }
 
   /** Settings controlling how the base map is displayed within a view.
    *  The base map can be provided by any map imagery source or set to be a single color.
@@ -195,7 +225,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** The settings controlling how a background map is displayed within a view.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map on or off.
    */
-  public get backgroundMapSettings(): BackgroundMapSettings { return this.settings.backgroundMap; }
+  public get backgroundMapSettings(): BackgroundMapSettings {
+    return this.settings.backgroundMap;
+  }
   public set backgroundMapSettings(settings: BackgroundMapSettings) {
     this.settings.backgroundMap = settings;
   }
@@ -242,7 +274,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
 
-  private * getRealityModels(): Iterable<ContextRealityModelState> {
+  private *getRealityModels(): Iterable<ContextRealityModelState> {
     for (const model of this.settings.contextRealityModels.models) {
       assert(model instanceof ContextRealityModelState);
       yield model;
@@ -280,7 +312,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** The name of this DisplayStyle */
-  public get name(): string { return this.code.value; }
+  public get name(): string {
+    return this.code.value;
+  }
 
   /** Change the Id of the [RenderTimeline]($backend) element that hosts the [RenderSchedule.Script]($common) to be applied by this display style for
    * animating the contents of the view, and update [[scheduleScript]] using the script associated with the [RenderTimeline]($backend) element.
@@ -354,7 +388,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @see [[setOSMBuildingDisplay]]
    */
   public getOSMBuildingRealityModel(): ContextRealityModelState | undefined {
-    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)  // The OSM tile tree is ellipsoidal.
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid) // The OSM tile tree is ellipsoidal.
       return undefined;
 
     const url = getCesiumOSMBuildingsUrl();
@@ -369,7 +403,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * The options [[OsmBuildingDisplayOptions]] control the display and appearance overrides.
    */
   public setOSMBuildingDisplay(options: OsmBuildingDisplayOptions): boolean {
-    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid)  // The OSM tile tree is ellipsoidal.
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid) // The OSM tile tree is ellipsoidal.
       return false;
 
     const url = getCesiumOSMBuildingsUrl();
@@ -405,7 +439,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** @internal */
-  public getMapLayers(isOverlay: boolean) { return isOverlay ? this.settings.mapImagery.overlayLayers : this.settings.mapImagery.backgroundLayers; }
+  public getMapLayers(isOverlay: boolean) {
+    return isOverlay ? this.settings.mapImagery.overlayLayers : this.settings.mapImagery.backgroundLayers;
+  }
 
   /** Attach a map layer to display style.
    * @param Settings representing the map layer.
@@ -450,7 +486,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** @internal */
   public detachMapLayerByNameAndSource(name: string, source: string, isOverlay: boolean): void {
     const index = this.findMapLayerIndexByNameAndSource(name, source, isOverlay);
-    if (- 1 !== index)
+    if (-1 !== index)
       this.detachMapLayerByIndex({ index, isOverlay });
   }
 
@@ -475,7 +511,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @param source Unique string identifying the layer.
    * @param isOverlay true if layer is overlay, otherwise layer is background. Defaults to false.
    * @public
-   *
    */
   public findMapLayerIndexByNameAndSource(name: string, source: string, isOverlay: boolean) {
     return this.getMapLayers(isOverlay).findIndex((layer) => layer.matchesNameAndSource(name, source));
@@ -578,7 +613,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Move map layer to top.
    * @param mapLayerIndex the [[MapLayerIndex]] of the map layer to move.
    * @public
-   *
    */
   public moveMapLayerToTop(mapLayerIndex: MapLayerIndex) {
     const layers = this.getMapLayers(mapLayerIndex.isOverlay);
@@ -626,18 +660,30 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   /** Flags controlling various aspects of the display style.
    * @see [DisplayStyleSettings.viewFlags]($common)
    */
-  public get viewFlags(): ViewFlags { return this.settings.viewFlags; }
-  public set viewFlags(flags: ViewFlags) { this.settings.viewFlags = flags; }
+  public get viewFlags(): ViewFlags {
+    return this.settings.viewFlags;
+  }
+  public set viewFlags(flags: ViewFlags) {
+    this.settings.viewFlags = flags;
+  }
 
   /** The background color for this DisplayStyle */
-  public get backgroundColor(): ColorDef { return this.settings.backgroundColor; }
-  public set backgroundColor(val: ColorDef) { this.settings.backgroundColor = val; }
+  public get backgroundColor(): ColorDef {
+    return this.settings.backgroundColor;
+  }
+  public set backgroundColor(val: ColorDef) {
+    this.settings.backgroundColor = val;
+  }
 
   /** The color used to draw geometry in monochrome mode.
    * @see [ViewFlags.monochrome]($common) for enabling monochrome mode.
    */
-  public get monochromeColor(): ColorDef { return this.settings.monochromeColor; }
-  public set monochromeColor(val: ColorDef) { this.settings.monochromeColor = val; }
+  public get monochromeColor(): ColorDef {
+    return this.settings.monochromeColor;
+  }
+  public set monochromeColor(val: ColorDef) {
+    this.settings.monochromeColor = val;
+  }
 
   private _backgroundMapGeometry?: {
     bimElevationBias: number;
@@ -666,7 +712,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const terrainSettings = this.backgroundMapSettings.terrainSettings;
       switch (terrainSettings.heightOriginMode) {
         case TerrainHeightOriginMode.Ground:
-          return (undefined === this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
+          return (undefined === this.iModel.projectCenterAltitude)
+            ? undefined
+            : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
 
         case TerrainHeightOriginMode.Geodetic:
           return terrainSettings.heightOrigin;
@@ -677,7 +725,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     } else {
       return this.backgroundMapSettings.groundBias;
     }
-
   }
 
   /** @internal */
@@ -691,7 +738,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return undefined;
 
     const globeMode = this.globeMode;
-    if (undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode || this._backgroundMapGeometry.bimElevationBias !== bimElevationBias) {
+    if (
+      undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode ||
+      this._backgroundMapGeometry.bimElevationBias !== bimElevationBias
+    ) {
       const geometry = new BackgroundMapGeometry(bimElevationBias, globeMode, this.iModel);
       this._backgroundMapGeometry = { bimElevationBias, geometry, globeMode };
     }
@@ -725,30 +775,40 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** Returns true if this is a 3d display style. */
-  public is3d(): this is DisplayStyle3dState { return this instanceof DisplayStyle3dState; }
+  public is3d(): this is DisplayStyle3dState {
+    return this instanceof DisplayStyle3dState;
+  }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The ID of the SubCategory whose appearance is to be overridden.
    * @param ovr The overrides to apply to the [[SubCategoryAppearance]].
    * @see [[dropSubCategoryOverride]]
    */
-  public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) { this.settings.overrideSubCategory(id, ovr); }
+  public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) {
+    this.settings.overrideSubCategory(id, ovr);
+  }
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
    * @see [[overrideSubCategory]]
    */
-  public dropSubCategoryOverride(id: Id64String) { this.settings.dropSubCategoryOverride(id); }
+  public dropSubCategoryOverride(id: Id64String) {
+    this.settings.dropSubCategoryOverride(id);
+  }
 
   /** Returns true if an [[SubCategoryOverride]]s are defined by this style. */
-  public get hasSubCategoryOverride() { return this.settings.hasSubCategoryOverride; }
+  public get hasSubCategoryOverride() {
+    return this.settings.hasSubCategoryOverride;
+  }
 
   /** Obtain the overrides applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
    * @returns The corresponding SubCategoryOverride, or undefined if the SubCategory's appearance is not overridden.
    * @see [[overrideSubCategory]]
    */
-  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
+  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
+    return this.settings.getSubCategoryOverride(id);
+  }
 
   /** For each subcategory belonging to any of the specified categories, make it visible by turning off the "invisible" flag in its subcategory appearance.
    * This requires that the categories and subcategories have been previously loaded by, e.g., a call to IModelConnection.querySubCategories.
@@ -761,10 +821,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     let anyChanged = false;
     for (const categoryId of Id64.iterable(categoryIds)) {
       const subCategoryIds = this.iModel.subcategories.getSubCategories(categoryId);
-      if (undefined !== subCategoryIds)
+      if (undefined !== subCategoryIds) {
         for (const subCategoryId of subCategoryIds)
           if (this.setSubCategoryVisible(subCategoryId, true))
             anyChanged = true;
+      }
     }
 
     return anyChanged;
@@ -848,13 +909,19 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
  * @extensions
  */
 export class DisplayStyle2dState extends DisplayStyleState {
-  public static override get className() { return "DisplayStyle2d"; }
+  public static override get className() {
+    return "DisplayStyle2d";
+  }
   private readonly _settings: DisplayStyleSettings;
 
-  public get settings(): DisplayStyleSettings { return this._settings; }
+  public get settings(): DisplayStyleSettings {
+    return this._settings;
+  }
 
   /** @internal */
-  public overrideTerrainDisplay(): TerrainDisplayOverrides | undefined { return undefined; }
+  public overrideTerrainDisplay(): TerrainDisplayOverrides | undefined {
+    return undefined;
+  }
 
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
@@ -873,10 +940,14 @@ export class DisplayStyle2dState extends DisplayStyleState {
  * @extensions
  */
 export class DisplayStyle3dState extends DisplayStyleState {
-  public static override get className() { return "DisplayStyle3d"; }
+  public static override get className() {
+    return "DisplayStyle3d";
+  }
   private _settings: DisplayStyle3dSettings;
 
-  public get settings(): DisplayStyle3dSettings { return this._settings; }
+  public get settings(): DisplayStyle3dSettings {
+    return this._settings;
+  }
 
   public constructor(props: DisplayStyleProps, iModel: IModelConnection, source?: DisplayStyle3dState) {
     super(props, iModel, source);
@@ -896,8 +967,12 @@ export class DisplayStyle3dState extends DisplayStyleState {
     this.settings.environment = env;
   }
 
-  public get lights(): LightSettings { return this.settings.lights; }
-  public set lights(lights: LightSettings) { this.settings.lights = lights; }
+  public get lights(): LightSettings {
+    return this.settings.lights;
+  }
+  public set lights(lights: LightSettings) {
+    this.settings.lights = lights;
+  }
 
   /** The direction of the solar light. */
   public get sunDirection(): Readonly<Vector3d> {
@@ -943,7 +1018,10 @@ export class DisplayStyle3dState extends DisplayStyleState {
       const ovr = new TerrainDisplayOverrides();
       if (this.viewFlags.thematicDisplay && ThematicGradientMode.IsoLines === this.settings.thematic.gradientSettings.mode)
         ovr.wantSkirts = false;
-      if (this.viewFlags.thematicDisplay && (ThematicDisplayMode.Slope === this.settings.thematic.displayMode || ThematicDisplayMode.HillShade === this.settings.thematic.displayMode))
+      if (
+        this.viewFlags.thematicDisplay &&
+        (ThematicDisplayMode.Slope === this.settings.thematic.displayMode || ThematicDisplayMode.HillShade === this.settings.thematic.displayMode)
+      )
         ovr.wantNormals = true;
       return ovr;
     }

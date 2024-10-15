@@ -12,7 +12,6 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 describe("FacetFaceData", () => {
-
   it("HelloWorld", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -20,7 +19,13 @@ describe("FacetFaceData", () => {
     const polyfaceA = Sample.createTriangularUnitGridPolyface(
       Point3d.create(0, 0, 0),
       Vector3d.unitX(2.5),
-      Vector3d.unitY(4), 2, 3, true, true, true);
+      Vector3d.unitY(4),
+      2,
+      3,
+      true,
+      true,
+      true,
+    );
     ffd.setParamDistanceRangeFromNewFaceData(polyfaceA, 0, polyfaceA.facetCount);
 
     const paramRange = ffd.paramRange;
@@ -56,7 +61,13 @@ describe("FacetFaceData", () => {
     const polyfaceB = Sample.createTriangularUnitGridPolyface(
       Point3d.create(0, 0, 0),
       Vector3d.unitX(),
-      Vector3d.unitY(), 2, 3, false, false, false);
+      Vector3d.unitY(),
+      2,
+      3,
+      false,
+      false,
+      false,
+    );
     // confirm failure if there are no params in the polyface
     ck.testFalse(ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceB, 2, 3));
 

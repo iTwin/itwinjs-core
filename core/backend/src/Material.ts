@@ -8,7 +8,17 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementProps, NormalMapProps, RenderMaterialAssetMapsProps, RenderMaterialProps, RgbFactorProps, TextureMapProps,
+  BisCodeSpec,
+  Code,
+  CodeScopeProps,
+  CodeSpec,
+  DefinitionElementProps,
+  ElementProps,
+  NormalMapProps,
+  RenderMaterialAssetMapsProps,
+  RenderMaterialProps,
+  RgbFactorProps,
+  TextureMapProps,
 } from "@itwin/core-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -21,7 +31,9 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
  * @public
  */
 export abstract class PhysicalMaterial extends DefinitionElement {
-  public static override get className(): string { return "PhysicalMaterial"; }
+  public static override get className(): string {
+    return "PhysicalMaterial";
+  }
   /** Create a Code for a PhysicalMaterial given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
    * @param definitionModelId The Id of the DefinitionModel that will contain the PhysicalMaterial and provide the scope for its name.
@@ -53,7 +65,9 @@ export abstract class PhysicalMaterial extends DefinitionElement {
  * @public
  */
 export class RenderMaterialElement extends DefinitionElement {
-  public static override get className(): string { return "RenderMaterial"; }
+  public static override get className(): string {
+    return "RenderMaterial";
+  }
 
   /** The name of a palette that can be used to categorize multiple materials. */
   public paletteName: string;
@@ -90,7 +104,12 @@ export class RenderMaterialElement extends DefinitionElement {
    * @returns The newly constructed RenderMaterial element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, materialName: string, params: RenderMaterialElementParams): RenderMaterialElement {
+  public static create(
+    iModelDb: IModelDb,
+    definitionModelId: Id64String,
+    materialName: string,
+    params: RenderMaterialElementParams,
+  ): RenderMaterialElement {
     let maps: RenderMaterialAssetMapsProps | undefined;
     const pbr_normal = params.normalMap?.scale;
     if (params.patternMap || params.normalMap) {
@@ -198,7 +217,9 @@ export class RenderMaterialElement extends DefinitionElement {
       }
       if (!Id64.isValid(sourceMap.TextureId) || sourceMap.TextureId === undefined)
         continue;
-      targetProps.jsonProperties.materialAssets.renderMaterial.Map[mapName].TextureId = context.findTargetElementId(sourceMap.TextureId ?? Id64.invalid);
+      targetProps.jsonProperties.materialAssets.renderMaterial.Map[mapName].TextureId = context.findTargetElementId(
+        sourceMap.TextureId ?? Id64.invalid,
+      );
     }
   }
 }

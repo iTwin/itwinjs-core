@@ -7,10 +7,10 @@
  */
 
 import { ColorDef, HiddenLine, RenderMode, ViewFlags } from "@itwin/core-common";
-import { FloatRgba } from "./FloatRGBA";
-import { RenderPass } from "./RenderFlags";
-import { LineCode } from "./LineCode";
 import { OvrFlags } from "../../common/internal/render/OvrFlags";
+import { FloatRgba } from "./FloatRGBA";
+import { LineCode } from "./LineCode";
+import { RenderPass } from "./RenderFlags";
 
 /** Controls symbology of edges based on ViewFlags and HiddenLine.Settings. Typically these come from the Target's
  * RenderPlan, but a GraphicBranch may override those settings.
@@ -51,7 +51,7 @@ export class EdgeSettings {
       this._color.setColorDef(vis.color);
     }
 
-    this._visibleLineCode = (undefined !== vis.pattern ? LineCode.valueFromLinePixels(vis.pattern) : undefined);
+    this._visibleLineCode = undefined !== vis.pattern ? LineCode.valueFromLinePixels(vis.pattern) : undefined;
     this._visibleWeight = vis.width;
 
     // Hidden edge settings default to matching visible edge settings.

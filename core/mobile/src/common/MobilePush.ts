@@ -19,7 +19,9 @@ export class MobilePushTransport extends RpcPushTransport {
   private _protocol: MobileRpcProtocol;
   private _last: number = -1;
 
-  public get last() { return this._last; }
+  public get last() {
+    return this._last;
+  }
 
   public constructor(protocol: MobileRpcProtocol) {
     super();

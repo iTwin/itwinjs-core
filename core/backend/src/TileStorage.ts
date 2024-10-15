@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { gunzip, gzip } from "zlib";
-import { promisify } from "util";
-import { Metadata, ObjectReference, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
-import { getTileObjectReference } from "@itwin/core-common";
 import { Logger } from "@itwin/core-bentley";
+import { getTileObjectReference } from "@itwin/core-common";
+import { Metadata, ObjectReference, ServerStorage, TransferConfig } from "@itwin/object-storage-core";
+import { promisify } from "util";
+import { gunzip, gzip } from "zlib";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
 
@@ -49,7 +49,7 @@ export class TileStorage {
       } catch (e: any) {
         // Ignore 409 errors. This is what Azure blob storage returns when the container already exists.
         // Usually this means multiple backends tried to initialize tile storage at the same time.
-        if(e.statusCode !== 409)
+        if (e.statusCode !== 409)
           throw e;
       }
     }
@@ -80,7 +80,15 @@ export class TileStorage {
   /**
    * Uploads a tile to the cloud cache.
    */
-  public async uploadTile(iModelId: string, changesetId: string, treeId: string, contentId: string, content: Uint8Array, guid?: string, metadata?: Metadata): Promise<void> {
+  public async uploadTile(
+    iModelId: string,
+    changesetId: string,
+    treeId: string,
+    contentId: string,
+    content: Uint8Array,
+    guid?: string,
+    metadata?: Metadata,
+  ): Promise<void> {
     try {
       await this.storage.upload(
         getTileObjectReference(iModelId, changesetId, treeId, contentId, guid),
@@ -146,7 +154,9 @@ export class TileStorage {
         if (parts[0] !== "tiles")
           return false;
         if (parts.length !== 3) {
-          Logger.logWarning(BackendLoggerCategory.IModelTileStorage, "Malformed tile id found in tile cache: {tileId}", { tileId: [...parts, objectName].join("/") });
+          Logger.logWarning(BackendLoggerCategory.IModelTileStorage, "Malformed tile id found in tile cache: {tileId}", {
+            tileId: [...parts, objectName].join("/"),
+          });
           return false;
         }
         return true;

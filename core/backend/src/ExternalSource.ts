@@ -1,4 +1,3 @@
-
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
@@ -8,11 +7,19 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Point3d } from "@itwin/core-geometry";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, EntityReferenceSet, ExternalSourceAttachmentProps, ExternalSourceAttachmentRole, ExternalSourceProps, IModel, RelatedElement,
+  BisCodeSpec,
+  Code,
+  CodeScopeSpec,
+  EntityReferenceSet,
+  ExternalSourceAttachmentProps,
+  ExternalSourceAttachmentRole,
+  ExternalSourceProps,
+  IModel,
+  RelatedElement,
   SynchronizationConfigLinkProps,
 } from "@itwin/core-common";
+import { Point3d } from "@itwin/core-geometry";
 import { InformationReferenceElement, UrlLink } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { ExternalSourceAttachmentAttachesSource, ExternalSourceIsInRepository } from "./NavigationRelationship";
@@ -29,7 +36,9 @@ export class ExternalSource extends InformationReferenceElement {
   /** The version of the iModel Connecter that processed this ExternalSource. */
   public connectorVersion?: string;
   /** @internal */
-  public static override get className(): string { return "ExternalSource"; }
+  public static override get className(): string {
+    return "ExternalSource";
+  }
 
   protected constructor(props: ExternalSourceProps, iModel: IModelDb) {
     super(props, iModel);
@@ -86,7 +95,9 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
   /** The scale of the attached [[ExternalSource]] relative to the ExternalSource that attaches it. */
   public scale?: Point3d;
   /** @internal */
-  public static override get className(): string { return "ExternalSourceAttachment"; }
+  public static override get className(): string {
+    return "ExternalSourceAttachment";
+  }
 
   protected constructor(props: ExternalSourceAttachmentProps, iModel: IModelDb) {
     super(props, iModel);
@@ -130,7 +141,9 @@ export class ExternalSourceAttachment extends InformationReferenceElement {
  */
 export class ExternalSourceGroup extends ExternalSource {
   /** @internal */
-  public static override get className(): string { return "ExternalSourceGroup"; }
+  public static override get className(): string {
+    return "ExternalSourceGroup";
+  }
 
   protected constructor(props: ExternalSourceProps, iModel: IModelDb) {
     super(props, iModel);
@@ -145,7 +158,9 @@ export class SynchronizationConfigLink extends UrlLink {
   /** Date/Time of last successful run of this synchronization configuration */
   public lastSuccessfulRun?: string;
   /** @internal */
-  public static override get className(): string { return "SynchronizationConfigLink"; }
+  public static override get className(): string {
+    return "SynchronizationConfigLink";
+  }
 
   protected constructor(props: SynchronizationConfigLinkProps, iModel: IModelDb) {
     super(props, iModel);
@@ -155,4 +170,3 @@ export class SynchronizationConfigLink extends UrlLink {
     return super.toJSON() as SynchronizationConfigLinkProps; // Entity.toJSON takes care of auto-handled properties
   }
 }
-

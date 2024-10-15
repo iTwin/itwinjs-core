@@ -36,11 +36,15 @@ describe("WmtsCapabilities", () => {
     if (capabilities?.operationsMetadata?.getCapabilities?.getDcpHttp) {
       expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[0].constraintName).to.equals("GetEncoding");
       expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[0].encoding).to.equals("RESTful");
-      expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[0].url).to.equals("https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS/1.0.0/WMTSCapabilities.xml");
+      expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[0].url).to.equals(
+        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS/1.0.0/WMTSCapabilities.xml",
+      );
 
       expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[1].constraintName).to.equals("GetEncoding");
       expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[1].encoding).to.equals("KVP");
-      expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[1].url).to.equals("https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS?");
+      expect(capabilities.operationsMetadata.getCapabilities.getDcpHttp[1].url).to.equals(
+        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS?",
+      );
     }
 
     // Test GetTile operation metadata
@@ -52,11 +56,15 @@ describe("WmtsCapabilities", () => {
     if (capabilities?.operationsMetadata?.getTile?.getDcpHttp) {
       expect(capabilities.operationsMetadata.getTile.getDcpHttp[0].constraintName).to.equals("GetEncoding");
       expect(capabilities.operationsMetadata.getTile.getDcpHttp[0].encoding).to.equals("RESTful");
-      expect(capabilities.operationsMetadata.getTile.getDcpHttp[0].url).to.equals("https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS/tile/1.0.0/");
+      expect(capabilities.operationsMetadata.getTile.getDcpHttp[0].url).to.equals(
+        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS/tile/1.0.0/",
+      );
 
       expect(capabilities.operationsMetadata.getTile.getDcpHttp[1].constraintName).to.equals("GetEncoding");
       expect(capabilities.operationsMetadata.getTile.getDcpHttp[1].encoding).to.equals("KVP");
-      expect(capabilities.operationsMetadata.getTile.getDcpHttp[1].url).to.equals("https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS?");
+      expect(capabilities.operationsMetadata.getTile.getDcpHttp[1].url).to.equals(
+        "https://basemap.nationalmap.gov/arcgis/rest/services/USGSHydroCached/MapServer/WMTS?",
+      );
     }
 
     // Check that no GetFeatureInfo has been configured
@@ -119,7 +127,9 @@ describe("WmtsCapabilities", () => {
 
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].scaleDenominator).to.not.undefined;
     if (capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].scaleDenominator)
-      expect(Math.abs(capabilities.contents.tileMatrixSets[0].tileMatrix[0].scaleDenominator - (5.590822640285016E8))).to.lessThan(SMALL_DECIMAL_DIFFERENCE);
+      expect(Math.abs(capabilities.contents.tileMatrixSets[0].tileMatrix[0].scaleDenominator - (5.590822640285016E8))).to.lessThan(
+        SMALL_DECIMAL_DIFFERENCE,
+      );
 
     expect(capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].topLeftCorner).to.not.undefined;
     if (capabilities?.contents?.tileMatrixSets[0].tileMatrix[0].topLeftCorner)
@@ -202,7 +212,7 @@ describe("WmtsCapabilities", () => {
     expect(capabilities?.contents).to.not.undefined;
 
     // layer
-    expect(capabilities?.contents?.layers.length).to.equal(2);  // this sample capabilities has 2 layers
+    expect(capabilities?.contents?.layers.length).to.equal(2); // this sample capabilities has 2 layers
     expect(capabilities?.contents?.layers[0].identifier).to.equal("etopo2");
 
     // tileMatrixSetLinks
@@ -233,7 +243,7 @@ describe("WmtsCapabilities", () => {
 
     //  Check the layer styles
     expect(capabilities?.contents?.layers).to.not.undefined;
-    expect(capabilities?.contents?.layers.length).to.equal(1);  // this sample capabilities has 2 layers
+    expect(capabilities?.contents?.layers.length).to.equal(1); // this sample capabilities has 2 layers
     expect(capabilities?.contents?.layers[0].title).to.equal("Base of Hooray Sandstone and Equivalents");
     expect(capabilities?.contents?.layers[0].styles.length).to.equal(2);
     expect(capabilities?.contents?.layers[0].styles[0].identifier).to.equal("gab:gab_formation_elevation_equalised_histogram");
@@ -248,14 +258,13 @@ describe("WmtsCapabilities", () => {
   });
 
   it("should request proper URL", async () => {
-
-    const fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input: RequestInfo | URL, _init?: RequestInit) {
+    const fetchStub = sandbox.stub(global, "fetch").callsFake(async function(_input: RequestInfo | URL, _init?: RequestInit) {
       return new Response();
     });
     const sampleUrl = "https://service.server.com/rest/WMTS";
     const searchParams = new URLSearchParams([["key1_1", "value1_1"], ["key1_2", "value1_2"]]);
-    const queryParams: {[key: string]: string} = {};
-    searchParams.forEach((value: string, key: string) =>  queryParams[key] = value);
+    const queryParams: { [key: string]: string } = {};
+    searchParams.forEach((value: string, key: string) => queryParams[key] = value);
     await WmtsCapabilities.create(sampleUrl, undefined, true, queryParams);
     expect(fetchStub.calledOnce).to.be.true;
     const firstCall = fetchStub.getCalls()[0];

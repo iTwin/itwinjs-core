@@ -4,14 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @internal */
 export class ArcGisUrl {
-
   // Extract the sub-url up to '/rest/'
   public static extractRestBaseUrl(url: URL): URL | undefined {
     const urlStr = url.toString();
     const searchStr = "/rest/";
     const restPos = urlStr.indexOf(searchStr);
     return (restPos === -1 ? undefined : new URL(urlStr.substring(0, restPos + searchStr.length)));
-
   }
 
   public static async getRestUrlFromGenerateTokenUrl(url: URL): Promise<URL | undefined> {
@@ -28,7 +26,6 @@ export class ArcGisUrl {
     try {
       json = await ArcGisUrl.fetchJson(infoUrl);
     } catch {
-
     }
 
     const tokenServicesUrl = json?.authInfo?.tokenServicesUrl;

@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Property, Schema, SchemaContext, SchemaItem } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 import { expect } from "chai";
+import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 
 class SchemaCompareReporter implements ISchemaCompareReporter {
   public changes: SchemaChanges[] = [];
@@ -16,26 +16,34 @@ class SchemaCompareReporter implements ISchemaCompareReporter {
 function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA: string) {
   let found = false;
   for (const diagnostic of diagnostics) {
-    if (SchemaCompareCodes.SchemaItemMissing === code &&
-      (diagnostic.ecDefinition as SchemaItem).fullName === fullNameA) {
+    if (
+      SchemaCompareCodes.SchemaItemMissing === code &&
+      (diagnostic.ecDefinition as SchemaItem).fullName === fullNameA
+    ) {
       found = true;
       break;
     }
 
-    if (SchemaCompareCodes.CustomAttributeInstanceClassMissing === code &&
-      diagnostic.messageArgs?.at(0).className === fullNameA) {
+    if (
+      SchemaCompareCodes.CustomAttributeInstanceClassMissing === code &&
+      diagnostic.messageArgs?.at(0).className === fullNameA
+    ) {
       found = true;
       break;
     }
 
-    if (SchemaCompareCodes.SchemaReferenceMissing === code &&
-      diagnostic.messageArgs?.at(0).fullName === fullNameA) {
+    if (
+      SchemaCompareCodes.SchemaReferenceMissing === code &&
+      diagnostic.messageArgs?.at(0).fullName === fullNameA
+    ) {
       found = true;
       break;
     }
 
-    if (SchemaCompareCodes.PropertyMissing === code &&
-      (diagnostic.ecDefinition as Property).fullName === fullNameA) {
+    if (
+      SchemaCompareCodes.PropertyMissing === code &&
+      (diagnostic.ecDefinition as Property).fullName === fullNameA
+    ) {
       found = true;
       break;
     }
@@ -150,7 +158,6 @@ describe("Comparison tests for schemas with same name and version", () => {
 
       expect(findTestClassTwoMissing).to.be.false;
       expect(findTestClassThreeMissing).to.be.false;
-
     });
 
     it("should return true to finding schemaItemMissing diagnostic from schemaB in schemaBChanges", async () => {
@@ -195,7 +202,6 @@ describe("Comparison tests for schemas with same name and version", () => {
             label: "test class one ref one",
           },
         },
-
       }, contextA);
 
       await Schema.fromJson({
@@ -319,7 +325,6 @@ describe("Comparison tests for schemas with same name and version", () => {
       expect(findDiagnostic(schemaAChanges, SchemaCompareCodes.PropertyMissing, "testClassOne.PropertyTwo")).to.be.false;
 
       expect(findDiagnostic(schemaBChanges, SchemaCompareCodes.PropertyMissing, "testClassOne.PropertyTwo")).to.be.true;
-
     });
   });
 });

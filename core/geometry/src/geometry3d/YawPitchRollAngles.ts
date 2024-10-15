@@ -172,32 +172,38 @@ export class YawPitchRollAngles {
     const cx = Math.cos(this.roll.radians);
     const sx = Math.sin(this.roll.radians);
     /**
-    * The axis order is XYZ (i.e., RPY) so the rotation matrix is calculated via rZ*rY*rX where
-    * rX, rY, and rZ are base rotation matrixes:
-    *
-    *     const rX = Matrix3d.createRowValues(
-    *        1, 0, 0,
-    *        0, Math.cos(x), -Math.sin(x),
-    *        0, Math.sin(x), Math.cos(x),
-    *      );
-    *      const rY = Matrix3d.createRowValues(
-    *        Math.cos(y), 0, Math.sin(y),
-    *        0, 1, 0,
-    *        -Math.sin(y), 0, Math.cos(y),
-    *      );
-    *      const rZ = Matrix3d.createRowValues(
-    *        Math.cos(z), -Math.sin(z), 0,
-    *        Math.sin(z), Math.cos(z), 0,
-    *        0, 0, 1,
-    *      );
-    *
-    * Then we replace sin(y) with -sin(y) because y rotation (i.e., pitch) is clockwise (alternatively, you
-    * can use transpose of rY in the matrix multiplication to get the same result)
-    */
+     * The axis order is XYZ (i.e., RPY) so the rotation matrix is calculated via rZ*rY*rX where
+     * rX, rY, and rZ are base rotation matrixes:
+     *
+     *     const rX = Matrix3d.createRowValues(
+     *        1, 0, 0,
+     *        0, Math.cos(x), -Math.sin(x),
+     *        0, Math.sin(x), Math.cos(x),
+     *      );
+     *      const rY = Matrix3d.createRowValues(
+     *        Math.cos(y), 0, Math.sin(y),
+     *        0, 1, 0,
+     *        -Math.sin(y), 0, Math.cos(y),
+     *      );
+     *      const rZ = Matrix3d.createRowValues(
+     *        Math.cos(z), -Math.sin(z), 0,
+     *        Math.sin(z), Math.cos(z), 0,
+     *        0, 0, 1,
+     *      );
+     *
+     * Then we replace sin(y) with -sin(y) because y rotation (i.e., pitch) is clockwise (alternatively, you
+     * can use transpose of rY in the matrix multiplication to get the same result)
+     */
     return Matrix3d.createRowValues(
-      cz * cy, -(sz * cx + cz * sy * sx), (sz * sx - cz * sy * cx),
-      sz * cy, (cz * cx - sz * sy * sx), -(cz * sx + sz * sy * cx),
-      sy, cy * sx, cy * cx,
+      cz * cy,
+      -(sz * cx + cz * sy * sx),
+      sz * sx - cz * sy * cx,
+      sz * cy,
+      cz * cx - sz * sy * sx,
+      -(cz * sx + sz * sy * cx),
+      sy,
+      cy * sx,
+      cy * cx,
       result,
     );
   }

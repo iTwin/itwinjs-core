@@ -45,8 +45,8 @@ function getWebpackConfig(srcFile, outDir, profile) {
       electron: true,
     },
   };
-};
+}
 
 module.exports = {
   getWebpackConfig,
-}
+};

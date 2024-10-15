@@ -3,16 +3,16 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { Content, ContentSpecificationTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
-import { collect, getFieldByLabel } from "../../Utils";
+import { expect } from "chai";
 import { buildTestIModelConnection, insertDocumentPartition } from "../../IModelSetupUtils";
+import { collect, getFieldByLabel } from "../../Utils";
 import { describeContentTestSuite } from "./Utils";
 
 describeContentTestSuite("Guid properties", () => {
-  it("creates guid fields", async function () {
+  it("creates guid fields", async function() {
     const guid = Guid.createValue();
     let instanceKey: InstanceKey;
     const imodelConnection = await buildTestIModelConnection(this.test!.fullTitle(), async (db) => {

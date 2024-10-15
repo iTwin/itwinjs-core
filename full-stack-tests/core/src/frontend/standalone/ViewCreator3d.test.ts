@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { SubCategoryAppearance } from "@itwin/core-common";
-import { IModelConnection, ScreenViewport, SnapshotConnection, ViewCreator3d} from "@itwin/core-frontend";
+import { IModelConnection, ScreenViewport, SnapshotConnection, ViewCreator3d } from "@itwin/core-frontend";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
 import sinon = require("sinon");
 
@@ -102,4 +102,3 @@ describe("ViewCreator3d", async () => {
     queryStub.restore();
   });
 });
-

@@ -7,9 +7,17 @@ import {
   SectionDrawing,
   SpatialViewDefinition,
 } from "@itwin/core-backend";
-import { TransformProps } from "@itwin/core-geometry";
-import { DbResult, DisplayStyle3dProps, GeometricModel2dProps, RelatedElementProps, SectionDrawingProps, SectionType, SpatialViewDefinitionProps } from "@itwin/core-common";
 import { Id64, Id64String } from "@itwin/core-bentley";
+import {
+  DbResult,
+  DisplayStyle3dProps,
+  GeometricModel2dProps,
+  RelatedElementProps,
+  SectionDrawingProps,
+  SectionType,
+  SpatialViewDefinitionProps,
+} from "@itwin/core-common";
+import { TransformProps } from "@itwin/core-geometry";
 import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult } from "../common/DtaIpcInterface";
 
 /** Find or create a document partition named" DrawingProductionDrawing" to contain all our section drawings. */
@@ -45,7 +53,12 @@ async function getDrawingProductionListModel(db: BriefcaseDb): Promise<Id64Strin
 }
 
 /** Insert a new SectionDrawing and drawing model. */
-async function insertSectionDrawing(db: BriefcaseDb, spatialViewId: Id64String, baseName: string, drawingToSpatialTransform: TransformProps): Promise<Id64String> {
+async function insertSectionDrawing(
+  db: BriefcaseDb,
+  spatialViewId: Id64String,
+  baseName: string,
+  drawingToSpatialTransform: TransformProps,
+): Promise<Id64String> {
   const documentListModelId = await getDrawingProductionListModel(db);
   const sectionDrawingProps: SectionDrawingProps = {
     classFullName: "BisCore:SectionDrawing",
@@ -82,7 +95,10 @@ async function insertSectionDrawing(db: BriefcaseDb, spatialViewId: Id64String, 
 }
 
 /** Insert the spatial view and its related model+category selectors and display style. */
-function insertSpatialView(db: BriefcaseDb, args: Pick<CreateSectionDrawingViewArgs, "baseName" | "spatialView" | "models" | "categories" | "displayStyle">): Id64String {
+function insertSpatialView(
+  db: BriefcaseDb,
+  args: Pick<CreateSectionDrawingViewArgs, "baseName" | "spatialView" | "models" | "categories" | "displayStyle">,
+): Id64String {
   const dictionary = BriefcaseDb.dictionaryId;
   const modelSelectorId = ModelSelector.insert(db, dictionary, args.baseName, args.models);
   const categorySelectorId = CategorySelector.insert(db, dictionary, args.baseName, args.categories);
@@ -117,7 +133,7 @@ export async function createSectionDrawing(args: CreateSectionDrawingViewArgs): 
 
   try {
     // Our definition elements will all be inserted into the briefcase's dictionary model, so we must obtain a shared lock on it.
-    await db.locks.acquireLocks({ shared: [ BriefcaseDb.dictionaryId ] });
+    await db.locks.acquireLocks({ shared: [BriefcaseDb.dictionaryId] });
 
     const spatialViewId = insertSpatialView(db, args);
     const sectionDrawingId = await insertSectionDrawing(db, spatialViewId, args.baseName, args.drawingToSpatialTransform);

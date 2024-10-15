@@ -6,10 +6,23 @@
  * @module Editing
  */
 
-import { CompressedId64Set, DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
-import { Matrix3d, Matrix3dProps, Point3d, Range3d, Range3dProps, Transform, TransformProps } from "@itwin/core-geometry";
 import { GeometricElement, IModelDb } from "@itwin/core-backend";
-import { BRepEntity, EcefLocation, EcefLocationProps, ElementGeometry, ElementGeometryBuilderParams, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryRequest, FilePropertyProps, GeometricElementProps, GeometryPartProps, IModelError } from "@itwin/core-common";
+import { CompressedId64Set, DbResult, Id64String, IModelStatus } from "@itwin/core-bentley";
+import {
+  BRepEntity,
+  EcefLocation,
+  EcefLocationProps,
+  ElementGeometry,
+  ElementGeometryBuilderParams,
+  ElementGeometryFunction,
+  ElementGeometryInfo,
+  ElementGeometryRequest,
+  FilePropertyProps,
+  GeometricElementProps,
+  GeometryPartProps,
+  IModelError,
+} from "@itwin/core-common";
+import { Matrix3d, Matrix3dProps, Point3d, Range3d, Range3dProps, Transform, TransformProps } from "@itwin/core-geometry";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds, FlatBufferGeometryFilter } from "@itwin/editor-common";
 import { EditCommand } from "./EditCommand";
 
@@ -19,9 +32,13 @@ import { EditCommand } from "./EditCommand";
 export class BasicManipulationCommand extends EditCommand implements BasicManipulationCommandIpc {
   public static override commandId = editorBuiltInCmdIds.cmdBasicManipulation;
 
-  public constructor(iModel: IModelDb, protected _str: string) { super(iModel); }
+  public constructor(iModel: IModelDb, protected _str: string) {
+    super(iModel);
+  }
 
-  public override async onStart() { return BasicManipulationCommand.commandId; }
+  public override async onStart() {
+    return BasicManipulationCommand.commandId;
+  }
 
   public async addAllowedChannel(channelKey: string): Promise<void> {
     this.iModel.channels.addAllowedChannel(channelKey);

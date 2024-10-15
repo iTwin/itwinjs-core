@@ -21,7 +21,7 @@ enum CharCode {
   Space = 32,
   Tab = 9,
   LineFeed = 10,
-  CarriageReturn = 13
+  CarriageReturn = 13,
 }
 
 function isWhitespace(code: number): boolean {
@@ -33,7 +33,7 @@ function isWhitespace(code: number): boolean {
   );
 }
 const wordSeparators = new Set<number>();
-'`~!@#$%^&*()-=+[{]}\\|;:\'",.<>/?'
+"`~!@#$%^&*()-=+[{]}\\|;:'\",.<>/?"
   .split("")
   .forEach((s) => wordSeparators.add(s.charCodeAt(0)));
 
@@ -106,8 +106,10 @@ function _matchesWords(word: string, target: string, i: number, j: number, conti
 
 function nextWord(word: string, start: number): number {
   for (let i = start; i < word.length; i++) {
-    if (isWordSeparator(word.charCodeAt(i)) ||
-      (i > 0 && isWordSeparator(word.charCodeAt(i - 1)))) {
+    if (
+      isWordSeparator(word.charCodeAt(i)) ||
+      (i > 0 && isWordSeparator(word.charCodeAt(i - 1)))
+    ) {
       return i;
     }
   }

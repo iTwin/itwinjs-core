@@ -2,25 +2,37 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
-import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
-import { IModelApp } from "../../../IModelApp";
-import { MockRender } from "../../../render/MockRender";
-import { ScreenViewport } from "../../../Viewport";
-import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
-import { openBlankViewport } from "../../openBlankViewport";
-import { GraphicType } from "../../../common/render/GraphicType";
+import {
+  Arc3d,
+  AuxChannel,
+  AuxChannelData,
+  AuxChannelDataType,
+  LineString3d,
+  Loop,
+  Point3d,
+  PolyfaceAuxData,
+  PolyfaceBuilder,
+  Range3d,
+  Transform,
+} from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
+import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
 import { MeshBuilder, MeshEdgeCreationOptions } from "../../../common/internal/render/MeshBuilder";
 import { MeshPrimitiveType } from "../../../common/internal/render/MeshPrimitive";
-import { ToleranceRatio, Triangle } from "../../../common/internal/render/Primitives";
-import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
-import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes";
-import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../common/internal/render/Polyface";
 import { Mesh } from "../../../common/internal/render/MeshPrimitives";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../common/internal/render/Polyface";
+import { ToleranceRatio, Triangle } from "../../../common/internal/render/Primitives";
+import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes";
 import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
 import { _accumulator } from "../../../common/internal/Symbols";
+import { GraphicType } from "../../../common/render/GraphicType";
+import { IModelApp } from "../../../IModelApp";
+import { PrimitiveBuilder } from "../../../internal/render/PrimitiveBuilder";
+import { MockRender } from "../../../render/MockRender";
+import { ScreenViewport } from "../../../Viewport";
+import { openBlankViewport } from "../../openBlankViewport";
 
 class FakeDisplayParams extends DisplayParams {
   public constructor() {
@@ -33,7 +45,7 @@ const edgeOptions = new MeshEdgeCreationOptions(MeshEdgeCreationOptions.Type.NoE
 describe("Mesh Builder Tests", () => {
   let viewport: ScreenViewport;
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  before(async () => { // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
     viewport = openBlankViewport();
   });
@@ -63,7 +75,7 @@ describe("Mesh Builder Tests", () => {
   });
 
   it("addStrokePointLists", () => {
-    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, {type: GraphicType.Scene, viewport });
+    const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, { type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
     const pointB = new Point3d(0, 100, 0);
@@ -168,7 +180,6 @@ describe("Mesh Builder Tests", () => {
   });
 
   it("addFromPolyfaceVisitor", () => {
-
     const points: Point3d[] = [];
     points.push(new Point3d(0, 0, 0));
     points.push(new Point3d(1, 0, 0));
@@ -261,7 +272,12 @@ describe("Mesh Builder Tests", () => {
     const triangleCount = visitor.pointCount - 2;
     const haveParam = includeParams && visitor.paramCount > 0;
     const triangleIndex = 0;
-    const vertices = mb.createTriangleVertices(triangleIndex, visitor, { edgeOptions, fillColor, includeParams, haveParam, triangleCount }, undefined);
+    const vertices = mb.createTriangleVertices(
+      triangleIndex,
+      visitor,
+      { edgeOptions, fillColor, includeParams, haveParam, triangleCount },
+      undefined,
+    );
 
     expect(vertices!.length).to.equal(3);
   });
@@ -304,7 +320,12 @@ describe("Mesh Builder Tests", () => {
     const triangleCount = visitor.pointCount - 2;
     const haveParam = includeParams && visitor.paramCount > 0;
     const triangleIndex = 0;
-    const triangle = mb.createTriangleVertices(triangleIndex, visitor, { edgeOptions, fillColor, includeParams, haveParam, triangleCount }, undefined);
+    const triangle = mb.createTriangleVertices(
+      triangleIndex,
+      visitor,
+      { edgeOptions, fillColor, includeParams, haveParam, triangleCount },
+      undefined,
+    );
 
     expect(triangle).to.not.be.undefined;
   });
@@ -390,7 +411,7 @@ describe("Mesh Builder Tests", () => {
   });
 
   function createMeshBuilder(type: MeshPrimitiveType, range: Range3d, options?: Partial<Omit<MeshBuilder.Props, "range" | "type">>): MeshBuilder {
-    options = options ?? { };
+    options = options ?? {};
     const tolerance = options.tolerance ?? 0.15;
     return MeshBuilder.create({
       quantizePositions: false,
@@ -490,12 +511,44 @@ describe("Mesh Builder Tests", () => {
 
       const aux = meshBuilder.mesh.auxChannels![0];
       expect(aux.data[0].values).to.deep.equal([
-        0, 1, 2, 3, 4, 0xffff, 3, 4, 0xffff,
-        0, 1, 2, 3, 4, 0xffff, 0, 1, 2,
+        0,
+        1,
+        2,
+        3,
+        4,
+        0xffff,
+        3,
+        4,
+        0xffff,
+        0,
+        1,
+        2,
+        3,
+        4,
+        0xffff,
+        0,
+        1,
+        2,
       ]);
       expectAuxChannelTable(meshBuilder.mesh, [
-        0, 0, 0, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
-        0, 0, 0, 0xffff, 0xffff, 0xffff, 0, 0, 0,
+        0,
+        0,
+        0,
+        0xffff,
+        0xffff,
+        0xffff,
+        0xffff,
+        0xffff,
+        0xffff,
+        0,
+        0,
+        0,
+        0xffff,
+        0xffff,
+        0xffff,
+        0,
+        0,
+        0,
       ]);
     });
   });

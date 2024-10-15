@@ -50,8 +50,8 @@ function createConfig(shouldInstrument) {
       },
       alias: {
         "@azure/storage-blob$": "@azure/storage-blob/dist-esm/storage-blob/src/index.browser.js",
-        "supports-color$": "supports-color/browser.js"
-      }
+        "supports-color$": "supports-color/browser.js",
+      },
     },
     module: {
       noParse: [
@@ -88,7 +88,7 @@ function createConfig(shouldInstrument) {
     },
     externals: {
       electron: "commonjs electron",
-      fs
+      fs,
     },
     plugins: [
       // Makes some environment variables available to the JS code, for example:
@@ -101,9 +101,9 @@ function createConfig(shouldInstrument) {
           },
           {
             IMODELJS_CORE_DIRNAME: JSON.stringify(
-              path.join(__dirname, "../..")
+              path.join(__dirname, "../.."),
             ),
-          }
+          },
         ),
       }),
       // certa doesn't like chunks
@@ -137,5 +137,5 @@ function createConfig(shouldInstrument) {
 // Runs webpack once for each config in the export array
 module.exports = [
   createConfig(false),
-  createConfig(true)
-]
+  createConfig(true),
+];

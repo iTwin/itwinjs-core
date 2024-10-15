@@ -2,18 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { Point3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, EmptyLocalization, Feature, GeometryClass, RenderMode } from "@itwin/core-common";
-import { IModelConnection } from "../../../IModelConnection";
-import { ScreenViewport } from "../../../Viewport";
-import { DecorateContext } from "../../../ViewContext";
-import { IModelApp } from "../../../IModelApp";
-import { SpatialViewState } from "../../../SpatialViewState";
-import { createBlankConnection } from "../../createBlankConnection";
-import { BoxDecorator, TestDecorator } from "../../TestDecorators";
-import { expectColors } from "../../ExpectColors";
+import { Point3d, Vector3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { GraphicType } from "../../../core-frontend";
+import { IModelApp } from "../../../IModelApp";
+import { IModelConnection } from "../../../IModelConnection";
+import { SpatialViewState } from "../../../SpatialViewState";
+import { DecorateContext } from "../../../ViewContext";
+import { ScreenViewport } from "../../../Viewport";
+import { createBlankConnection } from "../../createBlankConnection";
+import { expectColors } from "../../ExpectColors";
+import { BoxDecorator, TestDecorator } from "../../TestDecorators";
 
 describe("Pickable graphic", () => {
   let imodel: IModelConnection;

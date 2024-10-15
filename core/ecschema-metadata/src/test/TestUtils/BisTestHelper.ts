@@ -57,13 +57,15 @@ const bisCoreSchema = {
     },
     IParentElement: {
       appliesTo: "BisCore.Element",
-      description: "An interface that indicates that this Element is capable of being a parent (owning child Elements). This interface is mutually exclusive with ISubModeledElement.",
+      description:
+        "An interface that indicates that this Element is capable of being a parent (owning child Elements). This interface is mutually exclusive with ISubModeledElement.",
       label: "Parent Element",
       schemaItemType: "Mixin",
     },
     ISubModeledElement: {
       appliesTo: "BisCore.Element",
-      description: "An interface which indicates that an Element can be broken down or described by a (sub) Model.  This interface is mutually exclusive with IParentElement.",
+      description:
+        "An interface which indicates that an Element can be broken down or described by a (sub) Model.  This interface is mutually exclusive with IParentElement.",
       label: "Modellable Element",
       schemaItemType: "Mixin",
     },

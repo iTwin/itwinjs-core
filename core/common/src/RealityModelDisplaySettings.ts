@@ -184,7 +184,7 @@ export class PointCloudDisplaySettings {
     if (this.equals(defs))
       return undefined;
 
-    const props: PointCloudDisplayProps = { };
+    const props: PointCloudDisplayProps = {};
     if (this.shape !== defs.shape)
       props.shape = this.shape;
 
@@ -241,11 +241,11 @@ export class PointCloudDisplaySettings {
       return true;
 
     return this.shape === other.shape && this.sizeMode === other.sizeMode && this.pixelSize === other.pixelSize
-      && this.voxelScale === other.voxelScale && this.minPixelsPerVoxel === other.minPixelsPerVoxel && this.maxPixelsPerVoxel === other.maxPixelsPerVoxel
+      && this.voxelScale === other.voxelScale && this.minPixelsPerVoxel === other.minPixelsPerVoxel &&
+      this.maxPixelsPerVoxel === other.maxPixelsPerVoxel
       && this.edlMode === other.edlMode && this.edlStrength === other.edlStrength && this.edlRadius === other.edlRadius
       && this.edlFilter === other.edlFilter
-      && this.edlMixWts1 === other.edlMixWts1 && this.edlMixWts2 === other.edlMixWts2 && this.edlMixWts4 === other.edlMixWts4
-    ;
+      && this.edlMixWts1 === other.edlMixWts1 && this.edlMixWts2 === other.edlMixWts2 && this.edlMixWts4 === other.edlMixWts4;
   }
 }
 
@@ -286,12 +286,14 @@ export class RealityModelDisplaySettings {
   /** Convert these settings to their JSON representation, which is `undefined` if all of their properties match the default settings. */
   public toJSON(): RealityModelDisplayProps | undefined {
     const pointCloud = this.pointCloud.toJSON();
-    const overrideColorRatio = this.overrideColorRatio === RealityModelDisplaySettings.defaults.overrideColorRatio ? undefined : this.overrideColorRatio;
+    const overrideColorRatio = this.overrideColorRatio === RealityModelDisplaySettings.defaults.overrideColorRatio
+      ? undefined
+      : this.overrideColorRatio;
 
     if (undefined === pointCloud && undefined === overrideColorRatio)
       return undefined;
 
-    const props: RealityModelDisplayProps = { };
+    const props: RealityModelDisplayProps = {};
     if (undefined !== pointCloud)
       props.pointCloud = pointCloud;
 

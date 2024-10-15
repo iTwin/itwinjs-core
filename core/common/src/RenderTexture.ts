@@ -28,9 +28,15 @@ export abstract class RenderTexture implements IDisposable {
   /** Used for ordered comparisons, e.g. in DisplayParams.compareForMerge */
   private readonly _guid: GuidString;
 
-  public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
-  public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
-  public get isSkyBox(): boolean { return RenderTexture.Type.SkyBox === this.type; }
+  public get isTileSection(): boolean {
+    return RenderTexture.Type.TileSection === this.type;
+  }
+  public get isGlyph(): boolean {
+    return RenderTexture.Type.Glyph === this.type;
+  }
+  public get isSkyBox(): boolean {
+    return RenderTexture.Type.SkyBox === this.type;
+  }
   public abstract get bytesUsed(): number;
 
   protected constructor(type: RenderTexture.Type) {
@@ -91,8 +97,14 @@ export namespace RenderTexture { // eslint-disable-line no-redeclare
       this.isOwned = isOwned;
     }
 
-    public get isTileSection(): boolean { return RenderTexture.Type.TileSection === this.type; }
-    public get isGlyph(): boolean { return RenderTexture.Type.Glyph === this.type; }
-    public get isSkyBox(): boolean { return RenderTexture.Type.SkyBox === this.type; }
+    public get isTileSection(): boolean {
+      return RenderTexture.Type.TileSection === this.type;
+    }
+    public get isGlyph(): boolean {
+      return RenderTexture.Type.Glyph === this.type;
+    }
+    public get isSkyBox(): boolean {
+      return RenderTexture.Type.SkyBox === this.type;
+    }
   }
 }

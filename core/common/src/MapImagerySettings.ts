@@ -77,18 +77,25 @@ export class MapImagerySettings {
   /** The settings for the base layer.
    *  @note If changing the base provider it is currently necessary to also update the background map settings.
    */
-  public get backgroundBase(): BaseLayerSettings { return this._backgroundBase; }
-  public set backgroundBase(base: BaseLayerSettings) { this._backgroundBase = base; }
+  public get backgroundBase(): BaseLayerSettings {
+    return this._backgroundBase;
+  }
+  public set backgroundBase(base: BaseLayerSettings) {
+    this._backgroundBase = base;
+  }
 
-  public get backgroundLayers(): MapLayerSettings[] { return this._backgroundLayers; }
-  public get overlayLayers(): MapLayerSettings[] { return this._overlayLayers; }
+  public get backgroundLayers(): MapLayerSettings[] {
+    return this._backgroundLayers;
+  }
+  public get overlayLayers(): MapLayerSettings[] {
+    return this._overlayLayers;
+  }
 
   /** Return base transparency as a number between 0 and 1.
    * @internal
    */
   public get baseTransparency(): number {
     return (this._backgroundBase instanceof ColorDef) ? (this._backgroundBase.getTransparency() / 255) : this._backgroundBase.transparency;
-
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
@@ -98,7 +105,9 @@ export class MapImagerySettings {
 
   /** @internal */
   public static createFromJSON(imageryJson?: MapImageryProps, mapProps?: DeprecatedBackgroundMapProps) {
-    const baseLayer = imageryJson?.backgroundBase ? BaseLayerSettings.fromJSON(imageryJson.backgroundBase) : BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? { });
+    const baseLayer = imageryJson?.backgroundBase
+      ? BaseLayerSettings.fromJSON(imageryJson.backgroundBase)
+      : BaseMapLayerSettings.fromBackgroundMapProps(mapProps ?? {});
 
     return new MapImagerySettings(baseLayer, imageryJson?.backgroundLayers, imageryJson?.overlayLayers);
   }

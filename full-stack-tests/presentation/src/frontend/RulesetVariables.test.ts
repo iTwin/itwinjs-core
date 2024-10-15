@@ -2,13 +2,13 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as faker from "faker";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Content, ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
 import { Presentation, PresentationManager, RulesetVariablesManager } from "@itwin/presentation-frontend";
+import { expect } from "chai";
+import * as faker from "faker";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 import { collect } from "../Utils";
 
@@ -263,7 +263,9 @@ describe("Ruleset Variables", async () => {
     it("handles multiple simultaneous requests from different frontends with ruleset variables", async () => {
       for (let i = 0; i < 100; ++i) {
         frontends.forEach(async (f, fi) => f.vars(RULESET.id).setString("variable_id", `${i}_${fi}`));
-        const nodes = await Promise.all(frontends.map(async (f) => f.getNodesIterator({ imodel, rulesetOrId: RULESET }).then(async (x) => collect(x.items))));
+        const nodes = await Promise.all(
+          frontends.map(async (f) => f.getNodesIterator({ imodel, rulesetOrId: RULESET }).then(async (x) => collect(x.items))),
+        );
         frontends.forEach((_f, fi) => {
           expect(nodes[fi][0].label.displayValue).to.eq(`${i}_${fi}`);
         });

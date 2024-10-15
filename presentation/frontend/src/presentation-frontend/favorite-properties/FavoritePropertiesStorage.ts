@@ -191,7 +191,9 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
   private _connectivityInfo: IConnectivityInformationProvider;
   private _impl: IFavoritePropertiesStorage;
   private _propertiesOfflineCache = new DictionaryWithReservations<ITwinAndIModelIdsKey, Set<PropertyFullName>>(iTwinAndIModelIdsKeyComparer);
-  private _propertiesOrderOfflineCache = new DictionaryWithReservations<ITwinAndIModelIdsKey, FavoritePropertiesOrderInfo[]>(iTwinAndIModelIdsKeyComparer);
+  private _propertiesOrderOfflineCache = new DictionaryWithReservations<ITwinAndIModelIdsKey, FavoritePropertiesOrderInfo[]>(
+    iTwinAndIModelIdsKeyComparer,
+  );
 
   public constructor(props: OfflineCachingFavoritePropertiesStorageProps) {
     this._impl = props.impl;
@@ -217,11 +219,11 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
       // note: we're copying the cached values to temp arrays because `saveProperties` and `savePropertiesOrder` both
       // attempt to modify cache dictionaries
 
-      const propertiesCache = new Array<{ properties: Set<PropertyFullName>; iTwinId?: string; imodelId?: string }>();
+      const propertiesCache = new Array<{ properties: Set<PropertyFullName>, iTwinId?: string, imodelId?: string }>();
       this._propertiesOfflineCache.forEach((key, value) => propertiesCache.push({ properties: value, iTwinId: key[0], imodelId: key[1] }));
       propertiesCache.forEach(async (cached) => this.saveProperties(cached.properties, cached.iTwinId, cached.imodelId));
 
-      const ordersCache = new Array<{ order: FavoritePropertiesOrderInfo[]; iTwinId?: string; imodelId: string }>();
+      const ordersCache = new Array<{ order: FavoritePropertiesOrderInfo[], iTwinId?: string, imodelId: string }>();
       this._propertiesOrderOfflineCache.forEach((key, value) => ordersCache.push({ order: value, iTwinId: key[0], imodelId: key[1]! }));
       ordersCache.forEach(async (cached) => this.savePropertiesOrder(cached.order, cached.iTwinId, cached.imodelId));
     }
@@ -281,7 +283,7 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
 }
 
 class DictionaryWithReservations<TKey, TValue> {
-  private _impl: Dictionary<TKey, { value?: TValue; lastReservationId?: string }>;
+  private _impl: Dictionary<TKey, { value?: TValue, lastReservationId?: string }>;
   public constructor(compareKeys: OrderedComparator<TKey>) {
     this._impl = new Dictionary(compareKeys);
   }

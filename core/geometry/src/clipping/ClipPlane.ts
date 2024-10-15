@@ -106,7 +106,10 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   }
   /** Create a ClipPlane from Plane3dByOriginAndUnitNormal. */
   public static createPlane(
-    plane: Plane3dByOriginAndUnitNormal, invisible: boolean = false, interior: boolean = false, result?: ClipPlane,
+    plane: Plane3dByOriginAndUnitNormal,
+    invisible: boolean = false,
+    interior: boolean = false,
+    result?: ClipPlane,
   ): ClipPlane {
     const distance = plane.getNormalRef().dotProduct(plane.getOriginRef());
     if (result) {
@@ -123,7 +126,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * * The vector is normalized for storage.
    */
   public static createNormalAndDistance(
-    normal: Vector3d, distance: number, invisible: boolean = false, interior: boolean = false, result?: ClipPlane,
+    normal: Vector3d,
+    distance: number,
+    invisible: boolean = false,
+    interior: boolean = false,
+    result?: ClipPlane,
   ): ClipPlane | undefined {
     const normalized = normal.normalize();
     if (normalized) {
@@ -145,7 +152,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * a vector from the origin.)
    */
   public static createNormalAndPoint(
-    normal: Vector3d, point: Point3d, invisible: boolean = false, interior: boolean = false, result?: ClipPlane,
+    normal: Vector3d,
+    point: Point3d,
+    invisible: boolean = false,
+    interior: boolean = false,
+    result?: ClipPlane,
   ): ClipPlane | undefined {
     const normalized = normal.normalize();
     if (normalized) {
@@ -188,9 +199,14 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * as a vector from the origin.)
    */
   public static createNormalAndPointXYZXYZ(
-    normalX: number, normalY: number, normalZ: number,
-    originX: number, originY: number, originZ: number,
-    invisible: boolean = false, interior: boolean = false,
+    normalX: number,
+    normalY: number,
+    normalZ: number,
+    originX: number,
+    originY: number,
+    originZ: number,
+    invisible: boolean = false,
+    interior: boolean = false,
     result?: ClipPlane,
   ): ClipPlane | undefined {
     const q = Geometry.hypotenuseXYZ(normalX, normalY, normalZ);
@@ -227,7 +243,10 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   public static fromJSON(json: ClipPlaneProps, result?: ClipPlane): ClipPlane | undefined {
     if (json && json.normal && undefined !== json.dist && Number.isFinite(json.dist))
       return ClipPlane.createNormalAndDistance(
-        Vector3d.fromJSON(json.normal), json.dist, !!json.invisible, !!json.interior,
+        Vector3d.fromJSON(json.normal),
+        json.dist,
+        !!json.invisible,
+        !!json.interior,
       );
     return ClipPlane.createNormalAndDistance(Vector3d.unitZ(), 0, false, false, result);
   }
@@ -261,7 +280,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    * @param result optional preallocated plane
    */
   public static createEdgeAndUpVector(
-    point0: Point3d, point1: Point3d, upVector: Vector3d, tiltAngle?: Angle, result?: ClipPlane,
+    point0: Point3d,
+    point1: Point3d,
+    upVector: Vector3d,
+    tiltAngle?: Angle,
+    result?: ClipPlane,
   ): ClipPlane | undefined {
     const edgeVector = Vector3d.createFrom(point1.minus(point0));
     let normal = (upVector.crossProduct(edgeVector)).normalize();
@@ -305,7 +328,10 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
    */
   public getPlane4d(): Point4d {
     return Point4d.create(
-      this._inwardNormal.x, this._inwardNormal.y, this._inwardNormal.z, - this._distanceFromOrigin,
+      this._inwardNormal.x,
+      this._inwardNormal.y,
+      this._inwardNormal.z,
+      -this._distanceFromOrigin,
     );
   }
   /**
@@ -424,7 +450,12 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     const beta = this.velocity(arcVectors.vector0);
     const gamma = this.velocity(arcVectors.vector90);
     AnalyticRoots.appendImplicitLineUnitCircleIntersections(
-      alpha, beta, gamma, undefined, undefined, intersectionRadians,
+      alpha,
+      beta,
+      gamma,
+      undefined,
+      undefined,
+      intersectionRadians,
     );
   }
   private static _clipArcFractionArray = new GrowableFloat64Array();
@@ -453,7 +484,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     if (h0 === 0.0 && h1 === 0.0) {
       return undefined;
     }
-    return - h0 / (h1 - h0);
+    return -h0 / (h1 - h0);
   }
   /** Apply transform to the origin. Apply inverse transpose of the matrix part to th normal vector. */
   public transformInPlace(transform: Transform): boolean {
@@ -481,7 +512,7 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   /** Reverse the sign of all coefficients, so outside and inside reverse */
   public negateInPlace() {
     this._inwardNormal = this._inwardNormal.negate();
-    this._distanceFromOrigin = - this._distanceFromOrigin;
+    this._distanceFromOrigin = -this._distanceFromOrigin;
   }
   /**
    * Move the plane INWARD by given distance
@@ -535,16 +566,23 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
   }
   /** Announce the interval (if any) where a line is within the clip plane half space. */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: (fraction0: number, fraction1: number) => void,
+    f0: number,
+    f1: number,
+    pointA: Point3d,
+    pointB: Point3d,
+    announce?: (fraction0: number, fraction1: number) => void,
   ): boolean {
     if (f1 < f0)
       return false;
-    const h0 = - this.altitude(pointA);
-    const h1 = - this.altitude(pointB);
+    const h0 = -this.altitude(pointA);
+    const h1 = -this.altitude(pointB);
     const delta = h1 - h0;
     const f = Geometry.conditionalDivideFraction(-h0, delta);
     if (f === undefined) { // The segment is parallel to the plane.
-      if (h0 <= 0.0) { if (announce) announce(f0, f1); return true; }
+      if (h0 <= 0.0) {
+        if (announce) announce(f0, f1);
+        return true;
+      }
       return false;
     }
     if (delta > 0) { // segment aims OUT
@@ -618,7 +656,11 @@ export class ClipPlane extends Plane3d implements Clipper, PolygonClipper {
     const newInside = arrayCache.grabFromCache();
     const newOutside = arrayCache.grabFromCache();
     IndexedXYZCollectionPolygonOps.splitConvexPolygonInsideOutsidePlane(
-      this, xyz, newInside, newOutside, perpendicularRange,
+      this,
+      xyz,
+      newInside,
+      newOutside,
+      perpendicularRange,
     );
     ClipUtilities.captureOrDrop(newInside, 3, insideFragments, arrayCache);
     ClipUtilities.captureOrDrop(newOutside, 3, outsideFragments, arrayCache);

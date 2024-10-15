@@ -6,9 +6,24 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyEnumerator, CustomAttribute, ECClass, ECObjectsError, ECObjectsStatus,
-  EntityClass, Enumeration, Format, KindOfQuantity, OverrideFormat, Property, RelationshipClass, RelationshipConstraint,
-  Schema, SchemaItem, SchemaItemType,
+import {
+  AnyClass,
+  AnyEnumerator,
+  CustomAttribute,
+  ECClass,
+  ECObjectsError,
+  ECObjectsStatus,
+  EntityClass,
+  Enumeration,
+  Format,
+  KindOfQuantity,
+  OverrideFormat,
+  Property,
+  RelationshipClass,
+  RelationshipConstraint,
+  Schema,
+  SchemaItem,
+  SchemaItemType,
 } from "@itwin/ecschema-metadata";
 import { AnyDiagnostic } from "./Diagnostic";
 import { SchemaCompareCodes } from "./SchemaCompareDiagnostics";
@@ -52,7 +67,9 @@ export interface ISchemaChanges {
 /**
  * Allows an ISchemaChanges implementation to be dynamically constructed in addChangeToMap.
  */
-interface SchemaChangesConstructor { new(schema: Schema, ecTypeName: string): ISchemaChanges } // eslint-disable-line @typescript-eslint/prefer-function-type
+interface SchemaChangesConstructor {
+  new(schema: Schema, ecTypeName: string): ISchemaChanges;
+} // eslint-disable-line @typescript-eslint/prefer-function-type
 
 /**
  * An ISchemaChange implementation meant to be used as the base class
@@ -72,7 +89,9 @@ export abstract class BaseSchemaChange implements ISchemaChange {
   }
 
   /** Gets the diagnostic holding the information about the schema change. */
-  public get diagnostic(): AnyDiagnostic { return this._diagnostic; }
+  public get diagnostic(): AnyDiagnostic {
+    return this._diagnostic;
+  }
 
   /**
    * Returns the SchemaItem that this change ultimately belongs to. For example,
@@ -90,7 +109,9 @@ export abstract class BaseSchemaChange implements ISchemaChange {
       this._changeType = this.defaultChangeType;
     return this._changeType;
   }
-  public set changeType(changeType: ChangeType) { this._changeType = changeType; }
+  public set changeType(changeType: ChangeType) {
+    this._changeType = changeType;
+  }
 
   /** The default ChangeType (Delta or Missing). */
   public abstract get defaultChangeType(): ChangeType;
@@ -108,14 +129,20 @@ export abstract class BaseSchemaChange implements ISchemaChange {
    */
   protected getNameFromArgument(index: number, allowUndefined: boolean = false, fullName: boolean = false): string {
     if (!this.diagnostic.messageArgs || this.diagnostic.messageArgs.length <= index)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaComparisonArgument, `Schema comparison diagnostic '${this.diagnostic.code}' for SchemaItem '${this.topLevelSchemaItem.fullName}' has invalid arguments`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidSchemaComparisonArgument,
+        `Schema comparison diagnostic '${this.diagnostic.code}' for SchemaItem '${this.topLevelSchemaItem.fullName}' has invalid arguments`,
+      );
 
     const schemaItem = this.getValueFromArgument(index);
     if (Schema.isSchema(schemaItem) || SchemaItem.isSchemaItem(schemaItem) || OverrideFormat.isOverrideFormat(schemaItem))
       return fullName ? schemaItem.fullName : schemaItem.name;
 
     if (!allowUndefined)
-      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaComparisonArgument, `Schema comparison diagnostic '${this.diagnostic.code}' for SchemaItem '${this.topLevelSchemaItem.fullName}' has invalid arguments`);
+      throw new ECObjectsError(
+        ECObjectsStatus.InvalidSchemaComparisonArgument,
+        `Schema comparison diagnostic '${this.diagnostic.code}' for SchemaItem '${this.topLevelSchemaItem.fullName}' has invalid arguments`,
+      );
 
     return "undefined";
   }
@@ -202,7 +229,12 @@ export abstract class BaseSchemaChanges implements ISchemaChanges {
    * @param change The ISchemaChange to add.
    * @param changeKey The key used to identify the ISchemaChanges in the Map (typically the name of the EC type, ie. SchemaItem.name).
    */
-  protected addChangeToMap<V extends ISchemaChanges>(changes: Map<string, V>, changesType: SchemaChangesConstructor, change: ISchemaChange, changeKey: string) {
+  protected addChangeToMap<V extends ISchemaChanges>(
+    changes: Map<string, V>,
+    changesType: SchemaChangesConstructor,
+    change: ISchemaChange,
+    changeKey: string,
+  ) {
     if (changes.has(changeKey)) {
       const existingChanges = changes.get(changeKey);
       existingChanges!.addChange(change);
@@ -284,34 +316,54 @@ export class SchemaChanges extends BaseSchemaChanges {
   }
 
   /** Gets the MissingSchemaReferences collection. */
-  public get missingSchemaReferences(): SchemaReferenceMissing[] { return this._missingSchemaReferences; }
+  public get missingSchemaReferences(): SchemaReferenceMissing[] {
+    return this._missingSchemaReferences;
+  }
 
   /** Gets the SchemaReferenceChange collection. */
-  public get schemaReferenceDeltas(): SchemaReferenceDelta[] { return this._schemaReferenceDeltas; }
+  public get schemaReferenceDeltas(): SchemaReferenceDelta[] {
+    return this._schemaReferenceDeltas;
+  }
 
   /** Gets the CustomAttributeContainerChanges Map. */
-  public get customAttributeChanges(): Map<string, CustomAttributeContainerChanges> { return this._customAttributeChanges; }
+  public get customAttributeChanges(): Map<string, CustomAttributeContainerChanges> {
+    return this._customAttributeChanges;
+  }
 
   /** Gets the ClassChanges Map. */
-  public get classChanges(): Map<string, ClassChanges> { return this._classChanges; }
+  public get classChanges(): Map<string, ClassChanges> {
+    return this._classChanges;
+  }
 
   /** Gets the EntityClassChanges Map. */
-  public get entityClassChanges(): Map<string, EntityClassChanges> { return this._entityClassChanges; }
+  public get entityClassChanges(): Map<string, EntityClassChanges> {
+    return this._entityClassChanges;
+  }
 
   /** Gets the RelationshipClassChanges Map. */
-  public get relationshipClassChanges(): Map<string, RelationshipClassChanges> { return this._relationshipClassChanges; }
+  public get relationshipClassChanges(): Map<string, RelationshipClassChanges> {
+    return this._relationshipClassChanges;
+  }
 
   /** Gets the SchemaItemChanges Map. */
-  public get schemaItemChanges(): Map<string, SchemaItemChanges> { return this._schemaItemChanges; }
+  public get schemaItemChanges(): Map<string, SchemaItemChanges> {
+    return this._schemaItemChanges;
+  }
 
   /** Gets the EnumerationChanges Map. */
-  public get enumerationChanges(): Map<string, EnumerationChanges> { return this._enumerationChanges; }
+  public get enumerationChanges(): Map<string, EnumerationChanges> {
+    return this._enumerationChanges;
+  }
 
   /** Gets the KindOfQuantityChanges Map. */
-  public get kindOfQuantityChanges(): Map<string, KindOfQuantityChanges> { return this._kindOfQuantityChanges; }
+  public get kindOfQuantityChanges(): Map<string, KindOfQuantityChanges> {
+    return this._kindOfQuantityChanges;
+  }
 
   /** Gets the FormatChanges Map. */
-  public get formatChanges(): Map<string, FormatChanges> { return this._formatChanges; }
+  public get formatChanges(): Map<string, FormatChanges> {
+    return this._formatChanges;
+  }
 
   /** Gets all the change diagnostics that have been added to instance. */
   public get allDiagnostics(): AnyDiagnostic[] {
@@ -352,7 +404,12 @@ export class SchemaChanges extends BaseSchemaChanges {
       }
 
       if (this.isCAContainerChangeForThis(change.diagnostic, schemaName)) {
-        this.addChangeToMap(this.customAttributeChanges, CustomAttributeContainerChanges, change, (change as CustomAttributeContainerChange).changeKey);
+        this.addChangeToMap(
+          this.customAttributeChanges,
+          CustomAttributeContainerChanges,
+          change,
+          (change as CustomAttributeContainerChange).changeKey,
+        );
         return;
       }
 
@@ -1023,7 +1080,9 @@ export class FormatUnitChanges extends BaseSchemaChanges {
  * @alpha
  */
 export abstract class SchemaItemChange extends BaseSchemaChange {
-  public get topLevelSchemaItem(): Schema | SchemaItem { return this.diagnostic.ecDefinition as SchemaItem; }
+  public get topLevelSchemaItem(): Schema | SchemaItem {
+    return this.diagnostic.ecDefinition as SchemaItem;
+  }
 }
 
 /**
@@ -1032,10 +1091,14 @@ export abstract class SchemaItemChange extends BaseSchemaChange {
  */
 export class SchemaReferenceMissing extends BaseSchemaChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Missing; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Missing;
+  }
 
   /** Gets the SchemaItem or Schema (if a schema change) that this change ultimately belongs to. */
-  public get topLevelSchemaItem(): Schema | SchemaItem { return this.diagnostic.ecDefinition as Schema; }
+  public get topLevelSchemaItem(): Schema | SchemaItem {
+    return this.diagnostic.ecDefinition as Schema;
+  }
 
   /** Gets a string representation of the change. */
   public toString(): string {
@@ -1050,10 +1113,14 @@ export class SchemaReferenceMissing extends BaseSchemaChange {
  */
 export class SchemaReferenceDelta extends BaseSchemaChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Delta; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Delta;
+  }
 
   /** Gets the SchemaItem or Schema (if a schema change) that this change ultimately belongs to. */
-  public get topLevelSchemaItem(): Schema | SchemaItem { return this.diagnostic.ecDefinition as Schema; }
+  public get topLevelSchemaItem(): Schema | SchemaItem {
+    return this.diagnostic.ecDefinition as Schema;
+  }
 
   /** Gets a string representation of the change. */
   public toString(): string {
@@ -1070,7 +1137,9 @@ export class SchemaReferenceDelta extends BaseSchemaChange {
  */
 export class SchemaItemMissing extends SchemaItemChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Missing; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Missing;
+  }
 
   /** Gets a string representation of the change. */
   public toString(): string {
@@ -1085,7 +1154,6 @@ export class SchemaItemMissing extends SchemaItemChange {
  * @alpha
  */
 export class PropertyValueChange extends BaseSchemaChange {
-
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
     if (SchemaItem.isSchemaItem(this.diagnostic.ecDefinition))
@@ -1104,7 +1172,9 @@ export class PropertyValueChange extends BaseSchemaChange {
   }
 
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Delta; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Delta;
+  }
 
   /** Gets a string representation of the change. */
   public toString(): string {
@@ -1124,7 +1194,9 @@ export class PropertyValueChange extends BaseSchemaChange {
  */
 export class CustomAttributeContainerChange extends BaseSchemaChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Missing; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Missing;
+  }
 
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
@@ -1160,7 +1232,9 @@ export class CustomAttributeContainerChange extends BaseSchemaChange {
  */
 export class BaseClassDelta extends SchemaItemChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Delta; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Delta;
+  }
 
   /** Gets a string representation of the change. */
   public toString(): string {
@@ -1181,7 +1255,9 @@ export class PropertyMissing extends BaseSchemaChange {
   }
 
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Missing; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Missing;
+  }
 
   /** Gets a string representation of the change. */
   public toString(): string {
@@ -1195,7 +1271,9 @@ export class PropertyMissing extends BaseSchemaChange {
  */
 export class RelationshipConstraintClassChange extends BaseSchemaChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Missing; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Missing;
+  }
 
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
@@ -1215,7 +1293,9 @@ export class RelationshipConstraintClassChange extends BaseSchemaChange {
  */
 export class EnumeratorDelta extends BaseSchemaChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Delta; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Delta;
+  }
 
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
@@ -1245,7 +1325,9 @@ export class EnumeratorDelta extends BaseSchemaChange {
  */
 export class EnumeratorMissing extends BaseSchemaChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Missing; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Missing;
+  }
 
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
@@ -1269,7 +1351,9 @@ export class EnumeratorMissing extends BaseSchemaChange {
  */
 export class EntityMixinChange extends BaseSchemaChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Missing; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Missing;
+  }
 
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
@@ -1293,7 +1377,9 @@ export class EntityMixinChange extends BaseSchemaChange {
  */
 export class PresentationUnitChange extends BaseSchemaChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Missing; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Missing;
+  }
 
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
@@ -1324,7 +1410,9 @@ export class PresentationUnitChange extends BaseSchemaChange {
  */
 export class FormatUnitChange extends BaseSchemaChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Missing; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Missing;
+  }
 
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {
@@ -1355,7 +1443,9 @@ export class FormatUnitChange extends BaseSchemaChange {
  */
 export class UnitLabelOverrideDelta extends BaseSchemaChange {
   /** Gets the default ChangeType (Delta or Missing) for this change */
-  public get defaultChangeType(): ChangeType { return ChangeType.Delta; }
+  public get defaultChangeType(): ChangeType {
+    return ChangeType.Delta;
+  }
 
   /** Gets the SchemaItem that this change ultimately belongs to. */
   public get topLevelSchemaItem(): Schema | SchemaItem {

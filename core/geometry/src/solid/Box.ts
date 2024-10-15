@@ -39,8 +39,7 @@ export class Box extends SolidPrimitive {
   private _topX: number;
   private _topY: number;
 
-  protected constructor(map: Transform,
-    baseX: number, baseY: number, topX: number, topY: number, capped: boolean) {
+  protected constructor(map: Transform, baseX: number, baseY: number, topX: number, topY: number, capped: boolean) {
     super(capped);
     this._localToWorld = map;
     this._baseX = baseX;
@@ -90,10 +89,17 @@ export class Box extends SolidPrimitive {
    * @param topY size factor for top rectangle (multiplies vectorY)
    * @param capped true to define top and bottom closure caps
    */
-  public static createDgnBox(origin: Point3d, vectorX: Vector3d, vectorY: Vector3d,
+  public static createDgnBox(
+    origin: Point3d,
+    vectorX: Vector3d,
+    vectorY: Vector3d,
     topOrigin: Point3d,
-    baseX: number, baseY: number, topX: number, topY: number,
-    capped: boolean): Box | undefined {
+    baseX: number,
+    baseY: number,
+    topX: number,
+    topY: number,
+    capped: boolean,
+  ): Box | undefined {
     const vectorZ = origin.vectorTo(topOrigin);
     const localToWorld = Transform.createOriginAndMatrixColumns(origin, vectorX, vectorY, vectorZ);
     return new Box(localToWorld, baseX, baseY, topX, topY, capped);
@@ -110,12 +116,17 @@ export class Box extends SolidPrimitive {
    * @param topY size factor for top rectangle (multiplies vectorY)
    * @param capped true to define top and bottom closure caps
    */
-  public static createDgnBoxWithAxes(origin: Point3d, axes: Matrix3d,
+  public static createDgnBoxWithAxes(
+    origin: Point3d,
+    axes: Matrix3d,
     topOrigin: Point3d,
-    baseX: number, baseY: number, topX: number, topY: number,
-    capped: boolean): Box | undefined {
-    return Box.createDgnBox(origin, axes.columnX(), axes.columnY(), topOrigin,
-      baseX, baseY, topX, topY, capped);
+    baseX: number,
+    baseY: number,
+    topX: number,
+    topY: number,
+    capped: boolean,
+  ): Box | undefined {
+    return Box.createDgnBox(origin, axes.columnX(), axes.columnY(), topOrigin, baseX, baseY, topX, topY, capped);
   }
 
   /**
@@ -132,32 +143,58 @@ export class Box extends SolidPrimitive {
       zPoint.z = zPoint.z + range.zLength();
       return Box.createDgnBox(
         lowPoint,
-        Vector3d.unitX(), Vector3d.unitY(),
+        Vector3d.unitX(),
+        Vector3d.unitY(),
         zPoint,
-        xSize, ySize, xSize, ySize, capped);
+        xSize,
+        ySize,
+        xSize,
+        ySize,
+        capped,
+      );
     }
     return undefined;
   }
   /** (property accessor) return the x length at z = 0 */
-  public getBaseX(): number { return this._baseX; }
+  public getBaseX(): number {
+    return this._baseX;
+  }
   /** (property accessor) return the y length at z = 0 */
-  public getBaseY(): number { return this._baseY; }
+  public getBaseY(): number {
+    return this._baseY;
+  }
   /** (property accessor) return the x length at z = 1 */
-  public getTopX(): number { return this._topX; }
+  public getTopX(): number {
+    return this._topX;
+  }
   /** (property accessor) return the x length at z = 1 */
-  public getTopY(): number { return this._topY; }
+  public getTopY(): number {
+    return this._topY;
+  }
   /** (property accessor) return the local coordinates point (0,0,0) to world */
-  public getBaseOrigin(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 0); }
+  public getBaseOrigin(): Point3d {
+    return this._localToWorld.multiplyXYZ(0, 0, 0);
+  }
   /** (property accessor) return the local coordinates point (0,0,1) to world */
-  public getTopOrigin(): Point3d { return this._localToWorld.multiplyXYZ(0, 0, 1); }
+  public getTopOrigin(): Point3d {
+    return this._localToWorld.multiplyXYZ(0, 0, 1);
+  }
   /** (property accessor) return the local coordinate frame x vector */
-  public getVectorX(): Vector3d { return this._localToWorld.matrix.columnX(); }
+  public getVectorX(): Vector3d {
+    return this._localToWorld.matrix.columnX();
+  }
   /** (property accessor) return the local coordinate frame y vector */
-  public getVectorY(): Vector3d { return this._localToWorld.matrix.columnY(); }
+  public getVectorY(): Vector3d {
+    return this._localToWorld.matrix.columnY();
+  }
   /** (property accessor) return the local coordinate frame z vector */
-  public getVectorZ(): Vector3d { return this._localToWorld.matrix.columnZ(); }
+  public getVectorZ(): Vector3d {
+    return this._localToWorld.matrix.columnZ();
+  }
   /** Test of `other` is also of class `Box` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof Box; }
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof Box;
+  }
   /** test for near equality */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof Box) {

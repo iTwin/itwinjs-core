@@ -42,7 +42,7 @@ function findPackageRootDir(dir = __dirname) {
 const outputDir = path.resolve(findPackageRootDir(), "lib/test/ios/webpack");
 const configFile = path.join(outputDir, "config.json");
 const filteredEnv = Object.keys(process.env)
-  .filter(key => key.match(/^imjs_|^hybrid_test_|^saml_delegation_test_/i))
+  .filter((key) => key.match(/^imjs_|^hybrid_test_|^saml_delegation_test_/i))
   .reduce((obj, key) => {
     obj[key] = process.env[key];
     return obj;
@@ -62,44 +62,35 @@ module.exports = {
   module: {
     rules: [{
       test: /growl\.js$/,
-      use: 'null-loader'
-    },
-    {
+      use: "null-loader",
+    }, {
       test: /xunit\.js$/,
-      use: 'null-loader'
-    },
-    {
+      use: "null-loader",
+    }, {
       test: /bunyan/,
-      use: 'null-loader'
-    },
-    {
+      use: "null-loader",
+    }, {
       test: /@azure/,
-      use: 'null-loader'
-    },
-    {
+      use: "null-loader",
+    }, {
       test: /IModelBankCloudEnv\.js$/,
-      use: 'null-loader'
-    },
-    {
+      use: "null-loader",
+    }, {
       test: /DevTools\.js$/,
-      use: 'null-loader'
-    },
-    {
+      use: "null-loader",
+    }, {
       test: /OidcDesktopClient\.js$/,
-      use: 'null-loader'
-    },
-    {
+      use: "null-loader",
+    }, {
       test: /oidc-signin-tool/,
-      use: 'null-loader'
-    },
-    {
+      use: "null-loader",
+    }, {
       test: /AzCopy\.js$/,
-      use: 'null-loader'
-    },
-    ]
+      use: "null-loader",
+    }],
   },
   node: {
-    process: false
+    process: false,
   },
   externals: {
     "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-native/package.json",
@@ -114,11 +105,11 @@ module.exports = {
     "express": "express",
   },
   stats: {
-    warnings: false
+    warnings: false,
   },
   plugins: [
     new webpack.DefinePlugin({ "global.location.search": "''" }),
     new webpack.ProvidePlugin({}),
-    new webpack.EnvironmentPlugin({})
+    new webpack.EnvironmentPlugin({}),
   ],
-}
+};

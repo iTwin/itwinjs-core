@@ -8,15 +8,15 @@
 
 import { assert, dispose, Id64, OrderedId64Iterable } from "@itwin/core-bentley";
 import { ContourDisplay, PackedFeature, RenderFeatureTable } from "@itwin/core-common";
+import { computeDimensions } from "../../common/internal/render/VertexTable";
+import { BatchOptions } from "../../common/render/BatchOptions";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
-import { UniformHandle } from "./UniformHandle";
 import { TextureUnit } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { Texture2DDataUpdater, Texture2DHandle, TextureHandle } from "./Texture";
-import { BatchOptions } from "../../common/render/BatchOptions";
-import { computeDimensions } from "../../common/internal/render/VertexTable";
+import { UniformHandle } from "./UniformHandle";
 
 /** @internal */
 export type ContoursCleanup = () => void;
@@ -32,7 +32,9 @@ export class Contours implements WebGLDisposable {
   private _lutWidth = 0;
   private _numFeatures = 0;
 
-  public get byteLength(): number { return undefined !== this._lut ? this._lut.bytesUsed : 0; }
+  public get byteLength(): number {
+    return undefined !== this._lut ? this._lut.bytesUsed : 0;
+  }
 
   public matchesTargetAndFeatureCount(target: Target, map: RenderFeatureTable): boolean {
     // checking for target change or texture size requirement change
@@ -56,7 +58,7 @@ export class Contours implements WebGLDisposable {
   private _initialize(map: RenderFeatureTable) {
     assert(0 < map.numFeatures);
     this._numFeatures = map.numFeatures;
-    const dims = computeDimensions(this._numFeatures, 1/8, 0, System.instance.maxTextureSize);
+    const dims = computeDimensions(this._numFeatures, 1 / 8, 0, System.instance.maxTextureSize);
     const width = dims.width;
     const height = dims.height;
     assert(width * height * 8 >= this._numFeatures);
@@ -78,7 +80,7 @@ export class Contours implements WebGLDisposable {
   private buildLookupTable(data: Texture2DDataUpdater, map: RenderFeatureTable, contours: ContourDisplay) {
     // setup an efficient way to compare feature subcategories with lists in terrains
     const subCatMap = new Id64.Uint32Map<number>();
-    let defaultNdx = 0xf;  // default for unmatched subcategories is to not show contours
+    let defaultNdx = 0xf; // default for unmatched subcategories is to not show contours
     // NB: index also has to be a max of 14 - has to fit in 4 bits with value 15 reserved for no terrain def
     for (let index = 0, len = contours.groups.length; index < len && index < ContourDisplay.maxContourGroups; ++index) {
       const subCats = contours.groups[index].subCategories;
@@ -96,7 +98,7 @@ export class Contours implements WebGLDisposable {
     let byteOut = 0;
     let dataIndex = 0;
     for (const feature of map.iterable(scratchPackedFeature)) {
-      dataIndex = Math.floor (feature.index * 0.5);
+      dataIndex = Math.floor(feature.index * 0.5);
       even = (feature.index & 1) === 0;
       const terrainNdx = subCatMap.get(feature.subCategoryId.lower, feature.subCategoryId.upper) ?? defaultNdx;
       if (even)
@@ -118,7 +120,9 @@ export class Contours implements WebGLDisposable {
     return new Contours(target, options);
   }
 
-  public get isDisposed(): boolean { return undefined === this._lut; }
+  public get isDisposed(): boolean {
+    return undefined === this._lut;
+  }
 
   public dispose() {
     this._lut = dispose(this._lut);

@@ -3,27 +3,36 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { FeatureGraphicsRenderer, HitDetail, ImageryMapTileTree, MapCartoRectangle, MapFeatureInfoOptions, MapLayerFeatureInfo, MapLayerImageryProvider, QuadId, WGS84Extent } from "@itwin/core-frontend";
-import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
-import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError, SubLayerId } from "@itwin/core-common";
-import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
-import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
-import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
 import { base64StringToUint8Array, IModelStatus, Logger } from "@itwin/core-bentley";
+import { Cartographic, ColorDef, ImageMapLayerSettings, ImageSource, ImageSourceFormat, ServerError, SubLayerId } from "@itwin/core-common";
+import {
+  FeatureGraphicsRenderer,
+  HitDetail,
+  ImageryMapTileTree,
+  MapCartoRectangle,
+  MapFeatureInfoOptions,
+  MapLayerFeatureInfo,
+  MapLayerImageryProvider,
+  QuadId,
+  WGS84Extent,
+} from "@itwin/core-frontend";
+import { Matrix4d, Point3d, Range2d } from "@itwin/core-geometry";
 import * as Geojson from "geojson";
-import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
-import { OgcApiFeaturesReader } from "./OgcApiFeaturesReader";
-import { RandomMapColor } from "../Feature/RandomMapColor";
+import { ArcGisSymbologyCanvasRenderer } from "../ArcGisFeature/ArcGisSymbologyRenderer";
+import { EsriPMS, EsriPMSProps, EsriRenderer, EsriSFS, EsriSFSProps, EsriSLS, EsriSLSProps, EsriSymbol } from "../ArcGisFeature/EsriSymbology";
 import { DefaultMarkerIcon } from "../Feature/DefaultMarkerIcon";
+import { FeatureCanvasRenderer } from "../Feature/FeatureCanvasRenderer";
+import { FeatureDefaultSymbology } from "../Feature/FeatureSymbology";
+import { RandomMapColor } from "../Feature/RandomMapColor";
+import { OgcApiFeaturesReader } from "./OgcApiFeaturesReader";
 
 const loggerCategory = "MapLayersFormats.OgcApiFeatures";
 const dataUrlHeaderToken = "base64,";
 
 /**  Provide tiles from a ESRI ArcGIS Feature service
-* @internal
-*/
+ * @internal
+ */
 export class DefaultOgcSymbology implements FeatureDefaultSymbology {
-
   private static readonly _defaultPMSProps: Omit<EsriPMSProps, "imageData" | "contentType"> = {
     type: "esriPMS",
     url: "",
@@ -45,7 +54,7 @@ export class DefaultOgcSymbology implements FeatureDefaultSymbology {
 
   private static readonly _defaultSFSProps: EsriSFSProps = {
     type: "esriSFS",
-    color:  [0, 0, 255, 255],   // blue fill
+    color: [0, 0, 255, 255], // blue fill
     style: "esriSFSSolid",
     outline: DefaultOgcSymbology._defaultSLSProps,
   };
@@ -53,7 +62,7 @@ export class DefaultOgcSymbology implements FeatureDefaultSymbology {
 
   public constructor(randomColor?: RandomMapColor) {
     const color = randomColor ? randomColor.getColorDef() : ColorDef.blue;
-    this._defaultPMS = EsriPMS.fromJSON( {
+    this._defaultPMS = EsriPMS.fromJSON({
       ...DefaultMarkerIcon.getContent(color),
       type: "esriPMS",
       url: "",
@@ -85,11 +94,11 @@ export class DefaultOgcSymbology implements FeatureDefaultSymbology {
   }
 
   public getSymbology(geometryType: string): EsriSymbol {
-    if (geometryType === "LineString"|| geometryType === "MultiLineString" )
+    if (geometryType === "LineString" || geometryType === "MultiLineString")
       return this._defaultSLS;
-    else if (geometryType === "Polygon"|| geometryType === "MultiPolygon" )
+    else if (geometryType === "Polygon" || geometryType === "MultiPolygon")
       return this._defaultSFS;
-    else if (geometryType === "Point"|| geometryType === "MultiPoint" )
+    else if (geometryType === "Point" || geometryType === "MultiPoint")
       return this._defaultPMS;
 
     throw new Error(`Could not get default symbology for geometry type ${geometryType}`);
@@ -97,7 +106,6 @@ export class DefaultOgcSymbology implements FeatureDefaultSymbology {
 }
 /** @internal */
 export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
-
   // Debug flags, should always be committed to FALSE !
   private readonly _drawDebugInfo = false;
   /// ////////////////////////////
@@ -109,27 +117,32 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
   private readonly _forceTileMode = false;
   private _spatialIdx: any;
   private _defaultSymbol = new DefaultOgcSymbology(new RandomMapColor());
-  private _renderer: EsriRenderer|undefined;
+  private _renderer: EsriRenderer | undefined;
   private _collectionUrl = "";
   private _itemsUrl = "";
-  private readonly _itemsCrs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84";   // Fixed fow now
+  private readonly _itemsCrs = "http://www.opengis.net/def/crs/OGC/1.3/CRS84"; // Fixed fow now
   private _queryables: any;
 
   public serviceJson: any;
-  private _staticData: Geojson.FeatureCollection|undefined;
+  private _staticData: Geojson.FeatureCollection | undefined;
 
   constructor(settings: ImageMapLayerSettings) {
     super(settings, true);
   }
 
-  public override get supportsMapFeatureInfo() { return true;}
-  public override get minimumZoomLevel(): number { return this.staticMode ? super.minimumZoomLevel : this._tiledModeMinLod; }
-  public get staticMode(): boolean { return !!(this._spatialIdx && this._staticData && !this._forceTileMode); }
+  public override get supportsMapFeatureInfo() {
+    return true;
+  }
+  public override get minimumZoomLevel(): number {
+    return this.staticMode ? super.minimumZoomLevel : this._tiledModeMinLod;
+  }
+  public get staticMode(): boolean {
+    return !!(this._spatialIdx && this._staticData && !this._forceTileMode);
+  }
 
   public override async initialize(): Promise<void> {
-
     this._collectionUrl = this._settings.url;
-    let layerId: SubLayerId|undefined;
+    let layerId: SubLayerId | undefined;
 
     // OGC Feature service request can only serve data for a single feature
     // so if multiple sub-layer ids are specified, we pick the first one.
@@ -138,16 +151,15 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     }
 
     const readCollectionsPage = (data: any) => {
-      const collection = data.collections.find((col: any)=> col.id === layerId);
+      const collection = data.collections.find((col: any) => col.id === layerId);
       const collectionLinks = collection?.links;
       if (!collectionLinks) {
         const msg = `Missing layer id or matching collection could not be found`;
         Logger.logError(loggerCategory, msg);
         throw new Error(msg);
       }
-      const collectionLink = collectionLinks.find((link: any)=> link.rel.includes("collection") && link.type === "application/json",
-      );
-      this._collectionUrl  = collectionLink.href;
+      const collectionLink = collectionLinks.find((link: any) => link.rel.includes("collection") && link.type === "application/json");
+      this._collectionUrl = collectionLink.href;
     };
 
     const layerIdMismatch = () => {
@@ -160,8 +172,8 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     if (json?.type === "FeatureCollection") {
       // We landed on the items page, we need to look for the collection metadata url
       if (Array.isArray(json.links)) {
-        const collectionLink = json.links.find((link: any)=> link.rel.includes("collection") && link.type === "application/json");
-        this._collectionUrl  = collectionLink.href;
+        const collectionLink = json.links.find((link: any) => link.rel.includes("collection") && link.type === "application/json");
+        this._collectionUrl = collectionLink.href;
       }
     } else if (json.itemType === "feature") {
       // We landed on a specific collection page.
@@ -169,28 +181,27 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
 
       // Check if the collection id matches at least one sub-layer
       if (this._settings.subLayers && this._settings.subLayers.length > 0) {
-        const subLayer = this._settings.subLayers.find((s)=>s.id === collectionMetadata.id);
+        const subLayer = this._settings.subLayers.find((s) => s.id === collectionMetadata.id);
         if (subLayer)
           layerId = subLayer.id;
       } else {
         // No sub-layers were specified, defaults to collection id.
         layerId = collectionMetadata.id;
       }
-
     } else if (Array.isArray(json.collections)) {
       // We landed in the "Collections" page
       // Find to find the specified layer id among the available collections
       readCollectionsPage(json);
-    }  else if (Array.isArray(json.links)) {
+    } else if (Array.isArray(json.links)) {
       // This might be the main landing page
       // We need to find the the "Collections" page
-      const collectionsLink = json.links.find((link: any)=> link.rel.includes("data") && link.type === "application/json");
+      const collectionsLink = json.links.find((link: any) => link.rel.includes("data") && link.type === "application/json");
       if (!collectionsLink) {
         Logger.logError(loggerCategory, "Could not find collections link");
         throw new ServerError(IModelStatus.ValidationFailed, "");
       }
 
-      json =  await this.fetchMetadata(collectionsLink.href);
+      json = await this.fetchMetadata(collectionsLink.href);
       if (Array.isArray(json.collections)) {
         readCollectionsPage(json);
       }
@@ -205,26 +216,26 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     }
 
     // Read cartographic range
-    if (Array.isArray(collectionMetadata?.extent?.spatial?.bbox)
-    && collectionMetadata.extent.spatial.bbox.length > 0
-    && collectionMetadata.extent.spatial.crs === this._itemsCrs
+    if (
+      Array.isArray(collectionMetadata?.extent?.spatial?.bbox)
+      && collectionMetadata.extent.spatial.bbox.length > 0
+      && collectionMetadata.extent.spatial.crs === this._itemsCrs
     ) {
       const firstBbox = collectionMetadata.extent.spatial?.bbox[0];
       this.cartoRange = MapCartoRectangle.fromDegrees(firstBbox[0], firstBbox[1], firstBbox[2], firstBbox[3]);
     }
 
     // Read important links
-    let queryablesHref: string|undefined;
-    let itemsHref: string|undefined;
+    let queryablesHref: string | undefined;
+    let itemsHref: string | undefined;
     if (Array.isArray(collectionMetadata?.links)) {
       // Items links (Mandatory)
-      const itemsLink = collectionMetadata.links.find((link: any)=> link.rel.includes("items") && link.type === "application/geo+json");
+      const itemsLink = collectionMetadata.links.find((link: any) => link.rel.includes("items") && link.type === "application/geo+json");
       itemsHref = itemsLink.href;
 
       // Queryables link (Optional)
-      const queryablesLink = collectionMetadata.links.find((link: any)=> link.rel.includes("queryables") && link.type === "application/schema+json");
+      const queryablesLink = collectionMetadata.links.find((link: any) => link.rel.includes("queryables") && link.type === "application/schema+json");
       queryablesHref = queryablesLink.href;
-
     }
 
     if (itemsHref)
@@ -271,7 +282,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       let json = await response.json();
       data = json;
       // Follow "next" link if any
-      let nextLink = json.links?.find((link: any)=>link.rel === "next");
+      let nextLink = json.links?.find((link: any) => link.rel === "next");
       while (nextLink && (Date.now() - fetchBegin) < timeout && success) {
         tmpUrl = this.appendCustomParams(nextLink.href);
         response = await this.makeTileRequest(tmpUrl, this._staticModeFetchTimeout);
@@ -280,13 +291,13 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
           data!.features = this._staticData?.features ? [...this._staticData.features, ...json.features] : json.features;
         else
           success = false;
-        nextLink = json.links?.find((link: any)=>link.rel === "next");
+        nextLink = json.links?.find((link: any) => link.rel === "next");
       }
       if (Date.now() - fetchBegin >= this._staticModeFetchTimeout) {
         // We ran out of time, let switch to tile mode
         success = false;
       }
-    } catch (e)  {
+    } catch (e) {
       success = false;
       if (e instanceof DOMException && e.name === "AbortError") {
         Logger.logInfo(loggerCategory, "Request to fetch all features time out, switching to tile mode.");
@@ -307,9 +318,12 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     try {
       const datasetRange = new Range2d();
       const buildPositionRange = (coords: Geojson.Position, range: Range2d) => range.extendXY(coords[0], coords[1]);
-      const buildPositionArrayRange = (coords: Geojson.Position[], range: Range2d) => coords.forEach((position) => buildPositionRange(position, range) );
-      const buildDoublePositionRange = (coords: Geojson.Position[][], range: Range2d) => coords.forEach((position) => buildPositionArrayRange(position, range) );
-      const buildTriplePositionRange = (coords: Geojson.Position[][][], range: Range2d) => coords.forEach((position) => buildDoublePositionRange(position, range) );
+      const buildPositionArrayRange = (coords: Geojson.Position[], range: Range2d) =>
+        coords.forEach((position) => buildPositionRange(position, range));
+      const buildDoublePositionRange = (coords: Geojson.Position[][], range: Range2d) =>
+        coords.forEach((position) => buildPositionArrayRange(position, range));
+      const buildTriplePositionRange = (coords: Geojson.Position[][][], range: Range2d) =>
+        coords.forEach((position) => buildDoublePositionRange(position, range));
 
       const readGeomRange = (geom: Geojson.Geometry, range: Range2d) => {
         if (geom.type === "Point")
@@ -318,7 +332,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
           buildPositionArrayRange(geom.coordinates, range);
         else if (geom.type === "Polygon" || geom.type === "MultiLineString")
           buildDoublePositionRange(geom.coordinates, range);
-        else if (geom.type === "MultiPolygon" )
+        else if (geom.type === "MultiPolygon")
           buildTriplePositionRange(geom.coordinates, range);
       };
 
@@ -326,24 +340,25 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
         this._spatialIdx = new flatbush(this._staticData.features.length);
         this._staticData.features.forEach((feature: Geojson.Feature) => {
           try {
-            if (feature.geometry.type === "LineString"
-            || feature.geometry.type === "MultiLineString"
-            || feature.geometry.type === "Point"
-            || feature.geometry.type === "MultiPoint"
-            || feature.geometry.type === "Polygon"
-            || feature.geometry.type === "MultiPolygon"
+            if (
+              feature.geometry.type === "LineString"
+              || feature.geometry.type === "MultiLineString"
+              || feature.geometry.type === "Point"
+              || feature.geometry.type === "MultiPoint"
+              || feature.geometry.type === "Polygon"
+              || feature.geometry.type === "MultiPolygon"
             ) {
               readGeomRange(feature.geometry, datasetRange);
-              this._spatialIdx?.add(datasetRange.xLow, datasetRange.yLow, datasetRange.xHigh,datasetRange. yHigh);
+              this._spatialIdx?.add(datasetRange.xLow, datasetRange.yLow, datasetRange.xHigh, datasetRange.yHigh);
               datasetRange.setNull();
             } else if (feature.geometry.type === "GeometryCollection") {
               feature.geometry.geometries.forEach((geom) => {
                 readGeomRange(geom, datasetRange);
-                this._spatialIdx?.add(datasetRange.xLow, datasetRange.yLow, datasetRange.xHigh,datasetRange. yHigh);
+                this._spatialIdx?.add(datasetRange.xLow, datasetRange.yLow, datasetRange.xHigh, datasetRange.yHigh);
               });
               datasetRange.setNull();
             }
-          } catch (e: any)  {
+          } catch (e: any) {
             Logger.logInfo(loggerCategory, `Unknown error occurred indexing feature: ${e.message}`);
             success = false;
           }
@@ -353,15 +368,16 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
           this._spatialIdx.finish();
         }
       }
-
-    } catch (_e)  {
+    } catch (_e) {
       Logger.logError(loggerCategory, "Unknown error occurred when index static data");
       success = false;
     }
     return success;
   }
 
-  public override get tileSize(): number { return 512; }
+  public override get tileSize(): number {
+    return 512;
+  }
 
   // We don't use this method inside this provider (see constructFeatureUrl), but since this is an abstract method, we need to define something
   public async constructUrl(_row: number, _column: number, _zoomLevel: number): Promise<string> {
@@ -379,7 +395,6 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
   // Compute transform that provides coordinates in the canvas coordinate system (pixels, origin = top-left)
   // from coordinate in world
   public computeTileWorld2CanvasTransform(row: number, column: number, zoomLevel: number) {
-
     const tileExtentWorld4326 = this.getEPSG4326Extent(row, column, zoomLevel);
     const worldTileWidth = tileExtentWorld4326.longitudeRight - tileExtentWorld4326.longitudeLeft;
     const worldTileHeight = tileExtentWorld4326.latitudeTop - tileExtentWorld4326.latitudeBottom;
@@ -398,7 +413,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     const xTranslate = -1 * canvasTileOriginOffset.x;
 
     // Canvas origin is upper left corner, so we need to flip the y axis
-    const yTranslate = canvasTileExtentOffset.y;     // y-axis flip
+    const yTranslate = canvasTileExtentOffset.y; // y-axis flip
     const yWorld2CanvasRatio = -1 * world2CanvasRatioY; // y-axis flip
 
     const matrix = Matrix4d.createTranslationAndScaleXYZ(xTranslate, yTranslate, 0, world2CanvasRatioX, yWorld2CanvasRatio, 1);
@@ -406,19 +421,23 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
   }
 
   public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-
     const extent4326 = this.getEPSG4326Extent(row, column, zoomLevel);
 
     let data: any;
     if (this.staticMode) {
       // Static data mode
-      const filteredData: Geojson.FeatureCollection = {type: "FeatureCollection", features: []};
+      const filteredData: Geojson.FeatureCollection = { type: "FeatureCollection", features: [] };
 
-      this._spatialIdx?.search(extent4326.longitudeLeft, extent4326.latitudeBottom, extent4326.longitudeRight, extent4326.latitudeTop,
+      this._spatialIdx?.search(
+        extent4326.longitudeLeft,
+        extent4326.latitudeBottom,
+        extent4326.longitudeRight,
+        extent4326.latitudeTop,
         (index: number) => {
           filteredData.features.push(this._staticData!.features[index]);
           return true;
-        });
+        },
+      );
 
       data = filteredData;
     } else {
@@ -469,7 +488,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
       const symbRenderer = ArcGisSymbologyCanvasRenderer.create(this._renderer, this._defaultSymbol);
       const renderer = new FeatureCanvasRenderer(ctx, symbRenderer, transfo);
 
-      const featureReader  = new OgcApiFeaturesReader();
+      const featureReader = new OgcApiFeaturesReader();
 
       await featureReader.readAndRender(data, renderer);
       if (this._drawDebugInfo)
@@ -500,7 +519,14 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     return new ImageSource(base64StringToUint8Array(base64Png), format);
   }
 
-  public override async getFeatureInfo(featureInfos: MapLayerFeatureInfo[], quadId: QuadId, carto: Cartographic, _tree: ImageryMapTileTree, hit: HitDetail, options?: MapFeatureInfoOptions): Promise<void> {
+  public override async getFeatureInfo(
+    featureInfos: MapLayerFeatureInfo[],
+    quadId: QuadId,
+    carto: Cartographic,
+    _tree: ImageryMapTileTree,
+    hit: HitDetail,
+    options?: MapFeatureInfoOptions,
+  ): Promise<void> {
     const tileExtent = this.getEPSG4326Extent(quadId.row, quadId.column, quadId.level);
     const tilePixelSizeX = (tileExtent.longitudeRight - tileExtent.longitudeLeft) / this.tileSize;
     const tilePixelSizeY = (tileExtent.latitudeTop - tileExtent.latitudeBottom) / this.tileSize;
@@ -511,8 +537,10 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     // Note: We used to pass a single point as the query 'geometry' and leverage the 'distance' parameter, turns
     // out that approach was a lot slower on some server compared to using a single envelope.
     const bbox: WGS84Extent = {
-      longitudeLeft: carto.longitudeDegrees - toleranceWorldX, latitudeBottom: carto.latitudeDegrees - toleranceWorldY,
-      longitudeRight: carto.longitudeDegrees + toleranceWorldX, latitudeTop: carto.latitudeDegrees + toleranceWorldY,
+      longitudeLeft: carto.longitudeDegrees - toleranceWorldX,
+      latitudeBottom: carto.latitudeDegrees - toleranceWorldY,
+      longitudeRight: carto.longitudeDegrees + toleranceWorldX,
+      latitudeTop: carto.latitudeDegrees + toleranceWorldY,
     };
 
     const bboxStr = this.getEPSG4326ExtentString(bbox, false);
@@ -533,11 +561,10 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
 
     const featureReader = new OgcApiFeaturesReader();
     await featureReader.readFeatureInfo({
-      collection:data,
+      collection: data,
       layerSettings: this._settings,
       queryables: this._queryables,
-      geomRenderer: new FeatureGraphicsRenderer({viewport: hit.viewport, crs: "wgs84"})},
-    featureInfos );
+      geomRenderer: new FeatureGraphicsRenderer({ viewport: hit.viewport, crs: "wgs84" }),
+    }, featureInfos);
   }
 }
-

@@ -26,7 +26,7 @@ import {
 
 import { Readable, Stream } from "node:stream";
 import { promisify } from "node:util";
-import { brotliCompress, BrotliOptions, createBrotliCompress, createGzip, gzip, constants as zlibConstants } from "node:zlib";
+import { brotliCompress, BrotliOptions, constants as zlibConstants, createBrotliCompress, createGzip, gzip } from "node:zlib";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -87,7 +87,11 @@ function configureStream(fulfillment: RpcRequestFulfillment) {
   return fulfillment.result.stream!;
 }
 
-async function configureEncoding(req: HttpServerRequest, res: HttpServerResponse, responseBody: string | Buffer | Readable): Promise<string | Buffer | Readable> {
+async function configureEncoding(
+  req: HttpServerRequest,
+  res: HttpServerResponse,
+  responseBody: string | Buffer | Readable,
+): Promise<string | Buffer | Readable> {
   const acceptedEncodings = req.header("Accept-Encoding")?.split(",").map((value) => value.trim());
   if (!acceptedEncodings)
     return responseBody;
@@ -115,7 +119,13 @@ async function configureEncoding(req: HttpServerRequest, res: HttpServerResponse
 }
 
 /** @internal */
-export async function sendResponse(protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, req: HttpServerRequest, res: HttpServerResponse) {
+export async function sendResponse(
+  protocol: WebAppRpcProtocol,
+  request: SerializedRpcRequest,
+  fulfillment: RpcRequestFulfillment,
+  req: HttpServerRequest,
+  res: HttpServerResponse,
+) {
   logResponse(request, fulfillment.status, fulfillment.rawResult);
 
   const versionHeader = protocol.protocolVersionHeaderName;

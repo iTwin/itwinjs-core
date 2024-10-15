@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { CloudSqlite, IModelHost, PropertyStore } from "@itwin/core-backend";
+import { Guid } from "@itwin/core-bentley";
 import { expect } from "chai";
 import { Suite } from "mocha";
-import { CloudSqlite, IModelHost, PropertyStore } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
-import { Guid } from "@itwin/core-bentley";
 
 function countProperties(values: any, filter?: PropertyStore.PropertyFilter) {
   let count = 0;
@@ -28,7 +28,7 @@ async function makePropertyStore(user: string) {
   return propStore;
 }
 
-describe("PropertyStore", function (this: Suite) {
+describe("PropertyStore", function(this: Suite) {
   this.timeout(0);
 
   let ps1: PropertyStore.CloudAccess;
@@ -116,4 +116,3 @@ describe("PropertyStore", function (this: Suite) {
     ps2.close();
   });
 });
-

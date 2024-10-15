@@ -18,12 +18,18 @@ import { parseArgs } from "./parseArgs";
  */
 export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
   public static override toolId = "DumpLayerSettings";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   private _copyToClipboard = false;
 
-  protected override get require3d() { return true; }
+  protected override get require3d() {
+    return true;
+  }
 
   protected async parse(args: string[]) {
     if (1 === args.length)
@@ -59,8 +65,12 @@ export class DumpPlanProjectionSettingsTool extends DisplayStyleTool {
  */
 export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
   public static override toolId = "OverrideSubCategoryPriority";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   private readonly _subcatIds = new Set<string>();
   private _priority?: number;
@@ -99,13 +109,19 @@ export abstract class OverrideSubCategoryPriorityTool extends DisplayStyleTool {
  */
 export abstract class ChangePlanProjectionSettingsTool extends DisplayStyleTool {
   public static override toolId = "ChangeLayerSettings";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 5; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 5;
+  }
 
   private readonly _modelIds = new Set<string>();
   private _settings?: PlanProjectionSettings;
 
-  protected override get require3d() { return true; }
+  protected override get require3d() {
+    return true;
+  }
 
   protected async execute(vp: Viewport) {
     const settings = (vp.displayStyle as DisplayStyle3dState).settings;

@@ -42,7 +42,8 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
       const segment1 = this._geometry1;
       return LineSegment3d.create(
         segment0.startPoint().interpolate(this._fraction, segment1.startPoint()),
-        segment0.endPoint().interpolate(this._fraction, segment1.endPoint()));
+        segment0.endPoint().interpolate(this._fraction, segment1.endPoint()),
+      );
     }
     return undefined;
   }
@@ -86,7 +87,6 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
             ls1.packedDerivatives.getVector3dAtCheckedVectorIndex(i, workVector1);
             ls.addDerivative(workVector0.interpolate(fraction, workVector1));
           }
-
         }
         return ls;
       }
@@ -105,7 +105,8 @@ export class ConstructCurveBetweenCurves extends NullGeometryHandler {
         arc0.center.interpolate(this._fraction, arc1.center),
         arc0.vector0.interpolate(this._fraction, arc1.vector0),
         arc0.vector90.interpolate(this._fraction, arc1.vector90),
-        arc0.sweep.interpolate(this._fraction, arc1.sweep));
+        arc0.sweep.interpolate(this._fraction, arc1.sweep),
+      );
     }
     return undefined;
   }

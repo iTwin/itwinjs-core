@@ -240,7 +240,6 @@ function buildSampledGrid(points: Point3d[], numLongDirectionEdge: number, templ
   return grid.createPolyface();
 }
 describe("GridSampling", () => {
-
   it("NearestGridPointMax", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -256,7 +255,8 @@ describe("GridSampling", () => {
       Point3d.create(4, 7, 0.79),
       Point3d.create(3.5, 7, 0.79),
       Point3d.create(4, 2, 0.80),
-      Point3d.create(2, 3, 0.4)];
+      Point3d.create(2, 3, 0.4),
+    ];
     const zScale = 2.0;
     for (const p of points)
       p.z *= zScale;
@@ -309,5 +309,4 @@ describe("GridSampling", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "GridSampling", "Hello5Points");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

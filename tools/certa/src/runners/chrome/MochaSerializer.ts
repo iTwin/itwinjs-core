@@ -42,7 +42,7 @@ class MochaSerializer {
       isPrimary = true;
     }
 
-    return (isPrimary) ? { $$index, $$typeName, ...raw } : { $$index, $$typeName };
+    return isPrimary ? { $$index, $$typeName, ...raw } : { $$index, $$typeName };
   }
 
   /**

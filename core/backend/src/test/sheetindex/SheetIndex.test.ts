@@ -6,20 +6,26 @@
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BisCodeSpec, CodeScopeSpec, CodeSpec, GeometricModel2dProps, RelatedElement, SheetProps } from "@itwin/core-common";
 
-import { IModelDb, SnapshotDb } from "../../IModelDb";
-import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
-import { DocumentPartition, Sheet } from "../../Element";
 import { expect } from "chai";
+import { DocumentPartition, Sheet } from "../../Element";
+import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { DocumentListModel, SheetIndexModel, SheetModel } from "../../Model";
-import { ElementOwnsChildElements, SheetIndexFolderOwnsEntries, SheetIndexOwnsEntries, SheetIndexReferenceRefersToSheetIndex, SheetReferenceRefersToSheet } from "../../NavigationRelationship";
+import {
+  ElementOwnsChildElements,
+  SheetIndexFolderOwnsEntries,
+  SheetIndexOwnsEntries,
+  SheetIndexReferenceRefersToSheetIndex,
+  SheetReferenceRefersToSheet,
+} from "../../NavigationRelationship";
 import { SheetIndex, SheetIndexFolder, SheetIndexReference, SheetReference } from "../../SheetIndex";
+import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 
 export const getOrCreateDocumentList = async (iModel: IModelDb): Promise<Id64String> => {
   const documentListName = "SheetList";
   let documentListModelId: string | undefined;
 
   // Attempt to find an existing document partition and document list model
-  const ids = iModel.queryEntityIds({ from: DocumentPartition.classFullName, where: `CodeValue = '${documentListName}'`});
+  const ids = iModel.queryEntityIds({ from: DocumentPartition.classFullName, where: `CodeValue = '${documentListName}'` });
   if (ids.size === 1) {
     documentListModelId = ids.values().next().value;
   }
@@ -118,7 +124,13 @@ describe("SheetIndex", () => {
       const sheetIndex1Id = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex1Id)).to.be.true;
 
-      const folderId = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex1Id, name: "TestFolder", priority: 1 });
+      const folderId = SheetIndexFolder.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndex1Id,
+        name: "TestFolder",
+        priority: 1,
+      });
       expect(Id64.isValidId64(folderId)).to.be.true;
 
       const folder = iModel.elements.tryGetElement<SheetIndexFolder>(folderId);
@@ -144,22 +156,37 @@ describe("SheetIndex", () => {
       const sheetIndex2Id = SheetIndex.insert(iModel, modelId, "TestSheetIndex-2");
       expect(Id64.isValidId64(sheetIndex2Id)).to.be.true;
 
-      const folderId = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex1Id, name: "TestFolder", priority: 1 });
+      const folderId = SheetIndexFolder.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndex1Id,
+        name: "TestFolder",
+        priority: 1,
+      });
       expect(Id64.isValidId64(folderId)).to.be.true;
 
       const folder = iModel.elements.tryGetElement<SheetIndexFolder>(folderId);
       expect(folder).to.not.be.undefined;
 
-      const parentRel11 = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, { sourceId: sheetIndex1Id, targetId: folderId });
+      const parentRel11 = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, {
+        sourceId: sheetIndex1Id,
+        targetId: folderId,
+      });
       expect(parentRel11).to.not.be.undefined;
 
       folder!.parent = new SheetIndexOwnsEntries(sheetIndex2Id);
       folder!.update();
 
-      const parentRel12 = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, { sourceId: sheetIndex1Id, targetId: folderId });
+      const parentRel12 = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, {
+        sourceId: sheetIndex1Id,
+        targetId: folderId,
+      });
       expect(parentRel12).to.be.undefined;
 
-      const parentRel22 = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, { sourceId: sheetIndex2Id, targetId: folderId });
+      const parentRel22 = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, {
+        sourceId: sheetIndex2Id,
+        targetId: folderId,
+      });
       expect(parentRel22).to.not.be.undefined;
     });
 
@@ -175,7 +202,13 @@ describe("SheetIndex", () => {
       const sheet1Id = await insertSheet(iModel, "sheet-1");
       const sheet2Id = await insertSheet(iModel, "sheet-2");
 
-      const sheetRefId = SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndexId, name: "TestSheetReference", priority: 1 });
+      const sheetRefId = SheetReference.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndexId,
+        name: "TestSheetReference",
+        priority: 1,
+      });
       expect(Id64.isValidId64(sheetRefId)).to.be.true;
 
       const sheetRef = iModel.elements.tryGetElement<SheetReference>(sheetRefId);
@@ -185,19 +218,31 @@ describe("SheetIndex", () => {
       sheetRef!.sheet = new SheetReferenceRefersToSheet(sheet1Id);
       sheetRef!.update();
 
-      const refersRel11 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet1Id });
+      const refersRel11 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, {
+        sourceId: sheetRefId,
+        targetId: sheet1Id,
+      });
       expect(refersRel11).to.not.be.undefined;
 
-      const parentRel12 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet2Id });
+      const parentRel12 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, {
+        sourceId: sheetRefId,
+        targetId: sheet2Id,
+      });
       expect(parentRel12).to.be.undefined;
 
       sheetRef!.sheet = new SheetReferenceRefersToSheet(sheet2Id);
       sheetRef!.update();
 
-      const refersRel21 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet1Id });
+      const refersRel21 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, {
+        sourceId: sheetRefId,
+        targetId: sheet1Id,
+      });
       expect(refersRel21).to.be.undefined;
 
-      const parentRel22 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheet2Id });
+      const parentRel22 = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, {
+        sourceId: sheetRefId,
+        targetId: sheet2Id,
+      });
       expect(parentRel22).to.not.be.undefined;
     });
 
@@ -215,7 +260,13 @@ describe("SheetIndex", () => {
       const sheetIndex3Id = SheetIndex.insert(iModel, modelId, "TestSheetIndex-3");
       expect(Id64.isValidId64(sheetIndex3Id)).to.be.true;
 
-      const sheetIndexRefId = SheetIndexReference.insert({iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex1Id, name: "TestSheetReference", priority: 1});
+      const sheetIndexRefId = SheetIndexReference.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndex1Id,
+        name: "TestSheetReference",
+        priority: 1,
+      });
       expect(Id64.isValidId64(sheetIndexRefId)).to.be.true;
 
       const sheetIndexRef = iModel.elements.tryGetElement<SheetIndexReference>(sheetIndexRefId);
@@ -225,16 +276,25 @@ describe("SheetIndex", () => {
       sheetIndexRef!.sheetIndex = new SheetIndexReferenceRefersToSheetIndex(sheetIndex2Id);
       sheetIndexRef!.update();
 
-      const parentRel11 = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, { sourceId: sheetIndexRefId, targetId: sheetIndex2Id });
+      const parentRel11 = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, {
+        sourceId: sheetIndexRefId,
+        targetId: sheetIndex2Id,
+      });
       expect(parentRel11).to.not.be.undefined;
 
       sheetIndexRef!.sheetIndex = new SheetIndexReferenceRefersToSheetIndex(sheetIndex3Id);
       sheetIndexRef!.update();
 
-      const refersRel21 = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, { sourceId: sheetIndexRefId, targetId: sheetIndex2Id });
+      const refersRel21 = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, {
+        sourceId: sheetIndexRefId,
+        targetId: sheetIndex2Id,
+      });
       expect(refersRel21).to.be.undefined;
 
-      const parentRel22 = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, { sourceId: sheetIndexRefId, targetId: sheetIndex3Id });
+      const parentRel22 = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, {
+        sourceId: sheetIndexRefId,
+        targetId: sheetIndex3Id,
+      });
       expect(parentRel22).to.not.be.undefined;
     });
   });
@@ -248,13 +308,22 @@ describe("SheetIndex", () => {
       const sheetIndexId = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndexId)).to.be.true;
 
-      const folderId = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndexId, name: "TestFolder-1", priority: 1});
+      const folderId = SheetIndexFolder.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndexId,
+        name: "TestFolder-1",
+        priority: 1,
+      });
       expect(Id64.isValidId64(folderId)).to.be.true;
 
       const folder = iModel.elements.tryGetElement<SheetIndexFolder>(folderId);
       expect(folder).to.not.be.undefined;
 
-      const relationship = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, { sourceId: sheetIndexId, targetId: folderId });
+      const relationship = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, {
+        sourceId: sheetIndexId,
+        targetId: folderId,
+      });
       expect(relationship).to.not.be.undefined;
       expect(relationship?.classFullName).equals(SheetIndexOwnsEntries.classFullName);
 
@@ -272,7 +341,8 @@ describe("SheetIndex", () => {
       const folder = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestFolder", priority: 1 });
       expect(Id64.isValidId64(folder)).to.be.true;
 
-      const failInsert = () => SheetIndexFolder.insert({iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestFolder", priority: 0 });
+      const failInsert = () =>
+        SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestFolder", priority: 0 });
 
       expect(failInsert).throws();
     });
@@ -285,15 +355,30 @@ describe("SheetIndex", () => {
       const sheetIndexId = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndexId)).to.be.true;
 
-      const folder1Id = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndexId, name: "TestFolder-1", priority: 1 });
+      const folder1Id = SheetIndexFolder.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndexId,
+        name: "TestFolder-1",
+        priority: 1,
+      });
       expect(Id64.isValidId64(folder1Id)).to.be.true;
 
-      const folder2Id = SheetIndexFolder.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: folder1Id, name: "TestFolder-2", priority: 1 });
+      const folder2Id = SheetIndexFolder.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: folder1Id,
+        name: "TestFolder-2",
+        priority: 1,
+      });
       expect(Id64.isValidId64(folder2Id)).to.be.true;
       const folder2 = iModel.elements.tryGetElement<SheetIndexFolder>(folder2Id);
       expect(folder2).to.not.be.undefined;
 
-      const relationship = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, { sourceId: folder1Id, targetId: folder2Id });
+      const relationship = iModel.relationships.tryGetInstanceProps(ElementOwnsChildElements.classFullName, {
+        sourceId: folder1Id,
+        targetId: folder2Id,
+      });
       expect(relationship).to.not.be.undefined;
       expect(relationship?.classFullName).equals(SheetIndexFolderOwnsEntries.classFullName);
 
@@ -310,10 +395,17 @@ describe("SheetIndex", () => {
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex)).to.be.true;
 
-      const sheetRef1 = SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef", priority: 1 });
+      const sheetRef1 = SheetReference.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndex,
+        name: "TestSheetRef",
+        priority: 1,
+      });
       expect(Id64.isValidId64(sheetRef1)).to.be.true;
 
-      const failInsert = () => SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef", priority: 0 });
+      const failInsert = () =>
+        SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef", priority: 0 });
 
       expect(failInsert).throws();
     });
@@ -326,7 +418,13 @@ describe("SheetIndex", () => {
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex)).to.be.true;
 
-      const sheetRef = SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef", priority: 1 });
+      const sheetRef = SheetReference.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndex,
+        name: "TestSheetRef",
+        priority: 1,
+      });
       expect(Id64.isValidId64(sheetRef)).to.be.true;
     });
 
@@ -339,13 +437,23 @@ describe("SheetIndex", () => {
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex)).to.be.true;
 
-      const sheetRefId = SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef", priority: 1, sheetId });
+      const sheetRefId = SheetReference.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndex,
+        name: "TestSheetRef",
+        priority: 1,
+        sheetId,
+      });
       expect(Id64.isValidId64(sheetRefId)).to.be.true;
 
       const ref = iModel.elements.tryGetElement<SheetReference>(sheetRefId);
       expect(ref).to.not.be.undefined;
 
-      const relationship = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, { sourceId: sheetRefId, targetId: sheetId });
+      const relationship = iModel.relationships.tryGetInstanceProps(SheetReferenceRefersToSheet.classFullName, {
+        sourceId: sheetRefId,
+        targetId: sheetId,
+      });
       expect(relationship).to.not.be.undefined;
       expect(relationship?.classFullName).equals(SheetReferenceRefersToSheet.classFullName);
 
@@ -362,7 +470,8 @@ describe("SheetIndex", () => {
 
       SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef-1", priority: 1, sheetId });
 
-      const sameIndex = () => SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef-2", priority: 2, sheetId });
+      const sameIndex = () =>
+        SheetReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetRef-2", priority: 2, sheetId });
 
       expect(sameIndex).throws();
     });
@@ -377,10 +486,17 @@ describe("SheetIndex", () => {
       const sheetIndex = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex)).to.be.true;
 
-      const sheetIndexRef = SheetIndexReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetIndexRef", priority: 1 });
+      const sheetIndexRef = SheetIndexReference.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndex,
+        name: "TestSheetIndexRef",
+        priority: 1,
+      });
       expect(Id64.isValidId64(sheetIndexRef)).to.be.true;
 
-      const failInsert = () => SheetIndexReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetIndexRef", priority: 0 });
+      const failInsert = () =>
+        SheetIndexReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex, name: "TestSheetIndexRef", priority: 0 });
 
       expect(failInsert).throws();
     });
@@ -393,7 +509,13 @@ describe("SheetIndex", () => {
       const sheetIndex1Id = SheetIndex.insert(iModel, modelId, "TestSheetIndex");
       expect(Id64.isValidId64(sheetIndex1Id)).to.be.true;
 
-      const sheetRef = SheetIndexReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex1Id, name: "TestSheetIndexRef", priority: 1 });
+      const sheetRef = SheetIndexReference.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndex1Id,
+        name: "TestSheetIndexRef",
+        priority: 1,
+      });
       expect(Id64.isValidId64(sheetRef)).to.be.true;
     });
 
@@ -407,13 +529,23 @@ describe("SheetIndex", () => {
       const sheetIndex2Id = SheetIndex.insert(iModel, modelId, "TestSheetIndex-2");
       expect(Id64.isValidId64(sheetIndex1Id)).to.be.true;
 
-      const sheetIndexRefId = SheetIndexReference.insert({ iModelDb: iModel, sheetIndexModelId: modelId, parentId: sheetIndex1Id, name: "TestSheetRef", priority: 1, sheetIndexId: sheetIndex2Id });
+      const sheetIndexRefId = SheetIndexReference.insert({
+        iModelDb: iModel,
+        sheetIndexModelId: modelId,
+        parentId: sheetIndex1Id,
+        name: "TestSheetRef",
+        priority: 1,
+        sheetIndexId: sheetIndex2Id,
+      });
       expect(Id64.isValidId64(sheetIndexRefId)).to.be.true;
 
       const ref = iModel.elements.tryGetElement<SheetIndexReference>(sheetIndexRefId);
       expect(ref).to.not.be.undefined;
 
-      const relationship = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, { sourceId: sheetIndexRefId, targetId: sheetIndex2Id });
+      const relationship = iModel.relationships.tryGetInstanceProps(SheetIndexReferenceRefersToSheetIndex.classFullName, {
+        sourceId: sheetIndexRefId,
+        targetId: sheetIndex2Id,
+      });
       expect(relationship).to.not.be.undefined;
       expect(relationship?.classFullName).equals(SheetIndexReferenceRefersToSheetIndex.classFullName);
 

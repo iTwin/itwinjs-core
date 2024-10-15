@@ -16,7 +16,6 @@ let envConfig: DptaEnvConfig | undefined;
  * Note: This method can be run on both the backend and the frontend.
  */
 export const getConfig = (): DptaEnvConfig => {
-
   envConfig = {};
   if (undefined !== process.env.IMJS_NO_DEV_TOOLS)
     envConfig.noDevTools = true;

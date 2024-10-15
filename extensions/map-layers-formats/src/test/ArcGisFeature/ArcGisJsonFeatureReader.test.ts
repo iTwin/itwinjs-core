@@ -5,19 +5,19 @@
 
 import { Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings } from "@itwin/core-common";
+import { MapLayerFeatureInfo } from "@itwin/core-frontend";
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { ArcGisFeatureMapLayerFormat } from "../../ArcGisFeature/ArcGisFeatureFormat";
-import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
 import { ArcGisFeatureGeometryType } from "../../ArcGisFeature/ArcGisFeatureQuery";
-import { fakeContext } from "./Mocks";
-import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
-import { FeatureCanvasRenderer } from "../../Feature/FeatureCanvasRenderer";
-import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
-import { EsriSFS } from "../../ArcGisFeature/EsriSymbology";
-import { TestUtils } from "./TestUtils";
+import { ArcGisJsonFeatureReader } from "../../ArcGisFeature/ArcGisJsonFeatureReader";
 import { ArcGisUniqueValueSymbologyRenderer } from "../../ArcGisFeature/ArcGisSymbologyRenderer";
-import { MapLayerFeatureInfo } from "@itwin/core-frontend";
+import { EsriSFS } from "../../ArcGisFeature/EsriSymbology";
+import { FeatureCanvasRenderer } from "../../Feature/FeatureCanvasRenderer";
+import { fakeContext } from "./Mocks";
+import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
+import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
+import { TestUtils } from "./TestUtils";
 
 const esriFeatureSampleSource = { name: "dummyFeatureLayer", url: "https://dummy.com", formatId: ArcGisFeatureMapLayerFormat.formatId };
 
@@ -33,7 +33,6 @@ const createFeatureJSON = () => {
 };
 
 describe("ArcGisJsonFeatureReader", () => {
-
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
@@ -46,7 +45,10 @@ describe("ArcGisJsonFeatureReader", () => {
     // Since I want to use the same output reference for both formats, I force a max precision of 8.
     featureJson.floatPrecision = 8;
     const results: MapLayerFeatureInfo[] = [];
-    await featureJson.readFeatureInfo({ data: PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryJson, exceedTransferLimit: false }, results);
+    await featureJson.readFeatureInfo(
+      { data: PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryJson, exceedTransferLimit: false },
+      results,
+    );
     assert.deepEqual(results, PhillyLandmarksDataset.phillyTansportationGetFeatureInfoResultRef);
   });
 
@@ -67,7 +69,10 @@ describe("ArcGisJsonFeatureReader", () => {
 
     const data = PhillyLandmarksDataset.phillySimplePolyQueryJson;
 
-    const symbolRenderer = await TestUtils.createSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      data.geometryType as ArcGisFeatureGeometryType,
+      PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer,
+    );
 
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
@@ -76,9 +81,9 @@ describe("ArcGisJsonFeatureReader", () => {
 
     const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.features[0].geometry.lengths); // geometryLengths
-    expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.features[0].geometry.coords);              // geometryCoords
-    expect(firstCall.args[2]).to.eql(true);           // fill
-    expect(firstCall.args[3]).to.eql(2);              // stride
+    expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillySimplePolyQueryPbf.queryResult.featureResult.features[0].geometry.coords); // geometryCoords
+    expect(firstCall.args[2]).to.eql(true); // fill
+    expect(firstCall.args[3]).to.eql(2); // stride
   });
 
   it("should readAndRender multiple ring polygon feature", async () => {
@@ -86,7 +91,10 @@ describe("ArcGisJsonFeatureReader", () => {
 
     const data = PhillyLandmarksDataset.phillyDoubleRingPolyQueryJson;
 
-    const symbolRenderer = await TestUtils.createSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      data.geometryType as ArcGisFeatureGeometryType,
+      PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo.renderer,
+    );
 
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
@@ -95,34 +103,88 @@ describe("ArcGisJsonFeatureReader", () => {
 
     const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.features[0].geometry.lengths); // geometryLengths
-    expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.features[0].geometry.coords);              // geometryCoords
-    expect(firstCall.args[2]).to.eql(true);                        // fill
-    expect(firstCall.args[3]).to.eql(2);              // stride
+    expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillyDoubleRingPolyQueryPbf.queryResult.featureResult.features[0].geometry.coords); // geometryCoords
+    expect(firstCall.args[2]).to.eql(true); // fill
+    expect(firstCall.args[3]).to.eql(2); // stride
   });
 
   it("should readAndRender simple path", async () => {
     const featureJson = createFeatureJSON();
     const data = PhillyLandmarksDataset.phillySimplePathQueryJson;
-    const symbolRenderer = await TestUtils.createSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType,
-      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      data.geometryType as ArcGisFeatureGeometryType,
+      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer,
+    );
 
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
     await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);
     expect(renderPathSpy.calledOnce);
 
-    const geometryCoords = [360, 491, -2, -1, -1, 0, -1, 0, -1, 0, -1, 1, -4, 1, -10, 2, -15, 3, -1, 0, -1, 0, -2, 0, -1, 0, -1, 0, -1, -1, -1, 0, -2, -1, 0, -1, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0, -1, 0];
+    const geometryCoords = [
+      360,
+      491,
+      -2,
+      -1,
+      -1,
+      0,
+      -1,
+      0,
+      -1,
+      0,
+      -1,
+      1,
+      -4,
+      1,
+      -10,
+      2,
+      -15,
+      3,
+      -1,
+      0,
+      -1,
+      0,
+      -2,
+      0,
+      -1,
+      0,
+      -1,
+      0,
+      -1,
+      -1,
+      -1,
+      0,
+      -2,
+      -1,
+      0,
+      -1,
+      -1,
+      0,
+      -1,
+      0,
+      -1,
+      0,
+      -1,
+      0,
+      -1,
+      0,
+      -1,
+      0,
+    ];
     const firstCall = renderPathSpy.getCalls()[0];
-    expect(firstCall.args[0]).to.eql([24]);          // geometryLengths
+    expect(firstCall.args[0]).to.eql([24]); // geometryLengths
     expect(firstCall.args[1]).to.eql(geometryCoords); // geometryCoords
-    expect(firstCall.args[2]).to.eql(false);           // fill
-    expect(firstCall.args[3]).to.eql(2);              // stride
+    expect(firstCall.args[2]).to.eql(false); // fill
+    expect(firstCall.args[3]).to.eql(2); // stride
   });
 
   it("should readAndRender multi path", async () => {
     const featureJson = createFeatureJSON();
     const data = PhillyLandmarksDataset.phillyMultiPathQueryJson;
-    const symbolRenderer = await TestUtils.createSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      data.geometryType as ArcGisFeatureGeometryType,
+      PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo.renderer,
+    );
 
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const renderPathSpy = sinon.spy(featureRenderer, "renderPath");
@@ -133,8 +195,8 @@ describe("ArcGisJsonFeatureReader", () => {
     const firstCall = renderPathSpy.getCalls()[0];
     expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.features[0].geometry.lengths);
     expect(firstCall.args[1]).to.eql(PhillyLandmarksDataset.phillyMultiPathQueryPbf.queryResult.featureResult.features[0].geometry.coords);
-    expect(firstCall.args[2]).to.eql(false);           // fill
-    expect(firstCall.args[3]).to.eql(2);              // stride
+    expect(firstCall.args[2]).to.eql(false); // fill
+    expect(firstCall.args[3]).to.eql(2); // stride
   });
 
   it("should readAndRender simple point", async () => {
@@ -142,7 +204,8 @@ describe("ArcGisJsonFeatureReader", () => {
     const data = PhillyLandmarksDataset.phillySimplePointQueryJson;
     const symbolRenderer = await TestUtils.createSymbologyRenderer(
       data.geometryType as ArcGisFeatureGeometryType,
-      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer,
+    );
 
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const spy = sinon.spy(featureRenderer, "renderPoint");
@@ -152,14 +215,17 @@ describe("ArcGisJsonFeatureReader", () => {
     // Pbf contains already the right output format expect, lets rely on that.
     const geometryCoords = PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult.features[0].geometry.coords;
     const firstCall = spy.getCalls()[0];
-    expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult.features[0].geometry.lengths);          // geometryLengths
+    expect(firstCall.args[0]).to.eql(PhillyLandmarksDataset.phillySimplePointQueryPbf.queryResult.featureResult.features[0].geometry.lengths); // geometryLengths
     expect(firstCall.args[1]).to.eql(geometryCoords); // geometryCoords
-    expect(firstCall.args[2]).to.eql(2);              // stride
+    expect(firstCall.args[2]).to.eql(2); // stride
   });
 
   it("should log error when readAndRender /  readFeatureInfo is called invalid response Data", async () => {
     const featureJson = createFeatureJSON();
-    const symbolRenderer = await TestUtils.createSymbologyRenderer("esriGeometryPoint", PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      "esriGeometryPoint",
+      PhillyLandmarksDataset.phillySimplePointDrawingInfo.drawingInfo.renderer,
+    );
 
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const logErrorSpy = sandbox.spy(Logger, "logError");
@@ -169,13 +235,15 @@ describe("ArcGisJsonFeatureReader", () => {
     logErrorSpy.resetHistory();
     await featureJson.readFeatureInfo({ data: { test: "test" }, exceedTransferLimit: false }, []);
     expect(logErrorSpy.calledOnce);
-
   });
 
   it("should call setActiveFeatureAttributes when attribute driven symbology", async () => {
     const featureJson = createFeatureJSON();
     const data = NeptuneCoastlineDataset.singlePolyJson;
-    const symbolRenderer = await TestUtils.createSymbologyRenderer(data.geometryType as ArcGisFeatureGeometryType, NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer);
+    const symbolRenderer = await TestUtils.createSymbologyRenderer(
+      data.geometryType as ArcGisFeatureGeometryType,
+      NeptuneCoastlineDataset.uniqueValueSFSDrawingInfo.drawingInfo.renderer,
+    );
     const featureRenderer = new FeatureCanvasRenderer(fakeContext, symbolRenderer);
     const spy = sinon.spy(symbolRenderer as ArcGisUniqueValueSymbologyRenderer, "setActiveFeatureAttributes");
     await featureJson.readAndRender({ data, exceedTransferLimit: false }, featureRenderer);

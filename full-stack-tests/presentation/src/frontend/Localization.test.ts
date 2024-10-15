@@ -2,10 +2,10 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { IModelApp, IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, Content, DefaultContentDisplayTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { initialize, terminate, testLocalization } from "../IntegrationTests";
 import { collect, getFieldByLabel } from "../Utils";
 
@@ -309,7 +309,9 @@ describe("Localization", async () => {
       await Promise.all(
         Array.from({ length: 100 }).map(async () => {
           const [en, test] = await Promise.all(
-            frontends.map(async (frontend) => frontend.getNodesIterator({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }).then(async (x) => collect(x.items))),
+            frontends.map(async (frontend) =>
+              frontend.getNodesIterator({ imodel, rulesetOrId: CUSTOM_NODES_RULESET }).then(async (x) => collect(x.items))
+            ),
           );
 
           expect(en[0].label.displayValue).to.eq("test value");

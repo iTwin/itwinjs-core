@@ -65,11 +65,19 @@ export class ImdlHeader extends TileHeader {
   /** A bitfield wherein each set bit indicates an empty sub-volume. */
   public readonly emptySubRanges: number;
 
-  public get versionMajor(): number { return this.version >>> 0x10; }
-  public get versionMinor(): number { return (this.version & 0xffff) >>> 0; }
+  public get versionMajor(): number {
+    return this.version >>> 0x10;
+  }
+  public get versionMinor(): number {
+    return (this.version & 0xffff) >>> 0;
+  }
 
-  public get isValid(): boolean { return TileFormat.IModel === this.format; }
-  public get isReadableVersion(): boolean { return this.versionMajor <= CurrentImdlVersion.Major; }
+  public get isValid(): boolean {
+    return TileFormat.IModel === this.format;
+  }
+  public get isReadableVersion(): boolean {
+    return this.versionMajor <= CurrentImdlVersion.Major;
+  }
 
   /** Deserialize a header from the binary data at the stream's current position.
    * If the binary data does not contain a valid header, the Header will be marked 'invalid'.

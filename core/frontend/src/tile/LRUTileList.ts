@@ -92,7 +92,7 @@ export class TileUserIdSets extends SortedArray<TileUserIdSet> {
   public drop(userId: number): void {
     // Remove from all sets, and delete empty sets.
     let i = 0;
-    for (/* */; i < this._array.length; i++) {
+    for (; /* */ i < this._array.length; i++) {
       const set = this._array[i];
       set.drop(userId);
       if (set.length === 0)
@@ -101,7 +101,8 @@ export class TileUserIdSets extends SortedArray<TileUserIdSet> {
 
     // Collapse equivalent sets.
     i = 0;
-    for (let j = 1; j < this._array.length; /* */) {
+    for (let j = 1; j < this._array.length;/* */
+    ) {
       if (this._array[i].equals(this._array[j])) {
         this._array.splice(i, 1);
       } else {

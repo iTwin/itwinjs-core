@@ -3,16 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
+import { AccessToken, BeEvent, BriefcaseStatus } from "@itwin/core-bentley";
 import { IpcWebSocketBackend, RpcInterfaceDefinition } from "@itwin/core-common";
-import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
-import { ProgressCallback } from "./Request";
 import { mobileAppStrings } from "../common/MobileAppChannel";
 import { BatteryState, DeviceEvents, MobileAppFunctions, MobileNotifications, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
+import { CancelRequest, DownloadFailed, UserCancelledError } from "./MobileFileHandler";
 import { setupMobileRpc } from "./MobileRpcServer";
+import { ProgressCallback } from "./Request";
 
 /** @beta */
 export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: string, cancelled: boolean, err?: string) => void;
@@ -64,7 +64,13 @@ export abstract class MobileDevice {
   public abstract getOrientation(): Orientation;
   public abstract getBatteryState(): BatteryState;
   public abstract getBatteryLevel(): number;
-  public abstract createDownloadTask(downloadUrl: string, isBackground: boolean, downloadTo: string, completion: MobileCompletionCallback, progress?: MobileProgressCallback): number;
+  public abstract createDownloadTask(
+    downloadUrl: string,
+    isBackground: boolean,
+    downloadTo: string,
+    completion: MobileCompletionCallback,
+    progress?: MobileProgressCallback,
+  ): number;
   public abstract cancelDownloadTask(cancelId: number): boolean;
   public abstract getDownloadTasks(): DownloadTask[];
   public abstract resumeDownloadInForeground(requestId: number): boolean;
@@ -74,7 +80,9 @@ export abstract class MobileDevice {
 }
 
 class MobileAppHandler extends IpcHandler implements MobileAppFunctions {
-  public get channelName() { return mobileAppStrings.mobileAppChannel; }
+  public get channelName() {
+    return mobileAppStrings.mobileAppChannel;
+  }
   public async reconnect(connection: number) {
     MobileHost.reconnect(connection);
   }
@@ -97,7 +105,9 @@ export interface MobileHostOpts extends NativeHostOpts {
  */
 export class MobileHost {
   private static _device?: MobileDevice;
-  public static get device() { return this._device!; }
+  public static get device() {
+    return this._device!;
+  }
   /**
    * Raised when the mobile OS informs a mobile app that it is running low on memory.
    *
@@ -156,9 +166,13 @@ export class MobileHost {
   }
 
   /**  @internal */
-  public static async downloadFile(downloadUrl: string, downloadTo: string, progress?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+  public static async downloadFile(
+    downloadUrl: string,
+    downloadTo: string,
+    progress?: ProgressCallback,
+    cancelRequest?: CancelRequest,
+  ): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-
       let progressCb: MobileProgressCallback | undefined;
       let lastReportedOn = Date.now();
       const minTimeBeforeReportingProgress = 1000;
@@ -176,14 +190,20 @@ export class MobileHost {
           progress({ total: totalBytesExpectedToWrite, loaded: totalBytesWritten, percent });
         };
       }
-      const requestId = this.device.createDownloadTask(downloadUrl, false, downloadTo, (_downloadUrl: string, _downloadFileUrl: string, cancelled: boolean, err?: string) => {
-        if (cancelled)
-          reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download"));
-        else if (err)
-          reject(new DownloadFailed(400, "Download failed"));
-        else
-          resolve();
-      }, progressCb);
+      const requestId = this.device.createDownloadTask(
+        downloadUrl,
+        false,
+        downloadTo,
+        (_downloadUrl: string, _downloadFileUrl: string, cancelled: boolean, err?: string) => {
+          if (cancelled)
+            reject(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download"));
+          else if (err)
+            reject(new DownloadFailed(400, "Download failed"));
+          else
+            resolve();
+        },
+        progressCb,
+      );
       if (cancelRequest) {
         // eslint-disable-next-line @typescript-eslint/unbound-method
         cancelRequest.cancel = () => this.device.cancelDownloadTask(requestId);
@@ -191,7 +211,9 @@ export class MobileHost {
     });
   }
 
-  public static get isValid() { return undefined !== this._device; }
+  public static get isValid() {
+    return undefined !== this._device;
+  }
 
   /** Start the backend of a mobile app. */
   public static async startup(opt?: MobileHostOpts): Promise<void> {
@@ -207,7 +229,7 @@ export class MobileHost {
       this.onOrientationChanged.addListener(() => {
         try {
           MobileHost.notifyMobileFrontend("notifyOrientationChanged");
-        } catch (_ex) { } // Ignore: frontend is not currently connected
+        } catch (_ex) {} // Ignore: frontend is not currently connected
       });
       this.onWillTerminate.addListener(() => {
         MobileHost.notifyMobileFrontend("notifyWillTerminate");

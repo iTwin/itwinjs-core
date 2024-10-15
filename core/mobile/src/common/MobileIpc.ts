@@ -7,7 +7,14 @@
  */
 
 import {
-  IpcWebSocket, IpcWebSocketMessage, IpcWebSocketMessageType, IpcWebSocketTransport, RpcInterface, RpcManager, RpcMarshaling, RpcRequestFulfillment,
+  IpcWebSocket,
+  IpcWebSocketMessage,
+  IpcWebSocketMessageType,
+  IpcWebSocketTransport,
+  RpcInterface,
+  RpcManager,
+  RpcMarshaling,
+  RpcRequestFulfillment,
   SerializedRpcRequest,
 } from "@itwin/core-common";
 import { MobileEventLoop } from "./MobileEventLoop";
@@ -19,7 +26,7 @@ const IPC = "__ipc__";
 class IpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
   public static interfaceName = IPC;
   public static interfaceVersion = "0.0.0";
-  public async send() { }
+  public async send() {}
 }
 
 /** @internal */

@@ -2,20 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import {
-  BriefcaseIdValue, Code,  ColorDef,  GeometricElementProps, IModel,
-  SubCategoryAppearance,
-} from "@itwin/core-common";
-import {   _nativeDb, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
+import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
+import { assert, expect } from "chai";
+import { _nativeDb, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 interface TestElement extends GeometricElementProps {
-  addresses: [null, {city: "Pune", zip: 28}];
+  addresses: [null, { city: "Pune", zip: 28 }];
 }
 
-function initElemProps( _iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any): GeometricElementProps {
+function initElemProps(_iModelName: IModelDb, modId: Id64String, catId: Id64String, autoHandledProp: any): GeometricElementProps {
   // Create props
   const elementProps: GeometricElementProps = {
     classFullName: "Test:Foo",
@@ -62,8 +59,12 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
 
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     if (undefined === spatialCategoryId)
-      spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, categoryName,
-        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }));
+      spatialCategoryId = SpatialCategory.insert(
+        imodel,
+        IModel.dictionaryId,
+        categoryName,
+        new SubCategoryAppearance({ color: ColorDef.create("rgb(255,0,0)").toJSON() }),
+      );
 
     imodel.saveChanges();
     imodel.close();
@@ -76,8 +77,8 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
 
     // create element with auto handled properties
-    const expectedValue = initElemProps( imodel, newModelId, spatialCategoryId!, {
-      addresses: [null, {city: "Pune", zip: 28}],
+    const expectedValue = initElemProps(imodel, newModelId, spatialCategoryId!, {
+      addresses: [null, { city: "Pune", zip: 28 }],
     }) as TestElement;
 
     // insert a element
@@ -93,5 +94,4 @@ describe("Insert Null elements in Struct Array, and ensure they are returned whi
 
     imodel.close();
   });
-
 });

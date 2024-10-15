@@ -182,9 +182,15 @@ export class BarycentricTriangle {
    * @param result optional pre-allocated triangle.
    */
   public static createXYZXYZXYZ(
-    x0: number, y0: number, z0: number,
-    x1: number, y1: number, z1: number,
-    x2: number, y2: number, z2: number,
+    x0: number,
+    y0: number,
+    z0: number,
+    x1: number,
+    y1: number,
+    z1: number,
+    x2: number,
+    y2: number,
+    z2: number,
     result?: BarycentricTriangle,
   ): BarycentricTriangle {
     if (!result)
@@ -196,7 +202,10 @@ export class BarycentricTriangle {
   }
   /** Create a triangle with coordinates cloned from given points. */
   public static create(
-    point0: Point3d, point1: Point3d, point2: Point3d, result?: BarycentricTriangle,
+    point0: Point3d,
+    point1: Point3d,
+    point2: Point3d,
+    result?: BarycentricTriangle,
   ): BarycentricTriangle {
     if (!result)
       return new this(point0.clone(), point1.clone(), point2.clone());
@@ -238,7 +247,9 @@ export class BarycentricTriangle {
   /** Return area divided by sum of squared lengths. */
   public get aspectRatio(): number {
     return Geometry.safeDivideFraction(
-      this.area, this.edgeLengthSquared(0) + this.edgeLengthSquared(1) + this.edgeLengthSquared(2), 0,
+      this.area,
+      this.edgeLengthSquared(0) + this.edgeLengthSquared(1) + this.edgeLengthSquared(2),
+      0,
     );
   }
   /** Return the perimeter of the triangle. */
@@ -418,8 +429,12 @@ export class BarycentricTriangle {
     const j = Geometry.cyclic3dAxis(i + 1);
     const k = Geometry.cyclic3dAxis(j + 1);
     return Geometry.dotProductXYZXYZ(
-      this.points[j].x - this.points[i].x, this.points[j].y - this.points[i].y, this.points[j].z - this.points[i].z,
-      this.points[k].x - this.points[i].x, this.points[k].y - this.points[i].y, this.points[k].z - this.points[i].z,
+      this.points[j].x - this.points[i].x,
+      this.points[j].y - this.points[i].y,
+      this.points[j].z - this.points[i].z,
+      this.points[k].x - this.points[i].x,
+      this.points[k].y - this.points[i].y,
+      this.points[k].z - this.points[i].z,
     );
   }
   /**
@@ -463,7 +478,7 @@ export class BarycentricTriangle {
    */
   public closestPoint(b0: number, b1: number, b2: number): { closestEdgeIndex: number, closestEdgeParam: number } {
     const b: number[] = [b0, b1, b2];
-    let edgeIndex = -1;  // opposite-vertex index
+    let edgeIndex = -1; // opposite-vertex index
     let edgeParam = 0.0;
     if (BarycentricTriangle.isInsideTriangle(b0, b1, b2)) { // projects to any edge
       edgeIndex = BarycentricTriangle.indexOfMinimum((i: number) => {
@@ -486,7 +501,7 @@ export class BarycentricTriangle {
     } else if ((edgeIndex = BarycentricTriangle.isInRegionBeyondEdge(b0, b1, b2)) >= 0) { // projects to the edge or its vertices
       edgeParam = this.computeProjectionToEdge(edgeIndex, b);
       if (edgeParam < 0) {
-        edgeParam = 0.0;  // start of this edge
+        edgeParam = 0.0; // start of this edge
       } else if (edgeParam > 1) {
         edgeParam = 0.0;
         edgeIndex = Geometry.cyclic3dAxis(edgeIndex + 1); // end of this edge = start of next edge
@@ -518,7 +533,7 @@ export class BarycentricTriangle {
    * * `d.classify` can be used to determine where the intersection lies with respect to the triangle.
    * * Visualization can be found at https://www.itwinjs.org/sandbox/SaeedTorabi/RayTriangleIntersection
    * @see [[pointToFraction]]
-  */
+   */
   public intersectRay3d(ray: Ray3d, result?: TriangleLocationDetail): TriangleLocationDetail {
     result = TriangleLocationDetail.create(result);
     /**
@@ -531,16 +546,20 @@ export class BarycentricTriangle {
     const r0 = ray.origin;
     const d = ray.direction;
     const u = BarycentricTriangle._workVector0 = Vector3d.createStartEnd(
-      this.points[0], this.points[1], BarycentricTriangle._workVector0,
+      this.points[0],
+      this.points[1],
+      BarycentricTriangle._workVector0,
     );
     const v = BarycentricTriangle._workVector1 = Vector3d.createStartEnd(
-      this.points[0], this.points[2], BarycentricTriangle._workVector1,
+      this.points[0],
+      this.points[2],
+      BarycentricTriangle._workVector1,
     );
     const M = BarycentricTriangle._workMatrix = Matrix3d.createColumns(u, v, d, BarycentricTriangle._workMatrix);
-    const c = Vector3d.createStartEnd(this.points[0], r0, BarycentricTriangle._workVector0);  // reuse workVector0
-    const solution = BarycentricTriangle._workVector1;  // reuse workVector1
+    const c = Vector3d.createStartEnd(this.points[0], r0, BarycentricTriangle._workVector0); // reuse workVector0
+    const solution = BarycentricTriangle._workVector1; // reuse workVector1
     if (undefined === M.multiplyInverse(c, solution))
-      return result;  // invalid
+      return result; // invalid
     result.a = -solution.z; // = -(-s) = s
     ray.fractionToPoint(result.a, result.world);
     result.local.set(1.0 - solution.x - solution.y, solution.x, solution.y); // = (1 - b1 - b2, b1, b2) = (b0 , b1, b2)
@@ -559,7 +578,7 @@ export class BarycentricTriangle {
    * * `d.classify` can be used to determine where the intersection lies with respect to the triangle.
    * * `d.a` is the intersection parameter. If `d.a` is in [0,1], the segment intersects the plane of the triangle.
    * @see [[intersectRay3d]]
-  */
+   */
   public intersectSegment(point0: Point3d, point1: Point3d, result?: TriangleLocationDetail): TriangleLocationDetail {
     BarycentricTriangle._workRay = Ray3d.createStartEnd(point0, point1, BarycentricTriangle._workRay);
     return this.intersectRay3d(BarycentricTriangle._workRay, result);
@@ -598,9 +617,11 @@ export class BarycentricTriangle {
             BarycentricTriangle.isOnBoundedEdge(location.local.x, location.local.y, location.local.z),
           );
           location.closestEdgeParam = 1.0 - location.local.at(location.closestEdgeIndex);
-        } else {  // 2 snapped, at vertex
+        } else { // 2 snapped, at vertex
           location.closestEdgeIndex = BarycentricTriangle.isOnVertex(
-            location.local.x, location.local.y, location.local.z,
+            location.local.x,
+            location.local.y,
+            location.local.z,
           );
           location.closestEdgeParam = 0.0;
         }
@@ -614,7 +635,9 @@ export class BarycentricTriangle {
       const j = (i + 1) % 3;
       const k = (j + 1) % 3;
       const edgeProjection = BarycentricTriangle._workPoint = this.points[i].interpolate(
-        location.closestEdgeParam, this.points[j], BarycentricTriangle._workPoint,
+        location.closestEdgeParam,
+        this.points[j],
+        BarycentricTriangle._workPoint,
       );
       const dist = location.world.distance(edgeProjection);
       if (dist > 0.0 && dist < distanceTolerance) {
@@ -635,10 +658,14 @@ export class BarycentricTriangle {
    */
   public dotProductOfCrossProductsFromOrigin(other: BarycentricTriangle): number {
     BarycentricTriangle._workVector0 = this.points[0].crossProductToPoints(
-      this.points[1], this.points[2], BarycentricTriangle._workVector0,
+      this.points[1],
+      this.points[2],
+      BarycentricTriangle._workVector0,
     );
     BarycentricTriangle._workVector1 = other.points[0].crossProductToPoints(
-      other.points[1], other.points[2], BarycentricTriangle._workVector1,
+      other.points[1],
+      other.points[2],
+      BarycentricTriangle._workVector1,
     );
     return BarycentricTriangle._workVector0.dotProduct(BarycentricTriangle._workVector1);
   }

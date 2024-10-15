@@ -2,11 +2,11 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { using } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, RegisteredRuleset, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 import { collect } from "../Utils";
 
@@ -57,7 +57,7 @@ describe("Rulesets", async () => {
   });
 
   it("creates ruleset from json and gets root node using it", async () => {
-    await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(RULESET_1), async () => {
+    using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(RULESET_1), async () => {
       const rootNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: RULESET_1.id }).then(async (x) => collect(x.items));
       expect(rootNodes.length).to.be.equal(1);
       expect(rootNodes[0].label.displayValue).to.equal("label 1");
@@ -120,7 +120,9 @@ describe("Rulesets", async () => {
 
       const registeredRulesets = await Promise.all(frontends.map(async (f, i) => f.rulesets().add(rulesets[i])));
 
-      const nodes = await Promise.all(frontends.map(async (f) => f.getNodesIterator({ imodel, rulesetOrId: "test" }).then(async (x) => collect(x.items))));
+      const nodes = await Promise.all(
+        frontends.map(async (f) => f.getNodesIterator({ imodel, rulesetOrId: "test" }).then(async (x) => collect(x.items))),
+      );
       frontends.forEach((_f, i) => {
         expect(nodes[i][0].label.displayValue).to.eq(`label ${i + 1}`);
       });
@@ -142,7 +144,7 @@ describe("Rulesets", async () => {
 
     it("can use the same frontend-registered ruleset after backend is reset", async () => {
       const props = { imodel, rulesetOrId: RULESET_1.id };
-      await using<RegisteredRuleset, Promise<void>>(await frontend.rulesets().add(RULESET_1), async () => {
+      using<RegisteredRuleset, Promise<void>>(await frontend.rulesets().add(RULESET_1), async () => {
         const rootNodes1 = await frontend.getNodesIterator(props).then(async (x) => collect(x.items));
         expect(rootNodes1.length).to.be.equal(1);
         expect(rootNodes1[0].label.displayValue).to.be.equal("label 1");

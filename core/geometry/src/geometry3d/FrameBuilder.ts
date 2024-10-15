@@ -53,7 +53,9 @@ export class FrameBuilder {
   private static _workPoint?: Point3d;
   // test if both vectors are defined and have significant angle between.
   private areStronglyIndependentVectors(
-    vector0: Vector3d, vector1: Vector3d, radiansTolerance: number = Geometry.smallAngleRadians,
+    vector0: Vector3d,
+    vector1: Vector3d,
+    radiansTolerance: number = Geometry.smallAngleRadians,
   ): boolean {
     if (vector0 !== undefined && vector1 !== undefined) {
       const q = vector0.smallerUnorientedRadiansTo(vector1);
@@ -222,12 +224,13 @@ export class FrameBuilder {
         }
       }
     } else if (data instanceof CurveCollection) {
-      if (data.children)
+      if (data.children) {
         for (const child of data.children) {
           this.announce(child);
           if (this.savedVectorCount() > 1)
             break;
         }
+      }
     } else if (data instanceof GrowableXYZArray) {
       const point = Point3d.create();
       for (let i = 0; this.savedVectorCount() < 2; i++) {
@@ -328,7 +331,7 @@ export class FrameBuilder {
    */
   public static createFrameWithCCWPolygon(points: Point3d[], result?: Transform): Transform | undefined {
     if (points.length > 2) {
-      const ray = PolygonOps.centroidAreaNormal(points);  // can't pass pre-allocated ray...
+      const ray = PolygonOps.centroidAreaNormal(points); // can't pass pre-allocated ray...
       if (ray)
         return ray.toRigidZFrame(result);
     }

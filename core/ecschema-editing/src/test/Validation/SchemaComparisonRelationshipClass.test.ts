@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 import { expect } from "chai";
+import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 
 class TestSchemaCompareReporter implements ISchemaCompareReporter {
   public changes: SchemaChanges[] = [];
@@ -18,17 +18,21 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA?: 
   diagnostics.find((anyDiagnostic) => {
     switch (code) {
       case SchemaCompareCodes.RelationshipConstraintClassMissing: {
-        if (anyDiagnostic.code === code &&
-                    anyDiagnostic.messageArgs?.at(0).fullName === fullNameA) {
+        if (
+          anyDiagnostic.code === code &&
+          anyDiagnostic.messageArgs?.at(0).fullName === fullNameA
+        ) {
           found = true;
         }
         break;
       }
       case SchemaCompareCodes.RelationshipConstraintDelta: {
-        if (anyDiagnostic.code === code &&
-                    anyDiagnostic.messageArgs?.at(0) === propertyType &&
-                    anyDiagnostic.messageArgs?.at(1) === fullNameA &&
-                    anyDiagnostic.messageArgs?.at(2) === fullNameB) {
+        if (
+          anyDiagnostic.code === code &&
+          anyDiagnostic.messageArgs?.at(0) === propertyType &&
+          anyDiagnostic.messageArgs?.at(1) === fullNameA &&
+          anyDiagnostic.messageArgs?.at(2) === fullNameB
+        ) {
           found = true;
         }
         break;
@@ -157,8 +161,8 @@ describe("Custom attributes class comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-112", "SchemaA.testClassOne")).to.equal(false);
-      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-111", "SchemaA.testClassOne", "SchemaB.testClassOne", "abstractConstraint")).to.equal(false);
-
+      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-111", "SchemaA.testClassOne", "SchemaB.testClassOne", "abstractConstraint")).to
+        .equal(false);
     });
 
     it("should not report relationship constraint missing or abstractConstraint delta", async () => {
@@ -258,8 +262,8 @@ describe("Custom attributes class comparison tests", () => {
       await comparer.compareSchemas(schemaA, schemaB);
 
       expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-112", "SchemaA.testClassOne")).to.equal(false);
-      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-111", "SchemaA.testClassOne", "SchemaB.testClassOne", "abstractConstraint")).to.equal(false);
-
+      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-111", "SchemaA.testClassOne", "SchemaB.testClassOne", "abstractConstraint")).to
+        .equal(false);
     });
   });
 });

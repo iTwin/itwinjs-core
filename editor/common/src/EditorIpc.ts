@@ -17,7 +17,6 @@ export const editorIpcStrings = {
  * @beta
  */
 export interface EditorIpc {
-
   /** Start a new instance of an `EditCommand` on the backend, and then call its `onStart` method.
    * @param commandId the Id of a registered `EditCommand` on the backend. If commandId === "", the current command is
    * requested to finish but no new EditCommand is started.

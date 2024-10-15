@@ -77,7 +77,6 @@ class EllipsoidComponentExtrema {
     this.sinPhi0 = Math.sin(this.phi0Radians);
     this._axisRange = Range1d.createNull();
     this._trigForm = new SineCosinePolynomial(0, 0, 0);
-
   }
   /**
    * Create a component object with coefficients from a row of a `Transform`.
@@ -86,18 +85,28 @@ class EllipsoidComponentExtrema {
    */
   public static createTransformRow(transform: Transform, axisIndex: AxisIndex): EllipsoidComponentExtrema {
     const matrix = transform.matrix;
-    return new EllipsoidComponentExtrema(transform.origin.at(axisIndex), matrix.at(axisIndex, 0), matrix.at(axisIndex, 1), matrix.at(axisIndex, 2), axisIndex);
+    return new EllipsoidComponentExtrema(
+      transform.origin.at(axisIndex),
+      matrix.at(axisIndex, 0),
+      matrix.at(axisIndex, 1),
+      matrix.at(axisIndex, 2),
+      axisIndex,
+    );
   }
   public extendRangeForSmoothSurfacePoints(range: Range3d, theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number) {
     const delta = (this.u * this.cosTheta0 + this.v * this.sinTheta0) * this.cosPhi0 + this.w * this.sinPhi0;
-    if (AngleSweep.isRadiansInStartEnd(this.theta0Radians, theta0Radians, theta1Radians)
-      && AngleSweep.isRadiansInStartEnd(this.phi0Radians, phi0Radians, phi1Radians, false)) {
+    if (
+      AngleSweep.isRadiansInStartEnd(this.theta0Radians, theta0Radians, theta1Radians)
+      && AngleSweep.isRadiansInStartEnd(this.phi0Radians, phi0Radians, phi1Radians, false)
+    ) {
       range.extendSingleAxis(this.c + delta, this.axisIndex);
     }
     const thetaRadians = this.theta0Radians + Math.PI;
     const phiRadians = -this.phi0Radians;
-    if (AngleSweep.isRadiansInStartEnd(thetaRadians, theta0Radians, theta1Radians)
-      && AngleSweep.isRadiansInStartEnd(phiRadians, phi0Radians, phi1Radians, false)) {
+    if (
+      AngleSweep.isRadiansInStartEnd(thetaRadians, theta0Radians, theta1Radians)
+      && AngleSweep.isRadiansInStartEnd(phiRadians, phi0Radians, phi1Radians, false)
+    ) {
       // cosTheta and sinTheta are both negated
       // sinPhi is negated
       // delta is negated
@@ -114,7 +123,7 @@ class EllipsoidComponentExtrema {
   public extendRangeForConstantThetaArc(range: Range3d, thetaRadians: number, phi0Radians: number, phi1Radians: number) {
     const cosTheta = Math.cos(thetaRadians);
     const sinTheta = Math.sin(thetaRadians);
-    this._trigForm.set(this.c, (this.u * cosTheta + this.v * sinTheta), this.w);
+    this._trigForm.set(this.c, this.u * cosTheta + this.v * sinTheta, this.w);
     this._trigForm.rangeInStartEndRadians(phi0Radians, phi1Radians, this._axisRange);
     range.extendSingleAxis(this._axisRange.low, this.axisIndex);
     range.extendSingleAxis(this._axisRange.high, this.axisIndex);
@@ -193,7 +202,9 @@ export class Ellipsoid implements Clipper {
    *   * In the sphere space, an xyz (vector from origin) with magnitude less than 1 is INSIDE the sphere (hence its world image is INSIDE the ellipsoid)
    *   * In the sphere space, an xyz (vector from origin) with magnitude greater than 1 is OUTSIDE the sphere (hence its world image is OUTSIDE the ellipsoid)
    */
-  public get transformRef(): Transform { return this._transform; }
+  public get transformRef(): Transform {
+    return this._transform;
+  }
   /**
    * * Convert a world point to point within the underlying mapped sphere space.
    *   * In the sphere space, an xyz (vector from origin) with magnitude equal to 1 is ON the sphere (hence its world image is ON the ellipsoid)
@@ -257,7 +268,7 @@ export class Ellipsoid implements Clipper {
       const localPlaneB = localPlaneA.toPlane3dByOriginAndUnitNormal();
       // if the silhouette plane has origin inside the sphere, there is a silhouette with center at the plane origin.
       if (localPlaneB) {
-        const rr = 1.0 - localPlaneB.getOriginRef().magnitudeSquared();  // squared distance radius of silhouette arc
+        const rr = 1.0 - localPlaneB.getOriginRef().magnitudeSquared(); // squared distance radius of silhouette arc
         if (rr > 0.0 && rr <= 1.0) {
           const arc = Arc3d.createCenterNormalRadius(localPlaneB.getOriginRef(), localPlaneB.getNormalRef(), Math.sqrt(rr));
           if (arc.tryTransformInPlace(this._transform))
@@ -277,7 +288,12 @@ export class Ellipsoid implements Clipper {
    * * For each optional array, caller must of course initialize an array (usually empty)
    * * return 0 if ray length is too small.
    */
-  public intersectRay(ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: LongitudeLatitudeNumber[] | undefined): number {
+  public intersectRay(
+    ray: Ray3d,
+    rayFractions: number[] | undefined,
+    xyz: Point3d[] | undefined,
+    thetaPhiRadians: LongitudeLatitudeNumber[] | undefined,
+  ): number {
     if (xyz)
       xyz.length = 0;
     if (thetaPhiRadians !== undefined)
@@ -309,7 +325,13 @@ export class Ellipsoid implements Clipper {
   }
 
   /** Return the range of a uv-aligned patch of the sphere. */
-  public patchRangeStartEndRadians(theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d {
+  public patchRangeStartEndRadians(
+    theta0Radians: number,
+    theta1Radians: number,
+    phi0Radians: number,
+    phi1Radians: number,
+    result?: Range3d,
+  ): Range3d {
     const xExtreme = EllipsoidComponentExtrema.createTransformRow(this._transform, 0);
     const yExtreme = EllipsoidComponentExtrema.createTransformRow(this._transform, 1);
     const zExtreme = EllipsoidComponentExtrema.createTransformRow(this._transform, 2);
@@ -374,9 +396,12 @@ export class Ellipsoid implements Clipper {
    * @param result optional preallocated result
    */
   public radiansPairToGreatArc(
-    thetaARadians: number, phiARadians: number,
-    thetaBRadians: number, phiBRadians: number,
-    result?: Arc3d): Arc3d | undefined {
+    thetaARadians: number,
+    phiARadians: number,
+    thetaBRadians: number,
+    phiBRadians: number,
+    result?: Arc3d,
+  ): Arc3d | undefined {
     SphereImplicit.radiansToUnitSphereXYZ(thetaARadians, phiARadians, this._unitVectorA);
     SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._unitVectorB);
     const sweepAngle = this._unitVectorA.angleTo(this._unitVectorB);
@@ -384,8 +409,13 @@ export class Ellipsoid implements Clipper {
     const matrix = Matrix3d.createRigidFromColumns(this._unitVectorA, this._unitVectorB, AxisOrder.XYZ)!;
     if (matrix !== undefined) {
       const matrix1 = this._transform.matrix.multiplyMatrixMatrix(matrix);
-      return Arc3d.create(this._transform.getOrigin(), matrix1.columnX(), matrix1.columnY(),
-        AngleSweep.createStartEndRadians(0.0, sweepAngle.radians), result);
+      return Arc3d.create(
+        this._transform.getOrigin(),
+        matrix1.columnX(),
+        matrix1.columnY(),
+        AngleSweep.createStartEndRadians(0.0, sweepAngle.radians),
+        result,
+      );
     }
     return undefined;
   }
@@ -394,7 +424,12 @@ export class Ellipsoid implements Clipper {
    */
   public anglePairToGreatArc(angleA: LongitudeLatitudeNumber, angleB: LongitudeLatitudeNumber, result?: Arc3d): Arc3d | undefined {
     return this.radiansPairToGreatArc(
-      angleA.longitudeRadians, angleA.latitudeRadians, angleB.longitudeRadians, angleB.latitudeRadians, result);
+      angleA.longitudeRadians,
+      angleA.latitudeRadians,
+      angleB.longitudeRadians,
+      angleB.latitudeRadians,
+      result,
+    );
   }
   /**
    * Construct an arc for the section cut of a plane with the ellipsoid.
@@ -428,8 +463,12 @@ export class Ellipsoid implements Clipper {
    *  * ends at pointB (defined by its angle position)
    *  * contains the 3rd vector as an in-plane point.
    */
-  public createSectionArcPointPointVectorInPlane(pointAnglesA: LongitudeLatitudeNumber, pointAnglesB: LongitudeLatitudeNumber, inPlaneVector: Vector3d,
-    result?: Arc3d): Arc3d | undefined {
+  public createSectionArcPointPointVectorInPlane(
+    pointAnglesA: LongitudeLatitudeNumber,
+    pointAnglesB: LongitudeLatitudeNumber,
+    inPlaneVector: Vector3d,
+    result?: Arc3d,
+  ): Arc3d | undefined {
     const xyzA = this.radiansToPoint(pointAnglesA.longitudeRadians, pointAnglesA.latitudeRadians);
     const xyzB = this.radiansToPoint(pointAnglesB.longitudeRadians, pointAnglesB.latitudeRadians);
     const localA = this._transform.multiplyInversePoint3d(xyzA);
@@ -470,9 +509,12 @@ export class Ellipsoid implements Clipper {
    * @param result optional preallocated result
    */
   public radiansPairToEquatorialEllipsoid(
-    thetaARadians: number, phiARadians: number,
-    thetaBRadians: number, phiBRadians: number,
-    result?: Ellipsoid): Ellipsoid | undefined {
+    thetaARadians: number,
+    phiARadians: number,
+    thetaBRadians: number,
+    phiBRadians: number,
+    result?: Ellipsoid,
+  ): Ellipsoid | undefined {
     SphereImplicit.radiansToUnitSphereXYZ(thetaARadians, phiARadians, this._unitVectorA);
     SphereImplicit.radiansToUnitSphereXYZ(thetaBRadians, phiBRadians, this._unitVectorB);
 
@@ -515,8 +557,10 @@ export class Ellipsoid implements Clipper {
       return undefined;
     const cosPhi = latitude.cos();
     const sinPhi = latitude.sin();
-    const vector0 = this._transform.matrix.columnX(); vector0.scaleInPlace(cosPhi);
-    const vector90 = this._transform.matrix.columnY(); vector90.scaleInPlace(cosPhi);
+    const vector0 = this._transform.matrix.columnX();
+    vector0.scaleInPlace(cosPhi);
+    const vector90 = this._transform.matrix.columnY();
+    vector90.scaleInPlace(cosPhi);
     const center = this._transform.multiplyXYZ(0, 0, sinPhi);
     return Arc3d.create(center, vector0, vector90, longitudeSweep, result);
   }
@@ -530,7 +574,8 @@ export class Ellipsoid implements Clipper {
   public sectionArcWithIntermediateNormal(
     angleA: LongitudeLatitudeNumber,
     intermediateNormalFraction: number,
-    angleB: LongitudeLatitudeNumber): Arc3d {
+    angleB: LongitudeLatitudeNumber,
+  ): Arc3d {
     const normalA = this.radiansToUnitNormalRay(angleA.longitudeRadians, angleA.latitudeRadians)!;
     const normalB = this.radiansToUnitNormalRay(angleB.longitudeRadians, angleB.latitudeRadians)!;
     const normal = normalA.direction.interpolate(intermediateNormalFraction, normalB.direction);
@@ -549,7 +594,12 @@ export class Ellipsoid implements Clipper {
    *    * If false, omit he cos(phi) factor on the derivative wrt theta.  This ensures it is always nonzero and can be safely used in cross product for surface normal.
    * @param result optional plane result
    */
-  public radiansToPointAndDerivatives(thetaRadians: number, phiRadians: number, applyCosPhiFactor = true, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public radiansToPointAndDerivatives(
+    thetaRadians: number,
+    phiRadians: number,
+    applyCosPhiFactor = true,
+    result?: Plane3dByOriginAndVectors,
+  ): Plane3dByOriginAndVectors {
     const cosTheta = Math.cos(thetaRadians);
     const sinTheta = Math.sin(thetaRadians);
     const cosPhi = Math.cos(phiRadians);
@@ -560,7 +610,8 @@ export class Ellipsoid implements Clipper {
       return Plane3dByOriginAndVectors.createCapture(
         this._transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi),
         matrix.multiplyXYZ(-sinTheta * cosPhiA, cosTheta * cosPhiA, 0),
-        matrix.multiplyXYZ(-sinPhi * cosTheta, -sinPhi * sinTheta, cosPhi));
+        matrix.multiplyXYZ(-sinPhi * cosTheta, -sinPhi * sinTheta, cosPhi),
+      );
     // in place modification requires direct reference to members of the result ...
     this._transform.multiplyXYZ(cosTheta * cosPhi, sinTheta * cosPhi, sinPhi, result.origin);
     matrix.multiplyXYZ(-sinTheta * cosPhiA, cosTheta * cosPhiA, 0, result.vectorU);
@@ -580,13 +631,16 @@ export class Ellipsoid implements Clipper {
    * @param d2ThetaPhi (returned) second derivative wrt theta and phi
    * @param result optional plane result
    */
-  public radiansToPointAnd2Derivatives(thetaRadians: number, phiRadians: number,
+  public radiansToPointAnd2Derivatives(
+    thetaRadians: number,
+    phiRadians: number,
     point: Point3d,
     d1Theta: Vector3d,
     d1Phi: Vector3d,
     d2ThetaTheta: Vector3d,
     d2PhiPhi: Vector3d,
-    d2ThetaPhi: Vector3d) {
+    d2ThetaPhi: Vector3d,
+  ) {
     const cosTheta = Math.cos(thetaRadians);
     const sinTheta = Math.sin(thetaRadians);
     const cosPhi = Math.cos(phiRadians);
@@ -611,7 +665,6 @@ export class Ellipsoid implements Clipper {
    * @param thetaRadians longitude, in radians
    * @param phiRadians latitude, in radians
    * @param result optional transform result
-   *
    */
   public radiansToFrenetFrame(thetaRadians: number, phiRadians: number, result?: Transform): Transform | undefined {
     const plane = this.radiansToPointAndDerivatives(thetaRadians, phiRadians, false);
@@ -622,7 +675,6 @@ export class Ellipsoid implements Clipper {
    * @param thetaRadians longitude, in radians
    * @param phiRadians latitude, in radians
    * @param result optional transform result
-   *
    */
   public radiansToUnitNormalRay(thetaRadians: number, phiRadians: number, result?: Ray3d): Ray3d | undefined {
     const plane = this.radiansToPointAndDerivatives(thetaRadians, phiRadians, false);
@@ -648,7 +700,11 @@ export class Ellipsoid implements Clipper {
    *    * If `other` is undefined, default to unit sphere.
    * * Find the angles for the same normal on `this` ellipsoid
    */
-  public otherEllipsoidAnglesToThisEllipsoidAngles(otherEllipsoid: Ellipsoid | undefined, otherAngles: LongitudeLatitudeNumber, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber | undefined {
+  public otherEllipsoidAnglesToThisEllipsoidAngles(
+    otherEllipsoid: Ellipsoid | undefined,
+    otherAngles: LongitudeLatitudeNumber,
+    result?: LongitudeLatitudeNumber,
+  ): LongitudeLatitudeNumber | undefined {
     const normal = Ellipsoid.radiansToUnitNormalRay(otherEllipsoid, otherAngles.longitudeRadians, otherAngles.latitudeRadians);
     if (normal !== undefined)
       return this.surfaceNormalToAngles(normal.direction, result);
@@ -658,7 +714,12 @@ export class Ellipsoid implements Clipper {
    * * if ellipsoid is given, return its surface point and unit normal as a Ray3d.
    * * if not given, return surface point and unit normal for unit sphere.
    */
-  public static radiansToUnitNormalRay(ellipsoid: Ellipsoid | undefined, thetaRadians: number, phiRadians: number, result?: Ray3d): Ray3d | undefined {
+  public static radiansToUnitNormalRay(
+    ellipsoid: Ellipsoid | undefined,
+    thetaRadians: number,
+    phiRadians: number,
+    result?: Ray3d,
+  ): Ray3d | undefined {
     if (ellipsoid) {
       return ellipsoid.radiansToUnitNormalRay(thetaRadians, phiRadians, result);
     }
@@ -718,9 +779,11 @@ export class Ellipsoid implements Clipper {
   public announceClippedArcIntervals(arc: Arc3d, announce?: AnnounceNumberNumberCurvePrimitive): boolean {
     const arcData = arc.toVectors();
     let numAnnounce = 0;
-    if (this._transform.multiplyInversePoint3d(arcData.center, arcData.center)
+    if (
+      this._transform.multiplyInversePoint3d(arcData.center, arcData.center)
       && this._transform.matrix.multiplyInverse(arcData.vector0, arcData.vector0)
-      && this._transform.matrix.multiplyInverse(arcData.vector90, arcData.vector90)) {
+      && this._transform.matrix.multiplyInverse(arcData.vector90, arcData.vector90)
+    ) {
       // in local coordinates the arc parameterization is   X = center + vector0 * cos(theta) + vector90 * sin(theta)
       //  We want X DOT X === 1, viz
       //    center DOT center + 2 * cos(theta) * center DOT vector0 + 2 * sin(theta) * center DOT vector90 + cos(theta) ^2 * vector0 DOT vector0 + sin (theta)^2 * vector90 DOT vector90 = 1
@@ -732,10 +795,17 @@ export class Ellipsoid implements Clipper {
       const vv = Vector3d.dotProductAsXYAndZ(arcData.vector90, arcData.vector90);
       const intersectionRadians: number[] = [];
 
-      if (TrigPolynomial.solveUnitCircleImplicitQuadricIntersection(
-        uu, 2.0 * uv, vv,
-        2.0 * cu, 2.0 * cv, cc - 1.0,
-        intersectionRadians)) {
+      if (
+        TrigPolynomial.solveUnitCircleImplicitQuadricIntersection(
+          uu,
+          2.0 * uv,
+          vv,
+          2.0 * cu,
+          2.0 * cv,
+          cc - 1.0,
+          intersectionRadians,
+        )
+      ) {
         const fractions = [0.0, 1.0];
         for (const radians of intersectionRadians) {
           const fraction = arc.sweep.radiansToSignedPeriodicFraction(radians);
@@ -795,24 +865,39 @@ export class EllipsoidPatch implements UVSurface {
   }
   /** Return the point on the ellipsoid at fractional positions in the angular ranges. */
   public uvFractionToPoint(longitudeFraction: number, latitudeFraction: number, result?: Point3d): Point3d {
-    return this.ellipsoid.radiansToPoint(this.longitudeSweep.fractionToRadians(longitudeFraction), this.latitudeSweep.fractionToRadians(latitudeFraction), result);
+    return this.ellipsoid.radiansToPoint(
+      this.longitudeSweep.fractionToRadians(longitudeFraction),
+      this.latitudeSweep.fractionToRadians(latitudeFraction),
+      result,
+    );
   }
   /** Return the point and derivative vectors on the ellipsoid at fractional positions in the angular ranges.
    * * Derivatives are with respect to fractional position.
    */
-  public uvFractionToPointAndTangents(longitudeFraction: number, latitudeFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public uvFractionToPointAndTangents(
+    longitudeFraction: number,
+    latitudeFraction: number,
+    result?: Plane3dByOriginAndVectors,
+  ): Plane3dByOriginAndVectors {
     result = this.ellipsoid.radiansToPointAndDerivatives(
       this.longitudeSweep.fractionToRadians(longitudeFraction),
       this.latitudeSweep.fractionToRadians(latitudeFraction),
       true,
-      result);
+      result,
+    );
     result.vectorU.scale(this.longitudeSweep.sweepRadians);
     result.vectorV.scale(this.latitudeSweep.sweepRadians);
     return result;
   }
   /** Return the range of the patch, considering both boundary and internal extrema. */
   public range(result?: Range3d): Range3d {
-    return this.ellipsoid.patchRangeStartEndRadians(this.longitudeSweep.startRadians, this.longitudeSweep.endRadians, this.latitudeSweep.startRadians, this.latitudeSweep.endRadians, result);
+    return this.ellipsoid.patchRangeStartEndRadians(
+      this.longitudeSweep.startRadians,
+      this.longitudeSweep.endRadians,
+      this.latitudeSweep.startRadians,
+      this.latitudeSweep.endRadians,
+      result,
+    );
   }
   /** Return intersections of the ray and surface.
    * * uv values in the intersections are in radians unless `convertIntersectionRadiansToFractions` is true requesting conversion to patch fractions.
@@ -827,19 +912,27 @@ export class EllipsoidPatch implements UVSurface {
       const longitudeRadians = thetaPhi[i].longitudeRadians;
       const latitudeRadians = thetaPhi[i].latitudeRadians;
 
-      if (!restrictToPatch
+      if (
+        !restrictToPatch
         || (this.longitudeSweep.isRadiansInSweep(longitudeRadians)
-          && this.latitudeSweep.isRadiansInSweep(latitudeRadians))) {
+          && this.latitudeSweep.isRadiansInSweep(latitudeRadians))
+      ) {
         if (convertIntersectionRadiansToFractions) {
           const uFraction = this.longitudeSweep.radiansToSignedPeriodicFraction(longitudeRadians);
           const vFraction = this.latitudeSweep.radiansToSignedPeriodicFraction(latitudeRadians);
-          result.push(new CurveAndSurfaceLocationDetail(
-            CurveLocationDetail.createRayFractionPoint(ray, rayFractions[i], xyz[i]),
-            UVSurfaceLocationDetail.createSurfaceUVNumbersPoint(this, uFraction, vFraction, xyz[i])));
+          result.push(
+            new CurveAndSurfaceLocationDetail(
+              CurveLocationDetail.createRayFractionPoint(ray, rayFractions[i], xyz[i]),
+              UVSurfaceLocationDetail.createSurfaceUVNumbersPoint(this, uFraction, vFraction, xyz[i]),
+            ),
+          );
         } else {
-          result.push(new CurveAndSurfaceLocationDetail(
-            CurveLocationDetail.createRayFractionPoint(ray, rayFractions[i], xyz[i]),
-            UVSurfaceLocationDetail.createSurfaceUVNumbersPoint(this, longitudeRadians, latitudeRadians, xyz[i])));
+          result.push(
+            new CurveAndSurfaceLocationDetail(
+              CurveLocationDetail.createRayFractionPoint(ray, rayFractions[i], xyz[i]),
+              UVSurfaceLocationDetail.createSurfaceUVNumbersPoint(this, longitudeRadians, latitudeRadians, xyz[i]),
+            ),
+          );
         }
       }
     }
@@ -863,7 +956,6 @@ export class EllipsoidPatch implements UVSurface {
    *    * ray.origin is the point at requested altitude.
    *    * ray.direction is an outward-directed unit vector
    * @param position longitude, latitude, and height
-   *
    */
   public anglesToUnitNormalRay(position: LongitudeLatitudeNumber, result?: Ray3d): Ray3d | undefined {
     const ray = this.ellipsoid.radiansToUnitNormalRay(position.longitudeRadians, position.latitudeRadians, result);
@@ -879,8 +971,18 @@ export class EllipsoidPatch implements UVSurface {
    * @param h optional altitude
    * @param result optional preallocated result.
    */
-  public uvFractionToAngles(longitudeFraction: number, phiFraction: number, h: number = 0, result?: LongitudeLatitudeNumber): LongitudeLatitudeNumber {
-    return LongitudeLatitudeNumber.createRadians(this.longitudeSweep.fractionToRadians(longitudeFraction), this.latitudeSweep.fractionToRadians(phiFraction), h, result);
+  public uvFractionToAngles(
+    longitudeFraction: number,
+    phiFraction: number,
+    h: number = 0,
+    result?: LongitudeLatitudeNumber,
+  ): LongitudeLatitudeNumber {
+    return LongitudeLatitudeNumber.createRadians(
+      this.longitudeSweep.fractionToRadians(longitudeFraction),
+      this.latitudeSweep.fractionToRadians(phiFraction),
+      h,
+      result,
+    );
   }
   /** Find the closest point of the (patch of the) ellipsoid. */
   public projectPointToSurface(spacePoint: Point3d): LongitudeLatitudeNumber | undefined {
@@ -928,20 +1030,32 @@ class EllipsoidClosestPoint extends NewtonEvaluatorRRtoRRD {
     return LongitudeLatitudeNumber.createRadians(uv.thetaRadians, uv.phiRadians, 0.0);
   }
   public evaluate(thetaRadians: number, phiRadians: number): boolean {
-    this._ellipsoid.radiansToPointAnd2Derivatives(thetaRadians, phiRadians,
+    this._ellipsoid.radiansToPointAnd2Derivatives(
+      thetaRadians,
+      phiRadians,
       this._surfacePoint,
-      this._d1Theta, this._d1Phi,
-      this._d2Theta, this._d2Phi,
-      this._d2ThetaPhi);
+      this._d1Theta,
+      this._d1Phi,
+      this._d2Theta,
+      this._d2Phi,
+      this._d2ThetaPhi,
+    );
     Vector3d.createStartEnd(this._spacePoint, this._surfacePoint, this._delta);
     const q = this._d1Theta.dotProduct(this._d1Phi) + this._delta.dotProduct(this._d2ThetaPhi);
     this.currentF.setOriginAndVectorsXYZ(
       // f,g,0
-      this._delta.dotProduct(this._d1Theta), this._delta.dotProduct(this._d1Phi), 0,
+      this._delta.dotProduct(this._d1Theta),
+      this._delta.dotProduct(this._d1Phi),
+      0,
       // df/dTheta, dg/dTheta, 0
-      this._d1Theta.dotProduct(this._d1Theta) + this._delta.dotProduct(this._d2Theta), q, 0,
+      this._d1Theta.dotProduct(this._d1Theta) + this._delta.dotProduct(this._d2Theta),
+      q,
+      0,
       // df/dPhi, dg/dPhi, 0
-      q, this._d1Phi.dotProduct(this._d1Phi) + this._delta.dotProduct(this._d2Phi), 0);
+      q,
+      this._d1Phi.dotProduct(this._d1Phi) + this._delta.dotProduct(this._d2Phi),
+      0,
+    );
 
     return true;
   }
@@ -975,7 +1089,16 @@ export class GeodesicPathPoint {
   }
   /** Fill all evaluations at given theta and phi. */
   public evaluateDerivativesAtCurrentAngles(ellipsoid: Ellipsoid) {
-    ellipsoid.radiansToPointAnd2Derivatives(this.thetaRadians, this.phiRadians, this.point, this.dTheta, this.dPhi, this.d2Theta, this.d2Phi, this.d2ThetaPhi);
+    ellipsoid.radiansToPointAnd2Derivatives(
+      this.thetaRadians,
+      this.phiRadians,
+      this.point,
+      this.dTheta,
+      this.dPhi,
+      this.d2Theta,
+      this.d2Phi,
+      this.d2ThetaPhi,
+    );
     this.dTheta.crossProduct(this.dPhi, this.d1Cross);
   }
   private static _vectorAB?: Vector3d;
@@ -999,8 +1122,8 @@ export class GeodesicPathPoint {
     values[0] = this._vectorCross.dotProduct(pointB.d1Cross);
     // Derivatives wrt phi at A, B, C creates derivatives of values[0] wrt each.
     // derivatives at neighbor appear only on their point-to-point vector, and with negative sign ..
-    values[1] = - pointA.dPhi.tripleProduct(this._vectorCB, pointB.d1Cross);
-    values[3] = - this._vectorAB.tripleProduct(pointC.dPhi, pointB.d1Cross);
+    values[1] = -pointA.dPhi.tripleProduct(this._vectorCB, pointB.d1Cross);
+    values[3] = -this._vectorAB.tripleProduct(pointC.dPhi, pointB.d1Cross);
     // values from pointB appear with positive sign everywhere . ..
     values[2] = pointB.dPhi.tripleProduct(this._vectorCB, pointB.d1Cross)
       + this._vectorAB.tripleProduct(pointB.dPhi, pointB.d1Cross)
@@ -1029,19 +1152,30 @@ export class GeodesicPathSolver {
     this._defaultArc = defaultArc;
   }
   /**
-   *
    * @param originalEllipsoid Given start and endpoints on an ellipsoid, compute points along a near-optimal shortest path.
    * * The points are located so that at each point the local surface normal is contained in the plane of the point and its two neighbors.
    * @param startAngles angles for the start of the path
    * @param endAngles angles for the end of the path
    * @param density If this is a number, it is the requested edge count.  If this is an angle, it ias an angular spacing measured in the great arc through the two points.
    */
-  public static createGeodesicPath(originalEllipsoid: Ellipsoid,
-    startAngles: LongitudeLatitudeNumber, endAngles: LongitudeLatitudeNumber, density: number | Angle): GeodesicPathPoint[] | undefined {
-    const workEllipsoid1 = originalEllipsoid.radiansPairToEquatorialEllipsoid(startAngles.longitudeRadians, startAngles.latitudeRadians,
-      endAngles.longitudeRadians, endAngles.latitudeRadians);
-    const workArc = originalEllipsoid.radiansPairToGreatArc(startAngles.longitudeRadians, startAngles.latitudeRadians,
-      endAngles.longitudeRadians, endAngles.latitudeRadians);
+  public static createGeodesicPath(
+    originalEllipsoid: Ellipsoid,
+    startAngles: LongitudeLatitudeNumber,
+    endAngles: LongitudeLatitudeNumber,
+    density: number | Angle,
+  ): GeodesicPathPoint[] | undefined {
+    const workEllipsoid1 = originalEllipsoid.radiansPairToEquatorialEllipsoid(
+      startAngles.longitudeRadians,
+      startAngles.latitudeRadians,
+      endAngles.longitudeRadians,
+      endAngles.latitudeRadians,
+    );
+    const workArc = originalEllipsoid.radiansPairToGreatArc(
+      startAngles.longitudeRadians,
+      startAngles.latitudeRadians,
+      endAngles.longitudeRadians,
+      endAngles.latitudeRadians,
+    );
     if (workEllipsoid1 === undefined || workArc === undefined)
       return undefined;
     let numEdges = 4;
@@ -1155,11 +1289,14 @@ export class GeodesicPathSolver {
    * @param normalInterpolationFraction0
    * @param normalInterpolationFraction1
    */
-  public static approximateMinimumLengthSectionArc(ellipsoid: Ellipsoid,
+  public static approximateMinimumLengthSectionArc(
+    ellipsoid: Ellipsoid,
     angleA: LongitudeLatitudeNumber,
-    angleB: LongitudeLatitudeNumber, numSample: number,
+    angleB: LongitudeLatitudeNumber,
+    numSample: number,
     normalInterpolationFraction0: number,
-    normalInterpolationFraction1: number): { minLengthArc: Arc3d, minLengthNormalInterpolationFraction: number } | undefined {
+    normalInterpolationFraction1: number,
+  ): { minLengthArc: Arc3d, minLengthNormalInterpolationFraction: number } | undefined {
     numSample = Geometry.clampToStartEnd(numSample, 2, 200);
     const normalA = ellipsoid.radiansToUnitNormalRay(angleA.longitudeRadians, angleA.latitudeRadians);
     const normalB = ellipsoid.radiansToUnitNormalRay(angleB.longitudeRadians, angleB.latitudeRadians);
@@ -1187,5 +1324,4 @@ export class GeodesicPathSolver {
     }
     return undefined;
   }
-
 }

@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import type { SchemaItemKey } from "@itwin/ecschema-metadata";
 import type { PropertyCategoryDifference } from "../Differencing/SchemaDifference";
 import type { SchemaMergeContext } from "./SchemaMerger";
-import type { SchemaItemKey } from "@itwin/ecschema-metadata";
 
 /**
  * Merges a new PropertyCategory into the target schema.
@@ -28,13 +28,13 @@ export async function addPropertyCategory(context: SchemaMergeContext, change: P
  * @internal
  */
 export async function modifyPropertyCategory(context: SchemaMergeContext, change: PropertyCategoryDifference, itemKey: SchemaItemKey) {
-  if(change.difference.label !== undefined) {
+  if (change.difference.label !== undefined) {
     await context.editor.propertyCategories.setDisplayLabel(itemKey, change.difference.label);
   }
-  if(change.difference.description !== undefined) {
+  if (change.difference.description !== undefined) {
     await context.editor.propertyCategories.setDescription(itemKey, change.difference.description);
   }
-  if(change.difference.priority !== undefined) {
+  if (change.difference.priority !== undefined) {
     await context.editor.propertyCategories.setPriority(itemKey, change.difference.priority);
   }
 }

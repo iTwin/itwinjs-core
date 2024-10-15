@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-"use strict"
+"use strict";
 
 const argv = require("yargs").argv;
 const fs = require("fs-extra");
@@ -31,18 +31,18 @@ const getBentleyPackageDeps = () => {
   }
 
   return Array.from(deps);
-}
+};
 
 const copySync = (fromPath, toPath) => {
   if (fs.existsSync(fromPath)) {
     try {
       fs.copySync(fromPath, toPath);
-      console.log(`successfully copied from ${fromPath} to ${toPath}`)
+      console.log(`successfully copied from ${fromPath} to ${toPath}`);
     } catch (ex) {
       console.error(`failed to copy from ${fromPath} to ${toPath}`, ex);
     }
   }
-}
+};
 
 // finds all applicable dependences with assets and copies them into the destination folder
 const copyBentleyPackageDepAssets = () => {
@@ -55,7 +55,7 @@ const copyBentleyPackageDepAssets = () => {
     copySync(path.join(nodeModulesDir, "node_modules", target, "lib/assets"), destinationDir);
     copySync(path.join(nodeModulesDir, "node_modules", target, "lib/cjs/assets"), destinationDir);
   }
-}
+};
 
 copyBentleyPackageDepAssets();
 console.log("finished copying assets");

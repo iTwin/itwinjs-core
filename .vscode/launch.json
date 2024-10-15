@@ -202,7 +202,8 @@
         "${workspaceFolder}/extensions/frontend-tiles/lib/**/*.js"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Frontend Tests",
       "presentation": {
         "hidden": true
@@ -224,7 +225,8 @@
         "[BROWSER] Frontend Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BROWSER] Frontend Tests",
       "presentation": {
         "hidden": true
@@ -240,7 +242,8 @@
         "[NODE] Certa Test Runner for Frontend Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[NODE] Certa Test Runner for i18n Tests",
       "presentation": {
         "hidden": true
@@ -262,7 +265,8 @@
         "[BROWSER] i18n Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BROWSER] i18n Tests",
       "presentation": {
         "hidden": true
@@ -298,7 +302,8 @@
         "NODE_ENV": "development" // needed for asserts to fire
       }
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[NODE] Certa Test Runner for HyperModeling Tests",
       "presentation": {
         "hidden": true
@@ -320,7 +325,8 @@
         "[BROWSER] HyperModeling Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BROWSER] HyperModeling Tests",
       "presentation": {
         "hidden": true
@@ -336,7 +342,8 @@
         "[NODE] Certa Test Runner for HyperModeling Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Markup Tests",
       "presentation": {
         "hidden": true
@@ -351,7 +358,7 @@
       ],
       "outFiles": [
         "${workspaceFolder}/core/*/lib/**/*.js",
-        "${workspaceFolder}/tools/certa/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "outputCapture": "std",
       "attachSimplePort": 5858, // NB: This must match ports.debugging in core/markup/certa.json
@@ -359,7 +366,8 @@
         "[BROWSER] Markup Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BROWSER] Markup Tests",
       "presentation": {
         "hidden": true
@@ -393,7 +401,8 @@
       ]
     },
     // UI TESTS
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[NODE] Certa Test Runner for AppUI Abstract Tests",
       "presentation": {
         "hidden": true
@@ -417,7 +426,8 @@
         "[BROWSER] AppUI Abstract Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BROWSER] AppUI Abstract Tests",
       "presentation": {
         "hidden": true
@@ -690,10 +700,10 @@
       ],
       "outFiles": [
         "${workspaceFolder}/utils/workspace-editor/lib/**/*.js",
-        "${workspaceFolder}/core/*/lib/**/*.js",
+        "${workspaceFolder}/core/*/lib/**/*.js"
       ],
       "env": {
-        "WORKSPACE_EDITOR_LOGGING": "false",
+        "WORKSPACE_EDITOR_LOGGING": "false"
       }
     },
     {
@@ -710,7 +720,8 @@
       ]
     },
     // TEST APPS
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BACKEND] display-test-app (chrome)",
       "presentation": {
         "hidden": true
@@ -730,7 +741,8 @@
         "[FRONTEND] display-test-app (chrome)"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[FRONTEND] display-test-app (chrome)",
       "presentation": {
         "hidden": true
@@ -746,7 +758,8 @@
         "[BACKEND] display-test-app (chrome)"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BACKEND] display-test-app (electron)",
       "presentation": {
         "hidden": true
@@ -773,7 +786,8 @@
         "[FRONTEND] display-test-app (electron)"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[FRONTEND] display-test-app (electron)",
       "presentation": {
         "hidden": true
@@ -789,7 +803,8 @@
         "[BACKEND] display-test-app (electron)"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BACKEND] display-performance-test-app (chrome)",
       "presentation": {
         "hidden": true
@@ -806,7 +821,8 @@
         "[FRONTEND] display-performance-test-app (chrome)"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[FRONTEND] display-performance-test-app (chrome)",
       "presentation": {
         "hidden": true
@@ -823,7 +839,8 @@
       ]
     },
     // FULLSTACK TESTS
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BACKEND] Full Stack Core Tests",
       "presentation": {
         "hidden": true
@@ -847,7 +864,8 @@
         "[FRONTEND] Full Stack Core Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[FRONTEND] Full Stack Core Tests",
       "presentation": {
         "hidden": true
@@ -865,7 +883,8 @@
         "[BACKEND] Full Stack Core Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BACKEND] Full Stack Core Integration Tests",
       "presentation": {
         "hidden": true
@@ -891,7 +910,8 @@
         "[FRONTEND] Full Stack Core Integration Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[FRONTEND] Full Stack Core Integration Tests",
       "presentation": {
         "hidden": true
@@ -909,7 +929,8 @@
         "[BACKEND] Full Stack Core Integration Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BACKEND] Full Stack RPC Tests",
       "presentation": {
         "hidden": true
@@ -935,7 +956,8 @@
         "[FRONTEND] Full Stack RPC Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[FRONTEND] Full Stack RPC Tests",
       "presentation": {
         "hidden": true
@@ -953,7 +975,8 @@
         "[BACKEND] Full Stack RPC Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Full Stack RPC Interface Tests",
       "presentation": {
         "hidden": true
@@ -980,7 +1003,8 @@
         "[FRONTEND] Full Stack RPC Interface Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BACKEND] Local Backend for Full Stack RPC Interface Tests",
       "presentation": {
         "hidden": true
@@ -999,7 +1023,8 @@
         "[FRONTEND] Full Stack RPC Interface Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[FRONTEND] Full Stack RPC Interface Tests",
       "presentation": {
         "hidden": true
@@ -1018,7 +1043,8 @@
         "[BACKEND] Local Backend for Full Stack RPC Interface Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[BACKEND] Electron Frontend Tests",
       "presentation": {
         "hidden": true
@@ -1043,7 +1069,8 @@
         "[FRONTEND] Electron Frontend Tests"
       ]
     },
-    { /* PARTIAL */
+    {
+      /* PARTIAL */
       "name": "[FRONTEND] Electron Frontend Tests",
       "presentation": {
         "hidden": true
@@ -1069,7 +1096,7 @@
       "runtimeArgs": [
         "run",
         "generate"
-      ],
+      ]
     },
     {
       "name": "Electron Backend Tests",
@@ -1092,7 +1119,7 @@
         "${workspaceFolder}/core/backend/lib/**/*.js"
       ],
       "autoAttachChildProcesses": true
-    },
+    }
   ],
   "compounds": [
     {
@@ -1237,7 +1264,7 @@
         "[BROWSER] AppUI Abstract Tests",
         "[NODE] Certa Test Runner for AppUI Abstract Tests"
       ]
-    },
+    }
   ],
   "inputs": [
     {

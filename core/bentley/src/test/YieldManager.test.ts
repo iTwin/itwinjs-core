@@ -18,7 +18,6 @@ describe("YieldManager", () => {
       yieldManager.actualYieldCount++;
     };
     for (let i = 0; i < expectedYieldTimes * yieldManager.options.iterationsBeforeYield; ++i) {
-
       await yieldManager.allowYield();
     }
 

@@ -25,7 +25,9 @@ export class Triangle {
   public readonly visible = [true, true, true];
   public singleSided: boolean;
 
-  public constructor(singleSided: boolean = true) { this.singleSided = singleSided; }
+  public constructor(singleSided: boolean = true) {
+    this.singleSided = singleSided;
+  }
 
   public setIndices(a: number, b: number, c: number) {
     this.indices[0] = a;
@@ -44,7 +46,9 @@ export class Triangle {
     return this.visible[index];
   }
 
-  public get isDegenerate() { return this.indices[0] === this.indices[1] || this.indices[0] === this.indices[2] || this.indices[1] === this.indices[2]; }
+  public get isDegenerate() {
+    return this.indices[0] === this.indices[1] || this.indices[0] === this.indices[2] || this.indices[1] === this.indices[2];
+  }
 }
 
 /** @internal */
@@ -52,14 +56,18 @@ export class TriangleList {
   private readonly _flags: number[] = [];
   public readonly indices: number[] = [];
 
-  public get length(): number { return this._flags.length; }
-  public get isEmpty(): boolean { return 0 === this.length; }
+  public get length(): number {
+    return this._flags.length;
+  }
+  public get isEmpty(): boolean {
+    return 0 === this.length;
+  }
 
   public addTriangle(triangle: Triangle): void {
     let flags = triangle.singleSided ? 1 : 0;
     for (let i = 0; i < 3; i++) {
       if (triangle.isEdgeVisible(i))
-        flags |= (0x0002 << i);
+        flags |= 0x0002 << i;
 
       this.indices.push(triangle.indices[i]);
     }

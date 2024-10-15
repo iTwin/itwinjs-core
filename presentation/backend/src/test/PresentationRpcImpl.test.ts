@@ -2,10 +2,6 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as faker from "faker";
-import * as sinon from "sinon";
-import * as moq from "typemoq";
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
 import { BeEvent, Guid, using } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
@@ -79,6 +75,10 @@ import {
   createTestSimpleContentField,
   ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import * as faker from "faker";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import { BackendDiagnosticsAttribute } from "../presentation-backend";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { Presentation } from "../presentation-backend/Presentation";
@@ -139,7 +139,7 @@ describe("PresentationRpcImpl", () => {
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
     const impl = new PresentationRpcImpl({ requestTimeout: 10 });
-    await using([{ dispose: () => Presentation.terminate() }, impl], async (_) => {
+    using([{ dispose: () => Presentation.terminate() }, impl], async (_) => {
       presentationManagerMock
         .setup(async (x) => x.getNodesCount(moq.It.isAny()))
         .callback((props: HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable> & BackendDiagnosticsAttribute) => {
@@ -178,7 +178,7 @@ describe("PresentationRpcImpl", () => {
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
     const impl = new PresentationRpcImpl({ requestTimeout: 10 });
-    await using([{ dispose: () => Presentation.terminate() }, impl], async (_) => {
+    using([{ dispose: () => Presentation.terminate() }, impl], async (_) => {
       let callsCount = 0;
       const result = new ResolvablePromise<number>();
       presentationManagerMock
@@ -212,7 +212,7 @@ describe("PresentationRpcImpl", () => {
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
     const impl = new PresentationRpcImpl({ requestTimeout: 10 });
-    await using([{ dispose: () => Presentation.terminate() }, impl], async (_) => {
+    using([{ dispose: () => Presentation.terminate() }, impl], async (_) => {
       presentationManagerMock.setup(async (x) => x.getNodesCount(moq.It.isAny())).returns(async () => 123);
       const response = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { backendVersion: true } });
       expect(response.statusCode).to.eq(PresentationStatus.Success);

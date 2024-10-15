@@ -43,7 +43,9 @@ export namespace HiddenLine {
   /** Describes the symbology with which edges should be drawn. */
   export class Style {
     /** @internal */
-    public get ovrColor(): boolean { return undefined !== this.color; }
+    public get ovrColor(): boolean {
+      return undefined !== this.color;
+    }
     /** If defined, the color used to draw the edges. If undefined, edges are drawn using the element's line color. */
     public readonly color?: ColorDef;
     /** If defined, the pixel pattern used to draw the edges. If undefined, edges are drawn using the element's line pattern. */
@@ -180,7 +182,9 @@ export namespace HiddenLine {
     public readonly transparencyThreshold: number;
 
     /** An alias for [[transparencyThreshold]]. */
-    public get transThreshold(): number { return this.transparencyThreshold; }
+    public get transThreshold(): number {
+      return this.transparencyThreshold;
+    }
 
     /** The default display settings. */
     public static defaults = new Settings({});

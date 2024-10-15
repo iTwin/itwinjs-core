@@ -7,8 +7,8 @@ import { BentleyError, GuidString, IModelStatus, MarkRequired, Mutable } from "@
 import { CodeProps, FontId, FontType } from "@itwin/core-common";
 import { CloudSqlite } from "./CloudSqlite";
 import { IModelDb } from "./IModelDb";
-import { SettingsContainer } from "./workspace/Settings";
 import { VersionedSqliteDb } from "./SQLiteDb";
+import { SettingsContainer } from "./workspace/Settings";
 
 /**
  * The services for querying, reserving, updating, and deleting codes for a BriefcaseDb (available via `BriefcaseDb.codeService`) whenever it is opened for write access.
@@ -46,7 +46,6 @@ export interface CodeService {
 
 /** @alpha */
 export namespace CodeService {
-
   export interface WriteMethods {
     /** Add a new code spec to this code service.
      */
@@ -495,30 +494,29 @@ export namespace CodeService {
    * @see [[CodeService.Error.errorId]]
    */
   export type ErrorId =
-    "BadIndexProps" |
-    "CorruptIModel" |
-    "CorruptIndex" |
-    "DuplicateValue" |
-    "GuidIsInUse" |
-    "GuidMismatch" |
-    "IllegalValue" |
-    "InconsistentIModels" |
-    "IndexReadonly" |
-    "InvalidCodeScope" |
-    "InvalidGuid" |
-    "InvalidSequence" |
-    "MissingCode" |
-    "MissingGuid" |
-    "MissingInput" |
-    "MissingSpec" |
-    "NoCodeIndex" |
-    "NotAuthorized" |
-    "SequenceFull" |
-    "ReserveErrors" |
-    "SequenceNotFound" |
-    "SqlLogicError" |
-    "UpdateErrors" |
-    "ValueIsInUse" |
-    "WrongVersion";
-
+    | "BadIndexProps"
+    | "CorruptIModel"
+    | "CorruptIndex"
+    | "DuplicateValue"
+    | "GuidIsInUse"
+    | "GuidMismatch"
+    | "IllegalValue"
+    | "InconsistentIModels"
+    | "IndexReadonly"
+    | "InvalidCodeScope"
+    | "InvalidGuid"
+    | "InvalidSequence"
+    | "MissingCode"
+    | "MissingGuid"
+    | "MissingInput"
+    | "MissingSpec"
+    | "NoCodeIndex"
+    | "NotAuthorized"
+    | "SequenceFull"
+    | "ReserveErrors"
+    | "SequenceNotFound"
+    | "SqlLogicError"
+    | "UpdateErrors"
+    | "ValueIsInUse"
+    | "WrongVersion";
 }

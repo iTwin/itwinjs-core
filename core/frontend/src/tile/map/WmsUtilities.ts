@@ -18,13 +18,12 @@ export class WmsUtilities {
   }
 
   /**
- * fetch XML from HTTP request
- * @param url server URL to address the request
- * @internal
- */
+   * fetch XML from HTTP request
+   * @param url server URL to address the request
+   * @internal
+   */
   public static async fetchXml(url: string, credentials?: RequestBasicCredentials): Promise<string> {
-
-    let headers: Headers|undefined;
+    let headers: Headers | undefined;
     if (credentials && credentials.user && credentials.password) {
       headers = new Headers();
       setBasicAuthorization(headers, credentials);
@@ -32,7 +31,7 @@ export class WmsUtilities {
 
     let response = await fetch(url, { method: "GET", headers });
     if (!credentials && response.status === 401 && headersIncludeAuthMethod(response.headers, ["ntlm", "negotiate"])) {
-    // We got a http 401 challenge, lets try SSO (i.e. Windows Authentication)
+      // We got a http 401 challenge, lets try SSO (i.e. Windows Authentication)
       response = await fetch(url, { method: "GET", credentials: "include" });
     }
 

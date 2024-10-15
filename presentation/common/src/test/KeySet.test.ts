@@ -2,9 +2,9 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+import { Guid, Id64 } from "@itwin/core-bentley";
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { Guid, Id64 } from "@itwin/core-bentley";
 import { InstanceKey, Key, KeySet, KeySetJSON, PresentationError } from "../presentation-common";
 import { createTestECInstanceKey } from "./_helpers/EC";
 import {

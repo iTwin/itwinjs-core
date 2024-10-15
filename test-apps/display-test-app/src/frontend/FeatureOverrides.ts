@@ -4,11 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { dispose, Id64String, IDisposable } from "@itwin/core-bentley";
-import {
-  ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
-} from "@itwin/frontend-devtools";
 import { FeatureAppearance, FeatureAppearanceProps, LinePixels } from "@itwin/core-common";
 import { FeatureOverrideProvider, FeatureSymbology, Viewport } from "@itwin/core-frontend";
+import {
+  ComboBox,
+  ComboBoxHandler,
+  convertHexToRgb,
+  createButton,
+  createCheckBox,
+  createColorInput,
+  createComboBox,
+  createNumericInput,
+} from "@itwin/frontend-devtools";
 import { ToolBarDropDown } from "./ToolBar";
 
 export class Provider implements FeatureOverrideProvider {
@@ -16,7 +23,9 @@ export class Provider implements FeatureOverrideProvider {
   private _defaultOvrs: FeatureAppearance | undefined;
   private readonly _vp: Viewport;
 
-  private constructor(vp: Viewport) { this._vp = vp; }
+  private constructor(vp: Viewport) {
+    this._vp = vp;
+  }
 
   public addFeatureOverrides(ovrs: FeatureSymbology.Overrides, _vp: Viewport): void {
     this._elementOvrs.forEach((appearance, elementId) => ovrs.override({ elementId, appearance }));
@@ -73,7 +82,9 @@ export class Provider implements FeatureOverrideProvider {
     this.sync();
   }
 
-  private sync(): void { this._vp.setFeatureOverrideProviderChanged(); }
+  private sync(): void {
+    this._vp.setFeatureOverrideProviderChanged();
+  }
 
   public static get(vp: Viewport): Provider | undefined {
     return vp.findFeatureOverrideProvider((x) => x instanceof Provider) as Provider | undefined;
@@ -171,19 +182,40 @@ export class Settings implements IDisposable {
     this._parent.removeChild(this._element);
   }
 
-  private get _provider() { return Provider.getOrCreate(this._vp); }
+  private get _provider() {
+    return Provider.getOrCreate(this._vp);
+  }
 
   // private reset() { this._appearance = FeatureSymbology.Appearance.defaults; }
 
-  private updateAppearance(field: "rgb" | "transparency" | "lineRgb" | "lineTransparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable" | "emphasized" | "viewDependentTransparency", value: any): void {
+  private updateAppearance(
+    field:
+      | "rgb"
+      | "transparency"
+      | "lineRgb"
+      | "lineTransparency"
+      | "linePixels"
+      | "weight"
+      | "ignoresMaterial"
+      | "nonLocatable"
+      | "emphasized"
+      | "viewDependentTransparency",
+    value: any,
+  ): void {
     const props = this._appearance.toJSON();
     props[field] = value;
     this._appearance = FeatureAppearance.fromJSON(props);
   }
 
-  private updateWeight(weight: number | undefined): void { this.updateAppearance("weight", weight); }
-  private updateIgnoreMaterial(ignoresMaterial: true | undefined): void { this.updateAppearance("ignoresMaterial", ignoresMaterial); }
-  private updateNonLocatable(nonLocatable: true | undefined): void { this.updateAppearance("nonLocatable", nonLocatable); }
+  private updateWeight(weight: number | undefined): void {
+    this.updateAppearance("weight", weight);
+  }
+  private updateIgnoreMaterial(ignoresMaterial: true | undefined): void {
+    this.updateAppearance("ignoresMaterial", ignoresMaterial);
+  }
+  private updateNonLocatable(nonLocatable: true | undefined): void {
+    this.updateAppearance("nonLocatable", nonLocatable);
+  }
   private updateStyle(style: LinePixels): void {
     const linePixels = LinePixels.Invalid !== style ? style : undefined;
     this.updateAppearance("linePixels", linePixels);
@@ -427,7 +459,13 @@ export class FeatureOverridesPanel extends ToolBarDropDown {
     return Promise.resolve();
   }
 
-  protected _open(): void { this._settings = new Settings(this._vp, this._parent); }
-  protected _close(): void { this._settings = dispose(this._settings); }
-  public get isOpen(): boolean { return undefined !== this._settings; }
+  protected _open(): void {
+    this._settings = new Settings(this._vp, this._parent);
+  }
+  protected _close(): void {
+    this._settings = dispose(this._settings);
+  }
+  public get isOpen(): boolean {
+    return undefined !== this._settings;
+  }
 }

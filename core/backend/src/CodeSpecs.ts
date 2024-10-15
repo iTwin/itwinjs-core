@@ -8,8 +8,8 @@
 
 import { BentleyError, DbResult, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec, CodeSpecProperties, IModelError } from "@itwin/core-common";
-import { IModelDb } from "./IModelDb";
 import { CodeService } from "./CodeService";
+import { IModelDb } from "./IModelDb";
 
 /** Manages [CodeSpecs]($docs/BIS/guide/fundamentals/element-fundamentals.md#codespec) within an [[IModelDb]]
  * @public
@@ -156,9 +156,9 @@ export class CodeSpecs {
   }
 
   /** Update the Json properties of an existing CodeSpec.
- * @param codeSpec The codeSpec holding Json properties values to update
- * @throws if unable to update the codeSpec.
- */
+   * @param codeSpec The codeSpec holding Json properties values to update
+   * @throws if unable to update the codeSpec.
+   */
   public updateProperties(codeSpec: CodeSpec): void {
     this._imodel.withSqliteStatement(`UPDATE ${CodeSpecs.tableName} SET JsonProperties=? WHERE Id=?`, (stmt) => {
       stmt.bindString(1, JSON.stringify(codeSpec.properties));

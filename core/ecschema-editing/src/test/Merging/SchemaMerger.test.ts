@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaConflictsError } from "../../Differencing/Errors";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { ConflictCode, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
+import { SchemaConflictsError } from "../../Differencing/Errors";
+import { ConflictCode, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import "chai-as-promised";
 
 /* eslint-disable @typescript-eslint/naming-convention */

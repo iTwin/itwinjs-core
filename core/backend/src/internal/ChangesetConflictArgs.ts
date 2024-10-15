@@ -28,4 +28,3 @@ export interface ChangesetConflictArgs {
   getValueDouble: (columnIndex: number, stage: DbChangeStage) => number | null | undefined;
   isValueNull: (columnIndex: number, stage: DbChangeStage) => boolean | undefined;
 }
-

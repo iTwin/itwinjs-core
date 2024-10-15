@@ -11,7 +11,6 @@ import { Downloader } from "../system/runtime/Downloader";
 import { DownloaderNode } from "../system/runtime/DownloaderNode";
 
 describe("CRS engine tests", () => {
-
   it("crs transform of a position", async () => {
     Downloader.INSTANCE = new DownloaderNode();
     CRSManager.ENGINE = await OnlineEngine.create();
@@ -24,5 +23,4 @@ describe("CRS engine tests", () => {
     const expectedPosition: Coordinate = new Coordinate(4004726.217, 280783.407, 4939653.828);
     assert.isTrue(targetPosition.distance3D(expectedPosition) < 0.25, "found position " + targetPosition + ", expected " + expectedPosition);
   });
-
 });

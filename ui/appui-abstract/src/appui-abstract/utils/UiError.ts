@@ -12,7 +12,6 @@ import { BentleyError, BentleyStatus, GetMetaDataFunction } from "@itwin/core-be
  * @public @deprecated in 4.3. Use [[Bentley.BentleyError]] instead.
  */
 export class UiError extends BentleyError {
-
   /** Constructs UiError using BentleyError. */
   public constructor(public category: string, message: string, errorNumber: number = BentleyStatus.ERROR, getMetaData?: GetMetaDataFunction) {
     super(errorNumber, message, getMetaData);

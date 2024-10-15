@@ -2,19 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { IModelConnection } from "../../IModelConnection";
+import { expect } from "chai";
 import { IModelApp } from "../../IModelApp";
-import { SpatialViewState } from "../../SpatialViewState";
-import { ScreenViewport, Viewport } from "../../Viewport";
+import { IModelConnection } from "../../IModelConnection";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
+import { SpatialViewState } from "../../SpatialViewState";
 import {
-  GpuMemoryLimit, GpuMemoryLimits, Tile, TileAdmin, TileContent, TiledGraphicsProvider, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
-  TileTreeOwner, TileTreeReference, TileTreeSupplier,
+  GpuMemoryLimit,
+  GpuMemoryLimits,
+  Tile,
+  TileAdmin,
+  TileContent,
+  TiledGraphicsProvider,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileRequest,
+  TileTree,
+  TileTreeOwner,
+  TileTreeReference,
+  TileTreeSupplier,
 } from "../../tile/internal";
+import { ScreenViewport, Viewport } from "../../Viewport";
 import { createBlankConnection } from "../createBlankConnection";
 
 describe("TileAdmin", () => {
@@ -24,7 +35,12 @@ describe("TileAdmin", () => {
       expect(admin.maxTotalTileContentBytes).to.equal(maxBytes);
     }
 
-    function expectAdmin(isMobile: boolean, limits: GpuMemoryLimit | GpuMemoryLimits | undefined, expectedLimit: GpuMemoryLimit, expectedMaxBytes: number | undefined): TileAdmin {
+    function expectAdmin(
+      isMobile: boolean,
+      limits: GpuMemoryLimit | GpuMemoryLimits | undefined,
+      expectedLimit: GpuMemoryLimit,
+      expectedMaxBytes: number | undefined,
+    ): TileAdmin {
       const admin = new TileAdmin(isMobile, undefined, undefined !== limits ? { gpuMemoryLimits: limits } : undefined);
       expectLimits(admin, expectedLimit, expectedMaxBytes);
       return admin;
@@ -106,7 +122,7 @@ describe("TileAdmin", () => {
           stats.addTexture(this._size);
       }
 
-      public unionRange() { }
+      public unionRange() {}
     }
 
     class TestTile extends Tile {
@@ -176,10 +192,18 @@ describe("TileAdmin", () => {
         this._rootTile = new TestTile(this, contentSize, retainMemory);
       }
 
-      public get rootTile(): TestTile { return this._rootTile; }
-      public get is3d() { return true; }
-      public get maxDepth() { return undefined; }
-      public get viewFlagOverrides() { return { }; }
+      public get rootTile(): TestTile {
+        return this._rootTile;
+      }
+      public get is3d() {
+        return true;
+      }
+      public get maxDepth() {
+        return undefined;
+      }
+      public get viewFlagOverrides() {
+        return {};
+      }
 
       protected _selectTiles(args: TileDrawArgs): Tile[] {
         const tiles = [];
@@ -202,7 +226,7 @@ describe("TileAdmin", () => {
         args.drawGraphics();
       }
 
-      public prune() { }
+      public prune() {}
     }
 
     class Supplier implements TileTreeSupplier {
@@ -225,7 +249,9 @@ describe("TileAdmin", () => {
         this._owner = tree.iModel.tiles.getTileTreeOwner(tree, supplier);
       }
 
-      public get treeOwner() { return this._owner; }
+      public get treeOwner() {
+        return this._owner;
+      }
     }
 
     class Provider implements TiledGraphicsProvider {

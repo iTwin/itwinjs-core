@@ -8,7 +8,7 @@ module.exports = [
   {
     files: ["**/*.ts"],
     rules: {
-      "deprecation/deprecation": "off"
-    }
-  }
+      "deprecation/deprecation": "off",
+    },
+  },
 ];

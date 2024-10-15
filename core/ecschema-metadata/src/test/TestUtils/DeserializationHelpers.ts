@@ -8,9 +8,9 @@ import { ISchemaLocater, SchemaContext } from "../../Context";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaMatchType } from "../../ECObjects";
+import { SchemaInfo } from "../../Interfaces";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaKey } from "../../SchemaKey";
-import { SchemaInfo } from "../../Interfaces";
 
 export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): any {
   return {
@@ -28,7 +28,10 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
   private readonly _parser: (schemaContent: any, context: SchemaContext) => Schema;
   private readonly _asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<SchemaInfo>;
 
-  constructor(parser: (schemaContent: any, context: SchemaContext) => Schema, asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<SchemaInfo>) {
+  constructor(
+    parser: (schemaContent: any, context: SchemaContext) => Schema,
+    asyncParser: (SchemaContent: any, context: SchemaContext) => Promise<SchemaInfo>,
+  ) {
     this._schemaList = new Map();
     this._parser = parser;
     this._asyncParser = asyncParser;
@@ -56,7 +59,6 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
   }
 
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-
     if (this._schemaList.has(schemaKey.name)) {
       const schemaBody = this._schemaList.get(schemaKey.name);
       const schema = this._parser(schemaBody, context);

@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, PhysicalModel, StandaloneDb, Subject } from "@itwin/core-backend";
+import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
+import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -93,13 +93,10 @@ describe("Example Code", () => {
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
     // __PUBLISH_EXTRACT_END__
-
   });
 
   it("CodeService", async () => {
-
     if (false) { // this will compile but it will not run, because the root element has no federationGuid -- waiting for a fix
-
       // __PUBLISH_EXTRACT_START__ CodeService.reserveInternalCodeForNewElement
       const code = Subject.createCode(iModel, IModel.rootSubjectId, "main transfer pump"); // an example a code that an app might use
 
@@ -153,15 +150,16 @@ describe("Example Code", () => {
       // __PUBLISH_EXTRACT_END__
 
       // __PUBLISH_EXTRACT_START__ CodeService.findCode
-      const existingCodeGuid = iModel.codeService?.internalCodes?.reader.findCode({ value: code.value, ...CodeService.makeScopeAndSpec(iModel, code) });
+      const existingCodeGuid = iModel.codeService?.internalCodes?.reader.findCode({
+        value: code.value,
+        ...CodeService.makeScopeAndSpec(iModel, code),
+      });
       if (existingCodeGuid !== undefined) {
         /* the code has already been reserved and may be in use */
       }
       // __PUBLISH_EXTRACT_END__
     }
-
   });
-
 });
 
 namespace Snippets {

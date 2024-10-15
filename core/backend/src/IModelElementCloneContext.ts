@@ -5,15 +5,15 @@
 /** @packageDocumentation
  * @module iModels
  */
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { Code, CodeScopeSpec, CodeSpec, ElementProps, IModel, PropertyMetaData, RelatedElement } from "@itwin/core-common";
-import { IModelJsNative } from "@bentley/imodeljs-native";
 import { SubCategory } from "./Category";
 import { Element } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
-import { SQLiteDb } from "./SQLiteDb";
 import { _nativeDb } from "./internal/Symbols";
+import { SQLiteDb } from "./SQLiteDb";
 
 /** The context for transforming a *source* Element to a *target* Element and remapping internal identifiers to the target iModel.
  * @beta
@@ -48,15 +48,21 @@ export class IModelElementCloneContext {
   }
 
   /** Returns `true` if this context is for transforming between 2 iModels and `false` if it for transforming within the same iModel. */
-  public get isBetweenIModels(): boolean { return this.sourceDb !== this.targetDb; }
+  public get isBetweenIModels(): boolean {
+    return this.sourceDb !== this.targetDb;
+  }
 
   /** Dispose any native resources associated with this IModelElementCloneContext. */
-  public dispose(): void { this._nativeContext.dispose(); }
+  public dispose(): void {
+    this._nativeContext.dispose();
+  }
 
   /** Debugging aid that dumps the Id remapping details and other information to the specified output file.
    * @internal
    */
-  public dump(outputFileName: string): void { this._nativeContext.dump(outputFileName); }
+  public dump(outputFileName: string): void {
+    this._nativeContext.dump(outputFileName);
+  }
 
   /** Add a rule that remaps the specified source [CodeSpec]($common) to the specified target [CodeSpec]($common).
    * @param sourceCodeSpecName The name of the CodeSpec from the source iModel.

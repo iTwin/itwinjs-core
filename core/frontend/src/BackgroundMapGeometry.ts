@@ -7,8 +7,30 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Angle, Arc3d, ClipPlane, ClipPlaneContainment, Constant, CurvePrimitive, Ellipsoid, GrowableXYZArray, LongitudeLatitudeNumber, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range1d, Range3d, Ray3d, Transform, Vector3d, WritableXYAndZ, XYAndZ } from "@itwin/core-geometry";
 import { Cartographic, ColorByName, ColorDef, Frustum, GeoCoordStatus, GlobeMode, LinePixels } from "@itwin/core-common";
+import {
+  Angle,
+  Arc3d,
+  ClipPlane,
+  ClipPlaneContainment,
+  Constant,
+  CurvePrimitive,
+  Ellipsoid,
+  GrowableXYZArray,
+  LongitudeLatitudeNumber,
+  Matrix3d,
+  Plane3dByOriginAndUnitNormal,
+  Point2d,
+  Point3d,
+  Point4d,
+  Range1d,
+  Range3d,
+  Ray3d,
+  Transform,
+  Vector3d,
+  WritableXYAndZ,
+  XYAndZ,
+} from "@itwin/core-geometry";
 import { IModelConnection } from "./IModelConnection";
 import { GraphicBuilder } from "./render/GraphicBuilder";
 import { WebMercatorTilingScheme } from "./tile/internal";
@@ -30,7 +52,13 @@ function accumulateDepthRange(point: Point3d, viewRotation: Matrix3d, range: Ran
   range.extend(scratchPoint);
 }
 
-function accumulateFrustumPlaneDepthRange(frustum: Frustum, plane: Plane3dByOriginAndUnitNormal, viewRotation: Matrix3d, range: Range3d, eyePoint?: Point3d) {
+function accumulateFrustumPlaneDepthRange(
+  frustum: Frustum,
+  plane: Plane3dByOriginAndUnitNormal,
+  viewRotation: Matrix3d,
+  range: Range3d,
+  eyePoint?: Point3d,
+) {
   let includeHorizon = false;
   for (let i = 0; i < 4; i++) {
     const frustumRay = Ray3d.createStartEnd(eyePoint ? eyePoint : frustum.points[i + 4], frustum.points[i]);
@@ -81,8 +109,8 @@ export class BackgroundMapGeometry {
   private _mercatorFractionToDb: Transform;
   private _mercatorTilingScheme: WebMercatorTilingScheme;
   private _ecefToDb: Transform;
-  public static maxCartesianDistance = 1E4;           // If globe is 3D we still consider the map geometry flat within this distance of the project extents.
-  private static _transitionDistanceMultiplier = .25;  // In the transition range which extends beyond the cartesian range we interpolate between cartesian and ellipsoid.
+  public static maxCartesianDistance = 1E4; // If globe is 3D we still consider the map geometry flat within this distance of the project extents.
+  private static _transitionDistanceMultiplier = .25; // In the transition range which extends beyond the cartesian range we interpolate between cartesian and ellipsoid.
 
   private static _scratchRayFractions = new Array<number>();
   private static _scratchRayAngles = new Array<LongitudeLatitudeNumber>();
@@ -112,7 +140,8 @@ export class BackgroundMapGeometry {
     return cartesianRange;
   }
   public static getCartesianTransitionDistance(iModel: IModelConnection): number {
-    return BackgroundMapGeometry.getCartesianRange(iModel, scratchRange).diagonal().magnitudeXY() * BackgroundMapGeometry._transitionDistanceMultiplier;
+    return BackgroundMapGeometry.getCartesianRange(iModel, scratchRange).diagonal().magnitudeXY() *
+      BackgroundMapGeometry._transitionDistanceMultiplier;
   }
 
   public async dbToCartographicFromGcs(db: XYAndZ[]): Promise<Cartographic[]> {
@@ -134,7 +163,7 @@ export class BackgroundMapGeometry {
     const scratch = new Point3d();
     for (let i = 0; i < db.length; i++) {
       Point3d.createFrom(db[i], scratch);
-      if (this.cartesianRange.containsPoint(scratch) ) {
+      if (this.cartesianRange.containsPoint(scratch)) {
         reprojectIdx.push(i);
         reproject.push(db[i]);
       } else {
@@ -146,8 +175,8 @@ export class BackgroundMapGeometry {
       return result;
 
     const reprojectPromise = this._iModel.wgs84CartographicFromSpatial(reproject);
-    return reprojectPromise.then((reprojected) =>  {
-      if (reprojected.length === reprojectIdx.length) {   // reprojected array size must match our index array, otherwise something is OFF
+    return reprojectPromise.then((reprojected) => {
+      if (reprojected.length === reprojectIdx.length) { // reprojected array size must match our index array, otherwise something is OFF
         for (let i = 0; i < reprojected.length; i++) {
           result[reprojectIdx[i]] = reprojected[i]; // Insert the reprojected values at their original index
         }
@@ -210,7 +239,7 @@ export class BackgroundMapGeometry {
     const toReprojectIdx: number[] = [];
     db.forEach(async (p, i) => {
       if (this.cartesianRange.containsPoint(p)) {
-        toReprojectCoords.push({x:cartographic[i].longitudeDegrees, y:cartographic[i].latitudeDegrees, z:cartographic[i].height});
+        toReprojectCoords.push({ x: cartographic[i].longitudeDegrees, y: cartographic[i].latitudeDegrees, z: cartographic[i].height });
         toReprojectIdx.push(i);
       }
     });
@@ -254,9 +283,13 @@ export class BackgroundMapGeometry {
         if ((!positiveOnly || thisFraction > 0) && (undefined === intersectDistance || thisFraction < intersectDistance)) {
           intersectDistance = thisFraction;
           intersect = scratchIntersectRay;
-          ellipsoid.radiansToUnitNormalRay(BackgroundMapGeometry._scratchRayAngles[i].longitudeRadians, BackgroundMapGeometry._scratchRayAngles[i].latitudeRadians, intersect);
+          ellipsoid.radiansToUnitNormalRay(
+            BackgroundMapGeometry._scratchRayAngles[i].longitudeRadians,
+            BackgroundMapGeometry._scratchRayAngles[i].latitudeRadians,
+            intersect,
+          );
           if (intersect.direction.dotProduct(ray.direction) < 0) {
-            if (this.cartesianRange.containsPoint(intersect.origin)) {    // If we're in the cartesian range, correct to planar intersection.
+            if (this.cartesianRange.containsPoint(intersect.origin)) { // If we're in the cartesian range, correct to planar intersection.
               const planeFraction = ray.intersectionWithPlane(this.cartesianPlane, scratchIntersectRay.origin);
               if (undefined !== planeFraction && (!positiveOnly || planeFraction > 0)) {
                 intersect.direction.setFromVector3d(this.cartesianPlane.getNormalRef());
@@ -292,16 +325,22 @@ export class BackgroundMapGeometry {
   }
 
   /** @internal */
-  public getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d {
+  public getFrustumIntersectionDepthRange(
+    frustum: Frustum,
+    bimRange: Range3d,
+    heightRange?: Range1d,
+    gridPlane?: Plane3dByOriginAndUnitNormal,
+    doGlobalScope?: boolean,
+  ): Range1d {
     const clipPlanes = frustum.getRangePlanes(false, false, 0);
     const eyePoint = frustum.getEyePoint(scratchEyePoint);
     const viewRotation = frustum.getRotation(scratchViewRotation);
     if (undefined === viewRotation)
-      return Range1d.createNull();      // Degenerate frustum...
+      return Range1d.createNull(); // Degenerate frustum...
     const viewZ = viewRotation.getRow(2);
     const cartoRange = this.cartesianTransitionRange;
     const intersectRange = Range3d.createNull();
-    const doAccumulate = ((point: Point3d) => accumulateDepthRange(point, viewRotation, intersectRange));
+    const doAccumulate = (point: Point3d) => accumulateDepthRange(point, viewRotation, intersectRange);
 
     if (gridPlane)
       accumulateFrustumPlaneDepthRange(frustum, gridPlane, viewRotation, intersectRange, eyePoint);
@@ -331,10 +370,12 @@ export class BackgroundMapGeometry {
 
         // Extrema...
         let angles, extremaPoint;
-        if (undefined !== (angles = ellipsoid.surfaceNormalToAngles(viewZ)) &&
+        if (
+          undefined !== (angles = ellipsoid.surfaceNormalToAngles(viewZ)) &&
           undefined !== (extremaPoint = ellipsoid.radiansToPoint(angles.longitudeRadians, angles.latitudeRadians)) &&
           (eyePoint === undefined || viewZ.dotProductStartEnd(extremaPoint, eyePoint) > 0) &&
-          clipPlanes.classifyPointContainment([extremaPoint], false) !== ClipPlaneContainment.StronglyOutside)
+          clipPlanes.classifyPointContainment([extremaPoint], false) !== ClipPlaneContainment.StronglyOutside
+        )
           doAccumulate(extremaPoint);
 
         if (isInside) {
@@ -355,7 +396,9 @@ export class BackgroundMapGeometry {
               if (Vector3d.createStartEnd(silhouette.center, bimRange.center).dotProduct(scratchSilhouetteNormal) < 0)
                 scratchSilhouetteNormal.negate(scratchSilhouetteNormal);
             }
-            clipPlanes.planes.push(ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!);
+            clipPlanes.planes.push(
+              ClipPlane.createNormalAndDistance(scratchSilhouetteNormal, scratchSilhouetteNormal.dotProduct(silhouette.center))!,
+            );
           } else {
             clipPlanes.planes.push(ClipPlane.createNormalAndPoint(viewZ, center)!);
           }
@@ -370,12 +413,11 @@ export class BackgroundMapGeometry {
               if (undefined !== arc) {
                 arc.announceClipIntervals(clipPlanes, (a0: number, a1: number, cp: CurvePrimitive) => {
                   if (Math.abs(a1 - a0) < 1.0E-8) {
-                    doAccumulate(cp.fractionToPoint(a0));   // Tiny sweep - avoid problem with rangeMethod (not worth doing anyway).
+                    doAccumulate(cp.fractionToPoint(a0)); // Tiny sweep - avoid problem with rangeMethod (not worth doing anyway).
                   } else {
                     const segment = cp.clonePartialCurve(a0, a1);
                     if (segment !== undefined)
                       segment.extendRange(intersectRange, toView);
-
                   }
                 });
               }
@@ -392,7 +434,7 @@ export class BackgroundMapGeometry {
           clipPlanes.clipConvexPolygonInPlace(scratchCartoRectangle, scratchWorkArray);
           for (let i = 0; i < scratchCartoRectangle.length; i++)
             doAccumulate(scratchCartoRectangle.getPoint3dAtUncheckedPointIndex(i));
-          while (clipPlanes.planes.length > clipPlaneCount)   // Remove pushed silhouette plane.
+          while (clipPlanes.planes.length > clipPlaneCount) // Remove pushed silhouette plane.
             clipPlanes.planes.pop();
         }
       }
@@ -475,12 +517,15 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
   if (geoConverter === undefined)
     return undefined;
 
-  const origin = Point3d.create(originIn.x, originIn.y, 0);   // Always Test at zero.
+  const origin = Point3d.create(originIn.x, originIn.y, 0); // Always Test at zero.
   const eastPoint = origin.plusXYZ(1, 0, 0);
   const northPoint = origin.plusXYZ(0, 1, 0);
 
   const response = await geoConverter.getGeoCoordinatesFromIModelCoordinates([origin, northPoint, eastPoint]);
-  if (response.geoCoords[0].s !== GeoCoordStatus.Success || response.geoCoords[1].s !== GeoCoordStatus.Success || response.geoCoords[2].s !== GeoCoordStatus.Success)
+  if (
+    response.geoCoords[0].s !== GeoCoordStatus.Success || response.geoCoords[1].s !== GeoCoordStatus.Success ||
+    response.geoCoords[2].s !== GeoCoordStatus.Success
+  )
     return undefined;
 
   const geoOrigin = Point3d.fromJSON(response.geoCoords[0].p);
@@ -494,7 +539,7 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
   const yVector = Vector3d.createStartEnd(ecefOrigin, ecefNorth);
   const zVector = xVector.unitCrossProduct(yVector);
   if (undefined === zVector) {
-    assert(false);            // Should never occur.
+    assert(false); // Should never occur.
     return undefined;
   }
   const matrix = Matrix3d.createColumns(xVector, yVector, zVector);
@@ -503,10 +548,9 @@ export async function calculateEcefToDbTransformAtLocation(originIn: Point3d, iM
 
   const inverse = matrix.inverse();
   if (inverse === undefined) {
-    assert(false);               // Should never occur.
+    assert(false); // Should never occur.
     return undefined;
   }
 
   return Transform.createMatrixPickupPutdown(matrix, origin, ecefOrigin).inverse()!;
 }
-

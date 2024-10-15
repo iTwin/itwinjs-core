@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
 import { ClipVector, ClipVectorProps } from "@itwin/core-geometry";
+import { describe, expect, it } from "vitest";
 import { ViewDetails } from "../ViewDetails";
 
 describe("ViewDetails", () => {
@@ -12,7 +12,7 @@ describe("ViewDetails", () => {
       private _clipChanged = false;
 
       public constructor(clip?: ClipVectorProps) {
-        super(clip ? { viewDetails: { clip } } : { });
+        super(clip ? { viewDetails: { clip } } : {});
         this.onClipVectorChanged.addListener(() => this._clipChanged = true);
       }
 
@@ -34,7 +34,10 @@ describe("ViewDetails", () => {
     const clipProps: ClipVectorProps = [{
       shape: {
         points: [
-          [0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 0, 0],
+          [0, 0, 0],
+          [1, 0, 0],
+          [1, 1, 0],
+          [0, 0, 0],
         ],
       },
     }];

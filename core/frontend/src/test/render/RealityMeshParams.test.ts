@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { Point3d, Range3d } from "@itwin/core-geometry";
 import { QPoint3dBuffer } from "@itwin/core-common";
+import { Point3d, Range3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { RealityMeshParamsBuilder } from "../../render/RealityMeshParams";
 
 describe("RealityMeshParamsBuilder", () => {
@@ -105,7 +105,7 @@ describe("RealityMeshParamsBuilder", () => {
         wantNormals,
       });
 
-      const addVertex = () => builder.addQuantizedVertex({ x: 0, y: 0, z: 0 }, { x: 0, y: 0}, supplyNormals ? 100 : undefined);
+      const addVertex = () => builder.addQuantizedVertex({ x: 0, y: 0, z: 0 }, { x: 0, y: 0 }, supplyNormals ? 100 : undefined);
       if (expectThrow)
         expect(addVertex).to.throw("Logic Error");
       else

@@ -2,8 +2,8 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import * as faker from "faker";
 import { Id64, Id64String } from "@itwin/core-bentley";
+import * as faker from "faker";
 
 /**
  * @internal Used for testing only.

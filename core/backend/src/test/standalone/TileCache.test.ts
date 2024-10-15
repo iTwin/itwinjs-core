@@ -2,21 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Guid, Logger } from "@itwin/core-bentley";
+import {
+  BatchType,
+  ContentIdProvider,
+  defaultTileOptions,
+  IModelTileRpcInterface,
+  iModelTileTreeIdToString,
+  RpcActivity,
+  RpcManager,
+  RpcRegistry,
+} from "@itwin/core-common";
 import { expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { Guid, Logger } from "@itwin/core-bentley";
-import {
-  BatchType, ContentIdProvider, defaultTileOptions, IModelTileRpcInterface, iModelTileTreeIdToString, RpcActivity, RpcManager, RpcRegistry,
-} from "@itwin/core-common";
 import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { IModelJsFs } from "../../IModelJsFs";
+import { _nativeDb } from "../../internal/Symbols";
 import { GeometricModel3d } from "../../Model";
 import { RpcTrace } from "../../rpc/tracing";
-import { TestUtils } from "../TestUtils";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { _nativeDb } from "../../internal/Symbols";
+import { TestUtils } from "../TestUtils";
 
 const fakeRpc: RpcActivity = { // eslint-disable-line deprecation/deprecation
   accessToken: "dummy",
@@ -82,7 +89,10 @@ describe("TileCache open v1", () => {
     // Generate tile
     const tileProps = await getTileProps(iModel);
     expect(tileProps);
-    await RpcTrace.run(fakeRpc, async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid)); // eslint-disable-line deprecation/deprecation
+    await RpcTrace.run(
+      fakeRpc,
+      async () => tileRpcInterface.generateTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, tileProps!.guid),
+    ); // eslint-disable-line deprecation/deprecation
 
     const tilesCache = `${iModel.pathName}.Tiles`;
     expect(IModelJsFs.existsSync(tilesCache)).true;
@@ -98,7 +108,6 @@ describe("TileCache open v1", () => {
     const snapshot = IModelTestUtils.createSnapshotFromSeed(dbPath, IModelTestUtils.resolveAssetFile("mirukuru.ibim"));
     snapshot.close();
     await verifyTileCache(dbPath);
-
   });
   it("should create .tiles file next to .bim with set cacheDir", async () => {
     // Shutdown IModelHost to allow this test to use it.
@@ -154,4 +163,3 @@ describe("TileCache, open v2", async () => {
     checkpoint.close();
   });
 });
-

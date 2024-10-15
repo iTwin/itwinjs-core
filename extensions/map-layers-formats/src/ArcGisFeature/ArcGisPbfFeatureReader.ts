@@ -2,14 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
-import { FeatureAttributeDrivenSymbology, FeatureGeometryRenderer, GraphicsGeometryRenderer, MapLayerFeature, MapLayerFeatureAttribute, MapLayerFeatureInfo, MapSubLayerFeatureInfo} from "@itwin/core-frontend";
 import { PrimitiveValue, PropertyValueFormat, StandardTypeNames } from "@itwin/appui-abstract";
+import { Logger } from "@itwin/core-bentley";
 import { ImageMapLayerSettings } from "@itwin/core-common";
+import {
+  FeatureAttributeDrivenSymbology,
+  FeatureGeometryRenderer,
+  GraphicsGeometryRenderer,
+  MapLayerFeature,
+  MapLayerFeatureAttribute,
+  MapLayerFeatureInfo,
+  MapSubLayerFeatureInfo,
+} from "@itwin/core-frontend";
+import { esriPBuffer } from "../ArcGisFeature/esriPBuffer.gen";
+import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
 import { ArcGisBaseFeatureReader } from "./ArcGisFeatureReader";
 import { ArcGisResponseData } from "./ArcGisFeatureResponse";
-import { Logger } from "@itwin/core-bentley";
-import { ArcGisFeatureGeometryType } from "./ArcGisFeatureQuery";
 
 const esriGeometryType = esriPBuffer.FeatureCollectionPBuffer.GeometryType;
 const loggerCategory = "MapLayersFormats.ArcGISFeature";
@@ -72,14 +80,15 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
       propertyValue.value = undefined;
     }
 
-    return { propertyValue,  typename };
+    return { propertyValue, typename };
   }
 
-  public getFeatureAttribute(fieldInfo: PbfFieldInfo, attrValue: esriPBuffer.FeatureCollectionPBuffer.Value): MapLayerFeatureAttribute|undefined  {
+  public getFeatureAttribute(fieldInfo: PbfFieldInfo, attrValue: esriPBuffer.FeatureCollectionPBuffer.Value): MapLayerFeatureAttribute | undefined {
     let propertyValue: PrimitiveValue = { valueFormat: PropertyValueFormat.Primitive };
 
     let typename = StandardTypeNames.String;
-    if (fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeDouble
+    if (
+      fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeDouble
       || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeInteger
       || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeSmallInteger
       || fieldInfo.type === esriPBuffer.FeatureCollectionPBuffer.FieldType.esriFieldTypeOID
@@ -131,7 +140,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
 
     propertyValue.displayValue = this.getDisplayValue(typename, propertyValue.value);
 
-    return {value: propertyValue, property: { name: fieldInfo.name, displayLabel: fieldInfo.name, typename } };
+    return { value: propertyValue, property: { name: fieldInfo.name, displayLabel: fieldInfo.name, typename } };
   }
 
   public async readAndRender(response: ArcGisResponseData, renderer: FeatureGeometryRenderer) {
@@ -148,17 +157,15 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     // Fields metadata is stored outside feature results, create dedicated array first
     const fields: PbfFieldInfo[] = [];
     for (const field of collection.queryResult.featureResult.fields)
-      fields.push({name: field.name, type:field.fieldType});
+      fields.push({ name: field.name, type: field.fieldType });
 
     const geomType = collection.queryResult.featureResult.geometryType;
 
     const stride = (collection.queryResult.featureResult.hasM || collection.queryResult.featureResult.hasZ) ? 3 : 2;
     const relativeCoords = renderer.transform === undefined;
     for (const feature of collection.queryResult.featureResult.features) {
-
       // Render geometries
       if (renderer && feature?.has_geometry) {
-
         if (renderer.hasSymbologyRenderer() && renderer.symbolRenderer.isAttributeDriven()) {
           // Read attributes if needed (attribute driven symbology)
           this.applySymbologyAttributes(renderer.symbolRenderer, feature, fields);
@@ -167,20 +174,23 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
         if (geomType === esriGeometryType.esriGeometryTypePoint || geomType === esriGeometryType.esriGeometryTypeMultipoint) {
           await renderer.renderPoint(feature.geometry.lengths, feature.geometry.coords, stride, relativeCoords);
         } else if (geomType === esriGeometryType.esriGeometryTypePolyline || geomType === esriGeometryType.esriGeometryTypePolygon) {
-          const fill = (geomType === esriGeometryType.esriGeometryTypePolygon);
+          const fill = geomType === esriGeometryType.esriGeometryTypePolygon;
           await renderer.renderPath(feature.geometry.lengths, feature.geometry.coords, fill, stride, relativeCoords);
         }
       }
-
     }
   }
 
-  private applySymbologyAttributes(attrSymbology: FeatureAttributeDrivenSymbology, feature: esriPBuffer.FeatureCollectionPBuffer.Feature, fields: PbfFieldInfo[]) {
+  private applySymbologyAttributes(
+    attrSymbology: FeatureAttributeDrivenSymbology,
+    feature: esriPBuffer.FeatureCollectionPBuffer.Feature,
+    fields: PbfFieldInfo[],
+  ) {
     if (attrSymbology) {
       const symbolFields = attrSymbology.rendererFields;
       if (symbolFields && symbolFields.length > 0 && feature.attributes) {
         let fieldIdx = 0;
-        const featureAttr: {[key: string]: any} = {};
+        const featureAttr: { [key: string]: any } = {};
         for (const attrValue of feature.attributes) {
           if (fieldIdx > fields.length) {
             Logger.logError(loggerCategory, "Error while read feature info data: fields metadata missing");
@@ -194,7 +204,6 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
               featureAttr[fieldInfo.name] = primitiveValue.value;
             }
           }
-
         }
         attrSymbology.setActiveFeatureAttributes(featureAttr);
       }
@@ -203,7 +212,6 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
 
   public async readFeatureInfo(response: ArcGisResponseData, featureInfos: MapLayerFeatureInfo[], renderer?: GraphicsGeometryRenderer) {
     if (!(response.data instanceof esriPBuffer.FeatureCollectionPBuffer)) {
-
       Logger.logError(loggerCategory, "Response was not in PBF format");
     }
 
@@ -216,7 +224,7 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
     // Fields metadata is stored outside feature results, create dedicated array first
     const fields: PbfFieldInfo[] = [];
     for (const field of collection.queryResult.featureResult.fields)
-      fields.push({name: field.name, type:field.fieldType});
+      fields.push({ name: field.name, type: field.fieldType });
 
     const geomType = collection.queryResult.featureResult.geometryType;
     const stride = (collection.queryResult.featureResult.hasM || collection.queryResult.featureResult.hasZ) ? 3 : 2;
@@ -229,18 +237,18 @@ export class ArcGisPbfFeatureReader extends ArcGisBaseFeatureReader {
 
     // Read feature values
     for (const featureResponse of collection.queryResult.featureResult.features) {
-      const feature: MapLayerFeature = { attributes: []};
+      const feature: MapLayerFeature = { attributes: [] };
 
       if (renderer && featureResponse?.has_geometry) {
         if (geomType === esriGeometryType.esriGeometryTypePoint || geomType === esriGeometryType.esriGeometryTypeMultipoint) {
           await renderer.renderPoint(featureResponse.geometry.lengths, featureResponse.geometry.coords, stride, true);
         } else if (geomType === esriGeometryType.esriGeometryTypePolyline || geomType === esriGeometryType.esriGeometryTypePolygon) {
-          const fill = (geomType === esriGeometryType.esriGeometryTypePolygon);
+          const fill = geomType === esriGeometryType.esriGeometryTypePolygon;
           await renderer.renderPath(featureResponse.geometry.lengths, featureResponse.geometry.coords, fill, stride, true);
         }
         const graphics = renderer.moveGraphics();
         feature.geometries = graphics.map((graphic) => {
-          return {graphic};
+          return { graphic };
         });
       }
 

@@ -8,12 +8,12 @@
 
 import { dispose } from "@itwin/core-bentley";
 import { QParams2d, QParams3d } from "@itwin/core-common";
+import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } from "../../common/internal/render/AuxChannelTable";
 import { VertexTable } from "../../common/internal/render/VertexTable";
+import { qorigin3dToArray, qparams2dToArray, qscale3dToArray } from "./AttributeBuffers";
 import { ColorInfo } from "./ColorInfo";
 import { WebGLDisposable } from "./Disposable";
-import { qorigin3dToArray, qparams2dToArray, qscale3dToArray } from "./AttributeBuffers";
 import { TextureHandle } from "./Texture";
-import { AuxChannel, AuxChannelTable, AuxDisplacementChannel, AuxParamChannel } from "../../common/internal/render/AuxChannelTable";
 
 type ChannelPropName = "normals" | "displacements" | "params";
 
@@ -50,10 +50,16 @@ export class AuxChannelLUT implements WebGLDisposable {
       map.set(channel.name, channel as T);
   }
 
-  public get bytesUsed(): number { return this.texture.bytesUsed; }
-  public get hasScalarAnimation() { return undefined !== this.params; }
+  public get bytesUsed(): number {
+    return this.texture.bytesUsed;
+  }
+  public get hasScalarAnimation() {
+    return undefined !== this.params;
+  }
 
-  public get isDisposed(): boolean { return this.texture.isDisposed; }
+  public get isDisposed(): boolean {
+    return this.texture.isDisposed;
+  }
 
   public dispose() {
     dispose(this.texture);
@@ -74,13 +80,17 @@ export class VertexLUT implements WebGLDisposable {
   public readonly numRgbaPerVertex: number;
   public readonly colorInfo: ColorInfo;
   public readonly usesQuantizedPositions: boolean; // If true, positions are 16-bit integers quantized to qOrigin and qScale; otherwise they are unquantized 32-bit floats.
-  public readonly qOrigin: Float32Array;  // Origin of quantized range
-  public readonly qScale: Float32Array;   // Scale of quantized range
+  public readonly qOrigin: Float32Array; // Origin of quantized range
+  public readonly qScale: Float32Array; // Scale of quantized range
   public readonly uvQParams?: Float32Array; // If vertices contain texture UV params, quantization parameters as [origin.x, origin.y, scale.x, scale.y ]
   public readonly auxChannels?: AuxChannelLUT;
 
-  public get hasAnimation() { return undefined !== this.auxChannels; }
-  public get hasScalarAnimation() { return undefined !== this.auxChannels && this.auxChannels.hasScalarAnimation; }
+  public get hasAnimation() {
+    return undefined !== this.auxChannels;
+  }
+  public get hasScalarAnimation() {
+    return undefined !== this.auxChannels && this.auxChannels.hasScalarAnimation;
+  }
 
   public get bytesUsed(): number {
     let bytesUsed = this.texture.bytesUsed;
@@ -99,7 +109,15 @@ export class VertexLUT implements WebGLDisposable {
     return new VertexLUT(texture, vt, ColorInfo.createFromVertexTable(vt), vt.qparams, !vt.usesUnquantizedPositions, vt.uvParams, auxLUT);
   }
 
-  private constructor(texture: TextureHandle, table: VertexTable, colorInfo: ColorInfo, qparams: QParams3d, positionsAreQuantized: boolean, uvParams?: QParams2d, auxChannels?: AuxChannelLUT) {
+  private constructor(
+    texture: TextureHandle,
+    table: VertexTable,
+    colorInfo: ColorInfo,
+    qparams: QParams3d,
+    positionsAreQuantized: boolean,
+    uvParams?: QParams2d,
+    auxChannels?: AuxChannelLUT,
+  ) {
     this.texture = texture;
     this.numVertices = table.numVertices;
     this.numRgbaPerVertex = table.numRgbaPerVertex;
@@ -113,7 +131,9 @@ export class VertexLUT implements WebGLDisposable {
       this.uvQParams = qparams2dToArray(uvParams);
   }
 
-  public get isDisposed(): boolean { return this.texture.isDisposed; }
+  public get isDisposed(): boolean {
+    return this.texture.isDisposed;
+  }
 
   public dispose() {
     dispose(this.texture);

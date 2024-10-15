@@ -8,7 +8,6 @@ import { MaskManager } from "../../topology/MaskManager";
 import { Checker } from "../Checker";
 
 describe("MaskManager", () => {
-
   it("HelloWorld", () => {
     const ck = new Checker();
     const allFreeMasks = 0x000F0F00;
@@ -38,5 +37,4 @@ describe("MaskManager", () => {
 
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

@@ -55,7 +55,6 @@ export class ChainCollectorContext {
   }
   private _xyzWork0?: Point3d;
   private findAnyChainToConnect(xyz: Point3d): { chainIndex: number, atEnd: boolean } | undefined {
-
     for (let chainIndexA = 0; chainIndexA < this._chains.length; chainIndexA++) {
       const path = this._chains[chainIndexA];
       this._xyzWork1 = path[path.length - 1].endPoint(this._xyzWork1);
@@ -112,7 +111,7 @@ export class ChainCollectorContext {
         } else {
           this._xyzWork0 = candidate.endPoint(this._xyzWork0);
           connect = this.findAnyChainToConnect(this._xyzWork0);
-          if (connect) {  // START of new primitive ..
+          if (connect) { // START of new primitive ..
             if (connect.atEnd) {
               candidate.reverseInPlace();
               this._chains[connect.chainIndex].push(candidate);
@@ -169,7 +168,11 @@ export class ChainCollectorContext {
    * * primitiveB.startCut
    * * physical gap between primitives.
    */
-  public static needBreakBetweenPrimitives(primitiveA: CurvePrimitive | undefined, primitiveB: CurvePrimitive | undefined, isXYOnly: boolean = false): boolean {
+  public static needBreakBetweenPrimitives(
+    primitiveA: CurvePrimitive | undefined,
+    primitiveB: CurvePrimitive | undefined,
+    isXYOnly: boolean = false,
+  ): boolean {
     if (primitiveA === undefined)
       return true;
     if (primitiveB === undefined)

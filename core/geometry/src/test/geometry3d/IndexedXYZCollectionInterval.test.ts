@@ -36,7 +36,7 @@ describe("IndexedXYZCollectionInterval", () => {
 
     ck.testTrue(intervalB.isValidSubset);
     ck.testTrue(intervalB.length === 0);
-    points.length = 5;    // oops !! intervals become invalid!!
+    points.length = 5; // oops !! intervals become invalid!!
     ck.testFalse(fullInterval.isValidSubset, " subset invalid after trim.");
     fullInterval.restrictEnd();
     fullInterval.advanceEnd();
@@ -44,5 +44,4 @@ describe("IndexedXYZCollectionInterval", () => {
     ck.testExactNumber(fullInterval.length, points.length, "advanceEnd capped");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });

@@ -7,11 +7,19 @@
  */
 
 import { dispose } from "@itwin/core-bentley";
-import { Point2d, Range1d, Range2d, Vector2d } from "@itwin/core-geometry";
 import { RenderTexture, TextureTransparency } from "@itwin/core-common";
 import {
-  DecorateContext, Decorator, GraphicType, imageElementFromUrl, IModelApp, ParticleCollectionBuilder, ParticleProps, Tool, Viewport,
+  DecorateContext,
+  Decorator,
+  GraphicType,
+  imageElementFromUrl,
+  IModelApp,
+  ParticleCollectionBuilder,
+  ParticleProps,
+  Tool,
+  Viewport,
 } from "@itwin/core-frontend";
+import { Point2d, Range1d, Range2d, Vector2d } from "@itwin/core-geometry";
 import { parseToggle } from "../tools/parseToggle";
 import { randomFloat, randomInteger } from "./Random";
 
@@ -159,8 +167,10 @@ export class SnowDecorator implements Decorator {
       z: 0,
       size: randomInteger(this._params.sizeRange.low, this._params.sizeRange.high),
       transparency: randomInteger(this._params.transparencyRange.low, this._params.transparencyRange.high),
-      velocity: new Vector2d(randomFloat(this._params.velocityRange.low.x, this._params.velocityRange.high.x),
-        randomFloat(this._params.velocityRange.low.y, this._params.velocityRange.high.y)),
+      velocity: new Vector2d(
+        randomFloat(this._params.velocityRange.low.x, this._params.velocityRange.high.x),
+        randomFloat(this._params.velocityRange.low.y, this._params.velocityRange.high.y),
+      ),
     };
   }
 
@@ -182,8 +192,10 @@ export class SnowDecorator implements Decorator {
     for (let i = 0; i < this._particles.length; i++) {
       // Apply some acceleration to produce random drift.
       const particle = this._particles[i];
-      acceleration.set(randomFloat(this._params.accelerationRange.low.x, this._params.accelerationRange.high.x),
-        randomFloat(this._params.accelerationRange.low.y, this._params.accelerationRange.high.y));
+      acceleration.set(
+        randomFloat(this._params.accelerationRange.low.x, this._params.accelerationRange.high.x),
+        randomFloat(this._params.accelerationRange.low.y, this._params.accelerationRange.high.y),
+      );
 
       acceleration.scale(elapsedSeconds, acceleration);
       particle.velocity.plus(acceleration, particle.velocity);

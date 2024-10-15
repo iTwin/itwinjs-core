@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
-import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
 import * as chai from "chai";
+import * as sinon from "sinon";
 import { EsriUniqueValueRenderer } from "../../ArcGisFeature/EsriSymbology";
+import { NeptuneCoastlineDataset } from "./NeptuneCoastlineDataset";
 const expect = chai.expect;
 
 describe("EsriSymbology", () => {
-
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
@@ -25,7 +24,7 @@ describe("EsriSymbology", () => {
     expect(renderer.field3).to.be.undefined;
     expect(renderer.type).equals(dataset.drawingInfo.renderer.type);
     expect(renderer.uniqueValueInfos.length).equals(dataset.drawingInfo.renderer.uniqueValueInfos.length);
-    for (let i = 0 ; i < renderer.uniqueValueInfos.length; i++) {
+    for (let i = 0; i < renderer.uniqueValueInfos.length; i++) {
       const lhs = renderer.uniqueValueInfos[i];
       const rhs = dataset.drawingInfo.renderer.uniqueValueInfos[i];
       expect(lhs.value).equals(rhs.value);
@@ -34,5 +33,4 @@ describe("EsriSymbology", () => {
       expect(lhs.symbol.type).equals(rhs.symbol.type);
     }
   });
-
 }); // end test suite

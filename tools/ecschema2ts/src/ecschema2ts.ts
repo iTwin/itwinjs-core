@@ -4,7 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ECClass, ECClassModifier, EntityClass, Enumeration, EnumerationProperty, Mixin, PrimitiveProperty, PrimitiveType, Schema, SchemaItem, SchemaItemType, StructClass, StructProperty,
+  ECClass,
+  ECClassModifier,
+  EntityClass,
+  Enumeration,
+  EnumerationProperty,
+  Mixin,
+  PrimitiveProperty,
+  PrimitiveType,
+  Schema,
+  SchemaItem,
+  SchemaItemType,
+  StructClass,
+  StructProperty,
 } from "@itwin/ecschema-metadata";
 
 interface TsBentleyModule {
@@ -120,7 +132,7 @@ export class ECSchemaToTs {
     let outputString: string = "";
 
     // import modules
-    outputString += "import { ClassRegistry, Schema, Schemas } from \"@itwin/core-backend\";\n";
+    outputString += 'import { ClassRegistry, Schema, Schemas } from "@itwin/core-backend";\n';
     outputString += `import * as elementsModule from "./${schemaName}Elements";\n\n`;
 
     // create new schema class
@@ -354,7 +366,6 @@ export class ECSchemaToTs {
           varDeclarationLine += this.addImportClass(classNameToModule, `${structClass.schema.schemaKey.name}ElementProps`, structClass.name);
         else
           varDeclarationLine += structClass.name;
-
       } else if (ecProperty.isNavigation())
         varDeclarationLine += this.addImportClass(classNameToModule, tsBentleyModules.tsIModelJsCommon.moduleName, "RelatedElementProps");
 

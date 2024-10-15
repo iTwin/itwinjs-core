@@ -5,14 +5,7 @@
 /* eslint-disable @typescript-eslint/naming-convention, no-console */
 
 // __PUBLISH_EXTRACT_START__ ExtensionSample-SmartDeviceDecorator.example-code
-import {
-  DecorateContext,
-  Decorator,
-  IModelConnection,
-  Marker,
-  QueryRowFormat,
-  ScreenViewport,
-} from "@itwin/core-extension";
+import { DecorateContext, Decorator, IModelConnection, Marker, QueryRowFormat, ScreenViewport } from "@itwin/core-extension";
 import { SmartDeviceMarker } from "./SmartDeviceMarker";
 
 export class SmartDeviceDecorator implements Decorator {

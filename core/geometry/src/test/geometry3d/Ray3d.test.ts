@@ -76,7 +76,6 @@ function createRays(ck: Checker, target?: Ray3d) {
   const ray2C = Ray3d.fromJSON();
   ck.testTrue(ray2.isAlmostEqual(ray2B), "json round trip");
   ck.testPointer(ray2C, "expect some default fromJSON");
-
 }
 
 describe("Ray3d", () => {
@@ -100,7 +99,7 @@ describe("Ray3d", () => {
     createRays(ck, undefined);
     createRays(ck, rayQ0);
 
-    const nullRay = Ray3d.createXYZUVW(1, 2, 3, 0, 0, 0);  // general origin, zero vector to trigger else branches ..
+    const nullRay = Ray3d.createXYZUVW(1, 2, 3, 0, 0, 0); // general origin, zero vector to trigger else branches ..
     nullRay.toRigidZFrame();
     nullRay.tryNormalizeInPlaceWithAreaWeight(0.0);
     nullRay.tryNormalizeInPlaceWithAreaWeight(1.0);
@@ -112,7 +111,9 @@ describe("Ray3d", () => {
     ck.testUndefined(
       Ray3d.createWeightedDerivative(
         new Float64Array([1, 2, 3, 0]),
-        new Float64Array([2, 1, 4, 0])));
+        new Float64Array([2, 1, 4, 0]),
+      ),
+    );
     expect(ck.getNumErrors()).toBe(0);
   });
   it("Ray3d.ClosestApproach", () => {
@@ -142,7 +143,6 @@ describe("Ray3d", () => {
           const approachC = Ray3d.closestApproachRay3dRay3d(rayA, rayC);
           ck.testExactNumber(approachC.approachType!, CurveCurveApproachType.ParallelGeometry, indexA);
           ck.testCoordinate(shiftDistance, approachC.detailA.point.distance(approachC.detailB.point));
-
         } else {
           ck.testExactNumber(approach.approachType!, CurveCurveApproachType.PerpendicularChord, [indexA, indexB]);
           const vector = Vector3d.createStartEnd(approach.detailA.point, approach.detailB.point);
@@ -157,7 +157,10 @@ describe("Ray3d", () => {
           // rayE2 at fraction f2 has been moved to rayE1 at fraction f1.  Confirm intersection there . .
           const approachE = Ray3d.closestApproachRay3dRay3d(rayE1, rayE2);
           ck.testExactNumber(
-            approachE.approachType!, CurveCurveApproachType.Intersection, "forced intersection", [indexA, indexB],
+            approachE.approachType!,
+            CurveCurveApproachType.Intersection,
+            "forced intersection",
+            [indexA, indexB],
           );
           ck.testCoordinate(f1, approachE.detailA.fraction);
           ck.testCoordinate(f2, approachE.detailB.fraction);
@@ -203,16 +206,21 @@ describe("Ray3d", () => {
             const point = ray.fractionToPoint(interval.fractionToPoint(intervalFraction));
             if (
               !ck.testBoolean(
-                Geometry.isIn01(intervalFraction), range.containsPoint(point), "fractional point vs range",
-                intervalFraction, point, prettyPrint(ray), prettyPrint(range),
+                Geometry.isIn01(intervalFraction),
+                range.containsPoint(point),
+                "fractional point vs range",
+                intervalFraction,
+                point,
+                prettyPrint(ray),
+                prettyPrint(range),
               )
             )
               ray.intersectionWithRange3d(range);
           }
           const interval1 = ray1.intersectionWithRange3d(range);
           if (ck.testDefined(interval1, "Expected reversed ray to have related intersection")) {
-            ck.testCoordinate(interval.low, - interval1.high, "reversed ray");
-            ck.testCoordinate(interval.high, - interval1.low, "reversed ray");
+            ck.testCoordinate(interval.low, -interval1.high, "reversed ray");
+            ck.testCoordinate(interval.high, -interval1.low, "reversed ray");
           }
         } else {
           numOutside++;
@@ -228,15 +236,24 @@ describe("Ray3d", () => {
       const q = range.fractionToPoint(0.4, 0.2, 0.1);
       const interval0 = Range1d.createNull();
       for (const ray of raySample) {
-        const ray3 = Ray3d.create(q, ray.direction);   // we know this starts inside
+        const ray3 = Ray3d.create(q, ray.direction); // we know this starts inside
         const interval = ray3.intersectionWithRange3d(range, interval0);
         ck.testTrue(interval0 === interval, "Verify reuse result)");
         if (ck.testFalse(interval.isNull, "expect real intersection from inside start")) {
           ck.testTrue(interval.containsX(0.0));
           for (const intervalFraction of [0.999999, 0.5, 0.000001, -0.001, 1.001]) {
             const point = ray3.fractionToPoint(interval.fractionToPoint(intervalFraction));
-            if (!ck.testBoolean(Geometry.isIn01(intervalFraction), range.containsPoint(point), "fractional point vs range", intervalFraction, point,
-              prettyPrint(ray3), prettyPrint(range)))
+            if (
+              !ck.testBoolean(
+                Geometry.isIn01(intervalFraction),
+                range.containsPoint(point),
+                "fractional point vs range",
+                intervalFraction,
+                point,
+                prettyPrint(ray3),
+                prettyPrint(range),
+              )
+            )
               ray.intersectionWithRange3d(range);
           }
         }
@@ -265,10 +282,14 @@ describe("Ray3d", () => {
     ck.testUndefined(fractionB, "Detect ray parallel to plane");
     // This pair generates aDotN and UDotN both near zero
     const planeQ = Plane3dByOriginAndUnitNormal.createXYZUVW(
-      101.38054428331306, -7.136947376249823, 14.575798896766162,
-      1.4069516995683865e-17, 1.0468826690441132e-32, 1)!;
-    const rayQ = Ray3d.createXYZUVW(95.87780347429201, -7.1369473762498234, 14.575798896766187,
-      - 1, -4.61132646190051e-31, 4.567684502237405e-15);
+      101.38054428331306,
+      -7.136947376249823,
+      14.575798896766162,
+      1.4069516995683865e-17,
+      1.0468826690441132e-32,
+      1,
+    )!;
+    const rayQ = Ray3d.createXYZUVW(95.87780347429201, -7.1369473762498234, 14.575798896766187, -1, -4.61132646190051e-31, 4.567684502237405e-15);
     ck.testUndefined(rayQ.intersectionWithPlane(planeQ));
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -336,7 +357,10 @@ function captureTriangle(allGeometry: GeometryQuery[], triangle: BarycentricTria
   GeometryCoreTestIO.captureGeometry(
     allGeometry,
     LineString3d.create(
-      rotatedTriangle.points[0], rotatedTriangle.points[1], rotatedTriangle.points[2], rotatedTriangle.points[0],
+      rotatedTriangle.points[0],
+      rotatedTriangle.points[1],
+      rotatedTriangle.points[2],
+      rotatedTriangle.points[0],
     ),
   );
 }
@@ -379,7 +403,9 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     ray.cloneTransformed(rotationTransform, rotatedRay);
     triangle.cloneTransformed(rotationTransform, rotatedTriangle);
     rotatedIntersectionPoint = rotatedRay.intersectionWithTriangle(
-      rotatedTriangle.points[0], rotatedTriangle.points[1], rotatedTriangle.points[2],
+      rotatedTriangle.points[0],
+      rotatedTriangle.points[1],
+      rotatedTriangle.points[2],
     );
     rotatedOriginalIntersectionPoint = rotationMatrix.multiplyPoint(intersectionPoint);
     if (ck.testDefined(rotatedIntersectionPoint)) {
@@ -403,7 +429,9 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     ray.cloneTransformed(rotationTransform, rotatedRay);
     triangle.cloneTransformed(rotationTransform, rotatedTriangle);
     rotatedIntersectionPoint = rotatedRay.intersectionWithTriangle(
-      rotatedTriangle.points[0], rotatedTriangle.points[1], rotatedTriangle.points[2],
+      rotatedTriangle.points[0],
+      rotatedTriangle.points[1],
+      rotatedTriangle.points[2],
     );
     rotatedOriginalIntersectionPoint = rotationMatrix.multiplyPoint(intersectionPoint);
     if (ck.testDefined(rotatedIntersectionPoint)) {
@@ -423,13 +451,17 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     expectedIntersectionPoint = Point3d.create(5, 0, 0);
     if (ck.testDefined(intersectionPoint)) {
       ck.testPoint3d(
-        intersectionPoint, expectedIntersectionPoint, "ray intersects triangle on a triangle edge",
+        intersectionPoint,
+        expectedIntersectionPoint,
+        "ray intersects triangle on a triangle edge",
       );
     }
     ray.cloneTransformed(rotationTransform, rotatedRay);
     triangle.cloneTransformed(rotationTransform, rotatedTriangle);
     rotatedIntersectionPoint = rotatedRay.intersectionWithTriangle(
-      rotatedTriangle.points[0], rotatedTriangle.points[1], rotatedTriangle.points[2],
+      rotatedTriangle.points[0],
+      rotatedTriangle.points[1],
+      rotatedTriangle.points[2],
     );
     rotatedOriginalIntersectionPoint = rotationMatrix.multiplyPoint(intersectionPoint);
     if (ck.testDefined(rotatedIntersectionPoint)) {
@@ -525,9 +557,15 @@ describe("Ray3d.IntersectionWithTriangle", () => {
     for (let i = 0; i < N * N; i++) {
       triangles.push(
         BarycentricTriangle.createXYZXYZXYZ(
-          getRandomNumber(), getRandomNumber(), getRandomNumber(),
-          getRandomNumber(), getRandomNumber(), getRandomNumber(),
-          getRandomNumber(), getRandomNumber(), getRandomNumber(),
+          getRandomNumber(),
+          getRandomNumber(),
+          getRandomNumber(),
+          getRandomNumber(),
+          getRandomNumber(),
+          getRandomNumber(),
+          getRandomNumber(),
+          getRandomNumber(),
+          getRandomNumber(),
         ),
       );
     }
@@ -545,7 +583,9 @@ describe("Ray3d.IntersectionWithTriangle", () => {
         // shoot ray at triangle using Ray3d class
         startTime = performance.now();
         intersectionPoint1 = ray.intersectionWithTriangle(
-          triangle.points[0], triangle.points[1], triangle.points[2],
+          triangle.points[0],
+          triangle.points[1],
+          triangle.points[2],
         );
         endTime = performance.now();
         timeByRay3d = timeByRay3d + endTime - startTime;
@@ -562,22 +602,26 @@ describe("Ray3d.IntersectionWithTriangle", () => {
         }
       }
     }
-    if (!ck.testExactNumber(
-      intersectionPoints1.length,
-      intersectionPoints2.length,
-      "Ray3d and BarycentricTriangle classes return same number of intersection points",
-    )) {
+    if (
+      !ck.testExactNumber(
+        intersectionPoints1.length,
+        intersectionPoints2.length,
+        "Ray3d and BarycentricTriangle classes return same number of intersection points",
+      )
+    ) {
       expect(ck.getNumErrors()).toBe(0);
     }
     GeometryCoreTestIO.consoleLog(
       `${intersectionPoints1.length} intersection happened out of ${rays.length * triangles.length} shoots`,
     );
     for (let i = 0; i < intersectionPoints1.length; i++) {
-      if (!ck.testPoint3d(
-        intersectionPoints1[i],
-        intersectionPoints2[i],
-        "intersection points calculated by Ray3d and BarycentricTriangle classes are equal",
-      )) {
+      if (
+        !ck.testPoint3d(
+          intersectionPoints1[i],
+          intersectionPoints2[i],
+          "intersection points calculated by Ray3d and BarycentricTriangle classes are equal",
+        )
+      ) {
         expect(ck.getNumErrors()).toBe(0);
       }
     }
@@ -606,27 +650,33 @@ describe("Ray3d.IntersectionWithTriangle", () => {
         triangle.cloneTransformed(rotationTransform, rotatedTriangle);
         // shoot rotated ray at rotated triangle
         rotatedIntersectionPoint = rotatedRay.intersectionWithTriangle(
-          rotatedTriangle.points[0], rotatedTriangle.points[1], rotatedTriangle.points[2],
+          rotatedTriangle.points[0],
+          rotatedTriangle.points[1],
+          rotatedTriangle.points[2],
         );
         if (rotatedIntersectionPoint !== undefined) {
           rotatedIntersectionPoints.push(rotatedIntersectionPoint);
         }
       }
     }
-    if (!ck.testExactNumber(
-      intersectionPoints1.length,
-      rotatedIntersectionPoints.length,
-      "original and rotated shots return same number of intersection points",
-    )) {
+    if (
+      !ck.testExactNumber(
+        intersectionPoints1.length,
+        rotatedIntersectionPoints.length,
+        "original and rotated shots return same number of intersection points",
+      )
+    ) {
       expect(ck.getNumErrors()).toBe(0);
     }
     for (let i = 0; i < intersectionPoints1.length; i++) {
       rotatedOriginalIntersectionPoint = rotationMatrix.multiplyPoint(intersectionPoints1[i]);
-      if (!ck.testPoint3d(
-        rotatedOriginalIntersectionPoint,
-        rotatedIntersectionPoints[i],
-        "rotating original intersection points gives rotated intersection points",
-      )) {
+      if (
+        !ck.testPoint3d(
+          rotatedOriginalIntersectionPoint,
+          rotatedIntersectionPoints[i],
+          "rotating original intersection points gives rotated intersection points",
+        )
+      ) {
         expect(ck.getNumErrors()).toBe(0);
       }
     }

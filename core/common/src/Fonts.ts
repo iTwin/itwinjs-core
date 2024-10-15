@@ -10,7 +10,11 @@
  * @public
  * @extensions
  */
-export enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
+export enum FontType {
+  TrueType = 1,
+  Rsc = 2,
+  Shx = 3,
+}
 
 /** An iModel-local identifier for a font.
  * @public
@@ -34,7 +38,9 @@ export interface FontProps {
  * @public
  * @extensions
  */
-export interface FontMapProps { fonts: FontProps[] }
+export interface FontMapProps {
+  fonts: FontProps[];
+}
 
 /**
  * A FontMap holds the set of font names available in an iModel.

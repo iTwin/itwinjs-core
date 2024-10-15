@@ -33,12 +33,18 @@ export interface MobileNotifications {
 }
 
 /** @beta */
-export type DeviceEvents = "memoryWarning" | "orientationChanged" | "enterForeground" | "enterBackground" | "willTerminate" | "authAccessTokenChanged";
+export type DeviceEvents =
+  | "memoryWarning"
+  | "orientationChanged"
+  | "enterForeground"
+  | "enterBackground"
+  | "willTerminate"
+  | "authAccessTokenChanged";
 
 /**
-* The methods that may be invoked via Ipc from the frontend of a Mobile App that are implemented on its backend.
-* @beta
-*/
+ * The methods that may be invoked via Ipc from the frontend of a Mobile App that are implemented on its backend.
+ * @beta
+ */
 export interface MobileAppFunctions {
   reconnect: (connection: number) => Promise<void>;
   getAccessToken: () => Promise<[AccessToken, string]>;

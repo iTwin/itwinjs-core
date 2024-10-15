@@ -9,10 +9,10 @@
 
 // import { Point2d } from "./Geometry2d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
-import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { NumberArray } from "../geometry3d/PointHelpers";
+import { Transform } from "../geometry3d/Transform";
 // import { Geometry } from "./Geometry";
 import { Range1d, Range3d } from "../geometry3d/Range";
 
@@ -41,7 +41,7 @@ export enum AuxChannelDataType {
 
 /**  Represents the [[AuxChannel]] data at a single input value.
  * @public
-*/
+ */
 export class AuxChannelData {
   /** The input value for this data. */
   public input: number;
@@ -80,7 +80,7 @@ export class AuxChannelData {
 
 /**  Represents a single [[PolyfaceAuxData]] channel.
  * @public
-*/
+ */
 export class AuxChannel {
   /** An array of [[AuxChannelData]] that represents the vertex data at one or more input values. */
   public data: AuxChannelData[];
@@ -108,10 +108,12 @@ export class AuxChannel {
 
   /** Toleranced comparison of contents. */
   public isAlmostEqual(other: AuxChannel, tol?: number): boolean {
-    if (this.dataType !== other.dataType ||
+    if (
+      this.dataType !== other.dataType ||
       this.name !== other.name ||
       this.inputName !== other.inputName ||
-      this.data.length !== other.data.length)
+      this.data.length !== other.data.length
+    )
       return false;
 
     for (let i = 0; i < this.data.length; i++)
@@ -271,7 +273,7 @@ export class PolyfaceAuxData {
           case AuxChannelDataType.Normal: {
             inverseRot = inverseRot ?? rot.inverse();
             if (!inverseRot)
-                return false;
+              return false;
 
             transformPoints(data.values, (point) => inverseRot!.multiplyTransposeVectorInPlace(point));
             break;

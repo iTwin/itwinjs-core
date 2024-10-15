@@ -6,12 +6,12 @@
  * @module Polyface
  */
 
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
+import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { IndexedPolyface } from "../Polyface";
-import { Geometry } from "../../Geometry";
-import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
-import { Angle } from "../../geometry3d/Angle";
 
 /**
  * Normal vector with area (or other numeric) and source index
@@ -51,8 +51,12 @@ class SectorData {
   public sectorIndex: number;
   public vertexIndex: number;
   public sectorClusterData: IndexedAreaAndNormal | undefined;
-  public static cbSectorSort(left: SectorData, right: SectorData): number { return left.sectorIndex - right.sectorIndex; }
-  public static cbVertexSort(left: SectorData, right: SectorData): number { return left.vertexIndex - right.vertexIndex; }
+  public static cbSectorSort(left: SectorData, right: SectorData): number {
+    return left.sectorIndex - right.sectorIndex;
+  }
+  public static cbVertexSort(left: SectorData, right: SectorData): number {
+    return left.vertexIndex - right.vertexIndex;
+  }
   public static pushToArray(data: SectorData[], facetData: IndexedAreaAndNormal, sectorIndex: number, vertexIndex: number) {
     data.push(new SectorData(facetData, sectorIndex, vertexIndex));
   }
@@ -78,7 +82,7 @@ export class BuildAverageNormalsContext {
     // We ASSUME that the visitor order matches index order in polyface.data .....
     const visitor = polyface.createVisitor(0);
     const defaultNormal = Vector3d.create(0, 0, 1);
-    const smallArea = Geometry.smallMetricDistanceSquared;    // I DO NOT LIKE THIS TOLERANCE
+    const smallArea = Geometry.smallMetricDistanceSquared; // I DO NOT LIKE THIS TOLERANCE
     const sectors: SectorData[] = [];
     let facetIndex = 0;
     let sectorIndex = 0;
@@ -126,9 +130,7 @@ export class BuildAverageNormalsContext {
         clusters.push(clusterNormal);
         // Accumulate with equal weights . . .
         clusterNormal.addWeightedNormal(1.0, baseData.facetData.normal);
-        for (let candidateSectorIndex = baseSectorIndex;
-          candidateSectorIndex < sectors.length;
-          candidateSectorIndex++) {
+        for (let candidateSectorIndex = baseSectorIndex; candidateSectorIndex < sectors.length; candidateSectorIndex++) {
           const candidateSector = sectors[candidateSectorIndex];
           if (candidateSector.vertexIndex !== vertexIndex)
             break;

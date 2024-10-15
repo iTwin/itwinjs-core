@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ RpcInterface.implementation
-import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@itwin/core-common";
-import { Id64String } from "@itwin/core-bentley";
 import { IModelDb } from "@itwin/core-backend";
-import { RobotWorldEngine } from "./RobotWorldEngine";
+import { Id64String } from "@itwin/core-bentley";
+import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition } from "@itwin/core-common";
 import { RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
+import { RobotWorldEngine } from "./RobotWorldEngine";
 
 // Implement RobotWorldReadRpcInterface
 export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldReadRpcInterface { // eslint-disable-line deprecation/deprecation
@@ -28,7 +28,8 @@ export class RobotWorldReadRpcImpl extends RpcInterface implements RobotWorldRea
 }
 // __PUBLISH_EXTRACT_END__
 
-/* eslint-disable no-duplicate-imports */ // Disable this because it is intentionally separated.
+/* eslint-disable no-duplicate-imports */
+// Disable this because it is intentionally separated.
 import { Angle, AngleProps, Point3d, XYZProps } from "@itwin/core-geometry";
 import { RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
 
@@ -42,7 +43,13 @@ export class RobotWorldWriteRpcImpl extends RpcInterface implements RobotWorldWr
     RobotWorldEngine.moveRobot(IModelDb.findByKey(tokenProps.key), id, Point3d.fromJSON(location));
   }
 
-  public async insertBarrier(tokenProps: IModelRpcProps, modelId: Id64String, location: XYZProps, angle: AngleProps, length: number): Promise<Id64String> {
+  public async insertBarrier(
+    tokenProps: IModelRpcProps,
+    modelId: Id64String,
+    location: XYZProps,
+    angle: AngleProps,
+    length: number,
+  ): Promise<Id64String> {
     return RobotWorldEngine.insertBarrier(IModelDb.findByKey(tokenProps.key), modelId, Point3d.fromJSON(location), Angle.fromJSON(angle), length);
   }
 }

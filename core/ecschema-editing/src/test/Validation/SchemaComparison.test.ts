@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 import { expect } from "chai";
+import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 
 class TestSchemaCompareReporter implements ISchemaCompareReporter {
   public changes: SchemaChanges[] = [];
@@ -110,7 +110,15 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.ConstantDelta, "SchemaA.testPhenomenon", "SchemaB.testPhenomenon", "phenomenon")).to.be.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.ConstantDelta,
+            "SchemaA.testPhenomenon",
+            "SchemaB.testPhenomenon",
+            "phenomenon",
+          ),
+        ).to.be.undefined;
       });
 
       it("should report constant delta for phenomenon with the same name but defined in a referenced schema", async () => {
@@ -152,7 +160,15 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.ConstantDelta, "SchemaA.testPhenomenon", "DummyReferenceTwo.testPhenomenon", "phenomenon")).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.ConstantDelta,
+            "SchemaA.testPhenomenon",
+            "DummyReferenceTwo.testPhenomenon",
+            "phenomenon",
+          ),
+        ).to.be.not.undefined;
       });
     });
 
@@ -196,8 +212,24 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.UnitDelta, "SchemaA.testPhenomenon", "SchemaB.testPhenomenon", "phenomenon")).to.be.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.UnitDelta, "SchemaA.testUnitSystem", "SchemaB.testUnitSystem", "unitSystem")).to.be.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.UnitDelta,
+            "SchemaA.testPhenomenon",
+            "SchemaB.testPhenomenon",
+            "phenomenon",
+          ),
+        ).to.be.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.UnitDelta,
+            "SchemaA.testUnitSystem",
+            "SchemaB.testUnitSystem",
+            "unitSystem",
+          ),
+        ).to.be.undefined;
       });
 
       it("should report unit delta for phenomenon and unitSystem with the same names but defined in a referenced schema", async () => {
@@ -241,8 +273,24 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.UnitDelta, "SchemaA.testPhenomenon", "DummyReferenceTwo.testPhenomenon", "phenomenon")).to.be.not.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.UnitDelta, "SchemaA.testUnitSystem", "DummyReferenceTwo.testUnitSystem", "unitSystem")).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.UnitDelta,
+            "SchemaA.testPhenomenon",
+            "DummyReferenceTwo.testPhenomenon",
+            "phenomenon",
+          ),
+        ).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.UnitDelta,
+            "SchemaA.testUnitSystem",
+            "DummyReferenceTwo.testUnitSystem",
+            "unitSystem",
+          ),
+        ).to.be.not.undefined;
       });
     });
 
@@ -296,8 +344,24 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.InvertedUnitDelta, "SchemaA.testUnit", "SchemaB.testUnit", "invertsUnit")).to.be.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.InvertedUnitDelta, "SchemaA.testUnitSystem", "SchemaB.testUnitSystem", "unitSystem")).to.be.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.InvertedUnitDelta,
+            "SchemaA.testUnit",
+            "SchemaB.testUnit",
+            "invertsUnit",
+          ),
+        ).to.be.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.InvertedUnitDelta,
+            "SchemaA.testUnitSystem",
+            "SchemaB.testUnitSystem",
+            "unitSystem",
+          ),
+        ).to.be.undefined;
       });
 
       it("should report invertedUnit delta for unitSystem and invertsUnit with the same names but defined in a referenced schema", async () => {
@@ -351,8 +415,24 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.InvertedUnitDelta, "SchemaA.testUnit", "DummyReferenceTwo.testUnit", "invertsUnit")).to.be.not.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.InvertedUnitDelta, "SchemaA.testUnitSystem", "DummyReferenceTwo.testUnitSystem", "unitSystem")).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.InvertedUnitDelta,
+            "SchemaA.testUnit",
+            "DummyReferenceTwo.testUnit",
+            "invertsUnit",
+          ),
+        ).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.InvertedUnitDelta,
+            "SchemaA.testUnitSystem",
+            "DummyReferenceTwo.testUnitSystem",
+            "unitSystem",
+          ),
+        ).to.be.not.undefined;
       });
     });
 
@@ -424,8 +504,16 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.KoqDelta, "SchemaA.testUnit", "SchemaB.testUnit", "persistenceUnit")).to.be.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.PresentationUnitMissing, "SchemaA.testFormat(4)[SchemaA.testUnit|undefined]")).to.be.undefined;
+        expect(
+          findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.KoqDelta, "SchemaA.testUnit", "SchemaB.testUnit", "persistenceUnit"),
+        ).to.be.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.PresentationUnitMissing,
+            "SchemaA.testFormat(4)[SchemaA.testUnit|undefined]",
+          ),
+        ).to.be.undefined;
       });
 
       it("should report presentation unit missing when the presentationFormats have the same names but different precision", async () => {
@@ -473,7 +561,13 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.PresentationUnitMissing, "SchemaA.testFormat(4)[SchemaA.testUnit|undefined]")).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.PresentationUnitMissing,
+            "SchemaA.testFormat(4)[SchemaA.testUnit|undefined]",
+          ),
+        ).to.be.not.undefined;
       });
 
       it("should report presentation unit missing when the presentationFormats have the same names but different labels", async () => {
@@ -521,7 +615,13 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.PresentationUnitMissing, "SchemaA.testFormat(4)[SchemaA.testUnit|test]")).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.PresentationUnitMissing,
+            "SchemaA.testFormat(4)[SchemaA.testUnit|test]",
+          ),
+        ).to.be.not.undefined;
       });
 
       it("should report kindOfQuantity delta for presentationFormats and persistenceUnit with the same names but defined in a referenced schema", async () => {
@@ -581,8 +681,22 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.KoqDelta, "SchemaA.testUnit", "DummyReferenceTwo.testUnit", "persistenceUnit")).to.be.not.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.PresentationUnitMissing, "SchemaA.testFormat(4)[SchemaA.testUnit|undefined]")).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.KoqDelta,
+            "SchemaA.testUnit",
+            "DummyReferenceTwo.testUnit",
+            "persistenceUnit",
+          ),
+        ).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.PresentationUnitMissing,
+            "SchemaA.testFormat(4)[SchemaA.testUnit|undefined]",
+          ),
+        ).to.be.not.undefined;
       });
     });
 
@@ -637,7 +751,7 @@ describe("Schema comparison tests for comparing schemas with different names", (
                   },
                   {
                     name: "SchemaA.in",
-                    label: "\"",
+                    label: '"',
                   },
                 ],
               },
@@ -670,7 +784,7 @@ describe("Schema comparison tests for comparing schemas with different names", (
                   },
                   {
                     name: "SchemaB.in",
-                    label: "\"",
+                    label: '"',
                   },
                 ],
               },
@@ -718,7 +832,7 @@ describe("Schema comparison tests for comparing schemas with different names", (
                   },
                   {
                     name: "SchemaA.in",
-                    label: "\"",
+                    label: '"',
                   },
                 ],
               },
@@ -756,7 +870,7 @@ describe("Schema comparison tests for comparing schemas with different names", (
                   },
                   {
                     name: "DummyReferenceTwo.in",
-                    label: "\"",
+                    label: '"',
                   },
                 ],
               },
@@ -803,7 +917,9 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.BaseClassDelta, "SchemaA.testBaseClass", "SchemaB.testBaseClass")).to.be.undefined;
+        expect(
+          findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.BaseClassDelta, "SchemaA.testBaseClass", "SchemaB.testBaseClass"),
+        ).to.be.undefined;
       });
 
       it("should not report baseClass delta when the base class has the same name with different case and is defined in comparable schemas", async () => {
@@ -835,7 +951,9 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.BaseClassDelta, "SchemaA.testBaseClass", "SchemaB.testbaseclass")).to.be.undefined;
+        expect(
+          findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.BaseClassDelta, "SchemaA.testBaseClass", "SchemaB.testbaseclass"),
+        ).to.be.undefined;
       });
 
       it("should report baseClass delta when base class has different full name", async () => {
@@ -867,7 +985,9 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.BaseClassDelta, "SchemaA.testBaseClassA", "SchemaB.testBaseClassB")).to.be.not.undefined;
+        expect(
+          findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.BaseClassDelta, "SchemaA.testBaseClassA", "SchemaB.testBaseClassB"),
+        ).to.be.not.undefined;
       });
 
       it("should report baseClass delta for baseClass with the same name but defined in a referenced schema", async () => {
@@ -911,7 +1031,14 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.BaseClassDelta, "SchemaA.testBaseClass", "DummyReferenceTwo.testBaseClass")).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.BaseClassDelta,
+            "SchemaA.testBaseClass",
+            "DummyReferenceTwo.testBaseClass",
+          ),
+        ).to.be.not.undefined;
       });
 
       it("should not report baseClass delta if the full names are the same, even though the schema containing the definition classA has a different name ", async () => {
@@ -942,11 +1069,12 @@ describe("Schema comparison tests for comparing schemas with different names", (
               baseClass: "SchemaA.testBaseClass",
             },
           },
-
         }, contextA);
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.BaseClassDelta, "SchemaA.testBaseClass", "SchemaA.testBaseClass")).to.be.undefined;
+        expect(
+          findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.BaseClassDelta, "SchemaA.testBaseClass", "SchemaA.testBaseClass"),
+        ).to.be.undefined;
       });
     });
 
@@ -991,8 +1119,12 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.MixinDelta, "SchemaA.testEntity", "SchemaB.testEntity", "appliesTo")).to.be.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.MixinDelta, "SchemaA.testEntity", "SchemaB.testEntity2", "appliesTo")).to.be.not.undefined;
+        expect(
+          findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.MixinDelta, "SchemaA.testEntity", "SchemaB.testEntity", "appliesTo"),
+        ).to.be.undefined;
+        expect(
+          findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.MixinDelta, "SchemaA.testEntity", "SchemaB.testEntity2", "appliesTo"),
+        ).to.be.not.undefined;
       });
 
       it("should report Mixin delta for appliesTo with the same name but defined in a referenced schema", async () => {
@@ -1036,7 +1168,15 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.MixinDelta, "SchemaA.testEntity", "DummyReferenceTwo.testEntity", "appliesTo")).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.MixinDelta,
+            "SchemaA.testEntity",
+            "DummyReferenceTwo.testEntity",
+            "appliesTo",
+          ),
+        ).to.be.not.undefined;
       });
     });
 
@@ -1114,10 +1254,28 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintDelta, "SchemaA.sourceEntity", "SchemaB.sourceEntity", "abstractConstraint")).to.be.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintDelta, "SchemaA.targetEntity", "SchemaB.targetEntity", "abstractConstraint")).to.be.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintClassMissing, "SchemaA.sourceEntity")).to.be.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintClassMissing, "SchemaA.targetEntity")).to.be.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.RelationshipConstraintDelta,
+            "SchemaA.sourceEntity",
+            "SchemaB.sourceEntity",
+            "abstractConstraint",
+          ),
+        ).to.be.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.RelationshipConstraintDelta,
+            "SchemaA.targetEntity",
+            "SchemaB.targetEntity",
+            "abstractConstraint",
+          ),
+        ).to.be.undefined;
+        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintClassMissing, "SchemaA.sourceEntity")).to
+          .be.undefined;
+        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintClassMissing, "SchemaA.targetEntity")).to
+          .be.undefined;
       });
 
       it("should report Relationship Constraint delta for abstract constraint with the same name but defined in a referenced schema", async () => {
@@ -1205,15 +1363,33 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
         const comparer = new SchemaComparer(reporter);
         await comparer.compareSchemas(schemaA, schemaB);
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintDelta, "SchemaA.sourceEntity", "DummyReferenceTwo.sourceEntity", "abstractConstraint")).to.be.not.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintDelta, "SchemaA.targetEntity", "DummyReferenceTwo.targetEntity", "abstractConstraint")).to.be.not.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintClassMissing, "SchemaA.sourceEntity")).to.be.not.undefined;
-        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintClassMissing, "SchemaA.targetEntity")).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.RelationshipConstraintDelta,
+            "SchemaA.sourceEntity",
+            "DummyReferenceTwo.sourceEntity",
+            "abstractConstraint",
+          ),
+        ).to.be.not.undefined;
+        expect(
+          findDiagnostic(
+            reporter.changes[0].allDiagnostics,
+            SchemaCompareCodes.RelationshipConstraintDelta,
+            "SchemaA.targetEntity",
+            "DummyReferenceTwo.targetEntity",
+            "abstractConstraint",
+          ),
+        ).to.be.not.undefined;
+        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintClassMissing, "SchemaA.sourceEntity")).to
+          .be.not.undefined;
+        expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.RelationshipConstraintClassMissing, "SchemaA.targetEntity")).to
+          .be.not.undefined;
       });
     });
   });
 
-  describe("Property comparison cases", ()=> {
+  describe("Property comparison cases", () => {
     function items(schemaName: string) {
       return {
         testUnitSystem: {
@@ -1237,7 +1413,7 @@ describe("Schema comparison tests for comparing schemas with different names", (
       };
     }
 
-    it("should not report property delta when the category class has the same name and is defined in comparable schemas", async ()=> {
+    it("should not report property delta when the category class has the same name and is defined in comparable schemas", async () => {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
@@ -1284,10 +1460,18 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-      expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.PropertyDelta, "SchemaA.testCategory", "SchemaB.testCategory", "category")).to.be.undefined;
+      expect(
+        findDiagnostic(
+          reporter.changes[0].allDiagnostics,
+          SchemaCompareCodes.PropertyDelta,
+          "SchemaA.testCategory",
+          "SchemaB.testCategory",
+          "category",
+        ),
+      ).to.be.undefined;
     });
 
-    it("should not report property delta when the kind of quantity class has the same name and is defined in comparable schemas", async ()=> {
+    it("should not report property delta when the kind of quantity class has the same name and is defined in comparable schemas", async () => {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
@@ -1326,10 +1510,12 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-      expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.PropertyDelta, "SchemaA.testKoq", "SchemaB.testKoq", "kindOfQuantity")).to.be.undefined;
+      expect(
+        findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.PropertyDelta, "SchemaA.testKoq", "SchemaB.testKoq", "kindOfQuantity"),
+      ).to.be.undefined;
     });
 
-    it("should report property delta for category with the same name but defined in a referenced schema", async ()=> {
+    it("should report property delta for category with the same name but defined in a referenced schema", async () => {
       await Schema.fromJson({
         ...dummyRefOneJson,
         items: {
@@ -1388,10 +1574,18 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-      expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.PropertyDelta, "DummyReferenceOne.testCategory", "SchemaB.testCategory", "category")).to.be.not.undefined;
+      expect(
+        findDiagnostic(
+          reporter.changes[0].allDiagnostics,
+          SchemaCompareCodes.PropertyDelta,
+          "DummyReferenceOne.testCategory",
+          "SchemaB.testCategory",
+          "category",
+        ),
+      ).to.be.not.undefined;
     });
 
-    it("should report property delta for kind of quantity with the same name but defined in a referenced schema", async ()=> {
+    it("should report property delta for kind of quantity with the same name but defined in a referenced schema", async () => {
       await Schema.fromJson({
         ...dummyRefOneJson,
         items: {
@@ -1442,11 +1636,19 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-      expect(findDiagnostic(reporter.changes[0].allDiagnostics, SchemaCompareCodes.PropertyDelta, "DummyReferenceOne.testKoq", "SchemaB.testKoq", "kindOfQuantity")).to.be.not.undefined;
+      expect(
+        findDiagnostic(
+          reporter.changes[0].allDiagnostics,
+          SchemaCompareCodes.PropertyDelta,
+          "DummyReferenceOne.testKoq",
+          "SchemaB.testKoq",
+          "kindOfQuantity",
+        ),
+      ).to.be.not.undefined;
     });
   });
 
-  describe("Custom Attribute comparison cases", ()=> {
+  describe("Custom Attribute comparison cases", () => {
     const items = {
       testCA: {
         schemaItemType: "CustomAttributeClass",
@@ -1461,7 +1663,7 @@ describe("Schema comparison tests for comparing schemas with different names", (
       },
     };
 
-    it("should not report custom attribute missing when CA class has the same name and is defined in comparable schemas", async ()=> {
+    it("should not report custom attribute missing when CA class has the same name and is defined in comparable schemas", async () => {
       const schemaA = await Schema.fromJson({
         ...schemaAJson,
         items: {
@@ -1496,10 +1698,14 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-      expect(reporter.changes[0].allDiagnostics.find((d) => d.code === SchemaCompareCodes.CustomAttributeInstanceClassMissing && d.messageArgs!.at(0).className === "SchemaA.testCA")).to.be.undefined;
+      expect(
+        reporter.changes[0].allDiagnostics.find((d) =>
+          d.code === SchemaCompareCodes.CustomAttributeInstanceClassMissing && d.messageArgs!.at(0).className === "SchemaA.testCA"
+        ),
+      ).to.be.undefined;
     });
 
-    it("should report custom attribute missing for CA with the same name but defined in a referenced schema", async ()=> {
+    it("should report custom attribute missing for CA with the same name but defined in a referenced schema", async () => {
       await Schema.fromJson({
         ...dummyRefOneJson,
         items: {
@@ -1560,13 +1766,17 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-      expect(reporter.changes[0].allDiagnostics.find((d) => d.code === SchemaCompareCodes.CustomAttributeInstanceClassMissing && d.messageArgs!.at(0).className === "DummyReferenceOne.testCA")).to.be.not.undefined;
+      expect(
+        reporter.changes[0].allDiagnostics.find((d) =>
+          d.code === SchemaCompareCodes.CustomAttributeInstanceClassMissing && d.messageArgs!.at(0).className === "DummyReferenceOne.testCA"
+        ),
+      ).to.be.not.undefined;
     });
   });
 
   /**
-     * Linear draft schema examples
-     */
+   * Linear draft schema examples
+   */
   describe("Struct Class comparisons", () => {
     it("should not report property delta for typeName of the property with same name and is defined in schemas being compared", async () => {
       const schemaA = await Schema.fromJson({
@@ -1613,7 +1823,8 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "SchemaA.inSpanAddress", "SchemaB.inSpanAddress", "structClass")).to.be.undefined;
+      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "SchemaA.inSpanAddress", "SchemaB.inSpanAddress", "structClass")).to.be
+        .undefined;
     });
 
     it("should report property delta for typeName of the property with different name", async () => {
@@ -1661,7 +1872,8 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "SchemaA.inSpanAddressA", "SchemaB.inSpanAddressB", "structClass")).to.be.not.undefined;
+      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "SchemaA.inSpanAddressA", "SchemaB.inSpanAddressB", "structClass")).to.be
+        .not.undefined;
     });
 
     it("should report property delta for typeName of the property with the same name but defined in a referenced schema", async () => {
@@ -1722,7 +1934,8 @@ describe("Schema comparison tests for comparing schemas with different names", (
 
       const comparer = new SchemaComparer(reporter);
       await comparer.compareSchemas(schemaA, schemaB);
-      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "DummyReferenceOne.inSpanAddress", "SchemaB.inSpanAddress", "structClass")).to.be.not.undefined;
+      expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-106", "DummyReferenceOne.inSpanAddress", "SchemaB.inSpanAddress", "structClass"))
+        .to.be.not.undefined;
     });
   });
 });

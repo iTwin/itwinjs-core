@@ -2,17 +2,22 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ProcessDetector } from "@itwin/core-bentley";
 import { SectionType } from "@itwin/core-common";
 import { CheckpointConnection, IModelApp, IModelConnection, ParseAndRunResult, SnapshotConnection } from "@itwin/core-frontend";
 import { Point3d } from "@itwin/core-geometry";
 import {
-  HyperModeling, HyperModelingDecorator, SectionDrawingLocationState, SectionMarker, SectionMarkerConfig, SectionMarkerHandler,
+  HyperModeling,
+  HyperModelingDecorator,
+  SectionDrawingLocationState,
+  SectionMarker,
+  SectionMarkerConfig,
+  SectionMarkerHandler,
 } from "@itwin/hypermodeling-frontend";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
-import { testOnScreenViewport } from "../TestViewport";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
+import { testOnScreenViewport } from "../TestViewport";
 
 describe("HyperModeling (#integration)", () => {
   let imodel: IModelConnection; // An iModel containing no section drawing locations
@@ -88,7 +93,8 @@ describe("HyperModeling (#integration)", () => {
       const actual = states.find((state) =>
         state.id === expected.id && state.sectionType === expected.type && state.userLabel === expected.label &&
         state.placement.origin.isAlmostEqual(expected.origin, 0.001) && state.drawingViewId === expected.sectionViewId &&
-        state.spatialViewId === expected.spatialViewId && state.viewAttachment?.id === expected.viewAttachmentId)!;
+        state.spatialViewId === expected.spatialViewId && state.viewAttachment?.id === expected.viewAttachmentId
+      )!;
 
       expect(actual).not.to.be.undefined;
       expect(await actual.tryLoadDrawingView()).not.to.be.undefined;
@@ -203,7 +209,7 @@ describe("HyperModeling (#integration)", () => {
     HyperModeling.replaceConfiguration();
   });
 
-  it("adjusts marker display via key-in", async function () {
+  it("adjusts marker display via key-in", async function() {
     if (ProcessDetector.isElectronAppFrontend) {
       // The electron version fails to find/parse the hypermodeling package's JSON file containing its keyins.
       // The browser version has no such problem.
@@ -241,8 +247,10 @@ describe("HyperModeling (#integration)", () => {
 
       // Activating/deactivating markers is a no-op
       class Handler extends SectionMarkerHandler {
-        public override async activateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) { return true; }
-        public override async deactivateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) { }
+        public override async activateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) {
+          return true;
+        }
+        public override async deactivateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) {}
       }
 
       HyperModeling.updateConfiguration({ markerHandler: new Handler() });
@@ -356,8 +364,10 @@ describe("HyperModeling (#integration)", () => {
       class Handler extends SectionMarkerHandler {
         public static visible = true;
 
-        public override async activateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) { return true; }
-        public override async deactivateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) { }
+        public override async activateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) {
+          return true;
+        }
+        public override async deactivateMarker(_marker: SectionMarker, _decorator: HyperModelingDecorator) {}
         public override isMarkerVisible(_marker: SectionMarker, _dec: HyperModelingDecorator, _config: SectionMarkerConfig): boolean {
           return super.isMarkerVisible(_marker, _dec, _config) && Handler.visible;
         }

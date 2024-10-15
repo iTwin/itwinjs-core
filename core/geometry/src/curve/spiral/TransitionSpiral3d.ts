@@ -43,17 +43,16 @@ export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "c
  * @public
  */
 export type DirectSpiralTypeName =
-   "JapaneseCubic"  // 1 term from each of the X,Y clothoid series expansions:  y = x^3 / (6RL)
-  | "Arema"       // 2 terms from each of the X,Y clothoid series expansions.  Identical to ChineseCubic!
-  | "ChineseCubic"  // Identical to Arema!
-  | "HalfCosine"  // high continuity cosine variation from quadratic.
+  | "JapaneseCubic" // 1 term from each of the X,Y clothoid series expansions:  y = x^3 / (6RL)
+  | "Arema" // 2 terms from each of the X,Y clothoid series expansions.  Identical to ChineseCubic!
+  | "ChineseCubic" // Identical to Arema!
+  | "HalfCosine" // high continuity cosine variation from quadratic.
   | "AustralianRailCorp" // cubic with high accuracy distance series
-  | "WesternAustralian"  // simple cubic -- 2 terms of x series, 1 term of y series.
-  | "Czech"  // simple cubic with two term distance approximation
-  | "MXCubicAlongArc"  // x obtained from fractional distance via 2-terms from series, y = x^3/ (6RL)
+  | "WesternAustralian" // simple cubic -- 2 terms of x series, 1 term of y series.
+  | "Czech" // simple cubic with two term distance approximation
+  | "MXCubicAlongArc" // x obtained from fractional distance via 2-terms from series, y = x^3/ (6RL)
   | "Polish"
-  | "Italian"
-  ;
+  | "Italian";
 
 /**
  * TransitionSpiral3d is a base class for multiple variants of spirals.
@@ -79,15 +78,24 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
    */
   protected _activeFractionInterval: Segment1d;
   /** Return (reference to) the active portion of the reference spiral. */
-  public get activeFractionInterval(): Segment1d { return this._activeFractionInterval; }
+  public get activeFractionInterval(): Segment1d {
+    return this._activeFractionInterval;
+  }
   /** strokes in the active portion */
   public abstract get activeStrokes(): LineString3d;
   /** Placement transform */
   protected _localToWorld: Transform;
   /** (reference to) placement transform. */
-  public get localToWorld(): Transform { return this._localToWorld; }
+  public get localToWorld(): Transform {
+    return this._localToWorld;
+  }
 
-  protected constructor(spiralType: string | undefined, localToWorld: Transform, activeFractionInterval: Segment1d | undefined, designProperties: TransitionConditionalProperties | undefined) {
+  protected constructor(
+    spiralType: string | undefined,
+    localToWorld: Transform,
+    activeFractionInterval: Segment1d | undefined,
+    designProperties: TransitionConditionalProperties | undefined,
+  ) {
     super();
     this._spiralType = spiralType ? spiralType : "unknownSpiralType";
     this._designProperties = designProperties;
@@ -95,9 +103,13 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     this._activeFractionInterval = activeFractionInterval ? activeFractionInterval : Segment1d.create(0, 1);
   }
 
-  public get spiralType(): string { return this._spiralType; }
+  public get spiralType(): string {
+    return this._spiralType;
+  }
   /** Return 1/r with convention that if true zero is given as radius it represents infinite radius (0 curvature, straight line) */
-  public static radiusToCurvature(radius: number): number { return (radius === 0.0) ? 0.0 : 1.0 / radius; }
+  public static radiusToCurvature(radius: number): number {
+    return (radius === 0.0) ? 0.0 : 1.0 / radius;
+  }
 
   /** Return 1/k with convention that if near-zero is given as curvature, its infinite radius is returned as 0 */
   public static curvatureToRadius(curvature: number): number {
@@ -169,7 +181,9 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
     return TransitionSpiral3d.curvatureToRadius((2.0 * sweepRadians / arcLength) - TransitionSpiral3d.radiusToCurvature(radius1));
   }
   /** Return the original defining properties (if any) saved by the constructor. */
-  public get designProperties(): TransitionConditionalProperties | undefined { return this._designProperties; }
+  public get designProperties(): TransitionConditionalProperties | undefined {
+    return this._designProperties;
+  }
   /**
    * * If transformA is rigid with uniform scale, apply the rigid part of transformA to the localToWorld transform and return the scale and rigid separation.
    * * If not rigid, do nothing and return undefined.
@@ -207,20 +221,20 @@ export abstract class TransitionSpiral3d extends CurvePrimitive {
   }
   /** extend the range by the strokes of the spiral */
   public override extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    const myRange = this.rangeBetweenFractions (0.0, 1.0, transform);
-    rangeToExtend.extendRange (myRange);
+    const myRange = this.rangeBetweenFractions(0.0, 1.0, transform);
+    rangeToExtend.extendRange(myRange);
   }
 
   /** return the range of spiral between fractions of the activeStrokes.
    * * Use activeStrokes point count times interval factor for initial evaluation count, but do at least 5
    */
-   public override rangeBetweenFractions(fractionA: number, fractionB: number, transform?: Transform): Range3d {
+  public override rangeBetweenFractions(fractionA: number, fractionB: number, transform?: Transform): Range3d {
     const strokes = this.activeStrokes;
     if (undefined === strokes)
-      return Range3d.createNull ();
-    let count = Math.ceil (strokes.numPoints() * Math.abs (fractionB - fractionA));
-    count = Geometry.clamp (5, count, 30);
-    return this.rangeBetweenFractionsByCount (fractionA, fractionB, count, transform, 0.5);
+      return Range3d.createNull();
+    let count = Math.ceil(strokes.numPoints() * Math.abs(fractionB - fractionA));
+    count = Geometry.clamp(5, count, 30);
+    return this.rangeBetweenFractionsByCount(fractionA, fractionB, count, transform, 0.5);
   }
   /** Project instance geometry (via dispatch) onto the given ray, and return the extreme fractional parameters of projection.
    * @param ray ray onto which the instance is projected. A `Vector3d` is treated as a `Ray3d` with zero origin.

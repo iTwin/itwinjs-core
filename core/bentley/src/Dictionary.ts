@@ -80,7 +80,9 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
   }
 
   /** The number of entries in the dictionary. */
-  public get size(): number { return this._keys.length; }
+  public get size(): number {
+    return this._keys.length;
+  }
 
   /** Returns an iterator over the key-value pairs in the Dictionary suitable for use in `for-of` loops. Entries are returned in sorted order by key. */
   public [Symbol.iterator](): Iterator<DictionaryEntry<K, V>> {
@@ -89,7 +91,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
 
   /** Provides iteration over the keys in this Dictionary, in sorted order. */
   public keys(): Iterable<K> {
-    function * iterator(dict: Dictionary<K, V>) {
+    function* iterator(dict: Dictionary<K, V>) {
       for (const entry of dict)
         yield entry.key;
     }
@@ -101,7 +103,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
 
   /** Provides iteration over the values in this Dictionary, in sorted order by the corresponding keys. */
   public values(): Iterable<V> {
-    function * iterator(dict: Dictionary<K, V>) {
+    function* iterator(dict: Dictionary<K, V>) {
       for (const entry of dict)
         yield entry.value;
     }
@@ -234,5 +236,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    * @param key The key whose position is to be computed.
    * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent key already exists at that index.
    */
-  protected lowerBound(key: K): { index: number, equal: boolean } { return lowerBound(key, this._keys, this._compareKeys); }
+  protected lowerBound(key: K): { index: number, equal: boolean } {
+    return lowerBound(key, this._keys, this._compareKeys);
+  }
 }

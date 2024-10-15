@@ -140,16 +140,17 @@ describe("Point2d", () => {
           "cross product used consistently for reverse order signed angle",
         );
         /*
-        * ccw angle is positive and cw is negative. cross product is positive if thumb points up
-        * in the right hand rule and is negative if thumb points down in the right hand rule.
-        */
+         * ccw angle is positive and cw is negative. cross product is positive if thumb points up
+         * in the right hand rule and is negative if thumb points down in the right hand rule.
+         */
         ck.testLT(0, vectorI.crossProduct(vectorJ) * signedAngle.radians, "cross product sign agrees with signed angle");
 
         const vectorQ = Vector2d.create(1.2312321, 4.23);
         const vectorR = Vector2d.create(-0.23428, 1.231);
         ck.testPoint2d(
           origin.plus3Scaled(vectorI, s1, vectorJ, s2, vectorQ, s3),
-          origin.plusScaled(vectorI, s1).plus2Scaled(vectorJ, s2, vectorQ, s3));
+          origin.plusScaled(vectorI, s1).plus2Scaled(vectorJ, s2, vectorQ, s3),
+        );
         ck.testVector2d(
           vectorR.plus3Scaled(vectorI, s1, vectorJ, s2, vectorQ, s3),
           vectorR.plusScaled(vectorI, s1).plus2Scaled(vectorJ, s2, vectorQ, s3),

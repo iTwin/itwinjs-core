@@ -1,6 +1,6 @@
+import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import { describe, expect, it } from "vitest";
 import { TextAnnotation, TextAnnotationAnchor } from "../../annotation/TextAnnotation";
-import { Angle, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@itwin/core-geometry";
 
 describe("TextAnnotation", () => {
   describe("computeAnchorPoint", () => {
@@ -44,7 +44,10 @@ describe("TextAnnotation", () => {
             const anchor = annotation.computeAnchorPoint(extents);
             const transformed = transform.multiplyPoint3d(anchor);
             const expected = annotation.offset;
-            expect(transformed.isAlmostEqual(expected)).to.equal(true, `expected ${JSON.stringify(transformed.toJSON())} to equal ${JSON.stringify(expected.toJSON())}`);
+            expect(transformed.isAlmostEqual(expected)).to.equal(
+              true,
+              `expected ${JSON.stringify(transformed.toJSON())} to equal ${JSON.stringify(expected.toJSON())}`,
+            );
           };
 
           // No offset nor rotation
@@ -55,7 +58,7 @@ describe("TextAnnotation", () => {
           expectAnchorAtOrigin();
 
           // Offset only
-          annotation.orientation = new YawPitchRollAngles();;
+          annotation.orientation = new YawPitchRollAngles();
           annotation.offset = new Point3d(4, -6, 0);
           expectAnchorAtOrigin();
 
@@ -131,7 +134,7 @@ describe("TextAnnotation", () => {
         rotation: 90,
       });
       expectTransformedRange([10, -10, 20, 10], {
-        anchor: { horizontal: "center", vertical: "top"},
+        anchor: { horizontal: "center", vertical: "top" },
         rotation: 90,
       });
       expectTransformedRange([0, -20, 10, 0], {

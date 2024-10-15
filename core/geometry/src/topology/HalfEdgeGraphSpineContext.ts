@@ -6,13 +6,13 @@
  * @module Topology
  */
 import { Geometry } from "../Geometry";
-import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { HalfEdgeGraphMerge } from "./Merging";
-import { Triangulator } from "./Triangulation";
-import { RegularizationContext } from "./RegularizeFace";
-import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "./HalfEdgeGraphSearch";
 import { Angle } from "../geometry3d/Angle";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "./Graph";
+import { HalfEdgeGraphSearch, HalfEdgeMaskTester } from "./HalfEdgeGraphSearch";
+import { HalfEdgeGraphMerge } from "./Merging";
+import { RegularizationContext } from "./RegularizeFace";
+import { Triangulator } from "./Triangulation";
 // cSpell:disable
 // const sSpineRelTol = 1.0e-8;
 // const sSpineGraphAbsTol = 0.0;
@@ -34,13 +34,17 @@ function createNVectors(n: number): Vector3d[] {
 class NodeSortKey {
   private _a: number;
   private _node: HalfEdge;
-  public get node() { return this._node; }
+  public get node() {
+    return this._node;
+  }
 
   public constructor(node: HalfEdge, b: number) {
     this._node = node;
     this._a = b;
   }
-  public static compareForSort(dataA: NodeSortKey, dataB: NodeSortKey): number { return dataA._a - dataB._a; }
+  public static compareForSort(dataA: NodeSortKey, dataB: NodeSortKey): number {
+    return dataA._a - dataB._a;
+  }
 }
 
 /**
@@ -77,7 +81,9 @@ export class HalfEdgeGraphSpineContext {
   /** mask marking edges that have been paired into quads */
   private _diagonalMask: HalfEdgeMask;
   private _boxMask: HalfEdgeMask;
-  public get graph() { return this._spineGraph; }
+  public get graph() {
+    return this._spineGraph;
+  }
   /**
    * Create a context with an empty graph.
    * * Reserve masks for specialized markup.
@@ -106,15 +112,15 @@ export class HalfEdgeGraphSpineContext {
     xyzOut.push(newArray);
   }
 
-  private getBoxCorners(diagonalNode: HalfEdge,
-    nodes: HalfEdge[],
-    points: Point3d[]): boolean {
+  private getBoxCorners(diagonalNode: HalfEdge, nodes: HalfEdge[], points: Point3d[]): boolean {
     const diagonalMate = diagonalNode.edgeMate;
     nodes.length = 0;
     points.length = 0;
-    if (!diagonalNode.getMask(HalfEdgeMask.BOUNDARY_EDGE)
+    if (
+      !diagonalNode.getMask(HalfEdgeMask.BOUNDARY_EDGE)
       && diagonalNode.countEdgesAroundFace() === 3
-      && diagonalMate.countEdgesAroundFace() === 3) {
+      && diagonalMate.countEdgesAroundFace() === 3
+    ) {
       const nodeA = diagonalMate.faceSuccessor;
       nodes.push(nodeA);
       nodes.push(nodeA.faceSuccessor);
@@ -132,7 +138,6 @@ export class HalfEdgeGraphSpineContext {
   // function key is the smaller absolute angle between the bisectors.
   // (pi/2 is max possible value).
   private diagonalKeyFunc(pDiagonalNode: HalfEdge): number {
-
     const nodes: HalfEdge[] = [];
     const points: Point3d[] = [];
     if (this.getBoxCorners(pDiagonalNode, nodes, points)) {
@@ -170,10 +175,9 @@ export class HalfEdgeGraphSpineContext {
   // Select a branch point in a triangle.
   // This may be the centroid or the midpoint of an edge joining midpoints of a pair of edges.
   private selectTriangleInteriorPoint(pXYZ: Point3d[]): Point3d {
-
     const xyz = createNPoints(6);
-    const xyzMid = createNPoints(6);     // Midpoints of each edge.
-    const interiorCandidate = createNPoints(4);   // for i in {012}, [i] is midpoint of midpoint[i+1] and midpoint[i+2].
+    const xyzMid = createNPoints(6); // Midpoints of each edge.
+    const interiorCandidate = createNPoints(4); // for i in {012}, [i] is midpoint of midpoint[i+1] and midpoint[i+2].
     // [3] is centroid.
     const edgeVector = createNVectors(6);
     const centroid = Point3d.create();
@@ -187,7 +191,7 @@ export class HalfEdgeGraphSpineContext {
     for (let i = 0; i < 3; i++) {
       xyzMid[i] = xyz[i].interpolate(0.5, xyz[i + 1]);
       xyzMid[i + 3] = xyzMid[i];
-      edgeVector[i] = Vector3d.createStartEnd(xyz[i], xyz[i + 1]);    // use wraparound
+      edgeVector[i] = Vector3d.createStartEnd(xyz[i], xyz[i + 1]); // use wraparound
       edgeVector[i + 3] = edgeVector[i];
     }
 
@@ -222,7 +226,6 @@ export class HalfEdgeGraphSpineContext {
   }
 
   private markBox(pA: HalfEdge): void {
-
     const pB = pA.edgeMate;
     pA.setMask(this._diagonalMask);
     pB.setMask(this._diagonalMask);
@@ -231,7 +234,6 @@ export class HalfEdgeGraphSpineContext {
   }
 
   private setSortedDiagonalMasks(minA: number): number {
-
     const candidates: NodeSortKey[] = [];
     let numDiagonal = 0;
     for (const node of this._spineGraph.allHalfEdges) {
@@ -246,8 +248,10 @@ export class HalfEdgeGraphSpineContext {
     while (undefined !== (key = candidates.pop())) {
       const pA = key.node;
       const pB = pA.edgeMate;
-      if (!pA.getMask(this._boxMask)
-        && !pB.getMask(this._boxMask)) {
+      if (
+        !pA.getMask(this._boxMask)
+        && !pB.getMask(this._boxMask)
+      ) {
         this.markBox(pA);
         numDiagonal++;
       }
@@ -257,7 +261,6 @@ export class HalfEdgeGraphSpineContext {
 
   /// <param name="xyzA">Vertex whose angle is being split</param>
   private splitOK(xyzA: Point3d, xyzB: Point3d, xyzQ: Point3d, xyzC: Point3d, minAngle: number): boolean {
-
     const vectorAB = Vector3d.createStartEnd(xyzA, xyzB);
     const vectorAQ = Vector3d.createStartEnd(xyzA, xyzQ);
     const vectorAC = Vector3d.createStartEnd(xyzA, xyzC);
@@ -273,14 +276,14 @@ export class HalfEdgeGraphSpineContext {
   // Drop a perpenedicular to that boundary.
   // return the number of edges added.
   private addPerpendicularsToBoundaries(minSplitRadians: number, minCandidateRadians: number): number {
-
     let numAdd = 0;
     for (const pA of this._spineGraph.allHalfEdges) {
       const pB = pA.faceSuccessor;
       const pC = pB.faceSuccessor;
-      if (!pA.getMask(HalfEdgeMask.EXTERIOR)
-        && !pA.getMask(HalfEdgeMask.BOUNDARY_EDGE)   // ?? prevent deep recursion
-        && !pC.getMask(HalfEdgeMask.BOUNDARY_EDGE)   // ?? prevent deep recursion
+      if (
+        !pA.getMask(HalfEdgeMask.EXTERIOR)
+        && !pA.getMask(HalfEdgeMask.BOUNDARY_EDGE) // ?? prevent deep recursion
+        && !pC.getMask(HalfEdgeMask.BOUNDARY_EDGE) // ?? prevent deep recursion
         && pB.getMask(HalfEdgeMask.BOUNDARY_EDGE)
         && pC.faceSuccessor === pA
       ) {
@@ -319,8 +322,8 @@ export class HalfEdgeGraphSpineContext {
     // true to include the edge to boundary when the qued is a dead end.
     bIncludeFinal: boolean,
     // true to include the two adjacent edges to boundary if the quad is at a corner.
-    bIncludeCornerSpokes: boolean): boolean {
-
+    bIncludeCornerSpokes: boolean,
+  ): boolean {
     if (pFace.countEdgesAroundFace() !== 4)
       return false;
     const pNode: HalfEdge[] = [];
@@ -368,8 +371,10 @@ export class HalfEdgeGraphSpineContext {
       } else {
         // Block sits as exterior corner.  Let the two spines continue to their opposite faces ..
         for (let i: number = 0; i < 4; i++)
-          if ((bIsBoundary[i] && bIncludeCornerSpokes)
-            || (!bIsBoundary[i] && bIncludeInterior))
+          if (
+            (bIsBoundary[i] && bIncludeCornerSpokes)
+            || (!bIsBoundary[i] && bIncludeInterior)
+          )
             this.addEdge(xyzOut, midpoint[i], centroid);
       }
     } else if (numBoundary === 3) {
@@ -382,10 +387,11 @@ export class HalfEdgeGraphSpineContext {
   }
 
   private getSpineEdgesInTriangle(
-    pFace: HalfEdge, xyzOut: Point3d[][],
+    pFace: HalfEdge,
+    xyzOut: Point3d[][],
     bIncludeInterior: boolean,
-    bIncludeFinal: boolean): boolean {
-
+    bIncludeFinal: boolean,
+  ): boolean {
     if (pFace.countEdgesAroundFace() !== 3)
       return false;
     let n = 0;
@@ -452,8 +458,15 @@ export class HalfEdgeGraphSpineContext {
     let pPreviousB, pFirstA;
     for (let i: number = 1; i < xyzIn.length; i++) {
       const nodeA = this._spineGraph.createEdgeXYZXYZ(
-        xyzIn[i - 1].x, xyzIn[i - 1].y, 0, 0,
-        xyzIn[i].x, xyzIn[i].y, 0, 0);
+        xyzIn[i - 1].x,
+        xyzIn[i - 1].y,
+        0,
+        0,
+        xyzIn[i].x,
+        xyzIn[i].y,
+        0,
+        0,
+      );
       const nodeB = nodeA.faceSuccessor;
       nodeA.setMask(HalfEdgeMask.BOUNDARY_EDGE);
       nodeB.setMask(HalfEdgeMask.BOUNDARY_EDGE);
@@ -496,7 +509,6 @@ export class HalfEdgeGraphSpineContext {
    * @param minSplitRadians smallest allowed angle in the split sector that is split.
    */
   public triangulateForSpine(applyParity: boolean = true, minSplitRadians: number = 0.3): void {
-
     const sMaxSplit = 20;
     const sMinCandidateRadians = 1.0;
     let numSplit = 0;
@@ -508,8 +520,11 @@ export class HalfEdgeGraphSpineContext {
     const context2 = new RegularizationContext(this.graph);
     context2.regularizeGraph(false, HalfEdgeGraphSpineContext._regularize2);
     if (applyParity) {
-      HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(this.graph,
-        new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE), HalfEdgeMask.EXTERIOR);
+      HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(
+        this.graph,
+        new HalfEdgeMaskTester(HalfEdgeMask.BOUNDARY_EDGE),
+        HalfEdgeMask.EXTERIOR,
+      );
       this.purgeNullFaces(HalfEdgeMask.EXTERIOR);
     }
 
@@ -545,7 +560,8 @@ export class HalfEdgeGraphSpineContext {
           }
         }
         return true;
-      });
+      },
+    );
     return xyzOut;
   }
 
@@ -562,11 +578,11 @@ export class HalfEdgeGraphSpineContext {
    * @param minAngleRadians angle tolerance, as described above.
    */
   public consolidateTrianglesToQuads(bDeleteDiagonals: boolean, minAngle: Angle = Angle.createDegrees(50)): number {
-
     const numDiagonal = this.setSortedDiagonalMasks(minAngle.radians);
     if (bDeleteDiagonals && numDiagonal > 0) {
       this.graph.yankAndDeleteEdges(
-        (node: HalfEdge) => node.getMask(this._diagonalMask));
+        (node: HalfEdge) => node.getMask(this._diagonalMask),
+      );
     }
     return numDiagonal;
   }

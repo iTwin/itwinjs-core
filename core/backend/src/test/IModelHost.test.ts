@@ -2,21 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Logger, LogLevel } from "@itwin/core-bentley";
+import { RpcRegistry } from "@itwin/core-common";
+import { AzureServerStorage, AzureServerStorageBindings, AzureServerStorageBindingsConfig } from "@itwin/object-storage-azure";
+import { ServerStorage } from "@itwin/object-storage-core";
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { RpcRegistry } from "@itwin/core-common";
 import { BriefcaseManager } from "../BriefcaseManager";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost, IModelHostOptions, KnownLocations } from "../IModelHost";
-import { Schemas } from "../Schema";
-import { KnownTestLocations } from "./KnownTestLocations";
-import { AzureServerStorage, AzureServerStorageBindings, AzureServerStorageBindingsConfig } from "@itwin/object-storage-azure";
-import { ServerStorage } from "@itwin/object-storage-core";
-import { TestUtils } from "./TestUtils";
-import { IModelTestUtils } from "./IModelTestUtils";
-import { Logger, LogLevel } from "@itwin/core-bentley";
 import { overrideSyncNativeLogLevels } from "../internal/NativePlatform";
+import { Schemas } from "../Schema";
+import { IModelTestUtils } from "./IModelTestUtils";
+import { KnownTestLocations } from "./KnownTestLocations";
+import { TestUtils } from "./TestUtils";
 
 describe("IModelHost", () => {
   const opts = { cacheDir: TestUtils.getCacheDir() };
@@ -53,7 +53,6 @@ describe("IModelHost", () => {
     for (let i = 0; i <= 15; i++) {
       await IModelHost.startup();
       await IModelHost.shutdown();
-
     }
     const afterCount = process.listenerCount("beforeExit");
     expect(beforeCount).to.be.equal(afterCount);
@@ -82,7 +81,7 @@ describe("IModelHost", () => {
     IModelHost.onBeforeShutdown.addOnce(eventHandler);
     const filename = IModelTestUtils.resolveAssetFile("GetSetAutoHandledStructProperties.bim");
 
-    const workspaceClose = sinon.spy((IModelHost.appWorkspace as any), "close");
+    const workspaceClose = sinon.spy(IModelHost.appWorkspace as any, "close");
     const saveSettings = IModelHost.appWorkspace.settings as any;
     const settingClose = sinon.spy(saveSettings, "close");
     expect(workspaceClose.callCount).eq(0);
@@ -158,7 +157,10 @@ describe("IModelHost", () => {
     assert.isTrue(registerStub.calledOnce);
     assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountName, config.tileCacheAzureCredentials.account);
     assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).accountKey, config.tileCacheAzureCredentials.accessKey);
-    assert.equal((registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).baseUrl, `https://${config.tileCacheAzureCredentials.account}.blob.core.windows.net`);
+    assert.equal(
+      (registerStub.firstCall.lastArg as AzureServerStorageBindingsConfig).baseUrl,
+      `https://${config.tileCacheAzureCredentials.account}.blob.core.windows.net`,
+    );
   });
 
   it("should set custom cloud storage provider for tile cache", async () => {
@@ -214,7 +216,9 @@ describe("IModelHost", () => {
     let sha1 = IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths });
     expect(sha1).equal("3ac6578060902aa0b8426b61d62045fdf7fa0b2b");
 
-    expect(() => IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true })).throws("Failed to read schema SchemaA.ecschema");
+    expect(() => IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true })).throws(
+      "Failed to read schema SchemaA.ecschema",
+    );
 
     referencePaths = [path.join(assetsDir, "exact-match")];
     sha1 = IModelHost.computeSchemaChecksum({ schemaXmlPath, referencePaths, exactMatch: true });

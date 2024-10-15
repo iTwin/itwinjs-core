@@ -17,7 +17,9 @@ import { IModelConnection } from "./IModelConnection";
  * @extensions
  */
 export class ModelSelectorState extends ElementState {
-  public static override get className() { return "ModelSelector"; }
+  public static override get className() {
+    return "ModelSelector";
+  }
 
   private readonly _models = new ObservableSet<string>();
 
@@ -44,7 +46,9 @@ export class ModelSelectorState extends ElementState {
   }
 
   /** The name of this ModelSelector */
-  public get name(): string { return this.code.value; }
+  public get name(): string {
+    return this.code.value;
+  }
 
   public override toJSON(): ModelSelectorProps {
     const val: any = super.toJSON();
@@ -83,10 +87,14 @@ export class ModelSelectorState extends ElementState {
   }
 
   /** Determine whether this ModelSelectorState includes the specified modelId value */
-  public has(id: string): boolean { return this.models.has(id); }
+  public has(id: string): boolean {
+    return this.models.has(id);
+  }
 
   /** Determine whether this ModelSelectorState includes the specified modelId */
-  public containsModel(modelId: Id64String): boolean { return this.has(modelId.toString()); }
+  public containsModel(modelId: Id64String): boolean {
+    return this.has(modelId.toString());
+  }
 
   /** Make sure all models referenced by this ModelSelectorState are loaded. */
   public async load(): Promise<void> {

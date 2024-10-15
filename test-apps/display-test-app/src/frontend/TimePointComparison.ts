@@ -4,12 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Transform, Vector3d,
-} from "@itwin/core-geometry";
-import {
   AccuDrawHintBuilder,
-  FeatureSymbology, GraphicBranch, IModelApp, RenderClipVolume, SceneContext, ScreenViewport, TileTreeReference, Tool,
+  FeatureSymbology,
+  GraphicBranch,
+  IModelApp,
+  RenderClipVolume,
+  SceneContext,
+  ScreenViewport,
+  TileTreeReference,
+  Tool,
 } from "@itwin/core-frontend";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 
 /** Prototype for SYNCHRO feature. Split the viewport down the middle. Left-hand side remains frozen at current time point. Right-hand side updates when time point changes. */
 class TimePointComparison {

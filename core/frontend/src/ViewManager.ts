@@ -10,10 +10,10 @@ import { GeometryStreamProps } from "@itwin/core-common";
 import { HitDetail } from "./HitDetail";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { System } from "./render/webgl/System";
 import { DisclosedTileTreeSet, TileTree } from "./tile/internal";
 import { BeButtonEvent, EventHandled } from "./tools/Tool";
 import { ScreenViewport, ViewportDecorator } from "./Viewport";
-import { System } from "./render/webgl/System";
 
 /** Interface for drawing [decoration graphics]($docs/learning/frontend/ViewDecorations.md) into, or on top of, the active [[ScreenViewport]]s managed by [[ViewManager]].
  * Decorators generate [[Decorations]].
@@ -212,10 +212,14 @@ export class ViewManager implements Iterable<ScreenViewport> {
   }
 
   /** @internal */
-  public beginDynamicsMode() { this.inDynamicsMode = true; }
+  public beginDynamicsMode() {
+    this.inDynamicsMode = true;
+  }
 
   /** @internal */
-  public get doesHostHaveFocus(): boolean { return document.hasFocus(); }
+  public get doesHostHaveFocus(): boolean {
+    return document.hasFocus();
+  }
 
   /** Set the selected [[Viewport]] to undefined. */
   public clearSelectedView(): void {
@@ -250,15 +254,19 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
   /** @internal */
   public notifySelectedViewportChanged(previous: ScreenViewport | undefined, current: ScreenViewport | undefined) {
-    IModelApp.toolAdmin.onSelectedViewportChanged(previous, current);// eslint-disable-line @typescript-eslint/no-floating-promises
+    IModelApp.toolAdmin.onSelectedViewportChanged(previous, current); // eslint-disable-line @typescript-eslint/no-floating-promises
     this.onSelectedViewportChanged.emit({ previous, current });
   }
 
   /** The "selected view" is the default for certain operations.  */
-  public get selectedView(): ScreenViewport | undefined { return this._selectedView; }
+  public get selectedView(): ScreenViewport | undefined {
+    return this._selectedView;
+  }
 
   /** Get the first opened view. */
-  public getFirstOpenView(): ScreenViewport | undefined { return this._viewports.length > 0 ? this._viewports[0] : undefined; }
+  public getFirstOpenView(): ScreenViewport | undefined {
+    return this._viewports.length > 0 ? this._viewports[0] : undefined;
+  }
 
   /** Check if only a single viewport is being used.  If so, render directly on-screen using its WebGL canvas.  Otherwise, render each view offscreen. */
   private updateRenderToScreen() {
@@ -280,7 +288,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
 
     this._viewports.push(newVp);
     this.updateRenderToScreen();
-    this.setSelectedView(newVp);// eslint-disable-line @typescript-eslint/no-floating-promises
+    this.setSelectedView(newVp); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     // Start up the render loop if necessary.
     if (1 === this._viewports.length)
@@ -318,7 +326,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     this._viewports.splice(index, 1);
 
     if (this.selectedView === vp) // if removed viewport was selectedView, set it to undefined.
-      this.setSelectedView(undefined);// eslint-disable-line @typescript-eslint/no-floating-promises
+      this.setSelectedView(undefined); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     vp.rendersToScreen = false;
     this.updateRenderToScreen();
@@ -341,9 +349,10 @@ export class ViewManager implements Iterable<ScreenViewport> {
    * @see [[Viewport.invalidateCachedDecorations]] to invalidate the cached decorations for a single viewport.
    */
   public invalidateCachedDecorationsAllViews(decorator: ViewportDecorator): void {
-    if (decorator.useCachedDecorations)
+    if (decorator.useCachedDecorations) {
       for (const vp of this)
         vp.invalidateCachedDecorations(decorator);
+    }
   }
 
   /** Force each registered [[Viewport]] to regenerate its [[Decorations]] on the next frame. */
@@ -389,7 +398,9 @@ export class ViewManager implements Iterable<ScreenViewport> {
   }
 
   /** @internal */
-  public get sceneInvalidated(): boolean { return this._invalidateScenes; }
+  public get sceneInvalidated(): boolean {
+    return this._invalidateScenes;
+  }
 
   /** Invoked by ToolAdmin event loop.
    * @internal
@@ -571,14 +582,30 @@ export class ViewManager implements Iterable<ScreenViewport> {
     return undefined;
   }
 
-  public get crossHairCursor(): string { return `url(${IModelApp.publicPath}cursors/crosshair.cur), crosshair`; }
-  public get dynamicsCursor(): string { return `url(${IModelApp.publicPath}cursors/dynamics.cur), move`; }
-  public get grabCursor(): string { return `url(${IModelApp.publicPath}cursors/openHand.cur), auto`; }
-  public get grabbingCursor(): string { return `url(${IModelApp.publicPath}cursors/closedHand.cur), auto`; }
-  public get walkCursor(): string { return `url(${IModelApp.publicPath}cursors/walk.cur), auto`; }
-  public get rotateCursor(): string { return `url(${IModelApp.publicPath}cursors/rotate.cur), auto`; }
-  public get lookCursor(): string { return `url(${IModelApp.publicPath}cursors/look.cur), auto`; }
-  public get zoomCursor(): string { return `url(${IModelApp.publicPath}cursors/zoom.cur), auto`; }
+  public get crossHairCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/crosshair.cur), crosshair`;
+  }
+  public get dynamicsCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/dynamics.cur), move`;
+  }
+  public get grabCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/openHand.cur), auto`;
+  }
+  public get grabbingCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/closedHand.cur), auto`;
+  }
+  public get walkCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/walk.cur), auto`;
+  }
+  public get rotateCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/rotate.cur), auto`;
+  }
+  public get lookCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/look.cur), auto`;
+  }
+  public get zoomCursor(): string {
+    return `url(${IModelApp.publicPath}cursors/zoom.cur), auto`;
+  }
 
   /** Change the cursor shown in all Viewports.
    * @param cursor The new cursor to display. If undefined, the default cursor is used.

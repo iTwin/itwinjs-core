@@ -8,11 +8,11 @@
 
 import { assert } from "@itwin/core-bentley";
 import { DrawParams } from "../DrawCommand";
-import { UniformHandle } from "../UniformHandle";
 import { Matrix4 } from "../Matrix";
 import { Pass, TextureUnit } from "../RenderFlags";
-import { PositionType } from "../TechniqueFlags";
 import { VariableType, VertexShaderBuilder } from "../ShaderBuilder";
+import { PositionType } from "../TechniqueFlags";
+import { UniformHandle } from "../UniformHandle";
 import { decodeUint16, decodeUint24 } from "./Decode";
 import { addInstanceOverrides } from "./Instancing";
 import { addLookupTable } from "./LookupTable";

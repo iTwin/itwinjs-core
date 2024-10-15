@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { DbResult, Id64Set, Id64String } from "@itwin/core-bentley";
 import { ECSqlStatement, Element, IModelDb, PhysicalPartition, SnapshotDb, Subject } from "@itwin/core-backend";
+import { DbResult, Id64Set, Id64String } from "@itwin/core-bentley";
+import { assert } from "chai";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Useful ECSQL queries organized as tests to make sure that they build and run successfully. */
@@ -30,7 +30,8 @@ describe("Useful ECSQL queries", () => {
     // You could write the following query to find it. This query specifies that the
     // element you want is a PhysicalPartition, it has a code value of "Physical",
     // and it is a child of a Subject named "Subject1".
-    const partitionIds: Id64Set = iModel.withPreparedStatement(`
+    const partitionIds: Id64Set = iModel.withPreparedStatement(
+      `
       select
         [partition].ecinstanceid
       from
@@ -38,14 +39,16 @@ describe("Useful ECSQL queries", () => {
         (select ecinstanceid from ${Subject.classFullName} where CodeValue=:parentName) as parent
       where
       [partition].codevalue=:partitionName and [partition].parent.id = parent.ecinstanceid;
-    `, (stmt: ECSqlStatement) => {
-      stmt.bindValue("parentName", "Subject1");
-      stmt.bindValue("partitionName", "Physical");
-      const ids: Id64Set = new Set<Id64String>();
-      while (stmt.step() === DbResult.BE_SQLITE_ROW)
-        ids.add(stmt.getValue(0).getId());
-      return ids;
-    });
+    `,
+      (stmt: ECSqlStatement) => {
+        stmt.bindValue("parentName", "Subject1");
+        stmt.bindValue("partitionName", "Physical");
+        const ids: Id64Set = new Set<Id64String>();
+        while (stmt.step() === DbResult.BE_SQLITE_ROW)
+          ids.add(stmt.getValue(0).getId());
+        return ids;
+      },
+    );
 
     assert.isNotEmpty(partitionIds);
     assert.equal(partitionIds.size, 1);
@@ -81,12 +84,15 @@ describe("Useful ECSQL queries", () => {
   it("should select all top-level elements in a model", () => {
     // __PUBLISH_EXTRACT_START__ ECSQL-backend-queries.select-top-level-elements-in-model
     const modelId: Id64String = IModelDb.repositoryModelId;
-    iModel.withPreparedStatement(`SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId AND Parent.Id IS NULL`, (statement: ECSqlStatement) => {
-      statement.bindId("modelId", modelId);
-      while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        // do something with each row
-      }
-    });
+    iModel.withPreparedStatement(
+      `SELECT ECInstanceId AS id FROM ${Element.classFullName} WHERE Model.Id=:modelId AND Parent.Id IS NULL`,
+      (statement: ECSqlStatement) => {
+        statement.bindId("modelId", modelId);
+        while (DbResult.BE_SQLITE_ROW === statement.step()) {
+          // do something with each row
+        }
+      },
+    );
     // __PUBLISH_EXTRACT_END__
   });
 
@@ -101,5 +107,4 @@ describe("Useful ECSQL queries", () => {
     });
     // __PUBLISH_EXTRACT_END__
   });
-
 });

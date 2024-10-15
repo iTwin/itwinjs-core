@@ -2,19 +2,26 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import { AccessToken, GuidString } from "@itwin/core-bentley";
-import {
-  BatchType, ContentIdProvider, defaultTileOptions, getTileObjectReference, IModelTileRpcInterface, iModelTileTreeIdToString,
-  RpcManager, RpcRegistry, TileContentSource,
-} from "@itwin/core-common";
 import { AzureBlobStorageCredentials, GeometricModel3d, IModelDb, IModelHost, RpcTrace } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test";
+import { AccessToken, GuidString } from "@itwin/core-bentley";
+import {
+  BatchType,
+  ContentIdProvider,
+  defaultTileOptions,
+  getTileObjectReference,
+  IModelTileRpcInterface,
+  iModelTileTreeIdToString,
+  RpcManager,
+  RpcRegistry,
+  TileContentSource,
+} from "@itwin/core-common";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import { assert } from "chai";
+import { promisify } from "util";
+import { gunzip } from "zlib";
 import { HubUtility } from "../HubUtility";
 import { startupForIntegration } from "./StartupShutdown";
-import { gunzip } from "zlib";
-import { promisify } from "util";
 
 interface TileContentRequestProps {
   treeId: string;
@@ -124,7 +131,7 @@ describe("TileUpload", () => {
     const blobProperties = await IModelHost.tileStorage!.storage.getObjectProperties(objectReference);
 
     const tileSize = IModelHost.compressCachedTiles
-      ? (await promisify(gunzip)(blobBuffer) as Buffer).byteLength      // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+      ? (await promisify(gunzip)(blobBuffer) as Buffer).byteLength // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
       : blobBuffer.byteLength;
 
     // Verify metadata in blob properties

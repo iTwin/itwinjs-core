@@ -7,10 +7,10 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { ImdlEdgeVisibility } from "./ImdlSchema";
-import { ImdlModel } from "./ImdlModel";
 import { calculateEdgeTableParams } from "../internal/render/EdgeParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
+import { ImdlModel } from "./ImdlModel";
+import { ImdlEdgeVisibility } from "./ImdlSchema";
 
 /** Parameters supplied to [[indexedEdgeParamsFromCompactEdges]].
  * @internal
@@ -39,7 +39,11 @@ interface CompactEdge {
 /** Iterate over the compact edges.
  * @note The same object is returned on each iteration, mutated in place.
  */
-function * compactEdgeIterator(visibilityFlags: Uint8Array, vertexIndices: VertexIndices, normalPairs: Uint32Array | undefined): IterableIterator<CompactEdge> {
+function* compactEdgeIterator(
+  visibilityFlags: Uint8Array,
+  vertexIndices: VertexIndices,
+  normalPairs: Uint32Array | undefined,
+): IterableIterator<CompactEdge> {
   let bitIndex = 0;
   let flagsIndex = 0;
   let normalIndex = 0;
@@ -78,7 +82,7 @@ function setUint24(edgeTable: Uint8Array, byteIndex: number, value: number): voi
 /** Convert an [[ImdlCompactEdges]] to an [[IndexedEdgeParams]].
  * @internal
  */
-export function indexedEdgeParamsFromCompactEdges(compact: CompactEdgeParams): ImdlModel.IndexedEdgeParams  | undefined {
+export function indexedEdgeParamsFromCompactEdges(compact: CompactEdgeParams): ImdlModel.IndexedEdgeParams | undefined {
   const numSilhouettes = compact.normalPairs?.length ?? 0;
   const numTotalEdges = compact.numVisibleEdges + numSilhouettes;
   if (numTotalEdges <= 0)
@@ -90,7 +94,11 @@ export function indexedEdgeParamsFromCompactEdges(compact: CompactEdgeParams): I
     for (let j = 0; j < 6; j++)
       indices.setNthIndex(i * 6 + j, i);
 
-  const {width, height, silhouettePadding, silhouetteStartByteIndex} = calculateEdgeTableParams(compact.numVisibleEdges, numSilhouettes, compact.maxEdgeTableDimension);
+  const { width, height, silhouettePadding, silhouetteStartByteIndex } = calculateEdgeTableParams(
+    compact.numVisibleEdges,
+    numSilhouettes,
+    compact.maxEdgeTableDimension,
+  );
   const edgeTable = new Uint8Array(width * height * 4);
 
   let curVisibleIndex = 0;

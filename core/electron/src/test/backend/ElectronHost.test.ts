@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
-import { assert } from "chai";
-import { exec } from "child_process";
 import { IModelHost, IpcHandler, NativeHost } from "@itwin/core-backend";
 import { BeDuration } from "@itwin/core-bentley";
 import { RpcInterface, RpcRegistry } from "@itwin/core-common";
+import { assert } from "chai";
+import { exec } from "child_process";
+import * as path from "path";
 import { ElectronHost, ElectronHostOptions } from "../../ElectronBackend";
 import { TestSuite } from "./ElectronBackendTests";
 
@@ -72,7 +72,9 @@ async function testStartWithOptions() {
 
 async function testRegisterIpcHandler() {
   class IpcHandlerMock extends IpcHandler {
-    public override get channelName() { return "electron-test/mock-channel"; }
+    public override get channelName() {
+      return "electron-test/mock-channel";
+    }
     public static wasRegisterCalled = false;
 
     public static override register() {

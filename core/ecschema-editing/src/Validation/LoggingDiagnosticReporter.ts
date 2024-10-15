@@ -35,6 +35,15 @@ export class LoggingDiagnosticReporter extends FormatDiagnosticReporter {
   }
 
   private getLogMetaData(diagnostic: AnyDiagnostic) {
-    return { ...diagnostic, ...{ code: diagnostic.code, category: diagnostic.category, diagnosticType: diagnostic.diagnosticType, messageText: undefined, messageArgs: undefined } };
+    return {
+      ...diagnostic,
+      ...{
+        code: diagnostic.code,
+        category: diagnostic.category,
+        diagnosticType: diagnostic.diagnosticType,
+        messageText: undefined,
+        messageArgs: undefined,
+      },
+    };
   }
 }

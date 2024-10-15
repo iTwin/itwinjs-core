@@ -42,11 +42,9 @@ export class CurveExtendOptions {
     return param;
   }
   /**
-   *
    * * if fraction is between 0 and 1 return it unchanged.
    * * if fraction is less than 0 use the variant param to choose the fraction or 0
    * * if fraction is greater than 1 use the variant param to choose the fraction or 1
-   *
    */
   public static correctFraction(extendParam: VariantCurveExtendParameter, fraction: number): number {
     if (fraction < 0) {
@@ -85,7 +83,7 @@ export class CurveExtendOptions {
       } else if (mode1 !== CurveExtendMode.None) {
         if (fraction < 0.0)
           fraction += fractionPeriod;
-      } else {    // both clamped !!!!
+      } else { // both clamped !!!!
         fraction = Geometry.clamp(fraction, 0, 1);
       }
     }

@@ -47,9 +47,13 @@ export class Bezier1dNd {
     return result;
   }
   /** Return the bezier order */
-  public get order() { return this._order; }
+  public get order() {
+    return this._order;
+  }
   /** return the packed data array.  This is a REFERENCE to the array. */
-  public get packedData() { return this._packedData; }
+  public get packedData() {
+    return this._packedData;
+  }
   /** Create a Bezier1dNd, using the structure of `data[0]` to determine the bezier order. */
   public static create(data: Point2d[] | Point3d[] | Point4d[]): Bezier1dNd | undefined {
     if (data.length < 1)
@@ -199,7 +203,7 @@ export class Bezier1dNd {
     let i0 = poleIndexA * this._blockSize;
     let i1 = poleIndexB * this._blockSize;
     const data = this._packedData;
-    for (let i = 0; i < this._blockSize; i++ , i0++ , i1++) {
+    for (let i = 0; i < this._blockSize; i++, i0++, i1++) {
       data[i0] += fraction * (data[i1] - data[i0]);
     }
   }
@@ -228,7 +232,7 @@ export class Bezier1dNd {
       let k0 = kA - numInsert;
       if (knotArray[k0] < knotA) {
         let k1 = kB;
-        for (let i = 0; i < numInsert; i++ , k0++ , k1++) {
+        for (let i = 0; i < numInsert; i++, k0++, k1++) {
           const knot0 = knotArray[k0];
           const knot1 = knotArray[k1];
           const fraction = (knotA - knot0) / (knot1 - knot0);
@@ -239,7 +243,7 @@ export class Bezier1dNd {
     for (let numInsert = degree - 1; numInsert > 0; numInsert--) {
       let k2 = kB + numInsert;
       if (knotArray[k2] > knotB) {
-        for (let i = 0; i < numInsert; i++ , k2--) {
+        for (let i = 0; i < numInsert; i++, k2--) {
           const knot2 = knotArray[k2]; // right side of moving window
           // left side of window ia always the (previously saturated) knotA
           const fraction = (knotB - knot2) / (knotA - knot2);
@@ -273,7 +277,7 @@ export class Bezier1dNd {
       let k0 = kA - numInsert;
       if (knotArray[k0] < knotA) {
         let k1 = kB;
-        for (let i = 0; i < numInsert; i++ , k0++ , k1++) {
+        for (let i = 0; i < numInsert; i++, k0++, k1++) {
           const knot0 = knotArray[k0];
           const knot1 = knotArray[k1];
           const fraction = (knotA - knot0) / (knot1 - knot0);
@@ -285,7 +289,7 @@ export class Bezier1dNd {
       let k2 = kB + numInsert;
       let k;
       if (knotArray[k2] > knotB) {
-        for (let i = 0; i < numInsert; i++ , k2--) {
+        for (let i = 0; i < numInsert; i++, k2--) {
           const knot2 = knotArray[k2]; // right side of moving window
           // left side of window is always the (previously saturated) knotA
           const fraction = (knotB - knot2) / (knotA - knot2);
@@ -306,7 +310,7 @@ export class Bezier1dNd {
       return true;
     if (Geometry.isAlmostEqualNumber(fraction, 0.0))
       return false;
-    const g = 1.0 - fraction;   // interpolations will pull towards right indices
+    const g = 1.0 - fraction; // interpolations will pull towards right indices
     const order = this.order;
     for (let level = 1; level < order; level++) {
       for (let i1 = order - 1; i1 >= level; i1--) {
@@ -329,7 +333,7 @@ export class Bezier1dNd {
     const order = this.order;
     for (let level = 1; level < order; level++) {
       for (let i0 = 0; i0 + level < order; i0++)
-        this.interpolatePoleInPlace(i0, fraction, i0 + 1);   // leave updates to left.
+        this.interpolatePoleInPlace(i0, fraction, i0 + 1); // leave updates to left.
     }
     return true;
   }
@@ -360,5 +364,7 @@ export class Bezier1dNd {
     this.interval = Segment1d.create(a, b, this.interval);
   }
   /** map a fraction to the parent space. */
-  public fractionToParentFraction(fraction: number): number { return this.interval ? this.interval.fractionToPoint(fraction) : fraction; }
+  public fractionToParentFraction(fraction: number): number {
+    return this.interval ? this.interval.fractionToPoint(fraction) : fraction;
+  }
 }

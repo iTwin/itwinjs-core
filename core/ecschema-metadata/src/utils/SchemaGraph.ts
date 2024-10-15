@@ -26,7 +26,7 @@ export interface ReferenceCycle {
 export class SchemaGraph {
   private _schemas: SchemaInfo[] = [];
 
-  private constructor() { }
+  private constructor() {}
 
   private find(schemaKey: Readonly<SchemaKey>) {
     return this._schemas.find((info: SchemaInfo) => info.schemaKey.matches(schemaKey, SchemaMatchType.Latest));
@@ -71,7 +71,10 @@ export class SchemaGraph {
       for (const refKey of schema.references) {
         const refSchema = this.find(refKey.schemaKey);
         if (undefined === refSchema)
-          throw new ECObjectsError(ECObjectsStatus.UnableToLoadSchema, `Could not find the schema info for ref schema ${refKey.schemaKey.toString()} for schema ${schema.schemaKey.toString()}`);
+          throw new ECObjectsError(
+            ECObjectsStatus.UnableToLoadSchema,
+            `Could not find the schema info for ref schema ${refKey.schemaKey.toString()} for schema ${schema.schemaKey.toString()}`,
+          );
         if (!visited[refKey.schemaKey.name] && this.detectCycleUtil(refSchema, visited, recStack, cycles)) {
           cycles.push({ schema, refSchema });
           cycleFound = true;
@@ -106,8 +109,10 @@ export class SchemaGraph {
         if (!graph.find(refSchema.schemaKey)) {
           const refInfo = await context.getSchemaInfo(refSchema.schemaKey, SchemaMatchType.LatestWriteCompatible);
           if (undefined === refInfo) {
-            throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,
-              `Could not locate the referenced schema, ${refSchema.schemaKey.name}.${refSchema.schemaKey.version.toString()}, of ${s.schemaKey.name} when populating the graph for ${schema.schemaKey.name}`);
+            throw new ECObjectsError(
+              ECObjectsStatus.UnableToLocateSchema,
+              `Could not locate the referenced schema, ${refSchema.schemaKey.name}.${refSchema.schemaKey.version.toString()}, of ${s.schemaKey.name} when populating the graph for ${schema.schemaKey.name}`,
+            );
           }
           await genGraph(refInfo);
         }
@@ -141,6 +146,4 @@ export class SchemaGraph {
     genGraph(schema);
     return graph;
   }
-
 }
-

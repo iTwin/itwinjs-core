@@ -38,9 +38,15 @@ export class HubPicker extends ToolBarDropDown {
     }
   }
 
-  protected _open(): void { this._element.style.display = "block"; }
-  protected _close(): void { this._element.style.display = "none"; }
-  public get isOpen(): boolean { return "none" !== this._element.style.display; }
+  protected _open(): void {
+    this._element.style.display = "block";
+  }
+  protected _close(): void {
+    this._element.style.display = "none";
+  }
+  public get isOpen(): boolean {
+    return "none" !== this._element.style.display;
+  }
 
   private _createTextBox(props: TextBoxProps, defaultValue: string | undefined) {
     const div = this._element.appendChild(document.createElement("div"));

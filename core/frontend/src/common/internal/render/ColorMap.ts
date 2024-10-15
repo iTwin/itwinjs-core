@@ -13,9 +13,13 @@ import { ColorDef, ColorIndex } from "@itwin/core-common";
 export class ColorMap extends IndexMap<number> {
   private _hasTransparency: boolean = false;
 
-  public constructor() { super(compareNumbers, 0xffff); }
+  public constructor() {
+    super(compareNumbers, 0xffff);
+  }
 
-  public hasColor(color: number): boolean { return -1 !== this.indexOf(color); }
+  public hasColor(color: number): boolean {
+    return -1 !== this.indexOf(color);
+  }
 
   public override insert(color: number): number {
     // The table should never contain a mix of opaque and translucent colors.
@@ -27,8 +31,12 @@ export class ColorMap extends IndexMap<number> {
     return super.insert(color);
   }
 
-  public get hasTransparency(): boolean { return this._hasTransparency; }
-  public get isUniform(): boolean { return 1 === this.length; }
+  public get hasTransparency(): boolean {
+    return this._hasTransparency;
+  }
+  public get isUniform(): boolean {
+    return 1 === this.length;
+  }
 
   public toColorIndex(index: ColorIndex, indices: number[]): void {
     index.reset();

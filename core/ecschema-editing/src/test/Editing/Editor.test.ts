@@ -2,15 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ECVersion, EntityClass, PrimitiveType, Schema, SchemaContext, SchemaItemKey, SchemaKey } from "@itwin/ecschema-metadata";
 import { expect } from "chai";
-import {
-  ECVersion, EntityClass, PrimitiveType, Schema,
-  SchemaContext, SchemaItemKey, SchemaKey,
-} from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
+import { ECEditingStatus } from "../../Editing/Exception";
 import { AnyDiagnostic } from "../../Validation/Diagnostic";
 import { Diagnostics } from "../../Validation/ECRules";
-import { ECEditingStatus } from "../../Editing/Exception";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -24,7 +21,6 @@ function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
 
 // TODO: Add tests for cases where invalid names are passed into props objects. (to test the error message)
 describe("Editor tests", () => {
-
   describe("SchemaEditor tests", () => {
     let testEditor: SchemaContextEditor;
     let testSchema: Schema;
@@ -114,8 +110,7 @@ describe("Editor tests", () => {
           name: "SchemaA",
           version: "1.2.3",
           alias: "vs",
-          customAttributes: [
-          ],
+          customAttributes: [],
           references: [
             {
               name: "SchemaB",
@@ -136,15 +131,21 @@ describe("Editor tests", () => {
         testEditor = new SchemaContextEditor(context);
         testKey = schemaA.schemaKey;
 
-        await expect(testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" })).to.be.eventually.rejected.then(function (error) {
-          expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
-          expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-          expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from CustomAttribute SchemaB.TestCustomAttribute, container ${testKey.name}: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
-          const violations = error.innerError.ruleViolations as AnyDiagnostic[];
-          expect(violations[0]).to.deep.equal(new Diagnostics.CustomAttributeClassNotFound(schemaA, ["SchemaA", "SchemaB.TestCustomAttribute"]));
-          expect(schemaA.customAttributes && schemaA.customAttributes.has("SchemaB.TestCustomAttribute")).to.be.false;
-        });
-
+        await expect(testEditor.addCustomAttribute(testKey, { className: "SchemaB.TestCustomAttribute" })).to.be.eventually.rejected.then(
+          function(error) {
+            expect(error).to.have.property("errorNumber", ECEditingStatus.AddCustomAttributeToClass);
+            expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+            expect(error).to.have.nested.property(
+              "innerError.message",
+              `Rule violations occurred from CustomAttribute SchemaB.TestCustomAttribute, container ${testKey.name}: ${
+                getRuleViolationMessage(error.innerError.ruleViolations)
+              }`,
+            );
+            const violations = error.innerError.ruleViolations as AnyDiagnostic[];
+            expect(violations[0]).to.deep.equal(new Diagnostics.CustomAttributeClassNotFound(schemaA, ["SchemaA", "SchemaB.TestCustomAttribute"]));
+            expect(schemaA.customAttributes && schemaA.customAttributes.has("SchemaB.TestCustomAttribute")).to.be.false;
+          },
+        );
       });
     });
 
@@ -220,10 +221,15 @@ describe("Editor tests", () => {
         } catch (e: any) {
           expect(e).to.have.property("errorNumber", ECEditingStatus.AddSchemaReference);
           expect(e).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
-          expect(e).to.have.nested.property("innerError.message", `Rule violations occurred from Schema ${schemaA.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`);
+          expect(e).to.have.nested.property(
+            "innerError.message",
+            `Rule violations occurred from Schema ${schemaA.fullName}: ${getRuleViolationMessage(e.innerError.ruleViolations)}`,
+          );
           const violations = e.innerError.ruleViolations as AnyDiagnostic[];
           expect(violations[0]).to.deep.equal(new Diagnostics.SchemaRefAliasMustBeUnique(schemaA, [schemaA.name, "b", "SchemaB", "SchemaC"]));
-          expect(violations[1]).to.deep.equal(new Diagnostics.ReferenceCyclesNotAllowed(schemaA, [schemaA.name, `SchemaC --> SchemaA, SchemaA --> SchemaC`]));
+          expect(violations[1]).to.deep.equal(
+            new Diagnostics.ReferenceCyclesNotAllowed(schemaA, [schemaA.name, `SchemaC --> SchemaA, SchemaA --> SchemaC`]),
+          );
           expect(schemaA.getReferenceSync("SchemaC")).to.be.undefined;
         }
       });
@@ -469,9 +475,12 @@ describe("Editor tests", () => {
       testSchema = await Schema.fromJson(schemaJson, context);
       testEditor = new SchemaContextEditor(context);
 
-      await expect(testEditor.setAlias(testSchema.schemaKey, "123")).to.be.eventually.rejected.then(function (error) {
+      await expect(testEditor.setAlias(testSchema.schemaKey, "123")).to.be.eventually.rejected.then(function(error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetSchemaAlias);
-        expect(error).to.have.nested.property("innerError.message", `Could not set the alias for schema ${testSchema.name} because the specified alias is not a valid ECName.`);
+        expect(error).to.have.nested.property(
+          "innerError.message",
+          `Could not set the alias for schema ${testSchema.name} because the specified alias is not a valid ECName.`,
+        );
         expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidSchemaAlias);
       });
 
@@ -499,7 +508,7 @@ describe("Editor tests", () => {
       testEditor = new SchemaContextEditor(context);
 
       // tests case-insensitive search (ts2 === TS2)
-      await expect(testEditor.setAlias(testSchema1.schemaKey, "ts2")).to.be.eventually.rejected.then(function (error) {
+      await expect(testEditor.setAlias(testSchema1.schemaKey, "ts2")).to.be.eventually.rejected.then(function(error) {
         expect(error).to.have.property("errorNumber", ECEditingStatus.SetSchemaAlias);
         expect(error).to.have.nested.property("innerError.message", `Schema ${testSchema2.name} already uses the alias 'ts2'.`);
         expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaAliasAlreadyExists);

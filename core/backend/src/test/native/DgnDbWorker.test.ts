@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BeDuration } from "@itwin/core-bentley";
 import { Matrix4d } from "@itwin/core-geometry";
-import { IModelNative } from "../../internal/NativePlatform";
+import { assert, expect } from "chai";
 import { StandaloneDb } from "../../IModelDb";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelJsNative } from "@bentley/imodeljs-native";
+import { IModelNative } from "../../internal/NativePlatform";
 import { _nativeDb } from "../../internal/Symbols";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("DgnDbWorker", () => {
   let imodel: StandaloneDb;
@@ -36,22 +36,50 @@ describe("DgnDbWorker", () => {
       this._worker = new IModelNative.platform.TestWorker(imodel[_nativeDb]);
     }
 
-    public queue() { this.promise = this._worker.queue(); }
-    public cancel() { this._worker.cancel(); }
-    public setReady() { this._worker.setReady(); }
-    public setThrow() { this._worker.setThrow(); }
+    public queue() {
+      this.promise = this._worker.queue();
+    }
+    public cancel() {
+      this._worker.cancel();
+    }
+    public setReady() {
+      this._worker.setReady();
+    }
+    public setThrow() {
+      this._worker.setThrow();
+    }
 
-    public get isCanceled(): boolean { return this._worker.isCanceled(); }
-    public get wasExecuted(): boolean { return this._worker.wasExecuted(); }
-    public get state(): IModelJsNative.TestWorkerState { return this._worker.getState(); }
+    public get isCanceled(): boolean {
+      return this._worker.isCanceled();
+    }
+    public get wasExecuted(): boolean {
+      return this._worker.wasExecuted();
+    }
+    public get state(): IModelJsNative.TestWorkerState {
+      return this._worker.getState();
+    }
 
-    public get wasQueued() { return IModelJsNative.TestWorkerState.NotQueued !== this.state; }
-    public get isQueued() { return IModelJsNative.TestWorkerState.Queued === this.state; }
-    public get isRunning() { return IModelJsNative.TestWorkerState.Running === this.state; }
-    public get isError() { return IModelJsNative.TestWorkerState.Error === this.state; }
-    public get isOk() { return IModelJsNative.TestWorkerState.Ok === this.state; }
-    public get isSkipped() { return IModelJsNative.TestWorkerState.Skipped === this.state; }
-    public get isAborted() { return IModelJsNative.TestWorkerState.Aborted === this.state; }
+    public get wasQueued() {
+      return IModelJsNative.TestWorkerState.NotQueued !== this.state;
+    }
+    public get isQueued() {
+      return IModelJsNative.TestWorkerState.Queued === this.state;
+    }
+    public get isRunning() {
+      return IModelJsNative.TestWorkerState.Running === this.state;
+    }
+    public get isError() {
+      return IModelJsNative.TestWorkerState.Error === this.state;
+    }
+    public get isOk() {
+      return IModelJsNative.TestWorkerState.Ok === this.state;
+    }
+    public get isSkipped() {
+      return IModelJsNative.TestWorkerState.Skipped === this.state;
+    }
+    public get isAborted() {
+      return IModelJsNative.TestWorkerState.Aborted === this.state;
+    }
   }
 
   async function waitUntil(condition: () => boolean): Promise<void> {

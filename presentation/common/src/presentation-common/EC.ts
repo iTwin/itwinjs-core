@@ -231,7 +231,10 @@ export namespace NavigationPropertyInfo {
     return {
       ...compressedNavigationPropertyInfoJSON,
       classInfo: { id: compressedNavigationPropertyInfoJSON.classInfo, ...classesMap[compressedNavigationPropertyInfoJSON.classInfo] },
-      targetClassInfo: { id: compressedNavigationPropertyInfoJSON.targetClassInfo, ...classesMap[compressedNavigationPropertyInfoJSON.targetClassInfo] },
+      targetClassInfo: {
+        id: compressedNavigationPropertyInfoJSON.targetClassInfo,
+        ...classesMap[compressedNavigationPropertyInfoJSON.targetClassInfo],
+      },
     };
   }
 }
@@ -289,7 +292,9 @@ export namespace PropertyInfo {
     return {
       ...leftOverPropertyInfo,
       classInfo: propertyInfo.classInfo.id,
-      ...(navigationPropertyInfo ? { navigationPropertyInfo: NavigationPropertyInfo.toCompressedJSON(navigationPropertyInfo, classesMap) } : undefined),
+      ...(navigationPropertyInfo
+        ? { navigationPropertyInfo: NavigationPropertyInfo.toCompressedJSON(navigationPropertyInfo, classesMap) }
+        : undefined),
     };
   }
 
@@ -450,7 +455,10 @@ export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
  * an actual ECRelationship between them is optional.
  * @public
  */
-export type RelatedClassInfoWithOptionalRelationship = PartialBy<RelatedClassInfo, "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship">;
+export type RelatedClassInfoWithOptionalRelationship = PartialBy<
+  RelatedClassInfo,
+  "relationshipInfo" | "isForwardRelationship" | "isPolymorphicRelationship"
+>;
 
 /** @public */
 // eslint-disable-next-line deprecation/deprecation

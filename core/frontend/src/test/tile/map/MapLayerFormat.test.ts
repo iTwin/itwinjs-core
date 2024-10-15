@@ -3,15 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import {
-  ImageryMapLayerTreeReference,
-  MapLayerFormat,
-  MapLayerFormatRegistry,
-  MapLayerImageryProvider,
-} from "../../../tile/internal";
 import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
+import { expect } from "chai";
 import { IModelConnection } from "../../../IModelConnection";
+import { ImageryMapLayerTreeReference, MapLayerFormat, MapLayerFormatRegistry, MapLayerImageryProvider } from "../../../tile/internal";
 
 class TestMapLayerFormat extends MapLayerFormat {
   public static override formatId = "TestMapLayerFormat";
@@ -31,7 +26,7 @@ class TestMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 }
 
-class TestMapLayerSettings extends ImageMapLayerSettings { }
+class TestMapLayerSettings extends ImageMapLayerSettings {}
 
 const testMapLayer = {
   name: "TestName",

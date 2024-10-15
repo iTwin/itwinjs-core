@@ -2,10 +2,10 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { KeySet, NestedContentValue, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { initialize, terminate } from "../../../IntegrationTests";
 import { collect, getFieldByLabel, getFieldsByLabel, tryGetFieldByLabel } from "../../../Utils";
 import { printRuleset } from "../../Utils";
@@ -307,7 +307,8 @@ describe("Learning Snippets", () => {
           getFieldByLabel(content!.descriptor.fields, "Spatial View Definition").name
         ] as NestedContentValue[];
         expect(spatialViewDefinition.length).to.eq(1);
-        expect(spatialViewDefinition[0].values[getFieldByLabel(content!.descriptor.fields, "Calculated for SpatialViewDefinition").name]).to.not.be.empty;
+        expect(spatialViewDefinition[0].values[getFieldByLabel(content!.descriptor.fields, "Calculated for SpatialViewDefinition").name]).to.not.be
+          .empty;
         const nestedDisplayStyle = getFieldsByLabel(content!.descriptor.fields, "Display Style").find((field) => field.isNestedContentField());
         const displayStyle = spatialViewDefinition[0].values[nestedDisplayStyle!.name] as NestedContentValue[];
         expect(displayStyle.length).to.eq(1);

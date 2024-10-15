@@ -5,15 +5,15 @@
 
 // Sets up a local backend to be used for testing within the iTwin.js Core repo.
 
-import * as path from "path";
-import { IModelJsExpressServer } from "@itwin/express-server";
 import { IModelHost } from "@itwin/core-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@itwin/core-common";
-import { Presentation as PresentationBackend } from "@itwin/presentation-backend";
+import { IModelJsExpressServer } from "@itwin/express-server";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
-import { getRpcInterfaces, Settings } from "../common/Settings";
+import { Presentation as PresentationBackend } from "@itwin/presentation-backend";
 import * as fs from "fs";
+import * as path from "path";
+import { getRpcInterfaces, Settings } from "../common/Settings";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {

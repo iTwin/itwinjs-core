@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import { ScreenViewport } from "../Viewport";
-import { Decorator } from "../ViewManager";
-import { DecorateContext } from "../ViewContext";
-import { IModelApp } from "../IModelApp";
-import { openBlankViewport } from "./openBlankViewport";
-import { Marker } from "../Marker";
 import { EmptyLocalization } from "@itwin/core-common";
+import { expect } from "chai";
+import { IModelApp } from "../IModelApp";
+import { Marker } from "../Marker";
+import { DecorateContext } from "../ViewContext";
+import { Decorator } from "../ViewManager";
+import { ScreenViewport } from "../Viewport";
+import { openBlankViewport } from "./openBlankViewport";
 
 describe("ScreenViewport", () => {
   beforeEach(async () => {

@@ -63,8 +63,18 @@ class MapCurvePrimitiveToCurveLocationDetailPairArray {
         const p0 = p.clonePartialCurve(0.0, 0.5);
         const p1 = p.clonePartialCurve(0.5, 1.0);
         if (p0 && p1) {
-          this.insertPair(CurveLocationDetailPair.createCapture(CurveLocationDetail.createCurveEvaluatedFraction(p0, 0.0), CurveLocationDetail.createCurveEvaluatedFraction(p1, 1.0)));
-          this.insertPair(CurveLocationDetailPair.createCapture(CurveLocationDetail.createCurveEvaluatedFraction(p0, 1.0), CurveLocationDetail.createCurveEvaluatedFraction(p1, 0.0)));
+          this.insertPair(
+            CurveLocationDetailPair.createCapture(
+              CurveLocationDetail.createCurveEvaluatedFraction(p0, 0.0),
+              CurveLocationDetail.createCurveEvaluatedFraction(p1, 1.0),
+            ),
+          );
+          this.insertPair(
+            CurveLocationDetailPair.createCapture(
+              CurveLocationDetail.createCurveEvaluatedFraction(p0, 1.0),
+              CurveLocationDetail.createCurveEvaluatedFraction(p1, 0.0),
+            ),
+          );
         }
       }
     }
@@ -76,12 +86,16 @@ class MapCurvePrimitiveToCurveLocationDetailPairArray {
  */
 export class PlanarSubdivision {
   /** Create a graph from an array of curves, and an array of the curves' precomputed intersections. Z-coordinates are ignored. */
-  public static assembleHalfEdgeGraph(primitives: CurvePrimitive[], allPairs: CurveLocationDetailPair[], mergeTolerance: number = Geometry.smallMetricDistance): HalfEdgeGraph {
-    const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray();   // map from key CurvePrimitive to CurveLocationDetailPair.
+  public static assembleHalfEdgeGraph(
+    primitives: CurvePrimitive[],
+    allPairs: CurveLocationDetailPair[],
+    mergeTolerance: number = Geometry.smallMetricDistance,
+  ): HalfEdgeGraph {
+    const detailByPrimitive = new MapCurvePrimitiveToCurveLocationDetailPairArray(); // map from key CurvePrimitive to CurveLocationDetailPair.
     for (const pair of allPairs)
       detailByPrimitive.insertPair(pair);
     if (primitives.length > detailByPrimitive.primitiveToPair.size)
-      detailByPrimitive.splitAndAppendMissingClosedPrimitives(primitives, mergeTolerance);  // otherwise, these single-primitive loops are missing from the graph
+      detailByPrimitive.splitAndAppendMissingClosedPrimitives(primitives, mergeTolerance); // otherwise, these single-primitive loops are missing from the graph
     const graph = new HalfEdgeGraph();
     for (const entry of detailByPrimitive.primitiveToPair.entries()) {
       const p = entry[0];
@@ -100,7 +114,7 @@ export class PlanarSubdivision {
         const fractionB = getFractionOnCurve(pairB, p)!;
         return fractionA - fractionB;
       });
-      let last = {point: p.startPoint(), fraction: 0.0};
+      let last = { point: p.startPoint(), fraction: 0.0 };
       for (const detailPair of details) {
         const detail = getDetailOnCurve(detailPair, p)!;
         const detailFraction = Geometry.restrictToInterval(detail.fraction, 0, 1); // truncate fraction, but don't snap point; clustering happens later
@@ -122,9 +136,17 @@ export class PlanarSubdivision {
    * @param fraction1 end fraction
    * @returns end point and fraction, or start point and fraction if no action
    */
-  private static addHalfEdge(graph: HalfEdgeGraph, p: CurvePrimitive, point0: Point3d, fraction0: number, point1: Point3d, fraction1: number, mergeTolerance: number = Geometry.smallMetricDistance): {point: Point3d, fraction: number} {
+  private static addHalfEdge(
+    graph: HalfEdgeGraph,
+    p: CurvePrimitive,
+    point0: Point3d,
+    fraction0: number,
+    point1: Point3d,
+    fraction1: number,
+    mergeTolerance: number = Geometry.smallMetricDistance,
+  ): { point: Point3d, fraction: number } {
     if (point0.isAlmostEqualXY(point1, mergeTolerance))
-      return {point: point0, fraction: fraction0};
+      return { point: point0, fraction: fraction0 };
     const halfEdge = graph.createEdgeXYAndZ(point0, 0, point1, 0);
     const detail01 = CurveLocationDetail.createCurveEvaluatedFractionFraction(p, fraction0, fraction1);
     const mate = halfEdge.edgeMate;
@@ -134,15 +156,15 @@ export class PlanarSubdivision {
     mate.sortData = -1.0;
     halfEdge.sortAngle = sortAngle(p, fraction0, false);
     mate.sortAngle = sortAngle(p, fraction1, true);
-    return {point: point1, fraction: fraction1};
-    }
+    return { point: point1, fraction: fraction1 };
+  }
   /**
    * Based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative, or sliver loops.
    * @param zeroAreaTolerance absolute area tolerance for sliver face detection
    * @param isSliverFace whether the loop is known a priori (e.g., via topology) to have zero area
    * @returns the area (forced to zero if within tolerance)
    */
-  public static collectSignedLoop(loop: Loop, outLoops: SignedLoops, zeroAreaTolerance: number = 1.0e-10, isSliverFace?: boolean): number{
+  public static collectSignedLoop(loop: Loop, outLoops: SignedLoops, zeroAreaTolerance: number = 1.0e-10, isSliverFace?: boolean): number {
     let area = isSliverFace ? 0.0 : RegionOps.computeXYArea(loop);
     if (area === undefined)
       area = 0;
@@ -157,8 +179,7 @@ export class PlanarSubdivision {
       outLoops.slivers.push(loop);
     return area;
   }
-  public static createLoopInFace(faceSeed: HalfEdge,
-    announce?: (he: HalfEdge, curve: CurvePrimitive, loop: Loop) => void): Loop {
+  public static createLoopInFace(faceSeed: HalfEdge, announce?: (he: HalfEdge, curve: CurvePrimitive, loop: Loop) => void): Loop {
     let he = faceSeed;
     const loop = Loop.create();
     do {
@@ -181,22 +202,22 @@ export class PlanarSubdivision {
   }
   // Return true if there are only two edges in the face loop, and their start curvatures are the same.
   private static isNullFace(he: HalfEdge): boolean {
-    const faceHasTwoEdges = (he.faceSuccessor.faceSuccessor === he);
+    const faceHasTwoEdges = he.faceSuccessor.faceSuccessor === he;
     let faceIsBanana = false;
     if (faceHasTwoEdges) {
       const c0 = HalfEdgeGraphMerge.curvatureSortKey(he);
       const c1 = HalfEdgeGraphMerge.curvatureSortKey(he.faceSuccessor.edgeMate);
       if (!Geometry.isSameCoordinate(c0, c1)) // default tol!
-        faceIsBanana = true;  // heuristic: we could also check end curvatures, and/or higher derivatives...
+        faceIsBanana = true; // heuristic: we could also check end curvatures, and/or higher derivatives...
     }
     return faceHasTwoEdges && !faceIsBanana;
   }
   // Look across edge mates (possibly several) for a nonnull mate face.
   private static nonNullEdgeMate(_graph: HalfEdgeGraph, e: HalfEdge): HalfEdge | undefined {
-    if (this.isNullFace (e))
+    if (this.isNullFace(e))
       return undefined;
     let e1 = e.edgeMate;
-    while (this.isNullFace(e1)){
+    while (this.isNullFace(e1)) {
       e1 = e1.faceSuccessor.edgeMate;
       if (e1 === e)
         return undefined;

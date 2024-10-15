@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { ColorDef } from "@itwin/core-common";
+import { expect } from "chai";
 import { FloatRgb, FloatRgba } from "../../../render/webgl/FloatRGBA";
 
 interface Rgb {

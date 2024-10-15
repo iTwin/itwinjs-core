@@ -3,23 +3,42 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { join } from "path";
 import { CompressedId64Set, Guid, GuidString, Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import {
-  Camera, Code, ColorByName, ColorDef, DisplayStyle3dProps, ElementProps, IModel, IModelError, PlanProjectionSettings, SpatialViewDefinitionProps,
+  Camera,
+  Code,
+  ColorByName,
+  ColorDef,
+  DisplayStyle3dProps,
+  ElementProps,
+  IModel,
+  IModelError,
+  PlanProjectionSettings,
+  SpatialViewDefinitionProps,
   SubCategoryAppearance,
 } from "@itwin/core-common";
 import { Matrix3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
+import { join } from "path";
 import {
-  CategorySelector, DictionaryModel, DisplayStyle3d, IModelDb, ModelSelector, SpatialCategory, SpatialViewDefinition, StandaloneDb, ViewStore,
+  CategorySelector,
+  DictionaryModel,
+  DisplayStyle3d,
+  IModelDb,
+  ModelSelector,
+  SpatialCategory,
+  SpatialViewDefinition,
+  StandaloneDb,
+  ViewStore,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 function createNewModelAndCategory(rwIModel: IModelDb) {
-  const modelId = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"))[1];
-  const modelId2 = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "PhysicalModel2"), true)[1];
+  const modelId =
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"))[1];
+  const modelId2 =
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "PhysicalModel2"), true)[1];
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "TestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
@@ -129,20 +148,115 @@ describe("ViewDefinition", () => {
     expect(cs1out.categories.length).equal(2);
     expect(cs1out.categories[1]).equal("0x1234");
 
-    const longElementList = CompressedId64Set.sortAndCompress(["0x2a", "0x2b", "0x2d", "0x2e", "0x43", "0x1a", "0x1d", "0x12", "0x22",
-      "0x8", "0x21", "0x1b", "0x1c", "0x1e", "0x1f", "0x2c", "0x2f", "0x3a", "0x3b", "0x3d", "0x3e", "0x43",
-      "0x4a", "0x4b", "0x4d", "0x4e", "0x5a", "0x5b", "0x5d", "0x5e", "0x6a", "0x6b", "0x6d", "0x6e", "0x7a",
-      "0x7b", "0x7d", "0x7e", "0x8a", "0x8b", "0x8d", "0x8e", "0x9a", "0x9b", "0x9d", "0x9e", "0xaa", "0xab", "0xad",
-      "0xae", "0xba", "0xbb", "0xbd", "0xbe", "0xf5ca", "0xcb", "0xcd", "0xce", "0xda", "0xdb", "0xdd", "0xde", "0xea",
-      "0xeb", "0xed", "0xee", "0xfa", "0xfb", "0xfd", "0xfe", "0x10a", "0x10b", "0x10d", "0x10e", "0x11a", "0x11b", "0x11d",
-      "0x11e", "0x12a", "0x12b", "0x12d", "0x12e", "0x13a", "0x13b", "0x13d", "0x13e", "0x14a", "0x14b", "0x14d", "0x14e",
-      "0x15a", "0x15b", "0x15d", "0x15e", "0x16a", "0x16b", "0x16d"]);
+    const longElementList = CompressedId64Set.sortAndCompress([
+      "0x2a",
+      "0x2b",
+      "0x2d",
+      "0x2e",
+      "0x43",
+      "0x1a",
+      "0x1d",
+      "0x12",
+      "0x22",
+      "0x8",
+      "0x21",
+      "0x1b",
+      "0x1c",
+      "0x1e",
+      "0x1f",
+      "0x2c",
+      "0x2f",
+      "0x3a",
+      "0x3b",
+      "0x3d",
+      "0x3e",
+      "0x43",
+      "0x4a",
+      "0x4b",
+      "0x4d",
+      "0x4e",
+      "0x5a",
+      "0x5b",
+      "0x5d",
+      "0x5e",
+      "0x6a",
+      "0x6b",
+      "0x6d",
+      "0x6e",
+      "0x7a",
+      "0x7b",
+      "0x7d",
+      "0x7e",
+      "0x8a",
+      "0x8b",
+      "0x8d",
+      "0x8e",
+      "0x9a",
+      "0x9b",
+      "0x9d",
+      "0x9e",
+      "0xaa",
+      "0xab",
+      "0xad",
+      "0xae",
+      "0xba",
+      "0xbb",
+      "0xbd",
+      "0xbe",
+      "0xf5ca",
+      "0xcb",
+      "0xcd",
+      "0xce",
+      "0xda",
+      "0xdb",
+      "0xdd",
+      "0xde",
+      "0xea",
+      "0xeb",
+      "0xed",
+      "0xee",
+      "0xfa",
+      "0xfb",
+      "0xfd",
+      "0xfe",
+      "0x10a",
+      "0x10b",
+      "0x10d",
+      "0x10e",
+      "0x11a",
+      "0x11b",
+      "0x11d",
+      "0x11e",
+      "0x12a",
+      "0x12b",
+      "0x12d",
+      "0x12e",
+      "0x13a",
+      "0x13b",
+      "0x13d",
+      "0x13e",
+      "0x14a",
+      "0x14b",
+      "0x14d",
+      "0x14e",
+      "0x15a",
+      "0x15b",
+      "0x15d",
+      "0x15e",
+      "0x16a",
+      "0x16b",
+      "0x16d",
+    ]);
 
-    await expect(vs1.addCategorySelector({ selector: { query: { from: "BisCore:SubCategory" } } })).to.be.rejectedWith("must select from BisCore:Category");
-    const cs2 = (await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category" } } }));
+    await expect(vs1.addCategorySelector({ selector: { query: { from: "BisCore:SubCategory" } } })).to.be.rejectedWith(
+      "must select from BisCore:Category",
+    );
+    const cs2 = await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category" } } });
     expect(cs2).equal("@2");
-    const cs3 = (await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category", adds: longElementList } } }));
-    const cs4 = (await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category", removes: ["0x233", "0x21"], adds: longElementList } } }));
+    const cs3 = await vs1.addCategorySelector({ selector: { query: { from: "BisCore:Category", adds: longElementList } } });
+    const cs4 = await vs1.addCategorySelector({
+      selector: { query: { from: "BisCore:Category", removes: ["0x233", "0x21"], adds: longElementList } },
+    });
     const onlyUsedProps = {
       name: "only used spatial categories",
       selector: {
@@ -163,7 +277,7 @@ describe("ViewDefinition", () => {
     expect(selected.categories.length).equal(1);
     expect(selected.categories[0]).equal(spatialCategoryId);
 
-    const ms3 = (await vs1.addModelSelector({ name: "model selector 2", selector: { query: { from: "Bis.GeometricModel3d" } } }));
+    const ms3 = await vs1.addModelSelector({ name: "model selector 2", selector: { query: { from: "Bis.GeometricModel3d" } } });
     let selectedModels = vs1.getModelSelectorSync({ id: ms3 });
     expect(selectedModels.models.length).equal(2);
     const ms4Props = {
@@ -186,16 +300,14 @@ describe("ViewDefinition", () => {
     ds1.settings.setPlanProjectionSettings("0x2", new PlanProjectionSettings({ elevation: 2 }));
 
     const styles = (ds1.toJSON() as DisplayStyle3dProps).jsonProperties!.styles!;
-    styles.subCategoryOvr =
-      [{
-        subCategory: spatialCategoryId,
-        color: ColorByName.fuchsia,
-        invisible: true,
-        style: "0xaaa",
-        weight: 10,
-        transp: 0.5,
-      },
-      ];
+    styles.subCategoryOvr = [{
+      subCategory: spatialCategoryId,
+      color: ColorByName.fuchsia,
+      invisible: true,
+      style: "0xaaa",
+      weight: 10,
+      transp: 0.5,
+    }];
 
     styles.excludedElements = CompressedId64Set.sortAndCompress(["0x8", "0x12", "0x22"]);
     styles.scheduleScript = [{
@@ -215,7 +327,12 @@ describe("ViewDefinition", () => {
     const ds1out = vs1.getDisplayStyleSync({ id: ds1Row });
     expect(ds1out.classFullName).equal("BisCore:DisplayStyle3d");
     expect(ds1out.jsonProperties?.styles).deep.equal(JSON.parse(JSON.stringify(styles)));
-    ds1out.jsonProperties!.styles!.scheduleScript![0].elementTimelines[0].elementIds = CompressedId64Set.sortAndCompress(["0x11a", "0x11d", "0x11e", "0x12a"]);
+    ds1out.jsonProperties!.styles!.scheduleScript![0].elementTimelines[0].elementIds = CompressedId64Set.sortAndCompress([
+      "0x11a",
+      "0x11d",
+      "0x11e",
+      "0x12a",
+    ]);
     await vs1.updateDisplayStyle({ id: ds1Row, className: ds1.classFullName, settings: ds1out.jsonProperties!.styles! });
     const ds1out2 = vs1.getDisplayStyleSync({ id: ds1Row });
     expect(ds1out2.jsonProperties?.styles).deep.equal(ds1out.jsonProperties!.styles!);
@@ -295,14 +412,35 @@ describe("ViewDefinition", () => {
     expect(vs1.getModelSelectorRow(1)).not.undefined; // modelselector has a name so it should not be deleted
 
     // attempt to create a ViewDefinition element with invalid properties
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId } as ElementProps), IModelError, "displayStyleId is invalid");
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, categorySelectorId, displayStyleId } as ElementProps), IModelError, "modelSelectorId is invalid");
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, displayStyleId } as ElementProps), IModelError, "categorySelectorId is invalid");
+    assert.throws(
+      () => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId } as ElementProps),
+      IModelError,
+      "displayStyleId is invalid",
+    );
+    assert.throws(
+      () => iModel.elements.createElement({ ...basicProps, categorySelectorId, displayStyleId } as ElementProps),
+      IModelError,
+      "modelSelectorId is invalid",
+    );
+    assert.throws(
+      () => iModel.elements.createElement({ ...basicProps, modelSelectorId, displayStyleId } as ElementProps),
+      IModelError,
+      "categorySelectorId is invalid",
+    );
 
     // attempt to insert a ViewDefinition with invalid properties
-    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), "invalid displayStyle");
-    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps), "invalid modelSelector");
-    assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId: modelId, displayStyleId } as ElementProps), "invalid categorySelector");
+    assert.throws(
+      () => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps),
+      "invalid displayStyle",
+    );
+    assert.throws(
+      () => iModel.elements.insertElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps),
+      "invalid modelSelector",
+    );
+    assert.throws(
+      () => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId: modelId, displayStyleId } as ElementProps),
+      "invalid categorySelector",
+    );
 
     // Better way to create and insert
     const props: SpatialViewDefinitionProps = { ...basicProps, modelSelectorId, categorySelectorId, displayStyleId };
@@ -312,6 +450,14 @@ describe("ViewDefinition", () => {
     assert.isTrue(Id64.isValid(viewDefinitionId));
 
     // Best way to create and insert
-    SpatialViewDefinition.insertWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents);
+    SpatialViewDefinition.insertWithCamera(
+      iModel,
+      IModel.dictionaryId,
+      "default",
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      iModel.projectExtents,
+    );
   });
 });

@@ -65,7 +65,7 @@ export interface DialogPropertySyncItem extends DialogPropertyItem {
  * @public
  */
 export class DialogProperty<T> {
-  constructor(public description: PropertyDescription, private _value: T, private _displayValue?: string, private _isDisabled?: boolean) { }
+  constructor(public description: PropertyDescription, private _value: T, private _displayValue?: string, private _isDisabled?: boolean) {}
 
   public get isDisabled() {
     return !!this._isDisabled;
@@ -97,7 +97,10 @@ export class DialogProperty<T> {
 
   public get dialogItemValue() {
     // istanbul ignore else
-    if (typeof this._value === "string" || typeof this._value === "number" || typeof this._value === "undefined" || typeof this._value === "boolean" || this._value instanceof Date)
+    if (
+      typeof this._value === "string" || typeof this._value === "number" || typeof this._value === "undefined" || typeof this._value === "boolean" ||
+      this._value instanceof Date
+    )
       return {
         value: this._value,
         displayValue: this._displayValue,

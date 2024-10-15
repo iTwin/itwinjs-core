@@ -7,8 +7,8 @@
  */
 
 import { assert, Id64Array, Id64String } from "@itwin/core-bentley";
-import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
 import { ColorDefProps, GeometryClass } from "@itwin/core-common";
+import { IndexedPolyface, Polyface, PolyfaceData, PolyfaceVisitor } from "@itwin/core-geometry";
 
 /** A collection of line segments, suitable for direct use with graphics APIs.
  * The structure of this data matches GL_LINES in OpenGL.
@@ -420,27 +420,43 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
     return this.moveToReadIndex(this._nextFacetIndex);
   }
   /** Set the number of vertices to replicate in visitor arrays. */
-  public setNumWrap(numWrap: number): void { this._numWrap = numWrap; }
+  public setNumWrap(numWrap: number): void {
+    this._numWrap = numWrap;
+  }
 
   /** Return the index (in the client polyface) of the current facet */
-  public currentReadIndex(): number { return this._currentFacetIndex; }
+  public currentReadIndex(): number {
+    return this._currentFacetIndex;
+  }
   /** Return the point index of vertex i within the currently loaded facet */
-  public clientPointIndex(i: number): number { return this.pointIndex[i]; }
+  public clientPointIndex(i: number): number {
+    return this.pointIndex[i];
+  }
   /** Return the param index of vertex i within the currently loaded facet.
    * Use the artificial paramIndex, which matches pointIndex.
    */
-  public clientParamIndex(i: number): number { return this.paramIndex ? this.paramIndex[i] : -1; }
+  public clientParamIndex(i: number): number {
+    return this.paramIndex ? this.paramIndex[i] : -1;
+  }
   /** Return the normal index of vertex i within the currently loaded facet.
    * Use the artificial paramIndex, which matches pointIndex.
    */
-  public clientNormalIndex(i: number): number { return this.normalIndex ? this.normalIndex[i] : -1; }
+  public clientNormalIndex(i: number): number {
+    return this.normalIndex ? this.normalIndex[i] : -1;
+  }
   /** Return the color index of vertex i within the currently loaded facet */
-  public clientColorIndex(_i: number): number { return 1; }
+  public clientColorIndex(_i: number): number {
+    return 1;
+  }
   /** Return the aux data index of vertex i within the currently loaded facet */
-  public clientAuxIndex(_i: number): number { return -1; }
+  public clientAuxIndex(_i: number): number {
+    return -1;
+  }
 
   /** return the client polyface */
-  public clientPolyface(): Polyface { return (undefined as unknown) as Polyface; }
+  public clientPolyface(): Polyface {
+    return (undefined as unknown) as Polyface;
+  }
   /** clear the contents of all arrays.  Use this along with transferDataFrom methods to build up new facets */
   public clearArrays(): void {
     if (this.point !== undefined)
@@ -471,5 +487,4 @@ export class ExportGraphicsMeshVisitor extends PolyfaceData implements PolyfaceV
     if (this.normal && other.normal && index < other.normal.length)
       this.normal.pushFromGrowableXYZArray(other.normal, index);
   }
-
 }

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, describe, expect, it } from "vitest";
 import { Angle } from "@itwin/core-geometry";
+import { assert, describe, expect, it } from "vitest";
 import { Gradient } from "../Gradient";
 import { ImageBuffer, ImageBufferFormat } from "../Image";
 

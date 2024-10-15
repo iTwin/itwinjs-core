@@ -74,7 +74,7 @@ export interface InstanceLabelOverrideCompositeValueSpecification extends Instan
    * If any of the parts with `isRequired` flag evaluate to an empty string, the
    * result of this specification is also an empty string.
    */
-  parts: Array<{ spec: InstanceLabelOverrideValueSpecification; isRequired?: boolean }>;
+  parts: Array<{ spec: InstanceLabelOverrideValueSpecification, isRequired?: boolean }>;
 
   /** Separator to use when joining the parts. Defaults to a space character. */
   separator?: string;

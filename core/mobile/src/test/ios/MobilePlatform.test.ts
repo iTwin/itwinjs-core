@@ -95,5 +95,4 @@ describe("IOS Platform Test", () => {
 - (NSString*) realpathSync: (JSValue*)path :(JSValue*)options;
 - (void) closeSync: (JSValue*)fd;
 - (JSValue*) openSync: (NSString*)path :(NSString*)flags :(JSValue*)mode; */
-
 });

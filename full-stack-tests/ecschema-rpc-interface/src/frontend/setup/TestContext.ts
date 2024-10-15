@@ -3,18 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
+import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 import { NoRenderApp } from "@itwin/core-frontend";
+import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
+import { IModelsClient } from "@itwin/imodels-client-management";
 import {
-  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
+  getAccessTokenFromBackend,
+  TestBrowserAuthorizationClientConfiguration,
+  TestFrontendAuthorizationClient,
+  TestUserCredentials,
 } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { expect } from "chai";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
-import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
-import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
-import { IModelsClient } from "@itwin/imodels-client-management";
 
 export class TestContext {
   public adminUserAccessToken!: AccessToken;
@@ -45,7 +48,10 @@ export class TestContext {
   }
 
   private async initialize() {
-    expect(this.settings.users.length).to.be.gte(1, `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`);
+    expect(this.settings.users.length).to.be.gte(
+      1,
+      `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`,
+    );
 
     // Print out the configuration
     console.log(this.settings.toString()); // eslint-disable-line
@@ -81,6 +87,6 @@ export class TestContext {
       hubAccess: new FrontendIModelsAccess(iModelClient),
     });
 
-    console.log("TestSetup: Done");  // eslint-disable-line
+    console.log("TestSetup: Done"); // eslint-disable-line
   }
 }

@@ -40,7 +40,7 @@ describe("TextStyleSettings", () => {
 
     for (const propName of Object.keys(customProps)) {
       const key = propName as keyof TextStyleSettingsProps;
-      const props: TextStyleSettingsProps = { };
+      const props: TextStyleSettingsProps = {};
       (props as any)[key] = customProps[key];
 
       const settings = TextStyleSettings.fromJSON(props);

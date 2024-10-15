@@ -7,10 +7,10 @@
  */
 
 import { ContourDisplay, RgbColor } from "@itwin/core-common";
-import { UniformHandle } from "./UniformHandle";
+import { LineCode } from "./LineCode";
 import { desync, sync } from "./Sync";
 import { Target } from "./Target";
-import { LineCode } from "./LineCode";
+import { UniformHandle } from "./UniformHandle";
 
 /** Maintains state for uniforms related to contour display.
  * @internal
@@ -30,8 +30,8 @@ export class ContourUniforms {
   private packColor(startNdx: number, majorColor: RgbColor, minorColor: RgbColor) {
     // pack 2 bytes major (upper) minor (lower) into each float
     this._contourDefs[startNdx] = majorColor.r * 256 + minorColor.r;
-    this._contourDefs[startNdx+1] = majorColor.g * 256 + minorColor.g;
-    this._contourDefs[startNdx+2] = majorColor.b * 256 + minorColor.b;
+    this._contourDefs[startNdx + 1] = majorColor.g * 256 + minorColor.g;
+    this._contourDefs[startNdx + 2] = majorColor.b * 256 + minorColor.b;
   }
 
   private packPatWidth(startNdx: number, majorPattern: number, minorPattern: number, majorWidth: number, minorWidth: number, showGeometry: boolean) {
@@ -43,16 +43,16 @@ export class ContourUniforms {
     // NB: showGeometry flag is packed into bit 16 (above major pattern)
     const majWt = Math.floor((Math.min(8.5, Math.max(1.0, majorWidth)) - 1.0) * 2 + 0.5);
     const minWt = Math.floor((Math.min(8.5, Math.max(1.0, minorWidth)) - 1.0) * 2 + 0.5);
-    this._contourDefs[startNdx+3] = (showGeometry ? 65536 : 0) + majorPattern * 4096 + majWt * 256 + minorPattern * 16 + minWt;
+    this._contourDefs[startNdx + 3] = (showGeometry ? 65536 : 0) + majorPattern * 4096 + majWt * 256 + minorPattern * 16 + minWt;
   }
 
   private packIntervals(startNdx: number, even: boolean, minorInterval: number, majorIntervalCount: number) {
     // minorInterval is a float of interval in meters, majorIntervalCount is an int > 0 count of minor inteverals per major interval
     // minorInterval is stored in r or b (0 or 2) and majorIntervalCount is stored in g or a (1 or 3) depending on even or odd index
     const offset = (even ? 0 : 1) * 2;
-    this._contourDefs[startNdx+offset] = minorInterval <= 0.0 ? 1.0 : minorInterval;
+    this._contourDefs[startNdx + offset] = minorInterval <= 0.0 ? 1.0 : minorInterval;
     majorIntervalCount = Math.floor(majorIntervalCount + 0.5);
-    this._contourDefs[startNdx+offset+1] = majorIntervalCount < 1.0 ? 1.0 : majorIntervalCount;
+    this._contourDefs[startNdx + offset + 1] = majorIntervalCount < 1.0 ? 1.0 : majorIntervalCount;
   }
 
   public update(target: Target): void {
@@ -94,10 +94,17 @@ export class ContourUniforms {
       const contourDef = this.contourDisplay.groups[index].contourDef;
       const even = (index & 1) === 0;
       const colorDefsNdx = (even ? index * 1.5 : (index - 1) * 1.5 + 2) * 4;
-      this.packColor (colorDefsNdx, contourDef.majorStyle.color, contourDef.minorStyle.color);
-      this.packPatWidth (colorDefsNdx, LineCode.valueFromLinePixels(contourDef.majorStyle.pattern), LineCode.valueFromLinePixels(contourDef.minorStyle.pattern), contourDef.majorStyle.pixelWidth, contourDef.minorStyle.pixelWidth, contourDef.showGeometry);
+      this.packColor(colorDefsNdx, contourDef.majorStyle.color, contourDef.minorStyle.color);
+      this.packPatWidth(
+        colorDefsNdx,
+        LineCode.valueFromLinePixels(contourDef.majorStyle.pattern),
+        LineCode.valueFromLinePixels(contourDef.minorStyle.pattern),
+        contourDef.majorStyle.pixelWidth,
+        contourDef.minorStyle.pixelWidth,
+        contourDef.showGeometry,
+      );
       const intervalsPairNdx = (Math.floor(index * 0.5) * 3 + 1) * 4;
-      this.packIntervals (intervalsPairNdx, even, contourDef.minorInterval, contourDef.majorIntervalCount);
+      this.packIntervals(intervalsPairNdx, even, contourDef.minorInterval, contourDef.majorIntervalCount);
     }
   }
 

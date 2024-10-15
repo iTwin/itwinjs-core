@@ -13,7 +13,12 @@ import { SpatialClassifierTileTreeReference, Tile } from "../tile/internal";
 import { SceneContext } from "../ViewContext";
 
 /**  @internal */
-export interface PlanarClassifierTarget { modelId: Id64String, tiles: Tile[], location: Transform, isPointCloud: boolean }
+export interface PlanarClassifierTarget {
+  modelId: Id64String;
+  tiles: Tile[];
+  location: Transform;
+  isPointCloud: boolean;
+}
 /** An opaque representation of a planar classifier applied to geometry within a [[Viewport]].
  * @internal
  */

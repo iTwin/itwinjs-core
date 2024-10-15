@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
-import * as path from "path";
-import { Reporter } from "@itwin/perf-tools";
 import { IModelJsFs } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { Reporter } from "@itwin/perf-tools";
+import { assert } from "chai";
+import * as path from "path";
 import { PerfTestDataMgr } from "./PerfTestUtils";
 
 describe("SchemaDesignPerf Schema Import", () => {
@@ -63,6 +63,5 @@ describe("SchemaDesignPerf Schema Import", () => {
       reporter.addEntry("SchemaImportPerfTest", "ENums", "Execution time(s)", elapsedTime, { enumCount: eCount });
       tdm.closeDb();
     }
-
   });
 });

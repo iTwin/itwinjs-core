@@ -339,8 +339,7 @@ export class Angle implements BeJSONFunctions {
    * @param radiansB second radians value
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public static isAlmostEqualRadiansAllowPeriodShift(radiansA: number, radiansB: number,
-    radianTol: number = Geometry.smallAngleRadians): boolean {
+  public static isAlmostEqualRadiansAllowPeriodShift(radiansA: number, radiansB: number, radianTol: number = Geometry.smallAngleRadians): boolean {
     const delta = Math.abs(radiansA - radiansB);
     if (delta <= radianTol)
       return true;
@@ -352,9 +351,9 @@ export class Angle implements BeJSONFunctions {
     return Math.abs(delta1) <= radianTol;
   }
   /**
- * Test if this angle has magnitude no greater than that of `other`.
- * @param other the other angle
- */
+   * Test if this angle has magnitude no greater than that of `other`.
+   * @param other the other angle
+   */
   public isMagnitudeLessThanOrEqual(other: Angle): boolean {
     return Math.abs(this.radians) <= Math.abs(other.radians);
   }
@@ -373,8 +372,7 @@ export class Angle implements BeJSONFunctions {
    * @param radiansB second radians value
    * @param radianTol radian tolerance with default value of Geometry.smallAngleRadians
    */
-  public static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number,
-    radianTol: number = Geometry.smallAngleRadians): boolean {
+  public static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number, radianTol: number = Geometry.smallAngleRadians): boolean {
     return Math.abs(radiansA - radiansB) < radianTol;
   }
   /**
@@ -470,7 +468,10 @@ export class Angle implements BeJSONFunctions {
    * @return the angle t0 and its cosine and sine.
    */
   public static dotProductsToHalfAngleTrigValues(
-    dotUU: number, dotVV: number, dotUV: number, favorZero: boolean = true,
+    dotUU: number,
+    dotVV: number,
+    dotUV: number,
+    favorZero: boolean = true,
   ): TrigValues {
     const cos2t0 = dotUU - dotVV;
     const sin2t0 = 2.0 * dotUV;
@@ -489,7 +490,12 @@ export class Angle implements BeJSONFunctions {
    * @param vz z component of vector v
    */
   public static radiansBetweenVectorsXYZ(
-    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number,
+    ux: number,
+    uy: number,
+    uz: number,
+    vx: number,
+    vy: number,
+    vz: number,
   ): number {
     const uDotV = ux * vx + uy * vy + uz * vz;
     return Math.atan2(Geometry.crossProductMagnitude(ux, uy, uz, vx, vy, vz), uDotV);
@@ -513,9 +519,15 @@ export class Angle implements BeJSONFunctions {
    * signed (-PI < radians <= PI)
    */
   public static orientedRadiansBetweenVectorsXYZ(
-    ux: number, uy: number, uz: number,
-    vx: number, vy: number, vz: number,
-    upVectorX: number, upVectorY: number, upVectorZ: number,
+    ux: number,
+    uy: number,
+    uz: number,
+    vx: number,
+    vy: number,
+    vz: number,
+    upVectorX: number,
+    upVectorY: number,
+    upVectorZ: number,
     adjustToPositive: boolean = false,
   ): number {
     const uDotV = ux * vx + uy * vy + uz * vz;

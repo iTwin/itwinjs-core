@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { Id64String } from "@itwin/core-bentley";
 import { DefinitionElement, IModelDb } from "@itwin/core-backend";
+import { Id64String } from "@itwin/core-bentley";
 import { Code } from "@itwin/core-common";
 import { Ruleset as PresentationRuleset } from "@itwin/presentation-common";
 import { normalizeVersion } from "../Utils";

@@ -8,16 +8,24 @@
 
 import { assert, Id64 } from "@itwin/core-bentley";
 import {
-  ColorDef, Environment, Gradient, GraphicParams, RenderTexture, SkyCube, SkySphere, TextureImageSpec, TextureMapping,
+  ColorDef,
+  Environment,
+  Gradient,
+  GraphicParams,
+  RenderTexture,
+  SkyCube,
+  SkySphere,
+  TextureImageSpec,
+  TextureMapping,
 } from "@itwin/core-common";
 import { Point2d, Point3d, PolyfaceBuilder, StrokeOptions } from "@itwin/core-geometry";
 import { tryImageElementFromUrl } from "./common/ImageUtil";
+import { GraphicType } from "./common/render/GraphicType";
 import { IModelApp } from "./IModelApp";
 import { RenderGraphic } from "./render/RenderGraphic";
 import { RenderSkyBoxParams } from "./render/RenderSystem";
 import { DecorateContext } from "./ViewContext";
 import { ViewState3d } from "./ViewState";
-import { GraphicType } from "./common/render/GraphicType";
 
 /** @internal */
 export interface GroundPlaneDecorations {
@@ -143,7 +151,10 @@ export class EnvironmentDecorations {
 
     const gradient = new Gradient.Symb();
     gradient.mode = Gradient.Mode.Spherical;
-    gradient.keys = [{ color: groundColors[0], value: values[0] }, { color: groundColors[1], value: values[1] }, { color: groundColors[2], value: values[2] }];
+    gradient.keys = [{ color: groundColors[0], value: values[0] }, { color: groundColors[1], value: values[1] }, {
+      color: groundColors[2],
+      value: values[2],
+    }];
     const texture = IModelApp.renderSystem.getGradientTexture(gradient, this._view.iModel);
     if (!texture)
       return undefined;
@@ -163,7 +174,7 @@ export class EnvironmentDecorations {
     // Create GraphicParams using the material.
     const params = new GraphicParams();
     params.lineColor = gradient.keys[0].color;
-    params.fillColor = ColorDef.white;  // Fill should be set to opaque white for gradient texture...
+    params.fillColor = ColorDef.white; // Fill should be set to opaque white for gradient texture...
     params.material = material;
 
     return params;
@@ -194,7 +205,7 @@ export class EnvironmentDecorations {
   }
 
   private loadSkyBoxParams(): SkyBoxParamsLoader {
-    let load: (() => RenderSkyBoxParams | undefined);
+    let load: () => RenderSkyBoxParams | undefined;
     let preload: Promise<boolean> | undefined;
 
     const sky = this._environment.sky;
@@ -226,22 +237,38 @@ export class EnvironmentDecorations {
           // eslint-disable-next-line deprecation/deprecation
           const params = new RenderTexture.Params(key, RenderTexture.Type.SkyBox);
           const txImgs = [
-            idToImage.get(sky.images.front)!, idToImage.get(sky.images.back)!, idToImage.get(sky.images.top)!,
-            idToImage.get(sky.images.bottom)!, idToImage.get(sky.images.right)!, idToImage.get(sky.images.left)!,
+            idToImage.get(sky.images.front)!,
+            idToImage.get(sky.images.back)!,
+            idToImage.get(sky.images.top)!,
+            idToImage.get(sky.images.bottom)!,
+            idToImage.get(sky.images.right)!,
+            idToImage.get(sky.images.left)!,
           ];
 
-          return undefined !== IModelApp.renderSystem.createTextureFromCubeImages(txImgs[0], txImgs[1], txImgs[2], txImgs[3], txImgs[4], txImgs[5], this._view.iModel, params);
+          return undefined !==
+            IModelApp.renderSystem.createTextureFromCubeImages(
+              txImgs[0],
+              txImgs[1],
+              txImgs[2],
+              txImgs[3],
+              txImgs[4],
+              txImgs[5],
+              this._view.iModel,
+              params,
+            );
         });
       }
     } else if (sky instanceof SkySphere) {
       load = () => {
         const texture = IModelApp.renderSystem.findTexture(sky.image, this._view.iModel);
-        return texture ? {
-          type: "sphere",
-          texture,
-          rotation: 0,
-          zOffset: this._view.iModel.globalOrigin.z,
-        } : undefined;
+        return texture ?
+          {
+            type: "sphere",
+            texture,
+            rotation: 0,
+            zOffset: this._view.iModel.globalOrigin.z,
+          } :
+          undefined;
       };
 
       if (!IModelApp.renderSystem.findTexture(sky.image, this._view.iModel)) {

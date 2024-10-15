@@ -62,12 +62,7 @@ export * from "./SheetIndex";
 export * from "./SQLiteDb";
 export * from "./SqliteStatement";
 export * from "./TextAnnotationElement";
-export {
-  computeGraphemeOffsets,
-  computeLayoutTextBlockResult,
-  ComputeGraphemeOffsetsArgs,
-  LayoutTextBlockArgs,
-} from "./TextAnnotationLayout";
+export { computeGraphemeOffsets, ComputeGraphemeOffsetsArgs, computeLayoutTextBlockResult, LayoutTextBlockArgs } from "./TextAnnotationLayout";
 export * from "./TextAnnotationGeometry";
 export * from "./Texture";
 export * from "./TileStorage";
@@ -128,9 +123,9 @@ export * from "./internal/cross-package";
  */
 
 /**
-  * @docs-group-description ExportGraphics
-  * APIs for producing low-level graphics primitives from element geometry.
-  */
+ * @docs-group-description ExportGraphics
+ * APIs for producing low-level graphics primitives from element geometry.
+ */
 
 /**
  * @docs-group-description HubAccess

@@ -6,8 +6,8 @@
  * @module Core
  */
 
-import { IModelApp } from "@itwin/core-frontend";
 import { Localization } from "@itwin/core-common";
+import { IModelApp } from "@itwin/core-frontend";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
 import { FavoritePropertiesManager, FavoritePropertiesManagerProps } from "./favorite-properties/FavoritePropertiesManager";
 import { createFavoritePropertiesStorage, DefaultFavoritePropertiesStorageTypes } from "./favorite-properties/FavoritePropertiesStorage";
@@ -79,8 +79,7 @@ export class Presentation {
     if (!selectionManager) {
       selectionManager = new SelectionManager({
         ...props?.selection,
-        scopes:
-          props?.selection?.scopes ??
+        scopes: props?.selection?.scopes ??
           new SelectionScopesManager({
             rpcRequestsHandler: presentationManager.rpcRequestsHandler,
             localeProvider: () => this.presentation.activeLocale,

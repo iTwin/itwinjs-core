@@ -52,16 +52,24 @@ export class UsageSums {
     this._origin = origin;
   }
   /** Return the number of samples seen */
-  public get count(): number { return this._count; }
+  public get count(): number {
+    return this._count;
+  }
   /** return the mean of all samples.
    * * Return 0 if no samples
    */
-  public get mean(): number { return this._count > 0 ? this._sumX / this._count : 0.0; }
+  public get mean(): number {
+    return this._count > 0 ? this._sumX / this._count : 0.0;
+  }
   /** Return the mean of  squared samples.
    * * Return 0 if no samples.
    */
-  public get meanSquare(): number { return this._count > 0 ? this._sumXX / this._count : 0.0; }
-  public get minMax(): Range1d { return this._minMax.clone(); }
+  public get meanSquare(): number {
+    return this._count > 0 ? this._sumXX / this._count : 0.0;
+  }
+  public get minMax(): Range1d {
+    return this._minMax.clone();
+  }
 
   /**
    * Return the "biased standard deviation" (https://en.wikipedia.org/wiki/Standard_deviation)
@@ -85,7 +93,9 @@ export class UsageSums {
   /**
    * return the origin being used in the `accumulate(x)` method.
    */
-  public get origin(): number { return this._origin; }
+  public get origin(): number {
+    return this._origin;
+  }
   /**
    * Reset the origin.
    * * Former sums are unchanged !!

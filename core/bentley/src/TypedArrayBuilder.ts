@@ -6,8 +6,8 @@
  * @module Collections
  */
 
-import { Constructor } from "./UtilityTypes";
 import { assert } from "./Assert";
+import { Constructor } from "./UtilityTypes";
 
 /** Options used to construct a [[TypedArrayBuilder]].
  * @public

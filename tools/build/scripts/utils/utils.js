@@ -18,7 +18,7 @@ function logBuildError(msg) {
 
 function failBuild() {
   if (process.env.TF_BUILD) {
-    console.error("##vso[task.complete result=Failed;]DONE")
+    console.error("##vso[task.complete result=Failed;]DONE");
     process.exit(0);
   } else {
     process.exit(1);
@@ -35,5 +35,5 @@ module.exports = {
   logBuildWarning,
   logBuildError,
   failBuild,
-  throwAfterTimeout
-}
+  throwAfterTimeout,
+};

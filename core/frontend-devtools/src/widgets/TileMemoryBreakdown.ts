@@ -43,9 +43,10 @@ class TileMemoryTracer {
     for (const vp of IModelApp.viewManager) {
       imodels.add(vp.iModel);
       const tiles = IModelApp.tileAdmin.getTilesForUser(vp)?.selected;
-      if (tiles)
+      if (tiles) {
         for (const tile of tiles)
           selectedTiles.add(tile);
+      }
     }
 
     for (const selected of selectedTiles)
@@ -112,9 +113,10 @@ class TileMemoryTracer {
       this.add(tile, TileMemorySelector.Orphaned);
 
     const children = tile.children;
-    if (children)
+    if (children) {
       for (const child of children)
         this.processOrphan(child);
+    }
   }
 }
 

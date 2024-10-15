@@ -5,20 +5,20 @@
 
 import { describe, it } from "vitest";
 // import { Checker } from "../Checker";
-import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { Loop } from "../../curve/Loop";
-import { LinearSweep } from "../../solid/LinearSweep";
-import { ParityRegion } from "../../curve/ParityRegion";
-import { Arc3d } from "../../curve/Arc3d";
-import { AngleSweep } from "../../geometry3d/AngleSweep";
-import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { GeometryQuery } from "../../curve/GeometryQuery";
-import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { ConvexClipPlaneSet } from "../../clipping/ConvexClipPlaneSet";
-import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
-import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
-import { Angle } from "../../geometry3d/Angle";
+import { Arc3d } from "../../curve/Arc3d";
+import { GeometryQuery } from "../../curve/GeometryQuery";
+import { Loop } from "../../curve/Loop";
+import { ParityRegion } from "../../curve/ParityRegion";
 import { StrokeOptions } from "../../curve/StrokeOptions";
+import { Angle } from "../../geometry3d/Angle";
+import { AngleSweep } from "../../geometry3d/AngleSweep";
+import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
+import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
+import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
+import { LinearSweep } from "../../solid/LinearSweep";
+import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 describe("MeshConstruction", () => {
   /**
    * Example of constructing a plate with holes.
@@ -35,8 +35,7 @@ describe("MeshConstruction", () => {
     const plateBaseWithHoles = ParityRegion.create(plateBaseLoop);
     const numCircle = 3;
     for (let i = 0; i < numCircle; i++) {
-      const arc = Arc3d.createXY(Point3d.create(-0.5 * (i) * a / (numCircle + 1), b / 2), r,
-        AngleSweep.createStartEndDegrees(180, -180));
+      const arc = Arc3d.createXY(Point3d.create(-0.5 * i * a / (numCircle + 1), b / 2), r, AngleSweep.createStartEndDegrees(180, -180));
       plateBaseWithHoles.tryAddChild(Loop.create(arc));
     }
     const plateSolidWithHoles = LinearSweep.create(plateBaseWithHoles, Vector3d.create(0, 0, c), true)!;
@@ -52,7 +51,8 @@ describe("MeshConstruction", () => {
     const mesh0 = builder0.claimPolyface();
     GeometryCoreTestIO.captureCloneGeometry(geometryToSave, mesh0, x0, y0 += yStep);
 
-    x0 += xStep; y0 = 0;
+    x0 += xStep;
+    y0 = 0;
     const plateBlankSolid = LinearSweep.createZSweep(plateBasePoints, 0, c, true)!;
     const builder = PolyfaceBuilder.create();
     builder.addLinearSweep(plateBlankSolid);

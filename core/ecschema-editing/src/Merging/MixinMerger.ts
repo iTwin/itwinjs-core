@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import type { SchemaItemKey } from "@itwin/ecschema-metadata";
 import type { MixinClassDifference } from "../Differencing/SchemaDifference";
 import type { MutableMixin } from "../Editing/Mutable/MutableMixin";
-import type { SchemaMergeContext } from "./SchemaMerger";
-import type { SchemaItemKey } from "@itwin/ecschema-metadata";
-import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 import { modifyClass } from "./ClassMerger";
+import type { SchemaMergeContext } from "./SchemaMerger";
+import { updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 
 /**
  * Merges a new Mixin into the target schema.
@@ -31,7 +31,7 @@ export async function addMixinClass(context: SchemaMergeContext, change: MixinCl
  */
 export async function modifyMixinClass(context: SchemaMergeContext, change: MixinClassDifference, itemKey: SchemaItemKey) {
   const mixin = await context.targetSchema.lookupItem(itemKey) as MutableMixin;
-  if(change.difference.appliesTo !== undefined) {
+  if (change.difference.appliesTo !== undefined) {
     const appliesTo = await updateSchemaItemKey(context, change.difference.appliesTo);
     const currentValue = await mixin.appliesTo;
     if (currentValue !== undefined && !appliesTo.matches(currentValue.key)) {

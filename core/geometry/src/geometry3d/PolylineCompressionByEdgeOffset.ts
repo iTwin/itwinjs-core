@@ -99,7 +99,6 @@ export class PolylineCompressionContext {
     return maxDeviationIndex;
   }
   /**
-   *
    * @param i0 first active point index
    * @param i1 last active point index (INCLUSIVE -- not "one beyond")
    * @param chordTolerance

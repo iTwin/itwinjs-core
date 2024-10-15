@@ -6,9 +6,9 @@
  * @module NativeApp
  */
 
-import { join, relative } from "node:path";
 import { DbResult, IModelStatus } from "@itwin/core-bentley";
 import { IModelError, StorageValue } from "@itwin/core-common";
+import { join, relative } from "node:path";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -24,31 +24,34 @@ export class NativeAppStorage {
   private static readonly _ext = ".settings-db";
   private static _storages = new Map<string, NativeAppStorage>();
   private static _init: boolean = false;
-  private constructor(private _ecdb: ECDb, public readonly id: string) { }
+  private constructor(private _ecdb: ECDb, public readonly id: string) {}
 
   /** Set the value for a key */
   public setData(key: string, value: StorageValue): void {
-    const rc = this._ecdb.withPreparedSqliteStatement("INSERT INTO app_setting(key,type,val)VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET type=excluded.type,val=excluded.val", (stmt) => {
-      let valType = (value === undefined || value === null) ? "null" : typeof value;
-      if (valType === "object" && (value instanceof Uint8Array))
-        valType = "Uint8Array";
+    const rc = this._ecdb.withPreparedSqliteStatement(
+      "INSERT INTO app_setting(key,type,val)VALUES(?,?,?) ON CONFLICT(key) DO UPDATE SET type=excluded.type,val=excluded.val",
+      (stmt) => {
+        let valType = (value === undefined || value === null) ? "null" : typeof value;
+        if (valType === "object" && (value instanceof Uint8Array))
+          valType = "Uint8Array";
 
-      switch (valType) {
-        case "null":
-        case "number":
-        case "string":
-        case "boolean":
-        case "Uint8Array":
-          break;
-        default:
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${valType} for value for key='${key}`);
-      }
+        switch (valType) {
+          case "null":
+          case "number":
+          case "string":
+          case "boolean":
+          case "Uint8Array":
+            break;
+          default:
+            throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unsupported type ${valType} for value for key='${key}`);
+        }
 
-      stmt.bindValue(1, key);
-      stmt.bindValue(2, valType);
-      stmt.bindValue(3, value);
-      return stmt.step();
-    });
+        stmt.bindValue(1, key);
+        stmt.bindValue(2, valType);
+        stmt.bindValue(3, value);
+        return stmt.step();
+      },
+    );
     if (rc !== DbResult.BE_SQLITE_DONE)
       throw new IModelError(rc, "SQLite error");
 

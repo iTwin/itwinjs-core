@@ -2,19 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { CheckpointConnection, IModelApp, IModelConnection } from "@itwin/core-frontend";
 import { TestFrontendAuthorizationClient } from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { ChildNodeSpecificationTypes, ContentSpecificationTypes, InstanceKey, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { TestContext } from "./setup/TestContext";
 
 describe("PresentationRpcInterface tests", () => {
-
   let imodel: IModelConnection;
 
-  before(async function () {
+  before(async function() {
     const testContext = await TestContext.instance();
     if (!testContext.settings.runPresentationRpcTests)
       this.skip();
@@ -164,7 +163,6 @@ describe("PresentationRpcInterface tests", () => {
     const computedSelections = await Presentation.selection.scopes.computeSelection(imodel, ["0x1"], "element");
     expect(computedSelections).to.not.be.undefined;
   });
-
 });
 
 const createNodesRuleset = (): Ruleset => ({

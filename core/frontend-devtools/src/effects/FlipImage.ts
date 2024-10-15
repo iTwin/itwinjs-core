@@ -21,8 +21,12 @@ let flipColor = false;
 export class FlipImageEffect extends AddEffectTool {
   public static override toolId = "FlipImageEffect";
 
-  protected get effectName() { return "flip"; }
-  protected get textureCoordFromPosition() { return true; }
+  protected get effectName() {
+    return "flip";
+  }
+  protected get textureCoordFromPosition() {
+    return true;
+  }
 
   protected get source() {
     return {
@@ -87,8 +91,12 @@ export class FlipImageEffect extends AddEffectTool {
  */
 export class FlipImageConfig extends Tool {
   public static override toolId = "FlipImageConfig";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 3; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 3;
+  }
 
   public override async run(horizontal?: boolean, vertical?: boolean, color?: boolean): Promise<boolean> {
     flipHorizontal = !!horizontal;

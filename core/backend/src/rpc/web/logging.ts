@@ -15,9 +15,18 @@ import * as os from "os";
 export class WebAppRpcLoggingBackend extends WebAppRpcLogging {
   protected override async logProtocolEvent(event: RpcProtocolEvent, object: RpcInvocation): Promise<void> {
     switch (event) {
-      case RpcProtocolEvent.RequestReceived: return this.logRequest(CommonLoggerCategory.RpcInterfaceBackend, "RpcInterface.backend.request", object.request);
-      case RpcProtocolEvent.BackendErrorOccurred: return this.logErrorBackend("RpcInterface.backend.error", object);
-      case RpcProtocolEvent.BackendResponseCreated: return this.logResponse(CommonLoggerCategory.RpcInterfaceBackend, "RpcInterface.backend.response", object.request, object.status, object.elapsed);
+      case RpcProtocolEvent.RequestReceived:
+        return this.logRequest(CommonLoggerCategory.RpcInterfaceBackend, "RpcInterface.backend.request", object.request);
+      case RpcProtocolEvent.BackendErrorOccurred:
+        return this.logErrorBackend("RpcInterface.backend.error", object);
+      case RpcProtocolEvent.BackendResponseCreated:
+        return this.logResponse(
+          CommonLoggerCategory.RpcInterfaceBackend,
+          "RpcInterface.backend.response",
+          object.request,
+          object.status,
+          object.elapsed,
+        );
     }
   }
 

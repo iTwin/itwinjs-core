@@ -6,10 +6,18 @@
  * @module IModelApp
  */
 
-import { InterceptedRpcRequest, IpcSession, IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport, rpcOverIpcStrings } from "@itwin/core-common";
-import { IpcApp } from "./IpcApp";
-import { IModelApp, IModelAppOptions } from "./IModelApp";
+import {
+  InterceptedRpcRequest,
+  IpcSession,
+  IpcWebSocket,
+  IpcWebSocketFrontend,
+  IpcWebSocketMessage,
+  IpcWebSocketTransport,
+  rpcOverIpcStrings,
+} from "@itwin/core-common";
 import { _callIpcChannel } from "./common/internal/Symbols";
+import { IModelApp, IModelAppOptions } from "./IModelApp";
+import { IpcApp } from "./IpcApp";
 
 /** @internal */
 export interface LocalHostIpcAppOpts {

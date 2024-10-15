@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/unbound-method */
 
-import { expect } from "chai";
 import { IDisposable } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
+import { Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";

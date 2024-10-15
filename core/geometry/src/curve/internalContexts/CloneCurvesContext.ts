@@ -38,7 +38,8 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
     if (result) {
       if (this._stack.length === 0) // this should only happen once !!!
         this._result = result;
-      else // push this result to top of stack.
+      // push this result to top of stack.
+      else
         this._stack[this._stack.length - 1].tryAddChild(result);
     }
     return result;
@@ -53,7 +54,7 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
     const c = this.doClone(primitive);
     if (c !== undefined && this._stack.length > 0) {
       const parent = this._stack[this._stack.length - 1];
-      if (parent instanceof CurveChain || parent instanceof BagOfCurves)
+      if (parent instanceof CurveChain || parent instanceof BagOfCurves) {
         if (Array.isArray(c)) {
           for (const c1 of c) {
             parent.tryAddChild(c1);
@@ -61,6 +62,7 @@ export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
         } else {
           parent.tryAddChild(c);
         }
+      }
     }
   }
 }

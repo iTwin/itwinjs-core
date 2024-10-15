@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import { CompressedId64Set } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@itwin/core-geometry";
+import { describe, expect, it } from "vitest";
 import { RenderSchedule as RS } from "../RenderSchedule";
 import { RgbColor } from "../RgbColor";
 
@@ -138,31 +138,39 @@ describe("RenderSchedule", () => {
       expect(actual.isAlmostEqual(Transform.fromJSON(expected))).to.be.true;
     }
 
-    expectTransform(script.duration.low, [[1,0,0,7860.699219],[0,1,0,8590.857422],[0,0,1,-39.539063]]);
+    expectTransform(script.duration.low, [[1, 0, 0, 7860.699219], [0, 1, 0, 8590.857422], [0, 0, 1, -39.539063]]);
 
     expectTransform(script.duration.high, [
-      [0.966043,0.208746,-0.152273,117478.09375],
-      [-0.207021,0.977956,0.02728,-39223.738281],
-      [0.15461,0.00517,0.987962,18307.048828],
+      [0.966043, 0.208746, -0.152273, 117478.09375],
+      [-0.207021, 0.977956, 0.02728, -39223.738281],
+      [0.15461, 0.00517, 0.987962, 18307.048828],
     ]);
 
     expectTransform(script.duration.fractionToPoint(0.5), [
-      [0.9542084100696944,-0.29673855635648877,-0.037848901222266286,71759.88767870933],
-      [0.29684190212797457,0.9549219611634173,-0.002988850758880856,21679.967974600604],
-      [0.03702965424240229,-0.008383153301704048,0.9992790038059481,2437.9638765390373],
+      [0.9542084100696944, -0.29673855635648877, -0.037848901222266286, 71759.88767870933],
+      [0.29684190212797457, 0.9549219611634173, -0.002988850758880856, 21679.967974600604],
+      [0.03702965424240229, -0.008383153301704048, 0.9992790038059481, 2437.9638765390373],
     ]);
   });
 
   it("interpolates visibility", () => {
     const props: RS.TimelineProps = {
       visibilityTimeline: [{
-        interpolation: 2, time: 1254330000, value: undefined,
+        interpolation: 2,
+        time: 1254330000,
+        value: undefined,
       }, {
-        interpolation: 2, time: 1369123200, value: 70,
+        interpolation: 2,
+        time: 1369123200,
+        value: 70,
       }, {
-        interpolation: 2, time: 1369123260, value: 69,
+        interpolation: 2,
+        time: 1369123260,
+        value: 69,
       }, {
-        interpolation: 1, time: 1370710740, value: 30,
+        interpolation: 1,
+        time: 1370710740,
+        value: 30,
       }],
     };
 
@@ -200,7 +208,7 @@ describe("RenderSchedule", () => {
       expectIds(["0x5", "0x1"], "+1+4");
     });
 
-    it ("assigns unique consecutive batch Ids", () => {
+    it("assigns unique consecutive batch Ids", () => {
       const script = new RS.ScriptBuilder();
       const modelA = script.addModelTimeline("0xa");
       const modelB = script.addModelTimeline("0xb");
@@ -239,7 +247,7 @@ describe("RenderSchedule", () => {
           }],
         }],
       }, {
-        modelId:"0x2",
+        modelId: "0x2",
         realityModelUrl: "https://google.com",
         elementTimelines: [{
           elementIds: "+ABC",
@@ -248,16 +256,16 @@ describe("RenderSchedule", () => {
             time: 400,
             interpolation: linear,
             value: {
-              transform: [ [ 1, 0, 0, 4 ], [ 0, 1, 0, 5 ], [ 0, 0, 1, 6] ],
+              transform: [[1, 0, 0, 4], [0, 1, 0, 5], [0, 0, 1, 6]],
             },
           }, {
             time: 500,
             interpolation: linear,
             value: {
-              transform: [ [ 1, 0, 0, 4 ], [ 0, 1, 0, 5 ], [ 0, 0, 1, 6] ],
-              pivot: [ 1, 2, 3 ],
-              orientation: [ 4, 5, 6, 7 ],
-              position: [ 8, 9, 0 ],
+              transform: [[1, 0, 0, 4], [0, 1, 0, 5], [0, 0, 1, 6]],
+              pivot: [1, 2, 3],
+              orientation: [4, 5, 6, 7],
+              position: [8, 9, 0],
             },
           }],
         }, {
@@ -267,8 +275,8 @@ describe("RenderSchedule", () => {
             time: 600,
             interpolation: linear,
             value: {
-              position: [ 1, 2, 3 ],
-              direction: [ 0, 0, -1 ],
+              position: [1, 2, 3],
+              direction: [0, 0, -1],
               visible: true,
             },
           }],
@@ -288,7 +296,11 @@ describe("RenderSchedule", () => {
 
       const elem2 = model2.addElementTimeline(["0xabc"]);
       elem2.addTransform(400, Transform.createRefs(new Point3d(4, 5, 6), Matrix3d.createIdentity()));
-      elem2.addTransform(500, Transform.createRefs(new Point3d(4, 5, 6), Matrix3d.createIdentity()), { pivot: new Point3d(1, 2, 3), position: new Point3d(8, 9, 0), orientation: Point4d.create(4, 5, 6, 7) });
+      elem2.addTransform(500, Transform.createRefs(new Point3d(4, 5, 6), Matrix3d.createIdentity()), {
+        pivot: new Point3d(1, 2, 3),
+        position: new Point3d(8, 9, 0),
+        orientation: Point4d.create(4, 5, 6, 7),
+      });
 
       const elem3 = model2.addElementTimeline(["0xdef"]);
       elem3.addCuttingPlane(600, { position: new Point3d(1, 2, 3), direction: new Point3d(0, 0, -1), visible: true });
@@ -332,8 +344,14 @@ describe("RenderSchedule", () => {
       expectEqual(new RS.ColorEntry({ time: 1, interpolation: 1 }), new RS.ColorEntry({ time: 1, interpolation: 1 }));
       expectUnequal(new RS.ColorEntry({ time: 1, interpolation: 1 }), new RS.ColorEntry({ time: 1, interpolation: 2 }));
 
-      expectEqual(new RS.ColorEntry({ time: 1, value: { red: 1, green: 2, blue: 3 } }), new RS.ColorEntry({time: 1, value: { red: 1, green: 2, blue: 3 } }));
-      expectUnequal(new RS.ColorEntry({ time: 1, value: { red: 1, green: 2, blue: 3 } }), new RS.ColorEntry({time: 1, value: { red: 3, green: 2, blue: 1 } }));
+      expectEqual(
+        new RS.ColorEntry({ time: 1, value: { red: 1, green: 2, blue: 3 } }),
+        new RS.ColorEntry({ time: 1, value: { red: 1, green: 2, blue: 3 } }),
+      );
+      expectUnequal(
+        new RS.ColorEntry({ time: 1, value: { red: 1, green: 2, blue: 3 } }),
+        new RS.ColorEntry({ time: 1, value: { red: 3, green: 2, blue: 1 } }),
+      );
     });
   });
 
@@ -371,7 +389,7 @@ describe("RenderSchedule", () => {
       expectEqual(new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }), new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }));
       expectUnequal(new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }), new RS.TransformEntry({ time: 1, value: cmp(3, 2, 1) }));
 
-      expectUnequal(new RS.TransformEntry({time: 1, value: tf(1, 2, 3, 4) }), new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }));
+      expectUnequal(new RS.TransformEntry({ time: 1, value: tf(1, 2, 3, 4) }), new RS.TransformEntry({ time: 1, value: cmp(1, 2, 3) }));
     });
   });
 
@@ -408,14 +426,20 @@ describe("RenderSchedule", () => {
       const compressedIds = CompressedId64Set.compressArray(elementIds);
 
       expectEqual(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }));
-      expectEqual(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }));
+      expectEqual(
+        RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }),
+        RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }),
+      );
       expectEqual(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: compressedIds }));
 
       expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 5, elementIds }));
 
       expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0xabc"] }));
       expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0x1", "0x5"] }));
-      expectUnequal(RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }), RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0x1", "0x5", "0xdef"] }));
+      expectUnequal(
+        RS.ElementTimeline.fromJSON({ batchId: 4, elementIds }),
+        RS.ElementTimeline.fromJSON({ batchId: 4, elementIds: ["0x1", "0x5", "0xdef"] }),
+      );
 
       const v1 = { time: 3, interpolation: 1, value: 1 };
       const v2 = { time: 4, interpolation: 2, value: 2 };
@@ -473,12 +497,24 @@ describe("RenderSchedule", () => {
   describe("ModelTimeline", () => {
     it("compares for equality", () => {
       const elementTimelines: RS.ElementTimelineProps[] = [];
-      expectEqual(RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }), RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }));
+      expectEqual(
+        RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }),
+        RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }),
+      );
       expectEqual(RS.ModelTimeline.fromJSON({ modelId: "0x2", elementTimelines }), RS.ModelTimeline.fromJSON({ modelId: "0x2", elementTimelines }));
 
-      expectUnequal(RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }), RS.ModelTimeline.fromJSON({ modelId: "0x1", elementTimelines }));
-      expectUnequal(RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }), RS.ModelTimeline.fromJSON({ modelId: "0x2", realityModelUrl: "blah", elementTimelines }));
-      expectUnequal(RS.ModelTimeline.fromJSON({ modelId: "0x1", elementTimelines }), RS.ModelTimeline.fromJSON({ modelId: "0x1", elementTimelines: [{ batchId: 0, elementIds: ["0x2"] }] }));
+      expectUnequal(
+        RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }),
+        RS.ModelTimeline.fromJSON({ modelId: "0x1", elementTimelines }),
+      );
+      expectUnequal(
+        RS.ModelTimeline.fromJSON({ modelId: "0x1", realityModelUrl: "blah", elementTimelines }),
+        RS.ModelTimeline.fromJSON({ modelId: "0x2", realityModelUrl: "blah", elementTimelines }),
+      );
+      expectUnequal(
+        RS.ModelTimeline.fromJSON({ modelId: "0x1", elementTimelines }),
+        RS.ModelTimeline.fromJSON({ modelId: "0x1", elementTimelines: [{ batchId: 0, elementIds: ["0x2"] }] }),
+      );
     });
   });
 
@@ -494,8 +530,8 @@ describe("RenderSchedule", () => {
 
     it("weakly caches previous comparisons", () => {
       const elementTimelines: RS.ElementTimelineProps[] = [];
-      const s1 = RS.Script.fromJSON([{modelId: "0x1", elementTimelines}])!;
-      const s2 = RS.Script.fromJSON([{modelId: "0x2", elementTimelines}])!;
+      const s1 = RS.Script.fromJSON([{ modelId: "0x1", elementTimelines }])!;
+      const s2 = RS.Script.fromJSON([{ modelId: "0x2", elementTimelines }])!;
 
       function spy(timeline: any): void {
         timeline.compared = false;

@@ -175,10 +175,9 @@ export class Presentation {
   }
 
   private static createClientManager(clientId: string, onManagerUsed: () => void): ClientStoreItem {
-    const manager =
-      Presentation._initProps && Presentation._initProps.clientManagerFactory
-        ? Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps)
-        : new PresentationManager({ ...Presentation._initProps, id: clientId });
+    const manager = Presentation._initProps && Presentation._initProps.clientManagerFactory
+      ? Presentation._initProps.clientManagerFactory(clientId, Presentation._initProps)
+      : new PresentationManager({ ...Presentation._initProps, id: clientId });
     manager.setOnManagerUsedHandler(onManagerUsed);
     Logger.logInfo(
       PresentationBackendLoggerCategory.PresentationManager,

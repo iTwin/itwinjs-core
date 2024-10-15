@@ -6,14 +6,13 @@
  * @module OrbitGT
  */
 
-//package orbitgt.pointcloud.model;
+// package orbitgt.pointcloud.model;
 
 type int8 = number;
 type int16 = number;
 type int32 = number;
 type float32 = number;
 type float64 = number;
-
 
 import { Bounds } from "../../spatial/geom/Bounds";
 import { TileIndex } from "./TileIndex";
@@ -23,16 +22,16 @@ import { TileIndex } from "./TileIndex";
  */
 /** @internal */
 export class PointData {
-	// the index of the tile
-	public tileIndex: TileIndex;
-	// the spatial bounds of the tile
-	public bounds: Bounds;
+  // the index of the tile
+  public tileIndex: TileIndex;
+  // the spatial bounds of the tile
+  public bounds: Bounds;
 
-	/**
-	 * Create new point data.
-	 */
-	public constructor(tileIndex: TileIndex, bounds: Bounds) {
-		this.tileIndex = tileIndex;
-		this.bounds = bounds;
-	}
+  /**
+   * Create new point data.
+   */
+  public constructor(tileIndex: TileIndex, bounds: Bounds) {
+    this.tileIndex = tileIndex;
+    this.bounds = bounds;
+  }
 }

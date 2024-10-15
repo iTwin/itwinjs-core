@@ -16,22 +16,36 @@
  */
 export class SortableEdge extends Float64Array {
   /** Return the vertex index that appears first in the order stored.  */
-  public get vertexIndexA(): number { return this[0]; }
+  public get vertexIndexA(): number {
+    return this[0];
+  }
   /** Return the vertex index that appears second in the order stored.  */
-  public get vertexIndexB(): number { return this[1]; }
+  public get vertexIndexB(): number {
+    return this[1];
+  }
   /** Return the facet index.  */
-  public get facetIndex(): number { return this[2]; }
+  public get facetIndex(): number {
+    return this[2];
+  }
   /** return true if vertexIndexA is less than vertexIndexB */
-  public get isLowHigh(): boolean { return this[0] < this[1]; }
+  public get isLowHigh(): boolean {
+    return this[0] < this[1];
+  }
   /** Return the vertex index with lower numeric value */
-  public get lowVertexIndex(): number { return this[0] < this[1] ? this[0] : this[1]; }
+  public get lowVertexIndex(): number {
+    return this[0] < this[1] ? this[0] : this[1];
+  }
   /** Return the vertex index with higher numeric value */
-  public get highVertexIndex(): number { return this[0] > this[1] ? this[0] : this[1]; }
+  public get highVertexIndex(): number {
+    return this[0] > this[1] ? this[0] : this[1];
+  }
   /** Return true if the vertices edgeA and edgeB are the same vertex indices in opposite order */
-  public static areDirectedPartners(edgeA: SortableEdge, edgeB: SortableEdge): boolean { return edgeA[0] === edgeB[1] && edgeA[1] === edgeB[0]; }
+  public static areDirectedPartners(edgeA: SortableEdge, edgeB: SortableEdge): boolean {
+    return edgeA[0] === edgeB[1] && edgeA[1] === edgeB[0];
+  }
   /** Return true if the vertices edgeA and edgeB are the same vertex indices with no consideration of order */
   public static areUndirectedPartners(edgeA: SortableEdge, edgeB: SortableEdge): boolean {
-    return (edgeA[0] === edgeB[0] && edgeA[1] === edgeB[1]) || ((edgeA[0] === edgeB[1] && edgeA[1] === edgeB[0]));
+    return (edgeA[0] === edgeB[0] && edgeA[1] === edgeB[1]) || (edgeA[0] === edgeB[1] && edgeA[1] === edgeB[0]);
   }
   /** Return numeric relationship of edgeA and edgeB:
    * * 1 if they share start and end in the same order
@@ -44,7 +58,9 @@ export class SortableEdge extends Float64Array {
     return 0;
   }
 
-  public get isNullEdge(): boolean { return this[0] === this[1]; }
+  public get isNullEdge(): boolean {
+    return this[0] === this[1];
+  }
   /**
    * lexical comparison of two edges.
    * * If the edges have the same vertex pair (in same or opposite order) they will end up adjacent in a sort
@@ -75,7 +91,9 @@ export class SortableEdge extends Float64Array {
     this[1] = vertexB;
     this[2] = facetIndex;
   }
-  public toJSON(): any { return [this[0], this[1], this[2]]; }
+  public toJSON(): any {
+    return [this[0], this[1], this[2]];
+  }
   public static clusterToJSON(data: SortableEdgeCluster): any {
     if (data instanceof SortableEdge)
       return data.toJSON();
@@ -142,7 +160,6 @@ export class IndexedEdgeMatcher {
           cluster.push(this.edges[i]);
         dest.push(cluster);
       }
-
     }
   }
   /**
@@ -157,7 +174,12 @@ export class IndexedEdgeMatcher {
    * @param nullEdges optional array to receive arrays of null edges (same start and end vertex)
    * @param allOtherClusters optional array to receive arrays in which all the edges are partners in an undirected sense but not a simple directed pair.
    */
-  public sortAndCollectClusters(manifoldPairs: SortableEdgeCluster[] | undefined, singletons?: SortableEdgeCluster[], nullEdges?: SortableEdgeCluster[], allOtherClusters?: SortableEdgeCluster[]) {
+  public sortAndCollectClusters(
+    manifoldPairs: SortableEdgeCluster[] | undefined,
+    singletons?: SortableEdgeCluster[],
+    nullEdges?: SortableEdgeCluster[],
+    allOtherClusters?: SortableEdgeCluster[],
+  ) {
     this.sort();
     if (manifoldPairs) manifoldPairs.length = 0;
     if (singletons) singletons.length = 0;

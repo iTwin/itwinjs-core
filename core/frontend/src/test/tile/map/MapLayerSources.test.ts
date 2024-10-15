@@ -13,13 +13,12 @@ const sampleSourceJson = {
   url: "https://testserver/wms",
   transparentBackground: true,
   baseMap: true,
-  queryParams: {testParam : "testValue"},
+  queryParams: { testParam: "testValue" },
 };
 
 describe("MapLayerSources", () => {
-
   it("should create MapLayerSource with defaults", async () => {
-    const testSourceProps: MapLayerSourceProps = {name: sampleSourceJson.name, url: sampleSourceJson.url};
+    const testSourceProps: MapLayerSourceProps = { name: sampleSourceJson.name, url: sampleSourceJson.url };
     const sampleSource = MapLayerSource.fromJSON(testSourceProps);
     expect(sampleSource).to.not.undefined;
     expect(sampleSource!.formatId).to.equals("WMS");
@@ -30,7 +29,6 @@ describe("MapLayerSources", () => {
   });
 
   it("should create MapLayerSource from MapLayerSourceProps", async () => {
-
     let sampleSource = MapLayerSource.fromJSON(sampleSourceJson);
     expect(sampleSource).to.not.undefined;
     expect(sampleSource!.formatId).to.equals(sampleSourceJson.formatId);
@@ -61,7 +59,7 @@ describe("MapLayerSources", () => {
     // Save props not part of of props
     sampleSource!.userName = "testUser";
     sampleSource!.password = "testPassword";
-    sampleSource!.unsavedQueryParams = {unsavedParam : "unsavedParamValue"};
+    sampleSource!.unsavedQueryParams = { unsavedParam: "unsavedParamValue" };
 
     expect(sampleSource).to.not.undefined;
     if (!sampleSource)
@@ -84,7 +82,7 @@ describe("MapLayerSources", () => {
     expect(sampleSource.userName).to.equals(settings.userName);
     expect(sampleSource.password).to.equals(settings.password);
     expect(JSON.stringify(sampleSource.savedQueryParams)).to.equals(JSON.stringify(settings.savedQueryParams));
-    expect( JSON.stringify(sampleSource.unsavedQueryParams)).to.equals(JSON.stringify(settings.unsavedQueryParams));
+    expect(JSON.stringify(sampleSource.unsavedQueryParams)).to.equals(JSON.stringify(settings.unsavedQueryParams));
     expect(settings.subLayers).to.not.undefined;
     expect(settings.subLayers.length).to.equals(subLayers.length);
     expect(settings.subLayers[0].name).to.equals(subLayers[0].name);
@@ -97,7 +95,7 @@ describe("MapLayerSources", () => {
     // Save props not part of of props (should have no impact on resulting JSON)
     sampleSource!.userName = "testUser";
     sampleSource!.password = "testPassword";
-    sampleSource!.unsavedQueryParams = {unsavedParam : "unsavedParamValue"};
+    sampleSource!.unsavedQueryParams = { unsavedParam: "unsavedParamValue" };
 
     const sourceProps = sampleSource!.toJSON();
     expect(sampleSourceJson.formatId).to.equals(sourceProps.formatId);
@@ -105,6 +103,5 @@ describe("MapLayerSources", () => {
     expect(sampleSourceJson.url).to.equals(sourceProps.url);
     expect(sampleSourceJson.transparentBackground).to.equals(sourceProps.transparentBackground);
     expect(sampleSourceJson.queryParams).to.equals(sourceProps.queryParams);
-
   });
 });

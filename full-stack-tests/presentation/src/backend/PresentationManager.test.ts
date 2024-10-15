@@ -2,7 +2,6 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { IModelDb, SnapshotDb } from "@itwin/core-backend";
 import { BeEvent, Guid, using } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
@@ -22,6 +21,7 @@ import {
   Ruleset,
   RuleTypes,
 } from "@itwin/presentation-common";
+import { expect } from "chai";
 import { initialize, terminate, testLocalization } from "../IntegrationTests";
 import { getFieldByLabel } from "../Utils";
 
@@ -53,14 +53,22 @@ describe("PresentationManager", () => {
               getSchemaSync() {
                 throw new Error(`getSchemaSync not implemented`);
               },
-              async getSchemaInfo(key: Readonly<SchemaKey>, matchType: SchemaMatchType, schemaContext: SchemaContext): Promise<SchemaInfo | undefined> {
+              async getSchemaInfo(
+                key: Readonly<SchemaKey>,
+                matchType: SchemaMatchType,
+                schemaContext: SchemaContext,
+              ): Promise<SchemaInfo | undefined> {
                 const schemaInfo = await Schema.startLoadingFromJson(schemaIModel.getSchemaProps(key.name), schemaContext);
                 if (schemaInfo !== undefined && schemaInfo.schemaKey.matches(key, matchType)) {
                   return schemaInfo;
                 }
                 return undefined;
               },
-              async getSchema<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, schemaContext: SchemaContext): Promise<T | undefined> {
+              async getSchema<T extends Schema>(
+                key: Readonly<SchemaKey>,
+                matchType: SchemaMatchType,
+                schemaContext: SchemaContext,
+              ): Promise<T | undefined> {
                 await this.getSchemaInfo(key, matchType, schemaContext);
                 const schema = await schemaContext.getCachedSchema(key, matchType);
                 return schema as T;
@@ -170,7 +178,7 @@ describe("PresentationManager", () => {
 
   describe("getElementProperties", () => {
     it("returns properties for some elements of class 'PhysicalObject", async () => {
-      await using(new PresentationManager(), async (manager) => {
+      using(new PresentationManager(), async (manager) => {
         const properties: ElementProperties[] = [];
         const { iterator } = await manager.getElementProperties({ imodel, elementClasses: ["Generic:PhysicalObject"] });
         for await (const items of iterator()) {
@@ -183,7 +191,7 @@ describe("PresentationManager", () => {
 
   describe("Cancel request", () => {
     it("cancels 'getNodes' request", async () => {
-      await using(new PresentationManager(), async (manager) => {
+      using(new PresentationManager(), async (manager) => {
         const cancelEvent = new BeEvent<() => void>();
         const promise = manager.getNodes({
           imodel,

@@ -5,14 +5,27 @@
 // cspell:ignore JSONXYZ, ETRF, OSGB, DHDN, CLRK, Benoit, NAVD, NADCON, Xfrm, prvi, stgeorge, stlrnc, stpaul, helmert, NSRS
 
 import { describe, expect, it } from "vitest";
-import { GeographicCRS, GeographicCRSProps, HorizontalCRS, HorizontalCRSExtent, HorizontalCRSExtentProps, HorizontalCRSProps } from "../geometry/CoordinateReferenceSystem";
-import { GeodeticDatum, GeodeticDatumProps, GeodeticTransform, GeodeticTransformPath, GeodeticTransformPathProps, GeodeticTransformProps } from "../geometry/GeodeticDatum";
+import {
+  GeographicCRS,
+  GeographicCRSProps,
+  HorizontalCRS,
+  HorizontalCRSExtent,
+  HorizontalCRSExtentProps,
+  HorizontalCRSProps,
+} from "../geometry/CoordinateReferenceSystem";
+import {
+  GeodeticDatum,
+  GeodeticDatumProps,
+  GeodeticTransform,
+  GeodeticTransformPath,
+  GeodeticTransformPathProps,
+  GeodeticTransformProps,
+} from "../geometry/GeodeticDatum";
 import { GeodeticEllipsoid, GeodeticEllipsoidProps } from "../geometry/GeodeticEllipsoid";
 import { Carto2DDegrees } from "../geometry/Projection";
 // import { ProjectionMethod2 } from "../geometry/Projection";
 
 describe("Geodetic Settings", () => {
-
   /* Geodetic Transform unit tests */
   it("round-trips GeodeticTransform through JSON", () => {
     const roundTrip = (input: GeodeticTransformProps | undefined, expected: GeodeticTransformProps | "input") => {
@@ -217,8 +230,7 @@ describe("Geodetic Settings", () => {
       sourceDatumId: "NAD27",
       targetDatumId: "NAD83/HARN-A",
     }, "input");
-  },
-  );
+  });
 
   /* Geodetic Ellipsoid unit tests */
   it("round-trips GeodeticEllipsoid through JSON", () => {
@@ -251,7 +263,6 @@ describe("Geodetic Settings", () => {
 
       expect(ellipsoid.equals(expectedEllipsoid)).to.be.true;
       expect(ellipsoid.equals(outEllipsoid)).to.be.true;
-
     };
 
     /** For the moment no property is validated so we always use input as compare base */
@@ -313,7 +324,6 @@ describe("Geodetic Settings", () => {
       polarRadius: 6356774.719195306,
     });
     expect(ellipsoid1.equals(ellipsoid2)).to.be.true;
-
   });
 
   /* HorizontalCRSExtent unit tests */
@@ -339,7 +349,6 @@ describe("Geodetic Settings", () => {
 
       expect(extent.equals(expectedExtent)).to.be.true;
       expect(extent.equals(outExtent)).to.be.true;
-
     };
 
     roundTrip({ southWest: { latitude: 12.1, longitude: 45.6 }, northEast: { latitude: 14.56, longitude: 58.7 } }, "input");
@@ -349,11 +358,20 @@ describe("Geodetic Settings", () => {
     roundTrip({ southWest: { latitude: 12.1, longitude: 178.1 }, northEast: { latitude: 14.56, longitude: -178.7 } }, "input");
 
     // This one verifies that fuzzy number compare are applied
-    const cartoPointA = HorizontalCRSExtent.fromJSON({ southWest: { latitude: 12.1, longitude: 178.1 }, northEast: { latitude: 14.56, longitude: -178.7 } });
-    const cartoPointB = HorizontalCRSExtent.fromJSON({ southWest: { latitude: 12.100000000001, longitude: 178.1000000000001 }, northEast: { latitude: 14.56000000001, longitude: -178.70000000001 } });
+    const cartoPointA = HorizontalCRSExtent.fromJSON({
+      southWest: { latitude: 12.1, longitude: 178.1 },
+      northEast: { latitude: 14.56, longitude: -178.7 },
+    });
+    const cartoPointB = HorizontalCRSExtent.fromJSON({
+      southWest: { latitude: 12.100000000001, longitude: 178.1000000000001 },
+      northEast: { latitude: 14.56000000001, longitude: -178.70000000001 },
+    });
     expect(cartoPointA.equals(cartoPointB)).to.be.true;
 
-    const cartoPointC = HorizontalCRSExtent.fromJSON({ southWest: { latitude: 12.100000001, longitude: 178.1000000001 }, northEast: { latitude: 14.56000000001, longitude: -178.70000000001 } });
+    const cartoPointC = HorizontalCRSExtent.fromJSON({
+      southWest: { latitude: 12.100000001, longitude: 178.1000000001 },
+      northEast: { latitude: 14.56000000001, longitude: -178.70000000001 },
+    });
     expect(cartoPointA.equals(cartoPointC)).to.be.false;
 
     /* Additional unit tests */
@@ -962,7 +980,11 @@ describe("Geodetic Settings", () => {
     roundTrip({ horizontalCRS: { id: "ETRF89" }, verticalCRS: { id: "ELLIPSOID" } }, "input");
     roundTrip({ horizontalCRS: { id: "OSGB" }, verticalCRS: { id: "LOCAL_ELLIPSOID" } }, "input");
     roundTrip({ horizontalCRS: { id: "GDA2020" }, verticalCRS: { id: "GEOID" } }, "input");
-    roundTrip({ horizontalCRS: { id: "GDA2020" }, verticalCRS: { id: "GEOID" }, additionalTransform: { helmert2DWithZOffset: { translationX: 10.0, translationY: 15.0, translationZ: 0.02, rotDeg: 1.2, scale: 1.0001 } } }, "input");
+    roundTrip({
+      horizontalCRS: { id: "GDA2020" },
+      verticalCRS: { id: "GEOID" },
+      additionalTransform: { helmert2DWithZOffset: { translationX: 10.0, translationY: 15.0, translationZ: 0.02, rotDeg: 1.2, scale: 1.0001 } },
+    }, "input");
 
     roundTrip({
       horizontalCRS: {
@@ -1480,5 +1502,4 @@ describe("Geodetic Settings", () => {
 
     expect(CRS1.equals(CRS2)).to.be.true;
   });
-
 });

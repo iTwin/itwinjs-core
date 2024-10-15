@@ -66,7 +66,11 @@ export class SpatialClassifierFlags {
   public readonly isVolumeClassifier: boolean;
 
   /** Construct new flags. */
-  public constructor(inside = SpatialClassifierInsideDisplay.ElementColor, outside = SpatialClassifierOutsideDisplay.Dimmed, isVolumeClassifier = false) {
+  public constructor(
+    inside = SpatialClassifierInsideDisplay.ElementColor,
+    outside = SpatialClassifierOutsideDisplay.Dimmed,
+    isVolumeClassifier = false,
+  ) {
     this.inside = insideDisplay(inside);
     this.outside = outsideDisplay(outside);
     this.isVolumeClassifier = isVolumeClassifier;
@@ -191,7 +195,7 @@ export class SpatialClassifier {
    * @beta
    */
   public static fromModelMapLayer(mapLayer: ModelMapLayerSettings): SpatialClassifier {
-    const flags =  SpatialClassifierFlags.fromJSON({ inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off });
+    const flags = SpatialClassifierFlags.fromJSON({ inside: SpatialClassifierInsideDisplay.Off, outside: SpatialClassifierOutsideDisplay.Off });
 
     return new SpatialClassifier(mapLayer.modelId, mapLayer.name, flags);
   }
@@ -304,7 +308,7 @@ export class SpatialClassifiers implements Iterable<SpatialClassifier> {
 
     this._active = active;
     for (let i = 0; i < array.length; i++)
-      array[i].isActive = (i === propsIndex);
+      array[i].isActive = i === propsIndex;
 
     return this.active;
   }

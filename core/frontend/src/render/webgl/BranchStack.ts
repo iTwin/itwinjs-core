@@ -7,12 +7,12 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { Transform } from "@itwin/core-geometry";
 import { HiddenLine, ViewFlags } from "@itwin/core-common";
+import { Transform } from "@itwin/core-geometry";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { BranchState } from "./BranchState";
-import { Branch } from "./Graphic";
 import { EdgeSettings } from "./EdgeSettings";
+import { Branch } from "./Graphic";
 
 /**
  * Represents the current state of the scene graph. As the scene graph is traversed,
@@ -47,8 +47,12 @@ export class BranchStack {
     return this._stack[0];
   }
 
-  public get length() { return this._stack.length; }
-  public get empty() { return 0 === this.length; }
+  public get length() {
+    return this._stack.length;
+  }
+  public get empty() {
+    return 0 === this.length;
+  }
 
   public pushBranch(branch: Branch): void {
     assert(this.length > 0);

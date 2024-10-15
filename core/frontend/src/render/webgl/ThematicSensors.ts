@@ -7,14 +7,14 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ThematicDisplaySensor, ThematicDisplaySensorSettings } from "@itwin/core-common";
+import { Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
-import { Texture2DData, Texture2DHandle } from "./Texture";
-import { UniformHandle } from "./UniformHandle";
 import { TextureUnit } from "./RenderFlags";
 import { Target } from "./Target";
+import { Texture2DData, Texture2DHandle } from "./Texture";
+import { UniformHandle } from "./UniformHandle";
 
 /** @internal */
 interface ThematicSensorsTexture {
@@ -36,7 +36,9 @@ export class ThematicSensors implements WebGLDisposable {
   public readonly range: Range3d;
   public readonly sensorSettings?: ThematicDisplaySensorSettings;
 
-  public get numSensors(): number { return this._sensors.length; }
+  public get numSensors(): number {
+    return this._sensors.length;
+  }
 
   private _sensors: ThematicDisplaySensor[];
   private readonly _viewMatrix = Transform.createIdentity();
@@ -53,7 +55,8 @@ export class ThematicSensors implements WebGLDisposable {
         target.plan.thematic.sensorSettings.sensors,
         range,
         target.currentTransform,
-        target.plan.thematic.sensorSettings.distanceCutoff);
+        target.plan.thematic.sensorSettings.distanceCutoff,
+      );
     }
 
     const obj = this.createFloat(target, range, sensors);
@@ -61,7 +64,9 @@ export class ThematicSensors implements WebGLDisposable {
     return obj;
   }
 
-  public get isDisposed(): boolean { return this._texture.handle.isDisposed; }
+  public get isDisposed(): boolean {
+    return this._texture.handle.isDisposed;
+  }
 
   public dispose(): void {
     dispose(this._texture.handle);
@@ -75,9 +80,13 @@ export class ThematicSensors implements WebGLDisposable {
     this._texture.handle.bindSampler(uniform, TextureUnit.ThematicSensors);
   }
 
-  public get bytesUsed(): number { return this._texture.handle.bytesUsed; }
+  public get bytesUsed(): number {
+    return this._texture.handle.bytesUsed;
+  }
 
-  public get texture(): Texture2DHandle { return this._texture.handle; }
+  public get texture(): Texture2DHandle {
+    return this._texture.handle;
+  }
 
   private _update(viewMatrix: Transform) {
     this._viewMatrix.setFrom(viewMatrix);
@@ -114,7 +123,9 @@ export class ThematicSensors implements WebGLDisposable {
     return new this({ handle, data }, target, range, sensors);
   }
 
-  protected append(value: number) { this.appendFloat(value); }
+  protected append(value: number) {
+    this.appendFloat(value);
+  }
 
   protected appendFloat(value: number): void {
     this._view.setFloat32(this._curPos, value, true);
@@ -126,8 +137,12 @@ export class ThematicSensors implements WebGLDisposable {
     this.advance(1);
   }
 
-  private advance(numBytes: number): void { this._curPos += numBytes; }
-  private reset(): void { this._curPos = 0; }
+  private advance(numBytes: number): void {
+    this._curPos += numBytes;
+  }
+  private reset(): void {
+    this._curPos = 0;
+  }
 
   private appendValues(a: number, b: number, c: number, d: number) {
     this.append(a);
@@ -136,7 +151,9 @@ export class ThematicSensors implements WebGLDisposable {
     this.append(d);
   }
 
-  private appendSensor(position: Point3d, value: number): void { this.appendValues(position.x, position.y, position.z, value); }
+  private appendSensor(position: Point3d, value: number): void {
+    this.appendValues(position.x, position.y, position.z, value);
+  }
 }
 
 function _sensorRadiusAffectsRange(sensor: ThematicDisplaySensor, sensorRadius: number, range: Range3d) {
@@ -146,7 +163,12 @@ function _sensorRadiusAffectsRange(sensor: ThematicDisplaySensor, sensorRadius: 
 
 const scratchRange = Range3d.createNull();
 
-function _accumulateSensorsInRange(sensors: ThematicDisplaySensor[], range: Range3d, transform: Transform, distanceCutoff: number): ThematicDisplaySensor[] {
+function _accumulateSensorsInRange(
+  sensors: ThematicDisplaySensor[],
+  range: Range3d,
+  transform: Transform,
+  distanceCutoff: number,
+): ThematicDisplaySensor[] {
   const retSensors: ThematicDisplaySensor[] = [];
 
   transform.multiplyRange(range, scratchRange);

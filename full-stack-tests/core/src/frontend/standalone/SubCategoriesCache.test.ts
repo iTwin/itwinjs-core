@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { BeDuration, Id64, Id64Arg, Id64Set, Id64String } from "@itwin/core-bentley";
 import { IModelConnection, SnapshotConnection, SubCategoriesCache } from "@itwin/core-frontend";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
 
 describe("SubCategoriesCache", () => {
@@ -111,10 +111,18 @@ describe("SubCategoriesCache", () => {
       expectEqualIdSets(subcats!, subcatIds);
     }
 
-    public get current() { return this._current; }
-    public get next() { return this._next; }
-    public get request() { return this._request; }
-    public get disposed() { return this._disposed; }
+    public get current() {
+      return this._current;
+    }
+    public get next() {
+      return this._next;
+    }
+    public get request() {
+      return this._request;
+    }
+    public get disposed() {
+      return this._disposed;
+    }
 
     public async waitUntilEmpty(): Promise<void> {
       while (!this.isEmpty)

@@ -6,21 +6,56 @@
  * @module Tiles
  */
 import {
-  assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64, Id64Array, Id64String, IModelStatus, ProcessDetector,
+  assert,
+  BeDuration,
+  BeEvent,
+  BentleyStatus,
+  BeTimePoint,
+  Id64,
+  Id64Array,
+  Id64String,
+  IModelStatus,
+  ProcessDetector,
 } from "@itwin/core-bentley";
 import {
-  BackendError, defaultTileOptions, EdgeOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
-  IModelTileTreeProps, RenderSchedule, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
+  BackendError,
+  defaultTileOptions,
+  EdgeOptions,
+  ElementGraphicsRequestProps,
+  getMaximumMajorTileFormatVersion,
+  IModelError,
+  IModelTileRpcInterface,
+  IModelTileTreeProps,
+  RenderSchedule,
+  RpcOperation,
+  RpcResponseCacheControl,
+  ServerTimeoutError,
+  TileContentSource,
+  TileVersionInfo,
 } from "@itwin/core-common";
+import type { FrontendStorage } from "@itwin/object-storage-core/lib/frontend";
 import { IModelApp } from "../IModelApp";
-import { IpcApp } from "../IpcApp";
 import { IModelConnection } from "../IModelConnection";
+import { IpcApp } from "../IpcApp";
 import { Viewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, FetchCloudStorage, IModelTileTree, LRUTileList, ReadonlyTileUserSet, Tile, TileContentDecodingStatistics, TileLoadStatus,
-  TileRequest, TileRequestChannels, TileStorage, TileTree, TileTreeOwner, TileUsageMarker, TileUser, UniqueTileUserSets,
+  DisclosedTileTreeSet,
+  FetchCloudStorage,
+  IModelTileTree,
+  LRUTileList,
+  ReadonlyTileUserSet,
+  Tile,
+  TileContentDecodingStatistics,
+  TileLoadStatus,
+  TileRequest,
+  TileRequestChannels,
+  TileStorage,
+  TileTree,
+  TileTreeOwner,
+  TileUsageMarker,
+  TileUser,
+  UniqueTileUserSets,
 } from "./internal";
-import type { FrontendStorage } from "@itwin/object-storage-core/lib/frontend";
 
 /** Details about any tiles not handled by [[TileAdmin]]. At this time, that means OrbitGT point cloud tiles.
  * Used for bookkeeping by SelectedAndReadyTiles
@@ -186,7 +221,9 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public get emptyTileUserSet(): ReadonlyTileUserSet { return UniqueTileUserSets.emptySet; }
+  public get emptyTileUserSet(): ReadonlyTileUserSet {
+    return UniqueTileUserSets.emptySet;
+  }
 
   /** Returns basic statistics about the TileAdmin's current state. */
   public get statistics(): TileAdmin.Statistics {
@@ -223,7 +260,9 @@ export class TileAdmin {
     this.channels = new TileRequestChannels(rpcConcurrency, true === options.cacheTileMetadata);
 
     this._maxActiveTileTreePropsRequests = options.maxActiveTileTreePropsRequests ?? 10;
-    this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0) ? options.defaultTileSizeModifier : 1.0;
+    this._defaultTileSizeModifier = (undefined !== options.defaultTileSizeModifier && options.defaultTileSizeModifier > 0)
+      ? options.defaultTileSizeModifier
+      : 1.0;
     this._retryInterval = undefined !== options.retryInterval ? options.retryInterval : 1000;
     this._enableInstancing = options.enableInstancing ?? defaultTileOptions.enableInstancing;
     this.edgeOptions = {
@@ -236,7 +275,10 @@ export class TileAdmin {
     this.ignoreAreaPatterns = options.ignoreAreaPatterns ?? defaultTileOptions.ignoreAreaPatterns;
     this.enableExternalTextures = options.enableExternalTextures ?? defaultTileOptions.enableExternalTextures;
     this.disableMagnification = options.disableMagnification ?? defaultTileOptions.disableMagnification;
-    this.percentGPUMemDisablePreload = Math.max(0, Math.min((options.percentGPUMemDisablePreload === undefined ? 80 : options.percentGPUMemDisablePreload), 80));
+    this.percentGPUMemDisablePreload = Math.max(
+      0,
+      Math.min(options.percentGPUMemDisablePreload === undefined ? 80 : options.percentGPUMemDisablePreload, 80),
+    );
     this.alwaysRequestEdges = true === options.alwaysRequestEdges;
     this.alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
     this.maximumMajorTileFormatVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
@@ -279,7 +321,7 @@ export class TileAdmin {
     const minTreeTime = ignoreMinimums ? 0.1 : 10;
 
     // If unspecified, tile expiration time defaults to 20 seconds.
-    this.tileExpirationTime = clamp((options.tileExpirationTime ?? 20), minTileTime, 60)!;
+    this.tileExpirationTime = clamp(options.tileExpirationTime ?? 20, minTileTime, 60)!;
 
     // If unspecified, trees never expire (will change this to use a default later).
     this.tileTreeExpirationTime = clamp(options.tileTreeExpirationTime ?? 300, minTreeTime, 3600);
@@ -291,9 +333,12 @@ export class TileAdmin {
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
 
     // If unspecified preload 2 levels of parents for context tiles.
-    this.contextPreloadParentDepth = Math.max(0, Math.min((options.contextPreloadParentDepth === undefined ? 2 : options.contextPreloadParentDepth), 8));
+    this.contextPreloadParentDepth = Math.max(
+      0,
+      Math.min(options.contextPreloadParentDepth === undefined ? 2 : options.contextPreloadParentDepth, 8),
+    );
     // If unspecified skip one level before preloading  of parents of context tiles.
-    this.contextPreloadParentSkip = Math.max(0, Math.min((options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip), 5));
+    this.contextPreloadParentSkip = Math.max(0, Math.min(options.contextPreloadParentSkip === undefined ? 1 : options.contextPreloadParentSkip, 5));
 
     const removals = [
       this.onTileLoad.addListener(() => this.invalidateAllScenes()),
@@ -329,7 +374,9 @@ export class TileAdmin {
   }
 
   /** @internal */
-  public get enableInstancing() { return this._enableInstancing; }
+  public get enableInstancing() {
+    return this._enableInstancing;
+  }
 
   /** Given a numeric combined major+minor tile format version (typically obtained from a request to the backend to query the maximum tile format version it supports),
    * return the maximum *major* format version to be used to request tile content from the backend.
@@ -348,7 +395,9 @@ export class TileAdmin {
    * Changing it after startup will change it for all Viewports that do not explicitly override it with their own multiplier.
    * This value must be greater than zero.
    */
-  public get defaultTileSizeModifier() { return this._defaultTileSizeModifier; }
+  public get defaultTileSizeModifier() {
+    return this._defaultTileSizeModifier;
+  }
   public set defaultTileSizeModifier(modifier: number) {
     if (modifier !== this._defaultTileSizeModifier && modifier > 0 && !Number.isNaN(modifier)) {
       this._defaultTileSizeModifier = modifier;
@@ -415,7 +464,9 @@ export class TileAdmin {
    * @internal
    */
   public get isPreloadingAllowed(): boolean {
-    return !this._isMobile && this.percentGPUMemDisablePreload > 0 && (this._maxTotalTileContentBytes === undefined || this._lruList.totalBytesUsed / this._maxTotalTileContentBytes * 100 < this.percentGPUMemDisablePreload);
+    return !this._isMobile && this.percentGPUMemDisablePreload > 0 &&
+      (this._maxTotalTileContentBytes === undefined ||
+        this._lruList.totalBytesUsed / this._maxTotalTileContentBytes * 100 < this.percentGPUMemDisablePreload);
   }
 
   /** Invoked from the [[ToolAdmin]] event loop to process any pending or active requests for tiles.
@@ -656,7 +707,14 @@ export class TileAdmin {
       throw new Error("Provided iModel has no iModelId");
 
     const { guid, tokenProps, treeId } = this.getTileRequestProps(tile);
-    const content = await (await this.getTileStorage()).downloadTile(tokenProps, tile.iModelTree.iModel.iModelId, tile.iModelTree.iModel.changeset.id, treeId, tile.contentId, guid);
+    const content = await (await this.getTileStorage()).downloadTile(
+      tokenProps,
+      tile.iModelTree.iModel.iModelId,
+      tile.iModelTree.iModel.changeset.id,
+      treeId,
+      tile.contentId,
+      guid,
+    );
     return content;
   }
 
@@ -786,7 +844,10 @@ export class TileAdmin {
    * Otherwise, special tiles must be requested based on the script's sourceId (RenderTimeline or DisplayStyle element).
    * @internal
    */
-  public getScriptInfoForTreeId(modelId: Id64String, script: RenderSchedule.ScriptReference | undefined): { timeline?: RenderSchedule.ModelTimeline, animationId?: Id64String } | undefined {
+  public getScriptInfoForTreeId(
+    modelId: Id64String,
+    script: RenderSchedule.ScriptReference | undefined,
+  ): { timeline?: RenderSchedule.ModelTimeline, animationId?: Id64String } | undefined {
     if (!script || !script.script.requiresBatching)
       return undefined;
 
@@ -1319,10 +1380,13 @@ class TileTreePropsRequest {
     public readonly iModel: IModelConnection,
     private readonly _treeId: string,
     private readonly _resolve: (props: IModelTileTreeProps) => void,
-    private readonly _reject: (error: Error) => void) {
+    private readonly _reject: (error: Error) => void,
+  ) {
   }
 
-  public get isDispatched(): boolean { return this._isDispatched; }
+  public get isDispatched(): boolean {
+    return this._isDispatched;
+  }
 
   public dispatch(): void {
     if (this.isDispatched)

@@ -50,7 +50,9 @@ if (isCI) {
   // break CI builds if the schema file changes during the build
   const schemaFileDiff = execSync(`git diff "${yargs.path}"`).toString().trim();
   if (schemaFileDiff !== "") {
-    console.error(`JSON schema file was modified during a CI build. Please build the package locally and commit the changes. Diff:\n\n${schemaFileDiff}\n\n`);
+    console.error(
+      `JSON schema file was modified during a CI build. Please build the package locally and commit the changes. Diff:\n\n${schemaFileDiff}\n\n`,
+    );
     process.exit(1);
   }
 }

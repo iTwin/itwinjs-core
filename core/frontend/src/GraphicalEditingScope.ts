@@ -7,12 +7,17 @@
  */
 
 import { assert, BeEvent, compareStrings, DbOpcode, DuplicatePolicy, GuidString, Id64Set, Id64String, SortedArray } from "@itwin/core-bentley";
-import { Range3d } from "@itwin/core-geometry";
 import {
-  EditingScopeNotifications, ElementGeometryChange, ipcAppChannels, ModelGeometryChanges, ModelGeometryChangesProps, RemoveFunction,
+  EditingScopeNotifications,
+  ElementGeometryChange,
+  ipcAppChannels,
+  ModelGeometryChanges,
+  ModelGeometryChangesProps,
+  RemoveFunction,
 } from "@itwin/core-common";
-import { BriefcaseNotificationHandler } from "./BriefcaseTxns";
+import { Range3d } from "@itwin/core-geometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
+import { BriefcaseNotificationHandler } from "./BriefcaseTxns";
 import { IpcApp } from "./IpcApp";
 
 class ModelChanges extends SortedArray<ElementGeometryChange> {
@@ -53,7 +58,9 @@ class ModelChanges extends SortedArray<ElementGeometryChange> {
  * @public
  */
 export class GraphicalEditingScope extends BriefcaseNotificationHandler implements EditingScopeNotifications {
-  public get briefcaseChannelName() { return ipcAppChannels.editingScope; }
+  public get briefcaseChannelName() {
+    return ipcAppChannels.editingScope;
+  }
 
   /** Maps model Id to accumulated changes to geometric elements within the associated model. */
   private readonly _geometryChanges = new Map<Id64String, ModelChanges>();
@@ -142,7 +149,7 @@ export class GraphicalEditingScope extends BriefcaseNotificationHandler implemen
     return this._disposed;
   }
 
-  private * geometryChangeIterator(): Iterator<ModelGeometryChanges> {
+  private *geometryChangeIterator(): Iterator<ModelGeometryChanges> {
     for (const [key, value] of this._geometryChanges) {
       yield {
         id: key,

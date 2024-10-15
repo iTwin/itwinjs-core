@@ -29,7 +29,9 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
    *   { earthCenter.x, earthCenter.y, earthCenter.z, 0 },
    *   { scatteringCoefficients.x, scatteringCoefficients.y, scatteringCoefficients.z, 0 } }
    */
-  public get atmosphereData() { return this._atmosphereData; }
+  public get atmosphereData() {
+    return this._atmosphereData;
+  }
 
   // Fragment shader uniforms
   private _exposure = 0.0;
@@ -179,5 +181,5 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     return true;
   }
 
-  public dispose() { }
+  public dispose() {}
 }

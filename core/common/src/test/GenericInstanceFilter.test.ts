@@ -14,7 +14,7 @@ describe("GenericInstanceFilterRuleValue", () => {
     expect(GenericInstanceFilterRuleValue.isPoint2d(false)).to.be.false;
     expect(GenericInstanceFilterRuleValue.isPoint2d("text")).to.be.false;
     expect(GenericInstanceFilterRuleValue.isPoint2d(new Date())).to.be.false;
-    expect(GenericInstanceFilterRuleValue.isPoint2d({ id: "0x1", className: "TestClass"})).to.be.false;
+    expect(GenericInstanceFilterRuleValue.isPoint2d({ id: "0x1", className: "TestClass" })).to.be.false;
   });
 
   it("'isPoint3d' returns correct result", () => {
@@ -24,11 +24,11 @@ describe("GenericInstanceFilterRuleValue", () => {
     expect(GenericInstanceFilterRuleValue.isPoint3d(false)).to.be.false;
     expect(GenericInstanceFilterRuleValue.isPoint3d("text")).to.be.false;
     expect(GenericInstanceFilterRuleValue.isPoint3d(new Date())).to.be.false;
-    expect(GenericInstanceFilterRuleValue.isPoint3d({ id: "0x1", className: "TestClass"})).to.be.false;
+    expect(GenericInstanceFilterRuleValue.isPoint3d({ id: "0x1", className: "TestClass" })).to.be.false;
   });
 
   it("'isInstanceKey' returns correct result", () => {
-    expect(GenericInstanceFilterRuleValue.isInstanceKey({ id: "0x1", className: "TestClass"})).to.be.true;
+    expect(GenericInstanceFilterRuleValue.isInstanceKey({ id: "0x1", className: "TestClass" })).to.be.true;
     expect(GenericInstanceFilterRuleValue.isInstanceKey({ x: 1, y: 2, z: 3 })).to.be.false;
     expect(GenericInstanceFilterRuleValue.isInstanceKey({ x: 1, y: 2 })).to.be.false;
     expect(GenericInstanceFilterRuleValue.isInstanceKey(1)).to.be.false;

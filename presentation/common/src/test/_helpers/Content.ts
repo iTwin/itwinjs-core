@@ -178,7 +178,8 @@ export function createTestStructPropertiesContentField(props: {
         },
       ],
     },
-    props.memberFields ?? [createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "member1", type: "string" }) }] })],
+    props.memberFields ??
+      [createTestPropertiesContentField({ properties: [{ property: createTestPropertyInfo({ name: "member1", type: "string" }) }] })],
     props.isReadonly ?? false,
     props.priority ?? 0,
     props.properties,

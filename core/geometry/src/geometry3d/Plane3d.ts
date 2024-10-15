@@ -66,7 +66,6 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
   /**
    * Return a value -1, 0, 1 giving a signed indicator of whether the toleranced altitude of the point is
    * negative, near zero, or positive.
-   *
    */
   public classifyAltitude(point: Point3d, tolerance: number = Geometry.smallMetricDistance): -1 | 0 | 1 {
     return Geometry.split3Way01(this.altitude(point), tolerance);
@@ -74,10 +73,12 @@ export abstract class Plane3d implements PlaneAltitudeEvaluator {
   /**
    * Return a value -1, 0, 1 giving a signed indicator of whether the toleranced altitude of x,y,z is
    * negative, near zero, or positive.
-   *
    */
   public classifyAltitudeXYZ(
-    x: number, y: number, z: number, tolerance: number = Geometry.smallMetricDistance,
+    x: number,
+    y: number,
+    z: number,
+    tolerance: number = Geometry.smallMetricDistance,
   ): -1 | 0 | 1 {
     return Geometry.split3Way01(this.altitudeXYZ(x, y, z), tolerance);
   }

@@ -106,7 +106,7 @@ export class Metadata implements TxnEntityMetadata {
   }
 }
 
-function * entityChangesIterator(changes: EntityChanges, options?: TxnEntityChangesFilterOptions): Iterator<TxnEntityChange> {
+function* entityChangesIterator(changes: EntityChanges, options?: TxnEntityChangesFilterOptions): Iterator<TxnEntityChange> {
   let excludedMetaIndices: Set<number> | undefined;
   if (options?.includeMetadata) {
     for (let i = 0; i < changes.metadata.length; i++) {
@@ -117,7 +117,7 @@ function * entityChangesIterator(changes: EntityChanges, options?: TxnEntityChan
     }
   }
 
-  function * process(type: TxnEntityChangeType) {
+  function* process(type: TxnEntityChangeType) {
     if (options?.includeTypes && !options.includeTypes.includes(type)) {
       return;
     }
@@ -161,9 +161,15 @@ export class EntityChanges implements TxnEntityChanges {
     }
   }
 
-  public get inserted(): CompressedId64Set | undefined { return this.args.inserted; }
-  public get deleted(): CompressedId64Set | undefined { return this.args.deleted; }
-  public get updated(): CompressedId64Set | undefined { return this.args.updated; }
+  public get inserted(): CompressedId64Set | undefined {
+    return this.args.inserted;
+  }
+  public get deleted(): CompressedId64Set | undefined {
+    return this.args.deleted;
+  }
+  public get updated(): CompressedId64Set | undefined {
+    return this.args.updated;
+  }
 
   public [Symbol.iterator](): Iterator<TxnEntityChange> {
     return entityChangesIterator(this);

@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { Id64String } from "@itwin/core-bentley";
 import { Feature, FeatureTable, GeometryClass, LinePixels } from "@itwin/core-common";
+import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { InstancedGraphicPropsBuilder } from "../../common/internal/render/InstancedGraphicPropsBuilder";
+import { OvrFlags } from "../../common/internal/render/OvrFlags";
 import { InstancedGraphicProps } from "../../common/render/InstancedGraphicParams";
 import { Instance, InstanceSymbology } from "../../common/render/RenderInstancesParams";
-import { expect } from "chai";
-import { Point3d, Transform, XYZProps } from "@itwin/core-geometry";
-import { Id64String } from "@itwin/core-bentley";
-import { OvrFlags } from "../../common/internal/render/OvrFlags";
 
 function build(instances: Instance[], haveFeatures = false): InstancedGraphicProps {
   const builder = new InstancedGraphicPropsBuilder();
@@ -84,13 +84,13 @@ describe("InstancedGraphicPropsBuilder", () => {
       { transform, symbology: { linePixels: 2.7 as LinePixels } },
 
       { transform, symbology: { weight: 0 } },
-      { transform, symbology: { weight: 31} },
+      { transform, symbology: { weight: 31 } },
       { transform, symbology: { weight: 32 } },
       { transform, symbology: { weight: -1 } },
       { transform, symbology: { weight: 12.7 } },
 
       { transform, symbology: { color: { r: -1, g: 256, b: 127.7 } } },
-      { transform, symbology: { color: { r:0, g: 255, b: 127.2 } } },
+      { transform, symbology: { color: { r: 0, g: 255, b: 127.2 } } },
     ];
 
     const props = build(instances);
@@ -123,10 +123,10 @@ describe("InstancedGraphicPropsBuilder", () => {
       expect(symbs[i + 7]).to.equal(0);
     }
 
-    expectOvrs(0, { rgb: [63, 127, 191]});
+    expectOvrs(0, { rgb: [63, 127, 191] });
     expectOvrs(1, { weight: 25 });
     expectOvrs(2, { lineCode: 3 });
-    expectOvrs(3, { });
+    expectOvrs(3, {});
     expectOvrs(4, { rgb: [123, 255, 0], weight: 15, lineCode: 7 });
 
     // Any value that doesn't map to a LinePixels enum member is treated as line code zero (solid).
@@ -191,8 +191,15 @@ describe("InstancedGraphicPropsBuilder", () => {
       ["0x123", "0", GeometryClass.Pattern],
     ], [
       // But feature Ids are assigned at insertion time.
-      0, 1, 0, 2, 3, 4, 1, 0, 4,
+      0,
+      1,
+      0,
+      2,
+      3,
+      4,
+      1,
+      0,
+      4,
     ]);
   });
 });
-

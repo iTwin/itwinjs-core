@@ -8,8 +8,8 @@
 
 import { PropertyDescription, PropertyEditorInfo } from "../properties/Description";
 import { CustomFormattedNumberParams, IconEditorParams, ParseResults, PropertyEditorParamTypes } from "../properties/EditorParams";
-import { StandardTypeNames } from "../properties/StandardTypeNames";
 import { StandardEditorNames } from "../properties/StandardEditorNames";
+import { StandardTypeNames } from "../properties/StandardTypeNames";
 
 /**
  * Base Quantity Property Description
@@ -31,8 +31,7 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
         type: PropertyEditorParamTypes.CustomFormattedNumber,
         formatFunction: this.format,
         parseFunction: this.parse,
-      } as CustomFormattedNumberParams,
-      ],
+      } as CustomFormattedNumberParams],
     };
 
     // istanbul ignore else
@@ -59,5 +58,4 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
   public abstract get quantityType(): string;
 
   public abstract get parseError(): string;
-
 }

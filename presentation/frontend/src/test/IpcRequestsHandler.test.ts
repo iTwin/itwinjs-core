@@ -3,10 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import sinon from "sinon";
 import { _callIpcChannel, IpcApp } from "@itwin/core-frontend";
 import { PRESENTATION_IPC_CHANNEL_NAME, RulesetVariable, VariableValueTypes } from "@itwin/presentation-common";
+import { expect } from "chai";
+import sinon from "sinon";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 
 describe("IpcRequestsHandler", () => {

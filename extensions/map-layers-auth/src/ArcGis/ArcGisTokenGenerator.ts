@@ -10,7 +10,6 @@ import { MapLayerAccessToken } from "@itwin/core-frontend";
 
 /** @internal */
 export interface ArcGisOAuth2Token extends MapLayerAccessToken {
-
   // The expiration time of the token in milliseconds (UNIX time)
   expiresAt: number;
 
@@ -43,7 +42,6 @@ export enum ArcGisTokenClientType {
 
 /** @internal */
 export interface ArcGisGenerateTokenOptions {
-
   // The client type that will be granted access to the token.
   // Users will be able to specify whether the token will be generated for a client application's base URL,
   // a user-specified IP address, or the IP address that is making the request.
@@ -66,7 +64,7 @@ export interface ArcGisGenerateTokenOptions {
   // Requests for tokens larger than this time will be rejected.
   // Applications are responsible for renewing expired tokens;
   // expired tokens will be rejected by the server on subsequent requests that use the token.
-  expiration?: number;   // in minutes, defaults to 60 minutes
+  expiration?: number; // in minutes, defaults to 60 minutes
 }
 
 /** @internal */
@@ -132,7 +130,7 @@ export class ArcGisTokenGenerator {
       if (options.client === ArcGisTokenClientType.referer) {
         let refererStr = "";
         if (options.referer === undefined) {
-          refererStr = encodeURIComponent(location.origin);     // default to application origin
+          refererStr = encodeURIComponent(location.origin); // default to application origin
         } else {
           refererStr = encodeURIComponent(options.referer);
         }
@@ -156,7 +154,6 @@ export class ArcGisTokenGenerator {
 
       // Check a token was really generated (an error could be part of the body)
       token = await response.json();
-
     } catch (_error) {
     }
     return token;

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as path from "path";
 import * as fs from "fs-extra";
+import * as path from "path";
 import { Compiler, Configuration, Stats, StatsCompilation, webpack } from "webpack";
 const MODULE = require("module");
 const { usedDeps } = require("../utils/resolve-recurse/resolve");
@@ -19,7 +19,7 @@ function createTestCompiler(config: Configuration, vol?: any): Compiler {
 export async function runWebpack(config: Configuration, vol?: any): Promise<StatsCompilation> {
   const compiler = createTestCompiler(config, vol);
   return new Promise<any>((resolve, reject) => {
-    compiler.run((err?: Error | null, stats?: Stats) => (err) ? reject(err) : resolve(stats?.toJson({ logging: true })));
+    compiler.run((err?: Error | null, stats?: Stats) => err ? reject(err) : resolve(stats?.toJson({ logging: true })));
   });
 }
 

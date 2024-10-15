@@ -7,8 +7,8 @@
  */
 
 import { BentleyError, Logger } from "@itwin/core-bentley";
-import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { BackendReadable, BackendWritable } from "../../BackendTypes";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { RpcConfiguration } from "../core/RpcConfiguration";
 import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 import { RpcOperation } from "../core/RpcOperation";
@@ -121,34 +121,56 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   /** Supplies the status corresponding to a protocol-specific code value. */
   public override getStatus(code: number): RpcRequestStatus {
     switch (code) {
-      case 404: return RpcRequestStatus.NotFound;
-      case 202: return RpcRequestStatus.Pending;
-      case 200: return RpcRequestStatus.Resolved;
-      case 500: return RpcRequestStatus.Rejected;
-      case 204: return RpcRequestStatus.NoContent;
-      case 502: return RpcRequestStatus.BadGateway;
-      case 503: return RpcRequestStatus.ServiceUnavailable;
-      case 504: return RpcRequestStatus.GatewayTimeout;
-      case 408: return RpcRequestStatus.RequestTimeout;
-      case 429: return RpcRequestStatus.TooManyRequests;
-      default: return RpcRequestStatus.Unknown;
+      case 404:
+        return RpcRequestStatus.NotFound;
+      case 202:
+        return RpcRequestStatus.Pending;
+      case 200:
+        return RpcRequestStatus.Resolved;
+      case 500:
+        return RpcRequestStatus.Rejected;
+      case 204:
+        return RpcRequestStatus.NoContent;
+      case 502:
+        return RpcRequestStatus.BadGateway;
+      case 503:
+        return RpcRequestStatus.ServiceUnavailable;
+      case 504:
+        return RpcRequestStatus.GatewayTimeout;
+      case 408:
+        return RpcRequestStatus.RequestTimeout;
+      case 429:
+        return RpcRequestStatus.TooManyRequests;
+      default:
+        return RpcRequestStatus.Unknown;
     }
   }
 
   /** Supplies the protocol-specific code corresponding to a status value. */
   public override getCode(status: RpcRequestStatus): number {
     switch (status) {
-      case RpcRequestStatus.NotFound: return 404;
-      case RpcRequestStatus.Pending: return 202;
-      case RpcRequestStatus.Resolved: return 200;
-      case RpcRequestStatus.Rejected: return 500;
-      case RpcRequestStatus.NoContent: return 204;
-      case RpcRequestStatus.BadGateway: return 502;
-      case RpcRequestStatus.ServiceUnavailable: return 503;
-      case RpcRequestStatus.GatewayTimeout: return 504;
-      case RpcRequestStatus.RequestTimeout: return 408;
-      case RpcRequestStatus.TooManyRequests: return 429;
-      default: return 501;
+      case RpcRequestStatus.NotFound:
+        return 404;
+      case RpcRequestStatus.Pending:
+        return 202;
+      case RpcRequestStatus.Resolved:
+        return 200;
+      case RpcRequestStatus.Rejected:
+        return 500;
+      case RpcRequestStatus.NoContent:
+        return 204;
+      case RpcRequestStatus.BadGateway:
+        return 502;
+      case RpcRequestStatus.ServiceUnavailable:
+        return 503;
+      case RpcRequestStatus.GatewayTimeout:
+        return 504;
+      case RpcRequestStatus.RequestTimeout:
+        return 408;
+      case RpcRequestStatus.TooManyRequests:
+        return 429;
+      default:
+        return 501;
     }
   }
 
@@ -162,7 +184,9 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   /** An OpenAPI-compatible description of this protocol.
    * @internal
    */
-  public get openAPIDescription() { return new RpcOpenAPIDescription(this); }
+  public get openAPIDescription() {
+    return new RpcOpenAPIDescription(this);
+  }
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.
    * @internal

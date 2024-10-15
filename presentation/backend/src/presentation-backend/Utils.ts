@@ -6,7 +6,6 @@
  * @module Core
  */
 
-import { parse as parseVersion } from "semver";
 import { Element, IModelDb } from "@itwin/core-backend";
 import { DbResult, Id64String } from "@itwin/core-bentley";
 import {
@@ -17,6 +16,7 @@ import {
   DiagnosticsOptions,
   InstanceKey,
 } from "@itwin/presentation-common";
+import { parse as parseVersion } from "semver";
 
 const presentation = require("@itwin/presentation-common/lib/cjs/assets/locales/en/Presentation.json"); // eslint-disable-line @typescript-eslint/no-var-requires
 
@@ -140,7 +140,10 @@ function stripDiagnostics<TEntry extends DiagnosticsLogEntry>(options: Diagnosti
       if (!strippedScope.logs) {
         delete strippedScope.logs;
       }
-      if (entry.duration !== undefined && (options.perf === true || (typeof options.perf === "object" && entry.duration >= options.perf.minimumDuration))) {
+      if (
+        entry.duration !== undefined &&
+        (options.perf === true || (typeof options.perf === "object" && entry.duration >= options.perf.minimumDuration))
+      ) {
         stripped.push(strippedScope);
       } else if (scopeLogs) {
         delete strippedScope.duration;

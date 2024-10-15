@@ -10,8 +10,8 @@ module.exports = [
     files: ["**/*.ts"],
     rules: {
       "radix": "warn",
-      "@typescript-eslint/explicit-member-accessibility": "warn"
-    }
+      "@typescript-eslint/explicit-member-accessibility": "warn",
+    },
   },
   ...eslintBaseConfig,
 ];

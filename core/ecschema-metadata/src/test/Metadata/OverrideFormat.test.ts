@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { FormatTraits, FractionalPrecision, ShowSignOption } from "@itwin/core-quantity";
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { Format } from "../../Metadata/Format";
@@ -10,7 +11,6 @@ import { InvertedUnit } from "../../Metadata/InvertedUnit";
 import { OverrideFormat } from "../../Metadata/OverrideFormat";
 import { Schema } from "../../Metadata/Schema";
 import { Unit } from "../../Metadata/Unit";
-import { FormatTraits, FractionalPrecision, ShowSignOption } from "@itwin/core-quantity";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 

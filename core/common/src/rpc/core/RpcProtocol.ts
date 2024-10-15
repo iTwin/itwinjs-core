@@ -95,7 +95,7 @@ export type RpcProtocolEventHandler = (type: RpcProtocolEvent, object: RpcReques
 export enum RpcProtocolVersion {
   None = 0,
   IntroducedNoContent = 1,
-  IntroducedStatusCategory = 2
+  IntroducedStatusCategory = 2,
 }
 
 /**
@@ -163,7 +163,9 @@ export abstract class RpcProtocol {
   public supportsStatusCategory: boolean = false;
 
   /** If checkToken is true, will be called on the backend to inflate the IModelRpcProps for each request. */
-  public inflateToken(tokenFromBody: IModelRpcProps, _request: SerializedRpcRequest): IModelRpcProps { return tokenFromBody; }
+  public inflateToken(tokenFromBody: IModelRpcProps, _request: SerializedRpcRequest): IModelRpcProps {
+    return tokenFromBody;
+  }
 
   /** Override to supply the status corresponding to a protocol-specific code value. */
   public getStatus(code: number): RpcRequestStatus {
@@ -215,14 +217,14 @@ export abstract class RpcProtocol {
   }
 
   /** @internal */
-  public onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
+  public onRpcClientInitialized(_definition: RpcInterfaceDefinition, _client: RpcInterface): void {}
 
   /** @internal */
-  public onRpcImplInitialized(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
+  public onRpcImplInitialized(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void {}
 
   /** @internal */
-  public onRpcClientTerminated(_definition: RpcInterfaceDefinition, _client: RpcInterface): void { }
+  public onRpcClientTerminated(_definition: RpcInterfaceDefinition, _client: RpcInterface): void {}
 
   /** @internal */
-  public onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void { }
+  public onRpcImplTerminated(_definition: RpcInterfaceDefinition, _impl: RpcInterface): void {}
 }

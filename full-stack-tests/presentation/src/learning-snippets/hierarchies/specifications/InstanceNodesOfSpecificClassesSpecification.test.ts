@@ -2,13 +2,13 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { initialize, terminate } from "../../../IntegrationTests";
-import { printRuleset } from "../../Utils";
 import { collect } from "../../../Utils";
+import { printRuleset } from "../../Utils";
 
 describe("Learning Snippets", () => {
   let imodel: IModelConnection;
@@ -47,7 +47,9 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that PhysicalModel nodes were returned, grouped by class
-        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
+        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) =>
+          collect(x.items)
+        );
         expect(classGroupingNodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([
@@ -91,7 +93,9 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that DefinitionModel and GroupInformationModel nodes are not included
-        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
+        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) =>
+          collect(x.items)
+        );
         expect(classGroupingNodes)
           .to.have.lengthOf(3)
           .and.to.containSubset([
@@ -130,7 +134,9 @@ describe("Learning Snippets", () => {
         printRuleset(ruleset);
 
         // Verify that ViewDefinition nodes ending with "View 1" are not included
-        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) => collect(x.items));
+        const classGroupingNodes = await Presentation.presentation.getNodesIterator({ imodel, rulesetOrId: ruleset }).then(async (x) =>
+          collect(x.items)
+        );
         expect(classGroupingNodes)
           .to.have.lengthOf(1)
           .and.to.containSubset([

@@ -22,7 +22,9 @@ export class UnionFindContext {
       this._parentArray.push(i);
   }
   /** Return the number of leaves. */
-  public get length(): number { return this._parentArray.length; }
+  public get length(): number {
+    return this._parentArray.length;
+  }
   /** test if index is within the valid index range. */
   public isValidIndex(index: number): boolean {
     return 0 <= index && index < this._parentArray.length;

@@ -7,10 +7,8 @@
  */
 
 import { assert, Mutable } from "@itwin/core-bentley";
-import {
-  AuxChannelDataType, Point3d, AuxChannel as PolyfaceAuxChannel, Range1d, Range3d, Vector3d,
-} from "@itwin/core-geometry";
 import { OctEncodedNormal, QParams3d, QPoint3d, Quantization } from "@itwin/core-common";
+import { AuxChannel as PolyfaceAuxChannel, AuxChannelDataType, Point3d, Range1d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { computeDimensions } from "./VertexTable";
 
 /** @alpha */
@@ -167,7 +165,9 @@ export class AuxChannelTable {
         params.push(new AuxParamChannel(param));
     }
 
-    return undefined !== displacements || undefined !== normals || undefined !== params ? new AuxChannelTable(props, displacements, normals, params) : undefined;
+    return undefined !== displacements || undefined !== normals || undefined !== params
+      ? new AuxChannelTable(props, displacements, normals, params)
+      : undefined;
   }
 
   public toJSON(): AuxChannelTableProps {
@@ -206,7 +206,11 @@ class AuxChannelTableBuilder {
     this._view = new DataView(props.data.buffer);
   }
 
-  public static buildAuxChannelTable(channels: ReadonlyArray<PolyfaceAuxChannel>, numVertices: number, maxDimension: number): AuxChannelTable | undefined {
+  public static buildAuxChannelTable(
+    channels: ReadonlyArray<PolyfaceAuxChannel>,
+    numVertices: number,
+    maxDimension: number,
+  ): AuxChannelTable | undefined {
     const numBytesPerVertex = channels.reduce((accum, channel) => accum + computeNumBytesPerVertex(channel), 0);
     if (!numBytesPerVertex)
       return undefined;

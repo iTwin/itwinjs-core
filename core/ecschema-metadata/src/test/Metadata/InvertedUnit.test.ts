@@ -138,7 +138,10 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(
+        ECObjectsError,
+        `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`,
+      );
     });
     it("Resolve all dependencies for inverts unit and unit system", async () => {
       const json = {

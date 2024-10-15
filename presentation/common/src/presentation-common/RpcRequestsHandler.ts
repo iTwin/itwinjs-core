@@ -38,7 +38,12 @@ import {
   RequestOptionsWithRuleset,
   SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
-import { ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
+import {
+  ContentSourcesRpcResult,
+  PresentationRpcInterface,
+  PresentationRpcRequestOptions,
+  PresentationRpcResponse,
+} from "./PresentationRpcInterface";
 import { Ruleset } from "./rules/Ruleset";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -91,7 +96,10 @@ export class RpcRequestsHandler {
     return RpcManager.getClientForInterface(PresentationRpcInterface);
   }
 
-  private async requestWithTimeout<TResult>(func: () => PresentationRpcResponse<TResult>, diagnosticsHandler?: ClientDiagnosticsHandler): Promise<TResult> {
+  private async requestWithTimeout<TResult>(
+    func: () => PresentationRpcResponse<TResult>,
+    diagnosticsHandler?: ClientDiagnosticsHandler,
+  ): Promise<TResult> {
     const start = BeTimePoint.now();
     const timeout = BeDuration.fromMilliseconds(this.timeout);
     let diagnostics: ClientDiagnostics | undefined;
@@ -142,7 +150,9 @@ export class RpcRequestsHandler {
     return this.requestWithTimeout(doRequest, diagnosticsHandler);
   }
 
-  public async getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number> {
+  public async getNodesCount(
+    options: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> & ClientDiagnosticsAttribute,
+  ): Promise<number> {
     return this.request<number, typeof options>(this.rpcClient.getNodesCount.bind(this.rpcClient), options);
   }
 
@@ -157,7 +167,10 @@ export class RpcRequestsHandler {
   public async getNodesDescriptor(
     options: HierarchyLevelDescriptorRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> & ClientDiagnosticsAttribute,
   ): Promise<DescriptorJSON | undefined> {
-    const response = await this.request<string | DescriptorJSON | undefined, typeof options>(this.rpcClient.getNodesDescriptor.bind(this.rpcClient), options);
+    const response = await this.request<string | DescriptorJSON | undefined, typeof options>(
+      this.rpcClient.getNodesDescriptor.bind(this.rpcClient),
+      options,
+    );
     if (typeof response === "string") {
       return JSON.parse(response);
     }
@@ -180,7 +193,9 @@ export class RpcRequestsHandler {
     return this.request<NodePathElementJSON[], typeof options>(this.rpcClient.getFilteredNodePaths.bind(this.rpcClient), options);
   }
 
-  public async getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ContentSourcesRpcResult> {
+  public async getContentSources(
+    options: ContentSourcesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute,
+  ): Promise<ContentSourcesRpcResult> {
     return this.request<ContentSourcesRpcResult, typeof options>(this.rpcClient.getContentSources.bind(this.rpcClient), options);
   }
   public async getContentDescriptor(
@@ -196,7 +211,7 @@ export class RpcRequestsHandler {
   public async getPagedContent(
     options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>,
   ) {
-    return this.request<{ descriptor: DescriptorJSON; contentSet: PagedResponse<ItemJSON> } | undefined, typeof options>(
+    return this.request<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined, typeof options>(
       this.rpcClient.getPagedContent.bind(this.rpcClient),
       options,
     );
@@ -217,8 +232,8 @@ export class RpcRequestsHandler {
 
   public async getContentInstanceKeys(
     options: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute,
-  ): Promise<{ total: number; items: KeySetJSON }> {
-    return this.request<{ total: number; items: KeySetJSON }, typeof options>(this.rpcClient.getContentInstanceKeys.bind(this.rpcClient), options);
+  ): Promise<{ total: number, items: KeySetJSON }> {
+    return this.request<{ total: number, items: KeySetJSON }, typeof options>(this.rpcClient.getContentInstanceKeys.bind(this.rpcClient), options);
   }
 
   public async getDisplayLabelDefinition(

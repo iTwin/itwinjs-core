@@ -4,17 +4,30 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, compareStringsOrUndefined, GuidString } from "@itwin/core-bentley";
+import {
+  CartographicRange,
+  ContextRealityModelProps,
+  ModelProps,
+  RealityDataFormat,
+  RealityDataProvider,
+  RealityDataSourceKey,
+  SpatialClassifier,
+  SpatialClassifierFlagsProps,
+  SpatialClassifierInsideDisplay,
+  SpatialClassifierOutsideDisplay,
+  SpatialClassifiers,
+} from "@itwin/core-common";
+import { ContextRealityModelState, DisplayStyle3dState, IModelApp, SpatialModelState, SpatialViewState, Viewport } from "@itwin/core-frontend";
 import { ComboBox, ComboBoxEntry, createCheckBox, createComboBox, createNestedMenu, createNumericInput, NestedMenu } from "@itwin/frontend-devtools";
 import {
-  CartographicRange, ContextRealityModelProps, ModelProps, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, SpatialClassifier, SpatialClassifierFlagsProps, SpatialClassifierInsideDisplay,
-  SpatialClassifierOutsideDisplay, SpatialClassifiers,
-} from "@itwin/core-common";
-import {
-  ContextRealityModelState, DisplayStyle3dState, IModelApp, SpatialModelState, SpatialViewState, Viewport,
-} from "@itwin/core-frontend";
+  ITwinRealityData,
+  RealityDataAccessClient,
+  RealityDataClientOptions,
+  RealityDataQueryCriteria,
+  RealityDataResponse,
+} from "@itwin/reality-data-client";
 import { DisplayTestApp } from "./App";
 import { ToolBarDropDown } from "./ToolBar";
-import { ITwinRealityData, RealityDataAccessClient, RealityDataClientOptions, RealityDataQueryCriteria, RealityDataResponse } from "@itwin/reality-data-client";
 
 function clearElement(element: HTMLElement): void {
   while (element.hasChildNodes())
@@ -24,7 +37,7 @@ function clearElement(element: HTMLElement): void {
 const NO_MODEL_ID = "-1";
 
 enum RealityDataType {
-  REALITYMESH3DTILES  = "REALITYMESH3DTILES",
+  REALITYMESH3DTILES = "REALITYMESH3DTILES",
   OSMBUILDINGS = "OSMBUILDINGS",
   OPC = "OPC",
   TERRAIN3DTILES = "TERRAIN3DTILES", // Terrain3DTiles
@@ -103,8 +116,9 @@ export class ClassificationsPanel extends ToolBarDropDown {
     };
   }
 
-  private hasAttachedRealityModelFromKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey ): boolean {
-    return undefined !== style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
+  private hasAttachedRealityModelFromKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey): boolean {
+    return undefined !==
+      style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey, x.rdSourceKey));
   }
 
   private isSupportedType(type: string | undefined): boolean {
@@ -153,7 +167,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     }
 
     const range = new CartographicRange(this._vp.iModel.projectExtents, ecef.getTransform());
-    let available: RealityDataResponse = {realityDatas: []};
+    let available: RealityDataResponse = { realityDatas: [] };
     try {
       if (this._iTwinId !== undefined && IModelApp.authorizationClient) {
         const accessToken = await IModelApp.authorizationClient.getAccessToken();
@@ -178,7 +192,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
     for (const rdEntry of available.realityDatas) {
       const name = undefined !== rdEntry.displayName ? rdEntry.displayName : rdEntry.id;
       const rdSourceKey = this.createRealityDataSourceKeyFromITwinRealityData(rdEntry);
-      const tilesetUrl = await IModelApp.realityDataAccess?.getRealityDataUrl(this._iTwinId,rdSourceKey.id);
+      const tilesetUrl = await IModelApp.realityDataAccess?.getRealityDataUrl(this._iTwinId, rdSourceKey.id);
       const isDisplaySupported = this.isSupportedDisplayType(rdEntry.type);
       if (tilesetUrl && isDisplaySupported) {
         const entry: ContextRealityModelProps = {
@@ -288,13 +302,19 @@ export class ClassificationsPanel extends ToolBarDropDown {
     await this.populateModelList();
   }
 
-  public get isOpen(): boolean { return "none" !== this._element.style.display; }
+  public get isOpen(): boolean {
+    return "none" !== this._element.style.display;
+  }
   protected _open(): void {
     this.populateRealityModelList();
     this._element.style.display = "block";
   }
-  protected _close(): void { this._element.style.display = "none"; }
-  public override get onViewChanged(): Promise<void> { return this.populate(); }
+  protected _close(): void {
+    this._element.style.display = "none";
+  }
+  public override get onViewChanged(): Promise<void> {
+    return this.populate();
+  }
 
   private updateModelComboBox(modelId: string): void {
     if (undefined !== this._modelComboBox)
@@ -302,7 +322,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
   }
 
   private detachRealityModelByKey(style: DisplayStyle3dState, rdSourceKey: RealityDataSourceKey): boolean {
-    const model = style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey,x.rdSourceKey));
+    const model = style.settings.contextRealityModels.models.find((x) => x.rdSourceKey && RealityDataSourceKey.isEqual(rdSourceKey, x.rdSourceKey));
     return undefined !== model && style.settings.contextRealityModels.delete(model);
   }
 
@@ -312,7 +332,9 @@ export class ClassificationsPanel extends ToolBarDropDown {
     if (enabled)
       style.attachRealityModel(entry);
     else
-      entry.rdSourceKey ? this.detachRealityModelByKey(style, entry.rdSourceKey) : style.detachRealityModelByNameAndUrl(entry.name!, entry.tilesetUrl);
+      entry.rdSourceKey
+        ? this.detachRealityModelByKey(style, entry.rdSourceKey)
+        : style.detachRealityModelByNameAndUrl(entry.name!, entry.tilesetUrl);
 
     this.populateRealityModelList();
     this._vp.invalidateScene();

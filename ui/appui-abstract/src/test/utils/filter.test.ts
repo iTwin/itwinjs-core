@@ -5,10 +5,7 @@
 import { assert } from "chai";
 // based on file https://github.com/microsoft/vscode/blob/master/src/vs/base/test/common/filters.test.ts
 
-import {
-  IMatch,
-  matchesWords,
-} from "../../appui-abstract/utils/filter/filters";
+import { IMatch, matchesWords } from "../../appui-abstract/utils/filter/filters";
 
 type IFilter = (word: string, wordToMatchAgainst: string) => IMatch[] | null;
 
@@ -69,9 +66,8 @@ describe("Filters", () => {
   });
 
   describe("string tests", () => {
-    it("matchesWords returns null", function () {
+    it("matchesWords returns null", function() {
       assert.ok(matchesWords("A", "") === null);
     });
-
   });
 });

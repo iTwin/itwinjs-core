@@ -3,11 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
-import { AnyCurve } from "../../curve/CurveTypes";
+import { describe, expect, it } from "vitest";
 import { BagOfCurves, CurveChain, CurveCollection } from "../../curve/CurveCollection";
 import { CurveOps } from "../../curve/CurveOps";
+import { AnyCurve } from "../../curve/CurveTypes";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -16,26 +16,36 @@ import { JointOptions } from "../../curve/OffsetOptions";
 import { Path } from "../../curve/Path";
 import { RegionOps } from "../../curve/RegionOps";
 import { Geometry } from "../../Geometry";
+import { Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { PolylineOps } from "../../geometry3d/PolylineOps";
 import { Range3d } from "../../geometry3d/Range";
 import { Sample, SteppedIndexFunctionFactory } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
+import { ChainMergeContext } from "../../topology/ChainMerge";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
-import { ChainMergeContext } from "../../topology/ChainMerge";
-import { Vector3d } from "../../geometry3d/Point3dVector3d";
 
 const chainCollectorInputDirectory = "./src/test/data/ChainCollector/";
 const noOffset0 = "aecc_alignment";
 describe("ChainCollector", () => {
-
   it("OffsetExamples", () => {
     const ck = new Checker();
     let xOut = 0;
     let y0 = 0;
-    for (const filename of ["fillet00", "aecc_alignment", "linestring01", "boomerang.incompleteOffset", "boomerang.noOffsetsWithThisOrder",
-      "boomerang", "rectangle00", "linestrings", "MBDenseCurvesToOffset"]) {
+    for (
+      const filename of [
+        "fillet00",
+        "aecc_alignment",
+        "linestring01",
+        "boomerang.incompleteOffset",
+        "boomerang.noOffsetsWithThisOrder",
+        "boomerang",
+        "rectangle00",
+        "linestrings",
+        "MBDenseCurvesToOffset",
+      ]
+    ) {
       const allGeometry: GeometryQuery[] = [];
       const stringData = fs.readFileSync(`${chainCollectorInputDirectory}${filename}.imjs`, "utf8");
       if (stringData) {
@@ -157,13 +167,16 @@ describe("ChainCollector", () => {
     const xShift = 20.0;
     const yShift = 20.0;
     const offsetDistance = 0.5;
-    const reversePhase = [8, 5];    // reverse primitives if their index modulo anything here is reverseShift
+    const reversePhase = [8, 5]; // reverse primitives if their index modulo anything here is reverseShift
     const reverseShift = 3;
     for (const numPrimitive of [5, 6, 30, 60]) {
       let y0 = 0;
       const shuffledPrimitives = [];
-      const circlePoints = Sample.createPointsByIndexFunctions(numPrimitive,
-        SteppedIndexFunctionFactory.createCosine(6.0), SteppedIndexFunctionFactory.createSine(8.0));
+      const circlePoints = Sample.createPointsByIndexFunctions(
+        numPrimitive,
+        SteppedIndexFunctionFactory.createCosine(6.0),
+        SteppedIndexFunctionFactory.createSine(8.0),
+      );
       // make primitives in simple order around the ellipse ..
       const sequentialPrimitives = [];
       for (let i = 0; i + 1 < circlePoints.length; i++)
@@ -247,13 +260,14 @@ describe("ChainMerge", () => {
   it("ChainMergeVariants", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const e = 1;    // Really big blob tolerance !!!
+    const e = 1; // Really big blob tolerance !!!
     // line segments of a unit square with gap "e" at the beginning of each edge.
     const segments = [
       LineSegment3d.createXYXY(e, 0, 10, 0),
       LineSegment3d.createXYXY(10, e, 10, 10),
       LineSegment3d.createXYXY(10 - e, 10, 0, 10),
-      LineSegment3d.createXYXY(0, 10 - e, 0, 0)];
+      LineSegment3d.createXYXY(0, 10 - e, 0, 0),
+    ];
     let dy = 20.0;
     for (const tol of [0.0001 * e, 2.0 * e]) {
       // Create the context with the worst possible sort direction -- trigger N^2 search
@@ -261,7 +275,8 @@ describe("ChainMerge", () => {
         {
           tolerance: tol,
           primarySortDirection: Vector3d.create(0, 0, 1),
-        });
+        },
+      );
       chainMergeContext.addLineSegment3dArray(segments);
       chainMergeContext.clusterAndMergeVerticesXYZ();
       const chains = chainMergeContext.collectMaximalChains();

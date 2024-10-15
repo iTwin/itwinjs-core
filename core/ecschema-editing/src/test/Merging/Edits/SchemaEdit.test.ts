@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
 import { BisTestHelper } from "../../TestUtils/BisTestHelper";
-import { expect } from "chai";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 

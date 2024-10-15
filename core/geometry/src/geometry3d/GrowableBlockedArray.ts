@@ -21,7 +21,7 @@ export class GrowableBlockedArray {
   /** number of numbers per block in the array.
    * * If viewing the array as a two dimensional array, this is the row size.
    */
-  protected _blockSize: number;  // positive integer !!!
+  protected _blockSize: number; // positive integer !!!
   /**
    * multiplier used by ensureBlockCapacity to expand requested reallocation size
    */
@@ -48,13 +48,13 @@ export class GrowableBlockedArray {
    * @param destOffset copy to instance array starting at this block index; zero if undefined
    * @return count and offset of blocks copied
    */
-  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {count: number, offset: number} {
+  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): { count: number, offset: number } {
     // validate inputs and convert from blocks to entries
     let myOffset = (undefined !== destOffset) ? destOffset * this.numPerBlock : 0;
     if (myOffset < 0)
       myOffset = 0;
     if (myOffset >= this._data.length)
-      return {count: 0, offset: 0};
+      return { count: 0, offset: 0 };
     let myCount = (undefined !== sourceCount) ? sourceCount * this.numPerBlock : source.length;
     if (myCount > 0) {
       if (myCount > source.length)
@@ -65,14 +65,14 @@ export class GrowableBlockedArray {
         myCount -= myCount % this.numPerBlock;
     }
     if (myCount <= 0)
-      return {count: 0, offset: 0};
+      return { count: 0, offset: 0 };
     if (myCount === source.length)
       this._data.set(source, myOffset);
     else if (source instanceof Float64Array)
       this._data.set(source.subarray(0, myCount), myOffset);
     else
       this._data.set(source.slice(0, myCount), myOffset);
-    return {count: myCount / this.numPerBlock, offset: myOffset / this.numPerBlock};
+    return { count: myCount / this.numPerBlock, offset: myOffset / this.numPerBlock };
   }
 
   /**
@@ -87,11 +87,17 @@ export class GrowableBlockedArray {
   }
 
   /** computed property: length (in blocks, not doubles) */
-  public get length(): number { return this._inUse; }
+  public get length(): number {
+    return this._inUse;
+  }
   /** computed property: length (in blocks, not doubles) */
-  public get numBlocks(): number { return this._inUse; }
+  public get numBlocks(): number {
+    return this._inUse;
+  }
   /** property: number of data values per block */
-  public get numPerBlock(): number { return this._blockSize; }
+  public get numPerBlock(): number {
+    return this._blockSize;
+  }
   /**
    * Return a single value indexed within a block. Indices are unchecked.
    * @param blockIndex index of block to read
@@ -101,7 +107,9 @@ export class GrowableBlockedArray {
     return this._data[blockIndex * this._blockSize + indexWithinBlock];
   }
   /** clear the block count to zero, but maintain the allocated memory */
-  public clear() { this._inUse = 0; }
+  public clear() {
+    this._inUse = 0;
+  }
   /** Return the capacity in blocks (not doubles) */
   public blockCapacity() {
     return this._data.length / this._blockSize;
@@ -114,7 +122,7 @@ export class GrowableBlockedArray {
       const prevData = this._data;
       this._data = new Float64Array(blockCapacity * this._blockSize);
       this.copyData(prevData, this._inUse);
-      }
+    }
   }
   /** Add a new block of data.
    * * If newData has fewer than numPerBlock entries, the remaining part of the new block is zeros.
@@ -150,7 +158,9 @@ export class GrowableBlockedArray {
       this._inUse--;
   }
   /** convert a block index to the simple index to the underlying Float64Array. */
-  protected blockIndexToDoubleIndex(blockIndex: number) { return this._blockSize * blockIndex; }
+  protected blockIndexToDoubleIndex(blockIndex: number) {
+    return this._blockSize * blockIndex;
+  }
   /** Access a single double at offset within a block, with index checking and return undefined if indexing is invalid. */
   public checkedComponent(blockIndex: number, componentIndex: number): number | undefined {
     if (blockIndex >= this._inUse || blockIndex < 0 || componentIndex < 0 || componentIndex >= this._blockSize)
@@ -179,18 +189,21 @@ export class GrowableBlockedArray {
     return ia - ib; // so original order is maintained among duplicates !!!!
   }
   /** Return an array of block indices sorted per compareLexicalBlock function */
-  public sortIndicesLexical(compareBlocks: BlockComparisonFunction = (dataArray, size, iA, iB) => GrowableBlockedArray.compareLexicalBlock(dataArray, size, iA, iB)): Uint32Array {
+  public sortIndicesLexical(
+    compareBlocks: BlockComparisonFunction = (dataArray, size, iA, iB) => GrowableBlockedArray.compareLexicalBlock(dataArray, size, iA, iB),
+  ): Uint32Array {
     const n = this._inUse;
     // let numCompare = 0;
     const result = new Uint32Array(n);
     const data = this._data;
     const blockSize = this._blockSize;
-    for (let i = 0; i < n; i++)result[i] = i;
+    for (let i = 0; i < n; i++) result[i] = i;
     result.sort(
       (blockIndexA: number, blockIndexB: number) => {
         // numCompare++;
         return compareBlocks(data, blockSize, blockIndexA * blockSize, blockIndexB * blockSize);
-      });
+      },
+    );
     // console.log (n, numCompare);
     return result;
   }

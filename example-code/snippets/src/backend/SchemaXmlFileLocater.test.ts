@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import { KnownLocations } from "@itwin/core-backend";
-import path from "path";
+import { SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
+import { SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { assert } from "chai";
 import * as fs from "fs-extra";
+import path from "path";
 
 describe("SchemaXmlFileLocater - locate standard schema", () => {
   it("Schema path is less than 260 character long", async () => {
@@ -36,9 +36,9 @@ describe("SchemaXmlFileLocater - locate standard schema", () => {
       longSchemaPath = path.join(longSchemaPath, "ThisIsA35CharacterLongSubFolderName");
     }
     if (!fs.existsSync(longSchemaPath)) {
-      fs.mkdirSync(longSchemaPath, {recursive: true});
+      fs.mkdirSync(longSchemaPath, { recursive: true });
     }
-    fs.copySync(oldSchemaPath, longSchemaPath, {recursive: true});
+    fs.copySync(oldSchemaPath, longSchemaPath, { recursive: true });
     assert.isTrue(longSchemaPath.length > 260);
     assert.isTrue(longSchemaPath.length < 1024);
     loc.addSchemaSearchPath(longSchemaPath);
@@ -49,7 +49,7 @@ describe("SchemaXmlFileLocater - locate standard schema", () => {
     assert.isDefined(schema);
     assert.strictEqual(schema?.name, "Units");
     if (fs.existsSync(path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy"))) {
-      fs.rmSync(path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy"), {recursive: true});
+      fs.rmSync(path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy"), { recursive: true });
     }
   });
 });

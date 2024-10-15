@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@itwin/core-bentley";
 import { SchemaContext } from "../Context";
+import { SchemaItemType } from "../ECObjects";
 import { Constant } from "../Metadata/Constant";
 import { Schema } from "../Metadata/Schema";
 import { SchemaItem } from "../Metadata/SchemaItem";
 import { Unit } from "../Metadata/Unit";
 import { SchemaItemKey, SchemaKey } from "../SchemaKey";
-import { SchemaItemType } from "../ECObjects";
-import { UnitConversion } from "./UnitConversion";
-import { DefinitionFragment, parseDefinition } from "./Parser";
 import { Graph } from "./Graph";
+import { DefinitionFragment, parseDefinition } from "./Parser";
+import { UnitConversion } from "./UnitConversion";
 
 /** @internal */
 export class GraphUtils {
@@ -24,7 +24,14 @@ export class GraphUtils {
    * @param op Reducing function
    * @param initial Initial label
    */
-  public static dfsReduce<T>(_graph: Graph<Unit | Constant>, key: string, op: (previous: T, current: string) => T, initial: T, baseUnitsMap: Map<string, number>, accumulatedExponent: number): T {
+  public static dfsReduce<T>(
+    _graph: Graph<Unit | Constant>,
+    key: string,
+    op: (previous: T, current: string) => T,
+    initial: T,
+    baseUnitsMap: Map<string, number>,
+    accumulatedExponent: number,
+  ): T {
     const outEdges = _graph.outEdges(key);
     let t = initial;
     if (outEdges.length > 0) {

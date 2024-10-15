@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
-import { expect } from "chai";
-import { MapLayerFeatureInfo } from "@itwin/core-frontend";
-import { OgcApiFeaturesReader, ReadOgcApiFeaturesInfoOptions } from "../../OgcApiFeatures/OgcApiFeaturesReader";
-import { PhillyDataset } from "./PhillyDataset";
-import { FakeSymbGeomRenderer, MockFeatureSymbologyRenderer, MockGeometryRenderer, MockGraphicsRenderer } from "./Mocks";
-import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader";
 import { ImageMapLayerSettings } from "@itwin/core-common";
+import { MapLayerFeatureInfo } from "@itwin/core-frontend";
+import { expect } from "chai";
+import * as sinon from "sinon";
+import { GeoJSONGeometryReader } from "../../GeoJSON/GeoJSONGeometryReader";
+import { OgcApiFeaturesReader, ReadOgcApiFeaturesInfoOptions } from "../../OgcApiFeatures/OgcApiFeaturesReader";
 import { CountriesDataset } from "./CountriesDataset";
+import { FakeSymbGeomRenderer, MockFeatureSymbologyRenderer, MockGeometryRenderer, MockGraphicsRenderer } from "./Mocks";
+import { PhillyDataset } from "./PhillyDataset";
 
 describe("OgcApiFeaturesReader", () => {
   const sandbox = sinon.createSandbox();
@@ -31,12 +31,10 @@ describe("OgcApiFeaturesReader", () => {
   });
 
   it("should read multi features", async () => {
-
     const reader = new OgcApiFeaturesReader();
     const renderPathSpy = sandbox.spy(GeoJSONGeometryReader.prototype, "readGeometry");
     await reader.readAndRender(PhillyDataset.multiItemPoint as any, new MockGeometryRenderer());
     expect(renderPathSpy.getCalls().length).to.equals(PhillyDataset.multiItemPoint.features.length);
-
   });
 
   it("should read features and update the symbology renderer", async () => {
@@ -46,13 +44,12 @@ describe("OgcApiFeaturesReader", () => {
     mockSymbRenderer.rendererFields = ["gid", "objectid"];
     await reader.readAndRender(PhillyDataset.multiItemPoint as any, fakeGeomRenderer);
     expect(mockSymbRenderer.activeGeometryType).to.eqls("Point");
-    const lastIdx = PhillyDataset.multiItemPoint.features.length -1;
+    const lastIdx = PhillyDataset.multiItemPoint.features.length - 1;
     expect(mockSymbRenderer.activeFeatureAttributes.gid).to.eqls(PhillyDataset.multiItemPoint.features[lastIdx].properties.gid);
     expect(mockSymbRenderer.activeFeatureAttributes.objectid).to.eqls(PhillyDataset.multiItemPoint.features[lastIdx].properties.objectid);
   });
 
   it("should read features info", async () => {
-
     const reader = new OgcApiFeaturesReader();
     const layerSettings = ImageMapLayerSettings.fromJSON({
       name: "test",
@@ -76,7 +73,6 @@ describe("OgcApiFeaturesReader", () => {
   });
 
   it("should read features info without geometry renderer", async () => {
-
     const reader = new OgcApiFeaturesReader();
     const layerSettings = ImageMapLayerSettings.fromJSON({
       name: "test",

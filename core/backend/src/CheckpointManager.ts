@@ -8,19 +8,39 @@
 
 // cspell:ignore BLOCKCACHE
 
-import * as path from "path";
 import { NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { AccessToken, BeEvent, ChangeSetStatus, Guid, GuidString, IModelStatus, Logger, LogLevel, Mutable, OpenMode, StopWatch } from "@itwin/core-bentley";
 import {
-  BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, ChangesetIndexAndId, IModelError, IModelVersion, LocalDirName, LocalFileName, OpenCheckpointArgs,
+  AccessToken,
+  BeEvent,
+  ChangeSetStatus,
+  Guid,
+  GuidString,
+  IModelStatus,
+  Logger,
+  LogLevel,
+  Mutable,
+  OpenMode,
+  StopWatch,
+} from "@itwin/core-bentley";
+import {
+  BriefcaseIdValue,
+  ChangesetId,
+  ChangesetIdWithIndex,
+  ChangesetIndexAndId,
+  IModelError,
+  IModelVersion,
+  LocalDirName,
+  LocalFileName,
+  OpenCheckpointArgs,
 } from "@itwin/core-common";
+import * as path from "path";
 import { V2CheckpointAccessProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { CloudSqlite } from "./CloudSqlite";
+import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { SnapshotDb, TokenArg } from "./IModelDb";
 import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
 
@@ -125,7 +145,7 @@ export class Downloads {
 /**
  * Utility class for opening V2 checkpoints from cloud containers, and also for downloading them.
  * @internal
-*/
+ */
 export class V2CheckpointManager {
   public static readonly cloudCacheName = "Checkpoints";
   private static _cloudCache?: CloudSqlite.CloudCache;
@@ -180,7 +200,12 @@ export class V2CheckpointManager {
         tokenFn = async () => (await IModelHost.hubAccess.queryV2Checkpoint(checkpoint))?.sasToken ?? "";
         tokenRefreshSeconds = undefined;
       }
-      container = CloudSqlite.createCloudContainer({ ...this.toCloudContainerProps(v2Props), tokenRefreshSeconds, logId: process.env.POD_NAME, tokenFn });
+      container = CloudSqlite.createCloudContainer({
+        ...this.toCloudContainerProps(v2Props),
+        tokenRefreshSeconds,
+        logId: process.env.POD_NAME,
+        tokenFn,
+      });
       this.containers.set(v2Props.containerId, container);
     }
     return container;
@@ -204,7 +229,8 @@ export class V2CheckpointManager {
       container.checkForChanges();
       const dbStats = container.queryDatabase(dbName);
       if (IModelHost.appWorkspace.settings.getBoolean("Checkpoints/prefetch", false)) {
-        const getPrefetchConfig = (name: string, defaultVal: number) => IModelHost.appWorkspace.settings.getNumber(`Checkpoints/prefetch/${name}`, defaultVal);
+        const getPrefetchConfig = (name: string, defaultVal: number) =>
+          IModelHost.appWorkspace.settings.getNumber(`Checkpoints/prefetch/${name}`, defaultVal);
         const minRequests = getPrefetchConfig("minRequests", 3);
         const maxRequests = getPrefetchConfig("maxRequests", 6);
         const timeout = getPrefetchConfig("timeout", 100);
@@ -214,12 +240,21 @@ export class V2CheckpointManager {
             const stopwatch = new StopWatch(`[${container.containerId}/${dbName}]`, true);
             Logger.logInfo(loggerCategory, `Starting prefetch of ${stopwatch.description}`, { minRequests, maxRequests, timeout });
             const done = await prefetch.promise;
-            Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`, { minRequests, maxRequests, timeout });
+            Logger.logInfo(loggerCategory, `Prefetch of ${stopwatch.description} complete=${done} (${stopwatch.elapsedSeconds} seconds)`, {
+              minRequests,
+              maxRequests,
+              timeout,
+            });
           };
           // eslint-disable-next-line @typescript-eslint/no-floating-promises
           logPrefetch(CloudSqlite.startCloudPrefetch(container, dbName, { minRequests, nRequests: maxRequests, timeout }));
         } else {
-          Logger.logInfo(loggerCategory, `Skipping prefetch due to size limits or ongoing prefetch.`, { maxBlocks, numPrefetches: dbStats?.nPrefetch, totalBlocksInDb: dbStats?.totalBlocks, v2props });
+          Logger.logInfo(loggerCategory, `Skipping prefetch due to size limits or ongoing prefetch.`, {
+            maxBlocks,
+            numPrefetches: dbStats?.nPrefetch,
+            totalBlocksInDb: dbStats?.totalBlocks,
+            v2props,
+          });
         }
       }
       return { dbName, container };
@@ -234,7 +269,10 @@ export class V2CheckpointManager {
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
     const request = job.request;
-    const v2props: V2CheckpointAccessProps | undefined = await IModelHost.hubAccess.queryV2Checkpoint({ ...request.checkpoint, allowPreceding: true });
+    const v2props: V2CheckpointAccessProps | undefined = await IModelHost.hubAccess.queryV2Checkpoint({
+      ...request.checkpoint,
+      allowPreceding: true,
+    });
     if (!v2props)
       throw new IModelError(IModelStatus.NotFound, "V2 checkpoint not found");
 
@@ -302,7 +340,9 @@ export class V1CheckpointManager {
 export class CheckpointManager {
   public static readonly onDownloadV1 = new BeEvent<(job: DownloadJob) => void>();
   public static readonly onDownloadV2 = new BeEvent<(job: DownloadJob) => void>();
-  public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeset.id}`; }
+  public static getKey(checkpoint: CheckpointProps) {
+    return `${checkpoint.iModelId}:${checkpoint.changeset.id}`;
+  }
 
   private static async doDownload(request: DownloadRequest): Promise<ChangesetId> {
     try {
@@ -312,14 +352,29 @@ export class CheckpointManager {
       const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
       Logger.logInfo(loggerCategory, `Downloaded V2 checkpoint with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
       if (changesetId !== request.checkpoint.changeset.id)
-        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because requested checkpoint not found.`, { requestedChangesetId: request.checkpoint.changeset.id, iModelId: request.checkpoint.iModelId, changesetId, iTwinId: request.checkpoint.iTwinId });
+        Logger.logInfo(loggerCategory, `Downloaded previous v2 checkpoint because requested checkpoint not found.`, {
+          requestedChangesetId: request.checkpoint.changeset.id,
+          iModelId: request.checkpoint.iModelId,
+          changesetId,
+          iTwinId: request.checkpoint.iTwinId,
+        });
       else
-        Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint.`, { iModelId: request.checkpoint.iModelId, changesetId: request.checkpoint.changeset.id, iTwinId: request.checkpoint.iTwinId });
+        Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint.`, {
+          iModelId: request.checkpoint.iModelId,
+          changesetId: request.checkpoint.changeset.id,
+          iTwinId: request.checkpoint.iTwinId,
+        });
       return changesetId;
     } catch (error: any) {
       if (error.errorNumber === IModelStatus.NotFound) { // No V2 checkpoint available, try a v1 checkpoint
         const changeset = await V1CheckpointManager.downloadCheckpoint(request);
-        Logger.logWarning(loggerCategory, `Got an error downloading v2 checkpoint, but downloaded v1 checkpoint successfully!`, { error, iModelId: request.checkpoint.iModelId, iTwinId: request.checkpoint.iTwinId, requestedChangesetId: request.checkpoint.changeset.id, changesetId: changeset });
+        Logger.logWarning(loggerCategory, `Got an error downloading v2 checkpoint, but downloaded v1 checkpoint successfully!`, {
+          error,
+          iModelId: request.checkpoint.iModelId,
+          iTwinId: request.checkpoint.iTwinId,
+          requestedChangesetId: request.checkpoint.changeset.id,
+          changesetId: changeset,
+        });
         return changeset;
       }
       throw error; // most likely, was aborted
@@ -337,7 +392,6 @@ export class CheckpointManager {
       const db = SnapshotDb.openForApplyChangesets(targetFile);
       const nativeDb = db[_nativeDb];
       try {
-
         if (nativeDb.hasPendingTxns()) {
           Logger.logWarning(loggerCategory, "Checkpoint with Txns found - deleting them", () => traceInfo);
           nativeDb.deleteAllTxns();
@@ -352,7 +406,11 @@ export class CheckpointManager {
         if (currentChangeset.id !== checkpoint.changeset.id) {
           const accessToken = checkpoint.accessToken;
           const toIndex = checkpoint.changeset.index ??
-            (await IModelHost.hubAccess.getChangesetFromVersion({ accessToken, iModelId: checkpoint.iModelId, version: IModelVersion.asOfChangeSet(checkpoint.changeset.id) })).index;
+            (await IModelHost.hubAccess.getChangesetFromVersion({
+              accessToken,
+              iModelId: checkpoint.iModelId,
+              version: IModelVersion.asOfChangeSet(checkpoint.changeset.id),
+            })).index;
           await BriefcaseManager.pullAndApplyChangesets(db, { accessToken, toIndex });
         } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
@@ -365,11 +423,13 @@ export class CheckpointManager {
         db.close();
       }
     } catch (error: any) {
-
       Logger.logError(loggerCategory, "Error downloading checkpoint - deleting it", () => traceInfo);
       IModelJsFs.removeSync(targetFile);
 
-      if (error.errorNumber === ChangeSetStatus.CorruptedChangeStream || error.errorNumber === ChangeSetStatus.InvalidId || error.errorNumber === ChangeSetStatus.InvalidVersion) {
+      if (
+        error.errorNumber === ChangeSetStatus.CorruptedChangeStream || error.errorNumber === ChangeSetStatus.InvalidId ||
+        error.errorNumber === ChangeSetStatus.InvalidVersion
+      ) {
         Logger.logError(loggerCategory, "Detected potential corruption of change sets. Deleting them to enable retries", () => traceInfo);
         BriefcaseManager.deleteChangeSetsFromLocalDisk(checkpoint.iModelId);
       }
@@ -406,7 +466,11 @@ export class CheckpointManager {
       if (nativeDb.isReadonly())
         throw new IModelError(IModelStatus.ValidationFailed, "iModelId is not properly set up in the checkpoint");
 
-      Logger.logWarning(loggerCategory, "iModelId is not properly set up in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, dbGuid: iModelId }));
+      Logger.logWarning(
+        loggerCategory,
+        "iModelId is not properly set up in the checkpoint. Updated checkpoint to the correct iModelId.",
+        () => ({ ...traceInfo, dbGuid: iModelId }),
+      );
       const iModelIdNormalized = Guid.normalize(checkpoint.iModelId);
       nativeDb.setIModelId(iModelIdNormalized);
       (snapshotDb as any)._iModelId = iModelIdNormalized;

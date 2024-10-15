@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64, Id64String, OpenMode } from "@itwin/core-bentley";
 import { Code, IModel, RenderSchedule, RenderTimelineProps } from "@itwin/core-common";
+import { expect } from "chai";
 import { GenericSchema, IModelJsFs, RenderTimeline, StandaloneDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 

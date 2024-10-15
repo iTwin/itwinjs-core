@@ -9,8 +9,18 @@
 
 import { CompressedId64Set, Id64, Id64Array, Id64String } from "@itwin/core-bentley";
 import {
-  Camera, CategorySelectorProps, Code, CustomViewState3dCreatorOptions, DisplayStyle3dProps, Environment, IModel, IModelReadRpcInterface,
-  ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewStateProps,
+  Camera,
+  CategorySelectorProps,
+  Code,
+  CustomViewState3dCreatorOptions,
+  DisplayStyle3dProps,
+  Environment,
+  IModel,
+  IModelReadRpcInterface,
+  ModelSelectorProps,
+  RenderMode,
+  ViewDefinition3dProps,
+  ViewStateProps,
 } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { IModelConnection } from "./IModelConnection";
@@ -23,7 +33,7 @@ import { ViewState } from "./ViewState";
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public
  * @extensions
-*/
+ */
 export interface ViewCreator3dOptions {
   /** Turn the [[Camera]] on to produce a perspective view.
    * Default: true
@@ -67,7 +77,7 @@ export class ViewCreator3d {
    * Constructs a ViewCreator3d using an [[IModelConnection]].
    * @param _imodel [[IModelConnection]] to query for categories and/or models.
    */
-  constructor(private _imodel: IModelConnection) { }
+  constructor(private _imodel: IModelConnection) {}
 
   /**
    * Creates a default [[ViewState3d]] based on the model ids passed in. If no model ids are passed in, all 3D models in the iModel are used.
@@ -112,7 +122,12 @@ export class ViewCreator3d {
    * @param models Models to put in view props
    * @param options view creation options like camera On and skybox On
    */
-  private async _createViewStateProps(models: Id64Array, categories: Id64Array, modelExtents: Range3d, options?: ViewCreator3dOptions): Promise<ViewStateProps> {
+  private async _createViewStateProps(
+    models: Id64Array,
+    categories: Id64Array,
+    modelExtents: Range3d,
+    options?: ViewCreator3dOptions,
+  ): Promise<ViewStateProps> {
     // Use dictionary model in all props
     const dictionaryId = IModel.dictionaryId;
 
@@ -189,12 +204,11 @@ export class ViewCreator3d {
             visEdges: false,
             backgroundMap: this._imodel.isGeoLocated,
           },
-          environment:
-            options !== undefined &&
+          environment: options !== undefined &&
               options.skyboxOn !== undefined &&
               options.skyboxOn
-              ? Environment.defaults.withDisplay({ sky: true }).toJSON()
-              : undefined,
+            ? Environment.defaults.withDisplay({ sky: true }).toJSON()
+            : undefined,
         },
       },
     };
@@ -220,7 +234,7 @@ export class ViewCreator3d {
     if (viewId === undefined)
       return viewStateProps;
 
-    const seedViewState = (await this._imodel.views.load(viewId) as SpatialViewState);
+    const seedViewState = await this._imodel.views.load(viewId) as SpatialViewState;
     const seedViewStateProps = {
       categorySelectorProps: seedViewState.categorySelector.toJSON(),
       modelSelectorProps: seedViewState.modelSelector.toJSON(),

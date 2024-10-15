@@ -3,18 +3,29 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, GeometryStreamProps } from "@itwin/core-common";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, SnapStatus,
+  AccuDrawHintBuilder,
+  BeButtonEvent,
+  DecorateContext,
+  DynamicsContext,
+  EventHandled,
+  GraphicType,
+  HitDetail,
+  IModelApp,
+  PrimitiveTool,
+  SnapStatus,
 } from "@itwin/core-frontend";
+import { IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@itwin/core-geometry";
 
 export class DrawingAidTestTool extends PrimitiveTool {
   public static override toolId = "DrawingAidTest.Points";
   public readonly points: Point3d[] = [];
   protected _snapGeomId?: string;
 
-  public override requireWriteableTarget(): boolean { return false; }
+  public override requireWriteableTarget(): boolean {
+    return false;
+  }
   public override async onPostInstall() {
     await super.onPostInstall();
     this.setupAndPromptForNextAction();
@@ -36,7 +47,9 @@ export class DrawingAidTestTool extends PrimitiveTool {
     hints.sendHints();
   }
 
-  public override testDecorationHit(id: string): boolean { return id === this._snapGeomId; }
+  public override testDecorationHit(id: string): boolean {
+    return id === this._snapGeomId;
+  }
 
   public override getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
     if (this.points.length < 2)

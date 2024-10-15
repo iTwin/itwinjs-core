@@ -4,14 +4,28 @@
 *--------------------------------------------------------------------------------------------*/
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
+import {
+  CreateNewWorkspaceDbVersionArgs,
+  EditableWorkspaceContainer,
+  EditableWorkspaceDb,
+  IModelHost,
+  IModelJsFs,
+  SettingsContainer,
+  SettingsPriority,
+  StandaloneDb,
+  Workspace,
+  WorkspaceContainerProps,
+  WorkspaceDbCloudProps,
+  WorkspaceDbLoadError,
+  WorkspaceDbLoadErrors,
+  WorkspaceDbQueryResourcesArgs,
+  WorkspaceEditor,
+  WorkspaceSettingNames,
+} from "@itwin/core-backend";
+import { assert, Guid } from "@itwin/core-bentley";
 import { expect } from "chai";
 import * as fs from "fs-extra";
 import { join } from "path";
-import {
-  CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainerProps,
-  WorkspaceDbCloudProps, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames,
-} from "@itwin/core-backend";
-import { assert, Guid } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 // cspell:ignore premajor
@@ -57,11 +71,31 @@ describe("Cloud workspace containers", () => {
     IModelHost.authorizationClient = new AzuriteTest.AuthorizationClient();
     AzuriteTest.userToken = AzuriteTest.service.userToken.admin;
     editor = WorkspaceEditor.construct();
-    orgContainer = await editor.createNewCloudContainer({ metadata: { label: "orgContainer1", description: "org workspace1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: orgWsName } });
-    itwin2Container = await editor.createNewCloudContainer({ metadata: { label: "orgContainer2", description: "org workspace2" }, scope: { iTwinId: iTwin2Id }, manifest: { workspaceName: itwin2WsName } });
-    branchContainer = await editor.createNewCloudContainer({ metadata: { label: "iModel container", description: "imodel workspace" }, scope: { iTwinId: iTwin2Id, iModelId: iModel1 }, manifest: { workspaceName: iModelWsName } });
-    styles1 = await editor.createNewCloudContainer({ metadata: { label: "styles 1 container", description: "styles definitions 1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "styles 1 ws" } });
-    styles2 = await editor.createNewCloudContainer({ metadata: { label: "styles 2 container", description: "styles definitions 2" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "styles 2 ws" } });
+    orgContainer = await editor.createNewCloudContainer({
+      metadata: { label: "orgContainer1", description: "org workspace1" },
+      scope: { iTwinId: iTwin1Id },
+      manifest: { workspaceName: orgWsName },
+    });
+    itwin2Container = await editor.createNewCloudContainer({
+      metadata: { label: "orgContainer2", description: "org workspace2" },
+      scope: { iTwinId: iTwin2Id },
+      manifest: { workspaceName: itwin2WsName },
+    });
+    branchContainer = await editor.createNewCloudContainer({
+      metadata: { label: "iModel container", description: "imodel workspace" },
+      scope: { iTwinId: iTwin2Id, iModelId: iModel1 },
+      manifest: { workspaceName: iModelWsName },
+    });
+    styles1 = await editor.createNewCloudContainer({
+      metadata: { label: "styles 1 container", description: "styles definitions 1" },
+      scope: { iTwinId: iTwin1Id },
+      manifest: { workspaceName: "styles 1 ws" },
+    });
+    styles2 = await editor.createNewCloudContainer({
+      metadata: { label: "styles 2 container", description: "styles definitions 2" },
+      scope: { iTwinId: iTwin1Id },
+      manifest: { workspaceName: "styles 2 ws" },
+    });
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
     const makeV1 = async (container: EditableWorkspaceContainer) => {
@@ -148,7 +182,9 @@ describe("Cloud workspace containers", () => {
 
     // Attempting to get a released db version for edit should throw
     orgContainer.acquireWriteLock(user);
-    expect(() => orgContainer.getEditableDb({ version: "2.0.0" })).throws("workspace-db:2.0.0 has been published and is not editable. Make a new version first.");
+    expect(() => orgContainer.getEditableDb({ version: "2.0.0" })).throws(
+      "workspace-db:2.0.0 has been published and is not editable. Make a new version first.",
+    );
     orgContainer.releaseWriteLock();
 
     // Pre-release dbs can be edited
@@ -210,7 +246,12 @@ describe("Cloud workspace containers", () => {
     Workspace.onSettingsDictionaryLoadedFn = (dict: Workspace.SettingsDictionaryLoaded) => loadedDictionaries.push(dict);
 
     const appSettings: SettingsContainer = {};
-    appSettings["app1/styles/lineStyleDbs"] = [{ ...orgContainerProps!, loadingHelp: "see org admin for access to org ws", description: "org workspace", version: "^1" }];
+    appSettings["app1/styles/lineStyleDbs"] = [{
+      ...orgContainerProps!,
+      loadingHelp: "see org admin for access to org ws",
+      description: "org workspace",
+      version: "^1",
+    }];
     IModelHost.appWorkspace.settings.addDictionary({ name: "app settings", priority: SettingsPriority.application }, appSettings);
 
     let imodel2 = await StandaloneDb.open({ fileName });
@@ -222,9 +263,26 @@ describe("Cloud workspace containers", () => {
     expect(loadErrors.length).equal(1);
     expect(loadErrors[0].wsDb?.version).equal("1.0.0");
 
-    const style1Props: WorkspaceDbCloudProps = { ...styles1.cloudProps!, loadingHelp: "see admin1 for access to style1 workspace", description: "styles 1", version: "^1", prefetch: true };
-    const style2Props: WorkspaceDbCloudProps = { ...styles2.cloudProps!, loadingHelp: "see admin2 for access to style2 workspace", description: "styles 2", version: "^1" };
-    const style3Props: WorkspaceDbCloudProps = { ...styles2.cloudProps!, containerId: "not there", loadingHelp: "see admin2 for access to style3 workspace", description: "more text styles for branch", version: "^1" };
+    const style1Props: WorkspaceDbCloudProps = {
+      ...styles1.cloudProps!,
+      loadingHelp: "see admin1 for access to style1 workspace",
+      description: "styles 1",
+      version: "^1",
+      prefetch: true,
+    };
+    const style2Props: WorkspaceDbCloudProps = {
+      ...styles2.cloudProps!,
+      loadingHelp: "see admin2 for access to style2 workspace",
+      description: "styles 2",
+      version: "^1",
+    };
+    const style3Props: WorkspaceDbCloudProps = {
+      ...styles2.cloudProps!,
+      containerId: "not there",
+      loadingHelp: "see admin2 for access to style3 workspace",
+      description: "more text styles for branch",
+      version: "^1",
+    };
     await withPatchVersion(branchContainer, (editDb) => {
       const branchSettings: SettingsContainer = {};
       branchSettings["app1/max1"] = 10;
@@ -304,7 +362,9 @@ describe("Cloud workspace containers", () => {
 
     problems.length = 0;
     let lineStyleDbs = await imodel2.workspace.getWorkspaceDbs({
-      settingName: "app1/styles/lineStyleDbs", problems, filter: (_dbProps, dict) => {
+      settingName: "app1/styles/lineStyleDbs",
+      problems,
+      filter: (_dbProps, dict) => {
         return (dict.props.priority === SettingsPriority.branch as number);
       },
     });
@@ -378,6 +438,4 @@ describe("Cloud workspace containers", () => {
 
     imodel2.close();
   });
-
 });
-

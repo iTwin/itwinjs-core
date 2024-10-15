@@ -99,11 +99,14 @@ export abstract class BezierCoffs {
    */
   public abstract evaluate(u: number): number;
   /** The order (number of coefficients) as a readable property  */
-  public get order(): number { return this.coffs.length; }
+  public get order(): number {
+    return this.coffs.length;
+  }
   /** Copy coefficients from other Bezier. Note that the coefficient count (order) of "this" can change. */
   public copyFrom(other: BezierCoffs): void {
-    if (this.order === other.order)
+    if (this.order === other.order) {
       for (let i = 0; i < this.coffs.length; i++) { this.coffs[i] = other.coffs[i]; }
+    }
     else this.coffs = other.coffs.slice();
   }
   /**
@@ -127,7 +130,7 @@ export abstract class BezierCoffs {
    */
   public roots(targetValue: number, _restrictTo01: boolean): number[] | undefined {
     const bezier = UnivariateBezier.create(this);
-    bezier.addInPlace(- targetValue);
+    bezier.addInPlace(-targetValue);
     const roots = UnivariateBezier.deflateRoots(bezier);
     return this.filter01(roots, true);
   }
@@ -212,8 +215,9 @@ export class BezierPolynomialAlgebra {
     scale: number,
     indexA: number,
     constA: number,
-    indexB: number) {
-    const orderB = dataOrder - 1;  // coefficients of the first difference are implicitly present as differences of adjacent entries.
+    indexB: number,
+  ) {
+    const orderB = dataOrder - 1; // coefficients of the first difference are implicitly present as differences of adjacent entries.
     const orderA = dataOrder;
     const orderC = dataOrder + orderB - 1;
     if (product.length !== orderC) return;
@@ -237,7 +241,16 @@ export class BezierPolynomialAlgebra {
    *
    * * Take no action if product length is other than `dataOrder + dataOrder - 2`
    */
-  public static scaledComponentSum(sum: Float64Array, data: Float64Array, dataBlockSize: number, dataOrder: number, indexA: number, constA: number, indexB: number, constB: number) {
+  public static scaledComponentSum(
+    sum: Float64Array,
+    data: Float64Array,
+    dataBlockSize: number,
+    dataOrder: number,
+    indexA: number,
+    constA: number,
+    indexB: number,
+    constB: number,
+  ) {
     const orderA = dataOrder;
     if (sum.length !== orderA) return;
     for (let a = 0, rowBase = 0; a < orderA; a++, rowBase += dataBlockSize) {
@@ -290,7 +303,7 @@ export class BezierPolynomialAlgebra {
    * * Take no action if product length is other than `orderA + orderB - 2`
    */
   public static accumulateProductWithDifferences(product: Float64Array, dataA: Float64Array, dataB: Float64Array, scale: number = 1.0) {
-    const orderA = dataA.length - 1;  // We deal with its differences, which are lower order !!!
+    const orderA = dataA.length - 1; // We deal with its differences, which are lower order !!!
     const orderB = dataB.length;
     const orderC = orderA + orderB - 1;
     if (product.length !== orderC) return;
@@ -315,10 +328,11 @@ export class BezierPolynomialAlgebra {
    */
   public static univariateDifference(data: Float64Array, difference: Float64Array) {
     const differenceOrder = difference.length;
-    if (difference.length + 1 !== differenceOrder)
+    if (difference.length + 1 !== differenceOrder) {
       for (let i = 0; i < differenceOrder; i++) {
         difference[i] = data[i + 1] - data[i];
       }
+    }
   }
   /**
    * * Univariate bezierA has its coefficients in dataA[i]
@@ -332,7 +346,6 @@ export class BezierPolynomialAlgebra {
       resultB[i] += dataA[i];
     }
   }
-
 }
 /**
  * * The UnivariateBezier class is a univariate bezier polynomial with no particular order.
@@ -349,7 +362,9 @@ export class BezierPolynomialAlgebra {
 export class UnivariateBezier extends BezierCoffs {
   private _order: number;
   /** Query the order of this bezier. */
-  public override get order() { return this._order; }
+  public override get order() {
+    return this._order;
+  }
   public constructor(data: number | Float64Array | number[]) {
     super(data);
     this._order = super.order;
@@ -400,7 +415,6 @@ export class UnivariateBezier extends BezierCoffs {
    * @param index0 first index to access
    * @param order number of coefficients, i.e. order for the result
    * @param result optional result.
-   *
    */
   public static createArraySubset(coffs: number[] | Float64Array, index0: number, order: number, result?: UnivariateBezier): UnivariateBezier {
     if (!result)
@@ -591,7 +605,7 @@ export class UnivariateBezier extends BezierCoffs {
    */
   public deflateRoot(root: number): number {
     const orderA = this.order;
-    const orderC = orderA - 1;  // the order of the deflated bezier.
+    const orderC = orderA - 1; // the order of the deflated bezier.
     if (orderA === 1) {
       this._order = 0;
       return this.coffs[0];
@@ -628,10 +642,10 @@ export class UnivariateBezier extends BezierCoffs {
       for (let i = orderA - 2; i > 0; i--) {
         a1 = this.coffs[i] * pascalA[i];
         c0 = (a1 - c1 * b0) / b1;
-        this.coffs[i] = c0 / pascalC[i - 1];  // pascalC index is from destination, which is not shifted.
+        this.coffs[i] = c0 / pascalC[i - 1]; // pascalC index is from destination, which is not shifted.
         c1 = c0;
       }
-      remainder = (this.coffs[0] - c1 * b0);
+      remainder = this.coffs[0] - c1 * b0;
       for (let i = 0; i < orderC; i++)
         this.coffs[i] = this.coffs[i + 1];
     }
@@ -763,7 +777,7 @@ export class Order2Bezier extends BezierCoffs {
    * but if the fraction would exceed Geometry.largeFractionResult, return undefined.
    */
   public static solveCoffs(a0: number, a1: number): number | undefined {
-    return Geometry.conditionalDivideFraction(-a0, (a1 - a0));
+    return Geometry.conditionalDivideFraction(-a0, a1 - a0);
   }
   /**
    * Evaluate the basis functions at specified u.
@@ -970,7 +984,8 @@ export class Order4Bezier extends BezierCoffs {
       factorA.coffs[0] * factorB.coffs[0],
       (factorA.coffs[0] * factorB.coffs[1] + 2.0 * factorA.coffs[1] * factorB.coffs[0]) / 3.0,
       (2.0 * factorA.coffs[1] * factorB.coffs[1] + factorA.coffs[2] * factorB.coffs[0]) / 3.0,
-      factorA.coffs[2] * factorB.coffs[1]);
+      factorA.coffs[2] * factorB.coffs[1],
+    );
   }
   /**
    * Evaluate the basis functions at specified u.
@@ -1048,8 +1063,8 @@ export class Order4Bezier extends BezierCoffs {
     const v3 = v2 * v1;
     return this.coffs[0] * v3
       + u * (3.0 * this.coffs[1] * v2
-        + u * (3.0 * this.coffs[2] * v1
-          + u * this.coffs[3]));
+          + u * (3.0 * this.coffs[2] * v1
+              + u * this.coffs[3]));
   }
   /**
    * convert a power polynomial to bezier
@@ -1086,18 +1101,17 @@ export class Order4Bezier extends BezierCoffs {
       roots.push(1.0 / 3.0);
       roots.push(2.0 / 3.0);
       roots.push(1.0);
-      return;  // p(x) == 0 has infinite roots .... return 4, which is a red flag for cubic
+      return; // p(x) == 0 has infinite roots .... return 4, which is a red flag for cubic
     }
-    cc[0] = (y0 - e);
+    cc[0] = y0 - e;
     cc[1] = 3.0 * (y1 - y0);
     cc[2] = 3.0 * (y0 - 2.0 * y1 + y2);
-    cc[3] = - y0 + 3.0 * y1 - 3.0 * y2 + y3;
-    AnalyticRoots.appendCubicRoots(cc, roots);  // can't have zero solutions after passing min/max conditions . . .
+    cc[3] = -y0 + 3.0 * y1 - 3.0 * y2 + y3;
+    AnalyticRoots.appendCubicRoots(cc, roots); // can't have zero solutions after passing min/max conditions . . .
     if (restrictTo01)
       roots.reassign(0, 1);
     return;
   }
-
 }
 /** Bezier polynomial specialized to order 5 (5 coefficients, quartic  function)
  * @internal
@@ -1217,9 +1231,9 @@ export class Order5Bezier extends BezierCoffs {
     const v4 = v2 * v2;
     return this.coffs[0] * v4
       + u * (4.0 * this.coffs[1] * v3
-        + u * (6.0 * this.coffs[2] * v2
-          + u * (4.0 * this.coffs[3] * v1
-            + u * this.coffs[4])));
+          + u * (6.0 * this.coffs[2] * v2
+              + u * (4.0 * this.coffs[3] * v1
+                  + u * this.coffs[4])));
   }
   /** Add the product of a pair of Order3Bezier to this one. */
   public addProductOrder3BezierOrder3Bezier(f: Order3Bezier, g: Order3Bezier, a: number) {
@@ -1262,11 +1276,11 @@ export class Order5Bezier extends BezierCoffs {
 
     const cc = new Float64Array(5);
 
-    cc[0] = (y0 - e);
+    cc[0] = y0 - e;
     cc[1] = 4.0 * (-y0 + y1);
     cc[2] = 6.0 * (y0 - 2.0 * y1 + y2);
     cc[3] = 4.0 * (-y0 + 3.0 * y1 - 3.0 * y2 + y3);
-    cc[4] = (y0 - 4.0 * y1 + 6.0 * y2 - 4.0 * y3 + y4);
+    cc[4] = y0 - 4.0 * y1 + 6.0 * y2 - 4.0 * y3 + y4;
 
     AnalyticRoots.appendQuarticRoots(cc, roots);
     if (restrictTo01)

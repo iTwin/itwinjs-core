@@ -28,7 +28,6 @@
  * @beta
  */
 export class DelayedPromise<T> implements Promise<T> {
-
   /**
    * Constructs a DelayedPromise object.
    * @param startCallback The asynchronous callback to execute when this DelayedPromise should be "started".
@@ -55,7 +54,10 @@ export class DelayedPromise<T> implements Promise<T> {
    * @param onrejected The callback to execute when the Promise is rejected.
    * @return A Promise for the completion of which ever callback is executed.
    */
-  public async then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2> {
+  public async then<TResult1 = T, TResult2 = never>(
+    onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
+    onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null,
+  ): Promise<TResult1 | TResult2> {
     return this.start().then(onfulfilled, onrejected);
   }
 
@@ -94,7 +96,6 @@ export interface NoDelayedPromiseMethods {
  * @beta
  */
 export interface DelayedPromiseWithPropsConstructor {
-
   /**
    * Constructs a DelayedPromiseWithProps object, which is at once both:
    *  - A DelayedPromise object representing the eventual completion (or failure)
@@ -105,7 +106,10 @@ export interface DelayedPromiseWithPropsConstructor {
    *              as if they were readonly properties of the DelayedPromiseWithProps object being constructed.
    * @param startCallback The asynchronous callback to execute when as soon as this DelayedPromise should be "started".
    */
-  new <TProps extends NoDelayedPromiseMethods, TPayload>(props: TProps, startCallback: () => Promise<TPayload>): Readonly<TProps> & DelayedPromise<TPayload>; // eslint-disable-line @typescript-eslint/prefer-function-type
+  new<TProps extends NoDelayedPromiseMethods, TPayload>(
+    props: TProps,
+    startCallback: () => Promise<TPayload>,
+  ): Readonly<TProps> & DelayedPromise<TPayload>; // eslint-disable-line @typescript-eslint/prefer-function-type
 }
 
 // Because the property getters that wrap `props` are dynamically added, TypeScript isn't aware of them.
@@ -114,7 +118,7 @@ export interface DelayedPromiseWithPropsConstructor {
  * @beta
  */
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const DelayedPromiseWithProps = (class <TProps extends NoDelayedPromiseMethods, TPayload> extends DelayedPromise<TPayload> {
+export const DelayedPromiseWithProps = (class<TProps extends NoDelayedPromiseMethods, TPayload> extends DelayedPromise<TPayload> {
   constructor(props: TProps, cb: () => Promise<TPayload>) {
     super(cb);
 

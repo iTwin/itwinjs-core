@@ -1,20 +1,37 @@
-import { CustomAttribute, CustomAttributeContainerProps, DelayedPromiseWithProps, ECClass, ECName,
-  EnumerationProperty, KindOfQuantity, NavigationProperty, PrimitiveProperty,
-  PropertyCategory, SchemaItemKey, SchemaItemType, StructProperty } from "@itwin/ecschema-metadata";
 import { assert } from "@itwin/core-bentley";
-import { SchemaContextEditor } from "./Editor";
-import * as Rules from "../Validation/ECRules";
-import { MutableArrayProperty } from "./Mutable/MutableArrayProperty";
-import { MutableProperty } from "./Mutable/MutableProperty";
-import { MutablePrimitiveOrEnumPropertyBase } from "./Mutable/MutablePrimitiveOrEnumProperty";
-import { MutableClass } from "./Mutable/MutableClass";
-import { MutableStructProperty } from "./Mutable/MutableStructProperty";
-import { MutableNavigationProperty } from "./Mutable/MutableNavigationProperty";
-import { ECClassSchemaItems } from "./ECClasses";
-import { ClassId, CustomAttributeId, ECEditingStatus, PropertyId, PropertyTypeName, SchemaEditingError, SchemaId } from "./Exception";
+import {
+  CustomAttribute,
+  CustomAttributeContainerProps,
+  DelayedPromiseWithProps,
+  ECClass,
+  ECName,
+  EnumerationProperty,
+  KindOfQuantity,
+  NavigationProperty,
+  PrimitiveProperty,
+  PropertyCategory,
+  SchemaItemKey,
+  SchemaItemType,
+  StructProperty,
+} from "@itwin/ecschema-metadata";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
+import * as Rules from "../Validation/ECRules";
+import { ECClassSchemaItems } from "./ECClasses";
+import { SchemaContextEditor } from "./Editor";
+import { ClassId, CustomAttributeId, ECEditingStatus, PropertyId, PropertyTypeName, SchemaEditingError, SchemaId } from "./Exception";
+import { MutableArrayProperty } from "./Mutable/MutableArrayProperty";
+import { MutableClass } from "./Mutable/MutableClass";
+import { MutableNavigationProperty } from "./Mutable/MutableNavigationProperty";
+import { MutablePrimitiveOrEnumPropertyBase } from "./Mutable/MutablePrimitiveOrEnumProperty";
+import { MutableProperty } from "./Mutable/MutableProperty";
+import { MutableStructProperty } from "./Mutable/MutableStructProperty";
 
-type MutablePropertyType = MutableProperty | MutableArrayProperty | MutablePrimitiveOrEnumPropertyBase | MutableNavigationProperty | MutableStructProperty;
+type MutablePropertyType =
+  | MutableProperty
+  | MutableArrayProperty
+  | MutablePrimitiveOrEnumPropertyBase
+  | MutableNavigationProperty
+  | MutableStructProperty;
 
 /**
  * @alpha
@@ -28,9 +45,12 @@ export class Properties {
     let newName: ECName;
     try {
       newName = new ECName(newPropertyName);
-    } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
-        new SchemaEditingError(ECEditingStatus.InvalidECName, new PropertyId(this.ecClassType, classKey, newPropertyName)));
+    } catch (e: any) {
+      throw new SchemaEditingError(
+        ECEditingStatus.SetPropertyName,
+        new PropertyId(this.ecClassType, classKey, propertyName),
+        new SchemaEditingError(ECEditingStatus.InvalidECName, new PropertyId(this.ecClassType, classKey, newPropertyName)),
+      );
     }
 
     const existingProperty = await this.getProperty<MutableProperty>(classKey, propertyName)
@@ -40,8 +60,11 @@ export class Properties {
 
     const baseProperty = await existingProperty.class.getProperty(newPropertyName, true) as MutableProperty;
     if (baseProperty) {
-      throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
-        new SchemaEditingError(ECEditingStatus.PropertyAlreadyExists, new PropertyId(this.ecClassType, baseProperty.class.key, newPropertyName)));
+      throw new SchemaEditingError(
+        ECEditingStatus.SetPropertyName,
+        new PropertyId(this.ecClassType, classKey, propertyName),
+        new SchemaEditingError(ECEditingStatus.PropertyAlreadyExists, new PropertyId(this.ecClassType, baseProperty.class.key, newPropertyName)),
+      );
     }
 
     // Handle derived classes
@@ -49,8 +72,11 @@ export class Properties {
     const derivedClasses = await this.findDerivedClasses(existingProperty.class as MutableClass);
     for (const derivedClass of derivedClasses) {
       if (await derivedClass.getProperty(newPropertyName)) {
-        throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
-          new SchemaEditingError(ECEditingStatus.PropertyAlreadyExists, new PropertyId(this.ecClassType, derivedClass.key, newPropertyName)));
+        throw new SchemaEditingError(
+          ECEditingStatus.SetPropertyName,
+          new PropertyId(this.ecClassType, classKey, propertyName),
+          new SchemaEditingError(ECEditingStatus.PropertyAlreadyExists, new PropertyId(this.ecClassType, derivedClass.key, newPropertyName)),
+        );
       }
 
       const propertyOverride = await derivedClass.getProperty(propertyName) as MutableProperty;
@@ -161,8 +187,16 @@ export class Properties {
       });
 
     const currentKoq = await property.kindOfQuantity;
-    if(currentKoq && currentKoq.persistenceUnit && koq.persistenceUnit && !currentKoq.persistenceUnit.matchesFullName(koq.persistenceUnit.fullName)) {
-      throw new SchemaEditingError(ECEditingStatus.SetKindOfQuantity, new PropertyId(this.ecClassType, classKey, propertyName), undefined, undefined, "KindOfQuantity can only be changed if it has the same persistence unit as the property.");
+    if (
+      currentKoq && currentKoq.persistenceUnit && koq.persistenceUnit && !currentKoq.persistenceUnit.matchesFullName(koq.persistenceUnit.fullName)
+    ) {
+      throw new SchemaEditingError(
+        ECEditingStatus.SetKindOfQuantity,
+        new PropertyId(this.ecClassType, classKey, propertyName),
+        undefined,
+        undefined,
+        "KindOfQuantity can only be changed if it has the same persistence unit as the property.",
+      );
     }
 
     property.setKindOfQuantity(new DelayedPromiseWithProps<SchemaItemKey, KindOfQuantity>(kindOfQuantityKey, async () => koq));
@@ -191,8 +225,11 @@ export class Properties {
 
     if (diagnostics.length > 0) {
       this.removeCustomAttribute(property, customAttribute);
-      throw new SchemaEditingError(ECEditingStatus.AddCustomAttributeToProperty, new PropertyId(this.ecClassType, classKey, propertyName),
-        new SchemaEditingError(ECEditingStatus.RuleViolation, new CustomAttributeId(customAttribute.className, property)));
+      throw new SchemaEditingError(
+        ECEditingStatus.AddCustomAttributeToProperty,
+        new PropertyId(this.ecClassType, classKey, propertyName),
+        new SchemaEditingError(ECEditingStatus.RuleViolation, new CustomAttributeId(customAttribute.className, property)),
+      );
     }
   }
 
@@ -217,17 +254,20 @@ export class Properties {
 
     const property = await mutableClass.getProperty(propertyName) as T;
     if (property === undefined) {
-      throw new SchemaEditingError(ECEditingStatus.PropertyNotFound, new PropertyId(mutableClass.schemaItemType as ECClassSchemaItems, classKey, propertyName));
+      throw new SchemaEditingError(
+        ECEditingStatus.PropertyNotFound,
+        new PropertyId(mutableClass.schemaItemType as ECClassSchemaItems, classKey, propertyName),
+      );
     }
 
     return property;
   }
 
-  private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>>{
+  private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>> {
     const derivedClasses: Array<MutableClass> = [];
 
     for await (const schemaItem of this._schemaEditor.schemaContext.getSchemaItems()) {
-      if(ECClass.isECClass(schemaItem) && await schemaItem.is(mutableClass)) {
+      if (ECClass.isECClass(schemaItem) && await schemaItem.is(mutableClass)) {
         if (!mutableClass.key.matches(schemaItem.key)) {
           derivedClasses.push(schemaItem as MutableClass);
         }
@@ -246,7 +286,7 @@ export class Properties {
     if (ecClass === undefined)
       throw new SchemaEditingError(ECEditingStatus.SchemaItemNotFound, new ClassId(this.ecClassType, classKey));
 
-    if (ecClass.schemaItemType !== this.ecClassType){
+    if (ecClass.schemaItemType !== this.ecClassType) {
       throw new SchemaEditingError(ECEditingStatus.InvalidSchemaItemType, new ClassId(this.ecClassType, classKey));
     }
 
@@ -299,8 +339,11 @@ export class ArrayProperties extends Properties {
    */
   protected override async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
     const property = await super.getProperty<MutableArrayProperty>(classKey, propertyName) as T;
-    if (!property.isArray()){
-      throw new SchemaEditingError(ECEditingStatus.InvalidPropertyType, new PropertyId(this.ecClassType, classKey, propertyName, PropertyTypeName.ArrayProperty));
+    if (!property.isArray()) {
+      throw new SchemaEditingError(
+        ECEditingStatus.InvalidPropertyType,
+        new PropertyId(this.ecClassType, classKey, propertyName, PropertyTypeName.ArrayProperty),
+      );
     }
     return property;
   }
@@ -402,8 +445,11 @@ export class PrimitiveProperties extends PrimitiveOrEnumProperties {
    */
   protected override async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
     const property = await super.getProperty<MutablePrimitiveOrEnumPropertyBase>(classKey, propertyName) as T;
-    if (!(property instanceof PrimitiveProperty)){
-      throw new SchemaEditingError(ECEditingStatus.InvalidPropertyType, new PropertyId(this.ecClassType, classKey, propertyName, PropertyTypeName.PrimitiveProperty));
+    if (!(property instanceof PrimitiveProperty)) {
+      throw new SchemaEditingError(
+        ECEditingStatus.InvalidPropertyType,
+        new PropertyId(this.ecClassType, classKey, propertyName, PropertyTypeName.PrimitiveProperty),
+      );
     }
     return property;
   }
@@ -425,8 +471,11 @@ export class EnumerationProperties extends PrimitiveOrEnumProperties {
    */
   protected override async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
     const property = await super.getProperty<MutablePrimitiveOrEnumPropertyBase>(classKey, propertyName) as T;
-    if (!(property instanceof EnumerationProperty)){
-      throw new SchemaEditingError(ECEditingStatus.InvalidPropertyType, new PropertyId(this.ecClassType, classKey, propertyName, PropertyTypeName.EnumerationProperty));
+    if (!(property instanceof EnumerationProperty)) {
+      throw new SchemaEditingError(
+        ECEditingStatus.InvalidPropertyType,
+        new PropertyId(this.ecClassType, classKey, propertyName, PropertyTypeName.EnumerationProperty),
+      );
     }
     return property;
   }
@@ -448,8 +497,11 @@ export class NavigationProperties extends Properties {
    */
   protected override async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
     const property = await super.getProperty<MutableNavigationProperty>(classKey, propertyName) as T;
-    if (!(property instanceof NavigationProperty)){
-      throw new SchemaEditingError(ECEditingStatus.InvalidPropertyType, new PropertyId(this.ecClassType, classKey, propertyName, PropertyTypeName.NavigationProperty));
+    if (!(property instanceof NavigationProperty)) {
+      throw new SchemaEditingError(
+        ECEditingStatus.InvalidPropertyType,
+        new PropertyId(this.ecClassType, classKey, propertyName, PropertyTypeName.NavigationProperty),
+      );
     }
     return property;
   }
@@ -471,10 +523,12 @@ export class StructProperties extends Properties {
    */
   protected override async getProperty<T extends MutablePropertyType>(classKey: SchemaItemKey, propertyName: string): Promise<T> {
     const property = await super.getProperty<MutableStructProperty>(classKey, propertyName) as T;
-    if (!(property instanceof StructProperty)){
-      throw new SchemaEditingError(ECEditingStatus.InvalidPropertyType, new PropertyId(this.ecClassType, classKey, propertyName, PropertyTypeName.StructProperty));
+    if (!(property instanceof StructProperty)) {
+      throw new SchemaEditingError(
+        ECEditingStatus.InvalidPropertyType,
+        new PropertyId(this.ecClassType, classKey, propertyName, PropertyTypeName.StructProperty),
+      );
     }
     return property;
   }
 }
-

@@ -2,10 +2,6 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as faker from "faker";
-import sinon from "sinon";
-import * as moq from "typemoq";
 import { BeDuration, BeEvent, CompressedId64Set, using } from "@itwin/core-bentley";
 import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
 import { IModelApp, IModelConnection, IpcApp, QuantityFormatter } from "@itwin/core-frontend";
@@ -67,6 +63,10 @@ import {
   createTestPropertiesContentField,
   createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import * as faker from "faker";
+import sinon from "sinon";
+import * as moq from "typemoq";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
 import {
@@ -134,7 +134,7 @@ describe("PresentationManager", () => {
   };
 
   // use this when sending requests without ruleset-related attributes
-  const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection; unitSystem?: UnitSystemKey }>(requestOptions: TOptions) => {
+  const toIModelTokenOptions = <TOptions extends { imodel: IModelConnection, unitSystem?: UnitSystemKey }>(requestOptions: TOptions) => {
     return {
       unitSystem: quantityFormatterUnitSystem,
       ...requestOptions,
@@ -834,7 +834,9 @@ describe("PresentationManager", () => {
         keys: keyset,
       };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getContentSetSize(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
+        .setup(async (x) =>
+          x.getContentSetSize(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() }))
+        )
         .returns(async () => result)
         .verifiable();
       const actualResult = await manager.getContentSetSize(options);
@@ -882,7 +884,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) =>
-          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })),
+          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() }))
         )
         .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }))
         .verifiable();
@@ -906,7 +908,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) =>
-          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })),
+          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() }))
         )
         .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }))
         .verifiable();
@@ -951,7 +953,9 @@ describe("PresentationManager", () => {
         keys: keyset,
       };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedContent(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
+        .setup(async (x) =>
+          x.getPagedContent(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() }))
+        )
         .returns(async () => undefined)
         .verifiable();
       const actualResult = await manager.getContent(options);
@@ -990,7 +994,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) =>
-          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })),
+          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() }))
         )
         .returns(async () => ({ total: 1, items: [item.toJSON()] }))
         .verifiable();
@@ -1035,7 +1039,7 @@ describe("PresentationManager", () => {
         .setup(async (x) =>
           x.getPagedContentSet(
             toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), omitFormattedValues: true }),
-          ),
+          )
         )
         .returns(async () => ({ total: 1, items: [item.toJSON()] }))
         .verifiable();
@@ -1068,7 +1072,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) =>
-          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })),
+          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() }))
         )
         .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }));
 
@@ -1093,7 +1097,7 @@ describe("PresentationManager", () => {
       };
       rpcRequestsHandlerMock
         .setup(async (x) =>
-          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })),
+          x.getPagedContentSet(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() }))
         )
         .returns(async () => ({ ...result, items: result.items.map((i) => i.toJSON()) }))
         .verifiable();
@@ -1122,7 +1126,9 @@ describe("PresentationManager", () => {
         keys: keyset,
       };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedContent(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
+        .setup(async (x) =>
+          x.getPagedContent(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() }))
+        )
         .returns(async () => ({ descriptor: descriptor.toJSON(), contentSet: { ...result, items: result.items.map((i) => i.toJSON()) } }))
         .verifiable();
       const actualResult = await manager.getContentAndSize(options);
@@ -1151,16 +1157,26 @@ describe("PresentationManager", () => {
       rpcRequestsHandlerMock
         .setup(async (x) =>
           x.getPagedContent(
-            toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), paging: { start: 0, size: 2 } }),
-          ),
+            toRulesetRpcOptions({
+              ...options,
+              descriptor: descriptor.createDescriptorOverrides(),
+              keys: keyset.toJSON(),
+              paging: { start: 0, size: 2 },
+            }),
+          )
         )
         .returns(async () => ({ descriptor: descriptor.toJSON(), contentSet: { total: 5, items: [item1.toJSON()] } }))
         .verifiable();
       rpcRequestsHandlerMock
         .setup(async (x) =>
           x.getPagedContentSet(
-            toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON(), paging: { start: 1, size: 1 } }),
-          ),
+            toRulesetRpcOptions({
+              ...options,
+              descriptor: descriptor.createDescriptorOverrides(),
+              keys: keyset.toJSON(),
+              paging: { start: 1, size: 1 },
+            }),
+          )
         )
         .returns(async () => ({ total: 5, items: [item2.toJSON()] }))
         .verifiable();
@@ -1187,7 +1203,9 @@ describe("PresentationManager", () => {
         keys: keyset,
       };
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getPagedContent(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() })))
+        .setup(async (x) =>
+          x.getPagedContent(toRulesetRpcOptions({ ...options, descriptor: descriptor.createDescriptorOverrides(), keys: keyset.toJSON() }))
+        )
         .returns(async () => undefined)
         .verifiable();
       const actualResult = await manager.getContentAndSize(options);
@@ -1293,7 +1311,7 @@ describe("PresentationManager", () => {
               rulesetOrId: "ElementProperties",
               keys: new KeySet([{ className: "BisCore:Element", id: elementId }]).toJSON(),
             }),
-          ),
+          )
         )
         .returns(async () => undefined)
         .verifiable();
@@ -1362,7 +1380,7 @@ describe("PresentationManager", () => {
               rulesetOrId: "ElementProperties",
               keys: new KeySet([{ className: "BisCore:Element", id: elementId }]).toJSON(),
             }),
-          ),
+          )
         )
         .returns(async () => ({
           descriptor: descriptor.toJSON(),

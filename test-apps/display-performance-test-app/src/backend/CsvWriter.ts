@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
 import { IModelJsFs } from "@itwin/core-backend";
+import * as path from "path";
 
 export function createFilePath(filePath: string) {
   // ###TODO: Make this function platform independent
@@ -56,8 +56,11 @@ function addColumn(origFile: string, newName: string, columnsIndex: number): str
       if (pos < 0)
         pos = line.length;
 
-      newFile += `${line.slice(0, pos) + (pos !== 0 ? "," : "") + (lineIndex === 0 ? newName : (newName === "ReadPixels Selector" || newName === "Other Props" ? "" : 0))
-        + (line[pos] !== "," ? "," : "") + line.slice(pos)}\r\n`;
+      newFile += `${
+        line.slice(0, pos) + (pos !== 0 ? "," : "") +
+        (lineIndex === 0 ? newName : (newName === "ReadPixels Selector" || newName === "Other Props" ? "" : 0))
+        + (line[pos] !== "," ? "," : "") + line.slice(pos)
+      }\r\n`;
     }
   });
   return newFile;
@@ -73,8 +76,10 @@ export function addColumnsToCsvFile(filePath: string, rowData: Map<string, numbe
   let opNamesIndex = 0;
   let columnsIndex = 0;
   while (opNamesIndex < opNames.length || columnsIndex < columns.length) {
-    if (opNames[opNamesIndex] === undefined || columns[columnsIndex] === undefined
-      || opNames[opNamesIndex].trim() !== columns[columnsIndex].trim()) {
+    if (
+      opNames[opNamesIndex] === undefined || columns[columnsIndex] === undefined
+      || opNames[opNamesIndex].trim() !== columns[columnsIndex].trim()
+    ) {
       let count = 1;
       while (opNames[opNamesIndex + count] !== columns[columnsIndex] && (opNamesIndex + count) < opNames.length) {
         count++;
@@ -119,7 +124,10 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
         else
           value = 0;
       }
-      if (colName === "iModel" || colName === "View" || colName === "View Flags" || colName === "Disabled Ext" || colName === "ReadPixels Selector" || colName === "Tile Props" || colName === "Other Props")
+      if (
+        colName === "iModel" || colName === "View" || colName === "View Flags" || colName === "Disabled Ext" || colName === "ReadPixels Selector" ||
+        colName === "Tile Props" || colName === "Other Props"
+      )
         stringData += `"${value}",`;
       else if (colName !== "" || index !== columns.length - 1)
         stringData += `${value},`;

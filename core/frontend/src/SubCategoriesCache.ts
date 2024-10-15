@@ -33,13 +33,19 @@ export class SubCategoriesCache {
   private readonly _imodel: IModelConnection;
   private _missingAtTimeOfPreload: Id64Set | undefined;
 
-  public constructor(imodel: IModelConnection) { this._imodel = imodel; }
+  public constructor(imodel: IModelConnection) {
+    this._imodel = imodel;
+  }
 
   /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
-  public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
+  public getSubCategories(categoryId: string): Id64Set | undefined {
+    return this._byCategoryId.get(categoryId);
+  }
 
   /** Get the base appearance of the subcategory with the specified Id, or undefined if no such information is present. */
-  public getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId.toString()); }
+  public getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined {
+    return this._appearances.get(subCategoryId.toString());
+  }
 
   /** Request that the subcategory information for all of the specified categories is loaded.
    * If all such information has already been loaded, returns undefined.
@@ -69,13 +75,12 @@ export class SubCategoriesCache {
   public async loadAllUsedSpatialSubCategories(): Promise<void> {
     try {
       const results = await this._imodel.queryAllUsedSpatialSubCategories();
-      if (undefined !== results){
+      if (undefined !== results) {
         this.processResults(results, new Set<string>(), false);
       }
     } catch (e) {
       // In case of a truncated response, gracefully handle the error and exit.
     }
-
   }
   /** Given categoryIds, return which of these are not cached. */
   private getMissing(categoryIds: Id64Arg): Id64Set | undefined {
@@ -110,7 +115,7 @@ export class SubCategoriesCache {
   }
 
   private processResults(result: SubCategoriesCache.Result, missing: Id64Set, override: boolean = true): void {
-    for (const row of result){
+    for (const row of result) {
       this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance), override);
     }
 
@@ -133,7 +138,9 @@ export class SubCategoriesCache {
       this._appearances.set(subCategoryId, appearance);
   }
 
-  public async getCategoryInfo(inputCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>> {
+  public async getCategoryInfo(
+    inputCategoryIds: Id64String | Iterable<Id64String>,
+  ): Promise<Map<Id64String, IModelConnection.Categories.CategoryInfo>> {
     // Eliminate duplicates...
     const categoryIds = new Set<string>(typeof inputCategoryIds === "string" ? [inputCategoryIds] : inputCategoryIds);
     const req = this.load(categoryIds);
@@ -153,7 +160,10 @@ export class SubCategoriesCache {
     return map;
   }
 
-  public async getSubCategoryInfo(categoryId: Id64String, inputSubCategoryIds: Id64String | Iterable<Id64String>): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>> {
+  public async getSubCategoryInfo(
+    categoryId: Id64String,
+    inputSubCategoryIds: Id64String | Iterable<Id64String>,
+  ): Promise<Map<Id64String, IModelConnection.Categories.SubCategoryInfo>> {
     // Eliminate duplicates...
     const subCategoryIds = new Set<string>(typeof inputSubCategoryIds === "string" ? [inputSubCategoryIds] : inputSubCategoryIds);
     const req = this.load(categoryId);
@@ -188,7 +198,9 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
     private _canceled = false;
     private _curCategoryIdsIndex = 0;
 
-    public get wasCanceled() { return this._canceled || this._imodel.isClosed; }
+    public get wasCanceled() {
+      return this._canceled || this._imodel.isClosed;
+    }
 
     public constructor(categoryIds: Set<string>, imodel: IModelConnection, maxCategoriesPerQuery = 2500) {
       this._imodel = imodel;
@@ -202,7 +214,9 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
       }
     }
 
-    public cancel() { this._canceled = true; }
+    public cancel() {
+      this._canceled = true;
+    }
 
     public async dispatch(): Promise<Result | undefined> {
       if (this.wasCanceled || this._curCategoryIdsIndex >= this._categoryIds.length) // handle case of empty category Id set...
@@ -314,9 +328,10 @@ export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
 
         // Invoke all the functions which were awaiting this set of IModelConnection.Categories.
         assert(undefined !== this._current);
-        if (completed)
+        if (completed) {
           for (const func of this._current.funcs)
             func();
+        }
 
         this._request = undefined;
         this._current = undefined;

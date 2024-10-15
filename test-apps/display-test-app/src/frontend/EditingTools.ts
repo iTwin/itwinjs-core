@@ -5,11 +5,33 @@
 
 import { assert, CompressedId64Set, Id64String } from "@itwin/core-bentley";
 import {
-  Code, ColorDef, ElementGeometry, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, IModel, PhysicalElementProps,
+  Code,
+  ColorDef,
+  ElementGeometry,
+  GeometryPartProps,
+  GeometryStreamBuilder,
+  GeometryStreamProps,
+  IModel,
+  PhysicalElementProps,
 } from "@itwin/core-common";
 import {
-  AccuDrawHintBuilder, BeButtonEvent, BriefcaseConnection, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
-  NotifyMessageDetails, OutputMessagePriority, Tool, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction,
+  AccuDrawHintBuilder,
+  BeButtonEvent,
+  BriefcaseConnection,
+  CoreTools,
+  DecorateContext,
+  DynamicsContext,
+  EventHandled,
+  GraphicType,
+  HitDetail,
+  IModelApp,
+  NotifyMessageDetails,
+  OutputMessagePriority,
+  Tool,
+  ToolAssistance,
+  ToolAssistanceImage,
+  ToolAssistanceInputMethod,
+  ToolAssistanceInstruction,
   ToolAssistanceSection,
 } from "@itwin/core-frontend";
 import { IModelJson, LineString3d, Point3d, Sphere, Transform, Vector3d, YawPitchRollAngles } from "@itwin/core-geometry";
@@ -22,8 +44,12 @@ import { setTitle } from "./Title";
 /** If an editing scope is currently in progress, end it; otherwise, begin a new one. */
 export class EditingScopeTool extends Tool {
   public static override toolId = "EditingSession";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 0; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 0;
+  }
 
   public override async run(): Promise<boolean> {
     await this._run();
@@ -54,8 +80,12 @@ export class PlaceLineStringTool extends CreateElementTool {
   private _testGeomParts = false;
   protected _startedCmd?: string;
 
-  protected override get wantAccuSnap(): boolean { return true; }
-  protected override get wantDynamics(): boolean { return true; }
+  protected override get wantAccuSnap(): boolean {
+    return true;
+  }
+  protected override get wantDynamics(): boolean {
+    return true;
+  }
 
   protected async startCommand(): Promise<string> {
     if (undefined !== this._startedCmd)
@@ -90,11 +120,19 @@ export class PlaceLineStringTool extends CreateElementTool {
     const touchInstructions: ToolAssistanceInstruction[] = [];
 
     if (!ToolAssistance.createTouchCursorInstructions(touchInstructions))
-      touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse));
+      touchInstructions.push(
+        ToolAssistance.createInstruction(ToolAssistanceImage.OneTouchTap, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Touch),
+      );
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(ToolAssistanceImage.LeftClick, CoreTools.translate(leftMsg), false, ToolAssistanceInputMethod.Mouse),
+    );
 
-    touchInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Touch));
-    mouseInstructions.push(ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Mouse));
+    touchInstructions.push(
+      ToolAssistance.createInstruction(ToolAssistanceImage.TwoTouchTap, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Touch),
+    );
+    mouseInstructions.push(
+      ToolAssistance.createInstruction(ToolAssistanceImage.RightClick, CoreTools.translate(rightMsg), false, ToolAssistanceInputMethod.Mouse),
+    );
 
     const sections: ToolAssistanceSection[] = [];
     sections.push(ToolAssistance.createSection(mouseInstructions, ToolAssistance.inputsLabel));
@@ -178,7 +216,12 @@ export class PlaceLineStringTool extends CreateElementTool {
           if (!partBuilder.appendGeometry(sphere))
             return;
 
-          const partProps: GeometryPartProps = { classFullName: "BisCore:GeometryPart", model: IModel.dictionaryId, code: Code.createEmpty(), geom: partBuilder.geometryStream };
+          const partProps: GeometryPartProps = {
+            classFullName: "BisCore:GeometryPart",
+            model: IModel.dictionaryId,
+            code: Code.createEmpty(),
+            geom: partBuilder.geometryStream,
+          };
           const partId = await basicManipulationIpc.insertGeometryPart(partProps);
 
           for (const pt of this._points) {
@@ -187,7 +230,14 @@ export class PlaceLineStringTool extends CreateElementTool {
           }
         }
 
-        const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles }, geom: builder.geometryStream };
+        const elemProps: PhysicalElementProps = {
+          classFullName: "Generic:PhysicalObject",
+          model,
+          category,
+          code: Code.createEmpty(),
+          placement: { origin, angles },
+          geom: builder.geometryStream,
+        };
         await basicManipulationIpc.insertGeometricElement(elemProps);
         await this.saveChanges();
       } else {
@@ -215,7 +265,13 @@ export class PlaceLineStringTool extends CreateElementTool {
           }
         }
 
-        const elemProps: PhysicalElementProps = { classFullName: "Generic:PhysicalObject", model, category, code: Code.createEmpty(), placement: { origin, angles } };
+        const elemProps: PhysicalElementProps = {
+          classFullName: "Generic:PhysicalObject",
+          model,
+          category,
+          code: Code.createEmpty(),
+          placement: { origin, angles },
+        };
         elemProps.elementGeometryBuilderParams = { entryArray: builder.entries };
         await basicManipulationIpc.insertGeometricElement(elemProps);
         await this.saveChanges();
@@ -270,11 +326,14 @@ export async function transformElements(imodel: BriefcaseConnection, ids: string
 /** This tool moves an element relative to its current position. */
 export class MoveElementTool extends Tool {
   public static override toolId = "MoveElement";
-  public static override get minArgs() { return 2; }
-  public static override get maxArgs() { return 4; }
+  public static override get minArgs() {
+    return 2;
+  }
+  public static override get maxArgs() {
+    return 4;
+  }
 
   public override async run(elementId: string, x: number, y: number, z: number): Promise<boolean> {
-
     if (!IModelApp.viewManager.selectedView) {
       return false;
     }

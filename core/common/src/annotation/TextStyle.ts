@@ -161,7 +161,7 @@ export class TextStyleSettings {
   };
 
   /** Settings initialized to all default values. */
-  public static defaults: TextStyleSettings = new TextStyleSettings({ });
+  public static defaults: TextStyleSettings = new TextStyleSettings({});
 
   private constructor(props: TextStyleSettingsProps, defaults?: Required<TextStyleSettingsProps>) {
     if (!defaults) {
@@ -254,4 +254,3 @@ export class TextStyle {
     return this.name === other.name && this.settings.equals(other.settings);
   }
 }
-

@@ -7,7 +7,13 @@ import { AssetInfo, Compiler, DefinePlugin, ExternalsPlugin, RuleSetRule } from 
 import { CopyAppAssetsPlugin, CopyStaticAssetsPlugin } from "./CopyBentleyStaticResourcesPlugin";
 import { CopyExternalsPlugin } from "./CopyExternalsPlugin";
 import { IgnoreOptionalDependenciesPlugin } from "./OptionalDependenciesPlugin";
-import { addCopyFilesSuffix, addExternalPrefix, copyFilesRule, handlePrefixedExternals, RequireMagicCommentsPlugin } from "./RequireMagicCommentsPlugin";
+import {
+  addCopyFilesSuffix,
+  addExternalPrefix,
+  copyFilesRule,
+  handlePrefixedExternals,
+  RequireMagicCommentsPlugin,
+} from "./RequireMagicCommentsPlugin";
 
 export class BackendDefaultsPlugin {
   public apply(compiler: Compiler) {
@@ -28,8 +34,7 @@ export class BackendDefaultsPlugin {
       },
     ];
 
-    const isProductionLikeMode =
-      compiler.options.mode === "production" || !compiler.options.mode;
+    const isProductionLikeMode = compiler.options.mode === "production" || !compiler.options.mode;
 
     if (isProductionLikeMode) {
       defaultRules.push({

@@ -2,22 +2,30 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as fs from "fs";
-import * as path from "path";
-import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
-import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
-import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
-import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, produceTextAnnotationGeometry } from "@itwin/core-backend";
+import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import {
-  IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface, TextAnnotation, TextAnnotationProps, TextBlockGeometryProps,
+  IModelReadRpcInterface,
+  IModelRpcProps,
+  IModelTileRpcInterface,
+  RpcInterfaceDefinition,
+  RpcManager,
+  SnapshotIModelRpcInterface,
+  TextAnnotation,
+  TextAnnotationProps,
+  TextBlockGeometryProps,
 } from "@itwin/core-common";
+import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
-import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
-import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
+import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
+import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
+import { IModelsClient } from "@itwin/imodels-client-authoring";
+import * as fs from "fs";
+import * as path from "path";
+import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
+import { DtaRpcInterface } from "../common/DtaRpcInterface";
 
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
@@ -35,7 +43,6 @@ function loadEnv(envFile: string) {
 }
 
 class DisplayTestAppRpc extends DtaRpcInterface {
-
   public override async readExternalSavedViews(bimFileName: string): Promise<string> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
@@ -167,7 +174,6 @@ class DisplayTestAppRpc extends DtaRpcInterface {
       if (app !== undefined)
         app.exit();
     } catch {
-
     }
 
     // Browser only
@@ -179,7 +185,11 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
   }
 
-  public override async produceTextAnnotationGeometry(iModelToken: IModelRpcProps, annotationProps: TextAnnotationProps, debugAnchorPointAndRange?: boolean): Promise<TextBlockGeometryProps> {
+  public override async produceTextAnnotationGeometry(
+    iModelToken: IModelRpcProps,
+    annotationProps: TextAnnotationProps,
+    debugAnchorPointAndRange?: boolean,
+  ): Promise<TextBlockGeometryProps> {
     const iModel = IModelDb.findByKey(iModelToken.key);
     const annotation = TextAnnotation.fromJSON(annotationProps);
     return produceTextAnnotationGeometry({ iModel, annotation, debugAnchorPointAndRange });
@@ -266,9 +276,9 @@ async function initializeAuthorizationClient(): Promise<ElectronMainAuthorizatio
     return new ElectronMainAuthorization({
       clientId: process.env.IMJS_OIDC_ELECTRON_TEST_CLIENT_ID!,
       scopes: process.env.IMJS_OIDC_ELECTRON_TEST_SCOPES!,
-      redirectUris:
-        process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI !== undefined ?
-          [process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI] : ["http://localhost:3000/signin-callback"],
+      redirectUris: process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI !== undefined ?
+        [process.env.IMJS_OIDC_ELECTRON_TEST_REDIRECT_URI] :
+        ["http://localhost:3000/signin-callback"],
       issuerUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}ims.bentley.com`,
     });
   }

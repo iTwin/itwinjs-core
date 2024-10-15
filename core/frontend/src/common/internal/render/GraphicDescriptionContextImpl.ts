@@ -7,11 +7,29 @@
  */
 
 import { TransientIdSequence, TransientIdSequenceProps } from "@itwin/core-bentley";
-import { _implementationProhibited } from "../Symbols";
-import { GraphicDescriptionContextProps, WorkerGraphicDescriptionContext, WorkerGraphicDescriptionContextProps, WorkerTextureParams } from "../../render/GraphicDescriptionContext";
-import { MaterialParams } from "../../render/MaterialParams";
-import { ColorDef, ColorDefProps, Gradient, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderMaterial, RenderTexture, RgbColor, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
+import {
+  ColorDef,
+  ColorDefProps,
+  Gradient,
+  ImageBufferFormat,
+  ImageSource,
+  ImageSourceFormat,
+  RenderMaterial,
+  RenderTexture,
+  RgbColor,
+  RgbColorProps,
+  TextureMapping,
+  TextureTransparency,
+} from "@itwin/core-common";
 import { ImdlModel } from "../../imdl/ImdlModel";
+import {
+  GraphicDescriptionContextProps,
+  WorkerGraphicDescriptionContext,
+  WorkerGraphicDescriptionContextProps,
+  WorkerTextureParams,
+} from "../../render/GraphicDescriptionContext";
+import { MaterialParams } from "../../render/MaterialParams";
+import { _implementationProhibited } from "../Symbols";
 
 /** As part of a [[WorkerGraphicDescriptionContext]], describes constraints imposed by the [[RenderSystem]] that a [[GraphicDescriptionBuilder]] needs to know about
  * when creating a [[GraphicDescription]].
@@ -116,8 +134,10 @@ export class WorkerTexture extends RenderTexture {
     }
   }
 
-  public override dispose() { }
-  public override get bytesUsed() { return 0; } // doesn't matter, nobody's calling this.
+  public override dispose() {}
+  public override get bytesUsed() {
+    return 0;
+  } // doesn't matter, nobody's calling this.
 
   public toProps(xfer: Set<Transferable>): WorkerTextureProps {
     const source = this.source.gradient ? { ...this.source, gradient: this.source.gradient.toJSON() } : this.source;
@@ -147,14 +167,17 @@ export class WorkerMaterial extends RenderMaterial {
   public constructor(params: MaterialParams) {
     let textureMapping;
     if (params.textureMapping) {
-      textureMapping = new TextureMapping(params.textureMapping.texture, new TextureMapping.Params({
-        textureMat2x3: params.textureMapping.transform,
-        mapMode: params.textureMapping.mode,
-        textureWeight: params.textureMapping.weight,
-        worldMapping: params.textureMapping.worldMapping,
-        useConstantLod: params.textureMapping.useConstantLod,
-        constantLodProps: params.textureMapping.constantLodProps,
-      }));
+      textureMapping = new TextureMapping(
+        params.textureMapping.texture,
+        new TextureMapping.Params({
+          textureMat2x3: params.textureMapping.transform,
+          mapMode: params.textureMapping.mode,
+          textureWeight: params.textureMapping.weight,
+          worldMapping: params.textureMapping.worldMapping,
+          useConstantLod: params.textureMapping.useConstantLod,
+          constantLodProps: params.textureMapping.constantLodProps,
+        }),
+      );
       textureMapping.normalMapParams = params.textureMapping.normalMapParams;
     }
 
@@ -241,4 +264,3 @@ export class WorkerGraphicDescriptionContextImpl implements WorkerGraphicDescrip
     };
   }
 }
-

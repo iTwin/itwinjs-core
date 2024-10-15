@@ -2,22 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Range3d, Transform } from "@itwin/core-geometry";
-import { IModelConnection } from "../../IModelConnection";
+import { expect } from "chai";
 import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
-import {
-  Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
-  TileTreeOwner,
-  TileTreeSupplier,
-} from "../../tile/internal";
+import { Tile, TileContent, TileDrawArgs, TileLoadPriority, TileRequest, TileTree, TileTreeOwner, TileTreeSupplier } from "../../tile/internal";
 import { createBlankConnection } from "../createBlankConnection";
 
 describe("Tiles", () => {
-
   class TestGraphic extends RenderGraphic {
     public constructor(private _size: number) {
       super();
@@ -32,7 +27,7 @@ describe("Tiles", () => {
         stats.addTexture(this._size);
     }
 
-    public unionRange() { }
+    public unionRange() {}
   }
 
   class TestTile extends Tile {
@@ -102,10 +97,18 @@ describe("Tiles", () => {
       this._rootTile = new TestTile(this, contentSize, retainMemory);
     }
 
-    public get rootTile(): TestTile { return this._rootTile; }
-    public get is3d() { return true; }
-    public get maxDepth() { return undefined; }
-    public get viewFlagOverrides() { return { }; }
+    public get rootTile(): TestTile {
+      return this._rootTile;
+    }
+    public get is3d() {
+      return true;
+    }
+    public get maxDepth() {
+      return undefined;
+    }
+    public get viewFlagOverrides() {
+      return {};
+    }
 
     protected _selectTiles(args: TileDrawArgs): Tile[] {
       const tiles = [];
@@ -128,10 +131,10 @@ describe("Tiles", () => {
       args.drawGraphics();
     }
 
-    public prune() { }
+    public prune() {}
   }
 
-  const createOnTileTreeLoadPromise: (treeOwner: TileTreeOwner) => Promise<void> =  async (treeOwner: TileTreeOwner)  => {
+  const createOnTileTreeLoadPromise: (treeOwner: TileTreeOwner) => Promise<void> = async (treeOwner: TileTreeOwner) => {
     return new Promise((resolve) => {
       IModelApp.tileAdmin.onTileTreeLoad.addListener((tileTreeOwner) => {
         if (treeOwner === tileTreeOwner)
@@ -167,7 +170,6 @@ describe("Tiles", () => {
   });
 
   it("resetTileTreeOwner should remove the tiletree", async () => {
-
     const contentSize = 100;
     const tree1 = new TestTree(contentSize, imodel);
     const tree2 = new TestTree(contentSize, imodel);
@@ -184,7 +186,7 @@ describe("Tiles", () => {
     await Promise.all(promises);
 
     let nbItems = 0;
-    for ( const _item of imodel.tiles) {
+    for (const _item of imodel.tiles) {
       nbItems++;
     }
     expect(nbItems).to.equals(2);
@@ -197,7 +199,7 @@ describe("Tiles", () => {
     expect(tree2.isDisposed).to.be.false;
 
     nbItems = 0;
-    for ( const item of imodel.tiles) {
+    for (const item of imodel.tiles) {
       expect(item.id.id).to.equals(tree2.id);
       nbItems++;
     }

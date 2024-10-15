@@ -2,13 +2,13 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import sinon from "sinon";
-import * as moq from "typemoq";
 import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { AuthorizationClient, InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp, UserPreferencesAccess } from "@itwin/core-frontend";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import sinon from "sinon";
+import * as moq from "typemoq";
 import { IConnectivityInformationProvider } from "../../presentation-frontend/ConnectivityInformationProvider";
 import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentation-frontend/favorite-properties/FavoritePropertiesManager";
 import {
@@ -96,7 +96,9 @@ describe("IModelAppFavoritePropertiesStorage", () => {
   describe("saveProperties", () => {
     it("saves favorite properties", async () => {
       settingsAdminMock
-        .setup(async (x) => x.save(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME })))
+        .setup(async (x) =>
+          x.save(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_SETTING_NAME }))
+        )
         .returns(async () => {});
 
       const properties = new Set<PropertyFullName>(["propertyInfo1", "propertyInfo2"]);
@@ -129,7 +131,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
       };
       settingsAdminMock
         .setup(async (x) =>
-          x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME })),
+          x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME }))
         )
         .returns(async () => [orderInfo]);
 
@@ -142,7 +144,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     it("returns undefined", async () => {
       settingsAdminMock
         .setup(async (x) =>
-          x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME })),
+          x.get(moq.It.isObjectWith({ namespace: IMODELJS_PRESENTATION_SETTING_NAMESPACE, key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME }))
         )
         .returns(async () => undefined);
       sinon.stub(IModelApp, "userPreferences").get(() => settingsAdminMock.object);
@@ -185,7 +187,7 @@ describe("IModelAppFavoritePropertiesStorage", () => {
               key: FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME,
               content: [orderInfo],
             }),
-          ),
+          )
         )
         .returns(async () => {})
         .verifiable();

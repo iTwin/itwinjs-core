@@ -10,18 +10,18 @@ import { dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 import { RenderMemory } from "../RenderMemory";
 import { CachedGeometry } from "./CachedGeometry";
+import { EdgeGeometry, PolylineEdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry";
 import { Graphic } from "./Graphic";
+import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
 import { InstanceBuffers, PatternBuffers } from "./InstancedGeometry";
+import { MeshData } from "./MeshData";
 import { Primitive } from "./Primitive";
 import { RenderCommands } from "./RenderCommands";
 import { RenderPass } from "./RenderFlags";
-import { EdgeGeometry, PolylineEdgeGeometry, SilhouetteEdgeGeometry } from "./EdgeGeometry";
-import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
 import { SurfaceGeometry } from "./SurfaceGeometry";
-import { MeshData } from "./MeshData";
-import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
 export class MeshRenderGeometry implements RenderGeometry {
@@ -106,8 +106,12 @@ export class MeshGraphic extends Graphic {
   private readonly _instances?: InstanceBuffers | PatternBuffers;
   private readonly _meshRange: Range3d;
 
-  public get primitives(): readonly Primitive[] { return this._primitives; }
-  public get meshRange(): Readonly<Range3d> { return this._meshRange; }
+  public get primitives(): readonly Primitive[] {
+    return this._primitives;
+  }
+  public get meshRange(): Readonly<Range3d> {
+    return this._meshRange;
+  }
 
   public static create(geometry: MeshRenderGeometry, instances?: InstanceBuffers | PatternBuffers): MeshGraphic | undefined {
     return new MeshGraphic(geometry, instances);
@@ -135,8 +139,12 @@ export class MeshGraphic extends Graphic {
     this.addPrimitive(geometry.indexedEdges);
   }
 
-  public get isDisposed(): boolean { return this.meshData.isDisposed && 0 === this._primitives.length; }
-  public get isPickable() { return false; }
+  public get isDisposed(): boolean {
+    return this.meshData.isDisposed && 0 === this._primitives.length;
+  }
+  public get isPickable() {
+    return false;
+  }
 
   public dispose() {
     for (const primitive of this._primitives)
@@ -160,8 +168,14 @@ export class MeshGraphic extends Graphic {
       range.extendRange(this._meshRange);
   }
 
-  public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
-  public override addHiliteCommands(cmds: RenderCommands, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, pass)); }
+  public addCommands(cmds: RenderCommands): void {
+    this._primitives.forEach((prim) => prim.addCommands(cmds));
+  }
+  public override addHiliteCommands(cmds: RenderCommands, pass: RenderPass): void {
+    this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, pass));
+  }
 
-  public get surfaceType(): SurfaceType { return this.meshData.type; }
+  public get surfaceType(): SurfaceType {
+    return this.meshData.type;
+  }
 }

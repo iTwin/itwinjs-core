@@ -5,15 +5,15 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
 import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ConcurrentQuery } from "./ConcurrentQuery";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelNative } from "./internal/NativePlatform";
-import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
+import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -82,7 +82,9 @@ export class ECDb implements IDisposable {
   }
 
   /** Returns true if the ECDb is open */
-  public get isOpen(): boolean { return this[_nativeDb].isOpen(); }
+  public get isOpen(): boolean {
+    return this[_nativeDb].isOpen();
+  }
 
   /** Close the Db after saving any uncommitted changes.
    * @throws [IModelError]($common) if the database is not open.
@@ -287,7 +289,9 @@ export class ECDb implements IDisposable {
   /** @internal
    * @deprecated in 4.8. This internal API will be removed in 5.0. Use ECDb's public API instead.
    */
-  public get nativeDb(): IModelJsNative.ECDb { return this[_nativeDb]; }
+  public get nativeDb(): IModelJsNative.ECDb {
+    return this[_nativeDb];
+  }
 
   /** @internal */
   public get [_nativeDb](): IModelJsNative.ECDb {
@@ -306,7 +310,7 @@ export class ECDb implements IDisposable {
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
    * @public
-   * */
+   */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     if (!this._nativeDb || !this._nativeDb.isOpen()) {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, "db not open");
@@ -335,7 +339,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    * @deprecated in 3.7. Use [[createQueryReader]] instead; it accepts the same parameters.
    */
-  public async * query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
+  public async *query(ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     const builder = new QueryOptionsBuilder(options);
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step())
@@ -379,7 +383,7 @@ export class ECDb implements IDisposable {
    * @throws [IModelError]($common) If there was any error while submitting, preparing or stepping into query
    * @deprecated in 3.7. Use [[createQueryReader]] instead. Pass in the restart token as part of the `config` argument; e.g., `{ restartToken: myToken }` or `new QueryOptionsBuilder().setRestartToken(myToken).getOptions()`.
    */
-  public async * restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
+  public async *restartQuery(token: string, ecsql: string, params?: QueryBinder, options?: QueryOptions): AsyncIterableIterator<any> {
     for await (const row of this.createQueryReader(ecsql, params, new QueryOptionsBuilder(options).setRestartToken(token).getOptions())) {
       yield row;
     }

@@ -7,9 +7,16 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 import { Pass, RenderOrder, TextureUnit } from "../RenderFlags";
 import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
+  FragmentShaderBuilder,
+  FragmentShaderComponent,
+  ProgramBuilder,
+  ShaderBuilder,
+  VariablePrecision,
+  VariableType,
+  VertexShaderBuilder,
   VertexShaderComponent,
 } from "../ShaderBuilder";
 import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
@@ -19,7 +26,6 @@ import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fra
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
 import { addAlpha, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
-import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -745,7 +751,10 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
   if (!addCommon(builder, feat, opts) || FeatureSymbologyOptions.None === opts)
     return;
 
-  assert((FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) === (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)));
+  assert(
+    (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color) ===
+      (opts & (FeatureSymbologyOptions.HasOverrides | FeatureSymbologyOptions.Color)),
+  );
 
   builder.addGlobal("feature_rgb", VariableType.Vec3);
   builder.addGlobal("feature_alpha", VariableType.Float);

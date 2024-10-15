@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { BisCodeSpec, DisplayStyleProps, IModel, QueryBinder, QueryRowFormat } from "@itwin/core-common";
+import { expect } from "chai";
 import { DisplayStyle3d, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -14,7 +14,10 @@ describe("ExcludedElements", () => {
   let imodel: SnapshotDb;
 
   before(() => {
-    imodel = IModelTestUtils.createSnapshotFromSeed(IModelTestUtils.prepareOutputFile("IModel", "test.bim"), IModelTestUtils.resolveAssetFile("test.bim"));
+    imodel = IModelTestUtils.createSnapshotFromSeed(
+      IModelTestUtils.prepareOutputFile("IModel", "test.bim"),
+      IModelTestUtils.resolveAssetFile("test.bim"),
+    );
   });
 
   after(() => {
@@ -42,7 +45,11 @@ describe("ExcludedElements", () => {
       imodel.saveChanges();
 
       const rows: any[] = [];
-      for await (const queryRow of imodel.createQueryReader("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), { rowFormat: QueryRowFormat.UseJsPropertyNames }))
+      for await (
+        const queryRow of imodel.createQueryReader("SELECT jsonProperties FROM bis.Element WHERE ECInstanceId=?", QueryBinder.from([styleId]), {
+          rowFormat: QueryRowFormat.UseJsPropertyNames,
+        })
+      )
         rows.push(queryRow.toRow());
 
       expect(rows.length).to.equal(1);

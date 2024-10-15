@@ -3,24 +3,40 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
-import * as path from "path";
-import { Guid, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  ClassRegistry, IModelDb, IModelHost, IModelJsFs, PhysicalModel, PhysicalPartition, Schema, Schemas, SnapshotDb, SpatialCategory,
+  ClassRegistry,
+  IModelDb,
+  IModelHost,
+  IModelJsFs,
+  PhysicalModel,
+  PhysicalPartition,
+  Schema,
+  Schemas,
+  SnapshotDb,
+  SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "@itwin/core-backend";
-import {
-  CategoryProps, Code, GeometricElement3dProps, IModel, InformationPartitionElementProps, PhysicalElementProps,
-} from "@itwin/core-common";
+import { Guid, Id64, Id64String } from "@itwin/core-bentley";
+import { CategoryProps, Code, GeometricElement3dProps, IModel, InformationPartitionElementProps, PhysicalElementProps } from "@itwin/core-common";
 import { ILinearElementProps, LinearlyLocatedAttributionProps, LinearlyReferencedFromToLocationProps } from "@itwin/linear-referencing-common";
+import { assert } from "chai";
+import * as path from "path";
 import {
-  LinearElement, LinearlyLocated, LinearlyLocatedAttribution, LinearlyLocatedSingleFromTo, LinearlyReferencedFromToLocation, LinearReferencingSchema,
+  LinearElement,
+  LinearlyLocated,
+  LinearlyLocatedAttribution,
+  LinearlyLocatedSingleFromTo,
+  LinearlyReferencedFromToLocation,
+  LinearReferencingSchema,
 } from "../linear-referencing-backend";
 
 class TestLinearReferencingSchema extends Schema {
-  public static override get schemaName(): string { return "TestLinearReferencing"; }
-  public static get schemaFilePath(): string { return path.join(__dirname, "assets", "TestLinearReferencing.ecschema.xml"); }
+  public static override get schemaName(): string {
+    return "TestLinearReferencing";
+  }
+  public static get schemaFilePath(): string {
+    return path.join(__dirname, "assets", "TestLinearReferencing.ecschema.xml");
+  }
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {
       Schemas.unregisterSchema(this.schemaName);
@@ -32,7 +48,9 @@ class TestLinearReferencingSchema extends Schema {
 }
 
 class TestLinearlyLocatedAttribution extends LinearlyLocatedAttribution implements LinearlyLocatedSingleFromTo {
-  public static override get className(): string { return "TestLinearlyLocatedAttribution"; }
+  public static override get className(): string {
+    return "TestLinearlyLocatedAttribution";
+  }
 
   public constructor(props: LinearlyLocatedAttributionProps, iModel: IModelDb) {
     super(props, iModel);
@@ -58,8 +76,14 @@ class TestLinearlyLocatedAttribution extends LinearlyLocatedAttribution implemen
     LinearlyLocated.updateFromToLocation(this.iModel, this.id, linearLocation, aspectId);
   }
 
-  public static insertFromTo(iModel: IModelDb, modelId: Id64String, categoryId: Id64String, linearElementId: Id64String,
-    fromToPosition: LinearlyReferencedFromToLocationProps, attributedElementId: Id64String): Id64String {
+  public static insertFromTo(
+    iModel: IModelDb,
+    modelId: Id64String,
+    categoryId: Id64String,
+    linearElementId: Id64String,
+    fromToPosition: LinearlyReferencedFromToLocationProps,
+    attributedElementId: Id64String,
+  ): Id64String {
     return LinearlyLocated.insertFromTo(iModel, this.toProps(modelId, categoryId, attributedElementId), linearElementId, fromToPosition);
   }
 }
@@ -150,7 +174,13 @@ describe("LinearReferencing Domain", () => {
     };
 
     const linearlyLocatedAttributionId = TestLinearlyLocatedAttribution.insertFromTo(
-      iModelDb, physicalModelId, spatialCategoryId, linearElementId, linearFromToPosition, linearFeatureElementId);
+      iModelDb,
+      physicalModelId,
+      spatialCategoryId,
+      linearElementId,
+      linearFromToPosition,
+      linearFeatureElementId,
+    );
     assert.isTrue(Id64.isValidId64(linearlyLocatedAttributionId));
     assert.equal(linearElementId, LinearlyLocated.getLinearElementId(iModelDb, linearlyLocatedAttributionId));
 
@@ -192,14 +222,17 @@ describe("LinearReferencing Domain", () => {
       toPosition: { distanceAlongFromStart: 60.0 },
     };
 
-    const linearPhysicalElementId: Id64String =
-      LinearlyLocated.insertFromTo(iModelDb, testPhysicalLinearProps, linearElementId, linearFromToPosition);
+    const linearPhysicalElementId: Id64String = LinearlyLocated.insertFromTo(
+      iModelDb,
+      testPhysicalLinearProps,
+      linearElementId,
+      linearFromToPosition,
+    );
     assert.isTrue(Id64.isValidId64(linearPhysicalElementId));
     assert.equal(linearElementId, LinearlyLocated.getLinearElementId(iModelDb, linearPhysicalElementId));
 
     // Query for linearly located elements via the queryLinearLocations API
-    let linearLocationRefs = LinearElement.queryLinearLocations(iModelDb, linearElementId,
-      { fromDistanceAlong: 10.0, toDistanceAlong: 70.0 });
+    let linearLocationRefs = LinearElement.queryLinearLocations(iModelDb, linearElementId, { fromDistanceAlong: 10.0, toDistanceAlong: 70.0 });
     assert.equal(linearLocationRefs.length, 2);
     assert.equal(linearLocationRefs[0].linearlyLocatedId, linearlyLocatedAttributionId);
     assert.equal(linearLocationRefs[0].linearlyLocatedClassFullName, "TestLinearReferencing:TestLinearlyLocatedAttribution");
@@ -211,16 +244,15 @@ describe("LinearReferencing Domain", () => {
     assert.equal(linearLocationRefs[1].startDistanceAlong, 30.0);
     assert.equal(linearLocationRefs[1].stopDistanceAlong, 60.0);
 
-    linearLocationRefs = LinearElement.queryLinearLocations(iModelDb, linearElementId,
-      { linearlyLocatedClassFullNames: ["TestLinearReferencing:TestLinearlyLocatedAttribution"] });
+    linearLocationRefs = LinearElement.queryLinearLocations(iModelDb, linearElementId, {
+      linearlyLocatedClassFullNames: ["TestLinearReferencing:TestLinearlyLocatedAttribution"],
+    });
     assert.equal(linearLocationRefs.length, 1);
     assert.equal(linearLocationRefs[0].linearlyLocatedId, linearlyLocatedAttributionId);
 
-    linearLocationRefs = LinearElement.queryLinearLocations(iModelDb, linearElementId,
-      {
-        linearlyLocatedClassFullNames: ["TestLinearReferencing:TestLinearlyLocatedAttribution",
-          "TestLinearReferencing:TestLinearPhysicalElement"],
-      });
+    linearLocationRefs = LinearElement.queryLinearLocations(iModelDb, linearElementId, {
+      linearlyLocatedClassFullNames: ["TestLinearReferencing:TestLinearlyLocatedAttribution", "TestLinearReferencing:TestLinearPhysicalElement"],
+    });
     assert.equal(linearLocationRefs.length, 2);
     assert.equal(linearLocationRefs[0].linearlyLocatedId, linearlyLocatedAttributionId);
     assert.equal(linearLocationRefs[1].linearlyLocatedId, linearPhysicalElementId);

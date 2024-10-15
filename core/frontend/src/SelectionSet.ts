@@ -139,7 +139,9 @@ class HilitedElementIds extends HilitedIds {
     this.wantSyncWithSelectionSet = syncWithSelectionSet;
   }
 
-  public get wantSyncWithSelectionSet(): boolean { return undefined !== this._removeListener; }
+  public get wantSyncWithSelectionSet(): boolean {
+    return undefined !== this._removeListener;
+  }
   public set wantSyncWithSelectionSet(want: boolean) {
     if (want === this.wantSyncWithSelectionSet)
       return;
@@ -210,7 +212,9 @@ export class HiliteSet {
   public readonly models: Id64.Uint32Set;
 
   /** The set of hilited elements. */
-  public get elements(): Id64.Uint32Set { return this._elements; }
+  public get elements(): Id64.Uint32Set {
+    return this._elements;
+  }
 
   /** Controls how the sets of hilited [[models]] and [[subcategories]] interact with one another.
    * By default they are treated as a union: a [Feature]($common) is hilited if either its model **or** its subcategory is hilited.
@@ -247,8 +251,12 @@ export class HiliteSet {
    * When turning synchronization off, the contents of the HiliteSet will remain unchanged.
    * When turning synchronization on, the current contents of the HiliteSet will be preserved, and the contents of the selection set will be added to them.
    */
-  public get wantSyncWithSelectionSet(): boolean { return this._elements.wantSyncWithSelectionSet; }
-  public set wantSyncWithSelectionSet(want: boolean) { this._elements.wantSyncWithSelectionSet = want; }
+  public get wantSyncWithSelectionSet(): boolean {
+    return this._elements.wantSyncWithSelectionSet;
+  }
+  public set wantSyncWithSelectionSet(want: boolean) {
+    this._elements.wantSyncWithSelectionSet = want;
+  }
 
   /** Remove all elements from the hilited set. */
   public clear() {
@@ -258,7 +266,9 @@ export class HiliteSet {
   }
 
   /** Returns true if nothing is hilited. */
-  public get isEmpty(): boolean { return this.elements.isEmpty && this.subcategories.isEmpty && this.models.isEmpty; }
+  public get isEmpty(): boolean {
+    return this.elements.isEmpty && this.subcategories.isEmpty && this.models.isEmpty;
+  }
 
   /** Toggle the hilited state of one or more elements.
    * @param arg the ID(s) of the elements whose state is to be toggled.
@@ -291,12 +301,14 @@ export class SelectionSet {
   /** The IDs of the selected elements.
    * @note Do not modify this set directly. Instead, use methods like [[SelectionSet.add]].
    */
-  public get elements(): Set<string> { return this._elements; }
+  public get elements(): Set<string> {
+    return this._elements;
+  }
 
   /** Called whenever elements are added or removed from this SelectionSet */
   public readonly onChanged = new BeEvent<(ev: SelectionSetEvent) => void>();
 
-  public constructor(public iModel: IModelConnection) { }
+  public constructor(public iModel: IModelConnection) {}
 
   private sendChangedEvent(ev: SelectionSetEvent) {
     IModelApp.viewManager.onSelectionSetChanged(this.iModel);
@@ -304,20 +316,28 @@ export class SelectionSet {
   }
 
   /** Get the number of entries in this selection set. */
-  public get size() { return this.elements.size; }
+  public get size() {
+    return this.elements.size;
+  }
 
   /** Check whether there are any selected elements. */
-  public get isActive() { return this.size !== 0; }
+  public get isActive() {
+    return this.size !== 0;
+  }
 
   /** Return true if elemId is in this SelectionSet.
    * @see [[isSelected]]
    */
-  public has(elemId?: string) { return !!elemId && this.elements.has(elemId); }
+  public has(elemId?: string) {
+    return !!elemId && this.elements.has(elemId);
+  }
 
   /** Query whether an Id is in the selection set.
    * @see [[has]]
    */
-  public isSelected(elemId?: Id64String): boolean { return !!elemId && this.elements.has(elemId); }
+  public isSelected(elemId?: Id64String): boolean {
+    return !!elemId && this.elements.has(elemId);
+  }
 
   /** Clear current selection set.
    * @note raises the [[onChanged]] event with [[SelectionSetEventType.Clear]].

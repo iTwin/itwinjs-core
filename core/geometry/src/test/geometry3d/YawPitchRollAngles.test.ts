@@ -22,22 +22,25 @@ describe("YPR", () => {
       YawPitchRollAngles.createDegrees(360, -720, 3 * 360).isIdentity(false),
       "is not Identity if we don't allow period shift",
     );
-    for (const degrees of [
-      Vector3d.create(10, 0, 0),
-      Vector3d.create(0, 10, 0),
-      Vector3d.create(0, 0, 10),
-      Vector3d.create(0, 20, 10),
-      Vector3d.create(10, 20, 0),
-      Vector3d.create(10, 0, 20),
-      Vector3d.create(3, 2, 9),
-      Vector3d.create(6, 2, -40),
-      Vector3d.create(-9, 14, -2),
-      Vector3d.create(-25, 8, 2),
-      Vector3d.create(1, 40, 3),
-      Vector3d.create(1, -40, 2),
-      Vector3d.create(90, 0, 0),
-      Vector3d.create(0, 90, 0),
-      Vector3d.create(0, 0, 90)]) {
+    for (
+      const degrees of [
+        Vector3d.create(10, 0, 0),
+        Vector3d.create(0, 10, 0),
+        Vector3d.create(0, 0, 10),
+        Vector3d.create(0, 20, 10),
+        Vector3d.create(10, 20, 0),
+        Vector3d.create(10, 0, 20),
+        Vector3d.create(3, 2, 9),
+        Vector3d.create(6, 2, -40),
+        Vector3d.create(-9, 14, -2),
+        Vector3d.create(-25, 8, 2),
+        Vector3d.create(1, 40, 3),
+        Vector3d.create(1, -40, 2),
+        Vector3d.create(90, 0, 0),
+        Vector3d.create(0, 90, 0),
+        Vector3d.create(0, 0, 90),
+      ]
+    ) {
       const yprA = YawPitchRollAngles.createDegrees(degrees.z, degrees.y, degrees.x);
       const yawMatrix = Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees.z));
       const pitchMatrix = Matrix3d.createRotationAroundAxisIndex(1, Angle.createDegrees(-degrees.y));
@@ -130,29 +133,59 @@ describe("YPR", () => {
   it("createFromMatrix3dNearRigidMatrices", () => {
     const ck = new bsiChecker.Checker();
     const matrix1 = Matrix3d.createRowValues(
-      0.37146947416490494, 7.033246428758867e-16, -0.9284451763712457,
-      -0.9284452294022093, 2.813991026819455e-16, -0.3714694529472999,
-      1.9186788483451994e-23, 1.0000000571180345, 7.575294995656733e-16,
+      0.37146947416490494,
+      7.033246428758867e-16,
+      -0.9284451763712457,
+      -0.9284452294022093,
+      2.813991026819455e-16,
+      -0.3714694529472999,
+      1.9186788483451994e-23,
+      1.0000000571180345,
+      7.575294995656733e-16,
     ); // from Dovydas
     const matrix2 = Matrix3d.createRowValues(
-      0.707421, -0.415747, -0.571585,
-      0, 0.808703, -0.588217,
-      0.706792, 0.416117, 0.572094,
+      0.707421,
+      -0.415747,
+      -0.571585,
+      0,
+      0.808703,
+      -0.588217,
+      0.706792,
+      0.416117,
+      0.572094,
     ); // view matrix received from .css
     const matrix3 = Matrix3d.createRowValues(
-      0.70742, -0.41574, -0.57158,
-      0, 0.80870, -0.58821,
-      0.70679, 0.41611, 0.57209,
+      0.70742,
+      -0.41574,
+      -0.57158,
+      0,
+      0.80870,
+      -0.58821,
+      0.70679,
+      0.41611,
+      0.57209,
     ); // drop least significant digit from matrix2 (less rigid)
     const matrix4 = Matrix3d.createRowValues(
-      0.7074, -0.4157, -0.5715,
-      0, 0.8087, -0.5882,
-      0.7067, 0.4161, 0.5720,
+      0.7074,
+      -0.4157,
+      -0.5715,
+      0,
+      0.8087,
+      -0.5882,
+      0.7067,
+      0.4161,
+      0.5720,
     ); // drop least significant digit from matrix3 (less rigid)
     const matrix5 = Matrix3d.createRowValues(
-      0.707, -0.415, -0.571,
-      0, 0.808, -0.588,
-      0.706, 0.416, 0.572,
+      0.707,
+      -0.415,
+      -0.571,
+      0,
+      0.808,
+      -0.588,
+      0.706,
+      0.416,
+      0.572,
     ); // drop least significant digit from matrix4 (less rigid)
 
     const matrices = [

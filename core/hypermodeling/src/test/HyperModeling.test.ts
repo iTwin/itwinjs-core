@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { EmptyLocalization, SectionType } from "@itwin/core-common";
 import { IModelApp, ParseAndRunResult } from "@itwin/core-frontend";
+import { expect } from "chai";
 import { HyperModeling } from "../HyperModeling";
 import { HyperModelingConfig, SectionGraphicsConfig, SectionMarkerConfig } from "../HyperModelingConfig";
 import { SectionMarkerHandler } from "../SectionMarkerHandler";
@@ -84,7 +84,9 @@ describe("Package configuration", () => {
     };
 
     test({ markerHandler: new SectionMarkerHandler() });
-    test({ markers: { ignoreModelSelector: true, ignoreCategorySelector: undefined, hiddenSectionTypes: [SectionType.Elevation, SectionType.Plan] } });
+    test({
+      markers: { ignoreModelSelector: true, ignoreCategorySelector: undefined, hiddenSectionTypes: [SectionType.Elevation, SectionType.Plan] },
+    });
     test({ graphics: { ignoreClip: true, debugClipVolumes: false, hideSectionGraphics: undefined, hideSheetAnnotations: true } });
   });
 
@@ -102,23 +104,36 @@ describe("Package configuration", () => {
     const handler = new SectionMarkerHandler();
     test(
       { markerHandler: handler },
-      { markerHandler: handler });
+      { markerHandler: handler },
+    );
 
     test(
       { markers: { ignoreModelSelector: true, hiddenSectionTypes: [SectionType.Elevation] } },
-      { markerHandler: handler, markers: { ignoreModelSelector: true, hiddenSectionTypes: [SectionType.Elevation] } });
+      { markerHandler: handler, markers: { ignoreModelSelector: true, hiddenSectionTypes: [SectionType.Elevation] } },
+    );
 
     test(
       { markers: { ignoreModelSelector: false, ignoreCategorySelector: true, hiddenSectionTypes: [] } },
-      { markerHandler: handler, markers: { ignoreModelSelector: false, ignoreCategorySelector: true, hiddenSectionTypes: [] } });
+      { markerHandler: handler, markers: { ignoreModelSelector: false, ignoreCategorySelector: true, hiddenSectionTypes: [] } },
+    );
 
     test(
       { graphics: { ignoreClip: true, debugClipVolumes: false } },
-      { markerHandler: handler, markers: { ignoreModelSelector: false, ignoreCategorySelector: true, hiddenSectionTypes: [] }, graphics: { ignoreClip: true, debugClipVolumes: false } });
+      {
+        markerHandler: handler,
+        markers: { ignoreModelSelector: false, ignoreCategorySelector: true, hiddenSectionTypes: [] },
+        graphics: { ignoreClip: true, debugClipVolumes: false },
+      },
+    );
 
     test(
       { markerHandler: undefined, markers: {}, graphics: undefined },
-      { markerHandler: handler, markers: { ignoreModelSelector: false, ignoreCategorySelector: true, hiddenSectionTypes: [] }, graphics: { ignoreClip: true, debugClipVolumes: false } });
+      {
+        markerHandler: handler,
+        markers: { ignoreModelSelector: false, ignoreCategorySelector: true, hiddenSectionTypes: [] },
+        graphics: { ignoreClip: true, debugClipVolumes: false },
+      },
+    );
 
     // Reset for subsequent tests...
     HyperModeling.replaceConfiguration(undefined);

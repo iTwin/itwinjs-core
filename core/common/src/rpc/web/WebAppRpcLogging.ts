@@ -35,7 +35,7 @@ export abstract class WebAppRpcLogging {
 
   private static get backend(): WebAppRpcLogging {
     const instance = (globalThis as any)[BACKEND];
-    if (typeof (instance) === "undefined") {
+    if (typeof instance === "undefined") {
       throw new IModelError(BentleyStatus.ERROR, "Backend logging is not initialized.");
     }
 
@@ -44,7 +44,7 @@ export abstract class WebAppRpcLogging {
 
   private static get frontend(): WebAppRpcLogging {
     const instance = (globalThis as any)[FRONTEND];
-    if (typeof (instance) === "undefined") {
+    if (typeof instance === "undefined") {
       throw new IModelError(BentleyStatus.ERROR, "Frontend logging is not initialized.");
     }
 
@@ -91,7 +91,9 @@ export abstract class WebAppRpcLogging {
       return "unknown.unknown";
     }
 
-    const interfaceName = typeof (operation.interfaceDefinition) === "string" ? operation.interfaceDefinition : operation.interfaceDefinition.interfaceName;
+    const interfaceName = typeof (operation.interfaceDefinition) === "string"
+      ? operation.interfaceDefinition
+      : operation.interfaceDefinition.interfaceName;
     const operationName = operation.operationName;
     return `${interfaceName}.${operationName}`;
   }
@@ -113,7 +115,13 @@ export abstract class WebAppRpcLogging {
     }));
   }
 
-  protected logResponse(loggerCategory: string, message: string, object: WebAppRpcRequest | SerializedRpcRequest, status: number, elapsed: number): void {
+  protected logResponse(
+    loggerCategory: string,
+    message: string,
+    object: WebAppRpcRequest | SerializedRpcRequest,
+    status: number,
+    elapsed: number,
+  ): void {
     const operationDescriptor = this.buildOperationDescriptor(object.operation);
     const pathIds = this.findPathIds(object.path);
 
@@ -135,10 +143,20 @@ export abstract class WebAppRpcLogging {
 class WebAppRpcLoggingFrontend extends WebAppRpcLogging {
   protected override async logProtocolEvent(event: RpcProtocolEvent, object: WebAppRpcRequest): Promise<void> {
     switch (event) {
-      case RpcProtocolEvent.RequestCreated: return this.logRequest(CommonLoggerCategory.RpcInterfaceFrontend, "RpcInterface.frontend.request", object);
-      case RpcProtocolEvent.ResponseLoaded: return this.logResponse(CommonLoggerCategory.RpcInterfaceFrontend, "RpcInterface.frontend.response", object, object.metadata.status, object.elapsed);
-      case RpcProtocolEvent.ConnectionErrorReceived: return this.logErrorFrontend("RpcInterface.frontend.connectionError", object);
-      case RpcProtocolEvent.ConnectionAborted: return this.logErrorFrontend("RpcInterface.frontend.connectionAborted", object);
+      case RpcProtocolEvent.RequestCreated:
+        return this.logRequest(CommonLoggerCategory.RpcInterfaceFrontend, "RpcInterface.frontend.request", object);
+      case RpcProtocolEvent.ResponseLoaded:
+        return this.logResponse(
+          CommonLoggerCategory.RpcInterfaceFrontend,
+          "RpcInterface.frontend.response",
+          object,
+          object.metadata.status,
+          object.elapsed,
+        );
+      case RpcProtocolEvent.ConnectionErrorReceived:
+        return this.logErrorFrontend("RpcInterface.frontend.connectionError", object);
+      case RpcProtocolEvent.ConnectionAborted:
+        return this.logErrorFrontend("RpcInterface.frontend.connectionAborted", object);
     }
   }
 

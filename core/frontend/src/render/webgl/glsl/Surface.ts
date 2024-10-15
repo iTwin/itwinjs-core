@@ -7,28 +7,37 @@
  */
 
 import { assert } from "@itwin/core-bentley";
+import { Npc } from "@itwin/core-common";
 import { AttributeMap } from "../AttributeMap";
 import { Material } from "../Material";
 import { Pass, SurfaceBitIndex, SurfaceFlags, TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent,
-} from "../ShaderBuilder";
+import { FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariableType, VertexShaderComponent } from "../ShaderBuilder";
+import { wantMaterials } from "../SurfaceGeometry";
 import { System } from "../System";
-import {
-  FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, PositionType, TechniqueFlags,
-} from "../TechniqueFlags";
+import { FeatureMode, IsAnimated, IsClassified, IsInstanced, IsShadowable, IsThematic, PositionType, TechniqueFlags } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { Texture } from "../Texture";
 import { addAnimation } from "./Animation";
 import { unpackFloat } from "./Clipping";
 import { addColor } from "./Color";
 import { addChooseVec2WithBitFlagsFunction, addChooseVec3WithBitFlagFunction, addExtractNthBit, addFrustum, addShaderFlags } from "./Common";
+import { addApplyContours } from "./Contours";
 import { addUnpackAndNormalize2Bytes, decodeDepthRgb, unquantize2d } from "./Decode";
 import {
-  addFeatureSymbology, addMaxAlpha, addRenderOrder, addRenderOrderConstants, addSurfaceDiscard, addSurfaceHiliter, FeatureSymbologyOptions,
+  addFeatureSymbology,
+  addMaxAlpha,
+  addRenderOrder,
+  addRenderOrderConstants,
+  addSurfaceDiscard,
+  addSurfaceHiliter,
+  FeatureSymbologyOptions,
 } from "./FeatureSymbology";
 import {
-  addAltPickBufferOutputs, addFragColorWithPreMultipliedAlpha, addPickBufferOutputs, addWhiteOnWhiteReversal, assignFragColor,
+  addAltPickBufferOutputs,
+  addFragColorWithPreMultipliedAlpha,
+  addPickBufferOutputs,
+  addWhiteOnWhiteReversal,
+  assignFragColor,
 } from "./Fragment";
 import { addLighting } from "./Lighting";
 import { addSurfaceMonochrome } from "./Monochrome";
@@ -38,10 +47,7 @@ import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addTranslucency } from "./Translucency";
 import { addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
-import { wantMaterials } from "../SurfaceGeometry";
 import { addWiremesh } from "./Wiremesh";
-import { Npc } from "@itwin/core-common";
-import { addApplyContours } from "./Contours";
 
 const constantLodTextureLookup = `
 vec4 constantLodTextureLookup(sampler2D textureSampler) {
@@ -259,7 +265,13 @@ const computePositionPostlude = `
   return u_proj * pos;
 `;
 
-function createCommon(isInstanced: IsInstanced, animated: IsAnimated, shadowable: IsShadowable, isHiliter: boolean, positionType: PositionType): ProgramBuilder {
+function createCommon(
+  isInstanced: IsInstanced,
+  animated: IsAnimated,
+  shadowable: IsShadowable,
+  isHiliter: boolean,
+  positionType: PositionType,
+): ProgramBuilder {
   const instanced = IsInstanced.Yes === isInstanced;
   const attrMap = AttributeMap.findAttributeMap(TechniqueId.Surface, instanced);
   const builder = new ProgramBuilder(attrMap, { positionType, instanced });
@@ -529,7 +541,12 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
   const quantized = "quantized" === builder.vert.positionType;
   builder.vert.addFunction(octDecodeNormal);
   builder.vert.addFunction("vec3 computeSurfaceNormal()", getComputeNormal(quantized));
-  builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? getComputeAnimatedNormal(quantized) : "return computeSurfaceNormal();");
+  builder.addFunctionComputedVarying(
+    "v_n",
+    VariableType.Vec3,
+    "computeLightingNormal",
+    animated ? getComputeAnimatedNormal(quantized) : "return computeSurfaceNormal();",
+  );
   builder.frag.addGlobal("g_normal", VariableType.Vec3);
   let finalizeNormal = finalizeNormalPrelude;
 
@@ -565,7 +582,11 @@ function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
 /** @internal */
 export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThematic: IsThematic, isPointCloud: boolean, isHilite: boolean) {
   if (isThematic) {
-    builder.addInlineComputedVarying("v_thematicIndex", VariableType.Float, getComputeThematicIndex(builder.vert.usesInstancedGeometry, isPointCloud, true));
+    builder.addInlineComputedVarying(
+      "v_thematicIndex",
+      VariableType.Float,
+      getComputeThematicIndex(builder.vert.usesInstancedGeometry, isPointCloud, true),
+    );
   }
 
   // Point clouds do not need to compute texture coordinates since the only texture they use is the thematic gradient.
@@ -574,7 +595,12 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
     builder.vert.addFunction(unquantize2d);
     addChooseVec2WithBitFlagsFunction(builder.vert);
     const quantized = "quantized" === builder.vert.positionType;
-    builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? getComputeAnimatedTexCoord(quantized) : getComputeTexCoord(quantized));
+    builder.addFunctionComputedVarying(
+      "v_texCoord",
+      VariableType.Vec2,
+      "computeTexCoord",
+      animated ? getComputeAnimatedTexCoord(quantized) : getComputeTexCoord(quantized),
+    );
     builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
       prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
         const surfGeom = params.geometry.asSurface!;
@@ -594,7 +620,9 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
       if (params.geometry.supportsThematicDisplay && params.target.wantThematicDisplay) { // NB: if thematic display is enabled, bind the thematic texture and ignore any applied surface textures
         params.target.uniforms.thematic.bindTexture(uniform, TextureUnit.SurfaceTexture);
       } else if (surfGeom.useTexture(params.programParams)) {
-        const texture = (params.geometry.hasAnimation && params.target.analysisTexture) ? (params.target.analysisTexture as Texture) : surfGeom.texture;
+        const texture = (params.geometry.hasAnimation && params.target.analysisTexture)
+          ? (params.target.analysisTexture as Texture)
+          : surfGeom.texture;
         assert(undefined !== texture);
         texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else {
@@ -646,7 +674,9 @@ function addTransparencyDiscard(frag: FragmentShaderBuilder): void {
       // Otherwise, if the geometry draws in both opaque and translucent passes, use DisplayParams.minTransparency to filter pixels into appropriate pass to produce appropriate blending.
       // Negative cutoff applies only during opaque pass; positive cutoff applies during opaque and translucent passes.
       const pass = params.geometry.getPass(params.target);
-      const cutoff = (!Pass.rendersOpaqueAndTranslucent(pass) || params.target.isReadPixelsInProgress || !params.target.currentViewFlags.transparency) ? -1 / 255 : 241 / 255;
+      const cutoff = (!Pass.rendersOpaqueAndTranslucent(pass) || params.target.isReadPixelsInProgress || !params.target.currentViewFlags.transparency)
+        ? -1 / 255
+        : 241 / 255;
       uniform.setUniform1f(cutoff);
     });
   });

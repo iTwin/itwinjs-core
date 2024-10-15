@@ -10,7 +10,15 @@ import { LazyLoadedEntityClass, Mixin, NavigationProperty, RelationshipClass, St
  */
 export abstract class MutableMixin extends Mixin {
   public abstract override setAppliesTo(entityClass: LazyLoadedEntityClass): void;
-  public abstract override createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
-  public abstract override createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
+  public abstract override createNavigationProperty(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): Promise<NavigationProperty>;
+  public abstract override createNavigationPropertySync(
+    name: string,
+    relationship: string | RelationshipClass,
+    direction: string | StrengthDirection,
+  ): NavigationProperty;
   public abstract override setDisplayLabel(displayLabel: string): void;
 }

@@ -376,7 +376,9 @@ function isArrayValue(
   return v !== undefined && Array.isArray(v);
 }
 // eslint-disable-next-line deprecation/deprecation
-function isMapValue(v: Value | ValueJSON | DisplayValue | DisplayValueJSON): v is ValuesMap | ValuesMapJSON | DisplayValuesMap | DisplayValuesMapJSON {
+function isMapValue(
+  v: Value | ValueJSON | DisplayValue | DisplayValueJSON,
+): v is ValuesMap | ValuesMapJSON | DisplayValuesMap | DisplayValuesMapJSON {
   return v !== undefined && typeof v === "object" && !Array.isArray(v);
 }
 function isPrimitiveValue(v: Value | DisplayValue): v is string | number | boolean | undefined {

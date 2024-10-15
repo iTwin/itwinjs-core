@@ -39,7 +39,6 @@ import type { SchemaType } from "./SchemaDifference";
  * @alpha
  */
 export enum ConflictCode {
-
   ConflictingItemName = "C-001",
   ConflictingReferenceAlias = "C-002",
 

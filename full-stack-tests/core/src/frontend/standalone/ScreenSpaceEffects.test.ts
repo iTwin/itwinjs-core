@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { ColorDef } from "@itwin/core-common";
 import { IModelApp, Pixel, SnapshotConnection, VaryingType } from "@itwin/core-frontend";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
 import { Color, TestViewport, testViewports } from "../TestViewport";
 

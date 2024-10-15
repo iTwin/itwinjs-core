@@ -43,9 +43,13 @@ export class SmoothTransformBetweenFrusta {
   private _localToWorldA: Transform;
   private _localToWorldB: Transform;
   /** (property accessor) rigid frame at start of motion */
-  public get localToWorldA(): Transform { return this._localToWorldA; }
+  public get localToWorldA(): Transform {
+    return this._localToWorldA;
+  }
   /** (property accessor) rigid frame at end of motion */
-  public get localToWorldB(): Transform { return this._localToWorldB; }
+  public get localToWorldB(): Transform {
+    return this._localToWorldB;
+  }
   private _rotationAxis: Vector3d;
   private _rotationAngle: Angle;
 
@@ -58,7 +62,14 @@ export class SmoothTransformBetweenFrusta {
    * @param rotationAxis
    * @param rotationAngle
    */
-  private constructor(localToWorldA: Transform, localCornerA: Point3d[], localToWorldB: Transform, localCornerB: Point3d[], rotationAxis: Vector3d, rotationAngle: Angle) {
+  private constructor(
+    localToWorldA: Transform,
+    localCornerA: Point3d[],
+    localToWorldB: Transform,
+    localCornerB: Point3d[],
+    rotationAxis: Vector3d,
+    rotationAngle: Angle,
+  ) {
     this._localCornerA = localCornerA;
     this._localCornerB = localCornerB;
     this._localToWorldA = localToWorldA;
@@ -97,13 +108,11 @@ export class SmoothTransformBetweenFrusta {
             const rigidB1 = Transform.createOriginAndMatrix(spinCenter, rigidB.matrix);
             const localCornerA1 = rigidA1.multiplyInversePoint3dArray(cornerA)!;
             const localCornerB1 = rigidB1.multiplyInversePoint3dArray(cornerB)!;
-            return new SmoothTransformBetweenFrusta(rigidA1, localCornerA1, rigidB1, localCornerB1,
-              spinAxis.axis, spinAxis.angle);
+            return new SmoothTransformBetweenFrusta(rigidA1, localCornerA1, rigidB1, localCornerB1, spinAxis.axis, spinAxis.angle);
           }
         }
       }
-      return new SmoothTransformBetweenFrusta(rigidA, localCornerA, rigidB, localCornerB,
-        spinAxis.axis, spinAxis.angle);
+      return new SmoothTransformBetweenFrusta(rigidA, localCornerA, rigidB, localCornerB, spinAxis.axis, spinAxis.angle);
     }
     return undefined;
   }
@@ -124,8 +133,7 @@ export class SmoothTransformBetweenFrusta {
    */
   public fractionToWorldCorners(fraction: number, result?: Point3d[]): Point3d[] {
     const corners = this.interpolateLocalCorners(fraction, result);
-    const fractionalRotation = Matrix3d.createRotationAroundVector(this._rotationAxis,
-      this._rotationAngle.cloneScaled(fraction))!;
+    const fractionalRotation = Matrix3d.createRotationAroundVector(this._rotationAxis, this._rotationAngle.cloneScaled(fraction))!;
     const axes0 = this._localToWorldA.matrix;
     const fractionalAxes = fractionalRotation.multiplyMatrixMatrix(axes0);
     const fractionalOrigin = this._localToWorldA.getOrigin().interpolate(fraction, this._localToWorldB.origin);

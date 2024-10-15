@@ -3,19 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
-import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
 import { IModelHost, IModelJsFs, IModelNative, V1CheckpointManager } from "@itwin/core-backend";
 import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps } from "@itwin/core-common";
+import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
 import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
+import * as path from "path";
 
 /** the types of users available for tests */
 export enum TestUserType {
   Regular,
   Manager,
   Super,
-  SuperManager
+  SuperManager,
 }
 
 /** Utility to work with test iModels in the iModelHub */
@@ -116,7 +116,12 @@ export class HubUtility {
     const latestChangesetIndex = latestIndex; // Query results include latest specified change set
 
     const perfLogger = new PerfLogger("HubUtility.downloadChangesets -> Download Changesets");
-    await IModelHost.hubAccess.downloadChangesets({ accessToken, iModelId, range: { first: earliestChangesetIndex, end: latestChangesetIndex }, targetDir: changesetsPath });
+    await IModelHost.hubAccess.downloadChangesets({
+      accessToken,
+      iModelId,
+      range: { first: earliestChangesetIndex, end: latestChangesetIndex },
+      targetDir: changesetsPath,
+    });
     perfLogger.dispose();
     return changesets;
   }
@@ -124,7 +129,13 @@ export class HubUtility {
   /** Download an iModel's seed file and changesets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
-  public static async downloadIModelById(accessToken: AccessToken, iTwinId: string, iModelId: GuidString, downloadDir: string, reDownload: boolean): Promise<void> {
+  public static async downloadIModelById(
+    accessToken: AccessToken,
+    iTwinId: string,
+    iModelId: GuidString,
+    downloadDir: string,
+    reDownload: boolean,
+  ): Promise<void> {
     // Recreate the download folder if necessary
     if (reDownload) {
       if (IModelJsFs.existsSync(downloadDir))
@@ -163,7 +174,13 @@ export class HubUtility {
   /** Download an IModel's seed files and change sets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
-  public static async downloadIModelByName(accessToken: AccessToken, iTwinName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
+  public static async downloadIModelByName(
+    accessToken: AccessToken,
+    iTwinName: string,
+    iModelName: string,
+    downloadDir: string,
+    reDownload: boolean,
+  ): Promise<void> {
     const iTwinId = await HubUtility.getITwinIdByName(accessToken, iTwinName);
 
     const iModelId = await IModelHost.hubAccess.queryIModelByName({ accessToken, iTwinId, iModelName });
@@ -288,13 +305,14 @@ export class HubUtility {
 
     return iModelPathname;
   }
-
 }
 
 /** An implementation of TestITwin backed by an iTwin */
 class TestITwin {
-  public get isIModelHub(): boolean { return true; }
-  public terminate(): void { }
+  public get isIModelHub(): boolean {
+    return true;
+  }
+  public terminate(): void {}
 
   private static _iTwinAccessClient?: ITwinsAccessClient;
 

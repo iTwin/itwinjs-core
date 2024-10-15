@@ -3,13 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { BRepEntity, ColorDef } from "@itwin/core-common";
+import { Point3d, Transform, YawPitchRollAngles } from "@itwin/core-geometry";
 import * as fs from "fs";
-import {
-  Point3d, Transform, YawPitchRollAngles,
-} from "@itwin/core-geometry";
-import {
-  BRepEntity, ColorDef,
-} from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 export const brepData: { data: string } = JSON.parse(

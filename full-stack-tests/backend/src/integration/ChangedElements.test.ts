@@ -3,14 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { BriefcaseManager, ChangedElementsDb, IModelDb, IModelHost, IModelJsFs, ProcessChangesetOptions, SnapshotDb } from "@itwin/core-backend";
+import { ChangedElementsManager } from "@itwin/core-backend/lib/cjs/ChangedElementsManager";
+import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { AccessToken, DbResult, GuidString, OpenMode } from "@itwin/core-bentley";
 import { IModelError, IModelVersion } from "@itwin/core-common";
 import { Range3d } from "@itwin/core-geometry";
 import { TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
 import { assert } from "chai";
-import { BriefcaseManager, ChangedElementsDb, IModelDb, IModelHost, IModelJsFs, ProcessChangesetOptions, SnapshotDb } from "@itwin/core-backend";
-import { ChangedElementsManager } from "@itwin/core-backend/lib/cjs/ChangedElementsManager";
-import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/IModelTestUtils";
 import { HubUtility } from "../HubUtility";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -33,7 +33,12 @@ describe("ChangedElements", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
-    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      asOf: IModelVersion.first().toJSON(),
+    });
     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
@@ -168,7 +173,12 @@ describe("ChangedElements", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
-    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      asOf: IModelVersion.first().toJSON(),
+    });
     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
@@ -238,7 +248,12 @@ describe("ChangedElements", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
-    const iModel = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    const iModel = await HubWrappers.downloadAndOpenCheckpoint({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      asOf: IModelVersion.first().toJSON(),
+    });
     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
     assert.exists(iModel);
 
@@ -308,7 +323,12 @@ describe("ChangedElements", () => {
     if (IModelJsFs.existsSync(cacheFilePath))
       IModelJsFs.removeSync(cacheFilePath);
 
-    let iModel: IModelDb = await HubWrappers.downloadAndOpenCheckpoint({ accessToken, iTwinId: testITwinId, iModelId: testIModelId, asOf: IModelVersion.first().toJSON() });
+    let iModel: IModelDb = await HubWrappers.downloadAndOpenCheckpoint({
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      asOf: IModelVersion.first().toJSON(),
+    });
     const changesets = await IModelHost.hubAccess.queryChangesets({ accessToken, iModelId: testIModelId });
     const startChangesetId = changesets[0].id;
     const endChangesetId = changesets[changesets.length - 1].id;
@@ -352,10 +372,12 @@ describe("ChangedElements", () => {
     assert.isTrue(models!.modelIds.length !== 0);
     assert.isTrue(models!.modelIds.length === models!.bboxes.length);
     // We should be able to find some bounding boxes for geometric models that are not [0,0,0] due to wantBoundingBoxes = true
-    assert.isTrue(models!.bboxes.filter((bbox) => {
-      const range = Range3d.fromJSON(bbox);
-      return !range.isAlmostZeroX || !range.isAlmostZeroY || !range.isAlmostZeroZ;
-    }).length > 0);
+    assert.isTrue(
+      models!.bboxes.filter((bbox) => {
+        const range = Range3d.fromJSON(bbox);
+        return !range.isAlmostZeroX || !range.isAlmostZeroY || !range.isAlmostZeroZ;
+      }).length > 0,
+    );
 
     // Re-open iModel
     iModel = SnapshotDb.openFile(iModelPathName);

@@ -2,12 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Point3d } from "@itwin/core-geometry";
 import { BackgroundMapProps, BackgroundMapSettings, ColorDef, FontMap, FontType } from "@itwin/core-common";
 import {
-  CompassMode, createRenderPlanFromViewport, IModelApp, IModelConnection, PanViewTool,
-  RenderPlan, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId, TwoWayViewportSync,
+  CompassMode,
+  createRenderPlanFromViewport,
+  IModelApp,
+  IModelConnection,
+  PanViewTool,
+  RenderPlan,
+  ScreenViewport,
+  SnapshotConnection,
+  SpatialViewState,
+  StandardViewId,
+  TwoWayViewportSync,
 } from "@itwin/core-frontend";
+import { Point3d } from "@itwin/core-geometry";
 import { assert, expect } from "chai";
 import { TestUtility } from "../TestUtility";
 
@@ -29,7 +38,7 @@ describe("Viewport", () => {
   const viewDiv = createViewDiv();
   const viewDiv2 = createViewDiv();
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  before(async () => { // Create a ViewState to load into a Viewport
     await TestUtility.startFrontend(undefined, true);
     imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel2 = await SnapshotConnection.openFile("test2.bim"); // relative path resolved by BackendTestAssetResolver
@@ -169,17 +178,28 @@ describe("Viewport", () => {
     };
 
     // Set up baseline values for all properties
-    test({ groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true },
-      { groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    test({ groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true }, {
+      groundBias: 1234.5,
+      transparency: 0.3,
+      useDepthBuffer: true,
+      applyTerrain: true,
+    });
     // Set values to the current values
-    test({ groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true },
-      { groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    test({ groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true }, {
+      groundBias: 1234.5,
+      transparency: 0.3,
+      useDepthBuffer: true,
+      applyTerrain: true,
+    });
     // Undefined values => preserve current name, type, & bias
-    test({ groundBias: undefined, transparency: undefined, useDepthBuffer: undefined, applyTerrain: undefined },
-      { groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    test({ groundBias: undefined, transparency: undefined, useDepthBuffer: undefined, applyTerrain: undefined }, {
+      groundBias: 1234.5,
+      transparency: 0.3,
+      useDepthBuffer: true,
+      applyTerrain: true,
+    });
     // Missing values => preserve current name, type, & bias
-    test({},
-      { groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    test({}, { groundBias: 1234.5, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
     // Change groundBias only to int
     test({ groundBias: 543 }, { groundBias: 543, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
 
@@ -187,8 +207,7 @@ describe("Viewport", () => {
     test({ groundBias: -50.3 }, { groundBias: -50.3, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
 
     // Change bias
-    test({ groundBias: -10 },
-      { groundBias: -10, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
+    test({ groundBias: -10 }, { groundBias: -10, transparency: 0.3, useDepthBuffer: true, applyTerrain: true });
 
     // Change transparency to a number
     test({ transparency: 0.0 }, { groundBias: -10, transparency: 0.0, useDepthBuffer: true, applyTerrain: true });

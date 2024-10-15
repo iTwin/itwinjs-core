@@ -5,10 +5,10 @@
 
 var numFailed = -1;
 
-mocha.run(function (numTestsFailed) {
+mocha.run(function(numTestsFailed) {
   numFailed = numTestsFailed;
 });
 
-process.on('exit', function () {
+process.on("exit", function() {
   process._linkedBinding("iModelJsMobile").notifyListening(numFailed);
 });

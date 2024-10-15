@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ECSqlStatement, Element, IModelDb, Model, SnapshotDb } from "@itwin/core-backend";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { DbResult, Id64String } from "@itwin/core-bentley";
-import { ECSqlStatement, Element, IModelDb, Model, SnapshotDb } from "@itwin/core-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 // __PUBLISH_EXTRACT_START__ WireFormat_DumpIModel.code

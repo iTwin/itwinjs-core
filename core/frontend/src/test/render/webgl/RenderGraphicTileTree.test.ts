@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import { IModelApp } from "../../../IModelApp";
-import { GraphicType, HitDetail, HitDetailProps, HitPriority, HitSource, TileTreeReference } from "../../../core-frontend";
-import { testBlankViewportAsync } from "../../openBlankViewport";
 import { Feature } from "@itwin/core-common";
 import { Point3d } from "@itwin/core-geometry";
+import { expect } from "chai";
+import { GraphicType, HitDetail, HitDetailProps, HitPriority, HitSource, TileTreeReference } from "../../../core-frontend";
+import { IModelApp } from "../../../IModelApp";
+import { testBlankViewportAsync } from "../../openBlankViewport";
 
 describe("TileTreeReference.createFromRenderGraphic", () => {
   before(async () => IModelApp.startup());

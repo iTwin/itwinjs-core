@@ -10,8 +10,8 @@ import { Geometry } from "../../Geometry";
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Ray3d } from "../../geometry3d/Ray3d";
-import { Quadrature } from "../../numerics/Quadrature";
 import { SimpleNewton } from "../../numerics/Newton";
+import { Quadrature } from "../../numerics/Quadrature";
 /**
  * XYCurveEvaluator is an abstract with methods for evaluating X and Y parts of a curve parameterized by a fraction.
  * * The required methods call for independent X and Y evaluation.
@@ -48,17 +48,30 @@ export abstract class XYCurveEvaluator {
   }
   /** Evaluate both X and Y and their first derivatives at fractional coordinate, return bundled as origin and (non-unit) direction vector. */
   public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
-    return Ray3d.createXYZUVW(this.fractionToX(fraction), this.fractionToY(fraction), 0.0,
-      this.fractionToDX(fraction), this.fractionToDY(fraction), 0,
-      result);
+    return Ray3d.createXYZUVW(
+      this.fractionToX(fraction),
+      this.fractionToY(fraction),
+      0.0,
+      this.fractionToDX(fraction),
+      this.fractionToDY(fraction),
+      0,
+      result,
+    );
   }
   /** Evaluate both X and Y and their second derivatives at fractional coordinate, return bundled as origin and (non-unit) vectorU an vectorV. */
   public fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     return Plane3dByOriginAndVectors.createOriginAndVectorsXYZ(
-      this.fractionToX(fraction), this.fractionToY(fraction), 0.0,
-      this.fractionToDX(fraction), this.fractionToDY(fraction), 0,
-      this.fractionToDDX(fraction), this.fractionToDDY(fraction), 0,
-      result);
+      this.fractionToX(fraction),
+      this.fractionToY(fraction),
+      0.0,
+      this.fractionToDX(fraction),
+      this.fractionToDY(fraction),
+      0,
+      this.fractionToDDX(fraction),
+      this.fractionToDDY(fraction),
+      0,
+      result,
+    );
   }
   /**
    * Return the magnitude of the tangent vector at fraction.
@@ -108,21 +121,24 @@ export abstract class XYCurveEvaluator {
    * @param distance1 distance at end
    * @param targetDistance intermediate distance.
    */
-  public inverseDistanceFraction(fraction0: number, fraction1: number, distance0: number, distance1: number, targetDistance: number): number | undefined {
+  public inverseDistanceFraction(
+    fraction0: number,
+    fraction1: number,
+    distance0: number,
+    distance1: number,
+    targetDistance: number,
+  ): number | undefined {
     const startFraction = Geometry.inverseInterpolate(fraction0, distance0, fraction1, distance1, targetDistance);
     if (startFraction !== undefined) {
-      return SimpleNewton.runNewton1D(startFraction,
-        (fraction: number) => {
-          const d = this.integrateDistanceBetweenFractions(fraction0, fraction);
-          return distance0 + d - targetDistance;
-        },
-        (fraction: number) => this.fractionToTangentMagnitude(fraction));
+      return SimpleNewton.runNewton1D(startFraction, (fraction: number) => {
+        const d = this.integrateDistanceBetweenFractions(fraction0, fraction);
+        return distance0 + d - targetDistance;
+      }, (fraction: number) => this.fractionToTangentMagnitude(fraction));
     }
     return undefined;
   }
 
   /**
-   *
    * @param fraction fractional position along x axis
    * @param xy xy coordinates of point on the curve
    * @param d1xy

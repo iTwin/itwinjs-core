@@ -17,29 +17,37 @@ import * as g from "../core-geometry";
  * * higher selects should have increasing complexity
  */
 export class SimpleFactory {
-
   // an arc whose coordinates will all be "select == 2" compatible.
-  private static _arc2 = g.Arc3d.create(g.Point3d.create(0.2, 0.5, 0.3), g.Vector3d.create(0.9, 0.1, 0.01), g.Vector3d.create(-0.2, 0.5, -0.2), g.AngleSweep.createStartEndDegrees(20.5, 345.2));
+  private static _arc2 = g.Arc3d.create(
+    g.Point3d.create(0.2, 0.5, 0.3),
+    g.Vector3d.create(0.9, 0.1, 0.01),
+    g.Vector3d.create(-0.2, 0.5, -0.2),
+    g.AngleSweep.createStartEndDegrees(20.5, 345.2),
+  );
   // _point1 has integer coordinates
   private static _point1 = [
     g.Point3d.create(1, 2, 3),
     g.Point3d.create(-2, 3, 1),
-    g.Point3d.create(-1, -2, 3)];
+    g.Point3d.create(-1, -2, 3),
+  ];
   // _vector1 has integer coordinates
   private static _vector1 = [
     g.Vector3d.create(0, 1, 0),
     g.Vector3d.create(1, 0, 0),
-    g.Vector3d.create(1, 2, 4)];
+    g.Vector3d.create(1, 2, 4),
+  ];
   // _point2 has messy coordinates
   private static _point2 = [
     g.Point3d.create(0.234, -0.1, 0.52),
     g.Point3d.create(Math.sqrt(2.0), 3.234204809, -2.3),
-    g.Point3d.create(-2.90089, 0.32481216727, -2.789798787)];
+    g.Point3d.create(-2.90089, 0.32481216727, -2.789798787),
+  ];
   // _vector1 has messy  coordinates
   private static _vector2 = [
     g.Vector3d.create(3 / 27, 4 / 27, 5 / 27),
     g.Vector3d.create(3, 5, 10).normalize()!,
-    g.Vector3d.create(-2.90089, 0.32481216727, -2.789798787)];
+    g.Vector3d.create(-2.90089, 0.32481216727, -2.789798787),
+  ];
 
   public static createDefaultLineSegment3d(select: number): g.LineSegment3d | undefined {
     if (select === 0)
@@ -57,7 +65,12 @@ export class SimpleFactory {
     if (select === 1)
       return g.LineString3d.create(SimpleFactory._point1[0], SimpleFactory._point1[1]);
     if (select === 2)
-      return g.LineString3d.create(SimpleFactory._arc2.fractionToPoint(0.0), SimpleFactory._arc2.fractionToPoint(0.5), SimpleFactory._arc2.fractionToPoint(0.75), SimpleFactory._arc2.fractionToPoint(1.0));
+      return g.LineString3d.create(
+        SimpleFactory._arc2.fractionToPoint(0.0),
+        SimpleFactory._arc2.fractionToPoint(0.5),
+        SimpleFactory._arc2.fractionToPoint(0.75),
+        SimpleFactory._arc2.fractionToPoint(1.0),
+      );
     return undefined;
   }
 
@@ -67,7 +80,12 @@ export class SimpleFactory {
     if (select === 1)
       return g.PointString3d.create(SimpleFactory._point1[0], SimpleFactory._point1[1]);
     if (select === 2)
-      return g.PointString3d.create(SimpleFactory._arc2.fractionToPoint(0.0), SimpleFactory._arc2.fractionToPoint(0.5), SimpleFactory._arc2.fractionToPoint(0.75), SimpleFactory._arc2.fractionToPoint(1.0));
+      return g.PointString3d.create(
+        SimpleFactory._arc2.fractionToPoint(0.0),
+        SimpleFactory._arc2.fractionToPoint(0.5),
+        SimpleFactory._arc2.fractionToPoint(0.75),
+        SimpleFactory._arc2.fractionToPoint(1.0),
+      );
     return undefined;
   }
 
@@ -171,7 +189,10 @@ export class SimpleFactory {
     if (select === 2)
       return g.Transform.createOriginAndMatrix(g.Point3d.create(-1, 2, 3), g.Matrix3d.createRotationAroundAxisIndex(2, g.Angle.createDegrees(30)));
     if (select === 3)
-      return g.Transform.createOriginAndMatrix(g.Point3d.create(-1, 2, 3), g.Matrix3d.createRotationAroundVector(g.Vector3d.create(4, 2, -1), g.Angle.createDegrees(30)));
+      return g.Transform.createOriginAndMatrix(
+        g.Point3d.create(-1, 2, 3),
+        g.Matrix3d.createRotationAroundVector(g.Vector3d.create(4, 2, -1), g.Angle.createDegrees(30)),
+      );
     return undefined;
   }
 
@@ -208,17 +229,30 @@ export class SimpleFactory {
   public static createDefaultMatrix4d(select: number): g.Matrix4d | undefined {
     switch (select) {
       case 0:
-        return g.Matrix4d.createZero();   // and that is singular!!!
+        return g.Matrix4d.createZero(); // and that is singular!!!
       case 1:
         return g.Matrix4d.createIdentity();
       case 2:
         return g.Matrix4d.createTranslationAndScaleXYZ(1, 3, 2, 3, 2, 4);
       case 2:
         return g.Matrix4d.createRowValues(
-          12, 1, 0.2, 0.1,
-          0.13, 10, 1.1, 2,
-          -0.3, 0.9, 12, 0.8,
-          0.2, -0.23, 0.26, 15);
+          12,
+          1,
+          0.2,
+          0.1,
+          0.13,
+          10,
+          1.1,
+          2,
+          -0.3,
+          0.9,
+          12,
+          0.8,
+          0.2,
+          -0.23,
+          0.26,
+          15,
+        );
     }
     return undefined;
   }

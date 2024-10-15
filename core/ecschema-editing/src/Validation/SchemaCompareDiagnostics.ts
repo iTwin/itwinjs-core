@@ -6,13 +6,32 @@
  * @module Comparison
  */
 
-import { AnyClass, AnyEnumerator, Constant, CustomAttribute, CustomAttributeClass, EntityClass,
-  Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, PropertyCategory,
-  RelationshipClass, Schema, SchemaItem, Unit,
+import {
+  AnyClass,
+  AnyEnumerator,
+  Constant,
+  CustomAttribute,
+  CustomAttributeClass,
+  EntityClass,
+  Enumeration,
+  Format,
+  InvertedUnit,
+  KindOfQuantity,
+  Mixin,
+  OverrideFormat,
+  PropertyCategory,
+  RelationshipClass,
+  Schema,
+  SchemaItem,
+  Unit,
 } from "@itwin/ecschema-metadata";
 import {
-  createClassDiagnosticClass, createCustomAttributeContainerDiagnosticClass, createPropertyDiagnosticClass,
-  createRelationshipConstraintDiagnosticClass, createSchemaDiagnosticClass, createSchemaItemDiagnosticClass,
+  createClassDiagnosticClass,
+  createCustomAttributeContainerDiagnosticClass,
+  createPropertyDiagnosticClass,
+  createRelationshipConstraintDiagnosticClass,
+  createSchemaDiagnosticClass,
+  createSchemaItemDiagnosticClass,
 } from "./Diagnostic";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -98,13 +117,22 @@ export const SchemaCompareDiagnostics = {
   RelationshipConstraintDelta: createRelationshipConstraintDiagnosticClass<[string, any, any]>(SchemaCompareCodes.RelationshipConstraintDelta, ""),
 
   /** Required message parameters: constraint class */
-  RelationshipConstraintClassMissing: createRelationshipConstraintDiagnosticClass<[AnyClass]>(SchemaCompareCodes.RelationshipConstraintClassMissing, ""),
+  RelationshipConstraintClassMissing: createRelationshipConstraintDiagnosticClass<[AnyClass]>(
+    SchemaCompareCodes.RelationshipConstraintClassMissing,
+    "",
+  ),
 
   /** Required message parameters: property name, property A value, property B value  */
-  CustomAttributeClassDelta: createSchemaItemDiagnosticClass<CustomAttributeClass, [string, any, any]>(SchemaCompareCodes.CustomAttributeClassDelta, ""),
+  CustomAttributeClassDelta: createSchemaItemDiagnosticClass<CustomAttributeClass, [string, any, any]>(
+    SchemaCompareCodes.CustomAttributeClassDelta,
+    "",
+  ),
 
   /** Required message parameters: CustomAttributeClass name */
-  CustomAttributeInstanceClassMissing: createCustomAttributeContainerDiagnosticClass<[CustomAttribute]>(SchemaCompareCodes.CustomAttributeInstanceClassMissing, ""),
+  CustomAttributeInstanceClassMissing: createCustomAttributeContainerDiagnosticClass<[CustomAttribute]>(
+    SchemaCompareCodes.CustomAttributeInstanceClassMissing,
+    "",
+  ),
 
   /** Required message parameters: property name, property A value, property B value  */
   EnumerationDelta: createSchemaItemDiagnosticClass<Enumeration, [string, string, string]>(SchemaCompareCodes.EnumerationDelta, ""),
@@ -131,7 +159,10 @@ export const SchemaCompareDiagnostics = {
   FormatUnitMissing: createSchemaItemDiagnosticClass<Format, [Unit | InvertedUnit]>(SchemaCompareCodes.FormatUnitMissing, ""),
 
   /** Required message parameters: Unit or InvertedUnit, label A, label B */
-  UnitLabelOverrideDelta: createSchemaItemDiagnosticClass<Format, [Unit | InvertedUnit, string | undefined, string | undefined]>(SchemaCompareCodes.UnitLabelOverrideDelta, ""),
+  UnitLabelOverrideDelta: createSchemaItemDiagnosticClass<Format, [Unit | InvertedUnit, string | undefined, string | undefined]>(
+    SchemaCompareCodes.UnitLabelOverrideDelta,
+    "",
+  ),
 
   /** Required message parameters: property name, property A value, property B value  */
   UnitDelta: createSchemaItemDiagnosticClass<Format, [string, string, string]>(SchemaCompareCodes.UnitDelta, ""),

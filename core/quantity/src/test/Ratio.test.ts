@@ -2,9 +2,9 @@ import { assert, expect } from "chai";
 import { Format } from "../Formatter/Format";
 import { Formatter } from "../Formatter/Formatter";
 
+import { FormatProps, ParseError, Parser, ParserSpec, Quantity, QuantityError, UnitProps } from "../core-quantity";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
-import { FormatProps, ParseError, Parser, ParserSpec, Quantity, QuantityError, UnitProps } from "../core-quantity";
 
 describe("Ratio format tests", () => {
   const vHUnitName = "Units.VERTICAL_PER_HORIZONTAL";
@@ -17,7 +17,12 @@ describe("Ratio format tests", () => {
     parseError?: ParseError;
   }
 
-  async function testRatioType(ratioType: string, testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName) {
+  async function testRatioType(
+    ratioType: string,
+    testData: TestData[],
+    presentationUnitStr: string = vHUnitName,
+    persistenceUnitStr: string = vHUnitName,
+  ) {
     const defaultPrecision = 3;
 
     const ratioJson: FormatProps = {
@@ -55,9 +60,15 @@ describe("Ratio format tests", () => {
       }
 
       if (null != entry.precision)
-        expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.magnitude}`).closeTo(entry.magnitude, 4.999 * (0.1 ** entry.precision));
+        expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.magnitude}`).closeTo(
+          entry.magnitude,
+          4.999 * (0.1 ** entry.precision),
+        );
       else
-        expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.magnitude}`).closeTo(entry.magnitude, 4.999 * (0.1 ** defaultPrecision));
+        expect(parserRatioResult.value, `Parsed result for ${entry.ratio} from formatted ${entry.magnitude}`).closeTo(
+          entry.magnitude,
+          4.999 * (0.1 ** defaultPrecision),
+        );
     }
   }
 
@@ -116,7 +127,6 @@ describe("Ratio format tests", () => {
         { magnitude: 0.2857, ratio: "143:500" },
         { magnitude: 0.25, ratio: "1:4" },
         { magnitude: 0.6667, ratio: "667:1000" },
-
       ];
       await testRatioType("UseGreatestCommonDivisor", testData);
     });
@@ -132,11 +142,11 @@ describe("Ratio format tests", () => {
         { magnitude: 3, ratio: "1:0.333", precision: 3 },
         { magnitude: 3, ratio: "1:0.3333", precision: 4 },
 
-        { magnitude: 0.667, ratio: "1:1.49925", precision: 5},
-        { magnitude: 0.667, ratio: "1:1.4993", precision: 4},
-        { magnitude: 0.667, ratio: "1:1.499", precision: 3},
-        { magnitude: 0.667, ratio: "1:1.5", precision: 2},
-        { magnitude: 0.667, ratio: "1:1.5", precision: 1},
+        { magnitude: 0.667, ratio: "1:1.49925", precision: 5 },
+        { magnitude: 0.667, ratio: "1:1.4993", precision: 4 },
+        { magnitude: 0.667, ratio: "1:1.499", precision: 3 },
+        { magnitude: 0.667, ratio: "1:1.5", precision: 2 },
+        { magnitude: 0.667, ratio: "1:1.5", precision: 1 },
       ];
       await testRatioType("OneToN", testData);
     });
@@ -160,7 +170,6 @@ describe("Ratio format tests", () => {
       ];
       await testRatioType("ValueBased", testData);
     });
-
   });
 
   describe("ratio formatting that should throw an error", () => {
@@ -180,7 +189,7 @@ describe("Ratio format tests", () => {
       try {
         await ratioFormat.fromJSON(unitsProvider, ratioJson);
         expect.fail("Expected error was not thrown");
-      } catch (e: any){
+      } catch (e: any) {
         assert.strictEqual(e.message, "The Format Ratio is 'Ratio' type therefore the attribute 'ratioType' is required.");
         assert.instanceOf(e, QuantityError);
       }
@@ -203,12 +212,11 @@ describe("Ratio format tests", () => {
       try {
         await ratioFormat.fromJSON(unitsProvider, ratioJson);
         expect.fail("Expected error was not thrown");
-      } catch (e: any){
+      } catch (e: any) {
         assert.strictEqual(e.message, "The Format Ratio has an invalid 'ratioType' attribute.");
         assert.instanceOf(e, QuantityError);
       }
     });
-
   });
 
   describe("RatioType Tests with special values", () => {
@@ -250,8 +258,8 @@ describe("Ratio format tests", () => {
       const testData: TestData[] = [
         { magnitude: 1.0 / 7, ratio: "143:1000" },
         { magnitude: 2.0 / 7, ratio: "143:500" }, // comes down from 286:1000
-        { magnitude: 1.0 / 7, ratio: "1429:10000", precision: 4},
-        { magnitude: 2.0 / 7, ratio: "2857:10000", precision: 4},
+        { magnitude: 1.0 / 7, ratio: "1429:10000", precision: 4 },
+        { magnitude: 2.0 / 7, ratio: "2857:10000", precision: 4 },
       ];
       await testRatioType("useGreatestCommonDivisor", testData);
     });
@@ -259,9 +267,10 @@ describe("Ratio format tests", () => {
 
   describe("specific parse ratio string tests", () => {
     async function testRatioParser(
-      testData: TestData[], presentationUnitStr: string = vHUnitName, persistenceUnitStr: string = vHUnitName,
+      testData: TestData[],
+      presentationUnitStr: string = vHUnitName,
+      persistenceUnitStr: string = vHUnitName,
     ) {
-
       const ratioJson: FormatProps = {
         type: "Ratio",
         ratioType: "NToOne",
@@ -296,7 +305,6 @@ describe("Ratio format tests", () => {
             expect(parserRatioResult.error).to.equal(entry.parseError);
           else
             assert.fail(`Expected parse error for input ratio string ${entry.ratio}`);
-
         } else {
           if (!Parser.isParsedQuantity(parserRatioResult))
             assert.fail(`Expected a parsed from ratio string ${entry.ratio}`);
@@ -330,14 +338,13 @@ describe("Ratio format tests", () => {
         { magnitude: 1.0, ratio: "10:0", parseError: ParseError.MathematicOperationFoundButIsNotAllowed },
 
         { magnitude: 1.0, ratio: "", parseError: ParseError.NoValueOrUnitFoundInString },
-        { magnitude: 1.0, ratio: "1:", parseError: ParseError.NoValueOrUnitFoundInString},
-        { magnitude: 1.0, ratio: "1:A", parseError: ParseError.NoValueOrUnitFoundInString},
+        { magnitude: 1.0, ratio: "1:", parseError: ParseError.NoValueOrUnitFoundInString },
+        { magnitude: 1.0, ratio: "1:A", parseError: ParseError.NoValueOrUnitFoundInString },
 
-        { magnitude: 1.0, ratio: "1:2:3", parseError: ParseError.UnableToConvertParseTokensToQuantity},
+        { magnitude: 1.0, ratio: "1:2:3", parseError: ParseError.UnableToConvertParseTokensToQuantity },
       ];
       await testRatioParser(testData);
     });
-
   });
 
   describe("inverted unit tests", () => {
@@ -403,10 +410,10 @@ describe("Ratio format tests", () => {
       const hV: UnitProps = await unitsProvider.findUnitByName("Units.HORIZONTAL_PER_VERTICAL");
       assert.isTrue(hV.isValid);
 
-      const vphToVphFormatter = await FormatterSpec.create("vph_to_vph_formatter", vphRatioFormat, unitsProvider,vH);
-      const hpvToVphFormatter = await FormatterSpec.create("hvp_to_vph_formatter", vphRatioFormat, unitsProvider,hV);
-      const vphToHpvFormatter = await FormatterSpec.create("vph_to_hpv_formatter", hvpRatioFormat, unitsProvider,vH);
-      const hpvToHpvFormatter = await FormatterSpec.create("hpv_to_hpv_formatter", hvpRatioFormat, unitsProvider,hV);
+      const vphToVphFormatter = await FormatterSpec.create("vph_to_vph_formatter", vphRatioFormat, unitsProvider, vH);
+      const hpvToVphFormatter = await FormatterSpec.create("hvp_to_vph_formatter", vphRatioFormat, unitsProvider, hV);
+      const vphToHpvFormatter = await FormatterSpec.create("vph_to_hpv_formatter", hvpRatioFormat, unitsProvider, vH);
+      const hpvToHpvFormatter = await FormatterSpec.create("hpv_to_hpv_formatter", hvpRatioFormat, unitsProvider, hV);
 
       const vphToVphParser = await ParserSpec.create(vphRatioFormat, unitsProvider, vH);
       const hpvToVphParser = await ParserSpec.create(vphRatioFormat, unitsProvider, hV);

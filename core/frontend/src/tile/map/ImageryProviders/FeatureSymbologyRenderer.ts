@@ -19,4 +19,3 @@ export interface FeatureSymbologyRenderer {
 export interface FeatureSymbolizedRenderer {
   symbolRenderer: FeatureSymbologyRenderer;
 }
-

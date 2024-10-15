@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ChildProcess } from "child_process";
 import * as path from "path";
 import { Browser, chromium, LaunchOptions, Page } from "playwright";
-import { ChildProcess } from "child_process";
-import { spawnChildProcess } from "../../utils/SpawnUtils";
-import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { CertaConfig } from "../../CertaConfig";
+import { executeRegisteredCallback } from "../../utils/CallbackUtils";
 import { writeCoverageData } from "../../utils/CoverageUtils";
+import { spawnChildProcess } from "../../utils/SpawnUtils";
 import { configureRemoteReporter } from "./MochaRemoteReporter";
 
 interface ChromeTestResults {

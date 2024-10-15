@@ -6,8 +6,8 @@
  * @module PhysicalMaterial
  */
 
-import * as path from "path";
 import { ClassRegistry, KnownLocations, Schema, Schemas } from "@itwin/core-backend";
+import * as path from "path";
 import * as elementsModule from "./PhysicalMaterialElements";
 
 /** The PhysicalMaterialSchema contains standard physical material classes.
@@ -16,8 +16,12 @@ import * as elementsModule from "./PhysicalMaterialElements";
  * @public
  */
 export class PhysicalMaterialSchema extends Schema {
-  public static override get schemaName(): string { return "PhysicalMaterial"; }
-  public static get schemaFilePath(): string { return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", `${PhysicalMaterialSchema.schemaName}.ecschema.xml`); }
+  public static override get schemaName(): string {
+    return "PhysicalMaterial";
+  }
+  public static get schemaFilePath(): string {
+    return path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain", `${PhysicalMaterialSchema.schemaName}.ecschema.xml`);
+  }
 
   public static registerSchema() {
     if (this !== Schemas.getRegisteredSchema(this.schemaName)) {

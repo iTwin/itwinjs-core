@@ -2,16 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { CompressedId64Set, IModelStatus, OpenMode } from "@itwin/core-bentley";
-import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
 import {
-  Code, ColorByName, GeometricElement3dProps, GeometryStreamBuilder, IModel, ModelGeometryChangesProps, SubCategoryAppearance,
+  Code,
+  ColorByName,
+  GeometricElement3dProps,
+  GeometryStreamBuilder,
+  IModel,
+  ModelGeometryChangesProps,
+  SubCategoryAppearance,
 } from "@itwin/core-common";
-import {
-  _nativeDb,
-  ChannelControl, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement,
-} from "../../core-backend";
+import { LineSegment3d, Point3d, YawPitchRollAngles } from "@itwin/core-geometry";
+import { expect } from "chai";
+import { _nativeDb, ChannelControl, IModelJsFs, PhysicalModel, SpatialCategory, StandaloneDb, VolumeElement } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Model geometry changes", () => {

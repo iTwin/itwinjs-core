@@ -3,11 +3,6 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import "@itwin/presentation-common/lib/cjs/test/_helpers/Promises";
-import { expect } from "chai";
-import * as faker from "faker";
-import * as path from "path";
-import * as sinon from "sinon";
-import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IModelJsNative, IModelNative, IpcHost } from "@itwin/core-backend";
 import { DbResult, Id64String, using } from "@itwin/core-bentley";
 import { SchemaContext } from "@itwin/ecschema-metadata";
@@ -92,6 +87,11 @@ import {
   createTestSelectClassInfo,
   createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import * as faker from "faker";
+import * as path from "path";
+import * as sinon from "sinon";
+import * as moq from "typemoq";
 import {
   NativePlatformDefinition,
   NativePlatformRequestTypes,
@@ -378,7 +378,7 @@ describe("PresentationManager", () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "metric";
-      await using(new PresentationManager({ addon: addonMock.object }), async (manager) => {
+      using(new PresentationManager({ addon: addonMock.object }), async (manager) => {
         addonMock
           .setup(async (x) =>
             x.handleRequest(
@@ -388,7 +388,7 @@ describe("PresentationManager", () => {
                 return request.params.unitSystem === NativePresentationUnitSystem.Metric;
               }),
               undefined,
-            ),
+            )
           )
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
@@ -401,7 +401,7 @@ describe("PresentationManager", () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "usSurvey";
-      await using(new PresentationManager({ addon: addonMock.object, defaultUnitSystem: unitSystem }), async (manager) => {
+      using(new PresentationManager({ addon: addonMock.object, defaultUnitSystem: unitSystem }), async (manager) => {
         addonMock
           .setup(async (x) =>
             x.handleRequest(
@@ -411,7 +411,7 @@ describe("PresentationManager", () => {
                 return request.params.unitSystem === NativePresentationUnitSystem.UsSurvey;
               }),
               undefined,
-            ),
+            )
           )
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
@@ -424,7 +424,7 @@ describe("PresentationManager", () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "usCustomary";
-      await using(new PresentationManager({ addon: addonMock.object, defaultUnitSystem: "metric" }), async (manager) => {
+      using(new PresentationManager({ addon: addonMock.object, defaultUnitSystem: "metric" }), async (manager) => {
         expect(manager.activeUnitSystem).to.not.eq(unitSystem);
         addonMock
           .setup(async (x) =>
@@ -435,7 +435,7 @@ describe("PresentationManager", () => {
                 return request.params.unitSystem === NativePresentationUnitSystem.UsCustomary;
               }),
               undefined,
-            ),
+            )
           )
           .returns(async () => ({ result: "null" }))
           .verifiable(moq.Times.once());
@@ -452,7 +452,9 @@ describe("PresentationManager", () => {
       const manager = new PresentationManager({ addon: addonMock.object });
       const managerUsedSpy = sinon.spy();
 
-      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(async () => ({ result: `{"nodes":[]}` }));
+      addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(async () => ({
+        result: `{"nodes":[]}`,
+      }));
 
       addonMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(async () => ({ result: "{}" }));
 
@@ -587,7 +589,7 @@ describe("PresentationManager", () => {
             moq.It.isAny(),
             moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
             undefined,
-          ),
+          )
         )
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
@@ -632,7 +634,7 @@ describe("PresentationManager", () => {
             moq.It.isAny(),
             moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
             undefined,
-          ),
+          )
         )
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult.logs[0] }))
         .verifiable(moq.Times.once());
@@ -669,7 +671,7 @@ describe("PresentationManager", () => {
             moq.It.isAny(),
             moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true })),
             undefined,
-          ),
+          )
         )
         .returns(async () => {
           throw new PresentationNativePlatformResponseError({
@@ -728,7 +730,7 @@ describe("PresentationManager", () => {
             moq.It.isAny(),
             moq.It.is((reqStr) => sinon.match(JSON.parse(reqStr).params.diagnostics).test({ perf: true, dev: "debug" })),
             undefined,
-          ),
+          )
         )
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
         .verifiable(moq.Times.once());
@@ -780,11 +782,15 @@ describe("PresentationManager", () => {
 
     const setup = (addonResponse: any) => {
       if (addonResponse === undefined) {
-        nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(async () => ({ result: "null" }));
+        nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(async () => ({
+          result: "null",
+        }));
         return undefined;
       }
       const serialized = JSON.stringify(addonResponse);
-      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(async () => ({ result: serialized }));
+      nativePlatformMock.setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAnyString(), undefined)).returns(async () => ({
+        result: serialized,
+      }));
       return JSON.parse(serialized);
     };
     const verifyMockRequest = (expectedParams: any) => {
@@ -1334,11 +1340,36 @@ describe("PresentationManager", () => {
               selectClassInfo: "0x123",
               isSelectPolymorphic: true,
               pathToPrimaryClass: [{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }],
-              pathFromInputToSelectClass: [{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }],
-              relatedPropertyPaths: [[{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }]],
-              navigationPropertyClasses: [{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }],
-              relatedInstanceClasses: [{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }],
-              relatedInstancePaths: [[{ sourceClassInfo: "0x123", relationshipInfo: "0x456", isForwardRelationship: true, targetClassInfo: "0x789" }]],
+              pathFromInputToSelectClass: [{
+                sourceClassInfo: "0x123",
+                relationshipInfo: "0x456",
+                isForwardRelationship: true,
+                targetClassInfo: "0x789",
+              }],
+              relatedPropertyPaths: [[{
+                sourceClassInfo: "0x123",
+                relationshipInfo: "0x456",
+                isForwardRelationship: true,
+                targetClassInfo: "0x789",
+              }]],
+              navigationPropertyClasses: [{
+                sourceClassInfo: "0x123",
+                relationshipInfo: "0x456",
+                isForwardRelationship: true,
+                targetClassInfo: "0x789",
+              }],
+              relatedInstanceClasses: [{
+                sourceClassInfo: "0x123",
+                relationshipInfo: "0x456",
+                isForwardRelationship: true,
+                targetClassInfo: "0x789",
+              }],
+              relatedInstancePaths: [[{
+                sourceClassInfo: "0x123",
+                relationshipInfo: "0x456",
+                isForwardRelationship: true,
+                targetClassInfo: "0x789",
+              }]],
             } as SelectClassInfoJSON<Id64String>,
           ],
           classesMap: {
@@ -2605,7 +2636,9 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
               instanceFilter: {
                 selectClassName: `TestSchema.TestClass`,
-                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${Number.parseInt("0x124", 16).toString(10)}`,
+                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${
+                  Number.parseInt("0x124", 16).toString(10)
+                }`,
               },
             },
             keys: new KeySet(),
@@ -2735,7 +2768,9 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
               instanceFilter: {
                 selectClassName: `TestSchema.TestClass`,
-                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${Number.parseInt("0x124", 16).toString(10)}`,
+                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${
+                  Number.parseInt("0x124", 16).toString(10)
+                }`,
               },
             },
             keys: new KeySet(),
@@ -2865,7 +2900,9 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
               instanceFilter: {
                 selectClassName: `TestSchema.TestClass`,
-                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${Number.parseInt("0x124", 16).toString(10)}`,
+                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${
+                  Number.parseInt("0x124", 16).toString(10)
+                }`,
               },
             },
             keys: new KeySet(),

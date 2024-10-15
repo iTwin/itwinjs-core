@@ -4,13 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64, Id64Set, Id64String } from "@itwin/core-bentley";
-import {
-  Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d,
-} from "@itwin/core-geometry";
 import { Tileset3dSchema as schema, ViewFlagOverrides } from "@itwin/core-common";
 import { IModelConnection, RealityModelTileUtils, TileLoadPriority } from "@itwin/core-frontend";
-import { BatchedTileTreeParams } from "./BatchedTileTree";
+import { Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d } from "@itwin/core-geometry";
 import { BatchedTile, BatchedTileParams } from "./BatchedTile";
+import { BatchedTileTreeParams } from "./BatchedTileTree";
 
 /** @internal */
 export interface ModelMetadataProps {
@@ -112,9 +110,15 @@ function rangeFromBoundingVolume(vol: schema.BoundingVolume): Range3d {
 function transformFromJSON(json: schema.Transform): Transform {
   const translation = new Point3d(json[12], json[13], json[14]);
   const matrix = Matrix3d.createRowValues(
-    json[0], json[4], json[8],
-    json[1], json[5], json[9],
-    json[2], json[6], json[10],
+    json[0],
+    json[4],
+    json[8],
+    json[1],
+    json[5],
+    json[9],
+    json[2],
+    json[6],
+    json[10],
   );
 
   return Transform.createOriginAndMatrix(translation, matrix);
@@ -132,7 +136,9 @@ export class BatchedTilesetReader {
     this._modelGroups = modelGroups;
   }
 
-  public get baseUrl(): URL { return this._spec.baseUrl; }
+  public get baseUrl(): URL {
+    return this._spec.baseUrl;
+  }
 
   public readTileParams(json: schema.Tile, parent?: BatchedTile): BatchedTileParams {
     const content = json.content;

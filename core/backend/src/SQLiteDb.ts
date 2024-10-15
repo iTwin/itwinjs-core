@@ -6,17 +6,17 @@
  * @module SQLiteDb
  */
 
-import * as fs from "fs";
-import { dirname } from "path";
-import * as semver from "semver";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbResult, OpenMode } from "@itwin/core-bentley";
 import { LocalFileName } from "@itwin/core-common";
+import * as fs from "fs";
+import { dirname } from "path";
+import * as semver from "semver";
 import { CloudSqlite } from "./CloudSqlite";
-import { IModelNative } from "./internal/NativePlatform";
 import { IModelJsFs } from "./IModelJsFs";
-import { SqliteStatement, StatementCache } from "./SqliteStatement";
+import { IModelNative } from "./internal/NativePlatform";
 import { _nativeDb } from "./internal/Symbols";
+import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
 // cspell:ignore savepoint julianday rowid
 
@@ -30,7 +30,9 @@ export class SQLiteDb {
   /** @internal
    * @deprecated in 4.8. This internal API will be removed in 5.0. Use SQLiteDb's public API instead.
    */
-  public get nativeDb(): IModelJsNative.SQLiteDb { return this[_nativeDb]; }
+  public get nativeDb(): IModelJsNative.SQLiteDb {
+    return this[_nativeDb];
+  }
 
   /** @internal */
   public readonly [_nativeDb] = new IModelNative.platform.SQLiteDb();
@@ -82,10 +84,14 @@ export class SQLiteDb {
   }
 
   /** Returns true if this SQLiteDb is open */
-  public get isOpen(): boolean { return this[_nativeDb].isOpen(); }
+  public get isOpen(): boolean {
+    return this[_nativeDb].isOpen();
+  }
 
   /** Returns true if this SQLiteDb is open readonly */
-  public get isReadonly(): boolean { return this[_nativeDb].isReadonly(); }
+  public get isReadonly(): boolean {
+    return this[_nativeDb].isReadonly();
+  }
 
   /** Create a new table in this database. */
   protected createTable(args: {
@@ -102,13 +108,15 @@ export class SQLiteDb {
     const constraints = args.constraints ? `,${args.constraints}` : "";
     this.executeSQL(`CREATE TABLE ${args.tableName}(${args.columns}${timestampCol}${constraints})`);
     if (args.addTimestamp)
-      this.executeSQL(`CREATE TRIGGER ${args.tableName}_timestamp AFTER UPDATE ON ${args.tableName} WHEN old.lastMod=new.lastMod AND old.lastMod != julianday('now') BEGIN UPDATE ${args.tableName} SET lastMod=julianday('now') WHERE rowid=new.rowid; END`);
+      this.executeSQL(
+        `CREATE TRIGGER ${args.tableName}_timestamp AFTER UPDATE ON ${args.tableName} WHEN old.lastMod=new.lastMod AND old.lastMod != julianday('now') BEGIN UPDATE ${args.tableName} SET lastMod=julianday('now') WHERE rowid=new.rowid; END`,
+      );
   }
 
   /**
    * Get the last modified date for a row in a table of this database.
    * @note the table must have been created with `addTimestamp: true`
-  */
+   */
   public readLastModTime(tableName: string, rowId: number): Date {
     return this.withSqliteStatement(`SELECT lastMod from ${tableName} WHERE rowid=?`, (stmt) => {
       stmt.bindInteger(1, rowId);
@@ -242,10 +250,10 @@ export class SQLiteDb {
   }
 
   /** Prepare an SQL statement.
-     * @param sql The SQLite SQL statement to prepare
-     * @param logErrors Determine if errors are logged or not
-     * @internal
-     */
+   * @param sql The SQLite SQL statement to prepare
+   * @param logErrors Determine if errors are logged or not
+   * @internal
+   */
   public prepareSqliteStatement(sql: string, logErrors = true): SqliteStatement {
     const stmt = new SqliteStatement(sql);
     stmt.prepare(this[_nativeDb], logErrors);
@@ -285,7 +293,7 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
    * software. Likewise, if a new version of the package is asked to open an older VersionedSqliteDb that has not been upgraded to the lowest version
    * supported by it, the user will be informed that they need to upgrade their software.
    * @note this identifier is independent of versions in `package.json` files.
-  */
+   */
   public abstract myVersion: string;
 
   /**
@@ -296,7 +304,10 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
    */
   public setRequiredVersions(versions: SQLiteDb.RequiredVersionRanges) {
     // NOTE: It might look tempting to just stringify the supplied `versions` object, but we only include required members - there may be others.
-    this[_nativeDb].saveFileProperty(VersionedSqliteDb._versionProps, JSON.stringify({ readVersion: versions.readVersion, writeVersion: versions.writeVersion }));
+    this[_nativeDb].saveFileProperty(
+      VersionedSqliteDb._versionProps,
+      JSON.stringify({ readVersion: versions.readVersion, writeVersion: versions.writeVersion }),
+    );
   }
 
   /** Get the required version ranges necessary to open this VersionedSqliteDb. */
@@ -348,8 +359,11 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
 
     this.closeDb();
     const tooNew = semver.gtr(this.myVersion, range);
-    throw new Error(`${this[_nativeDb].getFilePath()} requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${isReadonly ? "read" : "write"}`);
-
+    throw new Error(
+      `${this[_nativeDb].getFilePath()} requires ${tooNew ? "older" : "newer"} version of ${this.constructor.name} for ${
+        isReadonly ? "read" : "write"
+      }`,
+    );
   }
 
   /**
@@ -362,7 +376,9 @@ export abstract class VersionedSqliteDb extends SQLiteDb {
     this.verifyVersions();
   }
 
-  public async upgradeSchema(arg: { dbName: string, lockContainer?: { container: CloudSqlite.CloudContainer, user: string }, upgradeFn: () => void }) {
+  public async upgradeSchema(
+    arg: { dbName: string, lockContainer?: { container: CloudSqlite.CloudContainer, user: string }, upgradeFn: () => void },
+  ) {
     // can't use "this" because it checks for version, which we don't want here
     return (arg.lockContainer) ?
       super.withLockedContainer({ dbName: arg.dbName, ...arg.lockContainer }, async () => arg.upgradeFn) :
@@ -393,8 +409,8 @@ export namespace SQLiteDb {
    */
   export interface BlobIO {
     /** Close this BlobIO if it is opened.
-       * @note this BlobIO *may* be reused after this call by calling `open` again.
-      */
+     * @note this BlobIO *may* be reused after this call by calling `open` again.
+     */
     close(): void;
     /** get the total number of bytes in the blob */
     getNumBytes(): number;
@@ -413,10 +429,11 @@ export namespace SQLiteDb {
         row: number;
         /** If true, open this BlobIO for write access */
         writeable?: boolean;
-      }): void;
+      },
+    ): void;
     /** Read from a blob
-       * @returns the contents of the requested byte range
-       */
+     * @returns the contents of the requested byte range
+     */
     read(args: {
       /** The number of bytes to read */
       numBytes: number;
@@ -426,8 +443,8 @@ export namespace SQLiteDb {
       blob?: ArrayBuffer;
     }): Uint8Array;
     /** Reposition this BlobIO to a new rowId
-       * @note this BlobIO must be valid when this methods is called.
-       */
+     * @note this BlobIO must be valid when this methods is called.
+     */
     changeRow(row: number): void;
     /** Write to a blob */
     write(args: {
@@ -451,7 +468,7 @@ export namespace SQLiteDb {
     /** An immediate transaction is started when the file is first opened. */
     Immediate = 2,
     /** An exclusive transaction is started when the file is first opened. */
-    Exclusive = 3
+    Exclusive = 3,
   }
 
   /** parameters common to opening or creating a new SQLiteDb */
@@ -463,8 +480,8 @@ export namespace SQLiteDb {
     /** Do not attempt to verify that the file is a valid sQLite file before opening. */
     skipFileCheck?: boolean;
     /** the default transaction mode
-   * @see [[SQLiteDb.DefaultTxnMode]]
-  */
+     * @see [[SQLiteDb.DefaultTxnMode]]
+     */
     defaultTxn?: 0 | 1 | 2 | 3;
     /** see query parameters from 'URI Filenames' in  https://www.sqlite.org/c3ref/open.html */
     queryParam?: string;

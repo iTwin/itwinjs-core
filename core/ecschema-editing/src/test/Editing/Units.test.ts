@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ECVersion, SchemaContext, SchemaItemKey, SchemaKey, Unit } from "@itwin/ecschema-metadata";
+import { expect } from "chai";
 import { SchemaContextEditor } from "../../Editing/Editor";
 import { ECEditingStatus } from "../../Editing/Exception";
 
@@ -48,20 +48,24 @@ describe("Units tests", () => {
   });
 
   it("try creating Unit to unknown schema, throws error", async () => {
-    const badKey = new SchemaKey("unknownSchema", new ECVersion(1,0,0));
-    await expect(testEditor.units.create(badKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
-    });
+    const badKey = new SchemaKey("unknownSchema", new ECVersion(1, 0, 0));
+    await expect(testEditor.units.create(badKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey)).to.be.eventually.rejected.then(
+      function(error) {
+        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+        expect(error).to.have.nested.property("innerError.message", `Schema Key ${badKey.toString(true)} could not be found in the context.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaNotFound);
+      },
+    );
   });
 
   it("try creating Unit with existing name, throws error", async () => {
     await testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey);
-    await expect(testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey)).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
-      expect(error).to.have.nested.property("innerError.message", `Unit testSchema.testUnit already exists in the schema ${testKey.name}.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
-    });
+    await expect(testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey)).to.be.eventually.rejected.then(
+      function(error) {
+        expect(error).to.have.property("errorNumber", ECEditingStatus.CreateSchemaItemFailed);
+        expect(error).to.have.nested.property("innerError.message", `Unit testSchema.testUnit already exists in the schema ${testKey.name}.`);
+        expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNameAlreadyExists);
+      },
+    );
   });
 });

@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import {BriefcaseConnection} from "../BriefcaseConnection";
+import { BriefcaseConnection } from "../BriefcaseConnection";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
@@ -26,8 +26,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public targetView?: Viewport;
   private _targetModelId?: string;
-  public get targetModelId() { return this._targetModelId; }
-  public set targetModelId(v: string | undefined) { this._targetModelId = v; }
+  public get targetModelId() {
+    return this._targetModelId;
+  }
+  public set targetModelId(v: string | undefined) {
+    this._targetModelId = v;
+  }
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
 
   /** Get the iModel on which this tool operates.
@@ -127,7 +131,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     if (isButtonEvent && ev.isDown)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.ProjectExtents")));
+      IModelApp.notifications.outputMessage(
+        new NotifyMessageDetails(OutputMessagePriority.Error, CoreTools.translate("ElementSet.Error.ProjectExtents")),
+      );
 
     return false;
   }
@@ -141,10 +147,14 @@ export abstract class PrimitiveTool extends InteractiveTool {
   }
 
   /**  Returns the prompt based on the tool's current state. */
-  public getPrompt(): string { return ""; }
+  public getPrompt(): string {
+    return "";
+  }
 
   /** Called from isCompatibleViewport to check for a read only iModel, which is not a valid target for tools that create or modify elements. */
-  public requireWriteableTarget(): boolean { return true; }
+  public requireWriteableTarget(): boolean {
+    return true;
+  }
 
   /**
    * Called when active view changes. Tool may choose to restart or exit based on current view type.
@@ -172,15 +182,21 @@ export abstract class PrimitiveTool extends InteractiveTool {
   /**
    * Called to reset tool to initial state. PrimitiveTool implements this method to call onRestartTool.
    */
-  public override async onReinitialize(): Promise<void> { return this.onRestartTool(); }
+  public override async onReinitialize(): Promise<void> {
+    return this.onRestartTool();
+  }
 
-  public async exitTool() { return IModelApp.toolAdmin.startDefaultTool(); }
+  public async exitTool() {
+    return IModelApp.toolAdmin.startDefaultTool();
+  }
 
   /**
    * Called to reverse to a previous tool state (ex. undo last data button).
    * @return false to instead reverse the most recent transaction.
    */
-  public async onUndoPreviousStep(): Promise<boolean> { return false; }
+  public async onUndoPreviousStep(): Promise<boolean> {
+    return false;
+  }
 
   /** @internal */
   public async undoPreviousStep(): Promise<boolean> {
@@ -198,7 +214,9 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * Called to reinstate to a previous tool state (ex. redo last data button).
    * @return false to instead reinstate the most recent transaction.
    */
-  public async onRedoPreviousStep(): Promise<boolean> { return false; }
+  public async onRedoPreviousStep(): Promise<boolean> {
+    return false;
+  }
 
   /** @internal */
   public async redoPreviousStep(): Promise<boolean> {

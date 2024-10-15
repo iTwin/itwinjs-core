@@ -3,15 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 import { NoRenderApp } from "@itwin/core-frontend";
-import {
-  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
-} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
+import {
+  getAccessTokenFromBackend,
+  TestBrowserAuthorizationClientConfiguration,
+  TestFrontendAuthorizationClient,
+  TestUserCredentials,
+} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import { expect } from "chai";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
 import { getClientAccessTokenFromBackend, getProcessEnvFromBackend } from "../../common/SideChannels";
 import { IModelSession } from "./IModelSession";
@@ -52,8 +55,14 @@ export class TestContext {
   }
 
   private async initialize() {
-    expect(this.settings.users.length).to.be.gte(1, `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`);
-    expect(this.settings.iModels.length).to.be.gte(1, `Unexpected number of iModels found in settings - got ${this.settings.iModels.length}, expected at least 1`);
+    expect(this.settings.users.length).to.be.gte(
+      1,
+      `Unexpected number of users found in settings - got ${this.settings.users.length}, expected at least 2`,
+    );
+    expect(this.settings.iModels.length).to.be.gte(
+      1,
+      `Unexpected number of iModels found in settings - got ${this.settings.iModels.length}, expected at least 1`,
+    );
 
     // Print out the configuration
     console.log(this.settings.toString());

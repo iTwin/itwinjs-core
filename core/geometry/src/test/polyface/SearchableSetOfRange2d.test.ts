@@ -25,29 +25,38 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
-function saveRange(allGeometry: GeometryQuery[], ticFraction: number | undefined, range: Range2d | Range3d, xOrigin: number, yOrigin: number, zOrigin: number = 0) {
+function saveRange(
+  allGeometry: GeometryQuery[],
+  ticFraction: number | undefined,
+  range: Range2d | Range3d,
+  xOrigin: number,
+  yOrigin: number,
+  zOrigin: number = 0,
+) {
   const x0 = range.low.x;
   const y0 = range.low.y;
   const x1 = range.high.x;
   const y1 = range.high.y;
   const points = [
-    Point3d.create(x0, y0), Point3d.create(x1, y0),
-    Point3d.create(x1, y1), Point3d.create(x0, y1),
+    Point3d.create(x0, y0),
+    Point3d.create(x1, y0),
+    Point3d.create(x1, y1),
+    Point3d.create(x0, y1),
     Point3d.create(x0, y0),
   ];
 
   if (ticFraction !== undefined && ticFraction > 0) {
     const allLines = BagOfCurves.create();
-    points.push(points[1]);   // 2nd wrap .
+    points.push(points[1]); // 2nd wrap .
     for (const i of [1, 2, 3, 4]) {
       const ticPoints = [
         points[i].interpolate(ticFraction, points[i - 1]),
         points[i],
-        points[i].interpolate(ticFraction, points[i + 1])];
+        points[i].interpolate(ticFraction, points[i + 1]),
+      ];
       allLines.tryAddChild(LineString3d.create(ticPoints));
     }
     GeometryCoreTestIO.captureGeometry(allGeometry, allLines, xOrigin, yOrigin, zOrigin);
-
   } else
     GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), xOrigin, yOrigin, zOrigin);
 }
@@ -90,21 +99,19 @@ describe("LinearSearchRange2dArray", () => {
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint, 0.02, x1, y1);
       GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint, 0.02, x0, y1);
       let numHit = 0;
-      ranges.searchXY(testPoint.x, testPoint.y,
-        (candidate: Range2d, _tag: number) => {
-          numHit++;
-          saveRange(allGeometry, 0.45, candidate, x0, y1);
-          ck.testTrue(candidate.containsPoint(testPoint));
-          return true;
-        });
+      ranges.searchXY(testPoint.x, testPoint.y, (candidate: Range2d, _tag: number) => {
+        numHit++;
+        saveRange(allGeometry, 0.45, candidate, x0, y1);
+        ck.testTrue(candidate.containsPoint(testPoint));
+        return true;
+      });
       // search again, but quit after 2nd hit.
       let numHit1 = 0;
-      ranges.searchXY(testPoint.x, testPoint.y,
-        (candidate: Range2d, _tag: number) => {
-          numHit1++;
-          saveRange(allGeometry, 0.45, candidate, x1, y1);
-          return numHit1 < 2;
-        });
+      ranges.searchXY(testPoint.x, testPoint.y, (candidate: Range2d, _tag: number) => {
+        numHit1++;
+        saveRange(allGeometry, 0.45, candidate, x1, y1);
+        return numHit1 < 2;
+      });
       const numHit1A = numHit <= 2 ? numHit : 2;
       ck.testExactNumber(numHit1A, numHit1, "Quick Exit Count");
 
@@ -113,33 +120,30 @@ describe("LinearSearchRange2dArray", () => {
       const testRange = Range2d.createXY(testPoint.x, testPoint.y);
       testRange.expandInPlace(b);
       saveRange(allGeometry, undefined, testRange, x2, y1);
-      ranges.searchRange2d(testRange,
-        (candidate: Range2d, _tag: number) => {
-          numHit2++;
-          saveRange(allGeometry, 0.30, candidate, x2, y1);
-          ck.testTrue(candidate.intersectsRange(testRange));
-          return true;
-        });
+      ranges.searchRange2d(testRange, (candidate: Range2d, _tag: number) => {
+        numHit2++;
+        saveRange(allGeometry, 0.30, candidate, x2, y1);
+        ck.testTrue(candidate.intersectsRange(testRange));
+        return true;
+      });
       ck.testLE(numHit, numHit2, "range search count can be larger than point hit");
     }
 
     // confirm trivial rejects ..
-    const outsidePoint = totalRange.fractionToPoint(1.3, 0.3);     // safely to the right of everything !!
+    const outsidePoint = totalRange.fractionToPoint(1.3, 0.3); // safely to the right of everything !!
     let numHitOut = 0;
-    ranges.searchXY(outsidePoint.x, outsidePoint.y,
-      (_candidate: Range2d, _tag: number) => {
-        numHitOut++;
-        return true;
-      });
+    ranges.searchXY(outsidePoint.x, outsidePoint.y, (_candidate: Range2d, _tag: number) => {
+      numHitOut++;
+      return true;
+    });
     ck.testExactNumber(0, numHitOut, "no candidates for outside point");
     numHitOut = 0;
     const outsideRange = Range2d.createXY(outsidePoint.x, outsidePoint.y);
     outsideRange.expandInPlace(0.01 * totalRange.xLength());
-    ranges.searchRange2d(outsideRange,
-      (_candidate: Range2d, _tag: number) => {
-        numHitOut++;
-        return true;
-      });
+    ranges.searchRange2d(outsideRange, (_candidate: Range2d, _tag: number) => {
+      numHitOut++;
+      return true;
+    });
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "LinearSearchRange2dArray", "HelloWorld");
     expect(ck.getNumErrors()).toBe(0);
@@ -173,7 +177,9 @@ describe("GriddedRaggedRange2dSet", () => {
         const fraction = i / numRange;
         const theta = totalTurns * Math.PI * 2 * i;
         const uvC = Point3d.create(
-          Geometry.interpolate(-0.01, fraction, 0.99), 0.5 + amplitude * Math.sin(theta));
+          Geometry.interpolate(-0.01, fraction, 0.99),
+          0.5 + amplitude * Math.sin(theta),
+        );
         const deltaUV = Sample.createRosePoint3d(2.14 * theta * theta, a);
         deltaUV.x = Geometry.maxXY(0.01, deltaUV.x);
         deltaUV.y = Geometry.maxXY(0.01, deltaUV.y);
@@ -220,45 +226,42 @@ describe("GriddedRaggedRange2dSet", () => {
         const isInGrid = (rangeArray[i] as any).isInGrid;
         const targetTag = i;
         y1 += dy;
-        saveRange(allGeometry, 0.05, totalRange, x0, y1, -0.0001);  // point search in grid only
-        saveRange(allGeometry, 0.05, totalRange, x1, y1, -0.0001);  // point search in two-layer
-        saveRange(allGeometry, 0.05, totalRange, x2, y1, -0.0001);  // range search in two-layer
+        saveRange(allGeometry, 0.05, totalRange, x0, y1, -0.0001); // point search in grid only
+        saveRange(allGeometry, 0.05, totalRange, x1, y1, -0.0001); // point search in two-layer
+        saveRange(allGeometry, 0.05, totalRange, x2, y1, -0.0001); // range search in two-layer
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint, circleRadius, x0, y1);
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, testPoint, circleRadius, x1, y1);
         let numHit = 0;
         let numHitAllRanges = 0;
         let primaryRangeHits = 0;
         let primaryAllRangeHits = 0;
-        rangesInGrid.searchXY(testPoint.x, testPoint.y,
-          (candidate: Range2d, tag: number) => {
-            numHit++;
-            saveRange(allGeometry, 0.45, candidate, x0, y1);
-            ck.testTrue(candidate.containsPoint(testPoint));
-            if (tag === targetTag)
-              primaryRangeHits++;
-            return true;
-          });
-        allRanges.searchXY(testPoint.x, testPoint.y,
-          (candidate: Range2d, tag: number) => {
-            numHitAllRanges++;
-            saveRange(allGeometry, 0.45, candidate, x1, y1);
-            ck.testTrue(candidate.containsPoint(testPoint));
-            if (tag === targetTag)
-              primaryAllRangeHits++;
-            return true;
-          });
+        rangesInGrid.searchXY(testPoint.x, testPoint.y, (candidate: Range2d, tag: number) => {
+          numHit++;
+          saveRange(allGeometry, 0.45, candidate, x0, y1);
+          ck.testTrue(candidate.containsPoint(testPoint));
+          if (tag === targetTag)
+            primaryRangeHits++;
+          return true;
+        });
+        allRanges.searchXY(testPoint.x, testPoint.y, (candidate: Range2d, tag: number) => {
+          numHitAllRanges++;
+          saveRange(allGeometry, 0.45, candidate, x1, y1);
+          ck.testTrue(candidate.containsPoint(testPoint));
+          if (tag === targetTag)
+            primaryAllRangeHits++;
+          return true;
+        });
         ck.testExactNumber(isInGrid ? 1 : 0, primaryRangeHits, "primary range hits", i);
         ck.testExactNumber(1, primaryAllRangeHits, "gridded primary range hits", i);
         ck.testLE(1, numHitAllRanges, "allRange hits", i);
 
         // search again, but quit after 2nd hit.
         let numHit1 = 0;
-        rangesInGrid.searchXY(testPoint.x, testPoint.y,
-          (candidate: Range2d, _tag: number) => {
-            numHit1++;
-            saveRange(allGeometry, 0.45, candidate, x1, y1);
-            return numHit1 < 2;
-          });
+        rangesInGrid.searchXY(testPoint.x, testPoint.y, (candidate: Range2d, _tag: number) => {
+          numHit1++;
+          saveRange(allGeometry, 0.45, candidate, x1, y1);
+          return numHit1 < 2;
+        });
         const numHit1A = numHit <= 2 ? numHit : 2;
         ck.testExactNumber(numHit1A, numHit1, "Quick Exit Count");
 
@@ -267,32 +270,29 @@ describe("GriddedRaggedRange2dSet", () => {
         const testRange = Range2d.createXY(testPoint.x, testPoint.y);
         testRange.expandInPlace(b);
         saveRange(allGeometry, undefined, testRange, x2, y1);
-        allRanges.searchRange2d(testRange,
-          (candidate: Range2d, _tag: number) => {
-            numHit2++;
-            saveRange(allGeometry, 0.30, candidate, x2, y1);
-            ck.testTrue(candidate.intersectsRange(testRange));
-            return true;
-          });
+        allRanges.searchRange2d(testRange, (candidate: Range2d, _tag: number) => {
+          numHit2++;
+          saveRange(allGeometry, 0.30, candidate, x2, y1);
+          ck.testTrue(candidate.intersectsRange(testRange));
+          return true;
+        });
         ck.testLE(numHit, numHit2, "range search count can be larger than point hit");
       }
       // confirm trivial rejects ..
-      const outsidePoint = totalRange.fractionToPoint(1.3, 0.3);     // safely to the right of everything !!
+      const outsidePoint = totalRange.fractionToPoint(1.3, 0.3); // safely to the right of everything !!
       let numHitOut = 0;
-      rangesInGrid.searchXY(outsidePoint.x, outsidePoint.y,
-        (_candidate: Range2d, _tag: number) => {
-          numHitOut++;
-          return true;
-        });
+      rangesInGrid.searchXY(outsidePoint.x, outsidePoint.y, (_candidate: Range2d, _tag: number) => {
+        numHitOut++;
+        return true;
+      });
       ck.testExactNumber(0, numHitOut, "no candidates for outside point");
       numHitOut = 0;
       const outsideRange = Range2d.createXY(outsidePoint.x, outsidePoint.y);
       outsideRange.expandInPlace(0.01 * totalRange.xLength());
-      rangesInGrid.searchRange2d(outsideRange,
-        (_candidate: Range2d, _tag: number) => {
-          numHitOut++;
-          return true;
-        });
+      rangesInGrid.searchRange2d(outsideRange, (_candidate: Range2d, _tag: number) => {
+        numHitOut++;
+        return true;
+      });
       x0 += 40 * totalRange.xLength();
       const xLine = -2 * boxHalfSize;
       GeometryCoreTestIO.captureGeometry(allGeometry, LineSegment3d.createXYXY(xLine, 0, xLine, y1), x0, y0);
@@ -330,7 +330,8 @@ describe("GriddedRaggedRange2dSet", () => {
         Point3d.create(0, 0, 0),
         Point3d.create(1, 0, -2),
         Point3d.create(0, 1, 1),
-        Point3d.create(1, 1, 3));
+        Point3d.create(1, 1, 3),
+      );
       for (const p of points) {
         const uv = fullRange.worldToLocal(Point2d.create(p.x, p.y))!;
         p.z = patch.uvFractionToPoint(uv.x, uv.y).z;
@@ -414,7 +415,6 @@ describe("GriddedRaggedRange2dSet", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "GriddedRaggedRange2dSet", "FacetGrid");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 function createSinSamplePoints(range: Range2d, numPoint: number, totalTurns: number): Point3d[] {
   const points = [];

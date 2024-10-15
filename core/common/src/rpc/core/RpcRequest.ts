@@ -28,22 +28,54 @@ export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 /** @internal */
 export class ResponseLike implements Response {
   private _data: Promise<any>;
-  public get body() { return null; }
-  public async arrayBuffer(): Promise<ArrayBuffer> { return this._data; }
-  public async blob(): Promise<Blob> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
-  public async formData(): Promise<FormData> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
-  public async json(): Promise<any> { return this._data; }
-  public async text(): Promise<string> { return this._data; }
-  public get bodyUsed() { return false; }
-  public get headers(): Headers { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
-  public get ok(): boolean { return this.status >= 200 && this.status <= 299; }
-  public get redirected() { return false; }
-  public get status() { return 200; }
-  public get statusText() { return ""; }
-  public get trailer(): Promise<Headers> { throw new IModelError(BentleyStatus.ERROR, "Not implemented."); }
-  public get type(): ResponseType { return "basic"; }
-  public get url() { return ""; }
-  public clone() { return { ...this }; }
+  public get body() {
+    return null;
+  }
+  public async arrayBuffer(): Promise<ArrayBuffer> {
+    return this._data;
+  }
+  public async blob(): Promise<Blob> {
+    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+  }
+  public async formData(): Promise<FormData> {
+    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+  }
+  public async json(): Promise<any> {
+    return this._data;
+  }
+  public async text(): Promise<string> {
+    return this._data;
+  }
+  public get bodyUsed() {
+    return false;
+  }
+  public get headers(): Headers {
+    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+  }
+  public get ok(): boolean {
+    return this.status >= 200 && this.status <= 299;
+  }
+  public get redirected() {
+    return false;
+  }
+  public get status() {
+    return 200;
+  }
+  public get statusText() {
+    return "";
+  }
+  public get trailer(): Promise<Headers> {
+    throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
+  }
+  public get type(): ResponseType {
+    return "basic";
+  }
+  public get url() {
+    return "";
+  }
+  public clone() {
+    return { ...this };
+  }
 
   public constructor(data: any) {
     this._data = Promise.resolve(data);
@@ -86,11 +118,16 @@ export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest
 /** Resolves "not found" responses for RPC requests.
  * @internal
  */
-export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason?: any) => void) => void;
+export type RpcRequestNotFoundHandler = (
+  request: RpcRequest,
+  response: RpcNotFoundResponse,
+  resubmit: () => void,
+  reject: (reason?: any) => void,
+) => void;
 
 class Cancellable<T> {
   public promise: Promise<T | undefined>;
-  public cancel() { }
+  public cancel() {}
 
   public constructor(task: Promise<T>) {
     this.promise = new Promise((resolve, reject) => {
@@ -133,7 +170,9 @@ export abstract class RpcRequest<TResponse = any> {
   public responseProtocolVersion = RpcProtocolVersion.None;
 
   /** All RPC requests that are currently in flight. */
-  public static get activeRequests(): ReadonlyMap<string, RpcRequest> { return this._activeRequests; }
+  public static get activeRequests(): ReadonlyMap<string, RpcRequest> {
+    return this._activeRequests;
+  }
 
   /** Events raised by RpcRequest. See [[RpcRequestEvent]] */
   public static readonly events: BeEvent<RpcRequestEventHandler> = new BeEvent();
@@ -142,7 +181,9 @@ export abstract class RpcRequest<TResponse = any> {
   public static readonly notFoundHandlers: BeEvent<RpcRequestNotFoundHandler> = new BeEvent();
 
   /** The aggregate operations profile of all active RPC interfaces. */
-  public static get aggregateLoad(): RpcOperationsProfile { return aggregateLoad; }
+  public static get aggregateLoad(): RpcOperationsProfile {
+    return aggregateLoad;
+  }
 
   /**
    * The request for the current RPC operation.
@@ -171,22 +212,32 @@ export abstract class RpcRequest<TResponse = any> {
   public readonly response: Promise<TResponse | undefined>;
 
   /** The status of this request. */
-  public get status() { return this._status; }
+  public get status() {
+    return this._status;
+  }
 
   /** Extended status information for this request (if available). */
-  public get extendedStatus() { return this._extendedStatus; }
+  public get extendedStatus() {
+    return this._extendedStatus;
+  }
 
   /** The last submission for this request. */
-  public get lastSubmitted() { return this._lastSubmitted; }
+  public get lastSubmitted() {
+    return this._lastSubmitted;
+  }
 
   /** The last status update received for this request. */
-  public get lastUpdated() { return this._lastUpdated; }
+  public get lastUpdated() {
+    return this._lastUpdated;
+  }
 
   /** The target interval (in milliseconds) between submission attempts for this request. */
   public retryInterval: number;
 
   /** Whether a connection is active for this request. */
-  public get connecting() { return this._connecting; }
+  public get connecting() {
+    return this._connecting;
+  }
 
   /** Whether this request is pending. */
   public get pending(): boolean {
@@ -214,12 +265,14 @@ export abstract class RpcRequest<TResponse = any> {
   public method: string;
 
   /** An attempt-specific value for when to next retry this request. */
-  public get retryAfter() { return this._retryAfter; }
+  public get retryAfter() {
+    return this._retryAfter;
+  }
 
   /** Finds the first parameter of a given structural type if present. */
   public findParameterOfType<T>(requiredProperties: { [index: string]: string }): T | undefined {
     for (const param of this.parameters) {
-      if (typeof (param) === "object" && param !== null) {
+      if (typeof param === "object" && param !== null) {
         for (const prop of Object.getOwnPropertyNames(requiredProperties)) {
           if (prop in param && typeof (param[prop]) === requiredProperties[prop]) {
             return param;
@@ -234,7 +287,6 @@ export abstract class RpcRequest<TResponse = any> {
   /** Finds the first IModelRpcProps parameter if present. */
   public findTokenPropsParameter(): IModelRpcProps | undefined {
     return this.findParameterOfType({ iModelId: "string" });
-
   }
 
   /** The raw implementation response for this request. */
@@ -299,7 +351,8 @@ export abstract class RpcRequest<TResponse = any> {
       return false;
     }
 
-    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory && this.responseProtocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
+    return RpcProtocol.protocolVersion >= RpcProtocolVersion.IntroducedStatusCategory &&
+      this.responseProtocolVersion >= RpcProtocolVersion.IntroducedStatusCategory;
   }
 
   /* @internal */
@@ -337,7 +390,7 @@ export abstract class RpcRequest<TResponse = any> {
       this.operation.policy.sentCallback(this);
 
       const response = await this._sending.promise;
-      if (typeof (response) === "undefined") {
+      if (typeof response === "undefined") {
         return;
       }
       this._sending = undefined;
@@ -456,7 +509,7 @@ export abstract class RpcRequest<TResponse = any> {
 
     try {
       const error = RpcMarshaling.deserialize(this.protocol, value);
-      const hasInfo = error && typeof (error) === "object" && error.hasOwnProperty("name") && error.hasOwnProperty("message");
+      const hasInfo = error && typeof error === "object" && error.hasOwnProperty("name") && error.hasOwnProperty("message");
       const name = hasInfo ? error.name : "";
       const message = hasInfo ? error.message : "";
       const errorNumber = (hasInfo && error.hasOwnProperty("errorNumber")) ? error.errorNumber : BentleyStatus.ERROR;

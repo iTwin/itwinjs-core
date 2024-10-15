@@ -7,9 +7,7 @@
  */
 import { ContourDisplay } from "@itwin/core-common";
 import { TextureUnit } from "../RenderFlags";
-import {
-  FragmentShaderComponent, ProgramBuilder, VariableType,
-} from "../ShaderBuilder";
+import { FragmentShaderComponent, ProgramBuilder, VariableType } from "../ShaderBuilder";
 import { addFeatureIndex } from "./FeatureSymbology";
 import { addInstancedRtcMatrix } from "./Vertex";
 

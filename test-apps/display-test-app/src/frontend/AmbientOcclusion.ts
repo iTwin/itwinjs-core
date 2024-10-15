@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { createButton, createCheckBox, createSlider, Slider } from "@itwin/frontend-devtools";
 import { AmbientOcclusion, RenderMode, ViewFlags } from "@itwin/core-common";
 import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { createButton, createCheckBox, createSlider, Slider } from "@itwin/frontend-devtools";
 
 export class AmbientOcclusionEditor {
   private readonly _vp: Viewport;
@@ -59,9 +59,10 @@ export class AmbientOcclusionEditor {
       max: "1.0",
       value: "0.0",
       readout: "right",
-      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.bias = parseFloat(slider.value);
-      }),
+      handler: (slider) =>
+        this.updateAmbientOcclusion((aoProps) => {
+          aoProps.bias = parseFloat(slider.value);
+        }),
     });
 
     this._aoZLengthCap = createSlider({
@@ -73,9 +74,10 @@ export class AmbientOcclusionEditor {
       max: "0.25",
       value: "0.0",
       readout: "right",
-      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.zLengthCap = parseFloat(slider.value);
-      }),
+      handler: (slider) =>
+        this.updateAmbientOcclusion((aoProps) => {
+          aoProps.zLengthCap = parseFloat(slider.value);
+        }),
     });
 
     this._aoMaxDistance = createSlider({
@@ -87,9 +89,10 @@ export class AmbientOcclusionEditor {
       max: "50000.0",
       value: "0.0",
       readout: "right",
-      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.maxDistance = parseFloat(slider.value);
-      }),
+      handler: (slider) =>
+        this.updateAmbientOcclusion((aoProps) => {
+          aoProps.maxDistance = parseFloat(slider.value);
+        }),
     });
 
     this._aoIntensity = createSlider({
@@ -101,9 +104,10 @@ export class AmbientOcclusionEditor {
       max: "16.0",
       value: "0.0",
       readout: "right",
-      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.intensity = parseFloat(slider.value);
-      }),
+      handler: (slider) =>
+        this.updateAmbientOcclusion((aoProps) => {
+          aoProps.intensity = parseFloat(slider.value);
+        }),
     });
 
     this._aoTexelStepSize = createSlider({
@@ -115,9 +119,10 @@ export class AmbientOcclusionEditor {
       max: "50.0",
       value: "0.0",
       readout: "right",
-      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.texelStepSize = parseFloat(slider.value);
-      }),
+      handler: (slider) =>
+        this.updateAmbientOcclusion((aoProps) => {
+          aoProps.texelStepSize = parseFloat(slider.value);
+        }),
     });
 
     this._aoBlurDelta = createSlider({
@@ -129,9 +134,10 @@ export class AmbientOcclusionEditor {
       max: "1.5",
       value: "0.0",
       readout: "right",
-      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.blurDelta = parseFloat(slider.value);
-      }),
+      handler: (slider) =>
+        this.updateAmbientOcclusion((aoProps) => {
+          aoProps.blurDelta = parseFloat(slider.value);
+        }),
     });
 
     this._aoBlurSigma = createSlider({
@@ -143,9 +149,10 @@ export class AmbientOcclusionEditor {
       max: "5.0",
       value: "0.0",
       readout: "right",
-      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.blurSigma = parseFloat(slider.value);
-      }),
+      handler: (slider) =>
+        this.updateAmbientOcclusion((aoProps) => {
+          aoProps.blurSigma = parseFloat(slider.value);
+        }),
     });
 
     this._aoBlurTexelStepSize = createSlider({
@@ -157,9 +164,10 @@ export class AmbientOcclusionEditor {
       max: "5.0",
       value: "0.0",
       readout: "right",
-      handler: (slider) => this.updateAmbientOcclusion((aoProps) => {
-        aoProps.blurTexelStepSize = parseFloat(slider.value);
-      }),
+      handler: (slider) =>
+        this.updateAmbientOcclusion((aoProps) => {
+          aoProps.blurTexelStepSize = parseFloat(slider.value);
+        }),
     });
 
     const resetButton = createButton({

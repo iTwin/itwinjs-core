@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
 import { DbResult, ProcessDetector } from "@itwin/core-bentley";
 import { QueryBinder, QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { assert } from "chai";
 import { TestUtility } from "../TestUtility";
 
 function skipIf(cond: () => boolean, skipMsg: string, title: string, callback: Mocha.AsyncFunc | Mocha.Func): Mocha.Test {
@@ -174,7 +174,7 @@ describe("ECSql Query", () => {
     }
   });
 
-  it("Query with Abbreviated Blobs", async function () {
+  it("Query with Abbreviated Blobs", async function() {
     const query1 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart LIMIT 1";
     const query2 = "SELECT ECInstanceId, GeometryStream FROM BisCore.GeometryPart WHERE ECInstanceId=?";
     let row1: any;
@@ -183,11 +183,21 @@ describe("ECSql Query", () => {
     for await (const row of imodel2.createQueryReader(query1, undefined, { rowFormat: QueryRowFormat.UseJsPropertyNames }))
       row1 = row.toRow();
     assert.isNotEmpty(row1.geometryStream);
-    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: false }))
+    for await (
+      const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+        abbreviateBlobs: false,
+      })
+    )
       row2 = row.toRow();
     assert.isNotEmpty(row2.geometryStream);
     assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    for await (const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), { rowFormat: QueryRowFormat.UseJsPropertyNames, abbreviateBlobs: true }))
+    for await (
+      const row of imodel2.createQueryReader(query2, QueryBinder.from([row1.id]), {
+        rowFormat: QueryRowFormat.UseJsPropertyNames,
+        abbreviateBlobs: true,
+      })
+    )
       row3 = row.toRow();
     assert.equal(row3.id, row1.id);
     assert.equal(row1.geometryStream.byteLength, JSON.parse(row3.geometryStream).bytes);

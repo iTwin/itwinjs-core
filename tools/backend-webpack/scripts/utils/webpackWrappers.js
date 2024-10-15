@@ -7,7 +7,7 @@ const webpack = require("webpack");
 const chalk = require("chalk");
 const { PrettyLoggingPlugin } = require("@itwin/core-webpack-tools");
 
-function createCompiler(webpack, config, name, description, onSuccess = function () { }) {
+function createCompiler(webpack, config, name, description, onSuccess = function() {}) {
   try {
     config.plugins.push(new PrettyLoggingPlugin(name, description, onSuccess));
     compiler = webpack(config);
@@ -34,7 +34,7 @@ async function watchBackend(config) {
 
 function runWebpackAsync(compiler) {
   return new Promise((resolve, reject) => {
-    compiler.run((err, stats) => (err) ? reject(err) : resolve(stats))
+    compiler.run((err, stats) => err ? reject(err) : resolve(stats));
   });
 }
 

@@ -56,7 +56,6 @@ function emitIModelJson(className: string, description: string, g: any) {
 // 2) An additional "import" directive to obtain an appropriate implementation of "emit".
 
 describe("constructorsAndImodelJson", () => {
-
   it("CurvePrimitives", () => {
     emitCategoryHeader("CurvePrimitive");
     const pointA = Point3d.create(0, 0, 0);
@@ -78,10 +77,15 @@ describe("constructorsAndImodelJson", () => {
     // elliptic arc -- larger vector90 . . .
     emitIModelJson("Arc3d.create", "elliptic arc", Arc3d.create(pointA, vectorAB, vectorAD.scale(2.0), AngleSweep.createStartEndDegrees(-45, 190)));
 
-    emitIModelJson("BSplineCurve3d.create", "curve by poles", BSplineCurve3d.create(
-      [pointA, pointB, pointC, pointD],
-      [0, 0, 0, 1, 1, 1], 4)!);
-
+    emitIModelJson(
+      "BSplineCurve3d.create",
+      "curve by poles",
+      BSplineCurve3d.create(
+        [pointA, pointB, pointC, pointD],
+        [0, 0, 0, 1, 1, 1],
+        4,
+      )!,
+    );
   });
 
   it("constructorsAndIModelJson.CurveCollections", () => {
@@ -94,10 +98,15 @@ describe("constructorsAndImodelJson", () => {
     const vectorAD = pointA.vectorTo(pointD);
 
     const upperSemiCircle = Arc3d.create(pointA, vectorAB, vectorAD, AngleSweep.createStartEndDegrees(0, 180));
-    emitIModelJson("Path.create", "path with line, arc, line",
+    emitIModelJson(
+      "Path.create",
+      "path with line, arc, line",
       Path.create(
         LineSegment3d.create(pointC, upperSemiCircle.fractionToPoint(0)),
-        upperSemiCircle, LineSegment3d.create(upperSemiCircle.fractionToPoint(1), pointA)));
+        upperSemiCircle,
+        LineSegment3d.create(upperSemiCircle.fractionToPoint(1), pointA),
+      ),
+    );
 
     const closureSegment = LineSegment3d.create(upperSemiCircle.fractionToPoint(1), upperSemiCircle.fractionToPoint(0));
     const semiCircleRegion = Loop.create(upperSemiCircle, closureSegment);
@@ -123,7 +132,11 @@ describe("constructorsAndImodelJson", () => {
       const radiusA = 1.5;
       const radiusB = 2.0;
       const capped = true;
-      emitIModelJson("Cone.createAxisPoints(centerA, centerB, radiusA, radiusB, capped)", "full sphere", Cone.createAxisPoints(centerA, centerB, radiusA, radiusB, capped)!);
+      emitIModelJson(
+        "Cone.createAxisPoints(centerA, centerB, radiusA, radiusB, capped)",
+        "full sphere",
+        Cone.createAxisPoints(centerA, centerB, radiusA, radiusB, capped)!,
+      );
     }
 
     {
@@ -133,10 +146,11 @@ describe("constructorsAndImodelJson", () => {
       const ay = 3.0;
       const bx = 4.0;
       const by = 2.0;
-      emitIModelJson("Box.createDgnBox(cornerA, xVector, yVector, baseX, baseY, topX, topY, capped)",
+      emitIModelJson(
+        "Box.createDgnBox(cornerA, xVector, yVector, baseX, baseY, topX, topY, capped)",
         "box with sides slanting inward",
-        Box.createDgnBox(cornerA, Vector3d.unitX(), Vector3d.unitY(),
-          cornerB, ax, ay, bx, by, true) as Box);
+        Box.createDgnBox(cornerA, Vector3d.unitX(), Vector3d.unitY(), cornerB, ax, ay, bx, by, true) as Box,
+      );
     }
     {
       const frame = Transform.createOriginAndMatrix(Point3d.create(1, 1, 1), Matrix3d.createRigidViewAxesZTowardsEye(2, 0, 3));
@@ -144,28 +158,29 @@ describe("constructorsAndImodelJson", () => {
       const minorRadius = 1.0;
       const sweep = Angle.createDegrees(90);
       const capped = true;
-      emitIModelJson("TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped)",
+      emitIModelJson(
+        "TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped)",
         "90 degree elbows",
-        TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped)!);
+        TorusPipe.createInFrame(frame, majorRadius, minorRadius, sweep, capped)!,
+      );
     }
     {
       const contour = Loop.create(LineString3d.createRegularPolygonXY(Point3d.create(1, 1, 0), 6, 1.0, true));
       const sweepVector = Vector3d.create(0, 0, 4);
       const capped = true;
-      emitIModelJson("LinearSweep.create(contour, sweepVector, capped)",
-        "swept hexagon",
-        LinearSweep.create(contour, sweepVector, capped)!);
+      emitIModelJson("LinearSweep.create(contour, sweepVector, capped)", "swept hexagon", LinearSweep.create(contour, sweepVector, capped)!);
     }
     {
       const contour = Loop.create(LineString3d.createRegularPolygonXY(Point3d.create(1, 1, 0), 6, 1.0, true));
       const axisOfRotation = Ray3d.create(Point3d.create(-1, 0, 0), Vector3d.create(0, 1, 0));
       const sweepAngle = Angle.createDegrees(135);
       const capped = true;
-      emitIModelJson("RotationalSweep.create(contour, axisOfRotation, sweepAngle, capped)",
+      emitIModelJson(
+        "RotationalSweep.create(contour, axisOfRotation, sweepAngle, capped)",
         "hexagon rotated",
-        RotationalSweep.create(contour, axisOfRotation, sweepAngle, capped)!);
+        RotationalSweep.create(contour, axisOfRotation, sweepAngle, capped)!,
+      );
     }
-
   });
   it("constructorsAndImodelJson.Other", () => {
     emitCategoryHeader("CurveCollections");
@@ -224,7 +239,15 @@ describe("constructorsAndImodelJson", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const tagA = new TaggedNumericData(-1000, 0);
-    const surface = TorusPipe.createDgnTorusPipe(Point3d.create(0, 0, 0), Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), 4, 1, Angle.createDegrees(90), true)!;
+    const surface = TorusPipe.createDgnTorusPipe(
+      Point3d.create(0, 0, 0),
+      Vector3d.create(1, 0, 0),
+      Vector3d.create(0, 1, 0),
+      4,
+      1,
+      Angle.createDegrees(90),
+      true,
+    )!;
     const options = StrokeOptions.createForFacets();
     options.angleTol = Angle.createDegrees(90);
     const builder = PolyfaceBuilder.create(options);

@@ -3,11 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as sinon from "sinon";
-import { AnyClass, AnyProperty, Constant, CustomAttribute, CustomAttributeClass, CustomAttributeContainerProps, EntityClass,
-  Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PropertyCategory,
-  RelationshipClass, RelationshipConstraint, Schema, SchemaItem, StructClass, Unit, UnitSystem,
+import {
+  AnyClass,
+  AnyProperty,
+  Constant,
+  CustomAttribute,
+  CustomAttributeClass,
+  CustomAttributeContainerProps,
+  EntityClass,
+  Enumeration,
+  Format,
+  InvertedUnit,
+  KindOfQuantity,
+  Mixin,
+  Phenomenon,
+  PropertyCategory,
+  RelationshipClass,
+  RelationshipConstraint,
+  Schema,
+  SchemaItem,
+  StructClass,
+  Unit,
+  UnitSystem,
 } from "@itwin/ecschema-metadata";
+import * as sinon from "sinon";
 import * as Diagnostics from "../../Validation/Diagnostic";
 import { IDiagnosticReporter } from "../../Validation/DiagnosticReporter";
 import { IRuleSet } from "../../Validation/Rules";
@@ -51,46 +70,86 @@ export const TestDiagnosticCodes = {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const TestDiagnostics = {
-  FailingSchemaDiagnostic: Diagnostics.createSchemaDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingSchemaDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingSchemaItemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<SchemaItem, [string, string]>(TestDiagnosticCodes.FailingSchemaItemDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingClassDiagnostic: Diagnostics.createClassDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingClassDiagnostic,
-    "Failed with params {0} {1}"),
-  FailingPropertyDiagnostic: Diagnostics.createPropertyDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingPropertyDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingEntityClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<EntityClass, [string, string]>(TestDiagnosticCodes.FailingEntityClassDiagnostic,
-    "Failed with params {0} {1}"),
-  FailingStructClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<StructClass, [string, string]>(TestDiagnosticCodes.FailingStructClassDiagnostic,
-    "Failed with params {0} {1}"),
-  FailingMixinDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Mixin, [string, string]>(TestDiagnosticCodes.FailingMixinDiagnostic,
-    "Failed with params {0} {1}"),
-  FailingRelationshipDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<RelationshipClass, [string, string]>(TestDiagnosticCodes.FailingRelationshipDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingRelationshipConstraintDiagnostic: Diagnostics.createRelationshipConstraintDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingRelationshipConstraintDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingCustomAttributeClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<CustomAttributeClass, [string, string]>(TestDiagnosticCodes.FailingCustomAttributeClassDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingCustomAttributeContainerDiagnostic: Diagnostics.createCustomAttributeContainerDiagnosticClass<[string, string]>(TestDiagnosticCodes.FailingCustomAttributeContainerDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingEnumerationDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Enumeration, [string, string]>(TestDiagnosticCodes.FailingEnumerationDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingKindOfQuantityDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<KindOfQuantity, [string, string]>(TestDiagnosticCodes.FailingKindOfQuantityDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingPropertyCategoryDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<PropertyCategory, [string, string]>(TestDiagnosticCodes.FailingPropertyCategoryDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Format, [string, string]>(TestDiagnosticCodes.FailingFormatDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingUnitDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Unit, [string, string]>(TestDiagnosticCodes.FailingUnitDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingInvertedUnitFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<InvertedUnit, [string, string]>(TestDiagnosticCodes.FailingInvertedUnitFormatDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingUnitSystemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<UnitSystem, [string, string]>(TestDiagnosticCodes.FailingUnitSystemDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingPhenomenonDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Phenomenon, [string, string]>(TestDiagnosticCodes.FailingPhenomenonDiagnostic,
-    "Failed with param {0} {1}"),
-  FailingConstantDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Constant, [string, string]>(TestDiagnosticCodes.FailingConstantDiagnostic,
-    "Failed with param {0} {1}"),
+  FailingSchemaDiagnostic: Diagnostics.createSchemaDiagnosticClass<[string, string]>(
+    TestDiagnosticCodes.FailingSchemaDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingSchemaItemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<SchemaItem, [string, string]>(
+    TestDiagnosticCodes.FailingSchemaItemDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingClassDiagnostic: Diagnostics.createClassDiagnosticClass<[string, string]>(
+    TestDiagnosticCodes.FailingClassDiagnostic,
+    "Failed with params {0} {1}",
+  ),
+  FailingPropertyDiagnostic: Diagnostics.createPropertyDiagnosticClass<[string, string]>(
+    TestDiagnosticCodes.FailingPropertyDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingEntityClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<EntityClass, [string, string]>(
+    TestDiagnosticCodes.FailingEntityClassDiagnostic,
+    "Failed with params {0} {1}",
+  ),
+  FailingStructClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<StructClass, [string, string]>(
+    TestDiagnosticCodes.FailingStructClassDiagnostic,
+    "Failed with params {0} {1}",
+  ),
+  FailingMixinDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Mixin, [string, string]>(
+    TestDiagnosticCodes.FailingMixinDiagnostic,
+    "Failed with params {0} {1}",
+  ),
+  FailingRelationshipDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<RelationshipClass, [string, string]>(
+    TestDiagnosticCodes.FailingRelationshipDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingRelationshipConstraintDiagnostic: Diagnostics.createRelationshipConstraintDiagnosticClass<[string, string]>(
+    TestDiagnosticCodes.FailingRelationshipConstraintDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingCustomAttributeClassDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<CustomAttributeClass, [string, string]>(
+    TestDiagnosticCodes.FailingCustomAttributeClassDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingCustomAttributeContainerDiagnostic: Diagnostics.createCustomAttributeContainerDiagnosticClass<[string, string]>(
+    TestDiagnosticCodes.FailingCustomAttributeContainerDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingEnumerationDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Enumeration, [string, string]>(
+    TestDiagnosticCodes.FailingEnumerationDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingKindOfQuantityDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<KindOfQuantity, [string, string]>(
+    TestDiagnosticCodes.FailingKindOfQuantityDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingPropertyCategoryDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<PropertyCategory, [string, string]>(
+    TestDiagnosticCodes.FailingPropertyCategoryDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Format, [string, string]>(
+    TestDiagnosticCodes.FailingFormatDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingUnitDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Unit, [string, string]>(
+    TestDiagnosticCodes.FailingUnitDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingInvertedUnitFormatDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<InvertedUnit, [string, string]>(
+    TestDiagnosticCodes.FailingInvertedUnitFormatDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingUnitSystemDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<UnitSystem, [string, string]>(
+    TestDiagnosticCodes.FailingUnitSystemDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingPhenomenonDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Phenomenon, [string, string]>(
+    TestDiagnosticCodes.FailingPhenomenonDiagnostic,
+    "Failed with param {0} {1}",
+  ),
+  FailingConstantDiagnostic: Diagnostics.createSchemaItemDiagnosticClass<Constant, [string, string]>(
+    TestDiagnosticCodes.FailingConstantDiagnostic,
+    "Failed with param {0} {1}",
+  ),
 };
 
 export async function* failingSchemaRule(schema: Schema): AsyncIterable<Diagnostics.SchemaDiagnostic<[string, string]>> {
@@ -125,7 +184,9 @@ export async function* passingPropertyRule(_property: AnyProperty): AsyncIterabl
   return undefined;
 }
 
-export async function* failingEntityClassRule(entityClass: EntityClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<EntityClass, [string, string]>> {
+export async function* failingEntityClassRule(
+  entityClass: EntityClass,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<EntityClass, [string, string]>> {
   yield new TestDiagnostics.FailingEntityClassDiagnostic(entityClass, ["Param1", "Param2"]);
 }
 
@@ -133,7 +194,9 @@ export async function* passingEntityClassRule(_entityClass: EntityClass): AsyncI
   return undefined;
 }
 
-export async function* failingStructClassRule(structClass: StructClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<StructClass, [string, string]>> {
+export async function* failingStructClassRule(
+  structClass: StructClass,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<StructClass, [string, string]>> {
   yield new TestDiagnostics.FailingStructClassDiagnostic(structClass, ["Param1", "Param2"]);
 }
 
@@ -149,47 +212,71 @@ export async function* passingMixinRule(_mixin: Mixin): AsyncIterable<Diagnostic
   return undefined;
 }
 
-export async function* failingRelationshipRule(relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, [string, string]>> {
+export async function* failingRelationshipRule(
+  relationship: RelationshipClass,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, [string, string]>> {
   yield new TestDiagnostics.FailingRelationshipDiagnostic(relationship, ["Param1", "Param2"]);
 }
 
-export async function* passingRelationshipRule(_relationship: RelationshipClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, any[]>> {
+export async function* passingRelationshipRule(
+  _relationship: RelationshipClass,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<RelationshipClass, any[]>> {
   return undefined;
 }
 
-export async function* failingRelationshipConstraintRule(constraint: RelationshipConstraint): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<[string, string]>> {
+export async function* failingRelationshipConstraintRule(
+  constraint: RelationshipConstraint,
+): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingRelationshipConstraintDiagnostic(constraint, ["Param1", "Param2"]);
 }
 
-export async function* passingRelationshipConstraintRule(_constraint: RelationshipConstraint): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<any[]>> {
+export async function* passingRelationshipConstraintRule(
+  _constraint: RelationshipConstraint,
+): AsyncIterable<Diagnostics.RelationshipConstraintDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingCustomAttributeClassRule(customAttributeClass: CustomAttributeClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, [string, string]>> {
+export async function* failingCustomAttributeClassRule(
+  customAttributeClass: CustomAttributeClass,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, [string, string]>> {
   yield new TestDiagnostics.FailingCustomAttributeClassDiagnostic(customAttributeClass, ["Param1", "Param2"]);
 }
 
-export async function* passingCustomAttributeClassRule(_customAttributeClass: CustomAttributeClass): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, any[]>> {
+export async function* passingCustomAttributeClassRule(
+  _customAttributeClass: CustomAttributeClass,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<CustomAttributeClass, any[]>> {
   return undefined;
 }
 
-export async function* failingCustomAttributeContainerRule(container: CustomAttributeContainerProps): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> {
+export async function* failingCustomAttributeContainerRule(
+  container: CustomAttributeContainerProps,
+): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingCustomAttributeContainerDiagnostic(container, ["Param1", "Param2"]);
 }
 
-export async function* passingCustomAttributeContainerRule(_container: CustomAttributeContainerProps): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> {
+export async function* passingCustomAttributeContainerRule(
+  _container: CustomAttributeContainerProps,
+): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingCustomAttributeRule(container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> {
+export async function* failingCustomAttributeRule(
+  container: CustomAttributeContainerProps,
+  _customAttribute: CustomAttribute,
+): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<[string, string]>> {
   yield new TestDiagnostics.FailingCustomAttributeContainerDiagnostic(container, ["Param1", "Param2"]);
 }
 
-export async function* passingCustomAttributeRule(_container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> {
+export async function* passingCustomAttributeRule(
+  _container: CustomAttributeContainerProps,
+  _customAttribute: CustomAttribute,
+): AsyncIterable<Diagnostics.CustomAttributeContainerDiagnostic<any[]>> {
   return undefined;
 }
 
-export async function* failingEnumerationRule(enumeration: Enumeration): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Enumeration, [string, string]>> {
+export async function* failingEnumerationRule(
+  enumeration: Enumeration,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<Enumeration, [string, string]>> {
   yield new TestDiagnostics.FailingEnumerationDiagnostic(enumeration, ["Param1", "Param2"]);
 }
 
@@ -197,19 +284,27 @@ export async function* passingEnumerationRule(_enumeration: Enumeration): AsyncI
   return undefined;
 }
 
-export async function* failingKindOfQuantityRule(kindOfQuantity: KindOfQuantity): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, [string, string]>> {
+export async function* failingKindOfQuantityRule(
+  kindOfQuantity: KindOfQuantity,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, [string, string]>> {
   yield new TestDiagnostics.FailingKindOfQuantityDiagnostic(kindOfQuantity, ["Param1", "Param2"]);
 }
 
-export async function* passingKindOfQuantityRule(_kindOfQuantity: KindOfQuantity): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, any[]>> {
+export async function* passingKindOfQuantityRule(
+  _kindOfQuantity: KindOfQuantity,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<KindOfQuantity, any[]>> {
   return undefined;
 }
 
-export async function* failingPropertyCategoryRule(propertyCategory: PropertyCategory): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, [string, string]>> {
+export async function* failingPropertyCategoryRule(
+  propertyCategory: PropertyCategory,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, [string, string]>> {
   yield new TestDiagnostics.FailingPropertyCategoryDiagnostic(propertyCategory, ["Param1", "Param2"]);
 }
 
-export async function* passingPropertyCategoryRule(_propertyCategory: PropertyCategory): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, any[]>> {
+export async function* passingPropertyCategoryRule(
+  _propertyCategory: PropertyCategory,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<PropertyCategory, any[]>> {
   return undefined;
 }
 
@@ -229,7 +324,9 @@ export async function* passingUnitRule(_unit: Unit): AsyncIterable<Diagnostics.S
   return undefined;
 }
 
-export async function* failingInvertedUnitRule(invertedUnit: InvertedUnit): AsyncIterable<Diagnostics.SchemaItemDiagnostic<InvertedUnit, [string, string]>> {
+export async function* failingInvertedUnitRule(
+  invertedUnit: InvertedUnit,
+): AsyncIterable<Diagnostics.SchemaItemDiagnostic<InvertedUnit, [string, string]>> {
   yield new TestDiagnostics.FailingInvertedUnitFormatDiagnostic(invertedUnit, ["Param1", "Param2"]);
 }
 
@@ -326,35 +423,61 @@ export async function applyRelationshipClassSuppression(_diagnostic: Diagnostics
   return true;
 }
 
-export async function ignoreRelationshipConstraintSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _constraint: RelationshipConstraint): Promise<boolean> {
+export async function ignoreRelationshipConstraintSuppression(
+  _diagnostic: Diagnostics.AnyDiagnostic,
+  _constraint: RelationshipConstraint,
+): Promise<boolean> {
   return false;
 }
 
-export async function applyRelationshipConstraintSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _constraint: RelationshipConstraint): Promise<boolean> {
+export async function applyRelationshipConstraintSuppression(
+  _diagnostic: Diagnostics.AnyDiagnostic,
+  _constraint: RelationshipConstraint,
+): Promise<boolean> {
   return true;
 }
 
-export async function ignoreCustomAttributeClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _customAttributeClass: CustomAttributeClass): Promise<boolean> {
+export async function ignoreCustomAttributeClassSuppression(
+  _diagnostic: Diagnostics.AnyDiagnostic,
+  _customAttributeClass: CustomAttributeClass,
+): Promise<boolean> {
   return false;
 }
 
-export async function applyCustomAttributeClassSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _customAttributeClass: CustomAttributeClass): Promise<boolean> {
+export async function applyCustomAttributeClassSuppression(
+  _diagnostic: Diagnostics.AnyDiagnostic,
+  _customAttributeClass: CustomAttributeClass,
+): Promise<boolean> {
   return true;
 }
 
-export async function ignoreCustomAttributeContainerSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps): Promise<boolean> {
+export async function ignoreCustomAttributeContainerSuppression(
+  _diagnostic: Diagnostics.AnyDiagnostic,
+  _container: CustomAttributeContainerProps,
+): Promise<boolean> {
   return false;
 }
 
-export async function applyCustomAttributeContainerSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps): Promise<boolean> {
+export async function applyCustomAttributeContainerSuppression(
+  _diagnostic: Diagnostics.AnyDiagnostic,
+  _container: CustomAttributeContainerProps,
+): Promise<boolean> {
   return true;
 }
 
-export async function ignoreCustomAttributeInstanceSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
+export async function ignoreCustomAttributeInstanceSuppression(
+  _diagnostic: Diagnostics.AnyDiagnostic,
+  _container: CustomAttributeContainerProps,
+  _customAttribute: CustomAttribute,
+): Promise<boolean> {
   return false;
 }
 
-export async function applyCustomAttributeInstanceSuppression(_diagnostic: Diagnostics.AnyDiagnostic, _container: CustomAttributeContainerProps, _customAttribute: CustomAttribute): Promise<boolean> {
+export async function applyCustomAttributeInstanceSuppression(
+  _diagnostic: Diagnostics.AnyDiagnostic,
+  _container: CustomAttributeContainerProps,
+  _customAttribute: CustomAttribute,
+): Promise<boolean> {
   return true;
 }
 
@@ -374,11 +497,17 @@ export async function applyKindOfQuantitySuppression(_diagnostic: Diagnostics.An
   return true;
 }
 
-export async function ignorePropertyCategorySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _propertyCategory: PropertyCategory): Promise<boolean> {
+export async function ignorePropertyCategorySuppression(
+  _diagnostic: Diagnostics.AnyDiagnostic,
+  _propertyCategory: PropertyCategory,
+): Promise<boolean> {
   return false;
 }
 
-export async function applyPropertyCategorySuppression(_diagnostic: Diagnostics.AnyDiagnostic, _propertyCategory: PropertyCategory): Promise<boolean> {
+export async function applyPropertyCategorySuppression(
+  _diagnostic: Diagnostics.AnyDiagnostic,
+  _propertyCategory: PropertyCategory,
+): Promise<boolean> {
   return true;
 }
 

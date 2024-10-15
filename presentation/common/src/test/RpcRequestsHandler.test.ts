@@ -2,12 +2,12 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
+import { Id64, Logger } from "@itwin/core-bentley";
+import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { Id64, Logger } from "@itwin/core-bentley";
-import { IModelRpcProps, RpcInterface, RpcInterfaceDefinition, RpcManager } from "@itwin/core-common";
 import {
   DescriptorOverrides,
   DistinctValuesRpcRequestOptions,
@@ -121,7 +121,10 @@ describe("RpcRequestsHandler", () => {
           handler: sinon.spy(),
         };
         const diagnosticsResult: ClientDiagnostics = {};
-        await handler.request(async () => successResponse(result, diagnosticsResult), { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions });
+        await handler.request(async () => successResponse(result, diagnosticsResult), {
+          ...defaultRpcHandlerOptions,
+          diagnostics: diagnosticsOptions,
+        });
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
       });
 
@@ -171,7 +174,9 @@ describe("RpcRequestsHandler", () => {
         };
         const diagnosticsResult: ClientDiagnostics = {};
         const func = sinon.fake(async () => errorResponse(PresentationStatus.Error, undefined, diagnosticsResult));
-        await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(PresentationError);
+        await expect(handler.request(func, { ...defaultRpcHandlerOptions, diagnostics: diagnosticsOptions })).to.eventually.be.rejectedWith(
+          PresentationError,
+        );
         expect(diagnosticsOptions.handler).to.be.calledOnceWith(diagnosticsResult);
       });
     });

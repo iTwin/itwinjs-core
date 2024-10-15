@@ -145,7 +145,9 @@ export class FacetOrientationFixup {
               if (neighborOrientation === 0) {
                 // first visit to this facet !
                 // orientations of baseEdge and neighborEdge tell us how to orient it.
-                const newOrientation = SortableEdge.areDirectedPartners(edgeArray[baseEdgeIndex], edgeArray[neighborEdgeIndex]) ? baseOrientation : -baseOrientation;
+                const newOrientation = SortableEdge.areDirectedPartners(edgeArray[baseEdgeIndex], edgeArray[neighborEdgeIndex])
+                  ? baseOrientation
+                  : -baseOrientation;
                 this.recordFacetInComponent(neighborFacet, newOrientation);
                 this.pushFacetEdgesOnStack(neighborEdgeIndex, edgeStack);
                 FacetOrientationFixup.swapEntries(this._edgeToEdgeInComponent, baseEdgeIndex, neighborEdgeIndex);
@@ -192,7 +194,6 @@ export class FacetOrientationFixup {
     data[j] = q;
   }
   /**
-   *
    * @param data an array of cyclically linked loops.
    */
   private static extractCyclicIndices(data: number[], index0: number, loopIndices: number[]) {

@@ -3,15 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Enumeration, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Enumeration merge tests", () => {
-
   const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TargetSchema",
@@ -150,8 +149,7 @@ describe("Enumeration merge tests", () => {
             name: "FirstValue",
             label: "first value",
             value: 0,
-          },
-          {
+          }, {
             name: "SecondValue",
             label: "second value",
             value: 1,
@@ -290,7 +288,7 @@ describe("Enumeration merge tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith(Error, "The Enumeration TestEnumeration has an incompatible type. It must be \"string\", not \"int\".");
+    await expect(merge).to.be.rejectedWith(Error, 'The Enumeration TestEnumeration has an incompatible type. It must be "string", not "int".');
   });
 
   it("should throw an error if enumerator value attribute conflict exist", async () => {
@@ -329,6 +327,6 @@ describe("Enumeration merge tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Failed to merge enumerator attribute, Enumerator \"EnumeratorOne\" has different values.");
+    await expect(merge).to.be.rejectedWith('Failed to merge enumerator attribute, Enumerator "EnumeratorOne" has different values.');
   });
 });

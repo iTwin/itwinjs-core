@@ -21,7 +21,9 @@ export class I3dmHeader extends TileHeader {
   public readonly batchTableBinaryLength: number;
   public readonly gltfVersion: number;
   public readonly batchTableJson: any;
-  public get isValid(): boolean { return TileFormat.I3dm === this.format; }
+  public get isValid(): boolean {
+    return TileFormat.I3dm === this.format;
+  }
 
   public constructor(stream: ByteStream) {
     super(stream);

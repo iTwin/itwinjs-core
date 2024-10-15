@@ -106,9 +106,10 @@ export namespace ElementGeometryChange { // eslint-disable-line @typescript-esli
     if (modelChanges.updated)
       yield* extantIterable(modelChanges.updated, DbOpcode.Update);
 
-    if (modelChanges.deleted)
+    if (modelChanges.deleted) {
       for (const id of CompressedId64Set.iterable(modelChanges.deleted))
         yield { type: DbOpcode.Delete, id };
+    }
   }
 
   /** Obtain an iterable over the geometry changes for a single [GeometricModel]($backend). A given element will appear at most once. */

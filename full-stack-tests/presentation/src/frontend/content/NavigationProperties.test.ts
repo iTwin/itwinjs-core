@@ -3,10 +3,10 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { assert, Guid } from "@itwin/core-bentley";
 import { ContentSpecificationTypes, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
 import { getFieldByLabel } from "../../Utils";
 import { describeContentTestSuite } from "./Utils";
 

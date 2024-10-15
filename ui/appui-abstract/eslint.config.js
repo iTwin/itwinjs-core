@@ -13,14 +13,14 @@ module.exports = [
   {
     files: ["**/*.ts"],
     rules: {
-      "max-statements-per-line": "off"
-    }
+      "max-statements-per-line": "off",
+    },
   },
   {
     files: ["src/test/**/*"],
     rules: {
-      "deprecation/deprecation": "off"
-    }
+      "deprecation/deprecation": "off",
+    },
   },
   ...eslintBaseConfig,
 ];

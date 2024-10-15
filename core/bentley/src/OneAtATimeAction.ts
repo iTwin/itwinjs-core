@@ -9,7 +9,7 @@
 import { BentleyError } from "./BentleyError";
 
 /** @beta */
-export class AbandonedError extends Error { }
+export class AbandonedError extends Error {}
 
 /**
  * An object that returns a Promise when you call [[init]], but supplies a way to abandon the promise if it is no longer relevant.
@@ -26,7 +26,7 @@ class PromiseWithAbandon<T> {
    * @param _run The method that creates the underlying Promise.
    * @param _args An array of args to be passed to run when [[start]] is called.
    */
-  constructor(private _run: (...args: any[]) => Promise<T>, private _args: any[]) { }
+  constructor(private _run: (...args: any[]) => Promise<T>, private _args: any[]) {}
 
   /** Create a Promise that is chained to the underlying Promise, but is connected to the abandon method. */
   public async init(msg: string): Promise<T> {

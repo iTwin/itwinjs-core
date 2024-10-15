@@ -79,7 +79,6 @@ describe("PolygonOps", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "SortOuterAndHoleLoopsXY.DeepNest");
     expect(ck.getNumErrors()).toBe(0);
-
   });
 
   it("SortOuterAndHoleLoopsXY.DeepAbuttingNest", () => {
@@ -125,7 +124,6 @@ describe("PolygonOps", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "SortOuterAndHoleLoopsXY.DeepAbuttingNest");
     expect(ck.getNumErrors()).toBe(0);
-
   });
 
   it("SortOuterAndHoleLoopsXY.ManyHoles", () => {
@@ -147,7 +145,7 @@ describe("PolygonOps", () => {
         const holeRange = Range2d.createXYXY(xx, yy, xx + a, yy + a);
         holeRange.scaleAboutCenterInPlace(0.9);
         loops.push(makeLoop(holeRange, true));
-        const numHoleA = (i % 3);
+        const numHoleA = i % 3;
         for (let k = 0; k < numHoleA; k++) {
           holeRange.scaleAboutCenterInPlace(0.8);
           loops.push(makeLoop(holeRange, true));
@@ -177,7 +175,6 @@ describe("PolygonOps", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOps", "SortOuterAndHoleLoopsXY.ManyHoles");
     expect(ck.getNumErrors()).toBe(0);
-
   });
 
   it("SortablePolygon.LoopToPolygon", () => {
@@ -230,7 +227,7 @@ describe("PolygonOps", () => {
         const testPt = Point3d.create(xCoord, yCoord);
         testPts.push(testPt);
         const startPt = Point3d.createAdd2Scaled(testPt, 1.0, deltaV, -Geometry.hypotenuseSquaredXY(xCoord, yCoord));
-        const endPt = Point3d.createAdd2Scaled(startPt, 1.0, deltaV, 1.0);  // segment parameter is arc length
+        const endPt = Point3d.createAdd2Scaled(startPt, 1.0, deltaV, 1.0); // segment parameter is arc length
         testSegments.push(LineSegment3d.create(startPt, endPt));
       }
     }
@@ -254,8 +251,17 @@ describe("PolygonOps", () => {
       if (ck.testTrue(loc.isValid, "found ray intersection")) {
         ck.testPoint3d(testPts[i], loc.point, "intersection point as expected");
         ck.testCoordinate(testPts[i].distance(testSegments[i].point0Ref), loc.a, "intersection parameter along ray as expected");
-        if (ck.testTrue(loc.closestEdgeIndex >= 0 && loc.closestEdgeIndex < polygon.length && loc.closestEdgeParam >= 0.0 && loc.closestEdgeParam <= 1.0, "found edge projection")) {
-          const projPt = polygonCarrier.interpolateIndexIndex(loc.closestEdgeIndex, loc.closestEdgeParam, (loc.closestEdgeIndex + 1) % polygon.length)!;
+        if (
+          ck.testTrue(
+            loc.closestEdgeIndex >= 0 && loc.closestEdgeIndex < polygon.length && loc.closestEdgeParam >= 0.0 && loc.closestEdgeParam <= 1.0,
+            "found edge projection",
+          )
+        ) {
+          const projPt = polygonCarrier.interpolateIndexIndex(
+            loc.closestEdgeIndex,
+            loc.closestEdgeParam,
+            (loc.closestEdgeIndex + 1) % polygon.length,
+          )!;
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, LineString3d.create([testPts[i], projPt]), x0);
         }
         if (isConvex) {
@@ -285,14 +291,46 @@ describe("PolygonOps", () => {
     const allGeometry: GeometryQuery[] = [];
     const xDelta = 5;
 
-    const convexPolygon = [Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-2, 1), Point3d.create(-1, 2), Point3d.create(0, 2), Point3d.create(1, 2), Point3d.create(2, 2), Point3d.create(1, -1), Point3d.create(0, -2)];
+    const convexPolygon = [
+      Point3d.create(-2, -1),
+      Point3d.create(-2, 0),
+      Point3d.create(-2, 1),
+      Point3d.create(-1, 2),
+      Point3d.create(0, 2),
+      Point3d.create(1, 2),
+      Point3d.create(2, 2),
+      Point3d.create(1, -1),
+      Point3d.create(0, -2),
+    ];
     convexPolygon.push(convexPolygon[0].clone()); // closure point for coverage and display
     testPolygonRayIntersection(ck, allGeometry, convexPolygon);
 
-    const convexPolygonWithDegenerateEdges = [Point3d.create(-2, -1), Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-2, 0), Point3d.create(-2, 1), Point3d.create(-1, 2), Point3d.create(0, 2), Point3d.create(2, 2), Point3d.create(1, -1), Point3d.create(0, -2)];
+    const convexPolygonWithDegenerateEdges = [
+      Point3d.create(-2, -1),
+      Point3d.create(-2, -1),
+      Point3d.create(-2, 0),
+      Point3d.create(-2, 0),
+      Point3d.create(-2, 1),
+      Point3d.create(-1, 2),
+      Point3d.create(0, 2),
+      Point3d.create(2, 2),
+      Point3d.create(1, -1),
+      Point3d.create(0, -2),
+    ];
     testPolygonRayIntersection(ck, allGeometry, convexPolygonWithDegenerateEdges);
 
-    const nonConvexPolygon = [Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-2, 1), Point3d.create(-1, 2), Point3d.create(0, 2), Point3d.create(2, 2), Point3d.create(1, 1), Point3d.create(1, -1), Point3d.create(0, -2), Point3d.create(-1, 0)];
+    const nonConvexPolygon = [
+      Point3d.create(-2, -1),
+      Point3d.create(-2, 0),
+      Point3d.create(-2, 1),
+      Point3d.create(-1, 2),
+      Point3d.create(0, 2),
+      Point3d.create(2, 2),
+      Point3d.create(1, 1),
+      Point3d.create(1, -1),
+      Point3d.create(0, -2),
+      Point3d.create(-1, 0),
+    ];
     testPolygonRayIntersection(ck, allGeometry, nonConvexPolygon, xDelta);
 
     const degeneratePolygon = [Point3d.create(-2, -1), Point3d.create(-2, 0), Point3d.create(-2, 1)];
@@ -321,7 +359,13 @@ describe("PolygonOps", () => {
     const capturePolygonWithClosure = (points: GrowableXYZArray, z0: number = 0) => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, points, x0, y0, z0);
       if (points.length > 1)
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [points.getPoint3dAtUncheckedPointIndex(0), points.getPoint3dAtUncheckedPointIndex(points.length - 1)], x0, y0, z0);
+        GeometryCoreTestIO.captureCloneGeometry(
+          allGeometry,
+          [points.getPoint3dAtUncheckedPointIndex(0), points.getPoint3dAtUncheckedPointIndex(points.length - 1)],
+          x0,
+          y0,
+          z0,
+        );
     };
 
     // closest approach is from mid edge1 of triangle A to .25 on edge 0 of triangle B.
@@ -335,7 +379,7 @@ describe("PolygonOps", () => {
         const iB1 = Geometry.cyclic3dAxis(iB0 + 1);
         const iB2 = Geometry.cyclic3dAxis(iB0 + 2);
         const polygonB = GrowableXYZArray.create([triangleB[iB0], triangleB[iB1], triangleB[iB2]]);
-        const approach = PolygonOps.closestApproach(polygonA, polygonB);  // this test assumes closest approaches at boundaries
+        const approach = PolygonOps.closestApproach(polygonA, polygonB); // this test assumes closest approaches at boundaries
         capturePolygonWithClosure(polygonA);
         capturePolygonWithClosure(polygonB);
         if (ck.testDefined(approach, "result from polygon approach")) {
@@ -387,7 +431,11 @@ describe("PolygonOps", () => {
     ck.testPoint3d(pldPairB.detailA.point, pldPairC.detailB.point, "PolygonLocationDetailPair.swapDetails A");
     ck.testPoint3d(pldPairB.detailB.point, pldPairC.detailA.point, "PolygonLocationDetailPair.swapDetails B");
 
-    ck.testExactNumber(PolygonOps.sumTriangleAreasXY([Point3d.createZero(), Point3d.create(1, 1, 1)]), 0.0, "PolygonOps.sumTriangleAreasXY on degenerate polygon");
+    ck.testExactNumber(
+      PolygonOps.sumTriangleAreasXY([Point3d.createZero(), Point3d.create(1, 1, 1)]),
+      0.0,
+      "PolygonOps.sumTriangleAreasXY on degenerate polygon",
+    );
     let area = PolygonOps.sumTriangleAreasXY(polylineA);
     ck.testCoordinate(area, 0.5, "PolygonOps.sumTriangleAreasXY on triangle");
     const dart = [Point3d.create(0, 0), Point3d.create(-1, 1), Point3d.create(-4, -4), Point3d.create(1, 0)];
@@ -405,7 +453,10 @@ describe("PolygonOps", () => {
     dart[dart.length - 1].x += Geometry.smallFraction;
     PolygonOps.forceClosure(dart);
     ck.testExactNumber(dart.length, 5, "PolygonOps.forceClosure on nearly closed input doesn't push a point");
-    ck.testTrue(Geometry.isSamePoint3d(dart[0], dart[dart.length - 1], 0.0), "PolygonOps.forceClosure on nearly closed input sets end point to start point");
+    ck.testTrue(
+      Geometry.isSamePoint3d(dart[0], dart[dart.length - 1], 0.0),
+      "PolygonOps.forceClosure on nearly closed input sets end point to start point",
+    );
 
     let closedDart = PolygonOps.ensureClosed(dart);
     ck.testTrue(Array.isArray(closedDart) && closedDart === dart, "PolygonOps.ensureClosed returns input if closed");

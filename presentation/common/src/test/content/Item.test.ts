@@ -6,9 +6,9 @@ import { expect } from "chai";
 import * as faker from "faker";
 import { Item, ItemJSON } from "../../presentation-common/content/Item";
 import { NestedContentValueJSON } from "../../presentation-common/content/Value";
+import { createTestContentItem } from "../_helpers";
 import { createTestECInstanceKey } from "../_helpers/EC";
 import { createRandomECClassInfo, createRandomECInstanceKey, createRandomLabelDefinition } from "../_helpers/random";
-import { createTestContentItem } from "../_helpers";
 
 describe("Item", () => {
   describe("constructor", () => {
@@ -18,7 +18,9 @@ describe("Item", () => {
     });
 
     it("creates valid item with label definition", () => {
-      const item = new Item([], createRandomLabelDefinition(), faker.random.uuid(), undefined, { key: faker.random.word() }, { key: faker.random.word() }, []);
+      const item = new Item([], createRandomLabelDefinition(), faker.random.uuid(), undefined, { key: faker.random.word() }, {
+        key: faker.random.word(),
+      }, []);
       expect(item).to.matchSnapshot();
     });
   });
@@ -136,7 +138,9 @@ describe("Item", () => {
     });
 
     it("returns true for merged field", () => {
-      const item = new Item([], faker.random.word(), faker.random.uuid(), undefined, { key: faker.random.word() }, { key: faker.random.word() }, ["key"]);
+      const item = new Item([], faker.random.word(), faker.random.uuid(), undefined, { key: faker.random.word() }, { key: faker.random.word() }, [
+        "key",
+      ]);
       expect(item.isFieldMerged("key")).to.be.true;
     });
   });

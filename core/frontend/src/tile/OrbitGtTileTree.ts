@@ -8,30 +8,72 @@
 
 import { assert, BeTimePoint, compareStringsOrUndefined, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  BatchType, Cartographic, ColorDef, Feature, FeatureTable, Frustum, FrustumPlanes, GeoCoordStatus, OrbitGtBlobProps, PackedFeatureTable, QParams3d,
-  Quantization, RealityDataFormat, RealityDataProvider, RealityDataSourceKey, ViewFlagOverrides,
+  BatchType,
+  Cartographic,
+  ColorDef,
+  Feature,
+  FeatureTable,
+  Frustum,
+  FrustumPlanes,
+  GeoCoordStatus,
+  OrbitGtBlobProps,
+  PackedFeatureTable,
+  QParams3d,
+  Quantization,
+  RealityDataFormat,
+  RealityDataProvider,
+  RealityDataSourceKey,
+  ViewFlagOverrides,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Transform, Vector3d } from "@itwin/core-geometry";
 import {
-  ALong, CRSManager, Downloader, DownloaderXhr, OnlineEngine, OPCReader, OrbitGtAList, OrbitGtBlockIndex, OrbitGtBounds, OrbitGtCoordinate,
-  OrbitGtDataManager, OrbitGtFrameData, OrbitGtIProjectToViewForSort, OrbitGtIViewRequest, OrbitGtLevel, OrbitGtTileIndex, OrbitGtTileLoadSorter,
-  OrbitGtTransform, PageCachedFile, PointDataRaw, UrlFS,
+  ALong,
+  CRSManager,
+  Downloader,
+  DownloaderXhr,
+  OnlineEngine,
+  OPCReader,
+  OrbitGtAList,
+  OrbitGtBlockIndex,
+  OrbitGtBounds,
+  OrbitGtCoordinate,
+  OrbitGtDataManager,
+  OrbitGtFrameData,
+  OrbitGtIProjectToViewForSort,
+  OrbitGtIViewRequest,
+  OrbitGtLevel,
+  OrbitGtTileIndex,
+  OrbitGtTileLoadSorter,
+  OrbitGtTransform,
+  PageCachedFile,
+  PointDataRaw,
+  UrlFS,
 } from "@itwin/core-orbitgt";
 import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
+import { Mesh } from "../common/internal/render/MeshPrimitives";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RealityDataSource } from "../RealityDataSource";
-import { Mesh } from "../common/internal/render/MeshPrimitives";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderMemory } from "../render/RenderMemory";
 import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  RealityModelTileTree, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner,
-  TileTreeParams, TileTreeSupplier, TileUsageMarker,
+  RealityModelTileTree,
+  Tile,
+  TileContent,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileParams,
+  TileRequest,
+  TileTree,
+  TileTreeOwner,
+  TileTreeParams,
+  TileTreeSupplier,
+  TileUsageMarker,
 } from "./internal";
 
 const scratchRange = Range3d.create();
@@ -43,7 +85,8 @@ interface OrbitGtTreeId {
 }
 
 function compareSourceKeys(lhs: RealityDataSourceKey, rhs: RealityDataSourceKey): number {
-  return compareStringsOrUndefined(lhs.id, rhs.id) || compareStringsOrUndefined(lhs.format, rhs.format) || compareStringsOrUndefined(lhs.iTwinId, rhs.iTwinId);
+  return compareStringsOrUndefined(lhs.id, rhs.id) || compareStringsOrUndefined(lhs.format, rhs.format) ||
+    compareStringsOrUndefined(lhs.iTwinId, rhs.iTwinId);
 }
 
 class OrbitGtTreeSupplier implements TileTreeSupplier {
@@ -84,9 +127,16 @@ function transformFromOrbitGt(ogtTransform: OrbitGtTransform, result?: Transform
     result = Transform.createIdentity();
 
   result.matrix.setRowValues(
-    ogtTransform.getElement(0, 0), ogtTransform.getElement(0, 1), ogtTransform.getElement(0, 2),
-    ogtTransform.getElement(1, 0), ogtTransform.getElement(1, 1), ogtTransform.getElement(1, 2),
-    ogtTransform.getElement(2, 0), ogtTransform.getElement(2, 1), ogtTransform.getElement(2, 2));
+    ogtTransform.getElement(0, 0),
+    ogtTransform.getElement(0, 1),
+    ogtTransform.getElement(0, 2),
+    ogtTransform.getElement(1, 0),
+    ogtTransform.getElement(1, 1),
+    ogtTransform.getElement(1, 2),
+    ogtTransform.getElement(2, 0),
+    ogtTransform.getElement(2, 1),
+    ogtTransform.getElement(2, 2),
+  );
 
   result.origin.x = ogtTransform.getElement(0, 3);
   result.origin.y = ogtTransform.getElement(1, 3);
@@ -123,7 +173,9 @@ class OrbitGtTileTreeParams implements TileTreeParams {
   public id: string;
   public modelId: string;
   public iModel: IModelConnection;
-  public get priority(): TileLoadPriority { return TileLoadPriority.Context; }
+  public get priority(): TileLoadPriority {
+    return TileLoadPriority.Context;
+  }
 
   public constructor(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String, public location: Transform) {
     const key = rdSourceKey;
@@ -134,13 +186,21 @@ class OrbitGtTileTreeParams implements TileTreeParams {
 }
 
 class OrbitGtRootTile extends Tile {
-  protected _loadChildren(_resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void { }
-  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> { return undefined; }
-  public get channel() { return IModelApp.tileAdmin.channels.getForHttp("itwinjs-orbitgit"); }
-  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> { return {}; }
-  public override freeMemory(): void { }
+  protected _loadChildren(_resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {}
+  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+    return undefined;
+  }
+  public get channel() {
+    return IModelApp.tileAdmin.channels.getForHttp("itwinjs-orbitgit");
+  }
+  public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> {
+    return {};
+  }
+  public override freeMemory(): void {}
 
-  constructor(params: TileParams, tree: TileTree) { super(params, tree); }
+  constructor(params: TileParams, tree: TileTree) {
+    super(params, tree);
+  }
 }
 
 class OrbitGtViewRequest extends OrbitGtIViewRequest {
@@ -171,9 +231,11 @@ class OrbitGtViewRequest extends OrbitGtIViewRequest {
     // get the world size of a screen pixel at the tile center
     const viewPt: Point3d = this._tileDrawArgs.worldToViewMap.transform0.multiplyPoint3dQuietNormalize(worldCenter);
     const viewPt2: Point3d = new Point3d(viewPt.x + 1.0, viewPt.y, viewPt.z);
-    const pixelSizeAtCenter: number = this._tileDrawArgs.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(this._tileDrawArgs.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2));
+    const pixelSizeAtCenter: number = this._tileDrawArgs.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt).distance(
+      this._tileDrawArgs.worldToViewMap.transform1.multiplyPoint3dQuietNormalize(viewPt2),
+    );
     // stop splitting if the voxel size of the children becomes too small to improve quality
-    const split: boolean = (0.5 * voxelSize > 2.0 * pixelSizeAtCenter);
+    const split: boolean = 0.5 * voxelSize > 2.0 * pixelSizeAtCenter;
     return split;
   }
 }
@@ -229,7 +291,13 @@ export class OrbitGtTileTree extends TileTree {
   public viewFlagOverrides: ViewFlagOverrides = {};
   private _tileGraphics = new Map<string, OrbitGtTileGraphic>();
 
-  public constructor(treeParams: TileTreeParams, private _dataManager: OrbitGtDataManager, cloudRange: Range3d, private _centerOffset: Vector3d, private _ecefTransform: Transform) {
+  public constructor(
+    treeParams: TileTreeParams,
+    private _dataManager: OrbitGtDataManager,
+    cloudRange: Range3d,
+    private _centerOffset: Vector3d,
+    private _ecefTransform: Transform,
+  ) {
     super(treeParams);
 
     const worldContentRange = this.iModelTransform.multiplyRange(cloudRange);
@@ -254,10 +322,18 @@ export class OrbitGtTileTree extends TileTree {
     super.dispose();
   }
 
-  protected _selectTiles(_args: TileDrawArgs): Tile[] { return []; }
-  public get is3d(): boolean { return true; }
-  public override get isContentUnbounded(): boolean { return false; }
-  public get maxDepth(): number | undefined { return undefined; }
+  protected _selectTiles(_args: TileDrawArgs): Tile[] {
+    return [];
+  }
+  public get is3d(): boolean {
+    return true;
+  }
+  public override get isContentUnbounded(): boolean {
+    return false;
+  }
+  public get maxDepth(): number | undefined {
+    return undefined;
+  }
 
   private _doPrune(olderThan: BeTimePoint) {
     for (const [key, graphic] of this._tileGraphics)
@@ -280,7 +356,7 @@ export class OrbitGtTileTree extends TileTree {
   public draw(args: TileDrawArgs) {
     const debugControl = args.context.target.debugControl;
     const debugBuilder = (debugControl && debugControl.displayRealityTileRanges) ? args.context.createSceneGraphicBuilder() : undefined;
-    const doLogging = (debugControl && debugControl.logRealityTiles);
+    const doLogging = debugControl && debugControl.logRealityTiles;
     const viewRequest = new OrbitGtViewRequest(args, this._centerOffset);
     const levelsInView = new OrbitGtAList<OrbitGtLevel>();
     const blocksInView = new OrbitGtAList<OrbitGtBlockIndex>();
@@ -289,13 +365,22 @@ export class OrbitGtTileTree extends TileTree {
 
     this._dataManager.getViewTree().renderView3D(viewRequest, levelsInView, blocksInView, tilesInView, frameData.tilesToRender);
     this._dataManager.filterLoadList(levelsInView, blocksInView, tilesInView, frameData.levelsToLoad, frameData.blocksToLoad, frameData.tilesToLoad);
-    tilesInView.sort(new OrbitGtTileLoadSorter(this._dataManager.getViewTree(), new TileSortProjector(this.iModelTransform, args.context.viewingSpace, this._centerOffset)));
+    tilesInView.sort(
+      new OrbitGtTileLoadSorter(
+        this._dataManager.getViewTree(),
+        new TileSortProjector(this.iModelTransform, args.context.viewingSpace, this._centerOffset),
+      ),
+    );
 
     let totalPointCount = 0;
     const tileCount = frameData.tilesToRender.size();
 
     // Inform TileAdmin about tiles we are handling ourselves...
-    IModelApp.tileAdmin.addExternalTilesForUser(args.context.viewport, { requested: frameData.tilesToLoad.size() + (frameData.hasMissingData() ? 1 : 0), selected: tileCount, ready: tileCount });
+    IModelApp.tileAdmin.addExternalTilesForUser(args.context.viewport, {
+      requested: frameData.tilesToLoad.size() + (frameData.hasMissingData() ? 1 : 0),
+      selected: tileCount,
+      ready: tileCount,
+    });
 
     if (debugBuilder)
       debugBuilder.setSymbology(ColorDef.red, ColorDef.red, 1);
@@ -364,9 +449,8 @@ export namespace OrbitGtTileTree {
     modelId?: Id64String;
   }
   function isValidSASToken(downloadUrl: string): boolean {
-
     // Create fake URL for and parameter parsing and SAS token URI parsing
-    if(!downloadUrl.startsWith("http"))
+    if (!downloadUrl.startsWith("http"))
       downloadUrl = `http://x.com/x?${downloadUrl}`;
 
     const sasUrl = new URL(downloadUrl);
@@ -383,16 +467,19 @@ export namespace OrbitGtTileTree {
     return false;
   }
   function isValidOrbitGtBlobProps(props: OrbitGtBlobProps): boolean {
-
     // Check main OrbitGtBlobProps fields are defined
-    if(!props.accountName || !props.containerName || !props.blobFileName || !props.sasToken)
+    if (!props.accountName || !props.containerName || !props.blobFileName || !props.sasToken)
       return false;
 
     // Check SAS token is valid
     return isValidSASToken(props.sasToken);
   }
 
-  export async function createOrbitGtTileTree(rdSourceKey: RealityDataSourceKey, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
+  export async function createOrbitGtTileTree(
+    rdSourceKey: RealityDataSourceKey,
+    iModel: IModelConnection,
+    modelId: Id64String,
+  ): Promise<TileTree | undefined> {
     const rdSource = await RealityDataSource.fromKey(rdSourceKey, iModel.iTwinId);
     const isContextShare = rdSourceKey.provider === RealityDataProvider.ContextShare;
     const isTilestUrl = rdSourceKey.provider === RealityDataProvider.TilesetUrl;
@@ -400,7 +487,7 @@ export namespace OrbitGtTileTree {
     let blobStringUrl: string;
     if (isContextShare) {
       const realityData = rdSource ? rdSource.realityData : undefined;
-      if (rdSource === undefined || realityData === undefined )
+      if (rdSource === undefined || realityData === undefined)
         return undefined;
       const docRootName = realityData.rootDocument;
       if (!docRootName)
@@ -414,7 +501,7 @@ export namespace OrbitGtTileTree {
       const orbitGtBlobProps = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
       if (orbitGtBlobProps === undefined)
         return undefined;
-      if(!isValidOrbitGtBlobProps(orbitGtBlobProps))
+      if (!isValidOrbitGtBlobProps(orbitGtBlobProps))
         return undefined;
       const { accountName, containerName, blobFileName, sasToken } = orbitGtBlobProps;
       blobStringUrl = blobFileName;
@@ -432,8 +519,8 @@ export namespace OrbitGtTileTree {
     const urlFS: UrlFS = new UrlFS();
     const blobFileSize: ALong = await urlFS.getFileLength(blobStringUrl);
     const cacheKilobytes = 128;
-    const cachedBlobFile = new PageCachedFile(urlFS, blobStringUrl, blobFileSize, cacheKilobytes * 1024 /* pageSize*/, 128/* maxPageCount*/);
-    const pointCloudReader = await OPCReader.openFile(cachedBlobFile, blobStringUrl, true/* lazyLoading*/);
+    const cachedBlobFile = new PageCachedFile(urlFS, blobStringUrl, blobFileSize, cacheKilobytes * 1024, /* pageSize*/ 128 /* maxPageCount*/);
+    const pointCloudReader = await OPCReader.openFile(cachedBlobFile, blobStringUrl, true /* lazyLoading*/);
     let pointCloudCRS = pointCloudReader.getFileCRS();
     if (pointCloudCRS == null)
       pointCloudCRS = "";
@@ -448,7 +535,9 @@ export namespace OrbitGtTileTree {
       await CRSManager.ENGINE.prepareForArea(pointCloudCRS, pointCloudBounds);
       const wgs84CRS = "4978";
       await CRSManager.ENGINE.prepareForArea(wgs84CRS, new OrbitGtBounds());
-      const pointCloudToEcef = transformFromOrbitGt(CRSManager.createTransform(pointCloudCRS, new OrbitGtCoordinate(pointCloudCenter.x, pointCloudCenter.y, pointCloudCenter.z), wgs84CRS));
+      const pointCloudToEcef = transformFromOrbitGt(
+        CRSManager.createTransform(pointCloudCRS, new OrbitGtCoordinate(pointCloudCenter.x, pointCloudCenter.y, pointCloudCenter.z), wgs84CRS),
+      );
       const pointCloudCenterToEcef = pointCloudToEcef.multiplyTransformTransform(addCloudCenter);
       ecefTransform.setFrom(pointCloudCenterToEcef);
 
@@ -462,7 +551,7 @@ export namespace OrbitGtTileTree {
       const ecefOrigin = pointCloudCenterToEcef.getOrigin();
       const dbOrigin = ecefToDb.multiplyPoint3d(ecefOrigin);
       const realityOriginToProjectDistance = iModel.projectExtents.distanceToPoint(dbOrigin);
-      const maxProjectDistance = 1E5;     // Only use the project GCS projection if within 100KM of the project.   Don't attempt to use GCS if global reality model or in another locale - Results will be unreliable.
+      const maxProjectDistance = 1E5; // Only use the project GCS projection if within 100KM of the project.   Don't attempt to use GCS if global reality model or in another locale - Results will be unreliable.
       if (realityOriginToProjectDistance < maxProjectDistance) {
         const cartographicOrigin = Cartographic.fromEcef(ecefOrigin);
         const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
@@ -497,8 +586,12 @@ export class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   protected _rdSourceKey: RealityDataSourceKey;
   private readonly _modelId: Id64String;
 
-  public override get castsShadows() { return false; }
-  public override get modelId() { return this._modelId; }
+  public override get castsShadows() {
+    return false;
+  }
+  public override get modelId() {
+    return this._modelId;
+  }
 
   public constructor(props: OrbitGtTileTree.ReferenceProps) {
     super(props);

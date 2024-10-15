@@ -1,15 +1,24 @@
+import {
+  HttpServerRequest,
+  HttpServerResponse,
+  RpcRequestFulfillment,
+  RpcRequestStatus,
+  SerializedRpcRequest,
+  WebAppRpcProtocol,
+} from "@itwin/core-common";
 import { expect } from "chai";
+import { brotliDecompressSync, unzipSync } from "node:zlib";
 import { SinonStub, stub } from "sinon";
 import { Readable, Writable } from "stream";
-import { HttpServerRequest, HttpServerResponse, RpcRequestFulfillment, RpcRequestStatus, SerializedRpcRequest, WebAppRpcProtocol } from "@itwin/core-common";
 import { sendResponse } from "../../rpc/web/response";
-import { brotliDecompressSync, unzipSync } from "node:zlib";
 
 /* eslint-disable deprecation/deprecation */
 
 class StubResponse extends Writable implements HttpServerResponse {
   public chunks: any[] = [];
-  public get buffer(): Buffer { return Buffer.concat(this.chunks); }
+  public get buffer(): Buffer {
+    return Buffer.concat(this.chunks);
+  }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
   public override _write(chunk: any, _encoding: BufferEncoding, callback: VoidFunction): void {

@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
-import { Volume } from "memfs";
 import { expect } from "chai";
-import * as path from "path";
 import * as fs from "fs-extra";
-import { clearCache, clearFileSystem, fsFromJson, getTestConfig, runWebpack } from "./TestUtils";
+import { Volume } from "memfs";
+import * as path from "path";
 import { CopyExternalsPlugin } from "../plugins/CopyExternalsPlugin";
 import { setApplicationDir } from "../utils/paths";
+import { clearCache, clearFileSystem, fsFromJson, getTestConfig, runWebpack } from "./TestUtils";
 
 describe("CopyExternalsPlugin", () => {
   let testConfig: any;

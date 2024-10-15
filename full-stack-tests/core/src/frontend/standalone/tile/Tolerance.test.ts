@@ -3,16 +3,31 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import {
-  BatchType, computeChildTileProps, computeTileChordTolerance, ContentIdProvider, defaultTileOptions, ImdlHeader, iModelTileTreeIdToString,
-  TileMetadata, TileProps, TileTreeMetadata,
+  BatchType,
+  computeChildTileProps,
+  computeTileChordTolerance,
+  ContentIdProvider,
+  defaultTileOptions,
+  ImdlHeader,
+  iModelTileTreeIdToString,
+  TileMetadata,
+  TileProps,
+  TileTreeMetadata,
 } from "@itwin/core-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
+  GeometricModelState,
+  IModelApp,
+  IModelConnection,
+  IModelTile,
+  IModelTileTree,
+  SnapshotConnection,
+  Tile,
+  TileTreeLoadStatus,
 } from "@itwin/core-frontend";
 import { Range3d, Range3dProps } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { TestUtility } from "../../TestUtility";
 import { fakeViewState } from "./TileIO.test";
 
@@ -20,7 +35,11 @@ describe("Tile tolerance", () => {
   let imodel: IModelConnection;
   const minimumSpatialTolerance = 0.02;
   const modelId = "0x1c";
-  const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false }, { ...defaultTileOptions, expandProjectExtents: false, useLargerTiles: false });
+  const treeId = iModelTileTreeIdToString(modelId, { type: BatchType.Primary, edges: false }, {
+    ...defaultTileOptions,
+    expandProjectExtents: false,
+    useLargerTiles: false,
+  });
 
   before(async () => {
     await TestUtility.startFrontend({ tileAdmin: { expandProjectExtents: false, minimumSpatialTolerance, useLargerTiles: false } });
@@ -46,17 +65,21 @@ describe("Tile tolerance", () => {
     };
   }
 
-  function computeTolerance(rangeProps: Range3dProps, arg: { tileScreenSize: number }, sizeMultiplier?: number ): number {
+  function computeTolerance(rangeProps: Range3dProps, arg: { tileScreenSize: number }, sizeMultiplier?: number): number {
     const range = new Range3d();
     range.setFromJSON(rangeProps);
-    return computeTileChordTolerance({
-      contentRange: range,
-      isLeaf: false,
-      sizeMultiplier,
-      emptySubRangeMask: 0,
-      contentId: "",
-      range,
-    }, true, arg.tileScreenSize);
+    return computeTileChordTolerance(
+      {
+        contentRange: range,
+        isLeaf: false,
+        sizeMultiplier,
+        emptySubRangeMask: 0,
+        contentId: "",
+        range,
+      },
+      true,
+      arg.tileScreenSize,
+    );
   }
 
   async function expectTolerance(contentId: string, expectedTolerance: number, epsilon = 0.000001): Promise<void> {

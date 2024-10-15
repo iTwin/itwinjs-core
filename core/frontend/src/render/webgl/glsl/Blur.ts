@@ -97,7 +97,8 @@ export function createBlurProgram(context: WebGL2RenderingContext, type: BlurTyp
         // ###TODO: If we want to apply this blur shader to situations other than AO, we should move these settings away from the ambient occlusion params.
         params.target.ambientOcclusionSettings.blurDelta,
         params.target.ambientOcclusionSettings.blurSigma,
-        params.target.ambientOcclusionSettings.blurTexelStepSize]);
+        params.target.ambientOcclusionSettings.blurTexelStepSize,
+      ]);
       uniform.setUniform3fv(hbaoSettings);
     });
   }, VariablePrecision.High);

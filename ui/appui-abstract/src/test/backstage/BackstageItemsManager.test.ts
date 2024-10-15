@@ -5,10 +5,15 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import {
-  BackstageItemsManager, BackstageItemUtilities, ConditionalBooleanValue, ConditionalStringValue, isActionItem, isStageLauncher,
+  BackstageItemsManager,
+  BackstageItemUtilities,
+  ConditionalBooleanValue,
+  ConditionalStringValue,
+  isActionItem,
+  isStageLauncher,
 } from "../../appui-abstract";
 
-const getActionItem = () => BackstageItemUtilities.createActionItem("Action", 100, 50, () => { }, "Custom Label", "subtitle", "icon-placeholder");
+const getActionItem = () => BackstageItemUtilities.createActionItem("Action", 100, 50, () => {}, "Custom Label", "subtitle", "icon-placeholder");
 const getStageLauncherItem = () => BackstageItemUtilities.createStageLauncher("stageId", 100, 50, "Custom Label", "subtitle", "icon-placeholder");
 
 describe("isActionItem", () => {
@@ -149,8 +154,12 @@ describe("BackstageItemsManager", () => {
     it("uisync", () => {
       let isVisible = true;
       let isEnabled = true;
-      const setVisibility = (value: boolean) => { isVisible = value; };
-      const setEnabled = (value: boolean) => { isEnabled = value; };
+      const setVisibility = (value: boolean) => {
+        isVisible = value;
+      };
+      const setEnabled = (value: boolean) => {
+        isEnabled = value;
+      };
       const syncId = "test-on-display-changed";
       const hiddenCondition = new ConditionalBooleanValue(() => !isVisible, [syncId]);
       const disabledCondition = new ConditionalBooleanValue(() => !isEnabled, [syncId]);
@@ -158,16 +167,27 @@ describe("BackstageItemsManager", () => {
       const conditionalIcon = new ConditionalStringValue(() => isVisible ? "icon-hand-2" : "icon-hand", [syncId]);
       const subTitleConditional = new ConditionalStringValue(() => isVisible ? "default subtitle" : "new subtitle", [syncId]);
 
-      const getActionItemWithNoConditions = () => BackstageItemUtilities.createActionItem("Action-NC", 100, 50, () => { }, "Custom Label", "subtitle", "icon-placeholder");  // try to init isVisible to false but this should be reset when loaded due to condition function
-      const getActionItemWithConditions = () => BackstageItemUtilities.createActionItem("Action-C", 100, 50, () => { }, conditionalLabel, subTitleConditional, conditionalIcon,
-        { isHidden: hiddenCondition });  // try to init isVisible to false but this should be reset when loaded due to condition function
-      const getStageLauncherItemWithNoConditions = () => BackstageItemUtilities.createStageLauncher("stageId-NC", 100, 50, "Custom Label", "subtitle", "icon-placeholder");
-      const getStageLauncherItemWithConditions = () => BackstageItemUtilities.createStageLauncher("stageId-C", 100, 50, conditionalLabel, subTitleConditional, conditionalIcon,
-        { isDisabled: disabledCondition });
+      const getActionItemWithNoConditions = () =>
+        BackstageItemUtilities.createActionItem("Action-NC", 100, 50, () => {}, "Custom Label", "subtitle", "icon-placeholder"); // try to init isVisible to false but this should be reset when loaded due to condition function
+      const getActionItemWithConditions = () =>
+        BackstageItemUtilities.createActionItem("Action-C", 100, 50, () => {}, conditionalLabel, subTitleConditional, conditionalIcon, {
+          isHidden: hiddenCondition,
+        }); // try to init isVisible to false but this should be reset when loaded due to condition function
+      const getStageLauncherItemWithNoConditions = () =>
+        BackstageItemUtilities.createStageLauncher("stageId-NC", 100, 50, "Custom Label", "subtitle", "icon-placeholder");
+      const getStageLauncherItemWithConditions = () =>
+        BackstageItemUtilities.createStageLauncher("stageId-C", 100, 50, conditionalLabel, subTitleConditional, conditionalIcon, {
+          isDisabled: disabledCondition,
+        });
 
       const sut = new BackstageItemsManager();
 
-      sut.add([getActionItemWithNoConditions(), getActionItemWithConditions(), getStageLauncherItemWithNoConditions(), getStageLauncherItemWithConditions()]);
+      sut.add([
+        getActionItemWithNoConditions(),
+        getActionItemWithConditions(),
+        getStageLauncherItemWithNoConditions(),
+        getStageLauncherItemWithConditions(),
+      ]);
 
       const syncIds = BackstageItemsManager.getSyncIdsOfInterest(sut.items);
       expect(syncIds.length).to.be.eq(1);
@@ -215,7 +235,7 @@ describe("BackstageItemsManager", () => {
 
     it("should convert SyncEventIds to lowercase", () => {
       const isHidden = new ConditionalBooleanValue(() => true, ["Test:CustomId"]);
-      const action = BackstageItemUtilities.createActionItem("TestAction", 100, 50, () => { }, "", undefined, undefined, { isHidden });
+      const action = BackstageItemUtilities.createActionItem("TestAction", 100, 50, () => {}, "", undefined, undefined, { isHidden });
       const sut = new BackstageItemsManager();
       sut.add(action);
       const syncIds = BackstageItemsManager.getSyncIdsOfInterest(sut.items);

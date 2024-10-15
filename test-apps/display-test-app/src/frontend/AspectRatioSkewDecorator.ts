@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@itwin/core-bentley";
-import { IModelJson, Path } from "@itwin/core-geometry";
 import { ColorDef, ViewDetails } from "@itwin/core-common";
 import { DecorateContext, GraphicType, IModelApp, IModelConnection, Tool } from "@itwin/core-frontend";
+import { IModelJson, Path } from "@itwin/core-geometry";
 import { parseArgs } from "@itwin/frontend-devtools";
 
 class AspectRatioSkewDecorator {
@@ -74,8 +74,12 @@ export class ToggleAspectRatioSkewDecoratorTool extends Tool {
   private _applyAspectRatioSkew = true;
 
   public static override toolId = "ToggleAspectRatioSkewDecorator";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(): Promise<boolean> {
     const iModel = IModelApp.viewManager.selectedView?.iModel;

@@ -4,13 +4,37 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
 import {
-  CheckBox, ComboBox, ComboBoxEntry, createCheckBox, createColorInput, createComboBox, createNestedMenu, createNumericInput, createSlider, Slider,
-} from "@itwin/frontend-devtools";
-import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapProviderProps, BackgroundMapType, BaseMapLayerSettings, CesiumTerrainAssetId, ColorDef, DisplayStyle3dSettingsProps,
-  GlobeMode, HiddenLine, LinePixels, MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
+  BackgroundMapProps,
+  BackgroundMapProviderName,
+  BackgroundMapProviderProps,
+  BackgroundMapType,
+  BaseMapLayerSettings,
+  CesiumTerrainAssetId,
+  ColorDef,
+  DisplayStyle3dSettingsProps,
+  GlobeMode,
+  HiddenLine,
+  LinePixels,
+  MonochromeMode,
+  RenderMode,
+  TerrainProps,
+  ThematicDisplayMode,
+  ThematicGradientColorScheme,
+  ThematicGradientMode,
 } from "@itwin/core-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, IModelApp, Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import {
+  CheckBox,
+  ComboBox,
+  ComboBoxEntry,
+  createCheckBox,
+  createColorInput,
+  createComboBox,
+  createNestedMenu,
+  createNumericInput,
+  createSlider,
+  Slider,
+} from "@itwin/frontend-devtools";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";
 import { EnvironmentEditor } from "./EnvironmentEditor";
 import { Settings } from "./FeatureOverrides";
@@ -21,7 +45,22 @@ import { ToolBarDropDown } from "./ToolBar";
 
 type UpdateAttribute = (view: ViewState) => void;
 
-type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume" | "forceSurfaceDiscard" | "whiteOnWhiteReversal";
+type ViewFlag =
+  | "acsTriad"
+  | "grid"
+  | "fill"
+  | "materials"
+  | "textures"
+  | "visibleEdges"
+  | "hiddenEdges"
+  | "monochrome"
+  | "constructions"
+  | "transparency"
+  | "weights"
+  | "styles"
+  | "clipVolume"
+  | "forceSurfaceDiscard"
+  | "whiteOnWhiteReversal";
 
 interface RenderingStyle extends DisplayStyle3dSettingsProps {
   name: string;
@@ -46,10 +85,17 @@ const renderingStyles: RenderingStyle[] = [{
   name: "Default",
   environment: {
     sky: {
-      display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303,
+      display: true,
+      groundColor: 8228728,
+      zenithColor: 16741686,
+      nadirColor: 3880,
+      skyColor: 16764303,
     },
     ground: {
-      display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987,
+      display: false,
+      elevation: -0.01,
+      aboveColor: 32768,
+      belowColor: 1262987,
     },
   },
   viewflags: renderingStyleViewFlags,
@@ -88,10 +134,17 @@ const renderingStyles: RenderingStyle[] = [{
   name: "Sun-dappled",
   environment: {
     sky: {
-      display: true, groundColor: 8228728, zenithColor: 16741686, nadirColor: 3880, skyColor: 16764303,
+      display: true,
+      groundColor: 8228728,
+      zenithColor: 16741686,
+      nadirColor: 3880,
+      skyColor: 16764303,
     },
     ground: {
-      display: false, elevation: -0.01, aboveColor: 32768, belowColor: 1262987,
+      display: false,
+      elevation: -0.01,
+      aboveColor: 32768,
+      belowColor: 1262987,
     },
   },
   viewflags: { ...renderingStyleViewFlags, shadows: true },
@@ -485,7 +538,9 @@ export class ViewAttributes {
     this._updates.push((view) => thematic.update(view));
   }
 
-  private getBackgroundMap(view: ViewState) { return view.displayStyle.settings.backgroundMap; }
+  private getBackgroundMap(view: ViewState) {
+    return view.displayStyle.settings.backgroundMap;
+  }
   private addBackgroundMapOrTerrain(): void {
     const isMapSupported = (view: ViewState) => view.is3d() && view.iModel.isGeoLocated;
 
@@ -552,8 +607,11 @@ export class ViewAttributes {
     };
 
     const terrainCheckbox = this.addCheckbox("Terrain", enableTerrain, backgroundSettingsDiv).checkbox;
-    const transCheckbox = this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv).checkbox;
-    const locatable = this.addCheckbox("Locatable", (enabled) => this.updateBackgroundMap({ nonLocatable: !enabled }), backgroundSettingsDiv).checkbox;
+    const transCheckbox =
+      this.addCheckbox("Transparency", (enabled: boolean) => this.updateBackgroundMap({ transparency: enabled ? 0.5 : false }), backgroundSettingsDiv)
+        .checkbox;
+    const locatable =
+      this.addCheckbox("Locatable", (enabled) => this.updateBackgroundMap({ nonLocatable: !enabled }), backgroundSettingsDiv).checkbox;
     backgroundSettingsDiv.appendChild(document.createElement("hr"));
     backgroundSettingsDiv.appendChild(mapSettings);
     backgroundSettingsDiv.appendChild(terrainSettings);
@@ -608,7 +666,8 @@ export class ViewAttributes {
     groundBiasDiv.style.textAlign = "left";
     mapSettingsDiv.appendChild(groundBiasDiv);
 
-    const depthCheckbox = this.addCheckbox("Depth", (enabled: boolean) => this.updateBackgroundMap({ useDepthBuffer: enabled }), mapSettingsDiv).checkbox;
+    const depthCheckbox =
+      this.addCheckbox("Depth", (enabled: boolean) => this.updateBackgroundMap({ useDepthBuffer: enabled }), mapSettingsDiv).checkbox;
 
     this._updates.push((view) => {
       const map = this.getBackgroundMap(view);
@@ -642,7 +701,9 @@ export class ViewAttributes {
         { name: "Sea Level (Geoid)", value: "1" },
         { name: "Ground", value: "2" },
       ],
-      handler: (select) => { updateTerrainSettings({ heightOriginMode: parseInt(select.value, 10) }); },
+      handler: (select) => {
+        updateTerrainSettings({ heightOriginMode: parseInt(select.value, 10) });
+      },
     }).select;
 
     const heightOriginDiv = document.createElement("div");
@@ -678,12 +739,14 @@ export class ViewAttributes {
     exaggerationDiv.style.textAlign = "left";
     settingsDiv.appendChild(exaggerationDiv);
 
-    const bingCheckbox = this.addCheckbox("Use Bing elevation",
+    const bingCheckbox = this.addCheckbox(
+      "Use Bing elevation",
       (enabled: boolean) => updateTerrainSettings({ providerName: enabled ? "DtaBingTerrain" : "CesiumWorldTerrain" }),
       settingsDiv,
     ).checkbox;
 
-    const bathyCheckbox = this.addCheckbox("Bathymetry",
+    const bathyCheckbox = this.addCheckbox(
+      "Bathymetry",
       (enabled: boolean) => updateTerrainSettings({ dataSource: enabled ? CesiumTerrainAssetId.Bathymetry : CesiumTerrainAssetId.Default }),
       settingsDiv,
     ).checkbox;
@@ -732,7 +795,9 @@ export class ViewAttributes {
     return `viewAttributesPanel_${this._id}`;
   }
 
-  private get _edgeSettings() { return (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings; }
+  private get _edgeSettings() {
+    return (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings;
+  }
   private overrideEdgeSettings(props: HiddenLine.SettingsProps) {
     (this._vp.view as ViewState3d).getDisplayStyle3d().settings.hiddenLineSettings = this._edgeSettings.override(props);
     this.sync();
@@ -825,7 +890,8 @@ export class ViewAttributes {
     div.hidden = forHiddenEdges ? !this._vp.view.viewFlags.hiddenEdges : !this._vp.view.viewFlags.visibleEdges;
 
     const getSettings = () => forHiddenEdges ? this._edgeSettings.hidden : this._edgeSettings.visible;
-    const overrideSettings = (newSettings: HiddenLine.Style) => this.overrideEdgeSettings(forHiddenEdges ? { hidden: newSettings.toJSON() } : { visible: newSettings.toJSON() });
+    const overrideSettings = (newSettings: HiddenLine.Style) =>
+      this.overrideEdgeSettings(forHiddenEdges ? { hidden: newSettings.toJSON() } : { visible: newSettings.toJSON() });
 
     // Color override (visible only)
     let colorCb: HTMLInputElement | undefined;
@@ -851,7 +917,10 @@ export class ViewAttributes {
         handler: (value: string) => overrideSettings(getSettings().overrideColor(ColorDef.create(value))),
       }).input;
 
-      colorCb.addEventListener("click", () => overrideSettings(getSettings().overrideColor(colorCb!.checked ? ColorDef.create(colorInput!.value) : undefined)));
+      colorCb.addEventListener(
+        "click",
+        () => overrideSettings(getSettings().overrideColor(colorCb!.checked ? ColorDef.create(colorInput!.value) : undefined)),
+      );
     }
 
     // Width override
@@ -974,7 +1043,9 @@ export class ViewAttributesPanel extends ToolBarDropDown {
     return this.populate();
   }
 
-  public get isOpen() { return undefined !== this._attributes; }
+  public get isOpen() {
+    return undefined !== this._attributes;
+  }
   protected _open(): void {
     this._attributes = new ViewAttributes(this._vp, this._parent, this._disableEdges);
     const loadingComboBox = createComboBox({

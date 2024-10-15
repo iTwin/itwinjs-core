@@ -102,7 +102,9 @@ export class DiagnosticsPanel {
       this._toolSettingsTracker = new ToolSettingsTracker(this._element, vp);
   }
 
-  public get element(): HTMLElement { return this._element; }
+  public get element(): HTMLElement {
+    return this._element;
+  }
 
   public dispose(): void {
     dispose(this._fpsTracker);

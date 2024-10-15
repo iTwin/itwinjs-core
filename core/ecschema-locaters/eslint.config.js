@@ -8,7 +8,7 @@ module.exports = [
   {
     files: ["**/*.ts"],
     rules: {
-      "radix": "warn"
-    }
-  }
+      "radix": "warn",
+    },
+  },
 ];

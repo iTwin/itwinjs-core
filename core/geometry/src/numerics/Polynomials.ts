@@ -112,10 +112,10 @@ export class Degree2PowerPolynomial {
   public static fromRootsAndC2(root0: number, root1: number, c2: number = 1): Degree2PowerPolynomial {
     return new Degree2PowerPolynomial(
       c2 * root0 * root1,
-      - c2 * (root0 + root1),
-      c2);
+      -c2 * (root0 + root1),
+      c2,
+    );
   }
-
 }
 /**
  * degree 3 (cubic) polynomial in for y = c0 + c1*x + c2*x^2 + c3*x^3
@@ -160,8 +160,9 @@ export class Degree3PowerPolynomial {
     return new Degree3PowerPolynomial(
       -c3 * root0 * root1 * root2,
       c3 * (root0 * root1 + root1 * root2 + root0 * root2),
-      - c3 * (root0 + root1 + root2),
-      c3);
+      -c3 * (root0 + root1 + root2),
+      c3,
+    );
   }
 }
 /**
@@ -203,9 +204,9 @@ export class Degree4PowerPolynomial {
       -c4 * (root0 * root1 * root2 + root0 * root1 * root3 + root0 * root2 * root3 + root1 * root2 * root3),
       c4 * (root0 * root1 + root0 * root2 + root0 * root3 + root1 * root2 + root1 * root3 + root2 * root3),
       -c4 * (root0 + root1 + root2 + root3),
-      c4);
+      c4,
+    );
   }
-
 }
 /**
  * polynomial services for an implicit torus with
@@ -366,7 +367,9 @@ export class TorusImplicit {
 export class SphereImplicit {
   /** Radius of sphere. */
   public radius: number;
-  constructor(r: number) { this.radius = r; }
+  constructor(r: number) {
+    this.radius = r;
+  }
 
   /** Evaluate the implicit function at coordinates x,y,z */
   public evaluateImplicitFunction(x: number, y: number, z: number): number {
@@ -404,10 +407,18 @@ export class SphereImplicit {
         valid = false;
       }
     }
-    return { thetaRadians: (theta), phiRadians: (phi), r, valid };
+    return { thetaRadians: theta, phiRadians: phi, r, valid };
   }
   /** Return the range of a uv-aligned patch of the sphere. */
-  public static patchRangeStartEndRadians(center: Point3d, radius: number, theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d {
+  public static patchRangeStartEndRadians(
+    center: Point3d,
+    radius: number,
+    theta0Radians: number,
+    theta1Radians: number,
+    phi0Radians: number,
+    phi1Radians: number,
+    result?: Range3d,
+  ): Range3d {
     const thetaSweep = AngleSweep.createStartEndRadians(theta0Radians, theta1Radians);
     const phiSweep = AngleSweep.createStartEndRadians(phi0Radians, phi1Radians);
     const range = Range3d.createNull(result);
@@ -423,13 +434,16 @@ export class SphereImplicit {
       const piOver2 = 0.5 * Math.PI;
       let phi, theta;
       // 6 candidate interior extreme points on equator and 0, 90 degree meridians
-      for (const thetaPhi of [
-        [0.0, 0.0],
-        [pi, 0.0],
-        [piOver2, 0.0],
-        [-piOver2, 0.0],
-        [theta0Radians, piOver2],
-        [theta0Radians, -piOver2]]) {
+      for (
+        const thetaPhi of [
+          [0.0, 0.0],
+          [pi, 0.0],
+          [piOver2, 0.0],
+          [-piOver2, 0.0],
+          [theta0Radians, piOver2],
+          [theta0Radians, -piOver2],
+        ]
+      ) {
         theta = thetaPhi[0];
         phi = thetaPhi[1];
         if (thetaSweep.isRadiansInSweep(theta) && phiSweep.isRadiansInSweep(phi))
@@ -448,10 +462,12 @@ export class SphereImplicit {
       for (const cosPhi of [cosPhi0, cosPhi1]) {
         trigForm.set(0, cosPhi * radius, 0);
         trigForm.rangeInSweep(thetaSweep, axisRange);
-        range.extendXOnly(axisRange.low); range.extendXOnly(axisRange.high);
+        range.extendXOnly(axisRange.low);
+        range.extendXOnly(axisRange.high);
         trigForm.set(0, 0, cosPhi * radius);
         trigForm.rangeInSweep(thetaSweep, axisRange);
-        range.extendYOnly(axisRange.low); range.extendYOnly(axisRange.high);
+        range.extendYOnly(axisRange.low);
+        range.extendYOnly(axisRange.high);
       }
       range.extendZOnly(sinPhi0 * radius);
       range.extendZOnly(sinPhi1 * radius);
@@ -462,11 +478,13 @@ export class SphereImplicit {
         const sinThetaR = Math.sin(thetaRadians) * radius;
         trigForm.set(0, cosThetaR, 0);
         trigForm.rangeInSweep(phiSweep, axisRange);
-        range.extendXOnly(axisRange.low); range.extendXOnly(axisRange.high);
+        range.extendXOnly(axisRange.low);
+        range.extendXOnly(axisRange.high);
 
         trigForm.set(0, sinThetaR, 0);
         trigForm.rangeInSweep(phiSweep, axisRange);
-        range.extendYOnly(axisRange.low); range.extendYOnly(axisRange.high);
+        range.extendYOnly(axisRange.low);
+        range.extendYOnly(axisRange.high);
       }
       range.cloneTranslated(center, range);
     }
@@ -480,7 +498,14 @@ export class SphereImplicit {
    *    * thetaPhiRadians = sphere longitude and latitude in radians.
    * * For each optional array, caller must of course initialize an array (usually empty)
    */
-  public static intersectSphereRay(center: Point3d, radius: number, ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: LongitudeLatitudeNumber[] | undefined): number {
+  public static intersectSphereRay(
+    center: Point3d,
+    radius: number,
+    ray: Ray3d,
+    rayFractions: number[] | undefined,
+    xyz: Point3d[] | undefined,
+    thetaPhiRadians: LongitudeLatitudeNumber[] | undefined,
+  ): number {
     const vx = ray.origin.x - center.x;
     const vy = ray.origin.y - center.y;
     const vz = ray.origin.z - center.z;
@@ -502,8 +527,9 @@ export class SphereImplicit {
       return 0;
     }
     const sphere = new SphereImplicit(radius);
-    if (rayFractions !== undefined)
+    if (rayFractions !== undefined) {
       for (const f of parameters) rayFractions.push(f);
+    }
     if (xyz !== undefined || thetaPhiRadians !== undefined) {
       for (const f of parameters) {
         const point = ray.fractionToPoint(f);
@@ -598,7 +624,6 @@ export class SphereImplicit {
 }
 /** AnalyticRoots has static methods for solving quadratic, cubic, and quartic equations.
  * @internal
- *
  */
 export class AnalyticRoots {
   private static readonly _EQN_EPS = 1.0e-9;
@@ -618,10 +643,10 @@ export class AnalyticRoots {
   }
   /** Return the (real, signed) principal cube root of x */
   public static cbrt(x: number): number {
-    return ((x) > 0.0
-      ? Math.pow((x), 1.0 / 3.0)
-      : ((x) < 0.0
-        ? -Math.pow(-(x), 1.0 / 3.0)
+    return (x > 0.0
+      ? Math.pow(x, 1.0 / 3.0)
+      : (x < 0.0
+        ? -Math.pow(-x, 1.0 / 3.0)
         : 0.0));
   }
   /**
@@ -663,13 +688,16 @@ export class AnalyticRoots {
     return undefined;
   }
   private static improveRoots(
-    coffs: Float64Array | number[], degree: number, roots: GrowableFloat64Array, restrictOrderChanges: boolean,
+    coffs: Float64Array | number[],
+    degree: number,
+    roots: GrowableFloat64Array,
+    restrictOrderChanges: boolean,
   ) {
     const relTol = 1.0e-10;
     // Loop through each root
     for (let i = 0; i < roots.length; i++) {
       let dx = this.newtonMethodAdjustment(coffs, roots.atUncheckedIndex(i), degree);
-      if (dx === undefined || dx === 0.0) continue;  // skip if newton step had divide by zero.
+      if (dx === undefined || dx === 0.0) continue; // skip if newton step had divide by zero.
       const originalValue = roots.atUncheckedIndex(i);
       let counter = 0;
       let convergenceCounter = 0;
@@ -731,7 +759,7 @@ export class AnalyticRoots {
    */
   public static mostDistantFromMean(data: GrowableFloat64Array | undefined): number {
     if (!data || data.length === 0) return 0;
-    let a = 0.0;  // to become the sum and finally the average.
+    let a = 0.0; // to become the sum and finally the average.
     for (let i = 0; i < data.length; i++) a += data.atUncheckedIndex(i);
     a /= data.length;
     let dMax = 0.0;
@@ -771,7 +799,7 @@ export class AnalyticRoots {
       return;
     } else if (D > 0) {
       const sqrt_D = Math.sqrt(D);
-      this.append2Solutions(sqrt_D - p, - sqrt_D - p, values);
+      this.append2Solutions(sqrt_D - p, -sqrt_D - p, values);
       return;
     }
     return;
@@ -796,7 +824,7 @@ export class AnalyticRoots {
     const q = b * b - 3.0 * a * c;
     const aa = a * a;
     const delta2 = q / (9.0 * aa);
-    const xN = - b / (3.0 * a);
+    const xN = -b / (3.0 * a);
     const yN = d + xN * (c + xN * (b + xN * a));
     const yN2 = yN * yN;
     const h2 = 4.0 * a * a * delta2 * delta2 * delta2;
@@ -978,11 +1006,11 @@ export class AnalyticRoots {
       }
       // the two quadratic equations
       coffs[0] = z - u;
-      coffs[1] = ((q < 0) ? (-v) : (v));
+      coffs[1] = (q < 0) ? (-v) : v;
       coffs[2] = 1;
       this.appendQuadraticRoots(coffs, results);
       coffs[0] = z + u;
-      coffs[1] = ((q < 0) ? (v) : (-v));
+      coffs[1] = (q < 0) ? v : (-v);
       coffs[2] = 1;
       this.appendQuadraticRoots(coffs, results);
     }
@@ -992,8 +1020,13 @@ export class AnalyticRoots {
     return;
   }
 
-  private static appendCosSinRadians(c: number, s: number, cosValues: OptionalGrowableFloat64Array, sinValues: OptionalGrowableFloat64Array,
-    radiansValues: OptionalGrowableFloat64Array) {
+  private static appendCosSinRadians(
+    c: number,
+    s: number,
+    cosValues: OptionalGrowableFloat64Array,
+    sinValues: OptionalGrowableFloat64Array,
+    radiansValues: OptionalGrowableFloat64Array,
+  ) {
     if (cosValues) cosValues.push(c);
     if (sinValues) sinValues.push(s);
     if (radiansValues) radiansValues.push(Math.atan2(s, c));
@@ -1043,7 +1076,7 @@ export class AnalyticRoots {
     if (delta2 <= 0.0) {
       solutionType = (alpha === 0) ? -2 : -1;
     } else {
-      const lambda = - alpha / delta2;
+      const lambda = -alpha / delta2;
       const a2 = alpha2 / delta2;
       const D2 = 1.0 - a2;
       if (D2 < -twoTol) {
@@ -1054,7 +1087,7 @@ export class AnalyticRoots {
         solutionType = 0;
       } else if (D2 < twoTol) {
         const delta = Math.sqrt(delta2);
-        const iota = (alpha < 0) ? (1.0 / delta) : (- 1.0 / delta);
+        const iota = (alpha < 0) ? (1.0 / delta) : (-1.0 / delta);
         this.appendCosSinRadians(lambda * beta, lambda * gamma, cosValues, sinValues, radiansValues);
         this.appendCosSinRadians(beta * iota, gamma * iota, cosValues, sinValues, radiansValues);
         solutionType = 1;
@@ -1158,7 +1191,10 @@ export class TrigPolynomial {
    * @return false if equation is all zeros. This usually means any angle is a solution.
    */
   public static solveAngles(
-    coff: Float64Array, nominalDegree: number, referenceCoefficient: number, radians: number[],
+    coff: Float64Array,
+    nominalDegree: number,
+    referenceCoefficient: number,
+    radians: number[],
   ): boolean {
     let maxCoff = Math.abs(referenceCoefficient);
     let a;
@@ -1220,7 +1256,13 @@ export class TrigPolynomial {
    * @param radians solution angles
    */
   public static solveUnitCircleImplicitQuadricIntersection(
-    axx: number, axy: number, ayy: number, ax: number, ay: number, a: number, radians: number[],
+    axx: number,
+    axy: number,
+    ayy: number,
+    ax: number,
+    ay: number,
+    a: number,
+    radians: number[],
   ): boolean {
     const coffs = new Float64Array(5);
     PowerPolynomial.zero(coffs);
@@ -1241,7 +1283,12 @@ export class TrigPolynomial {
       degree = 2;
     }
     const maxCoff = Math.max(
-      Math.abs(axx), Math.abs(ayy), Math.abs(axy), Math.abs(ax), Math.abs(ay), Math.abs(a),
+      Math.abs(axx),
+      Math.abs(ayy),
+      Math.abs(axy),
+      Math.abs(ax),
+      Math.abs(ay),
+      Math.abs(a),
     );
     const b = this.solveAngles(coffs, degree, maxCoff, radians);
     /*
@@ -1269,10 +1316,14 @@ export class TrigPolynomial {
    * @param circleRadians solution angles in circle parameter space
    */
   public static solveUnitCircleEllipseIntersection(
-    cx: number, cy: number,
-    ux: number, uy: number,
-    vx: number, vy: number,
-    ellipseRadians: number[], circleRadians: number[],
+    cx: number,
+    cy: number,
+    ux: number,
+    uy: number,
+    vx: number,
+    vy: number,
+    ellipseRadians: number[],
+    circleRadians: number[],
   ): boolean {
     circleRadians.length = 0;
     // see core\geometry\internaldocs\unitCircleEllipseIntersection.md for derivation of these coefficients:
@@ -1308,10 +1359,17 @@ export class TrigPolynomial {
    * @param circleRadians solution angles in circle parameter space
    */
   public static solveUnitCircleHomogeneousEllipseIntersection(
-    cx: number, cy: number, cw: number,
-    ux: number, uy: number, uw: number,
-    vx: number, vy: number, vw: number,
-    ellipseRadians: number[], circleRadians: number[],
+    cx: number,
+    cy: number,
+    cw: number,
+    ux: number,
+    uy: number,
+    uw: number,
+    vx: number,
+    vy: number,
+    vw: number,
+    ellipseRadians: number[],
+    circleRadians: number[],
   ): boolean {
     circleRadians.length = 0;
     // see core\geometry\internaldocs\unitCircleEllipseIntersection.md for derivation of these coefficients:
@@ -1322,7 +1380,13 @@ export class TrigPolynomial {
     const as = 2.0 * (vx * cx + vy * cy - vw * cw);
     const a = cx * cx + cy * cy - cw * cw;
     const status = this.solveUnitCircleImplicitQuadricIntersection(
-      acc, acs, ass, ac, as, a, ellipseRadians,
+      acc,
+      acs,
+      ass,
+      ac,
+      as,
+      a,
+      ellipseRadians,
     );
     for (const radians of ellipseRadians) {
       const cc = Math.cos(radians);
@@ -1348,8 +1412,7 @@ export class SmallSystem {
    * @param b1 end point of line b
    * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
    */
-  public static lineSegment2dXYTransverseIntersectionUnbounded(a0: Point2d, a1: Point2d, b0: Point2d, b1: Point2d,
-    result: Vector2d): boolean {
+  public static lineSegment2dXYTransverseIntersectionUnbounded(a0: Point2d, a1: Point2d, b0: Point2d, b1: Point2d, result: Vector2d): boolean {
     const ux = a1.x - a0.x;
     const uy = a1.y - a0.y;
 
@@ -1379,10 +1442,16 @@ export class SmallSystem {
    * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
    */
   public static lineSegmentXYUVTransverseIntersectionUnbounded(
-    ax0: number, ay0: number, ux: number, uy: number,
-    bx0: number, by0: number, vx: number, vy: number,
-    result: Vector2d): boolean {
-
+    ax0: number,
+    ay0: number,
+    ux: number,
+    uy: number,
+    bx0: number,
+    by0: number,
+    vx: number,
+    vy: number,
+    result: Vector2d,
+  ): boolean {
     const cx = bx0 - ax0;
     const cy = by0 - ay0;
 
@@ -1408,8 +1477,7 @@ export class SmallSystem {
    * @param b1 end point of line b
    * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
    */
-  public static lineSegment3dXYTransverseIntersectionUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d,
-    result: Vector2d): boolean {
+  public static lineSegment3dXYTransverseIntersectionUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, result: Vector2d): boolean {
     const ux = a1.x - a0.x;
     const uy = a1.y - a0.y;
 
@@ -1441,28 +1509,62 @@ export class SmallSystem {
    * @param hB1 homogeneous end point of line b
    * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
    */
-  public static lineSegment3dHXYTransverseIntersectionUnbounded(hA0: Point4d, hA1: Point4d, hB0: Point4d, hB1: Point4d, result?: Vector2d): Vector2d | undefined {
+  public static lineSegment3dHXYTransverseIntersectionUnbounded(
+    hA0: Point4d,
+    hA1: Point4d,
+    hB0: Point4d,
+    hB1: Point4d,
+    result?: Vector2d,
+  ): Vector2d | undefined {
     // Considering only x,y,w parts....
     // Point Q along B is (in full homogeneous)  `(1-lambda) B0 + lambda 1`
     // PointQ is colinear with A0,A1 when the determinant det (A0,A1,Q) is zero.  (Each column takes xyw parts)
     const alpha0 = Geometry.tripleProduct(
-      hA0.x, hA1.x, hB0.x,
-      hA0.y, hA1.y, hB0.y,
-      hA0.w, hA1.w, hB0.w);
+      hA0.x,
+      hA1.x,
+      hB0.x,
+      hA0.y,
+      hA1.y,
+      hB0.y,
+      hA0.w,
+      hA1.w,
+      hB0.w,
+    );
     const alpha1 = Geometry.tripleProduct(
-      hA0.x, hA1.x, hB1.x,
-      hA0.y, hA1.y, hB1.y,
-      hA0.w, hA1.w, hB1.w);
+      hA0.x,
+      hA1.x,
+      hB1.x,
+      hA0.y,
+      hA1.y,
+      hB1.y,
+      hA0.w,
+      hA1.w,
+      hB1.w,
+    );
     const fractionB = Geometry.conditionalDivideFraction(-alpha0, alpha1 - alpha0);
     if (fractionB !== undefined) {
       const beta0 = Geometry.tripleProduct(
-        hB0.x, hB1.x, hA0.x,
-        hB0.y, hB1.y, hA0.y,
-        hB0.w, hB1.w, hA0.w);
+        hB0.x,
+        hB1.x,
+        hA0.x,
+        hB0.y,
+        hB1.y,
+        hA0.y,
+        hB0.w,
+        hB1.w,
+        hA0.w,
+      );
       const beta1 = Geometry.tripleProduct(
-        hB0.x, hB1.x, hA1.x,
-        hB0.y, hB1.y, hA1.y,
-        hB0.w, hB1.w, hA1.w);
+        hB0.x,
+        hB1.x,
+        hA1.x,
+        hB0.y,
+        hB1.y,
+        hA1.y,
+        hB0.w,
+        hB1.w,
+        hA1.w,
+      );
       const fractionA = Geometry.conditionalDivideFraction(-beta0, beta1 - beta0);
       if (fractionA !== undefined)
         return Vector2d.create(fractionA, fractionB, result);
@@ -1485,13 +1587,27 @@ export class SmallSystem {
     const tx = hA1.x * hA0.w - hA0.x * hA1.w;
     const ty = hA1.y * hA0.w - hA0.y * hA1.w;
     const det0 = Geometry.tripleProduct(
-      hA0.x, -ty, spacePoint.x,
-      hA0.y, tx, spacePoint.y,
-      hA0.w, 0, spacePoint.w);
+      hA0.x,
+      -ty,
+      spacePoint.x,
+      hA0.y,
+      tx,
+      spacePoint.y,
+      hA0.w,
+      0,
+      spacePoint.w,
+    );
     const det1 = Geometry.tripleProduct(
-      hA1.x, -ty, spacePoint.x,
-      hA1.y, tx, spacePoint.y,
-      hA1.w, 0, spacePoint.w);
+      hA1.x,
+      -ty,
+      spacePoint.x,
+      hA1.y,
+      tx,
+      spacePoint.y,
+      hA1.w,
+      0,
+      spacePoint.w,
+    );
     return Geometry.conditionalDivideFraction(-det0, det1 - det0);
   }
 
@@ -1539,14 +1655,22 @@ export class SmallSystem {
    * @param b1 end point of line b
    * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
    */
-  public static lineSegment3dClosestApproachUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d,
-    result: Vector2d): boolean {
+  public static lineSegment3dClosestApproachUnbounded(a0: Point3d, a1: Point3d, b0: Point3d, b1: Point3d, result: Vector2d): boolean {
     return this.ray3dXYZUVWClosestApproachUnbounded(
-      a0.x, a0.y, a0.z,
-      a1.x - a0.x, a1.y - a0.y, a1.z - a0.z,
-      b0.x, b0.y, b0.z,
-      b1.x - b0.x, b1.y - b0.y, b1.z - b0.z,
-      result);
+      a0.x,
+      a0.y,
+      a0.z,
+      a1.x - a0.x,
+      a1.y - a0.y,
+      a1.z - a0.z,
+      b0.x,
+      b0.y,
+      b0.z,
+      b1.x - b0.x,
+      b1.y - b0.y,
+      b1.z - b0.z,
+      result,
+    );
   }
   /**
    * Return true if the given rays have closest approach (go by each other) in 3d
@@ -1566,10 +1690,20 @@ export class SmallSystem {
    * @param result point to receive fractional coordinates of intersection.   result.x is fraction on line a. result.y is fraction on line b.
    */
   public static ray3dXYZUVWClosestApproachUnbounded(
-    ax: number, ay: number, az: number, au: number, av: number, aw: number,
-    bx: number, by: number, bz: number, bu: number, bv: number, bw: number,
-    result: Vector2d): boolean {
-
+    ax: number,
+    ay: number,
+    az: number,
+    au: number,
+    av: number,
+    aw: number,
+    bx: number,
+    by: number,
+    bz: number,
+    bu: number,
+    bv: number,
+    bw: number,
+    result: Vector2d,
+  ): boolean {
     const cx = bx - ax;
     const cy = by - ay;
     const cz = bz - az;
@@ -1594,9 +1728,12 @@ export class SmallSystem {
    * @param result (x,y) solution (MUST be preallocated by caller)
    */
   public static linearSystem2d(
-    ux: number, vx: number, // first row of matrix
-    uy: number, vy: number, // second row of matrix
-    cx: number, cy: number, // right side
+    ux: number,
+    vx: number, // first row of matrix
+    uy: number,
+    vy: number, // second row of matrix
+    cx: number,
+    cy: number, // right side
     result: Vector2d,
   ): boolean {
     const uv = Geometry.crossProductXYXY(ux, uy, vx, vy);
@@ -1632,10 +1769,18 @@ export class SmallSystem {
    * @returns solution vector (u,v,w) or `undefined` if system is singular.
    */
   public static linearSystem3d(
-    axx: number, axy: number, axz: number, // first row of matrix
-    ayx: number, ayy: number, ayz: number, // second row of matrix
-    azx: number, azy: number, azz: number, // second row of matrix
-    cx: number, cy: number, cz: number,    // right side
+    axx: number,
+    axy: number,
+    axz: number, // first row of matrix
+    ayx: number,
+    ayy: number,
+    ayz: number, // second row of matrix
+    azx: number,
+    azy: number,
+    azz: number, // second row of matrix
+    cx: number,
+    cy: number,
+    cz: number, // right side
     result?: Vector3d,
   ): Vector3d | undefined {
     // determinants of various combinations of columns ...
@@ -1663,16 +1808,29 @@ export class SmallSystem {
    * @returns intersection point of the three planes (as a Vector3d), or undefined if at least two planes are parallel.
    */
   public static intersect3Planes(
-    xyzA: Point3d, normalA: Vector3d,
-    xyzB: Point3d, normalB: Vector3d,
-    xyzC: Point3d, normalC: Vector3d, result?: Vector3d): Vector3d | undefined {
+    xyzA: Point3d,
+    normalA: Vector3d,
+    xyzB: Point3d,
+    normalB: Vector3d,
+    xyzC: Point3d,
+    normalC: Vector3d,
+    result?: Vector3d,
+  ): Vector3d | undefined {
     return this.linearSystem3d(
-      normalA.x, normalA.y, normalA.z,
-      normalB.x, normalB.y, normalB.z,
-      normalC.x, normalC.y, normalC.z,
+      normalA.x,
+      normalA.y,
+      normalA.z,
+      normalB.x,
+      normalB.y,
+      normalB.z,
+      normalC.x,
+      normalC.y,
+      normalC.z,
       Geometry.dotProductXYZXYZ(xyzA.x, xyzA.y, xyzA.z, normalA.x, normalA.y, normalA.z),
       Geometry.dotProductXYZXYZ(xyzB.x, xyzB.y, xyzB.z, normalB.x, normalB.y, normalB.z),
-      Geometry.dotProductXYZXYZ(xyzC.x, xyzC.y, xyzC.z, normalC.x, normalC.y, normalC.z), result);
+      Geometry.dotProductXYZXYZ(xyzC.x, xyzC.y, xyzC.z, normalC.x, normalC.y, normalC.z),
+      result,
+    );
   }
 
   /**
@@ -1695,8 +1853,16 @@ export class SmallSystem {
    * * First equation: `a0 + b0 * u + c0 * v + d0 * u * v = 0`
    * * Second equation: `a0 + b0 * u + c0 * v + d0 * u * v = 0`
    */
-  public static solveBilinearPair(a0: number, b0: number, c0: number, d0: number,
-    a1: number, b1: number, c1: number, d1: number): Point2d[] | undefined {
+  public static solveBilinearPair(
+    a0: number,
+    b0: number,
+    c0: number,
+    d0: number,
+    a1: number,
+    b1: number,
+    c1: number,
+    d1: number,
+  ): Point2d[] | undefined {
     // constant linear, and quadratic coefficients for c0 + c1 * u + c2 * u*u = 0
     const e0 = Geometry.crossProductXYXY(a0, a1, c0, c1);
     const e1 = Geometry.crossProductXYXY(b0, b1, c0, c1) + Geometry.crossProductXYXY(a0, a1, d0, d1);
@@ -1731,7 +1897,6 @@ export class BilinearPolynomial {
   /** uv coefficient */
   public d: number;
   /**
-   *
    * @param a constant coefficient
    * @param b `u` coefficient
    * @param c `v` coefficient
@@ -1764,8 +1929,7 @@ export class BilinearPolynomial {
    * @param qValue
    */
   public static solvePair(p: BilinearPolynomial, pValue: number, q: BilinearPolynomial, qValue: number): Point2d[] | undefined {
-    return SmallSystem.solveBilinearPair(p.a - pValue, p.b, p.c, p.d,
-      q.a - qValue, q.b, q.c, q.d);
+    return SmallSystem.solveBilinearPair(p.a - pValue, p.b, p.c, p.d, q.a - qValue, q.b, q.c, q.d);
   }
 }
 
@@ -1781,7 +1945,6 @@ export class SineCosinePolynomial {
   /** sine coefficient */
   public sineCoff: number;
   /**
-   *
    * @param a constant coefficient
    * @param cosineCoff `cos(theta)` coefficient
    * @param sinCoff `sin(theta)` coefficient
@@ -1845,8 +2008,8 @@ export class ImplicitLineXY {
    */
   public a: number;
   /**
-  * x coefficient
-  */
+   * x coefficient
+   */
   public ax: number;
   /**
    * y coefficient

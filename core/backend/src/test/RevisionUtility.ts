@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyStatus } from "@itwin/core-bentley";
-import { IModelNative } from "../internal/NativePlatform";
 import { IModelJsFs } from "../IModelJsFs";
+import { IModelNative } from "../internal/NativePlatform";
 
 export interface LzmaParams {
   dictSize?: number;
@@ -64,7 +64,12 @@ export class RevisionUtility {
       throw new Error("RawChangesetFile does not exists");
     if (prefixFile && !IModelJsFs.existsSync(prefixFile))
       throw new Error("prefixFile does not exists");
-    return IModelNative.platform.RevisionUtility.assembleRevision(targetFile, rawChangesetFile, prefixFile, lzmaProps ? JSON.stringify(lzmaProps) : undefined);
+    return IModelNative.platform.RevisionUtility.assembleRevision(
+      targetFile,
+      rawChangesetFile,
+      prefixFile,
+      lzmaProps ? JSON.stringify(lzmaProps) : undefined,
+    );
   }
   public static normalizeLzmaParams(lzmaProps?: LzmaParams): LzmaParams {
     return JSON.parse(IModelNative.platform.RevisionUtility.normalizeLzmaParams(lzmaProps ? JSON.stringify(lzmaProps) : undefined)) as LzmaParams;

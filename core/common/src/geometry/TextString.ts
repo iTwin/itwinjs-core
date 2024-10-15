@@ -69,7 +69,9 @@ export class TextString {
   public readonly origin: Point3d;
   /** Rotation relative to element's placement */
   public readonly rotation: YawPitchRollAngles;
-  public get width() { return this.height * (this.widthFactor ? this.widthFactor : 1.0); }
+  public get width() {
+    return this.height * (this.widthFactor ? this.widthFactor : 1.0);
+  }
 
   public constructor(props: TextStringProps) {
     this.text = props.text;
@@ -121,7 +123,7 @@ export class TextString {
     this.origin.setFrom(newOrigin);
     this.rotation.setFrom(newRotation);
     this.height = newHeight;
-    this.widthFactor = (newHeight === newWidth ? undefined : (newWidth / newHeight));
+    this.widthFactor = newHeight === newWidth ? undefined : (newWidth / newHeight);
     return true;
   }
 }

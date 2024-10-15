@@ -4,7 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, GuidString } from "@itwin/core-bentley";
 import {
-  DevToolsRpcInterface, IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterface, RpcManager, SnapshotIModelRpcInterface,
+  DevToolsRpcInterface,
+  IModelReadRpcInterface,
+  IModelRpcProps,
+  IModelTileRpcInterface,
+  RpcInterface,
+  RpcManager,
+  SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { ECSchemaRpcInterface } from "@itwin/ecschema-rpcinterface-common";
 
@@ -56,7 +62,9 @@ export abstract class EventsTestRpcInterface extends RpcInterface {
   }
 
   // Set a event that would be fired from backend and received on frontend.
-  public async echo(_id: GuidString, _message: string): Promise<void> { return this.forward(arguments); }
+  public async echo(_id: GuidString, _message: string): Promise<void> {
+    return this.forward(arguments);
+  }
 }
 
 export const rpcInterfaces = [

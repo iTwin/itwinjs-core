@@ -63,7 +63,7 @@ describe("LightSettings", () => {
     roundTrip({ hemisphere: { intensity: -0.1 } }, undefined);
     roundTrip({ hemisphere: { intensity: 5.1 } }, { hemisphere: { intensity: 5.0 } });
 
-    roundTrip({ fresnel: { } }, undefined);
+    roundTrip({ fresnel: {} }, undefined);
     roundTrip({ fresnel: { intensity: 0.8, invert: false } }, { fresnel: { intensity: 0.8 } });
     roundTrip({ fresnel: { intensity: 0, invert: true } }, { fresnel: { invert: true } });
     roundTrip({ fresnel: { intensity: -1, invert: true } }, { fresnel: { invert: true } });
@@ -93,7 +93,7 @@ describe("LightSettings", () => {
     const dir1 = { x: 1, y: 2, z: 3 };
     const dir2 = { x: -1, y: -2, z: -3 };
 
-    test({ }, { timePoint: 123 }, { timePoint: 123 });
+    test({}, { timePoint: 123 }, { timePoint: 123 });
     test({ direction: dir1 }, { timePoint: 123 }, { direction: dir1, timePoint: 123 });
     test({ direction: dir1, timePoint: 123 }, { timePoint: 456 }, { direction: dir1, timePoint: 456 });
     test({ direction: dir1, timePoint: 123 }, { direction: dir2 }, { direction: dir2 });

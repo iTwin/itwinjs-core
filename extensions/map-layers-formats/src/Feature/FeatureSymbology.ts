@@ -5,7 +5,6 @@
 
 /** @internal */
 export abstract class FeatureSymbology {
-
 }
 
 /** @internal */

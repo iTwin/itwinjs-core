@@ -31,8 +31,8 @@ export default {
       definition: "Units.LENGTH(4)",
     },
     TargetPropertyCategory: {
-      schemaItemType:"PropertyCategory",
-      label:"Target Schema Category",
+      schemaItemType: "PropertyCategory",
+      label: "Target Schema Category",
       priority: 100000,
     },
     ChangedEnumeration: {
@@ -73,16 +73,14 @@ export default {
         multiplicity: "(0..*)",
         roleLabel: "Source RoleLabel",
         abstractConstraint: "TargetSchema.ChangedEntity",
-        constraintClasses: [
-        ],
+        constraintClasses: [],
       },
       target: {
         polymorphic: true,
         multiplicity: "(0..*)",
         roleLabel: "Target RoleLabel",
         abstractConstraint: "TargetSchema.ChangedEntity",
-        constraintClasses: [
-        ],
+        constraintClasses: [],
       },
     },
   },

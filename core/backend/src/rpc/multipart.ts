@@ -51,7 +51,7 @@ export async function parseMultipartRequest(req: HttpServerRequest) {
 
     form.on("close", () => {
       let i = 0;
-      for (; ;) {
+      for (;;) {
         const part = data[`data-${i}`];
         if (!part) {
           break;

@@ -22,4 +22,3 @@ export function makeEditToolIpc<K extends EditCommandIpc>(): PickAsyncMethods<K>
  * @internal
  */
 export const basicManipulationIpc = makeEditToolIpc<BasicManipulationCommandIpc>();
-

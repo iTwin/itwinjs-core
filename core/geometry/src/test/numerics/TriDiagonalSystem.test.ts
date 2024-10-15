@@ -11,7 +11,9 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 class TestFixture {
   public ck: Checker;
-  public constructor() { this.ck = new Checker(); }
+  public constructor() {
+    this.ck = new Checker();
+  }
 
   // Tester Methods -------------------------------------------------------------------
   public checkX(systemA: TriDiagonalSystem, systemB: TriDiagonalSystem) {
@@ -42,7 +44,6 @@ class TestFixture {
     if (Checker.noisy.tridiagonalSolver) {
       GeometryCoreTestIO.consoleLog("(1) A X AX");
       GeometryCoreTestIO.consoleLog(A);
-
     }
     const B: TriDiagonalSystem = A.copy();
     this.ck.testTrue(A.factorAndBackSubstitute(), "FactorAndBackSubstitute");
@@ -129,7 +130,7 @@ class TestFixture {
     A.setRow(2, 0.3, -3.1, 0.98);
     A.setRow(3, 0.43, -3.04, 0);
     for (let i = 0; i < 4; i++) {
-      A.setX(i, (1 + i * i));
+      A.setX(i, 1 + i * i);
     }
     A.multiplyAX();
     const B: TriDiagonalSystem = A.copy();
@@ -160,7 +161,7 @@ class TestFixture {
     for (let i = 1; i < (n - 1); i++) {
       const u = i / n;
       const v = u * 0.5;
-      A.addToRow(i, (1 - v * v), (3.0 + u), (1 + v * v));
+      A.addToRow(i, 1 - v * v, 3.0 + u, 1 + v * v);
     }
     A.setRow(n - 1, 1.235, 3.99, 0);
     for (let i = 0; i < n; i++) {
@@ -245,5 +246,4 @@ describe("TriDiagonalSystem", () => {
     tf.testRareConditions();
     expect(tf.ck.getNumErrors()).toBe(0);
   });
-
 });

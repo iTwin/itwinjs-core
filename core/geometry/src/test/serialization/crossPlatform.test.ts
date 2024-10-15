@@ -16,9 +16,17 @@ describe("CrossPlatform", () => {
     const ck = new Checker();
 
     // fileNames[Platform][FileType] are names of files of given type written by the given platform
-    interface TestCase { fileNames: string[][][] }
-    enum Platform { Native = 0, TypeScript = 1 }
-    enum FileType { FlatBuffer = 0, JSON = 1 }
+    interface TestCase {
+      fileNames: string[][][];
+    }
+    enum Platform {
+      Native = 0,
+      TypeScript = 1,
+    }
+    enum FileType {
+      FlatBuffer = 0,
+      JSON = 1,
+    }
 
     const root = "./src/test/data/crossPlatform/";
     const nativeRoot = `${root}native/`;
@@ -26,17 +34,40 @@ describe("CrossPlatform", () => {
 
     const testCases: TestCase[] = [];
     let testName = "indexedMesh-auxData";
-    testCases.push({ fileNames: [[[`${nativeRoot}${testName}.fb`], [`${nativeRoot}${testName}.imjs`]], [[`${typeScriptRoot}${testName}-new.fb`, `${typeScriptRoot}${testName}-old.fb`], [`${typeScriptRoot}${testName}.imjs`]]] });
-    testName = "indexedMesh-auxData2";  // inspired by Scientific Visualization sandbox
-    testCases.push({ fileNames: [[[`${nativeRoot}${testName}.fb`, `${nativeRoot}${testName}-size3.fb`, `${nativeRoot}${testName}-size4.fb`, `${nativeRoot}${testName}-size5.fb`], [`${nativeRoot}${testName}.imjs`, `${nativeRoot}${testName}-size3.imjs`, `${nativeRoot}${testName}-size4.imjs`, `${nativeRoot}${testName}-size5.imjs`]], [[`${typeScriptRoot}${testName}-new.fb`, `${typeScriptRoot}${testName}-old.fb`], [`${typeScriptRoot}${testName}.imjs`]]] });
+    testCases.push({
+      fileNames: [[[`${nativeRoot}${testName}.fb`], [`${nativeRoot}${testName}.imjs`]], [[
+        `${typeScriptRoot}${testName}-new.fb`,
+        `${typeScriptRoot}${testName}-old.fb`,
+      ], [`${typeScriptRoot}${testName}.imjs`]]],
+    });
+    testName = "indexedMesh-auxData2"; // inspired by Scientific Visualization sandbox
+    testCases.push({
+      fileNames: [[[
+        `${nativeRoot}${testName}.fb`,
+        `${nativeRoot}${testName}-size3.fb`,
+        `${nativeRoot}${testName}-size4.fb`,
+        `${nativeRoot}${testName}-size5.fb`,
+      ], [
+        `${nativeRoot}${testName}.imjs`,
+        `${nativeRoot}${testName}-size3.imjs`,
+        `${nativeRoot}${testName}-size4.imjs`,
+        `${nativeRoot}${testName}-size5.imjs`,
+      ]], [[`${typeScriptRoot}${testName}-new.fb`, `${typeScriptRoot}${testName}-old.fb`], [`${typeScriptRoot}${testName}.imjs`]]],
+    });
     testName = "indexedMesh-fixedSize";
-    testCases.push({ fileNames: [[[`${nativeRoot}${testName}.fb`], [`${nativeRoot}${testName}.imjs`]], [[`${typeScriptRoot}${testName}.fb`], [`${typeScriptRoot}${testName}.imjs`]]] });
+    testCases.push({
+      fileNames: [[[`${nativeRoot}${testName}.fb`], [`${nativeRoot}${testName}.imjs`]], [[`${typeScriptRoot}${testName}.fb`], [
+        `${typeScriptRoot}${testName}.imjs`,
+      ]]],
+    });
 
     // TODO: add other test cases
 
     const geometry: GeometryQuery[] = [];
     const pushFirstDeserializedGeom = (fileName: string, fileType: FileType) => {
-      const geom = FileType.FlatBuffer === fileType ? GeometryCoreTestIO.flatBufferFileToGeometry(fileName) : GeometryCoreTestIO.jsonFileToGeometry(fileName);
+      const geom = FileType.FlatBuffer === fileType
+        ? GeometryCoreTestIO.flatBufferFileToGeometry(fileName)
+        : GeometryCoreTestIO.jsonFileToGeometry(fileName);
       if (ck.testDefined(geom, `deserialized ${fileName}`)) {
         let toPush: GeometryQuery | undefined;
         if (Array.isArray(geom)) {

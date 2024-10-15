@@ -9,8 +9,8 @@
 // To avoid circular load errors, the "Element" classes must be loaded before IModelHost.
 import "./IModelDb"; // DO NOT REMOVE OR MOVE THIS LINE!
 
-import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import * as os from "os";
+import { IModelNative, loadNativePlatform } from "./internal/NativePlatform";
 import "reflect-metadata"; // this has to be before @itwin/object-storage-* and @itwin/cloud-agnostic-core imports because those packages contain decorators that use this polyfill.
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
 import { DependenciesConfig, Types as ExtensionTypes } from "@itwin/cloud-agnostic-core";
@@ -18,6 +18,8 @@ import { AccessToken, assert, BeEvent, DbResult, Guid, GuidString, IModelStatus,
 import { AuthorizationClient, BentleyStatus, IModelError, LocalDirName, SessionProps } from "@itwin/core-common";
 import { AzureServerStorageBindings } from "@itwin/object-storage-azure";
 import { ServerStorage } from "@itwin/object-storage-core";
+import { Container } from "inversify";
+import { join, normalize as normalizeDir } from "path";
 import { BackendHubAccess } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
@@ -27,6 +29,9 @@ import { FunctionalSchema } from "./domains/FunctionalSchema";
 import { GenericSchema } from "./domains/GenericSchema";
 import { GeoCoordConfig } from "./GeoCoordConfig";
 import { IModelJsFs } from "./IModelJsFs";
+import { SettingsImpl } from "./internal/workspace/SettingsImpl";
+import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
+import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
@@ -37,11 +42,6 @@ import { TileStorage } from "./TileStorage";
 import { SettingsContainer, SettingsPriority } from "./workspace/Settings";
 import { SettingsSchemas } from "./workspace/SettingsSchemas";
 import { Workspace, WorkspaceOpts } from "./workspace/Workspace";
-import { Container } from "inversify";
-import { join, normalize as normalizeDir } from "path";
-import { constructWorkspace, OwnedWorkspace } from "./internal/workspace/WorkspaceImpl";
-import { SettingsImpl } from "./internal/workspace/SettingsImpl";
-import { constructSettingsSchemas } from "./internal/workspace/SettingsSchemasImpl";
 
 const loggerCategory = BackendLoggerCategory.IModelHost;
 
@@ -278,7 +278,7 @@ const definedInStartup = <T>(obj: T | undefined): T => {
  * @public
  */
 export class IModelHost {
-  private constructor() { }
+  private constructor() {}
 
   /** The AuthorizationClient used to obtain [AccessToken]($bentley)s. */
   public static authorizationClient?: AuthorizationClient;
@@ -294,7 +294,9 @@ export class IModelHost {
    * @deprecated in 4.8. This internal API will be removed in 5.0. Use IModelHost's public API instead.
    * @internal
    */
-  public static get platform(): typeof IModelJsNative { return IModelNative.platform; }
+  public static get platform(): typeof IModelJsNative {
+    return IModelNative.platform;
+  }
 
   public static configuration?: IModelHostOptions;
 
@@ -334,22 +336,36 @@ export class IModelHost {
   public static readonly session: Mutable<SessionProps> = { applicationId: "2686", applicationVersion: "1.0.0", sessionId: "" };
 
   /** A uniqueId for this session */
-  public static get sessionId() { return this.session.sessionId; }
-  public static set sessionId(id: GuidString) { this.session.sessionId = id; }
+  public static get sessionId() {
+    return this.session.sessionId;
+  }
+  public static set sessionId(id: GuidString) {
+    this.session.sessionId = id;
+  }
 
   /** The Id of this application - needs to be set only if it is an agent application. The applicationId will otherwise originate at the frontend. */
-  public static get applicationId() { return this.session.applicationId; }
-  public static set applicationId(id: string) { this.session.applicationId = id; }
+  public static get applicationId() {
+    return this.session.applicationId;
+  }
+  public static set applicationId(id: string) {
+    this.session.applicationId = id;
+  }
 
   /** The version of this application - needs to be set if is an agent application. The applicationVersion will otherwise originate at the frontend. */
-  public static get applicationVersion() { return this.session.applicationVersion; }
-  public static set applicationVersion(version: string) { this.session.applicationVersion = version; }
+  public static get applicationVersion() {
+    return this.session.applicationVersion;
+  }
+  public static set applicationVersion(version: string) {
+    this.session.applicationVersion = version;
+  }
 
   /** A string that can identify the current user to other users when collaborating. */
   public static userMoniker = "unknown";
 
   /** Root directory holding files that iTwin.js caches */
-  public static get cacheDir(): LocalDirName { return this._cacheDir; }
+  public static get cacheDir(): LocalDirName {
+    return this._cacheDir;
+  }
 
   /** The application [[Workspace]] for this `IModelHost`
    * @note this `Workspace` only holds [[WorkspaceContainer]]s and [[Settings]] scoped to the currently loaded application(s).
@@ -357,13 +373,17 @@ export class IModelHost {
    * attempting to add them to this Workspace will fail.
    * @beta
    */
-  public static get appWorkspace(): Workspace { return definedInStartup(this._appWorkspace); }
+  public static get appWorkspace(): Workspace {
+    return definedInStartup(this._appWorkspace);
+  }
 
   /** The registry of schemas describing the [[Setting]]s for the application session.
    * Applications should register their schemas via methods like [[SettingsSchemas.addGroup]].
    * @beta
    */
-  public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
+  public static get settingsSchemas(): SettingsSchemas {
+    return definedInStartup(this._settingsSchemas);
+  }
 
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels.
    * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
@@ -388,7 +408,10 @@ export class IModelHost {
   private static loadNative(options: IModelHostOptions) {
     loadNativePlatform();
 
-    if (options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend && !ProcessDetector.isMobileAppBackend) {
+    if (
+      options.crashReportingConfig && options.crashReportingConfig.crashDir && !ProcessDetector.isElectronAppBackend &&
+      !ProcessDetector.isMobileAppBackend
+    ) {
       IModelNative.platform.setCrashReporting(options.crashReportingConfig);
 
       Logger.logTrace(loggerCategory, "Configured crash reporting", {
@@ -416,12 +439,16 @@ export class IModelHost {
 
   private static _hubAccess?: BackendHubAccess;
   /** @internal */
-  public static setHubAccess(hubAccess: BackendHubAccess | undefined) { this._hubAccess = hubAccess; }
+  public static setHubAccess(hubAccess: BackendHubAccess | undefined) {
+    this._hubAccess = hubAccess;
+  }
 
   /** get the current hubAccess, if present.
    * @internal
    */
-  public static getHubAccess(): BackendHubAccess | undefined { return this._hubAccess; }
+  public static getHubAccess(): BackendHubAccess | undefined {
+    return this._hubAccess;
+  }
 
   /** Provides access to the IModelHub for this IModelHost
    * @internal
@@ -444,7 +471,9 @@ export class IModelHost {
     try {
       this.appWorkspace.getCloudCache();
     } catch (e: any) {
-      throw (e.errorNumber === DbResult.BE_SQLITE_BUSY) ? new IModelError(DbResult.BE_SQLITE_BUSY, `Profile [${this.profileDir}] is already in use by another process`) : e;
+      throw (e.errorNumber === DbResult.BE_SQLITE_BUSY)
+        ? new IModelError(DbResult.BE_SQLITE_BUSY, `Profile [${this.profileDir}] is already in use by another process`)
+        : e;
     }
 
     this.appWorkspace.settings.addDirectory(settingAssets, SettingsPriority.defaults);
@@ -672,7 +701,6 @@ export class Platform {
  * @public
  */
 export class KnownLocations {
-
   /** The directory where the imodeljs-native assets are stored. */
   public static get nativeAssetsDir(): LocalDirName {
     return IModelNative.platform.DgnDb.getAssetsDir();
@@ -700,7 +728,9 @@ export abstract class FileNameResolver {
    * @param _fileKey The key that identifies the file name in a `Map` or other similar data structure.
    * @returns The resolved file name or `undefined` if not found.
    */
-  public tryResolveKey(_fileKey: string): string | undefined { return undefined; }
+  public tryResolveKey(_fileKey: string): string | undefined {
+    return undefined;
+  }
   /** Resolve a file name from the specified key.
    * @param fileKey The key that identifies the file name in a `Map` or other similar data structure.
    * @returns The resolved file name.
@@ -717,7 +747,9 @@ export abstract class FileNameResolver {
    * @param inFileName The partial file name.
    * @returns The resolved full path file name or `undefined` if not found.
    */
-  public tryResolveFileName(inFileName: string): string | undefined { return inFileName; }
+  public tryResolveFileName(inFileName: string): string | undefined {
+    return inFileName;
+  }
   /** Resolve the input file name, which may be a partial name, into a full path file name.
    * @param inFileName The partial file name.
    * @returns The resolved full path file name.

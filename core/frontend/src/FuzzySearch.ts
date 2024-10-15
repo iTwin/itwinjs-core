@@ -10,7 +10,6 @@ import Fuse from "fuse.js";
 
 /** @public */
 export class FuzzySearch<T> {
-
   /** Override to provide non-standard FuseOptions for searches where the a single word pattern is used */
   public onGetSingleWordSearchOptions(): Fuse.FuseOptions<T> {
     return {
@@ -183,9 +182,13 @@ export class FuzzySearchResults<T> implements Iterable<T> {
       this.results = results;
   }
 
-  public [Symbol.iterator](): any { return new FuzzySearchResultsIterator(this); }
+  public [Symbol.iterator](): any {
+    return new FuzzySearchResultsIterator(this);
+  }
 
-  public get length(): number { return this.results.length; }
+  public get length(): number {
+    return this.results.length;
+  }
 
   public getResult(resultIndex: number): FuzzySearchResult<T> | undefined {
     if ((resultIndex < 0) || (resultIndex > this.results.length))

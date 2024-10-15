@@ -23,8 +23,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             binaryProp?: any;
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Class with point3d type
@@ -44,8 +43,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             point3dProp?: Point3d;
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Class with point2d type
@@ -65,8 +63,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             point2dProp?: Point2d;
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Class with bool type
@@ -85,8 +82,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             boolProp?: boolean;
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Class with int type
@@ -105,8 +101,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             intProp?: number;
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Class with double type
@@ -125,8 +120,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             doubleProp?: number;
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Class with datetime
@@ -145,8 +139,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             dateTimeProp?: Date;
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Class with string
@@ -165,8 +158,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             stringProp?: string;
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Class with long
@@ -185,9 +177,9 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             longProp?: any;
-          }`,
-        ],
-      }];
+          }`],
+      },
+    ];
 
     utils.testGeneratedTypescriptProperty(testCases);
   });
@@ -212,9 +204,9 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             navProp?: RelatedElementProps;
-          }`,
-        ],
-      }];
+          }`],
+      },
+    ];
 
     utils.testGeneratedTypescriptProperty(testCases);
   });
@@ -241,8 +233,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             structProp?: DerivedStruct;
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Class with struct in reference schema
@@ -271,8 +262,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             structProp?: DerivedStruct;
-          }`,
-        ],
+          }`],
       },
     ];
 
@@ -310,9 +300,9 @@ describe("ecjson properties to ts", () => {
             point2dArrayProp?: Point2d[];
             point3dArrayProp?: Point3d[];
             stringArrayProp?: string[];
-          }`,
-        ],
-      }];
+          }`],
+      },
+    ];
 
     utils.testGeneratedTypescriptProperty(testCases);
   });
@@ -339,8 +329,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             structArrayProp?: TestStruct[];
-          }`,
-        ],
+          }`],
       },
 
       // Test Case: Class with struct array property in reference schema
@@ -369,8 +358,7 @@ describe("ecjson properties to ts", () => {
         expectedPropsTs: [utils.dedent`
           export interface TestClassProps extends EntityProps {
             structArrayProp?: TestStruct[];
-          }`,
-        ],
+          }`],
       },
     ];
 
@@ -417,9 +405,9 @@ describe("ecjson properties to ts", () => {
           export interface TestClassProps extends EntityProps {
             intProp?: number;
             structArrayProp?: TestStruct[];
-          }`,
-        ],
-      }];
+          }`],
+      },
+    ];
 
     utils.testGeneratedTypescriptProperty(testCases);
   });

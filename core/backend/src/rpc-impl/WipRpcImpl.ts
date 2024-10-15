@@ -19,9 +19,12 @@ import { BriefcaseDb } from "../IModelDb";
  * @deprecated in 4.10. If any of these methods are needed in the frontend, they should be rewritten using IPC or HTTP protocol.
  */
 export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
-
-  public static register() { RpcManager.registerImpl(WipRpcInterface, WipRpcImpl); }
-  public async placeholder(_tokenProps: IModelRpcProps): Promise<string> { return "placeholder"; }
+  public static register() {
+    RpcManager.registerImpl(WipRpcInterface, WipRpcImpl);
+  }
+  public async placeholder(_tokenProps: IModelRpcProps): Promise<string> {
+    return "placeholder";
+  }
 
   public async isChangeCacheAttached(tokenProps: IModelRpcProps): Promise<boolean> {
     return ChangeSummaryManager.isChangeCacheAttached(BriefcaseDb.findByKey(tokenProps.key));
@@ -31,7 +34,11 @@ export class WipRpcImpl extends RpcInterface implements WipRpcInterface {
     ChangeSummaryManager.attachChangeCache(BriefcaseDb.findByKey(tokenProps.key));
   }
 
-  public async getChangedElements(tokenProps: IModelRpcProps, startChangesetId: string, endChangesetId: string): Promise<ChangedElements | undefined> {
+  public async getChangedElements(
+    tokenProps: IModelRpcProps,
+    startChangesetId: string,
+    endChangesetId: string,
+  ): Promise<ChangedElements | undefined> {
     assert(undefined !== tokenProps.iModelId);
     return ChangedElementsManager.getChangedElements(tokenProps.iModelId, startChangesetId, endChangesetId);
   }

@@ -8,12 +8,12 @@
 
 import { DbResult, Id64, Id64String, IModelStatus, Logger } from "@itwin/core-bentley";
 import { EntityMetaData, EntityReferenceSet, IModelError, RelatedElement } from "@itwin/core-common";
-import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
-import { Schema, Schemas } from "./Schema";
-import { EntityReferences } from "./EntityReferences";
 import * as assert from "assert";
+import { Entity } from "./Entity";
+import { EntityReferences } from "./EntityReferences";
+import { IModelDb } from "./IModelDb";
 import { _nativeDb } from "./internal/Symbols";
+import { Schema, Schemas } from "./Schema";
 
 const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 
@@ -25,9 +25,13 @@ const isGeneratedClassTag = Symbol("isGeneratedClassTag");
 export class ClassRegistry {
   private static readonly _classMap = new Map<string, typeof Entity>();
   /** @internal */
-  public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
+  public static isNotFoundError(err: any) {
+    return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound);
+  }
   /** @internal */
-  public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, `metadata not found for ${className}`); }
+  public static makeMetaDataNotFoundError(className: string): IModelError {
+    return new IModelError(IModelStatus.NotFound, `metadata not found for ${className}`);
+  }
   /** Register a single `entityClass` defined in the specified `schema`.
    * @see [[registerModule]] to register multiple classes.
    * @public
@@ -46,20 +50,27 @@ export class ClassRegistry {
 
   /** Generate a proxy Schema for a domain that has not been registered. */
   private static generateProxySchema(domain: string, iModel: IModelDb): typeof Schema {
-    const hasBehavior = iModel.withPreparedSqliteStatement(`
+    const hasBehavior = iModel.withPreparedSqliteStatement(
+      `
       SELECT NULL FROM [ec_CustomAttribute] [c]
         JOIN [ec_schema] [s] ON [s].[Id] = [c].[ContainerId]
         JOIN [ec_class] [e] ON [e].[Id] = [c].[ClassId]
         JOIN [ec_schema] [b] ON [e].[SchemaId] = [b].[Id]
-      WHERE [c].[ContainerType] = 1 AND [s].[Name] = ? AND [b].[Name] || '.' || [e].[name] = ?`, (stmt) => {
-      stmt.bindString(1, domain);
-      stmt.bindString(2, "BisCore.SchemaHasBehavior");
-      return stmt.step() === DbResult.BE_SQLITE_ROW;
-    });
+      WHERE [c].[ContainerType] = 1 AND [s].[Name] = ? AND [b].[Name] || '.' || [e].[name] = ?`,
+      (stmt) => {
+        stmt.bindString(1, domain);
+        stmt.bindString(2, "BisCore.SchemaHasBehavior");
+        return stmt.step() === DbResult.BE_SQLITE_ROW;
+      },
+    );
 
     const schemaClass = class extends Schema {
-      public static override get schemaName() { return domain; }
-      public static override get missingRequiredBehavior() { return hasBehavior; }
+      public static override get schemaName() {
+        return domain;
+      }
+      public static override get missingRequiredBehavior() {
+        return hasBehavior;
+      }
     };
 
     Schemas.registerSchema(schemaClass); // register the class before we return it.
@@ -126,21 +137,31 @@ export class ClassRegistry {
       }
       const superclassMetaData = iModel.classMetaDataRegistry.find(currentSuperclass.classFullName);
       if (superclassMetaData === undefined)
-        throw new IModelError(IModelStatus.BadSchema, `could not find the metadata for class '${currentSuperclass.name}', class metadata should be loaded by now`);
+        throw new IModelError(
+          IModelStatus.BadSchema,
+          `could not find the metadata for class '${currentSuperclass.name}', class metadata should be loaded by now`,
+        );
       const maybeNextSuperclass = this.getClass(superclassMetaData.baseClasses[0], iModel);
       if (maybeNextSuperclass === undefined)
-        throw new IModelError(IModelStatus.BadSchema, `could not find the base class of '${currentSuperclass.name}', all generated classes must have a base class`);
+        throw new IModelError(
+          IModelStatus.BadSchema,
+          `could not find the base class of '${currentSuperclass.name}', all generated classes must have a base class`,
+        );
       currentSuperclass = maybeNextSuperclass;
     }
 
     const generatedClass = class extends superclass {
-      public static override get className() { return className; }
+      public static override get className() {
+        return className;
+      }
       private static [isGeneratedClassTag] = true;
-      public static override get isGeneratedClass() { return this.hasOwnProperty(isGeneratedClassTag); }
+      public static override get isGeneratedClass() {
+        return this.hasOwnProperty(isGeneratedClassTag);
+      }
     };
 
     // the above creates an anonymous class. For help debugging, set the "constructor.name" property to be the same as the bisClassName.
-    Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
+    Object.defineProperty(generatedClass, "name", { get: () => className }); // this is the (only) way to change that readonly property.
 
     // a class only gets an automatic `collectReferenceIds` implementation if:
     // - it is not in the `BisCore` schema
@@ -255,7 +276,9 @@ export class ClassRegistry {
    * @return true if the class was unregistered
    * @internal
    */
-  public static unregisterCLass(classFullName: string) { return this._classMap.delete(classFullName.toLowerCase()); }
+  public static unregisterCLass(classFullName: string) {
+    return this._classMap.delete(classFullName.toLowerCase());
+  }
   /** Unregister all classes from a schema.
    * This function is not normally needed, but is useful for cases where a generated *proxy* schema needs to be replaced by the *real* schema.
    * @param schema Name of the schema to unregister

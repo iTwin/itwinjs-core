@@ -38,15 +38,33 @@ export class Unit extends SchemaItem {
     this._definition = "";
   }
 
-  public get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
-  public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
-  public get definition(): string { return this._definition; }
-  public get numerator(): number { return this._numerator ?? 1.0; }
-  public get offset(): number { return this._offset ?? 0.0; }
-  public get denominator(): number { return this._denominator ?? 1.0; }
-  public get hasNumerator(): boolean { return (this._numerator !== undefined); }
-  public get hasOffset(): boolean { return (this._offset !== undefined); }
-  public get hasDenominator(): boolean { return (this._denominator !== undefined); }
+  public get phenomenon(): LazyLoadedPhenomenon | undefined {
+    return this._phenomenon;
+  }
+  public get unitSystem(): LazyLoadedUnitSystem | undefined {
+    return this._unitSystem;
+  }
+  public get definition(): string {
+    return this._definition;
+  }
+  public get numerator(): number {
+    return this._numerator ?? 1.0;
+  }
+  public get offset(): number {
+    return this._offset ?? 0.0;
+  }
+  public get denominator(): number {
+    return this._denominator ?? 1.0;
+  }
+  public get hasNumerator(): boolean {
+    return (this._numerator !== undefined);
+  }
+  public get hasOffset(): boolean {
+    return (this._offset !== undefined);
+  }
+  public get hasDenominator(): boolean {
+    return (this._denominator !== undefined);
+  }
 
   /**
    * Returns true if a conversion can be calculated between the input units
@@ -120,24 +138,22 @@ export class Unit extends SchemaItem {
     const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(unitProps.phenomenon);
     if (!phenomenonSchemaItemKey)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
-    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonSchemaItemKey,
-      async () => {
-        const phenom = await this.schema.lookupItem<Phenomenon>(phenomenonSchemaItemKey);
-        if (undefined === phenom)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
-        return phenom;
-      });
+    this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonSchemaItemKey, async () => {
+      const phenom = await this.schema.lookupItem<Phenomenon>(phenomenonSchemaItemKey);
+      if (undefined === phenom)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
+      return phenom;
+    });
 
     const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(unitProps.unitSystem);
     if (!unitSystemSchemaItemKey)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
-    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
-      async () => {
-        const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
-        if (undefined === unitSystem)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
-        return unitSystem;
-      });
+    this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey, async () => {
+      const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
+      if (undefined === unitSystem)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
+      return unitSystem;
+    });
 
     if (this._definition !== "" && unitProps.definition.toLowerCase() !== this._definition.toLowerCase())
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'definition' attribute.`);

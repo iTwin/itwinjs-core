@@ -3,12 +3,23 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { join } from "path";
 import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@itwin/core-bentley";
 import {
-  BriefcaseId, BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps,
-  ChangesetRange, IModelError, LocalDirName, LocalFileName, LockState,
+  BriefcaseId,
+  BriefcaseIdValue,
+  ChangesetFileProps,
+  ChangesetId,
+  ChangesetIdWithIndex,
+  ChangesetIndex,
+  ChangesetIndexOrId,
+  ChangesetProps,
+  ChangesetRange,
+  IModelError,
+  LocalDirName,
+  LocalFileName,
+  LockState,
 } from "@itwin/core-common";
+import { join } from "path";
 import { LockConflict, LockMap, LockProps } from "./BackendHubAccess";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "./IModelDb";
@@ -80,7 +91,9 @@ export class LocalHub {
   private _hubDb?: SQLiteDb;
   private _nextBriefcaseId = BriefcaseIdValue.FirstValid;
   private _latestChangesetIndex = 0;
-  public get latestChangesetIndex() { return this._latestChangesetIndex; }
+  public get latestChangesetIndex() {
+    return this._latestChangesetIndex;
+  }
 
   public constructor(public readonly rootDir: LocalDirName, arg: LocalHubProps) {
     this.iTwinId = arg.iTwinId;
@@ -97,8 +110,10 @@ export class LocalHub {
     const db = this._hubDb = new SQLiteDb();
     db.createDb(this.mockDbName);
     db.executeSQL("CREATE TABLE briefcases(id INTEGER PRIMARY KEY NOT NULL,user TEXT NOT NULL,alias TEXT NOT NULL,assigned INTEGER DEFAULT 1)");
-    db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,\
-                   FOREIGN KEY(briefcaseId) REFERENCES briefcases(id))");
+    db.executeSQL(
+      "CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER,\
+                   FOREIGN KEY(briefcaseId) REFERENCES briefcases(id))",
+    );
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,csIndex TEXT,FOREIGN KEY(csIndex) REFERENCES timeline(csIndex))");
     db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,level INTEGER NOT NULL,lastCSetIndex INTEGER,briefcaseId INTEGER)");
@@ -135,10 +150,18 @@ export class LocalHub {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-  private get db(): SQLiteDb { return this._hubDb!; } // eslint-disable-line @typescript-eslint/naming-convention
-  public get changesetDir() { return join(this.rootDir, "changesets"); }
-  public get checkpointDir() { return join(this.rootDir, "checkpoints"); }
-  public get mockDbName() { return join(this.rootDir, "localHub.db"); }
+  private get db(): SQLiteDb {
+    return this._hubDb!;
+  } // eslint-disable-line @typescript-eslint/naming-convention
+  public get changesetDir() {
+    return join(this.rootDir, "changesets");
+  }
+  public get checkpointDir() {
+    return join(this.rootDir, "checkpoints");
+  }
+  public get mockDbName() {
+    return join(this.rootDir, "localHub.db");
+  }
 
   /** Acquire the next available briefcaseId and assign it to the supplied user */
   public acquireNewBriefcaseId(user: string, alias?: string): BriefcaseId {
@@ -298,24 +321,27 @@ export class LocalHub {
     if (index <= 0)
       return { id: "", changesType: 0, description: "version0", parentId: "", briefcaseId: 0, pushDate: "", userCreated: "", index: 0, size: 0 };
 
-    return this.db.withPreparedSqliteStatement("SELECT description,size,type,pushDate,user,csId,briefcaseId FROM timeline WHERE csIndex=?", (stmt) => {
-      stmt.bindInteger(1, index);
-      const rc = stmt.step();
-      if (DbResult.BE_SQLITE_ROW !== rc)
-        throw new IModelError(rc, `changeset at index ${index} not found`);
+    return this.db.withPreparedSqliteStatement(
+      "SELECT description,size,type,pushDate,user,csId,briefcaseId FROM timeline WHERE csIndex=?",
+      (stmt) => {
+        stmt.bindInteger(1, index);
+        const rc = stmt.step();
+        if (DbResult.BE_SQLITE_ROW !== rc)
+          throw new IModelError(rc, `changeset at index ${index} not found`);
 
-      return {
-        description: stmt.getValueString(0),
-        size: stmt.getValueDouble(1),
-        changesType: stmt.getValueInteger(2),
-        pushDate: stmt.getValueString(3),
-        userCreated: stmt.getValueString(4),
-        id: stmt.getValueString(5),
-        briefcaseId: stmt.getValueInteger(6),
-        index,
-        parentId: this.getParentId(index),
-      };
-    });
+        return {
+          description: stmt.getValueString(0),
+          size: stmt.getValueDouble(1),
+          changesType: stmt.getValueInteger(2),
+          pushDate: stmt.getValueString(3),
+          userCreated: stmt.getValueString(4),
+          id: stmt.getValueString(5),
+          briefcaseId: stmt.getValueInteger(6),
+          index,
+          parentId: this.getParentId(index),
+        };
+      },
+    );
   }
 
   public getLatestChangeset(): ChangesetProps {
@@ -408,7 +434,6 @@ export class LocalHub {
       stmt.bindInteger(2, last);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
         checkpoints.push(stmt.getValueInteger(0));
-
     });
     return checkpoints;
   }
@@ -516,14 +541,17 @@ export class LocalHub {
     if (wantShared && (currStatus.state === LockState.Exclusive))
       throw new Error("cannot acquire shared lock because an exclusive lock is already held");
 
-    this.db.withPreparedSqliteStatement("INSERT INTO locks(id,level,briefcaseId) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET briefcaseId=excluded.briefcaseId,level=excluded.level", (stmt) => {
-      stmt.bindId(1, props.id);
-      stmt.bindInteger(2, props.state);
-      stmt.bindValue(3, wantShared ? undefined : briefcase.briefcaseId);
-      const rc = stmt.step();
-      if (rc !== DbResult.BE_SQLITE_DONE)
-        throw new IModelError(rc, "cannot insert lock");
-    });
+    this.db.withPreparedSqliteStatement(
+      "INSERT INTO locks(id,level,briefcaseId) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET briefcaseId=excluded.briefcaseId,level=excluded.level",
+      (stmt) => {
+        stmt.bindId(1, props.id);
+        stmt.bindInteger(2, props.state);
+        stmt.bindValue(3, wantShared ? undefined : briefcase.briefcaseId);
+        const rc = stmt.step();
+        if (rc !== DbResult.BE_SQLITE_DONE)
+          throw new IModelError(rc, "cannot insert lock");
+      },
+    );
 
     if (wantShared) {
       this.db.withPreparedSqliteStatement("INSERT INTO sharedLocks(lockId,briefcaseId) VALUES(?,?)", (stmt) => {
@@ -660,9 +688,13 @@ export class LocalHub {
   }
 
   // for debugging
-  public countSharedLocks(): number { return this.countTable("sharedLocks"); }
+  public countSharedLocks(): number {
+    return this.countTable("sharedLocks");
+  }
   // for debugging
-  public countLocks(): number { return this.countTable("locks"); }
+  public countLocks(): number {
+    return this.countTable("locks");
+  }
 
   // for debugging
   public queryAllSharedLocks(): { id: Id64String, briefcaseId: BriefcaseId }[] {
@@ -694,7 +726,6 @@ export class LocalHub {
       IModelJsFs.purgeDirSync(dirName);
       IModelJsFs.rmdirSync(dirName);
     }
-
   }
   public cleanup() {
     if (this._hubDb) {
@@ -706,7 +737,9 @@ export class LocalHub {
       this.removeDir(this.rootDir);
     } catch (err) {
       // eslint-disable-next-line no-console
-      console.log(`ERROR: test left an iModel open for [${this.iModelName}]. LocalMock cannot clean up - make sure you call imodel.close() in your test`);
+      console.log(
+        `ERROR: test left an iModel open for [${this.iModelName}]. LocalMock cannot clean up - make sure you call imodel.close() in your test`,
+      );
     }
   }
 }

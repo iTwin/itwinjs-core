@@ -139,7 +139,10 @@ export class StrokeOptions {
    * from the options.
    */
   public static applyAngleTol(
-    options: StrokeOptions | undefined, minCount: number, sweepRadians: number, defaultStepRadians?: number,
+    options: StrokeOptions | undefined,
+    minCount: number,
+    sweepRadians: number,
+    defaultStepRadians?: number,
   ): number {
     sweepRadians = Math.abs(sweepRadians);
     let stepRadians = defaultStepRadians ? defaultStepRadians : Math.PI / 8.0;
@@ -156,10 +159,12 @@ export class StrokeOptions {
    * @param edgeLength
    */
   public static applyMaxEdgeLength(
-    options: StrokeOptions | undefined, minCount: number, edgeLength: number,
+    options: StrokeOptions | undefined,
+    minCount: number,
+    edgeLength: number,
   ): number {
     if (edgeLength < 0)
-      edgeLength = - edgeLength;
+      edgeLength = -edgeLength;
     if (minCount < 1)
       minCount = 1;
     if (options && options.maxEdgeLength && options.maxEdgeLength * minCount < edgeLength) {
@@ -183,7 +188,7 @@ export class StrokeOptions {
   public applyChordTol(minCount: number, radius: number, sweepRadians: number): number {
     if (this.chordTol && this.chordTol > 0.0 && this.chordTol < radius) {
       const a = this.chordTol;
-      const stepRadians = 2.0 * Math.acos((1.0 - a / radius));
+      const stepRadians = 2.0 * Math.acos(1.0 - a / radius);
       minCount = Geometry.stepCount(stepRadians, sweepRadians, minCount);
     }
     return minCount;
@@ -202,8 +207,10 @@ export class StrokeOptions {
   }
   /** Return stroke count which is the larger of existing count or `this.minStrokesPerPrimitive` */
   public applyMinStrokesPerPrimitive(minCount: number): number {
-    if (this.minStrokesPerPrimitive !== undefined && Number.isFinite(this.minStrokesPerPrimitive)
-      && this.minStrokesPerPrimitive > minCount)
+    if (
+      this.minStrokesPerPrimitive !== undefined && Number.isFinite(this.minStrokesPerPrimitive)
+      && this.minStrokesPerPrimitive > minCount
+    )
       minCount = this.minStrokesPerPrimitive;
     return minCount;
   }

@@ -55,7 +55,6 @@ export class BGFBWriter {
     this.builder = new flatbuffers.Builder(defaultSize);
   }
   /**
-   *
    * @param data data source, as Float64Array or number[].
    * @param count optional count, used only if less than .length numbers are to be written.
    */
@@ -75,11 +74,10 @@ export class BGFBWriter {
   }
 
   /**
-   *
    * @param data data source, as Float64Array or number[].
    * @param count optional count, used only if less than .length numbers are to be written.
    */
-   public writeIntArray(data: Int32Array | number[] | undefined): number {
+  public writeIntArray(data: Int32Array | number[] | undefined): number {
     if (data === undefined)
       return 0;
     const numInt = data.length;
@@ -93,18 +91,17 @@ export class BGFBWriter {
   }
 
   /**
-   *
    * @param data data source, as array derived from XYZ.
    * The data is output as a flat array of 3*data.length numbers.
    */
-   public writePackedYZArray(data: XYZ[] | undefined): number {
+  public writePackedYZArray(data: XYZ[] | undefined): number {
     if (data === undefined)
       return 0;
     const numFloats = data.length * 3;
     if (numFloats === 0)
       return 0;
-     this.builder.startVector(8, numFloats, 8);
-     // write in reverse index order, and zyx within each XYZ
+    this.builder.startVector(8, numFloats, 8);
+    // write in reverse index order, and zyx within each XYZ
     for (let i = data.length - 1; i >= 0; i--) {
       this.builder.addFloat64(data[i].z);
       this.builder.addFloat64(data[i].y);
@@ -166,19 +163,32 @@ export class BGFBWriter {
       BGFBAccessors.InterpolationCurve.addIsNaturalTangents(this.builder, props.isNaturalTangents);
     // REMARK: some native or flatbuffer quirk made startTangent a point and endTangent a vector.
     if (props.startTangent !== undefined) {
-      const startTangentOffset = BGFBAccessors.DPoint3d.createDPoint3d(this.builder,
-        XYZ.x(props.startTangent), XYZ.y(props.startTangent), XYZ.z(props.startTangent));
-        BGFBAccessors.InterpolationCurve.addStartTangent(this.builder, startTangentOffset);
+      const startTangentOffset = BGFBAccessors.DPoint3d.createDPoint3d(
+        this.builder,
+        XYZ.x(props.startTangent),
+        XYZ.y(props.startTangent),
+        XYZ.z(props.startTangent),
+      );
+      BGFBAccessors.InterpolationCurve.addStartTangent(this.builder, startTangentOffset);
     }
     if (props.endTangent !== undefined) {
-      const endTangentOffset = BGFBAccessors.DVector3d.createDVector3d(this.builder,
-        XYZ.x(props.endTangent), XYZ.y(props.endTangent), XYZ.z(props.endTangent));
-        BGFBAccessors.InterpolationCurve.addEndTangent(this.builder, endTangentOffset);
+      const endTangentOffset = BGFBAccessors.DVector3d.createDVector3d(
+        this.builder,
+        XYZ.x(props.endTangent),
+        XYZ.y(props.endTangent),
+        XYZ.z(props.endTangent),
+      );
+      BGFBAccessors.InterpolationCurve.addEndTangent(this.builder, endTangentOffset);
     }
     if (knotOffset !== 0)
       BGFBAccessors.InterpolationCurve.addKnots(this.builder, knotOffset);
     const headerOffset = BGFBAccessors.InterpolationCurve.endInterpolationCurve(this.builder);
-    return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve, headerOffset, 0);
+    return BGFBAccessors.VariantGeometry.createVariantGeometry(
+      this.builder,
+      BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve,
+      headerOffset,
+      0,
+    );
   }
 
   public writeAkimaCurve3dAsFBVariantGeometry(curve: AkimaCurve3d): number | undefined {
@@ -195,14 +205,21 @@ export class BGFBWriter {
     if (BSplineWrapMode.None !== wrapMode)
       data.params.wrapMode = wrapMode;
 
-    if (!SerializationHelpers.Export.prepareBSplineCurveData(data, {jsonPoles: false}))
+    if (!SerializationHelpers.Export.prepareBSplineCurveData(data, { jsonPoles: false }))
       return undefined;
 
     const closed = !!data.params.closed;
     const polesOffset = this.writeDoubleArray(data.poles as Float64Array);
     const weightsOffset = 0;
     const knotsOffset = this.writeDoubleArray(data.params.knots);
-    const headerOffset = BGFBAccessors.BsplineCurve.createBsplineCurve(this.builder, data.params.order, closed, polesOffset, weightsOffset, knotsOffset);
+    const headerOffset = BGFBAccessors.BsplineCurve.createBsplineCurve(
+      this.builder,
+      data.params.order,
+      closed,
+      polesOffset,
+      weightsOffset,
+      knotsOffset,
+    );
     return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagBsplineCurve, headerOffset, 0);
   }
 
@@ -216,9 +233,16 @@ export class BGFBWriter {
       dim = 3;
     }
 
-    const data = SerializationHelpers.createBSplineSurfaceData(poles, dim,
-      bsurf.knots[UVSelect.uDirection].knots, bsurf.numPolesUV(UVSelect.uDirection), bsurf.orderUV(UVSelect.uDirection),
-      bsurf.knots[UVSelect.vDirection].knots, bsurf.numPolesUV(UVSelect.vDirection), bsurf.orderUV(UVSelect.vDirection));
+    const data = SerializationHelpers.createBSplineSurfaceData(
+      poles,
+      dim,
+      bsurf.knots[UVSelect.uDirection].knots,
+      bsurf.numPolesUV(UVSelect.uDirection),
+      bsurf.orderUV(UVSelect.uDirection),
+      bsurf.knots[UVSelect.vDirection].knots,
+      bsurf.numPolesUV(UVSelect.vDirection),
+      bsurf.orderUV(UVSelect.vDirection),
+    );
 
     if (weights)
       data.weights = weights;
@@ -229,7 +253,7 @@ export class BGFBWriter {
     if (BSplineWrapMode.None !== wrapModeV)
       data.vParams.wrapMode = wrapModeV;
 
-    if (!SerializationHelpers.Export.prepareBSplineSurfaceData(data, {jsonPoles: false}))
+    if (!SerializationHelpers.Export.prepareBSplineSurfaceData(data, { jsonPoles: false }))
       return undefined;
 
     // TypeScript B-spline surfaces do not support trim curves or isoline counts
@@ -244,9 +268,23 @@ export class BGFBWriter {
     const weightsOffset = data.weights ? this.writeDoubleArray(data.weights as Float64Array) : 0;
     const uKnotsOffset = this.writeDoubleArray(data.uParams.knots);
     const vKnotsOffset = this.writeDoubleArray(data.vParams.knots);
-    const headerOffset = BGFBAccessors.BsplineSurface.createBsplineSurface(this.builder, polesOffset, weightsOffset,
-      uKnotsOffset, vKnotsOffset, data.uParams.numPoles, data.vParams.numPoles, data.uParams.order, data.vParams.order,
-      numRulesU, numRulesV, holeOrigin, boundariesOffset, closedU, closedV);
+    const headerOffset = BGFBAccessors.BsplineSurface.createBsplineSurface(
+      this.builder,
+      polesOffset,
+      weightsOffset,
+      uKnotsOffset,
+      vKnotsOffset,
+      data.uParams.numPoles,
+      data.vParams.numPoles,
+      data.uParams.order,
+      data.vParams.order,
+      numRulesU,
+      numRulesV,
+      holeOrigin,
+      boundariesOffset,
+      closedU,
+      closedV,
+    );
 
     return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagBsplineSurface, headerOffset, 0);
   }
@@ -262,42 +300,66 @@ export class BGFBWriter {
     if (BSplineWrapMode.None !== wrapMode)
       data.params.wrapMode = wrapMode;
 
-    if (!SerializationHelpers.Export.prepareBSplineCurveData(data, {jsonPoles: false}))
+    if (!SerializationHelpers.Export.prepareBSplineCurveData(data, { jsonPoles: false }))
       return undefined;
 
     const closed = !!data.params.closed;
     const polesOffset = this.writeDoubleArray(data.poles as Float64Array);
     const weightsOffset = this.writeDoubleArray(data.weights);
     const knotsOffset = this.writeDoubleArray(data.params.knots);
-    const headerOffset = BGFBAccessors.BsplineCurve.createBsplineCurve(this.builder, data.params.order, closed, polesOffset, weightsOffset, knotsOffset);
+    const headerOffset = BGFBAccessors.BsplineCurve.createBsplineCurve(
+      this.builder,
+      data.params.order,
+      closed,
+      polesOffset,
+      weightsOffset,
+      knotsOffset,
+    );
     return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagBsplineCurve, headerOffset, 0);
   }
 
   public writeCurvePrimitiveAsFBVariantGeometry(curvePrimitive: CurvePrimitive): number | undefined {
     if (curvePrimitive instanceof LineSegment3d) {
-      const segmentDataOffset = BGFBAccessors.DSegment3d.createDSegment3d(this.builder,
+      const segmentDataOffset = BGFBAccessors.DSegment3d.createDSegment3d(
+        this.builder,
         curvePrimitive.point0Ref.x,
         curvePrimitive.point0Ref.y,
         curvePrimitive.point0Ref.z,
         curvePrimitive.point1Ref.x,
         curvePrimitive.point1Ref.y,
-        curvePrimitive.point1Ref.z);
+        curvePrimitive.point1Ref.z,
+      );
       const lineSegmentOffset = BGFBAccessors.LineSegment.createLineSegment(this.builder, segmentDataOffset);
-      return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagLineSegment, lineSegmentOffset, 0);
+      return BGFBAccessors.VariantGeometry.createVariantGeometry(
+        this.builder,
+        BGFBAccessors.VariantGeometryUnion.tagLineSegment,
+        lineSegmentOffset,
+        0,
+      );
     } else if (curvePrimitive instanceof Arc3d) {
       const data = curvePrimitive.toVectors();
-      const arcDataOffset = BGFBAccessors.DEllipse3d.createDEllipse3d(this.builder,
-        data.center.x, data.center.y, data.center.z,
-        data.vector0.x, data.vector0.y, data.vector0.z,
-        data.vector90.x, data.vector90.y, data.vector90.z,
+      const arcDataOffset = BGFBAccessors.DEllipse3d.createDEllipse3d(
+        this.builder,
+        data.center.x,
+        data.center.y,
+        data.center.z,
+        data.vector0.x,
+        data.vector0.y,
+        data.vector0.z,
+        data.vector90.x,
+        data.vector90.y,
+        data.vector90.z,
         data.sweep.startRadians,
-        data.sweep.sweepRadians);
+        data.sweep.sweepRadians,
+      );
       const arcOffset = BGFBAccessors.EllipticArc.createEllipticArc(this.builder, arcDataOffset);
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagEllipticArc, arcOffset, 0);
     } else if (curvePrimitive instanceof LineString3d) {
       const coordinates = extractNumberArray(curvePrimitive.packedPoints);
-      const lineStringOffset = BGFBAccessors.LineString.createLineString(this.builder,
-        BGFBAccessors.LineString.createPointsVector(this.builder, coordinates));
+      const lineStringOffset = BGFBAccessors.LineString.createLineString(
+        this.builder,
+        BGFBAccessors.LineString.createPointsVector(this.builder, coordinates),
+      );
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagLineString, lineStringOffset, 0);
     } else if (curvePrimitive instanceof BSplineCurve3d) {
       return this.writeBsplineCurve3dAsFBVariantGeometry(curvePrimitive);
@@ -310,21 +372,37 @@ export class BGFBWriter {
     } else if (curvePrimitive instanceof IntegratedSpiral3d) {
       const placement = curvePrimitive.localToWorld;
       const typeCode = DgnSpiralTypeQueries.stringToTypeCode(curvePrimitive.spiralType, true)!;
-      const spiralDetailOffset = BGFBAccessors.TransitionSpiralDetail.createTransitionSpiralDetail(this.builder,
-        placement.matrix.coffs[0], placement.matrix.coffs[1], placement.matrix.coffs[2], placement.origin.x,
-        placement.matrix.coffs[3], placement.matrix.coffs[4], placement.matrix.coffs[5], placement.origin.y,
-        placement.matrix.coffs[6], placement.matrix.coffs[5], placement.matrix.coffs[8], placement.origin.z,
-        curvePrimitive.activeFractionInterval.x0, curvePrimitive.activeFractionInterval.x1,
-        curvePrimitive.bearing01.startRadians, curvePrimitive.bearing01.endRadians,
+      const spiralDetailOffset = BGFBAccessors.TransitionSpiralDetail.createTransitionSpiralDetail(
+        this.builder,
+        placement.matrix.coffs[0],
+        placement.matrix.coffs[1],
+        placement.matrix.coffs[2],
+        placement.origin.x,
+        placement.matrix.coffs[3],
+        placement.matrix.coffs[4],
+        placement.matrix.coffs[5],
+        placement.origin.y,
+        placement.matrix.coffs[6],
+        placement.matrix.coffs[5],
+        placement.matrix.coffs[8],
+        placement.origin.z,
+        curvePrimitive.activeFractionInterval.x0,
+        curvePrimitive.activeFractionInterval.x1,
+        curvePrimitive.bearing01.startRadians,
+        curvePrimitive.bearing01.endRadians,
         TransitionSpiral3d.radiusToCurvature(curvePrimitive.radius01.x0),
         TransitionSpiral3d.radiusToCurvature(curvePrimitive.radius01.x1),
         typeCode,
-        0);
-      const transitionTableOffset = BGFBAccessors.TransitionSpiral.createTransitionSpiral(this.builder,
-        spiralDetailOffset, 0, 0);
-      return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder,
-        BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral, transitionTableOffset, 0);
-      } else if (curvePrimitive instanceof DirectSpiral3d) {
+        0,
+      );
+      const transitionTableOffset = BGFBAccessors.TransitionSpiral.createTransitionSpiral(this.builder, spiralDetailOffset, 0, 0);
+      return BGFBAccessors.VariantGeometry.createVariantGeometry(
+        this.builder,
+        BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral,
+        transitionTableOffset,
+        0,
+      );
+    } else if (curvePrimitive instanceof DirectSpiral3d) {
       const placement = curvePrimitive.localToWorld;
       // direct spirals always inflect at the origin of the local frame ..
       // spiral
@@ -335,30 +413,48 @@ export class BGFBWriter {
       const nominalLength = curvePrimitive.nominalL1;
       const bearing0Radians = 0.0;
       const bearing1Radians = TransitionSpiral3d.radiusRadiusLengthToSweepRadians(radius0, radius1, nominalLength);
-        const typeCode = DgnSpiralTypeQueries.stringToTypeCode(curvePrimitive.spiralType, true)!;
-        const spiralDetailOffset = BGFBAccessors.TransitionSpiralDetail.createTransitionSpiralDetail(this.builder,
-          placement.matrix.coffs[0], placement.matrix.coffs[1], placement.matrix.coffs[2], placement.origin.x,
-          placement.matrix.coffs[3], placement.matrix.coffs[4], placement.matrix.coffs[5], placement.origin.y,
-          placement.matrix.coffs[6], placement.matrix.coffs[5], placement.matrix.coffs[8], placement.origin.z,
-          curvePrimitive.activeFractionInterval.x0, curvePrimitive.activeFractionInterval.x1,
-          bearing0Radians, bearing1Radians,
-          curvature0, curvature1,
-          typeCode,
-          0);
-        const transitionTableOffset = BGFBAccessors.TransitionSpiral.createTransitionSpiral(this.builder,
-          spiralDetailOffset, 0, 0);
-        return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder,
-          BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral, transitionTableOffset, 0);
-        }
-      return undefined;
+      const typeCode = DgnSpiralTypeQueries.stringToTypeCode(curvePrimitive.spiralType, true)!;
+      const spiralDetailOffset = BGFBAccessors.TransitionSpiralDetail.createTransitionSpiralDetail(
+        this.builder,
+        placement.matrix.coffs[0],
+        placement.matrix.coffs[1],
+        placement.matrix.coffs[2],
+        placement.origin.x,
+        placement.matrix.coffs[3],
+        placement.matrix.coffs[4],
+        placement.matrix.coffs[5],
+        placement.origin.y,
+        placement.matrix.coffs[6],
+        placement.matrix.coffs[5],
+        placement.matrix.coffs[8],
+        placement.origin.z,
+        curvePrimitive.activeFractionInterval.x0,
+        curvePrimitive.activeFractionInterval.x1,
+        bearing0Radians,
+        bearing1Radians,
+        curvature0,
+        curvature1,
+        typeCode,
+        0,
+      );
+      const transitionTableOffset = BGFBAccessors.TransitionSpiral.createTransitionSpiral(this.builder, spiralDetailOffset, 0, 0);
+      return BGFBAccessors.VariantGeometry.createVariantGeometry(
+        this.builder,
+        BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral,
+        transitionTableOffset,
+        0,
+      );
+    }
+    return undefined;
   }
   public writePointString3dAsFBVariantGeometry(pointString: PointString3d): number | undefined {
     if (pointString instanceof PointString3d) {
       const coordinates = extractNumberArray(pointString.points);
-      const headerOffset = BGFBAccessors.PointString.createPointString(this.builder,
-        BGFBAccessors.PointString.createPointsVector(this.builder, coordinates));
+      const headerOffset = BGFBAccessors.PointString.createPointString(
+        this.builder,
+        BGFBAccessors.PointString.createPointsVector(this.builder, coordinates),
+      );
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagPointString, headerOffset, 0);
-
     }
     return undefined;
   }
@@ -376,23 +472,49 @@ export class BGFBWriter {
       const baseY = solid.getBaseY();
       const topX = solid.getTopX();
       const topY = solid.getTopY();
-      const detailOffset = BGFBAccessors.DgnBoxDetail.createDgnBoxDetail(this.builder,
-        originA.x, originA.y, originA.z,
-        originB.x, originB.y, originB.z,
-        vectorX.x, vectorX.y, vectorX.z,
-        vectorY.x, vectorY.y, vectorY.z,
-        baseX, baseY, topX, topY, solid.capped);
+      const detailOffset = BGFBAccessors.DgnBoxDetail.createDgnBoxDetail(
+        this.builder,
+        originA.x,
+        originA.y,
+        originA.z,
+        originB.x,
+        originB.y,
+        originB.z,
+        vectorX.x,
+        vectorX.y,
+        vectorX.z,
+        vectorY.x,
+        vectorY.y,
+        vectorY.z,
+        baseX,
+        baseY,
+        topX,
+        topY,
+        solid.capped,
+      );
       const carrierOffset = BGFBAccessors.DgnBox.createDgnBox(this.builder, detailOffset);
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagDgnBox, carrierOffset, 0);
     } else if (solid instanceof Sphere) {
       const localToWorld = solid.cloneLocalToWorld();
       const sweep = solid.cloneLatitudeSweep();
-      const detailOffset = BGFBAccessors.DgnSphereDetail.createDgnSphereDetail(this.builder,
-        localToWorld.matrix.coffs[0], localToWorld.matrix.coffs[1], localToWorld.matrix.coffs[2], localToWorld.origin.x,
-        localToWorld.matrix.coffs[3], localToWorld.matrix.coffs[4], localToWorld.matrix.coffs[5], localToWorld.origin.y,
-        localToWorld.matrix.coffs[6], localToWorld.matrix.coffs[7], localToWorld.matrix.coffs[8], localToWorld.origin.z,
-        sweep.startRadians, sweep.sweepRadians,
-        solid.capped);
+      const detailOffset = BGFBAccessors.DgnSphereDetail.createDgnSphereDetail(
+        this.builder,
+        localToWorld.matrix.coffs[0],
+        localToWorld.matrix.coffs[1],
+        localToWorld.matrix.coffs[2],
+        localToWorld.origin.x,
+        localToWorld.matrix.coffs[3],
+        localToWorld.matrix.coffs[4],
+        localToWorld.matrix.coffs[5],
+        localToWorld.origin.y,
+        localToWorld.matrix.coffs[6],
+        localToWorld.matrix.coffs[7],
+        localToWorld.matrix.coffs[8],
+        localToWorld.origin.z,
+        sweep.startRadians,
+        sweep.sweepRadians,
+        solid.capped,
+      );
       const carrierOffset = BGFBAccessors.DgnSphere.createDgnSphere(this.builder, detailOffset);
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagDgnSphere, carrierOffset, 0);
     } else if (solid instanceof Cone) {
@@ -402,11 +524,24 @@ export class BGFBWriter {
       const vectorY = solid.getVectorY();
       const radiusA = solid.getRadiusA();
       const radiusB = solid.getRadiusB();
-      const detailOffset = BGFBAccessors.DgnConeDetail.createDgnConeDetail(this.builder,
-        centerA.x, centerA.y, centerA.z,
-        centerB.x, centerB.y, centerB.z,
-        vectorX.x, vectorX.y, vectorX.z,
-        vectorY.x, vectorY.y, vectorY.z, radiusA, radiusB, solid.capped);
+      const detailOffset = BGFBAccessors.DgnConeDetail.createDgnConeDetail(
+        this.builder,
+        centerA.x,
+        centerA.y,
+        centerA.z,
+        centerB.x,
+        centerB.y,
+        centerB.z,
+        vectorX.x,
+        vectorX.y,
+        vectorX.z,
+        vectorY.x,
+        vectorY.y,
+        vectorY.z,
+        radiusA,
+        radiusB,
+        solid.capped,
+      );
       const carrierOffset = BGFBAccessors.DgnCone.createDgnCone(this.builder, detailOffset);
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagDgnCone, carrierOffset, 0);
     } else if (solid instanceof TorusPipe) {
@@ -416,10 +551,22 @@ export class BGFBWriter {
       const minorRadius = solid.getMinorRadius();
       const majorRadius = solid.getMajorRadius();
       const sweepRadians = solid.getSweepAngle().radians;
-      const detailOffset = BGFBAccessors.DgnTorusPipeDetail.createDgnTorusPipeDetail(this.builder,
-        center.x, center.y, center.z,
-        vectorX.x, vectorX.y, vectorX.z,
-        vectorY.x, vectorY.y, vectorY.z, majorRadius, minorRadius, sweepRadians, solid.capped);
+      const detailOffset = BGFBAccessors.DgnTorusPipeDetail.createDgnTorusPipeDetail(
+        this.builder,
+        center.x,
+        center.y,
+        center.z,
+        vectorX.x,
+        vectorX.y,
+        vectorX.z,
+        vectorY.x,
+        vectorY.y,
+        vectorY.z,
+        majorRadius,
+        minorRadius,
+        sweepRadians,
+        solid.capped,
+      );
       const carrierOffset = BGFBAccessors.DgnTorusPipe.createDgnTorusPipe(this.builder, detailOffset);
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagDgnTorusPipe, carrierOffset, 0);
     } else if (solid instanceof LinearSweep) {
@@ -437,7 +584,12 @@ export class BGFBWriter {
       BGFBAccessors.DgnExtrusion.addCapped(this.builder, solid.capped);
       const dgnExtrusionOffset = BGFBAccessors.DgnExtrusion.endDgnExtrusion(this.builder);
 
-      return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagDgnExtrusion, dgnExtrusionOffset, 0);
+      return BGFBAccessors.VariantGeometry.createVariantGeometry(
+        this.builder,
+        BGFBAccessors.VariantGeometryUnion.tagDgnExtrusion,
+        dgnExtrusionOffset,
+        0,
+      );
     } else if (solid instanceof RotationalSweep) {
       const baseCurveOffset = this.writeCurveCollectionAsFBCurveVector(solid.getSweepContourRef().getCurves())!;
       const axis = solid.cloneAxisRay();
@@ -449,14 +601,25 @@ export class BGFBWriter {
       //  chokes trying to add it.
       BGFBAccessors.DgnRotationalSweep.startDgnRotationalSweep(this.builder);
       BGFBAccessors.DgnRotationalSweep.addBaseCurve(this.builder, baseCurveOffset);
-      const axisRayOffset = BGFBAccessors.DRay3d.createDRay3d(this.builder,
-        axis.origin.x, axis.origin.y, axis.origin.z, axis.direction.x, axis.direction.y, axis.direction.z);
+      const axisRayOffset = BGFBAccessors.DRay3d.createDRay3d(
+        this.builder,
+        axis.origin.x,
+        axis.origin.y,
+        axis.origin.z,
+        axis.direction.x,
+        axis.direction.y,
+        axis.direction.z,
+      );
       BGFBAccessors.DgnRotationalSweep.addAxis(this.builder, axisRayOffset);
       BGFBAccessors.DgnRotationalSweep.addSweepRadians(this.builder, sweepAngle.radians);
       BGFBAccessors.DgnRotationalSweep.addCapped(this.builder, solid.capped);
       const dgnRotationalSweepOffset = BGFBAccessors.DgnRotationalSweep.endDgnRotationalSweep(this.builder);
-      return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagDgnRotationalSweep, dgnRotationalSweepOffset, 0);
-
+      return BGFBAccessors.VariantGeometry.createVariantGeometry(
+        this.builder,
+        BGFBAccessors.VariantGeometryUnion.tagDgnRotationalSweep,
+        dgnRotationalSweepOffset,
+        0,
+      );
     } else if (solid instanceof RuledSweep) {
       const contours = solid.sweepContoursRef();
       const contourOffsets: flatbuffers.Offset[] = [];
@@ -467,17 +630,19 @@ export class BGFBWriter {
       }
       const contoursVectorOffset = BGFBAccessors.DgnRuledSweep.createCurvesVector(this.builder, contourOffsets);
       const ruledSweepTable = BGFBAccessors.DgnRuledSweep.createDgnRuledSweep(this.builder, contoursVectorOffset, solid.capped);
-      return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagDgnRuledSweep, ruledSweepTable, 0);
+      return BGFBAccessors.VariantGeometry.createVariantGeometry(
+        this.builder,
+        BGFBAccessors.VariantGeometryUnion.tagDgnRuledSweep,
+        ruledSweepTable,
+        0,
+      );
     }
     return undefined;
   }
   public writePolyfaceAuxChannelDataAsFBVariantGeometry(channelData: AuxChannelData): number | undefined {
     if (channelData instanceof AuxChannelData) {
       const valuesOffset = BGFBAccessors.PolyfaceAuxChannelData.createValuesVector(this.builder, channelData.values);
-      return BGFBAccessors.PolyfaceAuxChannelData.createPolyfaceAuxChannelData(this.builder,
-        channelData.input,
-        valuesOffset,
-      );
+      return BGFBAccessors.PolyfaceAuxChannelData.createPolyfaceAuxChannelData(this.builder, channelData.input, valuesOffset);
     }
     return undefined;
   }
@@ -491,11 +656,7 @@ export class BGFBWriter {
       const valuesOffset = BGFBAccessors.PolyfaceAuxChannel.createDataVector(this.builder, channelDataOffsets);
       const nameOffset = channel.name ? this.builder.createString(channel.name) : 0;
       const inputNameOffset = channel.inputName ? this.builder.createString(channel.inputName) : 0;
-      return BGFBAccessors.PolyfaceAuxChannel.createPolyfaceAuxChannel(this.builder,
-        channel.dataType,
-        nameOffset,
-        inputNameOffset, valuesOffset,
-      );
+      return BGFBAccessors.PolyfaceAuxChannel.createPolyfaceAuxChannel(this.builder, channel.dataType, nameOffset, inputNameOffset, valuesOffset);
     }
     return undefined;
   }
@@ -516,11 +677,10 @@ export class BGFBWriter {
     return undefined;
   }
   public writeTaggedNumericDataArray(data: TaggedNumericData | undefined): number {
-    if (data){
-        const intDataOffset = this.writeIntArray(data.intData);
-        const doubleDataOffset = this.writeDoubleArray(data.doubleData);
-        return BGFBAccessors.TaggedNumericData.createTaggedNumericData(this.builder,
-          data.tagA, data.tagB, intDataOffset, doubleDataOffset);
+    if (data) {
+      const intDataOffset = this.writeIntArray(data.intData);
+      const doubleDataOffset = this.writeDoubleArray(data.doubleData);
+      return BGFBAccessors.TaggedNumericData.createTaggedNumericData(this.builder, data.tagA, data.tagB, intDataOffset, doubleDataOffset);
     }
     return 0;
   }
@@ -528,7 +688,7 @@ export class BGFBWriter {
   public writePolyfaceAsFBVariantGeometry(mesh: IndexedPolyface): number | undefined {
     if (mesh instanceof IndexedPolyface) {
       // WE KNOW . . . . the polyface has blocks of zero-based indices.
-      const indexArray: number[] = [];  // and this will really be integers.
+      const indexArray: number[] = []; // and this will really be integers.
       const numberArray: number[] = []; // and this will really be doubles.
 
       copyToPackedNumberArray(numberArray, mesh.data.point.float64Data(), mesh.data.point.float64Length);
@@ -541,7 +701,7 @@ export class BGFBWriter {
       let paramOffset = 0;
       let auxDataOffset = 0;
       let taggedNumericDataOffset = 0;
-      const meshStyle = 1;  // That is  . . . MESH_ELM_STYLE_INDEXED_FACE_LOOPS
+      const meshStyle = 1; // That is  . . . MESH_ELM_STYLE_INDEXED_FACE_LOOPS
       const numPerFace = 0; // specifically, variable size with 0 terminators
       this.fillOneBasedIndexArray(mesh, mesh.data.pointIndex, mesh.data.edgeVisible, 0, indexArray);
 
@@ -587,18 +747,40 @@ export class BGFBWriter {
       // NOTE: mesh.data.face is not persistent
 
       const polyfaceOffset = BGFBAccessors.Polyface.createPolyface(
-        this.builder, pointOffset, paramOffset, normalOffset, 0, intColorOffset, pointIndexOffset, paramIndexOffset,
-        normalIndexOffset, colorIndexOffset, 0, 0, 0, meshStyle, twoSided, numPerFace, 0, auxDataOffset,
-        expectedClosure, taggedNumericDataOffset,
+        this.builder,
+        pointOffset,
+        paramOffset,
+        normalOffset,
+        0,
+        intColorOffset,
+        pointIndexOffset,
+        paramIndexOffset,
+        normalIndexOffset,
+        colorIndexOffset,
+        0,
+        0,
+        0,
+        meshStyle,
+        twoSided,
+        numPerFace,
+        0,
+        auxDataOffset,
+        expectedClosure,
+        taggedNumericDataOffset,
       );
 
       return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagPolyface, polyfaceOffset, 0);
-
     }
     return undefined;
   }
 
-  public fillOneBasedIndexArray(mesh: IndexedPolyface, sourceIndex: number[], visible: boolean[] | undefined, facetTerminator: number | undefined, destIndex: number[]) {
+  public fillOneBasedIndexArray(
+    mesh: IndexedPolyface,
+    sourceIndex: number[],
+    visible: boolean[] | undefined,
+    facetTerminator: number | undefined,
+    destIndex: number[],
+  ) {
     destIndex.length = 0;
     const numFacet = mesh.facetCount;
     for (let facetIndex = 0; facetIndex < numFacet; facetIndex++) {
@@ -634,7 +816,7 @@ export class BGFBWriter {
     return undefined;
   }
 
-  public writeGeometryQueryArrayAsFBVariantGeometry(allGeometry: GeometryQuery | GeometryQuery[] | undefined): number | undefined{
+  public writeGeometryQueryArrayAsFBVariantGeometry(allGeometry: GeometryQuery | GeometryQuery[] | undefined): number | undefined {
     if (Array.isArray(allGeometry)) {
       const allOffsets: number[] = [];
       for (const g of allGeometry) {
@@ -645,7 +827,12 @@ export class BGFBWriter {
       if (allOffsets.length > 0) {
         const membersOffset = BGFBAccessors.VectorOfVariantGeometry.createMembersVector(this.builder, allOffsets);
         const vectorOffset = BGFBAccessors.VectorOfVariantGeometry.createVectorOfVariantGeometry(this.builder, membersOffset);
-        return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagVectorOfVariantGeometry, vectorOffset, 0);
+        return BGFBAccessors.VariantGeometry.createVariantGeometry(
+          this.builder,
+          BGFBAccessors.VariantGeometryUnion.tagVectorOfVariantGeometry,
+          vectorOffset,
+          0,
+        );
       }
     } else if (allGeometry instanceof GeometryQuery)
       return this.writeGeometryQueryAsFBVariantGeometry(allGeometry);
@@ -707,4 +894,3 @@ function copyToPackedNumberArray(dest: number[], source: Float64Array, count: nu
   for (let i = 0; i < count; i++)
     dest.push(source[i]);
 }
-

@@ -8,15 +8,22 @@
 
 import { GuidString, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  AngleProps, ClipVectorProps, LowAndHighXYProps, LowAndHighXYZProps, TransformProps, XYProps, XYZProps, YawPitchRollProps,
+  AngleProps,
+  ClipVectorProps,
+  LowAndHighXYProps,
+  LowAndHighXYZProps,
+  TransformProps,
+  XYProps,
+  XYZProps,
+  YawPitchRollProps,
 } from "@itwin/core-geometry";
+import { TextAnnotationProps } from "./annotation/TextAnnotation";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { ElementGeometryBuilderParams, ElementGeometryBuilderParamsForPart } from "./geometry/ElementGeometry";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
 import { IModelError, IModelStatus } from "./IModelError";
 import { SubCategoryAppearance } from "./SubCategoryAppearance";
-import { TextAnnotationProps } from "./annotation/TextAnnotation";
 
 /** Properties of a NavigationProperty.
  * @public
@@ -453,7 +460,7 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
    * @note Warning: if defined, jsonProperties must be a *string*, specifically a valid JSON string.
    * @note Warning: in a future major release, the type of `jsonProperties` will be changed to object, and itwin.js will automatically stringify it when writing to the iModel.
    * This will be a breaking change, since application code will have to change from supplying a string to supplying an object.
-  */
+   */
   jsonProperties?: any;
   /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
   source?: RelatedElementProps;
@@ -590,7 +597,7 @@ export interface RenderTimelineProps extends ElementProps {
 
 /** Properties of a [SheetIndexEntry]($backend).
  * @beta
-*/
+ */
 export interface SheetIndexEntryProps extends ElementProps {
   /** Can be used to prioritize or order members within a SheetIndex or SheetIndexFolder. */
   entryPriority: number;

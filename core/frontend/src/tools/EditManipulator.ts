@@ -6,8 +6,8 @@
  * @module Tools
  */
 
-import { AxisOrder, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef } from "@itwin/core-common";
+import { AxisOrder, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
 import { AccuDrawHintBuilder } from "../AccuDraw";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
@@ -26,7 +26,7 @@ import { ManipulatorToolEvent } from "./ToolAdmin";
  * - Respond to button events on the control handle decoration and run a sub-class of [[EditManipulator.HandleTool]] to modify.
  * @public
  * @extensions
-*/
+ */
 export namespace EditManipulator {
   /** Specifies the event for [[EditManipulator.HandleProvider.onManipulatorEvent]] */
   export enum EventType {
@@ -35,7 +35,7 @@ export namespace EditManipulator {
     /** Control handle modification was cancelled by user. */
     Cancel,
     /** Control handle modification was accepted by user. */
-    Accept
+    Accept,
   }
 
   /** Interactive control handle modification is done by installing an [[InputCollector]].
@@ -74,12 +74,16 @@ export namespace EditManipulator {
     /** Whether to call [[AccuSnap.enableSnap]] for handle modification.
      * @return true to enable snapping to elements.
      */
-    protected get wantAccuSnap(): boolean { return true; }
+    protected get wantAccuSnap(): boolean {
+      return true;
+    }
 
     /** Called from reset button up event to allow modification to be cancelled.
      * @return true to cancel modification.
      */
-    protected cancel(_ev: BeButtonEvent): boolean { return true; }
+    protected cancel(_ev: BeButtonEvent): boolean {
+      return true;
+    }
 
     /** Called from data button down event to check if enough input has been gathered to complete the modification.
      * @return true to complete modification.
@@ -110,9 +114,15 @@ export namespace EditManipulator {
       return this.onComplete(ev, EventType.Cancel);
     }
 
-    public override async onTouchMove(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-    public override async onTouchComplete(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-    public override async onTouchCancel(ev: BeTouchEvent): Promise<void> { return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+    public override async onTouchMove(ev: BeTouchEvent): Promise<void> {
+      return IModelApp.toolAdmin.convertTouchMoveToMotion(ev);
+    }
+    public override async onTouchComplete(ev: BeTouchEvent): Promise<void> {
+      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev);
+    }
+    public override async onTouchCancel(ev: BeTouchEvent): Promise<void> {
+      return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset);
+    }
 
     public override async onPostInstall() {
       await super.onPostInstall();
@@ -134,7 +144,9 @@ export namespace EditManipulator {
      * Usually followed by a call to [[IModelApp.toolAdmin.startDefaultTool]] to immediately raise the [[ManipulatorToolEvent.Start]] event.
      */
     public constructor(public iModel: IModelConnection) {
-      this._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) => this.onManipulatorToolEvent(tool, event));
+      this._removeManipulatorToolListener = IModelApp.toolAdmin.manipulatorToolEvent.addListener((tool, event) =>
+        this.onManipulatorToolEvent(tool, event)
+      );
     }
 
     /** Call to clear this handle provider. */
@@ -200,7 +212,7 @@ export namespace EditManipulator {
     }
 
     /** Sub-classes should override to display the pickable graphics for their controls. */
-    public decorate(_context: DecorateContext): void { }
+    public decorate(_context: DecorateContext): void {}
 
     /** The provider is responsible for checking if modification by controls is valid.
      * May still wish to present controls for "transient" geometry in non-read/write applications, etc.
@@ -215,7 +227,7 @@ export namespace EditManipulator {
     /** A provider can install an [[InputCollector]] to support interactive modification.
      * @return true if a tool was successfully run.
      * @see [[EditManipulator.HandleTool]]
-    */
+     */
     protected abstract modifyControls(_hit: HitDetail, _ev: BeButtonEvent): Promise<boolean>;
 
     /* Create, update, or clear based on the current selection. */
@@ -234,13 +246,19 @@ export namespace EditManipulator {
     }
 
     /** Sub-classes can override to perform some operation for a double click on a handle. */
-    protected async onDoubleClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+    protected async onDoubleClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> {
+      return EventHandled.No;
+    }
 
     /** Sub-classes can override to present a menu for a right click on a handle. */
-    protected async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.No; }
+    protected async onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> {
+      return EventHandled.No;
+    }
 
     /** Sub-classes can override to respond to a touch tap on a handle. By default, handles are selected by touch drag and taps are ignored. */
-    protected async onTouchTap(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> { return EventHandled.Yes; }
+    protected async onTouchTap(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled> {
+      return EventHandled.Yes;
+    }
 
     /** Event raised by a PrimitiveTool that supports handle providers to allow a pickable decoration to respond to being located. */
     public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> {
@@ -313,7 +331,15 @@ export namespace EditManipulator {
     }
 
     /** Return array of shape points representing a unit arrow in xy plane pointing in positive x direction. */
-    public static getArrowShape(baseStart: number = 0.0, baseWidth: number = 0.15, tipStart: number = 0.55, tipEnd: number = 1.0, tipWidth: number = 0.3, flangeStart: number = tipStart, flangeWidth: number = baseWidth): Point3d[] {
+    public static getArrowShape(
+      baseStart: number = 0.0,
+      baseWidth: number = 0.15,
+      tipStart: number = 0.55,
+      tipEnd: number = 1.0,
+      tipWidth: number = 0.3,
+      flangeStart: number = tipStart,
+      flangeWidth: number = baseWidth,
+    ): Point3d[] {
       const shapePts: Point3d[] = [];
       shapePts[0] = Point3d.create(tipEnd, 0.0);
       shapePts[1] = Point3d.create(flangeStart, tipWidth);

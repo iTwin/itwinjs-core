@@ -32,16 +32,18 @@ export class PrettyLoggingPlugin {
     this._startMessage = startMessage;
     this._startTime = Date.now();
     this._successCount = 0;
-    this._onSuccess = onSuccess || (() => { });
+    this._onSuccess = onSuccess || (() => {});
     this._formatter = formatter || ((s) => s);
   }
 
-  public get isInteractive() { return process.stdout.isTTY && this._isWatch; }
+  public get isInteractive() {
+    return process.stdout.isTTY && this._isWatch;
+  }
 
   private clearIfInteractive() {
     if (this.isInteractive) {
       const isWindows = process.platform === "win32";
-      process.stdout.write((isWindows) ? "\x1B[2J\x1B[0f" : "\x1B[2J\x1B[3J\x1B[H");
+      process.stdout.write(isWindows ? "\x1B[2J\x1B[0f" : "\x1B[2J\x1B[3J\x1B[H");
     }
   }
 
@@ -50,9 +52,11 @@ export class PrettyLoggingPlugin {
       console.groupEnd();
 
     const newline = (this.isInteractive) ? "\n" : "";
-    const myChalk: chalk.Chalk = (color) ? (chalk as any)[color] : chalk;
+    const myChalk: chalk.Chalk = color ? (chalk as any)[color] : chalk;
     if (elapsed)
-      console.log(`${newline}${myChalk.inverse(this._name)} ${myChalk.bold(message)}${chalk.gray(`   (in ${elapsed.toLocaleString()} ms)`)}${newline}`);
+      console.log(
+        `${newline}${myChalk.inverse(this._name)} ${myChalk.bold(message)}${chalk.gray(`   (in ${elapsed.toLocaleString()} ms)`)}${newline}`,
+      );
     else
       console.log(`${newline}${myChalk.inverse(this._name)} ${myChalk.bold(message)}${newline}`);
 

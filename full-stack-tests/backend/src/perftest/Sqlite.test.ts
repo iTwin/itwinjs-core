@@ -2,13 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ECDb, ECDbOpenMode, SQLiteDb, SqliteStatement } from "@itwin/core-backend";
+import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
+import { DbResult, OpenMode, StopWatch, using } from "@itwin/core-bentley";
 import * as fs from "fs";
 import * as os from "os";
 import * as path from "path";
 import * as readline from "readline";
-import { DbResult, OpenMode, StopWatch, using } from "@itwin/core-bentley";
-import { ECDb, ECDbOpenMode, SQLiteDb, SqliteStatement } from "@itwin/core-backend";
-import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test/index";
 
 function makeRandStr(length: number) {
   let text = "";
@@ -28,7 +28,7 @@ async function reportProgress(prefix: string, c: number, m: number) {
 }
 async function createSeedFile(pathName: string, tbl: string, nCols: number, nRows: number, startId: number) {
   const kMaxLengthOfString = 11;
-  await using(new ECDb(), async (ecdb) => {
+  using(new ECDb(), async (ecdb) => {
     ecdb.createDb(pathName);
     const cols = [];
     for (let i = 0; i < nCols; i++) {
@@ -37,7 +37,7 @@ async function createSeedFile(pathName: string, tbl: string, nCols: number, nRow
     const sp = new StopWatch(undefined, true);
     process.stdout.write(`Creating seed file ... ${pathName}\n`);
     ecdb.withPreparedSqliteStatement(`create table [${tbl}](id integer primary key,${cols.join(",")});`, (stmt) => stmt.step());
-    await using(ecdb.prepareSqliteStatement(`insert into ${tbl} values(?${",?".repeat(nCols)});`), async (stmt: SqliteStatement) => {
+    using(ecdb.prepareSqliteStatement(`insert into ${tbl} values(?${",?".repeat(nCols)});`), async (stmt: SqliteStatement) => {
       for (let i = 0; i < nRows; i++) {
         stmt.reset();
         stmt.clearBindings();
@@ -62,7 +62,13 @@ async function readRow(stmt: SqliteStatement, id: number, nParam: number = 1): P
   return stmt.step() === DbResult.BE_SQLITE_ROW && stmt.getValue(0).getInteger() === id;
 }
 
-async function simulateRowRead(stmt: SqliteStatement, probabilityOfConsecutiveReads: number, percentageOfRowToRead: number, startId: number, endId: number) {
+async function simulateRowRead(
+  stmt: SqliteStatement,
+  probabilityOfConsecutiveReads: number,
+  percentageOfRowToRead: number,
+  startId: number,
+  endId: number,
+) {
   const nRows = endId - startId;
   const rowsToBeRead = Math.round((percentageOfRowToRead / 100) * nRows);
   let rowReadSoFar = 0;
@@ -158,12 +164,18 @@ async function runReadTest(param: ReadParams) {
   const result: number[] = [];
   while (r++ < param.runCount) {
     process.stdout.write(`Run ... [${r}/${param.runCount}] `);
-    await using(new ECDb(), async (ecdb: ECDb) => {
+    using(new ECDb(), async (ecdb: ECDb) => {
       ecdb.openDb(testFilepath, ECDbOpenMode.Readonly);
       if (!ecdb.isOpen)
         throw new Error(`changePageSize() fail to open file ${testFilepath}`);
       await ecdb.withPreparedSqliteStatement(`select * from ${testTableName} where id=?`, async (stmt: SqliteStatement) => {
-        const elapsedTime = await simulateRowRead(stmt, param.probabilityOfConsecutiveReads, param.percentageOfRowsToRead, param.startId, param.startId + param.seedRowCount);
+        const elapsedTime = await simulateRowRead(
+          stmt,
+          param.probabilityOfConsecutiveReads,
+          param.percentageOfRowsToRead,
+          param.startId,
+          param.startId + param.seedRowCount,
+        );
         result.push(elapsedTime);
       });
     });

@@ -9,7 +9,6 @@ import { AbstractHalfEdgeGraphMarkSet, MarkedEdgeSet, MarkedFaceSet, MarkedHalfE
 import { Checker } from "../Checker";
 
 describe("HalfEdgeMarkSet", () => {
-
   it("HelloWorld", () => {
     const ck = new Checker();
     const graph = new HalfEdgeGraph();
@@ -125,7 +124,6 @@ describe("HalfEdgeMarkSet", () => {
         edgeSet.clear();
         vertexSet.clear();
         faceSet.clear();
-
       }
       halfEdgeSet.teardown();
       edgeSet.teardown();
@@ -135,7 +133,7 @@ describe("HalfEdgeMarkSet", () => {
 
     // Hard to reach lines ..
     // drain the mask pool in the graph ...
-    while (graph.grabMask() !== 0) { }
+    while (graph.grabMask() !== 0) {}
     // and all the mark set creations will fail ...
     ck.testUndefined(MarkedHalfEdgeSet.create(graph));
     ck.testUndefined(MarkedEdgeSet.create(graph));
@@ -143,7 +141,6 @@ describe("HalfEdgeMarkSet", () => {
     ck.testUndefined(MarkedVertexSet.create(graph));
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 
 function verifyMarkSetState(ck: Checker, title: string, markSet: AbstractHalfEdgeGraphMarkSet, expectedMaskCount: number, expectedLength: number) {

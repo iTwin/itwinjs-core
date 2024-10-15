@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { ScreenViewport, SnapshotConnection, SpatialViewState } from "@itwin/core-frontend";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
 
 describe("ViewState attached to Viewport", async () => {

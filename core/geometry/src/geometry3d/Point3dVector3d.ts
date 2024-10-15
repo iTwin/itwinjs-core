@@ -174,7 +174,7 @@ export class XYZ implements XYAndZ {
   /**
    * Return true if this and {other + vector*scale} have equal x,y,z parts within Geometry.smallMetricDistance.
    * * this method is useful in testing "point on ray" without explicitly constructing the projection point
-  */
+   */
   public isAlmostEqualPointPlusScaledVector(other: XYAndZ, vector: XYAndZ, scale: number, tol?: number): boolean {
     return Geometry.isSameCoordinate(this.x, other.x + vector.x * scale, tol)
       && Geometry.isSameCoordinate(this.y, other.y + vector.y * scale, tol)
@@ -358,9 +358,7 @@ export class XYZ implements XYAndZ {
   }
   /** Return a multiple of a the (full length) vector from this point to other */
   public scaledVectorTo(other: XYAndZ, scale: number, result?: Vector3d): Vector3d {
-    return Vector3d.create(scale * (other.x - this.x),
-      scale * (other.y - this.y),
-      scale * (other.z - this.z), result);
+    return Vector3d.create(scale * (other.x - this.x), scale * (other.y - this.y), scale * (other.z - this.z), result);
   }
   /**
    * Return a unit vector from this vector to other. Return a 000 vector if the input is too small to normalize.
@@ -513,16 +511,24 @@ export class Point3d extends XYZ {
    */
   public crossProductToPoints(pointA: Point3d, pointB: Point3d, result?: Vector3d): Vector3d {
     return Vector3d.createCrossProduct(
-      pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
-      pointB.x - this.x, pointB.y - this.y, pointB.z - this.z,
+      pointA.x - this.x,
+      pointA.y - this.y,
+      pointA.z - this.z,
+      pointB.x - this.x,
+      pointB.y - this.y,
+      pointB.z - this.z,
       result,
     );
   }
   /** Return the magnitude of the cross product of the vectors from this to pointA and pointB */
   public crossProductToPointsMagnitude(pointA: Point3d, pointB: Point3d): number {
     return Geometry.crossProductMagnitude(
-      pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
-      pointB.x - this.x, pointB.y - this.y, pointB.z - this.z,
+      pointA.x - this.x,
+      pointA.y - this.y,
+      pointA.z - this.z,
+      pointB.x - this.x,
+      pointB.y - this.y,
+      pointB.z - this.z,
     );
   }
   /**
@@ -532,9 +538,15 @@ export class Point3d extends XYZ {
    */
   public tripleProductToPoints(pointA: Point3d, pointB: Point3d, pointC: Point3d): number {
     return Geometry.tripleProduct(
-      pointA.x - this.x, pointA.y - this.y, pointA.z - this.z,
-      pointB.x - this.x, pointB.y - this.y, pointB.z - this.z,
-      pointC.x - this.x, pointC.y - this.y, pointC.z - this.z,
+      pointA.x - this.x,
+      pointA.y - this.y,
+      pointA.z - this.z,
+      pointB.x - this.x,
+      pointB.y - this.y,
+      pointB.z - this.z,
+      pointC.x - this.x,
+      pointC.y - this.y,
+      pointC.z - this.z,
     );
   }
   /**
@@ -568,7 +580,11 @@ export class Point3d extends XYZ {
   }
   /** Return a point with independent x,y,z fractional interpolation. */
   public interpolateXYZ(
-    fractionX: number, fractionY: number, fractionZ: number, other: Point3d, result?: Point3d,
+    fractionX: number,
+    fractionY: number,
+    fractionZ: number,
+    other: Point3d,
+    result?: Point3d,
   ): Point3d {
     return Point3d.create(
       Geometry.interpolate(this.x, fractionX, other.x),
@@ -579,7 +595,10 @@ export class Point3d extends XYZ {
   }
   /** Interpolate between points, then add a shift in the xy plane by a fraction of the XY projection perpendicular. */
   public interpolatePerpendicularXY(
-    fraction: number, pointB: Point3d, fractionXYPerp: number, result?: Point3d,
+    fraction: number,
+    pointB: Point3d,
+    fractionXYPerp: number,
+    result?: Point3d,
   ): Point3d {
     result = result ? result : new Point3d();
     const vector = pointB.minus(this);
@@ -602,15 +621,12 @@ export class Point3d extends XYZ {
   }
   /** Return point + vector * scalar */
   public plusScaled(vector: XYAndZ, scaleFactor: number, result?: Point3d): Point3d {
-    return Point3d.create(this.x + vector.x * scaleFactor,
-      this.y + vector.y * scaleFactor,
-      this.z + vector.z * scaleFactor,
-      result,
-    );
+    return Point3d.create(this.x + vector.x * scaleFactor, this.y + vector.y * scaleFactor, this.z + vector.z * scaleFactor, result);
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB */
   public plus2Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYZ, scalarB: number, result?: Point3d): Point3d {
-    return Point3d.create(this.x + vectorA.x * scalarA + vectorB.x * scalarB,
+    return Point3d.create(
+      this.x + vectorA.x * scalarA + vectorB.x * scalarB,
       this.y + vectorA.y * scalarA + vectorB.y * scalarB,
       this.z + vectorA.z * scalarA + vectorB.z * scalarB,
       result,
@@ -618,7 +634,13 @@ export class Point3d extends XYZ {
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB + vectorC * scalarC */
   public plus3Scaled(
-    vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Point3d,
+    vectorA: XYAndZ,
+    scalarA: number,
+    vectorB: XYAndZ,
+    scalarB: number,
+    vectorC: XYAndZ,
+    scalarC: number,
+    result?: Point3d,
   ): Point3d {
     return Point3d.create(
       this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC,
@@ -644,7 +666,11 @@ export class Point3d extends XYZ {
    * @param scaleB scale factor for pointB
    */
   public static createAdd2Scaled(
-    pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, result?: Point3d,
+    pointA: XYAndZ,
+    scaleA: number,
+    pointB: XYAndZ,
+    scaleB: number,
+    result?: Point3d,
   ): Point3d {
     return Point3d.create(
       pointA.x * scaleA + pointB.x * scaleB,
@@ -662,7 +688,13 @@ export class Point3d extends XYZ {
    * @param scaleC scale factor for pointC
    */
   public static createAdd3Scaled(
-    pointA: XYAndZ, scaleA: number, pointB: XYAndZ, scaleB: number, pointC: XYAndZ, scaleC: number, result?: Point3d,
+    pointA: XYAndZ,
+    scaleA: number,
+    pointB: XYAndZ,
+    scaleB: number,
+    pointC: XYAndZ,
+    scaleC: number,
+    result?: Point3d,
   ): Point3d {
     return Point3d.create(
       pointA.x * scaleA + pointB.x * scaleB + pointC.x * scaleC,
@@ -742,7 +774,13 @@ export class Vector3d extends XYZ {
    * @param result optional result vector.
    */
   public static createCrossProduct(
-    ux: number, uy: number, uz: number, vx: number, vy: number, vz: number, result?: Vector3d,
+    ux: number,
+    uy: number,
+    uz: number,
+    vx: number,
+    vy: number,
+    vz: number,
+    result?: Vector3d,
   ): Vector3d {
     return Vector3d.create(uy * vz - uz * vy, uz * vx - ux * vz, ux * vy - uy * vx, result);
   }
@@ -759,7 +797,15 @@ export class Vector3d extends XYZ {
    * @param cz z coordinate of target point c
    */
   public addCrossProductToTargetsInPlace(
-    ax: number, ay: number, az: number, bx: number, by: number, bz: number, cx: number, cy: number, cz: number,
+    ax: number,
+    ay: number,
+    az: number,
+    bx: number,
+    by: number,
+    bz: number,
+    cx: number,
+    cy: number,
+    cz: number,
   ) {
     const ux = bx - ax;
     const uy = by - ay;
@@ -778,8 +824,15 @@ export class Vector3d extends XYZ {
    * * the magnitude of the vector is twice the area of the triangle.
    */
   public static createCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d {
-    return Vector3d.createCrossProduct(pointA.x - origin.x, pointA.y - origin.y, pointA.z - origin.z,
-      pointB.x - origin.x, pointB.y - origin.y, pointB.z - origin.z, result);
+    return Vector3d.createCrossProduct(
+      pointA.x - origin.x,
+      pointA.y - origin.y,
+      pointA.z - origin.z,
+      pointB.x - origin.x,
+      pointB.y - origin.y,
+      pointB.z - origin.z,
+      result,
+    );
   }
   /**
    * Return the NORMALIZED cross product of the vectors from origin to pointA and pointB, or undefined
@@ -789,8 +842,15 @@ export class Vector3d extends XYZ {
    * * the magnitude of the vector is twice the area of the triangle.
    */
   public static createUnitCrossProductToPoints(origin: XYAndZ, pointA: XYAndZ, pointB: XYAndZ, result?: Vector3d): Vector3d | undefined {
-    const vector = Vector3d.createCrossProduct(pointA.x - origin.x, pointA.y - origin.y, pointA.z - origin.z,
-      pointB.x - origin.x, pointB.y - origin.y, pointB.z - origin.z, result);
+    const vector = Vector3d.createCrossProduct(
+      pointA.x - origin.x,
+      pointA.y - origin.y,
+      pointA.z - origin.z,
+      pointB.x - origin.x,
+      pointB.y - origin.y,
+      pointB.z - origin.z,
+      result,
+    );
     return vector.normalize();
   }
   /**
@@ -869,7 +929,13 @@ export class Vector3d extends XYZ {
    * @param result optional result vector.
    */
   public static createStartEndXYZXYZ(
-    x0: number, y0: number, z0: number, x1: number, y1: number, z1: number, result?: Vector3d,
+    x0: number,
+    y0: number,
+    z0: number,
+    x1: number,
+    y1: number,
+    z1: number,
+    result?: Vector3d,
   ): Vector3d {
     return this.create(x1 - x0, y1 - y0, z1 - z0, result);
   }
@@ -929,7 +995,7 @@ export class Vector3d extends XYZ {
    * @param denominator number by which to divide the coordinates of this instance
    * @param result optional pre-allocated object to return
    * @return scaled vector, or undefined if `denominator` is exactly zero (in which case instance is untouched).
-  */
+   */
   public safeDivideOrNull(denominator: number, result?: Vector3d): Vector3d | undefined {
     if (denominator !== 0.0) {
       return this.scale(1.0 / denominator, result);
@@ -970,7 +1036,7 @@ export class Vector3d extends XYZ {
    * Create a normalized vector from the inputs.
    * @param result optional result
    * @returns undefined if and only if normalization fails
-  */
+   */
   public static createNormalized(x: number = 0, y: number = 0, z: number = 0, result?: Vector3d): Vector3d | undefined {
     if (undefined === result)
       result = Vector3d.create(x, y, z);
@@ -986,7 +1052,7 @@ export class Vector3d extends XYZ {
    * @param endPoint end point of vector
    * @param result optional result
    * @returns undefined if and only if normalization fails.
-  */
+   */
   public static createNormalizedStartEnd(startPoint: XYAndZ, endPoint: XYAndZ, result?: Vector3d): Vector3d | undefined {
     result = Vector3d.createStartEnd(startPoint, endPoint, result);
     if (result.normalizeInPlace())
@@ -1003,7 +1069,7 @@ export class Vector3d extends XYZ {
    * @param target the target vector
    * @param defaultFraction the returned value in case the magnitude of `target` is too small
    * @returns the signed length of the projection divided by the length of `target`
-   * */
+   */
   public fractionOfProjectionToVector(target: Vector3d, defaultFraction: number = 0): number {
     /*
      * Projection vector is ((this.target)/||target||)(target/||target||) = ((this.target)/||target||^2)target
@@ -1178,8 +1244,15 @@ export class Vector3d extends XYZ {
   }
 
   /** Return the (strongly typed Vector3d) `thisVector3d + vectorA * scalarA + vectorB * scalarB + vectorC * scalarC` */
-  public plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number,
-    result?: Vector3d): Vector3d {
+  public plus3Scaled(
+    vectorA: XYAndZ,
+    scalarA: number,
+    vectorB: XYAndZ,
+    scalarB: number,
+    vectorC: XYAndZ,
+    scalarC: number,
+    result?: Vector3d,
+  ): Vector3d {
     result = result ? result : new Vector3d();
     result.x = this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC;
     result.y = this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC;
@@ -1187,32 +1260,47 @@ export class Vector3d extends XYZ {
     return result;
   }
   /** Return the (strongly typed Vector3d) `thisVector3d + vectorA * scalarA + vectorB * scalarB` */
-  public static createAdd2Scaled(vectorA: XYAndZ, scaleA: number, vectorB: XYAndZ, scaleB: number,
-    result?: Vector3d): Vector3d {
-    return Vector3d.create(vectorA.x * scaleA + vectorB.x * scaleB,
+  public static createAdd2Scaled(vectorA: XYAndZ, scaleA: number, vectorB: XYAndZ, scaleB: number, result?: Vector3d): Vector3d {
+    return Vector3d.create(
+      vectorA.x * scaleA + vectorB.x * scaleB,
       vectorA.y * scaleA + vectorB.y * scaleB,
       vectorA.z * scaleA + vectorB.z * scaleB,
-      result);
+      result,
+    );
   }
   /**
    * Return the (strongly typed Vector3d) `thisVector3d + vectorA * scalarA + vectorB * scalarB`
    * with all components presented as numbers
    */
-  public static createAdd2ScaledXYZ(ax: number, ay: number, az: number, scaleA: number,
-    bx: number, by: number, bz: number, scaleB: number, result?: Vector3d): Vector3d {
-    return Vector3d.create(ax * scaleA + bx * scaleB,
-      ay * scaleA + by * scaleB,
-      az * scaleA + bz * scaleB,
-      result);
+  public static createAdd2ScaledXYZ(
+    ax: number,
+    ay: number,
+    az: number,
+    scaleA: number,
+    bx: number,
+    by: number,
+    bz: number,
+    scaleB: number,
+    result?: Vector3d,
+  ): Vector3d {
+    return Vector3d.create(ax * scaleA + bx * scaleB, ay * scaleA + by * scaleB, az * scaleA + bz * scaleB, result);
   }
   /** Return the (strongly typed Vector3d) `thisVector3d + vectorA * scaleA + vectorB * scaleB + vectorC * scaleC` */
   public static createAdd3Scaled(
-    vectorA: XYAndZ, scaleA: number, vectorB: XYAndZ, scaleB: number, vectorC: XYAndZ, scaleC: number, result?: Vector3d,
+    vectorA: XYAndZ,
+    scaleA: number,
+    vectorB: XYAndZ,
+    scaleB: number,
+    vectorC: XYAndZ,
+    scaleC: number,
+    result?: Vector3d,
   ): Vector3d {
-    return Vector3d.create(vectorA.x * scaleA + vectorB.x * scaleB + vectorC.x * scaleC,
+    return Vector3d.create(
+      vectorA.x * scaleA + vectorB.x * scaleB + vectorC.x * scaleC,
       vectorA.y * scaleA + vectorB.y * scaleB + vectorC.y * scaleC,
       vectorA.z * scaleA + vectorB.z * scaleB + vectorC.z * scaleC,
-      result);
+      result,
+    );
   }
   /** Return vector * scalar */
   public scale(scale: number, result?: Vector3d): Vector3d {
@@ -1364,7 +1452,13 @@ export class Vector3d extends XYZ {
   /** Cross product with vector from pointA to pointB */
   public crossProductStartEnd(pointA: Point3d, pointB: Point3d, result?: Vector3d): Vector3d {
     return Vector3d.createCrossProduct(
-      this.x, this.y, this.z, pointB.x - pointA.x, pointB.y - pointA.y, pointB.z - pointA.z, result,
+      this.x,
+      this.y,
+      this.z,
+      pointB.x - pointA.x,
+      pointB.y - pointA.y,
+      pointB.z - pointA.z,
+      result,
     );
   }
   /** Cross product (xy parts only) with vector from pointA to pointB */
@@ -1411,8 +1505,7 @@ export class Vector3d extends XYZ {
   }
   /** Return the triple product of the instance, vectorB, and vectorC  */
   public tripleProduct(vectorB: Vector3d, vectorC: Vector3d): number {
-    return Geometry.tripleProduct(this.x, this.y, this.z, vectorB.x, vectorB.y, vectorB.z,
-      vectorC.x, vectorC.y, vectorC.z);
+    return Geometry.tripleProduct(this.x, this.y, this.z, vectorB.x, vectorB.y, vectorB.z, vectorC.x, vectorC.y, vectorC.z);
   }
   /** Return the cross product of the instance and vectorB, using only the x and y parts. */
   public crossProductXY(vectorB: Vector3d): number {
@@ -1537,7 +1630,7 @@ export class Vector3d extends XYZ {
     /*
      * projection of vector 'v' on normal 'n' is given by vProj = [dot(v,n)/||n||^2]*n
      * and projection of 'v' on the plane is given by 'v - vProj'
-    */
+     */
     const thisProj: Vector3d = this.plusScaled(planeNormal, -this.dotProduct(planeNormal) * factor);
     const vectorBProj: Vector3d = vectorB.plusScaled(planeNormal, -vectorB.dotProduct(planeNormal) * factor);
     return thisProj.signedRadiansTo(vectorBProj, planeNormal);
@@ -1577,8 +1670,12 @@ export class Vector3d extends XYZ {
    * @param returnValueIfAnInputIsZeroLength if either vector is near zero length, return this value.
    * @param options optional radian and distance tolerances.
    */
-  public isParallelTo(other: Vector3d, oppositeIsParallel: boolean = false,
-    returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions): boolean {
+  public isParallelTo(
+    other: Vector3d,
+    oppositeIsParallel: boolean = false,
+    returnValueIfAnInputIsZeroLength: boolean = false,
+    options?: PerpParallelOptions,
+  ): boolean {
     const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
     const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;
     const a2 = this.magnitudeSquared();
@@ -1603,7 +1700,9 @@ export class Vector3d extends XYZ {
    * @param options optional radian and distance tolerances.
    */
   public isPerpendicularTo(
-    other: Vector3d, returnValueIfAnInputIsZeroLength: boolean = false, options?: PerpParallelOptions,
+    other: Vector3d,
+    returnValueIfAnInputIsZeroLength: boolean = false,
+    options?: PerpParallelOptions,
   ): boolean {
     const radianSquaredTol: number = options?.radianSquaredTol ?? Geometry.smallAngleRadiansSquared;
     const distanceSquaredTol: number = options?.distanceSquaredTol ?? Geometry.smallMetricDistanceSquared;

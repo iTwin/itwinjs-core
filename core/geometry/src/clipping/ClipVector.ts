@@ -49,12 +49,16 @@ export class ClipVector implements Clipper {
    */
   public boundingRange: Range3d = Range3d.createNull();
   /** Returns a reference to the array of ClipShapes. */
-  public get clips() { return this._clips; }
+  public get clips() {
+    return this._clips;
+  }
   private constructor(clips?: ClipPrimitive[]) {
     this._clips = clips ? clips : [];
   }
   /** Returns true if this ClipVector contains a ClipPrimitive. */
-  public get isValid(): boolean { return this._clips.length > 0; }
+  public get isValid(): boolean {
+    return this._clips.length > 0;
+  }
   /** Create a ClipVector with an empty set of ClipShapes. */
   public static createEmpty(result?: ClipVector): ClipVector {
     if (result) {
@@ -125,8 +129,14 @@ export class ClipVector implements Clipper {
     this._clips.push(clip);
   }
   /** Create and append a new ClipPrimitive to the array given a shape as an array of points. Returns true if successful. */
-  public appendShape(shape: Point3d[], zLow?: number, zHigh?: number,
-    transform?: Transform, isMask: boolean = false, invisible: boolean = false): boolean {
+  public appendShape(
+    shape: Point3d[],
+    zLow?: number,
+    zHigh?: number,
+    transform?: Transform,
+    isMask: boolean = false,
+    invisible: boolean = false,
+  ): boolean {
     const clip = ClipShape.createShape(shape, zLow, zHigh, transform, isMask, invisible);
     if (!clip)
       return false;
@@ -172,7 +182,11 @@ export class ClipVector implements Clipper {
    * * Implement as dispatch to clipPlaneSets as supplied by derived class.
    */
   public announceClippedSegmentIntervals(
-    f0: number, f1: number, pointA: Point3d, pointB: Point3d, announce?: AnnounceNumberNumber,
+    f0: number,
+    f1: number,
+    pointA: Point3d,
+    pointB: Point3d,
+    announce?: AnnounceNumberNumber,
   ): boolean {
     this.ensureProxyClipNode();
     if (this._clipNodeProxy)
@@ -193,7 +207,8 @@ export class ClipVector implements Clipper {
     xyz: IndexedXYZCollection,
     insideFragments: GrowableXYZArray[],
     outsideFragments: GrowableXYZArray[],
-    arrayCache: GrowableXYZArrayCache) {
+    arrayCache: GrowableXYZArrayCache,
+  ) {
     this.ensureProxyClipNode();
     if (this._clipNodeProxy)
       this._clipNodeProxy.appendPolygonClip(xyz, insideFragments, outsideFragments, arrayCache);
@@ -238,7 +253,7 @@ export class ClipVector implements Clipper {
 
     for (const clip of this._clips) {
       if (clip instanceof ClipShape) {
-        if (firstClipShape !== undefined && clip !== firstClipShape) {      // Is not the first iteration
+        if (firstClipShape !== undefined && clip !== firstClipShape) { // Is not the first iteration
           let fwdTrans = Transform.createIdentity();
           let invTrans = Transform.createIdentity();
 
@@ -303,7 +318,7 @@ export class ClipVector implements Clipper {
    * @returns false if matrix inversion fails.
    */
   public multiplyPlanesByMatrix4d(matrix: Matrix4d, invert: boolean = true, transpose: boolean = true): boolean {
-    if (invert) {  // form inverse once here, reuse for all planes
+    if (invert) { // form inverse once here, reuse for all planes
       const inverse = matrix.createInverse();
       if (!inverse)
         return false;
@@ -365,7 +380,7 @@ export class ClipVector implements Clipper {
   public sumSizes(intervals: Segment1d[], begin: number, end: number): number {
     let s = 0.0;
     for (let i = begin; i < end; i++)
-      s += (intervals[i].x1 - intervals[i].x0);
+      s += intervals[i].x1 - intervals[i].x0;
     return s;
   }
   private static readonly _TARGET_FRACTION_SUM = 0.99999999;
@@ -434,7 +449,7 @@ export class ClipVector implements Clipper {
     }
     function formatPlane(plane: ClipPlane) {
       let flags = plane.invisible ? 1 : 0;
-      flags |= (plane.interior ? 2 : 0);
+      flags |= plane.interior ? 2 : 0;
       return `${formatFlags(flags)}${formatVector3d(plane.inwardNormalRef)}${formatNumber(plane.distance)}`;
     }
     function formatPlaneSet(set: ConvexClipPlaneSet) {

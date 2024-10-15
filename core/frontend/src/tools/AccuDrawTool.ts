@@ -8,7 +8,18 @@
 
 import { BentleyStatus } from "@itwin/core-bentley";
 import { AxisOrder, Geometry, Matrix3d, Point3d, Transform, Vector3d } from "@itwin/core-geometry";
-import { AccuDraw, AccuDrawFlags, AccuDrawHintBuilder, CompassMode, ContextMode, ItemField, KeyinStatus, LockedStates, RotationMode, ThreeAxes } from "../AccuDraw";
+import {
+  AccuDraw,
+  AccuDrawFlags,
+  AccuDrawHintBuilder,
+  CompassMode,
+  ContextMode,
+  ItemField,
+  KeyinStatus,
+  LockedStates,
+  RotationMode,
+  ThreeAxes,
+} from "../AccuDraw";
 import { TentativeOrAccuSnap } from "../AccuSnap";
 import { ACSDisplayOptions, AuxCoordSystemState } from "../AuxCoordSys";
 import { SnapDetail, SnapHeat } from "../HitDetail";
@@ -147,9 +158,11 @@ export class AccuDrawShortcuts {
         break;
 
       case 3:
-        if (normalizedDifference(points[1], points[0], vec[0]) < 0.00001 ||
+        if (
+          normalizedDifference(points[1], points[0], vec[0]) < 0.00001 ||
           normalizedDifference(points[2], points[0], vec[1]) < 0.00001 ||
-          normalizedCrossProduct(vec[0], vec[1], vec[2]) < 0.00001) {
+          normalizedCrossProduct(vec[0], vec[1], vec[2]) < 0.00001
+        ) {
           accept = true;
           break;
         }
@@ -163,7 +176,9 @@ export class AccuDrawShortcuts {
     return accept;
   }
 
-  public static processPendingHints() { IModelApp.accuDraw.processHints(); }
+  public static processPendingHints() {
+    IModelApp.accuDraw.processHints();
+  }
 
   public static requestInputFocus() {
     const accudraw = IModelApp.accuDraw;
@@ -192,26 +207,26 @@ export class AccuDrawShortcuts {
 
     const vp = accudraw.currentView;
     const is3d = vp ? vp.view.is3d() : false;
-    const isPolar = (CompassMode.Polar === accudraw.compassMode);
+    const isPolar = CompassMode.Polar === accudraw.compassMode;
     switch (index) {
       case ItemField.DIST_Item:
-        index = ((is3d && !forward) ? ItemField.Z_Item : ItemField.ANGLE_Item);
+        index = (is3d && !forward) ? ItemField.Z_Item : ItemField.ANGLE_Item;
         break;
 
       case ItemField.ANGLE_Item:
-        index = ((is3d && forward) ? ItemField.Z_Item : ItemField.DIST_Item);
+        index = (is3d && forward) ? ItemField.Z_Item : ItemField.DIST_Item;
         break;
 
       case ItemField.X_Item:
-        index = ((is3d && !forward) ? ItemField.Z_Item : ItemField.Y_Item);
+        index = (is3d && !forward) ? ItemField.Z_Item : ItemField.Y_Item;
         break;
 
       case ItemField.Y_Item:
-        index = ((is3d && forward) ? ItemField.Z_Item : ItemField.X_Item);
+        index = (is3d && forward) ? ItemField.Z_Item : ItemField.X_Item;
         break;
 
       case ItemField.Z_Item:
-        index = (forward ? (isPolar ? ItemField.DIST_Item : ItemField.X_Item) : (isPolar ? ItemField.ANGLE_Item : ItemField.Y_Item));
+        index = forward ? (isPolar ? ItemField.DIST_Item : ItemField.X_Item) : (isPolar ? ItemField.ANGLE_Item : ItemField.Y_Item);
         break;
     }
 
@@ -220,7 +235,9 @@ export class AccuDrawShortcuts {
     accudraw.dontMoveFocus = true;
   }
 
-  public static itemFieldNewInput(index: ItemField): void { IModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Partial); }
+  public static itemFieldNewInput(index: ItemField): void {
+    IModelApp.accuDraw.setKeyinStatus(index, KeyinStatus.Partial);
+  }
 
   public static async itemFieldAcceptInput(index: ItemField, str: string): Promise<void> {
     const accudraw = IModelApp.accuDraw;
@@ -245,14 +262,14 @@ export class AccuDrawShortcuts {
     }
 
     const is3d = vp ? vp.view.is3d() : false;
-    const isPolar = (CompassMode.Polar === accudraw.compassMode);
+    const isPolar = CompassMode.Polar === accudraw.compassMode;
     switch (index) {
       case ItemField.DIST_Item:
         index = ItemField.ANGLE_Item;
         break;
 
       case ItemField.ANGLE_Item:
-        index = (is3d ? ItemField.Z_Item : ItemField.DIST_Item);
+        index = is3d ? ItemField.Z_Item : ItemField.DIST_Item;
         break;
 
       case ItemField.X_Item:
@@ -260,11 +277,11 @@ export class AccuDrawShortcuts {
         break;
 
       case ItemField.Y_Item:
-        index = (is3d ? ItemField.Z_Item : ItemField.X_Item);
+        index = is3d ? ItemField.Z_Item : ItemField.X_Item;
         break;
 
       case ItemField.Z_Item:
-        index = (isPolar ? ItemField.DIST_Item : ItemField.X_Item);
+        index = isPolar ? ItemField.DIST_Item : ItemField.X_Item;
         break;
     }
     accudraw.setFocusItem(index);
@@ -765,7 +782,9 @@ export class AccuDrawShortcuts {
     accudraw.refreshDecorationsAndDynamics();
   }
 
-  public static rotateToBase(): void { this.setStandardRotation(IModelApp.accuDraw.flags.baseRotation); }
+  public static rotateToBase(): void {
+    this.setStandardRotation(IModelApp.accuDraw.flags.baseRotation);
+  }
 
   public static rotateToACS(): void {
     const accudraw = IModelApp.accuDraw;
@@ -1235,11 +1254,21 @@ export class AccuDrawRotateViewTool extends Tool {
 /** @internal */
 abstract class AccuDrawShortcutsTool extends InputCollector {
   private _complete = false;
-  protected get allowShortcut(): boolean { return this.wantActivateOnStart ? IModelApp.accuDraw.isEnabled : true; }
-  protected get wantActivateOnStart(): boolean { return false; } // Whether to automatically enable AccuDraw before the 1st data button...
-  protected get wantClearSnapOnStart(): boolean { return false; } // Whether to preserve active Tentative/AccuSnap on install...
-  protected get wantManipulationImmediate(): boolean { return false; } // Whether additional input is required to process on install...
-  protected get wantExitOnDataButtonUp(): boolean { return false; } // Whether to exit on button up instead of down (see rotate perpendicular)...
+  protected get allowShortcut(): boolean {
+    return this.wantActivateOnStart ? IModelApp.accuDraw.isEnabled : true;
+  }
+  protected get wantActivateOnStart(): boolean {
+    return false;
+  } // Whether to automatically enable AccuDraw before the 1st data button...
+  protected get wantClearSnapOnStart(): boolean {
+    return false;
+  } // Whether to preserve active Tentative/AccuSnap on install...
+  protected get wantManipulationImmediate(): boolean {
+    return false;
+  } // Whether additional input is required to process on install...
+  protected get wantExitOnDataButtonUp(): boolean {
+    return false;
+  } // Whether to exit on button up instead of down (see rotate perpendicular)...
 
   public override async onInstall(): Promise<boolean> {
     if (!this.allowShortcut)
@@ -1268,7 +1297,7 @@ abstract class AccuDrawShortcutsTool extends InputCollector {
       this.changeLocateState(false, true, undefined, CoordinateLockOverrides.None);
     }
 
-    this.doManipulation(undefined, true);;
+    this.doManipulation(undefined, true);
   }
 
   public override async onCleanup(): Promise<void> {
@@ -1302,19 +1331,29 @@ abstract class AccuDrawShortcutsTool extends InputCollector {
     this.doManipulation(ev, true);
   }
 
-  public onManipulationStart(): void { }
-  public onManipulationComplete(): AccuDrawFlags { return AccuDrawFlags.SetRMatrix; }
+  public onManipulationStart(): void {}
+  public onManipulationComplete(): AccuDrawFlags {
+    return AccuDrawFlags.SetRMatrix;
+  }
   public abstract doManipulation(ev: BeButtonEvent | undefined, isMotion: boolean): boolean;
 }
 
 /** @internal */
 export class AccuDrawRotateAxesTool extends AccuDrawShortcutsTool {
   public static override toolId = "AccuDraw.RotateAxes";
-  public static override get maxArgs(): number { return 1; }
-  public constructor(public aboutCurrentZ: boolean = true) { super(); }
+  public static override get maxArgs(): number {
+    return 1;
+  }
+  public constructor(public aboutCurrentZ: boolean = true) {
+    super();
+  }
 
-  protected override get allowShortcut(): boolean { return IModelApp.accuDraw.isActive; } // Require compass to already be active for this shortcut...
-  protected override get wantActivateOnStart(): boolean { return true; } // State is demoted to inactive when a tool install, still need this...
+  protected override get allowShortcut(): boolean {
+    return IModelApp.accuDraw.isActive;
+  } // Require compass to already be active for this shortcut...
+  protected override get wantActivateOnStart(): boolean {
+    return true;
+  } // State is demoted to inactive when a tool install, still need this...
 
   protected override get wantManipulationImmediate(): boolean {
     if (TentativeOrAccuSnap.isHot)
@@ -1362,8 +1401,12 @@ export class AccuDrawRotateElementTool extends AccuDrawShortcutsTool {
   public static override toolId = "AccuDraw.RotateElement";
   private _moveOrigin = !IModelApp.accuDraw.isActive || IModelApp.tentativePoint.isActive; // Preserve current origin if AccuDraw already active and not tentative snap...
 
-  protected override get wantActivateOnStart(): boolean { return true; }
-  protected override get wantManipulationImmediate(): boolean { return IModelApp.tentativePoint.isSnapped; }
+  protected override get wantActivateOnStart(): boolean {
+    return true;
+  }
+  protected override get wantManipulationImmediate(): boolean {
+    return IModelApp.tentativePoint.isSnapped;
+  }
 
   public override onManipulationStart(): void {
     IModelApp.accuDraw.setContext(AccuDrawFlags.FixedOrigin); // Don't move compass when updateOrientation returns false...
@@ -1410,7 +1453,9 @@ export class AccuDrawRotatePerpendicularTool extends AccuDrawRotateElementTool {
   public static override toolId = "AccuDraw.RotatePerpendicular";
   protected _location?: { point: Point3d, viewport: ScreenViewport };
 
-  protected override get wantExitOnDataButtonUp(): boolean { return true; } // Complete on button up since button down clears tentative...
+  protected override get wantExitOnDataButtonUp(): boolean {
+    return true;
+  } // Complete on button up since button down clears tentative...
 
   public override onManipulationComplete(): AccuDrawFlags {
     if (undefined !== this._location) {
@@ -1448,7 +1493,7 @@ export class AccuDrawRotatePerpendicularTool extends AccuDrawRotateElementTool {
 
     const xVec = new Vector3d();
     if (normalizedDifference(point, accudraw.origin, xVec) < Geometry.smallAngleRadians)
-      return false;; // Closest point and compass origin coincide...
+      return false; // Closest point and compass origin coincide...
 
     const yVec = xVec.unitCrossProduct(zVec);
     if (undefined === yVec)
@@ -1476,7 +1521,9 @@ export class DefineACSByElementTool extends AccuDrawShortcutsTool {
   private _rMatrix = Matrix3d.createIdentity();
   private _acs?: AuxCoordSystemState;
 
-  public override onManipulationStart(): void { CoreTools.outputPromptByKey("AccuDraw.DefineACSByElement.Prompts.FirstPoint"); }
+  public override onManipulationStart(): void {
+    CoreTools.outputPromptByKey("AccuDraw.DefineACSByElement.Prompts.FirstPoint");
+  }
 
   public updateOrientation(snap: SnapDetail, vp: Viewport): boolean {
     const rMatrix = AccuDraw.getSnapRotation(snap, vp);

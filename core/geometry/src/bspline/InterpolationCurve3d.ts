@@ -6,17 +6,17 @@
  * @module Bspline
  */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Geometry } from "../Geometry";
-import { Point3dArray } from "../geometry3d/PointHelpers";
-import { ProxyCurve } from "../curve/ProxyCurve";
-import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
-import { BSplineCurve3d } from "./BSplineCurve";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
-import { Transform } from "../geometry3d/Transform";
+import { ProxyCurve } from "../curve/ProxyCurve";
+import { Geometry } from "../Geometry";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
+import { Transform } from "../geometry3d/Transform";
 import { XYZProps } from "../geometry3d/XYZProps";
+import { BSplineCurve3d } from "./BSplineCurve";
 
 /**
  * fitPoints and end condition data for [[InterpolationCurve3d]]
@@ -75,35 +75,75 @@ export class InterpolationCurve3dOptions {
   private _knots?: number[];
 
   /** `order` as property */
-  public get order(): number { return Geometry.resolveNumber(this._order, 4); }
-  public set order(val: number) { this._order = val; }
+  public get order(): number {
+    return Geometry.resolveNumber(this._order, 4);
+  }
+  public set order(val: number) {
+    this._order = val;
+  }
   /** `closed` as property */
-  public get closed(): boolean { return Geometry.resolveValue(this._closed, false); }
-  public set closed(val: boolean) { this._closed = val; }
+  public get closed(): boolean {
+    return Geometry.resolveValue(this._closed, false);
+  }
+  public set closed(val: boolean) {
+    this._closed = val;
+  }
   /** `isChordLenKnots` as property */
-  public get isChordLenKnots(): number { return Geometry.resolveNumber(this._isChordLenKnots, 0); }
-  public set isChordLenKnots(val: number) { this._isChordLenKnots = val; }
+  public get isChordLenKnots(): number {
+    return Geometry.resolveNumber(this._isChordLenKnots, 0);
+  }
+  public set isChordLenKnots(val: number) {
+    this._isChordLenKnots = val;
+  }
   /** `isColinearTangents` as property */
-  public get isColinearTangents(): number { return Geometry.resolveNumber(this._isColinearTangents, 0); }
-  public set isColinearTangents(val: number) { this._isColinearTangents = val; }
+  public get isColinearTangents(): number {
+    return Geometry.resolveNumber(this._isColinearTangents, 0);
+  }
+  public set isColinearTangents(val: number) {
+    this._isColinearTangents = val;
+  }
   /** `isChordLenTangents` as property */
-  public get isChordLenTangents(): number { return Geometry.resolveNumber(this._isChordLenTangents, 0); }
-  public set isChordLenTangents(val: number) { this._isChordLenTangents = val; }
+  public get isChordLenTangents(): number {
+    return Geometry.resolveNumber(this._isChordLenTangents, 0);
+  }
+  public set isChordLenTangents(val: number) {
+    this._isChordLenTangents = val;
+  }
   /** `isNaturalTangents` as property */
-  public get isNaturalTangents(): number { return Geometry.resolveNumber(this._isNaturalTangents, 0); }
-  public set isNaturalTangents(val: number) { this._isNaturalTangents = val; }
+  public get isNaturalTangents(): number {
+    return Geometry.resolveNumber(this._isNaturalTangents, 0);
+  }
+  public set isNaturalTangents(val: number) {
+    this._isNaturalTangents = val;
+  }
   /** access POSSIBLY UNDEFINED start tangent. Setter CAPTURES. */
-  public get startTangent(): Vector3d | undefined { return this._startTangent; }
-  public set startTangent(val: Vector3d | undefined) { this._startTangent = val; }
+  public get startTangent(): Vector3d | undefined {
+    return this._startTangent;
+  }
+  public set startTangent(val: Vector3d | undefined) {
+    this._startTangent = val;
+  }
   /** access POSSIBLY UNDEFINED end tangent. Setter CAPTURES. */
-  public get endTangent(): Vector3d | undefined { return this._endTangent; }
-  public set endTangent(val: Vector3d | undefined) { this._endTangent = val; }
+  public get endTangent(): Vector3d | undefined {
+    return this._endTangent;
+  }
+  public set endTangent(val: Vector3d | undefined) {
+    this._endTangent = val;
+  }
   /** access POINTER TO fit points. Setter CAPTURES. */
-  public get fitPoints(): Point3d[] { return this._fitPoints; }
-  public set fitPoints(val: Point3d[]) { this._fitPoints = val; }
+  public get fitPoints(): Point3d[] {
+    return this._fitPoints;
+  }
+  public set fitPoints(val: Point3d[]) {
+    this._fitPoints = val;
+  }
   /** access POSSIBLY UNDEFINED knots array. Setter CAPTURES. */
-  public get knots(): number[] | undefined { return this._knots; }
-  public set knots(val: number[] | undefined) { this._knots = val; }
+  public get knots(): number[] | undefined {
+    return this._knots;
+  }
+  public set knots(val: number[] | undefined) {
+    this._knots = val;
+  }
 
   /** One step setup of properties not named in constructor.
    * * CAPTURE pointers to tangents.
@@ -127,7 +167,6 @@ export class InterpolationCurve3dOptions {
     this._isNaturalTangents = Geometry.resolveToUndefined(isNaturalTangents, 0);
     this._startTangent = startTangent;
     this._endTangent = endTangent;
-
   }
   /** Clone with strongly typed members reduced to simple json, with "undefined" members omitted */
   public cloneAsInterpolationCurve3dProps(): InterpolationCurve3dProps {
@@ -195,21 +234,23 @@ export class InterpolationCurve3dOptions {
     if (dataA === undefined && dataB === undefined)
       return true;
     if (dataA !== undefined && dataB !== undefined) {
-      if (Geometry.areEqualAllowUndefined(dataA.order, dataB.order)
+      if (
+        Geometry.areEqualAllowUndefined(dataA.order, dataB.order)
         && Geometry.areEqualAllowUndefined(dataA.closed, dataB.closed)
         && Geometry.areEqualAllowUndefined(dataA.isChordLenKnots, dataB.isChordLenKnots)
         && Geometry.areEqualAllowUndefined(dataA.isColinearTangents, dataB.isColinearTangents)
         && Geometry.areEqualAllowUndefined(dataA.isNaturalTangents, dataB.isNaturalTangents)
         && this.areAlmostEqualAllow000AsUndefined(dataA.startTangent, dataB.startTangent)
         && this.areAlmostEqualAllow000AsUndefined(dataA.endTangent, dataB.endTangent)
-        && Geometry.almostEqualArrays(dataA.fitPoints, dataB.fitPoints, (a: Point3d, b: Point3d) => a.isAlmostEqual(b))) {
+        && Geometry.almostEqualArrays(dataA.fitPoints, dataB.fitPoints, (a: Point3d, b: Point3d) => a.isAlmostEqual(b))
+      ) {
         if (Geometry.almostEqualNumberArrays(dataA.knots, dataB.knots, (a: number, b: number) => a === b))
           return true;
         if (dataA.knots === undefined && dataB.knots === undefined)
           return true;
         /* alas .. need to allow tricky mismatch of end replication */
         let knotsA = dataA.knots, knotsB = dataB.knots;
-        if (dataA.knots === undefined)  // construct undefined knots to compare against defined knots
+        if (dataA.knots === undefined) // construct undefined knots to compare against defined knots
           knotsA = BSplineCurveOps.C2CubicFit.constructFitParametersFromPoints(dataA.fitPoints, dataA.isChordLenKnots, dataA.closed);
         else if (dataB.knots === undefined)
           knotsB = BSplineCurveOps.C2CubicFit.constructFitParametersFromPoints(dataB.fitPoints, dataB.isChordLenKnots, dataB.closed);
@@ -297,7 +338,9 @@ export class InterpolationCurve3d extends ProxyCurve {
   }
 
   /** return the options pointer */
-  public get options(): InterpolationCurve3dOptions { return this._options; }
+  public get options(): InterpolationCurve3dOptions {
+    return this._options;
+  }
 
   /**
    * Reverse the curve direction.
@@ -335,6 +378,7 @@ export class InterpolationCurve3d extends ProxyCurve {
   }
 
   /** Test if `other` is also an [[InterpolationCurve3d]] */
-  public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof InterpolationCurve3d; }
-
+  public isSameGeometryClass(other: GeometryQuery): boolean {
+    return other instanceof InterpolationCurve3d;
+  }
 }

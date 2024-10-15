@@ -2,14 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { compareStrings } from "@itwin/core-bentley";
 import { ServerTimeoutError } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, overrideRequestTileTreeProps, RenderSystem, SnapshotConnection, Tile, TileContent, TileDrawArgs, TileLoadPriority,
-  TileRequest, TileRequestChannel, TileTree,
+  IModelApp,
+  IModelConnection,
+  overrideRequestTileTreeProps,
+  RenderSystem,
+  SnapshotConnection,
+  Tile,
+  TileContent,
+  TileDrawArgs,
+  TileLoadPriority,
+  TileRequest,
+  TileRequestChannel,
+  TileTree,
 } from "@itwin/core-frontend";
 import { Range3d, Transform } from "@itwin/core-geometry";
+import { expect } from "chai";
 import { TestUtility } from "../../TestUtility";
 
 class MockTile extends Tile {
@@ -54,18 +64,28 @@ class MockTree extends TileTree {
     this._rootTile = new MockTile(this);
   }
 
-  public get rootTile() { return this._rootTile; }
-  public get is3d() { return true; }
-  public get maxDepth() { return 1; }
-  public get viewFlagOverrides() { return {}; }
-  public override get isContentUnbounded() { return false; }
+  public get rootTile() {
+    return this._rootTile;
+  }
+  public get is3d() {
+    return true;
+  }
+  public get maxDepth() {
+    return 1;
+  }
+  public get viewFlagOverrides() {
+    return {};
+  }
+  public override get isContentUnbounded() {
+    return false;
+  }
 
   protected _selectTiles(_args: TileDrawArgs): Tile[] {
     return [];
   }
 
-  public draw(_args: TileDrawArgs): void { }
-  public prune(): void { }
+  public draw(_args: TileDrawArgs): void {}
+  public prune(): void {}
 }
 
 describe("TileTreeSupplier", () => {

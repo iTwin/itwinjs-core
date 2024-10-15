@@ -2,11 +2,11 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as sinon from "sinon";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
 import { ClientDiagnostics } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { initialize, terminate } from "../IntegrationTests";
 
 describe("Diagnostics", async () => {

@@ -42,7 +42,8 @@ export class CustomViewState3dCreator {
   private async _getAllCategories(): Promise<Id64Array> {
     // Only use categories with elements in them
     Logger.logInfo(loggerCategory, "Starting getAllCategories query.");
-    const query = `SELECT DISTINCT Category.Id AS id FROM BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId FROM BisCore.SpatialCategory)`;
+    const query =
+      `SELECT DISTINCT Category.Id AS id FROM BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId FROM BisCore.SpatialCategory)`;
     const categories: Id64Array = await this._executeQuery(query);
     Logger.logInfo(loggerCategory, "Finished getAllCategories query.");
     return categories;

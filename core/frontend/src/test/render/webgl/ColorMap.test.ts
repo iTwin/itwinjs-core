@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
 import { ColorDef, ColorIndex } from "@itwin/core-common";
+import { assert, expect } from "chai";
 import { ColorMap } from "../../../common/internal/render/ColorMap";
 
 describe("ColorMap", () => {

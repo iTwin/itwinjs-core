@@ -8,20 +8,20 @@
 
 import { assert } from "@itwin/core-bentley";
 import { AttributeMap } from "../AttributeMap";
+import { TextureUnit } from "../RenderFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderBuilder, VertexShaderComponent } from "../ShaderBuilder";
 import { IsAnimated, IsInstanced, PositionType } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
-import { TextureUnit } from "../RenderFlags";
 import { addAnimation } from "./Animation";
 import { addColor } from "./Color";
 import { addFrustum, addShaderFlags } from "./Common";
+import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology";
 import { addWhiteOnWhiteReversal } from "./Fragment";
+import { addLookupTable } from "./LookupTable";
 import { addAdjustWidth, addLineCode } from "./Polyline";
 import { octDecodeNormal } from "./Surface";
 import { addLineWeight, addModelViewMatrix, addNormalMatrix, addProjectionMatrix, addSamplePosition } from "./Vertex";
 import { addModelToWindowCoordinates, addViewport } from "./Viewport";
-import { addLookupTable } from "./LookupTable";
-import { addRenderOrder, addRenderOrderConstants } from "./FeatureSymbology";
 
 export type EdgeBuilderType = "SegmentEdge" | "Silhouette" | "IndexedEdge";
 
@@ -35,7 +35,8 @@ ${computeOtherPos}
   g_quadIndex = a_endPointAndQuadIndices.w;
 `;
 
-const animateEndPoint = `g_otherPos.xyz += computeAnimationDisplacement(g_otherIndex, u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);`;
+const animateEndPoint =
+  `g_otherPos.xyz += computeAnimationDisplacement(g_otherIndex, u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);`;
 
 // a_pos is a 24-bit index into edge lookup table.
 // First six bytes of lookup table entry are the pair of 24-bit indices identifying the endpoints of the edge in the vertex table.

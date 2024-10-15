@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
+import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
+import { assert, expect } from "chai";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
 import { Geometry } from "../../../common/internal/render/GeometryPrimitives";
-import { StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../common/internal/render/Polyface";
+import { StrokesPrimitiveList, StrokesPrimitivePointList, StrokesPrimitivePointLists } from "../../../common/internal/render/Strokes";
 
 function pointIsInArray(pt: Point3d, arr: Point3d[]): boolean {
   for (const arrPt of arr) {

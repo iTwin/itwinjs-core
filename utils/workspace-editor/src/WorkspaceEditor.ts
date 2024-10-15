@@ -5,13 +5,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as fs from "fs";
-import { globSync } from "glob";
-import { extname, join } from "path";
-import * as readline from "readline";
-import * as Yargs from "yargs";
 import {
-  _nativeDb, CloudSqlite, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SQLiteDb, SqliteStatement, WorkspaceContainerProps, WorkspaceDb, WorkspaceDbFullName, WorkspaceDbName, WorkspaceDbVersionIncrement, WorkspaceEditor, WorkspaceResourceName,
+  _nativeDb,
+  CloudSqlite,
+  EditableWorkspaceContainer,
+  EditableWorkspaceDb,
+  IModelHost,
+  IModelJsFs,
+  SQLiteDb,
+  SqliteStatement,
+  WorkspaceContainerProps,
+  WorkspaceDb,
+  WorkspaceDbFullName,
+  WorkspaceDbName,
+  WorkspaceDbVersionIncrement,
+  WorkspaceEditor,
+  WorkspaceResourceName,
 } from "@itwin/core-backend";
 import {
   constructWorkspaceDb,
@@ -23,6 +32,11 @@ import {
 } from "@itwin/core-backend/lib/cjs/internal/workspace/WorkspaceImpl";
 import { AccessToken, BentleyError, DbResult, Logger, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { IModelError, LocalDirName, LocalFileName } from "@itwin/core-common";
+import * as fs from "fs";
+import { globSync } from "glob";
+import { extname, join } from "path";
+import * as readline from "readline";
+import * as Yargs from "yargs";
 
 // cspell:ignore nodir nocase
 /* eslint-disable id-blacklist,no-console */
@@ -124,10 +138,12 @@ interface UploadOptions extends TransferOptions {
 
 async function askQuestion(query: string) {
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
-  return new Promise<string>((resolve) => rl.question(query, (ans) => {
-    rl.close();
-    resolve(ans);
-  }));
+  return new Promise<string>((resolve) =>
+    rl.question(query, (ans) => {
+      rl.close();
+      resolve(ans);
+    })
+  );
 }
 
 /** show a message */
@@ -161,7 +177,11 @@ async function createWorkspaceDb(args: CreateWorkspaceDbOpt) {
 }
 
 /** open, call a function to process, then close a WorkspaceDb */
-async function processWorkspace<W extends EditableWorkspaceDb | WorkspaceDb, T extends WorkspaceDbOpt>(args: T, ws: W, fn: (ws: W, args: T) => Promise<void>) {
+async function processWorkspace<W extends EditableWorkspaceDb | WorkspaceDb, T extends WorkspaceDbOpt>(
+  args: T,
+  ws: W,
+  fn: (ws: W, args: T) => Promise<void>,
+) {
   ws.open();
   showMessage(`WorkspaceDb [${ws.sqliteDb[_nativeDb].getFilePath()}]`);
   try {
@@ -242,7 +262,6 @@ async function listWorkspaceDb(args: ListOptions) {
         while (DbResult.BE_SQLITE_ROW === stmt.step())
           nameAndSize(stmt);
       });
-
     }
 
     if (args.files) {
@@ -542,7 +561,11 @@ async function queryWorkspaceDbs(args: WorkspaceDbOpt) {
     if (db) {
       const dirty = db.dirtyBlocks ? `, ${db.dirtyBlocks} dirty` : "";
       const editable = db.state === "copied" ? ", editable" : "";
-      showMessage(` "${dbName}", size=${friendlyFileSize(db.totalBlocks * blockSize)}, ${friendlyFileSize(db.localBlocks * blockSize)} downloaded (${(100 * db.localBlocks / db.totalBlocks).toFixed(0)}%)${editable}${dirty}`);
+      showMessage(
+        ` "${dbName}", size=${friendlyFileSize(db.totalBlocks * blockSize)}, ${friendlyFileSize(db.localBlocks * blockSize)} downloaded (${
+          (100 * db.localBlocks / db.totalBlocks).toFixed(0)
+        }%)${editable}${dirty}`,
+      );
     }
   }
 
@@ -666,8 +689,13 @@ Yargs.command<MakeVersionOpt>({
   command: "versionDb <dbName>",
   describe: "make a new version of a WorkspaceDb",
   builder: {
-    versionType: { describe: "the type of version to create", default: "patch", string: true, choices: ["major" , "minor" , "patch" , "premajor" , "preminor" , "prepatch" , "prerelease"] },
-    includePrerelease:{describe: "version prereleased Db", boolean:true, default:false},
+    versionType: {
+      describe: "the type of version to create",
+      default: "patch",
+      string: true,
+      choices: ["major", "minor", "patch", "premajor", "preminor", "prepatch", "prerelease"],
+    },
+    includePrerelease: { describe: "version prereleased Db", boolean: true, default: false },
   },
   handler: runCommand(versionWorkspaceDb),
 });

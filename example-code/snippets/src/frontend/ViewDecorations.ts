@@ -3,12 +3,28 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, Logger } from "@itwin/core-bentley";
-import { AngleSweep, Arc3d, Point2d, Point3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, ColorByName, ColorDef, NpcCenter } from "@itwin/core-common";
 import {
-  BeButton, BeButtonEvent, Cluster, DecorateContext, Decorator, GraphicBranch, GraphicType, HitDetail, imageElementFromUrl,
-  IModelApp, IModelConnection, Marker, MarkerImage, MarkerSet, MessageBoxIconType, MessageBoxType, readGltfGraphics, RenderGraphic,
+  BeButton,
+  BeButtonEvent,
+  Cluster,
+  DecorateContext,
+  Decorator,
+  GraphicBranch,
+  GraphicType,
+  HitDetail,
+  imageElementFromUrl,
+  IModelApp,
+  IModelConnection,
+  Marker,
+  MarkerImage,
+  MarkerSet,
+  MessageBoxIconType,
+  MessageBoxType,
+  readGltfGraphics,
+  RenderGraphic,
 } from "@itwin/core-frontend";
+import { AngleSweep, Arc3d, Point2d, Point3d, Transform, XAndY, XYAndZ } from "@itwin/core-geometry";
 
 // cSpell:ignore lerp
 
@@ -52,10 +68,14 @@ export class ExamplePickableGraphicDecoration {
   }
 
   /** Return true if supplied Id represents a pickable decoration created by this decorator. */
-  public testDecorationHit(id: string): boolean { return id === this._decoId; }
+  public testDecorationHit(id: string): boolean {
+    return id === this._decoId;
+  }
 
   /** Return localized tooltip message for the decoration identified by HitDetail.sourceId. */
-  public async getDecorationToolTip(_hit: HitDetail): Promise<HTMLElement | string> { return "Project Extents"; }
+  public async getDecorationToolTip(_hit: HitDetail): Promise<HTMLElement | string> {
+    return "Project Extents";
+  }
   // __PUBLISH_EXTRACT_END__
 }
 
@@ -111,7 +131,8 @@ class IncidentMarker extends Marker {
 
   /** Get a color based on severity by interpolating Green(0) -> Amber(15) -> Red(30)  */
   public static makeColor(severity: number): ColorDef {
-    return (severity <= 16 ? ColorDef.green.lerp(this._amber, (severity - 1) / 15.) :
+    return (severity <= 16 ?
+      ColorDef.green.lerp(this._amber, (severity - 1) / 15.) :
       this._amber.lerp(ColorDef.red, (severity - 16) / 14.));
   }
 
@@ -227,7 +248,9 @@ export class IncidentMarkerDemo {
   private static _numMarkers = 500;
   public static decorator?: IncidentMarkerDemo; // static variable so we can tell if the demo is active.
 
-  public get warningSign() { return this._images[0]; }
+  public get warningSign() {
+    return this._images[0];
+  }
 
   // Load one image, logging if there was an error
   private async loadOne(src: string) {

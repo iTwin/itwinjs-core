@@ -3,12 +3,22 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as path from "path";
-import * as fs from "fs";
-import { ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { FileSchemaKey, SchemaFileLocater, SchemaJsonFileLocater } from "@itwin/ecschema-locaters";
-import { DOMParser } from "@xmldom/xmldom";
 import { ECSchemaXmlContext, IModelHost } from "@itwin/core-backend";
+import { FileSchemaKey, SchemaFileLocater, SchemaJsonFileLocater } from "@itwin/ecschema-locaters";
+import {
+  ECObjectsError,
+  ECObjectsStatus,
+  ECVersion,
+  ISchemaLocater,
+  Schema,
+  SchemaContext,
+  SchemaInfo,
+  SchemaKey,
+  SchemaMatchType,
+} from "@itwin/ecschema-metadata";
+import { DOMParser } from "@xmldom/xmldom";
+import * as fs from "fs";
+import * as path from "path";
 import { ECSchemaToTs } from "./ecschema2ts";
 
 const unitsSchemaKey = new SchemaKey("Units", 1, 0, 0);
@@ -83,7 +93,12 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    * @param context The schema context used to parse schema
    * @param localPath The path of the recursion is following used to detect cyclic dependency
    */
-  private getSchemaRecursively<T extends Schema>(key: Readonly<SchemaKey>, matchType: SchemaMatchType, context: SchemaContext, localPath: Set<string>): T | undefined {
+  private getSchemaRecursively<T extends Schema>(
+    key: Readonly<SchemaKey>,
+    matchType: SchemaMatchType,
+    context: SchemaContext,
+    localPath: Set<string>,
+  ): T | undefined {
     // load the schema file
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
     if (0 === candidates.length)
@@ -109,8 +124,10 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
       if (undefined === context.getSchemaSync(referenceKey, matchType)) {
         const referenceSchema = this.getSchemaRecursively(referenceKey, SchemaMatchType.LatestWriteCompatible, context, localPath);
         if (!referenceSchema) {
-          throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema,
-            `Could not locate reference schema, ${referenceKey.name}.${referenceKey.version.toString()} of schema ${key.name}.${key.version.toString()}`);
+          throw new ECObjectsError(
+            ECObjectsStatus.UnableToLocateSchema,
+            `Could not locate reference schema, ${referenceKey.name}.${referenceKey.version.toString()} of schema ${key.name}.${key.version.toString()}`,
+          );
         }
       } else if (localPath.has(referenceKeyName)) {
         throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Schema ${schemaKeyName} and ${referenceKeyName} form cyclic dependency`);
@@ -136,10 +153,16 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
     // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < referenceDocuments.length; ++i) {
       const element = referenceDocuments[i];
-      const name = this.getRequiredXmlAttribute(element, "name",
-        "The schema has an invalid ECSchemaReference attribute. One of the reference is missing the 'name' attribute");
-      let version = this.getRequiredXmlAttribute(element, "version",
-        "The schema has an invalid ECSchemaReference attribute. One of the reference is missing the 'version' attribute");
+      const name = this.getRequiredXmlAttribute(
+        element,
+        "name",
+        "The schema has an invalid ECSchemaReference attribute. One of the reference is missing the 'name' attribute",
+      );
+      let version = this.getRequiredXmlAttribute(
+        element,
+        "version",
+        "The schema has an invalid ECSchemaReference attribute. One of the reference is missing the 'version' attribute",
+      );
       version = this.resolveECVersionString(version);
 
       const key = new SchemaKey(name, ECVersion.fromString(version));

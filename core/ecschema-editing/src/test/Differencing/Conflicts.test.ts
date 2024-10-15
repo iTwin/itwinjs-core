@@ -2,14 +2,13 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ConflictCode, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
 import { Schema, SchemaContext, SchemaProps } from "@itwin/ecschema-metadata";
-import { getSchemaDifferences, SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
+import { ConflictCode, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
+import { getSchemaDifferences, SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Schema Difference Conflicts", () => {
-
   async function findConflictItem({ conflicts }: SchemaDifferenceResult, name: string, path?: string) {
     return conflicts && conflicts.find((entry) => {
       return entry.itemName === name && (entry.path === path || entry.path);
@@ -879,7 +878,10 @@ describe("Schema Difference Conflicts", () => {
         expect(conflict).to.have.a.property("path", "TestProperty");
         expect(conflict).to.have.a.property("source", "ConflictSchema.KoQ_1");
         expect(conflict).to.have.a.property("target", null);
-        expect(conflict).to.have.a.property("description", "The kind of quantity cannot be assiged if the property did not have a kind of quantities before.");
+        expect(conflict).to.have.a.property(
+          "description",
+          "The kind of quantity cannot be assiged if the property did not have a kind of quantities before.",
+        );
       });
     });
 
@@ -976,7 +978,10 @@ describe("Schema Difference Conflicts", () => {
         expect(conflict).to.have.a.property("path", "TestProperty");
         expect(conflict).to.have.a.property("source", null);
         expect(conflict).to.have.a.property("target", "ConflictSchema.KoQ_1");
-        expect(conflict).to.have.a.property("description", "The kind of quantity cannot be undefined if the property had a kind of quantities before.");
+        expect(conflict).to.have.a.property(
+          "description",
+          "The kind of quantity cannot be undefined if the property had a kind of quantities before.",
+        );
       });
     });
 

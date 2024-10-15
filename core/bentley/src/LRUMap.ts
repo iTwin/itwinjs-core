@@ -21,7 +21,7 @@ import { Dictionary } from "./Dictionary";
 export class Entry<K, V> {
   public newer?: Entry<K, V>;
   public older?: Entry<K, V>;
-  constructor(public key: K, public value: V) { }
+  constructor(public key: K, public value: V) {}
 }
 
 class EntryIterator<K, V> implements Iterator<[K, V] | undefined> {
@@ -39,7 +39,7 @@ class EntryIterator<K, V> implements Iterator<[K, V] | undefined> {
   }
 }
 
-class KeyIterator<K, V> implements Iterator<K | undefined>  {
+class KeyIterator<K, V> implements Iterator<K | undefined> {
   private _entry: Entry<K, V> | undefined;
   constructor(oldestEntry: Entry<K, V>) {
     this._entry = oldestEntry;
@@ -200,7 +200,7 @@ export class LRUCache<K, V> {
     }
 
     // new entry
-    this._container.set(key, (entry = new Entry(key, value)));
+    this._container.set(key, entry = new Entry(key, value));
 
     if (this.newest) {
       // link previous tail to the new tail (entry)

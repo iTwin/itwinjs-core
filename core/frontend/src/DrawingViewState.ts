@@ -8,10 +8,19 @@
 
 import { assert, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import {
-  AxisAlignedBox3d, Frustum, HydrateViewStateRequestProps, HydrateViewStateResponseProps, QueryRowFormat, SectionDrawingViewProps, ViewDefinition2dProps, ViewFlagOverrides, ViewStateProps,
+  AxisAlignedBox3d,
+  Frustum,
+  HydrateViewStateRequestProps,
+  HydrateViewStateResponseProps,
+  QueryRowFormat,
+  SectionDrawingViewProps,
+  ViewDefinition2dProps,
+  ViewFlagOverrides,
+  ViewStateProps,
 } from "@itwin/core-common";
 import { Constant, Range3d, Transform, TransformProps, Vector3d } from "@itwin/core-geometry";
 import { CategorySelectorState } from "./CategorySelectorState";
+import { ViewRect } from "./common/ViewRect";
 import { CoordSystem } from "./CoordSystem";
 import { DisplayStyle2dState } from "./DisplayStyleState";
 import { Frustum2d } from "./Frustum2d";
@@ -25,7 +34,6 @@ import { Scene } from "./render/Scene";
 import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { SceneContext } from "./ViewContext";
 import { OffScreenViewport } from "./Viewport";
-import { ViewRect } from "./common/ViewRect";
 import { AttachToViewportArgs, ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
 
 /** Strictly for testing.
@@ -45,7 +53,9 @@ class SectionAttachmentInfo {
   private readonly _drawingToSpatialTransform: Transform;
   private readonly _displaySpatialView: boolean;
 
-  public get spatialView(): Id64String | ViewState3d { return this._spatialView; }
+  public get spatialView(): Id64String | ViewState3d {
+    return this._spatialView;
+  }
   public get wantDisplayed(): boolean {
     return this._displaySpatialView || DrawingViewState.alwaysDisplaySpatialView;
   }
@@ -308,7 +318,9 @@ class SectionAttachment {
  * @extensions
  */
 export class DrawingViewState extends ViewState2d {
-  public static override get className() { return "DrawingViewDefinition"; }
+  public static override get className() {
+    return "DrawingViewDefinition";
+  }
 
   /** Exposed strictly for testing and debugging. Indicates that when loading the view, the spatial view should be displayed even
    * if `SectionDrawing.displaySpatialView` is not `true`.
@@ -345,7 +357,14 @@ export class DrawingViewState extends ViewState2d {
     return this._attachmentInfo;
   }
 
-  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps) {
+  public constructor(
+    props: ViewDefinition2dProps,
+    iModel: IModelConnection,
+    categories: CategorySelectorState,
+    displayStyle: DisplayStyle2dState,
+    extents: AxisAlignedBox3d,
+    sectionDrawing?: SectionDrawingViewProps,
+  ) {
     super(props, iModel, categories, displayStyle);
     if (categories instanceof DrawingViewState) {
       this._viewedExtents = categories._viewedExtents.clone();
@@ -457,7 +476,9 @@ export class DrawingViewState extends ViewState2d {
   }
 
   /** @internal */
-  public override isDrawingView(): this is DrawingViewState { return true; }
+  public override isDrawingView(): this is DrawingViewState {
+    return true;
+  }
 
   /** See [[ViewState.getOrigin]]. */
   public override getOrigin() {

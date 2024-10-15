@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
 import { CodeScopeSpec, CodeSpec } from "@itwin/core-common";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { expect } from "chai";
 import { StandaloneDb } from "../../IModelDb";
+import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("CodeSpec", () => {
   let imodel: StandaloneDb;

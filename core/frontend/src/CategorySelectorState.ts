@@ -21,7 +21,9 @@ import { IModelConnection } from "./IModelConnection";
  * @extensions
  */
 export class CategorySelectorState extends ElementState {
-  public static override get className() { return "CategorySelector"; }
+  public static override get className() {
+    return "CategorySelector";
+  }
 
   private readonly _categories = new ObservableSet<string>();
 
@@ -68,13 +70,19 @@ export class CategorySelectorState extends ElementState {
   }
 
   /** The name of this CategorySelector */
-  public get name(): string { return this.code.value; }
+  public get name(): string {
+    return this.code.value;
+  }
 
   /** Determine whether this CategorySelector includes the specified categoryId string */
-  public has(id: Id64String): boolean { return this.categories.has(id); }
+  public has(id: Id64String): boolean {
+    return this.categories.has(id);
+  }
 
   /** Determine whether this CategorySelector includes the specified category */
-  public isCategoryViewed(categoryId: Id64String): boolean { return this.has(categoryId); }
+  public isCategoryViewed(categoryId: Id64String): boolean {
+    return this.has(categoryId);
+  }
 
   /** Add one or more categories to this CategorySelector */
   public addCategories(arg: Id64Arg): void {

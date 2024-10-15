@@ -12,12 +12,12 @@ import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComp
 import { FeatureMode, IsAnimated, IsClassified, IsThematic } from "../TechniqueFlags";
 import { TechniqueId } from "../TechniqueId";
 import { addUniformHiliter } from "./FeatureSymbology";
+import { assignFragColor } from "./Fragment";
 import { addColorPlanarClassifier, addFeaturePlanarClassifier, addHilitePlanarClassifier } from "./PlanarClassification";
+import { addTexture } from "./Surface";
+import { addThematicDisplay } from "./Thematic";
 import { addModelViewProjectionMatrix } from "./Vertex";
 import { addViewportTransformation } from "./Viewport";
-import { addThematicDisplay } from "./Thematic";
-import { addTexture } from "./Surface";
-import { assignFragColor } from "./Fragment";
 
 // Revert components if color format is BGR instead of RGB.
 const computeColor = `

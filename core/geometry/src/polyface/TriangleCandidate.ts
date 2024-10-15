@@ -44,7 +44,16 @@ export class TriangleCandidate extends BarycentricTriangle {
    * * Access points from multiple `IndexedXYZCollection`
    * * mark invalid if any indices are invalid.
    */
-  public static createFromIndexedXYZ(source0: IndexedXYZCollection, index0: number, source1: IndexedXYZCollection, index1: number, source2: IndexedXYZCollection, index2: number, id: number, result?: TriangleCandidate): TriangleCandidate {
+  public static createFromIndexedXYZ(
+    source0: IndexedXYZCollection,
+    index0: number,
+    source1: IndexedXYZCollection,
+    index1: number,
+    source2: IndexedXYZCollection,
+    index2: number,
+    id: number,
+    result?: TriangleCandidate,
+  ): TriangleCandidate {
     if (!result)
       result = new TriangleCandidate(Point3d.create(), Point3d.create(), Point3d.create(), id, 0.0, false);
     result.id = id;
@@ -62,7 +71,9 @@ export class TriangleCandidate extends BarycentricTriangle {
     return result;
   }
   /** (property) return the validity flag. */
-  public get isValid(): boolean { return this._isValid; }
+  public get isValid(): boolean {
+    return this._isValid;
+  }
   /**
    * * Mark this triangle invalid.
    * * optionally set aspect ratio.

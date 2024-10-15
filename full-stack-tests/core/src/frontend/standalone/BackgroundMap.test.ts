@@ -2,12 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import {
-  BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType, GlobeMode, PersistentBackgroundMapProps,
+  BackgroundMapProps,
+  BackgroundMapProviderName,
+  BackgroundMapSettings,
+  BackgroundMapType,
+  GlobeMode,
+  PersistentBackgroundMapProps,
   TerrainHeightOriginMode,
 } from "@itwin/core-common";
 import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { expect } from "chai";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport, TestViewport } from "../TestViewport";
 
@@ -73,7 +78,6 @@ describe("Background map", () => {
       [{ terrainSettings: { exaggeration: 42 } }, true],
       [{ terrainSettings: { heightOrigin: 21 } }, true],
       [{ terrainSettings: { heightOriginMode: TerrainHeightOriginMode.Ground } }, true],
-
       // Terrain enabled.
       /* ###TODO ApproximateTerrainHeights.json supplied by core-frontend is not found...
       [ { applyTerrain: true }, false ],

@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import {
-  connectViewportFrusta, connectViewportViews, IModelApp, Tool, Viewport,
-} from "@itwin/core-frontend";
+import { connectViewportFrusta, connectViewportViews, IModelApp, Tool, Viewport } from "@itwin/core-frontend";
 
 class State {
   private readonly _viewportIds: number[];
@@ -26,10 +24,16 @@ class State {
 /** Connect or disconnect two or more viewports using connectViewports. */
 export class SyncViewportsTool extends Tool {
   public static override toolId = "SyncViewports";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return undefined; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return undefined;
+  }
 
-  protected get syncType(): "frustum" | "view" { return "view"; }
+  protected get syncType(): "frustum" | "view" {
+    return "view";
+  }
 
   private static _state?: State;
   private static _removeListeners?: VoidFunction;
@@ -95,5 +99,7 @@ export class SyncViewportsTool extends Tool {
 export class SyncViewportFrustaTool extends SyncViewportsTool {
   public static override toolId = "SyncFrusta";
 
-  protected override get syncType() { return "frustum" as const; }
+  protected override get syncType() {
+    return "frustum" as const;
+  }
 }

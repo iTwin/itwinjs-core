@@ -3,11 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { IModelApp } from "@itwin/core-frontend";
 import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
-import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
+import {
+  obtainGraphicRepresentationUrl,
+  queryGraphicRepresentations,
+  QueryGraphicRepresentationsArgs,
+} from "../../GraphicsProvider/GraphicRepresentationProvider";
 
 use(chaiAsPromised);
 
@@ -31,7 +35,7 @@ interface TestJsonResponse {
   };
 }
 
-interface TestJsonResponses{
+interface TestJsonResponses {
   exports: TestJsonResponse[];
 
   /* eslint-disable-next-line @typescript-eslint/naming-convention */
@@ -81,8 +85,8 @@ function makeSource(props: SourceProps): TestJsonResponse {
       iModelId: "",
       changesetId: props.changesetId ?? "",
       exportType: "srcType",
-      geometryOptions: { },
-      viewDefinitionFilter: { },
+      geometryOptions: {},
+      viewDefinitionFilter: {},
     },
   };
 
@@ -131,13 +135,18 @@ describe("queryGraphicRepresentations", () => {
 
   it("returns no results upon error", async () => {
     await mockFetch(
-      () => { throw new Error("fetch threw"); },
+      () => {
+        throw new Error("fetch threw");
+      },
       async () => expectSources([], testArgs),
     );
     await mockFetch(
-      async () => Promise.resolve(makeResponse(
-        () => { throw new Error("json threw"); }),
-      ),
+      async () =>
+        Promise.resolve(makeResponse(
+          () => {
+            throw new Error("json threw");
+          },
+        )),
       async () => expectSources([], testArgs),
     );
   });
@@ -160,16 +169,17 @@ describe("queryGraphicRepresentations", () => {
           return makeSourcesResponse({ exports: [{ id: "c" }, { id: "d" }] });
         }
       },
-      async () => expectSources(["a", "b", "c", "d"], testArgs));
+      async () => expectSources(["a", "b", "c", "d"], testArgs),
+    );
   });
 
   it("includes only completed Data Sources unless otherwise specified", async () => {
     await mockFetch(
-      async () => makeSourcesResponse({ exports: [ { id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" } ] }),
+      async () => makeSourcesResponse({ exports: [{ id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" }] }),
       async () => {
         await expectSources(["a"], testArgs);
         await expectSources(["a", "b"], { ...testArgs, includeIncomplete: true }),
-        await expectSources(["a"], { ...testArgs, includeIncomplete: false });
+          await expectSources(["a"], { ...testArgs, includeIncomplete: false });
       },
     );
   });

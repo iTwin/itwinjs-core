@@ -102,7 +102,9 @@ export class FrameStatsCollector {
     this._frameStats.backgroundTime = 0;
   }
 
-  public constructor(onFrameStatsReady?: OnFrameStatsReadyEvent) { this._onFrameStatsReady = onFrameStatsReady; }
+  public constructor(onFrameStatsReady?: OnFrameStatsReadyEvent) {
+    this._onFrameStatsReady = onFrameStatsReady;
+  }
 
   private _begin(entry: keyof FrameStats) {
     const prevSpan = this._frameStats[entry];

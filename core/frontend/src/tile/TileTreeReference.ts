@@ -7,8 +7,15 @@
  */
 
 import { assert, BeTimePoint } from "@itwin/core-bentley";
+import {
+  ElementAlignedBox3d,
+  FeatureAppearanceProvider,
+  FrustumPlanes,
+  HiddenLine,
+  PlanarClipMaskPriority,
+  ViewFlagOverrides,
+} from "@itwin/core-common";
 import { Matrix4d, Range1d, Range3d, Transform } from "@itwin/core-geometry";
-import { ElementAlignedBox3d, FeatureAppearanceProvider, FrustumPlanes, HiddenLine, PlanarClipMaskPriority, ViewFlagOverrides } from "@itwin/core-common";
 import { HitDetail } from "../HitDetail";
 import { FeatureSymbology } from "../render/FeatureSymbology";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -16,7 +23,17 @@ import { RenderMemory } from "../render/RenderMemory";
 import { DecorateContext, SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import {
-  DisclosedTileTreeSet, GeometryTileTreeReference, MapFeatureInfoOptions, MapLayerFeatureInfo, RenderGraphicTileTreeArgs, TileDrawArgs, TileGeometryCollector, TileTree, TileTreeLoadStatus, TileTreeOwner, tileTreeReferenceFromRenderGraphic,
+  DisclosedTileTreeSet,
+  GeometryTileTreeReference,
+  MapFeatureInfoOptions,
+  MapLayerFeatureInfo,
+  RenderGraphicTileTreeArgs,
+  TileDrawArgs,
+  TileGeometryCollector,
+  TileTree,
+  TileTreeLoadStatus,
+  TileTreeOwner,
+  tileTreeReferenceFromRenderGraphic,
 } from "./internal";
 
 /** Describes the type of graphics produced by a [[TileTreeReference]].
@@ -79,7 +96,9 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * If you *don't* override this method, override [[canSupplyToolTip]] to return false.
    * Callers who want to obtain a tooltip should prefer [[getToolTipPromise]].
    */
-  public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> { return undefined; }
+  public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string | undefined> {
+    return undefined;
+  }
 
   /** Return whether this TileTreeReference can supply a tooltip describing the entity represented by the specified hit.
    * [[getToolTipPromise]] calls [[getToolTip]] if and only if `canSupplyToolTip` returns `true`.
@@ -97,12 +116,14 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   /** Optionally return a MapLayerFeatureInfo object describing the hit.].
    * @alpha
    */
-  public async getMapFeatureInfo(_hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<MapLayerFeatureInfo[] | undefined>  { return undefined; }
+  public async getMapFeatureInfo(_hit: HitDetail, _options?: MapFeatureInfoOptions): Promise<MapLayerFeatureInfo[] | undefined> {
+    return undefined;
+  }
 
   /** Optionally add any decorations specific to this reference. For example, map tile trees may add a logo image and/or copyright attributions.
    * @note This is currently only invoked for background maps and TiledGraphicsProviders - others have no decorations, but if they did implement this it would not be called.
    */
-  public decorate(_context: DecorateContext): void { }
+  public decorate(_context: DecorateContext): void {}
 
   /** Unions this reference's range with the supplied range to help compute a volume in world space for fitting a viewport to its contents.
    * Override this function if a reference's range should not be included in the fit range, or a range different from its tile tree's range should be used.
@@ -171,7 +192,9 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** @beta */
-  public getTransformFromIModel(): Transform | undefined { return undefined; }
+  public getTransformFromIModel(): Transform | undefined {
+    return undefined;
+  }
 
   /** @internal */
   protected getAnimationTransformNodeId(_tree: TileTree): number | undefined {
@@ -245,7 +268,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** @internal */
-  public getTerrainHeight(_terrainHeights: Range1d): void { }
+  public getTerrainHeight(_terrainHeights: Range1d): void {}
 
   /** Return whether the geometry exposed by this tile tree reference should cast shadows on other geometry. */
   public get castsShadows(): boolean {
@@ -253,16 +276,20 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** Return whether this reference has global coverage.  Mapping data is global and some non-primary models such as the OSM building layer have global coverage */
-  public get isGlobal(): boolean { return false; }
+  public get isGlobal(): boolean {
+    return false;
+  }
 
   /** The [PlanarClipMaskPriority]($common) of this tile tree used to determine which tile trees contribute to a clip mask when
    * using [PlanarClipMaskMode.Priority]($common).
    * @beta
    */
-  public get planarClipMaskPriority(): number { return PlanarClipMaskPriority.DesignModel; }
+  public get planarClipMaskPriority(): number {
+    return PlanarClipMaskPriority.DesignModel;
+  }
 
   /** Add attribution logo cards for the tile tree source logo cards to the viewport's logo div. */
-  public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void { }
+  public addLogoCards(_cards: HTMLTableElement, _vp: ScreenViewport): void {}
 
   /** Create a tile tree reference equivalent to this one that also supplies an implementation of [[GeometryTileTreeReference.collectTileGeometry]].
    * Return `undefined` if geometry collection is not supported.
@@ -309,7 +336,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
    * The reference can be used to add dynamic content to a [[Viewport]]'s scene as a [[TiledGraphicsProvider]], as in the following example:
    * ```ts
    * [[include:TileTreeReference_createFromRenderGraphic]]
-   *```
+   * ```
    * Or, it can be used as a [[DynamicSpatialClassifier]] to contextualize a reality model, like so:
    * ```ts
    * [[include:TileTreeReference_DynamicClassifier]]

@@ -8,19 +8,33 @@
 
 import { CompressedId64Set, GuidString, Id64, Id64Array, Id64String, Logger, MarkRequired, Optional } from "@itwin/core-bentley";
 import {
-  CategorySelectorProps, DisplayStyle3dSettingsProps, DisplayStyleLoadProps, DisplayStyleProps, DisplayStyleSettingsProps,
-  DisplayStyleSubCategoryProps, ElementProps, IModel, ModelSelectorProps, PlanProjectionSettingsProps, RenderSchedule,
-  RenderTimelineProps, SpatialViewDefinitionProps, ThumbnailFormatProps, ThumbnailProps, ViewDefinitionProps, ViewStoreRpc,
+  CategorySelectorProps,
+  DisplayStyle3dSettingsProps,
+  DisplayStyleLoadProps,
+  DisplayStyleProps,
+  DisplayStyleSettingsProps,
+  DisplayStyleSubCategoryProps,
+  ElementProps,
+  IModel,
+  ModelSelectorProps,
+  PlanProjectionSettingsProps,
+  RenderSchedule,
+  RenderTimelineProps,
+  SpatialViewDefinitionProps,
+  ThumbnailFormatProps,
+  ThumbnailProps,
+  ViewDefinitionProps,
+  ViewStoreRpc,
 } from "@itwin/core-common";
+import { BlobContainer } from "./BlobContainerService";
+import { Category } from "./Category";
 import { CloudSqlite } from "./CloudSqlite";
+import { Entity } from "./Entity";
+import { IModelDb } from "./IModelDb";
+import { _nativeDb } from "./internal/Symbols";
+import { Model } from "./Model";
 import { VersionedSqliteDb } from "./SQLiteDb";
 import { SqliteStatement } from "./SqliteStatement";
-import { IModelDb } from "./IModelDb";
-import { Category } from "./Category";
-import { Model } from "./Model";
-import { Entity } from "./Entity";
-import { BlobContainer } from "./BlobContainerService";
-import { _nativeDb } from "./internal/Symbols";
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -75,7 +89,6 @@ import { _nativeDb } from "./internal/Symbols";
  * @beta
  */
 export namespace ViewStore {
-
   export const tableName = {
     categorySelectors: "categorySelectors",
     displayStyles: "displayStyles",
@@ -188,10 +201,18 @@ export namespace ViewStore {
     public override myVersion = "4.0.0";
     private _iModel?: IModelDb;
     private _guidMap?: IModelDb.GuidMapper;
-    public get guidMap(): IModelDb.GuidMapper { return this._guidMap!; }
-    public set guidMap(guidMap: IModelDb.GuidMapper) { this._guidMap = guidMap; }
-    public get iModel(): IModelDb { return this._iModel!; }
-    public set iModel(iModel: IModelDb) { this._iModel = iModel; }
+    public get guidMap(): IModelDb.GuidMapper {
+      return this._guidMap!;
+    }
+    public set guidMap(guidMap: IModelDb.GuidMapper) {
+      this._guidMap = guidMap;
+    }
+    public get iModel(): IModelDb {
+      return this._iModel!;
+    }
+    public set iModel(iModel: IModelDb) {
+      this._iModel = iModel;
+    }
 
     public constructor(arg?: ViewDbCtorArgs) {
       super();
@@ -231,9 +252,13 @@ export namespace ViewStore {
       makeTable(tableName.timelines);
       makeTable(tableName.tags);
       makeTable(tableName.searches);
-      this.createTable({ tableName: tableName.thumbnails, columns: `Id INTEGER PRIMARY KEY REFERENCES ${tableName.views} (Id) ON DELETE CASCADE,json,owner,data BLOB NOT NULL` });
       this.createTable({
-        tableName: tableName.taggedViews, columns: `viewId INTEGER NOT NULL REFERENCES ${tableName.views} (Id) ON DELETE CASCADE,` +
+        tableName: tableName.thumbnails,
+        columns: `Id INTEGER PRIMARY KEY REFERENCES ${tableName.views} (Id) ON DELETE CASCADE,json,owner,data BLOB NOT NULL`,
+      });
+      this.createTable({
+        tableName: tableName.taggedViews,
+        columns: `viewId INTEGER NOT NULL REFERENCES ${tableName.views} (Id) ON DELETE CASCADE,` +
           `tagId INTEGER NOT NULL REFERENCES ${tableName.tags} (Id) ON DELETE CASCADE`,
         constraints: `UNIQUE(tagId,viewId)`,
       });
@@ -280,19 +305,22 @@ export namespace ViewStore {
     /** @internal */
     public addViewRow(args: ViewRow): RowId {
       validateName(args.name, "view");
-      return this.withSqliteStatement(`INSERT INTO ${tableName.views} (className,name,json,owner,private,groupId,modelSel,categorySel,displayStyle) VALUES(?,?,?,?,?,?,?,?,?)`, (stmt) => {
-        stmt.bindString(1, args.className);
-        stmt.bindString(2, args.name);
-        stmt.bindString(3, args.json);
-        stmt.maybeBindString(4, args.owner);
-        stmt.bindBoolean(5, args.isPrivate ?? false);
-        stmt.bindInteger(6, args.groupId ?? 1);
-        stmt.maybeBindInteger(7, args.modelSel);
-        stmt.bindInteger(8, args.categorySel);
-        stmt.bindInteger(9, args.displayStyle);
-        stmt.stepForWrite();
-        return this[_nativeDb].getLastInsertRowId();
-      });
+      return this.withSqliteStatement(
+        `INSERT INTO ${tableName.views} (className,name,json,owner,private,groupId,modelSel,categorySel,displayStyle) VALUES(?,?,?,?,?,?,?,?,?)`,
+        (stmt) => {
+          stmt.bindString(1, args.className);
+          stmt.bindString(2, args.name);
+          stmt.bindString(3, args.json);
+          stmt.maybeBindString(4, args.owner);
+          stmt.bindBoolean(5, args.isPrivate ?? false);
+          stmt.bindInteger(6, args.groupId ?? 1);
+          stmt.maybeBindInteger(7, args.modelSel);
+          stmt.bindInteger(8, args.categorySel);
+          stmt.bindInteger(9, args.displayStyle);
+          stmt.stepForWrite();
+          return this[_nativeDb].getLastInsertRowId();
+        },
+      );
     }
 
     /** @internal */
@@ -428,20 +456,23 @@ export namespace ViewStore {
      * @internal
      */
     public getViewRow(viewId: RowId): undefined | ViewRow {
-      return this.withSqliteStatement(`SELECT className,name,json,owner,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE Id=?`, (stmt) => {
-        stmt.bindInteger(1, viewId);
-        return !stmt.nextRow() ? undefined : {
-          className: stmt.getValueString(0),
-          name: stmt.getValueString(1),
-          json: stmt.getValueString(2),
-          owner: stmt.getValueStringMaybe(3),
-          isPrivate: stmt.getValueBoolean(4),
-          groupId: stmt.getValueInteger(5),
-          modelSel: stmt.getValueIntegerMaybe(6),
-          categorySel: stmt.getValueInteger(7),
-          displayStyle: stmt.getValueInteger(8),
-        };
-      });
+      return this.withSqliteStatement(
+        `SELECT className,name,json,owner,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE Id=?`,
+        (stmt) => {
+          stmt.bindInteger(1, viewId);
+          return !stmt.nextRow() ? undefined : {
+            className: stmt.getValueString(0),
+            name: stmt.getValueString(1),
+            json: stmt.getValueString(2),
+            owner: stmt.getValueStringMaybe(3),
+            isPrivate: stmt.getValueBoolean(4),
+            groupId: stmt.getValueInteger(5),
+            modelSel: stmt.getValueIntegerMaybe(6),
+            categorySel: stmt.getValueInteger(7),
+            displayStyle: stmt.getValueInteger(8),
+          };
+        },
+      );
     }
     /** @internal */
     public getThumbnailRow(viewId: RowId): undefined | ThumbnailRow {
@@ -654,22 +685,27 @@ export namespace ViewStore {
 
     private getViewInfoSync(id: RowIdOrString): ViewStoreRpc.ViewInfo | undefined {
       const maybeId = (rowId?: RowId): string | undefined => rowId ? fromRowId(rowId) : undefined;
-      return this.withPreparedSqliteStatement(`SELECT owner,className,name,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE id=?`, (stmt) => {
-        const viewId = toRowId(id);
-        stmt.bindInteger(1, viewId);
-        return stmt.nextRow() ? {
-          id: fromRowId(viewId),
-          owner: stmt.getValueString(0),
-          className: stmt.getValueString(1),
-          name: stmt.getValueStringMaybe(2),
-          isPrivate: stmt.getValueBoolean(3),
-          groupId: fromRowId(stmt.getValueInteger(4)),
-          modelSelectorId: maybeId(stmt.getValueInteger(5)),
-          categorySelectorId: fromRowId(stmt.getValueInteger(6)),
-          displayStyleId: fromRowId(stmt.getValueInteger(7)),
-          tags: this.getTagsForView(viewId),
-        } : undefined;
-      });
+      return this.withPreparedSqliteStatement(
+        `SELECT owner,className,name,private,groupId,modelSel,categorySel,displayStyle FROM ${tableName.views} WHERE id=?`,
+        (stmt) => {
+          const viewId = toRowId(id);
+          stmt.bindInteger(1, viewId);
+          return stmt.nextRow() ?
+            {
+              id: fromRowId(viewId),
+              owner: stmt.getValueString(0),
+              className: stmt.getValueString(1),
+              name: stmt.getValueStringMaybe(2),
+              isPrivate: stmt.getValueBoolean(3),
+              groupId: fromRowId(stmt.getValueInteger(4)),
+              modelSelectorId: maybeId(stmt.getValueInteger(5)),
+              categorySelectorId: fromRowId(stmt.getValueInteger(6)),
+              displayStyleId: fromRowId(stmt.getValueInteger(7)),
+              tags: this.getTagsForView(viewId),
+            } :
+            undefined;
+        },
+      );
     }
     public async getViewInfo(args: { viewId: RowIdOrString }): Promise<ViewStoreRpc.ViewInfo | undefined> {
       return this.getViewInfoSync(args.viewId);
@@ -1005,7 +1041,9 @@ export namespace ViewStore {
       }
       return JSON.stringify({ settings, className: args.className });
     }
-    public async addDisplayStyle(args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string }): Promise<RowString> {
+    public async addDisplayStyle(
+      args: { name?: string, className: string, settings: DisplayStyleSettingsProps, owner?: string },
+    ): Promise<RowString> {
       const json = this.makeDisplayStyleJson(args);
       return fromRowId(this.addDisplayStyleRow({ name: args.name, owner: args.owner, json }));
     }
@@ -1084,7 +1122,9 @@ export namespace ViewStore {
       return viewDef;
     }
 
-    private addViewDefinition(args: { readonly viewDefinition: ViewDefinitionProps, group?: ViewStoreRpc.ViewGroupSpec, owner?: string, isPrivate?: boolean }): RowId {
+    private addViewDefinition(
+      args: { readonly viewDefinition: ViewDefinitionProps, group?: ViewStoreRpc.ViewGroupSpec, owner?: string, isPrivate?: boolean },
+    ): RowId {
       const name = args.viewDefinition.code.value;
       if (name === undefined)
         throw new Error("ViewDefinition must have a name");
@@ -1241,23 +1281,30 @@ export namespace ViewStore {
     /** get the array of tags for the specified view. Returns undefined if the view has no tags. */
     public getTagsForView(viewId: RowIdOrString): ViewStoreRpc.TagName[] | undefined {
       const tags: ViewStoreRpc.TagName[] = [];
-      this.withPreparedSqliteStatement(`SELECT t.name FROM ${tableName.tags} t JOIN ${tableName.taggedViews} v ON t.Id = v.tagId WHERE v.viewId=?`, (stmt) => {
-        stmt.bindInteger(1, toRowId(viewId));
-        while (stmt.nextRow())
-          tags.push(stmt.getValueString(0));
-      });
+      this.withPreparedSqliteStatement(
+        `SELECT t.name FROM ${tableName.tags} t JOIN ${tableName.taggedViews} v ON t.Id = v.tagId WHERE v.viewId=?`,
+        (stmt) => {
+          stmt.bindInteger(1, toRowId(viewId));
+          while (stmt.nextRow())
+            tags.push(stmt.getValueString(0));
+        },
+      );
       return tags.length === 0 ? undefined : tags;
     }
 
     private iterateViewQuery(queryParams: ViewStoreRpc.QueryParams, callback: (rowId: RowId) => void) {
       const groupId = queryParams.group ? this.findViewGroup(queryParams.group) : defaultViewGroupId;
-      let sql = `SELECT Id,className,name,owner,private FROM ${tableName.views} WHERE groupId=? ${queryParams.owner ? " AND (owner=@owner OR private!=1)" : " AND private!=1"}`;
+      let sql = `SELECT Id,className,name,owner,private FROM ${tableName.views} WHERE groupId=? ${
+        queryParams.owner ? " AND (owner=@owner OR private!=1)" : " AND private!=1"
+      }`;
       if (queryParams.classNames)
         sql += ` AND className IN(${queryParams.classNames.map((className) => `'${className}'`).join(",")})`;
       if (queryParams.nameSearch)
         sql += ` AND name ${queryParams.nameCompare ?? "="} @name`;
       if (queryParams.tags)
-        sql += ` AND Id IN(SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN(SELECT Id FROM ${tableName.tags} WHERE name IN(${queryParams.tags.map((tag) => `'${tag}'`).join(",")})))`;
+        sql += ` AND Id IN(SELECT viewId FROM ${tableName.taggedViews} WHERE tagId IN(SELECT Id FROM ${tableName.tags} WHERE name IN(${
+          queryParams.tags.map((tag) => `'${tag}'`).join(",")
+        })))`;
       sql += " ORDER BY name";
       if (queryParams.limit)
         sql += ` LIMIT ${queryParams.limit} `;
@@ -1327,7 +1374,11 @@ export namespace ViewStore {
       } else {
         if (args.displayStyleProps === undefined || args.displayStyleProps.jsonProperties?.styles === undefined)
           throw new Error("Must supply valid displayStyle");
-        spatialDef.displayStyleId = await this.addDisplayStyle({ className: args.displayStyleProps.classFullName, settings: args.displayStyleProps.jsonProperties.styles, owner });
+        spatialDef.displayStyleId = await this.addDisplayStyle({
+          className: args.displayStyleProps.classFullName,
+          settings: args.displayStyleProps.jsonProperties.styles,
+          owner,
+        });
       }
       const viewId = this.addViewDefinition(args);
       if (args.tags)
@@ -1414,6 +1465,5 @@ export namespace ViewStore {
       await this.initializeDb(props);
       return props;
     }
-
   }
 }

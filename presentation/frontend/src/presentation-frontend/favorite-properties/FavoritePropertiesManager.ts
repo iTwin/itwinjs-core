@@ -149,7 +149,7 @@ export class FavoritePropertiesManager implements IDisposable {
         parentClassName: getPropertyClassName(info),
         orderedTimestamp: new Date(),
         priority: 0,
-      }),
+      })
     );
 
     let priority = propertiesOrder.length;
@@ -266,7 +266,7 @@ export class FavoritePropertiesManager implements IDisposable {
     const imodelId = imodel.iModelId!;
 
     const fieldInfos = getFieldInfos(field);
-    const workingScopes: Array<{ properties: Set<PropertyFullName>; save: (properties: Set<PropertyFullName>) => Promise<void> }> = [];
+    const workingScopes: Array<{ properties: Set<PropertyFullName>, save: (properties: Set<PropertyFullName>) => Promise<void> }> = [];
     workingScopes.push({
       properties: this._globalProperties!,
       save: async (properties) => this._storage.saveProperties(properties),
@@ -399,12 +399,12 @@ export class FavoritePropertiesManager implements IDisposable {
       return lp < rp
         ? 1
         : lp > rp
-          ? -1
-          : left.priority < right.priority
-            ? 1 // if favorite fields have equal priorities, sort by field priority
-            : left.priority > right.priority
-              ? -1
-              : left.name.localeCompare(right.name);
+        ? -1
+        : left.priority < right.priority
+        ? 1 // if favorite fields have equal priorities, sort by field priority
+        : left.priority > right.priority
+        ? -1
+        : left.name.localeCompare(right.name);
     };
 
     return fields.sort(sortFunction);
@@ -441,7 +441,7 @@ export class FavoritePropertiesManager implements IDisposable {
     if (this._imodelBaseClassesByClass.has(imodelInfo)) {
       baseClasses = this._imodelBaseClassesByClass.get(imodelInfo)!;
     } else {
-      this._imodelBaseClassesByClass.set(imodelInfo, (baseClasses = {}));
+      this._imodelBaseClassesByClass.set(imodelInfo, baseClasses = {});
     }
 
     const missingClasses = new Set<string>();
@@ -619,7 +619,8 @@ const getiModelInfo = (iTwinId: string, imodelId: string) => `${iTwinId}/${imode
 const getPropertiesFieldPropertyNames = (field: PropertiesField) => {
   const nestingPrefix = getNestingPrefix(field.parent);
   return field.properties.map(
-    (property) => `${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${nestingPrefix}${property.property.classInfo.name}:${property.property.name}`,
+    (property) =>
+      `${FavoritePropertiesManager.FAVORITES_IDENTIFIER_PREFIX}${nestingPrefix}${property.property.classInfo.name}:${property.property.name}`,
   );
 };
 

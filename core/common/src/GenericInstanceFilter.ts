@@ -106,7 +106,8 @@ export namespace GenericInstanceFilterRuleValue {
   }
   /** Checks if supplied value is [[GenericInstanceFilterRuleValue.InstanceKey]] like. */
   export function isInstanceKey(value: GenericInstanceFilterRuleValue.Values): value is GenericInstanceFilterRuleValue.InstanceKey {
-    return (value as GenericInstanceFilterRuleValue.InstanceKey) !== undefined && (value as GenericInstanceFilterRuleValue.InstanceKey).className !== undefined;
+    return (value as GenericInstanceFilterRuleValue.InstanceKey) !== undefined &&
+      (value as GenericInstanceFilterRuleValue.InstanceKey).className !== undefined;
   }
   export type Values =
     | string

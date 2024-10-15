@@ -18,8 +18,12 @@ export abstract class IdPicker extends ToolBarDropDown {
   protected readonly _availableIds = new Set<string>();
 
   protected abstract get _elementType(): "Model" | "Category";
-  protected get _settingsType(): "model" | "category" { return this._elementType.toLowerCase() as "model" | "category"; }
-  protected get _showIn2d(): boolean { return true; }
+  protected get _settingsType(): "model" | "category" {
+    return this._elementType.toLowerCase() as "model" | "category";
+  }
+  protected get _showIn2d(): boolean {
+    return true;
+  }
   protected abstract get _enabledIds(): Set<string>;
   protected abstract changeDisplay(ids: Id64Arg, enabled: boolean): void;
 
@@ -121,10 +125,18 @@ export abstract class IdPicker extends ToolBarDropDown {
     parent.appendChild(this._element);
   }
 
-  public get isOpen(): boolean { return "none" !== this._element.style.display; }
-  protected _open(): void { this._element.style.display = "block"; }
-  protected _close(): void { this._element.style.display = "none"; }
-  public override get onViewChanged(): Promise<void> { return this.populate(); }
+  public get isOpen(): boolean {
+    return "none" !== this._element.style.display;
+  }
+  protected _open(): void {
+    this._element.style.display = "block";
+  }
+  protected _close(): void {
+    this._element.style.display = "none";
+  }
+  public override get onViewChanged(): Promise<void> {
+    return this.populate();
+  }
 
   protected showOrHide(element: HTMLElement, show: boolean) {
     if (element)
@@ -228,18 +240,28 @@ function getCategoryName(row: any): string {
   return undefined !== row.label ? row.label : row.code;
 }
 
-const selectUsedSpatialCategoryIds = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
-const selectUsedDrawingCategoryIds = "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement2d WHERE Model.Id=? AND Category.Id IN (SELECT ECInstanceId from BisCore.DrawingCategory)";
+const selectUsedSpatialCategoryIds =
+  "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement3d WHERE Category.Id IN (SELECT ECInstanceId from BisCore.SpatialCategory)";
+const selectUsedDrawingCategoryIds =
+  "SELECT DISTINCT Category.Id as CategoryId from BisCore.GeometricElement2d WHERE Model.Id=? AND Category.Id IN (SELECT ECInstanceId from BisCore.DrawingCategory)";
 const selectCategoryProps = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM ";
 const selectSpatialCategoryProps = `${selectCategoryProps}BisCore.SpatialCategory WHERE ECInstanceId IN (${selectUsedSpatialCategoryIds})`;
 const selectDrawingCategoryProps = `${selectCategoryProps}BisCore.DrawingCategory WHERE ECInstanceId IN (${selectUsedDrawingCategoryIds})`;
 
 export class CategoryPicker extends IdPicker {
-  public constructor(vp: ScreenViewport, parent: HTMLElement) { super(vp, parent); }
+  public constructor(vp: ScreenViewport, parent: HTMLElement) {
+    super(vp, parent);
+  }
 
-  protected get _elementType(): "Category" { return "Category"; }
-  protected get _enabledIds() { return this._vp.view.categorySelector.categories; }
-  protected changeDisplay(ids: Id64Arg, enabled: boolean) { this._vp.changeCategoryDisplay(ids, enabled); }
+  protected get _elementType(): "Category" {
+    return "Category";
+  }
+  protected get _enabledIds() {
+    return this._vp.view.categorySelector.categories;
+  }
+  protected changeDisplay(ids: Id64Arg, enabled: boolean) {
+    this._vp.changeCategoryDisplay(ids, enabled);
+  }
 
   protected override get _comboBoxEntries(): ComboBoxEntry[] {
     const entries = super._comboBoxEntries;
@@ -257,7 +279,9 @@ export class CategoryPicker extends IdPicker {
     const ecsql = view.is3d() ? selectSpatialCategoryProps : selectDrawingCategoryProps;
     const bindings = view.is2d() ? [view.baseModelId] : undefined;
     const rows: any[] = [];
-    for await (const queryRow of view.iModel.createQueryReader(`${ecsql}`, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
+    for await (
+      const queryRow of view.iModel.createQueryReader(`${ecsql}`, QueryBinder.from(bindings), { rowFormat: QueryRowFormat.UseJsPropertyNames })
+    ) {
       rows.push(queryRow.toRow());
     }
     rows.sort((lhs, rhs) => {
@@ -322,11 +346,19 @@ export class ModelPicker extends IdPicker {
   private _fitOnStep = true;
   private _planProjectionIds: string[] = [];
 
-  public constructor(vp: ScreenViewport, parent: HTMLElement) { super(vp, parent); }
+  public constructor(vp: ScreenViewport, parent: HTMLElement) {
+    super(vp, parent);
+  }
 
-  protected get _elementType(): "Model" { return "Model"; }
-  protected get _enabledIds() { return (this._vp.view as SpatialViewState).modelSelector.models; }
-  protected override get _showIn2d() { return false; }
+  protected get _elementType(): "Model" {
+    return "Model";
+  }
+  protected get _enabledIds() {
+    return (this._vp.view as SpatialViewState).modelSelector.models;
+  }
+  protected override get _showIn2d() {
+    return false;
+  }
   protected changeDisplay(ids: Id64Arg, enabled: boolean) {
     if (enabled)
       this._vp.addViewedModels(ids); // eslint-disable-line @typescript-eslint/no-floating-promises

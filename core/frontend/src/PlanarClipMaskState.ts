@@ -8,10 +8,10 @@
 
 import { Id64String } from "@itwin/core-bentley";
 import { FeatureAppearance, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@itwin/core-common";
+import { Range3d } from "@itwin/core-geometry";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
 import { SceneContext } from "./ViewContext";
-import { Range3d } from "@itwin/core-geometry";
 
 /** The State of Planar Clip Mask applied to a reality model or background map.
  * Handles loading models and their associated tiles for models that are used by masks but may not be otherwise loaded or displayed.
@@ -36,7 +36,9 @@ export class PlanarClipMaskState {
     return this.create(PlanarClipMaskSettings.fromJSON(props));
   }
 
-  public get usingViewportOverrides(): boolean { return this._usingViewportOverrides; };
+  public get usingViewportOverrides(): boolean {
+    return this._usingViewportOverrides;
+  }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     if (this._tileTreeRefs)
@@ -69,23 +71,31 @@ export class PlanarClipMaskState {
       }
       this._allLoaded = this._tileTreeRefs.every((treeRef) => treeRef.treeOwner.load() !== undefined);
       maskRange.clone(this._maskRange);
-    } else  // If already loaded, just set the maskRange to the saved maskRange.
+    }
+    // If already loaded, just set the maskRange to the saved maskRange.
+    else
       this._maskRange.clone(maskRange);
 
     return this._allLoaded ? this._tileTreeRefs : undefined;
   }
 
   // Returns any potential FeatureSymbology overrides for drawing the planar clip mask.
-  public getPlanarClipMaskSymbologyOverrides(context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined {
+  public getPlanarClipMaskSymbologyOverrides(
+    context: SceneContext,
+    featureSymbologySource: FeatureSymbology.Source,
+  ): FeatureSymbology.Overrides | undefined {
     this._usingViewportOverrides = false;
     // First obtain a list of models that will need to be turned off for drawing the planar clip mask (only used for batched tile trees).
-    const overrideModels = context.viewport.view.isSpatialView() ? context.viewport.view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode) : undefined;
+    const overrideModels = context.viewport.view.isSpatialView()
+      ? context.viewport.view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode)
+      : undefined;
 
     const noSubCategoryOrElementIds = !this.settings.subCategoryOrElementIds;
     if (noSubCategoryOrElementIds && !overrideModels)
       return undefined;
 
-    const ovrBasedOnContext = PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode || noSubCategoryOrElementIds;
+    const ovrBasedOnContext = PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode ||
+      noSubCategoryOrElementIds;
     const viewport = overrideModels && ovrBasedOnContext ? context.viewport : undefined;
     const overrides = FeatureSymbology.Overrides.withSource(featureSymbologySource, viewport);
 
@@ -96,7 +106,7 @@ export class PlanarClipMaskState {
       // For Priority or Models mode, we need to start with the current overrides and modify them
       if (ovrBasedOnContext) {
         this._usingViewportOverrides = true; // Set flag to use listener since context.viewport might change afterwards.
-        overrides.addInvisibleElementOverridesToNeverDrawn();  // need this for fully trans element overrides to not participate in mask
+        overrides.addInvisibleElementOverridesToNeverDrawn(); // need this for fully trans element overrides to not participate in mask
         overrideModels.forEach((modelId: string) => {
           overrides.override({ modelId, appearance: appOff, onConflict: "replace" });
         });

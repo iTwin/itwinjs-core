@@ -4,6 +4,7 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
+import { NestedContentValue } from "../../presentation-common";
 import { Content } from "../../presentation-common/content/Content";
 import {
   addFieldHierarchy,
@@ -35,7 +36,6 @@ import {
   createTestSimpleContentField,
 } from "../_helpers/Content";
 import { createTestECInstanceKey } from "../_helpers/EC";
-import { NestedContentValue } from "../../presentation-common";
 
 describe("ContentTraverser", () => {
   class TestContentVisitor implements IContentVisitor {
@@ -565,7 +565,7 @@ describe("ContentTraverser", () => {
             ],
           },
           parentFieldName: undefined,
-        }),
+        })
       );
       expect(processPrimitiveValueSpy.callCount).to.eq(4);
       expect(processPrimitiveValueSpy.getCall(0).firstArg).to.containSubset({
@@ -824,7 +824,7 @@ describe("ContentTraverser", () => {
             ],
           },
           parentFieldName: parentField.name,
-        }),
+        })
       );
       expect(processPrimitiveValueSpy.callCount).to.eq(2);
       expect(processPrimitiveValueSpy.getCall(0).firstArg).to.containSubset({
@@ -985,7 +985,7 @@ describe("ContentTraverser", () => {
             },
           },
           parentFieldName: parentField.name,
-        }),
+        })
       );
       expect(startStructSpy.callCount).to.eq(4);
       [startStructSpy.getCall(0), startStructSpy.getCall(2)].forEach((call) =>
@@ -1029,7 +1029,7 @@ describe("ContentTraverser", () => {
             ],
           },
           parentFieldName: undefined,
-        }),
+        })
       );
       [startStructSpy.getCall(1), startStructSpy.getCall(3)].forEach((call) =>
         expect(call.firstArg).to.containSubset({
@@ -1053,7 +1053,7 @@ describe("ContentTraverser", () => {
             ],
           },
           parentFieldName: parentField.name,
-        }),
+        })
       );
       expect(processPrimitiveValueSpy.callCount).to.eq(2);
       expect(processPrimitiveValueSpy.firstCall.firstArg).to.containSubset({

@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
@@ -54,30 +54,51 @@ describe("Triangulation", () => {
     const dx = 40.0;
     const dy = 30.0;
     const allGeometry: GeometryQuery[] = [];
-    for (const myLoops of [
-      [[Point3d.create(1, -1, 0), Point3d.create(2, -1, 0), Point3d.create(2, 1, 0)]],
-      // outer
-      [[Point3d.create(0, 0, 0), Point3d.create(3, -2, 0), Point3d.create(6, 2, 0), Point3d.create(5, 5, 0), Point3d.create(4, 2, 0), Point3d.create(1, 3, 0)],
-      // hole
-      [Point3d.create(1, 1, 0), Point3d.create(2, 2, 0), Point3d.create(3, 1, 0)]],
-      // triangle with one hole
-      [[Point3d.create(0, 0, 0), Point3d.create(5, -5, 0), Point3d.create(5, 5, 0)],
-      [Point3d.create(2, 1, 0), Point3d.create(3, 1, 0), Point3d.create(3, 0, 0)]],
-      // triangle with one hole, CCW orientation on the hole (expect it to be corrected)
-      [[Point3d.create(0, 0, 0), Point3d.create(5, -5, 0), Point3d.create(5, 5, 0)],
-      [Point3d.create(2, 1, 0), Point3d.create(3, 0, 0), Point3d.create(3, 1, 0)]],
-      // rectangle with 2 holes
-      [[Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)],
-      [Point3d.create(1, 1, 0), Point3d.create(2, 2, 0), Point3d.create(2, 1, 0)],
-      [Point3d.create(3, 1.5, 0), Point3d.create(4, 3, 0), Point3d.create(4, 1.5, 0)]],
-      // rectangle with 2 holes, duplicate points here and there
-      [[Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)],
-      [Point3d.create(1, 1, 0), Point3d.create(2, 2, 0), Point3d.create(2, 1, 0), Point3d.create(2, 1, 0)],
-      [Point3d.create(3, 1.5, 0), Point3d.create(4, 3, 0), Point3d.create(4, 1.5, 0), Point3d.create(3, 1.5, 0)]],
-      Sample.createStarsInStars(11, 8, 5, 2, 1, 4, 3, 3, false),
-      Sample.createStarsInStars(10, 10, 2, 2, 2, 4, 3, 3, false),
-      Sample.createStarsInStars(14, 8, 6, 2, 0.4, 5, 3, 4, false)]) {
-
+    for (
+      const myLoops of [
+        [[Point3d.create(1, -1, 0), Point3d.create(2, -1, 0), Point3d.create(2, 1, 0)]],
+        // outer
+        [
+          [
+            Point3d.create(0, 0, 0),
+            Point3d.create(3, -2, 0),
+            Point3d.create(6, 2, 0),
+            Point3d.create(5, 5, 0),
+            Point3d.create(4, 2, 0),
+            Point3d.create(1, 3, 0),
+          ], // hole
+          [Point3d.create(1, 1, 0), Point3d.create(2, 2, 0), Point3d.create(3, 1, 0)],
+        ],
+        // triangle with one hole
+        [[Point3d.create(0, 0, 0), Point3d.create(5, -5, 0), Point3d.create(5, 5, 0)], [
+          Point3d.create(2, 1, 0),
+          Point3d.create(3, 1, 0),
+          Point3d.create(3, 0, 0),
+        ]],
+        // triangle with one hole, CCW orientation on the hole (expect it to be corrected)
+        [[Point3d.create(0, 0, 0), Point3d.create(5, -5, 0), Point3d.create(5, 5, 0)], [
+          Point3d.create(2, 1, 0),
+          Point3d.create(3, 0, 0),
+          Point3d.create(3, 1, 0),
+        ]],
+        // rectangle with 2 holes
+        [[Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)], [
+          Point3d.create(1, 1, 0),
+          Point3d.create(2, 2, 0),
+          Point3d.create(2, 1, 0),
+        ], [Point3d.create(3, 1.5, 0), Point3d.create(4, 3, 0), Point3d.create(4, 1.5, 0)]],
+        // rectangle with 2 holes, duplicate points here and there
+        [[Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)], [
+          Point3d.create(1, 1, 0),
+          Point3d.create(2, 2, 0),
+          Point3d.create(2, 1, 0),
+          Point3d.create(2, 1, 0),
+        ], [Point3d.create(3, 1.5, 0), Point3d.create(4, 3, 0), Point3d.create(4, 1.5, 0), Point3d.create(3, 1.5, 0)]],
+        Sample.createStarsInStars(11, 8, 5, 2, 1, 4, 3, 3, false),
+        Sample.createStarsInStars(10, 10, 2, 2, 2, 4, 3, 3, false),
+        Sample.createStarsInStars(14, 8, 6, 2, 0.4, 5, 3, 4, false),
+      ]
+    ) {
       let xShift = 0;
       for (const loop of myLoops) {
         const g = LineString3d.create(loop);
@@ -129,18 +150,34 @@ describe("Triangulation", () => {
     const dx = 40.0;
     const dy = 30.0;
     const allGeometry: GeometryQuery[] = [];
-    for (const myLoops of [
-      // rectangle with hole not fully contained
-      [[Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)],
-      [Point3d.create(1, -1, 0), Point3d.create(2, -1, 0), Point3d.create(2, 1, 0)]],
-      // Edge-Edge contact from hole to parent along lower edge.
-      [[Point3d.create(0, 0, 0), Point3d.create(4, 0, 0), Point3d.create(8, 0, 0), Point3d.create(10, 0, 0), Point3d.create(10, 5, 0), Point3d.create(0, 5, 0)],
-      [Point3d.create(4, 0, 0), Point3d.create(8, 0, 0), Point3d.create(8, 2, 0), Point3d.create(4, 2, 0)]],
-      // Edge-Edge contact from hole to parent along right edge.
-      [[Point3d.create(10, 0, 0), Point3d.create(10, 4), Point3d.create(10, 8), Point3d.create(10, 10, 0), Point3d.create(0, 10, 0), Point3d.create(0, 0, 0)],
-      [Point3d.create(10, 4), Point3d.create(10, 8), Point3d.create(6, 8)]],
-    ]) {
-
+    for (
+      const myLoops of [
+        // rectangle with hole not fully contained
+        [[Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(5, 5, 0), Point3d.create(0, 5, 0)], [
+          Point3d.create(1, -1, 0),
+          Point3d.create(2, -1, 0),
+          Point3d.create(2, 1, 0),
+        ]],
+        // Edge-Edge contact from hole to parent along lower edge.
+        [[
+          Point3d.create(0, 0, 0),
+          Point3d.create(4, 0, 0),
+          Point3d.create(8, 0, 0),
+          Point3d.create(10, 0, 0),
+          Point3d.create(10, 5, 0),
+          Point3d.create(0, 5, 0),
+        ], [Point3d.create(4, 0, 0), Point3d.create(8, 0, 0), Point3d.create(8, 2, 0), Point3d.create(4, 2, 0)]],
+        // Edge-Edge contact from hole to parent along right edge.
+        [[
+          Point3d.create(10, 0, 0),
+          Point3d.create(10, 4),
+          Point3d.create(10, 8),
+          Point3d.create(10, 10, 0),
+          Point3d.create(0, 10, 0),
+          Point3d.create(0, 0, 0),
+        ], [Point3d.create(10, 4), Point3d.create(10, 8), Point3d.create(6, 8)]],
+      ]
+    ) {
       let xShift = 0;
       for (const loop of myLoops) {
         const g = LineString3d.create(loop);
@@ -184,7 +221,8 @@ describe("Triangulation", () => {
         const yShiftVector = Vector3d.create(0, 2, 0);
         const rotation = Transform.createFixedPointAndMatrix(
           Point3d.create(1.5 * numPhase, 0, 0),
-          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(degrees)) as Matrix3d);
+          Matrix3d.createRotationAroundVector(Vector3d.unitZ(), Angle.createDegrees(degrees)) as Matrix3d,
+        );
         const points = Sample.createSquareWave(Point3d.create(0, 0, 0), 1, 0.5, 2, numPhase, 1);
         rotation.multiplyVector(yShiftVector, yShiftVector);
         if (degrees !== 0.0)
@@ -218,7 +256,14 @@ describe("Triangulation", () => {
   });
 });
 
-function testGraphFromSegments(ck: Checker, x0: number, segments: LineSegment3d[], expectSingleLoop: boolean, fileName: string, outputAnnotatedGeometry: boolean = true) {
+function testGraphFromSegments(
+  ck: Checker,
+  x0: number,
+  segments: LineSegment3d[],
+  expectSingleLoop: boolean,
+  fileName: string,
+  outputAnnotatedGeometry: boolean = true,
+) {
   const theGraph = HalfEdgeGraphMerge.formGraphFromSegments(segments);
   GraphChecker.verifySignedFaceCounts(ck, theGraph, undefined, 1, undefined);
   const dx = x0;
@@ -241,7 +286,6 @@ function testGraphFromSegments(ck: Checker, x0: number, segments: LineSegment3d[
   // }
   // exportGraph(theGraph, "AfterTriangulation");
   GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", fileName);
-
 }
 describe("MonotoneFaces", () => {
   // 5 sides -- tall rectangle with upward V at bottom edge.
@@ -274,17 +318,19 @@ describe("MonotoneFaces", () => {
     const ax = 5.0;
     const ay = 10.0;
     // const e = 0.1;
-    for (const loopA of [
-      Sample.createVerticalStaggerPolygon(-1, -2, 4, 3, ax, ay, 0, 0),
-      Sample.createVerticalStaggerPolygon(3, 0, 0, 4, ax, ay, 0, 0),
-      // Sample.createVerticalStaggerPolygon(3, e, e, 3, ax, ay, 0, 0),
-      // Sample.createVerticalStaggerPolygon(3, 0, 0, 3, ax, ay, 0, 0),
-      // Sample.createVerticalStaggerPolygon(-3, 2, 1, 2, ax, ay, 0, 0),
-      // Sample.createVerticalStaggerPolygon(3, 0, 0, 3, ax, ay, 0, 0),
-      // Sample.createVerticalStaggerPolygon(3, 0, 0, -3, ax, ay, 0, 0),
-      // Sample.createVerticalStaggerPolygon(3, 0, 0, -5, ax, ay, -1, 0),
-      // Sample.createVerticalStaggerPolygon(7, 0, 0, -6, ax, ay, -0.5, 0),
-    ]) {
+    for (
+      const loopA of [
+        Sample.createVerticalStaggerPolygon(-1, -2, 4, 3, ax, ay, 0, 0),
+        Sample.createVerticalStaggerPolygon(3, 0, 0, 4, ax, ay, 0, 0),
+        // Sample.createVerticalStaggerPolygon(3, e, e, 3, ax, ay, 0, 0),
+        // Sample.createVerticalStaggerPolygon(3, 0, 0, 3, ax, ay, 0, 0),
+        // Sample.createVerticalStaggerPolygon(-3, 2, 1, 2, ax, ay, 0, 0),
+        // Sample.createVerticalStaggerPolygon(3, 0, 0, 3, ax, ay, 0, 0),
+        // Sample.createVerticalStaggerPolygon(3, 0, 0, -3, ax, ay, 0, 0),
+        // Sample.createVerticalStaggerPolygon(3, 0, 0, -5, ax, ay, -1, 0),
+        // Sample.createVerticalStaggerPolygon(7, 0, 0, -6, ax, ay, -0.5, 0),
+      ]
+    ) {
       const segmentA = Sample.convertPointsToSegments(loopA);
       testGraphFromSegments(ck, id * 30, segmentA, true, `LoopA${id++}`, false);
     }
@@ -342,7 +388,6 @@ describe("MonotoneFaces", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Graph", "HashMerge");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 
 describe("Triangulation", () => {
@@ -365,15 +410,21 @@ describe("Triangulation", () => {
       for (const perpendicularFactor of [0.85, -1.0, -0.5]) {
         let yMax = 0.0;
         const baseVectorB = baseVectorA.clone();
-        for (const generatorFunction of [
-          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(_numRecursion, _perpendicularFactor),
-          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(_numRecursion, _perpendicularFactor),
-          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(_numRecursion, _perpendicularFactor),
-          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalHatReversingPattern(_numRecursion, _perpendicularFactor),
-          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(_numRecursion, _perpendicularFactor)]) {
+        for (
+          const generatorFunction of [
+            (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(_numRecursion, _perpendicularFactor),
+            (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(_numRecursion, _perpendicularFactor),
+            (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(_numRecursion, _perpendicularFactor),
+            (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalHatReversingPattern(_numRecursion, _perpendicularFactor),
+            (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(_numRecursion, _perpendicularFactor),
+          ]
+        ) {
           for (const degrees of [0, 10, 79]) {
             const points = generatorFunction(numRecursion, perpendicularFactor);
-            const transform0 = Transform.createFixedPointAndMatrix(points[0], Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
+            const transform0 = Transform.createFixedPointAndMatrix(
+              points[0],
+              Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)),
+            );
             transform0.multiplyPoint3dArrayInPlace(points);
             const range = Range3d.createArray(points);
             const dy = range.yLength();
@@ -500,7 +551,7 @@ describe("Triangulation", () => {
       }
       // run the triangulator with the array rotated to each x-axis point, and one of every numThetaSkip points around the arc.
       let y0 = 0.0;
-      for (let rotation = 0; rotation < points.length; rotation += (rotation < numColinear ? 1 : numThetaSkip)) {
+      for (let rotation = 0; rotation < points.length; rotation += rotation < numColinear ? 1 : numThetaSkip) {
         const pointsB = rotateArray(points, rotation);
         const graph = Triangulator.createTriangulatedGraphFromSingleLoop(pointsB);
         if (graph) {
@@ -527,32 +578,34 @@ describe("Triangulation", () => {
     const r = 1.0;
     let x0 = 0.0;
     // promise: all x above x0 is free space.
-    for (const points of [
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 2, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 3, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 4, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 6, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 1, 4, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 1, 4, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 90), 2, 5, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 3, 9, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 90), 3, 4, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(-10, 270), 2, 8, false),
-      Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(-30, 200), 5, 12, false),
-      Sample.createCutPie(0, 0, 100 * r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
-    ]) {
+    for (
+      const points of [
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 2, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 3, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 4, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 2, 6, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 1, 4, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 1, 4, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 90), 2, 5, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 3, 9, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 90), 3, 4, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(-10, 270), 2, 8, false),
+        Sample.createCutPie(0, 0, r, AngleSweep.createStartEndDegrees(-30, 200), 5, 12, false),
+        Sample.createCutPie(0, 0, 100 * r, AngleSweep.createStartEndDegrees(0, 180), 5, 12, false),
+      ]
+    ) {
       // run the triangulator with the array rotated to each x-axis point, and one of every numThetaSkip points around the arc.
       let y0 = 0.0;
       const range = Range3d.createArray(points);
-      const expectedTriangleCount = points.length - 2;   // we know that the point array is unclosed !!!
+      const expectedTriangleCount = points.length - 2; // we know that the point array is unclosed !!!
       const dx = range.xLength();
       const dy = range.yLength();
       const ex = x0 - range.low.x;
       const polygonArea = PolygonOps.areaXY(points);
       x0 += r;
-      for (let rotation = 0; rotation < points.length; rotation += (rotation < 4 ? 1 : numThetaSkip)) {
+      for (let rotation = 0; rotation < points.length; rotation += rotation < 4 ? 1 : numThetaSkip) {
         const pointsB = rotateArray(points, rotation);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, pointsB, x0, y0);
         Triangulator.clearAndEnableDebugGraphCapture(true);
@@ -608,19 +661,19 @@ describe("Triangulation", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x = 0;
-    for (const points of [
-      [{ x: 5.36, y: 8.85, z: 23.78 },
-      { x: 8.822141987513945, y: 6.843546977282015, z: 23.78 },
-      { x: 8.822141987513945, y: 6.843546977282015, z: 23.78 },
-      { x: 5.36, y: 8.85, z: 23.78 },
-      { x: 5.36, y: 8.85, z: 23.78 }],
-      [{ x: 0, y: 0, z: 0 },
-      { x: 3.4621419875139443, y: -2.0064530227179844, z: 0 },
-      { x: 0, y: 0, z: 0 }],
-      [{ x: 0, y: 0, z: 0 },
-      { x: 2.9577539019415324, y: -0.8576720613542541, z: 0 },
-      { x: 8.881784197001252e-16, y: 0, z: 0 }],
-    ]) {
+    for (
+      const points of [
+        [
+          { x: 5.36, y: 8.85, z: 23.78 },
+          { x: 8.822141987513945, y: 6.843546977282015, z: 23.78 },
+          { x: 8.822141987513945, y: 6.843546977282015, z: 23.78 },
+          { x: 5.36, y: 8.85, z: 23.78 },
+          { x: 5.36, y: 8.85, z: 23.78 },
+        ],
+        [{ x: 0, y: 0, z: 0 }, { x: 3.4621419875139443, y: -2.0064530227179844, z: 0 }, { x: 0, y: 0, z: 0 }],
+        [{ x: 0, y: 0, z: 0 }, { x: 2.9577539019415324, y: -0.8576720613542541, z: 0 }, { x: 8.881784197001252e-16, y: 0, z: 0 }],
+      ]
+    ) {
       const graph = Triangulator.createTriangulatedGraphFromSingleLoop(points);
       const polyface = graph ? PolyfaceBuilder.graphToPolyface(graph) : undefined;
       if (!ck.testTrue(graph === undefined || polyface!.facetCount === 0, "degenerate triangle produced no facets.")) {
@@ -644,7 +697,8 @@ describe("Triangulation", () => {
         Point3d.create(6, 2, 0),
         Point3d.create(a, 4, 0),
         Point3d.create(4, 3, 0),
-        Point3d.create(0, 3, 0)];
+        Point3d.create(0, 3, 0),
+      ];
       let counter1 = 0;
       const needParams = true;
       for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
@@ -661,8 +715,14 @@ describe("Triangulation", () => {
 
         sweepContour!.emitFacets(builder, false);
         const polyface = builder.claimPolyface(true);
-        if (!ck.testExactNumber(arrowPoints.length - 2, polyface.facetCount, `Triangle count in arrow ${counter0}.${counter1}   needParams${needParams}`)
-          || Checker.noisy.acsArrows) {
+        if (
+          !ck.testExactNumber(
+            arrowPoints.length - 2,
+            polyface.facetCount,
+            `Triangle count in arrow ${counter0}.${counter1}   needParams${needParams}`,
+          )
+          || Checker.noisy.acsArrows
+        ) {
           GeometryCoreTestIO.consoleLog(` Triangulation From Start index ${startIndex} needParams ${needParams} `);
           GeometryCoreTestIO.consoleLog(`   arrow parameter ${a}`);
           GeometryCoreTestIO.consoleLog(`    Facet Count ${polyface.facetCount} counter0 ${counter0}   counter1 ${counter1}`);
@@ -690,7 +750,8 @@ describe("Triangulation", () => {
         Point3d.create(0, 0, 0),
         Point3d.create(4, 0, 0),
         Point3d.create(0, a, 0),
-        Point3d.create(4, a, 0)];
+        Point3d.create(4, a, 0),
+      ];
       for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
         let dy = 0.0;
         const shiftedPoints = [];
@@ -718,7 +779,8 @@ describe("Triangulation", () => {
         Point3d.create(0, 0, 0),
         Point3d.create(4, 0, 0),
         Point3d.create(4, a, 0),
-        Point3d.create(3, 1, 0)];
+        Point3d.create(3, 1, 0),
+      ];
       for (let startIndex = 0; startIndex < basePoints.length; startIndex++) {
         let dy = 0.0;
         const shiftedPoints = [];
@@ -753,7 +815,8 @@ describe("Triangulation", () => {
         { x: 968, y: 3612 + dy14 },
         { x: 960, y: 3612 },
         { x: 960, y: 3616 },
-        { x: 960, y: 3616 }]);
+        { x: 960, y: 3616 },
+      ]);
     }
     // multiple pinch points:
     const x0 = 960;
@@ -802,10 +865,17 @@ describe("Triangulation", () => {
   });
 
   const dartInTriangleOuter = [
-    Point3d.create(1, -4), Point3d.create(13, 0), Point3d.create(1, 4), Point3d.create(1, -4),
+    Point3d.create(1, -4),
+    Point3d.create(13, 0),
+    Point3d.create(1, 4),
+    Point3d.create(1, -4),
   ];
   const dartInTriangleInner = [
-    Point3d.create(5, 0), Point3d.create(3, -2), Point3d.create(9, 0), Point3d.create(3, 2), Point3d.create(5, 0),
+    Point3d.create(5, 0),
+    Point3d.create(3, -2),
+    Point3d.create(9, 0),
+    Point3d.create(3, 2),
+    Point3d.create(5, 0),
   ];
 
   it("DartInTriangle", () => {
@@ -959,7 +1029,8 @@ describe("Triangulation", () => {
       [-0.801128 + ex0, -3.712995 + ey0],
       [-0.806443, -3.737396],
 
-      [0, 1.593037e-11]];
+      [0, 1.593037e-11],
+    ];
   }
   const _messyShape = [
     {
@@ -968,7 +1039,8 @@ describe("Triangulation", () => {
         trans: [
           [0.998765, 0.049683, -1.032365e-16, 532612.092389],
           [-0.049683, 0.998765, -5.489607e-20, 212337.746743],
-          [1.031063e-16, 5.183973e-18, 1, 7.41464]],
+          [1.031063e-16, 5.183973e-18, 1, 7.41464],
+        ],
       },
     },
   ];
@@ -1044,7 +1116,13 @@ describe("Triangulation", () => {
    * Caller should precede with Triangulator.clearAndEnableDebugGraphCapture(true);
    * @return whether tests succeeded
    */
-  function tryExpandConvex2(ck: Checker, allGeometry: GeometryQuery[], graph1: HalfEdgeGraph | undefined, graph2: HalfEdgeGraph | undefined, position: Point2d): boolean {
+  function tryExpandConvex2(
+    ck: Checker,
+    allGeometry: GeometryQuery[],
+    graph1: HalfEdgeGraph | undefined,
+    graph2: HalfEdgeGraph | undefined,
+    position: Point2d,
+  ): boolean {
     if (ck.testDefined(graph1, "Triangulation failed")) {
       const range = HalfEdgeGraphOps.graphRange(graph1);
       const numRemovedEdges1 = tryExpandConvex(ck, allGeometry, graph1, 1, position);
@@ -1104,16 +1182,22 @@ describe("Triangulation", () => {
     const position = Point2d.createZero();
     for (const numRecursion of [1, 2, 3]) {
       for (const perpendicularFactor of [0.85, -1.0, -0.5]) {
-        for (const generatorFunction of [
-          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(_numRecursion, _perpendicularFactor),
-          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(_numRecursion, _perpendicularFactor),
-          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(_numRecursion, _perpendicularFactor),
-          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalHatReversingPattern(_numRecursion, _perpendicularFactor),
-          (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(_numRecursion, _perpendicularFactor)]) {
+        for (
+          const generatorFunction of [
+            (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalSquareReversingPattern(_numRecursion, _perpendicularFactor),
+            (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalDiamondConvexPattern(_numRecursion, _perpendicularFactor),
+            (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLReversingPattern(_numRecursion, _perpendicularFactor),
+            (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalHatReversingPattern(_numRecursion, _perpendicularFactor),
+            (_numRecursion: number, _perpendicularFactor: number) => Sample.createFractalLMildConcavePatter(_numRecursion, _perpendicularFactor),
+          ]
+        ) {
           for (const degrees of [0, 10, 79]) {
             const points = generatorFunction(numRecursion, perpendicularFactor);
             let range = Range3d.createArray(points);
-            const transform = Transform.createFixedPointAndMatrix(range.center, Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)));
+            const transform = Transform.createFixedPointAndMatrix(
+              range.center,
+              Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(degrees)),
+            );
             transform.multiplyPoint3dArrayInPlace(points);
             range = Range3d.createArray(points);
             Triangulator.clearAndEnableDebugGraphCapture(true);
@@ -1160,7 +1244,7 @@ describe("Triangulation", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const skipTranslate = false; // false: non-overlapping output meshes; true: output as-is for debugging
-    const drawCircles = false;   // true: output a circle at each point for debugging
+    const drawCircles = false; // true: output a circle at each point for debugging
     const xMargin = 10;
     const yMargin = 10;
     let x0 = 0;
@@ -1195,7 +1279,7 @@ describe("Triangulation", () => {
       points: Point3d[];
       range: Range3d;
       name: string;
-    };
+    }
     const data: Dataset[] = [];
 
     // Minimal subset of dtmPointsSmall.imjs that reproduced an infinite loop:
@@ -1205,11 +1289,11 @@ describe("Triangulation", () => {
     // * A and C are skirt points "underneath" the hull
     const minimumPts = [
       Point3d.create(29.38440446735313, -46.664765115079454, 49.58476279246775), // 0
-      Point3d.create(78.7791513050385, -46.66476333748565, 47.07249011143456),   // 1
-      Point3d.create(78.77823641152756, -46.66476229743052, 45.60256502436375),  // A
-      Point3d.create(51.51740469722874, -46.66476418232037, 48.26649267203187),  // B
-      Point3d.create(51.5164898037178, -46.66476314226524, 46.79656758496107),   // C
-      Point3d.create(55.21859962987817, 29.55516271079307, 48.370060922134726),  // 2
+      Point3d.create(78.7791513050385, -46.66476333748565, 47.07249011143456), // 1
+      Point3d.create(78.77823641152756, -46.66476229743052, 45.60256502436375), // A
+      Point3d.create(51.51740469722874, -46.66476418232037, 48.26649267203187), // B
+      Point3d.create(51.5164898037178, -46.66476314226524, 46.79656758496107), // C
+      Point3d.create(55.21859962987817, 29.55516271079307, 48.370060922134726), // 2
       Point3d.create(50.334340847282135, -46.66476423327051, 48.33850061288565), // D
     ];
     data.push({ points: minimumPts, range: Range3d.create(...minimumPts), name: "7 points" });
@@ -1229,7 +1313,7 @@ describe("Triangulation", () => {
         ck.testLE(numSharpEdges, minNumSharpEdges, "larger tolerance should reduce sharp edge count");
         minNumSharpEdges = Math.min(numSharpEdges, minNumSharpEdges);
         if (!skipTranslate)
-          x0 += datum.range.xLength() + xMargin;  // as meshes progress left to right, more skirt points vanish
+          x0 += datum.range.xLength() + xMargin; // as meshes progress left to right, more skirt points vanish
       }
       if (!skipTranslate) {
         x0 = z0 = 0;

@@ -8,7 +8,7 @@ import { desync, isSynchronized, sync, SyncObserver } from "../../../render/webg
 describe("SyncObserver", () => {
   it("should synchronize with Sync", () => {
     const target = { syncKey: 0 };
-    const observer: SyncObserver = { };
+    const observer: SyncObserver = {};
 
     expect(isSynchronized(target, observer)).to.be.false;
     expect(sync(target, observer)).to.be.false;

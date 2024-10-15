@@ -4,9 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import {
-  ButtonGroupEditorParams, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, DialogRow,
-  PrimitiveValue, PropertyDescription, PropertyEditorParamTypes, StandardEditorNames,
-  StandardTypeNames, SuppressLabelEditorParams, UiLayoutDataProvider,
+  ButtonGroupEditorParams,
+  DialogItem,
+  DialogItemValue,
+  DialogLayoutDataProvider,
+  DialogPropertyItem,
+  DialogPropertySyncItem,
+  DialogRow,
+  PrimitiveValue,
+  PropertyDescription,
+  PropertyEditorParamTypes,
+  StandardEditorNames,
+  StandardTypeNames,
+  SuppressLabelEditorParams,
+  UiLayoutDataProvider,
 } from "../../appui-abstract";
 
 const value1: DialogItemValue = { value: 3 };
@@ -56,8 +67,7 @@ const getButtonGroupItemDescription = (): PropertyDescription => {
       } as ButtonGroupEditorParams, {
         type: PropertyEditorParamTypes.SuppressEditorLabel,
         suppressLabelPlaceholder: true,
-      } as SuppressLabelEditorParams,
-      ],
+      } as SuppressLabelEditorParams],
     },
     enum: {
       choices: [
@@ -70,9 +80,18 @@ const getButtonGroupItemDescription = (): PropertyDescription => {
 };
 
 const lockItem: DialogItem = { value: lockValue, property: getLockToggleDescription(), editorPosition: { rowPriority: 0, columnIndex: 0 } };
-const item1: DialogItem = { value: value1, property: getItem1Description(), editorPosition: { rowPriority: 0, columnIndex: 1 }, lockProperty: lockItem };
+const item1: DialogItem = {
+  value: value1,
+  property: getItem1Description(),
+  editorPosition: { rowPriority: 0, columnIndex: 1 },
+  lockProperty: lockItem,
+};
 const item2: DialogItem = { value: value2, property: getItem2Description(), editorPosition: { rowPriority: 0, columnIndex: 2 }, isDisabled: true };
-const buttonGroupItem: DialogItem = { value: buttonGroupValue, property: getButtonGroupItemDescription(), editorPosition: { rowPriority: 1, columnIndex: 0 } };
+const buttonGroupItem: DialogItem = {
+  value: buttonGroupValue,
+  property: getButtonGroupItemDescription(),
+  editorPosition: { rowPriority: 1, columnIndex: 0 },
+};
 const dialogItems: DialogItem[] = [item1, item2, buttonGroupItem];
 
 class TestDynamicUiDataProvider extends UiLayoutDataProvider {
@@ -188,7 +207,6 @@ describe("DialogLayoutDataProvider", () => {
       expect(emptySut.items.length).to.be.eq(0);
       expect(emptySut.rows.length).to.be.eq(0);
     });
-
   });
   describe("buttons", () => {
     it("should contain defaults", () => {
@@ -197,5 +215,4 @@ describe("DialogLayoutDataProvider", () => {
       expect(buttonData && buttonData.length).to.be.eq(2);
     });
   });
-
 });

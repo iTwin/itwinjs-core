@@ -54,7 +54,8 @@ function checkHullChords(hull: ConvexPolygon2d, step: number, ck: Checker) {
         const range = hull.rangeAlongRay(ray);
         const ray1 = Ray2d.createOriginAndDirectionCapture(
           ray.fractionToPoint(range.low),
-          ray.direction.scale(range.high - range.low));
+          ray.direction.scale(range.high - range.low),
+        );
         const range1 = hull.rangeAlongRay(ray1);
 
         ck.testCoordinate(range1.low, 0.0, "Vertex chord extent low");
@@ -74,7 +75,6 @@ function countPointsInHull(hull: ConvexPolygon2d, points: Point2d[]): number {
 }
 
 describe("ConvexPolygon2d", () => {
-
   it("ConvexHullQueries", () => {
     const ck = new Checker();
     const points: Point2d[] = [
@@ -127,7 +127,6 @@ describe("ConvexPolygon2d", () => {
       range = hull.clipRay(rayC1M);
       ck.testFalse(range.isNull, "Clip mixed segment");
       ck.testCoordinate(range.length(), pointA.distance(pointB), "Clipped segment length");
-
     }
 
     // Construct known exterior rays
@@ -248,7 +247,11 @@ describe("ConvexPolygon2d", () => {
       ck.testCoordinate(offsetDistance1, detail.a, "hull2 has expected offsetDistance1 from hull1");
     }
     const allGeometry: GeometryQuery[] = [];
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [GrowableXYZArray.create(hull.points), GrowableXYZArray.create(hull1.points), GrowableXYZArray.create(hull2.points)]);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [
+      GrowableXYZArray.create(hull.points),
+      GrowableXYZArray.create(hull1.points),
+      GrowableXYZArray.create(hull2.points),
+    ]);
     GeometryCoreTestIO.saveGeometry(allGeometry, "ConvexPolygon2d", "OffsetInPlace");
 
     expect(ck.getNumErrors()).toBe(0);

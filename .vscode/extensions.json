@@ -3,6 +3,6 @@
     "streetsidesoftware.code-spell-checker",
     "dbaeumer.vscode-eslint",
     "davidanson.vscode-markdownlint",
-    "mike-co.import-sorter"
+    "dprint.dprint"
   ]
 }

@@ -29,7 +29,7 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
     let x0 = 0.0;
     const dx = 8;
     const dy = 8;
-    const dz = 0.01;  // output stringers a little above and below
+    const dz = 0.01; // output stringers a little above and below
     for (const dataB of [dataB0, dataB1]) {
       for (let nA = 2; nA <= dataA.length; nA++) {
         const pointA = GrowableXYZArray.create(dataA.slice(0, nA));
@@ -65,7 +65,7 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
     const dataA = [[0, 0, z0], [1, 0, z0], [2, 0, z0], [2, 1, z0], [3, 1, z0], [3, 2, z0]];
     const dataB = [[0, 0, z1], [1, 0, z1], [1.5, 0.05, z1], [2, 0, z1], [2, 1, z1], [3, 1, z1], [3, 2, z1]];
     let y0 = 0;
-    const dz = 0.01;  // output stringers a little above and below
+    const dz = 0.01; // output stringers a little above and below
     const numDup = 2;
     const step = 4.0;
     for (let nA = 0; nA < dataA.length; nA++) {
@@ -102,7 +102,7 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
       const lineStringB = LineString3d.create(dataB);
       const dx = 8;
       const dy = 8;
-      const dz = 0.01;  // output stringers a little above and below
+      const dz = 0.01; // output stringers a little above and below
       const options = StrokeOptions.createForCurves();
       for (const edgeLengthA of [1, 0.55, 0.35, 0.28, 0.22]) {
         const lineStringA1 = LineString3d.create();
@@ -144,7 +144,7 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
       const lineStringB = LineString3d.create(dataB);
       const dx = 8;
       const dy = 8;
-      const dz = 0.01;  // output stringers a little above and below
+      const dz = 0.01; // output stringers a little above and below
       const options = StrokeOptions.createForCurves();
       for (const edgeLengthA of [1, 0.55, 0.35, 0.28, 0.22]) {
         const lineStringA1 = LineString3d.create();
@@ -169,7 +169,6 @@ describe("GreedyTriangulationBetweenLineStrings", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "GreedyTriangulationBetweenLineStrings", "quadStar");
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 
 /**

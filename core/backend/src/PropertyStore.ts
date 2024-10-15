@@ -14,7 +14,6 @@ import { SettingsContainer } from "./workspace/Settings";
 
 /** @beta */
 export namespace PropertyStore {
-
   /** The set of valid types for properties in a PropertyStore. */
   export type PropertyType = string | number | boolean | Uint8Array | SettingsContainer;
   /** The case-sensitive name of a Property. May not have leading or trailing spaces, and must be between 3 and 2048 characters long. */
@@ -72,60 +71,60 @@ export namespace PropertyStore {
       });
     }
     /** Get the value of a string property by name.
-    * @returns the property's value if it exists and is a string, `undefined` otherwise.
-    */
+     * @returns the property's value if it exists and is a string, `undefined` otherwise.
+     */
     public getString(name: PropertyName, defaultValue: string): string;
     /** Get the value of a string property by name.
-    * @returns the property's value if it exists and is a string, otherwise the supplied default value.
-    */
+     * @returns the property's value if it exists and is a string, otherwise the supplied default value.
+     */
     public getString(name: PropertyName): string | undefined;
     public getString(name: PropertyName, defaultValue?: string): string | undefined {
       const out = this.getProperty(name);
       return typeof out === "string" ? out : defaultValue;
     }
     /** Get the value of a boolean property by name.
-    * @returns the property's value if it exists and is a boolean, `undefined` otherwise.
-    */
+     * @returns the property's value if it exists and is a boolean, `undefined` otherwise.
+     */
     public getBoolean(name: PropertyName): boolean | undefined;
     /** Get the value of a boolean property by name.
-    * @returns the property's value if it exists and is a boolean, otherwise the supplied default value.
-    */
+     * @returns the property's value if it exists and is a boolean, otherwise the supplied default value.
+     */
     public getBoolean(name: PropertyName, defaultValue: boolean): boolean;
     public getBoolean(name: PropertyName, defaultValue?: boolean): boolean | undefined {
       const out = this.getProperty(name);
       return typeof out === "boolean" ? out : defaultValue;
     }
     /** Get the value of a number property by name.
-    * @returns the property's value if it exists and is a number, `undefined` otherwise.
-    */
+     * @returns the property's value if it exists and is a number, `undefined` otherwise.
+     */
     public getNumber(name: PropertyName): number | undefined;
     /** Get the value of a number property by name.
-    * @returns the property's value if it exists and is a number, otherwise the supplied default value.
-    */
+     * @returns the property's value if it exists and is a number, otherwise the supplied default value.
+     */
     public getNumber(name: PropertyName, defaultValue: number): number;
     public getNumber(name: PropertyName, defaultValue?: number): number | undefined {
       const out = this.getProperty(name);
       return typeof out === "number" ? out : defaultValue;
     }
     /** Get the value of a blob property by name.
-    * @returns the property's value if it exists and is a blob, `undefined` otherwise.
-    */
+     * @returns the property's value if it exists and is a blob, `undefined` otherwise.
+     */
     public getBlob(name: PropertyName): Uint8Array | undefined;
     /** Get the value of a blob property by name.
-    * @returns the property's value if it exists and is a blob, otherwise the supplied default value.
-    */
+     * @returns the property's value if it exists and is a blob, otherwise the supplied default value.
+     */
     public getBlob(name: PropertyName, defaultValue: Uint8Array): Uint8Array;
     public getBlob(name: PropertyName, defaultValue?: Uint8Array): Uint8Array | undefined {
       const out = this.getProperty(name);
       return out instanceof Uint8Array ? out : defaultValue;
     }
     /** Get the value of an object property by name.
-    * @returns the property's value if it exists and is an object, `undefined` otherwise.
-    */
+     * @returns the property's value if it exists and is an object, `undefined` otherwise.
+     */
     public getObject(name: PropertyName): SettingsContainer | undefined;
     /** Get the value of an object property by name.
-    * @returns the property's value if it exists and is an object, otherwise the supplied default value.
-    */
+     * @returns the property's value if it exists and is an object, otherwise the supplied default value.
+     */
     public getObject(name: PropertyName, defaultValue: SettingsContainer): SettingsContainer;
     public getObject(name: PropertyName, defaultValue?: SettingsContainer): SettingsContainer | undefined {
       const out = this.getProperty(name);

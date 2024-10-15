@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { ColorDef, EmptyLocalization } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import { OnScreenTarget } from "../core-frontend";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { createBlankConnection } from "./createBlankConnection";
-import { openBlankViewport } from "./openBlankViewport";
 import { expectColors } from "./ExpectColors";
-import { ColorDef, EmptyLocalization } from "@itwin/core-common";
+import { openBlankViewport } from "./openBlankViewport";
 
 describe("ViewManager", () => {
   let imodel: IModelConnection;

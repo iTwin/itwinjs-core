@@ -3,24 +3,104 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
 import { BentleyStatus, Id64, Id64String, IModelStatus } from "@itwin/core-bentley";
 import {
-  Angle, AngleSweep, Arc3d, Box, ClipMaskXYZRangePlanes, ClipPlane, ClipPlaneContainment, ClipPrimitive, ClipShape, ClipVector, ConvexClipPlaneSet,
-  CurveCollection, CurvePrimitive, Geometry, GeometryQueryCategory, IndexedPolyface, InterpolationCurve3d, InterpolationCurve3dOptions, InterpolationCurve3dProps,
-  LineSegment3d, LineString3d, Loop, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point3dArray, PointString3d, PolyfaceBuilder, Range2d, Range3d,
-  SolidPrimitive, Sphere, StrokeOptions, Transform, Vector3d, YawPitchRollAngles,
-} from "@itwin/core-geometry";
-import {
-  AreaPattern, BackgroundFill, BRepGeometryCreate, BRepGeometryFunction, BRepGeometryInfo, BRepGeometryOperation, Code, ColorByName,
-  ColorDef, ElementGeometry, ElementGeometryDataEntry, ElementGeometryFunction, ElementGeometryInfo, ElementGeometryOpcode, ElementGeometryRequest,
-  FillDisplay, GeometricElement3dProps, GeometricElementProps, GeometryClass,
-  GeometryContainmentRequestProps, GeometryParams, GeometryPartProps, GeometryPrimitive, GeometryStreamBuilder, GeometryStreamFlags, GeometryStreamIterator,
-  GeometryStreamProps, Gradient, ImageGraphicCorners, ImageGraphicProps, IModel, LinePixels, LineStyle, MassPropertiesOperation,
-  MassPropertiesRequestProps, PhysicalElementProps, Placement3d, Placement3dProps, TextString, TextStringGlyphData, TextStringProps, ThematicGradientMode,
-  ThematicGradientSettings, ViewFlags,
+  AreaPattern,
+  BackgroundFill,
+  BRepGeometryCreate,
+  BRepGeometryFunction,
+  BRepGeometryInfo,
+  BRepGeometryOperation,
+  Code,
+  ColorByName,
+  ColorDef,
+  ElementGeometry,
+  ElementGeometryDataEntry,
+  ElementGeometryFunction,
+  ElementGeometryInfo,
+  ElementGeometryOpcode,
+  ElementGeometryRequest,
+  FillDisplay,
+  GeometricElement3dProps,
+  GeometricElementProps,
+  GeometryClass,
+  GeometryContainmentRequestProps,
+  GeometryParams,
+  GeometryPartProps,
+  GeometryPrimitive,
+  GeometryStreamBuilder,
+  GeometryStreamFlags,
+  GeometryStreamIterator,
+  GeometryStreamProps,
+  Gradient,
+  ImageGraphicCorners,
+  ImageGraphicProps,
+  IModel,
+  LinePixels,
+  LineStyle,
+  MassPropertiesOperation,
+  MassPropertiesRequestProps,
+  PhysicalElementProps,
+  Placement3d,
+  Placement3dProps,
+  TextString,
+  TextStringGlyphData,
+  TextStringProps,
+  ThematicGradientMode,
+  ThematicGradientSettings,
+  ViewFlags,
 } from "@itwin/core-common";
-import { _nativeDb, DefinitionModel, deleteElementTree, GeometricElement, GeometryPart, LineStyleDefinition, PhysicalObject, SnapshotDb, Subject } from "../../core-backend";
+import {
+  Angle,
+  AngleSweep,
+  Arc3d,
+  Box,
+  ClipMaskXYZRangePlanes,
+  ClipPlane,
+  ClipPlaneContainment,
+  ClipPrimitive,
+  ClipShape,
+  ClipVector,
+  ConvexClipPlaneSet,
+  CurveCollection,
+  CurvePrimitive,
+  Geometry,
+  GeometryQueryCategory,
+  IndexedPolyface,
+  InterpolationCurve3d,
+  InterpolationCurve3dOptions,
+  InterpolationCurve3dProps,
+  LineSegment3d,
+  LineString3d,
+  Loop,
+  Matrix3d,
+  Plane3dByOriginAndUnitNormal,
+  Point2d,
+  Point3d,
+  Point3dArray,
+  PointString3d,
+  PolyfaceBuilder,
+  Range2d,
+  Range3d,
+  SolidPrimitive,
+  Sphere,
+  StrokeOptions,
+  Transform,
+  Vector3d,
+  YawPitchRollAngles,
+} from "@itwin/core-geometry";
+import { assert, expect } from "chai";
+import {
+  _nativeDb,
+  DefinitionModel,
+  deleteElementTree,
+  GeometricElement,
+  GeometryPart,
+  LineStyleDefinition,
+  PhysicalObject,
+  SnapshotDb,
+  Subject,
+} from "../../core-backend";
 import { createBRepDataProps } from "../GeometryTestUtil";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Timer } from "../TestUtils";
@@ -39,7 +119,12 @@ function createGeometryPartProps(geom?: GeometryStreamProps, modelId?: Id64Strin
   return partProps;
 }
 
-function createPhysicalElementProps(seedElement: GeometricElement, placement?: Placement3dProps, geom?: GeometryStreamProps, modelId?: Id64String): PhysicalElementProps {
+function createPhysicalElementProps(
+  seedElement: GeometricElement,
+  placement?: Placement3dProps,
+  geom?: GeometryStreamProps,
+  modelId?: Id64String,
+): PhysicalElementProps {
   const elementProps: PhysicalElementProps = {
     classFullName: PhysicalObject.classFullName,
     model: modelId ?? seedElement.model,
@@ -62,10 +147,22 @@ function createGeometricElem(geom: GeometryStreamProps, placement: Placement3dPr
   return imodel.elements.insertElement(el.toJSON());
 }
 
-function createPartElem(partId: Id64String, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement, isRelative = false): Id64String {
+function createPartElem(
+  partId: Id64String,
+  origin: Point3d,
+  angles: YawPitchRollAngles,
+  imodel: SnapshotDb,
+  seedElement: GeometricElement,
+  isRelative = false,
+): Id64String {
   const builder = new GeometryStreamBuilder();
   builder.appendGeometryPart3d(partId, isRelative ? origin : undefined, isRelative ? angles : undefined);
-  return createGeometricElem(builder.geometryStream, isRelative ? { origin: Point3d.createZero(), angles: YawPitchRollAngles.createDegrees(0, 0, 0) } : { origin, angles }, imodel, seedElement);
+  return createGeometricElem(
+    builder.geometryStream,
+    isRelative ? { origin: Point3d.createZero(), angles: YawPitchRollAngles.createDegrees(0, 0, 0) } : { origin, angles },
+    imodel,
+    seedElement,
+  );
 }
 
 function createCirclePart(radius: number, imodel: SnapshotDb): Id64String {
@@ -74,19 +171,37 @@ function createCirclePart(radius: number, imodel: SnapshotDb): Id64String {
   return createGeometryPart(builder.geometryStream, imodel);
 }
 
-function createCircleElem(radius: number, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
+function createCircleElem(
+  radius: number,
+  origin: Point3d,
+  angles: YawPitchRollAngles,
+  imodel: SnapshotDb,
+  seedElement: GeometricElement,
+): Id64String {
   const builder = new GeometryStreamBuilder();
   builder.appendGeometry(Arc3d.createXY(Point3d.createZero(), radius));
   return createGeometricElem(builder.geometryStream, { origin, angles }, imodel, seedElement);
 }
 
-function createSphereElem(radius: number, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
+function createSphereElem(
+  radius: number,
+  origin: Point3d,
+  angles: YawPitchRollAngles,
+  imodel: SnapshotDb,
+  seedElement: GeometricElement,
+): Id64String {
   const builder = new GeometryStreamBuilder();
   builder.appendGeometry(Sphere.createCenterRadius(Point3d.createZero(), radius));
   return createGeometricElem(builder.geometryStream, { origin, angles }, imodel, seedElement);
 }
 
-function createDisjointCirclesElem(radius: number, origin: Point3d, angles: YawPitchRollAngles, imodel: SnapshotDb, seedElement: GeometricElement): Id64String {
+function createDisjointCirclesElem(
+  radius: number,
+  origin: Point3d,
+  angles: YawPitchRollAngles,
+  imodel: SnapshotDb,
+  seedElement: GeometricElement,
+): Id64String {
   const builder = new GeometryStreamBuilder();
   const xOffset = radius * 1.5;
   builder.appendGeometry(Arc3d.createXY(Point3d.create(-xOffset), radius));
@@ -114,7 +229,15 @@ function createIndexedPolyface(radius: number, origin?: Point3d, angleTol?: Angl
   return polyBuilder.claimPolyface();
 }
 
-function createStyledLineElem(imodel: SnapshotDb, seedElement: GeometricElement, x: number, y: number, length: number, styleInfo?: LineStyle.Info, color?: ColorDef): Id64String {
+function createStyledLineElem(
+  imodel: SnapshotDb,
+  seedElement: GeometricElement,
+  x: number,
+  y: number,
+  length: number,
+  styleInfo?: LineStyle.Info,
+  color?: ColorDef,
+): Id64String {
   const builder = new GeometryStreamBuilder();
   const params = new GeometryParams(seedElement.category);
 
@@ -141,7 +264,7 @@ interface ExpectedElementGeometryEntry {
 
 function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElementGeometryEntry[], isWorld: boolean): void {
   assert.isTrue(undefined !== info.entryArray && expected.length === info.entryArray.length);
-  const geomParams = (undefined !== info.categoryId ? new GeometryParams(info.categoryId) : undefined);
+  const geomParams = undefined !== info.categoryId ? new GeometryParams(info.categoryId) : undefined;
 
   info.entryArray.forEach((entry, i) => {
     assert.isTrue(expected[i].opcode === entry.opcode);
@@ -185,8 +308,8 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
             const transform = Transform.fromJSON(brep?.transform);
             const otherTrans = Transform.fromJSON(other?.transform);
             assert.isTrue(transform.isAlmostEqual(otherTrans));
-            const faceSymbLen = (undefined !== brep?.faceSymbology ? brep?.faceSymbology.length : 0);
-            const otherSymbLen = (undefined !== other?.faceSymbology ? other?.faceSymbology.length : 0);
+            const faceSymbLen = undefined !== brep?.faceSymbology ? brep?.faceSymbology.length : 0;
+            const otherSymbLen = undefined !== other?.faceSymbology ? other?.faceSymbology.length : 0;
             assert.isTrue(faceSymbLen === otherSymbLen);
           }
           break;
@@ -267,7 +390,14 @@ function validateGeometricElementProps(info: ElementGeometryInfo, expected: Geom
   assert.isFalse(bbox?.isNull);
 }
 
-function doElementGeometryValidate(imodel: SnapshotDb, elementId: Id64String, expected: ExpectedElementGeometryEntry[], isWorld: boolean, elementProps?: GeometricElement3dProps, brepOpt?: number): IModelStatus {
+function doElementGeometryValidate(
+  imodel: SnapshotDb,
+  elementId: Id64String,
+  expected: ExpectedElementGeometryEntry[],
+  isWorld: boolean,
+  elementProps?: GeometricElement3dProps,
+  brepOpt?: number,
+): IModelStatus {
   const onGeometry: ElementGeometryFunction = (info: ElementGeometryInfo): void => {
     if (undefined !== elementProps)
       validateGeometricElementProps(info, elementProps);
@@ -291,7 +421,12 @@ function doElementGeometryValidate(imodel: SnapshotDb, elementId: Id64String, ex
   return imodel.elementGeometryRequest(requestProps);
 }
 
-function createGeometricElemFromSeed(imodel: SnapshotDb, seedId: Id64String, entryArray: ElementGeometryDataEntry[], placement?: Placement3dProps): Id64String {
+function createGeometricElemFromSeed(
+  imodel: SnapshotDb,
+  seedId: Id64String,
+  entryArray: ElementGeometryDataEntry[],
+  placement?: Placement3dProps,
+): Id64String {
   const seedElement = imodel.elements.getElement<GeometricElement>(seedId);
   assert.exists(seedElement);
 
@@ -325,18 +460,35 @@ describe("GeometryStream", () => {
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     // init line code to line pixels array
-    const lsCodes: LinePixels[] = [LinePixels.Solid, LinePixels.Code1, LinePixels.Code2, LinePixels.Code3, LinePixels.Code4, LinePixels.Code5, LinePixels.Code6, LinePixels.Code7];
+    const lsCodes: LinePixels[] = [
+      LinePixels.Solid,
+      LinePixels.Code1,
+      LinePixels.Code2,
+      LinePixels.Code3,
+      LinePixels.Code4,
+      LinePixels.Code5,
+      LinePixels.Code6,
+      LinePixels.Code7,
+    ];
 
     // create new line style definitions for line codes 1-7
     const lsStyles: Id64String[] = [];
     lsCodes.forEach((linePixels) => {
-      lsStyles.push(LinePixels.Solid === linePixels ? Id64.invalid : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels));
+      lsStyles.push(
+        LinePixels.Solid === linePixels
+          ? Id64.invalid
+          : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels),
+      );
     });
 
     // get existing line style definitions for line codes 1-7
     const lsStylesExist: Id64String[] = [];
     lsCodes.forEach((linePixels) => {
-      lsStylesExist.push(LinePixels.Solid === linePixels ? Id64.invalid : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels));
+      lsStylesExist.push(
+        LinePixels.Solid === linePixels
+          ? Id64.invalid
+          : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels),
+      );
     });
 
     // make sure we found existing styles and didn't create a second set
@@ -406,7 +558,7 @@ describe("GeometryStream", () => {
 
     // make sure we found existing style and didn't create a new one
     const styleIdExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId);
-    assert.isTrue(Id64.isValidId64(styleIdExists) && styleIdExists === (styleId));
+    assert.isTrue(Id64.isValidId64(styleIdExists) && styleIdExists === styleId);
 
     // create continuous style with pre-defined constant width
     const styleIdWidth = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05);
@@ -414,7 +566,7 @@ describe("GeometryStream", () => {
 
     // make sure we found existing style and didn't create a new one
     const styleIdWidthExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05);
-    assert.isTrue(Id64.isValidId64(styleIdWidthExists) && styleIdWidthExists === (styleIdWidth));
+    assert.isTrue(Id64.isValidId64(styleIdWidthExists) && styleIdWidthExists === styleIdWidth);
 
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
@@ -486,7 +638,9 @@ describe("GeometryStream", () => {
 
     partParams.fillDisplay = FillDisplay.Always;
     partBuilder.appendGeometryParamsChange(partParams);
-    partBuilder.appendGeometry(Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))));
+    partBuilder.appendGeometry(
+      Loop.create(LineString3d.create(Point3d.create(0.1, 0, 0), Point3d.create(0, -0.05, 0), Point3d.create(0, 0.05, 0), Point3d.create(0.1, 0, 0))),
+    );
 
     const partProps = createGeometryPartProps(partBuilder.geometryStream, definitionModelId);
     const partId = imodel.elements.insertElement(partProps);
@@ -496,10 +650,17 @@ describe("GeometryStream", () => {
     assert.isTrue(undefined !== pointSymbolData);
 
     // Use internal default instead of creating a stroke component for a solid line
-    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: "TestArrowHead", lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }] });
+    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, {
+      descr: "TestArrowHead",
+      lcId: 0,
+      lcType: LineStyleDefinition.ComponentType.Internal,
+      symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveEnd }],
+    });
     assert.isTrue(undefined !== strokePointData);
 
-    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
+    const compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, {
+      comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }],
+    });
     assert.isTrue(undefined !== compoundData);
 
     const styleId = LineStyleDefinition.Utils.createStyle(imodel, definitionModelId, "TestArrowStyle", compoundData);
@@ -557,14 +718,35 @@ describe("GeometryStream", () => {
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const lsStrokes: LineStyleDefinition.Strokes = [];
-    lsStrokes.push({ length: 0.25, orgWidth: 0.0, endWidth: 0.025, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Left });
+    lsStrokes.push({
+      length: 0.25,
+      orgWidth: 0.0,
+      endWidth: 0.025,
+      strokeMode: LineStyleDefinition.StrokeMode.Dash,
+      widthMode: LineStyleDefinition.StrokeWidth.Left,
+    });
     lsStrokes.push({ length: 0.1 });
-    lsStrokes.push({ length: 0.1, orgWidth: 0.025, endWidth: 0.025, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Full });
+    lsStrokes.push({
+      length: 0.1,
+      orgWidth: 0.025,
+      endWidth: 0.025,
+      strokeMode: LineStyleDefinition.StrokeMode.Dash,
+      widthMode: LineStyleDefinition.StrokeWidth.Full,
+    });
     lsStrokes.push({ length: 0.1 });
-    lsStrokes.push({ length: 0.25, orgWidth: 0.025, endWidth: 0.0, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Right });
+    lsStrokes.push({
+      length: 0.25,
+      orgWidth: 0.025,
+      endWidth: 0.0,
+      strokeMode: LineStyleDefinition.StrokeMode.Dash,
+      widthMode: LineStyleDefinition.StrokeWidth.Right,
+    });
     lsStrokes.push({ length: 0.1 });
 
-    const strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: "TestDashDotDashLineCode", strokes: lsStrokes });
+    const strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, {
+      descr: "TestDashDotDashLineCode",
+      strokes: lsStrokes,
+    });
     assert.isTrue(undefined !== strokePatternData);
 
     const partBuilder = new GeometryStreamBuilder();
@@ -581,7 +763,11 @@ describe("GeometryStream", () => {
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center });
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center });
 
-    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: "TestGapSymbolsLinePoint", lcId: strokePatternData.compId, symbols: lsSymbols });
+    const strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, {
+      descr: "TestGapSymbolsLinePoint",
+      lcId: strokePatternData.compId,
+      symbols: lsSymbols,
+    });
     assert.isTrue(undefined !== strokePointData);
 
     const lsComponents: LineStyleDefinition.Components = [];
@@ -627,20 +813,42 @@ describe("GeometryStream", () => {
     let unitDef = 1.0;
     let widthDef = 0.0;
     let name = `Continuous-${unitDef}-${widthDef}`;
-    let styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: 0, compType: LineStyleDefinition.ComponentType.Internal, flags: LineStyleDefinition.StyleFlags.Continuous | LineStyleDefinition.StyleFlags.NoSnap });
+    let styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, {
+      compId: 0,
+      compType: LineStyleDefinition.ComponentType.Internal,
+      flags: LineStyleDefinition.StyleFlags.Continuous | LineStyleDefinition.StyleFlags.NoSnap,
+    });
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect no range padding...
     let newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.0));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.0,
+      ),
+    );
 
     // Expect range padded by 0.25...
-    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.red);
+    newId = createStyledLineElem(
+      imodel,
+      seedElement,
+      x++,
+      y,
+      1.0,
+      new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })),
+      ColorDef.red,
+    );
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.25,
+      ),
+    );
 
     // LineStyleDefinition: create continuous style with both width and unit scale specified in definition...
     x = 0.0;
@@ -648,27 +856,70 @@ describe("GeometryStream", () => {
     unitDef = 2.0;
     widthDef = 0.5;
     name = `Continuous-${unitDef}-${widthDef}`;
-    let strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: [{ length: 1e37, orgWidth: widthDef, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Full }] });
-    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.Continuous | LineStyleDefinition.StyleFlags.NoSnap, unitDef });
+    let strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, {
+      descr: name,
+      strokes: [{
+        length: 1e37,
+        orgWidth: widthDef,
+        strokeMode: LineStyleDefinition.StrokeMode.Dash,
+        widthMode: LineStyleDefinition.StrokeWidth.Full,
+      }],
+    });
+    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, {
+      compId: strokePatternData.compId,
+      compType: strokePatternData.compType,
+      flags: LineStyleDefinition.StyleFlags.Continuous | LineStyleDefinition.StyleFlags.NoSnap,
+      unitDef,
+    });
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect no range padding...
-    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.0, physicalWidth: true })));
+    newId = createStyledLineElem(
+      imodel,
+      seedElement,
+      x++,
+      y,
+      1.0,
+      new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.0, physicalWidth: true })),
+    );
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.0));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.0,
+      ),
+    );
 
     // Expect range padded by 1.0...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        widthDef * unitDef,
+      ),
+    );
 
     // Expect range padded by 0.25...
-    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.green);
+    newId = createStyledLineElem(
+      imodel,
+      seedElement,
+      x++,
+      y,
+      1.0,
+      new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })),
+      ColorDef.green,
+    );
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.25,
+      ),
+    );
 
     // LineStyleDefinition: create stroke pattern with dash widths in definition...
     x = 0.0;
@@ -677,27 +928,67 @@ describe("GeometryStream", () => {
     widthDef = 0.025;
     name = `StrokePattern-${unitDef}-${widthDef}`;
     const lsStrokes: LineStyleDefinition.Strokes = [];
-    lsStrokes.push({ length: 0.25, orgWidth: widthDef, endWidth: widthDef, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Left });
+    lsStrokes.push({
+      length: 0.25,
+      orgWidth: widthDef,
+      endWidth: widthDef,
+      strokeMode: LineStyleDefinition.StrokeMode.Dash,
+      widthMode: LineStyleDefinition.StrokeWidth.Left,
+    });
     lsStrokes.push({ length: 0.1 });
-    lsStrokes.push({ length: 0.2, orgWidth: widthDef, endWidth: widthDef, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Full });
+    lsStrokes.push({
+      length: 0.2,
+      orgWidth: widthDef,
+      endWidth: widthDef,
+      strokeMode: LineStyleDefinition.StrokeMode.Dash,
+      widthMode: LineStyleDefinition.StrokeWidth.Full,
+    });
     lsStrokes.push({ length: 0.1 });
-    lsStrokes.push({ length: 0.25, orgWidth: widthDef, endWidth: widthDef, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Right });
+    lsStrokes.push({
+      length: 0.25,
+      orgWidth: widthDef,
+      endWidth: widthDef,
+      strokeMode: LineStyleDefinition.StrokeMode.Dash,
+      widthMode: LineStyleDefinition.StrokeWidth.Right,
+    });
     lsStrokes.push({ length: 0.1 });
     strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: lsStrokes });
-    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.NoSnap });
+    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, {
+      compId: strokePatternData.compId,
+      compType: strokePatternData.compType,
+      flags: LineStyleDefinition.StyleFlags.NoSnap,
+    });
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect range padded by 0.025...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        widthDef * unitDef,
+      ),
+    );
 
     // Expect range padded by 0.25...
-    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.red);
+    newId = createStyledLineElem(
+      imodel,
+      seedElement,
+      x++,
+      y,
+      1.0,
+      new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })),
+      ColorDef.red,
+    );
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.25,
+      ),
+    );
 
     // LineStyleDefinition: create stroke pattern with dash widths and unit scale specified in definition...
     x = 0.0;
@@ -705,32 +996,81 @@ describe("GeometryStream", () => {
     unitDef = 2.0;
     widthDef = 0.025;
     name = `StrokePattern-${unitDef}-${widthDef}`;
-    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, { compId: strokePatternData.compId, compType: strokePatternData.compType, flags: LineStyleDefinition.StyleFlags.NoSnap, unitDef });
+    styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, {
+      compId: strokePatternData.compId,
+      compType: strokePatternData.compType,
+      flags: LineStyleDefinition.StyleFlags.NoSnap,
+      unitDef,
+    });
     assert.isTrue(Id64.isValidId64(styleId));
 
     // Expect range padded by 0.05...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        widthDef * unitDef,
+      ),
+    );
 
     // Expect range padded by 0.25...
-    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })), ColorDef.red);
+    newId = createStyledLineElem(
+      imodel,
+      seedElement,
+      x++,
+      y,
+      1.0,
+      new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, physicalWidth: true })),
+      ColorDef.red,
+    );
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.25,
+      ),
+    );
 
     // Expect range padded by 0.25...
-    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, scale: 0.5, physicalWidth: true })), ColorDef.green);
+    newId = createStyledLineElem(
+      imodel,
+      seedElement,
+      x++,
+      y,
+      1.0,
+      new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.25, scale: 0.5, physicalWidth: true })),
+      ColorDef.green,
+    );
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.25,
+      ),
+    );
 
     // Expect range padded by 0.025...
-    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.blue);
+    newId = createStyledLineElem(
+      imodel,
+      seedElement,
+      x++,
+      y,
+      1.0,
+      new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })),
+      ColorDef.blue,
+    );
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), widthDef * unitDef * 0.5));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        widthDef * unitDef * 0.5,
+      ),
+    );
 
     // LineStyleDefinition: create point symbol with internal default instead of a stroke pattern...
     x = 0.0;
@@ -740,8 +1080,15 @@ describe("GeometryStream", () => {
     name = `PointSymbol-${unitDef}-${widthDef}`;
     const partId = createCirclePart(0.25, imodel);
     let pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId });
-    let strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: 0, lcType: LineStyleDefinition.ComponentType.Internal, symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveOrigin }] });
-    let compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, { comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }] });
+    let strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, {
+      descr: name,
+      lcId: 0,
+      lcType: LineStyleDefinition.ComponentType.Internal,
+      symbols: [{ symId: pointSymbolData!.compId, strokeNum: -1, mod1: LineStyleDefinition.SymbolOptions.CurveOrigin }],
+    });
+    let compoundData = LineStyleDefinition.Utils.createCompoundComponent(imodel, {
+      comps: [{ id: strokePointData.compId, type: strokePointData.compType }, { id: 0, type: LineStyleDefinition.ComponentType.Internal }],
+    });
     styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, name, compoundData);
     assert.isTrue(Id64.isValidId64(styleId));
 
@@ -749,19 +1096,42 @@ describe("GeometryStream", () => {
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.5));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.5,
+      ),
+    );
 
     // Expect range padded by 0.25 (scaled circle radius)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.25));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.25,
+      ),
+    );
 
     // Expect range padded by 1.0 (width override > symbol size)...
-    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 1.0, scale: 0.5, physicalWidth: true })), ColorDef.green);
+    newId = createStyledLineElem(
+      imodel,
+      seedElement,
+      x++,
+      y,
+      1.0,
+      new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 1.0, scale: 0.5, physicalWidth: true })),
+      ColorDef.green,
+    );
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 1.0));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        1.0,
+      ),
+    );
 
     // LineStyleDefinition: create scaling point symbol with stroke pattern with width and unit scale specified in definition...
     x = 0.0;
@@ -774,7 +1144,11 @@ describe("GeometryStream", () => {
     const lsSymbols: LineStyleDefinition.Symbols = [];
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center });
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center });
-    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
+    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, {
+      descr: name,
+      lcId: strokePatternData.compId,
+      symbols: lsSymbols,
+    });
     const lsComponents: LineStyleDefinition.Components = [];
     lsComponents.push({ id: strokePointData.compId, type: strokePointData.compType });
     lsComponents.push({ id: strokePatternData.compId, type: strokePatternData.compType });
@@ -787,19 +1161,42 @@ describe("GeometryStream", () => {
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.125));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.125,
+      ),
+    );
 
     // Expect range padded by 0.0625 (symbol and modifier scaled circle radius)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.0625));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.0625,
+      ),
+    );
 
     // Expect range padded by 0.75 (width override > symbol and modifier scaled symbol size)...
-    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })), ColorDef.green);
+    newId = createStyledLineElem(
+      imodel,
+      seedElement,
+      x++,
+      y,
+      1.0,
+      new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })),
+      ColorDef.green,
+    );
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.75));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.75,
+      ),
+    );
 
     // LineStyleDefinition: create non-scaling point symbol with stroke pattern with width and unit scale specified in definition...
     x = 0.0;
@@ -808,11 +1205,19 @@ describe("GeometryStream", () => {
     widthDef = 0.025; // value used for lsStrokes...
     name = `NonScalingPointSymbol-${unitDef}-${widthDef}}`;
     strokePatternData = LineStyleDefinition.Utils.createStrokePatternComponent(imodel, { descr: name, strokes: lsStrokes });
-    pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId, scale: 2.0, symFlags: LineStyleDefinition.PointSymbolFlags.NoScale });
+    pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, {
+      geomPartId: partId,
+      scale: 2.0,
+      symFlags: LineStyleDefinition.PointSymbolFlags.NoScale,
+    });
     lsSymbols.length = 0;
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center });
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center });
-    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
+    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, {
+      descr: name,
+      lcId: strokePatternData.compId,
+      symbols: lsSymbols,
+    });
     lsComponents.length = 0;
     lsComponents.push({ id: strokePointData.compId, type: strokePointData.compType });
     lsComponents.push({ id: strokePatternData.compId, type: strokePatternData.compType });
@@ -825,19 +1230,42 @@ describe("GeometryStream", () => {
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.5));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.5,
+      ),
+    );
 
     // Expect range padded by 0.5 (unscaled circle radius)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.5));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.5,
+      ),
+    );
 
     // Expect range padded by 0.75 (width override > unscaled symbol size)...
-    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })), ColorDef.green);
+    newId = createStyledLineElem(
+      imodel,
+      seedElement,
+      x++,
+      y,
+      1.0,
+      new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })),
+      ColorDef.green,
+    );
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.75));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.75,
+      ),
+    );
 
     // LineStyleDefinition: create scaling point symbol with offsets with stroke pattern with width and unit scale specified in definition...
     x = 0.0;
@@ -850,7 +1278,11 @@ describe("GeometryStream", () => {
     lsSymbols.length = 0;
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 1, mod1: LineStyleDefinition.SymbolOptions.Center, yOffset: -0.1 });
     lsSymbols.push({ symId: pointSymbolData!.compId, strokeNum: 3, mod1: LineStyleDefinition.SymbolOptions.Center, yOffset: 0.1 });
-    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, { descr: name, lcId: strokePatternData.compId, symbols: lsSymbols });
+    strokePointData = LineStyleDefinition.Utils.createStrokePointComponent(imodel, {
+      descr: name,
+      lcId: strokePatternData.compId,
+      symbols: lsSymbols,
+    });
     lsComponents.length = 0;
     lsComponents.push({ id: strokePointData.compId, type: strokePointData.compType });
     lsComponents.push({ id: strokePatternData.compId, type: strokePatternData.compType });
@@ -863,19 +1295,42 @@ describe("GeometryStream", () => {
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId));
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.225));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.225,
+      ),
+    );
 
     // Expect range padded by 0.1125 (offset symbol and modifier scaled circle radius)...
     newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ scale: 0.5 })), ColorDef.red);
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.1125));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.1125,
+      ),
+    );
 
     // Expect range padded by 0.75 (width override > symbol and modifier scaled symbol size)...
-    newId = createStyledLineElem(imodel, seedElement, x++, y, 1.0, new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })), ColorDef.green);
+    newId = createStyledLineElem(
+      imodel,
+      seedElement,
+      x++,
+      y,
+      1.0,
+      new LineStyle.Info(styleId, new LineStyle.Modifier({ startWidth: 0.75, scale: 0.5, physicalWidth: true })),
+      ColorDef.green,
+    );
     assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
-    assert.isTrue(Geometry.isSameCoordinate(Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(), 0.75));
+    assert.isTrue(
+      Geometry.isSameCoordinate(
+        Placement3d.fromJSON(imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true }).placement).bbox.yLength(),
+        0.75,
+      ),
+    );
   });
 
   it("create GeometricElement3d using shapes with fill/gradient", async () => {
@@ -890,7 +1345,15 @@ describe("GeometryStream", () => {
     builder.appendGeometryRanges(); // Test inclusion of local ranges...
 
     const xOffset = Transform.createTranslation(Point3d.create(1.5));
-    const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
+    const shape = Loop.create(
+      LineString3d.create(
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0),
+        Point3d.create(0, 1, 0),
+        Point3d.create(0, 0, 0),
+      ),
+    );
 
     // No fill...
     params.lineColor = ColorDef.green;
@@ -1012,7 +1475,15 @@ describe("GeometryStream", () => {
     builder.appendGeometryRanges(); // Test inclusion of local ranges...
 
     const xOffset = Transform.createTranslation(Point3d.create(1.5));
-    const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
+    const shape = Loop.create(
+      LineString3d.create(
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0),
+        Point3d.create(0, 1, 0),
+        Point3d.create(0, 0, 0),
+      ),
+    );
 
     // Hatch w/o overrides
     params.lineColor = ColorDef.create(ColorByName.yellow);
@@ -1093,10 +1564,16 @@ describe("GeometryStream", () => {
       assert.isDefined(entry.geomParams.pattern);
       switch (iShape++) {
         case 0:
-          assert.isTrue(undefined !== entry.geomParams.pattern!.space1 && undefined !== entry.geomParams.pattern!.angle1 && undefined === entry.geomParams.pattern!.space2 && undefined === entry.geomParams.pattern!.angle2);
+          assert.isTrue(
+            undefined !== entry.geomParams.pattern!.space1 && undefined !== entry.geomParams.pattern!.angle1 &&
+              undefined === entry.geomParams.pattern!.space2 && undefined === entry.geomParams.pattern!.angle2,
+          );
           break;
         case 1:
-          assert.isTrue(undefined !== entry.geomParams.pattern!.space1 && undefined !== entry.geomParams.pattern!.angle1 && undefined !== entry.geomParams.pattern!.space2 && undefined !== entry.geomParams.pattern!.angle2);
+          assert.isTrue(
+            undefined !== entry.geomParams.pattern!.space1 && undefined !== entry.geomParams.pattern!.angle1 &&
+              undefined !== entry.geomParams.pattern!.space2 && undefined !== entry.geomParams.pattern!.angle2,
+          );
           break;
         case 2:
           assert.isTrue(undefined !== entry.geomParams.pattern!.symbolId && undefined === entry.geomParams.pattern!.color);
@@ -1338,7 +1815,15 @@ describe("GeometryStream", () => {
 
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
-    const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
+    const shape = Loop.create(
+      LineString3d.create(
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0),
+        Point3d.create(0, 1, 0),
+        Point3d.create(0, 0, 0),
+      ),
+    );
 
     params.fillDisplay = FillDisplay.ByView;
     builder.appendGeometryParamsChange(params);
@@ -1370,7 +1855,10 @@ describe("GeometryStream", () => {
     const fromElProps = JSON.stringify(value.geom);
     const fromScratch = JSON.stringify(geometryStream);
 
-    assert.isTrue(undefined !== builder.geometryStream[0].appearance && builder.geometryStream[0].appearance.subCategory === IModel.getDefaultSubCategoryId(value.category)); // Ensure default sub-category is specified...
+    assert.isTrue(
+      undefined !== builder.geometryStream[0].appearance &&
+        builder.geometryStream[0].appearance.subCategory === IModel.getDefaultSubCategoryId(value.category),
+    ); // Ensure default sub-category is specified...
     assert.isTrue(fromElProps !== fromBuilder); // Should not match, default sub-category should not be persisted...
     assert.isTrue(fromElProps === fromScratch);
   });
@@ -1471,7 +1959,7 @@ describe("GeometryStream", () => {
 
     const roundTrip = () => {
       const iter = new GeometryStreamIterator(builder.geometryStream);
-      expect((iter.flags === GeometryStreamFlags.ViewIndependent)).to.equal(builder.isViewIndependent);
+      expect(iter.flags === GeometryStreamFlags.ViewIndependent).to.equal(builder.isViewIndependent);
 
       const partProps = createGeometryPartProps(builder.geometryStream);
       const part = imodel.elements.createElement(partProps);
@@ -1556,7 +2044,11 @@ describe("ElementGeometry", () => {
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const expected: ExpectedElementGeometryEntry[] = [{ opcode: ElementGeometryOpcode.SolidPrimitive, geometryCategory: "solid", geometrySubCategory: "sphere" }];
+    const expected: ExpectedElementGeometryEntry[] = [{
+      opcode: ElementGeometryOpcode.SolidPrimitive,
+      geometryCategory: "solid",
+      geometrySubCategory: "sphere",
+    }];
     assert(IModelStatus.Success === doElementGeometryValidate(imodel, "0x1d", expected, false));
   });
 
@@ -2092,10 +2584,16 @@ describe("ElementGeometry", () => {
     geomParams.lineColor = ColorDef.green;
     geomParams.weight = 2;
     const modifiers = new LineStyle.Modifier({
-      scale: 2, dashScale: 0.5, gapScale: 0.2,
-      startWidth: 0.1, endWidth: 0.3,
-      distPhase: 0.25, fractPhase: 0.1, centerPhase: true,
-      segmentMode: false, physicalWidth: true,
+      scale: 2,
+      dashScale: 0.5,
+      gapScale: 0.2,
+      startWidth: 0.1,
+      endWidth: 0.3,
+      distPhase: 0.25,
+      fractPhase: 0.1,
+      centerPhase: true,
+      segmentMode: false,
+      physicalWidth: true,
       normal: Vector3d.unitZ().toJSON(),
       rotation: YawPitchRollAngles.createDegrees(45, 0, 0).toJSON(),
     });
@@ -2297,7 +2795,9 @@ describe("ElementGeometry", () => {
     elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: 9999 } as unknown as ElementGeometryDataEntry] };
     expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
 
-    elemProps.elementGeometryBuilderParams = { entryArray: [{ opcode: ElementGeometryOpcode.ArcPrimitive, data: undefined } as unknown as ElementGeometryDataEntry] };
+    elemProps.elementGeometryBuilderParams = {
+      entryArray: [{ opcode: ElementGeometryOpcode.ArcPrimitive, data: undefined } as unknown as ElementGeometryDataEntry],
+    };
     expect(() => imodel.elements.insertElement(elemProps)).to.throw(); // TODO: check error message
 
     //    Update
@@ -2412,9 +2912,27 @@ describe("BRepGeometry", () => {
     };
 
     // Step 1: Create solid by subtracting the 2 small spheres from the large sphere
-    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createUniformScale(5)), AngleSweep.createFullLatitude(), true)!);
-    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(0, 0, 5), Matrix3d.createUniformScale(3)), AngleSweep.createFullLatitude(), true)!);
-    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(0, 0, -5), Matrix3d.createUniformScale(3)), AngleSweep.createFullLatitude(), true)!);
+    builder.appendGeometryQuery(
+      Sphere.createEllipsoid(
+        Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createUniformScale(5)),
+        AngleSweep.createFullLatitude(),
+        true,
+      )!,
+    );
+    builder.appendGeometryQuery(
+      Sphere.createEllipsoid(
+        Transform.createOriginAndMatrix(Point3d.create(0, 0, 5), Matrix3d.createUniformScale(3)),
+        AngleSweep.createFullLatitude(),
+        true,
+      )!,
+    );
+    builder.appendGeometryQuery(
+      Sphere.createEllipsoid(
+        Transform.createOriginAndMatrix(Point3d.create(0, 0, -5), Matrix3d.createUniformScale(3)),
+        AngleSweep.createFullLatitude(),
+        true,
+      )!,
+    );
 
     const createProps: BRepGeometryCreate = {
       operation: BRepGeometryOperation.Subtract,
@@ -2543,9 +3061,27 @@ describe("BRepGeometry", () => {
     };
 
     // Step 1: Create two solids by intersecting the 2 small spheres with the large sphere
-    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(2, 2, 0), Matrix3d.createUniformScale(5)), AngleSweep.createFullLatitude(), true)!);
-    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(2, 2, 5), Matrix3d.createUniformScale(3)), AngleSweep.createFullLatitude(), true)!);
-    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(2, 2, -5), Matrix3d.createUniformScale(3)), AngleSweep.createFullLatitude(), true)!);
+    builder.appendGeometryQuery(
+      Sphere.createEllipsoid(
+        Transform.createOriginAndMatrix(Point3d.create(2, 2, 0), Matrix3d.createUniformScale(5)),
+        AngleSweep.createFullLatitude(),
+        true,
+      )!,
+    );
+    builder.appendGeometryQuery(
+      Sphere.createEllipsoid(
+        Transform.createOriginAndMatrix(Point3d.create(2, 2, 5), Matrix3d.createUniformScale(3)),
+        AngleSweep.createFullLatitude(),
+        true,
+      )!,
+    );
+    builder.appendGeometryQuery(
+      Sphere.createEllipsoid(
+        Transform.createOriginAndMatrix(Point3d.create(2, 2, -5), Matrix3d.createUniformScale(3)),
+        AngleSweep.createFullLatitude(),
+        true,
+      )!,
+    );
 
     const createProps: BRepGeometryCreate = {
       operation: BRepGeometryOperation.Intersect,
@@ -2574,8 +3110,20 @@ describe("BRepGeometry", () => {
 
   it("unite/subtract/intersect solids test", async () => {
     const builder = new ElementGeometry.Builder();
-    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createUniformScale(5)), AngleSweep.createFullLatitude(), true)!);
-    builder.appendGeometryQuery(Sphere.createEllipsoid(Transform.createOriginAndMatrix(Point3d.create(5, 0, 0), Matrix3d.createUniformScale(3)), AngleSweep.createFullLatitude(), true)!);
+    builder.appendGeometryQuery(
+      Sphere.createEllipsoid(
+        Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createUniformScale(5)),
+        AngleSweep.createFullLatitude(),
+        true,
+      )!,
+    );
+    builder.appendGeometryQuery(
+      Sphere.createEllipsoid(
+        Transform.createOriginAndMatrix(Point3d.create(5, 0, 0), Matrix3d.createUniformScale(3)),
+        AngleSweep.createFullLatitude(),
+        true,
+      )!,
+    );
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
@@ -2631,12 +3179,60 @@ describe("BRepGeometry", () => {
 
   it("sew sheets test", async () => {
     const builder = new ElementGeometry.Builder();
-    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 2, 0), Point3d.create(1, 2, 0), Point3d.create(1, 0, 0), Point3d.create(0, 0, 0)]));
-    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 3), Point3d.create(1, 0, 3), Point3d.create(1, 2, 3), Point3d.create(0, 2, 3), Point3d.create(0, 0, 3)]));
-    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 0, 3), Point3d.create(0, 0, 3), Point3d.create(0, 0, 0)]));
-    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(1, 2, 0), Point3d.create(0, 2, 0), Point3d.create(0, 2, 3), Point3d.create(1, 2, 3), Point3d.create(1, 2, 0)]));
-    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 2, 0), Point3d.create(0, 0, 0), Point3d.create(0, 0, 3), Point3d.create(0, 2, 3), Point3d.create(0, 2, 0)]));
-    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(1, 0, 0), Point3d.create(1, 2, 0), Point3d.create(1, 2, 3), Point3d.create(1, 0, 3), Point3d.create(1, 0, 0)]));
+    builder.appendGeometryQuery(
+      Loop.createPolygon([
+        Point3d.create(0, 0, 0),
+        Point3d.create(0, 2, 0),
+        Point3d.create(1, 2, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(0, 0, 0),
+      ]),
+    );
+    builder.appendGeometryQuery(
+      Loop.createPolygon([
+        Point3d.create(0, 0, 3),
+        Point3d.create(1, 0, 3),
+        Point3d.create(1, 2, 3),
+        Point3d.create(0, 2, 3),
+        Point3d.create(0, 0, 3),
+      ]),
+    );
+    builder.appendGeometryQuery(
+      Loop.createPolygon([
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 0, 3),
+        Point3d.create(0, 0, 3),
+        Point3d.create(0, 0, 0),
+      ]),
+    );
+    builder.appendGeometryQuery(
+      Loop.createPolygon([
+        Point3d.create(1, 2, 0),
+        Point3d.create(0, 2, 0),
+        Point3d.create(0, 2, 3),
+        Point3d.create(1, 2, 3),
+        Point3d.create(1, 2, 0),
+      ]),
+    );
+    builder.appendGeometryQuery(
+      Loop.createPolygon([
+        Point3d.create(0, 2, 0),
+        Point3d.create(0, 0, 0),
+        Point3d.create(0, 0, 3),
+        Point3d.create(0, 2, 3),
+        Point3d.create(0, 2, 0),
+      ]),
+    );
+    builder.appendGeometryQuery(
+      Loop.createPolygon([
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 2, 0),
+        Point3d.create(1, 2, 3),
+        Point3d.create(1, 0, 3),
+        Point3d.create(1, 0, 0),
+      ]),
+    );
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
@@ -2739,7 +3335,15 @@ describe("BRepGeometry", () => {
 
     // Test embossing a surface
     builder.entries.length = 0;
-    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 5, 0), Point3d.create(5, 5, 0), Point3d.create(5, 0, 0), Point3d.create(0, 0, 0)]));
+    builder.appendGeometryQuery(
+      Loop.createPolygon([
+        Point3d.create(0, 0, 0),
+        Point3d.create(0, 5, 0),
+        Point3d.create(5, 5, 0),
+        Point3d.create(5, 0, 0),
+        Point3d.create(0, 0, 0),
+      ]),
+    );
     builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(2.5, 2.5, -0.5), 2, AngleSweep.createStartSweepDegrees(0, -360))));
 
     try {
@@ -2751,7 +3355,15 @@ describe("BRepGeometry", () => {
 
   it("thicken surfaces test", async () => {
     const builder = new ElementGeometry.Builder();
-    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 5, 0), Point3d.create(5, 5, 0), Point3d.create(5, 0, 0), Point3d.create(0, 0, 0)]));
+    builder.appendGeometryQuery(
+      Loop.createPolygon([
+        Point3d.create(0, 0, 0),
+        Point3d.create(0, 5, 0),
+        Point3d.create(5, 5, 0),
+        Point3d.create(5, 0, 0),
+        Point3d.create(0, 0, 0),
+      ]),
+    );
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
@@ -2786,7 +3398,15 @@ describe("BRepGeometry", () => {
 
   it("offset surfaces test", async () => {
     const builder = new ElementGeometry.Builder();
-    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 5, 0), Point3d.create(5, 5, 0), Point3d.create(5, 0, 0), Point3d.create(0, 0, 0)]));
+    builder.appendGeometryQuery(
+      Loop.createPolygon([
+        Point3d.create(0, 0, 0),
+        Point3d.create(0, 5, 0),
+        Point3d.create(5, 5, 0),
+        Point3d.create(5, 0, 0),
+        Point3d.create(0, 0, 0),
+      ]),
+    );
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
@@ -2850,7 +3470,9 @@ describe("BRepGeometry", () => {
   it("sweep profile along path test", async () => {
     const builder = new ElementGeometry.Builder();
     builder.appendGeometryQuery(Loop.create(Arc3d.createXY(Point3d.create(0, 0, 0), 1)));
-    builder.appendGeometryQuery(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 0, 3), Point3d.create(5, 0, 3), Point3d.create(8, 10, 10)));
+    builder.appendGeometryQuery(
+      LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 0, 3), Point3d.create(5, 0, 3), Point3d.create(8, 10, 10)),
+    );
 
     const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
       assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
@@ -2932,7 +3554,10 @@ describe("BRepGeometry", () => {
       assert.exists(brep);
       gsBuilder.appendBRepData(brep!);
 
-      const elementProps = createPhysicalElementProps(seedElement, { origin: Point3d.create(5, 10, 0), angles: YawPitchRollAngles.createDegrees(45, 0, 0) }, gsBuilder.geometryStream);
+      const elementProps = createPhysicalElementProps(seedElement, {
+        origin: Point3d.create(5, 10, 0),
+        angles: YawPitchRollAngles.createDegrees(45, 0, 0),
+      }, gsBuilder.geometryStream);
       const testElem = imodel.elements.createElement(elementProps);
       const newId = imodel.elements.insertElement(testElem.toJSON());
       imodel.saveChanges();
@@ -3009,7 +3634,15 @@ describe("Mass Properties", () => {
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
-    const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
+    const shape = Loop.create(
+      LineString3d.create(
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0),
+        Point3d.create(0, 1, 0),
+        Point3d.create(0, 0, 0),
+      ),
+    );
     const builder = new GeometryStreamBuilder();
     builder.appendGeometry(shape);
 
@@ -3063,7 +3696,14 @@ describe("Geometry Containment", () => {
     const block = ClipShape.createBlock(range, ClipMaskXYZRangePlanes.All, false, false);
     clip.appendReference(block);
 
-    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyInside];
+    const expectedContainment: ClipPlaneContainment[] = [
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.Ambiguous,
+      ClipPlaneContainment.Ambiguous,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.StronglyInside,
+    ];
 
     const requestProps: GeometryContainmentRequestProps = {
       candidates: [rangeInsideId, rangeOutsideId, edgeOverlapId, cornerOverlapId, rangeOvrGeomOutId, rangeOvrGeomInId],
@@ -3109,7 +3749,14 @@ describe("Geometry Containment", () => {
     const block = ClipShape.createBlock(range, ClipMaskXYZRangePlanes.All, false, false);
     clip.appendReference(block);
 
-    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyInside];
+    const expectedContainment: ClipPlaneContainment[] = [
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.Ambiguous,
+      ClipPlaneContainment.Ambiguous,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.StronglyInside,
+    ];
 
     const requestProps: GeometryContainmentRequestProps = {
       candidates: [rangeInsideId, rangeOutsideId, edgeOverlapId, cornerOverlapId, rangeOvrGeomOutId, rangeOvrGeomInId],
@@ -3159,7 +3806,14 @@ describe("Geometry Containment", () => {
     const rangeOutsideRId = createPartElem(partAId, Point3d.create(12, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement, true);
     const edgeOverlapRId = createPartElem(partAId, Point3d.create(0, 5, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement, true);
     const cornerOverlapRId = createPartElem(partAId, Point3d.create(10, 10, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement, true);
-    const rangeOvrGeomOutRId = createPartElem(partBId, Point3d.create(11, -1, 0), YawPitchRollAngles.createDegrees(0, 0, 0), imodel, seedElement, true);
+    const rangeOvrGeomOutRId = createPartElem(
+      partBId,
+      Point3d.create(11, -1, 0),
+      YawPitchRollAngles.createDegrees(0, 0, 0),
+      imodel,
+      seedElement,
+      true,
+    );
     const rangeOvrGeomInRId = createPartElem(partCId, Point3d.create(5, 9, 0), YawPitchRollAngles.createDegrees(45, 0, 0), imodel, seedElement, true);
 
     imodel.saveChanges();
@@ -3169,10 +3823,36 @@ describe("Geometry Containment", () => {
     const block = ClipShape.createBlock(range, ClipMaskXYZRangePlanes.All, false, false);
     clip.appendReference(block);
 
-    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyInside];
+    const expectedContainment: ClipPlaneContainment[] = [
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.Ambiguous,
+      ClipPlaneContainment.Ambiguous,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.Ambiguous,
+      ClipPlaneContainment.Ambiguous,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.StronglyInside,
+    ];
 
     const requestProps: GeometryContainmentRequestProps = {
-      candidates: [rangeInsideId, rangeOutsideId, edgeOverlapId, cornerOverlapId, rangeOvrGeomOutId, rangeOvrGeomInId, rangeInsideRId, rangeOutsideRId, edgeOverlapRId, cornerOverlapRId, rangeOvrGeomOutRId, rangeOvrGeomInRId],
+      candidates: [
+        rangeInsideId,
+        rangeOutsideId,
+        edgeOverlapId,
+        cornerOverlapId,
+        rangeOvrGeomOutId,
+        rangeOvrGeomInId,
+        rangeInsideRId,
+        rangeOutsideRId,
+        edgeOverlapRId,
+        cornerOverlapRId,
+        rangeOvrGeomOutRId,
+        rangeOvrGeomInRId,
+      ],
       clip: clip.toJSON(),
       allowOverlaps: true,
     };
@@ -3213,7 +3893,12 @@ describe("Geometry Containment", () => {
     const block = ClipShape.createBlock(range, ClipMaskXYZRangePlanes.All, false, false);
     clip.appendReference(block);
 
-    const expectedContainmentDef: ClipPlaneContainment[] = [ClipPlaneContainment.Ambiguous, ClipPlaneContainment.Ambiguous, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.Ambiguous];
+    const expectedContainmentDef: ClipPlaneContainment[] = [
+      ClipPlaneContainment.Ambiguous,
+      ClipPlaneContainment.Ambiguous,
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.Ambiguous,
+    ];
 
     const requestProps: GeometryContainmentRequestProps = {
       candidates: [primInConsOutId, primOutConsInId, primInConsInId, primOvrConsOvrId],
@@ -3230,7 +3915,12 @@ describe("Geometry Containment", () => {
     assert.isTrue(0 === result.numOutside);
     assert.isTrue(3 === result.numOverlap);
 
-    const expectedContainmentSubCat: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyOutside];
+    const expectedContainmentSubCat: ClipPlaneContainment[] = [
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.StronglyOutside,
+    ];
 
     requestProps.offSubCategories = [IModel.getDefaultSubCategoryId(seedElement.category)];
     result = await imodel.getGeometryContainment(requestProps);
@@ -3242,7 +3932,12 @@ describe("Geometry Containment", () => {
     assert.isTrue(4 === result.numOutside);
     assert.isTrue(0 === result.numOverlap);
 
-    const expectedContainmentViewFlags: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.Ambiguous];
+    const expectedContainmentViewFlags: ClipPlaneContainment[] = [
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.Ambiguous,
+    ];
 
     const flags = new ViewFlags(); // constructions are off by default...
     requestProps.viewFlags = flags;
@@ -3281,7 +3976,13 @@ describe("Geometry Containment", () => {
     const clip = ClipVector.createEmpty();
     clip.appendShape(clipShapePts, -5, 5);
 
-    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous];
+    const expectedContainment: ClipPlaneContainment[] = [
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.Ambiguous,
+    ];
 
     const requestProps: GeometryContainmentRequestProps = {
       candidates: [rangeInsideXYId, rangeInsideXId, rangeInsideYId, rangeOutsideId, rangeOvrGeomOvrId],
@@ -3323,7 +4024,13 @@ describe("Geometry Containment", () => {
     const clip = ClipVector.createEmpty();
     clip.appendShape(clipShapePts, -5, 5);
 
-    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous];
+    const expectedContainment: ClipPlaneContainment[] = [
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.Ambiguous,
+    ];
 
     const requestProps: GeometryContainmentRequestProps = {
       candidates: [rangeInsideXYId, rangeInsideXId, rangeInsideYId, rangeOutsideId, rangeOvrGeomOvrId],
@@ -3359,7 +4066,11 @@ describe("Geometry Containment", () => {
     const clip = ClipVector.createEmpty();
     clip.appendReference(prim);
 
-    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous];
+    const expectedContainment: ClipPlaneContainment[] = [
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.Ambiguous,
+    ];
 
     const requestProps: GeometryContainmentRequestProps = {
       candidates: [rangeInsideId, rangeOutsideId, rangeOverlapId],
@@ -3395,7 +4106,11 @@ describe("Geometry Containment", () => {
     const clip = ClipVector.createEmpty();
     clip.appendReference(prim);
 
-    const expectedContainment: ClipPlaneContainment[] = [ClipPlaneContainment.StronglyInside, ClipPlaneContainment.StronglyOutside, ClipPlaneContainment.Ambiguous];
+    const expectedContainment: ClipPlaneContainment[] = [
+      ClipPlaneContainment.StronglyInside,
+      ClipPlaneContainment.StronglyOutside,
+      ClipPlaneContainment.Ambiguous,
+    ];
 
     const requestProps: GeometryContainmentRequestProps = {
       candidates: [rangeInsideId, rangeOutsideId, rangeOverlapId],
@@ -3412,5 +4127,4 @@ describe("Geometry Containment", () => {
     assert.isTrue(1 === result.numOverlap);
     result.candidatesContainment!.forEach((val, index) => assert.isTrue(val === expectedContainment[index]));
   });
-
 });

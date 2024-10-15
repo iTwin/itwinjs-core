@@ -9,16 +9,31 @@
 // cspell:ignore elid
 
 import { GuidString, Id64String, JsonUtils } from "@itwin/core-bentley";
+import {
+  AxisAlignedBox3d,
+  ElementProps,
+  EntityReferenceSet,
+  GeometricModel2dProps,
+  GeometricModel3dProps,
+  GeometricModelProps,
+  IModel,
+  InformationPartitionElementProps,
+  ModelProps,
+  RelatedElement,
+} from "@itwin/core-common";
 import { Point2d, Range3d } from "@itwin/core-geometry";
 import {
-  AxisAlignedBox3d, ElementProps, EntityReferenceSet, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel,
-  InformationPartitionElementProps, ModelProps, RelatedElement,
-} from "@itwin/core-common";
-import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SheetIndexPartition, SpatialLocationPartition } from "./Element";
+  DefinitionPartition,
+  DocumentPartition,
+  InformationRecordPartition,
+  PhysicalPartition,
+  SheetIndexPartition,
+  SpatialLocationPartition,
+} from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
-import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 import { _nativeDb, _verifyChannel } from "./internal/Symbols";
+import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 
 /** Argument for the `Model.onXxx` static methods
  * @beta
@@ -66,9 +81,13 @@ export interface OnElementInModelIdArg extends OnModelIdArg {
  * @public
  */
 export class Model extends Entity {
-  public static override get className(): string { return "Model"; }
+  public static override get className(): string {
+    return "Model";
+  }
   /** @internal */
-  public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
+  public static override get protectedOperations() {
+    return ["onInsert", "onUpdate", "onDelete"];
+  }
   public readonly modeledElement!: RelatedElement;
   public readonly name: string;
   public readonly parentModel!: Id64String;
@@ -99,7 +118,7 @@ export class Model extends Entity {
   protected static onInsert(arg: OnModelPropsArg): void {
     const { props, iModel } = arg;
     iModel.channels[_verifyChannel](props.modeledElement.id);
-    if (props.parentModel)   // inserting requires shared lock on parent, if present
+    if (props.parentModel) // inserting requires shared lock on parent, if present
       iModel.locks.checkSharedLock(props.parentModel, "parent model", "insert");
   }
 
@@ -148,7 +167,7 @@ export class Model extends Entity {
    * @note `this` is the class of the Model that was deleted
    * @beta
    */
-  protected static onDeleted(_arg: OnModelIdArg): void { }
+  protected static onDeleted(_arg: OnModelIdArg): void {}
 
   /** Called before a prospective Element is to be inserted into an instance of a Model of this class.
    * @note throw an exception to disallow the insert
@@ -156,14 +175,14 @@ export class Model extends Entity {
    * @note `this` is the class of the Model to hold the element
    * @beta
    */
-  protected static onInsertElement(_arg: OnElementInModelPropsArg): void { }
+  protected static onInsertElement(_arg: OnElementInModelPropsArg): void {}
 
   /** Called after an Element has been inserted into an instance of a Model of this class.
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onInsertedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onInsertedElement(_arg: OnElementInModelIdArg): void {}
 
   /** Called when an Element in an instance of a Model of this class is about to be updated.
    * @note throw an exception to disallow the update
@@ -171,14 +190,14 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onUpdateElement(_arg: OnElementInModelPropsArg): void { }
+  protected static onUpdateElement(_arg: OnElementInModelPropsArg): void {}
 
   /** Called after an Element in an instance of a Model of this class has been updated.
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void {}
 
   /** Called when an Element in an instance of a Model of this class is about to be deleted.
    * @note throw an exception to disallow the delete
@@ -186,14 +205,14 @@ export class Model extends Entity {
    * @note `this` is the class of the Model holding the element
    * @beta
    */
-  protected static onDeleteElement(_arg: OnElementInModelIdArg): void { }
+  protected static onDeleteElement(_arg: OnElementInModelIdArg): void {}
 
   /** Called after an Element in an instance of a Model of this class has been deleted.
    * @note If you override this method, you must call super.
    * @note `this` is the class of the Model that held the element
    * @beta
    */
-  protected static onDeletedElement(_arg: OnElementInModelIdArg): void { }
+  protected static onDeletedElement(_arg: OnElementInModelIdArg): void {}
 
   private getAllUserProperties(): any {
     if (!this.jsonProperties.UserProps)
@@ -203,23 +222,39 @@ export class Model extends Entity {
   }
 
   /** Get a set of JSON user properties by namespace */
-  public getUserProperties(namespace: string) { return this.getAllUserProperties()[namespace]; }
+  public getUserProperties(namespace: string) {
+    return this.getAllUserProperties()[namespace];
+  }
 
   /** Change a set of user JSON properties of this Element by namespace. */
-  public setUserProperties(nameSpace: string, value: any) { this.getAllUserProperties()[nameSpace] = value; }
+  public setUserProperties(nameSpace: string, value: any) {
+    this.getAllUserProperties()[nameSpace] = value;
+  }
 
   /** Remove a set of JSON user properties, specified by namespace, from this Element */
-  public removeUserProperties(nameSpace: string) { delete this.getAllUserProperties()[nameSpace]; }
+  public removeUserProperties(nameSpace: string) {
+    delete this.getAllUserProperties()[nameSpace];
+  }
 
-  public getJsonProperty(name: string): any { return this.jsonProperties[name]; }
-  public setJsonProperty(name: string, value: any) { this.jsonProperties[name] = value; }
+  public getJsonProperty(name: string): any {
+    return this.jsonProperties[name];
+  }
+  public setJsonProperty(name: string, value: any) {
+    this.jsonProperties[name] = value;
+  }
 
   /** Insert this Model in the iModel */
-  public insert() { return this.id = this.iModel.models.insertModel(this.toJSON()); }
+  public insert() {
+    return this.id = this.iModel.models.insertModel(this.toJSON());
+  }
   /** Update this Model in the iModel. */
-  public update() { this.iModel.models.updateModel(this.toJSON()); }
+  public update() {
+    this.iModel.models.updateModel(this.toJSON());
+  }
   /** Delete this Model from the iModel. */
-  public delete() { this.iModel.models.deleteModel(this.id); }
+  public delete() {
+    this.iModel.models.deleteModel(this.id);
+  }
 
   protected override collectReferenceIds(referenceIds: EntityReferenceSet): void {
     super.collectReferenceIds(referenceIds);
@@ -235,9 +270,13 @@ export class Model extends Entity {
 export class GeometricModel extends Model {
   public geometryGuid?: GuidString; // Initialized by the Entity constructor
 
-  public static override get className(): string { return "GeometricModel"; }
+  public static override get className(): string {
+    return "GeometricModel";
+  }
 
-  protected constructor(props: GeometricModelProps, iModel: IModelDb) { super(props, iModel); }
+  protected constructor(props: GeometricModelProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 
   /** Query for the union of the extents of the elements contained by this model.
    * @note This function blocks the JavaScript event loop. Consider using [[queryRange]] instead.
@@ -266,9 +305,13 @@ export abstract class GeometricModel3d extends GeometricModel {
    */
   public readonly isNotSpatiallyLocated: boolean;
   /** If true, then the elements in this GeometricModel3d are in real-world coordinates and will be in the spatial index. */
-  public get isSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
+  public get isSpatiallyLocated(): boolean {
+    return !this.isNotSpatiallyLocated;
+  }
 
-  public static override get className(): string { return "GeometricModel3d"; }
+  public static override get className(): string {
+    return "GeometricModel3d";
+  }
 
   protected constructor(props: GeometricModel3dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -294,9 +337,13 @@ export abstract class GeometricModel3d extends GeometricModel {
 export abstract class GeometricModel2d extends GeometricModel {
   /** The actual coordinates of (0,0) in modeling coordinates. An offset applied to all modeling coordinates. */
   public globalOrigin?: Point2d; // Initialized by the Entity constructor
-  public static override get className(): string { return "GeometricModel2d"; }
+  public static override get className(): string {
+    return "GeometricModel2d";
+  }
 
-  protected constructor(props: GeometricModel2dProps, iModel: IModelDb) { super(props, iModel); }
+  protected constructor(props: GeometricModel2dProps, iModel: IModelDb) {
+    super(props, iModel);
+  }
 
   public override toJSON(): GeometricModel2dProps {
     const val = super.toJSON() as GeometricModel2dProps;
@@ -311,7 +358,9 @@ export abstract class GeometricModel2d extends GeometricModel {
  * @public
  */
 export abstract class GraphicalModel2d extends GeometricModel2d {
-  public static override get className(): string { return "GraphicalModel2d"; }
+  public static override get className(): string {
+    return "GraphicalModel2d";
+  }
 }
 
 /** A container for persisting GraphicalElement3d instances.
@@ -320,14 +369,18 @@ export abstract class GraphicalModel2d extends GeometricModel2d {
  * @public
  */
 export abstract class GraphicalModel3d extends GeometricModel3d {
-  public static override get className(): string { return "GraphicalModel3d"; }
+  public static override get className(): string {
+    return "GraphicalModel3d";
+  }
 }
 
 /** A container for persisting 3d geometric elements that are spatially located.
  * @public
  */
 export abstract class SpatialModel extends GeometricModel3d {
-  public static override get className(): string { return "SpatialModel"; }
+  public static override get className(): string {
+    return "SpatialModel";
+  }
 }
 
 /** A container for persisting physical elements that model physical space.
@@ -335,7 +388,9 @@ export abstract class SpatialModel extends GeometricModel3d {
  * @public
  */
 export class PhysicalModel extends SpatialModel {
-  public static override get className(): string { return "PhysicalModel"; }
+  public static override get className(): string {
+    return "PhysicalModel";
+  }
   /** Insert a PhysicalPartition and a PhysicalModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
@@ -366,7 +421,9 @@ export class PhysicalModel extends SpatialModel {
  * @public
  */
 export class SpatialLocationModel extends SpatialModel {
-  public static override get className(): string { return "SpatialLocationModel"; }
+  public static override get className(): string {
+    return "SpatialLocationModel";
+  }
   /** Insert a SpatialLocationPartition and a SpatialLocationModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The SpatialLocationPartition will be inserted as a child of this Subject element.
@@ -396,14 +453,18 @@ export class SpatialLocationModel extends SpatialModel {
  * @public
  */
 export class DrawingModel extends GraphicalModel2d {
-  public static override get className(): string { return "DrawingModel"; }
+  public static override get className(): string {
+    return "DrawingModel";
+  }
 }
 
 /** A container for persisting section [[DrawingGraphic]]s.
  * @public
  */
 export class SectionDrawingModel extends DrawingModel {
-  public static override get className(): string { return "SectionDrawingModel"; }
+  public static override get className(): string {
+    return "SectionDrawingModel";
+  }
 }
 
 /** A container for persisting [[ViewAttachment]]s and [[DrawingGraphic]]s.
@@ -412,21 +473,27 @@ export class SectionDrawingModel extends DrawingModel {
  * @public
  */
 export class SheetModel extends GraphicalModel2d {
-  public static override get className(): string { return "SheetModel"; }
+  public static override get className(): string {
+    return "SheetModel";
+  }
 }
 
 /** A container for persisting role elements.
  * @public
  */
 export class RoleModel extends Model {
-  public static override get className(): string { return "RoleModel"; }
+  public static override get className(): string {
+    return "RoleModel";
+  }
 }
 
 /** A container for persisting information elements.
  * @public
  */
 export abstract class InformationModel extends Model {
-  public static override get className(): string { return "InformationModel"; }
+  public static override get className(): string {
+    return "InformationModel";
+  }
 }
 
 /** A container for persisting group information elements.
@@ -434,22 +501,26 @@ export abstract class InformationModel extends Model {
  * @public
  */
 export abstract class GroupInformationModel extends InformationModel {
-  public static override get className(): string { return "GroupInformationModel"; }
+  public static override get className(): string {
+    return "GroupInformationModel";
+  }
 }
 
 /** A sub-model of a [[SheetIndexPartition]] serving as a container for persisting [[SheetIndexEntry]] and [[SheetIndex]] elements.
  * @beta
  */
 export class SheetIndexModel extends InformationModel {
-  public static override get className(): string { return "SheetIndexModel"; }
+  public static override get className(): string {
+    return "SheetIndexModel";
+  }
 
   /** Insert a SheetIndex and a SheetIndexModel that sub-models it.
- * @param iModelDb Insert into this iModel
- * @param parentSubjectId The SheetIndex will be inserted as a child of this Subject element.
- * @param name The name of the SheetIndex that the new SheetIndexModel will sub-model.
- * @returns The Id of the newly inserted SheetIndexModel.
- * @throws [[IModelError]] if there is an insert problem.
- */
+   * @param iModelDb Insert into this iModel
+   * @param parentSubjectId The SheetIndex will be inserted as a child of this Subject element.
+   * @param name The name of the SheetIndex that the new SheetIndexModel will sub-model.
+   * @returns The Id of the newly inserted SheetIndexModel.
+   * @throws [[IModelError]] if there is an insert problem.
+   */
   public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
     const sheetIndex: InformationPartitionElementProps = {
       classFullName: SheetIndexPartition.classFullName,
@@ -470,7 +541,9 @@ export class SheetIndexModel extends InformationModel {
  * @public
  */
 export class InformationRecordModel extends InformationModel {
-  public static override get className(): string { return "InformationRecordModel"; }
+  public static override get className(): string {
+    return "InformationRecordModel";
+  }
 
   /** Insert a InformationRecordPartition and a InformationRecordModel that sub-models it.
    * @param iModelDb Insert into this iModel
@@ -499,7 +572,9 @@ export class InformationRecordModel extends InformationModel {
  * @public
  */
 export class DefinitionModel extends InformationModel {
-  public static override get className(): string { return "DefinitionModel"; }
+  public static override get className(): string {
+    return "DefinitionModel";
+  }
 
   /** Insert a DefinitionPartition and a DefinitionModel that sub-models it.
    * @param iModelDb Insert into this iModel
@@ -527,7 +602,9 @@ export class DefinitionModel extends InformationModel {
  * @public
  */
 export class RepositoryModel extends DefinitionModel {
-  public static override get className(): string { return "RepositoryModel"; }
+  public static override get className(): string {
+    return "RepositoryModel";
+  }
 }
 
 /** Contains a list of document elements.
@@ -535,7 +612,9 @@ export class RepositoryModel extends DefinitionModel {
  * @public
  */
 export class DocumentListModel extends InformationModel {
-  public static override get className(): string { return "DocumentListModel"; }
+  public static override get className(): string {
+    return "DocumentListModel";
+  }
   /** Insert a DocumentPartition and a DocumentListModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
@@ -563,19 +642,25 @@ export class DocumentListModel extends InformationModel {
  * @public
  */
 export class LinkModel extends InformationModel {
-  public static override get className(): string { return "LinkModel"; }
+  public static override get className(): string {
+    return "LinkModel";
+  }
 }
 
 /** The singleton container for repository-specific definition elements.
  * @public
  */
 export class DictionaryModel extends DefinitionModel {
-  public static override get className(): string { return "DictionaryModel"; }
+  public static override get className(): string {
+    return "DictionaryModel";
+  }
 }
 
 /** Obtains and displays multi-resolution tiled raster organized according to the WebMercator tiling system.
  * @public
  */
 export class WebMercatorModel extends SpatialModel {
-  public static override get className(): string { return "WebMercatorModel"; }
+  public static override get className(): string {
+    return "WebMercatorModel";
+  }
 }

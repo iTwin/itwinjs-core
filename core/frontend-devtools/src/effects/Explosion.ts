@@ -7,11 +7,19 @@
  */
 
 import { Id64String } from "@itwin/core-bentley";
-import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { RenderTexture, TextureTransparency } from "@itwin/core-common";
 import {
-  DecorateContext, GraphicType, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, ParticleCollectionBuilder, ParticleProps, Tool,
+  DecorateContext,
+  GraphicType,
+  HitDetail,
+  imageElementFromUrl,
+  IModelApp,
+  IModelConnection,
+  ParticleCollectionBuilder,
+  ParticleProps,
+  Tool,
 } from "@itwin/core-frontend";
+import { Point3d, Range1d, Vector3d } from "@itwin/core-geometry";
 import { randomFloat, randomFloatInRange, randomIntegerInRange, randomPositionInRange } from "./Random";
 
 /** Represents one particle in the system. */
@@ -29,9 +37,15 @@ class Particle implements ParticleProps {
   /** Particle transparency in [0..255]. */
   public transparency = 0;
 
-  public get x() { return this.position.x; }
-  public get y() { return this.position.y; }
-  public get z() { return this.position.z; }
+  public get x() {
+    return this.position.x;
+  }
+  public get y() {
+    return this.position.y;
+  }
+  public get z() {
+    return this.position.z;
+  }
 
   public constructor(position: Point3d, velocity: Vector3d, lifetime: number, size: number) {
     this.position = position;
@@ -40,7 +54,9 @@ class Particle implements ParticleProps {
     this.size = size;
   }
 
-  public get isExpired() { return this.age >= this.lifetime; }
+  public get isExpired() {
+    return this.age >= this.lifetime;
+  }
 }
 
 /** Emits particles in a sphere with its center at the origin.

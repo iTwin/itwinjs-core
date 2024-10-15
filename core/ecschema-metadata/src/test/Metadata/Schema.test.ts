@@ -5,6 +5,8 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
+import { SchemaReadHelper } from "../../Deserialization/Helper";
+import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaItemType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { AnySchemaItem } from "../../Interfaces";
@@ -12,13 +14,22 @@ import { ECClass, StructClass } from "../../Metadata/Class";
 import { EntityClass } from "../../Metadata/EntityClass";
 import { Mixin } from "../../Metadata/Mixin";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
-import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
-import { SchemaReadHelper } from "../../Deserialization/Helper";
-import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaKey } from "../../SchemaKey";
+import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 
-import { Constant, CustomAttributeClass, Enumeration, Format, KindOfQuantity, Phenomenon, PropertyCategory, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
+import {
+  Constant,
+  CustomAttributeClass,
+  Enumeration,
+  Format,
+  KindOfQuantity,
+  Phenomenon,
+  PropertyCategory,
+  SchemaItem,
+  Unit,
+  UnitSystem,
+} from "../../ecschema-metadata";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 describe("Schema", () => {
@@ -676,7 +687,10 @@ describe("Schema", () => {
         };
         const testSchema = new Schema(new SchemaContext());
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(propertyJson)).to.be.rejectedWith(ECObjectsError, "The Schema ValidSchema does not have the required 'alias' attribute.");
+        await expect(testSchema.fromJSON(propertyJson)).to.be.rejectedWith(
+          ECObjectsError,
+          "The Schema ValidSchema does not have the required 'alias' attribute.",
+        );
       });
 
       it("should throw for invalid $schema", async () => {
@@ -688,8 +702,14 @@ describe("Schema", () => {
         const context = new SchemaContext();
         const testSchema = new Schema(context, "InvalidSchema", "is", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(schemaJson as any)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
-        await expect(Schema.fromJson(schemaJson as any, context)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
+        await expect(testSchema.fromJSON(schemaJson as any)).to.be.rejectedWith(
+          ECObjectsError,
+          "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.",
+        );
+        await expect(Schema.fromJson(schemaJson as any, context)).to.be.rejectedWith(
+          ECObjectsError,
+          "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.",
+        );
       });
 
       it("should throw for mismatched name", async () => {
@@ -1040,7 +1060,10 @@ describe("Schema", () => {
       const context = new SchemaContext();
       await context.addSchema(refSchema);
 
-      await expect(Schema.fromJson(schemaJson, context)).to.be.rejectedWith(ECObjectsError, "Could not locate the referenced schema, RefSchema.01.00.00, of ValidSchema");
+      await expect(Schema.fromJson(schemaJson, context)).to.be.rejectedWith(
+        ECObjectsError,
+        "Could not locate the referenced schema, RefSchema.01.00.00, of ValidSchema",
+      );
     });
 
     describe("toXML", () => {
@@ -1089,7 +1112,6 @@ describe("Schema", () => {
       });
 
       it("Deserialize after Serialization", async () => {
-
         const referenceJson = {
           $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "RefSchema",
@@ -1107,8 +1129,7 @@ describe("Schema", () => {
           },
         };
 
-        const coreCASchema =
-        {
+        const coreCASchema = {
           $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           alias: "CoreCA",
           description: "Custom attributes to indicate core EC concepts, may include struct classes intended for use in core custom attributes.",
@@ -1119,7 +1140,8 @@ describe("Schema", () => {
               label: "Is Mixin",
               modifier: "Sealed",
               CoreCustomAttributes: [{
-                description: "This mixin may only be applied to entity classes which derive from this class.  Class Name should be fully specified as 'alias:ClassName'",
+                description:
+                  "This mixin may only be applied to entity classes which derive from this class.  Class Name should be fully specified as 'alias:ClassName'",
                 name: "AppliesToEntityClass",
                 type: "PrimitiveProperty",
                 typeName: "string",
@@ -1807,8 +1829,20 @@ describe("Schema", () => {
             MM: { schemaItemType: "Unit", label: "mm", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "MM" },
             FT: { schemaItemType: "Unit", label: "ft", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "IN" },
 
-            TestFormat: { schemaItemType:"Format", label:"testFormat", type:"Decimal", precision:6, formatTraits:["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"]},
-            TestKoq: { schemaItemType:"KindOfQuantity", label:"testKoq", relativeError:0.00001, persistenceUnit:"TestSchema.M", ...presentationUnit},
+            TestFormat: {
+              schemaItemType: "Format",
+              label: "testFormat",
+              type: "Decimal",
+              precision: 6,
+              formatTraits: ["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+            },
+            TestKoq: {
+              schemaItemType: "KindOfQuantity",
+              label: "testKoq",
+              relativeError: 0.00001,
+              persistenceUnit: "TestSchema.M",
+              ...presentationUnit,
+            },
           },
         };
 
@@ -1819,12 +1853,32 @@ describe("Schema", () => {
       }
 
       it("KoQ serialization with overriden formats", async () => {
-        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT]"]}), `presentationUnits="TestFormat(4)[M][MM][FT]"`);
-        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M][MM][FT|]"`);
-        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM][FT|]"`);
-        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT]"`);
-        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|]"`);
-        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT|charlie]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|charlie]"`);
+        assert.deepEqual(
+          await testKoQSerialization({ presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT]"] }),
+          `presentationUnits="TestFormat(4)[M][MM][FT]"`,
+        );
+        assert.deepEqual(
+          await testKoQSerialization({ presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT|]"] }),
+          `presentationUnits="TestFormat(4)[M][MM][FT|]"`,
+        );
+        assert.deepEqual(
+          await testKoQSerialization({ presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM][TestSchema.FT|]"] }),
+          `presentationUnits="TestFormat(4)[M|alpha][MM][FT|]"`,
+        );
+        assert.deepEqual(
+          await testKoQSerialization({ presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT]"] }),
+          `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT]"`,
+        );
+        assert.deepEqual(
+          await testKoQSerialization({ presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT|]"] }),
+          `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|]"`,
+        );
+        assert.deepEqual(
+          await testKoQSerialization({
+            presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT|charlie]"],
+          }),
+          `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|charlie]"`,
+        );
       });
 
       async function testCompositeFormatSerialization(compositeFormat: any): Promise<string> {
@@ -1841,7 +1895,14 @@ describe("Schema", () => {
             MM: { schemaItemType: "Unit", label: "mm", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "MM" },
             FT: { schemaItemType: "Unit", label: "ft", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "IN" },
 
-            TestFormat: { schemaItemType:"Format", label:"testFormat", type:"Decimal", precision:6, formatTraits:["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"], composite:{...compositeFormat}},
+            TestFormat: {
+              schemaItemType: "Format",
+              label: "testFormat",
+              type: "Decimal",
+              precision: 6,
+              formatTraits: ["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"],
+              composite: { ...compositeFormat },
+            },
           },
         };
 
@@ -1853,17 +1914,31 @@ describe("Schema", () => {
       }
 
       it("Composite format serialization with overriden formats", async () => {
-        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M"},{name:"TestSchema.MM"},{name:"TestSchema.FT"}]}),
-          `<Composite spacer=" " includeZero="true"><Unit>M</Unit><Unit>MM</Unit><Unit>FT</Unit></Composite>`);
+        assert.deepEqual(
+          await testCompositeFormatSerialization({ units: [{ name: "TestSchema.M" }, { name: "TestSchema.MM" }, { name: "TestSchema.FT" }] }),
+          `<Composite spacer=" " includeZero="true"><Unit>M</Unit><Unit>MM</Unit><Unit>FT</Unit></Composite>`,
+        );
 
-        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M",label:"metre"},{name:"TestSchema.MM"},{name:"TestSchema.FT"}]}),
-          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit>MM</Unit><Unit>FT</Unit></Composite>`);
+        assert.deepEqual(
+          await testCompositeFormatSerialization({
+            units: [{ name: "TestSchema.M", label: "metre" }, { name: "TestSchema.MM" }, { name: "TestSchema.FT" }],
+          }),
+          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit>MM</Unit><Unit>FT</Unit></Composite>`,
+        );
 
-        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M",label:"metre"},{name:"TestSchema.MM", label:""},{name:"TestSchema.FT"}]}),
-          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit label="">MM</Unit><Unit>FT</Unit></Composite>`);
+        assert.deepEqual(
+          await testCompositeFormatSerialization({
+            units: [{ name: "TestSchema.M", label: "metre" }, { name: "TestSchema.MM", label: "" }, { name: "TestSchema.FT" }],
+          }),
+          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit label="">MM</Unit><Unit>FT</Unit></Composite>`,
+        );
 
-        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M",label:"metre"},{name:"TestSchema.MM", label:""},{name:"TestSchema.FT", label: "\""}]}),
-          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit label="">MM</Unit><Unit label="&quot;">FT</Unit></Composite>`);
+        assert.deepEqual(
+          await testCompositeFormatSerialization({
+            units: [{ name: "TestSchema.M", label: "metre" }, { name: "TestSchema.MM", label: "" }, { name: "TestSchema.FT", label: '"' }],
+          }),
+          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit label="">MM</Unit><Unit label="&quot;">FT</Unit></Composite>`,
+        );
       });
     });
   }); // Schema tests

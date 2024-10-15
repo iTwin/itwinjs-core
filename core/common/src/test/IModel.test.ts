@@ -2,19 +2,25 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { EcefLocation, EcefLocationProps, IModel, IModelProps, RootSubjectProps } from "../IModel";
+import { describe, expect, it } from "vitest";
 import { GeographicCRS } from "../geometry/CoordinateReferenceSystem";
+import { EcefLocation, EcefLocationProps, IModel, IModelProps, RootSubjectProps } from "../IModel";
 
 interface TestIModelProps extends IModelProps {
   key: string;
 }
 
 class TestIModel extends IModel {
-  public get isOpen() { return true; }
-  public get isSnapshot() { return true; }
-  public get isBriefcase() { return false; }
+  public get isOpen() {
+    return true;
+  }
+  public get isSnapshot() {
+    return true;
+  }
+  public get isBriefcase() {
+    return false;
+  }
 
   public constructor(props: TestIModelProps) {
     super(props);
@@ -131,7 +137,9 @@ describe("IModel", () => {
         orientation: { yaw: 5, pitch: 90, roll: -45 },
       });
       expectChange(imodel, () => imodel.setEcefLocation(newEcef), { ecef: { prev: ecef, curr: newEcef } });
-      expectChange(imodel, () => imodel.initFromProps({ ...imodel.getProps(), ecefLocation: undefined }), { ecef: { prev: newEcef, curr: undefined } });
+      expectChange(imodel, () => imodel.initFromProps({ ...imodel.getProps(), ecefLocation: undefined }), {
+        ecef: { prev: newEcef, curr: undefined },
+      });
 
       const newProps: TestIModelProps = {
         key: "",
@@ -186,13 +194,17 @@ describe("IModel", () => {
     };
 
     expect(new TestIModel(props).isGeoLocated).to.be.false;
-    expect(new TestIModel({
-      ...props,
-      ecefLocation: { origin: [0, 0, 0], orientation: { yaw: 0, pitch: 0, roll: 0 } },
-    }).isGeoLocated).to.be.false;
-    expect(new TestIModel({
-      ...props,
-      ecefLocation: { origin: [1, 0, 0], orientation: { yaw: 0, pitch: 0, roll: 0 } },
-    }).isGeoLocated).to.be.true;
+    expect(
+      new TestIModel({
+        ...props,
+        ecefLocation: { origin: [0, 0, 0], orientation: { yaw: 0, pitch: 0, roll: 0 } },
+      }).isGeoLocated,
+    ).to.be.false;
+    expect(
+      new TestIModel({
+        ...props,
+        ecefLocation: { origin: [1, 0, 0], orientation: { yaw: 0, pitch: 0, roll: 0 } },
+      }).isGeoLocated,
+    ).to.be.true;
   });
 });

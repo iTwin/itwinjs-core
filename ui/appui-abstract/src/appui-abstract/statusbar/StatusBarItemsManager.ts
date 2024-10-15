@@ -96,8 +96,7 @@ export class StatusBarItemsManager {
   }
 
   /** Remove StatusBar items based on id */
-  public remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId
-  >) {
+  public remove(itemIdOrItemIds: StatusBarItemId | ReadonlyArray<StatusBarItemId>) {
     const items = this._items.filter((item) => {
       return isInstance(itemIdOrItemIds) ? item.id !== itemIdOrItemIds : !itemIdOrItemIds.find((itemId) => itemId === item.id);
     });
@@ -115,7 +114,7 @@ export class StatusBarItemsManager {
       for (const [, entry] of Object.entries(item)) {
         if (entry instanceof ConditionalBooleanValue) {
           entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
-        } else /* istanbul ignore else */ if (entry instanceof ConditionalStringValue) {
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
           entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
         }
       }
@@ -123,7 +122,10 @@ export class StatusBarItemsManager {
     return [...eventIds.values()];
   }
 
-  private internalRefreshAffectedItems(items: readonly CommonStatusBarItem[], eventIds: Set<string>): { itemsUpdated: boolean, updatedItems: CommonStatusBarItem[] } {
+  private internalRefreshAffectedItems(
+    items: readonly CommonStatusBarItem[],
+    eventIds: Set<string>,
+  ): { itemsUpdated: boolean, updatedItems: CommonStatusBarItem[] } {
     // istanbul ignore next
     if (0 === eventIds.size)
       return { itemsUpdated: false, updatedItems: [] };
@@ -139,7 +141,7 @@ export class StatusBarItemsManager {
           // istanbul ignore else
           if (ConditionalBooleanValue.refreshValue(entry, eventIds))
             updateRequired = true;
-        } else /* istanbul ignore else */ if (entry instanceof ConditionalStringValue) {
+        } /* istanbul ignore else */ else if (entry instanceof ConditionalStringValue) {
           // istanbul ignore else
           if (ConditionalStringValue.refreshValue(entry, eventIds))
             updateRequired = true;

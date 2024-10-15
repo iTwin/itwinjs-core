@@ -53,10 +53,14 @@ export class GraphicParams {
   public gradient?: Gradient.Symb;
 
   /** Set the transparency of the line color, where 0=fully opaque and 255=full transparent. */
-  public setLineTransparency(transparency: number) { this.lineColor = this.lineColor.withTransparency(transparency); }
+  public setLineTransparency(transparency: number) {
+    this.lineColor = this.lineColor.withTransparency(transparency);
+  }
 
   /** Set the transparency of the fill color, where 0=fully opaque and 255=full transparent. */
-  public setFillTransparency(transparency: number) { this.fillColor = this.fillColor.withTransparency(transparency); }
+  public setFillTransparency(transparency: number) {
+    this.fillColor = this.fillColor.withTransparency(transparency);
+  }
 
   public clone(out?: GraphicParams): GraphicParams {
     out = out ?? new GraphicParams();

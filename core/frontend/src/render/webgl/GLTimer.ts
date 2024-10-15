@@ -17,17 +17,27 @@ class DisjointTimerExtension {
     this._context = system.context;
   }
 
-  public get isSupported(): boolean { return this._e !== undefined; }
+  public get isSupported(): boolean {
+    return this._e !== undefined;
+  }
 
   public didDisjointEventHappen(): boolean {
     return this._context.getParameter(this._e.GPU_DISJOINT_EXT);
   }
 
-  public createQuery(): WebGLQuery { return this._context.createQuery() as WebGLQuery; }
-  public deleteQuery(q: WebGLQuery) { this._context.deleteQuery(q); }
+  public createQuery(): WebGLQuery {
+    return this._context.createQuery() as WebGLQuery;
+  }
+  public deleteQuery(q: WebGLQuery) {
+    this._context.deleteQuery(q);
+  }
 
-  public beginQuery(q: WebGLQuery) { this._context.beginQuery(this._e.TIME_ELAPSED_EXT, q); }
-  public endQuery() { this._context.endQuery(this._e.TIME_ELAPSED_EXT); }
+  public beginQuery(q: WebGLQuery) {
+    this._context.beginQuery(this._e.TIME_ELAPSED_EXT, q);
+  }
+  public endQuery() {
+    this._context.endQuery(this._e.TIME_ELAPSED_EXT);
+  }
 
   public isResultAvailable(q: WebGLQuery): boolean {
     return this._context.getQueryParameter(q, this._context.QUERY_RESULT_AVAILABLE);
@@ -75,7 +85,9 @@ export class GLTimer {
     return new GLTimer(system);
   }
 
-  public get isSupported(): boolean { return this._extension.isSupported; }
+  public get isSupported(): boolean {
+    return this._extension.isSupported;
+  }
 
   public set resultsCallback(callback: GLTimerResultCallback | undefined) {
     if (this._queryStack.length !== 0)
@@ -131,7 +143,7 @@ export class GLTimer {
       // It takes one or more frames for results to become available.
       // Only checking time for root since it will always be the last query completed.
       // If there are any sibling queries then we will just check the last one.
-      const finalQuery = (undefined === root.siblingQueries ? root.query : root.siblingQueries[root.siblingQueries.length-1]);
+      const finalQuery = undefined === root.siblingQueries ? root.query : root.siblingQueries[root.siblingQueries.length - 1];
       if (!this._extension.isResultAvailable(finalQuery)) {
         setTimeout(queryCallback, 0);
         return;

@@ -165,37 +165,51 @@ export class ChangeSummaryManager {
   private static openChangeCacheFile(changesFile: ECDb, changeCacheFilePath: string): void {
     changesFile.openDb(changeCacheFilePath, ECDbOpenMode.FileUpgrade);
 
-    const actualSchemaVersion: { read: number, write: number, minor: number } = changesFile.withPreparedStatement("SELECT VersionMajor read,VersionWrite write,VersionMinor minor FROM meta.ECSchemaDef WHERE Name='IModelChange'",
+    const actualSchemaVersion: { read: number, write: number, minor: number } = changesFile.withPreparedStatement(
+      "SELECT VersionMajor read,VersionWrite write,VersionMinor minor FROM meta.ECSchemaDef WHERE Name='IModelChange'",
       (stmt: ECSqlStatement) => {
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
           throw new IModelError(DbResult.BE_SQLITE_ERROR, "File is not a valid Change Cache file.");
 
         return stmt.getRow();
-      });
+      },
+    );
 
-    if (actualSchemaVersion.read === ChangeSummaryManager._currentIModelChangeSchemaVersion.read &&
+    if (
+      actualSchemaVersion.read === ChangeSummaryManager._currentIModelChangeSchemaVersion.read &&
       actualSchemaVersion.write === ChangeSummaryManager._currentIModelChangeSchemaVersion.write &&
-      actualSchemaVersion.minor === ChangeSummaryManager._currentIModelChangeSchemaVersion.minor)
+      actualSchemaVersion.minor === ChangeSummaryManager._currentIModelChangeSchemaVersion.minor
+    )
       return;
 
     changesFile.importSchema(ChangeSummaryManager.getExtendedSchemaPath());
   }
 
-  private static getExtendedSchemaPath(): string { return path.join(KnownLocations.packageAssetsDir, "IModelChange.02.00.00.ecschema.xml"); }
-
-  private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: GuidString): Id64String | undefined {
-    return changesFile.withPreparedStatement("SELECT Summary.Id summaryid FROM imodelchange.ChangeSet WHERE WsgId=?",
-      (stmt: ECSqlStatement) => {
-        stmt.bindString(1, changeSetId);
-        if (DbResult.BE_SQLITE_ROW === stmt.step())
-          return stmt.getValue(0).getId();
-
-        return undefined;
-      });
+  private static getExtendedSchemaPath(): string {
+    return path.join(KnownLocations.packageAssetsDir, "IModelChange.02.00.00.ecschema.xml");
   }
 
-  private static addExtendedInfos(changesFile: ECDb, changeSummaryId: Id64String, changesetWsgId: GuidString, changesetParentWsgId?: GuidString, description?: string, changesetPushDate?: string, changeSetUserCreated?: GuidString): void {
-    changesFile.withPreparedStatement("INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,Description,PushDate,UserCreated) VALUES(?,?,?,?,?,?)",
+  private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: GuidString): Id64String | undefined {
+    return changesFile.withPreparedStatement("SELECT Summary.Id summaryid FROM imodelchange.ChangeSet WHERE WsgId=?", (stmt: ECSqlStatement) => {
+      stmt.bindString(1, changeSetId);
+      if (DbResult.BE_SQLITE_ROW === stmt.step())
+        return stmt.getValue(0).getId();
+
+      return undefined;
+    });
+  }
+
+  private static addExtendedInfos(
+    changesFile: ECDb,
+    changeSummaryId: Id64String,
+    changesetWsgId: GuidString,
+    changesetParentWsgId?: GuidString,
+    description?: string,
+    changesetPushDate?: string,
+    changeSetUserCreated?: GuidString,
+  ): void {
+    changesFile.withPreparedStatement(
+      "INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,Description,PushDate,UserCreated) VALUES(?,?,?,?,?,?)",
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, changeSummaryId);
         stmt.bindString(2, changesetWsgId);
@@ -214,7 +228,8 @@ export class ChangeSummaryManager {
         const r: DbResult = stmt.step();
         if (r !== DbResult.BE_SQLITE_DONE)
           throw new IModelError(r, `Failed to add changeset information to extracted change summary ${changeSummaryId}`);
-      });
+      },
+    );
   }
 
   /** Queries the ChangeSummary for the specified change summary id
@@ -232,15 +247,26 @@ export class ChangeSummaryManager {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
       throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 
-    return iModel.withPreparedStatement("SELECT WsgId,ParentWsgId,Description,PushDate,UserCreated FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?",
+    return iModel.withPreparedStatement(
+      "SELECT WsgId,ParentWsgId,Description,PushDate,UserCreated FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?",
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, changeSummaryId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
           throw new IModelError(IModelStatus.BadArg, `No ChangeSet information found for ChangeSummary ${changeSummaryId}.`);
 
         const row = stmt.getRow();
-        return { id: changeSummaryId, changeSet: { wsgId: row.wsgId, parentWsgId: row.parentWsgId, description: row.description, pushDate: row.pushDate, userCreated: row.userCreated } };
-      });
+        return {
+          id: changeSummaryId,
+          changeSet: {
+            wsgId: row.wsgId,
+            parentWsgId: row.parentWsgId,
+            description: row.description,
+            pushDate: row.pushDate,
+            userCreated: row.userCreated,
+          },
+        };
+      },
+    );
   }
 
   /** Queries the InstanceChange for the specified instance change id.
@@ -259,23 +285,29 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 
     // query instance changes
-    const instanceChange: InstanceChange = iModel.withPreparedStatement(`SELECT ic.Summary.Id summaryId, s.Name changedInstanceSchemaName, c.Name changedInstanceClassName, ic.ChangedInstance.Id changedInstanceId,
+    const instanceChange: InstanceChange = iModel.withPreparedStatement(
+      `SELECT ic.Summary.Id summaryId, s.Name changedInstanceSchemaName, c.Name changedInstanceClassName, ic.ChangedInstance.Id changedInstanceId,
        ic.OpCode, ic.IsIndirect FROM ecchange.change.InstanceChange ic JOIN main.meta.ECClassDef c ON c.ECInstanceId = ic.ChangedInstance.ClassId
-       JOIN main.meta.ECSchemaDef s ON c.Schema.Id = s.ECInstanceId WHERE ic.ECInstanceId =? `, (stmt: ECSqlStatement) => {
-      stmt.bindId(1, instanceChangeId);
-      if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-        throw new IModelError(IModelStatus.BadArg, `No InstanceChange found for id ${instanceChangeId}.`);
+       JOIN main.meta.ECSchemaDef s ON c.Schema.Id = s.ECInstanceId WHERE ic.ECInstanceId =? `,
+      (stmt: ECSqlStatement) => {
+        stmt.bindId(1, instanceChangeId);
+        if (stmt.step() !== DbResult.BE_SQLITE_ROW)
+          throw new IModelError(IModelStatus.BadArg, `No InstanceChange found for id ${instanceChangeId}.`);
 
-      const row = stmt.getRow();
-      const changedInstanceId: Id64String = row.changedInstanceId;
-      const changedInstanceClassName: string = `[${row.changedInstanceSchemaName}].[${row.changedInstanceClassName}]`;
-      const op: ChangeOpCode = row.opCode as ChangeOpCode;
+        const row = stmt.getRow();
+        const changedInstanceId: Id64String = row.changedInstanceId;
+        const changedInstanceClassName: string = `[${row.changedInstanceSchemaName}].[${row.changedInstanceClassName}]`;
+        const op: ChangeOpCode = row.opCode as ChangeOpCode;
 
-      return {
-        id: instanceChangeId, summaryId: row.summaryId, changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
-        opCode: op, isIndirect: row.isIndirect,
-      };
-    });
+        return {
+          id: instanceChangeId,
+          summaryId: row.summaryId,
+          changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
+          opCode: op,
+          isIndirect: row.isIndirect,
+        };
+      },
+    );
 
     return instanceChange;
   }
@@ -289,7 +321,8 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) if the change cache file hasn't been attached, or in case of other errors.
    */
   public static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[] {
-    return iModel.withPreparedStatement("SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?",
+    return iModel.withPreparedStatement(
+      "SELECT AccessString FROM ecchange.change.PropertyValueChange WHERE InstanceChange.Id=?",
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, instanceChangeId);
 
@@ -313,7 +346,8 @@ export class ChangeSummaryManager {
         }
 
         return selectClauseItems;
-      });
+      },
+    );
   }
 
   /** Builds the ECSQL to query the property value changes for the specified instance change and the specified ChangedValueState.
@@ -332,7 +366,12 @@ export class ChangeSummaryManager {
    * @throws [IModelError]($common) if instance change does not exist, if there are not property value changes for the instance change,
    *        if the change cache file hasn't been attached, or in case of other errors.
    */
-  public static buildPropertyValueChangesECSql(iModel: IModelDb, instanceChangeInfo: { id: Id64String, summaryId: Id64String, changedInstance: { id: Id64String, className: string } }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string {
+  public static buildPropertyValueChangesECSql(
+    iModel: IModelDb,
+    instanceChangeInfo: { id: Id64String, summaryId: Id64String, changedInstance: { id: Id64String, className: string } },
+    changedValueState: ChangedValueState,
+    changedPropertyNames?: string[],
+  ): string {
     let selectClauseItems: string[];
     if (!changedPropertyNames) {
       // query property value changes just to build a SELECT statement against the class of the changed instance
@@ -353,7 +392,8 @@ export class ChangeSummaryManager {
 
     // Avoiding parameters in the Changes function speeds up performance because ECDb can do optimizations
     // if it knows the function args at prepare time
-    ecsql += ` FROM main.${instanceChangeInfo.changedInstance.className}.Changes(${instanceChangeInfo.summaryId},${changedValueState}) WHERE ECInstanceId=${instanceChangeInfo.changedInstance.id}`;
+    ecsql +=
+      ` FROM main.${instanceChangeInfo.changedInstance.className}.Changes(${instanceChangeInfo.summaryId},${changedValueState}) WHERE ECInstanceId=${instanceChangeInfo.changedInstance.id}`;
     return ecsql;
   }
 
@@ -375,7 +415,12 @@ export class ChangeSummaryManager {
 
     const iModelId = iModel.iModelId;
     const changesetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
-    const changeset = await IModelHost.hubAccess.downloadChangeset({ accessToken: IModelHost.authorizationClient ? undefined : accessToken, iModelId, changeset: { id: iModel.changeset.id }, targetDir: changesetsFolder });
+    const changeset = await IModelHost.hubAccess.downloadChangeset({
+      accessToken: IModelHost.authorizationClient ? undefined : accessToken,
+      iModelId,
+      changeset: { id: iModel.changeset.id },
+      targetDir: changesetsFolder,
+    });
 
     if (!IModelJsFs.existsSync(changeset.pathname))
       throw new IModelError(IModelStatus.FileNotFound, `Failed to download change set: ${changeset.pathname}`);
@@ -387,7 +432,11 @@ export class ChangeSummaryManager {
 
       let changeSummaryId = ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, changesetId);
       if (changeSummaryId !== undefined) {
-        Logger.logInfo(loggerCategory, `Change Summary for changeset already exists. It is not extracted again.`, () => ({ iModelId, changeSetId: changesetId }));
+        Logger.logInfo(
+          loggerCategory,
+          `Change Summary for changeset already exists. It is not extracted again.`,
+          () => ({ iModelId, changeSetId: changesetId }),
+        );
         return changeSummaryId;
       }
 
@@ -397,7 +446,15 @@ export class ChangeSummaryManager {
 
       assert(undefined !== stat.result);
       changeSummaryId = stat.result;
-      ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, changesetId, changeset.parentId, changeset.description, changeset.pushDate, changeset.userCreated);
+      ChangeSummaryManager.addExtendedInfos(
+        changesFile,
+        changeSummaryId,
+        changesetId,
+        changeset.parentId,
+        changeset.description,
+        changeset.pushDate,
+        changeset.userCreated,
+      );
 
       changesFile.saveChanges();
       return changeSummaryId;
@@ -434,7 +491,14 @@ export class ChangeSummaryManager {
     let iModel: BriefcaseDb | undefined;
     try {
       // Download a version that has the first change set applied
-      const props = await BriefcaseManager.downloadBriefcase({ accessToken, iTwinId, iModelId, asOf: { afterChangeSetId: changesets[0].id }, briefcaseId: 0, fileName });
+      const props = await BriefcaseManager.downloadBriefcase({
+        accessToken,
+        iTwinId,
+        iModelId,
+        asOf: { afterChangeSetId: changesets[0].id },
+        briefcaseId: 0,
+        fileName,
+      });
       iModel = await BriefcaseDb.open({ fileName: props.fileName });
 
       const summaryIds = new Array<Id64String>();

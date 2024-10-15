@@ -15,7 +15,10 @@ import { DefinitionModel, Model } from "./Model";
 const loggerCategory = `${BackendLoggerCategory.IModelDb}.ElementTreeWalker`;
 
 /** @beta */
-export interface ElementTreeWalkerModelInfo { model: Model, isDefinitionModel: boolean }
+export interface ElementTreeWalkerModelInfo {
+  model: Model;
+  isDefinitionModel: boolean;
+}
 
 function sortChildrenBeforeParents(iModel: IModelDb, ids: Id64Array): Array<Id64Array> {
   const children: Id64Array = [];
@@ -46,7 +49,12 @@ function isDefinitionModel(model: Model): boolean {
   return (model.id !== IModel.repositoryModelId) && (model instanceof DefinitionModel);
 }
 
-enum ElementPruningClassification { PRUNING_CLASS_Normal = 0, PRUNING_CLASS_Subject = 1, PRUNING_CLASS_Definition = 2, PRUNING_CLASS_DefinitionPartition = 3, }
+enum ElementPruningClassification {
+  PRUNING_CLASS_Normal = 0,
+  PRUNING_CLASS_Subject = 1,
+  PRUNING_CLASS_Definition = 2,
+  PRUNING_CLASS_DefinitionPartition = 3,
+}
 
 function classifyElementForPruning(iModel: IModelDb, elementId: Id64String): ElementPruningClassification {
   const el = iModel.elements.getElement(elementId);
@@ -55,10 +63,13 @@ function classifyElementForPruning(iModel: IModelDb, elementId: Id64String): Ele
   // That is why we special-case it here.
   if (el instanceof DefinitionContainer)
     return ElementPruningClassification.PRUNING_CLASS_DefinitionPartition;
-  return (el instanceof Subject) ? ElementPruningClassification.PRUNING_CLASS_Subject :
-    (el instanceof DefinitionElement) ? ElementPruningClassification.PRUNING_CLASS_Definition :
-      (el instanceof DefinitionPartition) ? ElementPruningClassification.PRUNING_CLASS_DefinitionPartition :
-        ElementPruningClassification.PRUNING_CLASS_Normal;
+  return (el instanceof Subject) ?
+    ElementPruningClassification.PRUNING_CLASS_Subject :
+    (el instanceof DefinitionElement) ?
+    ElementPruningClassification.PRUNING_CLASS_Definition :
+    (el instanceof DefinitionPartition) ?
+    ElementPruningClassification.PRUNING_CLASS_DefinitionPartition :
+    ElementPruningClassification.PRUNING_CLASS_Normal;
 }
 
 /** Records the path that a tree search took to reach an element or model. This object is immutable.
@@ -96,9 +107,15 @@ export class ElementTreeWalkerScope {
     }
   }
 
-  public get enclosingModel(): Model { return this.enclosingModelInfo.model; }
-  public get inDefinitionModel(): boolean { return this.enclosingModelInfo.isDefinitionModel; } // NB: this will return false for the RepositoryModel!
-  public get inRepositoryModel(): boolean { return this.enclosingModelInfo.model.id === IModelDb.repositoryModelId; }
+  public get enclosingModel(): Model {
+    return this.enclosingModelInfo.model;
+  }
+  public get inDefinitionModel(): boolean {
+    return this.enclosingModelInfo.isDefinitionModel;
+  } // NB: this will return false for the RepositoryModel!
+  public get inRepositoryModel(): boolean {
+    return this.enclosingModelInfo.model.id === IModelDb.repositoryModelId;
+  }
 
   public static createTopScope(iModel: IModelDb, topElementId: Id64String) {
     const topElement = iModel.elements.getElement(topElementId);
@@ -172,16 +189,24 @@ function logModel(op: string, iModel: IModelDb, modelId: Id64String, scope?: Ele
  * @beta
  */
 export abstract class ElementTreeBottomUp {
-  constructor(protected _iModel: IModelDb) { }
+  constructor(protected _iModel: IModelDb) {}
 
   /** Return true if the search should recurse into this model  */
-  protected shouldExploreModel(_model: Model, _scope: ElementTreeWalkerScope): boolean { return true; }
+  protected shouldExploreModel(_model: Model, _scope: ElementTreeWalkerScope): boolean {
+    return true;
+  }
   /** Return true if the search should recurse into the children (if any) of this element  */
-  protected shouldExploreChildren(_parentId: Id64String, _scope: ElementTreeWalkerScope): boolean { return true; }
+  protected shouldExploreChildren(_parentId: Id64String, _scope: ElementTreeWalkerScope): boolean {
+    return true;
+  }
   /** Return true if the search should visit this element  */
-  protected shouldVisitElement(_elementId: Id64String, _scope: ElementTreeWalkerScope): boolean { return true; }
+  protected shouldVisitElement(_elementId: Id64String, _scope: ElementTreeWalkerScope): boolean {
+    return true;
+  }
   /** Return true if the search should visit this model  */
-  protected shouldVisitModel(_model: Model, _scope: ElementTreeWalkerScope): boolean { return true; }
+  protected shouldVisitModel(_model: Model, _scope: ElementTreeWalkerScope): boolean {
+    return true;
+  }
 
   /** Called to visit a model */
   protected abstract visitModel(model: Model, scope: ElementTreeWalkerScope): void;
@@ -294,7 +319,6 @@ class SpecialElements {
       }
     }
   }
-
 }
 
 /** Deletes an entire element tree, including sub-models and child elements.
@@ -306,8 +330,12 @@ class SpecialElements {
 export class ElementTreeDeleter extends ElementTreeBottomUp {
   protected _special: SpecialElements = new SpecialElements();
 
-  protected override shouldExploreModel(_model: Model): boolean { return true; }
-  protected override shouldVisitElement(_elementId: Id64String): boolean { return true; }
+  protected override shouldExploreModel(_model: Model): boolean {
+    return true;
+  }
+  protected override shouldVisitElement(_elementId: Id64String): boolean {
+    return true;
+  }
 
   protected override visitModel(model: Model, _scope: ElementTreeWalkerScope): void {
     if (isDefinitionModel(model))
@@ -342,7 +370,6 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
   public deleteSpecialElements(): void {
     this._special.deleteSpecialElements(this._iModel);
   }
-
 }
 
 /** Does a breadth-first search on the tree defined by an element and its sub-models and children.
@@ -352,15 +379,16 @@ export class ElementTreeDeleter extends ElementTreeBottomUp {
  * @beta
  */
 abstract class ElementTreeTopDown {
-  constructor(protected _iModel: IModelDb) { }
+  constructor(protected _iModel: IModelDb) {}
 
   /** Should the search *not* recurse into this sub-tree? */
-  protected shouldPrune(_elementId: Id64String, _scope: ElementTreeWalkerScope): boolean { return false; }
+  protected shouldPrune(_elementId: Id64String, _scope: ElementTreeWalkerScope): boolean {
+    return false;
+  }
 
   protected abstract prune(_elementId: Id64String, _scope: ElementTreeWalkerScope): void;
 
   protected processElementTree(element: Id64String, scope: ElementTreeWalkerScope) {
-
     if (this.shouldPrune(element, scope)) {
       this.prune(element, scope);
       return;
@@ -394,7 +422,6 @@ abstract class ElementTreeTopDown {
       }
     });
   }
-
 }
 
 /** Signature of the filter function used by ElementSubTreeDeleter.
@@ -425,7 +452,9 @@ export class ElementSubTreeDeleter extends ElementTreeTopDown {
     this._shouldPruneCb = shouldPruneCb;
   }
 
-  protected override shouldPrune(elementId: Id64String, scope: ElementTreeWalkerScope): boolean { return this._shouldPruneCb(elementId, scope); }
+  protected override shouldPrune(elementId: Id64String, scope: ElementTreeWalkerScope): boolean {
+    return this._shouldPruneCb(elementId, scope);
+  }
 
   protected prune(elementId: Id64String, scope: ElementTreeWalkerScope): void {
     this._treeDeleter.deleteNormalElements(elementId, scope);

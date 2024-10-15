@@ -40,7 +40,7 @@ export interface BaseFieldJSON {
   priority: number;
   renderer?: RendererDescription;
   editor?: EditorDescription;
-  extendedData?:  { [key: string]: unknown };
+  extendedData?: { [key: string]: unknown };
 }
 
 /**
@@ -146,7 +146,7 @@ export class Field {
   /** Property editor used to edit values of this field */
   public editor?: EditorDescription;
   /** Extended data associated with this field */
-  public extendedData?:  { [key: string]: unknown };
+  public extendedData?: { [key: string]: unknown };
   /** Parent field */
   private _parent?: NestedContentField;
 
@@ -171,7 +171,7 @@ export class Field {
     priority: number,
     editor?: EditorDescription,
     renderer?: RendererDescription,
-    extendedData?: { [key: string] : unknown }
+    extendedData?: { [key: string]: unknown },
   ) {
     this.category = category;
     this.name = name;
@@ -206,7 +206,17 @@ export class Field {
   }
 
   public clone() {
-    const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor, this.renderer, this.extendedData);
+    const clone = new Field(
+      this.category,
+      this.name,
+      this.label,
+      this.type,
+      this.isReadonly,
+      this.priority,
+      this.editor,
+      this.renderer,
+      this.extendedData,
+    );
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -222,7 +232,7 @@ export class Field {
       priority: this.priority,
       renderer: this.renderer,
       editor: this.editor,
-      extendedData: this.extendedData
+      extendedData: this.extendedData,
     };
   }
 
@@ -465,7 +475,7 @@ export class PropertiesField extends Field {
       !this.properties.some(({ property: fieldProperty }) =>
         descriptor.properties.some(
           (descriptorProperty) => fieldProperty.name === descriptorProperty.name && fieldProperty.classInfo.name === descriptorProperty.class,
-        ),
+        )
       )
     ) {
       return false;
@@ -480,7 +490,9 @@ export class PropertiesField extends Field {
         if (descriptor.pathFromSelectToPropertyClass.length < stepsCount + 1) {
           return false;
         }
-        if (!RelatedClassInfo.equals(step, descriptor.pathFromSelectToPropertyClass[descriptor.pathFromSelectToPropertyClass.length - stepsCount - 1])) {
+        if (
+          !RelatedClassInfo.equals(step, descriptor.pathFromSelectToPropertyClass[descriptor.pathFromSelectToPropertyClass.length - stepsCount - 1])
+        ) {
           return false;
         }
         ++stepsCount;
@@ -829,7 +841,10 @@ export class NestedContentField extends Field {
   }
 
   // eslint-disable-next-line deprecation/deprecation
-  private static fromCommonJSON(json: NestedContentFieldJSON<ClassInfoJSON | string>, categories: CategoryDescription[]): Partial<NestedContentField> {
+  private static fromCommonJSON(
+    json: NestedContentFieldJSON<ClassInfoJSON | string>,
+    categories: CategoryDescription[],
+  ): Partial<NestedContentField> {
     return {
       category: this.getCategoryFromFieldJson(json, categories),
       relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
@@ -965,7 +980,10 @@ function fromCompressedPropertyJSON(compressedPropertyJSON: PropertyJSON<string>
   };
 }
 
-function fromCompressedPropertyInfoJSON(compressedPropertyJSON: PropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfo {
+function fromCompressedPropertyInfoJSON(
+  compressedPropertyJSON: PropertyInfoJSON<string>,
+  classesMap: { [id: string]: CompressedClassInfoJSON },
+): PropertyInfo {
   assert(classesMap.hasOwnProperty(compressedPropertyJSON.classInfo));
 
   const { navigationPropertyInfo, ...leftOverPropertyJSON } = compressedPropertyJSON;
@@ -973,6 +991,8 @@ function fromCompressedPropertyInfoJSON(compressedPropertyJSON: PropertyInfoJSON
   return {
     ...leftOverPropertyJSON,
     classInfo: { id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo] },
-    ...(navigationPropertyInfo ? { navigationPropertyInfo: NavigationPropertyInfo.fromCompressedJSON(navigationPropertyInfo, classesMap) } : undefined),
+    ...(navigationPropertyInfo
+      ? { navigationPropertyInfo: NavigationPropertyInfo.fromCompressedJSON(navigationPropertyInfo, classesMap) }
+      : undefined),
   };
 }

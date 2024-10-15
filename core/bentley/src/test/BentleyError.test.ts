@@ -13,7 +13,9 @@ describe("BentleyError.getErrorMessage", () => {
 
   it("prefers Error.toString() to message property", () => {
     class CustomError extends Error {
-      public override toString() { return "CustomToString"; }
+      public override toString() {
+        return "CustomToString";
+      }
     }
     expect(BentleyError.getErrorMessage(new Error("foo"))).to.equal("Error: foo");
     expect(BentleyError.getErrorMessage(new CustomError("foo"))).to.equal("CustomToString");
@@ -138,7 +140,7 @@ describe("BentleyError.getErrorProps", () => {
     const err = new BentleyError(BentleyStatus.SUCCESS, "message");
     const serialized = BentleyError.getErrorProps(err);
     expect(serialized).to.be.an("object");
-    expect(serialized).to.eql({ message: err.toString(), stack: err.stack });  // eslint-disable-line @typescript-eslint/no-base-to-string
+    expect(serialized).to.eql({ message: err.toString(), stack: err.stack }); // eslint-disable-line @typescript-eslint/no-base-to-string
     expect(serialized).to.not.have.property("metadata");
   });
 
@@ -147,7 +149,7 @@ describe("BentleyError.getErrorProps", () => {
     const err = new BentleyError(BentleyStatus.ERROR, "fail", () => metadata);
     const serialized = BentleyError.getErrorProps(err);
     expect(serialized).to.be.an("object");
-    expect(serialized).to.eql({ message: err.toString(), stack: err.stack, metadata });  // eslint-disable-line @typescript-eslint/no-base-to-string
+    expect(serialized).to.eql({ message: err.toString(), stack: err.stack, metadata }); // eslint-disable-line @typescript-eslint/no-base-to-string
   });
 
   it("returns values that can safely be JSON round-tripped", () => {

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 // __PUBLISH_EXTRACT_START__ IModelExporter_CodeExporter.code
 
+import { Element, IModelDb, IModelJsFs as fs, SnapshotDb } from "@itwin/core-backend";
 import { Code, CodeSpec } from "@itwin/core-common";
-import { Element, IModelJsFs as fs, IModelDb, SnapshotDb } from "@itwin/core-backend";
 process.env.TRANSFORMER_NO_STRICT_DEP_CHECK = "1"; // allow this monorepo's dev versions of core libs in transformer
 import { IModelExporter, IModelExportHandler } from "@itwin/imodel-transformer";
 

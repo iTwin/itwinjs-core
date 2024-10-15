@@ -4,13 +4,31 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@itwin/core-bentley";
-import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions, Transform } from "@itwin/core-geometry";
 import {
-  AnalysisStyle, AnalysisStyleProps, ColorByName, ColorDef, RenderMode, SkyBox, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettingsProps,
+  AnalysisStyle,
+  AnalysisStyleProps,
+  ColorByName,
+  ColorDef,
+  RenderMode,
+  SkyBox,
+  ThematicGradientColorScheme,
+  ThematicGradientMode,
+  ThematicGradientSettingsProps,
 } from "@itwin/core-common";
+import { DecorateContext, GraphicType, IModelApp, RenderGraphicOwner, StandardViewId, Viewport } from "@itwin/core-frontend";
 import {
-  DecorateContext, GraphicType, IModelApp, RenderGraphicOwner, StandardViewId, Viewport,
-} from "@itwin/core-frontend";
+  Angle,
+  AuxChannel,
+  AuxChannelData,
+  AuxChannelDataType,
+  IModelJson,
+  Point3d,
+  Polyface,
+  PolyfaceAuxData,
+  PolyfaceBuilder,
+  StrokeOptions,
+  Transform,
+} from "@itwin/core-geometry";
 import { Viewer } from "./Viewer";
 
 type AnalysisMeshType = "Cantilever" | "Flat with waves";
@@ -21,7 +39,14 @@ interface AnalysisMesh {
   readonly styles: Map<string, AnalysisStyle | undefined>;
 }
 
-const seaMountain = [[0.0, 0, 255, 0, 0], [0.2, 72, 96, 160, 0x3f], [0.4, 152, 96, 160, 0x7f], [0.6, 128, 32, 104, 0xbf], [0.7, 148, 180, 128, 0xff], [1.0, 240, 240, 240, 0]];
+const seaMountain = [
+  [0.0, 0, 255, 0, 0],
+  [0.2, 72, 96, 160, 0x3f],
+  [0.4, 152, 96, 160, 0x7f],
+  [0.6, 128, 32, 104, 0xbf],
+  [0.7, 148, 180, 128, 0xff],
+  [1.0, 240, 240, 240, 0],
+];
 
 function populateAnalysisStyles(mesh: AnalysisMesh, displacementScale: number): void {
   const auxdata = mesh.polyface.data.auxData;
@@ -128,14 +153,30 @@ function createFlatMeshWithWaves(): Polyface {
   }
 
   // Static Channels.
-  auxChannels.push(new AuxChannel([new AuxChannelData(0.0, radialDisplacementData)], AuxChannelDataType.Vector, "Static Radial Displacement", "Radial: Static"));
-  auxChannels.push(new AuxChannel([new AuxChannelData(1.0, radialHeightData)], AuxChannelDataType.Distance, "Static Radial Height", "Radial: Static"));
+  auxChannels.push(
+    new AuxChannel([new AuxChannelData(0.0, radialDisplacementData)], AuxChannelDataType.Vector, "Static Radial Displacement", "Radial: Static"),
+  );
+  auxChannels.push(
+    new AuxChannel([new AuxChannelData(1.0, radialHeightData)], AuxChannelDataType.Distance, "Static Radial Height", "Radial: Static"),
+  );
   auxChannels.push(new AuxChannel([new AuxChannelData(1.0, radialSlopeData)], AuxChannelDataType.Scalar, "Static Radial Slope", "Radial: Static"));
 
   // Animated Channels.
-  const radialDisplacementDataVector = [new AuxChannelData(0.0, zeroDisplacementData), new AuxChannelData(1.0, radialDisplacementData), new AuxChannelData(2.0, zeroDisplacementData)];
-  const radialHeightDataVector = [new AuxChannelData(0.0, zeroScalarData), new AuxChannelData(1.0, radialHeightData), new AuxChannelData(2.0, zeroScalarData)];
-  const radialSlopeDataVector = [new AuxChannelData(0.0, zeroScalarData), new AuxChannelData(1.0, radialSlopeData), new AuxChannelData(2.0, zeroScalarData)];
+  const radialDisplacementDataVector = [
+    new AuxChannelData(0.0, zeroDisplacementData),
+    new AuxChannelData(1.0, radialDisplacementData),
+    new AuxChannelData(2.0, zeroDisplacementData),
+  ];
+  const radialHeightDataVector = [
+    new AuxChannelData(0.0, zeroScalarData),
+    new AuxChannelData(1.0, radialHeightData),
+    new AuxChannelData(2.0, zeroScalarData),
+  ];
+  const radialSlopeDataVector = [
+    new AuxChannelData(0.0, zeroScalarData),
+    new AuxChannelData(1.0, radialSlopeData),
+    new AuxChannelData(2.0, zeroScalarData),
+  ];
 
   auxChannels.push(new AuxChannel(radialDisplacementDataVector, AuxChannelDataType.Vector, "Animated Radial Displacement", "Radial: Time"));
   auxChannels.push(new AuxChannel(radialHeightDataVector, AuxChannelDataType.Distance, "Animated Radial Height", "Radial: Time"));

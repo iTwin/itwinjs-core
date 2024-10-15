@@ -1,4 +1,4 @@
-import { coverageConfigDefaults, defineConfig } from 'vitest/config';
+import { coverageConfigDefaults, defineConfig } from "vitest/config";
 export default defineConfig({
   test: {
     dir: "src/test",
@@ -7,26 +7,26 @@ export default defineConfig({
     coverage: {
       provider: "v8",
       include: [
-        "src/**/*"
+        "src/**/*",
       ],
       exclude: [
         ...coverageConfigDefaults.exclude,
         "src/test/**/*",
         "**/*.d.ts",
-        "**/*.d.tsx"
+        "**/*.d.tsx",
       ],
       reporter: [
         "text-summary",
         "lcov",
-        "cobertura"
+        "cobertura",
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
       thresholds: { // This should not be in the default config file.
         branches: 70,
         statements: 85,
         functions: 85,
-        lines: 85
-      }
+        lines: 85,
+      },
     },
     deps: {
       optimizer: {
@@ -35,5 +35,5 @@ export default defineConfig({
         },
       },
     },
-  }
-})
+  },
+});

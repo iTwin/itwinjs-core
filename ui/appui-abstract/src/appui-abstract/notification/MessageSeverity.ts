@@ -7,8 +7,8 @@
  */
 
 /** Message Severity enum for display messages.
-  * @public
-  */
+ * @public
+ */
 export enum MessageSeverity {
   None = 0,
   Information = 1,

@@ -7,7 +7,7 @@
  */
 
 import { Transform } from "@itwin/core-geometry";
-import { Box, extend, G, Element as MarkupElement, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
+import { Box, Element as MarkupElement, extend, G, Matrix, nodeOrNew, Rect, register, Svg, Text } from "@svgdotjs/svg.js";
 import { MarkupApp } from "./Markup";
 
 // cspell:ignore lmultiply matrixify dmove
@@ -92,7 +92,10 @@ extend(MarkupElement, {
   forElementsOfGroup(fn: (child: MarkupElement) => void): void {
     const me = this as MarkupElement;
     if (me instanceof G)
-      me.each((i, children) => { const child = children[i]; if (child instanceof MarkupElement) fn(child); }, false);
+      me.each((i, children) => {
+        const child = children[i];
+        if (child instanceof MarkupElement) fn(child);
+      }, false);
   },
   cloneMarkup(): MarkupElement {
     const me = this as MarkupElement;
@@ -121,11 +124,32 @@ extend(MarkupElement, {
       me.css(oldColor).data(OLDCOLOR, null); // change to old color and remove data object
     me.forElementsOfGroup((child) => child.resetColor());
   },
-  hilite() { const me = this as MarkupElement; if (!me.inSelection) { me.overrideColor(MarkupApp.props.hilite.color); me.inSelection = true; } },
-  unHilite() { const me = this as MarkupElement; if (me.inSelection) { me.resetColor(); me.inSelection = undefined; } },
-  flash() { const me = this as MarkupElement; if (!me.inSelection) me.overrideColor(MarkupApp.props.hilite.flash); },
-  unFlash() { const me = this as MarkupElement; if (!me.inSelection) me.resetColor(); },
-  markupStretch(w: number, h: number, x: number, y: number, _mtx: Matrix) { const me = this as MarkupElement; me.size(w, h).move(x, y); },
+  hilite() {
+    const me = this as MarkupElement;
+    if (!me.inSelection) {
+      me.overrideColor(MarkupApp.props.hilite.color);
+      me.inSelection = true;
+    }
+  },
+  unHilite() {
+    const me = this as MarkupElement;
+    if (me.inSelection) {
+      me.resetColor();
+      me.inSelection = undefined;
+    }
+  },
+  flash() {
+    const me = this as MarkupElement;
+    if (!me.inSelection) me.overrideColor(MarkupApp.props.hilite.flash);
+  },
+  unFlash() {
+    const me = this as MarkupElement;
+    if (!me.inSelection) me.resetColor();
+  },
+  markupStretch(w: number, h: number, x: number, y: number, _mtx: Matrix) {
+    const me = this as MarkupElement;
+    me.size(w, h).move(x, y);
+  },
   isChildOf(svg: Svg) {
     const parent = (this as MarkupElement).parent();
     return (parent === svg) ? true : (parent instanceof MarkupElement) ? parent.isChildOf(svg) : false;
@@ -156,11 +180,18 @@ extend(MarkupElement, {
 });
 
 extend(G, {
-  markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) { (this as G).attr("transform", mtx); },
+  markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) {
+    (this as G).attr("transform", mtx);
+  },
 });
 extend(Text, {
-  getFontSize(): number { const me = this as Text; return parseFloat(window.getComputedStyle(me.node).fontSize); },
-  markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) { (this as Text).attr("transform", mtx); },
+  getFontSize(): number {
+    const me = this as Text;
+    return parseFloat(window.getComputedStyle(me.node).fontSize);
+  },
+  markupStretch(_w: number, _h: number, _x: number, _y: number, mtx: Matrix) {
+    (this as Text).attr("transform", mtx);
+  },
   getMarkup() {
     const node = (this as Text).node;
     let text = "";
@@ -235,18 +266,31 @@ extend(Matrix, {
  * @internal
  */
 export class Title extends MarkupElement {
-  constructor(node: any) { super(nodeOrNew("title", node)); }
-  public override scale() { return this; }
-  public override size() { return this; }
-  public override move() { return this; }
-  public override dmove() { return this; }
-  public override bbox() { return new Box(); }
-  public override screenCTM() { return new Matrix(); }
-
+  constructor(node: any) {
+    super(nodeOrNew("title", node));
+  }
+  public override scale() {
+    return this;
+  }
+  public override size() {
+    return this;
+  }
+  public override move() {
+    return this;
+  }
+  public override dmove() {
+    return this;
+  }
+  public override bbox() {
+    return new Box();
+  }
+  public override screenCTM() {
+    return new Matrix();
+  }
 }
 register(Title, "Title");
 
 /** only for tests
  *  @internal
  */
-export function initSvgExt() { }
+export function initSvgExt() {}

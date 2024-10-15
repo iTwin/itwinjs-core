@@ -39,9 +39,13 @@ export class XYIndexGrid<T> {
     }
   }
   /** Return the number of x edges in the grid */
-  public get numXEdge(): number { return this._numXEdge; }
+  public get numXEdge(): number {
+    return this._numXEdge;
+  }
   /** Return the number of y edges in the grid */
-  public get numYEdge(): number { return this._numYEdge; }
+  public get numYEdge(): number {
+    return this._numYEdge;
+  }
 
   /** Return the `i` index of cells containing x coordinate */
   public xIndex(x: number): number {
@@ -154,7 +158,9 @@ export class XYPointBuckets {
   private _points: IndexedXYZCollection;
   private _buckets: XYIndexGrid<number>;
   /** Return the underlying grid with indices recorded by block */
-  public get indexGrid(): XYIndexGrid<number> { return this._buckets; }
+  public get indexGrid(): XYIndexGrid<number> {
+    return this._buckets;
+  }
   private constructor(points: IndexedXYZCollection, buckets: XYIndexGrid<number>) {
     this._points = points;
     this._buckets = buckets;
@@ -196,9 +202,10 @@ export class XYPointBuckets {
               const x = this._points.getXAtUncheckedPointIndex(k);
               const y = this._points.getYAtUncheckedPointIndex(k);
               const z = this._points.getZAtUncheckedPointIndex(k);
-              if (range.containsXY(x, y))
+              if (range.containsXY(x, y)) {
                 if (!announce(k, x, y, z))
                   return;
+              }
             }
           }
         }

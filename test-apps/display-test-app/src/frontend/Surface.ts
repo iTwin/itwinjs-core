@@ -2,23 +2,23 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { KeyinField, parseArgs } from "@itwin/frontend-devtools";
-import { Range3d } from "@itwin/core-geometry";
 import { Cartographic } from "@itwin/core-common";
 import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@itwin/core-frontend";
+import { Range3d } from "@itwin/core-geometry";
+import { KeyinField, parseArgs } from "@itwin/frontend-devtools";
+import { openAnalysisStyleExample } from "./AnalysisStyleExample";
 import { DisplayTestApp } from "./App";
+import { openDecorationGeometryExample } from "./DecorationGeometryExample";
 import { BrowserFileSelector, selectFileName } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
 import { NotificationsWindow } from "./Notifications";
+import { openIModel, OpenIModelProps } from "./openIModel";
 import { addSnapModes } from "./SnapModes";
 import { TileLoadIndicator } from "./TileLoadIndicator";
+import { setTitle } from "./Title";
 import { createToolButton, ToolBar } from "./ToolBar";
 import { Viewer, ViewerProps } from "./Viewer";
 import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
-import { openIModel, OpenIModelProps } from "./openIModel";
-import { setTitle } from "./Title";
-import { openAnalysisStyleExample } from "./AnalysisStyleExample";
-import { openDecorationGeometryExample } from "./DecorationGeometryExample";
 
 // cspell:ignore textbox topdiv
 
@@ -33,7 +33,9 @@ export class Surface {
   public readonly browserFileSelector?: BrowserFileSelector;
   public readonly openReadWrite: boolean;
 
-  public static get instance() { return DisplayTestApp.surface; }
+  public static get instance() {
+    return DisplayTestApp.surface;
+  }
 
   public constructor(surfaceDiv: HTMLElement, toolbarDiv: HTMLElement, browserFileSelector: BrowserFileSelector | undefined, openReadWrite: boolean) {
     // Ensure iModel gets closed on page close/reload
@@ -166,7 +168,7 @@ export class Surface {
   // create a new blank connection for testing backgroundMap and reality models.
   private async openBlankConnection(props?: Partial<BlankConnectionProps>): Promise<Viewer> {
     const iModel = BlankConnection.create({
-      location: props?.location ?? Cartographic.fromDegrees({longitude: -75.686694, latitude: 40.065757, height: 0}), // near Exton pa
+      location: props?.location ?? Cartographic.fromDegrees({ longitude: -75.686694, latitude: 40.065757, height: 0 }), // near Exton pa
       extents: props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
       name: props?.name ?? "blank connection test",
     });
@@ -321,8 +323,12 @@ export class Surface {
     this.keyinField.loseFocus();
   }
 
-  public focusNext() { this.focusNextOrPrevious(true); }
-  public focusPrevious() { this.focusNextOrPrevious(false); }
+  public focusNext() {
+    this.focusNextOrPrevious(true);
+  }
+  public focusPrevious() {
+    this.focusNextOrPrevious(false);
+  }
   private focusNextOrPrevious(next: boolean): void {
     // Focusing a window moves it to the front of the _windows array. So that array is ordered by most-recently- to least-recently-focused.
     if (next) {
@@ -430,8 +436,12 @@ export class Surface {
 
 export class CreateWindowTool extends Tool {
   public static override toolId = "CreateWindow";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return undefined; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return undefined;
+  }
 
   public override async run(props: NamedWindowProps): Promise<boolean> {
     DisplayTestApp.surface.createNamedWindow(props);
@@ -468,8 +478,12 @@ export class CreateWindowTool extends Tool {
 }
 
 export abstract class WindowIdTool extends Tool {
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public abstract execute(_window: Window): void;
 
@@ -516,8 +530,12 @@ export class CloseWindowTool extends WindowIdTool {
 }
 export class ResizeWindowTool extends Tool {
   public static override toolId = "ResizeWindow";
-  public static override get minArgs() { return 2; }
-  public static override get maxArgs() { return 3; }
+  public static override get minArgs() {
+    return 2;
+  }
+  public static override get maxArgs() {
+    return 3;
+  }
 
   public override async run(width: number, height: number, id?: string): Promise<boolean> {
     const window = undefined !== id ? Surface.instance.findWindowById(id) : Surface.instance.focusedWindow;
@@ -540,8 +558,12 @@ export class ResizeWindowTool extends Tool {
 
 export class DockWindowTool extends Tool {
   public static override toolId = "DockWindow";
-  public static override get minArgs() { return 1; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 1;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public override async run(dock: Dock, windowId?: string): Promise<boolean> {
     const window = undefined !== windowId ? Surface.instance.findWindowById(windowId) : Surface.instance.focusedWindow;
@@ -581,8 +603,12 @@ export class DockWindowTool extends Tool {
 
 export class CloneViewportTool extends Tool {
   public static override toolId = "CloneViewport";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(viewportId?: number): Promise<boolean> {
     if (undefined === viewportId) {
@@ -609,8 +635,12 @@ export class CloneViewportTool extends Tool {
 
 export class OpenIModelTool extends Tool {
   public static override toolId = "OpenIModel";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(filename?: string): Promise<boolean> {
     await Surface.instance.openFile(filename);

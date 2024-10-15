@@ -12,7 +12,7 @@ import { GraphicPrimitive } from "../../common/render/GraphicPrimitive";
 
 /** Options supplied to a `Viewport.getMapFeatureInfo` .
  * @beta
-  */
+ */
 export interface MapFeatureInfoOptions {
   /** The distance in screen pixels from the specified geometry within which the query operation should be performed. */
   tolerance?: number;

@@ -14,7 +14,7 @@ module.exports = [{
   mode: "production",
   entry: globSync(
     path.resolve(frontendLib, "esm/workers/ImdlParser/Worker.js"),
-    { windowsPathsNoEscape: true }
+    { windowsPathsNoEscape: true },
   ),
   output: {
     path: path.resolve(frontendLib, "workers/webpack/"),
@@ -27,7 +27,7 @@ module.exports = [{
         test: /\.js$/,
         use: "source-map-loader",
         sideEffects: false,
-        enforce: "pre"
+        enforce: "pre",
       },
       {
         test: /@itwin/,
@@ -37,6 +37,6 @@ module.exports = [{
   },
   stats: "errors-only",
   optimization: {
-    nodeEnv: "production"
+    nodeEnv: "production",
   },
 }];

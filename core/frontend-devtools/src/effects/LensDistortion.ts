@@ -8,8 +8,8 @@
 
 import { assert } from "@itwin/core-bentley";
 import { ScreenSpaceEffectBuilder, Tool, UniformType, VaryingType } from "@itwin/core-frontend";
-import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 import { parseArgs } from "../tools/parseArgs";
+import { AddEffectTool, refreshViewportsForEffect } from "./EffectTools";
 
 /** Adds a screen-space effect to the selected [[Viewport]] to simulate the lens distortion produced by real-world cameras with very wide fields of view.
  * Based on https://www.decarpentier.nl/lens-distortion
@@ -20,8 +20,12 @@ import { parseArgs } from "../tools/parseArgs";
 export class LensDistortionEffect extends AddEffectTool {
   public static override toolId = "LensDistortionEffect";
 
-  protected get effectName() { return "lensdistortion"; }
-  protected get textureCoordFromPosition() { return true; }
+  protected get effectName() {
+    return "lensdistortion";
+  }
+  protected get textureCoordFromPosition() {
+    return true;
+  }
 
   protected get source() {
     return {
@@ -95,8 +99,12 @@ export class LensDistortionEffect extends AddEffectTool {
  */
 export class LensDistortionConfig extends Tool {
   public static override toolId = "LensDistortionConfig";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public static strength = 0.5;
   public static cylindricalRatio = 0.5;

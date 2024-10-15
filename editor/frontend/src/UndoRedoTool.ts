@@ -45,4 +45,3 @@ export class RedoTool extends Tool {
     return true;
   }
 }
-

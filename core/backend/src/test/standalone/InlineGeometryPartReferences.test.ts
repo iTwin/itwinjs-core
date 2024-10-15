@@ -2,20 +2,40 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { Guid, Id64 } from "@itwin/core-bentley";
-import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
 import {
   AreaPattern,
-  Code, ColorDef, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator, IModel,
+  Code,
+  ColorDef,
+  GeometricElement3dProps,
+  GeometryParams,
+  GeometryPartProps,
+  GeometryStreamBuilder,
+  GeometryStreamIterator,
+  IModel,
 } from "@itwin/core-common";
+import { LineString3d, Loop, Point3d } from "@itwin/core-geometry";
+import { expect } from "chai";
 import {
-  _nativeDb, GenericSchema, GeometricElement3d, GeometryPart, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements,
+  _nativeDb,
+  GenericSchema,
+  GeometricElement3d,
+  GeometryPart,
+  PhysicalModel,
+  PhysicalObject,
+  PhysicalPartition,
+  RenderMaterialElement,
+  SnapshotDb,
+  SpatialCategory,
+  SubCategory,
+  SubjectOwnsPartitionElements,
 } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 // The only geometry in our geometry streams will be squares of 1 meter in x and y, with origin at (pos, 0, 0).
-interface Primitive { pos: number }
+interface Primitive {
+  pos: number;
+}
 
 interface PartRef {
   partId: string;
@@ -40,15 +60,17 @@ function makeGeomParams(symb: Symbology): GeometryParams {
   return params;
 }
 
-interface AppendSubRanges { appendSubRanges: true }
+interface AppendSubRanges {
+  appendSubRanges: true;
+}
 
 type UnionMember<T, U> = T & { [k in keyof U]?: never };
 
 type GeomWriterEntry =
-  UnionMember<PartRef, Symbology & Primitive & AppendSubRanges> |
-  UnionMember<Symbology, PartRef & Primitive & AppendSubRanges> |
-  UnionMember<Primitive, PartRef & Symbology & AppendSubRanges> |
-  UnionMember<AppendSubRanges, Symbology & Primitive & PartRef>;
+  | UnionMember<PartRef, Symbology & Primitive & AppendSubRanges>
+  | UnionMember<Symbology, PartRef & Primitive & AppendSubRanges>
+  | UnionMember<Primitive, PartRef & Symbology & AppendSubRanges>
+  | UnionMember<AppendSubRanges, Symbology & Primitive & PartRef>;
 
 class GeomWriter {
   public readonly builder: GeometryStreamBuilder;
@@ -65,25 +87,34 @@ class GeomWriter {
     else if (entry.subCategoryId || entry.categoryId || entry.color || entry.materialId || entry.patternOrigin)
       this.builder.appendGeometryParamsChange(makeGeomParams(entry));
     else if (undefined !== entry.pos)
-      this.builder.appendGeometry(Loop.createPolygon([new Point3d(entry.pos, 0, 0), new Point3d(entry.pos + 1, 0, 0), new Point3d(entry.pos + 1, 1, 0), new Point3d(entry.pos, 1, 0)]));
+      this.builder.appendGeometry(
+        Loop.createPolygon([
+          new Point3d(entry.pos, 0, 0),
+          new Point3d(entry.pos + 1, 0, 0),
+          new Point3d(entry.pos + 1, 1, 0),
+          new Point3d(entry.pos, 1, 0),
+        ]),
+      );
     else if (undefined !== entry.appendSubRanges)
       this.builder.appendGeometryRanges();
   }
 }
 
 // SubGraphicRange where x dimension is 1 meter and y and z are empty.
-interface SubRange { low: number }
+interface SubRange {
+  low: number;
+}
 
 type GeomStreamEntry =
-  UnionMember<PartRef, Symbology & SubRange & Primitive> |
-  UnionMember<Symbology, PartRef & SubRange & Primitive> |
-  UnionMember<SubRange, PartRef & Symbology & Primitive> |
-  UnionMember<Primitive, PartRef & Symbology & SubRange>;
+  | UnionMember<PartRef, Symbology & SubRange & Primitive>
+  | UnionMember<Symbology, PartRef & SubRange & Primitive>
+  | UnionMember<SubRange, PartRef & Symbology & Primitive>
+  | UnionMember<Primitive, PartRef & Symbology & SubRange>;
 
 function readGeomStream(iter: GeometryStreamIterator): GeomStreamEntry[] & { viewIndependent: boolean } {
   const result: GeomStreamEntry[] = [];
   for (const entry of iter) {
-    const symb: Symbology =  { categoryId: entry.geomParams.categoryId, subCategoryId: entry.geomParams.subCategoryId };
+    const symb: Symbology = { categoryId: entry.geomParams.categoryId, subCategoryId: entry.geomParams.subCategoryId };
 
     if (undefined !== entry.geomParams.lineColor)
       symb.color = entry.geomParams.lineColor;
@@ -215,7 +246,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       geom: writer.builder.geometryStream,
       placement: {
         origin: [0, 0, 0],
-        angles: { },
+        angles: {},
       },
     };
 
@@ -312,7 +343,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
     const part1 = insertGeometryPart([
       { pos: 1 },
       { color: ColorDef.green },
-      { pos: 1.5},
+      { pos: 1.5 },
     ]);
 
     const part2 = insertGeometryPart([
@@ -354,7 +385,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       { categoryId, subCategoryId: blueSubCategoryId },
       { pos: -1 },
       { categoryId, subCategoryId: redSubCategoryId },
-      { low: 1},
+      { low: 1 },
       { pos: 1 },
       { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.green },
       { low: 1.5 },
@@ -379,7 +410,7 @@ describe("DgnDb.inlineGeometryPartReferences", () => {
       { categoryId, subCategoryId: redSubCategoryId, materialId: "0" },
       { low: 3.5 },
       { pos: 3.5 },
-      {categoryId, subCategoryId: redSubCategoryId, color: ColorDef.white, materialId },
+      { categoryId, subCategoryId: redSubCategoryId, color: ColorDef.white, materialId },
       { low: -4 },
       { pos: -4 },
     ]);

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ECSchemaToTsXmlWriter } from "../ecschema2ts_io";
+import { SchemaContext } from "@itwin/ecschema-metadata";
 import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
+import { ECSchemaToTsXmlWriter } from "../ecschema2ts_io";
 import * as utils from "./utilities/utils";
-import { SchemaContext } from "@itwin/ecschema-metadata";
 
 const assetDir: string = utils.getAssetsDir();
 const ec32ReferenceDir: string = path.join(assetDir, "schema3.2");
@@ -29,7 +29,13 @@ async function testFileConverterFailure(context: SchemaContext, schemaFileName: 
   }
 }
 
-async function testFileConverterSuccess(context: SchemaContext, schemaFileName: string, schemaName: string, outputDir: string, referenceDir: string[]): Promise<void> {
+async function testFileConverterSuccess(
+  context: SchemaContext,
+  schemaFileName: string,
+  schemaName: string,
+  outputDir: string,
+  referenceDir: string[],
+): Promise<void> {
   const writer = new ECSchemaToTsXmlWriter(outputDir);
   await writer.convertSchemaFile(context, schemaFileName, referenceDir);
   assert.isTrue(fs.existsSync(path.join(outputDir, `${schemaName}.ts`)));

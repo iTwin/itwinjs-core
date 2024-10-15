@@ -3,18 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as chai from "chai";
 import { FontMap, GeometryContainmentRequestProps } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
+import * as chai from "chai";
 import { TestContext } from "./setup/TestContext";
 
 const expect = chai.expect;
 
 describe("IModel Views", () => {
-
   let iModel: IModelConnection;
 
-  before(async function () {
+  before(async function() {
     const testContext = await TestContext.instance();
 
     if (!testContext.settings.runiModelReadRpcTests)

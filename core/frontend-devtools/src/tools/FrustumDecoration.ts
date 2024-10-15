@@ -7,11 +7,20 @@
  * @module Tools
  */
 
-import { Map4d, Point3d } from "@itwin/core-geometry";
 import { ColorByName, ColorDef, Frustum, LinePixels, Npc } from "@itwin/core-common";
 import {
-  CoordSystem, DecorateContext, Decorator, GraphicBuilder, GraphicType, IModelApp, Tool, Viewport, ViewState, ViewState3d,
+  CoordSystem,
+  DecorateContext,
+  Decorator,
+  GraphicBuilder,
+  GraphicType,
+  IModelApp,
+  Tool,
+  Viewport,
+  ViewState,
+  ViewState3d,
 } from "@itwin/core-frontend";
+import { Map4d, Point3d } from "@itwin/core-geometry";
 import { parseToggle } from "./parseToggle";
 
 interface FrustumDecorationOptions {
@@ -56,7 +65,14 @@ class FrustumDecoration {
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
 
     if (this._isCameraOn)
-      FrustumDecoration.drawEyePositionAndFocalPlane(builder, this._npcFrustum, this._worldToNpcMap, this._eyePoint, this._focalPlane, context.viewport);
+      FrustumDecoration.drawEyePositionAndFocalPlane(
+        builder,
+        this._npcFrustum,
+        this._worldToNpcMap,
+        this._eyePoint,
+        this._focalPlane,
+        context.viewport,
+      );
 
     FrustumDecoration.drawFrustumBox(builder, this._worldFrustum, false, context.viewport); // show original frustum...
     FrustumDecoration.drawFrustumBox(builder, this._adjustedWorldFrustum, true, context.viewport); // show adjusted frustum...
@@ -131,7 +147,14 @@ class FrustumDecoration {
     return planePts;
   }
 
-  public static drawEyePositionAndFocalPlane(builder: GraphicBuilder, npcFrustum: Frustum, worldToNpcMap: Map4d, eyePoint: Point3d, focusPlaneNpc: number, vp: Viewport): void {
+  public static drawEyePositionAndFocalPlane(
+    builder: GraphicBuilder,
+    npcFrustum: Frustum,
+    worldToNpcMap: Map4d,
+    eyePoint: Point3d,
+    focusPlaneNpc: number,
+    vp: Viewport,
+  ): void {
     // Eye position...
     const contrastColor = vp.getContrastToBackgroundColor();
     builder.setSymbology(contrastColor, ColorDef.black, 8);
@@ -194,7 +217,9 @@ export class FrustumDecorator implements Decorator {
     }
   }
 
-  public static get isEnabled() { return undefined !== FrustumDecorator._instance; }
+  public static get isEnabled() {
+    return undefined !== FrustumDecorator._instance;
+  }
 }
 
 /** Enable ("ON"), disable ("OFF"), or toggle ("TOGGLE" or omitted) the [[FrustumDecorator]].
@@ -202,8 +227,12 @@ export class FrustumDecorator implements Decorator {
  */
 export class ToggleFrustumSnapshotTool extends Tool {
   public static override toolId = "ToggleFrustumSnapshot";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 2; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 2;
+  }
 
   public override async run(enable?: boolean, showPreloadFrustum?: boolean, showBackgroundIntersections?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -298,7 +327,14 @@ class SelectedViewFrustumDecoration {
     if (this._targetVp.isCameraOn) {
       const npcFrustum = this._targetVp.getFrustum(CoordSystem.Npc, true);
       const focalPlane = this._targetVp.worldToNpc(this._targetVp.view.getTargetPoint()).z;
-      FrustumDecoration.drawEyePositionAndFocalPlane(builder, npcFrustum, this._targetVp.viewingSpace.worldToNpcMap, this._targetVp.view.camera.getEyePoint(), focalPlane, context.viewport);
+      FrustumDecoration.drawEyePositionAndFocalPlane(
+        builder,
+        npcFrustum,
+        this._targetVp.viewingSpace.worldToNpcMap,
+        this._targetVp.view.camera.getEyePoint(),
+        focalPlane,
+        context.viewport,
+      );
     }
 
     const worldFrustum = this._targetVp.getFrustum(CoordSystem.World, false);
@@ -336,8 +372,12 @@ class SelectedViewFrustumDecoration {
  */
 export class ToggleSelectedViewFrustumTool extends Tool {
   public static override toolId = "ToggleSelectedViewFrustum";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -439,8 +479,12 @@ class ShadowFrustumDecoration {
  */
 export class ToggleShadowFrustumTool extends Tool {
   public static override toolId = "ToggleShadowFrustum";
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(enable?: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;

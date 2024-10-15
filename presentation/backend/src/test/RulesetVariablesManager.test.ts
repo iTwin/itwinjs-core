@@ -2,12 +2,12 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as faker from "faker";
-import * as moq from "typemoq";
 import { Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { VariableValueTypes } from "@itwin/presentation-common";
 import { createRandomId } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import * as faker from "faker";
+import * as moq from "typemoq";
 import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
 import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVariablesManager";
 

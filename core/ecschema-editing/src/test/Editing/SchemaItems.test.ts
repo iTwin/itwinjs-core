@@ -34,7 +34,7 @@ describe("Properties editing tests", () => {
   it("try setting description to unknown SchemaItem, returns error", async () => {
     const unknownKey = new SchemaItemKey("testUnitSystem", testKey);
 
-    await expect(testEditor.unitSystems.setDescription(unknownKey, "test description")).to.be.eventually.rejected.then(function (error) {
+    await expect(testEditor.unitSystems.setDescription(unknownKey, "test description")).to.be.eventually.rejected.then(function(error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.SetDescription);
       expect(error).to.have.nested.property("innerError.message", `UnitSystem ${unknownKey.fullName} could not be found in the schema context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
@@ -44,7 +44,7 @@ describe("Properties editing tests", () => {
   it("try setting label to unknown SchemaItem, returns error", async () => {
     const unknownKey = new SchemaItemKey("testUnitSystem", testKey);
 
-    await expect(testEditor.unitSystems.setDisplayLabel(unknownKey, "label")).to.be.eventually.rejected.then(function (error) {
+    await expect(testEditor.unitSystems.setDisplayLabel(unknownKey, "label")).to.be.eventually.rejected.then(function(error) {
       expect(error).to.have.property("errorNumber", ECEditingStatus.SetLabel);
       expect(error).to.have.nested.property("innerError.message", `UnitSystem ${unknownKey.fullName} could not be found in the schema context.`);
       expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);

@@ -7,8 +7,8 @@ import { describe, expect, it } from "vitest";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../../curve/CurveLocationDetail";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Geometry } from "../../Geometry";
-import { Checker } from "../Checker";
 import { Point3d } from "../../geometry3d/Point3dVector3d";
+import { Checker } from "../Checker";
 
 describe("CurveLocationDetail", () => {
   it("HelloWorld", () => {
@@ -27,7 +27,7 @@ describe("CurveLocationDetail", () => {
 
     const detailB0 = detailA0.clone();
     detailA0.fraction += 0.5;
-    const detailB1 = detailB0.clone(detailB0);    // nothing happens, but a return gets reached.
+    const detailB1 = detailB0.clone(detailB0); // nothing happens, but a return gets reached.
     ck.testPointer(detailB0, detailB1);
 
     ck.checkpoint("CurveLocationDetail.HelloWorld");
@@ -46,7 +46,7 @@ describe("CurveLocationDetail", () => {
     const g1 = detailA0.inverseInterpolateFraction(f, g0);
     ck.testExactNumber(g, g1, "inverse interpolation in simple interval.");
     // a degenerate two-point detail
-    const detailA2 = CurveLocationDetail.createCurveEvaluatedFractionFraction(segmentA, f0, f0);  // degenerate !
+    const detailA2 = CurveLocationDetail.createCurveEvaluatedFractionFraction(segmentA, f0, f0); // degenerate !
     const g2 = detailA2.inverseInterpolateFraction(f0, g0);
     ck.testExactNumber(g0, g2, "inverse interpolate in degenerate interval");
 
@@ -67,8 +67,10 @@ describe("CurveLocationDetail", () => {
     copy.collapseToEnd();
     ck.testExactNumber(copy.fraction, detail.fraction1!, "CurveLocationDetail.collapseToEnd moves fraction1 to fraction");
     ck.testPoint3d(copy.point, detail.point1!, "CurveLocationDetail.collapseToEnd moves point1 to point");
-    if (ck.testUndefined(copy.fraction1, "CurveLocationDetail.collapseToEnd nullifies fraction1") &&
-      ck.testUndefined(copy.point1, "CurveLocationDetail.collapseToEnd nullifies point1")) {
+    if (
+      ck.testUndefined(copy.fraction1, "CurveLocationDetail.collapseToEnd nullifies fraction1") &&
+      ck.testUndefined(copy.point1, "CurveLocationDetail.collapseToEnd nullifies point1")
+    ) {
       const copy1 = copy.clone();
       copy1.collapseToEnd();
       ck.testExactNumber(copy1.fraction, copy.fraction, "CurveLocationDetail.collapseToEnd preserves fraction if fraction1 undefined");

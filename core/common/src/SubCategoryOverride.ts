@@ -37,7 +37,8 @@ export class SubCategoryOverride {
 
   /** Returns true if any aspect of the appearance is overridden (i.e., if any member is not undefined). */
   public get anyOverridden(): boolean {
-    return undefined !== this.invisible || undefined !== this.color || undefined !== this.weight || undefined !== this.style || undefined !== this.priority || undefined !== this.material || undefined !== this.transparency;
+    return undefined !== this.invisible || undefined !== this.color || undefined !== this.weight || undefined !== this.style ||
+      undefined !== this.priority || undefined !== this.material || undefined !== this.transparency;
   }
 
   /** Returns a SubCategoryAppearance overridden to match the properties defined by this SubCategoryOverride. */
@@ -96,8 +97,10 @@ export class SubCategoryOverride {
 
   /** Perform equality comparison against another SubCategoryOverride. */
   public equals(other: SubCategoryOverride): boolean {
-    if (this.invisible !== other.invisible || this.weight !== other.weight || this.style !== other.style
-      || this.priority !== other.priority || this.material !== other.material || this.transparency !== other.transparency)
+    if (
+      this.invisible !== other.invisible || this.weight !== other.weight || this.style !== other.style
+      || this.priority !== other.priority || this.material !== other.material || this.transparency !== other.transparency
+    )
       return false;
 
     if (undefined !== this.color && undefined !== other.color)

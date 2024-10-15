@@ -163,9 +163,19 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   }
 
   private async makeRequest<
-    TRpcOptions extends { rulesetOrId?: Ruleset | string; clientId?: string; diagnostics?: RpcDiagnosticsOptions; rulesetVariables?: RulesetVariableJSON[] },
+    TRpcOptions extends {
+      rulesetOrId?: Ruleset | string;
+      clientId?: string;
+      diagnostics?: RpcDiagnosticsOptions;
+      rulesetVariables?: RulesetVariableJSON[];
+    },
     TResult,
-  >(token: IModelRpcProps, requestId: string, requestOptions: TRpcOptions, request: ContentGetter<Promise<TResult>>): PresentationRpcResponse<TResult> {
+  >(
+    token: IModelRpcProps,
+    requestId: string,
+    requestOptions: TRpcOptions,
+    request: ContentGetter<Promise<TResult>>,
+  ): PresentationRpcResponse<TResult> {
     const requestKey = JSON.stringify({ iModelKey: token.key, requestId, requestOptions });
 
     Logger.logInfo(PresentationBackendLoggerCategory.Rpc, `Received '${requestId}' request. Params: ${requestKey}`);
@@ -382,7 +392,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public override async getPagedContent(
     token: IModelRpcProps,
     requestOptions: Paged<ContentRpcRequestOptions>,
-  ): PresentationRpcResponse<{ descriptor: DescriptorJSON; contentSet: PagedResponse<ItemJSON> } | undefined> {
+  ): PresentationRpcResponse<{ descriptor: DescriptorJSON, contentSet: PagedResponse<ItemJSON> } | undefined> {
     return this.makeRequest(token, "getPagedContent", requestOptions, async (options) => {
       options = enforceValidPageSize({
         ...options,
@@ -417,7 +427,11 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       return this.errorResponse(response.statusCode, response.errorMessage, response.diagnostics);
     }
     if (!response.result) {
-      return this.errorResponse(PresentationStatus.Error, `Failed to get content set (received a success response with empty result)`, response.diagnostics);
+      return this.errorResponse(
+        PresentationStatus.Error,
+        `Failed to get content set (received a success response with empty result)`,
+        response.diagnostics,
+      );
     }
     return {
       ...response,
@@ -470,7 +484,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public override async getContentInstanceKeys(
     token: IModelRpcProps,
     requestOptions: ContentInstanceKeysRpcRequestOptions,
-  ): PresentationRpcResponse<{ total: number; items: KeySetJSON }> {
+  ): PresentationRpcResponse<{ total: number, items: KeySetJSON }> {
     return this.makeRequest(token, "getContentInstanceKeys", requestOptions, async (options) => {
       const { displayType, ...optionsNoDisplayType } = options;
       options = enforceValidPageSize(
@@ -530,9 +544,15 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     });
   }
 
-  public override async getSelectionScopes(token: IModelRpcProps, requestOptions: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]> {
-    return this.makeRequest(token, "getSelectionScopes", requestOptions, async (options) =>
-      this.getManager(requestOptions.clientId).getSelectionScopes(options),
+  public override async getSelectionScopes(
+    token: IModelRpcProps,
+    requestOptions: SelectionScopeRpcRequestOptions,
+  ): PresentationRpcResponse<SelectionScope[]> {
+    return this.makeRequest(
+      token,
+      "getSelectionScopes",
+      requestOptions,
+      async (options) => this.getManager(requestOptions.clientId).getSelectionScopes(options),
     );
   }
 

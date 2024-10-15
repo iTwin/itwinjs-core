@@ -8,8 +8,8 @@
 
 import { SchemaItemKey, SchemaItemType, SchemaKey, UnitSystem, UnitSystemProps } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
-import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
 import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
 import { SchemaItems } from "./SchemaItems";
 
 /**
@@ -22,9 +22,13 @@ export class UnitSystems extends SchemaItems {
   }
 
   public async create(schemaKey: SchemaKey, name: string, displayLabel?: string): Promise<SchemaItemKey> {
-
     try {
-      const newUnitSystem = await this.createSchemaItem<UnitSystem>(schemaKey, this.schemaItemType, (schema) => schema.createUnitSystem.bind(schema), name) as MutableUnitSystem;
+      const newUnitSystem = await this.createSchemaItem<UnitSystem>(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createUnitSystem.bind(schema),
+        name,
+      ) as MutableUnitSystem;
 
       if (displayLabel)
         newUnitSystem.setDisplayLabel(displayLabel);
@@ -37,10 +41,19 @@ export class UnitSystems extends SchemaItems {
 
   public async createFromProps(schemaKey: SchemaKey, unitSystemProps: UnitSystemProps): Promise<SchemaItemKey> {
     try {
-      const newUnitSystem = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createUnitSystem.bind(schema), unitSystemProps);
+      const newUnitSystem = await this.createSchemaItemFromProps(
+        schemaKey,
+        this.schemaItemType,
+        (schema) => schema.createUnitSystem.bind(schema),
+        unitSystemProps,
+      );
       return newUnitSystem.key;
     } catch (e: any) {
-      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, unitSystemProps.name!, schemaKey), e);
+      throw new SchemaEditingError(
+        ECEditingStatus.CreateSchemaItemFromProps,
+        new SchemaItemId(this.schemaItemType, unitSystemProps.name!, schemaKey),
+        e,
+      );
     }
   }
 }

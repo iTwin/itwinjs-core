@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { IModelJsFs } from "@itwin/core-backend";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelJsFs } from "@itwin/core-backend";
 
 export class KnownTestLocations {
   /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */

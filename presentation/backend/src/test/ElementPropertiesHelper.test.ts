@@ -2,11 +2,11 @@
  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
-import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb } from "@itwin/core-backend";
 import { DbResult } from "@itwin/core-bentley";
 import { PresentationError } from "@itwin/presentation-common";
+import { expect } from "chai";
+import * as moq from "typemoq";
 import { getBatchedClassElementIds, getClassesWithInstances, getElementsCount } from "../presentation-backend/ElementPropertiesHelper";
 import { stubECSqlReader } from "./Helpers";
 
@@ -48,7 +48,7 @@ describe("getElementsCount", () => {
         x.withPreparedStatement(
           moq.It.is((query) => query.includes("WHERE")),
           moq.It.isAny(),
-        ),
+        )
       )
       .returns(() => 0)
       .verifiable();
@@ -100,7 +100,7 @@ describe("getClassesWithInstances", () => {
           ["schema", "classB"],
           ["schema", "classA"],
           ["schema", "classB"],
-        ]),
+        ])
       );
     const result = new Array<string>();
     await getClassesWithInstances(imodelMock.object, ["x"]).forEach((value) => result.push(value));

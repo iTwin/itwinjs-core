@@ -2,20 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Logger, LogLevel } from "@itwin/core-bentley";
+import { EmptyLocalization } from "@itwin/core-common";
 import { assert, expect } from "chai";
 import { IModelApp } from "../../../IModelApp";
 import { AttributeMap } from "../../../render/webgl/AttributeMap";
-import { CompileStatus } from "../../../render/webgl/ShaderProgram";
+import { ViewportQuadGeometry } from "../../../render/webgl/CachedGeometry";
 import { DrawParams, ShaderProgramParams } from "../../../render/webgl/DrawCommand";
-import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
 import { FragmentShaderComponent, ProgramBuilder, VariableType, VertexShaderComponent } from "../../../render/webgl/ShaderBuilder";
-import { SingularTechnique, Techniques } from "../../../render/webgl/Technique";
+import { CompileStatus } from "../../../render/webgl/ShaderProgram";
 import { System } from "../../../render/webgl/System";
 import { Target } from "../../../render/webgl/Target";
+import { SingularTechnique, Techniques } from "../../../render/webgl/Technique";
+import { FeatureMode, TechniqueFlags } from "../../../render/webgl/TechniqueFlags";
 import { TechniqueId } from "../../../render/webgl/TechniqueId";
-import { ViewportQuadGeometry } from "../../../render/webgl/CachedGeometry";
-import { Logger, LogLevel } from "@itwin/core-bentley";
-import { EmptyLocalization } from "@itwin/core-common";
 
 function createPurpleQuadBuilder(): ProgramBuilder {
   const builder = new ProgramBuilder(AttributeMap.findAttributeMap(undefined, false));
@@ -166,7 +166,7 @@ describe("Techniques", () => {
 
       let numBuilt = 0;
       let maxNumVaryings = 0;
-      ProgramBuilder.prototype.buildProgram = function (gl) {
+      ProgramBuilder.prototype.buildProgram = function(gl) {
         ++numBuilt;
         const numVaryings = this.vert.computeNumVaryingVectors(this.frag.buildSource());
         expect(numVaryings).most(minGuaranteed);

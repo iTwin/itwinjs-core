@@ -110,7 +110,7 @@ export class FolderContainsRepositories extends ElementOwnsChildElements {
 export class SheetIndexFolderOwnsEntries extends ElementOwnsChildElements {
   public static override classFullName = "BisCore:SheetIndexFolderOwnsEntries";
   public constructor(parentId: Id64String, relClassName: string = SheetIndexFolderOwnsEntries.classFullName) {
-    super(parentId, relClassName );
+    super(parentId, relClassName);
   }
 }
 
@@ -120,7 +120,7 @@ export class SheetIndexFolderOwnsEntries extends ElementOwnsChildElements {
 export class SheetIndexOwnsEntries extends ElementOwnsChildElements {
   public static override classFullName = "BisCore:SheetIndexOwnsEntries";
   public constructor(parentId: Id64String, relClassName: string = SheetIndexOwnsEntries.classFullName) {
-    super(parentId, relClassName );
+    super(parentId, relClassName);
   }
 }
 

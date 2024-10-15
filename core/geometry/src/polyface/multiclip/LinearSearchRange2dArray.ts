@@ -57,9 +57,10 @@ export class LinearSearchRange2dArray<T> implements Range2dSearchInterface<T> {
       this.updateForSearch();
     // NEEDS WORK: Linear search here -- do better!
     for (const candidate of this._rangeArray) {
-      if (candidate.containsXY(x, y))
+      if (candidate.containsXY(x, y)) {
         if (!handler(candidate, (candidate as any).tag))
           return false;
+      }
     }
     return true;
   }
@@ -75,9 +76,10 @@ export class LinearSearchRange2dArray<T> implements Range2dSearchInterface<T> {
     if (this._isDirty)
       this.updateForSearch();
     for (const candidate of this._rangeArray) {
-      if (candidate.intersectsRange(testRange))
+      if (candidate.intersectsRange(testRange)) {
         if (!handler(candidate, (candidate as any).tag))
           return false;
+      }
     }
     return true;
   }

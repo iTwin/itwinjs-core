@@ -8,7 +8,25 @@ import { Point2d } from "@itwin/core-geometry";
 import { assert } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { DefinitionContainer, DefinitionModel, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, ElementGroupsMembers, ElementOwnsChildElements, ExternalSource, ExternalSourceGroup, IModelDb, Model, PhysicalPartition, SnapshotDb, SpatialCategory, SubCategory, Subject } from "../../core-backend";
+import {
+  DefinitionContainer,
+  DefinitionModel,
+  DocumentListModel,
+  Drawing,
+  DrawingCategory,
+  DrawingGraphic,
+  ElementGroupsMembers,
+  ElementOwnsChildElements,
+  ExternalSource,
+  ExternalSourceGroup,
+  IModelDb,
+  Model,
+  PhysicalPartition,
+  SnapshotDb,
+  SpatialCategory,
+  SubCategory,
+  Subject,
+} from "../../core-backend";
 import { deleteElementSubTrees, deleteElementTree, ElementTreeBottomUp, ElementTreeWalkerScope } from "../../ElementTreeWalker";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -20,7 +38,9 @@ class ElementTreeCollector extends ElementTreeBottomUp {
   public elements: Id64Array = [];
   public definitions: Id64Array = [];
 
-  public constructor(iModel: IModelDb) { super(iModel); }
+  public constructor(iModel: IModelDb) {
+    super(iModel);
+  }
 
   public visitModel(model: Model, _scope: ElementTreeWalkerScope): void {
     if (model instanceof DefinitionModel)
@@ -42,10 +62,18 @@ class ElementTreeCollector extends ElementTreeBottomUp {
 }
 
 class SelectedElementCollector extends ElementTreeCollector {
-  public constructor(iModel: IModelDb, private _elementsToReport: Id64Array) { super(iModel); }
-  public override shouldExploreModel(_model: Model): boolean { return true; }
-  public override shouldVisitModel(_model: Model): boolean { return false; }
-  public override shouldVisitElement(elementId: Id64String): boolean { return this._elementsToReport.includes(elementId); }
+  public constructor(iModel: IModelDb, private _elementsToReport: Id64Array) {
+    super(iModel);
+  }
+  public override shouldExploreModel(_model: Model): boolean {
+    return true;
+  }
+  public override shouldVisitModel(_model: Model): boolean {
+    return false;
+  }
+  public override shouldVisitElement(elementId: Id64String): boolean {
+    return this._elementsToReport.includes(elementId);
+  }
 }
 
 function doesElementExist(iModel: IModelDb, elementId: Id64String): boolean {
@@ -57,12 +85,15 @@ function doesModelExist(iModel: IModelDb, mid: Id64String): boolean {
 }
 
 function doesGroupRelationshipExist(iModel: IModelDb, source: Id64String, target: Id64String): boolean {
-  return iModel.withPreparedStatement(`select count(*) from ${ElementGroupsMembers.classFullName} where sourceecinstanceid=? and targetecinstanceid=?`, (stmt) => {
-    stmt.bindId(1, source);
-    stmt.bindId(2, target);
-    stmt.step();
-    return stmt.getValue(0).getInteger() !== 0;
-  });
+  return iModel.withPreparedStatement(
+    `select count(*) from ${ElementGroupsMembers.classFullName} where sourceecinstanceid=? and targetecinstanceid=?`,
+    (stmt) => {
+      stmt.bindId(1, source);
+      stmt.bindId(2, target);
+      stmt.step();
+      return stmt.getValue(0).getInteger() !== 0;
+    },
+  );
 }
 
 describe("ElementTreeWalker", () => {
@@ -148,8 +179,17 @@ describe("ElementTreeWalker", () => {
     definitionContainerId = DefinitionContainer.insert(iModel, definitionModelId, Code.createEmpty());
     nestedSpatialCategoryId = SpatialCategory.insert(iModel, definitionContainerId, "nested", {});
 
-    xsGroup = iModel.elements.insertElement({ classFullName: ExternalSourceGroup.classFullName, model: drawingDefinitionModelId, code: Code.createEmpty() });
-    xsElement = iModel.elements.insertElement({ classFullName: ExternalSource.classFullName, model: drawingDefinitionModelId, parent: new ElementOwnsChildElements(xsGroup), code: Code.createEmpty() });
+    xsGroup = iModel.elements.insertElement({
+      classFullName: ExternalSourceGroup.classFullName,
+      model: drawingDefinitionModelId,
+      code: Code.createEmpty(),
+    });
+    xsElement = iModel.elements.insertElement({
+      classFullName: ExternalSource.classFullName,
+      model: drawingDefinitionModelId,
+      parent: new ElementOwnsChildElements(xsGroup),
+      code: Code.createEmpty(),
+    });
 
     documentListModelId = DocumentListModel.insert(iModel, jobSubjectId, "Document");
     assert.isTrue(Id64.isValidId64(documentListModelId));
@@ -165,7 +205,12 @@ describe("ElementTreeWalker", () => {
     };
     drawingGraphicId1 = iModel.elements.insertElement(drawingGraphicProps1);
 
-    [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, PhysicalPartition.createCode(iModel, childSubject, "Physical"), false, childSubject);
+    [, physicalModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(
+      iModel,
+      PhysicalPartition.createCode(iModel, childSubject, "Physical"),
+      false,
+      childSubject,
+    );
     const elementProps: GeometricElementProps = {
       classFullName: "TestBim:TestPhysicalObject",
       model: physicalModelId,
@@ -225,7 +270,10 @@ describe("ElementTreeWalker", () => {
       assert.isTrue(collector1.subModels.includes(physicalModelId));
       assert.isTrue(collector1.subModels.includes(drawingModelId));
       assert.isTrue(collector1.subModels.includes(documentListModelId));
-      assert.isTrue(collector1.subModels.indexOf(drawingModelId) < collector1.subModels.indexOf(documentListModelId), "in bottom-up search, a child model should be visited before its parent model");
+      assert.isTrue(
+        collector1.subModels.indexOf(drawingModelId) < collector1.subModels.indexOf(documentListModelId),
+        "in bottom-up search, a child model should be visited before its parent model",
+      );
       assert.isFalse(collector1.subModels.includes(definitionModelId));
       assert.isTrue(collector1.definitionModels.includes(definitionModelId));
       assert.isFalse(collector1.subModels.includes(definitionContainerId));
@@ -238,15 +286,42 @@ describe("ElementTreeWalker", () => {
       assert.isFalse(collector1.elements.includes(drawingCategoryId));
       assert.isFalse(collector1.elements.includes(spatialCategoryId));
       assert.isFalse(collector1.elements.includes(nestedSpatialCategoryId));
-      assert.isTrue(collector1.elements.indexOf(physicalObjectId1) < collector1.elements.indexOf(physicalModelId), "in bottom-up search, an element in a model should be visited before its model's element");
-      assert.isTrue(collector1.elements.indexOf(drawingGraphicId1) < collector1.elements.indexOf(drawingModelId), "in bottom-up search, an element in a model should be visited before its model's element");
-      assert.isTrue(collector1.elements.indexOf(drawingModelId) < collector1.elements.indexOf(documentListModelId), "in bottom-up search, an element in a model should be visited before its model's element");
-      assert.isTrue(collector1.elements.indexOf(documentListModelId) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
-      assert.isTrue(collector1.elements.indexOf(definitionModelId) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
-      assert.isTrue(collector1.elements.indexOf(definitionContainerId) < collector1.elements.indexOf(definitionModelId), "in bottom-up search, a child element should be visited before its parent element");
-      assert.isTrue(collector1.elements.indexOf(drawingDefinitionModelId) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
-      assert.isTrue(collector1.elements.indexOf(childSubject) < collector1.elements.indexOf(jobSubjectId), "in bottom-up search, a child element should be visited before its parent element");
-      assert.isTrue(collector1.elements.indexOf(physicalModelId) < collector1.elements.indexOf(childSubject), "in bottom-up search, a child element should be visited before its parent element");
+      assert.isTrue(
+        collector1.elements.indexOf(physicalObjectId1) < collector1.elements.indexOf(physicalModelId),
+        "in bottom-up search, an element in a model should be visited before its model's element",
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(drawingGraphicId1) < collector1.elements.indexOf(drawingModelId),
+        "in bottom-up search, an element in a model should be visited before its model's element",
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(drawingModelId) < collector1.elements.indexOf(documentListModelId),
+        "in bottom-up search, an element in a model should be visited before its model's element",
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(documentListModelId) < collector1.elements.indexOf(jobSubjectId),
+        "in bottom-up search, a child element should be visited before its parent element",
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(definitionModelId) < collector1.elements.indexOf(jobSubjectId),
+        "in bottom-up search, a child element should be visited before its parent element",
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(definitionContainerId) < collector1.elements.indexOf(definitionModelId),
+        "in bottom-up search, a child element should be visited before its parent element",
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(drawingDefinitionModelId) < collector1.elements.indexOf(jobSubjectId),
+        "in bottom-up search, a child element should be visited before its parent element",
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(childSubject) < collector1.elements.indexOf(jobSubjectId),
+        "in bottom-up search, a child element should be visited before its parent element",
+      );
+      assert.isTrue(
+        collector1.elements.indexOf(physicalModelId) < collector1.elements.indexOf(childSubject),
+        "in bottom-up search, a child element should be visited before its parent element",
+      );
     }
 
     // Exercise the search filters

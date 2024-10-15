@@ -3,20 +3,34 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@itwin/core-bentley";
-import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
 import { ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
-  IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
-  PaddingPercent, ScreenViewport, Tool, Viewport, ViewState,
+  IModelApp,
+  IModelConnection,
+  MarginOptions,
+  MarginPercent,
+  NotifyMessageDetails,
+  openImageDataUrlInNewWindow,
+  OutputMessagePriority,
+  PaddingPercent,
+  ScreenViewport,
+  Tool,
+  Viewport,
+  ViewState,
 } from "@itwin/core-frontend";
-import { parseArgs } from "@itwin/frontend-devtools";
+import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Vector3d } from "@itwin/core-geometry";
 import { MarkupApp, MarkupData } from "@itwin/core-markup";
+import { parseArgs } from "@itwin/frontend-devtools";
+import { CameraPathsMenu } from "./CameraPaths";
 import { ClassificationsPanel } from "./ClassificationsPanel";
+import { ContoursPanel } from "./Contours";
 import { DebugWindow } from "./DebugWindow";
 import { FeatureOverridesPanel } from "./FeatureOverrides";
+import { HubPicker } from "./HubPicker";
 import { CategoryPicker, ModelPicker } from "./IdPicker";
+import { openIModel, OpenIModelProps } from "./openIModel";
+import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
 import { SavedViewPicker } from "./SavedViews";
-import { CameraPathsMenu } from "./CameraPaths";
 import { SectionsPanel } from "./SectionTools";
 import { StandardRotations } from "./StandardRotations";
 import { Surface } from "./Surface";
@@ -26,10 +40,6 @@ import { createImageButton, createToolButton, ToolBar } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
-import { openIModel, OpenIModelProps } from "./openIModel";
-import { HubPicker } from "./HubPicker";
-import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
-import { ContoursPanel } from "./Contours";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -44,7 +54,9 @@ export class ZoomToSelectedElementsTool extends Tool {
   private _padding?: PaddingPercent | number;
 
   public static override toolId = "ZoomToSelectedElements";
-  public static override get maxArgs() { return 4; }
+  public static override get maxArgs() {
+    return 4;
+  }
 
   public override async run(): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -118,8 +130,12 @@ export class ModelClipTool extends Tool {
 export class MarkupTool extends Tool {
   public static override toolId = "Markup";
   public static savedData?: MarkupData;
-  public static override get minArgs() { return 0; }
-  public static override get maxArgs() { return 1; }
+  public static override get minArgs() {
+    return 0;
+  }
+  public static override get maxArgs() {
+    return 1;
+  }
 
   public override async run(wantSavedData: boolean): Promise<boolean> {
     const vp = IModelApp.viewManager.selectedView;
@@ -128,7 +144,8 @@ export class MarkupTool extends Tool {
 
     if (MarkupApp.isActive) {
       // NOTE: Because we don't have separate START and STOP buttons in the test app, exit markup mode only when the Markup Select tool is active, otherwise start the Markup Select tool...
-      const startMarkupSelect = IModelApp.toolAdmin.defaultToolId === MarkupApp.markupSelectToolId && (undefined === IModelApp.toolAdmin.activeTool || MarkupApp.markupSelectToolId !== IModelApp.toolAdmin.activeTool.toolId);
+      const startMarkupSelect = IModelApp.toolAdmin.defaultToolId === MarkupApp.markupSelectToolId &&
+        (undefined === IModelApp.toolAdmin.activeTool || MarkupApp.markupSelectToolId !== IModelApp.toolAdmin.activeTool.toolId);
       if (startMarkupSelect) {
         await IModelApp.toolAdmin.startDefaultTool();
         return true;
@@ -139,7 +156,7 @@ export class MarkupTool extends Tool {
           MarkupTool.savedData = markupData;
         if (undefined !== markupData.image)
           openImageDataUrlInNewWindow(markupData.image, "Markup");
-      }).catch((_) => { });
+      }).catch((_) => {});
     } else {
       MarkupApp.props.active.element.stroke = "white"; // as an example, set default color for elements
       MarkupApp.markupSelectToolId = "Markup.TestSelect"; // as an example override the default markup select tool to launch redline tools using key events
@@ -562,7 +579,9 @@ export class Viewer extends Window {
     this.container.classList.remove("viewport-selected");
   }
 
-  public get windowId(): string { return this.viewport.viewportId.toString(); }
+  public get windowId(): string {
+    return this.viewport.viewportId.toString();
+  }
 
   public override onClosing(): void {
     this.toolBar.dispose();

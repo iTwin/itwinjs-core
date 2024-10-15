@@ -61,7 +61,8 @@ export interface RequestOptionsWithRuleset<TIModel, TRulesetVariable = RulesetVa
  * Request type for hierarchy requests.
  * @public
  */
-export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+export interface HierarchyRequestOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable>
+  extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** Key of the parent node to get children for */
   parentKey?: TNodeKey;
 
@@ -116,7 +117,8 @@ export interface FilterByInstancePathsHierarchyRequestOptions<TIModel, TRulesetV
  * Request type of filtering hierarchies by given text.
  * @public
  */
-export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+export interface FilterByTextHierarchyRequestOptions<TIModel, TRulesetVariable = RulesetVariable>
+  extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   /** Text to filter the hierarchy by. */
   filterText: string;
 }
@@ -291,7 +293,8 @@ export function isComputeSelectionRequestOptions<TIModel>(
  * Data structure for comparing a hierarchy after ruleset or ruleset variable changes.
  * @public
  */
-export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable> extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
+export interface HierarchyCompareOptions<TIModel, TNodeKey, TRulesetVariable = RulesetVariable>
+  extends RequestOptionsWithRuleset<TIModel, TRulesetVariable> {
   prev: {
     rulesetOrId?: Ruleset | string;
     rulesetVariables?: TRulesetVariable[];

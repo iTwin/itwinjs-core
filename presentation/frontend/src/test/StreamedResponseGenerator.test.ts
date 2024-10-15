@@ -3,15 +3,15 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import sinon from "sinon";
 import { PagedResponse, PageOptions } from "@itwin/presentation-common";
 import { ResolvablePromise } from "@itwin/presentation-common/lib/cjs/test";
+import { expect } from "chai";
+import sinon from "sinon";
 import { StreamedResponseGenerator, StreamedResponseGeneratorProps } from "../presentation-frontend/StreamedResponseGenerator";
 
 describe("StreamedResponseGenerator", () => {
   /** Creates a response with the total item count and an array of items for the requested page. */
-  async function createItemsResponse<T>(generator: StreamedResponseGenerator<T>): Promise<{ total: number; items: T[] }> {
+  async function createItemsResponse<T>(generator: StreamedResponseGenerator<T>): Promise<{ total: number, items: T[] }> {
     const response = await generator.createAsyncIteratorResponse();
     const items = new Array<T>();
     for await (const value of response.items) {
@@ -53,10 +53,12 @@ describe("StreamedResponseGenerator", () => {
 
   it("returns values in correct order when requests resolve in different order than being made", async () => {
     const total = 4;
-    for (const ordering of [
-      [2, 1, 0],
-      [2, 0, 1],
-    ]) {
+    for (
+      const ordering of [
+        [2, 1, 0],
+        [2, 0, 1],
+      ]
+    ) {
       const fakePromises: ResolvablePromise<PagedResponse<number>>[] = [...new Array(total - 1).keys()].map(() => new ResolvablePromise());
       const generator = new StreamedResponseGenerator({
         getBatch: async (_, idx) => {

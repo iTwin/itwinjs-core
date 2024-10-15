@@ -6,13 +6,37 @@
  * @module Comparison
  */
 
-import {
-  AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant, containerTypeToString, CustomAttribute, CustomAttributeClass,
-  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Phenomenon,
-  primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass, RelationshipConstraint, Schema,
-  SchemaItem, SchemaItemKey, strengthDirectionToString, strengthToString, Unit,
-} from "@itwin/ecschema-metadata";
 import { formatTraitsToArray, formatTypeToString, scientificTypeToString, showSignOptionToString } from "@itwin/core-quantity";
+import {
+  AnyClass,
+  AnyEnumerator,
+  AnyProperty,
+  classModifierToString,
+  Constant,
+  containerTypeToString,
+  CustomAttribute,
+  CustomAttributeClass,
+  CustomAttributeContainerProps,
+  EntityClass,
+  Enumeration,
+  Format,
+  InvertedUnit,
+  KindOfQuantity,
+  Mixin,
+  OverrideFormat,
+  Phenomenon,
+  primitiveTypeToString,
+  PropertyCategory,
+  propertyTypeToString,
+  RelationshipClass,
+  RelationshipConstraint,
+  Schema,
+  SchemaItem,
+  SchemaItemKey,
+  strengthDirectionToString,
+  strengthToString,
+  Unit,
+} from "@itwin/ecschema-metadata";
 import { ISchemaCompareReporter } from "./SchemaCompareReporter";
 import { SchemaCompareResultDelegate } from "./SchemaCompareResultDelegate";
 import { SchemaCompareVisitor } from "./SchemaCompareVisitor";
@@ -111,14 +135,24 @@ export class SchemaComparer {
       if (!refB)
         promises.push(this._reporter.reportSchemaReferenceMissing(schemaA, ref, this._compareDirection));
       else if (!refB.schemaKey.matches(ref.schemaKey))
-        promises.push(this._reporter.reportSchemaReferenceDelta(schemaA, ref, ref.schemaKey.version.toString(), refB.schemaKey.version.toString(), this._compareDirection));
+        promises.push(
+          this._reporter.reportSchemaReferenceDelta(
+            schemaA,
+            ref,
+            ref.schemaKey.version.toString(),
+            refB.schemaKey.version.toString(),
+            this._compareDirection,
+          ),
+        );
     }
 
     if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
     if (schemaA.schemaKey.toString() !== schemaB.schemaKey.toString())
-      promises.push(this._reporter.reportSchemaDelta(schemaA, "schemaKey", schemaA.schemaKey.toString(), schemaB.schemaKey.toString(), this._compareDirection));
+      promises.push(
+        this._reporter.reportSchemaDelta(schemaA, "schemaKey", schemaA.schemaKey.toString(), schemaB.schemaKey.toString(), this._compareDirection),
+      );
 
     if (schemaA.alias !== schemaB.alias)
       promises.push(this._reporter.reportSchemaDelta(schemaA, "alias", schemaA.alias, schemaB.alias, this._compareDirection));
@@ -157,7 +191,9 @@ export class SchemaComparer {
     }
 
     if (schemaItemA.description !== schemaItemB.description)
-      promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "description", schemaItemA.description, schemaItemB.description, this._compareDirection));
+      promises.push(
+        this._reporter.reportSchemaItemDelta(schemaItemA, "description", schemaItemA.description, schemaItemB.description, this._compareDirection),
+      );
 
     if (!labelsMatch(schemaItemA.label, schemaItemB.label))
       promises.push(this._reporter.reportSchemaItemDelta(schemaItemA, "label", schemaItemA.label, schemaItemB.label, this._compareDirection));
@@ -228,7 +264,9 @@ export class SchemaComparer {
       promises.push(this._reporter.reportPropertyDelta(propertyA, "label", propertyA.label, propertyB.label, this._compareDirection));
 
     if (propertyA.description !== propertyB.description)
-      promises.push(this._reporter.reportPropertyDelta(propertyA, "description", propertyA.description, propertyB.description, this._compareDirection));
+      promises.push(
+        this._reporter.reportPropertyDelta(propertyA, "description", propertyA.description, propertyB.description, this._compareDirection),
+      );
 
     if (propertyA.isReadOnly !== propertyB.isReadOnly)
       promises.push(this._reporter.reportPropertyDelta(propertyA, "isReadOnly", propertyA.isReadOnly, propertyB.isReadOnly, this._compareDirection));
@@ -250,7 +288,12 @@ export class SchemaComparer {
       const koqKeyA = propertyA.kindOfQuantity?.fullName;
       const koqKeyB = propertyB.kindOfQuantity?.fullName;
       if (koqKeyA !== koqKeyB) {
-        const areSameByName = this.areItemsSameByName(propertyA.kindOfQuantity, propertyB.kindOfQuantity, propertyA.schema.name, propertyB.schema.name);
+        const areSameByName = this.areItemsSameByName(
+          propertyA.kindOfQuantity,
+          propertyB.kindOfQuantity,
+          propertyA.schema.name,
+          propertyB.schema.name,
+        );
         if (!areSameByName)
           promises.push(this._reporter.reportPropertyDelta(propertyA, "kindOfQuantity", koqKeyA, koqKeyB, this._compareDirection));
       }
@@ -315,7 +358,9 @@ export class SchemaComparer {
     if (relationshipA.strengthDirection !== relationshipB.strengthDirection) {
       const directionAString = strengthDirectionToString(relationshipA.strengthDirection);
       const directionBString = strengthDirectionToString(relationshipB.strengthDirection);
-      promises.push(this._reporter.reportRelationshipClassDelta(relationshipA, "strengthDirection", directionAString, directionBString, this._compareDirection));
+      promises.push(
+        this._reporter.reportRelationshipClassDelta(relationshipA, "strengthDirection", directionAString, directionBString, this._compareDirection),
+      );
     }
 
     await Promise.all(promises);
@@ -331,8 +376,13 @@ export class SchemaComparer {
 
     if (constraintA.constraintClasses) {
       for (const classA of constraintA.constraintClasses) {
-        if (!constraintB.constraintClasses || -1 === constraintB.constraintClasses.findIndex((classB) =>
-          this.areItemsSameByName(classA, classB, constraintA.schema.name, constraintB.schema.name)))
+        if (
+          !constraintB.constraintClasses ||
+          -1 ===
+            constraintB.constraintClasses.findIndex((classB) =>
+              this.areItemsSameByName(classA, classB, constraintA.schema.name, constraintB.schema.name)
+            )
+        )
           promises.push(this._reporter.reportRelationshipConstraintClassMissing(constraintA, await classA, this._compareDirection));
       }
     }
@@ -346,22 +396,47 @@ export class SchemaComparer {
       const multiplicityA = constraintA.multiplicity.toString();
       const multiplicityB = constraintB.multiplicity.toString();
       if (multiplicityA !== multiplicityB)
-        promises.push(this._reporter.reportRelationshipConstraintDelta(constraintA, "multiplicity", multiplicityA, multiplicityB, this._compareDirection));
+        promises.push(
+          this._reporter.reportRelationshipConstraintDelta(constraintA, "multiplicity", multiplicityA, multiplicityB, this._compareDirection),
+        );
     }
 
     if (constraintA.roleLabel !== constraintB.roleLabel)
-      promises.push(this._reporter.reportRelationshipConstraintDelta(constraintA, "roleLabel", constraintA.roleLabel, constraintB.roleLabel, this._compareDirection));
+      promises.push(
+        this._reporter.reportRelationshipConstraintDelta(
+          constraintA,
+          "roleLabel",
+          constraintA.roleLabel,
+          constraintB.roleLabel,
+          this._compareDirection,
+        ),
+      );
 
     if (constraintA.polymorphic !== constraintB.polymorphic)
-      promises.push(this._reporter.reportRelationshipConstraintDelta(constraintA, "polymorphic", constraintA.polymorphic, constraintB.polymorphic, this._compareDirection));
+      promises.push(
+        this._reporter.reportRelationshipConstraintDelta(
+          constraintA,
+          "polymorphic",
+          constraintA.polymorphic,
+          constraintB.polymorphic,
+          this._compareDirection,
+        ),
+      );
 
     if (constraintA.abstractConstraint || constraintB.abstractConstraint) {
       const abstractA = constraintA.abstractConstraint?.fullName;
       const abstractB = constraintB.abstractConstraint?.fullName;
       if (abstractA !== abstractB) {
-        const areSameByName = this.areItemsSameByName(constraintA.abstractConstraint, constraintB.abstractConstraint, constraintA.schema.name, constraintB.schema.name);
+        const areSameByName = this.areItemsSameByName(
+          constraintA.abstractConstraint,
+          constraintB.abstractConstraint,
+          constraintA.schema.name,
+          constraintB.schema.name,
+        );
         if (!areSameByName) {
-          promises.push(this._reporter.reportRelationshipConstraintDelta(constraintA, "abstractConstraint", abstractA, abstractB, this._compareDirection));
+          promises.push(
+            this._reporter.reportRelationshipConstraintDelta(constraintA, "abstractConstraint", abstractA, abstractB, this._compareDirection),
+          );
         }
       }
     }
@@ -374,7 +449,10 @@ export class SchemaComparer {
    * @param customAttributeClassA
    * @param customAttributeClassB
    */
-  public async compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass): Promise<void> {
+  public async compareCustomAttributeClasses(
+    customAttributeClassA: CustomAttributeClass,
+    customAttributeClassB: CustomAttributeClass,
+  ): Promise<void> {
     if (this._compareDirection === SchemaCompareDirection.Backward)
       return;
 
@@ -529,19 +607,27 @@ export class SchemaComparer {
     }
 
     if (formatA.decimalSeparator !== formatB.decimalSeparator)
-      promises.push(this._reporter.reportFormatDelta(formatA, "decimalSeparator", formatA.decimalSeparator, formatB.decimalSeparator, this._compareDirection));
+      promises.push(
+        this._reporter.reportFormatDelta(formatA, "decimalSeparator", formatA.decimalSeparator, formatB.decimalSeparator, this._compareDirection),
+      );
 
     if (formatA.thousandSeparator !== formatB.thousandSeparator)
-      promises.push(this._reporter.reportFormatDelta(formatA, "thousandSeparator", formatA.thousandSeparator, formatB.thousandSeparator, this._compareDirection));
+      promises.push(
+        this._reporter.reportFormatDelta(formatA, "thousandSeparator", formatA.thousandSeparator, formatB.thousandSeparator, this._compareDirection),
+      );
 
     if (formatA.uomSeparator !== formatB.uomSeparator)
       promises.push(this._reporter.reportFormatDelta(formatA, "uomSeparator", formatA.uomSeparator, formatB.uomSeparator, this._compareDirection));
 
     if (formatA.stationSeparator !== formatB.stationSeparator)
-      promises.push(this._reporter.reportFormatDelta(formatA, "stationSeparator", formatA.stationSeparator, formatB.stationSeparator, this._compareDirection));
+      promises.push(
+        this._reporter.reportFormatDelta(formatA, "stationSeparator", formatA.stationSeparator, formatB.stationSeparator, this._compareDirection),
+      );
 
     if (formatA.stationOffsetSize !== formatB.stationOffsetSize)
-      promises.push(this._reporter.reportFormatDelta(formatA, "stationOffsetSize", formatA.stationOffsetSize, formatB.stationOffsetSize, this._compareDirection));
+      promises.push(
+        this._reporter.reportFormatDelta(formatA, "stationOffsetSize", formatA.stationOffsetSize, formatB.stationOffsetSize, this._compareDirection),
+      );
 
     if (formatA.formatTraits !== formatB.formatTraits) {
       const traitsA = formatTraitsToArray(formatA.formatTraits);
@@ -619,7 +705,12 @@ export class SchemaComparer {
       const fullNameA = invertedUnitA.invertsUnit?.fullName;
       const fullNameB = invertedUnitB.invertsUnit?.fullName;
       if (fullNameA !== fullNameB) {
-        const eqByName = this.areItemsSameByName(invertedUnitA.invertsUnit, invertedUnitB.invertsUnit, invertedUnitA.schema.name, invertedUnitB.schema.name);
+        const eqByName = this.areItemsSameByName(
+          invertedUnitA.invertsUnit,
+          invertedUnitB.invertsUnit,
+          invertedUnitA.schema.name,
+          invertedUnitB.schema.name,
+        );
         if (!eqByName)
           promises.push(this._reporter.reportInvertedUnitDelta(invertedUnitA, "invertsUnit", fullNameA, fullNameB, this._compareDirection));
       }
@@ -629,7 +720,12 @@ export class SchemaComparer {
       const fullNameA = invertedUnitA.unitSystem?.fullName;
       const fullNameB = invertedUnitB.unitSystem?.fullName;
       if (fullNameA !== fullNameB) {
-        const eqByName = this.areItemsSameByName(invertedUnitA.unitSystem, invertedUnitB.unitSystem, invertedUnitA.schema.name, invertedUnitB.schema.name);
+        const eqByName = this.areItemsSameByName(
+          invertedUnitA.unitSystem,
+          invertedUnitB.unitSystem,
+          invertedUnitA.schema.name,
+          invertedUnitB.schema.name,
+        );
         if (!eqByName)
           promises.push(this._reporter.reportInvertedUnitDelta(invertedUnitA, "unitSystem", fullNameA, fullNameB, this._compareDirection));
       }
@@ -679,7 +775,9 @@ export class SchemaComparer {
       promises.push(this._reporter.reportConstantDelta(constantA, "numerator", constantA.numerator, constantB.numerator, this._compareDirection));
 
     if (constantA.denominator !== constantB.denominator)
-      promises.push(this._reporter.reportConstantDelta(constantA, "denominator", constantA.denominator, constantB.denominator, this._compareDirection));
+      promises.push(
+        this._reporter.reportConstantDelta(constantA, "denominator", constantA.denominator, constantB.denominator, this._compareDirection),
+      );
 
     await Promise.all(promises);
   }
@@ -725,9 +823,14 @@ export class SchemaComparer {
         const relationshipClassB = propertyB.isNavigation() ? propertyB.relationshipClass : undefined;
         const relA = propertyA.relationshipClass.fullName;
         const relB = relationshipClassB ? relationshipClassB.fullName : undefined;
-        if (relA !== relB){
-          const areSameByName = this.areItemsSameByName(propertyA.relationshipClass, relationshipClassB, propertyA.schema.name, propertyB.schema.name);
-          if(!areSameByName)
+        if (relA !== relB) {
+          const areSameByName = this.areItemsSameByName(
+            propertyA.relationshipClass,
+            relationshipClassB,
+            propertyA.schema.name,
+            propertyB.schema.name,
+          );
+          if (!areSameByName)
             promises.push(this._reporter.reportPropertyDelta(propertyA, "relationshipClass", relA, relB, this._compareDirection));
         }
       }
@@ -764,7 +867,9 @@ export class SchemaComparer {
 
       const extendedTypeNameB = propertyB.isPrimitive() ? propertyB.extendedTypeName : undefined;
       if (propertyA.extendedTypeName !== extendedTypeNameB) {
-        promises.push(this._reporter.reportPropertyDelta(propertyA, "extendedTypeName", propertyA.extendedTypeName, extendedTypeNameB, this._compareDirection));
+        promises.push(
+          this._reporter.reportPropertyDelta(propertyA, "extendedTypeName", propertyA.extendedTypeName, extendedTypeNameB, this._compareDirection),
+        );
       }
     }
 
@@ -790,7 +895,16 @@ export class SchemaComparer {
     const promises: Array<Promise<void>> = [];
 
     if (enumeratorA.description !== enumeratorB.description)
-      promises.push(this._reporter.reportEnumeratorDelta(enumA, enumeratorA, "description", enumeratorA.description, enumeratorB.description, this._compareDirection));
+      promises.push(
+        this._reporter.reportEnumeratorDelta(
+          enumA,
+          enumeratorA,
+          "description",
+          enumeratorA.description,
+          enumeratorB.description,
+          this._compareDirection,
+        ),
+      );
 
     if (!labelsMatch(enumeratorA.label, enumeratorB.label))
       promises.push(this._reporter.reportEnumeratorDelta(enumA, enumeratorA, "label", enumeratorA.label, enumeratorB.label, this._compareDirection));
@@ -809,7 +923,9 @@ export class SchemaComparer {
     const promises: Array<Promise<void>> = [];
 
     for (const unitA of formatA.units) {
-      const unitB = formatB.units ? formatB.units.find((u) => this.areItemsSameByName(unitA[0], u[0], formatA.schema.name, formatB.schema.name)) : undefined;
+      const unitB = formatB.units
+        ? formatB.units.find((u) => this.areItemsSameByName(unitA[0], u[0], formatA.schema.name, formatB.schema.name))
+        : undefined;
       if (!unitB) {
         promises.push(this._reporter.reportFormatUnitMissing(formatA, unitA[0], this._compareDirection));
         continue;
@@ -832,13 +948,17 @@ export class SchemaComparer {
     itemKeyA: Format | OverrideFormat,
     itemKeyB: Format | OverrideFormat,
     topLevelSchemaNameA: string,
-    topLevelSchemaNameB: string | undefined ): boolean {
-
+    topLevelSchemaNameB: string | undefined,
+  ): boolean {
     if (itemKeyA.units) {
       for (const unitA of itemKeyA.units) {
-        if (!itemKeyB.units
-          || -1 === itemKeyB.units.findIndex((unitB) => this.areItemsSameByName(unitA[0], unitB[0], topLevelSchemaNameA, topLevelSchemaNameB)
-            && unitA[1] === unitB[1]))
+        if (
+          !itemKeyB.units
+          || -1 === itemKeyB.units.findIndex((unitB) =>
+              this.areItemsSameByName(unitA[0], unitB[0], topLevelSchemaNameA, topLevelSchemaNameB)
+              && unitA[1] === unitB[1]
+            )
+        )
           return false;
       }
     }
@@ -861,8 +981,8 @@ export class SchemaComparer {
     itemKeyA: Readonly<SchemaItemKey> | SchemaItem | undefined,
     itemKeyB: Readonly<SchemaItemKey> | SchemaItem | undefined,
     topLevelSchemaNameA: string,
-    topLevelSchemaNameB: string | undefined ): boolean {
-
+    topLevelSchemaNameB: string | undefined,
+  ): boolean {
     const nameA = itemKeyA ? itemKeyA.name.toUpperCase() : undefined;
     const nameB = itemKeyB ? itemKeyB.name.toUpperCase() : undefined;
 
@@ -878,7 +998,8 @@ export class SchemaComparer {
         : itemKeyB.schemaName
       : undefined;
 
-    return (nameA === nameB && schemaNameA === topLevelSchemaNameA && schemaNameB === topLevelSchemaNameB) || (nameA === nameB && schemaNameA === schemaNameB);
+    return (nameA === nameB && schemaNameA === topLevelSchemaNameA && schemaNameB === topLevelSchemaNameB) ||
+      (nameA === nameB && schemaNameA === schemaNameB);
   }
 
   /**
@@ -888,7 +1009,11 @@ export class SchemaComparer {
    * @param containerB container in which to look for classNameA.
    * @returns true if a same classA is in containerB, otherwise false.
    */
-  private containerHasClass(attributeA: CustomAttribute, containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps): boolean {
+  private containerHasClass(
+    attributeA: CustomAttribute,
+    containerA: CustomAttributeContainerProps,
+    containerB: CustomAttributeContainerProps,
+  ): boolean {
     if (containerB && containerB.customAttributes) {
       for (const [_className, attributeB] of containerB.customAttributes) {
         const classItemKeyA = containerA.schema.getSchemaItemKey(attributeA.className);
@@ -901,7 +1026,7 @@ export class SchemaComparer {
 
             // If propertyName is class name, they don't need to be compared as this has been done
             // in the areItemsSameByName function.
-            if(propertyName === "className")
+            if (propertyName === "className")
               return true;
 
             return deepEquals(valueA, valueB);
@@ -920,12 +1045,12 @@ export class SchemaComparer {
  * @returns   true if they are deeply equal, otherwise false.
  */
 function deepEquals(a: unknown, b: unknown): boolean {
-  if(Array.isArray(a) && Array.isArray(b)) {
+  if (Array.isArray(a) && Array.isArray(b)) {
     return a.length === b.length && a.every((value, index) => {
       return deepEquals(value, b[index]);
     });
   }
-  if(isObject(a) && isObject(b)) {
+  if (isObject(a) && isObject(b)) {
     const propertiesA = Object.keys(a);
     const propertiesB = Object.keys(b);
     return propertiesA.length === propertiesB.length && propertiesA.every((propertyName) => {

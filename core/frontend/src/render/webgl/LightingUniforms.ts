@@ -8,8 +8,8 @@
 
 import { ColorDef, LightSettings, RgbColor } from "@itwin/core-common";
 import { FloatRgb } from "./FloatRGBA";
-import { UniformHandle } from "./UniformHandle";
 import { desync, sync } from "./Sync";
+import { UniformHandle } from "./UniformHandle";
 
 /** Maintains state of uniforms associated with a DisplayStyle3dState's LightSettings.
  * A single float array stored as:

@@ -26,19 +26,25 @@ function makeViewableGeometry(): GeometryQuery[] {
   geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 1, 0)));
   geometry.push(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(0, 0, 1.5)));
   geometry.push(LineString3d.create(
-    [Point3d.create(-1, -1, -1),
-    Point3d.create(1, -1, -1),
-    Point3d.create(1, -1, 1),
-    Point3d.create(-1, -1, 1),
-    Point3d.create(-1, -1, -1),
-    Point3d.create(-1, -1, -1)]));
+    [
+      Point3d.create(-1, -1, -1),
+      Point3d.create(1, -1, -1),
+      Point3d.create(1, -1, 1),
+      Point3d.create(-1, -1, 1),
+      Point3d.create(-1, -1, -1),
+      Point3d.create(-1, -1, -1),
+    ],
+  ));
   geometry.push(LineString3d.create(
-    [Point3d.create(-1, 1, -1),
-    Point3d.create(1, 1, -1),
-    Point3d.create(1, 1, 1),
-    Point3d.create(-1, 1, 1),
-    Point3d.create(-1, 1, -1),
-    Point3d.create(-1, 1, -1)]));
+    [
+      Point3d.create(-1, 1, -1),
+      Point3d.create(1, 1, -1),
+      Point3d.create(1, 1, 1),
+      Point3d.create(-1, 1, 1),
+      Point3d.create(-1, 1, -1),
+      Point3d.create(-1, 1, -1),
+    ],
+  ));
 
   geometry.push(LineSegment3d.createXYZXYZ(1, -1, -1, 1, 1, -1));
   geometry.push(LineSegment3d.createXYZXYZ(1, -1, 1, 1, 1, 1));
@@ -47,25 +53,39 @@ function makeViewableGeometry(): GeometryQuery[] {
   geometry.push(LineSegment3d.createXYZXYZ(-1, -1, 1, -1, 1, 1));
 
   const a = 0.5;
-  geometry.push(Arc3d.create(Point3d.create(0, 0, 0), Vector3d.create(a, 0, 0), Vector3d.create(0, a, 0), AngleSweep.createStartSweepDegrees(0, 105)));
+  geometry.push(
+    Arc3d.create(Point3d.create(0, 0, 0), Vector3d.create(a, 0, 0), Vector3d.create(0, a, 0), AngleSweep.createStartSweepDegrees(0, 105)),
+  );
   const b = 0.25;
   // triangle in xz plane
   geometry.push(Loop.createPolygon([
     Point3d.create(0, 0, 0),
     Point3d.create(b, 0, 0),
-    Point3d.create(0, 0, b)]));
+    Point3d.create(0, 0, b),
+  ]));
   // skinnier triangle in yz plane -- to higher z
   geometry.push(Loop.createPolygon([
     Point3d.create(0, 0, 0),
     Point3d.create(0, b * 0.5, 0),
-    Point3d.create(0, 0, 1.5 * b)]));
+    Point3d.create(0, 0, 1.5 * b),
+  ]));
   return geometry;
 }
 // Gather viewable geometry from MakeViewAbleGeometry
 // create viewing setup from given vectors local Z, Y rotations.
 // append the (rotated) geometry to the GeometryQuery[].
 //
-function collectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number, topNoneBottom: number, xShift: number, yShift: number, expectedIndex: StandardViewIndex | 0) {
+function collectViewableGeometry(
+  ck: Checker,
+  geometry: GeometryQuery[],
+  rightVector: Vector3d,
+  upVector: Vector3d,
+  leftNoneRight: number,
+  topNoneBottom: number,
+  xShift: number,
+  yShift: number,
+  expectedIndex: StandardViewIndex | 0,
+) {
   const geometry0 = makeViewableGeometry();
   const axes0 = Matrix3d.createViewedAxes(rightVector, upVector, leftNoneRight, topNoneBottom)!;
   if (expectedIndex !== 0) {
@@ -84,7 +104,6 @@ function collectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVe
   for (const g of geometry0) {
     geometry.push(g.cloneTransformed(frame1)!);
   }
-
 }
 // Gather viewable geometry from MakeViewAbleGeometry
 // create viewing setup from given vectors local Z, Y rotations.
@@ -104,7 +123,6 @@ function collectViewableGeometryByXYZ(geometry: GeometryQuery[], x: number, y: n
   for (const g of geometry0) {
     geometry.push(g.cloneTransformed(frame1)!);
   }
-
 }
 class PointLattice {
   public xCoordinates: number[] = [];
@@ -127,7 +145,7 @@ class PointLattice {
   // if any are exterior, create an IndexedPolyface with the exterior polygons.
   // REMARK tag is unused -- for future use in tagging the various meshes, e.g. as vertex/edge/face
   public createMeshOnLatticeCubeExteriorFaces(i0: number, j0: number, k0: number, tag: number): IndexedPolyface | undefined {
-    if (tag === -1)   // tag is unused otherwise .. get by the compiler complaint
+    if (tag === -1) // tag is unused otherwise .. get by the compiler complaint
       return undefined;
     const builder = PolyfaceBuilder.create();
     const corners = [];
@@ -157,17 +175,15 @@ class PointLattice {
       return polyface;
     return undefined;
   }
-
 }
 describe("ViewWidget", () => {
   it("CubeGeometry", () => {
     const geometry = [];
-    for (const lattice of [
-      new PointLattice([0, 0.2, 0.8, 1.0]),
-      new PointLattice([0, 0.4, 1.6, 2.0],
-        [2, 2.2, 2.8, 3.0],
-        [0, 0.1, 0.4, 0.5]),
-    ]
+    for (
+      const lattice of [
+        new PointLattice([0, 0.2, 0.8, 1.0]),
+        new PointLattice([0, 0.4, 1.6, 2.0], [2, 2.2, 2.8, 3.0], [0, 0.1, 0.4, 0.5]),
+      ]
     ) {
       // 8 corners
       geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(0, 0, 0, 0)!);
@@ -202,7 +218,6 @@ describe("ViewWidget", () => {
       geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(1, 2, 1, 204)!);
       geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(1, 1, 0, 205)!);
       geometry.push(lattice.createMeshOnLatticeCubeExteriorFaces(1, 1, 2, 206)!);
-
     }
     if (geometry)
       GeometryCoreTestIO.saveGeometry(geometry, "ViewWidget", "CubeGeometry");
@@ -214,30 +229,30 @@ describe("ViewWidget", () => {
 
     const b = 30;
     const a = b * 0.5;
-    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitY(), 0, 0, 0, b, StandardViewIndex.Top);  // TOP
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitY(), 0, 0, 0, b, StandardViewIndex.Top); // TOP
 
-    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 0, 0, 0, 0, StandardViewIndex.Front);  // FRONT
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 0, 0, 0, 0, StandardViewIndex.Front); // FRONT
     collectViewableGeometry(ck, geometry, Vector3d.unitY(), Vector3d.unitZ(), 0, 0, b, 0, StandardViewIndex.Right); // RIGHT
     collectViewableGeometry(ck, geometry, Vector3d.unitX(-1), Vector3d.unitZ(), 0, 0, 2 * b, 0, StandardViewIndex.Back); // BACK
     collectViewableGeometry(ck, geometry, Vector3d.unitY(-1), Vector3d.unitZ(), 0, 0, -b, 0, StandardViewIndex.Left); // LEFT
 
     collectViewableGeometry(ck, geometry, Vector3d.unitX(1), Vector3d.unitY(-1), 0, 0, 0, -b, StandardViewIndex.Bottom); // BOTTOM
     // full iso views
-    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, 1, a, a, StandardViewIndex.RightIso);  // RIGHT FRONT ISO (bottom to top)
-    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, 1, -a, a, StandardViewIndex.Iso);  // LEFT FRONT ISO (bottom to top)
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, 1, a, a, StandardViewIndex.RightIso); // RIGHT FRONT ISO (bottom to top)
+    collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, 1, -a, a, StandardViewIndex.Iso); // LEFT FRONT ISO (bottom to top)
 
     // incremental iso views based on front
     for (const isoFactor of [0.5, -0.25, 0, 0.25, 0.5]) {
-      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, isoFactor, a, isoFactor * a, 0);  // RIGHT FRONT ISO (bottom to top)
-      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, isoFactor, -a, isoFactor * a, 0);  // LEFT FRONT ISO (bottom to top)
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), 1, isoFactor, a, isoFactor * a, 0); // RIGHT FRONT ISO (bottom to top)
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), -1, isoFactor, -a, isoFactor * a, 0); // LEFT FRONT ISO (bottom to top)
     }
 
     for (const cornerFactor of [-0.75, -0.5, -0.25, 0.25, 0.5, 0.75]) {
-      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 0, cornerFactor * a, 0, 0);  // left to right swings from front
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 0, cornerFactor * a, 0, 0); // left to right swings from front
     }
     for (const cornerFactor of [-3, -1, 1, 3]) {
       // look in from middle of all vertical edges . . .
-      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 0, cornerFactor * a, 0, 0);  // swing front to 4 corners.
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 0, cornerFactor * a, 0, 0); // swing front to 4 corners.
       // look in down and up from vertical edge
       collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, 1, cornerFactor * a, a, 0);
       collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, -1, cornerFactor * a, -a, 0);
@@ -245,19 +260,21 @@ describe("ViewWidget", () => {
     // look in from all horizontal edges
     const q = Math.PI * 0.25 / Math.atan(Math.sqrt(0.5));
     for (const cornerFactor of [-2, 0, 2, 4]) {
-      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, q, cornerFactor * a, a, 0);  // swing front to edges and look down
-      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, q, cornerFactor * a, -a, 0);  // swing front to edges and look up
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, q, cornerFactor * a, a, 0); // swing front to edges and look down
+      collectViewableGeometry(ck, geometry, Vector3d.unitX(), Vector3d.unitZ(), cornerFactor, q, cornerFactor * a, -a, 0); // swing front to edges and look up
     }
 
     // lay out the unfolded box
-    for (const origin of [
-      Point3d.create(-a, -3 * a),
-      Point3d.create(-3 * a, -a),
-      Point3d.create(-a, -a),
-      Point3d.create(a, -a),
-      Point3d.create(3 * a, -a),
-      Point3d.create(-a, a),
-    ]) {
+    for (
+      const origin of [
+        Point3d.create(-a, -3 * a),
+        Point3d.create(-3 * a, -a),
+        Point3d.create(-a, -a),
+        Point3d.create(a, -a),
+        Point3d.create(3 * a, -a),
+        Point3d.create(-a, a),
+      ]
+    ) {
       geometry.push(LineString3d.createRectangleXY(origin, b, b, true));
     }
 

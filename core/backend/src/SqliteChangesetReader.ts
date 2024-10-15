@@ -13,12 +13,12 @@ import { _nativeDb } from "./internal/Symbols";
 
 /** Changed value type
  * @beta
-*/
+ */
 type SqliteValue = Uint8Array | number | string | null | undefined;
 
 /**  Array of changed values
  * @beta
-*/
+ */
 type SqliteValueArray = SqliteValue[];
 /**
  * Format option when converting change from array to column/value object.
@@ -39,22 +39,22 @@ export interface ChangeFormatArgs {
 
 /** Operation that cause the change
  * @beta
-*/
+ */
 export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 
 /** Stage is version of value that needed to be read
  * @beta
-*/
+ */
 export type SqliteValueStage = "Old" | "New";
 
 /** Db from which schema will be read. It should be from timeline to which changeset belong.
  * @beta
-*/
+ */
 export type AnyDb = IModelDb | ECDb;
 
 /** Arg to open a changeset file from disk
  * @beta
-*/
+ */
 export interface SqliteChangesetReaderArgs {
   /** db from which schema will be read. It should be at or ahead of the latest changeset being opened.*/
   readonly db: AnyDb;
@@ -91,7 +91,7 @@ export class SqliteChangesetReader implements IDisposable {
   protected constructor(
     /** db from where sql schema will be read */
     public readonly db: AnyDb,
-  ) { }
+  ) {}
 
   /**
    * Open changeset file from disk
@@ -135,18 +135,22 @@ export class SqliteChangesetReader implements IDisposable {
    * @param args.db must be of type IModelDb
    * @returns SqliteChangesetReader instance
    */
-  public static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & { db: IModelDb, includeInMemoryChanges?: true }): SqliteChangesetReader {
+  public static openLocalChanges(
+    args: Omit<SqliteChangesetReaderArgs, "db"> & { db: IModelDb, includeInMemoryChanges?: true },
+  ): SqliteChangesetReader {
     const reader = new SqliteChangesetReader(args.db);
     reader._disableSchemaCheck = args.disableSchemaCheck ?? false;
     reader._nativeReader.openLocalChanges(args.db[_nativeDb], args.includeInMemoryChanges ?? false, args.invert ?? false);
     return reader;
   }
   /** check if schema check is disabled or not */
-  public get disableSchemaCheck(): boolean { return this._disableSchemaCheck; }
+  public get disableSchemaCheck(): boolean {
+    return this._disableSchemaCheck;
+  }
   /** Move to next change in changeset
    * @returns true if there is current change false if reader is end of changeset.
    * @beta
-  */
+   */
   public step(): boolean {
     if (this._nativeReader.step()) {
       this._changeIndex++;
@@ -156,25 +160,25 @@ export class SqliteChangesetReader implements IDisposable {
   }
   /** Check if reader current on a row
    * @beta
-  */
+   */
   public get hasRow(): boolean {
     return this._nativeReader.hasRow();
   }
   /** Check if its current change is indirect
    * @beta
-  */
+   */
   public get isIndirect(): boolean {
     return this._nativeReader.isIndirectChange();
   }
   /** Get count of columns in current change
    * @beta
-  */
+   */
   public get columnCount(): number {
     return this._nativeReader.getColumnCount();
   }
   /** Get operation that caused the change
    * @beta
-  */
+   */
   public get op(): SqliteChangeOp {
     if (this._nativeReader.getOpCode() === DbOpcode.Insert)
       return "Inserted";
@@ -186,7 +190,7 @@ export class SqliteChangesetReader implements IDisposable {
   }
   /** Get primary key value array
    * @beta
-  */
+   */
   public get primaryKeyValues(): SqliteValueArray {
     return this._nativeReader.getPrimaryKeys();
   }
@@ -203,7 +207,7 @@ export class SqliteChangesetReader implements IDisposable {
   }
   /** Get current change table.
    * @beta
-  */
+   */
   public get tableName(): string {
     return this._nativeReader.getTableName();
   }
@@ -387,7 +391,9 @@ export class SqliteChangesetReader implements IDisposable {
   /** index of current change
    * @beta
    */
-  public get changeIndex() { return this._changeIndex; }
+  public get changeIndex() {
+    return this._changeIndex;
+  }
   /**
    * Close changeset
    * @beta

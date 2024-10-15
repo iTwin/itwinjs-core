@@ -24,7 +24,6 @@ import { prettyPrint } from "../testFunctions";
 /* eslint-disable @typescript-eslint/naming-convention */
 
 /**
- *
  * @param select 0 for transform0, 1 for transform1
  * @param geometry array to receive new geometry
  * @param map map to evaluate
@@ -43,15 +42,14 @@ function appendNPC(select: number, geometry: GeometryQuery[], map: Map4d, dx: nu
   for (const point of xyz) {
     point.addInPlace(shift);
   }
-  geometry.push(LineString3d.create(xyz[0], xyz[1], xyz[3], xyz[2], xyz[0],
-    xyz[4], xyz[5], xyz[7], xyz[6], xyz[4]));
+  geometry.push(LineString3d.create(xyz[0], xyz[1], xyz[3], xyz[2], xyz[0], xyz[4], xyz[5], xyz[7], xyz[6], xyz[4]));
   geometry.push(LineSegment3d.create(xyz[1], xyz[5]));
   geometry.push(LineSegment3d.create(xyz[2], xyz[6]));
   geometry.push(LineSegment3d.create(xyz[3], xyz[7]));
 }
 
 class Geometry4dTests {
-  constructor(public noisy: boolean = false) { }
+  constructor(public noisy: boolean = false) {}
   public testSums(ck: bsiChecker.Checker) {
     const point0 = Point4d.create(1, 2, 3, 4);
     const point1 = Point4d.create(2, 3, 4, 1);
@@ -81,7 +79,6 @@ class Geometry4dTests {
     ck.testParallel(vector01A, vector01C, "pseudo vector direction");
   }
   public testPoint4d(ck: bsiChecker.Checker) {
-
     const pointZ = Point4d.fromJSON([]);
     ck.testExactNumber(0, pointZ.maxAbs(), "default fromJSON");
     ck.testExactNumber(0, Point4d.fromJSON([4.0]).maxAbs());
@@ -104,8 +101,7 @@ class Geometry4dTests {
 
       const pointAMinusC = hPointA.minus(pointC);
       ck.testCoordinate(pointAMinusC.magnitudeXYZW(), hPointA.distanceXYZW(pointC));
-      ck.testCoordinate(pointAMinusC.magnitudeXYZW() * pointAMinusC.magnitudeXYZW(),
-        hPointA.distanceSquaredXYZW(pointC));
+      ck.testCoordinate(pointAMinusC.magnitudeXYZW() * pointAMinusC.magnitudeXYZW(), hPointA.distanceSquaredXYZW(pointC));
     }
     const pointC2 = Point4d.createFromPackedXYZ(cc)!;
     ck.testExactNumber(pointC.x, pointC2.x, "packed point methods extract the same x");
@@ -115,7 +111,7 @@ class Geometry4dTests {
 
     const pointD = Point4d.createZero();
     const pointD2 = Point4d.createZero();
-    Point4d.create(cc[0], cc[1], cc[2], cc[3], pointD);  // create with supplied target.
+    Point4d.create(cc[0], cc[1], cc[2], cc[3], pointD); // create with supplied target.
     ck.testPoint4d(pointC, pointD);
     pointC.clone(pointD2);
     ck.testPoint4d(pointD2, pointC);
@@ -140,7 +136,6 @@ class Geometry4dTests {
     ck.testPoint4d(point1, Point4d.createFromPointAndWeight(xyz2!, 0.50).normalizeWeight()!);
     ck.testPointer(xyz1, "simple normalize");
   }
-
 }
 describe("Geometry4d.HelloWorld", () => {
   it("Geometry4d sums", () => {
@@ -170,7 +165,7 @@ describe("Geometry4d.HelloWorld", () => {
     const ck = new bsiChecker.Checker();
     const pointA = Point4d.create(1, 2, 3, 4);
     const pointZ = Point4d.createZero();
-    pointA.set();    // should become zero!!!
+    pointA.set(); // should become zero!!!
     ck.testPoint4d(pointA, pointZ, "implicit zero");
     ck.checkpoint("Set");
     expect(ck.getNumErrors()).toBe(0);
@@ -251,8 +246,10 @@ describe("Geometry4d.BoxMap", () => {
     ck.testTrue(map!.isAlmostEqual(map3!), "verify reused map");
     ck.testUndefined(Map4d.createBoxMap(lowA, highA, lowB, lowB));
     ck.testUndefined(Map4d.createBoxMap(highA, highA, lowB, highB));
-    ck.testUndefined(Map4d.createVectorFrustum(Point3d.create(0, 0, 1),
-      Vector3d.unitX(), Vector3d.unitY(), Vector3d.unitY(), 0.8), "expect no map from singular axes");
+    ck.testUndefined(
+      Map4d.createVectorFrustum(Point3d.create(0, 0, 1), Vector3d.unitX(), Vector3d.unitY(), Vector3d.unitY(), 0.8),
+      "expect no map from singular axes",
+    );
     const map4 = Map4d.fromJSON({});
     ck.testTrue(map4.isAlmostEqual(Map4d.createIdentity()));
     if (ck.testPointer(map, "Expect box map") && map) {
@@ -288,15 +285,41 @@ describe("Matrix4d", () => {
   it("Multiply", () => {
     const ck = new bsiChecker.Checker();
     const matrixA = Matrix4d.createRowValues(
-      10, 2, 3, 4,
-      5, 20, 2, 1,
-      4, 6, 30, 2,
-      3, 2, 1, 30);
+      10,
+      2,
+      3,
+      4,
+      5,
+      20,
+      2,
+      1,
+      4,
+      6,
+      30,
+      2,
+      3,
+      2,
+      1,
+      30,
+    );
     const matrixB = Matrix4d.createRowValues(
-      30, -2, -1, 0.3,
-      1, 40, 0.1, 3,
-      2, 4, 15, 6,
-      -0.3, 0.1, 4, 20);
+      30,
+      -2,
+      -1,
+      0.3,
+      1,
+      40,
+      0.1,
+      3,
+      2,
+      4,
+      15,
+      6,
+      -0.3,
+      0.1,
+      4,
+      20,
+    );
 
     const diagonalB = matrixB.diagonal();
     const BX = matrixB.columnX();
@@ -322,15 +345,24 @@ describe("Matrix4d", () => {
         ck.testCoordinate(
           matrixAB.atIJ(row, col),
           matrixA.rowDotColumn(row, matrixB, col),
-          "AB entry", row, col);
+          "AB entry",
+          row,
+          col,
+        );
         ck.testCoordinate(
           matrixABT.atIJ(row, col),
           matrixA.rowDotRow(row, matrixB, col),
-          "ABT entry", row, col);
+          "ABT entry",
+          row,
+          col,
+        );
         ck.testCoordinate(
           matrixATB.atIJ(row, col),
           matrixA.columnDotColumn(row, matrixB, col),
-          "ATB entry", row, col);
+          "ATB entry",
+          row,
+          col,
+        );
       }
 
     const CX = matrixAB.columnX();
@@ -366,9 +398,9 @@ describe("Matrix4d", () => {
     matrixAB.multiplyPoint4dArrayQuietRenormalize(point4dArray, point3dArray1);
     for (let i = 0; i < point3dArray.length; i++) {
       const p = point3dArray[i];
-      const pointQ =
-        Point4d.createAdd2Scaled(CX, p.x, CY, p.y).plus(
-          Point4d.createAdd2Scaled(CZ, p.z, CW, weight));
+      const pointQ = Point4d.createAdd2Scaled(CX, p.x, CY, p.y).plus(
+        Point4d.createAdd2Scaled(CZ, p.z, CW, weight),
+      );
       ck.testPoint4d(pointQ, point4dArray[i]);
     }
 
@@ -378,10 +410,23 @@ describe("Matrix4d", () => {
   it("MultiplyAndRenormalize", () => {
     const ck = new bsiChecker.Checker();
     const matrixA = Matrix4d.createRowValues(
-      10, 2, 3, 4,
-      5, 20, 2, 1,
-      4, 6, 30, 2,
-      3, 2, 1, 30);
+      10,
+      2,
+      3,
+      4,
+      5,
+      20,
+      2,
+      1,
+      4,
+      6,
+      30,
+      2,
+      3,
+      2,
+      1,
+      30,
+    );
     const pointQ = [Point3d.create(3, 2, 5), Point3d.create(2, 9, -4)];
     const pointQ4d = [];
     const pointAQ4d = [];
@@ -402,10 +447,23 @@ describe("Matrix4d", () => {
   it("addTranslationSandwichInPlace", () => {
     const ck = new bsiChecker.Checker();
     const matrixZ = Matrix4d.createRowValues(
-      10, 3, 4, 5,
-      6, 30, 1, 1.2,
-      8, 3, -15, 2,
-      9, 1, 2, 11);
+      10,
+      3,
+      4,
+      5,
+      6,
+      30,
+      1,
+      1.2,
+      8,
+      3,
+      -15,
+      2,
+      9,
+      1,
+      2,
+      11,
+    );
     const scale = 1.25;
     const allMatrices = [
       Matrix4d.createZero(),
@@ -419,10 +477,23 @@ describe("Matrix4d", () => {
       }
     }
     allMatrices.push(Matrix4d.createRowValues(
-      10, 2, 3, 4,
-      5, 20, 2, 1,
-      4, 6, 30, 2,
-      3, 2, 1, 30));
+      10,
+      2,
+      3,
+      4,
+      5,
+      20,
+      2,
+      1,
+      4,
+      6,
+      30,
+      2,
+      3,
+      2,
+      1,
+      30,
+    ));
     for (const matrixB of allMatrices)
       for (const xyz of [[2, 0, 0], [0, 3, 0], [0, 0, 4]]) {
         const ax = xyz[0];
@@ -447,10 +518,23 @@ describe("Matrix4d", () => {
   it("Misc", () => {
     const ck = new bsiChecker.Checker();
     const matrixA = Matrix4d.createRowValues(
-      10, 2, 3, 4,
-      5, 20, 2, 1,
-      4, 6, 30, 2,
-      3, 2, 1, 30);
+      10,
+      2,
+      3,
+      4,
+      5,
+      20,
+      2,
+      1,
+      4,
+      6,
+      30,
+      2,
+      3,
+      2,
+      1,
+      30,
+    );
     const arrayB = matrixA.rowArrays();
     const f = 2.9;
     const arrayC = matrixA.rowArrays((value: number) => f * value);
@@ -468,65 +552,204 @@ describe("Matrix4d", () => {
   it("Inverse", () => {
     const ck = new bsiChecker.Checker();
 
-    for (const matrixA of [
-      Matrix4d.createRowValues(
-        -0.7180980534975014, 0, 0, 513359.37226204335,
-        0, -1.267092311832453, 0, 6221930.288732969,
-        0, 0, 0.02752494718615039, 0.00028901194545457914,
-        0, 0, 0, 1),  // from RBB, failed to invert with matrix.maxAbs() scaling logic
-      Matrix4d.createRowValues(0.5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
-      Matrix4d.createRowValues(
-        1, 0, 0, 0,
-        0, 2, 0, 0,
-        0, 0, 1, 0,
-        0, 0, 0, 1),
-      Matrix4d.createRowValues(
-        10, 2, 3, 4,
-        5, 20, 2, 1,
-        4, 6, 30, 2,
-        3, 2, 1, 30),
-      Matrix4d.createRowValues(
-        -4509.659901029264, -2398.122299764309, 0, 4192.763181336376,
-        1705.3435500113474, -6341.664102191739, 0, 312.814982291711,
-        0, -0, 179.36736748646942, -118.00864861439914,
-        0, -0, 0, 1),
-      Matrix4d.createRowValues(
-        -5.199577930106449e-8, 5.5878993626914775e-8, 0, 0.005147466964956382,
-        - 2.116903271812029e-10, - 7.745682382609335e-10, 0, 0.009886485615341636,
-        1.0596550131841224e-8, 3.877244310855186e-8, 1.1236140303104357e-7, 0.00017487220506423595,
-        2.119310026368245e-8, 7.754488621710374e-8, 0, 0.010227421860234953),
-      Matrix4d.createRowValues(
-        -0.00006936056809344464, 0.00002622893965818147, 0, 0.49974485667496793,
-        -0.00001813902597199655, -0.00004796736591244489, 0, 0.3652941567347317,
-        0, 0, 0.0013814942135607167, 0.3550280429194092,
-        0, 0, 0, 1)])
+    for (
+      const matrixA of [
+        Matrix4d.createRowValues(
+          -0.7180980534975014,
+          0,
+          0,
+          513359.37226204335,
+          0,
+          -1.267092311832453,
+          0,
+          6221930.288732969,
+          0,
+          0,
+          0.02752494718615039,
+          0.00028901194545457914,
+          0,
+          0,
+          0,
+          1,
+        ), // from RBB, failed to invert with matrix.maxAbs() scaling logic
+        Matrix4d.createRowValues(0.5, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1),
+        Matrix4d.createRowValues(
+          1,
+          0,
+          0,
+          0,
+          0,
+          2,
+          0,
+          0,
+          0,
+          0,
+          1,
+          0,
+          0,
+          0,
+          0,
+          1,
+        ),
+        Matrix4d.createRowValues(
+          10,
+          2,
+          3,
+          4,
+          5,
+          20,
+          2,
+          1,
+          4,
+          6,
+          30,
+          2,
+          3,
+          2,
+          1,
+          30,
+        ),
+        Matrix4d.createRowValues(
+          -4509.659901029264,
+          -2398.122299764309,
+          0,
+          4192.763181336376,
+          1705.3435500113474,
+          -6341.664102191739,
+          0,
+          312.814982291711,
+          0,
+          -0,
+          179.36736748646942,
+          -118.00864861439914,
+          0,
+          -0,
+          0,
+          1,
+        ),
+        Matrix4d.createRowValues(
+          -5.199577930106449e-8,
+          5.5878993626914775e-8,
+          0,
+          0.005147466964956382,
+          -2.116903271812029e-10,
+          -7.745682382609335e-10,
+          0,
+          0.009886485615341636,
+          1.0596550131841224e-8,
+          3.877244310855186e-8,
+          1.1236140303104357e-7,
+          0.00017487220506423595,
+          2.119310026368245e-8,
+          7.754488621710374e-8,
+          0,
+          0.010227421860234953,
+        ),
+        Matrix4d.createRowValues(
+          -0.00006936056809344464,
+          0.00002622893965818147,
+          0,
+          0.49974485667496793,
+          -0.00001813902597199655,
+          -0.00004796736591244489,
+          0,
+          0.3652941567347317,
+          0,
+          0,
+          0.0013814942135607167,
+          0.3550280429194092,
+          0,
+          0,
+          0,
+          1,
+        ),
+      ]
+    )
       verifyInverse(ck, matrixA, "diagonally dominant");
 
     for (const a33 of [1, 10, 100]) {
-      verifyInverse(ck,
+      verifyInverse(
+        ck,
         Matrix4d.createRowValues(
-          0, 1, 0, 0,
-          - 0.6643638388299198, 0, 0.7474093186836596, 0,
-          0.7474093186836597, 0, 0.6643638388299198, 0,
-          0, 0, 0, a33), `David S example with scale ${a33}`);
+          0,
+          1,
+          0,
+          0,
+          -0.6643638388299198,
+          0,
+          0.7474093186836596,
+          0,
+          0.7474093186836597,
+          0,
+          0.6643638388299198,
+          0,
+          0,
+          0,
+          0,
+          a33,
+        ),
+        `David S example with scale ${a33}`,
+      );
     }
 
-    for (const singularMatrix of [
-      Matrix4d.createRowValues(     // row 1,2 match
-        10, 2, 3, 4,
-        5, 20, 2, 1,
-        5, 20, 2, 1,
-        3, 2, 1, 30),
-      Matrix4d.createRowValues(   // column 2,3 match
-        10, 2, 4, 4,
-        5, 20, 2, 2,
-        4, 6, 2, 2,
-        3, 2, 30, 30),
-      Matrix4d.createRowValues(     // row 3 is sum of rows 0,1,2
-        10, 2, 3, 4,
-        5, 20, 2, 1,
-        5, 20, 2, 1,
-        20, 42, 7, 6)]) {
+    for (
+      const singularMatrix of [
+        Matrix4d.createRowValues( // row 1,2 match
+          10,
+          2,
+          3,
+          4,
+          5,
+          20,
+          2,
+          1,
+          5,
+          20,
+          2,
+          1,
+          3,
+          2,
+          1,
+          30,
+        ),
+        Matrix4d.createRowValues( // column 2,3 match
+          10,
+          2,
+          4,
+          4,
+          5,
+          20,
+          2,
+          2,
+          4,
+          6,
+          2,
+          2,
+          3,
+          2,
+          30,
+          30,
+        ),
+        Matrix4d.createRowValues( // row 3 is sum of rows 0,1,2
+          10,
+          2,
+          3,
+          4,
+          5,
+          20,
+          2,
+          1,
+          5,
+          20,
+          2,
+          1,
+          20,
+          42,
+          7,
+          6,
+        ),
+      ]
+    ) {
       for (const scaleFactor of [1.0, 0.232136936231648, 1.0 / 3.8798797912312, Math.sqrt(2), Math.sqrt(20), Math.sqrt(200)]) {
         const scaledMatrix = singularMatrix.clone();
         scaledMatrix.scaleRowsInPlace(scaleFactor, scaleFactor, scaleFactor, scaleFactor);
@@ -535,10 +758,23 @@ describe("Matrix4d", () => {
     }
 
     const matrixB = Matrix4d.createRowValues(
-      10, 1, 2, 3,
-      0, 10, 3, 4,
-      0, 10, 3, 4,  // same as row 2 -- this makes it singular!!!
-      0, 0, 1, 1);
+      10,
+      1,
+      2,
+      3,
+      0,
+      10,
+      3,
+      4,
+      0,
+      10,
+      3,
+      4, // same as row 2 -- this makes it singular!!!
+      0,
+      0,
+      1,
+      1,
+    );
     ck.testUndefined(matrixB.createInverse());
 
     const matrixC = Matrix4d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16);
@@ -560,13 +796,15 @@ describe("Matrix4d", () => {
       ck.testCoordinate(
         rows[i].dotProduct(rows[i + 1]),
         rows[i].dotProductXYZW(rows[i + 1].x, rows[i + 1].y, rows[i + 1].z, rows[i + 1].w),
-        "dot product scalars");
+        "dot product scalars",
+      );
     }
     for (let i = 0; i < 4; i++)
       for (let j = 0; j < 4; j++)
         ck.testCoordinate(
           matrixD.columnDotColumn(i, matrixC, j),
-          matrixD.columnDotRow(i, matrixCT, j));
+          matrixD.columnDotRow(i, matrixCT, j),
+        );
     ck.checkpoint("Matrix4d.Inverse");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -578,7 +816,8 @@ describe("Matrix4d", () => {
 function verify3d4dPlaneMatch(
   ck: bsiChecker.Checker,
   planeA: Plane3dByOriginAndVectors,
-  planeB: PlaneByOriginAndVectors4d) {
+  planeB: PlaneByOriginAndVectors4d,
+) {
   for (const uv of [[0.4, 0.62], [0, 0], [1, 0], [0, 1]]) {
     const q3d = planeA.fractionToPoint(uv[0], uv[1]);
     const q4d = planeB.fractionToPoint(uv[0], uv[1]);
@@ -601,13 +840,15 @@ function verify3d4dPlaneMatch(
     ck.testTrue(planeXY.isAlmostEqual(planeB3), "revert to XY plane");
 
     const planeB4 = PlaneByOriginAndVectors4d.createOriginAndVectors(
-      planeB.origin, planeB.vectorU, planeB.vectorV);
+      planeB.origin,
+      planeB.vectorU,
+      planeB.vectorV,
+    );
     ck.testTrue(planeB.isAlmostEqual(planeB4));
     // reuse planeB3
     PlaneByOriginAndVectors4d.createOriginAndVectors(planeB.origin, planeB.vectorU, planeB.vectorV, planeB3);
     ck.testTrue(planeB.isAlmostEqual(planeB3));
   }
-
 }
 describe("Plane4dByOriginAndVectors", () => {
   it("Create", () => {
@@ -630,25 +871,25 @@ describe("Plane4dByOriginAndVectors", () => {
     const vectorV = Vector3d.create(-5, 2, 8);
     const targetU = origin.plus(vectorU);
     const targetV = origin.plus(vectorV);
-    const plane0 = PlaneByOriginAndVectors4d.createOriginAndTargets3d(origin,
-      targetU, targetV);
+    const plane0 = PlaneByOriginAndVectors4d.createOriginAndTargets3d(origin, targetU, targetV);
     const plane2 = PlaneByOriginAndVectors4d.createOriginAndVectors(
       Point4d.createFromPointAndWeight(origin, 1),
       Point4d.createFromPointAndWeight(vectorU, 0),
-      Point4d.createFromPointAndWeight(vectorV, 0));
+      Point4d.createFromPointAndWeight(vectorV, 0),
+    );
     ck.testPoint4d(plane0.origin, plane2.origin);
     ck.testPoint4d(plane0.vectorU, plane2.vectorU);
     ck.testPoint4d(plane0.vectorV, plane2.vectorV);
     const plane1 = Plane3dByOriginAndVectors.createOriginAndVectors(
-      origin, vectorU, vectorV);
+      origin,
+      vectorU,
+      vectorV,
+    );
     verify3d4dPlaneMatch(ck, plane1, plane0);
-    verify3d4dPlaneMatch(ck,
-      Plane3dByOriginAndVectors.createXYPlane(),
-      PlaneByOriginAndVectors4d.createXYPlane());
+    verify3d4dPlaneMatch(ck, Plane3dByOriginAndVectors.createXYPlane(), PlaneByOriginAndVectors4d.createXYPlane());
 
     expect(ck.getNumErrors()).toBe(0);
   });
-
 });
 function suppressNearZero(value: number): number {
   const tol = 1.0e-15;
@@ -693,8 +934,7 @@ describe("Map4d", () => {
     const scaleFactor = 2.5;
     const scaleTransform = Transform.createScaleAboutPoint(fixedPoint, scaleFactor);
     const scaleTransform1 = scaleTransform.inverse()!;
-    ck.testUndefined(Map4d.createTransform(scaleTransform, scaleTransform),
-      "confirm Map4d constructor rejects mismatch");
+    ck.testUndefined(Map4d.createTransform(scaleTransform, scaleTransform), "confirm Map4d constructor rejects mismatch");
     const scaleMap = Map4d.createTransform(scaleTransform, scaleTransform1);
     if (ck.testPointer(scaleMap)) {
       ck.testFalse(mapI.isAlmostEqual(scaleMap));
@@ -714,7 +954,8 @@ describe("Map4d", () => {
       Vector3d.create(1, 0, 0),
       Vector3d.create(0, 1, 0),
       Vector3d.create(0, 0, 1),
-      1.0)!;
+      1.0,
+    )!;
     ck.testTrue(mapI.isAlmostEqual(frustumIdentity), "Identity frustum");
 
     const yzxFrustum = Map4d.createVectorFrustum( // YZX frustum, eyepoint at (10,0,0) ??
@@ -722,11 +963,13 @@ describe("Map4d", () => {
       Vector3d.create(0, 1, 0),
       Vector3d.create(0, 0, 1),
       Vector3d.create(1, 0, 0),
-      0.9)!;
+      0.9,
+    )!;
 
     const rotationTransform = Transform.createFixedPointAndMatrix(
       Point3d.create(4, 2, 8),
-      Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(10))!);
+      Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(10))!,
+    );
     const rotationMap = Map4d.createTransform(rotationTransform, rotationTransform.inverse())!;
     verifySandwich(ck, rotationMap, mapI);
     verifySandwich(ck, mapI, rotationMap);
@@ -824,7 +1067,7 @@ describe("Map4d", () => {
     const ck = new bsiChecker.Checker();
     let badFraction: number | undefined;
     for (const wA0 of [1, 1.1, 1.3]) {
-      for (const wA1 of [1, 0.4, 1.5]) {  // remark wA1=2 creates anomalies with spacePoint 2,4,2,anyW?
+      for (const wA1 of [1, 0.4, 1.5]) { // remark wA1=2 creates anomalies with spacePoint 2,4,2,anyW?
         for (const wSpace of [1, 0.9]) {
           const hA0 = Point4d.create(0, 0, 0, wA0);
           const hA1 = Point4d.create(3, 1, 0, wA1);
@@ -853,13 +1096,33 @@ describe("Map4d", () => {
   it("CreateMap4dWithUndefinedTransform1", () => {
     const ck = new bsiChecker.Checker();
     const transform1 = Transform.createRowValues(
-      10, 1, 1, 0,
-      1, 11, 2, 3,
-      2, 4, 20, -2);   // good transform, but skewed for fun
+      10,
+      1,
+      1,
+      0,
+      1,
+      11,
+      2,
+      3,
+      2,
+      4,
+      20,
+      -2,
+    ); // good transform, but skewed for fun
     const singularTransform = Transform.createRowValues(
-      10, 1, 1, 0,
-      10, 1, 1, 0,
-      2, 4, 20, -2);   // repeated row makes it singular
+      10,
+      1,
+      1,
+      0,
+      10,
+      1,
+      1,
+      0,
+      2,
+      4,
+      20,
+      -2,
+    ); // repeated row makes it singular
     const map1 = Map4d.createTransform(transform1);
     const singularMap = Map4d.createTransform(singularTransform);
     ck.testPointer(map1, "Map4d computed its own inverse");

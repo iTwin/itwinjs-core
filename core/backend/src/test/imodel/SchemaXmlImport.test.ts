@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { Logger, LogLevel } from "@itwin/core-bentley";
 import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { PhysicalElement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { Logger, LogLevel } from "@itwin/core-bentley";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("Schema XML Import Tests", () => {
@@ -40,5 +40,4 @@ describe("Schema XML Import Tests", () => {
     assert.equal(testDomainClass.baseClasses.length, 1);
     assert.equal(testDomainClass.baseClasses[0], PhysicalElement.classFullName);
   });
-
 });

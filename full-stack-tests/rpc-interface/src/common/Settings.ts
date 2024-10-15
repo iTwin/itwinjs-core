@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ServiceAuthorizationClientConfiguration } from "@itwin/service-authorization";
 import { LogLevel } from "@itwin/core-bentley";
 import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@itwin/core-common";
 import { TestUserCredentials } from "@itwin/oidc-signin-tool";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
+import { ServiceAuthorizationClientConfiguration } from "@itwin/service-authorization";
 
 /* eslint-disable @typescript-eslint/indent */
 
@@ -65,21 +65,39 @@ export class Settings {
   public clientConfiguration?: ServiceAuthorizationClientConfiguration;
 
   public iModels: IModelData[] = [];
-  public get iModel(): IModelData { return this.iModels[0]; }
-  public get writeIModel(): IModelData { return this.iModels[1]; }
-  public get user(): TestUserCredentials { return this.users[0]; }
+  public get iModel(): IModelData {
+    return this.iModels[0];
+  }
+  public get writeIModel(): IModelData {
+    return this.iModels[1];
+  }
+  public get user(): TestUserCredentials {
+    return this.users[0];
+  }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  public get Backend(): Backend { return this._backend; }
+  public get Backend(): Backend {
+    return this._backend;
+  }
 
-  public get runiModelTileRpcTests(): boolean { return checkEnabled(process.env.RPC_IMODELTILE_ENABLE); }
-  public get runPresentationRpcTests(): boolean { return checkEnabled(process.env.RPC_PRESENTATION_ENABLE); }
-  public get runiModelReadRpcTests(): boolean { return checkEnabled(process.env.RPC_IMODELREAD_ENABLE); }
-  public get runiModelWriteRpcTests(): boolean { return checkEnabled(process.env.RPC_IMODELWRITE_ENABLE); }
-  public get runDevToolsRpcTests(): boolean { return checkEnabled(process.env.RPC_DEVTOOLS_ENABLE); }
+  public get runiModelTileRpcTests(): boolean {
+    return checkEnabled(process.env.RPC_IMODELTILE_ENABLE);
+  }
+  public get runPresentationRpcTests(): boolean {
+    return checkEnabled(process.env.RPC_PRESENTATION_ENABLE);
+  }
+  public get runiModelReadRpcTests(): boolean {
+    return checkEnabled(process.env.RPC_IMODELREAD_ENABLE);
+  }
+  public get runiModelWriteRpcTests(): boolean {
+    return checkEnabled(process.env.RPC_IMODELWRITE_ENABLE);
+  }
+  public get runDevToolsRpcTests(): boolean {
+    return checkEnabled(process.env.RPC_DEVTOOLS_ENABLE);
+  }
 
   constructor(env: NodeJS.ProcessEnv) {
-    const isFrontend = (typeof (process) === "undefined");
+    const isFrontend = typeof process === "undefined";
     if (!isFrontend && undefined === env.TF_BUILD) {
       const path = require("path"); // eslint-disable-line @typescript-eslint/no-var-requires
       const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
@@ -188,7 +206,10 @@ export class Settings {
       password: process.env.USER_WITH_ACCESS_PASSWORD || "",
     });
 
-    if (undefined !== process.env.CLIENT_WITH_ACCESS_ID && undefined !== process.env.CLIENT_WITH_ACCESS_SECRET && undefined !== process.env.CLIENT_WITH_ACCESS_SCOPES) {
+    if (
+      undefined !== process.env.CLIENT_WITH_ACCESS_ID && undefined !== process.env.CLIENT_WITH_ACCESS_SECRET &&
+      undefined !== process.env.CLIENT_WITH_ACCESS_SCOPES
+    ) {
       this.clientConfiguration = {
         clientId: process.env.CLIENT_WITH_ACCESS_ID,
         clientSecret: process.env.CLIENT_WITH_ACCESS_SECRET,

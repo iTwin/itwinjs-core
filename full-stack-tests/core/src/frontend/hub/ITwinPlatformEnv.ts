@@ -6,7 +6,17 @@ import { AccessToken, GuidString } from "@itwin/core-bentley";
 import { AuthorizationClient, BriefcaseId } from "@itwin/core-common";
 import { FrontendHubAccess, IModelIdArg } from "@itwin/core-frontend";
 import { AccessTokenAdapter, FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
-import { IModelsClient as AuthorIModelsClient, Briefcase, GetBriefcaseListParams, GetIModelListParams, IModelScopedOperationParams, MinimalIModel, ReleaseBriefcaseParams, SPECIAL_VALUES_ME, toArray } from "@itwin/imodels-client-authoring";
+import {
+  Briefcase,
+  GetBriefcaseListParams,
+  GetIModelListParams,
+  IModelsClient as AuthorIModelsClient,
+  IModelScopedOperationParams,
+  MinimalIModel,
+  ReleaseBriefcaseParams,
+  SPECIAL_VALUES_ME,
+  toArray,
+} from "@itwin/imodels-client-authoring";
 import { IModelsClient as FrontendIModelsClient } from "@itwin/imodels-client-management";
 import { ITwinAccessClientWrapper } from "../../common/ITwinAccessClientWrapper";
 
@@ -60,7 +70,6 @@ export class TestHubFrontend extends FrontendIModelsAccess {
     const briefcases: Briefcase[] = await toArray(briefcasesIterator);
     const briefcaseIds: BriefcaseId[] = briefcases.map((briefcase) => briefcase.briefcaseId);
     return briefcaseIds;
-
   }
   public async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {
     const releaseBriefcaseParams: ReleaseBriefcaseParams = {
@@ -69,7 +78,7 @@ export class TestHubFrontend extends FrontendIModelsAccess {
     };
 
     // Need to use the IModelsClient from the authoring package to be able to release the briefcase.
-    const iModelClient = new AuthorIModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    const iModelClient = new AuthorIModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
     return iModelClient.briefcases.release(releaseBriefcaseParams);
   }
 }
@@ -88,7 +97,7 @@ export class ITwinPlatformCloudEnv implements ITwinPlatformAbstraction {
   public readonly authClient?: AuthorizationClient; // This should be the new AuthorizationClient method defined in #
 
   public constructor(authClient?: AuthorizationClient) {
-    const iModelClient = new FrontendIModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels`}});
+    const iModelClient = new FrontendIModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com/imodels` } });
     this.hubAccess = new TestHubFrontend(iModelClient);
     this.authClient = authClient;
   }

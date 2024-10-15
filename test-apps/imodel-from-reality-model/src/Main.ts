@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as yargs from "yargs";
-import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "@itwin/core-backend";
+import { Logger } from "@itwin/core-bentley";
+import * as yargs from "yargs";
 import { RealityModelContextIModelCreator } from "./RealityModelContextIModelCreator";
 
 /** Use [yargs](https://www.npmjs.com/package/yargs) to validate and extract command line options. */

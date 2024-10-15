@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module Curve
  */
-import { AnyCurve } from "./CurveTypes";
 import { BagOfCurves, CurveCollection } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
+import { AnyCurve } from "./CurveTypes";
 import { Loop } from "./Loop";
 import { ParityRegion } from "./ParityRegion";
 import { Path } from "./Path";
@@ -25,9 +25,9 @@ export abstract class RecursiveCurveProcessor {
   }
 
   /** process error content */
-  public announceUnexpected(_data: AnyCurve, _indexInParent: number) { }
+  public announceUnexpected(_data: AnyCurve, _indexInParent: number) {}
   /** process a leaf primitive. */
-  public announceCurvePrimitive(_data: CurvePrimitive, _indexInParent = -1): void { }
+  public announceCurvePrimitive(_data: CurvePrimitive, _indexInParent = -1): void {}
 
   /** announce a path (recurse to children) */
   public announcePath(data: Path, _indexInParent: number = -1): void {
@@ -86,16 +86,20 @@ export abstract class RecursiveCurveProcessorWithStack extends RecursiveCurvePro
   /** Push `data` onto the stack so its status is available during processing of children.
    * * Called when `data` is coming into scope.
    */
-  public enter(data: CurveCollection) { this._stack.push(data); }
+  public enter(data: CurveCollection) {
+    this._stack.push(data);
+  }
   /** Pop the stack
    * * called when the top of the stack goes out of scope
    */
-  public leave(): CurveCollection | undefined { return this._stack.pop(); }
+  public leave(): CurveCollection | undefined {
+    return this._stack.pop();
+  }
 
   /** process error content */
-  public override announceUnexpected(_data: AnyCurve, _indexInParent: number) { }
+  public override announceUnexpected(_data: AnyCurve, _indexInParent: number) {}
   /** process a leaf primitive. */
-  public override announceCurvePrimitive(_data: CurvePrimitive, _indexInParent = -1): void { }
+  public override announceCurvePrimitive(_data: CurvePrimitive, _indexInParent = -1): void {}
 
   /** announce a path (recurse to children) */
   public override announcePath(data: Path, indexInParent: number = -1): void {

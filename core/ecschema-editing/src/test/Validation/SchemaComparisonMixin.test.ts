@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 import { expect } from "chai";
+import { AnyDiagnostic, ISchemaChanges, ISchemaCompareReporter, SchemaChanges, SchemaCompareCodes, SchemaComparer } from "../../ecschema-editing";
 
 class TestSchemaCompareReporter implements ISchemaCompareReporter {
   public changes: SchemaChanges[] = [];
@@ -18,17 +18,21 @@ function findDiagnostic(diagnostics: AnyDiagnostic[], code: string, fullNameA?: 
   diagnostics.find((anyDiagnostic) => {
     switch (code) {
       case SchemaCompareCodes.MixinDelta: {
-        if (anyDiagnostic.code === code &&
+        if (
+          anyDiagnostic.code === code &&
           anyDiagnostic.messageArgs?.at(0) === propertyType &&
           anyDiagnostic.messageArgs?.at(1) === fullNameA &&
-          anyDiagnostic.messageArgs?.at(2) === fullNameB) {
+          anyDiagnostic.messageArgs?.at(2) === fullNameB
+        ) {
           found = true;
         }
         break;
       }
       case SchemaCompareCodes.EntityMixinMissing: {
-        if (anyDiagnostic.code === code &&
-          anyDiagnostic.messageArgs?.at(0).fullName === fullNameA) {
+        if (
+          anyDiagnostic.code === code &&
+          anyDiagnostic.messageArgs?.at(0).fullName === fullNameA
+        ) {
           found = true;
         }
         break;
@@ -238,7 +242,6 @@ describe("Mixin comparison tests", () => {
 
       expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-108", "SchemaA.mixinA")).to.equal(false);
       expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-108", "SchemaA.mixinB")).to.equal(false);
-
     });
 
     it("should report missing mixin", async () => {
@@ -293,7 +296,6 @@ describe("Mixin comparison tests", () => {
 
       expect(findDiagnostic(reporter.changes[0].allDiagnostics, "SC-108", "SchemaA.mixinC")).to.equal(true);
       expect(findDiagnostic(reporter.changes[1].allDiagnostics, "SC-108", "SchemaB.mixinD")).to.equal(true);
-
     });
   });
 });

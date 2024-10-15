@@ -35,7 +35,7 @@ export enum QueryRowFormat {
  * Specify limit or range of rows to return
  * @public
  * @extensions
- * */
+ */
 export interface QueryLimit {
   /** Number of rows to return */
   count?: number;
@@ -80,7 +80,7 @@ export interface DbRuntimeStats {
  * Quota hint for the query.
  * @public
  * @extensions
- * */
+ */
 export interface QueryQuota {
   /** Max time allowed in seconds. This is hint and may not be honoured but help in prioritize request */
   time?: number;
@@ -99,8 +99,8 @@ export interface BaseReaderOptions {
   /** If specified cancel last query (if any) with same restart token and queue the new query */
   restartToken?: string;
   /** For editing apps this can be set to true and all query will run on primary connection
-  *  his may cause slow queries execution but the most recent data changes will be visitable via query
-  */
+   *  his may cause slow queries execution but the most recent data changes will be visitable via query
+   */
   usePrimaryConn?: boolean;
   /** Restrict time or memory for query but use as hint and may be changed base on backend settings */
   quota?: QueryQuota;
@@ -116,12 +116,12 @@ export interface BaseReaderOptions {
  * ECSql query config
  * @public
  * @extensions
- * */
+ */
 export interface QueryOptions extends BaseReaderOptions {
   /**
    * default to false. It abbreviate blobs to single bytes. This help cases where wildcard is
    * used in select clause. Use BlobReader api to read individual blob specially if its of large size.
-   * */
+   */
   abbreviateBlobs?: boolean;
   /**
    * default to false. It will suppress error and will not log it. Useful in cases where we expect query
@@ -135,7 +135,7 @@ export interface QueryOptions extends BaseReaderOptions {
   /**
    * Convert ECClassId, SourceECClassId, TargetECClassId and RelClassId to respective name.
    * When true, XXXXClassId property will be returned as className.
-   * */
+   */
   convertClassIdsToClassNames?: boolean;
   /**
    * Determine row format.
@@ -152,8 +152,10 @@ export interface BlobOptions extends BaseReaderOptions {
 
 /** @public */
 export class QueryOptionsBuilder {
-  public constructor(private _options: QueryOptions = {}) { }
-  public getOptions(): QueryOptions { return this._options; }
+  public constructor(private _options: QueryOptions = {}) {}
+  public getOptions(): QueryOptions {
+    return this._options;
+  }
   /**
    * @internal
    * Allow to set priority of query. Query will be inserted int queue base on priority value. This value will be ignored if concurrent query is configured with ignored priority is true.
@@ -250,8 +252,10 @@ export class QueryOptionsBuilder {
 }
 /** @beta */
 export class BlobOptionsBuilder {
-  public constructor(private _options: BlobOptions = {}) { }
-  public getOptions(): BlobOptions { return this._options; }
+  public constructor(private _options: BlobOptions = {}) {}
+  public getOptions(): BlobOptions {
+    return this._options;
+  }
   /**
    * @internal
    * Allow to set priority of blob request. Blob request will be inserted int queue base on priority value. This value will be ignored if concurrent query is configured with ignored priority is true.
@@ -399,7 +403,8 @@ export class QueryBinder {
     const name = String(indexOrName);
     const base64 = Base64.fromUint8Array(val);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Blob,
         value: base64,
       },
@@ -417,7 +422,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Double,
         value: val,
       },
@@ -435,7 +441,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Id,
         value: val,
       },
@@ -454,7 +461,8 @@ export class QueryBinder {
     const name = String(indexOrName);
     OrderedId64Iterable.uniqueIterator(val);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.IdSet,
         value: CompressedId64Set.sortAndCompress(OrderedId64Iterable.uniqueIterator(val)),
       },
@@ -472,7 +480,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Integer,
         value: val,
       },
@@ -490,7 +499,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Struct,
         value: val,
       },
@@ -508,7 +518,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Long,
         value: val,
       },
@@ -526,7 +537,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.String,
         value: val,
       },
@@ -543,7 +555,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Null,
         value: null,
       },
@@ -561,7 +574,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Point2d,
         value: val,
       },
@@ -579,7 +593,8 @@ export class QueryBinder {
     this.verify(indexOrName);
     const name = String(indexOrName);
     Object.defineProperty(this._args, name, {
-      enumerable: true, value: {
+      enumerable: true,
+      value: {
         type: QueryParamType.Point3d,
         value: val,
       },
@@ -642,19 +657,19 @@ export class QueryBinder {
 /** @internal */
 export enum DbRequestKind {
   BlobIO = 0,
-  ECSql = 1
+  ECSql = 1,
 }
 
 /** @internal */
 export enum DbResponseKind {
   BlobIO = DbRequestKind.BlobIO,
   ECSql = DbRequestKind.ECSql,
-  NoResult = 2
+  NoResult = 2,
 }
 
 /** @internal */
 export enum DbResponseStatus {
-  Done = 1,  /* query ran to completion. */
+  Done = 1, /* query ran to completion. */
   Cancel = 2, /*  Requested by user.*/
   Partial = 3, /*  query was running but ran out of quota.*/
   Timeout = 4, /*  query time quota expired while it was in queue.*/
@@ -671,7 +686,7 @@ export enum DbResponseStatus {
 /** @internal */
 export enum DbValueFormat {
   ECSqlNames = 0,
-  JsNames = 1
+  JsNames = 1,
 }
 
 /** @internal */
