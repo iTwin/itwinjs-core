@@ -116,11 +116,11 @@ describe("Schema Edit tests", () => {
 
       if (differences.conflicts) {
         for (const conflict of differences.conflicts) {
-          if (conflict.code === ConflictCode.ConflictingItemName && conflict.itemName === "SameNameOtherItemType") {
-            schemaEdits.items.rename(sourceSchema.name, conflict.itemName, `${conflict.itemName}_1`);
+          if (conflict.code === ConflictCode.ConflictingItemName && conflict.difference.itemName === "SameNameOtherItemType") {
+            schemaEdits.items.rename(sourceSchema.name, conflict.difference.itemName, `${conflict.difference.itemName}_1`);
           }
-          if (conflict.code === ConflictCode.ConflictingPropertyName && conflict.path === "MyProperty") {
-            schemaEdits.properties.rename(sourceSchema.name, conflict.itemName!, conflict.path, `${conflict.path}_1`);
+          if (conflict.code === ConflictCode.ConflictingPropertyName && conflict.difference.path === "MyProperty") {
+            schemaEdits.properties.rename(sourceSchema.name, conflict.difference.itemName, conflict.difference.path, `${conflict.difference.path}_1`);
           }
         }
       }
