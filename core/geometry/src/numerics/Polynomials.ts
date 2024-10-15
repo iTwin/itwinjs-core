@@ -1149,9 +1149,9 @@ export class TrigPolynomial {
    * * Solution logic includes inferring angular roots corresponding zero leading coefficients
    * (roots at infinity).
    * @param coff coefficients.
-   * @param nominalDegree degree of the polynomial under most complex root case. If there are
-   * any zero coefficients up to this degree, a single root "at infinity" is recorded as its
-   * corresponding angular parameter at negative pi/2.
+   * @param nominalDegree degree of the polynomial under most complex root case. If there are any
+   * leading zero coefficients (starting from `coff[4]`), a single root "at infinity" is recorded
+   * as its corresponding angular parameter at -pi/2.
    * @param referenceCoefficient a number which represents the size of coefficients at various
    * stages of computation. A small fraction of this will be used as a zero tolerance
    * @param radians roots are placed here.
@@ -1191,18 +1191,18 @@ export class TrigPolynomial {
         // TODO: WORK WITH BEZIER SOLVER
       }
       if (roots.length > 0) {
-        // Each solution t represents an angle with Math.Cos(theta) = C(t)/W(t) and sin(theta) = S(t)/W(t)
-        // Division by W has no effect on atan2 calculations, so we just compute S(t),C(t)
+        // each solution t represents an angle with Math.Cos(theta) = C(t)/W(t) and sin(theta) = S(t)/W(t)
+        // division by W has no effect on atan2 calculations, so we just compute S(t),C(t)
         for (let i = 0; i < roots.length; i++) {
           const ss = PowerPolynomial.evaluate(this.S, roots.atUncheckedIndex(i));
           const cc = PowerPolynomial.evaluate(this.C, roots.atUncheckedIndex(i));
           radians.push(Math.atan2(ss, cc));
         }
-        // each leading zero at the front of the coefficient array corresponds to a root at -PI/2.
-        // only make one entry because we don't report multiplicity.
-        if (degree < nominalDegree)
-          radians.push(-0.5 * Math.PI);
       }
+      // each leading zero coefficients (starting from `coff[4]`) corresponds to a root at -PI/2.
+      // we only make one entry because we don't report multiplicity.
+      if (degree < nominalDegree)
+        radians.push(-0.5 * Math.PI);
     }
     return radians.length > 0;
   }
@@ -1240,9 +1240,7 @@ export class TrigPolynomial {
       PowerPolynomial.accumulate(coffs, this.W, a);
       degree = 2;
     }
-    const maxCoff = Math.max(
-      Math.abs(axx), Math.abs(ayy), Math.abs(axy), Math.abs(ax), Math.abs(ay), Math.abs(a),
-    );
+    const maxCoff = Math.max(Math.abs(axx), Math.abs(ayy), Math.abs(axy), Math.abs(ax), Math.abs(ay), Math.abs(a));
     const b = this.solveAngles(coffs, degree, maxCoff, radians);
     /*
     for (const theta of angles) {

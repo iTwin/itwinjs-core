@@ -761,13 +761,20 @@ it("unitCircleEllipseIntersection", () => {
   vx = 0, vy = 1;
   expectedIntersections = 1;
   captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
+  // intersection at t = 0,1
+  dx += 12;
+  cx = 0, cy = 0;
+  ux = 1, uy = 0;
+  vx = 0, vy = 0.5;
+  expectedIntersections = 2;
+  captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
   // intersection at t = infinity
   dx += 12;
   cx = 0, cy = 2;
   ux = 2, uy = 0;
   vx = 0, vy = 1;
   expectedIntersections = 1;
-  // captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
+  captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "unitCircleEllipseIntersection");
   expect(ck.getNumErrors()).toBe(0);

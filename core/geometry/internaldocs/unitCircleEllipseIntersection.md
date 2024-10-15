@@ -38,8 +38,7 @@ These formulas are used in `TrigPolynomial.solveUnitCircleHomogeneousEllipseInte
 
 Equation $(1)$ is what we want to solve to get the ellipse angles $\theta$ of the intersections. To take advantage of polynomial root finders tailored to other bases, we make a change of basis from the trigonometric basis $(1, \cos\theta, \sin\theta, \cos\theta\sin\theta, ...)$ to another polynomial basis as follows.
 
-First, note that as $\theta$ traverses from 0 to $\pi$, $\begin{bmatrix}\cos\theta \\ \sin\theta \end{bmatrix}$
-traverses the top half of the unit circle. There is a rational homogeneous parameterization for the same path as $t$ goes from $0$ to $1$:
+First, note that as $\theta$ traverses from $-\frac{\pi}{2}$ to $\frac{\pi}{2}$, $\begin{bmatrix}\cos\theta \\ \sin\theta \end{bmatrix}$ traverses the unit circle starting from $(0,-1)$. There is a rational homogeneous parameterization for the same path as $t$ goes from $-\infty$ to $\infty$:
 
 $$
 \begin{bmatrix}
@@ -68,6 +67,8 @@ t \\
 t^2
 \end{bmatrix}
 $$
+
+Specifically, traverse of $\theta$ from 0 to $\pi$ is same as traverse of $t$ from 0 to 1 which is CCW traverse of the top half of the unit circle.
 
 The first matrix of scalars encapsulates the Bezier coefficients of the $C$, $S$, and $W$ polynomials in the degree-2 Bernstein-Bezier polynomial basis; the second matrix of scalars, the coefficients in the standard power basis. For more info see:
 - https://en.wikipedia.org/wiki/Bernstein_polynomial
