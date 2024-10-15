@@ -13,6 +13,7 @@ import {
 import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import { restore, SinonSpy, SinonStub, spy, stub } from "sinon";
 import { HubWrappers, KnownTestLocations } from "../";
 import { HubMock } from "../../HubMock";
 import {
@@ -25,7 +26,6 @@ import {
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 chai.use(chaiAsPromised);
-import sinon = require("sinon");
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {
@@ -139,7 +139,7 @@ describe("Changeset conflict handler", () => {
   });
 
   afterEach(async () => {
-    sinon.restore();
+    restore();
 
     if (b1.isOpen) {
       b1.abandonChanges();
@@ -157,8 +157,8 @@ describe("Changeset conflict handler", () => {
     }
   });
 
-  async function spyChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>) => void) {
-    const s1 = sinon.spy(b, "onChangesetConflict" as any) as sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>;
+  async function spyChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: SinonSpy<ChangesetConflictArgs[], DbConflictResolution>) => void) {
+    const s1 = spy(b, "onChangesetConflict" as any) as sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>;
     try {
       await cb();
     } finally {
@@ -167,17 +167,17 @@ describe("Changeset conflict handler", () => {
     }
   }
 
-  async function stubChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>) => void) {
-    const s1 = sinon.stub(b as any, "onChangesetConflict" as any);
+  async function stubChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: SinonStub<ChangesetConflictArgs[], DbConflictResolution>) => void) {
+    const s1 = stub(b as any, "onChangesetConflict" as any);
     try {
-      test(s1 as sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>);
+      test(s1 as SinonStub<ChangesetConflictArgs[], DbConflictResolution>);
       await cb();
     } finally {
       s1.restore();
     }
   }
   async function fakeChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, interceptMethod: (arg: ChangesetConflictArgs) => DbConflictResolution | undefined) {
-    const s1 = sinon.stub<ChangesetConflictArgs[], DbConflictResolution>(b as any, "onChangesetConflict" as any);
+    const s1 = stub<ChangesetConflictArgs[], DbConflictResolution>(b as any, "onChangesetConflict" as any);
     s1.callsFake(interceptMethod);
     try {
       await cb();

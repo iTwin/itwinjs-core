@@ -2,8 +2,9 @@
   "extends": "./node_modules/@itwin/build-tools/tsconfig-base.json",
   "compilerOptions": {
     "outDir": "./lib",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
     "resolvePackageJsonExports": true
   },
   "include": ["./src/backend/*.ts", "./src/common/*.ts"]

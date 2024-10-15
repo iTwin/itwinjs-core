@@ -12,6 +12,7 @@ import {
 import * as chai from "chai";
 import { assert, expect } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import { stub } from "sinon";
 import { HubWrappers, KnownTestLocations } from "../";
 import { HubMock } from "../../HubMock";
 import {
@@ -22,7 +23,6 @@ import {
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
-import sinon = require("sinon");
 export async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
   const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
@@ -143,7 +143,7 @@ describe("Merge conflict & locking", () => {
     } as ElementAspectProps);
     b2.saveChanges();
 
-    const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
+    const onChangesetConflictStub = stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
     await assertThrowsAsync(
       async () => b2.pushChanges({ accessToken: accessToken1, description: `modify aspect ${aspectId1} with no lock` }),
       "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
@@ -216,7 +216,7 @@ describe("Merge conflict & locking", () => {
     await b1.pushChanges({ accessToken: accessToken1, description: `deleted element ${el1}` });
     b2.saveChanges();
 
-    const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
+    const onChangesetConflictStub = stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
     await assertThrowsAsync(
       async () => b2.pushChanges({ accessToken: accessToken2, description: `add aspect to element ${el1}` }),
       "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered.");
@@ -328,7 +328,7 @@ describe("Merge conflict & locking", () => {
 
     await b1.pushChanges({ accessToken: accessToken1, description: `deleted element ${el1}` });
 
-    const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
+    const onChangesetConflictStub = stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
     /* we should be able to apply all changesets */
     await b3.pullChanges();
     expect(onChangesetConflictStub.callCount).greaterThanOrEqual(1, "native conflict handler must call BriefcaseDb.onChangesetConflict()");

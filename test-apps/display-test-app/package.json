@@ -2,6 +2,7 @@
   "name": "display-test-app",
   "description": "Internal app for testing features of display system",
   "license": "UNLICENSED",
+  "type": "module",
   "author": {
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
