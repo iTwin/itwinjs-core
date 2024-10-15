@@ -188,8 +188,10 @@ export abstract class MapTilingScheme {
   }
 
   /** @alpha */
-  private ecefToPixelFraction(point: Point3d, applyTerrain: boolean): Point3d {
+  private ecefToPixelFraction(point: Point3d, applyTerrain: boolean): Point3d | undefined {
     const cartoGraphic = Cartographic.fromEcef(point)!;
+    if (!cartoGraphic)
+      return undefined;
     return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitude), this.latitudeToYFraction(cartoGraphic.latitude), applyTerrain ? cartoGraphic.height : 0);
   }
 
@@ -204,6 +206,9 @@ export abstract class MapTilingScheme {
     const mercatorOrigin = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectCenter), applyTerrain);
     const mercatorX = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectEast), applyTerrain);
     const mercatorY = this.ecefToPixelFraction(dbToEcef.multiplyPoint3d(projectNorth), applyTerrain);
+
+    if (!mercatorOrigin || !mercatorX || !mercatorY)
+      return Transform.createIdentity();
 
     const deltaX = Vector3d.createStartEnd(mercatorOrigin, mercatorX);
     const deltaY = Vector3d.createStartEnd(mercatorOrigin, mercatorY);
