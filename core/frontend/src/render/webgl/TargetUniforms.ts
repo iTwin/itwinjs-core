@@ -23,6 +23,7 @@ import { ThematicUniforms } from "./ThematicUniforms";
 import { ViewRectUniforms } from "./ViewRectUniforms";
 import { RealityModelUniforms } from "./RealityModelUniforms";
 import { AtmosphereUniforms } from "./AtmosphereUniforms";
+import { ContourUniforms } from "./ContourUniforms";
 
 class PixelWidthFactor {
   /** The pixel width factor depends on both the frustum and the view rect. It also depends on the frustum scale associated with the current Branch. */
@@ -130,6 +131,7 @@ export class TargetUniforms {
   public readonly style = new StyleUniforms();
   public readonly lights = new LightingUniforms();
   public readonly thematic = new ThematicUniforms();
+  public readonly contours = new ContourUniforms();
   public readonly branch: BranchUniforms;
   public readonly batch: BatchUniforms;
   public readonly shadow: ShadowUniforms;

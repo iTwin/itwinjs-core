@@ -217,6 +217,10 @@ export class ShaderVariables {
     this.addVariable(ShaderVariable.create(name, type, VariableScope.Uniform, binding, precision));
   }
 
+  public addUniformArray(name: string, type: VariableType, length: number, binding: AddVariableBinding) {
+    this.addVariable(ShaderVariable.createArray(name, type, length, VariableScope.Uniform, binding));
+  }
+
   public addVarying(name: string, type: VariableType): boolean {
     return this.addVariable(ShaderVariable.create(name, type, VariableScope.Varying));
   }
@@ -892,6 +896,9 @@ export const enum FragmentShaderComponent {
   // (Optional) Discard if outside any clipping planes
   // void applyClipping()
   ApplyClipping,
+  // (Optional) Apply countour lines to lit base color
+  // vec4 applyClipping(vec4 baseColor)
+  ApplyContours,
   // (Optional) Apply flash hilite to lit base color
   // vec4 applyFlash(vec4 baseColor)
   ApplyFlash,
@@ -1076,6 +1083,12 @@ export class FragmentShaderBuilder extends ShaderBuilder {
     if (undefined !== reverseWoW) {
       prelude.addFunction("vec4 reverseWhiteOnWhite(vec4 baseColor)", reverseWoW);
       main.addline("  baseColor = reverseWhiteOnWhite(baseColor);");
+    }
+
+    const applyContours = this.get(FragmentShaderComponent.ApplyContours);
+    if (undefined !== applyContours) {
+      prelude.addFunction("vec4 applyContours(vec4 baseColor)", applyContours);
+      main.addline("  baseColor = applyContours(baseColor);");
     }
 
     const applyFlash = this.get(FragmentShaderComponent.ApplyFlash);

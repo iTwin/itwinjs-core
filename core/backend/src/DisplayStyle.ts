@@ -211,6 +211,14 @@ export class DisplayStyle3d extends DisplayStyle {
     if (this.settings.planProjectionSettings)
       for (const planProjectionSetting of this.settings.planProjectionSettings)
         referenceIds.addElement(planProjectionSetting[0]);
+
+    const groups = this.settings.contours.groups;
+    for (const group of groups) {
+      const subCategories = group.subCategories;
+      for (const subCategoryId of subCategories) {
+        referenceIds.addElement(subCategoryId);
+      }
+    }
   }
 
   /** @alpha */
@@ -241,6 +249,23 @@ export class DisplayStyle3d extends DisplayStyle {
           }
         }
         targetElementProps.jsonProperties.styles.planProjections = remappedPlanProjections;
+      }
+
+      const groups = targetElementProps?.jsonProperties?.styles?.contours?.groups;
+      if (groups) {
+        for (const group of groups) {
+          if (group.subCategories) {
+            const subCategories = CompressedId64Set.decompressArray(group.subCategories);
+            const remappedSubCategories: Id64String[] = [];
+            for (const subCategoryId of subCategories) {
+              const remappedSubCategoryId: Id64String = context.findTargetElementId(subCategoryId);
+              if (Id64.isValidId64(remappedSubCategoryId)) {
+                remappedSubCategories.push(remappedSubCategoryId);
+              }
+            }
+            group.subCategories = CompressedId64Set.sortAndCompress(remappedSubCategories);
+          }
+        }
       }
     }
   }
