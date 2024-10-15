@@ -77,7 +77,7 @@ export class ContentFormatter {
       assert(Value.isArray(value));
       return this.formatArrayItems(value, field);
     }
-    if (field.isStructPropertiesField()) {
+    if (field.isStructPropertiesField() && value !== undefined) {
       assert(Value.isMap(value));
       return this.formatStructMembers(value, field);
     }
