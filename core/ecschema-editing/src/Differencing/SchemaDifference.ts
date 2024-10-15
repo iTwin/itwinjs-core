@@ -6,7 +6,7 @@
  * @module Differencing
  */
 
-import { SchemaDifferenceConflict } from "./SchemaConflicts";
+import { AnySchemaDifferenceConflict } from "./SchemaConflicts";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
@@ -73,7 +73,7 @@ export interface SchemaDifferenceResult {
   readonly differences: AnySchemaDifference[];
 
   /** List of conflicts found while comparing the schemas. */
-  readonly conflicts?: SchemaDifferenceConflict[];
+  readonly conflicts?: AnySchemaDifferenceConflict[];
 }
 
 /**
@@ -85,6 +85,7 @@ export type AnySchemaDifference =
   SchemaReferenceDifference |
   AnySchemaItemDifference |
   AnySchemaItemPathDifference |
+  EntityClassMixinDifference |
   CustomAttributeDifference;
 
 /**
@@ -118,7 +119,6 @@ export type AnySchemaItemDifference =
   AnyClassItemDifference |
   ConstantDifference |
   EnumerationDifference |
-  EntityClassMixinDifference |
   FormatDifference |
   KindOfQuantityDifference |
   InvertedUnitDifference |
