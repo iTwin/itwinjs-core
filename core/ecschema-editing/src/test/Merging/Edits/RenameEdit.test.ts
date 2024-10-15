@@ -155,7 +155,7 @@ describe("Rename change tests", () => {
       expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code");
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename(sourceSchema.name, conflict.itemName!, "MergedCategory");
+      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedCategory");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
@@ -234,7 +234,7 @@ describe("Rename change tests", () => {
       expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code");
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename(sourceSchema.name, conflict.itemName!, "MergedKoq");
+      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedKoq");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
@@ -313,7 +313,7 @@ describe("Rename change tests", () => {
       expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code");
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename(sourceSchema.name, conflict.itemName!, "MergedEnum");
+      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedEnum");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
@@ -394,8 +394,8 @@ describe("Rename change tests", () => {
       conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename(sourceSchema.name, conflicts[0].itemName!, "MergedBaseStruct");
-      schemaEdits.items.rename(sourceSchema.name, conflicts[1].itemName!, "MergedStruct");
+      schemaEdits.items.rename("SourceSchema", "TestBase", "MergedBaseStruct");
+      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedStruct");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
@@ -580,8 +580,8 @@ describe("Rename change tests", () => {
       conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename(sourceSchema.name, conflicts[0].itemName!, "MergedBaseCA");
-      schemaEdits.items.rename(sourceSchema.name, conflicts[1].itemName!, "MergedCA");
+      schemaEdits.items.rename("SourceSchema", "TestBase", "MergedBaseCA");
+      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedCA");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
@@ -687,8 +687,8 @@ describe("Rename change tests", () => {
       conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename(sourceSchema.name, conflicts[0].itemName!, "MergedBaseMixin");
-      schemaEdits.items.rename(sourceSchema.name, conflicts[1].itemName!, "MergedMixin");
+      schemaEdits.items.rename("SourceSchema", "TestBase", "MergedBaseMixin");
+      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedMixin");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
@@ -832,8 +832,8 @@ describe("Rename change tests", () => {
       conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename(sourceSchema.name, conflicts[0].itemName!, "MergedBaseEntity");
-      schemaEdits.items.rename(sourceSchema.name, conflicts[1].itemName!, "MergedEntity");
+      schemaEdits.items.rename("SourceSchema", "TestBase", "MergedBaseEntity");
+      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedEntity");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
@@ -975,8 +975,8 @@ describe("Rename change tests", () => {
       conflicts.forEach((conflict) => expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code"));
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename(sourceSchema.name, conflicts[0].itemName!, "MergedBaseRelationship");
-      schemaEdits.items.rename(sourceSchema.name, conflicts[1].itemName!, "MergedRelationship");
+      schemaEdits.items.rename("SourceSchema", "TestBase", "MergedBaseRelationship");
+      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedRelationship");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
@@ -1043,7 +1043,7 @@ describe("Rename change tests", () => {
       expect(differences.conflicts).to.be.undefined;
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.items.rename(sourceSchema.name, "TestItem", "MergedCategory");
+      schemaEdits.items.rename("SourceSchema", "TestItem", "MergedCategory");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
@@ -1101,7 +1101,7 @@ describe("Rename change tests", () => {
       expect(conflict.code).equals(ConflictCode.ConflictingPropertyName, "Unexpected conflict code");
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.properties.rename(sourceSchema.name, conflict.itemName!, conflict.path!, "MergedProperty");
+      schemaEdits.properties.rename("SourceSchema", "TestEntity", "TestProp", "MergedProperty");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
@@ -1156,7 +1156,7 @@ describe("Rename change tests", () => {
       expect(conflict.code).equals(ConflictCode.ConflictingPropertyName, "Unexpected conflict code");
 
       const schemaEdits = new SchemaEdits();
-      schemaEdits.properties.rename(sourceSchema.name, conflict.itemName!, conflict.path!, "MergedProperty");
+      schemaEdits.properties.rename("SourceSchema", "TestEntity", "TestProp", "MergedProperty");
 
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(differences, schemaEdits);
