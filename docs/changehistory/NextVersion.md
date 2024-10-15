@@ -5,22 +5,22 @@ publish: false
 
 Table of contents:
 
-  - [Revert timeline changes](#revert-timeline-changes)
-  - [Display](#display)
-    - [Instancing](#instancing)
-    - [Overriding line color](#overriding-line-color)
-    - [Context Reality model visibility](#context-reality-model-visibility)
-    - [Contour Display](#contour-display)
-  - [Interactive Tools](#interactive-tools)
-    - [Element Locate](#element-locate)
-  - [Presentation](#presentation)
-    - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
-  - [Quantity](#quantity)
-  - [API deprecations](#api-deprecations)
-    - [@itwin/appui-abstract](#itwinappui-abstract)
-    - [@itwin/core-backend](#itwincore-backend)
-    - [@itwin/core-frontend](#itwincore-frontend)
-    - [@itwin/core-quantity](#itwincore-quantity)
+- [Revert timeline changes](#revert-timeline-changes)
+ - [Display](#display)
+  - [Instancing](#instancing)
+   - [Overriding line color](#overriding-line-color)
+   - [Context Reality model visibility](#context-reality-model-visibility)
+   - [Contour Display](#contour-display)
+- [Interactive Tools](#interactive-tools)
+   - [Element Locate](#element-locate)
+ - [Presentation](#presentation)
+  - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
+ - [Quantity](#quantity)
+ - [API deprecations](#api-deprecations)
+   - [@itwin/appui-abstract](#itwinappui-abstract)
+   - [@itwin/core-backend](#itwincore-backend)
+   - [@itwin/core-frontend](#itwincore-frontend)
+   - [@itwin/core-quantity](#itwincore-quantity)
 
 ## Revert timeline changes
 
