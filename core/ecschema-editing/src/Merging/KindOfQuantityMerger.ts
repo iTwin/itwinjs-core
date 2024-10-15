@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import type { KindOfQuantityDifference, KoqPresentationFormatDifference } from "../Differencing/SchemaDifference";
+import type { KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference } from "../Differencing/SchemaDifference";
 import type { MutableKindOfQuantity } from "../Editing/Mutable/MutableKindOfQuantity";
 import type { SchemaMergeContext } from "./SchemaMerger";
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
@@ -64,7 +64,7 @@ export async function modifyKindOfQuantity(context: SchemaMergeContext, change: 
  * Merges a new presentation format into the target kind of quantity
  * @internal
 */
-export async function addPresentationFormat(context: SchemaMergeContext, change: KoqPresentationFormatDifference) {
+export async function addPresentationFormat(context: SchemaMergeContext, change: KindOfQuantityPresentationFormatDifference) {
   for (const presentationFormat of change.difference) {
     const koqKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
     const formatString = await updateOverrideFormat(context, presentationFormat);

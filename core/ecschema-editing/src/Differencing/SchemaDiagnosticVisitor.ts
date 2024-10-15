@@ -22,7 +22,7 @@ import {
   type DifferenceType,
   type EntityClassMixinDifference,
   type EnumeratorDifference,
-  type KoqPresentationFormatDifference,
+  type KindOfQuantityPresentationFormatDifference,
   type RelationshipConstraintClassDifference,
   type RelationshipConstraintDifference,
   type SchemaDifference,
@@ -39,7 +39,7 @@ import {
 export class SchemaDiagnosticVisitor {
 
   public readonly schemaDifferences: Array<SchemaDifference | SchemaReferenceDifference>;
-  public readonly schemaItemDifferences: Array<AnySchemaItemDifference | EntityClassMixinDifference | KoqPresentationFormatDifference>;
+  public readonly schemaItemDifferences: Array<AnySchemaItemDifference | EntityClassMixinDifference | KindOfQuantityPresentationFormatDifference>;
   public readonly schemaItemPathDifferences: Array<AnySchemaItemPathDifference>;
   public readonly customAttributeDifferences: Array<CustomAttributeDifference>;
 
@@ -457,15 +457,15 @@ export class SchemaDiagnosticVisitor {
     const koq = diagnostic.ecDefinition as KindOfQuantity;
     const [presentationFormat] = diagnostic.messageArgs as [Format | OverrideFormat];
 
-    let modifyEntry = this.schemaItemDifferences.find((entry): entry is KoqPresentationFormatDifference => {
-      return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.KoqPresentationFormat
+    let modifyEntry = this.schemaItemDifferences.find((entry): entry is KindOfQuantityPresentationFormatDifference => {
+      return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.KindOfQuantityPresentationFormat
         && entry.itemName === koq.name;
     });
 
     if (modifyEntry === undefined) {
       modifyEntry = {
         changeType: "add",
-        schemaType: SchemaOtherTypes.KoqPresentationFormat,
+        schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat,
         itemName: koq.name,
         difference: [],
       };

@@ -108,7 +108,7 @@ alpha;function;isUnitSystemDifference
 beta;type;ISuppressionRule
 alpha;class;KindOfQuantityChanges
 alpha;interface;KindOfQuantityDifference
-alpha;interface;KoqPresentationFormatDifference
+alpha;interface;KindOfQuantityPresentationFormatDifference
 beta;class;LoggingDiagnosticReporter
 alpha;interface;MixinClassDifference
 alpha;interface;PhenomenonDifference

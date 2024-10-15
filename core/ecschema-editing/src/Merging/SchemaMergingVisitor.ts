@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, KoqPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "../Differencing/SchemaDifference";
+import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "../Differencing/SchemaDifference";
 import { addConstant, modifyConstant } from "./ConstantMerger";
 import { addCustomAttribute } from "./CustomAttributeMerger";
 import { addCustomAttributeClass, modifyCustomAttributeClass } from "./CustomAttributeClassMerger";
@@ -333,10 +333,10 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
   }
 
   /**
-  * Visitor implementation for handling KoqPresentationFormatDifference.
+  * Visitor implementation for handling KindOfQuantityPresentationFormatDifference.
   * @internal
   */
-  public async visitKoqPresentationFormatDifference(entry: KoqPresentationFormatDifference): Promise<void> {
+  public async visitKindOfQuantityPresentationFormatDifference(entry: KindOfQuantityPresentationFormatDifference): Promise<void> {
     switch(entry.changeType) {
       case "add": return addPresentationFormat(this._context, entry);
     }

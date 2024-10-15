@@ -366,9 +366,9 @@ describe("Schema Differences", () => {
   });
 
   it("should return missing presentation format of kindOfQuantity", () => {
-    expectPartiallyEquals(findEntry({ changeType: "add", schemaType: "KoqPresentationFormat", itemName: "ChangedKoq" }), {
+    expectPartiallyEquals(findEntry({ changeType: "add", schemaType: "KindOfQuantityPresentationFormat", itemName: "ChangedKoq" }), {
       changeType: "add",
-      schemaType: "KoqPresentationFormat",
+      schemaType: "KindOfQuantityPresentationFormat",
       itemName: "ChangedKoq",
       difference: [
         "SourceSchema.TestFormat(4)[SourceSchema.TestUnit|m]",

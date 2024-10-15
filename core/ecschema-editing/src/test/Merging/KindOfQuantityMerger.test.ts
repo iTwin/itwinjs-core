@@ -367,7 +367,7 @@ describe("KindOfQuantity merge tests", () => {
         differences: [
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.KoqPresentationFormat,
+            schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat,
             itemName: "TestKoq",
             difference: [
               "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU_PER_TU|tu/tu][ReferenceSchema.KILOTU|undefined]",
@@ -434,7 +434,7 @@ describe("KindOfQuantity merge tests", () => {
         differences: [
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.KoqPresentationFormat,
+            schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat,
             itemName: "TestKoq",
             difference: [
               "ReferenceSchema.TestDecimal(8)[ReferenceSchema.TU_PER_TU|tu/tu]",
@@ -442,7 +442,7 @@ describe("KindOfQuantity merge tests", () => {
           },
           {
             changeType: "add",
-            schemaType: SchemaOtherTypes.KoqPresentationFormat,
+            schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat,
             itemName: "TestKoq",
             difference: [
               "SourceSchema.TestReal(4)[SourceSchema.PI_TU|pi*tu]",

@@ -7,7 +7,7 @@
  */
 
 import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
-import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, KoqPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
+import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
 
@@ -441,10 +441,10 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
   }
 
   /**
-   * Visitor implementation for handling KoqPresentationFormatDifference.
+   * Visitor implementation for handling KindOfQuantityPresentationFormatDifference.
    * @internal
    */
-  public async visitKoqPresentationFormatDifference(_entry: KoqPresentationFormatDifference) {
+  public async visitKindOfQuantityPresentationFormatDifference(_entry: KindOfQuantityPresentationFormatDifference) {
   }
 
   /**
