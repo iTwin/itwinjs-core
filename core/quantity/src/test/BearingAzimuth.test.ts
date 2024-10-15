@@ -142,6 +142,40 @@ describe("Bearing format tests:", () => {
       expect(parseBearingDecimalResult.value, `Parsed result for ${normalizedAngle} from formatted ${resultBearingDecimal}`).closeTo(normalizedAngle, 0.0001);
     }
   });
+
+  it("should return error if prefix or suffix is missing in bearing string", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const bearingDMSJson: FormatProps = {
+      minWidth: 2,
+      precision: 0,
+      type: "Bearing",
+      revolutionUnit: "Units.REVOLUTION",
+      composite: {
+        includeZero: true,
+        spacer: ":",
+        units: [
+          { name: "Units.ARC_DEG" },
+          { name: "Units.ARC_MINUTE" },
+          { name: "Units.ARC_SECOND" },
+        ],
+      },
+    };
+
+    const bearingDMS = new Format("BearingDMS");
+    await bearingDMS.fromJSON(unitsProvider, bearingDMSJson).catch(() => { });
+    const rad = await unitsProvider.findUnitByName("Units.RAD");
+    const bearingDMSParser = await ParserSpec.create(bearingDMS, unitsProvider, rad);
+
+    let parseResult = Parser.parseQuantityString("00:00:00E", bearingDMSParser);
+    expect(parseResult.ok).to.be.false;
+
+    parseResult = Parser.parseQuantityString("N00:00:00", bearingDMSParser);
+    expect(parseResult.ok).to.be.false;
+
+    parseResult = Parser.parseQuantityString("00:00:00", bearingDMSParser);
+    expect(parseResult.ok).to.be.false;
+  });
 });
 
 describe("Azimuth format tests:", () => {
