@@ -8,7 +8,7 @@
  */
 import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
-import { SmallSystem } from "../numerics/Polynomials";
+import { SmallSystem } from "../numerics/SmallSystem";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Vector2d } from "./Point2dVector2d";

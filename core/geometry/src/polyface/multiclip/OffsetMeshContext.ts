@@ -6,20 +6,20 @@
  * @module Polyface
  */
 
-import { SmallSystem } from "../../numerics/Polynomials";
+import { Geometry } from "../../Geometry";
+import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
+import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
 import { Ray3d } from "../../geometry3d/Ray3d";
+import { XYAndZ } from "../../geometry3d/XYZProps";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeMask } from "../../topology/Graph";
 import { HalfEdgeGraphFromIndexedLoopsContext } from "../../topology/HalfEdgeGraphFromIndexedLoopsContext";
 import { IndexedPolyface } from "../Polyface";
 import { PolyfaceBuilder } from "../PolyfaceBuilder";
-import { XYAndZ } from "../../geometry3d/XYZProps";
-import { Geometry } from "../../Geometry";
 import { OffsetMeshOptions } from "../PolyfaceQuery";
-import { PolylineCompressionContext } from "../../geometry3d/PolylineCompressionByEdgeOffset";
-import { Angle } from "../../geometry3d/Angle";
 
 function isDefinedAndTrue(value: boolean | undefined): boolean {
   if (value === undefined)

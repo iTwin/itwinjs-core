@@ -23,10 +23,11 @@ import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
 import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
 import {
-  AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, ImplicitLineXY, SmallSystem, SphereImplicit, TorusImplicit,
+  AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, ImplicitLineXY, SphereImplicit, TorusImplicit,
   TrigPolynomial,
 } from "../../numerics/Polynomials";
 import { Quadrature } from "../../numerics/Quadrature";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import { Sphere } from "../../solid/Sphere";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
