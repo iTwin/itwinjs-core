@@ -73,7 +73,7 @@ export class ContentFormatter {
   }
 
   private async formatPropertyValue(value: Value, field: PropertiesField): Promise<DisplayValue> {
-    if (field.isArrayPropertiesField()) {
+    if (field.isArrayPropertiesField() && value !== undefined) {
       assert(Value.isArray(value));
       return this.formatArrayItems(value, field);
     }
