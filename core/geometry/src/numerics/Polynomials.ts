@@ -7,6 +7,7 @@
  * @module Numerics
  */
 
+import { assert } from "@itwin/core-bentley";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -19,9 +20,7 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { XAndY } from "../geometry3d/XYZProps";
 import { Point4d } from "../geometry4d/Point4d";
 
-// cspell:word Cardano
-// cspell:word CCminusSS
-/* eslint-disable @typescript-eslint/naming-convention */
+// cspell:words XYUV Cardano internaldocs
 
 /**
  * degree 2 (quadratic) polynomial in for y = c0 + c1*x + c2*x^2
@@ -770,8 +769,8 @@ export class AnalyticRoots {
     } else if (D < 0) {
       return;
     } else if (D > 0) {
-      const sqrt_D = Math.sqrt(D);
-      this.append2Solutions(sqrt_D - p, - sqrt_D - p, values);
+      const sqrtD = Math.sqrt(D);
+      this.append2Solutions(sqrtD - p, - sqrtD - p, values);
       return;
     }
     return;
@@ -836,7 +835,7 @@ export class AnalyticRoots {
    */
   /*
   private static _appendCubicRootsUnsorted(c: Float64Array | number[], results: GrowableFloat64Array) {
-    let sq_A: number;
+    let AA: number;
     let p: number;
     let q: number;
 
@@ -857,9 +856,9 @@ export class AnalyticRoots {
     //    f' = 3y^2 + p
     //        local min/max at Y = +-sqrt (-p)
     //        f(+Y) = -p sqrt(-p) + 3p sqrt (-p) + 2q = 2 p sqrt (-p) + 2q
-    sq_A = A * A;
-    p = (3.0 * B - sq_A) / 9.0;
-    q = 1.0 / 2 * (2.0 / 27 * A * sq_A - 1.0 / 3 * A * B + C);
+    AA = A * A;
+    p = (3.0 * B - AA) / 9.0;
+    q = 1.0 / 2 * (2.0 / 27 * A * AA - 1.0 / 3 * A * B + C);
 
     // Use Cardano formula
     const cb_p: number = p * p * p;
@@ -897,9 +896,9 @@ export class AnalyticRoots {
 
       return;
     } else {    // One real solution
-      const sqrt_D = Math.sqrt(D);
-      const u = this.cbrt(sqrt_D - q);
-      const v = -(this.cbrt(sqrt_D + q));
+      const sqrtD = Math.sqrt(D);
+      const u = this.cbrt(sqrtD - q);
+      const v = -(this.cbrt(sqrtD + q));
       results.push(origin + u + v);
       this.improveRoots(c, 3, results, false);
       return;
@@ -939,10 +938,10 @@ export class AnalyticRoots {
     const D: number = c[0] * coffScale[0];
     const origin = -0.25 * A;
     // substitute x = y - A/4 to eliminate cubic term: y^4 + py^2 + qy + r = 0
-    const sq_A: number = A * A;
-    const p: number = -0.375 * sq_A + B;
-    const q: number = 0.125 * sq_A * A - 0.5 * A * B + C;
-    const r: number = -0.01171875 * sq_A * sq_A + 0.0625 * sq_A * B - 0.25 * A * C + D;
+    const AA: number = A * A;
+    const p: number = -0.375 * AA + B;
+    const q: number = 0.125 * AA * A - 0.5 * A * B + C;
+    const r: number = -0.01171875 * AA * AA + 0.0625 * AA * B - 0.25 * A * C + D;
     const cubicSolutions = new GrowableFloat64Array();
     if (this.isZero(r)) { // no absolute term: y(y^3 + py + q) = 0
       coffs[0] = q;
@@ -1140,20 +1139,19 @@ export class TrigPolynomial {
   /** Standard Basis coefficients for W(t) * W(t). */
   public static readonly WW = Float64Array.from([1.0, -4.0, 8.0, -8.0, 4.0]);
   /** Standard Basis coefficients for C(t) * C(t) - S(t) * S(t). */
-  public static readonly CCminusSS = Float64Array.from([1.0, -4.0, 0.0, 8.0, -4.0]);
+  public static readonly CCMinusSS = Float64Array.from([1.0, -4.0, 0.0, 8.0, -4.0]); // eslint-disable-line @typescript-eslint/naming-convention
 
   /**
-   * Solve a polynomial created from trigonometric condition using Trig.S, Trig.C, Trig.W.
-   * * Polynomial is of degree 4:
-   * `p(t) = coff[0] + coff[1] * t + coff[2] * t^2 + coff[3] * t^3 + coff[4] * t^4`
-   * * Solution logic includes inferring angular roots corresponding zero leading coefficients
-   * (roots at infinity).
-   * @param coff coefficients.
-   * @param nominalDegree degree of the polynomial under most complex root case. If there are any
-   * leading zero coefficients (starting from `coff[4]`), a single root "at infinity" is recorded
-   * as its corresponding angular parameter at -pi/2.
-   * @param referenceCoefficient a number which represents the size of coefficients at various
-   * stages of computation. A small fraction of this will be used as a zero tolerance
+   * Find the roots of a univariate polynomial created from substituting the rational parameterization of the unit
+   * circle into a trigonometric polynomial. Roots are returned as radian angles.
+   * * Currently implemented for polynomials of degree <= 4.
+   * * For example, the ellipse-ellipse intersection problem reduces to finding the roots of a quartic polynomial:
+   * `p(t) = coff[0] + coff[1] t + coff[2] t^2 + coff[3] t^3 + coff[4] t^4`.
+   * * Particular care is given to report a root at t = +/-infinity, which corresponds to the returned angle -pi/2.
+   * @param coff coefficients in the power basis
+   * @param nominalDegree degree of the polynomial under the most complex root case.
+   * @param referenceCoefficient a number which represents the size of coefficients at various stages of computation.
+   * A small fraction of this number will be used as a zero tolerance.
    * @param radians roots are placed here.
    * @return false if equation is all zeros. This usually means any angle is a solution.
    */
@@ -1189,6 +1187,7 @@ export class TrigPolynomial {
         AnalyticRoots.appendQuarticRoots(coff, roots);
       } else {
         // TODO: WORK WITH BEZIER SOLVER
+        assert(false, "Unimplemented degree in trig solver");
       }
       if (roots.length > 0) {
         // each solution t represents an angle with Math.Cos(theta) = C(t)/W(t) and sin(theta) = S(t)/W(t)
@@ -1199,8 +1198,9 @@ export class TrigPolynomial {
           radians.push(Math.atan2(ss, cc));
         }
       }
-      // each leading zero coefficients (starting from `coff[4]`) corresponds to a root at -PI/2.
-      // we only make one entry because we don't report multiplicity.
+      // If the tail of the coff array is zero, we solved a polynomial of lesser degree above, and
+      // we report the skipped "root at infinity" as the corresponding angle -pi/2 (without multiplicity).
+      // See core\geometry\internaldocs\unitCircleEllipseIntersection.md for details.
       if (degree < nominalDegree)
         radians.push(-0.5 * Math.PI);
     }
@@ -1208,16 +1208,15 @@ export class TrigPolynomial {
   }
   private static readonly _coefficientRelTol = 1.0e-12;
   /**
-   * Compute intersections of unit circle `x^2 + y^2 = 1` with general quadric
-   * `axx * x^2 + axy * x * y + ayy * y^2 + ax * x + ay * y + a = 0`
-   * Solutions are returned as angles. Sine and Cosine of the angles are the x, y results.
+   * Compute intersections of the unit circle `x^2 + y^2 = 1` with the general quadric (conic)
+   * `axx x^2 + axy xy + ayy y^2 + ax x + ay y + a = 0`.
    * @param axx coefficient of x^2
    * @param axy coefficient of xy
    * @param ayy coefficient of y^2
    * @param ax coefficient of x
    * @param ay coefficient of y
    * @param a constant coefficient
-   * @param radians solution angles
+   * @param radians up to 4 solution angles t in the quadric parameterization: x = cos(t), y = sin(t)
    */
   public static solveUnitCircleImplicitQuadricIntersection(
     axx: number, axy: number, ayy: number, ax: number, ay: number, a: number, radians: number[],
@@ -1278,9 +1277,9 @@ export class TrigPolynomial {
     const acs = 2.0 * (ux * vx + uy * vy);
     const ass = vx * vx + vy * vy;
     const ac = 2.0 * (ux * cx + uy * cy);
-    const asi = 2.0 * (vx * cx + vy * cy);
+    const as = 2.0 * (vx * cx + vy * cy);
     const a = cx * cx + cy * cy - 1.0;
-    const status = this.solveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, asi, a, ellipseRadians);
+    const status = this.solveUnitCircleImplicitQuadricIntersection(acc, acs, ass, ac, as, a, ellipseRadians);
     for (const radians of ellipseRadians) {
       const cc = Math.cos(radians);
       const ss = Math.sin(radians);
