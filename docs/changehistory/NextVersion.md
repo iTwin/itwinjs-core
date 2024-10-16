@@ -6,22 +6,22 @@ publish: false
 Table of contents:
 
 - [Revert timeline changes](#revert-timeline-changes)
-- [Display](#display)
+ - [Display](#display)
   - [Instancing](#instancing)
-  - [Overriding line color](#overriding-line-color)
-  - [Context Reality model visibility](#context-reality-model-visibility)
-  - [Contour Display](#contour-display)
+   - [Overriding line color](#overriding-line-color)
+   - [Context Reality model visibility](#context-reality-model-visibility)
+   - [Contour Display](#contour-display)
 - [Interactive Tools](#interactive-tools)
-  - [Element Locate](#element-locate)
-- [Presentation](#presentation)
+   - [Element Locate](#element-locate)
+ - [Presentation](#presentation)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
-- [Quantity](#quantity)
-- [Electron 33 support](#electron-33-support)
-- [API Deprecations](#api-deprecations)
-  - [@itwin/appui-abstract](#itwinappui-abstract)
-  - [@itwin/core-backend](#itwincore-frontend)
-  - [@itwin/core-frontend](#itwincore-frontend)
-  - [@itwin/core-quantity](#itwincore-quantity)
+ - [Quantity](#quantity)
+ - [Electron 33 support](#electron-33-support)
+ - [API deprecations](#api-deprecations)
+   - [@itwin/appui-abstract](#itwinappui-abstract)
+   - [@itwin/core-backend](#itwincore-backend)
+   - [@itwin/core-frontend](#itwincore-frontend)
+   - [@itwin/core-quantity](#itwincore-quantity)
 
 ## Revert timeline changes
 
@@ -159,5 +159,7 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 - [SnapshotConnection.openRemote]($frontend) has been deprecated. Use [CheckpointConnection.openRemote]($frontend) to open a connection to an iModel within web application.
 
 ### @itwin/core-quantity
+
+- Refactored `FormatType`, `ScientificType`, `ShowSignOption` from int enums to string enums and added `RatioType` as a string enum. Relevant toString functions, including [formatTypeToString]($quantity), [scientificTypeToString]($quantity), and [showSignOptionToString]($quantity), have been deprecated because they don't need serialization methods.
 
 - [Parser.parseToQuantityValue]($quantity) have been deprecated. Use the existing method [Parser.parseQuantityString]($quantity) instead.
