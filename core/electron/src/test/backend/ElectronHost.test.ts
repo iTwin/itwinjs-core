@@ -132,8 +132,7 @@ async function testMainWindowUrl() {
   const window = ElectronHost.electron.BrowserWindow.getAllWindows()[0];
   assert(window !== undefined);
 
-  // `as any` required because of mismatch in Node types: we use @types/node 18, but Electron uses 20
-  await new Promise((resolve) => window.webContents.once("did-finish-load" as any, resolve));
+  await new Promise((resolve) => window.webContents.once("did-finish-load", () => resolve(undefined)));
   assert(url === window.webContents.getURL());
 }
 
