@@ -138,7 +138,7 @@ export class XmlParser extends AbstractParser<Element> {
 
         const itemType = this.getSchemaItemType(rawItemType);
         if (itemType === undefined) {
-          if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion?.readVersion, this._ecXmlVersion?.writeVersion))
+          if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion))
             continue;
           throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `A SchemaItem in ${this._schemaName} has an invalid type. '${rawItemType}' is not a valid SchemaItem type.`);
         }
@@ -312,7 +312,7 @@ export class XmlParser extends AbstractParser<Element> {
     } else if (/string/i.test(enumType)) {
       tempBackingType = PrimitiveType.String;
     } else {
-      if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion?.readVersion, this._ecXmlVersion?.writeVersion))
+      if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion))
         tempBackingType = PrimitiveType.String;
       else
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);

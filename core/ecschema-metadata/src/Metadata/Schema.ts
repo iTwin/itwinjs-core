@@ -675,9 +675,9 @@ export class Schema implements CustomAttributeContainerProps {
     // The schema props have not been parsed. Parse the ECXml version from the $schema attribute
     let ecVersion: ECXmlVersion;
     if (schemaProps.ecXmlMajorVersion === undefined || schemaProps.ecXmlMinorVersion === undefined) {
-      ecVersion = ((schemaProps.$schema.search("ECXML") !== -1) ? XmlParser.parseXmlNamespace(schemaProps.$schema) : JsonParser.parseJSUri(schemaProps.$schema)) as unknown as ECXmlVersion;
+      ecVersion = ((schemaProps.$schema.search("ECXML") !== -1) ? XmlParser.parseXmlNamespace(schemaProps.$schema) : JsonParser.parseJSUri(schemaProps.$schema)) as ECXmlVersion;
     } else {
-      ecVersion = { readVersion: schemaProps.ecXmlMajorVersion, writeVersion: schemaProps.ecXmlMinorVersion } as unknown as ECXmlVersion;
+      ecVersion = { readVersion: schemaProps.ecXmlMajorVersion, writeVersion: schemaProps.ecXmlMinorVersion } as ECXmlVersion;
     }
 
     this._originalECXmlMajorVersion = ecVersion?.readVersion;

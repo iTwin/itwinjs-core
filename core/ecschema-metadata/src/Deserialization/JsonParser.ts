@@ -97,7 +97,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       ...this._rawSchema,
       ecXmlMajorVersion: ecVersions?.readVersion,
       ecXmlMinorVersion: ecVersions?.writeVersion,
-    } as unknown as SchemaProps;
+    } as SchemaProps;
   }
 
   public *getReferences(): Iterable<SchemaReferenceProps> {
@@ -214,7 +214,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         if (typeof (property.type) !== "string")
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} has an invalid 'type' attribute. It should be of type 'string'.`);
         if (!this.isValidPropertyType(property.type)) {
-          if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion?.readVersion, this._ecXmlVersion?.writeVersion))
+          if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion))
             return;
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECProperty ${itemName}.${property.name} has an invalid 'type' attribute. '${property.type}' is not a valid type.`);
         }
@@ -417,7 +417,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
         (type === "string");
     };
     if (!isValidEnumerationType(jsonObj.type)) {
-      if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion?.readVersion, this._ecXmlVersion?.writeVersion))
+      if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion))
         (jsonObj as any).type = "string";
       else
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'type' attribute. It should be either "int" or "string".`);

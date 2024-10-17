@@ -21,7 +21,7 @@ import {
 } from "./Property";
 import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
-import { SchemaReadHelper } from "../Deserialization/Helper";
+import { ECXmlVersion, SchemaReadHelper } from "../Deserialization/Helper";
 
 /**
  * A common abstract class for all of the ECClass types.
@@ -411,7 +411,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (undefined !== classProps.modifier) {
       const modifier = parseClassModifier(classProps.modifier);
       if (undefined === modifier) {
-        if (SchemaReadHelper.isECXmlVersionNewer(classProps.originalECXmlMajorVersion, classProps.originalECXmlMinorVersion))
+        if (SchemaReadHelper.isECXmlVersionNewer({readVersion: classProps.originalECXmlMajorVersion, writeVersion: classProps.originalECXmlMinorVersion} as ECXmlVersion))
           this._modifier = ECClassModifier.None;
         else
           throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${classProps.modifier}' is not a valid ECClassModifier.`);

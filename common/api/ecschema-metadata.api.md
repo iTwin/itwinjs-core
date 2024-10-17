@@ -2020,7 +2020,7 @@ export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 export class SchemaReadHelper<T = unknown> {
     constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor);
     // (undocumented)
-    static isECXmlVersionNewer(ecXmlMajorVersionToCheck?: number, ecXmlMinorVersionToCheck?: number): boolean;
+    static isECXmlVersionNewer(ecXmlVersion?: ECXmlVersion): boolean;
     readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U>;
     readSchemaInfo<U extends Schema>(schema: U, rawSchema: T): Promise<SchemaInfo>;
     readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U;

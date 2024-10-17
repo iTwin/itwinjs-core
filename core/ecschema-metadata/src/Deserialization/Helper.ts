@@ -881,7 +881,7 @@ export class SchemaReadHelper<T = unknown> {
 
     const loadTypeName = async (typeName: string): Promise<ECObjectsStatus> => {
       if (undefined === parsePrimitiveType(typeName)) {
-        if (SchemaReadHelper.isECXmlVersionNewer(this._parser.getECXmlVersion?.readVersion, this._parser.getECXmlVersion?.writeVersion))
+        if (SchemaReadHelper.isECXmlVersionNewer(this._parser.getECXmlVersion))
           return ECObjectsStatus.NewerSchemaVersion;
         await this.findSchemaItem(typeName);
       }
@@ -938,7 +938,7 @@ export class SchemaReadHelper<T = unknown> {
   private loadPropertyTypesSync(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): void {
     const loadTypeName = (typeName: string): ECObjectsStatus => {
       if (undefined === parsePrimitiveType(typeName)) {
-        if (SchemaReadHelper.isECXmlVersionNewer(this._parser.getECXmlVersion?.readVersion, this._parser.getECXmlVersion?.writeVersion))
+        if (SchemaReadHelper.isECXmlVersionNewer(this._parser.getECXmlVersion))
           return ECObjectsStatus.NewerSchemaVersion;
         this.findSchemaItemSync(typeName);
       }
@@ -1065,10 +1065,10 @@ export class SchemaReadHelper<T = unknown> {
     }
   }
 
-  public static isECXmlVersionNewer(ecXmlMajorVersionToCheck?: number, ecXmlMinorVersionToCheck?: number): boolean {
-    if (ecXmlMajorVersionToCheck === undefined || ecXmlMinorVersionToCheck === undefined)
+  public static isECXmlVersionNewer(ecXmlVersion?: ECXmlVersion): boolean {
+    if (ecXmlVersion === undefined || ecXmlVersion.readVersion === undefined || ecXmlVersion.writeVersion === undefined)
       return false;
 
-    return ((ecXmlMajorVersionToCheck > Schema.currentECXmlMajorVersion) || (ecXmlMajorVersionToCheck === Schema.currentECXmlMajorVersion && ecXmlMinorVersionToCheck > Schema.currentECXmlMinorVersion));
+    return ((ecXmlVersion.readVersion > Schema.currentECXmlMajorVersion) || (ecXmlVersion.readVersion === Schema.currentECXmlMajorVersion && ecXmlVersion.writeVersion > Schema.currentECXmlMinorVersion));
   }
 }
