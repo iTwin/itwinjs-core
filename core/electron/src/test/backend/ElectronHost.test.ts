@@ -132,7 +132,7 @@ async function testMainWindowUrl() {
   const window = ElectronHost.electron.BrowserWindow.getAllWindows()[0];
   assert(window !== undefined);
 
-  await new Promise((resolve) => window.webContents.once("did-finish-load", resolve));
+  await new Promise((resolve) => window.webContents.once("did-finish-load", () => resolve(undefined)));
   assert(url === window.webContents.getURL());
 }
 
