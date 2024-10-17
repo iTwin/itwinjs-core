@@ -19,17 +19,13 @@ import {
   PrimitivePropertyProps, PropertyCategoryProps, PropertyProps, RelationshipClassProps, RelationshipConstraintProps, SchemaItemFormatProps, SchemaItemProps,
   SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
+import { ECXmlVersion, SchemaReadHelper } from "./Helper";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
 const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";
 
 type PrimitiveArray = PrimitiveValue[];
 type PrimitiveValue = string | number | boolean | Date;
-
-interface ECXmlVersion {
-  readVersion: number;
-  writeVersion: number;
-}
 
 /** @internal */
 export class XmlParser extends AbstractParser<Element> {
@@ -39,7 +35,6 @@ export class XmlParser extends AbstractParser<Element> {
   private _schemaAlias: string;
   private _schemaVersion?: string;
   private _xmlNamespace?: string;
-  private _ecXmlVersion?: ECXmlVersion;
   private _currentItemFullName?: string;
   private _schemaItems: Map<string, [string, Element]>;
   private _mapIsPopulated: boolean;
@@ -68,12 +63,14 @@ export class XmlParser extends AbstractParser<Element> {
     const xmlNamespace = schemaInfo.getAttribute("xmlns");
     if (xmlNamespace) {
       this._xmlNamespace = xmlNamespace;
-      this._ecXmlVersion = this.parseXmlNamespace(this._xmlNamespace);
+      this._ecXmlVersion = XmlParser.parseXmlNamespace(this._xmlNamespace);
     }
 
     this._schemaItems = new Map<string, [string, Element]>();
     this._mapIsPopulated = false;
   }
+
+  public get getECXmlVersion(): ECXmlVersion | undefined { return this._ecXmlVersion; }
 
   public parseSchema(): SchemaProps {
     const schemaMetadata = this._rawSchema.documentElement;
@@ -108,6 +105,8 @@ export class XmlParser extends AbstractParser<Element> {
       alias,
       label: displayLabel,
       description,
+      ecXmlMajorVersion: this._ecXmlVersion.readVersion,
+      ecXmlMinorVersion: this._ecXmlVersion.writeVersion,
     };
 
     return schemaProps;
@@ -138,8 +137,11 @@ export class XmlParser extends AbstractParser<Element> {
         }
 
         const itemType = this.getSchemaItemType(rawItemType);
-        if (itemType === undefined)
+        if (itemType === undefined) {
+          if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion))
+            continue;
           throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `A SchemaItem in ${this._schemaName} has an invalid type. '${rawItemType}' is not a valid SchemaItem type.`);
+        }
 
         const itemName = this.getRequiredAttribute(item, "typeName", `A SchemaItem in ${this._schemaName} is missing the required 'typeName' attribute.`);
 
@@ -305,12 +307,16 @@ export class XmlParser extends AbstractParser<Element> {
     // TODO: This shouldn't be verified here.  It's for the deserialize method to handle.  The only reason it's currently done here so that the xml
     // value can be put in the correct type, number or string.
     let tempBackingType: PrimitiveType;
-    if (/int/i.test(enumType))
+    if (/int/i.test(enumType)) {
       tempBackingType = PrimitiveType.Integer;
-    else if (/string/i.test(enumType))
+    } else if (/string/i.test(enumType)) {
       tempBackingType = PrimitiveType.String;
-    else
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+    } else {
+      if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion))
+        tempBackingType = PrimitiveType.String;
+      else
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
+    }
 
     let isStrictString: string | undefined = this.getOptionalAttribute(xmlElement, "isStrict");
     if (isStrictString === undefined)
@@ -353,6 +359,8 @@ export class XmlParser extends AbstractParser<Element> {
       type: enumType,
       isStrict,
       enumerators,
+      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
+      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
     };
   }
 
@@ -820,6 +828,8 @@ export class XmlParser extends AbstractParser<Element> {
       ...itemProps,
       modifier,
       baseClass,
+      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
+      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
     };
   }
 
@@ -1212,7 +1222,7 @@ export class XmlParser extends AbstractParser<Element> {
     return true;
   }
 
-  private parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined {
+  public static parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined {
     const regEx = new RegExp(`^${ECXML_URI}\\.([0-9]+)\\.([0-9]+)$`);
     const match = xmlNamespace.match(regEx);
     if (!match)
