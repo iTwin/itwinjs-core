@@ -7,13 +7,13 @@
  * @module Numerics
  */
 
-import { Geometry } from "../Geometry";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { Geometry } from "../Geometry";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
-import { SmallSystem } from "./Polynomials";
+import { SmallSystem } from "./SmallSystem";
 
 // cspell:word currentdFdX XYRR
 
