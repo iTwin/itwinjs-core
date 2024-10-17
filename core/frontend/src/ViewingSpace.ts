@@ -312,7 +312,9 @@ export class ViewingSpace {
         zMax = Math.max(zMax, 1.0); // make sure we have at least +-1m. Data may be purely planar
         delta.z = 2.0 * zMax;
         origin.z = -zMax;
-        this.adjustZPlanes(origin, delta); // make sure view volume includes entire volume of view, including bg map
+        const ds = this.view.displayStyle;
+        if (ds.getIsBackgroundMapVisible() && undefined !== ds.getBackgroundMapGeometry())
+          this.adjustZPlanes(origin, delta); // make sure view volume includes background map
       } else {
         if (view.isCameraOn)
           this.validateCamera();
