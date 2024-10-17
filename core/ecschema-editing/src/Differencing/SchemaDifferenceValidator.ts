@@ -7,7 +7,7 @@
  */
 
 import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
+import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
 
@@ -452,6 +452,13 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    */
   public async visitUnitSystemDifference(entry: UnitSystemDifference) {
     await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
+  }
+
+  /**
+   * Visitor implementation for handling KindOfQuantityPresentationFormatDifference.
+   * @internal
+   */
+  public async visitKindOfQuantityPresentationFormatDifference(_entry: KindOfQuantityPresentationFormatDifference) {
   }
 
   /**
