@@ -6,7 +6,7 @@
  * @module Differencing
  */
 
-import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey } from "@itwin/ecschema-metadata";
+import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
@@ -63,14 +63,28 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    */
   public async visitSchemaReferenceDifference(entry: SchemaReferenceDifference) {
     const sourceSchemaReference = await this._sourceSchema.getReference(entry.difference.name) as Schema;
-    const targetSchemaReference = this._targetSchema.getReferenceNameByAlias(sourceSchemaReference.alias);
-    if (targetSchemaReference && targetSchemaReference !== sourceSchemaReference.name) {
+    const targetSchemaReferenceName = this._targetSchema.getReferenceNameByAlias(sourceSchemaReference.alias);
+    if (targetSchemaReferenceName && targetSchemaReferenceName !== sourceSchemaReference.name) {
       this.addConflict({
         code: ConflictCode.ConflictingReferenceAlias,
         difference: entry,
         source: entry.difference.name,
-        target: targetSchemaReference,
+        target: targetSchemaReferenceName,
         description: "Target schema already references a different schema with this alias.",
+      });
+    }
+
+    const sourceSchemaKey = sourceSchemaReference.schemaKey;
+    const targetSchemaKey = await this._targetSchema.getReference(entry.difference.name)
+      .then((schema) => schema?.schemaKey);
+
+    if(entry.changeType === "modify" && targetSchemaKey && !sourceSchemaKey.matches(targetSchemaKey, SchemaMatchType.LatestWriteCompatible)) {
+      return this.addConflict({
+        code: ConflictCode.ConflictingReferenceVersion,
+        difference: entry,
+        description: "Schema reference cannot be updated, incompatible versions",
+        source: sourceSchemaKey.toString(),
+        target: targetSchemaKey.toString(),
       });
     }
   }
