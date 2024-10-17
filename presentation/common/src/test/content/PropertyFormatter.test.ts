@@ -51,6 +51,22 @@ describe("ContentFormatter", () => {
     expect(formattedContent.contentSet[0].displayValues[koqField.name]).to.be.eq("FormattedValue");
   });
 
+  it("does not add undefined values to displayValues", async () => {
+    const field = createTestSimpleContentField({
+      name: "fieldName",
+    });
+    const descriptor = createTestContentDescriptor({ fields: [field] });
+    const contentItem = createTestContentItem({
+      displayValues: {},
+      values: {
+        [field.name]: undefined,
+      },
+    });
+    const content = new Content(descriptor, [contentItem]);
+    const formattedContent = await formatter.formatContent(content);
+    expect(formattedContent.contentSet[0].displayValues).to.deep.eq({});
+  });
+
   it("formats property item value", async () => {
     const simplePropField = createTestPropertiesContentField({
       name: "simpleFieldName",
