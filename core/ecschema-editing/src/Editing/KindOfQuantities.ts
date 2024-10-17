@@ -84,28 +84,16 @@ export class KindOfQuantities extends SchemaItems {
     }
   }
 
-  public async addPresentationFormatString(koqKey: SchemaItemKey, formatString: string) {
-    try {
-      const kindOfQuantity = await this.getSchemaItem<MutableKindOfQuantity>(koqKey);
-      await kindOfQuantity.processPresentationUnits(formatString);
-    } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.AddPresentationOverride, new SchemaItemId(this.schemaItemType, koqKey), e);
-    }
-  }
-
   /**
-   * @param koqKey A schemaItemKey of the editing KindOfQuantity.
    * @param parent A SchemaItemKey of the parent Format.
    * @param unitLabelOverrides The list of Unit (or InvertedUnit) and label overrides. The length of list should be equal to the number of units in the parent Format.
    */
-  public async createFormatOverride(koqKey: SchemaItemKey, parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat> {
+  public async createFormatOverride(parent: SchemaItemKey, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): Promise<OverrideFormat> {
     try {
-      await this.getSchemaItem<MutableKindOfQuantity>(koqKey);
-
       const parentFormat = await this.getSchemaItem<Format>(parent, SchemaItemType.Format);
       return new OverrideFormat(parentFormat, precision, unitLabelOverrides);
     } catch(e: any) {
-      throw new SchemaEditingError(ECEditingStatus.AddPresentationOverride, new SchemaItemId(this.schemaItemType, koqKey), e);
+      throw new SchemaEditingError(ECEditingStatus.CreateFormatOverride, new SchemaItemId(this.schemaItemType, parent), e);
     }
   }
 }
