@@ -38,7 +38,9 @@ export namespace Pixel {
     public readonly transformFromIModel?: Transform;
     /** @internal */
     public readonly tileId?: string;
-    /** The Id of the [ViewAttachment]($backend), if any, from which the pixel originated.
+    /** The Id of the "attached" view, if any, from which the pixel originated.
+     * An attached view is a 2d view drawn into the context of another view - for example, a [[ViewAttachment]]($backend)
+     * rendered into a [[SheetViewState]], or a [[SpatialViewState]] rendered by a [SectionDrawing]($backend) view.
      * @beta
      */
     public readonly viewAttachmentId?: Id64String;
