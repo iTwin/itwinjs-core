@@ -9,7 +9,7 @@
 import { Schema, type SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { SchemaContextEditor } from "../Editing/Editor";
 import { SchemaConflictsError } from "../Differencing/Errors";
-import { getSchemaDifferences, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
+import { AnySchemaDifference, getSchemaDifferences, type SchemaDifferenceResult } from "../Differencing/SchemaDifference";
 import { SchemaMergingVisitor } from "./SchemaMergingVisitor";
 import { SchemaMergingWalker } from "./SchemaMergingWalker";
 import type { SchemaEdits } from "./Edits/SchemaEdits";
@@ -80,28 +80,61 @@ export class SchemaMerger {
       );
     }
 
-    const schema = await this._editor.getSchema(targetSchemaKey).catch((error: Error) => {
-      if (error instanceof SchemaEditingError && error.errorNumber === ECEditingStatus.SchemaNotFound) {
-        throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
+    const mergedDifferences: AnySchemaDifference[] = [];
+
+    try {
+      const schema = await this._editor.getSchema(targetSchemaKey).catch((error: Error) => {
+        if (error instanceof SchemaEditingError && error.errorNumber === ECEditingStatus.SchemaNotFound) {
+          throw new Error(`The target schema '${targetSchemaKey.name}' could not be found in the editing context.`);
+        }
+        throw error;
+      });
+
+      if (!schema.customAttributes || !schema.customAttributes.has("CoreCustomAttributes.DynamicSchema")) {
+        throw new Error(`The target schema '${targetSchemaKey.name}' is not dynamic. Only dynamic schemas are supported for merging.`);
       }
-      throw error;
-    });
 
-    if (!schema.customAttributes || !schema.customAttributes.has("CoreCustomAttributes.DynamicSchema")) {
-      throw new Error(`The target schema '${targetSchemaKey.name}' is not dynamic. Only dynamic schemas are supported for merging.`);
+      const visitor = new SchemaMergingVisitor({
+        editor: this._editor,
+        targetSchema: schema,
+        targetSchemaKey,
+        sourceSchemaKey,
+      });
+
+      const walker = new SchemaMergingWalker(visitor);
+      walker.on("mergedDifference", (difference) => mergedDifferences.push(difference));
+
+      await walker.traverse(differenceResult.differences, "add");
+      await walker.traverse(differenceResult.differences, "modify");
+
+      return schema;
+    } catch(error: any) {
+      throw new SchemaMergingError("An error occurred while merging the schemas.", error, mergedDifferences);
     }
+  }
+}
 
-    const visitor = new SchemaMergingVisitor({
-      editor: this._editor,
-      targetSchema: schema,
-      targetSchemaKey,
-      sourceSchemaKey,
-    });
+/**
+ * Error class that provides additional information why a schema merge failed.
+ * @beta
+ */
+export class SchemaMergingError extends Error {
 
-    const walker = new SchemaMergingWalker(visitor);
-    await walker.traverse(differenceResult.differences, "add");
-    await walker.traverse(differenceResult.differences, "modify");
+  /** The differences that have been already merged into the target schema. */
+  public readonly mergedDifferences: ReadonlyArray<AnySchemaDifference>;
 
-    return schema;
+  /** The error that occurred while merging the schemas. */
+  public readonly mergeError: Error;
+
+  /**
+   * Initializes a new instance of the SchemaMergingError class.
+   * @param message           The error message.
+   * @param mergeError        The error that occurred while merging the schemas.
+   * @param mergedDifferences The differences that have been already merged into the target schema.
+   */
+  constructor(message: string, mergeError: Error, mergedDifferences: ReadonlyArray<AnySchemaDifference>) {
+    super(message);
+    this.mergedDifferences = mergedDifferences;
+    this.mergeError = mergeError;
   }
 }
