@@ -112,7 +112,7 @@ export enum HitDetailType {
  * @beta
  */
 export interface ViewAttachmentHitInfo {
-  /** The Id of the [ViewAttachment]($backend) element or - for a [SectionDrawing]($backend) view - the [SpatialViewState]($backend) from which the hit originated. */
+  /** The Id of the [ViewAttachment]($backend) element or - for a [SectionDrawing]($backend) view - the [SpatialViewDefinition]($backend) from which the hit originated. */
   readonly id: Id64String;
   /** The viewport that renders the contents of the attached view into the [[ScreenViewport]].
    * @alpha
