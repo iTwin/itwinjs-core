@@ -89,10 +89,10 @@ export type AnyEditingError = SchemaEditingError | Error;
 export type AnyIdentifier = ISchemaIdentifier | ISchemaItemIdentifier | IClassIdentifier | IPropertyIdentifier | ICustomAttributeIdentifier | IRelationshipConstraintIdentifier | IEnumeratorIdentifier;
 
 // @alpha
-export type AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | EntityClassMixinDifference | CustomAttributeDifference;
+export type AnySchemaDifference = SchemaDifference | SchemaReferenceDifference | AnySchemaItemDifference | AnySchemaItemPathDifference | EntityClassMixinDifference | CustomAttributeDifference | KindOfQuantityPresentationFormatDifference;
 
 // @alpha
-export type AnySchemaDifferenceConflict = SchemaDifferenceConflict<ConflictCode.ConflictingItemName, SchemaItemType> | SchemaDifferenceConflict<ConflictCode.ConflictingReferenceAlias, SchemaOtherTypes.SchemaReference> | SchemaDifferenceConflict<ConflictCode.ConflictingBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.RemovingBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.SealedBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.ConflictingClassModifier, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.ConflictingEnumerationType, SchemaItemType.Enumeration> | SchemaDifferenceConflict<ConflictCode.ConflictingEnumeratorValue, SchemaOtherTypes.Enumerator> | SchemaDifferenceConflict<ConflictCode.ConflictingPersistenceUnit, SchemaItemType.KindOfQuantity> | SchemaDifferenceConflict<ConflictCode.MixinAppliedMustDeriveFromConstraint, SchemaOtherTypes.EntityClassMixin> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyName, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantity, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantityUnit, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.AbstractConstraintMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> | SchemaDifferenceConflict<ConflictCode.DerivedConstraintsMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> | SchemaDifferenceConflict<ConflictCode.ConstraintClassesDeriveFromAbstractConstraint, SchemaOtherTypes.RelationshipConstraint>;
+export type AnySchemaDifferenceConflict = SchemaDifferenceConflict<ConflictCode.ConflictingItemName, SchemaItemType> | SchemaDifferenceConflict<ConflictCode.ConflictingReferenceAlias, SchemaOtherTypes.SchemaReference> | SchemaDifferenceConflict<ConflictCode.ConflictingReferenceVersion, SchemaOtherTypes.SchemaReference> | SchemaDifferenceConflict<ConflictCode.ConflictingBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.RemovingBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.SealedBaseClass, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.ConflictingClassModifier, EcClassTypes> | SchemaDifferenceConflict<ConflictCode.ConflictingEnumerationType, SchemaItemType.Enumeration> | SchemaDifferenceConflict<ConflictCode.ConflictingEnumeratorValue, SchemaOtherTypes.Enumerator> | SchemaDifferenceConflict<ConflictCode.ConflictingPersistenceUnit, SchemaItemType.KindOfQuantity> | SchemaDifferenceConflict<ConflictCode.MixinAppliedMustDeriveFromConstraint, SchemaOtherTypes.EntityClassMixin> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyName, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantity, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantityUnit, SchemaOtherTypes.Property> | SchemaDifferenceConflict<ConflictCode.AbstractConstraintMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> | SchemaDifferenceConflict<ConflictCode.DerivedConstraintsMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> | SchemaDifferenceConflict<ConflictCode.ConstraintClassesDeriveFromAbstractConstraint, SchemaOtherTypes.RelationshipConstraint>;
 
 // @alpha
 export type AnySchemaEdits = SkipEdit | RenameSchemaItemEdit | RenamePropertyEdit;
@@ -222,6 +222,8 @@ export enum ConflictCode {
     ConflictingPropertyName = "C-1300",
     // (undocumented)
     ConflictingReferenceAlias = "C-002",
+    // (undocumented)
+    ConflictingReferenceVersion = "C-003",
     // (undocumented)
     ConstraintClassesDeriveFromAbstractConstraint = "C-1502",
     // (undocumented)
@@ -1392,6 +1394,18 @@ export interface KindOfQuantityDifference extends SchemaItemDifference<KindOfQua
     readonly schemaType: SchemaItemType.KindOfQuantity;
 }
 
+// @alpha
+export interface KindOfQuantityPresentationFormatDifference {
+    // (undocumented)
+    readonly changeType: "add";
+    // (undocumented)
+    readonly difference: string[];
+    // (undocumented)
+    readonly itemName: string;
+    // (undocumented)
+    readonly schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat;
+}
+
 // @beta
 export class LoggingDiagnosticReporter extends FormatDiagnosticReporter {
     // (undocumented)
@@ -2217,6 +2231,8 @@ export enum SchemaOtherTypes {
     EntityClassMixin = "EntityClassMixin",
     // (undocumented)
     Enumerator = "Enumerator",
+    // (undocumented)
+    KindOfQuantityPresentationFormat = "KindOfQuantityPresentationFormat",
     // (undocumented)
     Property = "Property",
     // (undocumented)
