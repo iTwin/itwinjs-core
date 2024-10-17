@@ -69,8 +69,9 @@ export interface EntityQueryParams {
   bindings?: any[] | object;
 }
 
-/** The primitive types of an Entity property.
- * @beta
+/** The set of [fundamental types]($docs/bis/ec/primitive-types.md) for an [EC property]($docs/bis/ec/ec-property.md)
+ * that defines a simple (non-struct) value or an array of such values.
+ * @public
  */
 export enum PrimitiveTypeCode {
   Uninitialized = 0x00,
@@ -83,19 +84,27 @@ export enum PrimitiveTypeCode {
   Point2d = 0x701, // eslint-disable-line @typescript-eslint/no-shadow
   Point3d = 0x801, // eslint-disable-line @typescript-eslint/no-shadow
   String = 0x901,
-  IGeometry = 0xa01, // Used for Bentley.Geometry.Common.IGeometry types
+  IGeometry = 0xa01,
 }
 
-/** A callback function to process properties of an Entity
- * @beta
+/** A callback function used when iterating over the properties of an [Entity]($backend) class using methods like
+ * [Entity.forEachProperty]($backend) and [IModelDb.forEachMetaData]($backend).
+ * @deprecated in 4.8. Use PropertyMetaDataCallback.
+ * @public
  */
 export type PropertyCallback = (name: string, meta: PropertyMetaData) => void;
 
-/** A custom attribute instance
- * @beta
+/** A callback function used when iterating over the properties of an [Entity]($backend) class using methods like
+ * [Entity.forEachProperty]($backend) and [IModelDb.forEachMetaData]($backend).
+ * @public
+ */
+export type PropertyMetaDataCallback = (name: string, meta: Readonly<PropertyMetaData>) => void;
+
+/** Represents a [custom attribute]($docs/bis/ec/ec-custom-attributes.md) attached to a [[PropertyMetaData]] or [[EntityMetaData]].
+ * @public
  */
 export interface CustomAttribute {
-  /** The class of the CustomAttribute */
+  /** The fully-qualified name of the [custom attribute class]($docs/bis/ec/ec-custom-attribute-class.md).*/
   ecclass: string;
   /** An object whose properties correspond by name to the properties of this custom attribute instance. */
   properties: { [propName: string]: any };
@@ -103,49 +112,92 @@ export interface CustomAttribute {
 
 type FactoryFunc = (jsonObj: any) => any;
 
-/** @beta */
+/** JSON representation of a [[PropertyMetaData]].
+ * @public
+ */
 export interface PropertyMetaDataProps {
+  /** See [[PropertyMetaData.primitiveType]]. */
   primitiveType?: number;
+  /** See [[PropertyMetaData.structName]]. */
   structName?: string;
+  /** See [[PropertyMetaData.extendedType]]. */
   extendedType?: string;
+  /** See [[PropertyMetaData.description]]. */
   description?: string;
+  /** See [[PropertyMetaData.displayLabel]]. */
   displayLabel?: string;
+  /** See [[PropertyMetaData.minimumValue]]. */
   minimumValue?: any;
+  /** See [[PropertyMetaData.maximumValue]]. */
   maximumValue?: any;
+  /** See [[PropertyMetaData.minimumLength]]. */
   minimumLength?: number;
+  /** See [[PropertyMetaData.maximumLength]]. */
   maximumLength?: number;
+  /** See [[PropertyMetaData.readOnly]]. */
   readOnly?: boolean;
+  /** See [[PropertyMetaData.kindOfQuantity]]. */
   kindOfQuantity?: string;
+  /** See [[PropertyMetaData.isCustomHandled]]. */
   isCustomHandled?: boolean;
+  /** @deprecated in 4.8. This property doesn't do anything useful. */
   isCustomHandledOrphan?: boolean;
+  /** See [[PropertyMetaData.minOccurs]]. */
   minOccurs?: number;
+  /** See [[PropertyMetaData.maxOccurs]]. */
   maxOccurs?: number;
+  /** See [[PropertyMetaData.direction]]. */
   direction?: string;
+  /** See [[PropertyMetaData.relationshipClass]]. */
   relationshipClass?: string;
+  /** See [[PropertyMetaData.customAttributes]]. */
   customAttributes?: CustomAttribute[];
 }
 
-/** Metadata for a property.
- * @beta
+/** Describes one [property]($docs/bis/ec/ec-property.md) of an [[EntityMetaData]].
+ * @public
  */
 export class PropertyMetaData implements PropertyMetaDataProps {
+  /** For a primitive property, or an array of primitive values, the underlying type. */
   public primitiveType?: PrimitiveTypeCode;
+  /** For a complex property, or an array of complex values, the fully-qualified name of the class that defines the property's type. */
   public structName?: string;
+  /** The optional name of a more specific type than [[primitiveType]] that provides additional semantics.
+   * For example, a property of type [[PrimitiveTypeCode.String]] may have an extended type of "Json" if it stores a stringified JSON value, or "URI" if
+   * it stores a universal resource identifier.
+   */
   public extendedType?: string;
+  /** An optional extended description of the property. */
   public description?: string;
+  /** An optional user-facing label. */
   public displayLabel?: string;
+  /** For primitive properties, an optional constraint on the minimum value permitted to be assigned to it. */
   public minimumValue?: any;
+  /** For primitive properties, an optional constraint on the maximum value permitted to be assigned to it. */
   public maximumValue?: any;
+  /** For a string or binary property, an optional constraint on the minimum number of characters or bytes, respectively. */
   public minimumLength?: number;
+  /** For a string or binary property, an optional constraint on the maximum number of characters or bytes, respectively. */
   public maximumLength?: number;
+  /** If true, the value of the property cannot be changed. */
   public readOnly?: boolean;
+  /** The optional name denoating the ["kind of quantity"]($docs/bis/ec/kindofquantity.md) this property represents. */
   public kindOfQuantity?: string;
+  /** If true, the property has some custom logic that controls its value. Custom-handled properties are limited to a handful of fundamental
+   * properties in the BisCore ECSchema, like [Element.federationGuid]($backend) and [GeometricElement.category]($backend).
+   */
   public isCustomHandled?: boolean;
+  /** @deprecated in 4.8. This property doesn't do anything useful. */
   public isCustomHandledOrphan?: boolean;
+  /** For an array property, an optional constraint on the minimum number of entries in the array. */
   public minOccurs?: number;
+  /** For an array property, an optional constraint on the maximum number of entries in the array. */
   public maxOccurs?: number;
+  /** For a navigation property, the direction in which to traverse the [relationship]($docs/bis/ec/ec-relationships.md). */
   public direction?: string;
+  /** For a navigation property, the fully-qualified name of the [EC relationship class]($docs/bis/ec/ec-relationship-class.md) defining the relationship. */
   public relationshipClass?: string;
+  /** The set of [custom attributes]($docs/bis/ec/ec-custom-attributes.md) attached to the property. */
   public customAttributes?: CustomAttribute[];
 
   public constructor(jsonObj: PropertyMetaDataProps) {
@@ -185,7 +237,9 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     return val;
   }
 
-  /** construct a single property from an input object according to this metadata */
+  /** Construct a single property from an input object according to this metadata
+   * @deprecated in 4.8. If you are using this for some reason, please [tell us why](https://github.com/orgs/iTwin/discussions).
+   */
   public createProperty(jsonObj: any): any {
     if (jsonObj === undefined)
       return undefined;
@@ -211,44 +265,66 @@ export class PropertyMetaData implements PropertyMetaDataProps {
     return jsonObj;
   }
 
-  /** Return `true` if this property is a NavigationProperty. */
+  /** Return `true` if this property is a "navigation property" - i.e., it points to another entity via an [EC relationship]($docs/bis/ec/ec-relationships.md). */
   public get isNavigation(): boolean {
     return (this.direction !== undefined); // the presence of `direction` means it is a navigation property
   }
 }
 
-/** @beta */
+/** The JSON representation of an [[EntityMetaData]].
+ * @public
+ */
 export interface EntityMetaDataProps {
+  /** See [[EntityMetaData.classId]]. */
   classId: Id64String;
+  /** See [[EntityMetaData.ecclass]]. */
   ecclass: string;
+  /** See [[EntityMetaData.description]]. */
   description?: string;
+  /** See [[EntityMetaData.modifier]]. */
   modifier?: string;
+  /** See [[EntityMetaData.displayLabel]]. */
   displayLabel?: string;
-  /** The  base classes from which this class derives. If more than one, the first is the super class and the others are [mixins]($docs/bis/ec/ec-mixin-class). */
+  /** See [[EntityMetaData.baseClasses]]. */
   baseClasses: string[];
-  /** The Custom Attributes for this class */
+  /** See [[EntityMetaData.customAttributes]]. */
   customAttributes?: CustomAttribute[];
-  /** An object whose properties correspond by name to the properties of this class. */
+  /** See [[EntityMetaData.properties]]. */
   properties: { [propName: string]: PropertyMetaData };
 }
 
-/** Metadata for an Entity.
- * @beta
+/** Describes the [ECClass]($docs/bis/ec/ec-class.md) for an [Entity]($backend).
+ * @public
  */
-export class EntityMetaData implements EntityMetaDataProps {
-  /** The Id of the class in the [[IModelDb]] from which the metadata was obtained. */
+export class EntityMetaData {
+  private readonly _properties: { [propName: string]: PropertyMetaData & { name: string } };
+  /** The Id of the class in the [IModelDb]($backend) from which the metadata was obtained. */
   public readonly classId: Id64String;
-  /** The Entity name */
+  /** The fully-qualified class name. */
   public readonly ecclass: string;
+  /** An optional extended description of the class. */
   public readonly description?: string;
+  /** An optional constraint applied to the class, one of the following:
+   *  - "Abstract", indicating that the class cannot be instantiated, but may have instantiable subclasses;
+   *  - "Sealed", indicating that the class cannot have subclasses; or
+   *  - "None" (the default)
+   */
   public readonly modifier?: string;
+  /** An optional user-facing label. */
   public readonly displayLabel?: string;
-  /** The  base class that this class is derives from. If more than one, the first is the actual base class and the others are mixins. */
+  /** The list of classes from which this class derives. The first entry in the array is the direct Entity base class; any subsequent
+   * entries are [mix-ins]($docs/bis/ec/ec-mixin-class.md).
+   */
   public readonly baseClasses: string[];
-  /** The Custom Attributes for this class */
+  /** The set of [custom attributes]($docs/bis/ec/ec-custom-attributes.md) attached to the class. */
   public readonly customAttributes?: CustomAttribute[];
-  /** An object whose properties correspond by name to the properties of this class. */
-  public readonly properties: { [propName: string]: PropertyMetaData };
+  /** An object whose properties correspond by name to the properties of this class.
+   * @note The return type of the indexer is incorrect - it will return `undefined` if no property named `propName` exists.
+   * @deprecated in 4.8. Use getProperty to look up a property, or getProperties to iterate all properties.
+   */
+  public get properties(): { [propName: string]: PropertyMetaData } {
+    return this._properties;
+  }
 
   public constructor(jsonObj: EntityMetaDataProps) {
     this.classId = jsonObj.classId;
@@ -258,10 +334,29 @@ export class EntityMetaData implements EntityMetaDataProps {
     this.displayLabel = jsonObj.displayLabel;
     this.baseClasses = jsonObj.baseClasses;
     this.customAttributes = jsonObj.customAttributes;
-    this.properties = {};
+    this._properties = {};
 
     for (const propName in jsonObj.properties) { // eslint-disable-line guard-for-in
-      this.properties[propName] = new PropertyMetaData(jsonObj.properties[propName]);
+      const prop = new PropertyMetaData(jsonObj.properties[propName]) as PropertyMetaData & { name: string };
+      prop.name = propName;
+      this._properties[propName] = prop;
     }
+  }
+
+  /** Look up a property by its name, if it exists. */
+  public getProperty(name: string): Readonly<PropertyMetaData> | undefined {
+    return this._properties[name];
+  }
+
+  /** Iterate over all of the properties of the entity class. */
+  public getProperties(): Iterable<Readonly<PropertyMetaData & { name: string }>> {
+    return this.getMutableProperties();
+  }
+
+  /** Retained to avoid breaking PropertyCallback which exposes mutable PropertyMetaData.
+   * @internal
+   */
+  public getMutableProperties(): Iterable<PropertyMetaData & { name: string }> {
+    return Object.values(this._properties);
   }
 }
