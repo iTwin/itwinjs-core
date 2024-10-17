@@ -193,6 +193,11 @@ export class Color {
     const colors = def.colors;
     return colors.r === this.r && colors.g === this.g && colors.b === this.b && colors.t === 0xff - this.a;
   }
+
+  public toHexString(): string {
+    const color = ColorDef.create(this.v);
+    return color.toHexString();
+  }
 }
 
 /** A set of unique color values read from a viewport - see readUniqueColors.
