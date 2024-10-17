@@ -180,7 +180,7 @@ export class SchemaUnitProvider implements UnitsProvider {
         return { item: schemaItemName, schema: schemaName };
       });
 
-    if (item.schemaItemType === SchemaItemType.Unit)
+    if (item.schemaItemType === SchemaItemType.Unit || item.schemaItemType === SchemaItemType.InvertedUnit)
       return item;
 
     throw new BentleyError(BentleyStatus.ERROR, "Item is not a unit", () => {

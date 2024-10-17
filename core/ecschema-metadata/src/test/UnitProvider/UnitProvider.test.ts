@@ -73,6 +73,11 @@ describe("Unit Provider tests", () => {
       expect(unit2.name === "Units.KM_PER_HR", `Unit name should be Units.KM_PER_HR and not ${unit2.name}`).to.be.true;
     });
 
+    it("should find inverted unit by unit name in Units schema", async () => {
+      const unit1 = await provider.findUnitByName("Units.FT_HORIZONTAL_PER_FT_VERTICAL");
+      expect(unit1.name === "Units.FT_HORIZONTAL_PER_FT_VERTICAL").to.be.true;
+    });
+
     it("should find units by unit names in MetricUnits schema", async () => {
       const unit1 = await provider.findUnitByName("MetricUnits.KM");
       expect(unit1.name === "MetricUnits.KM", `Unit name should be MetricUnits.KM and not ${unit1.name}`).to.be.true;
