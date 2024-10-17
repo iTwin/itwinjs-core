@@ -7,10 +7,11 @@ import { expect } from "chai";
 import sinon from "sinon";
 import { IModelApp } from "../IModelApp";
 import { Cartographic, EmptyLocalization, GlobeMode } from "@itwin/core-common";
-import { IModelConnection } from "../IModelConnection";
-import { Range3d, XYAndZ } from "@itwin/core-geometry";
+import { BlankConnection, IModelConnection } from "../IModelConnection";
+import { Point3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { createBlankConnection } from "./createBlankConnection";
+import { Guid } from "@itwin/core-bentley";
 
 describe("BackgroundMapGeometry", () => {
   const sandbox = sinon.createSandbox();
@@ -52,5 +53,16 @@ describe("BackgroundMapGeometry", () => {
       expect(dataset[i].y).to.eq(result[i].latitude);
       expect(dataset[i].z).to.eq(result[i].height);
     }
+  });
+
+  it("creates new background map geometry when the origin is (0, 0, 0)", async () => {
+    const name = "test-blank-connection";
+    const extents = new Range3d(-2500, -2500, -1000, 2500, 2500, 1000);
+    const globalOrigin = new Point3d(0, 0, 0);
+    const iTwinId = Guid.createValue();
+    const imodel = BlankConnection.create({ name, location: { origin: [0, 0, 0], orientation: { yaw: 0, pitch: 0, roll: 0 } }, extents, iTwinId, globalOrigin });
+
+    const geometry = new BackgroundMapGeometry(0, 0, imodel);
+    expect(geometry).to.not.be.undefined;
   });
 });
