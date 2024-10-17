@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "ContentFormatter does not throw when formatting struct type properties with 'undefined' value",
+      "comment": "ContentFormatter does not throw when formatting properties with 'undefined' value",
       "type": "none"
     }
   ],
