@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ECClassModifier, EntityClass, Schema, SchemaContext, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaMerger, SchemaMergingError } from "../../Merging/SchemaMerger";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { ECEditingStatus } from "../../Editing/Exception";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
@@ -282,7 +282,10 @@ describe("EntityClass merger tests", () => {
         },
       ],
     });
-    await expect(merge).to.be.rejectedWith("Changing the type of item 'TestClass' not supported.");
+
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "Changing the type of item 'TestClass' not supported.");
+    });
   });
 
   it("should throw an error when merging class modifier changed from Abstract to Sealed", async () => {
@@ -312,7 +315,9 @@ describe("EntityClass merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the class 'TestEntity' modifier is not supported.");
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "Changing the class 'TestEntity' modifier is not supported.");
+    });
   });
 
   it("should throw an error when merging entity base class changed from existing one to undefined", async () => {
@@ -345,7 +350,9 @@ describe("EntityClass merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the class 'TestEntity' baseClass is not supported.");
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "Changing the class 'TestEntity' baseClass is not supported.");
+    });
   });
 
   it("should throw an error when merging entity base class changed from undefined to existing one", async () => {
@@ -381,7 +388,9 @@ describe("EntityClass merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the class 'TestEntity' baseClass is not supported.");
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "Changing the class 'TestEntity' baseClass is not supported.");
+    });
   });
 
   it("should throw an error when merging entity base class to one that doesn't derive from", async () => {
@@ -430,9 +439,9 @@ describe("EntityClass merger tests", () => {
     });
 
     await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+      expect(error).to.have.nested.property("mergeError.errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.nested.property("mergeError.innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
+      expect(error).to.have.nested.property("mergeError.innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });
   });
 
@@ -463,9 +472,9 @@ describe("EntityClass merger tests", () => {
     });
 
     await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.AddMixin);
-      expect(error).to.have.nested.property("innerError.message", `Mixin TargetSchema.NotExistingMixin could not be found in the schema context.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
+      expect(error).to.have.nested.property("mergeError.errorNumber", ECEditingStatus.AddMixin);
+      expect(error).to.have.nested.property("mergeError.innerError.message", `Mixin TargetSchema.NotExistingMixin could not be found in the schema context.`);
+      expect(error).to.have.nested.property("mergeError.innerError.errorNumber", ECEditingStatus.SchemaItemNotFoundInContext);
     });
   });
 
@@ -513,9 +522,9 @@ describe("EntityClass merger tests", () => {
     });
 
     await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.BaseMixin.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+      expect(error).to.have.nested.property("mergeError.errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.nested.property("mergeError.innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.BaseMixin.`);
+      expect(error).to.have.nested.property("mergeError.innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });
   });
 });

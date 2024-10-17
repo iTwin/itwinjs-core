@@ -45,7 +45,7 @@ export class SchemaDifferenceWalker {
   /**
    * Calls the appropriate method on the visitor based on the schema difference type.
    */
-  private async visit(difference: AnySchemaDifference, index: number, array: AnySchemaDifference[]) {
+  protected async visit(difference: AnySchemaDifference, index: number, array: AnySchemaDifference[]) {
     switch (difference.schemaType) {
       case SchemaOtherTypes.Schema:
         return this._visitor.visitSchemaDifference(difference, index, array);
