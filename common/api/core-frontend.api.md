@@ -8737,6 +8737,8 @@ export abstract class PrimitiveTool extends InteractiveTool {
     get iModel(): IModelConnection;
     isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
     isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean;
+    // (undocumented)
+    onCleanup(): Promise<void>;
     onRedoPreviousStep(): Promise<boolean>;
     onReinitialize(): Promise<void>;
     abstract onRestartTool(): Promise<void>;
@@ -15235,6 +15237,8 @@ export abstract class ViewTool extends InteractiveTool {
     exitTool(): Promise<void>;
     // (undocumented)
     inDynamicUpdate: boolean;
+    // (undocumented)
+    onCleanup(): Promise<void>;
     // (undocumented)
     onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
     // (undocumented)

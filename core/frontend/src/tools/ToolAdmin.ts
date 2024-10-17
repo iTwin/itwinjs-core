@@ -491,6 +491,7 @@ export class ToolAdmin {
   /** @internal */
   public onShutDown() {
     this.clearMotionPromises();
+    void this.callOnCleanup();
     this._idleTool = undefined;
     IconSprites.emptyAll(); // clear cache of icon sprites
     ToolAdmin._removals.forEach((remove) => remove());
@@ -512,6 +513,7 @@ export class ToolAdmin {
 
     // Remove any events associated with this viewport.
     ToolAdmin._toolEvents = ToolAdmin._toolEvents.filter((ev) => ev.vp !== vp);
+    void this.currentTool.onCleanup();
   }
 
   private getMousePosition(event: ToolEvent): XAndY {
@@ -1912,8 +1914,10 @@ export class ToolAdmin {
   public async callOnCleanup() {
     await this.exitViewTool();
     await this.exitInputCollector();
-    if (undefined !== this._primitiveTool)
+    if (undefined !== this._primitiveTool) {
       await this._primitiveTool.onCleanup();
+      this._primitiveTool = undefined;
+    }
   }
 }
 
