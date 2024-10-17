@@ -11,6 +11,8 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
 import { CurveChain } from "./CurveCollection";
+import { CurveExtendMode, CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
+import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
 import { GeometryQuery } from "./GeometryQuery";
@@ -69,6 +71,47 @@ export class Path extends CurveChain {
     for (const curve of this.children)
       curve.emitStrokes(strokes, options);
     return Path.create(strokes);
+  }
+  /**
+   * Return the closest point on the contained curves.
+   * @param spacePoint point in space.
+   * @param extend the extend parameter.
+   * @returns a `CurveLocationDetail` structure that holds the details of the close point.
+   */
+  public override closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined {
+    let detailA: CurveLocationDetail | undefined;
+    if (this.children !== undefined) {
+      for (let i = 0; i < this.children.length; i++) {
+        const child = this.children[i];
+        let childExtend: VariantCurveExtendParameter = extend;
+        if (i === 0) { // head only extends from start
+          if (extend === false)
+            childExtend = false;
+          else if (extend === true)
+            childExtend = [CurveExtendMode.OnCurve, CurveExtendMode.None];
+          else {
+            const mode0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);
+            childExtend = [mode0, CurveExtendMode.None];
+          }
+        } else if (i === this.children.length - 1) { // tail only extends from end
+          if (extend === false)
+            childExtend = false;
+          else if (extend === true)
+            childExtend = [CurveExtendMode.None, CurveExtendMode.OnCurve];
+          else if (Array.isArray(extend)) {
+            const mode1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1);
+            childExtend = [CurveExtendMode.None, mode1];
+          } else {
+            childExtend = [CurveExtendMode.None, extend];
+          }
+        } else { // middle children do not extend
+          childExtend = false;
+        }
+        const detailB = child.closestPoint(spacePoint, childExtend);
+        detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+      }
+    }
+    return detailA;
   }
   /** Return the boundary type (1) of a corresponding MicroStation CurveVector */
   public dgnBoundaryType(): number {

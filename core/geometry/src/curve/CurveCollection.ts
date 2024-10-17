@@ -13,10 +13,11 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
+import { VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
-import { AnyCurve, type AnyRegion } from "./CurveTypes";
+import { AnyCurve, AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
@@ -26,11 +27,10 @@ import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRange
 import { SumLengthsContext } from "./internalContexts/SumLengthsContext";
 import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext";
 import { LineString3d } from "./LineString3d";
+import { Loop } from "./Loop";
+import { Path } from "./Path";
 import { ProxyCurve } from "./ProxyCurve";
 import { StrokeOptions } from "./StrokeOptions";
-
-import type { Path } from "./Path";
-import type { Loop } from "./Loop";
 
 /** Note: CurveChain and BagOfCurves classes are located in this file to prevent circular dependency. */
 
@@ -72,8 +72,13 @@ export abstract class CurveCollection extends GeometryQuery {
   public sumLengths(): number {
     return SumLengthsContext.sumLengths(this);
   }
-  /** Return the closest point on the contained curves */
-  public closestPoint(spacePoint: Point3d): CurveLocationDetail | undefined {
+  /**
+   * Return the closest point on the contained curves.
+   * @param spacePoint point in space.
+   * @param _extend ignored.
+   * @returns a `CurveLocationDetail` structure that holds the details of the close point.
+   */
+  public closestPoint(spacePoint: Point3d, _extend: VariantCurveExtendParameter): CurveLocationDetail | undefined {
     let detailA: CurveLocationDetail | undefined;
     if (this.children !== undefined) {
       for (const child of this.children) {
@@ -81,7 +86,7 @@ export abstract class CurveCollection extends GeometryQuery {
           const detailB = child.closestPoint(spacePoint, false);
           detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
         } else if (child instanceof CurveCollection) {
-          const detailB = child.closestPoint(spacePoint);
+          const detailB = child.closestPoint(spacePoint, _extend);
           detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
         }
       }
@@ -277,6 +282,22 @@ export abstract class CurveChain extends CurveCollection {
   public override get children(): CurvePrimitive[] {
     return this._curves;
   }
+  /** Return the start point of the curve chain (start point of the first child). */
+  public startPoint(result?: Point3d): Point3d | undefined {
+    const firstChild = this.getChild(0);
+    if (firstChild)
+      return firstChild.fractionToPoint(0.0, result);
+    else
+      return undefined;
+  }
+  /** Return the end point of the curve chain (last point of the last child). */
+  public endPoint(result?: Point3d): Point3d | undefined {
+    const lastChild = this.getChild(this._curves.length - 1);
+    if (lastChild)
+      return lastChild.fractionToPoint(1.0, result);
+    else
+      return undefined;
+  }
   /**
    * Return the curve primitive at the given `index`, optionally using `modulo` to map `index` to the cyclic indexing.
    * * In particular, `-1` is the final curve.
@@ -439,6 +460,23 @@ export class BagOfCurves extends CurveCollection {
       }
     }
     return clone;
+  }
+  /**
+   * Return the closest point on the contained curves.
+   * @param spacePoint point in space.
+   * @param extend the extend parameter. `extend` is only applied to children of type curve primitive or `Path` children
+   * and is `false` for other curve collection types.
+   * @returns a `CurveLocationDetail` structure that holds the details of the close point.
+   */
+  public override closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined {
+    let detailA: CurveLocationDetail | undefined;
+    if (this.children !== undefined) {
+      for (const child of this.children) {
+        const detailB = child.closestPoint(spacePoint, extend);
+        detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+      }
+    }
+    return detailA;
   }
   /** Return an empty `BagOfCurves` */
   public cloneEmptyPeer(): BagOfCurves {

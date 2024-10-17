@@ -529,11 +529,11 @@ export abstract class CurvePrimitive extends GeometryQuery {
    * Search for a point on the curve that is closest to the spacePoint.
    * * If the space point is exactly on the curve, this is the reverse of fractionToPoint.
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always
-   * succeed
-   * @param spacePoint point in space
+   * succeed.
+   * @param spacePoint point in space.
    * @param extend true to extend the curve (if possible), false for no extend, single CurveExtendOptions (for both
    * directions), or array of distinct CurveExtendOptions for start and end.
-   * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
+   * @returns a CurveLocationDetail structure that holds the details of the close point.
    */
   public closestPoint(
     spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
