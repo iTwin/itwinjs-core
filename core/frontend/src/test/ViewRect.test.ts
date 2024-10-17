@@ -3,15 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { ViewRect } from "../common/ViewRect";
 import { getCenteredViewRect } from "../common/ImageUtil";
 
 function expectRect(rect: ViewRect, l: number, t: number, r: number, b: number): void {
-  expect(rect.left).to.equal(l);
-  expect(rect.right).to.equal(r);
-  expect(rect.top).to.equal(t);
-  expect(rect.bottom).to.equal(b);
+  expect(rect.left).toEqual(l);
+  expect(rect.right).toEqual(r);
+  expect(rect.top).toEqual(t);
+  expect(rect.bottom).toEqual(b);
 }
 
 describe("ViewRect", () => {

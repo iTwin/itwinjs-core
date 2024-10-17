@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { assert as bAssert } from "@itwin/core-bentley";
 import { EmptyLocalization, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@itwin/core-common";
 import { extractImageSourceDimensions, imageBufferToPngDataUrl, imageElementFromImageSource, imageElementFromUrl } from "../../../common/ImageUtil";
@@ -24,8 +24,8 @@ const bitmapData = new Uint8Array([
 ]);
 
 describe("Texture tests", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
 
   it("should produce an attachment texture (rgb, unsigned byte)", () => {
     if (!IModelApp.hasRenderSystem) {
@@ -33,12 +33,12 @@ describe("Texture tests", () => {
     }
 
     const texture: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.Rgb, GL.Texture.DataType.UnsignedByte);
-    assert(undefined !== texture);
+    expect(texture).toBeDefined();
     if (undefined === texture) {
       return;
     }
 
-    expect(texture.getHandle()).to.not.be.undefined;
+    expect(texture.getHandle()).toBeDefined();
   });
 
   it("should produce an attachment texture (depth, unsigned int)", () => {
@@ -47,12 +47,12 @@ describe("Texture tests", () => {
     }
 
     const texture: TextureHandle | undefined = TextureHandle.createForAttachment(1, 1, GL.Texture.Format.DepthComponent, GL.Texture.DataType.UnsignedInt);
-    assert(undefined !== texture);
+    expect(texture).toBeDefined();
     if (undefined === texture) {
       return;
     }
 
-    expect(texture.getHandle()).to.not.be.undefined;
+    expect(texture.getHandle()).toBeDefined();
   });
 
   it("should produce a data texture (implied RGBA, unsigned byte) with preserved data", () => {
@@ -62,13 +62,13 @@ describe("Texture tests", () => {
 
     const data: Uint8Array = new Uint8Array([255, 255, 0, 255]);
     const texture: TextureHandle | undefined = TextureHandle.createForData(1, 1, data, true);
-    assert(undefined !== texture);
+    expect(texture).toBeDefined();
     if (undefined === texture) {
       return;
     }
 
-    expect(texture.getHandle()).to.not.be.undefined;
-    expect(texture.dataBytes).to.not.be.undefined; // data should be preserved
+    expect(texture.getHandle()).toBeDefined();
+    expect(texture.dataBytes).toBeDefined(); // data should be preserved
   });
 
   it("should produce an image (png) texture with unpreserved data", () => {
@@ -78,14 +78,14 @@ describe("Texture tests", () => {
 
     // create texture with default parameters
     const imageBuffer = ImageBuffer.create(bitmapData, ImageBufferFormat.Rgb, 4);
-    assert(undefined !== imageBuffer);
+    expect(imageBuffer).toBeDefined();
     const texture = TextureHandle.createForImageBuffer(imageBuffer, RenderTexture.Type.Normal)!;
-    assert(undefined !== texture);
+    expect(texture).toBeDefined();
 
-    expect(texture.getHandle()).to.not.be.undefined;
-    expect(texture.dataBytes).to.be.undefined;
-    expect(texture.width).to.equal(4);
-    expect(texture.height).to.equal(2);
+    expect(texture.getHandle()).toBeDefined();
+    expect(texture.dataBytes).toBeUndefined();
+    expect(texture.width).toEqual(4);
+    expect(texture.height).toEqual(2);
   });
 
   it("should produce a texture from an html image and resize to power of two", async () => {
@@ -94,8 +94,8 @@ describe("Texture tests", () => {
     bAssert(undefined !== image);
     const imageTexture = TextureHandle.createForImage(image, RenderTexture.Type.Normal);
     bAssert(undefined !== imageTexture);
-    expect(imageTexture.width).to.equal(4);
-    expect(imageTexture.height).to.equal(4);
+    expect(imageTexture.width).toEqual(4);
+    expect(imageTexture.height).toEqual(4);
   });
 });
 
@@ -106,22 +106,22 @@ describe("Texture tests", () => {
 async function testImageBufferUrl(buffer: ImageBuffer, expectedPixels: number[]) {
   // Create a URL from the image buffer
   const url = imageBufferToPngDataUrl(buffer);
-  expect(url).not.to.be.undefined;
+  expect(url).toBeDefined();
   const urlPrefix = "data:image/png;base64,";
-  expect(url!.startsWith(urlPrefix)).to.be.true;
+  expect(url!.startsWith(urlPrefix)).toBe(true);
 
   // Create an HTML image from the URL
   const image = await imageElementFromUrl(url!);
-  expect(image).not.to.be.undefined;
+  expect(image).toBeDefined();
 
   // Draw the image onto a canvas
   const canvas = document.createElement("canvas");
-  assert(null !== canvas);
+  expect(canvas).not.toBeNull();
   canvas.width = buffer.width;
   canvas.height = buffer.height;
 
   const context = canvas.getContext("2d")!;
-  assert(null !== context);
+  expect(context).not.toBeNull();
   context.drawImage(image, 0, 0);
 
   // Extract the image pixels
@@ -129,10 +129,10 @@ async function testImageBufferUrl(buffer: ImageBuffer, expectedPixels: number[])
 
   // Compare
   const actualPixels = imageData.data;
-  expect(actualPixels.length).to.equal(expectedPixels.length);
+  expect(actualPixels.length).toEqual(expectedPixels.length);
 
   for (let i = 0; i < actualPixels.length; i++) {
-    expect(actualPixels[i]).to.equal(expectedPixels[i]);
+    expect(actualPixels[i]).toEqual(expectedPixels[i]);
   }
 }
 
@@ -141,16 +141,16 @@ describe("ImageUtil", () => {
 
   it("should extract image dimensions from ImageSource", async () => {
     const size = await extractImageSourceDimensions(imageSource);
-    assert(undefined !== size);
-    expect(size.x).to.equal(3);
-    expect(size.y).to.equal(3);
+    expect(size).toBeDefined();
+    expect(size.x).toEqual(3);
+    expect(size.y).toEqual(3);
   });
 
   it("should extract image from ImageSource", async () => {
     const image = await imageElementFromImageSource(imageSource);
-    assert(undefined !== image);
-    expect(image.naturalWidth).to.equal(3);
-    expect(image.naturalHeight).to.equal(3);
+    expect(image).toBeDefined();
+    expect(image.naturalWidth).toEqual(3);
+    expect(image.naturalHeight).toEqual(3);
   });
 
   it("should produce a data URL from an alpha ImageBuffer", async () => {

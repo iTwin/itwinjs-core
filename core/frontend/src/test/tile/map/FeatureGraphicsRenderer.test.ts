@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Cartographic, DisplayStyle3dProps, EcefLocation, EmptyLocalization, GeoCoordinatesRequestProps, IModelConnectionProps, IModelCoordinatesRequestProps, PointWithStatus } from "@itwin/core-common";
-import chai, { expect } from "chai";
-import chaiAsPromised from "chai-as-promised";
-import sinon from "sinon";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { IModelApp } from "../../../IModelApp";
 import {
   FeatureGraphicsRenderer,
@@ -18,8 +16,6 @@ import { Loop, Point3d, Range3d, Transform, XYZProps } from "@itwin/core-geometr
 import { BackgroundMapGeometry, DisplayStyle3dState, GraphicLineString, ScreenViewport, ViewState3d } from "../../../core-frontend";
 
 import * as moq from "typemoq";
-
-chai.use(chaiAsPromised);
 
 export class TestConnection extends BlankConnection {
   public toIModelCoordsCount = 0;
@@ -97,7 +93,6 @@ export class ViewportMock {
   }
 
   public setup() {
-    //
     this.viewMock.setup((view) => view.iModel).returns(() => this.imodel);
     this.viewportMock.setup((viewport) => viewport.iModel).returns(() => this.viewMock.object.iModel);
     this.viewportMock.setup((viewport) => viewport.displayStyle).returns(() => this.displayStyle);
@@ -131,7 +126,6 @@ const sampleiModelProps = {
 };
 
 describe("FeatureGraphicsRenderer", () => {
-  const sandbox = sinon.createSandbox();
   let viewportMock: ViewportMock|undefined;
   beforeEach(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
@@ -139,7 +133,7 @@ describe("FeatureGraphicsRenderer", () => {
   });
 
   afterEach(async () => {
-    sandbox.restore();
+    vi.restoreAllMocks();
     if (IModelApp.initialized)
       await IModelApp.shutdown();
     viewportMock!.reset();
@@ -157,7 +151,7 @@ describe("FeatureGraphicsRenderer", () => {
 
     // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
-    const toSpatialStub = sandbox.stub(FeatureGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
+    const toSpatialStub = vi.spyOn(FeatureGraphicsRenderer.prototype as any, "toSpatial").mockImplementation(function _(geoPoints: any): any {
       return geoPoints;
     });
 
@@ -167,20 +161,19 @@ describe("FeatureGraphicsRenderer", () => {
     const tolerance = 0.0000001;
 
     const graphics = renderer.moveGraphics();
-    expect(graphics.length).to.equals(2);
+    expect(graphics.length).toEqual(2);
     for (const graphic of graphics) {
-      expect(graphic.type).to.equals("linestring");
+      expect(graphic.type).toEqual("linestring");
       const linestring  = graphic as GraphicLineString;
-      expect(linestring.points.length).to.equals(2);
+      expect(linestring.points.length).toEqual(2);
       for (const pt of linestring.points) {
-        expect(Math.abs(pt.x - testCoords[i++])).to.be.lessThan(tolerance);
-        expect(Math.abs(pt.y - testCoords[i++])).to.be.lessThan(tolerance);
+        expect(Math.abs(pt.x - testCoords[i++])).toBeLessThan(tolerance);
+        expect(Math.abs(pt.y - testCoords[i++])).toBeLessThan(tolerance);
       }
-
     }
-    expect(graphics[0].type).to.equals("linestring");
-    expect((graphics[0] as any).points.length ).to.equals(2);
-    expect(toSpatialStub.called).to.be.true;
+    expect(graphics[0].type).toEqual("linestring");
+    expect((graphics[0] as any).points.length).toEqual(2);
+    expect(toSpatialStub).toHaveBeenCalled();
   });
 
   it("render filled paths correctly", async () => {
@@ -188,7 +181,7 @@ describe("FeatureGraphicsRenderer", () => {
 
     // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
-    const toSpatialStub = sandbox.stub(FeatureGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
+    const toSpatialStub = vi.spyOn(FeatureGraphicsRenderer.prototype as any, "toSpatial").mockImplementation(function _(geoPoints: any): any {
       return geoPoints;
     });
 
@@ -205,22 +198,21 @@ describe("FeatureGraphicsRenderer", () => {
     // Make sure each render call makes translate into a single call to 'toIModelCoords' (i.e. points should NOT be converted one by one)
     await renderer.renderPath([testCoords.length/2], testCoords, true, 2, false);
     const graphics = renderer.moveGraphics();
-    expect(graphics.length).to.equals(1);
-    expect(graphics[0].type).to.equals("loop");
+    expect(graphics.length).toEqual(1);
+    expect(graphics[0].type).toEqual("loop");
     const loop: Loop = (graphics[0] as any).loop;
-    expect(loop.children.length).to.equals(6);
+    expect(loop.children.length).toEqual(6);
 
     let i = 0;
     const tolerance = 0.0000001;
     for (const child of loop.children) {
-      expect(Math.abs(child.startPoint().x -  testCoords[i++])).to.be.lessThan(tolerance);
-      expect(Math.abs(child.startPoint().y -  testCoords[i++])).to.be.lessThan(tolerance);
-      expect(Math.abs(child.endPoint().x -  testCoords[i])).to.be.lessThan(tolerance);
-      expect(Math.abs(child.endPoint().y -  testCoords[i+1])).to.be.lessThan(tolerance);
+      expect(Math.abs(child.startPoint().x - testCoords[i++])).toBeLessThan(tolerance);
+      expect(Math.abs(child.startPoint().y - testCoords[i++])).toBeLessThan(tolerance);
+      expect(Math.abs(child.endPoint().x - testCoords[i])).toBeLessThan(tolerance);
+      expect(Math.abs(child.endPoint().y - testCoords[i + 1])).toBeLessThan(tolerance);
     }
 
-    expect(toSpatialStub.called).to.be.true;
-
+    expect(toSpatialStub).toHaveBeenCalled();
   });
 
   it("render point correctly", async () => {
@@ -228,7 +220,7 @@ describe("FeatureGraphicsRenderer", () => {
 
     // We stub 'FeatureGraphicsRenderer.toSpatialFromEcf' to have the same input/output points, and simplify testing.  We make sure
     // 'toSpatialFromEcf' is being called.
-    const toSpatialStub = sandbox.stub(FeatureGraphicsRenderer.prototype, "toSpatial" as any).callsFake(function _(geoPoints: any): any {
+    const toSpatialStub = vi.spyOn(FeatureGraphicsRenderer.prototype as any, "toSpatial").mockImplementation(function _(geoPoints: any): any {
       return geoPoints;
     });
 
@@ -239,17 +231,16 @@ describe("FeatureGraphicsRenderer", () => {
     // Make sure each render call makes translate into a single call to 'toIModelCoords' (i.e. points should NOT be converted one by one)
     await renderer.renderPoint([testCoords.length/2], testCoords, 2, false);
     const graphics = renderer.moveGraphics();
-    expect(graphics.length).to.equals(1);
-    expect(graphics[0].type).to.equals("pointstring");
+    expect(graphics.length).toEqual(1);
+    expect(graphics[0].type).toEqual("pointstring");
     const points: Point3d[] = (graphics[0] as any).points;
-    expect(points.length).to.equals(1);
+    expect(points.length).toEqual(1);
     let i = 0;
     const tolerance = 0.0000001;
-    expect(Math.abs(points[0].x -  testCoords[i++])).to.be.lessThan(tolerance);
-    expect(Math.abs(points[0].y -  testCoords[i++])).to.be.lessThan(tolerance);
+    expect(Math.abs(points[0].x - testCoords[i++])).toBeLessThan(tolerance);
+    expect(Math.abs(points[0].y - testCoords[i++])).toBeLessThan(tolerance);
 
-    expect(toSpatialStub.called).to.be.true;
-
+    expect(toSpatialStub).toHaveBeenCalled();
   });
 
   it("coordinates reprojection RPC calls get batched if GCS defined", async () => {
@@ -275,18 +266,17 @@ describe("FeatureGraphicsRenderer", () => {
 
     // Make sure each render call makes translate into a single call to 'toIModelCoords' (i.e. points should NOT be converted one by one)
     await renderer.renderPath(testLengths, testCoords, false, 2, false);
-    expect(connection.toIModelCoordsCount).to.equals(1);
+    expect(connection.toIModelCoordsCount).toEqual(1);
 
     // filled paths
     connection.toIModelCoordsCount = 0;
     await renderer.renderPath(testLengths, testCoords, true, 2, false);
-    expect(connection.toIModelCoordsCount).to.equals(1);
+    expect(connection.toIModelCoordsCount).toEqual(1);
 
     // filled paths
     connection.toIModelCoordsCount = 0;
     await renderer.renderPoint(testLengths, testCoords, 2, false);
-    expect(connection.toIModelCoordsCount).to.equals(1);
-
+    expect(connection.toIModelCoordsCount).toEqual(1);
   });
 
   it("coordinates reprojection RPC calls get batched if GCS defined", async () => {
@@ -315,7 +305,6 @@ describe("FeatureGraphicsRenderer", () => {
     ];
 
     await renderer.renderPath(testLengths, testCoords, false, 2, false);
-    expect(connection.toIModelCoordsCount).to.equals(0);
+    expect(connection.toIModelCoordsCount).toEqual(0);
   });
-
 });
