@@ -104,4 +104,5 @@
     "NODE_ENV": "development"
   },
   "typescript.tsdk": "common/temp/node_modules/typescript/lib",
+  "vitest.maximumConfigs": 20,
 }
