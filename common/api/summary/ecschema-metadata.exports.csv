@@ -76,6 +76,7 @@ beta;class;NavigationProperty
 beta;interface;NavigationPropertyProps
 beta;interface;NoDelayedPromiseMethods
 beta;class;OverrideFormat
+beta;interface;OverrideFormatProps
 beta;function;parseClassModifier
 beta;function;parseCustomAttributeContainerType
 beta;function;parsePrimitiveType
