@@ -88,6 +88,53 @@ describe("Schema Difference Conflicts", () => {
         return true;
       });
     });
+
+    it("should find a conflict schema references aren't compartible", async () => {
+      const sourceContext = new SchemaContext();
+      await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ReferenceA",
+        version: "2.0.0",
+        alias: "ref",
+      }, sourceContext);
+      const sourceSchema = await Schema.fromJson({
+        ...schemaHeader,
+        references: [
+          {
+            name: "ReferenceA",
+            version: "2.0.0",
+          },
+        ],
+      }, sourceContext);
+
+      const targetContext = new SchemaContext();
+      await Schema.fromJson({
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+        name: "ReferenceA",
+        version: "1.0.0",
+        alias: "ref",
+      }, targetContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...schemaHeader,
+        references: [
+          {
+            name: "ReferenceA",
+            version: "1.0.0",
+          },
+        ],
+      }, targetContext);
+
+      const differences = await getSchemaDifferences(targetSchema, sourceSchema);
+      expect(differences.conflicts).to.have.a.lengthOf(1).and.satisfies(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingReferenceVersion);
+        expect(conflict).to.have.a.property("source", "ReferenceA.02.00.00");
+        expect(conflict).to.have.a.property("target", "ReferenceA.01.00.00");
+        expect(conflict).to.have.a.property("description", "Schema reference cannot be updated, incompatible versions");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "SchemaReference");
+        return true;
+      });
+    });
   });
 
   describe("Different schema item type conflicts", () => {

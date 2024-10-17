@@ -43,6 +43,7 @@ export enum ConflictCode {
 
   ConflictingItemName = "C-001",
   ConflictingReferenceAlias = "C-002",
+  ConflictingReferenceVersion = "C-003",
 
   ConflictingBaseClass = "C-100",
   RemovingBaseClass = "C-101",
@@ -96,6 +97,7 @@ type EcClassTypes = SchemaItemType.CustomAttributeClass |  SchemaItemType.Entity
 export type AnySchemaDifferenceConflict =
   SchemaDifferenceConflict<ConflictCode.ConflictingItemName, SchemaItemType> |
   SchemaDifferenceConflict<ConflictCode.ConflictingReferenceAlias, SchemaOtherTypes.SchemaReference> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingReferenceVersion, SchemaOtherTypes.SchemaReference> |
   SchemaDifferenceConflict<ConflictCode.ConflictingBaseClass, EcClassTypes> |
   SchemaDifferenceConflict<ConflictCode.RemovingBaseClass, EcClassTypes> |
   SchemaDifferenceConflict<ConflictCode.SealedBaseClass, EcClassTypes> |
