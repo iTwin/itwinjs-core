@@ -197,6 +197,12 @@ export abstract class ModifyElementWithDynamicsTool extends ModifyElementTool im
     await this._graphicsProvider.createGraphic(elemProps.category, elemProps.placement, geometry);
   }
 
+  protected override async onAgendaModified(): Promise<void> {
+    if (!this._firstResult)
+      this.updateAgendaAppearanceProvider(); // When Reset cycles between elements, recompute feature overrides...
+    return super.onAgendaModified();
+  }
+
   public override onDynamicFrame(_ev: BeButtonEvent, context: DynamicsContext): void {
     if (undefined !== this._graphicsProvider)
       this._graphicsProvider.addGraphic(context);

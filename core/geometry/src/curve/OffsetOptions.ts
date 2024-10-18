@@ -11,7 +11,7 @@ import { Angle } from "../geometry3d/Angle";
 import { StrokeOptions } from "./StrokeOptions";
 
 /**
- * Control parameters for joint construction, used in offset construction methods such as [[RegionOps.constructPolygonWireXYOffset]] and [[Region.Ops.constructCurveXYOffset]].
+ * Control parameters for joint construction, used in offset construction methods such as [[RegionOps.constructPolygonWireXYOffset]] and [[RegionOps.constructCurveXYOffset]].
  *   * Define a "joint" as the common point between adjacent segments of the input curve.
  *   * Define the "turn angle" at a joint to be the angle in [0,pi] between the first derivatives (tangents) of
  * the segments at the joint.

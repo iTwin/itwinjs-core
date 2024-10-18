@@ -687,6 +687,17 @@ export class Schema implements CustomAttributeContainerProps {
   protected setDescription(description: string) {
     this._description = description;
   }
+
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected setAlias(alias: string) {
+    if (!ECName.validate(alias)) {
+      throw new ECObjectsError(ECObjectsStatus.InvalidECName, "The specified schema alias is invalid.");
+    }
+    this._alias = alias;
+  }
 }
 
 /**
@@ -733,4 +744,5 @@ export abstract class MutableSchema extends Schema {
   public abstract override deleteClassSync(name: string): void;
   public abstract override deleteSchemaItem(name: string): Promise<void>;
   public abstract override deleteSchemaItemSync(name: string): void;
+  public abstract override setAlias(alias: string): void;
 }

@@ -8,7 +8,7 @@
 
 import { assert, BentleyStatus, Dictionary, dispose, Id64, Id64String } from "@itwin/core-bentley";
 import { ColorDef, ElementAlignedBox3d, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSourceFormat, IModelError, RenderFeatureTable, RenderMaterial, RenderTexture, RgbColorProps, TextureMapping, TextureTransparency } from "@itwin/core-common";
-import { ClipVector, Point3d, Transform } from "@itwin/core-geometry";
+import { ClipVector, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { Capabilities, WebGLContext } from "@itwin/webgl-compatibility";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -31,7 +31,8 @@ import { CreateRenderMaterialArgs } from "../CreateRenderMaterialArgs";
 import { RenderMemory } from "../RenderMemory";
 import { RealityMeshParams } from "../RealityMeshParams";
 import {
-  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderGeometry, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
+  CreateGraphicFromTemplateArgs,
+  DebugShaderFile, GLTimerResultCallback, PlanarGridProps, RenderAreaPattern, RenderDiagnostics, RenderInstances, RenderSkyBoxParams, RenderSystem, RenderSystemDebugControl,
 } from "../RenderSystem";
 import { RenderTarget } from "../RenderTarget";
 import { CreateTextureArgs, CreateTextureFromSourceArgs } from "../CreateTextureArgs";
@@ -45,7 +46,7 @@ import { DepthBuffer, FrameBufferStack } from "./FrameBuffer";
 import { GL } from "./GL";
 import { GLTimer } from "./GLTimer";
 import { AnimationTransformBranch, Batch, Branch, Graphic, GraphicOwner, GraphicsArray } from "./Graphic";
-import { isInstancedGraphicParams, PatternBuffers } from "./InstancedGeometry";
+import { InstanceBuffers, isInstancedGraphicParams, PatternBuffers, RenderInstancesImpl } from "./InstancedGeometry";
 import { Layer, LayerContainer } from "./Layer";
 import { LineCode } from "./LineCode";
 import { Material } from "./Material";
@@ -65,6 +66,10 @@ import { Techniques } from "./Technique";
 import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 import { BatchOptions } from "../../common/render/BatchOptions";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
+import { RenderInstancesParams } from "../../common/render/RenderInstancesParams";
+import { _batch, _branch, _featureTable, _nodes } from "../../common/internal/Symbols";
+import { RenderInstancesParamsImpl } from "../../internal/render/RenderInstancesParamsImpl";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -74,6 +79,8 @@ export const enum ContextState {
   Success,
   Error,
 }
+
+type RenderGeometryImpl = MeshRenderGeometry | RealityMeshGeometry | PolylineGeometry | PointStringGeometry | PointCloudGeometry;
 
 /** Id map holds key value pairs for both materials and textures, useful for caching such objects.
  * @internal
@@ -463,9 +470,8 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
   public override createRealityMeshGraphic(params: RealityMeshGraphicParams, disableTextureDisposal = false): RenderGraphic | undefined {
     return RealityMeshGeometry.createGraphic(this, params, disableTextureDisposal);
   }
-  public override createRealityMesh(realityMesh: RealityMeshParams, disableTextureDisposal = false): RenderGraphic | undefined {
-    const geom = RealityMeshGeometry.createFromRealityMesh(realityMesh, disableTextureDisposal);
-    return geom ? Primitive.create(geom) : undefined;
+  public override createRealityMeshGeometry(realityMesh: RealityMeshParams, disableTextureDisposal = false): RealityMeshGeometry | undefined {
+    return RealityMeshGeometry.createFromRealityMesh(realityMesh, disableTextureDisposal);
   }
 
   public override createMeshGeometry(params: MeshParams, viOrigin?: Point3d): MeshRenderGeometry | undefined {
@@ -484,25 +490,100 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return PatternBuffers.create(params);
   }
 
-  public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern): RenderGraphic | undefined {
-    if (!(geometry instanceof MeshRenderGeometry)) {
-      if (geometry instanceof PolylineGeometry || geometry instanceof PointStringGeometry)
-        return Primitive.create(geometry, instances);
-
-      assert(false, "Invalid RenderGeometry for System.createRenderGraphic");
-      return undefined;
-    }
-
-    assert(!instances || instances instanceof PatternBuffers || isInstancedGraphicParams(instances));
-    return MeshGraphic.create(geometry, instances);
+  public override createRenderInstances(params: RenderInstancesParams): RenderInstances | undefined {
+    return RenderInstancesImpl.create(params as RenderInstancesParamsImpl);
   }
 
-  public override createPointCloud(args: PointCloudArgs): RenderGraphic | undefined {
-    return Primitive.create(new PointCloudGeometry(args));
+  private createInstancedGraphic(geometry: RenderGeometry, instances: RenderInstances): RenderGraphic | undefined {
+    const geom = geometry as RenderGeometryImpl;
+    return this.createRenderGraphic(geom, InstanceBuffers.fromRenderInstances(instances, geom.computeRange()));
+  }
+
+  public override createGraphicFromTemplate(args: CreateGraphicFromTemplateArgs): RenderGraphic {
+    const template = args.template;
+    const instances = args.instances as RenderInstancesImpl | undefined;
+    if (instances && !template.isInstanceable) {
+      throw new Error("GraphicTemplate is not instanceable");
+    }
+
+    const graphics: RenderGraphic[] = [];
+    for (const node of template[_nodes]) {
+      const nodeGraphics: RenderGraphic[] = [];
+      for (const geometry of node.geometry) {
+        const gf = instances ? this.createInstancedGraphic(geometry, instances) : this.createRenderGraphic(geometry);
+        if (gf) {
+          nodeGraphics.push(gf);
+        }
+      }
+
+      if (nodeGraphics.length === 0) {
+        continue;
+      }
+
+      if (node.transform) {
+        const branch = new GraphicBranch();
+        for (const gf of nodeGraphics) {
+          branch.add(gf);
+        }
+
+        graphics.push(this.createGraphicBranch(branch, node.transform));
+      } else {
+        graphics.push(this.createGraphicList(nodeGraphics));
+      }
+    }
+
+    let graphic = this.createGraphicList(graphics);
+    if (instances && instances[_featureTable]) {
+      const range = new Range3d();
+      graphic.unionRange(range);
+      graphic = this.createBatch(graphic, instances[_featureTable], range);
+    } else if (template[_batch]) {
+      graphic = this.createBatch(graphic, template[_batch].featureTable, template[_batch].range, template[_batch].options);
+    }
+
+    const templateBranch = template[_branch];
+    if (templateBranch) {
+      const branch = new GraphicBranch(true);
+      if (templateBranch.viewFlagOverrides) {
+        branch.setViewFlagOverrides(templateBranch.viewFlagOverrides);
+      }
+
+      branch.add(graphic);
+      graphic = this.createBranch(branch, templateBranch.transform ?? Transform.createIdentity());
+    }
+
+    return graphic;
+  }
+
+  public override createRenderGraphic(geometry: RenderGeometry, instances?: InstancedGraphicParams | RenderAreaPattern | InstanceBuffers): RenderGraphic | undefined {
+    const geom = geometry as RenderGeometryImpl;
+
+    let buffers: InstanceBuffers | PatternBuffers | undefined;
+    if (instances) {
+      if (!geometry.isInstanceable) {
+        throw new Error("RenderGeometry is not instanceable");
+      }
+
+      if (instances instanceof PatternBuffers || instances instanceof InstanceBuffers) {
+        buffers = instances;
+      } else {
+        assert(isInstancedGraphicParams(instances));
+        buffers = InstanceBuffers.fromParams(instances, () => geom.computeRange());
+        if (!buffers) {
+          return undefined;
+        }
+      }
+    }
+
+    return geom.renderGeometryType === "mesh" ? MeshGraphic.create(geom, buffers) : Primitive.create(geom, buffers);
+  }
+
+  public override createPointCloudGeometry(args: PointCloudArgs): PointCloudGeometry {
+    return new PointCloudGeometry(args);
   }
 
   public createGraphicList(primitives: RenderGraphic[]): RenderGraphic {
-    return new GraphicsArray(primitives);
+    return primitives.length === 1 ? primitives[0] : new GraphicsArray(primitives);
   }
 
   public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic {

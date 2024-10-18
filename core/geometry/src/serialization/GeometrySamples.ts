@@ -1142,7 +1142,7 @@ export class Sample {
       ParityRegion.create(
         Loop.create(
           LineString3d.create(point0, pointA, pointB),
-          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!,
+          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0),
         ),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
       ),
@@ -1168,7 +1168,7 @@ export class Sample {
       ParityRegion.create(
         Loop.create(
           LineString3d.create(point0, pointA, pointB),
-          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!,
+          Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0),
         ),
         Loop.create(LineString3d.createRectangleXY(point1, bx, by)),
         Loop.create(Arc3d.create(point4, Vector3d.create(-r2, 0), Vector3d.create(0, r2A))),
@@ -1191,7 +1191,7 @@ export class Sample {
                 pointB,
               ],
               3)!,
-            Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0)!,
+            Arc3d.createCircularStartMiddleEnd(pointB, pointC1, point0),
           ),
         ),
       );
@@ -2244,7 +2244,7 @@ export class Sample {
         Path.create(
           Arc3d.createCircularStartMiddleEnd(
             Point3d.create(0, 0, 0), Point3d.create(3, 3, 0), Point3d.create(6, 0, 0),
-          )!,
+          ),
         ),
       ),
     );
@@ -2267,7 +2267,7 @@ export class Sample {
       CurveChainWithDistanceIndex.createCapture(
         Path.create(
           LineSegment3d.create(pointsA[0], pointsA[1]),
-          Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3])!,
+          Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3]),
           LineSegment3d.create(pointsA[3], pointsA[4]),
         ),
       ),
@@ -2692,7 +2692,7 @@ export class Sample {
     const pointABCDA = [pointA, pointB, pointC, pointD, pointA];
     result.push(LineSegment3d.create(pointA, pointB));
     result.push(CoordinateXYZ.create(pointA));
-    result.push(Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC)!);
+    result.push(Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC));
     result.push(PointString3d.create(pointA, pointB));
     result.push(
       IntegratedSpiral3d.createRadiusRadiusBearingBearing(

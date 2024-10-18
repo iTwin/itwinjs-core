@@ -86,6 +86,10 @@ export namespace SchemaSync {
     }
   };
 
+  export const isEnabled = (iModel: IModelDb) => {
+    return iModel[_nativeDb].schemaSyncEnabled();
+  };
+
   /** Synchronize local briefcase schemas with cloud container */
   export const pull = async (iModel: IModelDb) => {
     if (iModel[_nativeDb].schemaSyncEnabled() && !iModel.isReadonly) {

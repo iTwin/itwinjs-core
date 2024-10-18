@@ -196,9 +196,15 @@ export type ElementPropertiesRequestOptions<TIModel, TParsedContent = ElementPro
  * Request type for single element properties requests.
  * @public
  */
-export interface SingleElementPropertiesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+export interface SingleElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
   /** ID of the element to get properties for. */
   elementId: Id64String;
+
+  /**
+   * Content parser that creates a result item based on given content descriptor and content item. Defaults
+   * to a parser that creates [[ElementProperties]] objects.
+   */
+  contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
 }
 
 /**

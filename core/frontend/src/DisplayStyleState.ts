@@ -256,7 +256,11 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** @internal */
   public forEachRealityTileTreeRef(func: (ref: TileTreeReference) => void): void {
-    this.forEachRealityModel((model) => func(model.treeRef));
+    this.forEachRealityModel((model) => {
+      if (!model.invisible) {
+        func(model.treeRef);
+      }
+    });
   }
 
   /** @internal */

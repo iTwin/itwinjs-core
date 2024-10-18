@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
@@ -63,7 +63,7 @@ describe("InterpolationCurve3d", () => {
       testInterpolationCurveConstruction(ck, allGeometry, options, x0, y0, delta);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("BrienCurve", () => {
@@ -80,7 +80,7 @@ describe("InterpolationCurve3d", () => {
     const options = InterpolationCurve3dOptions.create({ fitPoints: points, startTangent: startTan, endTangent: endTan, isChordLenKnots: 1, isColinearTangents: 1 });
     testInterpolationCurveConstruction(ck, allGeometry, options);
     GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "BrienCurve");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ExercisePointSpacing", () => {
@@ -115,7 +115,7 @@ describe("InterpolationCurve3d", () => {
       y0 += 10.0 * deltaY;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "ExercisePointSpacing");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

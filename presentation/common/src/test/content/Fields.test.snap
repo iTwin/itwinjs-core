@@ -4,12 +4,14 @@ exports[`Field fromJSON creates valid ArrayPropertiesField from valid JSON 1`] =
 Object {
   "category": "test-category",
   "editor": undefined,
+  "extendedData": undefined,
   "isReadonly": false,
   "itemsField": Object {
     "category": "test-category",
     "editor": Object {
       "name": "custom-editor",
     },
+    "extendedData": undefined,
     "isReadonly": false,
     "label": "Properties Field",
     "name": "PropertiesField",
@@ -67,6 +69,7 @@ exports[`Field fromJSON creates valid Field from valid JSON 1`] = `
 Object {
   "category": "test-category",
   "editor": undefined,
+  "extendedData": undefined,
   "isReadonly": false,
   "label": "Simple Field",
   "name": "SimpleField",
@@ -90,6 +93,7 @@ Object {
     "name": "SchemaName:ClassName",
   },
   "editor": undefined,
+  "extendedData": undefined,
   "isReadonly": false,
   "label": "Nested Content",
   "name": "NestedContentField",
@@ -97,6 +101,7 @@ Object {
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Simple Field",
       "name": "SimpleField",
@@ -154,6 +159,7 @@ exports[`Field fromJSON creates valid PropertiesField from valid JSON 1`] = `
 Object {
   "category": "test-category",
   "editor": undefined,
+  "extendedData": undefined,
   "isReadonly": false,
   "label": "Properties Field",
   "name": "PropertiesField",
@@ -183,12 +189,14 @@ exports[`Field fromJSON creates valid StructPropertiesField from valid JSON 1`] 
 Object {
   "category": "test-category",
   "editor": undefined,
+  "extendedData": undefined,
   "isReadonly": false,
   "label": "Struct Properties Field",
   "memberFields": Array [
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Properties Field",
       "name": "PropertiesField",
@@ -257,6 +265,7 @@ Object {
     "name": "SchemaName:ClassName",
   },
   "editor": undefined,
+  "extendedData": undefined,
   "isReadonly": false,
   "label": "Nested Content",
   "name": "NestedContentField",
@@ -264,6 +273,7 @@ Object {
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Simple Field",
       "name": "SimpleField",
@@ -328,6 +338,7 @@ Object {
     "name": "SchemaName:ClassName",
   },
   "editor": undefined,
+  "extendedData": undefined,
   "isReadonly": false,
   "label": "Nested Content",
   "name": "NestedContentField",
@@ -335,6 +346,7 @@ Object {
     Object {
       "category": "test-category",
       "editor": undefined,
+      "extendedData": undefined,
       "isReadonly": false,
       "label": "Simple Field",
       "name": "SimpleField",
@@ -392,6 +404,7 @@ exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON 
 Object {
   "category": "test-category",
   "editor": undefined,
+  "extendedData": undefined,
   "isReadonly": false,
   "label": "Properties Field",
   "name": "PropertiesField",
@@ -421,6 +434,7 @@ exports[`PropertiesField fromJSON creates valid PropertiesField from valid JSON 
 Object {
   "category": "test-category",
   "editor": undefined,
+  "extendedData": undefined,
   "isReadonly": false,
   "label": "Properties Field",
   "name": "PropertiesField",

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { UnionFindContext } from "../../numerics/UnionFind";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -72,6 +72,6 @@ describe("UnionFind", () => {
       ck.testLE(numLongPath1, numLongPath0, "Leaf queries can reduce number of long paths");
       ck.testExactNumber(0, numLongPath1, "Leaf queries eliminate long paths");    // is this really certain?
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

@@ -25,7 +25,7 @@ import { linePlaneIntersect } from "./LinePlaneIntersect";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState } from "./ViewState";
 import { QuantityType } from "./quantity-formatting/QuantityFormatter";
-import { ParseError, Parser, QuantityParseResult } from "@itwin/core-quantity";
+import { ParseError, Parser, ParserSpec, QuantityParseResult } from "@itwin/core-quantity";
 import { GraphicType } from "./common/render/GraphicType";
 
 // cspell:ignore dont primitivetools
@@ -1002,23 +1002,35 @@ export class AccuDraw {
     rMatrix.multiplyTransposeVector(this.vector);
   }
 
+  /** Allow the AccuDraw user interface to supply the distance parser */
+  public getLengthParser(): ParserSpec | undefined {
+    return IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
+  }
+
   private stringToDistance(str: string): QuantityParseResult {
-    const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
+    const parserSpec = this.getLengthParser();
     if (parserSpec)
       return parserSpec.parseToQuantityValue(str);
     return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
+  /** Allow the AccuDraw user interface to specify bearing */
+  public get isBearingMode(): boolean { return false; }
+
+  /** Allow the AccuDraw user interface to supply the angle/direction parser */
+  public getAngleParser(): ParserSpec | undefined {
+    // TODO: Use QuantityType.Angle when isBearingMode=false and "Bearing" for isBearingMode=true.
+    return IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Angle);
+  }
+
   private stringToAngle(inString: string): QuantityParseResult {
-    // Need to update once there is an official "Bearing" QuantityType. Once available then
-    // use QuantityType.Angle for isBearing=false and "Bearing" for isBearing=true.
-    const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Angle);
+    const parserSpec = this.getAngleParser();
     if (parserSpec)
       return parserSpec.parseToQuantityValue(inString);
     return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
-  private updateFieldValue(index: ItemField, input: string, _out: { isBearing: boolean }): BentleyStatus {
+  private updateFieldValue(index: ItemField, input: string): BentleyStatus {
     if (input.length === 0)
       return BentleyStatus.ERROR;
 
@@ -1185,9 +1197,7 @@ export class AccuDraw {
 
   /** Call from an AccuDraw UI event to sync the supplied input field value */
   public async processFieldInput(index: ItemField, input: string, synchText: boolean): Promise<void> {
-    const isBearing = false;
-
-    if (BentleyStatus.SUCCESS !== this.updateFieldValue(index, input, { isBearing })) {
+    if (BentleyStatus.SUCCESS !== this.updateFieldValue(index, input)) {
       const saveKeyinStatus = this._keyinStatus[index]; // Don't want this to change when entering '.', etc.
       this.updateFieldLock(index, false);
       this._keyinStatus[index] = saveKeyinStatus;
@@ -1208,7 +1218,7 @@ export class AccuDraw {
           this.setKeyinStatus(index, KeyinStatus.Dynamic);
         }
 
-        if (!isBearing || !this.flags.bearingFixToPlane2D)
+        if (!this.isBearingMode || !this.flags.bearingFixToPlane2D)
           this.updateVector(this._angle);
         else
           this.vector.set(Math.cos(this._angle), Math.sin(this._angle), 0.0);

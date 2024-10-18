@@ -3,17 +3,21 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, Logger} from "@itwin/core-bentley";
-import { IModelApp, IModelConnection} from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl} from "./GraphicRepresentationProvider";
-import { loggerCategory} from "../LoggerCategory";
+import { AccessToken, Logger } from "@itwin/core-bentley";
+import { IModelApp } from "@itwin/core-frontend";
+import { obtainGraphicRepresentationUrl } from "./GraphicRepresentationProvider";
+import { loggerCategory } from "../LoggerCategory";
 
-/** Arguments supplied  to [[obtainMeshExportTilesetUrl]].
+/** Arguments supplied  to [[obtainIModelTilesetUrl]].
  * @beta
  */
 export interface ObtainIModelTilesetUrlArgs {
-  /** The iModel for which to obtain a tileset URl. */
-  iModel: IModelConnection;
+  /** The iTwin id for which to obtain a tileset URL. */
+  iTwinId?: string;
+  /** The iModel id for which to obtain a tileset URL. */
+  iModelId?: string;
+  /** The changeset id for which to obtain a tileset URL. */
+  changesetId?: string;
   /** The token used to access the mesh export service. */
   accessToken: AccessToken;
   /** Chiefly used in testing environments. */
@@ -34,12 +38,12 @@ export interface ObtainIModelTilesetUrlArgs {
  */
 export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs):
 Promise<URL|undefined> {
-  if (!args.iModel.iModelId) {
+  if (!args.iModelId) {
     Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data for an iModel with no iModelId");
     return undefined;
   }
 
-  if (!args.iModel.iTwinId) {
+  if (!args.iTwinId) {
     Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data for an iModel with no iTwinId");
     return undefined;
   }
@@ -48,9 +52,9 @@ Promise<URL|undefined> {
     accessToken: args.accessToken,
     sessionId: IModelApp.sessionId,
     dataSource: {
-      iTwinId: args.iModel.iTwinId,
-      id: args.iModel.iModelId,
-      changeId: args.iModel.changeset.id,
+      iTwinId: args.iTwinId,
+      id: args.iModelId,
+      changeId: args.changesetId,
       type: "IMODEL",
     },
     format: "IMDL",

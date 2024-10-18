@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Allow context reality model visibility to be toggled on/off",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

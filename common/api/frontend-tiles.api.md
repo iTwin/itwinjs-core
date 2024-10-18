@@ -151,8 +151,10 @@ export function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs): Promis
 // @beta
 export interface ObtainIModelTilesetUrlArgs {
     accessToken: AccessToken;
+    changesetId?: string;
     enableCDN?: boolean;
-    iModel: IModelConnection;
+    iModelId?: string;
+    iTwinId?: string;
     requireExactChangeset?: boolean;
     urlPrefix?: string;
 }

@@ -6,7 +6,7 @@
  * @module Differencing
  */
 
-import { SchemaDifferenceConflict } from "./SchemaConflicts";
+import { AnySchemaDifferenceConflict } from "./SchemaConflicts";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
@@ -16,6 +16,7 @@ import {
   MixinProps, PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, RelationshipConstraintProps,
   type Schema, SchemaItemFormatProps, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
 } from "@itwin/ecschema-metadata";
+import { validateDifferences } from "./SchemaDifferenceValidator";
 
 /** Utility-Type to remove possible readonly flags on the given type. */
 type PartialEditable<T> = {
@@ -50,6 +51,7 @@ export enum SchemaOtherTypes {
   RelationshipConstraint = "RelationshipConstraint",
   RelationshipConstraintClass = "RelationshipConstraintClass",
   EntityClassMixin = "EntityClassMixin",
+  KindOfQuantityPresentationFormat = "KindOfQuantityPresentationFormat",
 }
 
 /**
@@ -72,7 +74,7 @@ export interface SchemaDifferenceResult {
   readonly differences: AnySchemaDifference[];
 
   /** List of conflicts found while comparing the schemas. */
-  readonly conflicts?: SchemaDifferenceConflict[];
+  readonly conflicts?: AnySchemaDifferenceConflict[];
 }
 
 /**
@@ -84,7 +86,9 @@ export type AnySchemaDifference =
   SchemaReferenceDifference |
   AnySchemaItemDifference |
   AnySchemaItemPathDifference |
-  CustomAttributeDifference;
+  EntityClassMixinDifference |
+  CustomAttributeDifference |
+  KindOfQuantityPresentationFormatDifference;
 
 /**
  * Differencing entry for changes on a Schema.
@@ -114,10 +118,9 @@ export interface SchemaReferenceDifference {
  * @alpha
  */
 export type AnySchemaItemDifference =
-  ClassItemDifference |
+  AnyClassItemDifference |
   ConstantDifference |
   EnumerationDifference |
-  EntityClassMixinDifference |
   FormatDifference |
   KindOfQuantityDifference |
   InvertedUnitDifference |
@@ -130,7 +133,7 @@ export type AnySchemaItemDifference =
  * Union for supported class Schema Items.
  * @alpha
  */
-export type ClassItemDifference =
+export type AnyClassItemDifference =
   EntityClassDifference |
   MixinClassDifference |
   StructClassDifference |
@@ -388,6 +391,17 @@ export interface RelationshipConstraintClassDifference {
 }
 
 /**
+ * Differencing entry for presentation formats added to KindOfQuantities.
+ * @alpha
+ */
+export interface KindOfQuantityPresentationFormatDifference {
+  readonly changeType: "add";
+  readonly schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat;
+  readonly itemName: string;
+  readonly difference: string[];
+}
+
+/**
  * Creates a [[SchemaDifferenceResult]] for two given schemas.
  * @param targetSchema  The schema the differences gets merged into.
  * @param sourceSchema  The schema to get merged in the target.
@@ -411,10 +425,12 @@ export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: S
     ...visitor.customAttributeDifferences,
   ];
 
+  const conflicts = await validateDifferences(differences, targetSchema, sourceSchema);
+
   return {
     sourceSchemaName: sourceSchema.schemaKey.toString(),
     targetSchemaName: targetSchema.schemaKey.toString(),
-    conflicts: visitor.conflicts.length > 0 ? visitor.conflicts : undefined,
+    conflicts: conflicts.length > 0 ? conflicts : undefined,
     differences,
   };
 }

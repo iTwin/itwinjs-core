@@ -978,6 +978,7 @@ export class OverrideFormat {
     get minWidth(): number | undefined;
     readonly name: string;
     readonly parent: Format;
+    static parseFormatString(formatString: string): OverrideFormatProps;
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
     // (undocumented)
@@ -1000,6 +1001,16 @@ export class OverrideFormat {
     get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
+}
+
+// @beta (undocumented)
+export interface OverrideFormatProps {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    precision?: number;
+    // (undocumented)
+    unitAndLabels?: Array<[string, string | undefined]>;
 }
 
 // @beta
@@ -1237,6 +1248,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     protected setDescription(description: string): void;
     // @internal
     protected setIsReadOnly(isReadOnly: boolean): void;
+    // @internal
+    protected setKindOfQuantity(kindOfQuantity: LazyLoadedKindOfQuantity): void;
     // @internal
     protected setLabel(label: string): void;
     // (undocumented)
@@ -1664,6 +1677,8 @@ export class Schema implements CustomAttributeContainerProps {
     get schemaKey(): SchemaKey;
     // (undocumented)
     protected _schemaKey?: SchemaKey;
+    // @alpha
+    protected setAlias(alias: string): void;
     // @alpha
     protected setContext(context: SchemaContext): void;
     // @alpha

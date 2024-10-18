@@ -33,7 +33,7 @@ function expectPartiallyEquals(actual: any, expected: any, message?: string) {
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("Schema Difference Reporting", () => {
+describe("Schema Differences", () => {
 
   const customAttributeSchemaJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -94,8 +94,8 @@ describe("Schema Difference Reporting", () => {
     const targetSchema = await Schema.fromJson(targetJson, targetContext);
 
     differenceResult = await getSchemaDifferences(targetSchema, sourceSchema);
-    expect(differenceResult.conflicts).equals(undefined, "This test suite should not have conflicts.");
-    expect(differenceResult.differences).has.a.lengthOf(27, "Unexpected count of differences.");
+    expect(differenceResult.conflicts, `This test suite should not have conflicts.\n${JSON.stringify(differenceResult.conflicts, null, 2)}`).to.be.undefined;
+    expect(differenceResult.differences).has.a.lengthOf(29, "Unexpected count of differences.");
   });
 
   it("should have the expected source and target schema names in differences", () => {
@@ -213,10 +213,10 @@ describe("Schema Difference Reporting", () => {
   });
 
   it("should return missing schema items", () => {
-    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "TestUnitSystem" }), {
+    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "MissingUnitSystem" }), {
       changeType: "add",
       schemaType: "UnitSystem",
-      itemName: "TestUnitSystem",
+      itemName: "MissingUnitSystem",
       difference: {
         label: "Imperial",
         // [...]
@@ -349,6 +349,29 @@ describe("Schema Difference Reporting", () => {
       itemName: "RelationshipEntity",
       difference: [
         "SourceSchema.RelationshipSourceEntity",
+      ],
+    });
+  });
+
+  it("should return changed kindOfQuantity properties", () => {
+    expectPartiallyEquals(findEntry({ changeType: "modify", schemaType: "KindOfQuantity", itemName: "ChangedKoq" }), {
+      changeType: "modify",
+      schemaType: "KindOfQuantity",
+      itemName: "ChangedKoq",
+      difference: {
+        label: "Koq",
+        relativeError: 0.09290304,
+      },
+    });
+  });
+
+  it("should return missing presentation format of kindOfQuantity", () => {
+    expectPartiallyEquals(findEntry({ changeType: "add", schemaType: "KindOfQuantityPresentationFormat", itemName: "ChangedKoq" }), {
+      changeType: "add",
+      schemaType: "KindOfQuantityPresentationFormat",
+      itemName: "ChangedKoq",
+      difference: [
+        "SourceSchema.TestFormat(4)[SourceSchema.TestUnit|m]",
       ],
     });
   });

@@ -272,7 +272,7 @@ describe("Composite Formats tests:", () => {
     const formatData = {
       composite: {
         includeZero: true,
-        spacer: "",
+        spacer: ":",
         units: [
           {
             label: "'",

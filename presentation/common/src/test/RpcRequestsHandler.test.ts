@@ -27,7 +27,6 @@ import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import { ItemJSON } from "../presentation-common/content/Item";
 import { ClientDiagnostics } from "../presentation-common/Diagnostics";
 import { InstanceKey } from "../presentation-common/EC";
-import { ElementProperties } from "../presentation-common/ElementProperties";
 import { NodeKey } from "../presentation-common/hierarchy/Key";
 import {
   ComputeSelectionRequestOptions,
@@ -42,7 +41,6 @@ import {
   FilterByTextHierarchyRequestOptions,
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
-  SingleElementPropertiesRequestOptions,
 } from "../presentation-common/PresentationManagerOptions";
 import {
   ContentDescriptorRpcRequestOptions,
@@ -56,7 +54,6 @@ import {
   FilterByTextHierarchyRpcRequestOptions,
   HierarchyLevelDescriptorRpcRequestOptions,
   HierarchyRpcRequestOptions,
-  SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { createTestContentDescriptor } from "./_helpers/Content";
@@ -579,30 +576,6 @@ describe("RpcRequestsHandler", () => {
         .returns(async () => successResponse(result))
         .verifiable();
       expect(await handler.getPagedDistinctValues(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
-    });
-
-    it("forwards getElementProperties call", async () => {
-      const elementId = "0x123";
-      const handlerOptions: SingleElementPropertiesRequestOptions<IModelRpcProps> = {
-        imodel: token,
-        elementId,
-      };
-      const rpcOptions: SingleElementPropertiesRpcRequestOptions = {
-        clientId,
-        elementId,
-      };
-      const result: ElementProperties = {
-        class: "test class",
-        id: elementId,
-        label: "test label",
-        items: {},
-      };
-      rpcInterfaceMock
-        .setup(async (x) => x.getElementProperties(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
-      expect(await handler.getElementProperties(handlerOptions)).to.deep.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

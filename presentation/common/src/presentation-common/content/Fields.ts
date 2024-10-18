@@ -40,6 +40,7 @@ export interface BaseFieldJSON {
   priority: number;
   renderer?: RendererDescription;
   editor?: EditorDescription;
+  extendedData?:  { [key: string]: unknown };
 }
 
 /**
@@ -144,6 +145,8 @@ export class Field {
   public renderer?: RendererDescription;
   /** Property editor used to edit values of this field */
   public editor?: EditorDescription;
+  /** Extended data associated with this field */
+  public extendedData?:  { [key: string]: unknown };
   /** Parent field */
   private _parent?: NestedContentField;
 
@@ -157,6 +160,7 @@ export class Field {
    * @param priority Priority of the field
    * @param editor Property editor used to edit values of this field
    * @param renderer Property renderer used to render values of this field
+   * @param extendedData Extended data associated with this field
    */
   public constructor(
     category: CategoryDescription,
@@ -167,6 +171,7 @@ export class Field {
     priority: number,
     editor?: EditorDescription,
     renderer?: RendererDescription,
+    extendedData?: { [key: string] : unknown }
   ) {
     this.category = category;
     this.name = name;
@@ -176,6 +181,7 @@ export class Field {
     this.priority = priority;
     this.editor = editor;
     this.renderer = renderer;
+    this.extendedData = extendedData;
   }
 
   /**
@@ -200,7 +206,7 @@ export class Field {
   }
 
   public clone() {
-    const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor, this.renderer);
+    const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor, this.renderer, this.extendedData);
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -216,6 +222,7 @@ export class Field {
       priority: this.priority,
       renderer: this.renderer,
       editor: this.editor,
+      extendedData: this.extendedData
     };
   }
 

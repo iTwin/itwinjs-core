@@ -9,6 +9,7 @@
 
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { Point3d } from "../geometry3d/Point3dVector3d";
+import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
 import { CurveChain } from "./CurveCollection";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
@@ -45,7 +46,9 @@ export class Path extends CurveChain {
   public static create(...curves: Array<CurvePrimitive | Point3d[]>): Path {
     const result = new Path();
     for (const curve of curves) {
-      if (curve instanceof CurvePrimitive)
+      if (curve instanceof CurveChainWithDistanceIndex)
+        result.children.push(...curve.path.children);
+      else if (curve instanceof CurvePrimitive)
         result.children.push(curve);
       else if (Array.isArray(curve) && curve.length > 0 && curve[0] instanceof Point3d) {
         result.children.push(LineString3d.create(curve));
@@ -58,11 +61,7 @@ export class Path extends CurveChain {
    * @param curves array of individual curve primitives.
    */
   public static createArray(curves: CurvePrimitive[]): Path {
-    const result = new Path();
-    for (const curve of curves) {
-      result.children.push(curve);
-    }
-    return result;
+    return this.create(...curves);
   }
   /** Return a deep copy, with leaf-level curve primitives stroked. */
   public cloneStroked(options?: StrokeOptions): Path {

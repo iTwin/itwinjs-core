@@ -505,6 +505,32 @@ export namespace Id64 {
         this.addIds(ids);
     }
 
+    /** Return true if `this` and `other` contain the same set of Ids. */
+    public equals(other: Uint32Set): boolean {
+      if (this === other) {
+        return true;
+      }
+
+      if (this.size !== other.size) {
+        return false;
+      }
+
+      for (const [key, thisValue] of this._map) {
+        const otherValue = other._map.get(key);
+        if (!otherValue || thisValue.size !== otherValue.size) {
+          return false;
+        }
+
+        for (const value of thisValue) {
+          if (!otherValue.has(value)) {
+            return false;
+          }
+        }
+      }
+
+      return true;
+    }
+
     /** Remove all contents of this set. */
     public clear(): void {
       this._map.clear();

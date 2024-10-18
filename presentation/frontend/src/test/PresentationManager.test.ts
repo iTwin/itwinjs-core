@@ -15,10 +15,12 @@ import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
   Content,
   ContentDescriptorRequestOptions,
+  ContentFlags,
   ContentInstanceKeysRequestOptions,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
   ContentSourcesRpcResult,
+  DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
   DisplayLabelRequestOptions,
@@ -46,7 +48,6 @@ import {
   Ruleset,
   RulesetVariable,
   SelectClassInfo,
-  SingleElementPropertiesRequestOptions,
   UpdateInfo,
   VariableValueTypes,
 } from "@itwin/presentation-common";
@@ -58,10 +59,13 @@ import {
   createRandomNodePathElement,
   createRandomRuleset,
   createRandomTransientId,
+  createTestCategoryDescription,
   createTestContentDescriptor,
   createTestContentItem,
+  createTestECClassInfo,
   createTestECInstanceKey,
   createTestPropertiesContentField,
+  createTestSimpleContentField,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { IpcRequestsHandler } from "../presentation-frontend/IpcRequestsHandler";
 import { Presentation } from "../presentation-frontend/Presentation";
@@ -1278,22 +1282,98 @@ describe("PresentationManager", () => {
   describe("getElementProperties", () => {
     it("requests single element properties", async () => {
       const elementId = "0x123";
-      const result: ElementProperties = {
-        class: "test class",
-        id: elementId,
-        label: "test label",
-        items: {},
-      };
-      const options: SingleElementPropertiesRequestOptions<IModelConnection> = {
+      rpcRequestsHandlerMock
+        .setup(async (x) =>
+          x.getPagedContent(
+            toRulesetRpcOptions({
+              descriptor: {
+                displayType: DefaultContentDisplayTypes.PropertyPane,
+                contentFlags: ContentFlags.ShowLabels,
+              },
+              rulesetOrId: "ElementProperties",
+              keys: new KeySet([{ className: "BisCore:Element", id: elementId }]).toJSON(),
+            }),
+          ),
+        )
+        .returns(async () => undefined)
+        .verifiable();
+      const actualResult = await manager.getElementProperties({
         imodel: testData.imodelMock.object,
         elementId,
+      });
+      expect(actualResult).to.be.undefined;
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+    it("parses element properties from content", async () => {
+      const elementId = "0x123";
+      const expectedElementProperties: ElementProperties = {
+        class: "Test Class",
+        id: "0x123",
+        label: "test label",
+        items: {
+          ["Test Category"]: {
+            type: "category",
+            items: {
+              ["Test Field"]: {
+                type: "primitive",
+                value: "test display value",
+              },
+            },
+          },
+        },
       };
+      const testCategory = createTestCategoryDescription({ name: "TestCategory", label: "Test Category" });
+      const testField = createTestSimpleContentField({
+        name: "TestField",
+        category: testCategory,
+        label: "Test Field",
+        type: {
+          valueFormat: PropertyValueFormat.Primitive,
+          typeName: "string",
+        },
+      });
+      const descriptor = createTestContentDescriptor({
+        categories: [testCategory],
+        fields: [testField],
+      });
+      const contentItem = new Item(
+        [{ className: "TestSchema:TestElement", id: elementId }],
+        "test label",
+        "",
+        createTestECClassInfo({ label: "Test Class" }),
+        {
+          [testField.name]: "test value",
+        },
+        {
+          [testField.name]: "test display value",
+        },
+        [],
+        undefined,
+      );
       rpcRequestsHandlerMock
-        .setup(async (x) => x.getElementProperties(toIModelTokenOptions(options)))
-        .returns(async () => result)
+        .setup(async (x) =>
+          x.getPagedContent(
+            toRulesetRpcOptions({
+              descriptor: {
+                displayType: DefaultContentDisplayTypes.PropertyPane,
+                contentFlags: ContentFlags.ShowLabels,
+              },
+              rulesetOrId: "ElementProperties",
+              keys: new KeySet([{ className: "BisCore:Element", id: elementId }]).toJSON(),
+            }),
+          ),
+        )
+        .returns(async () => ({
+          descriptor: descriptor.toJSON(),
+          contentSet: { total: 1, items: [contentItem.toJSON()] },
+        }))
         .verifiable();
-      const actualResult = await manager.getElementProperties(options);
-      expect(actualResult).to.deep.eq(result);
+      const actualResult = await manager.getElementProperties({
+        imodel: testData.imodelMock.object,
+        elementId,
+      });
+      expect(actualResult).to.deep.eq(expectedElementProperties);
       rpcRequestsHandlerMock.verifyAll();
     });
   });

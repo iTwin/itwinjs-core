@@ -9,10 +9,10 @@
 
 import { Arc3d } from "../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
 import { CurveFactory } from "../curve/CurveFactory";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { LineString3d } from "../curve/LineString3d";
 import { Loop } from "../curve/Loop";
@@ -51,6 +51,7 @@ import { Sphere } from "../solid/Sphere";
 import { SweepContour } from "../solid/SweepContour";
 import { TorusPipe } from "../solid/TorusPipe";
 import { HalfEdge, HalfEdgeGraph, HalfEdgeToBooleanFunction } from "../topology/Graph";
+import { InsertedVertexZOptions } from "../topology/InsertAndRetriangulateContext";
 import { Triangulator } from "../topology/Triangulation";
 import { BoxTopology } from "./BoxTopology";
 import { GreedyTriangulationBetweenLineStrings } from "./GreedyTriangulationBetweenLineStrings";
@@ -1327,8 +1328,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     if (surface.capped && contour.isAnyRegionType) {
       const contourA = surface.getSweepContourRef();
       contourA.purgeFacets();
-      contourA.emitFacets(this, true, undefined);
-      contourA.emitFacets(this, false, sweepTransform);
+      const reverseNearCap = contourA.localToWorld.matrix.dotColumnZ(sweepVector) > 0;
+      contourA.emitFacets(this, reverseNearCap, undefined);
+      contourA.emitFacets(this, !reverseNearCap, sweepTransform);
     }
   }
   /** Add facets from a ruled sweep. */
@@ -1953,14 +1955,17 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   /**
    * Create a polyface from a triangulation of the points.
    * * The triangulation is computed as seen in the top view: z-coordinates are ignored.
+   * * The highest z-coordinate is preserved for points that are separated by a vertical distance.
    * @param points an array of points.
-   * @param options (optional) stroke options. Currently only two options are supported. If `options.needNormals` is
-   * true, all facets are assigned the single normal 001. If `options.needParams` is true, all facet vertices are
-   * assigned uv-parameters equal to their xy-coordinates. These options are rarely useful.
+   * @param options (optional) stroke options:
+   * * `options.chordTol`: xy-distance for equating points. For DTM points, 1-2mm may suffice. Default value is
+   * `Geometry.smallMetricDistance`.
+   * * `options.needNormals`: whether to assign 001 to all facets (rarely useful).
+   * * `options.needParams`: whether to assign all vertices uv-parameters equal to their xy-coordinates (rarely useful).
    * @returns triangulated polyface or `undefined` if triangulation was not possible.
    */
   public static pointsToTriangulatedPolyface(points: Point3d[], options?: StrokeOptions): IndexedPolyface | undefined {
-    const graph = Triangulator.createTriangulatedGraphFromPoints(points);
+    const graph = Triangulator.createTriangulatedGraphFromPoints(points, InsertedVertexZOptions.ReplaceIfLarger, options?.chordTol);
     if (graph)
       return PolyfaceBuilder.graphToPolyface(graph, options);
     return undefined;

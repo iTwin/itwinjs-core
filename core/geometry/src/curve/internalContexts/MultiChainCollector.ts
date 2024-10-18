@@ -27,7 +27,7 @@ import { StrokeOptions } from "../StrokeOptions";
  * Manage a growing array of arrays of curve primitives that are to be joined "head to tail" in paths.
  * * The caller makes a sequence of calls to announce individual primitives.
  * * This collector (unlike the simpler [[ChainCollectorContext]]) expects to have inputs arriving in random order, leaving multiple open chains in play at any time.
- * * When all curves have been announced, the call to `grabResults` restructures the various active chains into Paths (and optionally, Loops).
+ * * When all curves have been announced, the call to `grabResult` restructures the various active chains into Paths (and optionally, Loops).
  * * Chain formation is dependent upon input fragment order, as a greedy algorithm is employed.
  * * Usage pattern is
  *   * initialization: `context = new MultiChainCollector(gapTol, planeTol)`
@@ -38,13 +38,13 @@ import { StrokeOptions } from "../StrokeOptions";
  * @internal
  */
 export class MultiChainCollector {
-  /** accumulated chains */
+  /** Accumulated chains. */
   private _chains: CurvePrimitive[][];
-  /** largest gap distance to close */
+  /** Largest gap distance to close. */
   private _gapTolerance: number;
-  /** end point snap tolerance (assumed to be as tight or tighter than gapTolerance) */
+  /** End point snap tolerance (assumed to be as tight or tighter than gapTolerance). */
   private _snapTolerance: number;
-  /** tolerance for choosing Path or Loop. If undefined, always Path. */
+  /** Planarity tolerance, used to determine whether to return a Path or Loop in `grabResult(true)`. If undefined, always Path. */
   private _planeTolerance: number | undefined;
 
   private static _staticPointA: Point3d;
@@ -56,7 +56,7 @@ export class MultiChainCollector {
    * @param gapTolerance tolerance for calling endpoints identical
    * @param planeTolerance tolerance for considering a closed chain to be planar. If undefined, only create Path. If defined, create Loops for closed chains within tolerance of a plane.
    */
-  public constructor(gapTolerance = Geometry.smallMetricDistance, planeTolerance: number | undefined = Geometry.smallMetricDistance) {
+  public constructor(gapTolerance = Geometry.smallMetricDistance, planeTolerance?: number) {
     this._chains = [];
     this._gapTolerance = gapTolerance;
     this._snapTolerance = Geometry.smallMetricDistance;
@@ -271,7 +271,7 @@ export class MultiChainCollector {
   /**
    * Convert an array of curve primitives into the simplest possible strongly typed curve structure.
    * @param curves input array, assembled correctly into a single contiguous path, captured by returned object
-   * @param makeLoopIfClosed whether to return a Loop from physically closed curves array, otherwise Path
+   * @param makeLoopIfClosed whether to return a Loop from physically closed coplanar curves, otherwise Path
    * @return Loop or Path if multiple curves; the primitive if only one curve; undefined if no curves
    */
   private promoteArrayToCurves(curves: CurvePrimitive[], makeLoopIfClosed: boolean): CurvePrimitive | Path | Loop | undefined {
@@ -329,7 +329,10 @@ export class MultiChainCollector {
     }
     return bag;
   }
-  /** Return chains as individual calls to announceChain. */
+  /**
+   * Return chains as individual calls to announceChain.
+   * * Does not use planeTolerance.
+  */
   public announceChainsAsLineString3d(announceChain: (ls: LineString3d) => void, options?: StrokeOptions): void {
     const chains = this._chains;
     if (chains.length === 1) {

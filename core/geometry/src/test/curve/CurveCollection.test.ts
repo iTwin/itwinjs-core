@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { BezierCurve3d } from "../../bspline/BezierCurve3d";
 import { Arc3d } from "../../curve/Arc3d";
@@ -106,7 +106,7 @@ describe("CurveCollection", () => {
     for (const data of Sample.createSimpleLoops()) verifyCurveCollection(ck, data);
     for (const data of Sample.createSimpleUnions()) verifyCurveCollection(ck, data);
     ck.checkpoint("CurveCollection.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("hasNonLinearPrimitives", () => {
     const ck = new Checker();
@@ -120,7 +120,7 @@ describe("CurveCollection", () => {
     ck.testLE(0, counts.nonLinearFalse, "BagOfCurves samples should have some linear-only");
     ck.testLE(0, counts.nonLinearTrue, "BagOfCurves samples should have some nonLinear");
     ck.checkpoint("CurveCollection.hasNonLinearPrimitives");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("CyclicIndex", () => {
     const ck = new Checker();
@@ -146,7 +146,7 @@ describe("CurveCollection", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -186,7 +186,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
       markLimits(allGeometry, path0.collectCurvePrimitives(), 0.01, 0.03, 0.01, x0, y0 + yStep);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", "Lines");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("LinesAndArcs", () => {
@@ -238,7 +238,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacentPrimitives", "LinesAndArcs");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("consolidateAdjacentFiles", () => {
     const ck = new Checker();
@@ -272,7 +272,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
       }
       GeometryCoreTestIO.saveGeometry(allGeometry, "ConsolidateAdjacent", filename);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Misc", () => {
@@ -286,8 +286,8 @@ describe("ConsolidateAdjacentPrimitives", () => {
     ck.testExactNumber(1, loop0.children.length);
     ck.testExactNumber(1, loop1.children.length);
 
-    const arc1 = Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 2, 0))!;
-    const arc2 = Arc3d.createCircularStartMiddleEnd(arc1.endPoint(), Point3d.create(1, 3, 0), Point3d.create(2, 2, 0))!;
+    const arc1 = Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 2, 0));
+    const arc2 = Arc3d.createCircularStartMiddleEnd(arc1.endPoint(), Point3d.create(1, 3, 0), Point3d.create(2, 2, 0));
     const arcArcPath = Path.create(arc1, arc2);
     RegionOps.consolidateAdjacentPrimitives(arcArcPath);
     ck.testExactNumber(2, arcArcPath.children.length, " arcs with cusp are not consolidated");
@@ -303,7 +303,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
     const singlePointPathB = Path.create(LineString3d.create(Point3d.create(1, 1, 2)));
     RegionOps.consolidateAdjacentPrimitives(singlePointPathB);
     ck.testExactNumber(1, singlePointPathB.children.length, "Single point path consolidates to stub");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ClosestPointInCollection", () => {
     const ck = new Checker();
@@ -342,7 +342,7 @@ describe("ConsolidateAdjacentPrimitives", () => {
       x0 += 2.0 * range.xLength();
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCollection", "ClosestPoint");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

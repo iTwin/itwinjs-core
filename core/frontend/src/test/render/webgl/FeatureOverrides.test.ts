@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { BeEvent } from "@itwin/core-bentley";
-import { Range3d, Transform } from "@itwin/core-geometry";
-import { ColorDef, EmptyLocalization, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable } from "@itwin/core-common";
+import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
+import { ColorByName, ColorDef, EmptyLocalization, Feature, FeatureAppearance, FeatureTable, PackedFeatureTable, RenderMode, RgbColor } from "@itwin/core-common";
 import { ViewRect } from "../../../common/ViewRect";
 import { IModelApp } from "../../../IModelApp";
 import { FeatureSymbology } from "../../../render/FeatureSymbology";
@@ -13,8 +13,11 @@ import { GraphicBranch } from "../../../render/GraphicBranch";
 import { Target } from "../../../render/webgl/Target";
 import { Texture2DDataUpdater } from "../../../render/webgl/Texture";
 import { Batch, Branch } from "../../../render/webgl/Graphic";
-import { OvrFlags } from "../../../render/webgl/RenderFlags";
-import { testBlankViewport } from "../../openBlankViewport";
+import { readUniqueColors, testBlankViewport } from "../../openBlankViewport";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags";
+import { Decorator } from "../../../ViewManager";
+import { DecorateContext } from "../../../ViewContext";
+import { GraphicType } from "../../../common/render/GraphicType";
 
 describe("FeatureOverrides", () => {
   before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
@@ -325,7 +328,7 @@ describe("FeatureOverrides", () => {
             const data = ovrs!.lutData!;
             expect(data).not.to.be.undefined;
 
-            const numBytesPerFeature = 8; // 2 RGBA values per feature
+            const numBytesPerFeature = 12; // 3 RGBA values per feature
             expect(data.length).to.equal(2 * numBytesPerFeature);
 
             const tex = new Texture2DDataUpdater(data);
@@ -413,6 +416,141 @@ describe("FeatureOverrides", () => {
 
       runTest(false);
       runTest(true);
+    });
+  });
+
+  describe("line color and transparency", () => {
+    const lineId = "0xa";
+    const pointId = "0xb";
+    const shapeId = "0xc";
+    const lineColor = ColorDef.blue;
+    const pointColor = ColorDef.green;
+    const shapeColor = ColorDef.red;
+    const bgColor = ColorDef.black;
+    const yellow = ColorDef.create(ColorByName.yellow);
+
+    const decorator: Decorator = {
+      decorate: (context: DecorateContext) => {
+        const builder = context.createGraphic({
+          pickable: { id: lineId },
+          type: GraphicType.Scene,
+        });
+
+        builder.setSymbology(lineColor, lineColor, 1);
+        builder.addLineString2d([new Point2d(-1, -1), new Point2d(-1, 1)], 0);
+
+        builder.activateFeature(new Feature(pointId));
+        builder.setSymbology(pointColor, pointColor, 1);
+        builder.addPointString2d([new Point2d(1, -1)], 0);
+
+        builder.activateFeature(new Feature(shapeId));
+        builder.setSymbology(shapeColor, shapeColor, 1);
+        builder.addShape2d([new Point2d(0, 0), new Point2d(1, 0), new Point2d(0, 1), new Point2d(0, 0)], 0);
+
+        context.addDecorationFromBuilder(builder);
+      },
+    };
+
+    beforeEach(() => IModelApp.viewManager.addDecorator(decorator));
+    afterEach(() => IModelApp.viewManager.dropDecorator(decorator));
+
+    function multiplyAlpha(color: ColorDef): ColorDef {
+      const colors = color.colors;
+      const a = (0xff - colors.t) / 0xff;
+      colors.r = colors.r * a;
+      colors.g = colors.g * a;
+      colors.b = colors.b * a;
+      return ColorDef.from(colors.r, colors.g, colors.b, 0);
+    }
+
+    function expectColors(defaultAppearance: FeatureAppearance | undefined, expectedColors: ColorDef[]): void {
+      testBlankViewport((vp) => {
+        if (defaultAppearance) {
+          vp.addFeatureOverrideProvider({
+            addFeatureOverrides: (ovrs) => {
+              ovrs.setDefaultOverrides(defaultAppearance);
+            },
+          });
+        }
+
+        vp.viewFlags = vp.viewFlags.copy({
+          lighting: false,
+          renderMode: RenderMode.SmoothShade,
+          visibleEdges: false,
+        });
+
+        vp.displayStyle.backgroundColor = bgColor;
+
+        vp.view.lookAtViewAlignedVolume(new Range3d(-2, -2, -2, 2, 2, 2));
+        vp.synchWithView();
+
+        vp.renderFrame();
+
+        expectedColors = expectedColors.map((x) => multiplyAlpha(x));
+        expectedColors.push(bgColor);
+
+        const actualColors = readUniqueColors(vp);
+        expect(actualColors.length).to.equal(expectedColors.length);
+        for (const color of expectedColors) {
+          expect(actualColors.containsColorDef(color)).to.be.true;
+        }
+      });
+    }
+
+    it("is not overridden by default", () => {
+      // Just a sanity test to verify the baseline for the rest of the tests.
+      expectColors(undefined, [lineColor, pointColor, shapeColor]);
+    });
+
+    it("is the same as surfaces by default", () => {
+      expectColors(FeatureAppearance.fromRgb(ColorDef.white), [ColorDef.white]);
+      expectColors(FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)), [ColorDef.white.withTransparency(127)]);
+      expectColors(FeatureAppearance.fromTransparency(0.5), [lineColor.withTransparency(127), pointColor.withTransparency(127), shapeColor.withTransparency(127)]);
+    });
+
+    it("optionally ignores surface overrides", () => {
+      expectColors(FeatureAppearance.fromRgb(ColorDef.white).clone({ lineRgb: false }), [ColorDef.white, lineColor, pointColor]);
+
+      expectColors(
+        FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)).clone({ lineRgb: false, lineTransparency: false }),
+        [ColorDef.white.withTransparency(127), pointColor, lineColor],
+      );
+
+      expectColors(
+        FeatureAppearance.fromTransparency(0.5).clone({ lineTransparency: false }),
+        [lineColor, pointColor, shapeColor.withTransparency(127)],
+      );
+
+      expectColors(
+        FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)).clone({ lineRgb: false }),
+        [ColorDef.white.withTransparency(127), lineColor.withTransparency(127), pointColor.withTransparency(127)],
+      );
+
+      expectColors(
+        FeatureAppearance.fromRgba(ColorDef.white.withTransparency(127)).clone({ lineTransparency: false }),
+        [ColorDef.white.withTransparency(127), ColorDef.white],
+      );
+    });
+
+    it("can be overridden independently from surfaces", () => {
+      expectColors(
+        FeatureAppearance.fromJSON({ rgb: RgbColor.fromColorDef(ColorDef.white), lineRgb: RgbColor.fromColorDef(yellow) }),
+        [yellow, ColorDef.white],
+      );
+
+      expectColors(
+        FeatureAppearance.fromJSON({ lineTransparency: 0.5 }),
+        [shapeColor, lineColor.withTransparency(127), pointColor.withTransparency(127)],
+      );
+
+      expectColors(
+        FeatureAppearance.fromJSON({
+          rgb: RgbColor.fromColorDef(ColorDef.white),
+          lineRgb: false,
+          lineTransparency: 0.5,
+        }),
+        [ColorDef.white, lineColor.withTransparency(127), pointColor.withTransparency(127)],
+      );
     });
   });
 });

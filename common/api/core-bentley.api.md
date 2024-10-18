@@ -671,6 +671,7 @@ export namespace Id64 {
         delete(low: number, high: number): void;
         deleteId(id: Id64String): void;
         deleteIds(ids: Id64Arg): void;
+        equals(other: Uint32Set): boolean;
         forEach(func: (lo: number, hi: number) => void): void;
         has(low: number, high: number): boolean;
         hasId(id: Id64String): boolean;
@@ -1296,6 +1297,9 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
 
 // @public
 export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
+
+// @public
+export type MaybePromise<T> = T | Promise<T>;
 
 // @public
 export type Mutable<T> = {
