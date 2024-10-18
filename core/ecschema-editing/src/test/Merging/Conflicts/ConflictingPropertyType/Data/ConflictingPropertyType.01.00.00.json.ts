@@ -10,17 +10,17 @@ export default {
   version: "01.00.00",
   alias: "c_1300",
   label: "Conflicting Property Type",
-  /* references: [
+  references: [
     {
       name: "CoreCustomAttributes",
-      version: "01.00.03",
+      version: "01.00.01",
     },
   ],
   customAttributes: [
     {
       className: "CoreCustomAttributes.DynamicSchema",
     },
-  ], */
+  ],
   items: {
     DAMPER: {
       schemaItemType: "EntityClass",

@@ -10,17 +10,17 @@ export default {
   version: "01.00.01",
   alias: "c_1300",
   label: "Conflicting Primitive Type",
-  /* references: [
+  references: [
     {
       name: "CoreCustomAttributes",
-      version: "01.00.03"
-    }
+      version: "01.00.01",
+    },
   ],
   customAttributes: [
     {
-      className: "CoreCustomAttributes.DynamicSchema"
-    }
-  ], */
+      className: "CoreCustomAttributes.DynamicSchema",
+    },
+  ],
   items: {
     ARCWALL: {
       label: "Basic Wall",

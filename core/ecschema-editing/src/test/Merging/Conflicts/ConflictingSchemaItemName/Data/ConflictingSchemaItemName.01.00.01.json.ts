@@ -10,17 +10,17 @@ export default {
   version: "01.00.01",
   alias: "c_001",
   label: "Conflicting Schema Item Name",
-  /* references: [
+  references: [
     {
       name: "CoreCustomAttributes",
-      version: "01.00.03",
+      version: "01.00.01",
     },
   ],
   customAttributes: [
     {
       className: "CoreCustomAttributes.DynamicSchema",
     },
-  ], */
+  ],
   items: {
     PIPE: {
       schemaItemType: "EntityClass",
