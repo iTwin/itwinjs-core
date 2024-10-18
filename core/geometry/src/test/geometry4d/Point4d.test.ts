@@ -195,23 +195,29 @@ describe("Point4d", () => {
       return c * size;
     };
     // verify new impl is at least as successful and accurate as old impl
+    const testPlaneImplementations = (pt: Point4d, count: number) => {
+      const oldPlane = toPlane3dByOriginAndUnitNormalOrig(pt);
+      const newPlane = (count % 2) ? pt.toPlane3dByOriginAndUnitNormal(workPlane) : pt.toPlane3dByOriginAndUnitNormal();  // cover both
+      ck.testTrue((!!oldPlane && !!newPlane) || !oldPlane, "new plane successfully constructed at least as often as oldPlane");
+      if (oldPlane && newPlane) {
+        ck.testPoint3d(oldPlane.getOriginRef(), newPlane.getOriginRef(), `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same origins`);
+        ck.testVector3d(oldPlane.getNormalRef(), newPlane.getNormalRef(), `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same normals`);
+      } else if (!!oldPlane && !newPlane) {  // error case: recompute to debug
+        const oldPlane1 = toPlane3dByOriginAndUnitNormalOrig(pt);
+        const newPlane1 = pt.toPlane3dByOriginAndUnitNormal();
+        ck.testDefined(oldPlane1); ck.testUndefined(newPlane1);  // silence linter
+      }
+    };
     for (let size = 1.0e-7; size < 1.e8; size *= 10) {
       for (let count = 0; count < 100; ++count) {
         const pt = Point4d.create(randomCoordinate(size), randomCoordinate(size), randomCoordinate(size), randomCoordinate(size));
-        const oldPlane = toPlane3dByOriginAndUnitNormalOrig(pt);
-        const newPlane = (count % 2) ? pt.toPlane3dByOriginAndUnitNormal(workPlane) : pt.toPlane3dByOriginAndUnitNormal();  // cover both
-        ck.testTrue((!!oldPlane && !!newPlane) || !oldPlane, "new plane successfully constructed at least as often as oldPlane");
-        if (oldPlane && newPlane) {
-          ck.testPoint3d(oldPlane.getOriginRef(), newPlane.getOriginRef(), `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same origins`);
-          ck.testVector3d(oldPlane.getNormalRef(), newPlane.getNormalRef(), `for pt = (${pt.x}, ${pt.y}, ${pt.z}, ${pt.w}), plane implementations have same normals`);
-        } else if (!!oldPlane && !newPlane) {  // error case: recompute to debug
-          const oldPlane1 = toPlane3dByOriginAndUnitNormalOrig(pt);
-          const newPlane1 = pt.toPlane3dByOriginAndUnitNormal();
-          ck.testDefined(oldPlane1); ck.testUndefined(newPlane1);  // silence linter
-        }
+        testPlaneImplementations(pt, count);
       }
     }
-
+    // flaky test investigation
+    const ptFlaky = Point4d.create(0, 1.4171408489160875e-10, 0, -8.561060281069466e-7);
+    testPlaneImplementations(ptFlaky, 0);
+    testPlaneImplementations(ptFlaky, 1);
     expect(ck.getNumErrors()).toBe(0);
   });
 
