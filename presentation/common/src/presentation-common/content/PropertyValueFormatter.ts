@@ -49,6 +49,11 @@ export class ContentFormatter {
         continue;
       }
 
+      // do not add undefined value to display values
+      if (value === undefined) {
+        continue;
+      }
+
       // format display values of nested content field
       if (field.isNestedContentField()) {
         assert(Value.isNestedContent(value));
