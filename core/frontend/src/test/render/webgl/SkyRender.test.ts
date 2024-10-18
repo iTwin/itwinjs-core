@@ -12,7 +12,7 @@ import { expectColors, expectNotTheseColors } from "../../ExpectColors";
 import { BeDuration } from "@itwin/core-bentley";
 import { EnvironmentDecorations } from "../../../EnvironmentDecorations";
 import { imageElementFromImageSource } from "../../../common/ImageUtil";
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Texture2DHandle, TextureCubeHandle } from "../../../webgl";
 
 describe("Sky rendering", () => {
@@ -52,13 +52,13 @@ describe("Sky rendering", () => {
 
       await this.sky.promise;
       return BeDuration.wait(1).then(() => {
-        expect(this.sky.promise).to.be.undefined;
-        expect(this.sky.params).not.to.be.undefined;
+        expect(this.sky.promise).toBeUndefined();
+        expect(this.sky.params).toBeDefined();
       });
     }
   }
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
 
     // 1x1 red png image
@@ -99,12 +99,12 @@ describe("Sky rendering", () => {
     iModel = createBlankConnection();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await iModel.close();
     await IModelApp.shutdown();
   });
 
-  it("draws sky cube", async () => {
+  it("draws sky cube", { timeout: 20000 }, async () => {  // macOS is slow.
     const view = createView({
       sky: {
         display: true,
@@ -123,11 +123,11 @@ describe("Sky rendering", () => {
 
     const dec = await Decorations.create(view);
 
-    expect(dec.sky.params!.type).to.equal("cube");
+    expect(dec.sky.params!.type).toEqual("cube");
     expectColors(viewport, [ColorDef.red]);
-  }).timeout(20000); // macOS is slow.
+  });
 
-  it("draws sky sphere", async () => {
+  it("draws sky sphere", { timeout: 20000 }, async () => {  // macOS is slow.
     const view = createView({
       sky: {
         display: true,
@@ -142,11 +142,11 @@ describe("Sky rendering", () => {
 
     const dec = await Decorations.create(view);
 
-    expect(dec.sky.params!.type).to.equal("sphere");
+    expect(dec.sky.params!.type).toEqual("sphere");
     expectColors(viewport, [ColorDef.red]);
-  }).timeout(20000); // macOS is slow.
+  });
 
-  it("draws sky gradient", async () => {
+  it("draws sky gradient", { timeout: 20000 }, async () => {  // macOS is slow.
     const view = createView({
       sky: {
         display: true,
@@ -163,13 +163,13 @@ describe("Sky rendering", () => {
 
     const dec = await Decorations.create(view);
 
-    expect(dec.sky.params!.type).to.equal("gradient");
+    expect(dec.sky.params!.type).toEqual("gradient");
     expectNotTheseColors(viewport, [view.displayStyle.backgroundColor]);
-  }).timeout(20000); // macOS is slow.
+  });
 
-  it("draws no sky", async () => {
+  it("draws no sky", { timeout: 20000 }, async () => {  // macOS is slow.
     const view = createView({});
     viewport = ScreenViewport.create(div, view);
     expectColors(viewport, [view.displayStyle.backgroundColor]);
-  }).timeout(20000); // macOS is slow.
+  });
 });
