@@ -1030,9 +1030,9 @@ describe("iModel", () => {
     }
     assert.isTrue(foundClassHasHandler);
     assert.isTrue(foundClassHasCurrentTimeStampProperty);
-    assert.isDefined(obj.properties.federationGuid);
-    assert.equal(obj.properties.federationGuid.primitiveType, 257);
-    assert.equal(obj.properties.federationGuid.extendedType, "BeGuid");
+    assert.isDefined(obj.getProperty("federationGuid"));
+    assert.equal(obj.getProperty("federationGuid")!.primitiveType, 257);
+    assert.equal(obj.getProperty("federationGuid")!.extendedType, "BeGuid");
   }
 
   it("should get metadata for class", () => {
@@ -1118,9 +1118,9 @@ describe("iModel", () => {
   });
 
   function checkClassHasHandlerMetaData(obj: EntityMetaData) {
-    assert.isDefined(obj.properties.restrictions);
-    assert.equal(obj.properties.restrictions.primitiveType, 2305);
-    assert.equal(obj.properties.restrictions.minOccurs, 0);
+    assert.isDefined(obj.getProperty("restrictions"));
+    assert.equal(obj.getProperty("restrictions")!.primitiveType, 2305);
+    assert.equal(obj.getProperty("restrictions")!.minOccurs, 0);
   }
 
   it("should get metadata for CA class just as well (and we'll see a array-typed property)", () => {
@@ -1336,8 +1336,8 @@ describe("iModel", () => {
 
   it("should import schemas", async () => {
     const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
-    assert.isDefined(classMetaData.properties.testDocumentProperty);
-    assert.isTrue(classMetaData.properties.testDocumentProperty.primitiveType === PrimitiveTypeCode.Integer);
+    assert.isDefined(classMetaData.getProperty("testDocumentProperty"));
+    assert.isTrue(classMetaData.getProperty("testDocumentProperty")!.primitiveType === PrimitiveTypeCode.Integer);
   });
 
   it("should do CRUD on models", () => {
