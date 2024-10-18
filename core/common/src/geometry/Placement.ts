@@ -100,6 +100,8 @@ export class Placement3d implements Placement3dProps {
   }
 
   /** Multiply the Transform of this Placement3d by the specified *other* Transform.
+   * * Specifically `this.angles` is set to the rotation specified by `other * this.transform.matrix`.
+   * * Since the placement transform is local-to-world, this means `other` is a world-to-world transform.
    * @throws [[IModelError]] if the Transform is invalid for a GeometricElement3d.
    */
   public multiplyTransform(other: Transform): void {
