@@ -10,6 +10,7 @@ import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { Unit } from "../Metadata/Unit";
 import { SchemaItemType } from "../ECObjects";
 import { UnitConverter } from "../UnitConversion/UnitConverter";
+import { InvertedUnit } from "../Metadata/InvertedUnit";
 
 /**
  * Class used to find Units in SchemaContext by attributes such as Phenomenon and DisplayLabel.
@@ -124,7 +125,7 @@ export class SchemaUnitProvider implements UnitsProvider {
     const findSchema = schemaName ? schemaName.toLowerCase() : undefined;
     const findPhenomenon = phenomenon ? phenomenon.toLowerCase() : undefined;
     const findUnitSystem = unitSystem ? unitSystem.toLowerCase() : undefined;
-    let foundUnit: Unit | undefined;
+    let foundUnit: Unit | InvertedUnit | undefined;
 
     try {
       try {
@@ -161,7 +162,7 @@ export class SchemaUnitProvider implements UnitsProvider {
    * @param unitName Full name of unit.
    * @returns Unit whose full name matches unitName.
    */
-  private async findECUnitByName(unitName: string): Promise<Unit> {
+  private async findECUnitByName(unitName: string): Promise<Unit|InvertedUnit> {
     // Check if schema exists and unit exists in schema
     const [schemaName, schemaItemName] = SchemaItem.parseFullName(unitName);
     const schemaKey = new SchemaKey(schemaName);
@@ -237,6 +238,13 @@ export class SchemaUnitProvider implements UnitsProvider {
         if (entry.altDisplayLabels.findIndex((ref: string) => ref.toLowerCase() === altDisplayLabel) !== -1) {
           // Found altDisplayLabel that matches label to find
           const unit = await this.findECUnitByName(entry.name);
+
+          if (unit.schemaItemType === SchemaItemType.InvertedUnit) {
+            throw new BentleyError(BentleyStatus.ERROR, "Item is not a unit", () => {
+              return { altDisplayLabel };
+            });
+          }
+
           const foundPhenomenon = await unit.phenomenon;
           const foundUnitSystem = await unit.unitSystem;
           if (!schemaName || unit.schema.name.toLowerCase() === schemaName)
