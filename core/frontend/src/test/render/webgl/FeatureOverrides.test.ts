@@ -175,7 +175,7 @@ describe("FeatureOverrides", () => {
     hook(ovrs);
 
     expect(ovrs.length).toEqual(3);
-    expect(Array.from(batch.perTargetData.data[0].featureOverrides.keys())).toEqual([undefined, s1, s2]);
+    expect(Array.from(batch.perTargetData.data[0].featureOverrides.keys())).toStrictEqual([undefined, s1, s2]);
 
     expect(ovrs.some((x) => x.updated)).toBe(false);
 

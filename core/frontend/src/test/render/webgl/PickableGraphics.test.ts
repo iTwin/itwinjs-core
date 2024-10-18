@@ -65,21 +65,21 @@ describe("Pickable graphic", () => {
       expect(actual.has(id)).toBe(true);
   }
 
-  it("is pickable", { timeout: 20000 }, () => {  // macOS is slow.
+  it("is pickable", () => {
     const dec = new BoxDecorator({ viewport, color: ColorDef.red, pickable: { id: "0x123", locateOnly: false } });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
     expect(dec.pickable).toBeDefined();
     expectIds([dec.pickable!.id]);
   });
 
-  it("optionally draws only for pick", { timeout: 20000 }, () => {  // macOS is slow.
+  it("optionally draws only for pick", () => {
     const dec = new BoxDecorator({ viewport, color: ColorDef.blue, pickable: { id: "0x456", locateOnly: true } });
     expectColors(viewport, [viewport.view.displayStyle.backgroundColor]);
     expect(dec.pickable).toBeDefined();
     expectIds([dec.pickable!.id]);
   });
 
-  it("can contain multiple features", { timeout: 20000 }, () => {  // macOS is slow.
+  it("can contain multiple features", () => {
     expect(viewport.viewFlags.constructions).toBe(false);
     const bgColor = viewport.view.displayStyle.backgroundColor;
 

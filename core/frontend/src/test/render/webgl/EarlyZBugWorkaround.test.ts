@@ -42,7 +42,7 @@ describe("Early Z driver bug workaround", () => {
     await IModelApp.shutdown();
   });
 
-  it("applies to shaders lacking discard statements when buggy driver is detected", { timeout: 95000 }, async () => {
+  it("applies to shaders lacking discard statements when buggy driver is detected", async () => {
     // Figure out which shaders the workaround should apply to.
     await TestSystem.startIModelApp(false);
     const indicesOfShadersLackingDiscard: number[] = [];
@@ -55,7 +55,7 @@ describe("Early Z driver bug workaround", () => {
       ++index;
     });
 
-    expect(indicesOfShadersLackingDiscard.length === 0).toBe(false);
+    expect(indicesOfShadersLackingDiscard.length).not.toEqual(0);
 
     // Now simulate the bug and confirm (1) workaround applied *only* to shaders that require it and (2) those shaders compile cleanly.
     await IModelApp.shutdown();

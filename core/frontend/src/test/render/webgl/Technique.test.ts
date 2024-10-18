@@ -72,7 +72,7 @@ describe("Techniques", () => {
 
   it("should render a purple quad", () => {
     const target = createTarget();
-    expect(target).not.toBeUndefined();
+    expect(target).toBeDefined();
     if (undefined === target) {
       return;
     }
@@ -95,7 +95,7 @@ describe("Techniques", () => {
     expect(System.instance.techniques.compileShaders()).toBe(true);
   }
 
-  it("should compile all shader programs", { timeout: compileTimeout !== 0 ? compileTimeout : undefined }, async () => {
+  it("should compile all shader programs", { timeout: compileTimeout || undefined }, async () => {
     await compileAllShaders();
   });
 

@@ -270,7 +270,7 @@ describe("ArcGISTileMap", () => {
     expect(getTileMapStub).not.toHaveBeenCalled();
     available = await tileMap.getChildrenAvailability(reqParentTile2.getChildIds());
     expect(available).toEqual(dataset6.sibling.available);
-    expect(getTileMapStub).toHaveBeenCalledTimes(0);
+    expect(getTileMapStub).not.toHaveBeenCalled();
   });
 
   it("Tile map location should change if data already in cache", async () => {

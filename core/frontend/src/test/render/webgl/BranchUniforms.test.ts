@@ -38,7 +38,7 @@ function makeBranch(info: ClipInfo): Branch {
   if (undefined !== info.noViewClip)
     branch.viewFlagOverrides.clipVolume = !info.noViewClip;
   const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { clipVolume: info.clip, disableClipStyle: info.disableClipStyle });
-  expect(graphic instanceof Branch).toBe(true);
+  expect(graphic).toBeInstanceOf(Branch);
   return graphic as Branch;
 }
 
@@ -56,7 +56,7 @@ function expectClipStack(target: Target, expected: Array<{ numRows: number }>): 
   const expectedView = expected[0];
   expect(actualView.numRows).toEqual(expectedView.numRows);
   expect(actualView instanceof ClipVolume).toEqual(expectedView instanceof ClipVolume);
-  if (actualView instanceof ClipVolume && expectedView instanceof ClipVolume)
+  if (actualView instanceof ClipVolume && expectedView instanceof ClipVolume) // Needed to avoid type error
     expect(actualView.clipVector).toEqual(expectedView.clipVector);
 
   for (let i = 1; i < actual.length; i++)

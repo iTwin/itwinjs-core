@@ -130,11 +130,11 @@ describe("GraphicDescriptionBuilder", () => {
     expect(meshParams.edges).toBeUndefined();
 
     const branch = IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
-    expect(branch instanceof Branch).toBe(true);
+    expect(branch).toBeInstanceOf(Branch);
     expect(branch.branch.entries.length).toEqual(1);
 
     const mesh = branch.branch.entries[0] as MeshGraphic;
-    expect(mesh instanceof MeshGraphic).toBe(true);
+    expect(mesh).toBeInstanceOf(MeshGraphic);
     expect(mesh.primitives.length).toEqual(1);
     expectRange(mesh.meshRange, undefined, -5, -2.5, 0, 5, 2.5, 0);
 
@@ -177,11 +177,11 @@ describe("GraphicDescriptionBuilder", () => {
     expect(edgeParams.indexed).toBeDefined();
 
     const branch = IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
-    expect(branch instanceof Branch).toBe(true);
+    expect(branch).toBeInstanceOf(Branch);
     expect(branch.branch.entries.length).toEqual(1);
 
     const mesh = branch.branch.entries[0] as MeshGraphic;
-    expect(mesh instanceof MeshGraphic).toBe(true);
+    expect(mesh).toBeInstanceOf(MeshGraphic);
     expect(mesh.primitives.length).toEqual(2);
     expectRange(mesh.meshRange, undefined, -5, -2.5, 0, 5, 2.5, 0);
 
@@ -288,11 +288,11 @@ describe("GraphicDescriptionBuilder", () => {
     expectRange(Range3d.fromJSON(batchDescr.range), descr.translation, 0, 0, 2, 10, 5, 2);
 
     const branch = IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
-    expect(branch instanceof Branch).toBe(true);
+    expect(branch).toBeInstanceOf(Branch);
     expect(branch.branch.entries.length).toEqual(1);
 
     const batch = branch.branch.entries[0] as Batch;
-    expect(batch instanceof Batch).toBe(true);
+    expect(batch).toBeInstanceOf(Batch);
 
     expect(batch.options.noFlash).toBe(true);
     expect(batch.options.locateOnly).toBe(true);
@@ -307,7 +307,7 @@ describe("GraphicDescriptionBuilder", () => {
     expectRange(batch.range, descr.translation, 0, 0, 2, 10, 5, 2);
 
     const mesh = batch.graphic as MeshGraphic;
-    expect(mesh instanceof MeshGraphic).toBe(true);
+    expect(mesh).toBeInstanceOf(MeshGraphic);
     expect(mesh.primitives.length).toEqual(1);
   });
 
@@ -339,11 +339,11 @@ describe("GraphicDescriptionBuilder", () => {
     expectRange(Range3d.fromJSON(batchDescr.range), descr.translation, 0, 0, 2, 10, 5, 2);
 
     const branch = IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
-    expect(branch instanceof Branch).toBe(true);
+    expect(branch).toBeInstanceOf(Branch);
     expect(branch.branch.entries.length).toEqual(1);
 
     const batch = branch.branch.entries[0] as Batch;
-    expect(batch instanceof Batch).toBe(true);
+    expect(batch).toBeInstanceOf(Batch);
 
     expect(batch.featureTable.batchModelId).toEqual("0x456");
     expect(batch.featureTable.numFeatures).toEqual(1);
@@ -352,7 +352,7 @@ describe("GraphicDescriptionBuilder", () => {
     expectRange(batch.range, descr.translation, 0, 0, 2, 10, 5, 2);
 
     const mesh = batch.graphic as MeshGraphic;
-    expect(mesh instanceof MeshGraphic).toBe(true);
+    expect(mesh).toBeInstanceOf(MeshGraphic);
     expect(mesh.primitives.length).toEqual(1);
   });
 
@@ -388,11 +388,11 @@ describe("GraphicDescriptionBuilder", () => {
     expectRange(Range3d.fromJSON(batchDescr.range), descr.translation, 1, 1, 1, 3, 3, 3);
 
     const branch = IModelApp.renderSystem.createGraphicFromDescription({ description: descr, context: mainContext }) as Branch;
-    expect(branch instanceof Branch).toBe(true);
+    expect(branch).toBeInstanceOf(Branch);
     expect(branch.branch.entries.length).toEqual(1);
 
     const batch = branch.branch.entries[0] as Batch;
-    expect(batch instanceof Batch).toBe(true);
+    expect(batch).toBeInstanceOf(Batch);
 
     expect(batch.featureTable.batchModelId).toEqual("0xb1");
     expect(batch.featureTable.numFeatures).toEqual(3);
@@ -432,7 +432,7 @@ describe("GraphicDescriptionBuilder", () => {
       } else if (source instanceof URL) {
         expect(texture.source.url).toEqual(source.toString());
       } else {
-        expect(source instanceof Gradient.Symb).toBe(true);
+        expect(source).toBeInstanceOf(Gradient.Symb);
         expect(texture.source.gradient).toEqual(source);
       }
     }
@@ -472,8 +472,9 @@ describe("GraphicDescriptionBuilder", () => {
     const xfers = new Set<Transferable>();
     const contextProps = workerContext.toProps(xfers);
     expect(xfers.size).toEqual(2);
-    expect(Array.from(xfers).every((x) => x instanceof ArrayBuffer)).toBe(true);
-
+    Array.from(xfers).forEach((x) => {
+      expect(x).toBeInstanceOf(ArrayBuffer);
+    });
     const iModel = createIModel();
     const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(contextProps, iModel);
     expect(context[_textures].size).toEqual(4);
@@ -599,16 +600,17 @@ describe("GraphicDescriptionBuilder", () => {
 
     const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(workerContext.toProps(new Set()), createIModel());
     const branch = IModelApp.renderSystem.createGraphicFromDescription({ description, context }) as Branch;
-    expect(branch).toBeDefined();
-    expect(branch instanceof Branch).toBe(true);
+    expect(branch).toBeInstanceOf(Branch);
     expect(branch.branch.entries.length).toEqual(1);
 
     const array = branch.branch.entries[0] as GraphicsArray;
-    expect(array instanceof GraphicsArray).toBe(true);
+    expect(array).toBeInstanceOf(GraphicsArray);
     expect(array.graphics.length).toEqual(6);
 
     const meshes = array.graphics as MeshGraphic[];
-    expect(meshes.every((x) => x instanceof MeshGraphic));
+    meshes.forEach((x) => {
+      expect(x).toBeInstanceOf(MeshGraphic);
+    });
 
     for (let i = 0; i < meshes.length; i++) {
       const index = meshIndices.indexOf(i);
@@ -623,7 +625,7 @@ describe("GraphicDescriptionBuilder", () => {
 
       expect(mesh.meshData.materialInfo?.isAtlas).toBe(false);
       const mat = mesh.meshData.materialInfo as Material;
-      expect(mat instanceof Material).toBe(true);
+      expect(mat).toBeInstanceOf(Material);
 
       switch (i) {
         case 0:
@@ -723,7 +725,7 @@ describe("GraphicDescriptionBuilder", () => {
       const branch = graphic as Branch;
       expect(branch.branch.entries.length).toEqual(1);
       const batch = branch.branch.entries[0] as Batch;
-      expect(batch instanceof Batch).toBe(true);
+      expect(batch).toBeInstanceOf(Batch);
 
       // TestWorker.createWorker assigns the following Ids, starting with transient local Id 2 because we allocated 1 above.
       //   modelId: 0xffffff0000000003
@@ -740,9 +742,9 @@ describe("GraphicDescriptionBuilder", () => {
       expectFeature(2, ft, { elementId: "0x456", subCategoryId: makeTransientId(8), geometryClass: GeometryClass.Primary, modelId });
 
       const list = batch.graphic as GraphicsArray;
-      expect(list instanceof GraphicsArray).toBe(true);
+      expect(list).toBeInstanceOf(GraphicsArray);
       expect(list.graphics.length).toEqual(3);
-      expect(list.graphics[0] instanceof MeshGraphic).toBe(true);
+      expect(list.graphics[0]).toBeInstanceOf(MeshGraphic);
     });
   });
 });

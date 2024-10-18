@@ -5,7 +5,6 @@ export default defineConfig({
   test: {
     dir: "src",
     setupFiles: "./src/test/setupTests.ts",
-    // include: ["**/<testfileName>.test.ts"], // to adhere to chai's describe.only/it.only
     browser: {
       provider: "playwright",
       enabled: true,

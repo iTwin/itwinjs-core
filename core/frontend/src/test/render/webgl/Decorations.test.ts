@@ -68,7 +68,7 @@ describe("Decorations", () => {
     document.body.removeChild(div);
   });
 
-  it("draws box decoration in expected location", { timeout: 20000 }, () => {  // macOS is slow.
+  it("draws box decoration in expected location", () => {
     const dec = new BoxDecorator({ viewport, color: ColorDef.red, points: shapePoints });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]); // are both the decorator and background rendering?
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor], boxDecLocRect); // is decorator rendering at expected location?

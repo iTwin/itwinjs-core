@@ -35,9 +35,7 @@ describe("ShaderBuilder", () => {
 
   it("should convert contents of ShaderVariables to glsl declaration", () => {
     const vars = new ShaderVariables();
-    const fakeBinding = (prog: ShaderProgram) => {
-      expect(prog).not.toBe(prog); // shut up the stupid compiler complaining about unused function arg...
-    };
+    const fakeBinding = (_prog: ShaderProgram) => {};
 
     vars.addUniform("x", VariableType.Float, fakeBinding, VariablePrecision.High);
     vars.addVarying("z", VariableType.Int);

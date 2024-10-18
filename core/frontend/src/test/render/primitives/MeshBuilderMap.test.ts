@@ -75,7 +75,6 @@ describe("MeshBuilderMap Tests", () => {
     const pointB = new Point3d(0, 100, 0);
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
-    expect(arc).toBeDefined();
     expect(arc).toBeInstanceOf(Arc3d);
     if (arc === undefined || !(arc instanceof Arc3d))
       return;
@@ -126,7 +125,6 @@ describe("MeshBuilderMap Tests", () => {
     const pointB = new Point3d(0, 100, 0);
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
-    expect(arc).toBeDefined();
     expect(arc).toBeInstanceOf(Arc3d);
     if (arc === undefined || !(arc instanceof Arc3d))
       return;
@@ -180,7 +178,6 @@ describe("MeshBuilderMap Tests", () => {
     const pointB = new Point3d(0, 100, 0);
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
-    expect(arc).toBeDefined();
     expect(arc).toBeInstanceOf(Arc3d);
     if (arc === undefined || !(arc instanceof Arc3d))
       return;
@@ -321,7 +318,6 @@ describe("MeshBuilderMap Tests", () => {
     const pointB = new Point3d(0, 100, 0);
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
-    expect(arc).toBeDefined();
     expect(arc).toBeInstanceOf(Arc3d);
     if (arc === undefined || !(arc instanceof Arc3d))
       return;
@@ -359,7 +355,6 @@ describe("MeshBuilderMap Tests", () => {
     const pointB = new Point3d(0, 100, 0);
     const pointC = new Point3d(100, 0, 0);
     const arc = Arc3d.createCircularStartMiddleEnd(pointA, pointB, pointC);
-    expect(arc).toBeDefined();
     expect(arc).toBeInstanceOf(Arc3d);
     if (arc === undefined || !(arc instanceof Arc3d))
       return;
