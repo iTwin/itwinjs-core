@@ -49,7 +49,7 @@ export class ContentFormatter {
         continue;
       }
 
-      // do not add undefined value to display values, it's raw value will be formatted
+      // do not add undefined value to display values
       if (value === undefined) {
         continue;
       }
