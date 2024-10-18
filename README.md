@@ -95,4 +95,4 @@ Use these instructions to update dependencies and devDependencies on external pa
 ## Other NPM Scripts
 
 1. Build TypeDoc documentation for all packages: `rush docs`
-2. Build TypeDoc documentation for a single package: `cd core\backend` and then `pnpm run docs`
+2. Build TypeDoc documentation for a single package: `cd core\backend` and then `rushx docs`
