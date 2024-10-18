@@ -732,7 +732,7 @@ describe("ECSql Query", () => {
     assert.equal(reader.stats.backendRowsReturned, 1);
     assert.isTrue(reader.stats.backendCpuTime > 0);
   });
-  it.only("concurrent query bind idset with invalid values in IdSet virtual table", async () => {
+  it("concurrent query bind idset with invalid values in IdSet virtual table", async () => {
     const ids: string[] = ["ABC", "0x1","YZ"]; // as first value is not an Id so QueryBinder.from will throw error of "unsupported type"
 
     try{
