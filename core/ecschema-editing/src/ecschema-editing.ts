@@ -23,7 +23,7 @@ export * from "./Differencing/SchemaDifference";
 export * from "./Differencing/SchemaConflicts";
 export * from "./Differencing/Errors";
 export * from "./Differencing/Utils";
-export { SchemaMerger } from "./Merging/SchemaMerger";
+export { SchemaMerger, SchemaMergingError } from "./Merging/SchemaMerger";
 export * from "./Merging/Edits/SchemaEdits";
 
 /** @docs-package-description

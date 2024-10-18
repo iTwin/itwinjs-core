@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttributeClass, ECClass, EntityClass, Mixin, Property, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaMerger, SchemaMergingError } from "../../Merging/SchemaMerger";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
@@ -1009,7 +1009,9 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestStruct.Prop' primitiveType is not supported.");
+      await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+        expect(error).has.a.nested.property("mergeError.message", "Changing the property 'TestStruct.Prop' primitiveType is not supported.");
+      });
     });
 
     it("should throw an error when merging array properties primitive type changed from double to string", async () => {
@@ -1044,7 +1046,10 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestCA.ArrProp' primitiveType is not supported.");
+
+      await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+        expect(error).has.a.nested.property("mergeError.message", "Changing the property 'TestCA.ArrProp' primitiveType is not supported.");
+      });
     });
 
     it("should throw an error when merging properties type changed from PrimitiveArrayProperty to PrimitiveProperty", async () => {
@@ -1078,7 +1083,10 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.Prop' type is not supported.");
+
+      await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+        expect(error).has.a.nested.property("mergeError.message", "Changing the property 'TestEntity.Prop' type is not supported.");
+      });
     });
 
     it("should not throw an error when merging properties with changed kind of quantity but same persistence unit", async () => {
@@ -1220,7 +1228,10 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("KindOfQuantity can only be changed if it has the same persistence unit as the property.");
+
+      await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+        expect(error).has.a.nested.property("mergeError.message", "KindOfQuantity can only be changed if it has the same persistence unit as the property.");
+      });
     });
 
     it("should throw an error when merging struct properties structClass changed", async () => {
@@ -1265,7 +1276,10 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.StructProp' structClass is not supported.");
+
+      await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+        expect(error).has.a.nested.property("mergeError.message", "Changing the property 'TestEntity.StructProp' structClass is not supported.");
+      });
     });
 
     it("should throw an error when merging struct array properties structClass changed", async () => {
@@ -1308,7 +1322,10 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestStruct.StructArrayProp' structClass is not supported.");
+
+      await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+        expect(error).has.a.nested.property("mergeError.message", "Changing the property 'TestStruct.StructArrayProp' structClass is not supported.");
+      });
     });
 
     it("should throw an error when merging enumeration properties enumeration changed", async () => {
@@ -1361,7 +1378,10 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.EnumProp' enumeration is not supported.");
+
+      await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+        expect(error).has.a.nested.property("mergeError.message", "Changing the property 'TestEntity.EnumProp' enumeration is not supported.");
+      });
     });
 
     it("should throw an error when merging enumeration array properties enumeration changed", async () => {
@@ -1423,7 +1443,10 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.EnumArrayProp' enumeration is not supported.");
+
+      await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+        expect(error).has.a.nested.property("mergeError.message", "Changing the property 'TestEntity.EnumArrayProp' enumeration is not supported.");
+      });
     });
 
     it("should throw an error when merging navigation properties direction changed", async () => {
@@ -1466,7 +1489,10 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.NavProp' direction is not supported.");
+
+      await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+        expect(error).has.a.nested.property("mergeError.message", "Changing the property 'TestEntity.NavProp' direction is not supported.");
+      });
     });
 
     it("should throw an error when merging navigation properties relationship class changed", async () => {
@@ -1535,7 +1561,10 @@ describe("Property merger tests", () => {
           },
         ],
       });
-      await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.NavProp' relationship class is not supported.");
+
+      await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+        expect(error).has.a.nested.property("mergeError.message", "Changing the property 'TestEntity.NavProp' relationship class is not supported.");
+      });
     });
   });
 });

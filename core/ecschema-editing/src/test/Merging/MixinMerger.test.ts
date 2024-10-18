@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Mixin, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaMerger, SchemaMergingError } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
@@ -158,6 +158,8 @@ describe("Mixin merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the mixin 'TestMixin' appliesTo is not supported.");
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "Changing the mixin 'TestMixin' appliesTo is not supported.");
+    });
   });
 });
