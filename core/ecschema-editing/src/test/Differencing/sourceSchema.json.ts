@@ -31,13 +31,45 @@ export default {
   customAttributes: [{ className: "CustomAttributeSchema.MissingCA" }],
 
   items: {
+    TestUnitSystem: {
+      schemaItemType: "UnitSystem",
+    },
+    TestFormat: {
+      schemaItemType: "Format",
+      label: "real",
+      type: "Decimal",
+      precision: 6,
+      formatTraits: [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel",
+      ],
+      decimalSeparator: ",",
+      thousandSeparator: " ",
+    },
+    TestUnit: {
+      schemaItemType: "Unit",
+      label: "m",
+      phenomenon: "SourceSchema.AreaPhenomenon",
+      unitSystem: "SourceSchema.TestUnitSystem",
+      definition: "M",
+    },
+    ChangedKoq: {
+      schemaItemType: "KindOfQuantity",
+      label: "Koq",
+      relativeError: 0.09290304,
+      persistenceUnit: "SourceSchema.TestUnit",
+      presentationUnits: [
+        "SourceSchema.TestFormat(4)[SourceSchema.TestUnit|m]",
+      ],
+    },
     AreaPhenomenon: {
       schemaItemType: "Phenomenon",
       label: "Area",
       description: "Area description",
       definition: "Units.LENGTH(4)",
     },
-    TestUnitSystem: {
+    MissingUnitSystem: {
       schemaItemType: "UnitSystem",
       label: "Imperial",
     },

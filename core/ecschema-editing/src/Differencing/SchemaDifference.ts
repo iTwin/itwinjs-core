@@ -51,6 +51,7 @@ export enum SchemaOtherTypes {
   RelationshipConstraint = "RelationshipConstraint",
   RelationshipConstraintClass = "RelationshipConstraintClass",
   EntityClassMixin = "EntityClassMixin",
+  KindOfQuantityPresentationFormat = "KindOfQuantityPresentationFormat",
 }
 
 /**
@@ -86,7 +87,8 @@ export type AnySchemaDifference =
   AnySchemaItemDifference |
   AnySchemaItemPathDifference |
   EntityClassMixinDifference |
-  CustomAttributeDifference;
+  CustomAttributeDifference |
+  KindOfQuantityPresentationFormatDifference;
 
 /**
  * Differencing entry for changes on a Schema.
@@ -385,6 +387,17 @@ export interface RelationshipConstraintClassDifference {
   readonly schemaType: SchemaOtherTypes.RelationshipConstraintClass;
   readonly itemName: string;
   readonly path: "$source" | "$target";
+  readonly difference: string[];
+}
+
+/**
+ * Differencing entry for presentation formats added to KindOfQuantities.
+ * @alpha
+ */
+export interface KindOfQuantityPresentationFormatDifference {
+  readonly changeType: "add";
+  readonly schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat;
+  readonly itemName: string;
   readonly difference: string[];
 }
 
