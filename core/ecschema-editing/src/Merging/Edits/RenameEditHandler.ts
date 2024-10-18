@@ -36,7 +36,7 @@ export function applyRenamePropertyEdit(result: SchemaDifferenceResult, edit: Re
   propertyDifference.path = edit.value;
 
   if (result.conflicts) {
-    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === itemName && entry.path === path);
+    const conflictIndex = result.conflicts.findIndex((entry) => entry.difference === propertyDifference);
     if (conflictIndex > -1) {
       result.conflicts.splice(conflictIndex, 1);
     }
@@ -64,7 +64,7 @@ export function applyRenameSchemaItemEdit(result: SchemaDifferenceResult, edit: 
   renameName(itemDifference, itemName, edit.value);
 
   if (result.conflicts) {
-    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === itemName && entry.path === undefined);
+    const conflictIndex = result.conflicts.findIndex((entry) => entry.difference === itemDifference);
     if (conflictIndex > -1) {
       result.conflicts.splice(conflictIndex, 1);
     }

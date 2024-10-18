@@ -10,7 +10,7 @@ import type { AnyDiagnostic } from "../Validation/Diagnostic";
 import { SchemaCompareCodes } from "../Validation/SchemaCompareDiagnostics";
 import {
   AnyEnumerator, AnyPropertyProps, AnySchemaItem, CustomAttribute, ECClass,
-  Enumeration, Mixin, Property, PropertyProps,
+  Enumeration, Format, KindOfQuantity, Mixin, OverrideFormat, Property, PropertyProps,
   RelationshipConstraint, RelationshipConstraintProps, Schema, SchemaItem,
 } from "@itwin/ecschema-metadata";
 import {
@@ -22,6 +22,7 @@ import {
   type DifferenceType,
   type EntityClassMixinDifference,
   type EnumeratorDifference,
+  type KindOfQuantityPresentationFormatDifference,
   type RelationshipConstraintClassDifference,
   type RelationshipConstraintDifference,
   type SchemaDifference,
@@ -38,7 +39,7 @@ import {
 export class SchemaDiagnosticVisitor {
 
   public readonly schemaDifferences: Array<SchemaDifference | SchemaReferenceDifference>;
-  public readonly schemaItemDifferences: Array<AnySchemaItemDifference>;
+  public readonly schemaItemDifferences: Array<AnySchemaItemDifference | EntityClassMixinDifference | KindOfQuantityPresentationFormatDifference>;
   public readonly schemaItemPathDifferences: Array<AnySchemaItemPathDifference>;
   public readonly customAttributeDifferences: Array<CustomAttributeDifference>;
 
@@ -105,9 +106,11 @@ export class SchemaDiagnosticVisitor {
       case SchemaCompareCodes.CustomAttributeInstanceClassMissing:
         return this.visitMissingCustomAttributeInstance(diagnostic);
 
+      case SchemaCompareCodes.PresentationUnitMissing:
+        return this.visitMissingPresentationUnit(diagnostic);
+
       // Currently not handled...
       case SchemaCompareCodes.FormatUnitMissing:
-      case SchemaCompareCodes.PresentationUnitMissing:
       case SchemaCompareCodes.UnitLabelOverrideDelta:
         break;
     }
@@ -314,20 +317,20 @@ export class SchemaDiagnosticVisitor {
     const ecClass = diagnostic.ecDefinition as ECClass;
     const [mixin] = diagnostic.messageArgs as [Mixin];
 
-    let modifyEntry = this.schemaItemDifferences.find((entry): entry is EntityClassMixinDifference => {
+    let addEntry = this.schemaItemDifferences.find((entry): entry is EntityClassMixinDifference => {
       return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.EntityClassMixin && entry.itemName === ecClass.name;
     });
 
-    if (modifyEntry === undefined) {
-      modifyEntry = {
+    if (addEntry === undefined) {
+      addEntry = {
         changeType: "add",
         schemaType: SchemaOtherTypes.EntityClassMixin,
         itemName: ecClass.name,
         difference: [],
       };
-      this.schemaItemDifferences.push(modifyEntry);
+      this.schemaItemDifferences.push(addEntry);
     }
-    modifyEntry.difference.push(mixin.fullName);
+    addEntry.difference.push(mixin.fullName);
   }
 
   private visitMissingRelationshipConstraintClass(diagnostic: AnyDiagnostic) {
@@ -335,23 +338,23 @@ export class SchemaDiagnosticVisitor {
     const className = constraint.relationshipClass.name;
     const constraintPath = constraint.isSource ? "$source" : "$target";
 
-    let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is RelationshipConstraintClassDifference => {
+    let addEntry = this.schemaItemPathDifferences.find((entry): entry is RelationshipConstraintClassDifference => {
       return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.RelationshipConstraintClass, entry.itemName === className && entry.path === constraintPath;
     });
 
-    if (!modifyEntry) {
-      modifyEntry = {
+    if (!addEntry) {
+      addEntry = {
         changeType: "add",
         schemaType: SchemaOtherTypes.RelationshipConstraintClass,
         itemName: className,
         path: constraintPath,
         difference: [],
       };
-      this.schemaItemPathDifferences.push(modifyEntry);
+      this.schemaItemPathDifferences.push(addEntry);
     }
 
     const [constraintClass] = diagnostic.messageArgs as [ECClass];
-    modifyEntry.difference.push(constraintClass.fullName);
+    addEntry.difference.push(constraintClass.fullName);
   }
 
   private visitChangedRelationshipConstraint(diagnostic: AnyDiagnostic) {
@@ -448,6 +451,27 @@ export class SchemaDiagnosticVisitor {
       });
     }
     return;
+  }
+
+  private visitMissingPresentationUnit(diagnostic: AnyDiagnostic) {
+    const koq = diagnostic.ecDefinition as KindOfQuantity;
+    const [presentationFormat] = diagnostic.messageArgs as [Format | OverrideFormat];
+
+    let addEntry = this.schemaItemDifferences.find((entry): entry is KindOfQuantityPresentationFormatDifference => {
+      return entry.changeType === "add" && entry.schemaType === SchemaOtherTypes.KindOfQuantityPresentationFormat
+        && entry.itemName === koq.name;
+    });
+
+    if (addEntry === undefined) {
+      addEntry = {
+        changeType: "add",
+        schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat,
+        itemName: koq.name,
+        difference: [],
+      };
+      this.schemaItemDifferences.push(addEntry);
+    }
+    addEntry.difference.push(presentationFormat.fullName);
   }
 }
 
