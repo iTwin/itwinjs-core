@@ -16,6 +16,7 @@ Table of contents:
  - [Presentation](#presentation)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
  - [Quantity](#quantity)
+ - [Electron 33 support](#electron-33-support)
  - [API deprecations](#api-deprecations)
    - [@itwin/appui-abstract](#itwinappui-abstract)
    - [@itwin/core-backend](#itwincore-backend)
@@ -136,6 +137,10 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 
 - Change azimuth and bearing logic from working with east-based counterclockwise persisted values to working with north-based clockwise values.
 - The previous applies to azimuthBase as well, if provided.
+
+## Electron 33 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 33](https://www.electronjs.org/blog/electron-33-0).
 
 ## API deprecations
 
