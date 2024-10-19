@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { QuantityError } from "../Exception";
 import { Format } from "../Formatter/Format";
 import { DecimalPrecision, FormatTraits, parseFormatTrait } from "../Formatter/FormatEnums";
@@ -22,7 +22,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'type' attribute.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'type' attribute.`);
     });
   });
 
@@ -37,7 +38,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test does not have the required 'precision' attribute.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test does not have the required 'precision' attribute.`);
     });
   });
 
@@ -53,7 +55,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'precision' attribute. It should be an integer.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'precision' attribute. It should be an integer.`);
     });
   });
 
@@ -69,7 +72,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'precision' attribute.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'precision' attribute.`);
     });
   });
 
@@ -86,7 +90,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'showSignOption' attribute.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'showSignOption' attribute.`);
     });
   });
 
@@ -102,7 +107,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'precision' attribute.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'precision' attribute.`);
     });
   });
 
@@ -118,7 +124,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'formatTraits' attribute.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'formatTraits' attribute.`);
     });
   });
 
@@ -165,7 +172,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'minWidth' attribute. It should be a positive integer.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'minWidth' attribute. It should be a positive integer.`);
     });
   });
 
@@ -182,7 +190,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch(() => {
-      assert.isTrue(false);
+      expect.fail();
     });
   });
 
@@ -198,7 +206,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'decimalSeparator' attribute. It should be an empty or one character string.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'decimalSeparator' attribute. It should be an empty or one character string.`);
     });
   });
 
@@ -214,7 +223,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch(() => {
-      assert.isTrue(false);
+      expect.fail();
     });
   });
 
@@ -230,7 +239,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'thousandSeparator' attribute. It should be an empty or one character string.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'thousandSeparator' attribute. It should be an empty or one character string.`);
     });
   });
 
@@ -246,7 +256,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch(() => {
-      assert.isTrue(false);
+      expect.fail();
     });
   });
 
@@ -261,7 +271,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'uomSeparator' attribute. It should be an empty or one character string.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'uomSeparator' attribute. It should be an empty or one character string.`);
     });
   });
 
@@ -276,7 +287,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch(() => {
-      assert.isTrue(false);
+      expect.fail();
     });
   });
 
@@ -293,7 +304,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'stationSeparator' attribute. It should be an empty or one character string.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'stationSeparator' attribute. It should be an empty or one character string.`);
     });
   });
 
@@ -310,7 +322,7 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch(() => {
-      assert.isTrue(false);
+      expect.fail();
     });
   });
 
@@ -326,7 +338,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test is 'Scientific' type therefore the attribute 'scientificType' is required.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test is 'Scientific' type therefore the attribute 'scientificType' is required.`);
     });
   });
 
@@ -343,7 +356,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'scientificType' attribute.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'scientificType' attribute.`);
     });
   });
 
@@ -364,7 +378,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has a Composite with no valid 'units'`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has a Composite with no valid 'units'`);
     });
   });
 
@@ -389,7 +404,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `Invalid unit name 'Units.F'.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`Invalid unit name 'Units.F'.`);
     });
   });
 
@@ -419,7 +435,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The unit Units.FT has a duplicate name.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The unit Units.FT has a duplicate name.`);
     });
   });
 
@@ -435,7 +452,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test is 'Station' type therefore the attribute 'stationOffsetSize' is required.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test is 'Station' type therefore the attribute 'stationOffsetSize' is required.`);
     });
   });
 
@@ -452,7 +470,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
     });
   });
 
@@ -482,7 +501,8 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json).catch((err) => {
-      assert.isTrue(err instanceof QuantityError && err.message === `The Format test has a Composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
+      expect(err).toBeInstanceOf(QuantityError);
+      expect(err.message).toEqual(`The Format test has a Composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
     });
   });
 
@@ -498,27 +518,27 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json);
-    assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.ApplyRounding));
-    assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.ExponentOnlyNegative));
-    assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.FractionDash));
-    assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.KeepDecimalPoint));
-    assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.KeepSingleZero));
-    assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.PrependUnitLabel));
-    assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.ShowUnitLabel));
-    assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.TrailZeroes));
-    assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.Use1000Separator));
-    assert.isTrue(testFormat.hasFormatTraitSet(FormatTraits.ZeroEmpty));
+    expect(testFormat.hasFormatTraitSet(FormatTraits.ApplyRounding)).to.be.true;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.ExponentOnlyNegative)).to.be.true;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.FractionDash)).to.be.true;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.KeepDecimalPoint)).to.be.true;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.KeepSingleZero)).to.be.true;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.PrependUnitLabel)).to.be.true;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.ShowUnitLabel)).to.be.true;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.TrailZeroes)).to.be.true;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.Use1000Separator)).to.be.true;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.ZeroEmpty)).to.be.true;
 
     const outJson = testFormat.toJSON();
-    assert.isTrue(outJson.formatTraits!.length === 10);
+    expect(outJson.formatTraits!.length).toEqual(10);
 
     // ensure we can modify
     const modifiedFormatProps = { ...outJson, formatTraits: ["keepSingleZero"], precision: 3 };
     const modifiedFormat = new Format("modified");
     await modifiedFormat.fromJSON(unitsProvider, modifiedFormatProps);
-    assert.isTrue(modifiedFormat.hasFormatTraitSet(FormatTraits.KeepSingleZero));
-    assert.isFalse(modifiedFormat.hasFormatTraitSet(FormatTraits.ShowUnitLabel));
-    assert.isTrue(modifiedFormat.precision === DecimalPrecision.Three);
+    expect(modifiedFormat.hasFormatTraitSet(FormatTraits.KeepSingleZero)).to.be.true;
+    expect(modifiedFormat.hasFormatTraitSet(FormatTraits.ShowUnitLabel)).to.be.false;
+    expect(modifiedFormat.precision).toEqual(DecimalPrecision.Three);
   });
 
   it("Read/Write Empty Format Traits", async () => {
@@ -533,19 +553,19 @@ describe("Formatting tests:", () => {
     const testFormat = new Format("test");
 
     await testFormat.fromJSON(unitsProvider, json);
-    assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.ApplyRounding));
-    assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.ExponentOnlyNegative));
-    assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.FractionDash));
-    assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.KeepDecimalPoint));
-    assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.KeepSingleZero));
-    assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.PrependUnitLabel));
-    assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.ShowUnitLabel));
-    assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.TrailZeroes));
-    assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.Use1000Separator));
-    assert.isFalse(testFormat.hasFormatTraitSet(FormatTraits.ZeroEmpty));
+    expect(testFormat.hasFormatTraitSet(FormatTraits.ApplyRounding)).to.be.false;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.ExponentOnlyNegative)).to.be.false;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.FractionDash)).to.be.false;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.KeepDecimalPoint)).to.be.false;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.KeepSingleZero)).to.be.false;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.PrependUnitLabel)).to.be.false;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.ShowUnitLabel)).to.be.false;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.TrailZeroes)).to.be.false;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.Use1000Separator)).to.be.false;
+    expect(testFormat.hasFormatTraitSet(FormatTraits.ZeroEmpty)).to.be.false;
 
     const outJson = testFormat.toJSON();
-    assert.isTrue(outJson.formatTraits!.length === 0);
+    expect(outJson.formatTraits!.length).toEqual(0);
   });
 
   it("Load Formats from Json", async () => {
@@ -726,25 +746,25 @@ describe("Formatting tests:", () => {
       const format = new Format("test");
       await format.fromJSON(unitsProvider, formatData).catch(() => { });
       if (formatData.hasOwnProperty("precision"))
-        assert.isTrue(format.precision === formatData.precision);
-      assert.isTrue(format.type.toUpperCase() === formatData.type.toUpperCase());
+        expect(format.precision).toEqual(formatData.precision);
+      expect(format.type.toUpperCase()).toEqual(formatData.type.toUpperCase());
       if (formatData.hasOwnProperty("uomSeparator"))
-        assert.isTrue(format.uomSeparator === formatData.uomSeparator);
+        expect(format.uomSeparator).toEqual(formatData.uomSeparator);
       for (const traitStr of formatData.formatTraits) {
         const traitToValidate = parseFormatTrait(traitStr, "format.test");
         if (traitToValidate !== undefined)
-          assert.isTrue(format.hasFormatTraitSet(traitToValidate));
+          expect(format.hasFormatTraitSet(traitToValidate)).to.be.true;
       }
 
       if (formatData.hasOwnProperty("composite")) {
-        assert.isTrue(format.hasUnits === true);
-        assert.isTrue(format.units!.length === formatData.composite!.units.length);
+        expect(format.hasUnits).to.be.true;
+        expect(format.units!.length).toEqual(formatData.composite!.units.length);
       }
 
       const jsonData = format.toJSON();
-      assert.isTrue(jsonData.type.toUpperCase() === format.type.toUpperCase());
+      expect(jsonData.type.toUpperCase()).toEqual(format.type.toUpperCase());
       if (formatData.hasOwnProperty("showSignOption")) {
-        assert.isTrue(formatData.showSignOption!.toUpperCase() === jsonData.showSignOption!.toUpperCase());
+        expect(formatData.showSignOption!.toUpperCase()).toEqual(jsonData.showSignOption!.toUpperCase());
       }
     }
   });
@@ -765,16 +785,16 @@ describe("Formatting tests:", () => {
       ],
     };
 
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes) === false);
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty));
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes)).to.be.false;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty)).to.be.true;
   });
 
   it("isFormatTraitSetInProps works properly", () => {
@@ -785,16 +805,16 @@ describe("Formatting tests:", () => {
       ],
     };
 
-    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding));
-    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative));
-    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash));
-    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint));
-    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero));
-    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel));
-    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel));
-    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator));
-    assert.isFalse(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes));
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding)).to.be.false;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative)).to.be.false;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash)).to.be.false;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint)).to.be.false;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero)).to.be.false;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel)).to.be.false;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel)).to.be.false;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)).to.be.false;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty)).to.be.false;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes)).to.be.true;
   });
 
   it("show old/optional trait format works properly", () => {
@@ -803,16 +823,16 @@ describe("Formatting tests:", () => {
       formatTraits: "trailZeroes,keepSingleZero,zeroEmpty,keepDecimalPoint,applyRounding,fractionDash,showUnitLabel,prependUnitLabel,use1000Separator,exponentOnlyNegative",
     };
 
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator));
-    assert.isTrue(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty));
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ApplyRounding)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ExponentOnlyNegative)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.FractionDash)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepDecimalPoint)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.KeepSingleZero)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.PrependUnitLabel)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ShowUnitLabel)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.TrailZeroes)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)).to.be.true;
+    expect(Format.isFormatTraitSetInProps(formatProps, FormatTraits.ZeroEmpty)).to.be.true;
   });
 
   it("deserialization of custom Formats is consistent", async () => {
@@ -834,11 +854,11 @@ describe("Formatting tests:", () => {
     // Assertions
     // eslint-disable-next-line guard-for-in
     for (const key in formatProps) {
-      assert(jsonObj.hasOwnProperty(key), `jsonObj is missing property ${key}`);
+      expect(jsonObj.hasOwnProperty(key)).to.be.true;
       const formatPropValue = formatProps[key as keyof FormatProps];
       const jsonObjValue = jsonObj[key as keyof FormatProps];
 
-      assert(typeof formatPropValue === typeof jsonObjValue, `Property ${key} types do not match`);
+      expect(typeof formatPropValue).toEqual(typeof jsonObjValue);
       if (Array.isArray(formatPropValue) && Array.isArray(jsonObjValue)) {
         expect(formatPropValue).to.have.members(jsonObjValue, `Property ${key} does not match`);
       } else {
@@ -932,11 +952,11 @@ describe("Formatting tests:", () => {
       // Assertions
       // eslint-disable-next-line guard-for-in
       for (const key in formatProps) {
-        assert(jsonObj.hasOwnProperty(key), `jsonObj is missing property ${key}`);
+        expect(jsonObj.hasOwnProperty(key)).to.be.true;
         const formatPropValue = formatProps[key as keyof FormatProps];
         const jsonObjValue = jsonObj[key as keyof FormatProps];
 
-        assert(typeof formatPropValue === typeof jsonObjValue, `Property ${key} types do not match`);
+        expect(typeof formatPropValue).toEqual(typeof jsonObjValue);
         if (Array.isArray(formatPropValue) && Array.isArray(jsonObjValue)) {
           expect(formatPropValue).to.have.members(jsonObjValue, `Property ${key} does not match`);
         } else {
