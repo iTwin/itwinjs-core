@@ -98,7 +98,11 @@
     "webpack": "^5.76.0"
   },
   "dependencies": {
+<<<<<<< HEAD
     "@bentley/imodeljs-native": "4.9.32",
+=======
+    "@bentley/imodeljs-native": "4.10.14",
+>>>>>>> 0716d56cbd (Regression 4.9.2 where aliased ECClassId switch from returning classId to className (#7279))
     "@itwin/cloud-agnostic-core": "^2.2.4",
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.2.5",
