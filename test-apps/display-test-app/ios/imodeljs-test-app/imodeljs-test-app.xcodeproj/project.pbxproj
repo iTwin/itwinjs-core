@@ -453,11 +453,7 @@
 			repositoryURL = "https://github.com/iTwin/mobile-native-ios";
 			requirement = {
 				kind = exactVersion;
-<<<<<<< HEAD
 				version = 4.9.32;
-=======
-				version = 4.10.14;
->>>>>>> 0716d56cbd (Regression 4.9.2 where aliased ECClassId switch from returning classId to className (#7279))
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
