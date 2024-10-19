@@ -18,9 +18,9 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json .nyc_output",
     "extract-api": "betools extract-api --entry=core-quantity",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "test": "mocha",
+    "test": "vitest --run",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-quantity/file.json --tsIndexFile=./core-quantity.ts --onlyJson",
-    "cover": "nyc npm -s test",
+    "cover": "vitest --run --coverage",
     "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs"
   },
   "keywords": [
@@ -36,24 +36,14 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/eslint-plugin": "^4.0.2",
-    "@types/chai": "4.3.1",
-    "@types/chai-as-promised": "^7",
     "@types/glob": "^5.0.35",
-    "@types/mocha": "^10.0.6",
-    "@types/sinon": "^17.0.2",
-    "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.1",
+    "@vitest/coverage-v8": "^2.1.0",
     "eslint": "^8.56.0",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "sinon": "^17.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.3.3",
+    "vitest": "^2.1.0"
   },
   "peerDependencies": {
     "@itwin/core-bentley": "workspace:^4.10.0-dev.27"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

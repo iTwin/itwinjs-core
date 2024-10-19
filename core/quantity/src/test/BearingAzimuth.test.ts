@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
@@ -65,18 +65,18 @@ describe("Bearing format tests:", () => {
 
     const bearingDMS = new Format("BearingDMS");
     await bearingDMS.fromJSON(unitsProvider, bearingDMSJson).catch(() => { });
-    assert.isTrue(bearingDMS.hasUnits);
+    expect(bearingDMS.hasUnits).to.be.true;
 
     const bearingDMSWithLabel = new Format("BearingDMSWithLabel");
     await bearingDMSWithLabel.fromJSON(unitsProvider, bearingDMSWithLabelJson).catch(() => { });
-    assert.isTrue(bearingDMSWithLabel.hasUnits);
+    expect(bearingDMSWithLabel.hasUnits).to.be.true;
 
     const bearingDecimal = new Format("BearingDecimal");
     await bearingDecimal.fromJSON(unitsProvider, bearingDecimalJson).catch(() => { });
-    assert.isTrue(bearingDecimal.hasUnits);
+    expect(bearingDecimal.hasUnits).to.be.true;
 
     const rad: UnitProps = await unitsProvider.findUnitByName("Units.RAD");
-    assert.isTrue(rad.isValid);
+    expect(rad.isValid).to.be.true;
     const bearingDMSFormatter = await FormatterSpec.create("RadToBearingDMS", bearingDMS, unitsProvider, rad);
     const bearingDMSWithLabelFormatter = await FormatterSpec.create("RadToBearingDMSWithLabel", bearingDMSWithLabel, unitsProvider, rad);
     const bearingDecimalFormatter = await FormatterSpec.create("RadToBearingDecimal", bearingDecimal, unitsProvider, rad);
@@ -121,7 +121,7 @@ describe("Bearing format tests:", () => {
       expect(resultBearingDMS).to.be.eql(entry.dms);
       const parseBearingDMSResult = Parser.parseQuantityString(resultBearingDMS, bearingDMSParser);
       if (!Parser.isParsedQuantity(parseBearingDMSResult)) {
-        assert.fail(`Expected a parsed from bearing DMS input string ${resultBearingDMS}`);
+        expect.fail(`Expected a parsed from bearing DMS input string ${resultBearingDMS}`);
       }
       expect(parseBearingDMSResult.value, `Parsed result for ${entry.input} from formatted ${resultBearingDMS}`).closeTo(normalizedAngle, 0.0001);
 
@@ -129,7 +129,7 @@ describe("Bearing format tests:", () => {
       expect(resultBearingDMSWithLabel).to.be.eql(entry.dmsWithLabel);
       const parseBearingDMSWithLabelResult = Parser.parseQuantityString(resultBearingDMSWithLabel, bearingDMSWithLabelParser);
       if (!Parser.isParsedQuantity(parseBearingDMSWithLabelResult)) {
-        assert.fail(`Expected a parsed from bearing DMS with label input string ${resultBearingDMSWithLabel}`);
+        expect.fail(`Expected a parsed from bearing DMS with label input string ${resultBearingDMSWithLabel}`);
       }
       expect(parseBearingDMSWithLabelResult.value, `Parsed result for ${normalizedAngle} from formatted ${resultBearingDMSWithLabel}`).closeTo(normalizedAngle, 0.0001);
 
@@ -137,7 +137,7 @@ describe("Bearing format tests:", () => {
       expect(resultBearingDecimal).to.be.eql(entry.decimal);
       const parseBearingDecimalResult = Parser.parseQuantityString(resultBearingDecimal, bearingDecimalParser);
       if (!Parser.isParsedQuantity(parseBearingDecimalResult)) {
-        assert.fail(`Expected a parsed from bearing decimal input string ${resultBearingDecimal}`);
+        expect.fail(`Expected a parsed from bearing decimal input string ${resultBearingDecimal}`);
       }
       expect(parseBearingDecimalResult.value, `Parsed result for ${normalizedAngle} from formatted ${resultBearingDecimal}`).closeTo(normalizedAngle, 0.0001);
     }
@@ -217,14 +217,14 @@ describe("Azimuth format tests:", () => {
 
     const azimuthDMS = new Format("azimuthDMS");
     await azimuthDMS.fromJSON(unitsProvider, azimuthDMSJson).catch(() => { });
-    assert.isTrue(azimuthDMS.hasUnits);
+    expect(azimuthDMS.hasUnits).to.be.true;
 
     const azimuthDecimal = new Format("azimuthDecimal");
     await azimuthDecimal.fromJSON(unitsProvider, azimuthDecimalJson).catch(() => { });
-    assert.isTrue(azimuthDecimal.hasUnits);
+    expect(azimuthDecimal.hasUnits).to.be.true;
 
     const rad: UnitProps = await unitsProvider.findUnitByName("Units.RAD");
-    assert.isTrue(rad.isValid);
+    expect(rad.isValid).to.be.true;
     const azimuthDMSFormatter = await FormatterSpec.create("RadToAzimuthDMS", azimuthDMS, unitsProvider, rad);
     const azimuthDecimalFormatter = await FormatterSpec.create("RadToAzimuthDecimal", azimuthDecimal, unitsProvider, rad);
 
@@ -295,9 +295,9 @@ describe("Azimuth format tests:", () => {
 
       const format = new Format(`azimuthWith${baseInDegrees}Base`);
       await format.fromJSON(unitsProvider, props);
-      assert.isTrue(format.hasUnits);
+      expect(format.hasUnits).to.be.true;
       const deg: UnitProps = await unitsProvider.findUnitByName("Units.ARC_DEG");
-      assert.isTrue(deg.isValid);
+      expect(deg.isValid).to.be.true;
       return FormatterSpec.create(`DegreeToAzimuthWith${baseInDegrees}Base`, format, unitsProvider, deg);
     };
 
@@ -310,9 +310,9 @@ describe("Azimuth format tests:", () => {
 
       const format = new Format(`azimuthWith${baseInDegrees}Base`);
       await format.fromJSON(unitsProvider, props);
-      assert.isTrue(format.hasUnits);
+      expect(format.hasUnits).to.be.true;
       const deg: UnitProps = await unitsProvider.findUnitByName("Units.ARC_DEG");
-      assert.isTrue(deg.isValid);
+      expect(deg.isValid).to.be.true;
       return ParserSpec.create(format, unitsProvider, deg);
     };
 
@@ -352,7 +352,7 @@ describe("Azimuth format tests:", () => {
       const parser = await createParser(entry.base, entry.counterClockwise);
       const parseResult = Parser.parseQuantityString(result, parser);
       if (!Parser.isParsedQuantity(parseResult)) {
-        assert.fail("Expected a parsed quantity");
+        expect.fail("Expected a parsed quantity");
       }
       expect(parseResult.value, `Parsed result for ${entry.input} with base ${entry.base} ccw: ${entry.counterClockwise}`).closeTo(entry.input, 0.0001);
     }
@@ -382,9 +382,9 @@ describe("Azimuth format tests:", () => {
 
     const format = new Format(`azimuth`);
     await format.fromJSON(unitsProvider, formatJson);
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
     const minutes: UnitProps = await unitsProvider.findUnitByName("Units.ARC_MINUTE");
-    assert.isTrue(minutes.isValid);
+    expect(minutes.isValid).to.be.true;
     const formatter = await FormatterSpec.create("Formatter", format, unitsProvider, minutes);
     const result = Formatter.formatQuantity(5100, formatter); // 85 degrees, angle with a South base
     expect(result).to.be.eql("265.0°");
@@ -414,14 +414,14 @@ describe("Azimuth format tests:", () => {
 
     const format = new Format(`azimuth`);
     await format.fromJSON(unitsProvider, formatJson);
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
     const rad: UnitProps = await unitsProvider.findUnitByName("Units.RAD");
-    assert.isTrue(rad.isValid);
+    expect(rad.isValid).to.be.true;
     const formatter = await FormatterSpec.create("Formatter", format, unitsProvider, rad);
     const parser = await ParserSpec.create(format, unitsProvider, rad, unitsProvider);
     const parseResult = Parser.parseQuantityString("265.0°", parser);
     if (!Parser.isParsedQuantity(parseResult)) {
-      assert.fail("Expected a parsed quantity");
+      expect.fail("Expected a parsed quantity");
     }
     expect(parseResult.value).closeTo(1.4835, 0.0001);
     const formattedValue = Formatter.formatQuantity(parseResult.value, formatter);
@@ -451,8 +451,8 @@ describe("Azimuth and Revolution formatting that throws error:", () => {
       await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
       expect.fail("Expected error was not thrown");
     } catch (e: any) {
-      assert.strictEqual(e.message, "The Format testAzimuthFormat has an invalid 'azimuthBaseUnit' attribute. It should be of type 'string'.");
-      assert.instanceOf(e, QuantityError);
+      expect(e.message).toEqual("The Format testAzimuthFormat has an invalid 'azimuthBaseUnit' attribute. It should be of type 'string'.");
+      expect(e).toBeInstanceOf(QuantityError);
     }
   });
 
@@ -466,8 +466,8 @@ describe("Azimuth and Revolution formatting that throws error:", () => {
       await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
       expect.fail("Expected error was not thrown");
     } catch (e: any) {
-      assert.strictEqual(e.message, "Invalid unit name 'invalidUnit' for azimuthBaseUnit in Format 'testAzimuthFormat'.");
-      assert.instanceOf(e, QuantityError);
+      expect(e.message).toEqual("Invalid unit name 'invalidUnit' for azimuthBaseUnit in Format 'testAzimuthFormat'.");
+      expect(e).toBeInstanceOf(QuantityError);
     }
   });
 
@@ -481,8 +481,8 @@ describe("Azimuth and Revolution formatting that throws error:", () => {
       await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
       expect.fail("Expected error was not thrown");
     } catch (e: any) {
-      assert.strictEqual(e.message, "The Format testAzimuthFormat has an invalid 'revolutionUnit' attribute. It should be of type 'string'.");
-      assert.instanceOf(e, QuantityError);
+      expect(e.message).toEqual("The Format testAzimuthFormat has an invalid 'revolutionUnit' attribute. It should be of type 'string'.");
+      expect(e).toBeInstanceOf(QuantityError);
     }
   });
 
@@ -496,8 +496,8 @@ describe("Azimuth and Revolution formatting that throws error:", () => {
       await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
       expect.fail("Expected error was not thrown");
     } catch (e: any) {
-      assert.strictEqual(e.message, "Invalid unit name 'invalidUnit' for revolutionUnit in Format 'testAzimuthFormat'.");
-      assert.instanceOf(e, QuantityError);
+      expect(e.message).toEqual("Invalid unit name 'invalidUnit' for revolutionUnit in Format 'testAzimuthFormat'.");
+      expect(e).toBeInstanceOf(QuantityError);
     }
   });
 
@@ -510,8 +510,8 @@ describe("Azimuth and Revolution formatting that throws error:", () => {
       await testFormatWithAzimuthType.fromJSON(unitsProvider, jsonObj);
       expect.fail("Expected error was not thrown");
     } catch (e: any) {
-      assert.strictEqual(e.message, "The Format testAzimuthFormat is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.");
-      assert.instanceOf(e, QuantityError);
+      expect(e.message).toEqual("The Format testAzimuthFormat is 'Azimuth' or 'Bearing' type therefore the attribute 'revolutionUnit' is required.");
+      expect(e).toBeInstanceOf(QuantityError);
     }
   });
 
@@ -523,8 +523,8 @@ describe("Azimuth and Revolution formatting that throws error:", () => {
       await testFormatWithAzimuthType.fromJSON(unitsProvider, { type: "azimuth" });
       expect.fail("Expected error was not thrown");
     } catch (e: any) {
-      assert.strictEqual(e.message, "The Format testAzimuthFormat has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.");
-      assert.instanceOf(e, QuantityError);
+      expect(e.message).toEqual("The Format testAzimuthFormat has an 'azimuthBase' attribute therefore the attribute 'azimuthBaseUnit' is required.");
+      expect(e).toBeInstanceOf(QuantityError);
     }
   });
 });
