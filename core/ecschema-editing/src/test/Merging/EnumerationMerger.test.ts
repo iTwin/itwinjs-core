@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Enumeration, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaMerger, SchemaMergingError } from "../../Merging/SchemaMerger";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
@@ -290,7 +290,9 @@ describe("Enumeration merge tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith(Error, "The Enumeration TestEnumeration has an incompatible type. It must be \"string\", not \"int\".");
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "The Enumeration TestEnumeration has an incompatible type. It must be \"string\", not \"int\".");
+    });
   });
 
   it("should throw an error if enumerator value attribute conflict exist", async () => {
@@ -329,6 +331,8 @@ describe("Enumeration merge tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Failed to merge enumerator attribute, Enumerator \"EnumeratorOne\" has different values.");
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "Failed to merge enumerator attribute, Enumerator \"EnumeratorOne\" has different values.");
+    });
   });
 });

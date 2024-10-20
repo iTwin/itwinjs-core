@@ -12,6 +12,11 @@ import { AnySchemaDifference, DifferenceType, SchemaOtherTypes, SchemaType } fro
  * @internal
  */
 export class SchemaMergingWalker extends SchemaDifferenceWalker {
+  private _mergeEventHandler?: (difference: AnySchemaDifference) => void;
+
+  public on(_event: "mergedDifference", listener: (difference: AnySchemaDifference) => void) {
+    this._mergeEventHandler = listener;
+  }
 
   /**
    * Traverses the schema differences and calls the appropriate method on the visitor.
@@ -61,5 +66,14 @@ export class SchemaMergingWalker extends SchemaDifferenceWalker {
       // And then the custom attributes.
       ...differences.filter(filterByType(SchemaOtherTypes.CustomAttributeInstance)),
     ]);
+  }
+
+  /**
+   * Calls the appropriate method on the visitor based on the schema difference type.
+   * Overrides the base class method to track the merged differences.
+   */
+  protected override async visit(difference: AnySchemaDifference, index: number, array: AnySchemaDifference[]): Promise<void> {
+    return super.visit(difference, index, array)
+      .then(() => this._mergeEventHandler && this._mergeEventHandler(difference));
   }
 }

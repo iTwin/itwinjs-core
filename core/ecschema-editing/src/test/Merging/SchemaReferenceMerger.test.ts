@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaMerger, SchemaMergingError } from "../../Merging/SchemaMerger";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
@@ -115,6 +115,9 @@ describe("Schema reference merging tests", () => {
         },
       }],
     });
-    await expect(merge).to.eventually.rejectedWith("Schemas references of BisCore have incompatible versions: 01.00.01 and 01.01.01");
+
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "Schemas references of BisCore have incompatible versions: 01.00.01 and 01.01.01");
+    });
   });
 });
