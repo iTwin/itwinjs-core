@@ -424,7 +424,8 @@
         "StartPoint": "Define start point",
         "EndPoint": "Define endpoint",
         "StartCorner": "Define corner point",
-        "OppositeCorner": "Define opposite corner"
+        "OppositeCorner": "Define opposite corner",
+        "ShapePoint": "Define shape point"
       },
       "Inputs": {
         "CrossingLine": "Define crossing line",
@@ -458,7 +459,8 @@
       "SelectionMethods": {
         "Pick": "Select single",
         "Line": "Select by crossing line",
-        "Box": "Select by box corners"
+        "Box": "Select by box corners",
+        "Polygon": "Select by polygon"
       },
       "SelectionModes": {
         "Replace": "Replace current selection",
