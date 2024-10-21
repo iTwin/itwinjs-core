@@ -19,6 +19,7 @@ import {
   PrimitivePropertyProps, PropertyCategoryProps, PropertyProps, RelationshipClassProps, RelationshipConstraintProps, SchemaItemFormatProps, SchemaItemProps,
   SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
+import { propertyTypeToString } from "../PropertyTypes";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
 const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";
@@ -1104,7 +1105,10 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private readPrimitivePropertyValue(propElement: Element, primitiveType: PrimitiveType): PrimitiveValue {
-    if (propElement.textContent === undefined || propElement.textContent === null)
+    if (undefined === propElement.textContent || null === propElement.textContent)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid property value.`);
+
+    if (propElement.textContent === "" && primitiveType !== PrimitiveType.String)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid property value.`);
 
     // TODO: Mapping all primitive types to string, number and boolean
