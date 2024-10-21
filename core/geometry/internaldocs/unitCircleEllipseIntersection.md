@@ -1,6 +1,6 @@
 # Intersection of Unit Circle and General Ellipse
 
-We want to find intersections of the homogeneous unit circle $x^2 + y^2 = w^2$ and the general ellipse
+We want to find intersections of the homogeneous unit circle $x^2 + y^2 = w^2$ and the general homogeneous ellipse $c + u \cos\theta + v\sin\theta$ given by
 $$
 \begin{bmatrix}
 x(\theta) \\
@@ -16,10 +16,10 @@ u_w & v_w & c_w
 \cos\theta \\
 \sin\theta \\
 1
-\end{bmatrix}
+\end{bmatrix}.
 $$
 
-By substituting the ellipse equation into the unit circle equation, we get
+By substituting the ellipse equation into the circle equation, we get
 
 $$\begin{equation}a_{cc} \cos\theta \cos\theta + a_{cs} \cos\theta \sin\theta + a_{ss} \sin\theta \sin\theta + a_c \cos\theta + a_s \sin\theta + a = 0\end{equation}$$
 
@@ -34,12 +34,14 @@ $$\begin{align}
 \nonumber{}a &= c_x c_x + c_y c_y - c_w c_w
 \end{align}$$
 
-These formulas are used in `TrigPolynomial.solveUnitCircleHomogeneousEllipseIntersection`.
+The above formulae are used in `TrigPolynomial.solveUnitCircleHomogeneousEllipseIntersection`.
 
-Equation $(1)$ is what we want to solve to get the ellipse angles $\theta$ of the intersections. To take advantage of polynomial root finders tailored to other bases, we make a change of basis from the trigonometric basis $(1, \cos\theta, \sin\theta, \cos\theta\sin\theta, ...)$ to another polynomial basis as follows.
+Equation $(1)$ is what we want to solve to find the ellipse angles $\theta$ of the intersections. To take advantage of polynomial root finders tailored to other bases, we make a change of basis from the trigonometric basis $(1, \cos\theta, \sin\theta, \cos\theta\sin\theta, ...)$ to another polynomial basis as follows.
 
-First, note that as $\theta$ traverses from 0 to $\pi$, $\begin{bmatrix}\cos\theta \\ \sin\theta \end{bmatrix}$
-traverses the top half of the unit circle. There is a rational homogeneous parameterization for the same path as $t$ goes from $0$ to $1$:
+Consider this substitution defined by the rational homogeneous parameterization of the unit circle $^1$:
+$$\begin{equation}\cos\theta = \frac{C(t)}{W(t)} =: x(t),\space\space\space \sin\theta = \frac{S(t)}{W(t)} =: y(t)\end{equation}$$
+
+where
 
 $$
 \begin{bmatrix}
@@ -67,19 +69,29 @@ t^2
 t \\
 t^2
 \end{bmatrix}
-$$
+.$$
 
-The first matrix of scalars encapsulates the Bezier coefficients of the $C$, $S$, and $W$ polynomials in the degree-2 Bernstein-Bezier polynomial basis; the second matrix of scalars, the coefficients in the standard power basis. For more info see:
-- https://en.wikipedia.org/wiki/Bernstein_polynomial
-- **Curves and Surfaces for CAGD: A Practical Guide**, Gerald Farin, 4th Edition, Section 13.8 (Control Vectors)
+By substituting $(2)$ into $(1)$, the problem of solving the trigonometric equation for angles $\theta$ is transformed into the problem of solving a nominally quartic polynomial equation for parameters $t\in\R$.
 
-The transformation of equation $(1)$ from trigonometric basis to power polynomial basis is performed by the substitution:
-$$\begin{equation}\cos\theta = \frac{C(t)}{W(t)} =: x(t),\space\space\space \sin\theta = \frac{S(t)}{W(t)} =: y(t)\end{equation}$$
+In `TrigPolynomial.solveUnitCircleImplicitQuadricIntersection` we perform this transformation, then compute the roots of the transformed polynomial. For each root $t$ found, the inverse of the substitution $(2)$ yields an angle $\theta$ at which the ellipse intersects the unit circle:
 
-The method `TrigPolynomial.solveUnitCircleImplicitQuadricIntersection` takes the coefficients of the trigonometric polynomial in $(1)$, and internally applies the transformation $(2)$ to compute its power basis coefficients. The transformed polynomial $P(t)$ has degree at most 4. We currently prefer the power basis because we have polynomial root finders for degrees 2, 3, and 4 implemented by classical formulae. In the future we may use a Bezier polynomial solver that handles any degree, and has the advantage of superior numerical stability of the Bernstein-Bezier basis.
+$$\theta = \arctan\left(\frac{S(t)}{C(t)}\right).$$
 
-Note that if both arcs are circular, then $a_{cc} = a_{cs} = a_{ss} = 0$, and the quartic reduces to a quadratic.
+**Remark:** We defined the substitution $(2)$ in terms of two polynomial bases. The first matrix of scalars encapsulates the Bezier coefficients in the degree-2 Bernstein-Bezier polynomial basis $^2$; the second matrix of scalars, the coefficients in the standard power basis. We currently employ the power basis version of $(2)$ because we have root finders for degrees <= 4 based on classical formulae. In the future we may use a Bezier polynomial solver that handles any degree, and has the advantage of superior numerical stability of the Bernstein-Bezier basis.
 
-Once a solution to $P(t) = 0$ is found, the inverse of the substitution $(2)$ yields an ellipse angle $\theta$ of the intersection of the ellipse and the unit circle:
+**Remark:** As $t$ increases between $-\infty$ and $\infty$, the point $(x(t),y(t))$ traverses the entire unit circle counterclockwise save for one point: $(0,-1)$, which corresponds to angle $\theta=-\pi/2$. A solution to $(1)$ that lies at this "point at infinity" in the rational parameterization cannot be found by a polynomial root finder, so we have to test for this root separately. Specifically, referring to equation $(1)$ as transformed by $(2)$ into the power basis:
 
-$$\theta = \arctan(\frac{S(t)}{C(t)}).$$
+$$c_0 + c_1 t + c_2 t^2 + c_3 t^3 + c_4 t^4 = 0,$$
+
+all we need to do is check the size of the leading coefficient, since
+
+$$\begin{align}
+\notag{}c_4 = 0 &\Leftrightarrow 4a_{ss} - 4a_s + 4a = 0 \\
+\notag{}&\Leftrightarrow (c_x - v_x)^2 + (c_y - v_y)^2 = (c_w - v_w)^2 \\
+\notag{}&\Leftrightarrow c-v \rm{\ is\ on\ the\ homogeneous \ unit\ circle} \\
+\notag{}&\Leftrightarrow \theta=-\frac{\pi}{2} \rm{\ is\ a\ solution\ of\ }(1).
+\end{align}$$
+
+References:
+1. **Curves and Surfaces for CAGD: A Practical Guide**, Gerald Farin, 4th Edition, Section 13.8 (Control Vectors)
+2. https://en.wikipedia.org/wiki/Bernstein_polynomial
