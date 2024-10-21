@@ -1868,6 +1868,61 @@ describe("XmlParser", () => {
     });
 
     describe("Property Parsing Tests", () => {
+      describe("String Parsing Tests", () => {
+        it("With value set to valid string, CustomAttributeProvider should provide valid instance.", async () => {
+          const itemXml = `
+            <ECCustomAttributes>
+              <TestAttribute xmlns="TestSchema.1.0">
+                <TestProperty>TestString</TestProperty>
+              </TestAttribute>
+            </ECCustomAttributes>`;
+
+          const propertyJson = {
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "string",
+              },
+            ],
+          };
+
+          const testClass = await getTestCAClass(propertyJson);
+          const providers = getCAProviders(itemXml);
+
+          // Call Provider
+          const caInstance = providers[0][1](testClass!);
+
+          expect(caInstance.TestProperty).to.equal("TestString");
+        });
+
+        it("Empty property tag, CustomAttributeProvider should provide valid instance.", async () => {
+          const itemXml = `
+            <ECCustomAttributes>
+              <TestAttribute xmlns="TestSchema.1.0">
+                <TestProperty />
+              </TestAttribute>
+            </ECCustomAttributes>`;
+
+          const propertyJson = {
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "string",
+              },
+            ],
+          };
+
+          const testClass = await getTestCAClass(propertyJson);
+          const providers = getCAProviders(itemXml);
+
+          // Call Provider
+          const caInstance = providers[0][1](testClass!);
+
+          expect(caInstance.TestProperty).to.equal("");
+        });
+      });
       describe("Boolean Parsing Tests", () => {
         it("With value set to 'True', CustomAttributeProvider should provide valid instance.", async () => {
           const itemXml = `
