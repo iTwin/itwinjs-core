@@ -106,12 +106,13 @@ export enum HitDetailType {
   Intersection = 3,
 }
 
-/** Describes the [ViewAttachment]($backend), if any, from which the hit represented by a [[HitDetail]] originated.
- * @note Only [[SheetViewState]]s contain view attachments.
+/** Describes the "attached" view, if any, from which the hit represented by a [[HitDetail]] originated.
+ * An attached view is a 2d view drawn into the context of another view - for example, a [[ViewAttachment]]($backend)
+ * rendered into a [[SheetViewState]], or a [[SpatialViewState]] rendered by a [SectionDrawing]($backend) view.
  * @beta
  */
 export interface ViewAttachmentHitInfo {
-  /** The element Id of the [ViewAttachment]($backend) from which the hit originated. */
+  /** The Id of the [ViewAttachment]($backend) element or - for a [SectionDrawing]($backend) view - the [SpatialViewDefinition]($backend) from which the hit originated. */
   readonly id: Id64String;
   /** The viewport that renders the contents of the attached view into the [[ScreenViewport]].
    * @alpha
@@ -159,8 +160,7 @@ export interface HitDetailProps {
    * @alpha
    */
   readonly isClassifier?: boolean;
-  /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
-   * @note Only [[SheetViewState]]s can have view attachments.
+  /** Information about the attached view, if any, within which the hit geometry resides.
    * @beta
    */
   readonly viewAttachment?: ViewAttachmentHitInfo;
@@ -210,8 +210,7 @@ export class HitDetail {
    * @alpha
    */
   public get isClassifier(): boolean | undefined { return this._props.isClassifier; }
-  /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
-   * @note Only [[SheetViewState]]s can have view attachments.
+  /** Information about the attached view within which the hit geometry resides, if any.
    * @beta
    */
   public get viewAttachment(): ViewAttachmentHitInfo | undefined { return this._props.viewAttachment; }

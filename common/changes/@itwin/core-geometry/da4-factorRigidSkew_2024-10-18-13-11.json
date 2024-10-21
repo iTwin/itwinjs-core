@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-geometry",
+      "comment": "new method Matrix3d.factorRigidSkew",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-geometry"
+}
