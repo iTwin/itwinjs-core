@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Comply with 4.8.x ECSql row format",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
