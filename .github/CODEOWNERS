@@ -68,8 +68,8 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /common/**/core-i18n/                             @calebmshafer @wgoehrig
 /common/**/core-markup.*                          @pmconne @bbastings
 /common/**/core-markup/                           @pmconne @bbastings
-/common/**/core-quantity.*                        @calebmshafer @ColinKerr
-/common/**/core-quantity/                         @calebmshafer @ColinKerr
+/common/**/core-quantity.*                        @ColinKerr @hl662 @rschili
+/common/**/core-quantity/                         @ColinKerr @hl662 @rschili
 /common/**/linear-referencing-backend.*           @ColinKerr @diegoalexdiaz
 /common/**/linear-referencing-backend/            @ColinKerr @diegoalexdiaz
 /common/**/linear-referencing-common.*            @ColinKerr @diegoalexdiaz
@@ -109,7 +109,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /core/markup                                      @pmconne @bbastings
 /core/mobile                                      @iTwin/itwinjs-core-admins @iTwin/mobilesdkadmins
 /core/orbitgt                                     @iTwin/itwinjs-core-display
-/core/quantity                                    @calebmshafer @ColinKerr
+/core/quantity                                    @ColinKerr @hl662 @rschili
 /core/webgl-compatibility                         @iTwin/itwinjs-core-display
 
 /docs                                             @iTwin/itwinjs-core
