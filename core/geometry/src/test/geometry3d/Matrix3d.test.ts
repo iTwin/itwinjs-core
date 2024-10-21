@@ -13,13 +13,13 @@ import { Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { XYAndZ } from "../../geometry3d/XYZProps";
 import { Sample } from "../../serialization/GeometrySamples";
-import * as bsiChecker from "../Checker";
+import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 // cSpell:words XXYZ YXYZ ZXYZ XYZAs Eigen dgnplatform VTAT rigids ATTV
 
 export class MatrixTests {
-  public static checkProperties(ck: bsiChecker.Checker, matrix: Matrix3d, isIdentity: boolean | undefined,
+  public static checkProperties(ck: Checker, matrix: Matrix3d, isIdentity: boolean | undefined,
     isUnitPerpendicular: boolean, isRigid: boolean, isInvertible: boolean, isDiagonal: boolean | undefined) {
     if (isIdentity !== undefined)
       ck.testBoolean(isIdentity, matrix.isIdentity, "isIdentity");
@@ -40,7 +40,7 @@ export class MatrixTests {
   }
 }
 
-function testCreateProperties(ck: bsiChecker.Checker) {
+function testCreateProperties(ck: Checker) {
   const matrix = Matrix3d.createRotationAroundVector(Vector3d.create(0, 0, 1), Angle.createDegrees(45.0));
   if (matrix) {
     const vectorA = Vector3d.create(10, 1, 1);
@@ -127,14 +127,14 @@ function testCreateProperties(ck: bsiChecker.Checker) {
 }
 describe("Matrix3d.Construction", () => {
   it("Verify properties of Matrix3d.create", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     testCreateProperties(ck);
     ck.checkpoint("Matrix3d.Construction");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
 
-function checkInverse(ck: bsiChecker.Checker, matrixA: Matrix3d) {
+function checkInverse(ck: Checker, matrixA: Matrix3d) {
   const matrixAInverse = matrixA.inverse();
   ck.testPointer(matrixAInverse, "inverse");
   // GeometryCoreTestIO.consoleLog("matrixA", matrixA);
@@ -146,7 +146,7 @@ function checkInverse(ck: bsiChecker.Checker, matrixA: Matrix3d) {
 }
 describe("Matrix3d.Inverse", () => {
   it("Verify matrix is invertible and matrix times inverse is identity", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrixA = Matrix3d.createRowValues(
       4, 2, 1,
       -1, 5, 3,
@@ -158,7 +158,7 @@ describe("Matrix3d.Inverse", () => {
   });
 });
 
-function checkPointArrays(ck: bsiChecker.Checker, pointsA: Point3d[]) {
+function checkPointArrays(ck: Checker, pointsA: Point3d[]) {
   const transform = Transform.createScaleAboutPoint(Point3d.create(3, 3, 3), 2);
   const pointsB = transform.multiplyPoint3dArray(pointsA);
   ck.testExactNumber(
@@ -202,7 +202,7 @@ function checkPointArrays(ck: bsiChecker.Checker, pointsA: Point3d[]) {
 
 describe("Matrix3d.checkPointArrays", () => {
   it("Matrix3d.checkPointArrays", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const pointsA = [Point3d.create(1, 2, 3), Point3d.create(4, 5, 2)];
     checkPointArrays(ck, pointsA);
     ck.checkpoint("Point3dArray.checkPointArrays");
@@ -231,7 +231,7 @@ describe("Matrix3d.isAlmostEqualAllowZRotation", () => {
 
 describe("Matrix3d.factorPerpendicularColumns", () => {
   it("Matrix3d.factorPerpendicularColumns", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     for (const scale of [1, 10, 1000, 68234]) {
       for (const efg of [[0, 0, 0], [0.1, 0, 0], [0.1, 0.5, -0.3], [0.1, 0.5, 0.54], [-0.2, 0.8, 1.1], [0.01, 0, 0]]) {
         const e = efg[0];
@@ -248,7 +248,7 @@ describe("Matrix3d.factorPerpendicularColumns", () => {
         matrixA.factorPerpendicularColumns(matrixB, matrixC);
         const matrixBU = matrixB.multiplyMatrixMatrix(matrixC);
         const matrixBTB = matrixB.multiplyMatrixTransposeMatrix(matrixB);
-        if (bsiChecker.Checker.noisy.factorPerpendicularColumns) {
+        if (Checker.noisy.factorPerpendicularColumns) {
           GeometryCoreTestIO.consoleLog("A", matrixA);
           GeometryCoreTestIO.consoleLog("diagonal elements of BTB: ",
             matrixBTB.at(0, 0), " - ", matrixBTB.at(1, 1), " - ", matrixBTB.at(1, 1),
@@ -293,7 +293,7 @@ describe("Matrix3d.factorPerpendicularColumns", () => {
 
 describe("Matrix3d.symmetricEigenvalues", () => {
   it("Matrix3d.symmetricEigenvalues", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     for (const lambda0 of [
       Vector3d.create(2, 1, 4),
       Vector3d.create(3, 2, -1),
@@ -329,7 +329,7 @@ describe("Matrix3d.symmetricEigenvalues", () => {
 
 describe("Matrix3d.directDots", () => {
   it("Matrix3d.Matrix3d.directDots", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix = Matrix3d.createRowValues(
       1, 2, 3,
       0.3, 0.77, 4.2,
@@ -350,7 +350,7 @@ describe("Matrix3d.directDots", () => {
   });
 });
 
-function testCacheUse(ck: bsiChecker.Checker, name: string, numCompute: number, numUse: number) {
+function testCacheUse(ck: Checker, name: string, numCompute: number, numUse: number) {
   ck.testExactNumber(numCompute, Matrix3d.numComputeCache, `${name} + numCompute`);
   ck.testExactNumber(numUse, Matrix3d.numUseCache, `${name} + numUse`);
   Matrix3d.numComputeCache = 0;
@@ -358,7 +358,7 @@ function testCacheUse(ck: bsiChecker.Checker, name: string, numCompute: number, 
 }
 describe("Matrix3d.cachedInverse", () => {
   it("cachedInverse", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrixA = Matrix3d.createRowValues(
       1, 2, 3,
       0.3, 0.77, 4.2,
@@ -393,7 +393,7 @@ describe("Matrix3d.cachedInverse", () => {
   });
 });
 
-function verifyInverseGo(ck: bsiChecker.Checker, matrixA: Matrix3d) {
+function verifyInverseGo(ck: Checker, matrixA: Matrix3d) {
   const vectorY = Vector3d.create(1, 2, 3);
   const vectorX = matrixA.multiplyInverse(vectorY);
   if (vectorX) {
@@ -414,7 +414,7 @@ function verifyInverseGo(ck: bsiChecker.Checker, matrixA: Matrix3d) {
     }
   }
 }
-function verifyMatrix3dInverseProperties(ck: bsiChecker.Checker, matrixA: Matrix3d) {
+function verifyMatrix3dInverseProperties(ck: Checker, matrixA: Matrix3d) {
   verifyInverseGo(ck, matrixA);
   verifyInverseGo(ck, matrixA.clone());
   const matrixB = Matrix3d.createIdentity();
@@ -425,7 +425,7 @@ function verifyMatrix3dInverseProperties(ck: bsiChecker.Checker, matrixA: Matrix
 }
 describe("Matrix3d.CachedInverse", () => {
   it("Matrix3d.CachedInverse", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     verifyMatrix3dInverseProperties(ck, Matrix3d.createIdentity());
     verifyMatrix3dInverseProperties(ck, Matrix3d.createScale(2, 3, 4));
     verifyMatrix3dInverseProperties(
@@ -447,7 +447,7 @@ describe("Matrix3d.CachedInverse", () => {
 
 describe("Matrix3d.SingularMatrix", () => {
   it("Matrix3d.SingularMatrix", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const singularX = Matrix3d.createScale(0, 1, 1);
     const singularY = Matrix3d.createScale(1, 0, 1);
     const singularZ = Matrix3d.createScale(1, 1, 0);
@@ -484,7 +484,7 @@ describe("Matrix3d.SingularMatrix", () => {
 
 describe("Matrix3d.ColumnAccess", () => {
   it("Matrix3d.ColumnAccess", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const vectorQ = Vector3d.create(1.789, 2.9, -0.33);
     for (const matrix of Sample.createMatrix3dArray()) {
       const columnX = matrix.columnX();
@@ -504,7 +504,7 @@ describe("Matrix3d.ColumnAccess", () => {
 
 describe("Matrix3d.RowAccess", () => {
   it("Matrix3d.RowAccess", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const vectorQ = Vector3d.create(1.789, 2.9, -0.33);
     for (const matrix of Sample.createMatrix3dArray()) {
       const rowX = matrix.rowX();
@@ -524,11 +524,11 @@ describe("Matrix3d.RowAccess", () => {
 
 describe("AxisOrder.ShiftAxis", () => {
   it("AxisOrder.ShiftAxis", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     for (const axisOrder of
       [AxisOrder.XYZ, AxisOrder.YZX, AxisOrder.ZXY, AxisOrder.XZY, AxisOrder.YXZ, AxisOrder.ZYX]
     ) {
-      if (bsiChecker.Checker.noisy.axisOrderVerify) {
+      if (Checker.noisy.axisOrderVerify) {
         GeometryCoreTestIO.consoleLog(
           "AxisOrder", axisOrder,
           Geometry.axisOrderToAxis(axisOrder, 0),
@@ -553,7 +553,7 @@ describe("AxisOrder.ShiftAxis", () => {
     const vector0 = Vector3d.create(1000, 2, 5);
     const vector1 = Vector3d.create(1, 1001, -2);
     const vector2 = Vector3d.create(-3, 1.234, 1002);
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     for (const axisOrder of
       [AxisOrder.XYZ, AxisOrder.YZX, AxisOrder.ZXY, AxisOrder.XZY, AxisOrder.YXZ, AxisOrder.ZYX]
     ) {
@@ -573,7 +573,7 @@ describe("AxisOrder.ShiftAxis", () => {
   });
 });
 
-function verifyRigidScale(ck: bsiChecker.Checker, matrixA: Matrix3d, expectedScale: number, expectRigid: boolean) {
+function verifyRigidScale(ck: Checker, matrixA: Matrix3d, expectedScale: number, expectRigid: boolean) {
   // console.log ("VerifyRigid " + prettyPrint(matrixA) + " expect " + expectedScale);
   const data = matrixA.factorRigidWithSignedScale();
   if (!expectRigid) {
@@ -589,7 +589,7 @@ function verifyRigidScale(ck: bsiChecker.Checker, matrixA: Matrix3d, expectedSca
 }
 describe("Matrix3d.Factors", () => {
   it("Matrix3d.RigidScale", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const rigids = Sample.createRigidAxes();
     for (const rigid of rigids) {
       ck.testTrue(rigid.isRigid(), "verify rigid");
@@ -605,8 +605,51 @@ describe("Matrix3d.Factors", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
+  it("FactorRigidSkew", () => {
+    const ck = new Checker();
+    const col0 = Vector3d.create(1);
+    const col1 = Vector3d.create(2,1);
+    const col2 = Vector3d.create(1,2,-1);
+    const M = Matrix3d.createColumns(col0, col1, col2); // mirror
+    const R = Matrix3d.createZero();
+    const G = Matrix3d.createZero();
+    if (ck.testTrue(M.factorRigidSkew(R, G), "successfully factored M = R * G")) {
+      ck.testTrue(R.multiplyMatrixMatrix(G).isAlmostEqual(M, Geometry.smallAngleRadians), "verified M factorization");
+      ck.testTrue(R.isRigid(), "R is a rotation");
+      ck.testFalse(G.isRigid(), "G is not a rotation");
+      ck.testTrue(G.determinant() < 0, "G contains the mirror");
+    }
+    col1.scale(2, col0);
+    const M1 = Matrix3d.createColumns(col0, col1, col2); // linearly dependent cols
+    if (ck.testFalse(M1.factorRigidSkew(R, G), "unsuccessfully factored matrix with linearly dependent columns")) {
+      ck.testTrue(R.isIdentity, "on factorization failure, R is the identity");
+      ck.testTrue(G.isAlmostEqual(M1, Geometry.smallAngleRadians), "on factorization failure, G is the instance");
+    }
+    const M2 = Matrix3d.createRotationVectorToVector(col1, col2)!; // rotation
+    if (ck.testTrue(M2.factorRigidSkew(R, G), "successfully factored M2 = R * G")) {
+      ck.testTrue(R.isAlmostEqual(M2, Geometry.smallAngleRadians), "factoring a rotation results in R = input matrix");
+      ck.testTrue(G.isIdentity, "factoring a rotation results in G = identity");
+    }
+    const scale = 3;
+    const M3 = M2.scaleColumns(scale, scale, scale); // rotation * scale
+    const rss = M3.factorRigidWithSignedScale();
+    if (ck.testDefined(rss, "successfully factored M3 = rotation * scale")) {
+      ck.testTrue(rss.rigidAxes.scaleColumns(rss.scale, rss.scale, rss.scale).isAlmostEqual(M3, Geometry.smallAngleRadians), "verified factorRigidWithSignedScale factorization");
+      ck.testNearNumber(scale, rss.scale, Geometry.smallAngleRadians, "factorRigidWithSignedScale yields expected scale");
+      if (ck.testTrue(M3.factorRigidSkew(R, G), "successfully factored M3 = R * G")) {
+        ck.testTrue(R.multiplyMatrixMatrix(G).isAlmostEqual(M3, Geometry.smallAngleRadians), "verified M3 factorization");
+        ck.testTrue(R.isRigid(), "R is a rotation");
+        const scaleG = G.sameDiagonalScale();
+        if (ck.testDefined(scaleG, "G is a uniform scale")) {
+          ck.testNearNumber(scaleG, scale, Geometry.smallAngleRadians, "G has expected uniform scale");
+        }
+      }
+    }
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
   it("Matrix3d.Quaternion", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const rigidScale = Matrix3d.createRowValues(
       0.019908485552297163, -0.0040687348173572974, 0,
       0.0040687348173572974, 0.019908485552297163, 0,
@@ -626,7 +669,7 @@ describe("Matrix3d.Factors", () => {
   });
 
   it("Matrix3d.AxisAndAngleOfRotation", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const rigids = Sample.createRigidAxes();
     for (const rigid of rigids) {
       ck.testTrue(rigid.isRigid(), "verify rigid");
@@ -644,7 +687,7 @@ describe("Matrix3d.Factors", () => {
 
 describe("Matrix3d.BadInputCases", () => {
   it("Matrix3d.BadInputCases", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const failure1 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitX());
     ck.testUndefined(failure1, "createViewedAxes fails with equal inputs");
 
@@ -661,14 +704,14 @@ describe("Matrix3d.BadInputCases", () => {
 
 describe("Matrix3d.AxisAndAngleOfRotation", () => {
   it("Matrix3d.AxisAndAngleOfRotationMaxDiff", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const vectors = Sample.createNonZeroVectors();
     let maxDiff12 = 0;
     for (const vector of vectors) {
-      if (bsiChecker.Checker.noisy.rotMatrixAxisAndAngle)
+      if (Checker.noisy.rotMatrixAxisAndAngle)
         GeometryCoreTestIO.consoleLog("*** vector *** ", vector);
       for (const degrees of [0.01, 10, -14, 78, 128, 0.01, 0.328]) {
-        if (bsiChecker.Checker.noisy.rotMatrixAxisAndAngle)
+        if (Checker.noisy.rotMatrixAxisAndAngle)
           GeometryCoreTestIO.consoleLog("*** degrees *** ", degrees);
         const matrix1 = Matrix3d.createRotationAroundVector(vector, Angle.createDegrees(degrees))!;
         const data = matrix1.getAxisAndAngleOfRotation();
@@ -682,7 +725,7 @@ describe("Matrix3d.AxisAndAngleOfRotation", () => {
         }
         if (matrix2) {
           const diff12 = matrix2.maxDiff(matrix1);
-          if (bsiChecker.Checker.noisy.rotMatrixAxisAndAngle)
+          if (Checker.noisy.rotMatrixAxisAndAngle)
             GeometryCoreTestIO.consoleLog("matrix1.maxDiff(matrix2) ", diff12);
           maxDiff12 = Math.max(maxDiff12, diff12);
         }
@@ -695,7 +738,7 @@ describe("Matrix3d.AxisAndAngleOfRotation", () => {
 
   // rotation by 180 degrees is a special case to invert.
   it("Matrix3d.AxisAndAngleOfRotationPI", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     for (const vector of [
       Vector3d.unitX(),
       Vector3d.unitY(),
@@ -748,7 +791,7 @@ function generateRotationTransform(eyePoint: Point3d, viewRotation: Matrix3d, ya
   return transform;
 }
 
-function testRotateVectorAroundAxis(vector: Vector3d, axis: Vector3d, angle: Angle, ck: bsiChecker.Checker): void {
+function testRotateVectorAroundAxis(vector: Vector3d, axis: Vector3d, angle: Angle, ck: Checker): void {
   const result = Vector3d.createRotateVectorAroundVector(vector, axis, angle);
   const isParallel = vector.isParallelTo(axis);
   ck.testTrue(!isParallel, "vector is not parallel to axis");
@@ -763,7 +806,7 @@ function testRotateVectorAroundAxis(vector: Vector3d, axis: Vector3d, angle: Ang
   }
 }
 
-function testRotateVectorToVector(vectorA: Vector3d, vectorB: Vector3d, ck: bsiChecker.Checker) {
+function testRotateVectorToVector(vectorA: Vector3d, vectorB: Vector3d, ck: Checker) {
   const matrix = Matrix3d.createRotationVectorToVector(vectorA, vectorB);
   const fraction = 0.2;
   ck.testPointer(matrix, "rotation matrix");
@@ -779,7 +822,7 @@ function testRotateVectorToVector(vectorA: Vector3d, vectorB: Vector3d, ck: bsiC
 
 describe("Matrix3d.RotateVector", () => {
   it("Matrix3d.createRotationAroundVector", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const eyePoint = Point3d.create(10, 15, 23);
     const viewRotation = Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createRadians(0.23))!;
     const yawRateRadiansPerTime = 0.5;
@@ -805,7 +848,7 @@ describe("Matrix3d.RotateVector", () => {
   });
 
   it("Matrix3d.testRotateVectorAroundAxis", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     testRotateVectorAroundAxis(Vector3d.create(1, 0, 0), Vector3d.create(0, 0, 1), Angle.createDegrees(25.0), ck);
     testRotateVectorAroundAxis(Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), Angle.createDegrees(-49.0), ck);
     testRotateVectorAroundAxis(Vector3d.create(1, 2, 4), Vector3d.create(5, -2, 1), Angle.createDegrees(25.2), ck);
@@ -814,7 +857,7 @@ describe("Matrix3d.RotateVector", () => {
   });
 
   it("Matrix3d.testRotateVectorToVector", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     testRotateVectorToVector(Vector3d.create(1, 0, 0), Vector3d.create(0, 0, 1), ck);
     testRotateVectorToVector(Vector3d.create(1, 0, 0), Vector3d.create(0, 1, 0), ck);
     testRotateVectorToVector(Vector3d.create(1, 0, 0), Vector3d.create(1, 0, 0), ck);
@@ -849,7 +892,7 @@ describe("Matrix3d.RotateVector", () => {
   });
 
   it("Matrix3d.RotateAroundAxis", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     ck.testMatrix3d(
       Matrix3d.create90DegreeRotationAroundAxis(0),
       Matrix3d.createRotationAroundVector(Vector3d.unitX(), Angle.createDegrees(90))!,
@@ -891,7 +934,7 @@ describe("Matrix3d.RotateVector", () => {
 
 describe("Matrix3d.RowColumn", () => {
   it("Matrix3d.RowColumn", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const vectorX = Vector3d.create(1, 2, 4);
     const vectorY = Vector3d.create(3, 9, 27);
     const vectorZ = Vector3d.create(5, 25, 125);
@@ -935,7 +978,7 @@ describe("Matrix3d.RowColumn", () => {
 
 describe("Matrix3d.DotRows", () => {
   it("Matrix3d.DotRows", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const vector = Vector3d.create(-3.12321, 0.28, 1.249);
     const vectorX = Vector3d.create(1, 2, 4);
     const vectorY = Vector3d.create(3, 9, 27);
@@ -953,7 +996,7 @@ describe("Matrix3d.DotRows", () => {
 
 describe("Matrix3d.SignedPermutation", () => {
   it("Matrix3d.SignedPermutation", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const unitX = Vector3d.unitX();
     const unitY = Vector3d.unitY();
     const orderList = [AxisOrder.XYZ, AxisOrder.YZX, AxisOrder.ZXY, AxisOrder.XZY, AxisOrder.YXZ, AxisOrder.ZYX];
@@ -985,7 +1028,7 @@ describe("Matrix3d.SignedPermutation", () => {
 
 describe("Matrix3d.StandardViewedAxes", () => {
   it("StandardView", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     for (let viewIndex = 0; viewIndex < 8; viewIndex++) {
       const matrix = Matrix3d.createStandardWorldToView(viewIndex);
       ck.testTrue(matrix.isRigid());
@@ -994,7 +1037,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardTopViewedAxes", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Top, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitY(), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1002,7 +1045,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardBottomViewedAxes", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Bottom, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitY(-1), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1010,7 +1053,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardFrontViewedAxes", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Front, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitZ(), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1018,7 +1061,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardBackViewedAxes", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Back, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(-1), Vector3d.unitZ(), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1026,7 +1069,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardRightViewedAxes", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Right, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitY(), Vector3d.unitZ(), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1034,7 +1077,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardLeftViewedAxes", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Left, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitY(-1), Vector3d.unitZ(), 0, 0)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1042,7 +1085,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardIsoViewedAxes", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Iso, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitZ(), -1, 1)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1050,7 +1093,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardRightIsoViewedAxes", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.RightIso, true);
     const matrix2 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitZ(), 1, 1)!;
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1058,7 +1101,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardTopRigidHeadsUp", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Top, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitZ());
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1070,7 +1113,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
    * matrixes match the cross product constructions is just a surprise coincidence.
    */
   // it("StandardBottomRigidHeadsUp", () => {
-  //   const ck = new bsiChecker.Checker();
+  //   const ck = new Checker();
   //   const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Bottom, true);
   //   const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitZ(-1))!;
   //   ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1078,7 +1121,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   // });
 
   it("StandardFrontRigidHeadsUp", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Front, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitY(-1));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1086,7 +1129,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardBackRigidHeadsUp", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Back, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitY());
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1094,7 +1137,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardRightRigidHeadsUp", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Right, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitX());
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1102,7 +1145,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardLeftRigidHeadsUp", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Left, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.unitX(-1));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1110,7 +1153,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardIsoRigidHeadsUp", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Iso, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.create(-1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3)));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1118,7 +1161,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardRightIsoRigidHeadsUp", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.RightIso, true);
     const matrix2 = Matrix3d.createRigidHeadsUp(Vector3d.create(1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3)));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1126,7 +1169,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardTopRigidViewAxesZTowardsEye", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Top, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(0, 0, 1);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1134,7 +1177,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardBottomRigidViewAxesZTowardsEye", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Bottom, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(0, 0, -1);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1142,7 +1185,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardFrontRigidViewAxesZTowardsEye", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Front, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(0, -1, 0);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1150,7 +1193,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardBackRigidViewAxesZTowardsEye", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Back, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(0, 1, 0);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1158,7 +1201,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardRightRigidViewAxesZTowardsEye", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Right, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(1, 0, 0);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1166,7 +1209,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardLeftRigidViewAxesZTowardsEye", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Left, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(-1, 0, 0);
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1174,7 +1217,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardIsoRigidViewAxesZTowardsEye", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.Iso, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(-1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1182,7 +1225,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
   });
 
   it("StandardRightIsoRigidViewAxesZTowardsEye", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix1 = Matrix3d.createStandardWorldToView(StandardViewIndex.RightIso, true);
     const matrix2 = Matrix3d.createRigidViewAxesZTowardsEye(1 / Math.sqrt(3), -1 / Math.sqrt(3), 1 / Math.sqrt(3));
     ck.testMatrix3d(matrix1, matrix2, "matrixes are equal");
@@ -1192,7 +1235,7 @@ describe("Matrix3d.StandardViewedAxes", () => {
 
 describe("Matrix3d.DirectionalScale", () => {
   it("Matrix3d.DirectionalScale", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     for (const planeNormal of [Vector3d.create(0, 0, 1), Vector3d.create(1, 2, 4)]) {
       planeNormal.normalizeInPlace();
       const vectors = Sample.createNonZeroVectors();
@@ -1221,7 +1264,7 @@ describe("Matrix3d.DirectionalScale", () => {
 
 describe("Matrix3d.Multiply", () => {
   it("Matrix3d.MultiplyXY", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const planeNormal = Vector3d.create(1, 2, 4);
     planeNormal.normalizeInPlace();
     const vectors = Sample.createNonZeroVectors();
@@ -1256,7 +1299,7 @@ describe("Matrix3d.Multiply", () => {
   });
 
   it("Matrix3d.MultiplyXYZToFloat64Array", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const vectors = Sample.createNonZeroVectors();
     for (const planeNormal of [
       Vector3d.unitX(),
@@ -1287,7 +1330,7 @@ describe("Matrix3d.Multiply", () => {
 
 describe("Matrix3d.AxisOrderConstructions", () => {
   it("Matrix3d.AxisOrderConstructions", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const planeNormal = Vector3d.create(1, 2, 4);
     planeNormal.normalizeInPlace();
     // matrix does not have to be generated by createDirectionalScale and can be any matrix.
@@ -1307,7 +1350,7 @@ describe("Matrix3d.AxisOrderConstructions", () => {
 
 describe("Matrix3d.CloneAndPerturbation", () => {
   it("Matrix3d.CloneAndPerturbation", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const epsilon = 0.0001;
     const matrixA = Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
     const matrixB = matrixA.clone();
@@ -1336,7 +1379,7 @@ describe("Matrix3d.CloneAndPerturbation", () => {
 
 describe("Matrix3d.JSON", () => {
   it("Matrix3d.JSON", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const epsilon = 1.0e-15;
     const matrixA = Matrix3d.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9);
     const jsonA = matrixA.toJSON();
@@ -1362,7 +1405,7 @@ describe("Matrix3d.JSON", () => {
 
 describe("Matrix3d.Transpose", () => {
   it("Matrix3d.Transpose", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const vector = Vector3d.create(2.9123, -0.23423, 4.0029);
     for (const matrixA of Sample.createScaleSkewMatrix3d()) {
       const matrixAT = matrixA.transpose();
@@ -1388,7 +1431,7 @@ function skewFactors(matrix: Matrix3d): { rigidFactor: Matrix3d, skewFactor: Mat
 }
 describe("Matrix3d.SkewFactorization", () => {
   it("Matrix3d.SkewFactorization", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     for (const matrix of Sample.createScaleSkewMatrix3d()) {
       const factors = skewFactors(matrix);
       if (ck.testPointer(factors)) {
@@ -1426,7 +1469,7 @@ describe("Matrix3d.SkewFactorization", () => {
 
 describe("Matrix3d.InverseVariants", () => {
   it("Matrix3d.CreateCapture", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     for (const matrix of Sample.createScaleSkewMatrix3d()) {
       const coffs = new Float64Array(matrix.coffs);
       matrix.computeCachedInverse(true);
@@ -1445,7 +1488,7 @@ describe("Matrix3d.InverseVariants", () => {
   });
 
   it("Matrix3d.Singular", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrixA = Matrix3d.createRotationAroundVector(Vector3d.create(1, 2, 3), Angle.createDegrees(13))!;
     const matrixB = Matrix3d.createZero();
     ck.testUndefined(matrixA.multiplyMatrixMatrixInverse(matrixB), "singular matrix trapped at multiplication");
@@ -1479,7 +1522,7 @@ function snapVectorToCubeFeatures(vec: XYAndZ, tolerance: number = 1.0e-6): Vect
 }
 describe("Matrix3d.SnapToCube", () => {
   it("Matrix3d.SnapToCube", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const points = Sample.createPoint3dLattice(-1, 1, 1);
     ck.testExactNumber(points.length, 27, "Expect 27 lattice points");
     const a = 1.0e-8;
@@ -1529,10 +1572,10 @@ describe("Matrix3d.SnapToCube", () => {
   });
 });
 
-function checkInverseRelationship(ck: bsiChecker.Checker, name: string, matrix: Matrix3d | undefined,
+function checkInverseRelationship(ck: Checker, name: string, matrix: Matrix3d | undefined,
   expectedInverseState: InverseMatrixState | undefined) {
   if (matrix !== undefined) {
-    if (bsiChecker.Checker.noisy.matrixMultiplyAliasing) {
+    if (Checker.noisy.matrixMultiplyAliasing) {
       GeometryCoreTestIO.consoleLog("-------------------------------");
       GeometryCoreTestIO.consoleLog(`${name}    ${matrix.coffs}`, ` inverse state ${matrix.inverseState}        `);
       GeometryCoreTestIO.consoleLog(`cached inverse    ${matrix.inverseCoffs}`);
@@ -1547,7 +1590,7 @@ function checkInverseRelationship(ck: bsiChecker.Checker, name: string, matrix: 
   }
 }
 function testProductCombinations(
-  ck: bsiChecker.Checker,
+  ck: Checker,
   matrixA0: Matrix3d,
   matrixB0: Matrix3d,
   expectInvertible: boolean,
@@ -1614,7 +1657,7 @@ function testProductCombinations(
 }
 describe("Matrix3d.MatrixProduct", () => {
   it("Matrix3d.MatrixProduct", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrixA = Matrix3d.createRowValues(
       10, 1, 2,
       -3, 12, 4,
@@ -1778,7 +1821,7 @@ describe("Matrix3d.MatrixProduct", () => {
 
 describe("Matrix3d.CloneRigid", () => {
   it("Matrix3d.CloneRigid", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix = Matrix3d.createRowValues(
       -6.438509378433656e-18, -1.0840344784091856e-18, -0.008851813267008355,
       7.88489990157899e-34, -0.008851813267008355, 1.0840344784091856e-18,
@@ -1818,7 +1861,7 @@ describe("Matrix3d.CloneRigid", () => {
 
 describe("Matrix3d.SetColumns", () => {
   it("Matrix3d.SetColumns", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const vectorX: Vector3d = Vector3d.create(1, 2, 3);
     const vectorY: Vector3d = Vector3d.create(4, 5, 6);
     const expectedMatrix: Matrix3d = Matrix3d.createRowValues(
@@ -1835,7 +1878,7 @@ describe("Matrix3d.SetColumns", () => {
 
 describe("Matrix3d.SetRow", () => {
   it("Matrix3d.SetRow", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const vector: Vector3d = Vector3d.create(1, 2, 3);
     const expectedMatrix: Matrix3d = Matrix3d.createRowValues(
       1, 2, 3,
@@ -1863,7 +1906,7 @@ describe("Matrix3d.CreateDirectionalScale", () => {
 
 describe("Matrix3d.createRigidHeadsUp", () => {
   it("Matrix3d.createRigidHeadsUp", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const normal = Vector3d.create(1, 2, 3);
     const matrix = Matrix3d.createRigidHeadsUp(normal);
     // equation of plane with the given normal passing through (0,0,0): x + 2y + 3z = 0
@@ -1875,7 +1918,7 @@ describe("Matrix3d.createRigidHeadsUp", () => {
 
 describe("Matrix3d.createRigidViewAxesZTowardsEye", () => {
   it("Matrix3d.createRigidViewAxesZTowardsEye", () => {
-    const ck = new bsiChecker.Checker();
+    const ck = new Checker();
     const matrix = Matrix3d.createRigidViewAxesZTowardsEye(1, 2, 3); // plane normal is (1,2,3)
     // equation of plane with the given normal passing through (0,0,0): x + 2y + 3z = 0
     const pointOnPlane = Vector3d.create(-5, 1, 1);

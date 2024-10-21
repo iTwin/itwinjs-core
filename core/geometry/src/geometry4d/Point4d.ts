@@ -380,7 +380,8 @@ export class Point4d extends Plane3d implements BeJSONFunctions {
   public projectPointToPlane(spacePoint: Point3d, result?: Point3d): Point3d {
     const h = this.altitude(spacePoint);
     const nn = this.magnitudeSquaredXYZ();
-    const alpha = Geometry.conditionalDivideCoordinate(-h, nn);
+    // this unusual tol is needed so that toPlane3dByOriginAndUnitNormal agrees with its original implementation
+    const alpha = Geometry.conditionalDivideCoordinate(-h, nn, Geometry.largeFractionResult * Geometry.largeFractionResult);
     if (alpha === undefined)
       return spacePoint.clone(result);
     return spacePoint.plusXYZ(alpha * this.x, alpha * this.y, alpha * this.z, result);
