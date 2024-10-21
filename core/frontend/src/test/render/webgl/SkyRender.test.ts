@@ -104,7 +104,7 @@ describe("Sky rendering", () => {
     await IModelApp.shutdown();
   });
 
-  it("draws sky cube", { timeout: 20000 }, async () => {  // macOS is slow.
+  it("draws sky cube", async () => {
     const view = createView({
       sky: {
         display: true,
@@ -127,7 +127,7 @@ describe("Sky rendering", () => {
     expectColors(viewport, [ColorDef.red]);
   });
 
-  it("draws sky sphere", { timeout: 20000 }, async () => {  // macOS is slow.
+  it("draws sky sphere", async () => {
     const view = createView({
       sky: {
         display: true,
@@ -146,7 +146,7 @@ describe("Sky rendering", () => {
     expectColors(viewport, [ColorDef.red]);
   });
 
-  it("draws sky gradient", { timeout: 20000 }, async () => {  // macOS is slow.
+  it("draws sky gradient", async () => {
     const view = createView({
       sky: {
         display: true,
@@ -167,7 +167,7 @@ describe("Sky rendering", () => {
     expectNotTheseColors(viewport, [view.displayStyle.backgroundColor]);
   });
 
-  it("draws no sky", { timeout: 20000 }, async () => {  // macOS is slow.
+  it("draws no sky", async () => {
     const view = createView({});
     viewport = ScreenViewport.create(div, view);
     expectColors(viewport, [view.displayStyle.backgroundColor]);

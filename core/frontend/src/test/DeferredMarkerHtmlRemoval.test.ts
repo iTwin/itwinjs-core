@@ -57,7 +57,7 @@ describe("ScreenViewport", () => {
     }
   }
 
-  it("should not delete markers that are readded by registered decorators", { timeout: 20000 }, () => {
+  it("should not delete markers that are readded by registered decorators", () => {
     const vp = openBlankViewport();
     const decorator = new AddMarkersAlwaysDecorator(vp);
     IModelApp.viewManager.addDecorator(decorator);

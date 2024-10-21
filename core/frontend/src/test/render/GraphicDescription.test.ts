@@ -616,7 +616,11 @@ describe("GraphicDescriptionBuilder", () => {
       const index = meshIndices.indexOf(i);
       expect(index).least(0);
       const mesh = meshes[index];
-      expect(mesh.meshData.texture === undefined).toEqual(i === 0);
+      if (i === 0) {
+        expect(mesh.meshData.texture).toBeUndefined();
+      } else {
+        expect(mesh.meshData.texture).toBeDefined();
+      }
 
       if (i === 5) {
         expect(mesh.meshData.materialInfo).toBeUndefined();

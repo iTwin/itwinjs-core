@@ -79,7 +79,7 @@ describe("Viewport", () => {
       removeListener();
 
       expect(viewport.flashedId).toEqual(expectedId);
-		  expect(event).toEqual(expectedEvent);
+      expect(event).toEqual(expectedEvent);
     }
 
     it("dispatches events when flashed Id changes", () => {
