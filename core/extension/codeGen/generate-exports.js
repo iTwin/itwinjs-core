@@ -6,7 +6,8 @@
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-import pkgJson from "../package.json" assert { type: "json" };
+// `with` keyword is not available in Node 18. If you need to run this in Node 18, replace `with` with `assert`
+import pkgJson from "../package.json" with { type: "json" };
 
 const declarationFilePath = "index.d.ts";
 const jsFilePath = "index.js";
