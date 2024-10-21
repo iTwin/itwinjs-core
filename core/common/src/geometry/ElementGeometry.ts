@@ -1307,7 +1307,7 @@ export namespace ElementGeometry {
 
     if (undefined !== localToWorld) {
       if (undefined !== transform)
-        transform.multiplyTransformTransform(localToWorld, transform);
+        localToWorld.multiplyTransformTransform(transform, transform);
       else
         transform = localToWorld;
     }
@@ -1343,7 +1343,7 @@ export namespace ElementGeometry {
   export function fromBRep(brep: BRepEntity.DataProps, worldToLocal?: Transform): ElementGeometryDataEntry | undefined {
     if (undefined !== worldToLocal) {
       const entityTrans = Transform.fromJSON(brep.transform);
-      const localTrans = entityTrans.multiplyTransformTransform(worldToLocal);
+      const localTrans = worldToLocal.multiplyTransformTransform(entityTrans);
       brep = {
         data: brep.data,
         type: brep.type,
@@ -1447,7 +1447,7 @@ export namespace ElementGeometry {
       transform = Transform.createRowValues(entityTransform.x00(), entityTransform.x01(), entityTransform.x02(), entityTransform.tx(), entityTransform.x10(), entityTransform.x11(), entityTransform.x12(), entityTransform.ty(), entityTransform.x20(), entityTransform.x21(), entityTransform.x22(), entityTransform.tz());
 
     if (undefined !== transform)
-      transform.multiplyTransformTransform(inputTransform, transform);
+      inputTransform.multiplyTransformTransform(transform, transform);
     else
       transform = inputTransform;
 

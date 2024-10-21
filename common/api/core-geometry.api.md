@@ -41,17 +41,6 @@ export interface AkimaCurve3dProps {
     fitPoints: XYZProps[];
 }
 
-// @internal
-export class AnalyticRoots {
-    static appendCubicRoots(c: Float64Array | number[], results: GrowableFloat64Array): void;
-    static appendImplicitLineUnitCircleIntersections(alpha: number, beta: number, gamma: number, cosValues: OptionalGrowableFloat64Array, sinValues: OptionalGrowableFloat64Array, radiansValues: OptionalGrowableFloat64Array, relTol?: number): number;
-    static appendLinearRoot(c0: number, c1: number, values: GrowableFloat64Array): void;
-    static appendQuadraticRoots(c: Float64Array | number[], values: GrowableFloat64Array): void;
-    static appendQuarticRoots(c: Float64Array | number[], results: GrowableFloat64Array): void;
-    static cbrt(x: number): number;
-    static mostDistantFromMean(data: GrowableFloat64Array | undefined): number;
-}
-
 // @public
 export class Angle implements BeJSONFunctions {
     addMultipleOf2PiInPlace(multiple: number): void;
@@ -645,18 +634,6 @@ export class BilinearPatch implements UVSurface {
     tryTransformInPlace(transform: Transform): boolean;
     uvFractionToPoint(u: number, v: number, result?: Point3d): Point3d;
     uvFractionToPointAndTangents(u: number, v: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
-}
-
-// @internal
-export class BilinearPolynomial {
-    constructor(a: number, b: number, c: number, d: number);
-    a: number;
-    b: number;
-    c: number;
-    static createUnitSquareValues(f00: number, f10: number, f01: number, f11: number): BilinearPolynomial;
-    d: number;
-    evaluate(u: number, v: number): number;
-    static solvePair(p: BilinearPolynomial, pValue: number, q: BilinearPolynomial, qValue: number): Point2d[] | undefined;
 }
 
 // @public
@@ -1868,45 +1845,6 @@ export class DeepCompare {
     };
 }
 
-// @internal
-export class Degree2PowerPolynomial {
-    constructor(c0?: number, c1?: number, c2?: number);
-    addConstant(a: number): void;
-    addSquaredLinearTerm(a: number, b: number, s?: number): void;
-    coffs: number[];
-    evaluate(x: number): number;
-    evaluateDerivative(x: number): number;
-    static fromRootsAndC2(root0: number, root1: number, c2?: number): Degree2PowerPolynomial;
-    realRoots(): number[] | undefined;
-    static solveQuadratic(a: number, b: number, c: number): number[] | undefined;
-    tryGetVertexFactorization(): {
-        x0: number;
-        y0: number;
-        c: number;
-    } | undefined;
-}
-
-// @internal
-export class Degree3PowerPolynomial {
-    constructor(c0?: number, c1?: number, c2?: number, c3?: number);
-    addConstant(a: number): void;
-    addSquaredLinearTerm(a: number, b: number, s?: number): void;
-    coffs: number[];
-    evaluate(x: number): number;
-    evaluateDerivative(x: number): number;
-    static fromRootsAndC3(root0: number, root1: number, root2: number, c3?: number): Degree3PowerPolynomial;
-}
-
-// @internal
-export class Degree4PowerPolynomial {
-    constructor(c0?: number, c1?: number, c2?: number, c3?: number, c4?: number);
-    addConstant(a: number): void;
-    coffs: number[];
-    evaluate(x: number): number;
-    evaluateDerivative(x: number): number;
-    static fromRootsAndC4(root0: number, root1: number, root2: number, root3: number, c4?: number): Degree4PowerPolynomial;
-}
-
 // @public
 export class DirectSpiral3d extends TransitionSpiral3d {
     constructor(localToWorld: Transform, spiralType: string | undefined, originalProperties: TransitionConditionalProperties | undefined, nominalL1: number, nominalR1: number, activeFractionInterval: Segment1d | undefined, evaluator: XYCurveEvaluator);
@@ -2815,17 +2753,6 @@ export namespace IModelJson {
     }
 }
 
-// @internal
-export class ImplicitLineXY {
-    constructor(a: number, ax: number, ay: number);
-    a: number;
-    addScaledCoefficientsInPlace(a: number, ax: number, ay: number, scale: number): void;
-    ax: number;
-    ay: number;
-    convertToSegmentPoints(b: number): Point3d[] | undefined;
-    evaluatePoint(xy: XAndY): number;
-}
-
 // @public
 export class IndexedCollectionInterval<T extends CollectionWithLength> {
     protected constructor(points: T, base: number, limit: number);
@@ -3541,6 +3468,7 @@ export class Matrix3d implements BeJSONFunctions {
     dotRowZXYZ(x: number, y: number, z: number): number;
     factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean;
     factorPerpendicularColumns(matrixVD: Matrix3d, matrixU: Matrix3d): boolean;
+    factorRigidSkew(rotation: Matrix3d, skew: Matrix3d, axisOrder?: AxisOrder): boolean;
     factorRigidWithSignedScale(result?: Matrix3d): {
         rigidAxes: Matrix3d;
         scale: number;
@@ -4884,14 +4812,6 @@ export class PolylineOps {
     static removeClosurePoint(data: Point3d[] | Point3d[][]): void;
 }
 
-// @internal
-export class PowerPolynomial {
-    static accumulate(coffP: Float64Array, coffQ: Float64Array, scaleQ: number): number;
-    static degreeKnownEvaluate(coff: Float64Array, degree: number, x: number): number;
-    static evaluate(coff: Float64Array, x: number): number;
-    static zero(coff: Float64Array): void;
-}
-
 // @public
 export abstract class ProxyCurve extends CurvePrimitive {
     constructor(proxyCurve: CurvePrimitive);
@@ -5627,20 +5547,6 @@ export interface SignedLoops {
     slivers: Loop[];
 }
 
-// @internal
-export class SineCosinePolynomial {
-    constructor(a: number, cosCoff: number, sinCoff: number);
-    a: number;
-    cosineCoff: number;
-    evaluateRadians(theta: number): number;
-    range(result?: Range1d): Range1d;
-    rangeInStartEndRadians(radians0: number, radians1: number, result?: Range1d): Range1d;
-    rangeInSweep(sweep: AngleSweep, result?: Range1d): Range1d;
-    referenceMinMaxRadians(): number;
-    set(a: number, cosCoff: number, sinCoff: number): void;
-    sineCoff: number;
-}
-
 // @public
 export class SmallSystem {
     static eliminateFromPivot(rowA: Float64Array, pivotIndex: number, rowB: Float64Array, a: number): boolean;
@@ -5731,25 +5637,6 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d;
     uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
     vFractionToRadians(v: number): number;
-}
-
-// @internal
-export class SphereImplicit {
-    constructor(r: number);
-    evaluateDerivativesThetaPhi(thetaRadians: number, phiRadians: number, dxdTheta: Vector3d, dxdPhi: Vector3d): void;
-    evaluateImplicitFunction(x: number, y: number, z: number): number;
-    evaluateImplicitFunctionXYZW(wx: number, wy: number, wz: number, w: number): number;
-    evaluateThetaPhi(thetaRadians: number, phiRadians: number, result?: Point3d): Point3d;
-    static intersectSphereRay(center: Point3d, radius: number, ray: Ray3d, rayFractions: number[] | undefined, xyz: Point3d[] | undefined, thetaPhiRadians: LongitudeLatitudeNumber[] | undefined): number;
-    static patchRangeStartEndRadians(center: Point3d, radius: number, theta0Radians: number, theta1Radians: number, phi0Radians: number, phi1Radians: number, result?: Range3d): Range3d;
-    static radiansToUnitSphereXYZ(thetaRadians: number, phiRadians: number, xyz: XYZ): void;
-    radius: number;
-    xyzToThetaPhiR(xyz: Point3d): {
-        thetaRadians: number;
-        phiRadians: number;
-        r: number;
-        valid: boolean;
-    };
 }
 
 // @public
@@ -5911,28 +5798,6 @@ export class TaggedNumericData {
     tagB: number;
     tagToIndexedDouble(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
     tagToInt(targetTag: number, minValue: number, maxValue: number, defaultValue: number): number;
-}
-
-// @internal
-export class TorusImplicit {
-    constructor(majorRadius: number, minorRadius: number);
-    boxSize(): number;
-    evaluateDerivativesThetaPhi(thetaRadians: number, phiRadians: number, dxdTheta: Vector3d, dxdPhi: Vector3d): void;
-    evaluateImplicitFunctionPoint(xyz: Point3d): number;
-    evaluateImplicitFunctionXYZ(x: number, y: number, z: number): number;
-    evaluateImplicitFunctionXYZW(x: number, y: number, z: number, w: number): number;
-    evaluateThetaPhi(thetaRadians: number, phiRadians: number): Point3d;
-    evaluateThetaPhiDistance(thetaRadians: number, phiRadians: number, distance: number): Point3d;
-    implicitFunctionScale(): number;
-    majorRadius: number;
-    minorRadius: number;
-    xyzToThetaPhiDistance(xyz: Point3d): {
-        theta: number;
-        phi: number;
-        distance: number;
-        rho: number;
-        safePhi: boolean;
-    };
 }
 
 // @public
@@ -6138,24 +6003,6 @@ export class TriDiagonalSystem {
     setB(row: number, bb: number): void;
     setRow(row: number, left: number, diag: number, right: number): void;
     setX(row: number, xx: number): void;
-}
-
-// @internal
-export class TrigPolynomial {
-    static readonly C: Float64Array;
-    static readonly CC: Float64Array;
-    static readonly CCminusSS: Float64Array;
-    static readonly CW: Float64Array;
-    static readonly S: Float64Array;
-    static readonly SC: Float64Array;
-    static solveAngles(coff: Float64Array, nominalDegree: number, referenceCoefficient: number, radians: number[]): boolean;
-    static solveUnitCircleEllipseIntersection(cx: number, cy: number, ux: number, uy: number, vx: number, vy: number, ellipseRadians: number[], circleRadians: number[]): boolean;
-    static solveUnitCircleHomogeneousEllipseIntersection(cx: number, cy: number, cw: number, ux: number, uy: number, uw: number, vx: number, vy: number, vw: number, ellipseRadians: number[], circleRadians: number[]): boolean;
-    static solveUnitCircleImplicitQuadricIntersection(axx: number, axy: number, ayy: number, ax: number, ay: number, a: number, radians: number[]): boolean;
-    static readonly SS: Float64Array;
-    static readonly SW: Float64Array;
-    static readonly W: Float64Array;
-    static readonly WW: Float64Array;
 }
 
 // @public
