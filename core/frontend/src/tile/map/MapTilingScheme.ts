@@ -189,7 +189,7 @@ export abstract class MapTilingScheme {
 
   /** @alpha */
   private ecefToPixelFraction(point: Point3d, applyTerrain: boolean): Point3d | undefined {
-    const cartoGraphic = Cartographic.fromEcef(point)!;
+    const cartoGraphic = Cartographic.fromEcef(point);
     if (!cartoGraphic)
       return undefined;
     return Point3d.create(this.longitudeToXFraction(cartoGraphic.longitude), this.latitudeToYFraction(cartoGraphic.latitude), applyTerrain ? cartoGraphic.height : 0);
