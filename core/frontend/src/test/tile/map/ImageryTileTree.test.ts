@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ImageMapLayerProps, ImageMapLayerSettings } from "@itwin/core-common";
-import { expect } from "chai";
-import * as sinon from "sinon";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import { MockRender } from "../../../render/MockRender";
 import { createBlankConnection } from "../../createBlankConnection";
 import { ImageryMapLayerTreeReference } from "../../../tile/map/ImageryTileTree";
@@ -46,19 +45,17 @@ interface DatasetEntry {
 }
 
 describe("ImageryTileTree", () => {
-
   let imodel: IModelConnection;
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  beforeAll(async () => {   // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
     imodel = createBlankConnection();
     IModelApp.mapLayerFormatRegistry.register(CustomFormat1);
     IModelApp.mapLayerFormatRegistry.register(CustomFormat2);
   });
 
-  const sandbox = sinon.createSandbox();
   afterEach(async () => {
-    sandbox.restore();
+    vi.restoreAllMocks();
   });
 
   it("tree supplier", async () => {
@@ -76,18 +73,18 @@ describe("ImageryTileTree", () => {
       const treeRefLhs = new ImageryMapLayerTreeReference({ layerSettings: settingsLhs, layerIndex: 0, iModel: imodel });
       const treeOwnerLhs = treeRefLhs.treeOwner;
       const tileTreeLhs = await treeOwnerLhs.loadTree();
-      expect(tileTreeLhs).to.not.undefined;
+      expect(tileTreeLhs).toBeDefined();
 
       const settingsRhs = ImageMapLayerSettings.fromJSON(entry.rhs);
       const treeRefRhs = new ImageryMapLayerTreeReference({ layerSettings: settingsRhs, layerIndex: 0, iModel: imodel });
       const treeOwnerRhs = treeRefRhs.treeOwner;
       const tileTreeRhs = await treeOwnerRhs.loadTree();
-      expect(tileTreeRhs).to.not.undefined;
+      expect(tileTreeRhs).toBeDefined();
 
       if (entry.expectSameTileTree)
-        expect(tileTreeLhs!.modelId).to.equals(tileTreeRhs!.modelId);
+        expect(tileTreeLhs!.modelId).toEqual(tileTreeRhs!.modelId);
       else
-        expect(tileTreeLhs!.modelId).to.not.equals(tileTreeRhs!.modelId);
+        expect(tileTreeLhs!.modelId).not.toEqual(tileTreeRhs!.modelId);
     }
   });
 });
