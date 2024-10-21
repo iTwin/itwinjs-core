@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Update test to reflect correct behaviour",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
