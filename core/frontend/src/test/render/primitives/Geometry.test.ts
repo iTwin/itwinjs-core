@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { IndexedPolyface, LineString3d, Loop, Path, Point3d, Range3d, Transform } from "@itwin/core-geometry";
 import { ColorDef, GraphicParams } from "@itwin/core-common";
 import { DisplayParams } from "../../../common/internal/render/DisplayParams";
@@ -52,7 +52,7 @@ describe("GeometryPrimitives tests", () => {
     // query stroke list from loopGeom
     const strokesPrimList: StrokesPrimitiveList | undefined = loopGeom.getStrokes(0.0);
 
-    assert(strokesPrimList !== undefined);
+    expect(strokesPrimList).toBeDefined();
     if (strokesPrimList === undefined)
       return;
 
@@ -60,25 +60,25 @@ describe("GeometryPrimitives tests", () => {
     const strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
     expect(strksPrims.length).to.be.greaterThan(0);
     const strks: StrokesPrimitivePointList = strksPrims[0];
-    expect(strks.points.length).to.equal(points.length);
+    expect(strks.points.length).toEqual(points.length);
 
     for (const pt of points) { // compare generated (stroked) points to original points
-      expect(pointIsInArray(pt, strks.points)).to.be.true;
+      expect(pointIsInArray(pt, strks.points)).toBe(true);
     }
 
     // query polyface list from loopGeom
     const pfPrimList: PolyfacePrimitiveList | undefined = loopGeom.getPolyfaces(0);
 
-    assert(pfPrimList !== undefined);
+    expect(pfPrimList).toBeDefined();
     if (pfPrimList === undefined)
       return;
 
     expect(pfPrimList.length).to.be.greaterThan(0);
     const pfPrim: PolyfacePrimitive = pfPrimList[0];
-    expect(pfPrim.indexedPolyface.pointCount).to.equal(points.length);
+    expect(pfPrim.indexedPolyface.pointCount).toEqual(points.length);
 
     for (const pt of points) { // compare generated polyface points to original points
-      expect(pointIsInPolyface(pt, pfPrim.indexedPolyface)).to.be.true;
+      expect(pointIsInPolyface(pt, pfPrim.indexedPolyface)).toBe(true);
     }
 
     /*
@@ -113,22 +113,22 @@ describe("GeometryPrimitives tests", () => {
     // query stroke list from pathGeom
     const strokesPrimList: StrokesPrimitiveList | undefined = pathGeom.getStrokes(0.0);
 
-    assert(strokesPrimList !== undefined);
+    expect(strokesPrimList).toBeDefined();
     if (strokesPrimList === undefined)
       return;
 
-    expect(strokesPrimList.length).to.be.greaterThan(0);
+    expect(strokesPrimList.length).toBeGreaterThan(0);
     const strksPrims: StrokesPrimitivePointLists = strokesPrimList[0].strokes;
-    expect(strksPrims.length).to.be.greaterThan(0);
+    expect(strksPrims.length).toBeGreaterThan(0);
     const strks: StrokesPrimitivePointList = strksPrims[0];
-    expect(strks.points.length).to.equal(points.length);
+    expect(strks.points.length).toEqual(points.length);
 
     for (const pt of points) { // compare generated (stroked) points to original points
-      expect(pointIsInArray(pt, strks.points)).to.be.true;
+      expect(pointIsInArray(pt, strks.points)).toBe(true);
     }
 
     // query polyface list from pathGeom (should be undefined - can't get polys from paths)
     const pfPrimList: PolyfacePrimitiveList | undefined = pathGeom.getPolyfaces(0);
-    expect(pfPrimList).to.be.undefined;
+    expect(pfPrimList).toBeUndefined();
   });
 });

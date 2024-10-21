@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ScreenViewport } from "../Viewport";
 import { Decorator } from "../ViewManager";
 import { DecorateContext } from "../ViewContext";
@@ -68,7 +68,7 @@ describe("ScreenViewport", () => {
     vp.renderFrame();
     for (const marker of decorator.markers) {
       // eslint-disable-next-line deprecation/deprecation
-      expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.true;
+      expect(vp.decorationDiv.contains(marker.htmlElement!)).toBe(true);
     }
 
     vp.invalidateDecorations();
@@ -76,11 +76,11 @@ describe("ScreenViewport", () => {
     vp.renderFrame();
     for (const marker of decorator.markers) {
       // eslint-disable-next-line deprecation/deprecation
-      expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.true;
+      expect(vp.decorationDiv.contains(marker.htmlElement!)).toBe(true);
     }
 
     IModelApp.viewManager.dropDecorator(decorator);
-  }).timeout(20000);
+  });
 
   it("should delete markers that aren't readded by registered decorators", () => {
     const vp = openBlankViewport();
@@ -93,7 +93,7 @@ describe("ScreenViewport", () => {
     vp.renderFrame();
     for (const marker of decorator.markers) {
       // eslint-disable-next-line deprecation/deprecation
-      expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.true;
+      expect(vp.decorationDiv.contains(marker.htmlElement!)).toBe(true);
     }
 
     vp.invalidateDecorations();
@@ -101,7 +101,7 @@ describe("ScreenViewport", () => {
     vp.renderFrame();
     for (const marker of decorator.markers) {
       // eslint-disable-next-line deprecation/deprecation
-      expect(vp.decorationDiv.contains(marker.htmlElement!)).to.be.false;
+      expect(vp.decorationDiv.contains(marker.htmlElement!)).toBe(false);
     }
 
     IModelApp.viewManager.dropDecorator(decorator);
