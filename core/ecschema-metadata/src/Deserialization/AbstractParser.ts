@@ -10,6 +10,7 @@ import {
 } from "../Deserialization/JsonProps";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
+import { ECXmlVersion } from "./Helper";
 
 type SchemaItemTuple<T> = Readonly<[string /** Name */, string /** SchemaItemType */, Readonly<T>]>;
 type PropertyTuple<T> = Readonly<[string /** Name */, string /** Property */, Readonly<T>]>;
@@ -22,6 +23,8 @@ export type CAProviderTuple = Readonly<[string /** Full Name */, CustomAttribute
 
 /** @internal */
 export abstract class AbstractParser<TItem = any, TProperty = TItem> {
+  protected _ecXmlVersion?: ECXmlVersion;
+
   public abstract parseSchema(): SchemaProps;
   public abstract getReferences(): Iterable<SchemaReferenceProps>;
 
@@ -54,6 +57,7 @@ export abstract class AbstractParser<TItem = any, TProperty = TItem> {
   public abstract getClassCustomAttributeProviders(data: Readonly<TItem>): Iterable<CAProviderTuple>;
   public abstract getPropertyCustomAttributeProviders(data: Readonly<TProperty>): Iterable<CAProviderTuple>;
   public abstract getRelationshipConstraintCustomAttributeProviders(data: Readonly<TItem>): [Iterable<CAProviderTuple> /* source */, Iterable<CAProviderTuple> /* target */];
+  public abstract get getECXmlVersion(): ECXmlVersion | undefined;
 }
 
 /** @internal */

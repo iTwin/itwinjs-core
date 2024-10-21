@@ -425,6 +425,8 @@ export enum ECObjectsStatus {
     // (undocumented)
     MissingSchemaUrl = 35070,
     // (undocumented)
+    NewerSchemaVersion = 35081,
+    // (undocumented)
     SchemaContextUndefined = 35075,
     // (undocumented)
     Success = 0,
@@ -486,6 +488,14 @@ export class ECVersion {
     toString(padZeroes?: boolean): string;
     // (undocumented)
     get write(): number;
+}
+
+// @internal
+export interface ECXmlVersion {
+    // (undocumented)
+    readVersion: number;
+    // (undocumented)
+    writeVersion: number;
 }
 
 // @beta
@@ -1624,6 +1634,10 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     protected createUnitSystemSync(name: string): UnitSystem;
     // (undocumented)
+    static get currentECXmlMajorVersion(): number;
+    // (undocumented)
+    static get currentECXmlMinorVersion(): number;
+    // (undocumented)
     get customAttributes(): CustomAttributeSet | undefined;
     // @alpha
     protected deleteClass(name: string): Promise<void>;
@@ -1668,6 +1682,10 @@ export class Schema implements CustomAttributeContainerProps {
     get minorVersion(): number;
     // (undocumented)
     get name(): string;
+    // (undocumented)
+    get originalECXmlMajorVersion(): number | undefined;
+    // (undocumented)
+    get originalECXmlMinorVersion(): number | undefined;
     // (undocumented)
     get readVersion(): number;
     // (undocumented)
@@ -1837,6 +1855,10 @@ export interface SchemaItemProps {
     // (undocumented)
     readonly name?: string;
     // (undocumented)
+    readonly originalECXmlMajorVersion?: number;
+    // (undocumented)
+    readonly originalECXmlMinorVersion?: number;
+    // (undocumented)
     readonly schema?: string;
     // (undocumented)
     readonly schemaItemType?: string;
@@ -1985,6 +2007,10 @@ export interface SchemaProps {
     // (undocumented)
     readonly description?: string;
     // (undocumented)
+    readonly ecXmlMajorVersion?: number;
+    // (undocumented)
+    readonly ecXmlMinorVersion?: number;
+    // (undocumented)
     readonly items?: {
         [name: string]: SchemaItemProps;
     };
@@ -2004,6 +2030,8 @@ export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 // @internal
 export class SchemaReadHelper<T = unknown> {
     constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor);
+    // (undocumented)
+    static isECXmlVersionNewer(ecXmlVersion?: ECXmlVersion): boolean;
     readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U>;
     readSchemaInfo<U extends Schema>(schema: U, rawSchema: T): Promise<SchemaInfo>;
     readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U;
@@ -2201,6 +2229,8 @@ export class XmlParser extends AbstractParser<Element> {
     // (undocumented)
     getClassCustomAttributeProviders(xmlElement: Element): Iterable<CAProviderTuple>;
     // (undocumented)
+    get getECXmlVersion(): ECXmlVersion | undefined;
+    // (undocumented)
     getItems(): Iterable<[string, string, Element]>;
     // (undocumented)
     getProperties(xmlElement: Element, itemName: string): Iterable<[string, string, Element]>;
@@ -2252,6 +2282,8 @@ export class XmlParser extends AbstractParser<Element> {
     parseUnit(xmlElement: Element): SchemaItemUnitProps;
     // (undocumented)
     parseUnitSystem(xmlElement: Element): UnitSystemProps;
+    // (undocumented)
+    static parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined;
 }
 
 // (No @packageDocumentation comment for this package)
