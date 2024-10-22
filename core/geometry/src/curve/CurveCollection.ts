@@ -17,7 +17,7 @@ import { VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
-import { AnyCurve, AnyRegion } from "./CurveTypes";
+import { AnyCurve, type AnyRegion } from "./CurveTypes";
 import { GeometryQuery } from "./GeometryQuery";
 import { CloneCurvesContext } from "./internalContexts/CloneCurvesContext";
 import { CloneWithExpandedLineStrings } from "./internalContexts/CloneWithExpandedLineStrings";
@@ -27,10 +27,11 @@ import { PlaneAltitudeRangeContext } from "./internalContexts/PlaneAltitudeRange
 import { SumLengthsContext } from "./internalContexts/SumLengthsContext";
 import { TransformInPlaceContext } from "./internalContexts/TransformInPlaceContext";
 import { LineString3d } from "./LineString3d";
-import { Loop } from "./Loop";
-import { Path } from "./Path";
 import { ProxyCurve } from "./ProxyCurve";
 import { StrokeOptions } from "./StrokeOptions";
+
+import type { Path } from "./Path";
+import type { Loop } from "./Loop";
 
 /** Note: CurveChain and BagOfCurves classes are located in this file to prevent circular dependency. */
 
