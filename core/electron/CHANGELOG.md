@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Wed, 09 Oct 2024 20:23:41 GMT and should not be manually modified.
+This log was last generated on Tue, 22 Oct 2024 20:03:09 GMT and should not be manually modified.
+
+## 4.9.5
+Tue, 22 Oct 2024 20:01:40 GMT
+
+_Version update only_
 
 ## 4.9.4
 Wed, 09 Oct 2024 20:22:04 GMT
