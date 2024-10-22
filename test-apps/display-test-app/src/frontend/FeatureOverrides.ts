@@ -198,17 +198,7 @@ export class Settings implements IDisposable {
         parent: div,
         name,
         id: "whatever...",
-        handler: () => {
-          input.disabled = !cb.checkbox.checked;
-          if (cb.checkbox.checked) {
-            applyToLineCb.disabled = lineTransElem.checkbox.checked;
-          } else {
-            applyToLineCb.disabled = true;
-            applyToLineCb.checked = false;
-          }
-
-          updateTransparencies();
-        },
+        handler: () => updateCheckboxesAndTransparencies(),
       });
 
       const input = createNumericInput({
@@ -231,28 +221,11 @@ export class Settings implements IDisposable {
       parent,
       id: "ugh",
       name: "Apply to lines",
-      handler: () => {
-        if (applyToLineCb.checked) {
-          lineTransElem.checkbox.disabled = false;
-        } else {
-          lineTransElem.checkbox.disabled = true;
-          lineTransElem.checkbox.checked = false;
-        }
-
-        updateTransparencies();
-      },
+      handler: () => updateCheckboxesAndTransparencies(),
     }).checkbox;
     applyToLineCb.disabled = true;
 
     const lineTransElem = addTransparency("Line Transp ");
-    lineTransElem.checkbox.addEventListener("click", () => {
-      if (!lineTransElem.checkbox.checked) {
-        applyToLineCb.disabled = !transElem.checkbox.checked;
-      } else {
-        applyToLineCb.disabled = true;
-        applyToLineCb.checked = false;
-      }
-    });
 
     createCheckBox({
       parent: this._element,
@@ -262,6 +235,20 @@ export class Settings implements IDisposable {
     });
 
     parent.appendChild(document.createElement("hr"));
+
+    const updateCheckboxesAndTransparencies = () => {
+      if (!transElem.checkbox.checked) {
+        applyToLineCb.checked = false;
+      }
+
+      applyToLineCb.disabled = !transElem.checkbox.checked || lineTransElem.checkbox.checked;
+      lineTransElem.checkbox.disabled = applyToLineCb.checked;
+
+      transElem.input.disabled = !transElem.checkbox.checked;
+      lineTransElem.input.disabled = !lineTransElem.checkbox.checked;
+
+      updateTransparencies();
+    };
 
     const updateTransparencies = () => {
       const trans = transElem.checkbox.checked ? parseInt(transElem.input.value, 10) / 255 : undefined;
