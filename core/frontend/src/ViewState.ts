@@ -89,9 +89,7 @@ export interface ComputeDisplayTransformArgs {
    * Defaults to the [DisplayStyleSettings.timePoint]($common) specified by the view's display style.
    */
   timePoint?: number;
-  /** The Id of the "attached" view through which the element or model is drawn.
-   * An attached view is a 2d view drawn into the context of another view - for example, a [[ViewAttachment]]($backend)
-   * rendered into a [[SheetViewState]], or a [[SpatialViewState]] rendered by a [SectionDrawing]($backend) view.
+  /** The element Id of the [ViewAttachment]($backend) through which the element or model is drawn.
    * @beta
    */
   viewAttachmentId?: Id64String;
@@ -1366,9 +1364,7 @@ export abstract class ViewState extends ElementState {
     return [];
   }
 
-  /** Find the viewport that renders the contents of the attached view with the specified element Id into this view.
-   * For a sheet view, the Id refers to a ViewAttachment.
-   * For a section drawing, it refers to a SpatialViewDefinition.
+  /** Find the viewport that renders the contents of the view attachment with the specified element Id into this view.
    * @internal
    */
   public getAttachmentViewport(_id: Id64String): Viewport | undefined {
