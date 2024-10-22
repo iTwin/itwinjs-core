@@ -82,7 +82,7 @@ describe("Learning Snippets", () => {
         },
       });
       // __PUBLISH_EXTRACT_END__
-      // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const expectedBackendVersion = require("@itwin/presentation-backend/package.json").version;
       expect(log).to.be.calledOnceWith(`Backend version: ${expectedBackendVersion}`);
     });

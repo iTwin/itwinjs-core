@@ -105,7 +105,7 @@ import { RulesetVariablesManagerImpl } from "../presentation-backend/RulesetVari
 import { SelectionScopesHelper } from "../presentation-backend/SelectionScopesHelper";
 import { stubECSqlReader } from "./Helpers";
 
-const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-require-imports
 
 describe("PresentationManager", () => {
   before(async () => {

@@ -208,7 +208,7 @@ export class DevTools {
     const availableRpcs: RpcInterfaceEndpoints[] = [];
     return {
       application: IModelHost.applicationVersion,
-      iTwinJs: require("../../package.json").version, // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+      iTwinJs: require("../../package.json").version, // eslint-disable-line @typescript-eslint/no-require-imports
       availableRpcs, // filled in on the frontend
     };
   }

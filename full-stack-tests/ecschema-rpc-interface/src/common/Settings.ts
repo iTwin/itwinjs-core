@@ -52,9 +52,9 @@ export class Settings {
   constructor(env: NodeJS.ProcessEnv) {
     const isFrontend = (typeof (process) === "undefined");
     if (!isFrontend && undefined === env.TF_BUILD) {
-      const path = require("path"); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
-      const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
-      const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+      const path = require("path"); // eslint-disable-line @typescript-eslint/no-require-imports
+      const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
+      const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
       // First check in process.cwd() for the config
       let result = dotenv.config();
       if (result.error) {

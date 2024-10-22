@@ -113,7 +113,7 @@ describe("SchemaDesignPerf Impact of Mixins", () => {
   }
 
   before(async () => {
-    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
     seedCount = configData.mixin.seedCount;
     propCount = configData.mixin.propCount;
     hierarchyCounts = configData.mixin.mixinLevels;

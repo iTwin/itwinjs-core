@@ -113,7 +113,7 @@ describe("SchemaDesignPerf Polymorphic query", () => {
     return schemaPath;
   }
   before(async () => {
-    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
     multiHierarchyCount = configData.polymorphic.multi.hierarchyCount;
     multiSeedCount = configData.polymorphic.multi.seedCount;
     multiOpCount = configData.polymorphic.multi.opCount;

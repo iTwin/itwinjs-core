@@ -64,7 +64,7 @@ export function initializeTracing(enableOpenTelemetry: boolean = false) {
 
   if (enableOpenTelemetry) {
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const api = require("@opentelemetry/api");
       const tracer = api.trace.getTracer("@itwin/core-backend", IModelHost.backendVersion);
       Tracing.enableOpenTelemetry(tracer, api);

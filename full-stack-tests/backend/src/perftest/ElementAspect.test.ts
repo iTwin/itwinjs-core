@@ -36,7 +36,7 @@ describe("ElementAspectPerformance", () => {
     if (!fs.existsSync(KnownTestLocations.outputDir))
       fs.mkdirSync(KnownTestLocations.outputDir);
     // TODO: Update config to use iTwin terminology
-    const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+    const configData = require(path.join(__dirname, "CSPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
     const iTwinId = configData.basicTest.projectId;
     const imodelId = configData.basicTest.aspectIModelId;
 

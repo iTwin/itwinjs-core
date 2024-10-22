@@ -137,7 +137,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     });
   }
   before(async () => {
-    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+    const configData = require(path.join(__dirname, "SchemaPerfConfig.json")); // eslint-disable-line @typescript-eslint/no-require-imports
     seedCount = configData.relation.seedCount;
     opCount = configData.relation.operationsCount;
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))

@@ -519,7 +519,7 @@ export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
 // @public
 export enum DefaultContentDisplayTypes {
-    Grid = "Grid",// eslint-disable-line id-blacklist
+    Grid = "Grid",// eslint-disable-line id-denylist
     List = "List",
     PropertyPane = "PropertyPane",
     Undefined = "Undefined",

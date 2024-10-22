@@ -98,13 +98,13 @@ export namespace Value {
  * A map of raw values
  * @public
  */
-export interface ValuesMap extends ValuesDictionary<Value> {} // eslint-disable-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
+export interface ValuesMap extends ValuesDictionary<Value> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * An array of raw values
  * @public
  */
-export interface ValuesArray extends Array<Value> {} // eslint-disable-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
+export interface ValuesArray extends Array<Value> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Display value type.
@@ -171,13 +171,13 @@ export namespace DisplayValue {
  * A map of display values
  * @public
  */
-export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> {} // eslint-disable-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
+export interface DisplayValuesMap extends ValuesDictionary<DisplayValue> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * An array of display values
  * @public
  */
-export interface DisplayValuesArray extends Array<DisplayValue> {} // eslint-disable-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
+export interface DisplayValuesArray extends Array<DisplayValue> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Data structure that describes nested content value.
@@ -251,7 +251,7 @@ export type ValueJSON = string | number | boolean | null | ValuesMapJSON | Value
  * @deprecated in 3.x. Use [[ValuesMap]]
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
+export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * JSON representation of [[ValuesArray]]
@@ -259,7 +259,7 @@ export interface ValuesMapJSON extends ValuesDictionary<ValueJSON> {} // eslint-
  * @deprecated in 3.x. Use [[ValuesArray]]
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface ValuesArrayJSON extends Array<ValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
+export interface ValuesArrayJSON extends Array<ValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * JSON representation of [[DisplayValue]]
@@ -275,7 +275,7 @@ export type DisplayValueJSON = string | null | DisplayValuesMapJSON | DisplayVal
  * @deprecated in 3.x. Use [[DisplayValuesMap]]
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
+export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * JSON representation of [[DisplayValuesArray]]
@@ -283,7 +283,7 @@ export interface DisplayValuesMapJSON extends ValuesDictionary<DisplayValueJSON>
  * @deprecated in 3.x. Use [[DisplayValuesArray]]
  */
 // eslint-disable-next-line @typescript-eslint/no-deprecated
-export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
+export interface DisplayValuesArrayJSON extends Array<DisplayValueJSON> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * JSON representation of [[NestedContentValue]]

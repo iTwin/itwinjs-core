@@ -270,7 +270,7 @@ export interface DisplayLabelsRequestOptions<TIModel, TInstanceKey> extends Requ
  * Request options used for selection scope related requests
  * @public
  */
-export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
+export interface SelectionScopeRequestOptions<TIModel> extends RequestOptions<TIModel> {} // eslint-disable-line @typescript-eslint/no-empty-object-type
 
 /**
  * Request options used for calculating selection based on given instance keys and selection scope.

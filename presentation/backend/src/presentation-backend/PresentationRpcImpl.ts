@@ -66,7 +66,7 @@ import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
 import { TemporaryStorage } from "./TemporaryStorage";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires, @typescript-eslint/no-require-imports
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const packageJsonVersion = require("../../../package.json").version;
 
 type ContentGetter<TResult = any, TOptions = any> = (requestOptions: TOptions) => TResult;

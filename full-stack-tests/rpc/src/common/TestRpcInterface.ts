@@ -46,7 +46,7 @@ export abstract class ZeroMajorRpcInterface extends RpcInterface {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface, @typescript-eslint/no-empty-object-type
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TokenValues extends IModelRpcProps { }
 
 export abstract class TestRpcInterface extends RpcInterface {
