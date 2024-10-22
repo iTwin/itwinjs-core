@@ -113,6 +113,12 @@ export abstract class ViewTool extends InteractiveTool {
   public constructor(public viewport?: ScreenViewport) {
     super();
   }
+
+  public override async onCleanup(): Promise<void> {
+    this.viewport = undefined;
+    return super.onCleanup();
+  }
+
   public override async onResetButtonUp(_ev: BeButtonEvent) {
     await this.exitTool();
     return EventHandled.Yes;

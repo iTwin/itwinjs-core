@@ -169,3 +169,18 @@ describe("IModelApp", () => {
     expect(IModelApp.renderSystem).toBeInstanceOf(MockRender.System);
   });
 });
+
+describe("IModelApp Shutdown", () => {
+  beforeEach(async () => {
+    await TestApp.startup();
+    await IModelApp.localization.registerNamespace("TestApp");  // we must wait for the localization read to finish.
+  });
+
+  it("on shutdown, should dispose of all tools", async () => {
+    await TestApp.shutdown();
+    expect(IModelApp.toolAdmin.activeTool).to.be.undefined;
+    expect(IModelApp.toolAdmin.primitiveTool).to.be.undefined;
+    expect(IModelApp.toolAdmin.viewTool).to.be.undefined;
+    expect(IModelApp.tools.tools.size).to.equal(0);
+  });
+});
