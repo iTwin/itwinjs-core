@@ -350,18 +350,7 @@ export class Settings implements IDisposable {
         handler: () => updateColors(),
       });
 
-      checkbox.addEventListener("click", () => {
-        picker.input.disabled = !checkbox.checked;
-
-        if (checkbox.checked) {
-          applyToLineCb.checkbox.disabled = lineColorElem.checkbox.checked;
-        } else {
-          applyToLineCb.checkbox.disabled = true;
-          applyToLineCb.checkbox.checked = false;
-        }
-
-        updateColors();
-      });
+      checkbox.addEventListener("click", () => updateCheckboxesAndColors());
 
       return { checkbox, picker };
     };
@@ -372,31 +361,28 @@ export class Settings implements IDisposable {
       parent,
       id: "why is this required...",
       name: "Apply to lines",
-      handler: () => {
-        if (applyToLineCb.checkbox.checked) {
-          lineColorElem.checkbox.disabled = false;
-        } else {
-          lineColorElem.checkbox.disabled = true;
-          lineColorElem.checkbox.checked = false;
-        }
-
-        updateColors();
-      },
+      handler: () => updateCheckboxesAndColors(),
     });
-    applyToLineCb.checkbox.disabled = true;
 
     const lineColorElem = addColorPicker("Line Color");
-    lineColorElem.checkbox.addEventListener("click", () => {
-      if (!lineColorElem.checkbox.checked) {
-        applyToLineCb.checkbox.disabled = !colorElem.checkbox.checked;
-      } else {
-        applyToLineCb.checkbox.disabled = true;
-        applyToLineCb.checkbox.checked = false;
-      }
-    });
+    lineColorElem.checkbox.addEventListener("click", () => updateCheckboxesAndColors());
 
     parent.appendChild(document.createElement("hr"));
 
+    const updateCheckboxesAndColors = () => {
+      if (!colorElem.checkbox.checked) {
+        applyToLineCb.checkbox.checked = false;
+      }
+
+      applyToLineCb.checkbox.disabled = !colorElem.checkbox.checked || lineColorElem.checkbox.checked;
+      lineColorElem.checkbox.disabled = applyToLineCb.checkbox.checked;
+
+      colorElem.picker.input.disabled = !colorElem.checkbox.checked;
+      lineColorElem.picker.input.disabled = !lineColorElem.checkbox.checked;
+
+      updateColors();
+    };
+    
     const updateColors = () => {
       const color = colorElem.checkbox.checked ? convertHexToRgb(colorElem.picker.input.value) : undefined;
       let lineColor;
@@ -407,6 +393,8 @@ export class Settings implements IDisposable {
       this.updateAppearance("rgb", color);
       this.updateAppearance("lineRgb", lineColor);
     };
+
+    updateCheckboxesAndColors();
   }
 }
 
