@@ -93,6 +93,10 @@ export interface ComputeDisplayTransformArgs {
    * @beta
    */
   viewAttachmentId?: Id64String;
+  /** ###TODO
+   * @beta
+   */
+  inSectionDrawingAttachment?: boolean;
   /** If supplied, [[ViewState.computeDisplayTransform]] will modify and return this Transform to hold the result instead of allocating a new Transform.
    * @note If [[ViewState.computeDisplayTransform]] returns `undefined`, this Transform will be unmodified.
    */
@@ -195,6 +199,14 @@ const scratchRange2dIntersect = Range2d.createNull();
  * @public
  */
 export type AttachToViewportArgs = Viewport;
+
+/** Arguments to [[ViewState.getAttachmentViewport]].
+ * @internal
+ */
+export interface GetAttachmentViewportArgs {
+  viewAttachmentId?: Id64String;
+  inSectionDrawingAttachment?: boolean;
+}
 
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
@@ -1367,7 +1379,7 @@ export abstract class ViewState extends ElementState {
   /** Find the viewport that renders the contents of the view attachment with the specified element Id into this view.
    * @internal
    */
-  public getAttachmentViewport(_id: Id64String): Viewport | undefined {
+  public getAttachmentViewport(_args: GetAttachmentViewportArgs): Viewport | undefined {
     return undefined;
   }
 }

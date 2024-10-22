@@ -29,7 +29,7 @@ import { DecorateContext, SceneContext } from "./ViewContext";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";
-import { AttachToViewportArgs, ComputeDisplayTransformArgs, ViewState, ViewState2d } from "./ViewState";
+import { AttachToViewportArgs, ComputeDisplayTransformArgs, GetAttachmentViewportArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./common/ImageUtil";
@@ -561,15 +561,26 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public override getAttachmentViewport(id: Id64String): Viewport | undefined {
-    return this._attachments?.findById(id)?.viewport;
+  public override getAttachmentViewport(args: GetAttachmentViewportArgs): Viewport | undefined {
+    const attachment = args.viewAttachmentId ? this._attachments?.findById(args.viewAttachmentId) : undefined;
+    if (!attachment) {
+      return undefined;
+    }
+
+    return args.inSectionDrawingAttachment ? attachment.viewport?.view.getAttachmentViewport({ inSectionDrawingAttachment: true }) : attachment.viewport;
   }
 
   /** @internal */
   public override computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
-    // ###TODO check if the attached view has a display transform...
+    // ###TODO we're currently ignoring model and element Id in args, assuming irrelevant for sheets.
+    // Should probably call super or have super call us.
     const attachment = undefined !== args.viewAttachmentId ? this._attachments?.findById(args.viewAttachmentId) : undefined;
-    return attachment && attachment instanceof OrthographicAttachment ? attachment.toSheet.clone() : undefined;
+    if (!attachment || !(attachment instanceof OrthographicAttachment)) {
+      return undefined;
+    }
+
+    // ###TODO if args.inSectionDrawingAttachment, get attachment view's transform and multiply
+    return attachment.toSheet.clone(args.output);
   }
 }
 

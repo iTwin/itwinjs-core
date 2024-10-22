@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module LocatingElements
  */
-import { assert, Id64, Id64String } from "@itwin/core-bentley";
+import { assert, Id64, Id64String, RequireAtLeastOne } from "@itwin/core-bentley";
 import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
@@ -119,6 +119,14 @@ export interface ViewAttachmentHitInfo {
   readonly viewport: Viewport;
 }
 
+/** ###TODO
+ * @beta
+ */
+export interface HitPath {
+  viewAttachment?: ViewAttachmentHitInfo;
+  sectionDrawingAttachment?: { viewport: Viewport };
+};
+
 /** Arguments supplied to the [[HitDetail]] constructor.
  * @public
  */
@@ -159,11 +167,10 @@ export interface HitDetailProps {
    * @alpha
    */
   readonly isClassifier?: boolean;
-  /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
-   * @note Only [[SheetViewState]]s can have view attachments.
+  /** ###TODO
    * @beta
    */
-  readonly viewAttachment?: ViewAttachmentHitInfo;
+  readonly path?: HitPath;
 }
 
 /** A HitDetail stores the result when locating geometry displayed in a view.
@@ -214,7 +221,11 @@ export class HitDetail {
    * @note Only [[SheetViewState]]s can have view attachments.
    * @beta
    */
-  public get viewAttachment(): ViewAttachmentHitInfo | undefined { return this._props.viewAttachment; }
+  public get viewAttachment(): ViewAttachmentHitInfo | undefined { return this._props.path?.viewAttachment; }
+  /** ###TODO
+   * @beta
+   */
+  public get path(): HitPath | undefined { return this._props.path; }
 
   /** Create a new HitDetail from the inputs to and results of a locate operation. */
   public constructor(props: HitDetailProps);
@@ -245,6 +256,9 @@ export class HitDetail {
         isClassifier,
       };
     } else {
+      // Ignore an empty path.
+      const path = arg0.path?.sectionDrawingAttachment || arg0.path?.viewAttachment ? arg0.path : undefined;
+      
       // Tempting to use { ...arg0 } but spread operator omits getters so, e.g., if input is a HitDetail we would lose all the properties.
       this._props = {
         testPoint: arg0.testPoint,
@@ -262,7 +276,7 @@ export class HitDetail {
         transformFromSourceIModel: arg0.transformFromSourceIModel,
         tileId: arg0.tileId,
         isClassifier: arg0.isClassifier,
-        viewAttachment: arg0.viewAttachment,
+        path,
       };
     }
   }
