@@ -12,6 +12,7 @@ import {
   iTwinChannel, RemoveFunction,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
+import { _callIpcChannel } from "./common/internal/Symbols";
 
 /**
  * Options for [[IpcApp.startup]]
@@ -91,7 +92,7 @@ export class IpcApp {
    * @note Ipc is only supported if [[isValid]] is true.
    * @internal Use [[makeIpcProxy]] for a type-safe interface.
    */
-  public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
+  public static async [_callIpcChannel](channelName: string, methodName: string, ...args: any[]): Promise<any> {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
     if (undefined !== retVal.error) {
       const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
@@ -101,6 +102,13 @@ export class IpcApp {
     return retVal.result;
   }
 
+  /** @internal
+   * @deprecated in 4.8. Use [[makeIpcProxy]] for a type-safe interface.
+   */
+  public static async callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any> {
+    return this[_callIpcChannel](channelName, methodName, ...args);
+  }
+
   /** Create a type safe Proxy object to make IPC calls to a registered backend interface.
    * @param channelName the channel registered by the backend handler.
    */
@@ -108,7 +116,7 @@ export class IpcApp {
     return new Proxy({} as PickAsyncMethods<K>, {
       get(_target, methodName: string) {
         return async (...args: any[]) =>
-          IpcApp.callIpcChannel(channelName, methodName, ...args);
+          IpcApp[_callIpcChannel](channelName, methodName, ...args);
       },
     });
   }
@@ -116,20 +124,19 @@ export class IpcApp {
   /** Create a type safe Proxy object to call an IPC function on a of registered backend handler that accepts a "methodName" argument followed by optional arguments
    * @param channelName the channel registered by the backend handler.
    * @param functionName the function to call on the handler.
-   * @internal
    */
   public static makeIpcFunctionProxy<K>(channelName: string, functionName: string): PickAsyncMethods<K> {
     return new Proxy({} as PickAsyncMethods<K>, {
       get(_target, methodName: string) {
         return async (...args: any[]) =>
-          IpcApp.callIpcChannel(channelName, functionName, methodName, ...args);
+          IpcApp[_callIpcChannel](channelName, functionName, methodName, ...args);
       },
     });
   }
 
   /** @deprecated in 3.x. use [[appFunctionIpc]] */
   public static async callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>) {
-    return this.callIpcChannel(ipcAppChannels.functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
+    return this[_callIpcChannel](ipcAppChannels.functions, methodName, ...args) as PromiseReturnType<IpcAppFunctions[T]>;
   }
 
   /** A Proxy to call one of the [IpcAppFunctions]($common) functions via IPC. */

@@ -12,6 +12,7 @@ import { AnimationBranchStates } from "./render/GraphicBranch";
 import { RenderSystem } from "./render/RenderSystem";
 import { RenderTarget } from "./render/RenderTarget";
 import { ViewRect } from "./common/ViewRect";
+import { _implementationProhibited } from "./common/internal/Symbols";
 
 /**
  * A RenderTarget for applications that must run in environments where WebGL is not present.
@@ -19,6 +20,7 @@ import { ViewRect } from "./common/ViewRect";
  * @internal
  */
 export class NullTarget extends RenderTarget {
+  protected override readonly [_implementationProhibited] = undefined;
   public get analysisFraction(): number { return 0; }
   public set analysisFraction(_fraction: number) { }
   public get renderSystem() { return undefined as any; }
@@ -62,6 +64,7 @@ export class NullRenderSystem extends RenderSystem {
   public dispose() { }
   public constructor() { super(); }
   public override createRenderGraphic() { return undefined; }
+  public override createGraphicFromTemplate() { return undefined as any; }
 }
 
 /** A utility class intended for applications (primarily test-runners) that run in environments that lack support for WebGL.

@@ -7,15 +7,16 @@
  * @module SQLiteDb
  */
 
+import { BlobContainer } from "./BlobContainerService";
 import { CloudSqlite } from "./CloudSqlite";
 import { VersionedSqliteDb } from "./SQLiteDb";
-import { SettingObject } from "./workspace/Settings";
+import { SettingsContainer } from "./workspace/Settings";
 
 /** @beta */
 export namespace PropertyStore {
 
   /** The set of valid types for properties in a PropertyStore. */
-  export type PropertyType = string | number | boolean | Uint8Array | SettingObject;
+  export type PropertyType = string | number | boolean | Uint8Array | SettingsContainer;
   /** The case-sensitive name of a Property. May not have leading or trailing spaces, and must be between 3 and 2048 characters long. */
   export type PropertyName = string;
   /** An array of PropertyName/PropertyType pairs to be stored in a PropertyStore. */
@@ -65,7 +66,7 @@ export namespace PropertyStore {
           case "number":
             return stmt.getValueDouble(1);
           case "object":
-            return JSON.parse(stmt.getValueString(1)) as SettingObject;
+            return JSON.parse(stmt.getValueString(1)) as SettingsContainer;
         }
         return undefined;
       });
@@ -121,14 +122,14 @@ export namespace PropertyStore {
     /** Get the value of an object property by name.
     * @returns the property's value if it exists and is an object, `undefined` otherwise.
     */
-    public getObject(name: PropertyName): SettingObject | undefined;
+    public getObject(name: PropertyName): SettingsContainer | undefined;
     /** Get the value of an object property by name.
     * @returns the property's value if it exists and is an object, otherwise the supplied default value.
     */
-    public getObject(name: PropertyName, defaultValue: SettingObject): SettingObject;
-    public getObject(name: PropertyName, defaultValue?: SettingObject): SettingObject | undefined {
+    public getObject(name: PropertyName, defaultValue: SettingsContainer): SettingsContainer;
+    public getObject(name: PropertyName, defaultValue?: SettingsContainer): SettingsContainer | undefined {
       const out = this.getProperty(name);
-      return typeof out === "object" ? out as SettingObject : defaultValue;
+      return typeof out === "object" ? out as SettingsContainer : defaultValue;
     }
 
     /** call an iteration function for each property, optionally applying a filter */
@@ -221,6 +222,11 @@ export namespace PropertyStore {
 
   const defaultDbName = "PropertyDb" as const;
 
+  export interface CreateNewContainerProps {
+    scope: BlobContainer.Scope;
+    metadata: Omit<BlobContainer.Metadata, "containerType">;
+  }
+
   /**
    * Provides access to a cloud-based `PropertyDb` to hold a set of values of type `PropertyType`, each with a unique `PropertyName`.
    * `PropertyStore.PropertyDb`s that are stored in cloud containers require an access token that grants permission to read and/or write them.
@@ -236,12 +242,22 @@ export namespace PropertyStore {
     }
 
     /**
-     * Initialize a cloud container for use as a PropertyStore. The container must first be created via its storage supplier api (e.g. Azure, or AWS).
-     * A valid sasToken that grants write access must be supplied. This function creates and uploads an empty PropertyDb into the container.
+     * Initialize a cloud container for use as a PropertyStore. This method is called by [[createNewContainer]].
+     * It is only necessary to convert an existing container to a PropertyStore container.
      * @note this deletes any existing content in the container.
+     * @internal
      */
-    public static async initializeDb(args: { props: CloudSqlite.ContainerAccessProps }) {
+    public static async initializeDb(args: { props: CloudSqlite.ContainerProps }) {
       return super._initializeDb({ ...args, dbType: PropertyDb, dbName: defaultDbName });
+    }
+
+    /** Create and initialize a new BlobContainer to hold a PropertyStore
+     * @note the current user must have administrator rights to create containers.
+     */
+    public static async createNewContainer(args: CreateNewContainerProps): Promise<CloudSqlite.ContainerProps> {
+      const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "property-store" } });
+      await this.initializeDb({ props });
+      return props;
     }
   }
 }

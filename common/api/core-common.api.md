@@ -63,6 +63,7 @@ import { PolyfaceVisitor } from '@itwin/core-geometry';
 import { Range1d } from '@itwin/core-geometry';
 import { Range1dProps } from '@itwin/core-geometry';
 import { Range2d } from '@itwin/core-geometry';
+import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Range3dProps } from '@itwin/core-geometry';
 import type { Readable } from 'stream';
@@ -707,6 +708,8 @@ export enum BisCodeSpec {
     physicalType = "bis:PhysicalType",
     renderMaterial = "bis:RenderMaterial",
     sheet = "bis:Sheet",
+    sheetIndex = "bis:SheetIndex",
+    sheetIndexEntry = "bis:SheetIndexEntry",
     spatialCategory = "bis:SpatialCategory",
     spatialLocationType = "bis:SpatialLocationType",
     subCategory = "bis:SubCategory",
@@ -1164,11 +1167,6 @@ export enum ChangesetType {
     Regular = 0,
     Schema = 1,
     SchemaSync = 65
-}
-
-// @alpha
-export class ChannelConstraintError extends IModelError {
-    constructor(message: string, getMetaData?: LoggingMetaData);
 }
 
 // @public
@@ -1639,6 +1637,20 @@ export namespace ConcreteEntityTypes {
     export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
 }
 
+// @public
+export interface ConflictingLock {
+    briefcaseIds: number[];
+    objectId: string;
+    state: LockState;
+}
+
+// @public
+export class ConflictingLocksError extends IModelError {
+    constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
+    // (undocumented)
+    conflictingLocks?: ConflictingLock[];
+}
+
 // @alpha
 export enum ContentFlags {
     // (undocumented)
@@ -1693,11 +1705,16 @@ export class ContextRealityModel {
     set displaySettings(settings: RealityModelDisplaySettings);
     // @beta (undocumented)
     protected _displaySettings: RealityModelDisplaySettings;
+    // @beta
+    get invisible(): boolean;
+    set invisible(invisible: boolean);
     matchesNameAndUrl(name: string, url: string): boolean;
     readonly name: string;
     readonly onAppearanceOverridesChanged: BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>;
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>;
+    // @beta
+    readonly onInvisibleChanged: BeEvent<(invisible: boolean, model: ContextRealityModel) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>;
     // @alpha (undocumented)
     readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
@@ -1721,6 +1738,8 @@ export interface ContextRealityModelProps {
     description?: string;
     // @beta
     displaySettings?: RealityModelDisplayProps;
+    // @beta
+    invisible?: boolean;
     name?: string;
     // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
@@ -1748,6 +1767,8 @@ export class ContextRealityModels {
     readonly onChanged: BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>;
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>;
+    // @beta
+    readonly onInvisibleChanged: BeEvent<(model: ContextRealityModel, invisible: boolean) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
     populate(): void;
     replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
@@ -1766,6 +1787,113 @@ export interface ContextRealityModelsContainer {
     // @internal
     container?: never;
     contextRealityModels?: ContextRealityModelProps[];
+}
+
+// @public
+export class Contour {
+    clone(changedProps?: Partial<ContourProperties>): Contour;
+    static compare(lhs: Contour, rhs: Contour): number;
+    static create(props?: Partial<ContourProperties>): Contour;
+    // (undocumented)
+    static readonly defaults: Contour;
+    // (undocumented)
+    equals(other: Contour): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourProps): Contour;
+    readonly majorIntervalCount: number;
+    readonly majorStyle: ContourStyle;
+    readonly minorInterval: number;
+    readonly minorStyle: ContourStyle;
+    readonly showGeometry: boolean;
+    // (undocumented)
+    toJSON(): ContourProps;
+}
+
+// @public
+export class ContourDisplay {
+    clone(changedProps?: Partial<ContourDisplayProperties>): ContourDisplay;
+    static create(props?: Partial<ContourDisplayProperties>): ContourDisplay;
+    readonly displayContours: boolean;
+    equals(other: ContourDisplay): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourDisplayProps): ContourDisplay;
+    readonly groups: ContourGroup[];
+    static readonly maxContourGroups = 5;
+    // (undocumented)
+    toJSON(): ContourDisplayProps;
+    withDisplayContours(displayContours: boolean): ContourDisplay;
+}
+
+// @public
+export type ContourDisplayProperties = NonFunctionPropertiesOf<ContourDisplay>;
+
+// @public
+export interface ContourDisplayProps {
+    displayContours?: boolean;
+    groups?: ContourGroupProps[];
+}
+
+// @public
+export class ContourGroup {
+    clone(changedProps?: Partial<ContourGroupProperties>): ContourGroup;
+    readonly contourDef: Contour;
+    static create(props?: Partial<ContourGroupProperties>): ContourGroup;
+    equals(other: ContourGroup | undefined): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourGroupProps): ContourGroup;
+    get isDefaultGroup(): boolean;
+    readonly name: string;
+    get subCategories(): OrderedId64Iterable;
+    subCategoriesEqual(other: ContourGroup): boolean;
+    // (undocumented)
+    toJSON(): ContourGroupProps;
+}
+
+// @public
+export type ContourGroupProperties = NonFunctionPropertiesOf<ContourGroup>;
+
+// @public
+export interface ContourGroupProps {
+    contourDef?: ContourProps;
+    name?: string;
+    subCategories?: CompressedId64Set;
+}
+
+// @public
+export type ContourProperties = NonFunctionPropertiesOf<Contour>;
+
+// @public
+export interface ContourProps {
+    majorIntervalCount?: number;
+    majorStyle?: ContourStyleProps;
+    minorInterval?: number;
+    minorStyle?: ContourStyleProps;
+    showGeometry?: boolean;
+}
+
+// @public
+export class ContourStyle {
+    clone(changedProps?: Partial<ContourStyleProperties>): ContourStyle;
+    readonly color: RgbColor;
+    static compare(lhs: ContourStyle, rhs: ContourStyle): number;
+    static create(props?: Partial<ContourStyleProperties>): ContourStyle;
+    equals(other: ContourStyle): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourStyleProps): ContourStyle;
+    readonly pattern: LinePixels;
+    readonly pixelWidth: number;
+    // (undocumented)
+    toJSON(): ContourStyleProps;
+}
+
+// @public
+export type ContourStyleProperties = NonFunctionPropertiesOf<ContourStyle>;
+
+// @public
+export interface ContourStyleProps {
+    color?: RgbColorProps;
+    pattern?: LinePixels;
+    pixelWidth?: number;
 }
 
 // @public
@@ -1800,8 +1928,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2228224,
-    Major = 34,
+    Combined = 2293760,
+    Major = 35,
     Minor = 0
 }
 
@@ -2113,6 +2241,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     clearSunTime(): void;
+    get contours(): ContourDisplay;
+    set contours(contours: ContourDisplay);
     get environment(): Environment;
     set environment(environment: Environment);
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
@@ -2142,6 +2272,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 // @public
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     ao?: AmbientOcclusion.Props;
+    contours?: ContourDisplayProps;
     environment?: EnvironmentProps;
     hline?: HiddenLine.SettingsProps;
     lights?: LightSettingsProps;
@@ -2245,6 +2376,7 @@ export class DisplayStyleSettings {
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
     readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
+    readonly onContoursChanged: BeEvent<(newContours: ContourDisplay) => void>;
     readonly onEnvironmentChanged: BeEvent<(newEnv: Readonly<Environment>) => void>;
     readonly onExcludedElementsChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
@@ -2721,16 +2853,40 @@ export namespace ElementGeometry {
     export function updateGeometryParams(entry: ElementGeometryDataEntry, geomParams: GeometryParams, localToWorld?: Transform): boolean;
 }
 
-// @beta
+// @public
 export interface ElementGeometryBuilderParams {
     entryArray: ElementGeometryDataEntry[];
     viewIndependent?: boolean;
 }
 
-// @beta
+// @public
 export interface ElementGeometryBuilderParamsForPart {
     entryArray: ElementGeometryDataEntry[];
     is2dPart?: boolean;
+}
+
+// @beta
+export interface ElementGeometryCacheOperationRequestProps {
+    id: Id64String;
+    onGeometry?: ElementGeometryFunction;
+    op: number;
+    params?: any;
+}
+
+// @beta
+export interface ElementGeometryCacheRequestProps {
+    id?: Id64String;
+}
+
+// @beta
+export interface ElementGeometryCacheResponseProps {
+    numCurve?: number;
+    numGeom?: number;
+    numOther?: number;
+    numPart?: number;
+    numSolid?: number;
+    numSurface?: number;
+    status: BentleyStatus;
 }
 
 // @public (undocumented)
@@ -3093,10 +3249,14 @@ export class FeatureAppearance {
     static fromRgba(color: ColorDef, viewDependentTransparency?: boolean): FeatureAppearance;
     static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance;
     static fromTransparency(transparencyValue: number, viewDependent?: boolean): FeatureAppearance;
+    getLineRgb(): RgbColor | undefined;
+    getLineTransparency(): number | undefined;
     readonly ignoresMaterial?: true;
     // (undocumented)
     get isFullyTransparent(): boolean;
     readonly linePixels?: LinePixels;
+    readonly lineRgb?: RgbColor | false;
+    readonly lineTransparency?: number | false;
     get matchesDefaults(): boolean;
     readonly nonLocatable?: true;
     // (undocumented)
@@ -3124,6 +3284,8 @@ export interface FeatureAppearanceProps {
     emphasized?: true;
     ignoresMaterial?: true;
     linePixels?: LinePixels;
+    lineRgb?: RgbColorProps | false;
+    lineTransparency?: number | false;
     nonLocatable?: true;
     rgb?: RgbColorProps;
     transparency?: number;
@@ -3167,6 +3329,8 @@ export enum FeatureIndexType {
 // @public
 export class FeatureOverrides implements FeatureAppearanceSource {
     constructor();
+    // @internal
+    addInvisibleElementOverridesToNeverDrawn(): void;
     get alwaysDrawn(): Id64.Uint32Set;
     // @internal
     protected readonly _alwaysDrawn: Id64.Uint32Set;
@@ -3526,12 +3690,7 @@ export type GenericInstanceFilterRuleGroupOperator = "and" | "or";
 export type GenericInstanceFilterRuleOperator = "is-equal" | "is-not-equal" | "is-null" | "is-not-null" | "is-true" | "is-false" | "less" | "less-or-equal" | "greater" | "greater-or-equal" | "like";
 
 // @beta
-export interface GenericInstanceFilterRuleValue {
-    // (undocumented)
-    displayValue: string;
-    // (undocumented)
-    rawValue: GenericInstanceFilterRuleValue.Values;
-}
+export type GenericInstanceFilterRuleValue = GenericInstanceFilterRuleNumericValue | GenericInstanceFilterRuleNonNumericValue;
 
 // @beta (undocumented)
 export namespace GenericInstanceFilterRuleValue {
@@ -3761,7 +3920,6 @@ export interface GeometricElement3dProps extends GeometricElementProps {
 // @public
 export interface GeometricElementProps extends ElementProps {
     category: Id64String;
-    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParams;
     geom?: GeometryStreamProps;
     placement?: PlacementProps;
@@ -3870,7 +4028,6 @@ export interface GeometryPartInstanceProps {
 export interface GeometryPartProps extends ElementProps {
     // (undocumented)
     bbox?: LowAndHighXYZProps;
-    // @beta
     elementGeometryBuilderParams?: ElementGeometryBuilderParamsForPart;
     // (undocumented)
     geom?: GeometryStreamProps;
@@ -4796,7 +4953,8 @@ export abstract class IModel implements IModelProps {
     protected constructor(tokenProps?: IModelRpcProps);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
-    changeset: ChangesetIdWithIndex;
+    get changeset(): ChangesetIdWithIndex;
+    set changeset(changeset: ChangesetIdWithIndex);
     static readonly dictionaryId: Id64String;
     get ecefLocation(): EcefLocation | undefined;
     set ecefLocation(ecefLocation: EcefLocation | undefined);
@@ -4828,6 +4986,7 @@ export abstract class IModel implements IModelProps {
     get key(): string;
     get name(): string;
     set name(name: string);
+    readonly onChangesetChanged: BeEvent<(previousChangeset: ChangesetIdWithIndex) => void>;
     readonly onEcefLocationChanged: BeEvent<(previousLocation: EcefLocation | undefined) => void>;
     readonly onGeographicCoordinateSystemChanged: BeEvent<(previousGCS: GeographicCRS | undefined) => void>;
     readonly onGlobalOriginChanged: BeEvent<(previousOrigin: Point3d) => void>;
@@ -4948,6 +5107,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     static interfaceVersion: string;
     // (undocumented)
     loadElementProps(_iModelToken: IModelRpcProps, _elementIdentifier: Id64String | GuidString | CodeProps, _options?: ElementLoadOptions): Promise<ElementProps | undefined>;
+    // (undocumented)
+    queryAllUsedSpatialSubCategories(_iModelToken: IModelRpcProps): Promise<SubCategoryResultRow[]>;
     // (undocumented)
     queryBlob(_iModelToken: IModelRpcProps, _request: DbBlobRequest): Promise<DbBlobResponse>;
     // (undocumented)
@@ -5404,6 +5565,15 @@ export interface LineBreakRunProps extends TextBlockComponentProps {
     readonly type: "linebreak";
 }
 
+// @beta
+export interface LineLayoutResult {
+    justificationRange: Range2dProps;
+    offsetFromDocument: XAndY;
+    range: Range2dProps;
+    runs: RunLayoutResult[];
+    sourceParagraphIndex: number;
+}
+
 // @public
 export enum LinePixels {
     Code0 = 0,
@@ -5519,6 +5689,13 @@ export interface Localization {
     initialize(namespaces: string[]): Promise<void>;
     registerNamespace(namespace: string): Promise<void>;
     unregisterNamespace(namespace: string): void;
+}
+
+// @public
+export enum LockState {
+    Exclusive = 2,
+    None = 0,
+    Shared = 1
 }
 
 export { LogFunction }
@@ -6407,6 +6584,8 @@ export class PackedFeatureTable implements RenderFeatureTable {
     readonly batchModelIdPair: Id64.Uint32Pair;
     // (undocumented)
     get byteLength(): number;
+    // (undocumented)
+    readonly data: Uint32Array;
     findElementId(featureIndex: number): Id64String | undefined;
     findFeature(featureIndex: number, result: ModelFeature): ModelFeature | undefined;
     // (undocumented)
@@ -6746,20 +6925,16 @@ export interface PolylineFlags {
     is2d?: boolean;
     isDisjoint?: boolean;
     isPlanar?: boolean;
-    // @alpha
     type?: PolylineTypeFlags;
 }
 
 // @public
 export type PolylineIndices = number[];
 
-// @alpha
+// @public
 export enum PolylineTypeFlags {
-    // (undocumented)
-    Edge = 1,// Just an ordinary polyline
-    // (undocumented)
-    Normal = 0,// A polyline used to define the edges of a planar region.
-    // (undocumented)
+    Edge = 1,
+    Normal = 0,
     Outline = 2
 }
 
@@ -7491,7 +7666,11 @@ export interface RenderFeatureTable {
 
 // @public
 export abstract class RenderMaterial {
-    protected constructor(params: RenderMaterial.Params);
+    protected constructor(params: {
+        key?: string;
+        textureMapping?: TextureMapping;
+    });
+    compare(other: RenderMaterial): number;
     // (undocumented)
     get hasTexture(): boolean;
     readonly key?: string;
@@ -7914,6 +8093,7 @@ export abstract class RenderTexture implements IDisposable {
     protected constructor(type: RenderTexture.Type);
     // (undocumented)
     abstract get bytesUsed(): number;
+    compare(other: RenderTexture): number;
     abstract dispose(): void;
     // (undocumented)
     get isGlyph(): boolean;
@@ -8774,9 +8954,23 @@ export namespace Run {
 }
 
 // @beta
-export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
+export interface RunLayoutResult {
+    characterCount: number;
+    characterOffset: number;
+    denominatorRange?: Range2dProps;
+    fontId: FontId;
+    justificationRange?: Range2dProps;
+    numeratorRange?: Range2dProps;
+    offsetFromLine: XAndY;
+    range: Range2dProps;
+    sourceRunIndex: number;
+    textStyle: TextStyleSettingsProps;
+}
 
 // @beta
+export type RunProps = TextRunProps | FractionRunProps | LineBreakRunProps;
+
+// @public
 export enum SchemaState {
     TooNew = 4,
     TooOld = 3,
@@ -8900,6 +9094,19 @@ export interface SheetBorderTemplateProps extends ElementProps {
     width?: number;
 }
 
+// @beta
+export interface SheetIndexEntryProps extends ElementProps {
+    entryPriority: number;
+}
+
+// @beta
+export type SheetIndexFolderProps = SheetIndexEntryProps;
+
+// @beta
+export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
+    sheetIndex?: RelatedElementProps;
+}
+
 // @public
 export interface SheetProps extends ElementProps {
     // (undocumented)
@@ -8912,6 +9119,11 @@ export interface SheetProps extends ElementProps {
     sheetTemplate?: Id64String;
     // (undocumented)
     width?: number;
+}
+
+// @beta
+export interface SheetReferenceProps extends SheetIndexEntryProps {
+    sheet?: RelatedElementProps;
 }
 
 // @beta
@@ -9068,6 +9280,7 @@ export interface SnapRequestProps {
     id: Id64String;
     // (undocumented)
     intersectCandidates?: Id64Array;
+    modelToWorld?: TransformProps;
     // (undocumented)
     snapAperture?: number;
     // (undocumented)
@@ -9120,7 +9333,7 @@ export abstract class SnapshotIModelRpcInterface extends RpcInterface {
     static interfaceVersion: string;
     // (undocumented)
     openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
-    // (undocumented)
+    // @deprecated (undocumented)
     openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
 }
 
@@ -9459,8 +9672,8 @@ export class TestRpcManager {
 // @beta
 export class TextAnnotation {
     anchor: TextAnnotationAnchor;
-    computeAnchorPoint(textBlockDimensions: XAndY): Point3d;
-    computeTransform(textBlockDimensions: XAndY): Transform;
+    computeAnchorPoint(boundingBox: Range2d): Point3d;
+    computeTransform(boundingBox: Range2d): Transform;
     static create(args?: TextAnnotationCreateArgs): TextAnnotation;
     equals(other: TextAnnotation): boolean;
     static fromJSON(props: TextAnnotationProps | undefined): TextAnnotation;
@@ -9578,6 +9791,12 @@ export type TextBlockGeometryPropsEntry = {
 
 // @beta
 export type TextBlockJustification = "left" | "center" | "right";
+
+// @beta
+export interface TextBlockLayoutResult {
+    lines: LineLayoutResult[];
+    range: Range2dProps;
+}
 
 // @beta
 export interface TextBlockProps extends TextBlockComponentProps {
@@ -9758,6 +9977,7 @@ export interface TextureLoadProps {
 // @public
 export class TextureMapping {
     constructor(tx: RenderTexture, params: TextureMapping.Params);
+    compare(other: TextureMapping): number;
     // @internal (undocumented)
     computeUVParams(visitor: PolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
     // @beta
@@ -9813,6 +10033,7 @@ export namespace TextureMapping {
     }
     export class Params {
         constructor(props?: TextureMapping.ParamProps);
+        compare(other: Params): number;
         // @internal
         computeUVParams(visitor: IndexedPolyfaceVisitor, transformToImodel: Transform): Point2d[] | undefined;
         constantLodParams: ConstantLodParams;
@@ -9825,6 +10046,7 @@ export namespace TextureMapping {
     }
     export class Trans2x3 {
         constructor(m00?: number, m01?: number, originX?: number, m10?: number, m11?: number, originY?: number);
+        compare(other: Trans2x3): number;
         static readonly identity: Trans2x3;
         readonly transform: Transform;
     }
@@ -11126,7 +11348,7 @@ export class WhiteOnWhiteReversalSettings {
     toJSON(): WhiteOnWhiteReversalProps | undefined;
 }
 
-// @internal
+// @internal @deprecated
 export abstract class WipRpcInterface extends RpcInterface {
     // (undocumented)
     attachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;

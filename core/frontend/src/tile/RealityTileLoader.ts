@@ -152,6 +152,7 @@ export abstract class RealityTileLoader {
             transform: tile.transformToRoot,
             hasChildren: !tile.isLeaf,
             pickableOptions: { id: modelId },
+            idMap: this.getBatchIdMap(),
           });
         }
 

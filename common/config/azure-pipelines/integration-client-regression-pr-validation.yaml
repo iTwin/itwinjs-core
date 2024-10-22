@@ -17,6 +17,10 @@ jobs:
     pool:
       vmImage: ubuntu-latest
     steps:
+      - checkout: self
+        clean: true
+        fetchDepth: 1
+
       - template: templates/integration-test-steps.yaml
         parameters:
           nodeVersion: 20.x

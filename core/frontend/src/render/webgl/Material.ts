@@ -7,8 +7,8 @@
  */
 
 import { ColorDef, RenderMaterial } from "@itwin/core-common";
-import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/render/primitives/SurfaceParams";
 import { FloatRgb } from "./FloatRGBA";
+import { SurfaceMaterial, SurfaceMaterialAtlas } from "../../common/internal/render/SurfaceParams";
 
 /** Parameters describing a single material. The parameters used are:
  *  - diffuse color rgb (vec3).
@@ -51,9 +51,19 @@ export class Material extends RenderMaterial {
   public get overridesAlpha() { return this.rgba[3] >= 0; }
   public get hasTranslucency() { return this.overridesAlpha && this.rgba[3] < 1; }
 
+  /** Strictly for testing. */
+  public static preserveParams = false;
+  /** Strictly for testing. */
+  // eslint-disable-next-line deprecation/deprecation
+  public params?: RenderMaterial.Params;
+
   // eslint-disable-next-line deprecation/deprecation
   public constructor(params: RenderMaterial.Params) {
     super(params);
+
+    if (Material.preserveParams) {
+      this.params = params;
+    }
 
     if (undefined !== params.diffuseColor) {
       const rgb = FloatRgb.fromColorDef(params.diffuseColor);

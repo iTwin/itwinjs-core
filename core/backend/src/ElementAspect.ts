@@ -11,6 +11,7 @@ import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DbResult, Id64String } from "@itwin/core-bentley";
+import { _verifyChannel } from "./internal/Symbols";
 
 /** Argument for the `ElementAspect.onXxx` static methods
  * @beta
@@ -42,7 +43,6 @@ export interface OnAspectIdArg extends OnAspectArg {
  * @public
  */
 export class ElementAspect extends Entity {
-  /** @internal */
   public static override get className(): string { return "ElementAspect"; }
   public element: RelatedElement;
 
@@ -65,7 +65,7 @@ export class ElementAspect extends Entity {
    */
   protected static onInsert(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
-    iModel.channels.verifyChannel(arg.model);
+    iModel.channels[_verifyChannel](arg.model);
     iModel.locks.checkExclusiveLock(props.element.id, "element", "insert aspect");
   }
 
@@ -82,7 +82,7 @@ export class ElementAspect extends Entity {
    */
   protected static onUpdate(arg: OnAspectPropsArg): void {
     const { props, iModel } = arg;
-    iModel.channels.verifyChannel(arg.model);
+    iModel.channels[_verifyChannel](arg.model);
     iModel.locks.checkExclusiveLock(props.element.id, "element", "update aspect");
   }
 
@@ -99,7 +99,7 @@ export class ElementAspect extends Entity {
    */
   protected static onDelete(arg: OnAspectIdArg): void {
     const { aspectId, iModel } = arg;
-    iModel.channels.verifyChannel(arg.model);
+    iModel.channels[_verifyChannel](arg.model);
     const { element } = iModel.elements.getAspect(aspectId);
     iModel.locks.checkExclusiveLock(element.id, "element", "delete aspect");
   }
@@ -114,7 +114,6 @@ export class ElementAspect extends Entity {
  * @public
  */
 export class ElementUniqueAspect extends ElementAspect {
-  /** @internal */
   public static override get className(): string { return "ElementUniqueAspect"; }
 }
 
@@ -122,7 +121,6 @@ export class ElementUniqueAspect extends ElementAspect {
  * @public
  */
 export class ElementMultiAspect extends ElementAspect {
-  /** @internal */
   public static override get className(): string { return "ElementMultiAspect"; }
 }
 
@@ -130,7 +128,6 @@ export class ElementMultiAspect extends ElementAspect {
  * @public
  */
 export class ChannelRootAspect extends ElementUniqueAspect {
-  /** @internal */
   public static override get className(): string { return "ChannelRootAspect"; }
   /** Insert a ChannelRootAspect on the specified element.
    * @deprecated in 4.0 use [[ChannelControl.makeChannelRoot]]. This method does not enforce the rule that channels may not nest and is therefore dangerous.
@@ -146,7 +143,6 @@ export class ChannelRootAspect extends ElementUniqueAspect {
  * @public
  */
 export class ExternalSourceAspect extends ElementMultiAspect {
-  /** @internal */
   public static override get className(): string { return "ExternalSourceAspect"; }
 
   /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source.

@@ -13,7 +13,7 @@ import { UnitConverter } from "../UnitConversion/UnitConverter";
 
 /**
  * Class used to find Units in SchemaContext by attributes such as Phenomenon and DisplayLabel.
- * @alpha
+ * @beta
  */
 export class SchemaUnitProvider implements UnitsProvider {
   private _unitConverter: UnitConverter;

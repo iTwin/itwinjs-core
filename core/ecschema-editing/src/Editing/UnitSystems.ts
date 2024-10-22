@@ -6,41 +6,41 @@
  * @module Editing
  */
 
-import { SchemaKey, UnitSystemProps } from "@itwin/ecschema-metadata";
-import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
+import { SchemaItemKey, SchemaItemType, SchemaKey, UnitSystem, UnitSystemProps } from "@itwin/ecschema-metadata";
+import { SchemaContextEditor } from "./Editor";
 import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
+import { ECEditingStatus, SchemaEditingError, SchemaItemId } from "./Exception";
+import { SchemaItems } from "./SchemaItems";
 
 /**
  * @alpha
  * A class allowing you to create schema items of type UnitSystems.
  */
-export class UnitSystems {
-  public constructor(protected _schemaEditor: SchemaContextEditor) { }
-  public async create(schemaKey: SchemaKey, name: string, displayLabel?: string): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
-
-    const newUnitSystem = (await schema.createUnitSystem(name)) as MutableUnitSystem;
-    if (displayLabel)
-      newUnitSystem.setDisplayLabel(displayLabel);
-
-    return { itemKey: newUnitSystem.key };
+export class UnitSystems extends SchemaItems {
+  public constructor(schemaEditor: SchemaContextEditor) {
+    super(SchemaItemType.UnitSystem, schemaEditor);
   }
 
-  public async createFromProps(schemaKey: SchemaKey, unitSystemProps: UnitSystemProps): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined)
-      return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+  public async create(schemaKey: SchemaKey, name: string, displayLabel?: string): Promise<SchemaItemKey> {
 
-    if (unitSystemProps.name === undefined)
-      return { errorMessage: `No name was supplied within props.` };
+    try {
+      const newUnitSystem = await this.createSchemaItem<UnitSystem>(schemaKey, this.schemaItemType, (schema) => schema.createUnitSystem.bind(schema), name) as MutableUnitSystem;
 
-    const newUnitSystem = (await schema.createUnitSystem(unitSystemProps.name)) as MutableUnitSystem;
-    if (newUnitSystem === undefined)
-      return { errorMessage: `Failed to create class ${unitSystemProps.name} in schema ${schemaKey.toString(true)}.` };
+      if (displayLabel)
+        newUnitSystem.setDisplayLabel(displayLabel);
 
-    await newUnitSystem.fromJSON(unitSystemProps);
-    return { itemKey: newUnitSystem.key };
+      return newUnitSystem.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFailed, new SchemaItemId(this.schemaItemType, name, schemaKey), e);
+    }
+  }
+
+  public async createFromProps(schemaKey: SchemaKey, unitSystemProps: UnitSystemProps): Promise<SchemaItemKey> {
+    try {
+      const newUnitSystem = await this.createSchemaItemFromProps(schemaKey, this.schemaItemType, (schema) => schema.createUnitSystem.bind(schema), unitSystemProps);
+      return newUnitSystem.key;
+    } catch (e: any) {
+      throw new SchemaEditingError(ECEditingStatus.CreateSchemaItemFromProps, new SchemaItemId(this.schemaItemType, unitSystemProps.name!, schemaKey), e);
+    }
   }
 }

@@ -8,7 +8,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import { Guid } from "@itwin/core-bentley";
 import { CheckpointManager, V1CheckpointManager, V2CheckpointManager } from "../../CheckpointManager";
-import { IModelHost } from "../../core-backend";
+import { _nativeDb, IModelHost } from "../../core-backend";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelJsFs } from "../../IModelJsFs";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -62,11 +62,11 @@ describe("V1 Checkpoint Manager", () => {
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.setITwinId(iTwinId);
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
+    snapshot[_nativeDb].setITwinId(iTwinId);
+    snapshot[_nativeDb].saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
 
-    assert.notEqual(iModelId, snapshot.nativeDb.getIModelId()); // Ensure the Snapshot dbGuid and iModelId are different
+    assert.notEqual(iModelId, snapshot[_nativeDb].getIModelId()); // Ensure the Snapshot dbGuid and iModelId are different
     snapshot.close();
 
     sinon.stub(V2CheckpointManager, "downloadCheckpoint").callsFake(async (arg) => {
@@ -79,7 +79,7 @@ describe("V1 Checkpoint Manager", () => {
     const request = { localFile, checkpoint: { iTwinId, iModelId, changeset } };
     await CheckpointManager.downloadCheckpoint(request);
     const db = V1CheckpointManager.openCheckpointV1(localFile, request.checkpoint);
-    assert.equal(iModelId, db.nativeDb.getIModelId(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
+    assert.equal(iModelId, db[_nativeDb].getIModelId(), "expected the V1 Checkpoint download to fix the improperly set dbGuid.");
     db.close();
   });
 });
@@ -137,8 +137,8 @@ describe("Checkpoint Manager", () => {
     const iModelId = snapshot.iModelId;
     const iTwinId = Guid.createValue();
     const changeset = IModelTestUtils.generateChangeSetId();
-    snapshot.nativeDb.setITwinId(iTwinId);
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
+    snapshot[_nativeDb].setITwinId(iTwinId);
+    snapshot[_nativeDb].saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
     snapshot.close();
 

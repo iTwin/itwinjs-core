@@ -33,10 +33,14 @@ function copyIdSetToUint32Set(dst: Id64.Uint32Set, src: Iterable<string>): void 
 export interface FeatureAppearanceProps {
   /** See [[FeatureAppearance.rgb]]. */
   rgb?: RgbColorProps;
+  /** See [[FeatureAppearance.lineRgb]]. */
+  lineRgb?: RgbColorProps | false;
   /** See [[FeatureAppearance.weight]]. */
   weight?: number;
   /** See [[FeatureAppearance.transparency]]. */
   transparency?: number;
+  /** See [[FeatureAppearance.lineTransparency]]. */
+  lineTransparency?: number | false;
   /** See [[FeatureAppearance.viewDependentTransparency]]. */
   viewDependentTransparency?: true;
   /** See [[FeatureAppearance.linePixels]]. */
@@ -49,20 +53,110 @@ export interface FeatureAppearanceProps {
   emphasized?: true;
 }
 
+function propsMatchDefaults(props: FeatureAppearanceProps): boolean {
+  return !props.rgb && !props.lineRgb
+    && undefined === props.weight && undefined === props.linePixels
+    && undefined === props.transparency && undefined === props.lineTransparency
+    && !props.ignoresMaterial && !props.nonLocatable && !props.emphasized;
+}
+
+function equalRgb(a: RgbColor | undefined, b: RgbColor | undefined): boolean {
+  if (a === b) {
+    return true;
+  } else if (!a || !b) {
+    return false;
+  } else {
+    return a.equals(b);
+  }
+}
+
+function equalLineRgb(a: RgbColor | false | undefined, b: RgbColor | false | undefined): boolean {
+  if (a === b) {
+    return true;
+  } else if (a instanceof RgbColor && b instanceof RgbColor) {
+    return equalRgb(a, b);
+  } else {
+    assert(a === undefined || a === false);
+    assert(b === undefined || b === false);
+    return false;
+  }
+}
+
+function equalTransparency(a: number | undefined, b: number | undefined): boolean {
+  if (a === b) {
+    return true;
+  } else if (undefined === a || undefined === b) {
+    return false;
+  } else {
+    return Math.floor(a * 0xff) === Math.floor(b * 0xff);
+  }
+}
+
+function equalLineTransparency(a: number | false | undefined, b: number | false | undefined): boolean {
+  if (a === b) {
+    return true;
+  } else if (typeof a === "number" && typeof b === "number") {
+    return equalTransparency(a, b);
+  } else {
+    assert(a === undefined || a === false);
+    assert(b === undefined || b === false);
+    return false;
+  }
+}
+
+function transparencyFromJSON(transp: number | undefined): number | undefined {
+  if (undefined === transp) {
+    return undefined;
+  }
+
+  transp = Math.max(0, Math.min(transp, 1));
+
+  // Fix up rounding errors...
+  const smallDelta = 0.0001;
+  if (1.0 - transp < smallDelta) {
+    transp = 1.0;
+  } else if (transp < smallDelta) {
+    transp = 0.0;
+  }
+
+  return transp;
+}
+
 /** Defines overrides for selected aspects of a [[Feature]]'s symbology.
  * Any member defined in the appearance overrides that aspect of symbology for all [[Feature]]s to which the appearance is applied.
+ *
+ * The [[rgb]] and [[transparency]] overrides, if defined, apply to all geometry by default.
+ * However, the color and transparency of "linear" geometry can optionally be controlled independently from the rest of the geometry via [[lineRgb]] and [[lineTransparency]].
+ * Linear geometry consists of any of the following:
+ * - Curves and line strings;
+ * - Points and point strings; and
+ * - The outlines of planar regions.
+ * The edges of 3d surfaces like spheres are not considered linear geometry.
+ *
  * @see [[FeatureOverrides]] to customize the appearance of multiple features.
  * @public
  */
 export class FeatureAppearance {
-  /** Overrides the feature's color. */
+  /** Overrides the feature's color.
+   * If [[lineRgb]] is `undefined`, this color also applies to linear geometry.
+   */
   public readonly rgb?: RgbColor;
+  /** If defined, overrides the color of linear geometry independently of [[rgb]].
+   * If `false`, linear geometry draws using its normal color; otherwise, it uses the specified color.
+   */
+  public readonly lineRgb?: RgbColor | false;
   /** The width of lines and edges in pixels as an integer in [1, 31]. */
   public readonly weight?: number;
   /** The transparency in the range [0, 1] where 0 indicates fully opaque and 1 indicates fully transparent.
+   * If [[lineTransparency]] is `undefined`, this transparency also applies to linear geometry.
    * @see [[viewDependentTransparency]] for details on how this override interacts with the [DisplayStyle]($backend).
    */
   public readonly transparency?: number;
+  /** If defined, overrides the transparency of linear geometry independently of [[transparency]].
+   * If `false`, linear geometry draws using its normal transparency; otherwise, it uses the specified transparency.
+   * @see [[viewDependentTransparency]] for details on how this override interacts with the [DisplayStyle]($backend).
+   */
+  public readonly lineTransparency?: number | false;
   /** The pixel pattern applied to lines and edges. */
   public readonly linePixels?: LinePixels;
   /** If true, don't apply the [[RenderMaterial]] to the feature's surfaces. */
@@ -71,9 +165,9 @@ export class FeatureAppearance {
   public readonly nonLocatable?: true;
   /** If true, the feature will be rendered using the [[Hilite.Settings]] defined by [Viewport.emphasisSettings]($frontend) to make it stand out. */
   public readonly emphasized?: true;
-  /** If true, then [[transparency]] will only be applied if [[ViewFlags.transparency]] is enabled and the current [[RenderMode]] supports transparency.
+  /** If true, then [[transparency]] and/or [[lineTransparency]] will only be applied if [[ViewFlags.transparency]] is enabled and the current [[RenderMode]] supports transparency.
    * Default: false, meaning the transparency will be applied regardless of view flags or render mode.
-   * This property has no effect if [[transparency]] is `undefined`.
+   * This property has no effect if this appearance does not override transparency.
    */
   public readonly viewDependentTransparency?: true;
 
@@ -81,24 +175,25 @@ export class FeatureAppearance {
   public static readonly defaults = new FeatureAppearance({});
 
   public static fromJSON(props?: FeatureAppearanceProps) {
-    if (undefined === props || (undefined === props.rgb && undefined === props.weight && undefined === props.transparency && undefined === props.linePixels && !props.ignoresMaterial && !props.nonLocatable && !props.emphasized))
+    if (!props || propsMatchDefaults(props)) {
       return this.defaults;
-    else
-      return new FeatureAppearance(props);
+    }
+
+    return new FeatureAppearance(props);
   }
 
   /** Create a FeatureAppearance that overrides only the RGB color.
    * @note The transparency component of the ColorDef is ignored.
    */
   public static fromRgb(color: ColorDef): FeatureAppearance {
-    return this.fromJSON({ rgb: RgbColor.fromColorDef(color) });
+    return new FeatureAppearance({ rgb: RgbColor.fromColorDef(color) });
   }
 
   /** Create a FeatureAppearance that overrides the RGB and transparency.
    * The appearance's transparency is derived from the transparency component of the ColorDef.
    */
   public static fromRgba(color: ColorDef, viewDependentTransparency = false): FeatureAppearance {
-    return this.fromJSON({
+    return new FeatureAppearance({
       rgb: RgbColor.fromColorDef(color),
       transparency: color.colors.t / 255,
       viewDependentTransparency: viewDependentTransparency ? true : undefined,
@@ -106,7 +201,7 @@ export class FeatureAppearance {
   }
   /** Create a FeatureAppearance that overrides only the transparency */
   public static fromTransparency(transparencyValue: number, viewDependent = false): FeatureAppearance {
-    return this.fromJSON({
+    return new FeatureAppearance({
       transparency: transparencyValue,
       viewDependentTransparency: viewDependent ? true : undefined,
     });
@@ -132,12 +227,35 @@ export class FeatureAppearance {
   public get overridesTransparency(): boolean { return undefined !== this.transparency; }
   public get overridesLinePixels(): boolean { return undefined !== this.linePixels; }
   public get overridesWeight(): boolean { return undefined !== this.weight; }
+
+  /** Get the color that will be applied to linear geometry, or undefined if not overridden.
+   * This is the same as [[rgb]] if [[lineRgb]] is `undefined`.
+   */
+  public getLineRgb(): RgbColor | undefined {
+    return false !== this.lineRgb ? (this.lineRgb ?? this.rgb) : undefined;
+  }
+
+  /** Get the transparency that will be applied to linear geometry, or undefined if not overridden.
+   * This is the same as [[transparency]] if [[lineTransparency]] is `undefined`.
+   */
+  public getLineTransparency(): number | undefined {
+    return false !== this.lineTransparency ? (this.lineTransparency ?? this.transparency) : undefined;
+  }
+
   public get overridesSymbology(): boolean {
     return this.overridesRgb || this.overridesTransparency || this.overridesWeight || this.overridesLinePixels || !!this.ignoresMaterial
-      || this.emphasized || this.overridesNonLocatable;
+      || this.emphasized || this.overridesNonLocatable
+      || undefined !== this.getLineRgb() || undefined !== this.getLineTransparency();
   }
+
   public get overridesNonLocatable(): boolean { return undefined !== this.nonLocatable; }
-  public get isFullyTransparent(): boolean { return undefined !== this.transparency && this.transparency >= 1.0; }
+
+  public get isFullyTransparent(): boolean {
+    const surf = this.transparency ?? 0;
+    const line = this.getLineTransparency() ?? 0;
+    return surf >= 1 && line >= 1;
+  }
+
   /** Returns true if any aspect of the appearance is overridden (i.e., if any member is not undefined). */
   public get anyOverridden(): boolean { return this.overridesSymbology || this.overridesNonLocatable; }
 
@@ -145,14 +263,16 @@ export class FeatureAppearance {
     if (this === other)
       return true;
 
-    return this.rgbIsEqual(other.rgb)
+    return equalRgb(this.rgb, other.rgb)
       && this.weight === other.weight
-      && this.transparencyIsEqual(other.transparency)
+      && equalTransparency(this.transparency, other.transparency)
       && this.linePixels === other.linePixels
       && this.ignoresMaterial === other.ignoresMaterial
       && this.nonLocatable === other.nonLocatable
       && this.emphasized === other.emphasized
-      && this.viewDependentTransparency === other.viewDependentTransparency;
+      && this.viewDependentTransparency === other.viewDependentTransparency
+      && equalLineTransparency(this.lineTransparency, other.lineTransparency)
+      && equalLineRgb(this.lineRgb, other.lineRgb);
   }
 
   public toJSON(): FeatureAppearanceProps {
@@ -180,6 +300,15 @@ export class FeatureAppearance {
 
     if (true === this.emphasized)
       props.emphasized = true;
+
+    if (undefined !== this.lineTransparency)
+      props.lineTransparency = this.lineTransparency;
+
+    if (this.lineRgb) {
+      props.lineRgb = this.lineRgb;
+      if (this.viewDependentTransparency)
+        props.viewDependentTransparency = true;
+    }
 
     return props;
   }
@@ -231,8 +360,12 @@ export class FeatureAppearance {
       props.nonLocatable = true;
     if (undefined === props.emphasized && this.emphasized)
       props.emphasized = true;
+    if (!props.lineRgb)
+      props.lineRgb = this.lineRgb;
+    if (undefined === props.lineTransparency)
+      props.lineTransparency = this.lineTransparency;
 
-    if (undefined !== props.transparency && this.viewDependentTransparency)
+    if (this.viewDependentTransparency && (undefined !== props.transparency || undefined !== props.lineTransparency))
       props.viewDependentTransparency = true;
 
     return FeatureAppearance.fromJSON(props);
@@ -240,47 +373,25 @@ export class FeatureAppearance {
 
   protected constructor(props: FeatureAppearanceProps) {
     this.rgb = undefined !== props.rgb ? RgbColor.fromJSON(props.rgb) : undefined;
+    this.lineRgb = typeof props.lineRgb === "object" ? RgbColor.fromJSON(props.lineRgb) : (false === props.lineRgb ? false : undefined);
+
+    this.transparency = transparencyFromJSON(props.transparency);
+    this.lineTransparency = typeof props.lineTransparency === "number" ? transparencyFromJSON(props.lineTransparency) : (false === props.lineTransparency ? false : undefined);
+
     this.weight = props.weight;
-    this.transparency = props.transparency;
     this.linePixels = props.linePixels;
+
     this.ignoresMaterial = props.ignoresMaterial;
     this.nonLocatable = props.nonLocatable;
     this.emphasized = props.emphasized;
 
-    if (undefined !== this.weight)
+    if (undefined !== this.weight) {
       this.weight = Math.max(1, Math.min(this.weight, 32));
-
-    if (undefined !== this.transparency) {
-      if (props.viewDependentTransparency)
-        this.viewDependentTransparency = true;
-
-      this.transparency = Math.max(0, Math.min(this.transparency, 1));
-
-      // Fix up rounding errors...
-      const smallDelta = 0.0001;
-      if (1.0 - this.transparency < smallDelta)
-        this.transparency = 1.0;
-      else if (this.transparency < smallDelta)
-        this.transparency = 0.0;
     }
-  }
 
-  private rgbIsEqual(rgb?: RgbColor): boolean {
-    if (undefined === this.rgb)
-      return undefined === rgb;
-    else if (undefined === rgb)
-      return false;
-    else
-      return this.rgb.equals(rgb);
-  }
-
-  private transparencyIsEqual(transp?: number): boolean {
-    if (undefined === this.transparency)
-      return undefined === transp;
-    else if (undefined === transp)
-      return false;
-    else
-      return Math.floor(this.transparency * 0xff) === Math.floor(transp * 0xff);
+    if (props.viewDependentTransparency && (undefined !== this.transparency || undefined !== this.getLineTransparency())) {
+      this.viewDependentTransparency = true;
+    }
   }
 }
 
@@ -779,6 +890,17 @@ export class FeatureOverrides implements FeatureAppearanceSource {
    */
   public getSubCategoryPriority(idLo: number, idHi: number): number {
     return this._subCategoryPriorities.get(idLo, idHi) ?? 0;
+  }
+
+  /** Adds all fully transparent elements to the _neverDrawn set.  This is used for BatchedModels planar masks.
+   * @internal
+   */
+  public addInvisibleElementOverridesToNeverDrawn(): void {
+    this._elementOverrides.forEach((lo, hi) => {
+      const app = this.getElementOverrides(lo, hi, 0);
+      if (app?.isFullyTransparent)
+        this._neverDrawn.add(lo, hi);
+    });
   }
 
   /** Construct a new Overrides that overrides nothing.

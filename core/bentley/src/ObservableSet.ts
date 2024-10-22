@@ -36,7 +36,9 @@ export class ObservableSet<T> extends Set<T> {
     };
   }
 
-  /** @internal */
+  /** Invokes [Set.delete](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/delete), raising
+   * the [[onDeleted]] event if the item was removed from the set.
+   */
   public override delete(item: T): boolean {
     const ret = super.delete(item);
     if (ret)
@@ -45,7 +47,9 @@ export class ObservableSet<T> extends Set<T> {
     return ret;
   }
 
-  /** @internal */
+  /** If this set is not already empty, invokes [Set.clear](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Set/clear)
+   * and raises the [[onCleared]] event.
+   */
   public override clear(): void {
     if (0 !== this.size) {
       super.clear();

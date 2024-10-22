@@ -7,15 +7,14 @@
  * @module WebGL
  */
 
-import { dispose } from "@itwin/core-bentley";
+import { BeEvent, dispose } from "@itwin/core-bentley";
 import {
   ColorDef, Frustum, FrustumPlanes, RenderMode, RenderTexture, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, TextureTransparency,
 } from "@itwin/core-common";
-import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { PlanarClipMaskState } from "../../PlanarClipMaskState";
 import { GraphicsCollectorDrawArgs, SpatialClassifierTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
-import { ViewState3d } from "../../ViewState";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { RenderGraphic } from "../RenderGraphic";
 import { RenderMemory } from "../RenderMemory";
@@ -262,6 +261,10 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
   private _classifierTreeRef?: SpatialClassifierTileTreeReference;
   private _planarClipMaskOverrides?: FeatureSymbology.Overrides;
   private _contentMode: PlanarClassifierContent = PlanarClassifierContent.None;
+  private _removeMe?: () => void;
+  private _featureSymbologySource: FeatureSymbology.Source = {
+    onSourceDisposed: new BeEvent<() => void>(),
+  };;
 
   private static _postProjectionMatrix = Matrix4d.createRowValues(
     0, 1, 0, 0,
@@ -337,6 +340,11 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     this._maskBuffer = dispose(this._maskBuffer);
     this._classifierCombinedBuffer = dispose(this._classifierCombinedBuffer);
     this._classifierAndMaskCombinedBuffer = dispose(this._classifierAndMaskCombinedBuffer);
+    if (this._removeMe) {
+      this._removeMe();
+      this._removeMe = undefined;
+    }
+    this._featureSymbologySource.onSourceDisposed.raiseEvent();
   }
 
   public get texture(): Texture | undefined {
@@ -391,19 +399,23 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (undefined === context.viewingSpace)
       return;
 
-    const viewState = context.viewingSpace.view as ViewState3d;
-    if (undefined === viewState)
+    const viewState = context.viewingSpace.view;
+    if (!viewState.isSpatialView())
       return;
 
-    const requiredHeight = context.target.viewRect.height;
-    const requiredWidth = context.target.viewRect.width;
+    this._doDebugFrustum = context.target.debugControl?.displayMaskFrustum ?? false;
+
+    const maxTextureSize = System.instance.maxTexSizeAllow;
+    const requiredHeight = maxTextureSize;
+    const requiredWidth = maxTextureSize;
 
     if (requiredWidth !== this._width || requiredHeight !== this._height)
       this.dispose();
 
     this._width = requiredWidth;
     this._height = requiredHeight;
-    const maskTrees = this._planarClipMask?.getTileTrees(viewState, target.modelId);
+    const maskRange = Range3d.createNull();
+    const maskTrees = this._planarClipMask?.getTileTrees(context, target.modelId, maskRange);
     if (!maskTrees && !this._classifierTreeRef)
       return;
 
@@ -411,14 +423,23 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     if (this._classifierTreeRef)
       allTrees.push(this._classifierTreeRef);
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, target, allTrees, viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, target, allTrees, viewState, this._width, this._height, maskRange);
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 
     this._projectionMatrix = projection.projectionMatrix;
     this._frustum = projection.textureFrustum;
     this._debugFrustum = projection.debugFrustum;
-    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides();
+    this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
+    if (!this._planarClipMask?.usingViewportOverrides && this._removeMe) {
+      this._removeMe();
+      this._removeMe = undefined;
+    } else if (this._planarClipMask?.usingViewportOverrides && !this._removeMe) {
+      this._removeMe = context.viewport.onFeatureOverridesChanged.addListener(() => {
+        this._planarClipMaskOverrides = this._planarClipMask?.getPlanarClipMaskSymbologyOverrides(context, this._featureSymbologySource);
+        context.viewport.requestRedraw();
+      });
+    }
 
     const drawTree = (treeRef: TileTreeReference, graphics: RenderGraphic[]) => {
       this._graphics = graphics;
@@ -442,13 +463,21 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
       this._debugFrustumGraphic = dispose(this._debugFrustumGraphic);
       const builder = context.createSceneGraphicBuilder();
 
-      builder.setSymbology(ColorDef.green, ColorDef.green, 1);
+      builder.setSymbology(ColorDef.green, ColorDef.green, 2);
       builder.addFrustum(context.viewingSpace.getFrustum());
-      builder.setSymbology(ColorDef.red, ColorDef.red, 1);
+      builder.setSymbology(ColorDef.red, ColorDef.red, 2);
       builder.addFrustum(this._debugFrustum!);
-      builder.setSymbology(ColorDef.white, ColorDef.white, 1);
+      builder.setSymbology(ColorDef.blue, ColorDef.blue, 2);
       builder.addFrustum(this._frustum);
+
+      builder.setSymbology(ColorDef.from(0,200,0,222), ColorDef.from(0,200,0,222), 2);
+      builder.addFrustumSides(context.viewingSpace.getFrustum());
+      builder.setSymbology(ColorDef.from(200,0,0,222), ColorDef.from(200,0,0,222), 2);
+      builder.addFrustumSides(this._debugFrustum!);
+      builder.setSymbology(ColorDef.from(0,0,200,222), ColorDef.from(0,0,200,222), 2);
+      builder.addFrustumSides(this._frustum);
       this._debugFrustumGraphic = builder.finish();
+      context.outputGraphic(this._debugFrustumGraphic);
     }
   }
 
@@ -498,9 +527,6 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
         this._contentMode = PlanarClassifierContent.ClassifierAndMask;
       }
     }
-
-    if (undefined !== this._debugFrustumGraphic)
-      target.graphics.foreground.push(this._debugFrustumGraphic);
 
     // Temporarily override the Target's state.
     const system = System.instance;

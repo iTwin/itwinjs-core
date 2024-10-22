@@ -6,8 +6,8 @@ import { Logger } from "@itwin/core-bentley";
 import { Cartographic } from "@itwin/core-common";
 import { GrowableXYZArray, LineString3d, Loop, Point3d, Point3dArray, RegionOps } from "@itwin/core-geometry";
 import { FeatureGeometryBaseRenderer, FeatureGeometryRenderer, FeatureSymbolizedRenderer, WebMercator } from "../../internal";
-import { GraphicPrimitive } from "../../../render/GraphicPrimitive";
 import { Viewport } from "../../../Viewport";
+import { GraphicPrimitive } from "../../../common/render/GraphicPrimitive";
 
 const loggerCategory = "MapLayerImageryProvider.FeatureGraphicsRenderer";
 

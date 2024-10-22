@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Allow revert timeline changes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -15,11 +15,11 @@ import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderGraphic } from "../render/RenderGraphic";
-import { BatchOptions } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import { ImdlModel } from "../common/imdl/ImdlModel";
 import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../common/imdl/ParseImdlDocument";
 import { decodeImdlGraphics, IModelTileContent } from "./internal";
+import { BatchOptions } from "../common/render/BatchOptions";
 
 /* eslint-disable no-restricted-syntax */
 

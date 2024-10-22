@@ -221,7 +221,7 @@ export abstract class RpcRequest<TResponse = any> {
     for (const param of this.parameters) {
       if (typeof (param) === "object" && param !== null) {
         for (const prop of Object.getOwnPropertyNames(requiredProperties)) {
-          if (param.hasOwnProperty(prop) && typeof (param[prop]) === requiredProperties[prop]) {
+          if (prop in param && typeof (param[prop]) === requiredProperties[prop]) {
             return param;
           }
         }

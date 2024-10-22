@@ -1320,6 +1320,11 @@ describe("ECClass", () => {
             },
             {
               type: "PrimitiveProperty",
+              typeName: "dateTime",
+              name: "DateTimeString",
+            },
+            {
+              type: "PrimitiveProperty",
               typeName: "point2d",
               name: "Point2D",
             },
@@ -1354,6 +1359,7 @@ describe("ECClass", () => {
         Long: 100,
         Double: 200,
         DateTime: new Date(nowTicks),
+        DateTimeString: "2021-08-19T16:37:42.278",
         Point2D: { x: 100, y: 200 },
         Point3D: { x: 100, y: 200, z: 300 },
         IGeometry: "geometry",
@@ -1362,6 +1368,7 @@ describe("ECClass", () => {
 
       testClass.addCustomAttribute(ca);
       const serialized = await testClass.toXml(newDom);
+      const expectedTimeFromString  = new Date("2021-08-19T16:37:42.278").getTime();
 
       let element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TrueBoolean");
       expect(element.textContent).to.equal("True");
@@ -1375,6 +1382,8 @@ describe("ECClass", () => {
       expect(element.textContent).to.equal("200");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "DateTime");
       expect(element.textContent).to.equal(nowTicks.toString());
+      element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "DateTimeString");
+      expect(element.textContent).to.equal(expectedTimeFromString.toString());
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point2D");
       expect(element.textContent).to.equal("100,200");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point3D");

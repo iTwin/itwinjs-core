@@ -13,10 +13,9 @@ import { IModelConnection } from "@itwin/core-frontend";
 import { ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "../Presentation";
 import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
+import hiliteRuleset from "./HiliteRules.json";
 
-/** @internal */
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-export const HILITE_RULESET: Ruleset = require("./HiliteRules.json");
+const HILITE_RULESET = hiliteRuleset as Ruleset;
 
 /**
  * A set of model, subcategory and element ids that can be used for specifying

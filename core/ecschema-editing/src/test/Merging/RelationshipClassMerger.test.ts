@@ -6,8 +6,19 @@ import { RelationshipClass, Schema, SchemaContext, SchemaItemType } from "@itwin
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { ECEditingStatus } from "../../Editing/Exception";
+import { AnyDiagnostic } from "../../ecschema-editing";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
+
+function getRuleViolationMessage(ruleViolations: AnyDiagnostic[]) {
+  let violations = "";
+  for (const diagnostic of ruleViolations) {
+    violations += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
+  }
+  return violations;
+}
 
 describe("Relationship Class merger tests", () => {
   let targetContext: SchemaContext;
@@ -16,7 +27,14 @@ describe("Relationship Class merger tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
   };
+
   const testJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "TestSchema",
@@ -104,8 +122,8 @@ describe("Relationship Class merger tests", () => {
     };
   }
 
-  beforeEach(() => {
-    targetContext = new SchemaContext();
+  beforeEach(async () => {
+    targetContext = await BisTestHelper.getNewContext();
   });
 
   it("should merge missing relationship class with added constraint classes", async () => {
@@ -275,6 +293,7 @@ describe("Relationship Class merger tests", () => {
     await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -347,6 +366,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -450,6 +470,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -531,6 +552,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -596,6 +618,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -634,7 +657,12 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith(Error, "ECObjects-1601: The Source-Constraint of 'TargetSchema.BaseRelationship' has multiple constraint classes which requires an abstract constraint to be defined.");
+    // await expect(merge).to.be.rejectedWith(Error, "ECObjects-1601: The Source-Constraint of 'TargetSchema.BaseRelationship' has multiple constraint classes which requires an abstract constraint to be defined.");
+    await expect(merge).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.AddConstraintClass);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+      expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from Source constraint of RelationshipClass TargetSchema.BaseRelationship: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
+    });
   });
 
   it("should throw an error merging constraint classes not supported by base class constraint", async () => {
@@ -642,6 +670,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -682,7 +711,11 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith(Error, "ECObjects-1502: The constraint class 'TestSchema.TestEntity' on the Source-Constraint of 'TargetSchema.BaseRelationship' is not derived from the abstract constraint class 'TestSchema.SourceBaseEntity'.");
+    await expect(merge).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.AddConstraintClass);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+      expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from RelationshipClass TargetSchema.BaseRelationship: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
+    });
   });
 
   it("should throw an error merging constraint classes not supported by base class constraint", async () => {
@@ -690,6 +723,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -729,7 +763,11 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith(Error, `ECObjects-1501: The constraint class 'TestSchema.TargetBaseEntity' on the Source-Constraint of 'TargetSchema.ChildRelationship' is not supported by the base class constraint in 'TestSchema.BaseRelationship'.\r\nECObjects-1502: The constraint class 'TestSchema.TargetBaseEntity' on the Source-Constraint of 'TargetSchema.ChildRelationship' is not derived from the abstract constraint class 'TestSchema.SourceBaseEntity'.`);
+    await expect(merge).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.AddConstraintClass);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.RuleViolation);
+      expect(error).to.have.nested.property("innerError.message", `Rule violations occurred from RelationshipClass TargetSchema.ChildRelationship: ${getRuleViolationMessage(error.innerError.ruleViolations)}`);
+    });
   });
 
   it("should throw an error merging relationship class strengthDirection", async () => {
@@ -737,6 +775,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -793,6 +832,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -849,6 +889,7 @@ describe("Relationship Class merger tests", () => {
     const targetSchema = await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -906,6 +947,7 @@ describe("Relationship Class merger tests", () => {
     await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",
@@ -969,7 +1011,11 @@ describe("Relationship Class merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Baseclass TargetSchema.TestRelationship must derive from TestSchema.BaseRelationship.");
+    await expect(merge).to.be.eventually.rejected.then(function (error) {
+      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestRelationship must derive from TestSchema.BaseRelationship.`);
+      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+    });
   });
 
   it("should throw an error merging base class changed from undefined to existing one", async () => {
@@ -977,6 +1023,7 @@ describe("Relationship Class merger tests", () => {
     await Schema.fromJson({
       ...targetJson,
       references: [
+        ...targetJson.references,
         {
           name: "TestSchema",
           version: "01.00.15",

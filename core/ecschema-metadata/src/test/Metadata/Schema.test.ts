@@ -17,6 +17,9 @@ import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaKey } from "../../SchemaKey";
 
+import { Constant, CustomAttributeClass, Enumeration, Format, KindOfQuantity, Phenomenon, PropertyCategory, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
+import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
+
 /* eslint-disable @typescript-eslint/naming-convention */
 describe("Schema", () => {
   describe("api creation of schema", () => {
@@ -156,6 +159,236 @@ describe("Schema", () => {
       expect(await testSchema.getItem("TESTENTITY")).not.undefined;
       expect(await testSchema.getItem("TestEntity")).not.undefined;
       expect(await testSchema.getItem("testEntity")).not.undefined;
+    });
+  });
+
+  describe("adding and deleting SchemaItems from schemas", async () => {
+    it("should do nothing when deleting SchemaItem name that is not in schema, synchronous", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteClassSync("TestUnitSystem");
+      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+    });
+
+    it("should do nothing when deleting SchemaItem name that is not in schema", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteClass("TestUnitSystem");
+      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+    });
+
+    it("should do nothing if SchemaItem is already deleted, synchronous", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestUnitSystem"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem");
+      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem");
+      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+    });
+
+    it("should do nothing if SchemaItem is already deleted", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestUnitSystem"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem");
+      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem");
+      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+    });
+
+    it("should add and delete classes by case-insensitive names", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem1");
+      await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem2");
+      await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem3");
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem1"))).to.equal(true);
+      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem1"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+
+      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem2"))).to.equal(true);
+      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem2"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+
+      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem3"))).to.equal(true);
+      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem3"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem1");
+      expect(await testSchema.getItem("TestUnitSystem1")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteSchemaItem("testunitsystem2");
+      expect(await testSchema.getItem("TestUnitSystem2")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TESTUNITSYSTEM3");
+      expect(await testSchema.getItem("TestUnitSystem3")).to.be.undefined;
+    });
+
+    it("should add and delete classes by case-insensitive names, synchronous", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem1");
+      await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem2");
+      await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem3");
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem1"))).to.equal(true);
+      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem1"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+
+      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem2"))).to.equal(true);
+      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem2"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+
+      expect(ECClass.isSchemaItem(await testSchema.getItem("TestUnitSystem3"))).to.equal(true);
+      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem3"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem1");
+      expect(await testSchema.getItem("TestUnitSystem1")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("testunitsystem2");
+      expect(await testSchema.getItem("TestUnitSystem2")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TESTUNITSYSTEM3");
+      expect(await testSchema.getItem("TestUnitSystem3")).to.be.undefined;
+    });
+
+    it("should successfully delete for all SchemaItems from schema, synchronous", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createConstant("TestConstant");
+      await (testSchema as MutableSchema).createEnumeration("TestEnumeration");
+      await (testSchema as MutableSchema).createFormat("TestFormat");
+      await (testSchema as MutableSchema).createInvertedUnit("TestInvertedUnit");
+      await (testSchema as MutableSchema).createUnit("TestUnit");
+      await (testSchema as MutableSchema).createKindOfQuantity("TestKindOfQuantity");
+      await (testSchema as MutableSchema).createPhenomenon("TestPhenomenon");
+      await (testSchema as MutableSchema).createPropertyCategory("TestPropertyCategory");
+      await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestConstant"))).to.equal(true);
+      expect((await testSchema.getItem<Constant>("TestConstant"))?.schemaItemType).to.equal(SchemaItemType.Constant);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestEnumeration"))).to.equal(true);
+      expect((await testSchema.getItem<Enumeration>("TestEnumeration"))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestFormat"))).to.equal(true);
+      expect((await testSchema.getItem<Format>("TestFormat"))?.schemaItemType).to.equal(SchemaItemType.Format);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestInvertedUnit"))).to.equal(true);
+      expect((await testSchema.getItem<CustomAttributeClass>("TestInvertedUnit"))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnit"))).to.equal(true);
+      expect((await testSchema.getItem<Unit>("TestUnit"))?.schemaItemType).to.equal(SchemaItemType.Unit);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestKindOfQuantity"))).to.equal(true);
+      expect((await testSchema.getItem<KindOfQuantity>("TestKindOfQuantity"))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPhenomenon"))).to.equal(true);
+      expect((await testSchema.getItem<Phenomenon>("TestPhenomenon"))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPropertyCategory"))).to.equal(true);
+      expect((await testSchema.getItem<PropertyCategory>("TestPropertyCategory"))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
+      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestConstant");
+      expect(await testSchema.getItem("TestConstant")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestEnumeration");
+      expect(await testSchema.getItem("TestEnumeration")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestFormat");
+      expect(await testSchema.getItem("TestFormat")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestInvertedUnit");
+      expect(await testSchema.getItem("TestInvertedUnit")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestUnit");
+      expect(await testSchema.getItem("TestUnit")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestKindOfQuantity");
+      expect(await testSchema.getItem("TestKindOfQuantity")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestPhenomenon");
+      expect(await testSchema.getItem("TestPhenomenon")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestPropertyCategory");
+      expect(await testSchema.getItem("TestPropertyCategory")).to.be.undefined;
+
+      (testSchema as MutableSchema).deleteSchemaItemSync("TestUnitSystem");
+      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
+    });
+
+    it("should successfully delete for all SchemaItems from schema", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      await (testSchema as MutableSchema).createConstant("TestConstant");
+      await (testSchema as MutableSchema).createEnumeration("TestEnumeration");
+      await (testSchema as MutableSchema).createFormat("TestFormat");
+      await (testSchema as MutableSchema).createInvertedUnit("TestInvertedUnit");
+      await (testSchema as MutableSchema).createUnit("TestUnit");
+      await (testSchema as MutableSchema).createKindOfQuantity("TestKindOfQuantity");
+      await (testSchema as MutableSchema).createPhenomenon("TestPhenomenon");
+      await (testSchema as MutableSchema).createPropertyCategory("TestPropertyCategory");
+      await (testSchema as MutableSchema).createUnitSystem("TestUnitSystem");
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestConstant"))).to.equal(true);
+      expect((await testSchema.getItem<Constant>("TestConstant"))?.schemaItemType).to.equal(SchemaItemType.Constant);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestEnumeration"))).to.equal(true);
+      expect((await testSchema.getItem<Enumeration>("TestEnumeration"))?.schemaItemType).to.equal(SchemaItemType.Enumeration);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestFormat"))).to.equal(true);
+      expect((await testSchema.getItem<Format>("TestFormat"))?.schemaItemType).to.equal(SchemaItemType.Format);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestInvertedUnit"))).to.equal(true);
+      expect((await testSchema.getItem<CustomAttributeClass>("TestInvertedUnit"))?.schemaItemType).to.equal(SchemaItemType.InvertedUnit);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnit"))).to.equal(true);
+      expect((await testSchema.getItem<Unit>("TestUnit"))?.schemaItemType).to.equal(SchemaItemType.Unit);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestKindOfQuantity"))).to.equal(true);
+      expect((await testSchema.getItem<KindOfQuantity>("TestKindOfQuantity"))?.schemaItemType).to.equal(SchemaItemType.KindOfQuantity);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPhenomenon"))).to.equal(true);
+      expect((await testSchema.getItem<Phenomenon>("TestPhenomenon"))?.schemaItemType).to.equal(SchemaItemType.Phenomenon);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestPropertyCategory"))).to.equal(true);
+      expect((await testSchema.getItem<PropertyCategory>("TestPropertyCategory"))?.schemaItemType).to.equal(SchemaItemType.PropertyCategory);
+
+      expect(SchemaItem.isSchemaItem(await testSchema.getItem("TestUnitSystem"))).to.equal(true);
+      expect((await testSchema.getItem<UnitSystem>("TestUnitSystem"))?.schemaItemType).to.equal(SchemaItemType.UnitSystem);
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestConstant");
+      expect(await testSchema.getItem("TestConstant")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestEnumeration");
+      expect(await testSchema.getItem("TestEnumeration")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestFormat");
+      expect(await testSchema.getItem("TestFormat")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestInvertedUnit");
+      expect(await testSchema.getItem("TestInvertedUnit")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestUnit");
+      expect(await testSchema.getItem("TestUnit")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestKindOfQuantity");
+      expect(await testSchema.getItem("TestKindOfQuantity")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestPhenomenon");
+      expect(await testSchema.getItem("TestPhenomenon")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestPropertyCategory");
+      expect(await testSchema.getItem("TestPropertyCategory")).to.be.undefined;
+
+      await (testSchema as MutableSchema).deleteSchemaItem("TestUnitSystem");
+      expect(await testSchema.getItem("TestUnitSystem")).to.be.undefined;
     });
   });
 
@@ -1548,6 +1781,89 @@ describe("Schema", () => {
         prop2 = structs[1].getElementsByTagName("String");
         expect(prop2.length).to.equal(1);
         expect(prop2[0].textContent).to.equal("test2");
+      });
+
+      async function serialize(schemaJson: any): Promise<string> {
+        const context = new SchemaContext();
+        const testSchema = await Schema.fromJson(schemaJson, context);
+        expect(testSchema).to.exist;
+
+        const xmlDom = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "text/xml");
+        await testSchema.toXml(xmlDom);
+        return new XMLSerializer().serializeToString(xmlDom);
+      }
+
+      async function testKoQSerialization(presentationUnit: any): Promise<string> {
+        const testSchemaJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          name: "TestSchema",
+          version: "1.0.0",
+          alias: "ts",
+          description: "Test serialization",
+          items: {
+            SI: { schemaItemType: "UnitSystem" },
+            LENGTH: { schemaItemType: "Phenomenon", label: "Length", definition: "LENGTH" },
+            M: { schemaItemType: "Unit", label: "m", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "M" },
+            MM: { schemaItemType: "Unit", label: "mm", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "MM" },
+            FT: { schemaItemType: "Unit", label: "ft", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "IN" },
+
+            TestFormat: { schemaItemType:"Format", label:"testFormat", type:"Decimal", precision:6, formatTraits:["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"]},
+            TestKoq: { schemaItemType:"KindOfQuantity", label:"testKoq", relativeError:0.00001, persistenceUnit:"TestSchema.M", ...presentationUnit},
+          },
+        };
+
+        const matches = (await serialize(testSchemaJson)).match(/presentationUnits="(.+?)"/);
+        if (!matches)
+          assert(false);
+        return matches[0];
+      }
+
+      it("KoQ serialization with overriden formats", async () => {
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT]"]}), `presentationUnits="TestFormat(4)[M][MM][FT]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M][TestSchema.MM][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M][MM][FT|]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM][FT|]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT|]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|]"`);
+        assert.deepEqual(await testKoQSerialization({presentationUnits: ["TestSchema.TestFormat(4)[TestSchema.M|alpha][TestSchema.MM|bravo][TestSchema.FT|charlie]"]}), `presentationUnits="TestFormat(4)[M|alpha][MM|bravo][FT|charlie]"`);
+      });
+
+      async function testCompositeFormatSerialization(compositeFormat: any): Promise<string> {
+        const testSchemaJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          name: "TestSchema",
+          version: "1.0.0",
+          alias: "ts",
+          description: "Test serialization",
+          items: {
+            SI: { schemaItemType: "UnitSystem" },
+            LENGTH: { schemaItemType: "Phenomenon", label: "Length", definition: "LENGTH" },
+            M: { schemaItemType: "Unit", label: "m", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "M" },
+            MM: { schemaItemType: "Unit", label: "mm", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "MM" },
+            FT: { schemaItemType: "Unit", label: "ft", phenomenon: "TestSchema.LENGTH", unitSystem: "TestSchema.SI", definition: "IN" },
+
+            TestFormat: { schemaItemType:"Format", label:"testFormat", type:"Decimal", precision:6, formatTraits:["KeepSingleZero", "KeepDecimalPoint", "ShowUnitLabel"], composite:{...compositeFormat}},
+          },
+        };
+
+        const str = await serialize(testSchemaJson);
+        const matches = str.match(/<Composite ([^]+?)\/Composite>/g);
+        if (!matches)
+          assert(false);
+        return matches[0];
+      }
+
+      it("Composite format serialization with overriden formats", async () => {
+        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M"},{name:"TestSchema.MM"},{name:"TestSchema.FT"}]}),
+          `<Composite spacer=" " includeZero="true"><Unit>M</Unit><Unit>MM</Unit><Unit>FT</Unit></Composite>`);
+
+        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M",label:"metre"},{name:"TestSchema.MM"},{name:"TestSchema.FT"}]}),
+          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit>MM</Unit><Unit>FT</Unit></Composite>`);
+
+        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M",label:"metre"},{name:"TestSchema.MM", label:""},{name:"TestSchema.FT"}]}),
+          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit label="">MM</Unit><Unit>FT</Unit></Composite>`);
+
+        assert.deepEqual(await testCompositeFormatSerialization({units:[{name:"TestSchema.M",label:"metre"},{name:"TestSchema.MM", label:""},{name:"TestSchema.FT", label: "\""}]}),
+          `<Composite spacer=" " includeZero="true"><Unit label="metre">M</Unit><Unit label="">MM</Unit><Unit label="&quot;">FT</Unit></Composite>`);
       });
     });
   }); // Schema tests

@@ -13,7 +13,7 @@ import { HSVColor, HSVConstants } from "./HSVColor";
 
 // cspell: ignore ttbbggrr bbggrr rrggbb aabbggrr abgr rrggbb hsla lerp torgb dhue dsaturation dvalue intpart fractpart cyanish
 
-// portions adapted from Three.js Copyright © 2010-2017 three.js authors
+// portions adapted from Three.js Copyright © 2010-2024 three.js authors
 
 const scratchBytes = new Uint8Array(4);
 const scratchUInt32 = new Uint32Array(scratchBytes.buffer);

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@itwin/core-bentley";
+import { assert, Id64Set } from "@itwin/core-bentley";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import {
   BatchType, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, ViewFlagOverrides,
@@ -12,7 +12,7 @@ import {
   formatAnimationBranchId, RenderClipVolume, SceneContext, TileDrawArgs, TileGraphicType, TileTree, TileTreeOwner, TileTreeReference,
 } from "@itwin/core-frontend";
 import { BatchedModels } from "./BatchedModels";
-import { ModelGroupInfo } from "./ModelGroup";
+import { ModelGroup, ModelGroupInfo } from "./ModelGroup";
 
 export interface BatchedTileTreeReferenceArgs {
   readonly models: BatchedModels;
@@ -36,6 +36,10 @@ export class BatchedTileTreeReference extends TileTreeReference implements Featu
       assert(undefined !== this._groupInfo.timeline);
       this._branchId = formatAnimationBranchId(this._groupInfo.timeline.modelId, animationNodeId);
     }
+  }
+
+  public get groupModelIds(): Id64Set | undefined {
+    return (this._groupInfo as ModelGroup).modelIds;
   }
 
   private get _groupInfo(): ModelGroupInfo {

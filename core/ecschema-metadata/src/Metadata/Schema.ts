@@ -175,6 +175,29 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   /**
+   * Deletes a SchemaItem from within this schema.
+   * @param name the local (unqualified) class name, lookup is case-insensitive
+   * @alpha
+   */
+  protected async deleteSchemaItem(name: string): Promise<void> {
+    const schemaItem = await this.getItem(name);
+    if (SchemaItem.isSchemaItem(schemaItem)) {
+      this._items.delete(name.toUpperCase());
+    }
+  }
+
+  /**
+   * Deletes a SchemaItem from within this schema.
+   * @param name the local (unqualified) class name, lookup is case-insensitive
+   * @alpha
+   */
+  protected deleteSchemaItemSync(name: string): void {
+    const schemaItem = this.getItemSync(name);
+    if (SchemaItem.isSchemaItem(schemaItem))
+      this._items.delete(name.toUpperCase());
+  }
+
+  /**
    * @alpha
    */
   protected createItem<T extends AnySchemaItem>(type: (new (_schema: Schema, _name: string) => T), name: string): T {
@@ -664,6 +687,17 @@ export class Schema implements CustomAttributeContainerProps {
   protected setDescription(description: string) {
     this._description = description;
   }
+
+  /**
+   * @alpha
+   * Used for schema editing.
+   */
+  protected setAlias(alias: string) {
+    if (!ECName.validate(alias)) {
+      throw new ECObjectsError(ECObjectsStatus.InvalidECName, "The specified schema alias is invalid.");
+    }
+    this._alias = alias;
+  }
 }
 
 /**
@@ -708,4 +742,7 @@ export abstract class MutableSchema extends Schema {
   public abstract override setContext(schemaContext: SchemaContext): void;
   public abstract override deleteClass(name: string): Promise<void>;
   public abstract override deleteClassSync(name: string): void;
+  public abstract override deleteSchemaItem(name: string): Promise<void>;
+  public abstract override deleteSchemaItemSync(name: string): void;
+  public abstract override setAlias(alias: string): void;
 }

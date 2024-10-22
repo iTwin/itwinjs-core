@@ -58,6 +58,10 @@ function startWebServer() {
       browser = arg;
     else if (arg === "headless")
       chromeFlags.push("--headless");
+    else if (arg === "egl"){
+      chromeFlags.push("--use-gl=angle");
+      chromeFlags.push("--use-angle=gl-egl");
+    }
   });
 
   if (serverConfig === undefined) {

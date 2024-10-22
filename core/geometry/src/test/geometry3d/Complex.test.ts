@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 
 import { Complex } from "../../numerics/Complex";
 import { Checker } from "../Checker";
@@ -35,7 +35,7 @@ describe("Complex.HelloWorld", () => {
     const z1 = Complex.create(3, 1);
     tester.exerciseComplexMethods(z0, z1);
     tester.exerciseComplexMethods(z1, z0);
-    expect(tester.getNumErrors()).equals(0);
+    expect(tester.getNumErrors()).toBe(0);
     z0.setFrom(z1);
     ck.testComplex(z0, z1, "Complex setFrom");
     const z2 = z0.clone();
@@ -75,6 +75,6 @@ describe("Complex.HelloWorld", () => {
     d1.set();
     ck.testComplex(d0, d1, "Complex arg defaults");
     ck.checkpoint("Complex.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

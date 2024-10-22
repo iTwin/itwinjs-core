@@ -8,7 +8,7 @@
  */
 
 import { assert, dispose } from "@itwin/core-bentley";
-import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Vector3d } from "@itwin/core-geometry";
+import { Matrix4d, Plane3dByOriginAndUnitNormal, Point3d, Range3d, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, Frustum, FrustumPlanes, RenderTexture, TextureTransparency } from "@itwin/core-common";
 import { GraphicsCollectorDrawArgs, MapTileTreeReference, TileTreeReference } from "../../tile/internal";
 import { SceneContext } from "../../ViewContext";
@@ -97,7 +97,7 @@ export class BackgroundMapDrape extends TextureDrape {
 
     const targetTiles = targetTree.selectTiles(args);
 
-    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, { tiles: targetTiles, location: args.location }, [this._mapTree], viewState, this._width, this._height);
+    const projection = PlanarTextureProjection.computePlanarTextureProjection(this._plane, context, { tiles: targetTiles, location: args.location }, [this._mapTree], viewState, this._width, this._height, Range3d.createNull());
     if (!projection.textureFrustum || !projection.projectionMatrix || !projection.worldToViewMap)
       return;
 

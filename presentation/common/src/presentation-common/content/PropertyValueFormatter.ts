@@ -18,7 +18,7 @@ import { Item } from "./Item";
 import { ArrayTypeDescription, PrimitiveTypeDescription, PropertyValueFormat, StructTypeDescription, TypeDescription } from "./TypeDescription";
 import { DisplayValue, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "./Value";
 
-/** @alpha */
+/** @internal */
 export class ContentFormatter {
   constructor(
     private _propertyValueFormatter: { formatPropertyValue: (field: Field, value: Value, unitSystem?: UnitSystemKey) => Promise<DisplayValue> },
@@ -46,6 +46,11 @@ export class ContentFormatter {
       // format display value of merged values
       if (mergedFields.includes(field.name)) {
         displayValues[field.name] = "@Presentation:label.varies@";
+        continue;
+      }
+
+      // do not add undefined value to display values
+      if (value === undefined) {
         continue;
       }
 
@@ -99,7 +104,7 @@ export class ContentFormatter {
   }
 }
 
-/** @alpha */
+/** @internal */
 export class ContentPropertyValueFormatter {
   constructor(private _koqValueFormatter: KoqPropertyValueFormatter) {}
 

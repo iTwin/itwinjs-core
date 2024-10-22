@@ -8,9 +8,9 @@ import * as chaiAsPromised from "chai-as-promised";
 import { existsSync, removeSync } from "fs-extra";
 import { join } from "path";
 import * as sinon from "sinon";
-import { BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
+import { _nativeDb, BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, BeDuration, DbResult, Guid, GuidString, OpenMode } from "@itwin/core-bentley";
+import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -18,6 +18,25 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 // spell:ignore localstore itwindb
 
 useFromChai(chaiAsPromised);
+
+/**
+ * Waits until `check` doesn't throw or a timeout happens. In case the `check` succeeds before the timeout,
+ * it's result is returned. In case of a timeout, the last error, thrown by calling `check`, is re-thrown.
+ */
+async function waitFor<T>(check: () => Promise<T> | T, timeout: number = 5000): Promise<T> {
+  const timer = new StopWatch(undefined, true);
+  let lastError: unknown;
+  do {
+    try {
+      const res = check();
+      return res instanceof Promise ? await res : res;
+    } catch (e) {
+      lastError = e;
+      await BeDuration.wait(2);
+    }
+  } while (timer.current.milliseconds < timeout);
+  throw lastError;
+}
 
 describe("CloudSqlite", () => {
   const azSqlite = AzuriteTest.Sqlite;
@@ -188,6 +207,62 @@ describe("CloudSqlite", () => {
     container.disconnect({detach: true});
   });
 
+  it("should LogLevel.Trace set LogMask to ALL", async () => {
+    const testContainer0 = testContainers[0];
+
+    const logConsole = (level: string) => (category: string, message: string, metaData: LoggingMetaData) =>
+      console.log(`${level} | ${category} | ${message} ${Logger.stringifyMetaData(metaData)}`); // eslint-disable-line no-console
+    const logTrace = sinon.spy(logConsole("Trace"));
+    const logInfo = sinon.spy(logConsole("Info"));
+    Logger.initialize(undefined, undefined, logInfo, logTrace);
+
+    const executeWithWriteLock = async (cacheName: string, fileName: string) => {
+      const testCache = azSqlite.makeCaches([cacheName])[0];
+      testContainer0.connect(testCache);
+      await CloudSqlite.withWriteLock({ user: user1, container: testContainer0 }, async () => {
+        await testContainer0.copyDatabase("testBim", fileName);
+        const db = await BriefcaseDb.open({ fileName, container: testContainer0 });
+        db.saveFileProperty({ name: "logMask", namespace: "logMaskTest", id: 1, subId: 1 }, "this is a test");
+        db.close();
+        await testContainer0.deleteDatabase(fileName);
+      });
+      testContainer0.disconnect();
+    };
+    // LogLevel.Trace should set logMask to ALL, including dirty block
+    Logger.setLevel("CloudSqlite", LogLevel.Trace);
+    await executeWithWriteLock("testCache1", "copyTestBim1");
+    // Check that Trace and Info messages were logged
+    sinon.assert.called(logTrace);
+    sinon.assert.called(logInfo);
+    // Check for a dirty block log message
+    let dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
+    expect(dirtyBlockLogMsg).to.be.true;
+    // resetHistory is sometimes occurring before all of the logs make it to logTrace and logInfo causing our assert.notCalled to fail.
+    // Looking at the analytics for our pipeline, all the failures are due to the below two log messages. Wait for them to show up before we reset history.
+    const assertFoundMessage = (message: string) => {
+      const found = logInfo.getCalls().some((call) => call.args[1].includes(message));
+      if (!found)
+        throw new Error(`Expected ${message} to be found in logInfo calls.`);
+    };
+    await waitFor(() => assertFoundMessage("enters DELETE state"));
+    await waitFor(() => assertFoundMessage("leaves DELETE state"));
+    logTrace.resetHistory();
+    logInfo.resetHistory();
+
+    // LogLevel.Info uses the default log
+    Logger.setLevel("CloudSqlite", LogLevel.Info);
+    await executeWithWriteLock("testCache2", "copyTestBim2");
+    sinon.assert.notCalled(logTrace);
+    sinon.assert.notCalled(logInfo);
+    // Check for a dirty block log message(expect nothing)
+    dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
+    expect(dirtyBlockLogMsg).to.be.false;
+    // clean up
+    logTrace.resetHistory();
+    logInfo.resetHistory();
+    Logger.initialize();
+  });
+
   it("should query bcv stat table", async () => {
     const cache = azSqlite.makeCache("bcv-stat-cache");
     const container = testContainers[0];
@@ -264,9 +339,9 @@ describe("CloudSqlite", () => {
     const db = new SQLiteDb();
     db.openDb("c0-db1:0", OpenMode.Readonly, contain1);
     expect(db.isOpen);
-    expect(db.nativeDb.cloudContainer).equals(contain1);
+    expect(db[_nativeDb].cloudContainer).equals(contain1);
     db.closeDb();
-    expect(db.nativeDb.cloudContainer).undefined;
+    expect(db[_nativeDb].cloudContainer).undefined;
 
     dbProps = contain1.queryDatabase(dbs[0]);
     assert(dbProps !== undefined);
@@ -294,7 +369,7 @@ describe("CloudSqlite", () => {
       const briefcase = await BriefcaseDb.open({ fileName: "testBim2", container: contain1 });
       expect(briefcase.getBriefcaseId()).equals(0);
       expect(briefcase.iModelId).equals(testBimGuid);
-      expect(briefcase.nativeDb.cloudContainer).equals(contain1);
+      expect(briefcase[_nativeDb].cloudContainer).equals(contain1);
       briefcase.close();
     });
 
@@ -335,14 +410,15 @@ describe("CloudSqlite", () => {
     await azSqlite.setSasToken(contain1, "read"); // don't ask for delete permission
     contain1.connect(caches[1]);
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
-      await expect(contain1.cleanDeletedBlocks()).eventually.rejectedWith("not authorized").property("errorNumber", 403);
+      // need nSeconds 0 or the blocks of the database we just deleted won't be deleted.
+      await expect(CloudSqlite.cleanDeletedBlocks(contain1, { nSeconds: 0 })).eventually.rejectedWith("delete block failed (403)");
     });
 
     contain1.disconnect();
     await azSqlite.setSasToken(contain1, "admin"); // now ask for delete permission
     contain1.connect(caches[1]);
 
-    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => contain1.cleanDeletedBlocks());
+    await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => CloudSqlite.cleanDeletedBlocks(contain1, {nSeconds: 0}));
     expect(contain1.garbageBlocks).equals(0); // should successfully purge
 
     // should be connected
@@ -443,6 +519,94 @@ describe("CloudSqlite", () => {
     expect(newCache1.guid).not.equals(newCache2.guid);
     newCache1.destroy();
     newCache2.destroy();
+  });
+
+  it("should be able to interrupt cleanDeletedBlocks operation", async () => {
+    const cache = azSqlite.makeCache("clean-blocks-cache");
+    const container = testContainers[0];
+
+    const dbName = "testBimForCleaningBlocks";
+
+    const pathToCopy = join(KnownLocations.tmpdir, `${dbName}`);
+
+    if (IModelJsFs.existsSync(pathToCopy))
+      IModelJsFs.removeSync(pathToCopy);
+    const sqliteDb = new SQLiteDb();
+    sqliteDb.createDb(pathToCopy, undefined, { rawSQLite: true });
+    sqliteDb.executeSQL("CREATE TABLE TestData(id INTEGER PRIMARY KEY,val BLOB)");
+    // Insert 16mb so we have some data to delete.
+    sqliteDb.executeSQL(`INSERT INTO TestData(id,val) VALUES (1, randomblob(1024*1024*16))`);
+
+    sqliteDb.saveChanges();
+    sqliteDb.closeDb();
+    await azSqlite.setSasToken(container, "write"); // get a write token to be able to upload.
+    await azSqlite.uploadFile(container, cache, dbName, pathToCopy);
+
+    container.connect(cache);
+    const dbs = container.queryDatabases();
+    expect(dbs.length).to.be.greaterThanOrEqual(1);
+    const db = container.queryDatabase(dbName);
+    expect(db !== undefined).to.be.true;
+
+    expect(container.garbageBlocks).to.be.equal(0);
+    container.acquireWriteLock("testuser");
+    await container.deleteDatabase(dbName);
+    await container.uploadChanges();
+    expect(container.queryDatabase(dbName)).to.be.undefined;
+
+    expect(container.garbageBlocks).to.be.greaterThan(0);
+    const garbageBlocksPrev = container.garbageBlocks;
+
+    // cleanDeletedBlocks defaults to an nSeconds of 3600, so we expect to keep our garbage blocks, because they are less than 3600 seconds old.
+    await CloudSqlite.cleanDeletedBlocks(container, {});
+    expect(container.garbageBlocks).to.be.equal(garbageBlocksPrev);
+
+    // Upload dummy block to simulate an orphaned block.
+    const blockName = await azSqlite.uploadDummyBlock(container, 24);
+    // findOrphanedBlocks is false, so we expect to keep our dummy block.
+    await CloudSqlite.cleanDeletedBlocks(container, {findOrphanedBlocks: false});
+    await expect(azSqlite.checkBlockExists(container, blockName)).to.eventually.become(true);
+    // findOrphanedBlocks is true, so we expect to remove our dummy block.
+    await CloudSqlite.cleanDeletedBlocks(container, {findOrphanedBlocks: true});
+    await expect(azSqlite.checkBlockExists(container, blockName)).to.eventually.become(false);
+
+    expect(container.garbageBlocks).to.be.equal(garbageBlocksPrev);
+
+    const onProgress = sinon.stub();
+    onProgress.onFirstCall().returns(2);
+
+    // Faking the interval setup in cleanDeletedBlocks.
+    const clock = sinon.useFakeTimers({toFake: ["setInterval"], shouldAdvanceTime: true, advanceTimeDelta: 1});
+    let resolved = false;
+    CloudSqlite.cleanDeletedBlocks(container, {nSeconds: 0, findOrphanedBlocks: true, onProgress}).then(() => {
+      resolved = true;
+    }).catch(() => {
+      resolved = true;
+    });
+
+    while (!resolved) {
+      await clock.tickAsync(250);
+      await new Promise((resolve) => clock.setTimeout(resolve, 1));
+    }
+    container.checkForChanges();
+
+    expect(onProgress.called).to.be.true;
+    // We aborted our cleanup, so expect no progress to be shown.
+    expect(container.garbageBlocks).to.be.equal(garbageBlocksPrev);
+
+    resolved = false;
+    clock.reset();
+    clock.restore();
+
+    onProgress.reset();
+    onProgress.returns(0);
+    // One final clean that we don't interrupt ( because we always return 0 from onProgress)
+    await CloudSqlite.cleanDeletedBlocks(container, {nSeconds: 0, onProgress});
+    container.checkForChanges();
+    expect(container.garbageBlocks).to.be.equal(0);
+
+    container.releaseWriteLock();
+    container.disconnect({detach: true});
   });
 
   /** make sure that the auto-refresh for container tokens happens every hour */

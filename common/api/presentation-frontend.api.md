@@ -79,10 +79,10 @@ export class BrowserLocalFavoritePropertiesStorage implements IFavoritePropertie
     savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
 }
 
-// @beta
+// @public
 export function consoleDiagnosticsHandler(diagnostics: ClientDiagnostics): void;
 
-// @beta
+// @public
 export function createCombinedDiagnosticsHandler(handlers: ClientDiagnosticsHandler[]): (diagnostics: ClientDiagnostics) => void;
 
 // @public
@@ -178,9 +178,6 @@ export type GetNodesRequestOptions = HierarchyRequestOptions<IModelConnection, N
 // @public @deprecated
 export function getScopeId(scope: SelectionScope | string | undefined): string;
 
-// @internal (undocumented)
-export const HILITE_RULESET: Ruleset;
-
 // @public
 export interface HiliteSet {
     // (undocumented)
@@ -224,14 +221,14 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
     savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], iTwinId: string | undefined, imodelId: string): Promise<void>;
 }
 
-// @alpha
+// @public
 export interface IModelContentChangeEventArgs {
     imodelKey: string;
     rulesetId: string;
     updateInfo: ContentUpdateInfo;
 }
 
-// @alpha
+// @public
 export interface IModelHierarchyChangeEventArgs {
     imodelKey: string;
     rulesetId: string;
@@ -357,7 +354,7 @@ export class PresentationManager implements IDisposable {
         total: number;
         items: AsyncIterableIterator<DisplayValueGroup>;
     }>;
-    getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
+    getElementProperties<TParsedContent = ElementProperties>(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection, TParsedContent> & ClientDiagnosticsAttribute): Promise<TParsedContent | undefined>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     // @deprecated
@@ -368,7 +365,6 @@ export class PresentationManager implements IDisposable {
         nodes: Node_2[];
     }>;
     getNodesCount(requestOptions: GetNodesRequestOptions): Promise<number>;
-    // @beta
     getNodesDescriptor(requestOptions: HierarchyLevelDescriptorRequestOptions<IModelConnection, NodeKey, RulesetVariable> & ClientDiagnosticsAttribute): Promise<Descriptor | undefined>;
     getNodesIterator(requestOptions: GetNodesRequestOptions & MultipleValuesRequestOptions): Promise<{
         total: number;
@@ -378,9 +374,7 @@ export class PresentationManager implements IDisposable {
     getPagedDistinctValues(requestOptions: GetDistinctValuesRequestOptions & MultipleValuesRequestOptions): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     get ipcRequestsHandler(): IpcRequestsHandler | undefined;
-    // @alpha
     onIModelContentChanged: BeEvent<(args: IModelContentChangeEventArgs) => void>;
-    // @alpha
     onIModelHierarchyChanged: BeEvent<(args: IModelHierarchyChangeEventArgs) => void>;
     // @internal (undocumented)
     get rpcRequestsHandler(): RpcRequestsHandler;
@@ -396,14 +390,12 @@ export interface PresentationManagerProps {
     // @deprecated
     activeUnitSystem?: UnitSystemKey;
     clientId?: string;
-    // @alpha
     defaultFormats?: FormatsMap;
     // @internal (undocumented)
     ipcRequestsHandler?: IpcRequestsHandler;
     requestTimeout?: number;
     // @internal (undocumented)
     rpcRequestsHandler?: RpcRequestsHandler;
-    // @alpha
     schemaContextProvider?: (imodel: IModelConnection) => SchemaContext;
 }
 
@@ -422,9 +414,7 @@ export interface RulesetManager {
     add(ruleset: Ruleset): Promise<RegisteredRuleset>;
     clear(): Promise<void>;
     get(id: string): Promise<RegisteredRuleset | undefined>;
-    // @beta
     modify(ruleset: RegisteredRuleset, newRules: Omit<Ruleset, "id">): Promise<RegisteredRuleset>;
-    // @beta
     onRulesetModified: BeEvent<(curr: RegisteredRuleset, prev: Ruleset) => void>;
     remove(ruleset: RegisteredRuleset | [string, string]): Promise<boolean>;
 }

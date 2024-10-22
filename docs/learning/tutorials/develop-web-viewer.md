@@ -24,7 +24,7 @@
 
 - Once your new application is saved and a clientId is generated, add the clientId, list of scopes, and redirect url to the following variables in the .env file within the application's root directory: `IMJS_AUTH_CLIENT_CLIENT_ID`, `IMJS_AUTH_CLIENT_SCOPES`
   `IMJS_AUTH_CLIENT_REDIRECT_URI`.
-- Add a valid contextId (i.e. Project Id) and iModelId for your user to the `IMJS_CONTEXT_ID` and `IMJS_IMODEL_ID` variables in the .env file within the application's root directory.
+- Add a valid contextId (i.e. Project Id) and iModelId for your user to the `IMJS_ITWIN_ID` and `IMJS_IMODEL_ID` variables in the .env file within the application's root directory.
   - You can obtain these ids from the "Show Ids" column of your "[My sample iModels](https://developer.bentley.com/my-imodels/)" page.
   - This will be used for initial development. The idea is that it would be replaced by a proper model selection process in a production application.
 - From a terminal at your application's root directory, `npm start`. This will serve the application with live reloading.

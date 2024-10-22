@@ -4,19 +4,19 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
+import { join } from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { BriefcaseDb, IModelHost, IpcHost } from "@itwin/core-backend";
 import { assert } from "@itwin/core-bentley";
 import { RpcManager } from "@itwin/core-common";
 import { PresentationError } from "@itwin/presentation-common";
-import { MultiManagerPresentationProps, Presentation } from "../presentation-backend/Presentation";
+import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
+import { Presentation } from "../presentation-backend/Presentation";
 import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import { PresentationManager } from "../presentation-backend/PresentationManager";
 import { PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
 import { TemporaryStorage } from "../presentation-backend/TemporaryStorage";
-import { NativePlatformDefinition } from "../presentation-backend/NativePlatform";
-import { join } from "path";
 
 describe("Presentation", () => {
   afterEach(async () => {
@@ -61,7 +61,7 @@ describe("Presentation", () => {
       it("sets unused client lifetime provided through props", () => {
         Presentation.initialize({ unusedClientLifetime: faker.random.number() });
         const storage = (Presentation as any)._clientsStorage as TemporaryStorage<PresentationManager>;
-        expect(storage.props.unusedValueLifetime).to.eq((Presentation.initProps! as MultiManagerPresentationProps).unusedClientLifetime);
+        expect(storage.props.unusedValueLifetime).to.eq(Presentation.initProps!.unusedClientLifetime);
       });
 
       it("sets request timeout to `PresentationRpcImpl`", () => {
@@ -77,14 +77,6 @@ describe("Presentation", () => {
         const managerMock = moq.Mock.ofType<PresentationManager>();
         Presentation.initialize({ clientManagerFactory: () => managerMock.object });
         expect(Presentation.getManager()).to.eq(managerMock.object);
-      });
-
-      it("uses useSingleManager flag to create one manager for all clients", () => {
-        Presentation.initialize({ useSingleManager: true });
-        const manager = Presentation.getManager();
-        expect(manager).to.be.instanceOf(PresentationManager);
-        const clientId = faker.random.word();
-        expect(manager).to.be.eq(Presentation.getManager(clientId));
       });
     });
   });

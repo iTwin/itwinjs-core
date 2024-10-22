@@ -2,44 +2,44 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point2d, Point3d, Range3d } from "@itwin/core-geometry";
 import { ColorIndex, FeatureIndex, FeatureIndexType, FillFlags, QParams2d, QParams3d, QPoint3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import { MockRender } from "../../../render/MockRender";
-import { Point3dList } from "../../../common/render/primitives/MeshPrimitive";
-import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { Point3dList } from "../../../common/internal/render/MeshPrimitive";
 import { IModelApp } from "../../../IModelApp";
-import { createMeshParams } from "../../../render/primitives/VertexTableBuilder";
+import { createMeshParams } from "../../../common/internal/render/VertexTableBuilder";
+import { MeshArgs } from "../../../render/MeshArgs";
 
 function expectMeshParams(args: MeshArgs, colorIndex: ColorIndex, vertexBytes: number[][], expectedColors?: number[], quvParams?: QParams2d) {
-  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize);
+  const params = createMeshParams(args, IModelApp.renderSystem.maxTextureSize, "non-indexed" !== IModelApp.tileAdmin.edgeOptions.type);
 
   // Compare vertex table bytes
   const data = params.vertices.data;
   let dataIndex = 0;
   for (const bytes of vertexBytes) {
     for (const byte of bytes) {
-      expect(data[dataIndex++]).to.equal(byte);
+      expect(data[dataIndex++]).toEqual(byte);
     }
   }
 
   // Compare appended color table
-  expect(undefined === colorIndex.nonUniform).to.equal(undefined === expectedColors);
+  expect(undefined === colorIndex.nonUniform).toEqual(undefined === expectedColors);
   if (undefined !== expectedColors) {
-    expect(expectedColors.length).to.equal(colorIndex.nonUniform!.colors.length * 4);
+    expect(expectedColors.length).toEqual(colorIndex.nonUniform!.colors.length * 4);
 
     for (const color of expectedColors) {
-      expect(data[dataIndex++]).to.equal(color);
+      expect(data[dataIndex++]).toEqual(color);
     }
   }
 
   if (undefined !== quvParams) {
     const compParams = params.vertices.uvParams!;
-    expect(compParams).not.to.be.undefined;
-    expect(quvParams.origin.x).to.equal(compParams.origin.x);
-    expect(quvParams.origin.y).to.equal(compParams.origin.y);
-    expect(quvParams.scale.x).to.equal(compParams.scale.x);
-    expect(quvParams.scale.y).to.equal(compParams.scale.y);
+    expect(compParams).toBeDefined();
+    expect(quvParams.origin.x).toEqual(compParams.origin.x);
+    expect(quvParams.origin.y).toEqual(compParams.origin.y);
+    expect(quvParams.scale.x).toEqual(compParams.scale.x);
+    expect(quvParams.scale.y).toEqual(compParams.scale.y);
   }
 }
 
@@ -50,8 +50,8 @@ class FakeTexture extends RenderTexture {
 }
 
 describe("VertexLUT", () => {
-  before(async () => MockRender.App.startup());
-  after(async () => MockRender.App.shutdown());
+  beforeAll(async () => MockRender.App.startup());
+  afterAll(async () => MockRender.App.shutdown());
 
   it("should produce correct VertexLUT.Params from quantized MeshArgs", () => {
     // Make a mesh consisting of a single triangle.

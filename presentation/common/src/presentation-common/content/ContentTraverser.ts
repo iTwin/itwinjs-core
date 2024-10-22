@@ -13,7 +13,26 @@ import { Descriptor } from "./Descriptor";
 import { Field, NestedContentField } from "./Fields";
 import { Item } from "./Item";
 import { PropertyValueFormat, TypeDescription } from "./TypeDescription";
-import { DisplayValue, DisplayValuesArray, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "./Value";
+import {
+  DisplayValue,
+  DisplayValuesArray,
+  DisplayValuesMap,
+  NestedContentValue,
+  Value as PresentationValue,
+  ValuesArray as PresentationValuesArray,
+  ValuesMap as PresentationValuesMap,
+} from "./Value";
+import { LabelDefinition } from "../LabelDefinition";
+
+const NESTED_CONTENT_LABEL_SYMBOL = Symbol();
+
+type ValuesMap = PresentationValuesMap & {
+  [NESTED_CONTENT_LABEL_SYMBOL]?: LabelDefinition;
+};
+
+type Value = Exclude<PresentationValue, PresentationValuesMap> | ValuesMap;
+
+type ValuesArray = Array<Value>;
 
 /**
  * A data structure to define a hierarchy of [[Field]] objects.
@@ -86,9 +105,11 @@ export interface StartStructProps {
   /** Name of the parent field (if there is one). */
   parentFieldName?: string;
   /** Member raw values. */
-  rawValues: ValuesMap;
+  rawValues: PresentationValuesMap;
   /** Member display values. */
   displayValues: DisplayValuesMap;
+  /** Label definition of the ECInstance that the struct represents. */
+  label?: LabelDefinition;
 }
 
 /**
@@ -103,7 +124,7 @@ export interface StartArrayProps {
   /** Name of the parent field (if there is one). */
   parentFieldName?: string;
   /** Item raw values. */
-  rawValues: ValuesArray;
+  rawValues: PresentationValuesArray;
   /** Item display values. */
   displayValues: DisplayValuesArray;
 }
@@ -138,7 +159,7 @@ export interface ProcessPrimitiveValueProps {
   /** Name of the parent field (if there is one). */
   parentFieldName?: string;
   /** Raw value. */
-  rawValue: Value;
+  rawValue: PresentationValue;
   /** Display value. */
   displayValue: DisplayValue;
 }
@@ -422,12 +443,12 @@ function traverseContentItemFieldValue(
 ) {
   if (rawValue !== undefined) {
     if (valueType.valueFormat === PropertyValueFormat.Array) {
-      assert(Value.isArray(rawValue));
+      assert(PresentationValue.isArray(rawValue));
       assert(DisplayValue.isArray(displayValue));
       return traverseContentItemArrayFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, displayValue);
     }
     if (valueType.valueFormat === PropertyValueFormat.Struct) {
-      assert(Value.isMap(rawValue));
+      assert(PresentationValue.isMap(rawValue));
       assert(DisplayValue.isMap(displayValue));
       return traverseContentItemStructFieldValue(visitor, fieldHierarchy, mergedFieldNames, valueType, parentFieldName, rawValue, displayValue);
     }
@@ -470,7 +491,8 @@ function traverseContentItemStructFieldValue(
   displayValues: DisplayValuesMap,
 ) {
   assert(valueType.valueFormat === PropertyValueFormat.Struct);
-  if (!visitor.startStruct({ hierarchy: fieldHierarchy, valueType, parentFieldName, rawValues, displayValues })) {
+  const label = rawValues[NESTED_CONTENT_LABEL_SYMBOL];
+  if (!visitor.startStruct({ hierarchy: fieldHierarchy, valueType, parentFieldName, rawValues, displayValues, label })) {
     return;
   }
 
@@ -690,7 +712,7 @@ interface NestedItemConversionResult {
 
 function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: Field, nextField: Field): NestedItemConversionResult {
   const value = item.values[field.name] ?? [];
-  assert(Value.isNestedContent(value));
+  assert(PresentationValue.isNestedContent(value));
   if (value.length === 0) {
     return { emptyNestedItem: true, convertedItem: item };
   }
@@ -701,7 +723,7 @@ function convertNestedContentItemToStructArrayItem(item: Readonly<Item>, field: 
     const nextDisplayValue = ncv.displayValues[nextField.name];
     if (nextField.isNestedContentField()) {
       if (nextRawValue) {
-        assert(Value.isNestedContent(nextRawValue));
+        assert(PresentationValue.isNestedContent(nextRawValue));
         nextFieldValues.raw.push(...nextRawValue);
       }
     } else {
@@ -752,11 +774,18 @@ function convertNestedContentFieldHierarchyToStructArrayHierarchy(fieldHierarchy
 }
 
 function convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy: FieldHierarchy, ncvs: ReadonlyArray<NestedContentValue>) {
-  const result: { raw: ValuesArray; display: DisplayValuesArray; mergedFieldNames: string[] } = { raw: [], display: [], mergedFieldNames: [] };
+  const result: {
+    raw: ValuesArray;
+    display: DisplayValuesArray;
+    mergedFieldNames: string[];
+  } = { raw: [], display: [], mergedFieldNames: [] };
+
   ncvs.forEach((ncv) => {
     const values: ValuesMap = { ...ncv.values };
     const displayValues: DisplayValuesMap = { ...ncv.displayValues };
     const mergedFieldNames: string[] = [...ncv.mergedFieldNames];
+    values[NESTED_CONTENT_LABEL_SYMBOL] = ncv.labelDefinition;
+
     fieldHierarchy.childFields.forEach((childFieldHierarchy) => {
       const childFieldName = childFieldHierarchy.field.name;
       if (-1 !== ncv.mergedFieldNames.indexOf(childFieldName)) {
@@ -764,7 +793,7 @@ function convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy: 
       }
       if (childFieldHierarchy.field.isNestedContentField()) {
         const value = values[childFieldName];
-        assert(Value.isNestedContent(value));
+        assert(PresentationValue.isNestedContent(value));
         const convertedValues = convertNestedContentValuesToStructArrayValuesRecursive(childFieldHierarchy, value);
         values[childFieldName] = convertedValues.raw;
         displayValues[childFieldName] = convertedValues.display;
@@ -781,7 +810,7 @@ function convertNestedContentValuesToStructArrayValuesRecursive(fieldHierarchy: 
 function convertNestedContentFieldHierarchyItemToStructArrayItem(item: Readonly<Item>, fieldHierarchy: FieldHierarchy): NestedItemConversionResult {
   const fieldName = fieldHierarchy.field.name;
   const rawValue = item.values[fieldName];
-  assert(Value.isNestedContent(rawValue));
+  assert(PresentationValue.isNestedContent(rawValue));
   if (rawValue.length === 0) {
     return { emptyNestedItem: true, convertedItem: item };
   }

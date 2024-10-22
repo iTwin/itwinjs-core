@@ -10,10 +10,10 @@ import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Tran
 import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
-import { GraphicType } from "./render/GraphicBuilder";
 import { IconSprites, Sprite } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport, Viewport } from "./Viewport";
+import { GraphicType } from "./common/render/GraphicType";
 
 /**
  * @public
@@ -106,12 +106,13 @@ export enum HitDetailType {
   Intersection = 3,
 }
 
-/** Describes the [ViewAttachment]($backend), if any, from which the hit represented by a [[HitDetail]] originated.
- * @note Only [[SheetViewState]]s contain view attachments.
+/** Describes the "attached" view, if any, from which the hit represented by a [[HitDetail]] originated.
+ * An attached view is a 2d view drawn into the context of another view - for example, a [[ViewAttachment]]($backend)
+ * rendered into a [[SheetViewState]], or a [[SpatialViewState]] rendered by a [SectionDrawing]($backend) view.
  * @beta
  */
 export interface ViewAttachmentHitInfo {
-  /** The element Id of the [ViewAttachment]($backend) from which the hit originated. */
+  /** The Id of the [ViewAttachment]($backend) element or - for a [SectionDrawing]($backend) view - the [SpatialViewDefinition]($backend) from which the hit originated. */
   readonly id: Id64String;
   /** The viewport that renders the contents of the attached view into the [[ScreenViewport]].
    * @alpha
@@ -151,14 +152,15 @@ export interface HitDetailProps {
    * @internal
    */
   readonly sourceIModel?: IModelConnection;
+  /** @internal */
+  readonly transformFromSourceIModel?: Transform;
   /** @internal chiefly for debugging */
   readonly tileId?: string;
   /** True if the hit originated from a reality model classifier.
    * @alpha
    */
   readonly isClassifier?: boolean;
-  /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
-   * @note Only [[SheetViewState]]s can have view attachments.
+  /** Information about the attached view, if any, within which the hit geometry resides.
    * @beta
    */
   readonly viewAttachment?: ViewAttachmentHitInfo;
@@ -200,14 +202,15 @@ export class HitDetail {
    * @internal
    */
   public get sourceIModel(): IModelConnection | undefined { return this._props.sourceIModel; }
+  /** @internal */
+  public get transformFromSourceIModel(): Transform | undefined { return this._props.transformFromSourceIModel; }
   /** @internal chiefly for debugging */
   public get tileId(): string | undefined { return this._props.tileId; }
   /** True if the hit originated from a reality model classifier.
    * @alpha
    */
   public get isClassifier(): boolean | undefined { return this._props.isClassifier; }
-  /** Information about the [ViewAttachment]($backend) within which the hit geometry resides, if any.
-   * @note Only [[SheetViewState]]s can have view attachments.
+  /** Information about the attached view within which the hit geometry resides, if any.
    * @beta
    */
   public get viewAttachment(): ViewAttachmentHitInfo | undefined { return this._props.viewAttachment; }
@@ -255,6 +258,7 @@ export class HitDetail {
         geometryClass: arg0.geometryClass,
         modelId: arg0.modelId,
         sourceIModel: arg0.sourceIModel,
+        transformFromSourceIModel: arg0.transformFromSourceIModel,
         tileId: arg0.tileId,
         isClassifier: arg0.isClassifier,
         viewAttachment: arg0.viewAttachment,

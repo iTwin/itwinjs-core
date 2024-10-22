@@ -346,6 +346,12 @@ describe("IModelReadRpcInterface Methods from an IModelConnection", () => {
     expect(candidate1Result).to.deep.eq({ ...expectedCandidate1Result, candidate: candidates[0] });
     expect(candidate2Result).to.deep.eq({ ...expectedCandidate2Result, candidate: candidates[1] });
   });
+
+  it("queryAllUsedSpatialSubCategories should find subcategories coming from spatial categories of 3d Elements", async () => {
+    const result = await iModel.queryAllUsedSpatialSubCategories();
+    expect(result).to.not.be.null;
+    expect(result.length).to.not.be.equal(0);
+  });
 });
 
 describe("Snapping", () => {

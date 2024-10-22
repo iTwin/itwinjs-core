@@ -10,7 +10,7 @@ import { Node, NodeJSON } from "./Node";
 
 /**
  * Defines a hierarchy level that consists of an array of nodes and possibly other information.
- * @beta
+ * @public
  */
 export interface HierarchyLevel {
   /** A list of nodes in a hierarchy level. */
@@ -35,11 +35,12 @@ export interface HierarchyLevelJSON {
 
 /**
  * Contains helper functions for working with objects of [[HierarchyLevel]] type.
- * @beta
+ * @public
  */
 export namespace HierarchyLevel {
   /**
    * Deserialize [[HierarchyLevel]] from JSON
+   * @beta
    * @deprecated in 3.x. Use [[HierarchyLevel]].
    */
   // eslint-disable-next-line deprecation/deprecation

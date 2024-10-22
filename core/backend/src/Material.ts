@@ -21,7 +21,6 @@ import { IModelElementCloneContext } from "./IModelElementCloneContext";
  * @public
  */
 export abstract class PhysicalMaterial extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "PhysicalMaterial"; }
   /** Create a Code for a PhysicalMaterial given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -54,15 +53,14 @@ export abstract class PhysicalMaterial extends DefinitionElement {
  * @public
  */
 export class RenderMaterialElement extends DefinitionElement {
-  /** @internal */
   public static override get className(): string { return "RenderMaterial"; }
 
   /** The name of a palette that can be used to categorize multiple materials. */
   public paletteName: string;
   /** An optional description of the material. */
   public description?: string;
-  /** @internal */
-  constructor(props: RenderMaterialProps, iModel: IModelDb) {
+
+  private constructor(props: RenderMaterialProps, iModel: IModelDb) {
     super(props, iModel);
     this.paletteName = props.paletteName;
     this.description = props.description;
@@ -186,13 +184,18 @@ export class RenderMaterialElement extends DefinitionElement {
     return iModelDb.elements.insertElement(renderMaterial.toJSON());
   }
 
-  /** @internal */
+  /** @beta */
   protected static override onCloned(context: IModelElementCloneContext, sourceProps: ElementProps, targetProps: ElementProps) {
     super.onCloned(context, sourceProps, targetProps);
     for (const mapName in sourceProps.jsonProperties?.materialAssets?.renderMaterial?.Map ?? {}) {
       if (typeof mapName !== "string")
         continue;
       const sourceMap = sourceProps.jsonProperties.materialAssets.renderMaterial.Map[mapName];
+      // sourceMap could be null/undefined, keep it the same in targetProps
+      if (!sourceMap) {
+        targetProps.jsonProperties.materialAssets.renderMaterial.Map[mapName] = sourceMap;
+        continue;
+      }
       if (!Id64.isValid(sourceMap.TextureId) || sourceMap.TextureId === undefined)
         continue;
       targetProps.jsonProperties.materialAssets.renderMaterial.Map[mapName].TextureId = context.findTargetElementId(sourceMap.TextureId ?? Id64.invalid);

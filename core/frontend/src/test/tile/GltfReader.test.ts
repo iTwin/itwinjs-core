@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
 import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
@@ -11,6 +10,8 @@ import { IModelApp } from "../../IModelApp";
 import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
 import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
+import { BatchedTileIdMap } from "../../core-frontend";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
 const minimalJson = { asset: { version: "02.00" }, meshes: [] };
@@ -21,7 +22,7 @@ function jsonToBytes(json: Object, alignment = 4): Uint8Array {
     str += " ";
 
   const bytes = new TextEncoder().encode(str);
-  expect(bytes.length).to.equal(str.length); // pure ASCII
+  expect(bytes.length).toEqual(str.length); // pure ASCII
   return bytes;
 }
 
@@ -80,33 +81,33 @@ function makeGlb(json: Object | undefined, binary?: Uint8Array, header?: Header)
 }
 
 function expectBinaryData(reader: GltfGraphicsReader, expected: Uint8Array | undefined): void {
-  expect(undefined === reader.binaryData).to.equal(undefined === expected);
+  expect(undefined === reader.binaryData).toEqual(undefined === expected);
   if (expected)
-    expect(Array.from(reader.binaryData!)).to.deep.equal(Array.from(expected));
+    expect(Array.from(reader.binaryData!)).toEqual(Array.from(expected));
 }
 
 describe("GltfReader", () => {
   let iModel: IModelConnection;
 
-  before(async () => {
+  beforeAll(async () => {
     await IModelApp.startup({ localization: new EmptyLocalization() });
     iModel = createBlankConnection();
   });
 
-  after(async () => {
+  afterAll(async () => {
     await iModel.close();
     await IModelApp.shutdown();
   });
 
-  function createReader(gltf: Uint8Array | GltfDocument): GltfGraphicsReader | undefined {
+  function createReader(gltf: Uint8Array | GltfDocument, idMap: BatchedTileIdMap | undefined = undefined): GltfGraphicsReader | undefined {
     const props = GltfReaderProps.create(gltf, true);
-    return props ? new GltfGraphicsReader(props, { gltf, iModel }) : undefined;
+    return props ? new GltfGraphicsReader(props, { gltf, iModel, idMap }) : undefined;
   }
 
   it("accepts minimal glb", () => {
     const glb = makeGlb(minimalJson, minimalBin);
     const reader = createReader(glb)!;
-    expect(reader).not.to.be.undefined;
+    expect(reader).toBeDefined();
     expectBinaryData(reader, minimalBin);
   });
 
@@ -115,7 +116,7 @@ describe("GltfReader", () => {
       const glb = makeGlb(minimalJson, minimalBin);
       setHeader(glb, length ?? glb.length, format, version);
       const reader = createReader(glb);
-      expect(reader !== undefined).to.equal(expectValid);
+      expect(reader !== undefined).toEqual(expectValid);
     }
 
     // Valid.
@@ -132,13 +133,13 @@ describe("GltfReader", () => {
   it("accepts glb with no binary chunk", () => {
     const glb = glbFromChunks([{ data: jsonToBytes(minimalJson), type: GltfV2ChunkTypes.JSON }]);
     const reader = createReader(glb)!;
-    expect(reader).not.to.be.undefined;
-    expect(reader.binaryData).to.be.undefined;
+    expect(reader).toBeDefined();
+    expect(reader.binaryData).toBeUndefined();
   });
 
   it("rejects glb with no JSON chunk", () => {
     const glb = glbFromChunks([{ data: minimalBin, type: GltfV2ChunkTypes.Binary }]);
-    expect(createReader(glb)).to.be.undefined;
+    expect(createReader(glb)).toBeUndefined();
   });
 
   it("rejects glb with multiple binary chunks", () => {
@@ -150,7 +151,7 @@ describe("GltfReader", () => {
       data: minimalBin, type: GltfV2ChunkTypes.Binary,
     }]);
 
-    expect(createReader(glb)).to.be.undefined;
+    expect(createReader(glb)).toBeUndefined();
   });
 
   it("ignores unrecognized chunks", () => {
@@ -163,7 +164,7 @@ describe("GltfReader", () => {
     chunks.push({ data: minimalBin, type: 0xdeadbeef as GltfV2ChunkTypes });
     const glb = glbFromChunks(chunks);
     const reader = createReader(glb)!;
-    expect(reader).not.to.be.undefined;
+    expect(reader).toBeDefined();
     expectBinaryData(reader, minimalBin);
   });
 
@@ -174,7 +175,7 @@ describe("GltfReader", () => {
       data: jsonToBytes(minimalJson), type: GltfV2ChunkTypes.JSON,
     }]);
 
-    expect(createReader(glb)).to.be.undefined;
+    expect(createReader(glb)).toBeUndefined();
   });
 
   it("identifies the scene nodes", () => {
@@ -203,8 +204,8 @@ describe("GltfReader", () => {
     function expectSceneNodes(sceneId: GltfId | undefined, expectedSceneNodes: GltfId[]) {
       json.scene = sceneId;
       const reader = createReader(makeGlb(json, minimalBin))!;
-      expect(reader).not.to.be.undefined;
-      expect(reader.sceneNodes).to.deep.equal(expectedSceneNodes);
+      expect(reader).toBeDefined();
+      expect(reader.sceneNodes).toEqual(expectedSceneNodes);
     }
 
     // If scene is not present we fall back to Object.keys, which are strings.
@@ -251,11 +252,11 @@ describe("GltfReader", () => {
     function expectTraversal(sceneId: GltfId, expectedTraversal: GltfId[]) {
       json.scene = sceneId;
       const reader = createReader(makeGlb(json, minimalBin))!;
-      expect(reader).not.to.be.undefined;
-      expect(reader.sceneNodes).to.deep.equal(reader.scenes[sceneId]?.nodes);
+      expect(reader).toBeDefined();
+      expect(reader.sceneNodes).toEqual(reader.scenes[sceneId]?.nodes);
 
       const actualTraversal = [];
-      expect(Array.isArray(reader.nodes)).to.be.true;
+      expect(Array.isArray(reader.nodes)).toBe(true);
       const nodes = reader.nodes as unknown as GltfNode[];
       for (const node of reader.traverseScene()) {
         const nodeId = nodes.indexOf(node);
@@ -263,7 +264,7 @@ describe("GltfReader", () => {
         actualTraversal.push(nodeId);
       }
 
-      expect(actualTraversal).to.deep.equal(expectedTraversal);
+      expect(actualTraversal).toEqual(expectedTraversal);
     }
 
     expectTraversal(1, []);
@@ -298,10 +299,10 @@ describe("GltfReader", () => {
     function expectCycle(scene: GltfId | undefined) {
       json.scene = scene;
       const reader = createReader(makeGlb(json, minimalBin))!;
-      expect(reader).not.to.be.undefined;
+      expect(reader).toBeDefined();
       expect(() => {
         for (const _ of reader.traverseScene()) { }
-      }).to.throw("Cycle detected while traversing glTF nodes");
+      }).toThrowError("Cycle detected while traversing glTF nodes");
     }
 
     expectCycle(0);
@@ -368,35 +369,35 @@ describe("GltfReader", () => {
 
   it("computes bounding boxes", async () => {
     const reader = createReader(unindexedTriangle)!;
-    expect(reader).not.to.be.undefined;
+    expect(reader).toBeDefined();
     const result = await reader.read();
-    expect(result.graphic).not.to.be.undefined;
+    expect(result.graphic).toBeDefined();
 
     // Content range is in local coordinates (y-up)
-    expect(result.contentRange?.toJSON()).to.deep.equal({
+    expect(result.contentRange?.toJSON()).toEqual({
       low: [0, 0, 0],
       high: [1, 1, 0],
     });
 
     // Range is in world coordinates (z-up). Transform introduces slight floating point fuzz.
-    expect(result.range).not.to.be.undefined;
-    expect(result.range!.isAlmostEqual(new Range3d(0, 0, -1, 1, 0, 0))).to.be.true;
+    expect(result.range).toBeDefined();
+    expect(result.range!.isAlmostEqual(new Range3d(0, 0, -1, 1, 0, 0))).toBe(true);
   });
 
   describe("textures", () => {
     function expectTextureType(expected: RenderTexture.Type, sampler: GltfSampler | undefined, defaultWrap?: GltfWrapMode): void {
       const reader = createReader(makeGlb(minimalJson, minimalBin))!;
-      expect(reader).not.to.be.undefined;
+      expect(reader).toBeDefined();
       if (undefined !== defaultWrap)
         reader.defaultWrapMode = defaultWrap;
 
-      expect(reader.getTextureType(sampler)).to.equal(expected);
+      expect(reader.getTextureType(sampler)).toEqual(expected);
     }
 
     // This test includes a current deviation from the glTF spec: we currently do not support mirrored repeat.
     it("produces normal textures unless clamp-to-edge is specified", () => {
       expectTextureType(RenderTexture.Type.Normal, undefined);
-      expectTextureType(RenderTexture.Type.Normal, { });
+      expectTextureType(RenderTexture.Type.Normal, {});
       expectTextureType(RenderTexture.Type.Normal, { magFilter: 9728, minFilter: 9987 });
 
       expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.Repeat });
@@ -419,7 +420,7 @@ describe("GltfReader", () => {
 
     it("overrides default texture type if unspecified by sampler", () => {
       expectTextureType(RenderTexture.Type.TileSection, undefined, GltfWrapMode.ClampToEdge);
-      expectTextureType(RenderTexture.Type.TileSection, { }, GltfWrapMode.ClampToEdge);
+      expectTextureType(RenderTexture.Type.TileSection, {}, GltfWrapMode.ClampToEdge);
       expectTextureType(RenderTexture.Type.TileSection, { magFilter: 9728, minFilter: 9987 }, GltfWrapMode.ClampToEdge);
 
       expectTextureType(RenderTexture.Type.Normal, { wrapS: GltfWrapMode.Repeat }, GltfWrapMode.ClampToEdge);
@@ -435,6 +436,637 @@ describe("GltfReader", () => {
       expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
       expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.Repeat, wrapT: GltfWrapMode.ClampToEdge }, GltfWrapMode.ClampToEdge);
       expectTextureType(RenderTexture.Type.TileSection, { wrapS: GltfWrapMode.ClampToEdge, wrapT: GltfWrapMode.MirroredRepeat }, GltfWrapMode.ClampToEdge);
+    });
+  });
+
+  const instanceFeaturesExt: GltfDocument = JSON.parse(`
+{
+  "asset": {
+    "version": "2.0"
+  },
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ],
+  "nodes": [
+    {
+			"extensions": {
+				"EXT_instance_features": {
+					"featureIds": [
+					  {
+								"featureCount": 4,
+								"propertyTable": 0
+						},
+						{
+								"attribute": 0,
+								"featureCount": 4,
+								"propertyTable": 1,
+								"nullFeatureId": 3
+						}
+					]
+				},
+				"EXT_mesh_gpu_instancing": {
+					"attributes": {
+						"_FEATURE_ID_0": 1,
+            "TRANSLATION": 2
+					}
+				}
+			},
+			"mesh": 0
+		}
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 0
+          }
+        }
+      ]
+    }
+  ],
+  "buffers": [
+    {
+      "uri": "data:application/octet-stream;base64,AQIDBA==",
+      "byteLength": 4
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AQACAAMABAA=",
+      "byteLength": 8
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AQAAAAIAAAADAAAABAAAAA==",
+      "byteLength": 16
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AQAAAAAAAAACAAAAAAAAAAMAAAAAAAAABAAAAAAAAAA=",
+      "byteLength": 32
+    },
+    {
+      "uri": "data:application/octet-stream;base64,//79/A==",
+      "byteLength": 4
+    },
+    {
+      "uri": "data:application/octet-stream;base64,///+//3//P8=",
+      "byteLength": 8
+    },
+    {
+      "uri": "data:application/octet-stream;base64,//////7////9/////P///w==",
+      "byteLength": 16
+    },
+    {
+      "uri": "data:application/octet-stream;base64,///////////+//////////3//////////P////////8=",
+      "byteLength": 32
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AACAPwAAAEAAAEBAAACAQA==",
+      "byteLength": 16
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AAAAAAAA8D8AAAAAAAAAQAAAAAAAAAhAAAAAAAAAEEA=",
+      "byteLength": 32
+    },
+    {
+      "uri": "data:application/octet-stream;base64,b25ldHdvdGhyZWVmb3Vy",
+      "byteLength": 15
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AAAAAAMAAAAGAAAACwAAABAAAAA=",
+      "byteLength": 20
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AQIDBAUGBwgJCgsMDQ4PEBESExQVFhcYGRobHB0eHyAhIiMkJSYnKCkqKywtLi8wMTIzNDU2Nzg5Ojs8PT4/QA==",
+      "byteLength": 64
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AAAAAAAAAAAAAAAAAACAPwAAAAAAAAAAAAAAAAAAgD8AAAAA",
+      "byteLength": 36
+    },
+    {
+      "uri": "data:application/octet-stream;base64,AgAAAAEAAAADAAAAAAAAAA==",
+      "byteLength": 16
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 4
+    },
+    {
+      "buffer": 1,
+      "byteOffset": 0,
+      "byteLength": 8
+    },
+    {
+      "buffer": 2,
+      "byteOffset": 0,
+      "byteLength": 16
+    },
+    {
+      "buffer": 3,
+      "byteOffset": 0,
+      "byteLength": 32
+    },
+    {
+      "buffer": 4,
+      "byteOffset": 0,
+      "byteLength": 4
+    },
+    {
+      "buffer": 5,
+      "byteOffset": 0,
+      "byteLength": 8
+    },
+    {
+      "buffer": 6,
+      "byteOffset": 0,
+      "byteLength": 16
+    },
+    {
+      "buffer": 7,
+      "byteOffset": 0,
+      "byteLength": 32
+    },
+    {
+      "buffer": 8,
+      "byteOffset": 0,
+      "byteLength": 16
+    },
+    {
+      "buffer": 9,
+      "byteOffset": 0,
+      "byteLength": 32
+    },
+    {
+      "buffer": 10,
+      "byteOffset": 0,
+      "byteLength": 15
+    },
+    {
+      "buffer": 11,
+      "byteOffset": 0,
+      "byteLength": 20
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 8
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 12
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 16
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 36
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 64
+    },
+    {
+      "buffer": 13,
+      "byteOffset": 0,
+      "byteLength": 36
+    },
+    {
+      "buffer": 14,
+      "byteOffset": 0,
+      "byteLength": 16
+    },
+    {
+      "buffer": 12,
+      "byteOffset": 0,
+      "byteLength": 48
+    }
+  ],
+  "accessors": [
+    {
+      "bufferView": 17,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 3,
+      "type": "VEC3",
+      "max": [
+        1.0,
+        1.0,
+        0.0
+      ],
+      "min": [
+        0.0,
+        0.0,
+        0.0
+      ]
+    },
+		{
+			"bufferView": 18,
+			"componentType": 5125,
+			"count": 4,
+			"type": "SCALAR"
+		},
+		{
+			"bufferView": 19,
+			"componentType": 5126,
+			"count": 4,
+			"type": "VEC3"
+		}
+  ],
+  "extensions": {
+    "EXT_structural_metadata": {
+      "propertyTables": [
+        {
+          "class": "propertySet0",
+          "count": 4,
+          "name": "propertySet0",
+          "properties": {
+            "property0": {
+              "values": 0
+            },
+            "property1": {
+              "values": 1
+            },
+            "property2": {
+              "values": 2
+            },
+            "property3": {
+              "values": 3
+            },
+            "property4": {
+              "values": 4
+            },
+            "property5": {
+              "values": 5
+            },
+            "property6": {
+              "values": 6
+            },
+            "property7": {
+              "values": 7
+            },
+            "property8": {
+              "values": 8
+            },
+            "property9": {
+              "values": 9
+            },
+            "property10": {
+              "values": 10,
+              "stringOffsets": 11
+            }
+          }
+        },
+        {
+          "class": "propertySet1",
+          "count": 4,
+          "name": "propertySet1",
+          "properties": {
+            "property0": {
+              "values": 12
+            },
+            "property1": {
+              "values": 13
+            },
+            "property2": {
+              "values": 14
+            },
+            "property3": {
+              "values": 15
+            },
+            "property4": {
+              "values": 15
+            },
+            "property5": {
+              "values": 16
+            }
+          }
+        }
+      ],
+      "schema": {
+        "classes": {
+          "propertySet0": {
+            "name": "propertySet0",
+            "properties": {
+              "property0": {
+                "componentType": "UINT8",
+                "name": "UINT8_VALUES",
+                "noData": 4,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property1": {
+                "componentType": "UINT16",
+                "name": "UINT16_VALUES",
+                "noData": 4,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property2": {
+                "componentType": "UINT32",
+                "name": "UINT32_VALUES",
+                "noData": 4,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property3": {
+                "componentType": "UINT64",
+                "name": "UINT64_VALUES",
+                "noData": "4",
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property4": {
+                "componentType": "INT8",
+                "name": "INT8_VALUES",
+                "noData": -4,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property5": {
+                "componentType": "INT16",
+                "name": "INT16_VALUES",
+                "noData": -4,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property6": {
+                "componentType": "INT32",
+                "name": "INT32_VALUES",
+                "noData": -4,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property7": {
+                "componentType": "INT64",
+                "name": "INT64_VALUES",
+                "noData": "-4",
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property8": {
+                "componentType": "FLOAT32",
+                "name": "FLOAT32_VALUES",
+                "noData": 4,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property9": {
+                "componentType": "FLOAT64",
+                "name": "FLOAT64_VALUES",
+                "noData": 4,
+                "required": true,
+                "type": "SCALAR"
+              },
+              "property10": {
+                "name": "STRING_VALUES",
+                "required": true,
+                "noData": "four",
+                "type": "STRING"
+              }
+            }
+          },
+          "propertySet1": {
+            "name": "propertySet1",
+            "properties": {
+              "property0": {
+                "componentType": "UINT8",
+                "name": "UINT8_VEC2_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "VEC2"
+              },
+              "property1": {
+                "componentType": "UINT8",
+                "name": "UINT8_VEC3_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "VEC3"
+              },
+              "property2": {
+                "componentType": "UINT8",
+                "name": "UINT8_VEC4_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "VEC4"
+              },
+              "property3": {
+                "componentType": "UINT8",
+                "name": "UINT8_MAT2_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "MAT2"
+              },
+              "property4": {
+                "componentType": "UINT8",
+                "name": "UINT8_MAT3_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "MAT3"
+              },
+              "property5": {
+                "componentType": "UINT8",
+                "name": "UINT8_MAT4_VALUES",
+                "noData": 0,
+                "required": true,
+                "type": "MAT4"
+              }
+            }
+          }
+        },
+        "id": "testProperties"
+      }
+    }
+  }
+}`);
+
+  const compareArrays = (a: any[], b: any[]) => {
+    for (let i = 0; i < a.length; i++) {
+      if(Array.isArray(a[i])){
+        if (!compareArrays(a[i], b[i])){
+          return false;
+        }
+      } else{
+        if (a[i] !== b[i]){
+          return false;
+        }
+      }
+    }
+    return true;
+  };
+
+  describe("EXT_structural_metadata", () => {
+
+    const instanceFeatures = [2,1,3,0];
+    const expectedValuesUnsigned = [1,2,3,undefined];
+    const expectedValuesBigUnsigned = ["1","2","3",undefined];
+    const expectedValuesSigned = [-1,-2,-3,undefined];
+    const expectedValuesBigSigned = ["-1","-2","-3",undefined];
+    const expectedValuesString = ["one","two","three",undefined];
+
+    const expectedValuesVec2 = [[1,2],[3,4],[5,6],[7,8]];
+    const expectedValuesVec3 = [[1,2,3],[4,5,6],[7,8,9],[10,11,12]];
+    const expectedValuesVec4 = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]];
+    const expectedValuesMat3 = [[1,2,3,4,5,6,7,8,9],[10,11,12,13,14,15,16,17,18],[19,20,21,22,23,24,25,26,27],[28,29,30,31,32,33,34,35,36]];
+    const expectedValuesMat4 = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],[17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32], [33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48], [49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64]];
+
+    it("parses structural metadata", async () => {
+      const reader = createReader(instanceFeaturesExt)!;
+      expect(reader).toBeDefined();
+      const result = await reader.read();
+      expect(result.graphic).toBeDefined();
+      expect(reader.structuralMetadata).toBeDefined();
+      const structuralMetadata = reader.structuralMetadata!;
+
+      expect(structuralMetadata.tables.length === 2);
+      expect(structuralMetadata.tables[0].entries.length === 11);
+
+      for(const entry of structuralMetadata.tables[0].entries ?? []) {
+        if(entry.name === "UINT8_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
+        } else if(entry.name === "UINT16_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
+        } else if(entry.name === "UINT32_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
+        } else if(entry.name === "UINT64_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesBigUnsigned)).toBe(true);
+        } else if(entry.name === "INT8_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesSigned)).toBe(true);
+        } else if(entry.name === "INT16_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesSigned)).toBe(true);
+        } else if(entry.name === "INT32_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesSigned)).toBe(true);
+        } else if(entry.name === "INT64_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesBigSigned)).toBe(true);
+        }else if(entry.name === "FLOAT32_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
+        } else if(entry.name === "FLOAT64_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
+        } else if(entry.name === "STRING_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesString)).toBe(true);
+        }
+      }
+
+      expect(structuralMetadata.tables[1].entries.length === 6);
+      for(const entry of structuralMetadata.tables[1].entries ?? []) {
+        if(entry.name === "UINT8_VEC2_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec2)).toBe(true);
+        } else if(entry.name === "UINT8_VEC3_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec3)).toBe(true);
+        } else if(entry.name === "UINT8_VEC4_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec4)).toBe(true);
+        } else if(entry.name === "UINT8_MAT2_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec4)).toBe(true);
+        } else if(entry.name === "UINT8_MAT3_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesMat3)).toBe(true);
+        } else if(entry.name === "UINT8_MAT4_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesMat4)).toBe(true);
+        }
+      }
+    });
+
+    it("parses instance features", async () => {
+      const idMap = new BatchedTileIdMap(iModel);
+
+      const reader = createReader(instanceFeaturesExt, idMap)!;
+      expect(reader).toBeDefined();
+
+      const result = await reader.read();
+      expect(result).toBeDefined();
+
+      let entryCount = 0;
+      for(const entry of idMap.entries()) {
+        expect(entry).toBeDefined();
+
+        // Expect empty property set for noData = 4 | -4 | "four"
+        if(entryCount === 3){
+          expect(JSON.stringify(entry.properties.propertySet0) === JSON.stringify({})).toBe(true);
+        } else {
+          let propertyCount0 = 0;
+          for(const [key, value] of Object.entries(entry.properties.propertySet0)){
+            if(key === "UINT8_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "UINT16_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "UINT32_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "UINT64_VALUES") {
+              expect(value === expectedValuesBigUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "INT8_VALUES") {
+              expect(value === expectedValuesSigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "INT16_VALUES") {
+              expect(value === expectedValuesSigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "INT32_VALUES") {
+              expect(value === expectedValuesSigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "INT64_VALUES") {
+              expect(value === expectedValuesBigSigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "FLOAT32_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "FLOAT64_VALUES") {
+              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+              propertyCount0++;
+            } else if(key === "STRING_VALUES") {
+              expect(value === expectedValuesString[entryCount]).toBe(true);
+              propertyCount0++;
+            }
+          }
+          expect(propertyCount0 === 11).toBe(true);
+        }
+
+        // Expect empty property set for null feature id = 3
+        if(instanceFeatures[entryCount] === 3){
+          expect(JSON.stringify(entry.properties.propertySet1) === JSON.stringify({})).toBe(true);
+        } else {
+          let propertyCount1 = 0;
+          for(const [key, value] of Object.entries(entry.properties.propertySet1)){
+            const array = value as any[];
+            if(key === "UINT8_VEC2_VALUES") {
+              expect(compareArrays(array, expectedValuesVec2[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            } else if(key === "UINT8_VEC3_VALUES") {
+              expect(compareArrays(array, expectedValuesVec3[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            } else if(key === "UINT8_VEC4_VALUES") {
+              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            } else if(key === "UINT8_MAT2_VALUES") {
+              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            } else if(key === "UINT8_MAT3_VALUES") {
+              expect(compareArrays(array, expectedValuesMat3[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            }else if(key === "UINT8_MAT4_VALUES") {
+              expect(compareArrays(array, expectedValuesMat4[instanceFeatures[entryCount]])).toBe(true);
+              propertyCount1++;
+            }
+          }
+          expect(propertyCount1 === 6).toBe(true);
+        }
+
+        entryCount ++;
+      }
+      expect(entryCount === 4).toBe(true);
     });
   });
 });

@@ -9,7 +9,7 @@
 // spell:ignore datacenter
 
 import { AccessToken, GuidString, Id64String } from "@itwin/core-bentley";
-import { SettingObject } from "./workspace/Settings";
+import { SettingsContainer } from "./workspace/Settings";
 
 /**
  * Types and functions for creating, deleting and authorizing access to cloud-based blob containers for an iTwin.
@@ -65,7 +65,7 @@ export namespace BlobContainer {
     /** Optional human-readable explanation of the information held in the container. This will be displayed in the administrator RBAC panel, and on usage reports. */
     description?: string;
     /** optional properties for the container */
-    json?: SettingObject;
+    json?: SettingsContainer;
   }
 
   /** Properties returned by `Service.requestToken` */
@@ -83,6 +83,8 @@ export namespace BlobContainer {
     expiration: Date;
     /** Metadata of the container. */
     metadata: Metadata;
+    /** Base URI of container */
+    baseUri: string;
   }
 
   /** The URI and Id of the container. */
@@ -113,7 +115,7 @@ export namespace BlobContainer {
   export type RequestAccessLevel = "write" | "read" | "admin" | "writeIfPossible";
 
   /** Information required to request an access token for a container. */
-  export interface RequestTokenProps extends AccessContainerProps {
+  export interface RequestTokenProps extends Omit<AccessContainerProps,"baseUri">  {
     /** the level of access requested. If not specified, defaults to `"writeIfPossible"`. */
     accessLevel?: RequestAccessLevel;
     /** the number of seconds before the token should expire.
@@ -155,7 +157,7 @@ export namespace BlobContainer {
     queryMetadata(container: AccessContainerProps): Promise<Metadata>;
 
     /** update the json properties of this container */
-    updateJson(container: AccessContainerProps, json: SettingObject): Promise<void>;
+    updateJson(container: AccessContainerProps, json: SettingsContainer): Promise<void>;
 
     /** Request a `ContainerToken` for a container. Throws on failure. */
     requestToken(props: RequestTokenProps): Promise<TokenProps>;

@@ -29,7 +29,7 @@ import { StrippedRelationshipPath } from "./EC";
  * }
  * ```
  *
- * @beta
+ * @public
  */
 export interface InstanceFilterDefinition {
   /**
@@ -59,14 +59,14 @@ export interface InstanceFilterDefinition {
 
 /**
  * Related instance definition for accessing properties of a related instance in [[InstanceFilterDefinition.expression]].
- * @beta
+ * @public
  */
 export type InstanceFilterRelatedInstanceDefinition = InstanceFilterRelatedInstancePath &
   (InstanceFilterRelatedInstanceTargetAlias | InstanceFilterRelatedInstanceRelationshipAlias);
 
 /**
  * Partial definition of common attributes for [[InstanceFilterRelatedInstanceDefinition]].
- * @beta
+ * @public
  */
 export interface InstanceFilterRelatedInstancePath {
   /**
@@ -83,7 +83,7 @@ export interface InstanceFilterRelatedInstancePath {
 
 /**
  * Partial definition of [[InstanceFilterRelatedInstanceDefinition]] for the case when referencing the target class.
- * @beta
+ * @public
  */
 export interface InstanceFilterRelatedInstanceTargetAlias {
   /**
@@ -95,7 +95,7 @@ export interface InstanceFilterRelatedInstanceTargetAlias {
 
 /**
  * Partial definition of [[InstanceFilterRelatedInstanceDefinition]] for the case when referencing the relationship class.
- * @beta
+ * @public
  */
 export interface InstanceFilterRelatedInstanceRelationshipAlias {
   /**

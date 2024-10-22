@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -61,6 +61,6 @@ describe("FacetFaceData", () => {
     ck.testFalse(ffdB0.setParamDistanceRangeFromNewFaceData(polyfaceB, 2, 3));
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "AddPolyface");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

@@ -30,7 +30,8 @@ const baseUrlOptions = (argv.baseUrl === undefined) ? [] : ["--baseUrl", argv.ba
 const includeOptions = (argv.includes === undefined) ? [] : ["--includes", argv.includes];
 
 const testExclude = argv.testExcludeGlob ?? "**/*test*/**/*";
-let excludeList = `**/node_modules/**/*,${testExclude}`;
+const excludeInternalFolders = "**/internal/**/*"
+let excludeList = `**/node_modules/**/*,${testExclude},${excludeInternalFolders}`;
 if (argv.excludes !== undefined)
   excludeList += ",**/" + argv.excludes + "/**/*";
 if (argv.excludeGlob !== undefined)

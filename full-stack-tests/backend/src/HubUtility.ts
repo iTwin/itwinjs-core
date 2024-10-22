@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import { ITwin, ITwinsAccessClient, ITwinsAPIResponse, ITwinSubClass } from "@itwin/itwins-client";
-import { IModelHost, IModelJsFs, V1CheckpointManager } from "@itwin/core-backend";
+import { IModelHost, IModelJsFs, IModelNative, V1CheckpointManager } from "@itwin/core-backend";
 import { AccessToken, ChangeSetStatus, GuidString, Logger, OpenMode, PerfLogger } from "@itwin/core-bentley";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetProps } from "@itwin/core-common";
 import { TestUserCredentials, TestUsers, TestUtility } from "@itwin/oidc-signin-tool";
@@ -59,7 +59,9 @@ export class HubUtility {
   public static async getTestITwinId(accessToken: AccessToken): Promise<GuidString> {
     if (undefined !== HubUtility.iTwinId)
       return HubUtility.iTwinId;
-    return HubUtility.getITwinIdByName(accessToken, HubUtility.testITwinName);
+
+    HubUtility.iTwinId = await HubUtility.getITwinIdByName(accessToken, HubUtility.testITwinName);
+    return HubUtility.iTwinId;
   }
 
   private static imodelCache = new Map<string, GuidString>();
@@ -197,7 +199,7 @@ export class HubUtility {
     Logger.logInfo(HubUtility.logCategory, "Making a local copy of the seed");
     HubUtility.copyIModelFromSeed(briefcasePathname, iModelDir, true /* =overwrite */);
 
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
     const changesets = HubUtility.readChangesets(iModelDir);
     const endNum: number = endCS ? endCS : changesets.length;
@@ -275,7 +277,7 @@ export class HubUtility {
       IModelJsFs.copySync(seedPathname, iModelPathname);
     }
 
-    const nativeDb = new IModelHost.platform.DgnDb();
+    const nativeDb = new IModelNative.platform.DgnDb();
     nativeDb.openIModel(iModelPathname, OpenMode.ReadWrite);
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);

@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as almostEqual from "almost-equal";
 import { Constant } from "../Metadata/Constant";
 import { Unit } from "../Metadata/Unit";
 import { SchemaItemType } from "../ECObjects";
+import { almostEqual } from "@itwin/core-quantity";
 
 /**
  * Class used for storing calculated conversion between two Units [[UnitConverter.calculateConversion]] and converting values from one Unit to another [[UnitConverter.evaluate]]

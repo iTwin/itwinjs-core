@@ -8,9 +8,9 @@
 
 import { assert } from "@itwin/core-bentley";
 import { RenderGraphicOwner } from "./render/RenderGraphic";
-import { GraphicType } from "./render/GraphicBuilder";
 import { ViewportDecorator } from "./Viewport";
 import { CanvasDecoration } from "./render/CanvasDecoration";
+import { GraphicType } from "./common/render/GraphicType";
 
 /** @internal */
 export type CachedDecoration =

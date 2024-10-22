@@ -683,15 +683,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected setModifier(modifier: ECClassModifier) {
     this._modifier = modifier;
   }
-
-  /**
-   * @alpha
-   * A setter method for the ECClass name, used specifically for schema editing.
-   * @param modifier
-   */
-  protected setName(name: string) {
-    this._key = new SchemaItemKey(name, this.schema.schemaKey);
-  }
 }
 
 /**

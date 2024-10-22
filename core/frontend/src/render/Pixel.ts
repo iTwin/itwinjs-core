@@ -11,6 +11,7 @@ import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-com
 import { HitPriority, ViewAttachmentHitInfo } from "../HitDetail";
 import { IModelConnection } from "../IModelConnection";
 import type { Viewport } from "../Viewport";
+import { Transform } from "@itwin/core-geometry";
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
  * @see [[Viewport.readPixels]].
@@ -34,8 +35,12 @@ export namespace Pixel {
     /** The iModel from which the geometry producing the pixel originated. */
     public readonly iModel?: IModelConnection;
     /** @internal */
+    public readonly transformFromIModel?: Transform;
+    /** @internal */
     public readonly tileId?: string;
-    /** The Id of the [ViewAttachment]($backend), if any, from which the pixel originated.
+    /** The Id of the "attached" view, if any, from which the pixel originated.
+     * An attached view is a 2d view drawn into the context of another view - for example, a [[ViewAttachment]]($backend)
+     * rendered into a [[SheetViewState]], or a [[SpatialViewState]] rendered by a [SectionDrawing]($backend) view.
      * @beta
      */
     public readonly viewAttachmentId?: Id64String;
@@ -54,6 +59,7 @@ export namespace Pixel {
       iModel?: IModelConnection;
       tileId?: string;
       viewAttachmentId?: string;
+      transformFromIModel?: Transform;
     }) {
       if (args?.feature)
         this.feature = new Feature(args.feature.elementId, args.feature.subCategoryId, args.feature.geometryClass);
@@ -65,6 +71,7 @@ export namespace Pixel {
       this.iModel = args?.iModel;
       this.tileId = args?.tileId;
       this.viewAttachmentId = args?.viewAttachmentId;
+      this.transformFromIModel = args?.transformFromIModel;
     }
 
     /** The Id of the element that produced the pixel. */
@@ -119,6 +126,7 @@ export namespace Pixel {
         tileId: this.tileId,
         isClassifier: this.isClassifier,
         sourceIModel: this.iModel,
+        transformFromSourceIModel: this.transformFromIModel,
         viewAttachment,
       };
     }
@@ -156,6 +164,8 @@ export namespace Pixel {
      * @internal
      */
     sourceIModel?: IModelConnection;
+    /** @internal */
+    transformFromSourceIModel?: Transform;
     /** @internal chiefly for debugging */
     tileId?: string;
     /** True if the hit originated from a reality model classifier.

@@ -19,6 +19,8 @@ import { IModelDb } from "./IModelDb";
 import { Category } from "./Category";
 import { Model } from "./Model";
 import { Entity } from "./Entity";
+import { BlobContainer } from "./BlobContainerService";
+import { _nativeDb } from "./internal/Symbols";
 
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 
@@ -271,7 +273,7 @@ export namespace ViewStore {
       return existing !== 0 ? existing : this.withPreparedSqliteStatement(`INSERT INTO ${tableName.guids} (guid) VALUES(?)`, (stmt) => {
         stmt.bindGuid(1, guid);
         stmt.stepForWrite();
-        return this.nativeDb.getLastInsertRowId();
+        return this[_nativeDb].getLastInsertRowId();
       });
     }
 
@@ -289,7 +291,7 @@ export namespace ViewStore {
         stmt.bindInteger(8, args.categorySel);
         stmt.bindInteger(9, args.displayStyle);
         stmt.stepForWrite();
-        return this.nativeDb.getLastInsertRowId();
+        return this[_nativeDb].getLastInsertRowId();
       });
     }
 
@@ -302,7 +304,7 @@ export namespace ViewStore {
         stmt.bindInteger(3, args.parentId ?? 1);
         stmt.bindString(4, args.json);
         stmt.stepForWrite();
-        return this.nativeDb.getLastInsertRowId();
+        return this[_nativeDb].getLastInsertRowId();
       });
     }
 
@@ -312,7 +314,7 @@ export namespace ViewStore {
         stmt.bindString(2, args.json);
         stmt.maybeBindString(3, args.owner);
         stmt.stepForWrite();
-        return this.nativeDb.getLastInsertRowId();
+        return this[_nativeDb].getLastInsertRowId();
       });
     }
     /** add a row to the "modelSelectors" table, return the RowId
@@ -362,7 +364,7 @@ export namespace ViewStore {
         stmt.maybeBindString(3, args.owner);
         stmt.bindBlob(4, args.data);
         stmt.stepForWrite();
-        return this.nativeDb.getLastInsertRowId();
+        return this[_nativeDb].getLastInsertRowId();
       });
     }
 
@@ -1383,15 +1385,35 @@ export namespace ViewStore {
   /** arguments to construct a `ViewStore.CloudAccess` */
   export type ViewStoreCtorProps = CloudSqlite.ContainerAccessProps & ViewDbCtorArgs;
 
+  export interface CreateNewContainerProps {
+    scope: BlobContainer.Scope;
+    metadata: Omit<BlobContainer.Metadata, "containerType">;
+  }
+
   /** Provides access to a cloud-based `ViewDb` */
   export class CloudAccess extends CloudSqlite.DbAccess<ViewDb, ReadMethods, ViewStoreRpc.Writer> {
     public constructor(props: ViewStoreCtorProps) {
       super({ dbType: ViewDb, props, dbName: viewDbName });
     }
 
-    /** Initialize a cloud container for use as a ViewDb. */
-    public static async initializeDb(props: CloudSqlite.ContainerAccessProps) {
+    /**
+     * Initialize a cloud container for use as a ViewDb. This method is called by [[createNewContainer]].
+     * It is only necessary to convert an existing container to a ViewStore container.
+     * @note this deletes any existing content in the container.
+     * @internal
+     */
+    public static async initializeDb(props: CloudSqlite.ContainerProps) {
       return super._initializeDb({ props, dbType: ViewDb, dbName: viewDbName });
     }
+
+    /** Create and initialize a new BlobContainer to hold a ViewStore
+     * @note the current user must have administrator rights to create containers.
+     */
+    public static async createNewContainer(args: CreateNewContainerProps): Promise<CloudSqlite.ContainerProps> {
+      const props = await this.createBlobContainer({ scope: args.scope, metadata: { ...args.metadata, containerType: "viewstore" } });
+      await this.initializeDb(props);
+      return props;
+    }
+
   }
 }

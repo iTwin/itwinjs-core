@@ -8,6 +8,7 @@ import * as process from "process";
 import { Logger, LogLevel } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { IModelHost } from "./IModelHost";
+import { IModelNative } from "./internal/NativePlatform";
 import { RpcInterfaceEndpoints } from "@itwin/core-common";
 
 // cspell:ignore ppid elap
@@ -198,7 +199,7 @@ export class DevTools {
     const oldLevel = Logger.getLevel(inLoggerCategory);
     Logger.logInfo(loggerCategory, `Setting log level`, () => ({ loggerCategory: inLoggerCategory, oldLevel, newLevel }));
     Logger.setLevel(inLoggerCategory, newLevel);
-    IModelHost.platform.clearLogLevelCache();
+    IModelNative.platform.clearLogLevelCache();
     return oldLevel;
   }
 

@@ -9,10 +9,10 @@
 import type { ByteStream, Id64Set, Id64String } from "@itwin/core-bentley";
 import { BatchType } from "@itwin/core-common";
 import type { IModelConnection } from "../IModelConnection";
-import { BatchOptions } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import type { ImdlTimeline } from "../common/imdl/ParseImdlDocument";
 import { acquireImdlParser, ImdlReaderResult, readImdlContent } from "./internal";
+import { BatchOptions } from "../common/render/BatchOptions";
 
 /** Arguments supplied to [[ImdlDecoder.decode]].
  * @internal

@@ -6,9 +6,10 @@
 import { assert, expect } from "chai";
 import * as os from "os";
 import * as readline from "readline";
+import * as sinon from "sinon";
 import { AccessToken, BriefcaseStatus, GuidString, StopWatch } from "@itwin/core-bentley";
 import { BriefcaseIdValue, BriefcaseProps, IModelError, IModelVersion } from "@itwin/core-common";
-import { BriefcaseDb, BriefcaseManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
+import { BriefcaseDb, BriefcaseManager, CheckpointManager, IModelHost, IModelJsFs, RequestNewBriefcaseArg, V2CheckpointManager } from "@itwin/core-backend";
 import { HubWrappers } from "@itwin/core-backend/lib/cjs/test/index";
 import { HubUtility, TestUserType } from "../HubUtility";
 
@@ -43,6 +44,37 @@ describe("BriefcaseManager", () => {
 
   after(async () => {
     V2CheckpointManager.cleanup();
+  });
+
+  it("should be able to reverse apply changesets and maintain changeset indices", async () => {
+    const testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.readOnly);
+    const changesetId = "1b186c485d182c46c02b99aff4fb12637263438f";
+    const args: RequestNewBriefcaseArg = {
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      briefcaseId: BriefcaseIdValue.Unassigned,
+      asOf: {afterChangeSetId: changesetId},
+    };
+    const props = await BriefcaseManager.downloadBriefcase(args);
+    const iModel = await BriefcaseDb.open({
+      fileName: props.fileName,
+      readonly: true,
+    });
+
+    expect(iModel.changeset.id).to.equal(changesetId);
+    expect(iModel.changeset.index).to.equal(4);
+    let index = 3;
+    await iModel.pullChanges({ accessToken, toIndex: index });
+    expect(iModel.changeset.index).to.equal(index);
+    index = 2;
+    await iModel.pullChanges({ accessToken, toIndex: index });
+    expect(iModel.changeset.index).to.equal(index);
+    index = 4;
+    await iModel.pullChanges({ accessToken, toIndex: index });
+    expect(iModel.changeset.index).to.equal(index);
+    expect(iModel.changeset.id).to.equal(changesetId);
+    await HubWrappers.closeAndDeleteBriefcaseDb(accessToken, iModel);
   });
 
   it("should open and close an iModel from the Hub", async () => {
@@ -162,6 +194,23 @@ describe("BriefcaseManager", () => {
     const downloadPromise = BriefcaseManager.downloadBriefcase(args);
     setTimeout(async () => aborted = 1, 1000);
     await expect(downloadPromise).to.eventually.be.rejectedWith("cancelled").have.property("errorNumber", BriefcaseStatus.DownloadCancelled);
+  });
+
+  it("Should be able to delete the briefcase .bim file on a failed download", async () => {
+    const testIModelId = await HubUtility.getTestIModelId(accessToken, HubUtility.testIModelNames.stadium);
+    const args: RequestNewBriefcaseArg & BriefcaseProps = {
+      accessToken,
+      iTwinId: testITwinId,
+      iModelId: testIModelId,
+      briefcaseId: BriefcaseIdValue.Unassigned,
+    };
+    const fileName = BriefcaseManager.getFileName(args);
+    await BriefcaseManager.deleteBriefcaseFiles(fileName);
+    sinon.stub(CheckpointManager, "downloadCheckpoint").throws(new Error("testError"));
+    const downloadPromise = BriefcaseManager.downloadBriefcase({...args, fileName});
+    await expect(downloadPromise).to.eventually.be.rejectedWith("testError");
+    expect(IModelJsFs.existsSync(fileName)).to.be.false;
+    sinon.restore();
   });
 
 });

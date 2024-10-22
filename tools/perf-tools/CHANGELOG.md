@@ -1,6 +1,121 @@
 # Change Log - @itwin/perf-tools
 
-This log was last generated on Wed, 29 May 2024 14:36:43 GMT and should not be manually modified.
+This log was last generated on Wed, 09 Oct 2024 20:23:41 GMT and should not be manually modified.
+
+## 4.9.4
+Wed, 09 Oct 2024 20:22:04 GMT
+
+_Version update only_
+
+## 4.9.3
+Thu, 03 Oct 2024 19:15:45 GMT
+
+_Version update only_
+
+## 4.9.2
+Wed, 02 Oct 2024 15:14:43 GMT
+
+_Version update only_
+
+## 4.9.1
+Wed, 25 Sep 2024 20:10:58 GMT
+
+_Version update only_
+
+## 4.9.0
+Mon, 23 Sep 2024 13:44:01 GMT
+
+_Version update only_
+
+## 4.8.7
+Fri, 13 Sep 2024 15:11:17 GMT
+
+_Version update only_
+
+## 4.8.6
+Fri, 06 Sep 2024 05:06:49 GMT
+
+_Version update only_
+
+## 4.8.5
+Wed, 28 Aug 2024 17:27:23 GMT
+
+_Version update only_
+
+## 4.8.4
+Thu, 22 Aug 2024 17:37:06 GMT
+
+_Version update only_
+
+## 4.8.3
+Fri, 16 Aug 2024 18:18:14 GMT
+
+_Version update only_
+
+## 4.8.2
+Thu, 15 Aug 2024 15:33:49 GMT
+
+_Version update only_
+
+## 4.8.1
+Mon, 12 Aug 2024 14:05:54 GMT
+
+_Version update only_
+
+## 4.8.0
+Thu, 08 Aug 2024 16:15:38 GMT
+
+_Version update only_
+
+## 4.7.8
+Wed, 31 Jul 2024 13:38:04 GMT
+
+_Version update only_
+
+## 4.7.7
+Fri, 19 Jul 2024 14:52:42 GMT
+
+_Version update only_
+
+## 4.7.6
+Fri, 12 Jul 2024 14:42:56 GMT
+
+_Version update only_
+
+## 4.7.5
+Thu, 11 Jul 2024 15:24:55 GMT
+
+_Version update only_
+
+## 4.7.4
+Mon, 01 Jul 2024 14:06:24 GMT
+
+_Version update only_
+
+## 4.7.3
+Thu, 27 Jun 2024 21:09:02 GMT
+
+_Version update only_
+
+## 4.7.2
+Sat, 22 Jun 2024 01:09:54 GMT
+
+_Version update only_
+
+## 4.7.1
+Thu, 13 Jun 2024 22:47:32 GMT
+
+_Version update only_
+
+## 4.7.0
+Wed, 12 Jun 2024 18:02:16 GMT
+
+_Version update only_
+
+## 4.6.2
+Sat, 08 Jun 2024 00:50:25 GMT
+
+_Version update only_
 
 ## 4.6.1
 Wed, 29 May 2024 14:35:17 GMT

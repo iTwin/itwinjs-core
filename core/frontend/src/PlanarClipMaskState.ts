@@ -6,11 +6,12 @@
  * @module Views
  */
 
-import { assert, Id64String } from "@itwin/core-bentley";
-import { PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@itwin/core-common";
+import { Id64String } from "@itwin/core-bentley";
+import { FeatureAppearance, PlanarClipMaskMode, PlanarClipMaskPriority, PlanarClipMaskProps, PlanarClipMaskSettings } from "@itwin/core-common";
 import { FeatureSymbology } from "./render/FeatureSymbology";
-import { createMaskTreeReference, DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
-import { ViewState3d } from "./ViewState";
+import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
+import { SceneContext } from "./ViewContext";
+import { Range3d } from "@itwin/core-geometry";
 
 /** The State of Planar Clip Mask applied to a reality model or background map.
  * Handles loading models and their associated tiles for models that are used by masks but may not be otherwise loaded or displayed.
@@ -20,6 +21,8 @@ export class PlanarClipMaskState {
   public readonly settings: PlanarClipMaskSettings;
   private _tileTreeRefs?: TileTreeReference[];
   private _allLoaded = false;
+  private _usingViewportOverrides = false;
+  private _maskRange: Range3d = Range3d.createNull();
 
   private constructor(settings: PlanarClipMaskSettings) {
     this.settings = settings;
@@ -33,65 +36,92 @@ export class PlanarClipMaskState {
     return this.create(PlanarClipMaskSettings.fromJSON(props));
   }
 
+  public get usingViewportOverrides(): boolean { return this._usingViewportOverrides; };
+
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     if (this._tileTreeRefs)
       this._tileTreeRefs.forEach((treeRef) => treeRef.discloseTileTrees(trees));
   }
 
-  public getTileTrees(view: ViewState3d, classifiedModelId: Id64String): TileTreeReference[] | undefined {
+  // Returns the TileTreeReferences for the models that need to be drawn to create the planar clip mask, and extend the maskRange if needed.
+  public getTileTrees(context: SceneContext, classifiedModelId: Id64String, maskRange: Range3d): TileTreeReference[] | undefined {
     if (this.settings.mode === PlanarClipMaskMode.Priority) {
+      // For priority mode we simply want refs for all viewed models if the priority is higher than the mask priority.
+      // For this case, we don't need a maskRange so leave it as null.
       const viewTrees = new Array<TileTreeReference>();
       const thisPriority = this.settings.priority === undefined ? PlanarClipMaskPriority.RealityModel : this.settings.priority;
-      view.forEachTileTreeRef((ref) => {
+      context.viewport.forEachTileTreeRef((ref) => {
         const tree = ref.treeOwner.load();
-        if (tree && tree.modelId !== classifiedModelId && ref.planarclipMaskPriority > thisPriority)
+        if (tree && tree.modelId !== classifiedModelId && ref.planarClipMaskPriority > thisPriority)
           viewTrees.push(ref);
       });
 
       return viewTrees;
     }
 
-    if (!this._tileTreeRefs) {
+    // For all other modes we need to let the tree refs in the view state decide which refs need to be drawn
+    // since batched tiles cannot turn on/off individual models just by their tile tree refs.
+    // Keep calling this until loaded so that the range is valid.
+    if (!this._allLoaded) {
       this._tileTreeRefs = new Array<TileTreeReference>();
-      if (this.settings.modelIds) {
-        for (const modelId of this.settings.modelIds) {
-          const model = view.iModel.models.getLoaded(modelId);
-          assert(model !== undefined);   // Models should be loaded by RealityModelTileTree
-          if (model?.asGeometricModel)
-            this._tileTreeRefs.push(createMaskTreeReference(view, model.asGeometricModel));
-        }
+      if (this.settings.modelIds && context.viewport.view.isSpatialView()) {
+        context.viewport.view.collectMaskRefs(this.settings.modelIds, this._tileTreeRefs, maskRange);
       }
-    }
-
-    if (!this._allLoaded)
       this._allLoaded = this._tileTreeRefs.every((treeRef) => treeRef.treeOwner.load() !== undefined);
+      maskRange.clone(this._maskRange);
+    } else  // If already loaded, just set the maskRange to the saved maskRange.
+      this._maskRange.clone(maskRange);
 
     return this._allLoaded ? this._tileTreeRefs : undefined;
   }
 
-  public getPlanarClipMaskSymbologyOverrides(): FeatureSymbology.Overrides | undefined {
-    if (!this.settings.subCategoryOrElementIds)
+  // Returns any potential FeatureSymbology overrides for drawing the planar clip mask.
+  public getPlanarClipMaskSymbologyOverrides(context: SceneContext, featureSymbologySource: FeatureSymbology.Source): FeatureSymbology.Overrides | undefined {
+    this._usingViewportOverrides = false;
+    // First obtain a list of models that will need to be turned off for drawing the planar clip mask (only used for batched tile trees).
+    const overrideModels = context.viewport.view.isSpatialView() ? context.viewport.view.getModelsNotInMask(this.settings.modelIds, PlanarClipMaskMode.Priority === this.settings.mode) : undefined;
+
+    const noSubCategoryOrElementIds = !this.settings.subCategoryOrElementIds;
+    if (noSubCategoryOrElementIds && !overrideModels)
       return undefined;
 
+    const ovrBasedOnContext = PlanarClipMaskMode.Priority === this.settings.mode || PlanarClipMaskMode.Models === this.settings.mode || noSubCategoryOrElementIds;
+    const viewport = overrideModels && ovrBasedOnContext ? context.viewport : undefined;
+    const overrides = FeatureSymbology.Overrides.withSource(featureSymbologySource, viewport);
+
+    if (overrideModels) {
+      // overrideModels is used for batched models.  For those, we need to create model overrides to turn off models that are
+      // not wanted in the mask (using transparency) no matter what mask mode is being used.
+      const appOff = FeatureAppearance.fromTransparency(1.0);
+      // For Priority or Models mode, we need to start with the current overrides and modify them
+      if (ovrBasedOnContext) {
+        this._usingViewportOverrides = true; // Set flag to use listener since context.viewport might change afterwards.
+        overrides.addInvisibleElementOverridesToNeverDrawn();  // need this for fully trans element overrides to not participate in mask
+        overrideModels.forEach((modelId: string) => {
+          overrides.override({ modelId, appearance: appOff, onConflict: "replace" });
+        });
+        return overrides;
+      }
+      // Otherwise, we just start with a default overrides and modify it.
+      overrideModels.forEach((modelId: string) => {
+        overrides.override({ modelId, appearance: appOff, onConflict: "replace" });
+      });
+    }
+
+    // Add overrides to turn things on or off based on the subcategories or elements in the mask settings.
     switch (this.settings.mode) {
       case PlanarClipMaskMode.IncludeElements: {
-        const overrides = new FeatureSymbology.Overrides();
-        overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds, true);
+        overrides.setAlwaysDrawnSet(this.settings.subCategoryOrElementIds!, true);
         return overrides;
       }
       case PlanarClipMaskMode.ExcludeElements: {
-        const overrides = new FeatureSymbology.Overrides();
-
         overrides.ignoreSubCategory = true;
-        overrides.setNeverDrawnSet(this.settings.subCategoryOrElementIds);
-
+        overrides.setNeverDrawnSet(this.settings.subCategoryOrElementIds!);
         return overrides;
       }
       case PlanarClipMaskMode.IncludeSubCategories: {
-        const overrides = new FeatureSymbology.Overrides();
-        for (const subCategoryId of this.settings.subCategoryOrElementIds)
+        for (const subCategoryId of this.settings.subCategoryOrElementIds!)
           overrides.setVisibleSubCategory(subCategoryId);
-
         return overrides;
       }
     }

@@ -7,7 +7,7 @@ import { assert } from "chai";
 import {
   GeographicCRSInterpretRequestProps, GeographicCRSProps,
 } from "@itwin/core-common";
-import { IModelHost } from "../../IModelHost";
+import { IModelNative } from "../../internal/NativePlatform";
 import { Geometry, Range2d, Range2dProps } from "@itwin/core-geometry";
 import { GeoCoordConfig } from "../../GeoCoordConfig";
 import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServices";
@@ -22,7 +22,7 @@ describe("GeoServices", () => {
   const completionTest = async (incompleteGCS: GeographicCRSProps, completeCRS: GeographicCRSProps) => {
 
     const requestProps: GeographicCRSInterpretRequestProps = { format: "JSON", geographicCRSDef: JSON.stringify(incompleteGCS) };
-    const response = IModelHost.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
+    const response = IModelNative.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
 
     assert.isTrue(response.status === 0);
 
@@ -444,7 +444,7 @@ describe("GeoServices", () => {
     const interpretWKTTest = async (testWKT: string, completeCRS: GeographicCRSProps) => {
 
       const requestProps: GeographicCRSInterpretRequestProps = { format: "WKT", geographicCRSDef: testWKT };
-      const response = IModelHost.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
+      const response = IModelNative.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
 
       assert.isTrue(response.status === 0);
 
@@ -898,7 +898,7 @@ describe("GeoServices", () => {
     const interpretInvalidTest = async (formatCRS: "WKT" | "JSON", testInvalid: string) => {
 
       const requestProps: GeographicCRSInterpretRequestProps = { format: formatCRS, geographicCRSDef: testInvalid };
-      const response = IModelHost.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
+      const response = IModelNative.platform.GeoServices.getGeographicCRSInterpretation(requestProps);
 
       // At the moment return codes are not really error specific (we mostly return 32768) so we do not validate
       // actual error code for now.

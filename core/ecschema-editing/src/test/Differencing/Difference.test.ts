@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
-import { DifferenceType, SchemaDifference, SchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { DifferenceType, getSchemaDifferences, SchemaDifferenceResult, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { expect } from "chai";
 
 import sourceJson from "./sourceSchema.json";
@@ -33,7 +33,7 @@ function expectPartiallyEquals(actual: any, expected: any, message?: string) {
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-describe("Schema Difference Reporting", () => {
+describe("Schema Differences", () => {
 
   const customAttributeSchemaJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -60,7 +60,7 @@ describe("Schema Difference Reporting", () => {
     alias: "empty",
   };
 
-  let schemaDifferences: SchemaDifferences;
+  let differenceResult: SchemaDifferenceResult;
 
   function findEntry(args: LookupArgs) {
     const entries = findEntries(args);
@@ -68,7 +68,7 @@ describe("Schema Difference Reporting", () => {
   }
 
   function findEntries(args: LookupArgs) {
-    return schemaDifferences.differences && schemaDifferences.differences.filter((change: any) => {
+    return differenceResult.differences && differenceResult.differences.filter((change: any) => {
       return (!args.changeType || change.changeType === args.changeType)
         && (!args.schemaType || change.schemaType === args.schemaType)
         && (!args.itemName || change.itemName === args.itemName)
@@ -93,14 +93,14 @@ describe("Schema Difference Reporting", () => {
     await Schema.fromJson(customAttributeSchemaJson, targetContext);
     const targetSchema = await Schema.fromJson(targetJson, targetContext);
 
-    schemaDifferences = await SchemaDifference.fromSchemas(targetSchema, sourceSchema);
-    expect(schemaDifferences.conflicts).equals(undefined, "This test suite should not have conflicts.");
-    expect(schemaDifferences.differences).has.a.lengthOf(27, "Unexpected count of differences.");
+    differenceResult = await getSchemaDifferences(targetSchema, sourceSchema);
+    expect(differenceResult.conflicts, `This test suite should not have conflicts.\n${JSON.stringify(differenceResult.conflicts, null, 2)}`).to.be.undefined;
+    expect(differenceResult.differences).has.a.lengthOf(29, "Unexpected count of differences.");
   });
 
   it("should have the expected source and target schema names in differences", () => {
-    expect(schemaDifferences.sourceSchemaName).equals("SourceSchema.01.02.03", "unexpected difference source name");
-    expect(schemaDifferences.targetSchemaName).equals("TargetSchema.01.00.00", "unexpected difference target name");
+    expect(differenceResult.sourceSchemaName).equals("SourceSchema.01.02.03", "unexpected difference source name");
+    expect(differenceResult.targetSchemaName).equals("TargetSchema.01.00.00", "unexpected difference target name");
   });
 
   it("should set schema label and description", () => {
@@ -128,7 +128,7 @@ describe("Schema Difference Reporting", () => {
       alias: "target",
     }, new SchemaContext());
 
-    const differences = await SchemaDifference.fromSchemas(targetSchema, sourceSchema);
+    const differences = await getSchemaDifferences(targetSchema, sourceSchema);
     expect(differences.differences).has.lengthOf(0, "This test should not have differences.");
     expect(differences.conflicts).equals(undefined, "This test should not have conflicts.");
   });
@@ -213,10 +213,10 @@ describe("Schema Difference Reporting", () => {
   });
 
   it("should return missing schema items", () => {
-    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "TestUnitSystem" }), {
+    expectPartiallyEquals(findEntry({ changeType: "add", itemName: "MissingUnitSystem" }), {
       changeType: "add",
       schemaType: "UnitSystem",
-      itemName: "TestUnitSystem",
+      itemName: "MissingUnitSystem",
       difference: {
         label: "Imperial",
         // [...]
@@ -349,6 +349,29 @@ describe("Schema Difference Reporting", () => {
       itemName: "RelationshipEntity",
       difference: [
         "SourceSchema.RelationshipSourceEntity",
+      ],
+    });
+  });
+
+  it("should return changed kindOfQuantity properties", () => {
+    expectPartiallyEquals(findEntry({ changeType: "modify", schemaType: "KindOfQuantity", itemName: "ChangedKoq" }), {
+      changeType: "modify",
+      schemaType: "KindOfQuantity",
+      itemName: "ChangedKoq",
+      difference: {
+        label: "Koq",
+        relativeError: 0.09290304,
+      },
+    });
+  });
+
+  it("should return missing presentation format of kindOfQuantity", () => {
+    expectPartiallyEquals(findEntry({ changeType: "add", schemaType: "KindOfQuantityPresentationFormat", itemName: "ChangedKoq" }), {
+      changeType: "add",
+      schemaType: "KindOfQuantityPresentationFormat",
+      itemName: "ChangedKoq",
+      difference: [
+        "SourceSchema.TestFormat(4)[SourceSchema.TestUnit|m]",
       ],
     });
   });

@@ -11,6 +11,7 @@ import { IModelDb, SnapshotDb } from "../../IModelDb";
 import { Logger } from "@itwin/core-bentley";
 import { IModelHost } from "../../IModelHost";
 import { HubMock } from "../../HubMock";
+import { _nativeDb } from "../../internal/Symbols";
 
 describe("SnapshotDb.refreshContainerForRpc", () => {
   afterEach(() => sinon.restore());
@@ -58,7 +59,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
-    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
+    sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
     const userAccessToken = "token";
@@ -106,12 +107,12 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
 
     const openDgnDbStub = sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
-    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
+    sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
 
     const userAccessToken = "token";
     const checkpoint = await SnapshotDb.openCheckpointFromRpc({ accessToken: userAccessToken, iTwinId, iModelId, changeset, reattachSafetySeconds: 60 });
-    expect(checkpoint.nativeDb.cloudContainer?.accessToken).equal(mockCheckpointV2.sasToken);
+    expect(checkpoint[_nativeDb].cloudContainer?.accessToken).equal(mockCheckpointV2.sasToken);
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("fakeDb");
 
@@ -167,7 +168,7 @@ describe("SnapshotDb.refreshContainerForRpc", () => {
     sinon.stub(SnapshotDb, "openDgnDb").returns(fakeSnapshotDb);
     sinon.stub(CheckpointManager, "validateCheckpointGuids").returns();
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
-    sinon.stub(IModelDb.prototype, "loadSettingDictionaries" as any);
+    sinon.stub(IModelDb.prototype, "loadIModelSettings" as any);
 
     const snapshot = V1CheckpointManager.openCheckpointV1("fakeFilePath", { iTwinId: "fakeITwinId", iModelId: "fake1", changeset });
     const nowStub = sinon.stub(Date, "now");

@@ -6,7 +6,7 @@
  * @module Views
  */
 
-import { BeEvent, CompressedId64Set, Id64String } from "@itwin/core-bentley";
+import { BeEvent, CompressedId64Set, Id64String, OrderedId64Iterable } from "@itwin/core-bentley";
 import { Constant, Matrix3d, Range3d, XYAndZ } from "@itwin/core-geometry";
 import { AxisAlignedBox3d, HydrateViewStateRequestProps, HydrateViewStateResponseProps, SpatialViewDefinitionProps, ViewStateProps } from "@itwin/core-common";
 import { AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
@@ -254,6 +254,25 @@ export class SpatialViewState extends ViewState3d {
    */
   public setTileTreeReferencesDeactivated(modelIds: Id64String | Id64String[] | undefined, deactivated: boolean | undefined, which: "all" | "animated" | "primary" | "section" | number[]): void {
     this._treeRefs.setDeactivated(modelIds, deactivated, which);
+  }
+
+  /** For getting the [TileTreeReference]s that are in the modelIds, for planar classification.
+   * @param modelIds modelIds for which to get the TileTreeReferences
+   * @param maskTreeRefs where to store the TileTreeReferences
+   * @param maskRange range to extend for the maskRefs
+   * @internal
+   */
+  public collectMaskRefs(modelIds: OrderedId64Iterable, maskTreeRefs: TileTreeReference[], maskRange: Range3d): void {
+    this._treeRefs.collectMaskRefs(modelIds, maskTreeRefs, maskRange);
+  }
+
+  /** For getting a list of modelIds which do not participate in masking for planar classification.
+   * @param maskModels models which DO participate in planar clip masking
+   * @param useVisible when true, use visible models to set flag
+   * @internal
+   */
+  public getModelsNotInMask(maskModels: OrderedId64Iterable | undefined, useVisible: boolean): Id64String[] | undefined {
+    return this._treeRefs.getModelsNotInMask(maskModels, useVisible);
   }
 
   private registerModelSelectorListeners(): void {

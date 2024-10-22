@@ -38,7 +38,6 @@ export interface BaseDialogItem {
   readonly isDisabled?: boolean;
 }
 /** [[DialogItem]] is the specification that the display engine turns into a UI item.
- * @see See learning documentation [DialogItem]($docs/learning/ui/abstract/dialogitem.md)
  * @public
  */
 export interface DialogItem extends BaseDialogItem {

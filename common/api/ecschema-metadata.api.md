@@ -160,9 +160,11 @@ export interface CustomAttribute {
 export class CustomAttributeClass extends ECClass {
     constructor(schema: Schema, name: string, modifier?: ECClassModifier);
     // (undocumented)
-    get containerType(): CustomAttributeContainerType;
+    get appliesTo(): CustomAttributeContainerType;
     // (undocumented)
-    protected _containerType?: CustomAttributeContainerType;
+    protected _appliesTo?: CustomAttributeContainerType;
+    // @deprecated (undocumented)
+    get containerType(): CustomAttributeContainerType;
     // (undocumented)
     fromJSON(customAttributeProps: CustomAttributeClassProps): Promise<void>;
     // (undocumented)
@@ -170,7 +172,7 @@ export class CustomAttributeClass extends ECClass {
     // (undocumented)
     readonly schemaItemType: SchemaItemType.CustomAttributeClass;
     // @alpha
-    protected setContainerType(containerType: CustomAttributeContainerType): void;
+    protected setAppliesTo(containerType: CustomAttributeContainerType): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): CustomAttributeClassProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -178,7 +180,6 @@ export class CustomAttributeClass extends ECClass {
 
 // @beta (undocumented)
 export interface CustomAttributeClassProps extends ClassProps {
-    // (undocumented)
     readonly appliesTo: string;
 }
 
@@ -334,8 +335,6 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     protected _properties?: Map<string, Property>;
     // @alpha
     protected setModifier(modifier: ECClassModifier): void;
-    // @alpha
-    protected setName(name: string): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): ClassProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -979,6 +978,7 @@ export class OverrideFormat {
     get minWidth(): number | undefined;
     readonly name: string;
     readonly parent: Format;
+    static parseFormatString(formatString: string): OverrideFormatProps;
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
     // (undocumented)
@@ -1001,6 +1001,16 @@ export class OverrideFormat {
     get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
+}
+
+// @beta (undocumented)
+export interface OverrideFormatProps {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    precision?: number;
+    // (undocumented)
+    unitAndLabels?: Array<[string, string | undefined]>;
 }
 
 // @beta
@@ -1238,6 +1248,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     protected setDescription(description: string): void;
     // @internal
     protected setIsReadOnly(isReadOnly: boolean): void;
+    // @internal
+    protected setKindOfQuantity(kindOfQuantity: LazyLoadedKindOfQuantity): void;
     // @internal
     protected setLabel(label: string): void;
     // (undocumented)
@@ -1617,6 +1629,10 @@ export class Schema implements CustomAttributeContainerProps {
     protected deleteClass(name: string): Promise<void>;
     // @alpha
     protected deleteClassSync(name: string): void;
+    // @alpha
+    protected deleteSchemaItem(name: string): Promise<void>;
+    // @alpha
+    protected deleteSchemaItemSync(name: string): void;
     // (undocumented)
     get description(): string | undefined;
     // (undocumented)
@@ -1661,6 +1677,8 @@ export class Schema implements CustomAttributeContainerProps {
     get schemaKey(): SchemaKey;
     // (undocumented)
     protected _schemaKey?: SchemaKey;
+    // @alpha
+    protected setAlias(alias: string): void;
     // @alpha
     protected setContext(context: SchemaContext): void;
     // @alpha
@@ -1771,6 +1789,8 @@ export abstract class SchemaItem {
     protected setDescription(description: string): void;
     // @alpha
     protected setDisplayLabel(displayLabel: string): void;
+    // @alpha
+    protected setName(name: string): void;
     toJSON(standalone?: boolean, includeSchemaVersion?: boolean): SchemaItemProps;
     // @internal (undocumented)
     toXml(schemaXml: Document): Promise<Element>;
@@ -1997,7 +2017,7 @@ export interface SchemaReferenceProps {
     readonly version: string;
 }
 
-// @alpha
+// @beta
 export class SchemaUnitProvider implements UnitsProvider {
     constructor(contextOrLocater: ISchemaLocater, _unitExtraData?: UnitExtraData[]);
     findUnit(unitLabel: string, schemaName?: string, phenomenon?: string, unitSystem?: string): Promise<UnitProps>;
