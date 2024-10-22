@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import type { SpanAttributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
@@ -1308,7 +1306,7 @@ export type Mutable<T> = {
 
 // @public
 export class MutableCompressedId64Set implements OrderedId64Iterable {
-    [Symbol.iterator](): Iterator<string, any, undefined>;
+    [Symbol.iterator](): Iterator<string, any, any>;
     constructor(ids?: CompressedId64Set);
     add(id: Id64String): void;
     clear(): void;

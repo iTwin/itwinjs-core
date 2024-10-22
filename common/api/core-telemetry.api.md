@@ -4,6 +4,7 @@
 
 ```ts
 
+import { GuidString } from '@itwin/core-bentley';
 import { RpcActivity } from '@itwin/core-common';
 
 // @internal (undocumented)
@@ -21,8 +22,8 @@ export enum TelemetryClientLoggerCategory {
 export class TelemetryEvent {
     constructor(
     eventName: string,
-    eventId?: string | undefined,
-    iTwinId?: string | undefined, iModelId?: string | undefined, changeSetId?: string | undefined, time?: {
+    eventId?: GuidString | undefined,
+    iTwinId?: GuidString | undefined, iModelId?: GuidString | undefined, changeSetId?: GuidString | undefined, time?: {
         startTime: Date;
         endTime: Date;
     } | undefined,
@@ -33,15 +34,15 @@ export class TelemetryEvent {
         [key: string]: any;
     };
     // (undocumented)
-    readonly changeSetId?: string | undefined;
-    readonly eventId?: string | undefined;
+    readonly changeSetId?: GuidString | undefined;
+    readonly eventId?: GuidString | undefined;
     readonly eventName: string;
     getProperties(): {
         [key: string]: any;
     };
     // (undocumented)
-    readonly iModelId?: string | undefined;
-    readonly iTwinId?: string | undefined;
+    readonly iModelId?: GuidString | undefined;
+    readonly iTwinId?: GuidString | undefined;
     // (undocumented)
     readonly time?: {
         startTime: Date;
