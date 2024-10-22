@@ -198,17 +198,7 @@ export class Settings implements IDisposable {
         parent: div,
         name,
         id: "whatever...",
-        handler: () => {
-          input.disabled = !cb.checkbox.checked;
-          if (cb.checkbox.checked) {
-            applyToLineCb.disabled = lineTransElem.checkbox.checked;
-          } else {
-            applyToLineCb.disabled = true;
-            applyToLineCb.checked = false;
-          }
-
-          updateTransparencies();
-        },
+        handler: () => updateCheckboxesAndTransparencies(),
       });
 
       const input = createNumericInput({
@@ -231,28 +221,11 @@ export class Settings implements IDisposable {
       parent,
       id: "ugh",
       name: "Apply to lines",
-      handler: () => {
-        if (applyToLineCb.checked) {
-          lineTransElem.checkbox.disabled = false;
-        } else {
-          lineTransElem.checkbox.disabled = true;
-          lineTransElem.checkbox.checked = false;
-        }
-
-        updateTransparencies();
-      },
+      handler: () => updateCheckboxesAndTransparencies(),
     }).checkbox;
     applyToLineCb.disabled = true;
 
     const lineTransElem = addTransparency("Line Transp ");
-    lineTransElem.checkbox.addEventListener("click", () => {
-      if (!lineTransElem.checkbox.checked) {
-        applyToLineCb.disabled = !transElem.checkbox.checked;
-      } else {
-        applyToLineCb.disabled = true;
-        applyToLineCb.checked = false;
-      }
-    });
 
     createCheckBox({
       parent: this._element,
@@ -262,6 +235,20 @@ export class Settings implements IDisposable {
     });
 
     parent.appendChild(document.createElement("hr"));
+
+    const updateCheckboxesAndTransparencies = () => {
+      if (!transElem.checkbox.checked) {
+        applyToLineCb.checked = false;
+      }
+
+      applyToLineCb.disabled = !transElem.checkbox.checked || lineTransElem.checkbox.checked;
+      lineTransElem.checkbox.disabled = applyToLineCb.checked;
+
+      transElem.input.disabled = !transElem.checkbox.checked;
+      lineTransElem.input.disabled = !lineTransElem.checkbox.checked;
+
+      updateTransparencies();
+    };
 
     const updateTransparencies = () => {
       const trans = transElem.checkbox.checked ? parseInt(transElem.input.value, 10) / 255 : undefined;
@@ -350,18 +337,7 @@ export class Settings implements IDisposable {
         handler: () => updateColors(),
       });
 
-      checkbox.addEventListener("click", () => {
-        picker.input.disabled = !checkbox.checked;
-
-        if (checkbox.checked) {
-          applyToLineCb.checkbox.disabled = lineColorElem.checkbox.checked;
-        } else {
-          applyToLineCb.checkbox.disabled = true;
-          applyToLineCb.checkbox.checked = false;
-        }
-
-        updateColors();
-      });
+      checkbox.addEventListener("click", () => updateCheckboxesAndColors());
 
       return { checkbox, picker };
     };
@@ -372,30 +348,27 @@ export class Settings implements IDisposable {
       parent,
       id: "why is this required...",
       name: "Apply to lines",
-      handler: () => {
-        if (applyToLineCb.checkbox.checked) {
-          lineColorElem.checkbox.disabled = false;
-        } else {
-          lineColorElem.checkbox.disabled = true;
-          lineColorElem.checkbox.checked = false;
-        }
-
-        updateColors();
-      },
+      handler: () => updateCheckboxesAndColors(),
     });
-    applyToLineCb.checkbox.disabled = true;
 
     const lineColorElem = addColorPicker("Line Color");
-    lineColorElem.checkbox.addEventListener("click", () => {
-      if (!lineColorElem.checkbox.checked) {
-        applyToLineCb.checkbox.disabled = !colorElem.checkbox.checked;
-      } else {
-        applyToLineCb.checkbox.disabled = true;
-        applyToLineCb.checkbox.checked = false;
-      }
-    });
+    lineColorElem.checkbox.addEventListener("click", () => updateCheckboxesAndColors());
 
     parent.appendChild(document.createElement("hr"));
+
+    const updateCheckboxesAndColors = () => {
+      if (!colorElem.checkbox.checked) {
+        applyToLineCb.checkbox.checked = false;
+      }
+
+      applyToLineCb.checkbox.disabled = !colorElem.checkbox.checked || lineColorElem.checkbox.checked;
+      lineColorElem.checkbox.disabled = applyToLineCb.checkbox.checked;
+
+      colorElem.picker.input.disabled = !colorElem.checkbox.checked;
+      lineColorElem.picker.input.disabled = !lineColorElem.checkbox.checked;
+
+      updateColors();
+    };
 
     const updateColors = () => {
       const color = colorElem.checkbox.checked ? convertHexToRgb(colorElem.picker.input.value) : undefined;
@@ -407,6 +380,8 @@ export class Settings implements IDisposable {
       this.updateAppearance("rgb", color);
       this.updateAppearance("lineRgb", lineColor);
     };
+
+    updateCheckboxesAndColors();
   }
 }
 
