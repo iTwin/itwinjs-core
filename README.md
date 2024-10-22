@@ -20,6 +20,7 @@ Each package has its own **node_modules** directory that contains symbolic links
 
 - [Git](https://git-scm.com/)
 - [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 20. The Node installation also includes the **npm** package manager.
+- [pnpm](https://pnpm.io/): our required package manager. It is more performant and monorepo friendly than `npm`. We recommend installing `pnpm` using [`corepack enable pnpm`](https://pnpm.io/installation#using-corepack). Note you may have to use an administrator shell to run the command.
 - [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
 - [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
 - [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
@@ -69,6 +70,8 @@ For incremental builds, the `rush build` command can be used to only build packa
 11. Add and commit the changelog JSON files and any API signature updates.
 12. Publish changes on the branch and open a pull request.
 
+> If executing scripts from 'package.json` files in any of the subdirectories, we recommend using [`rushx`](https://rushjs.io/pages/commands/rushx/) over `npm`.
+
 If using the command line, steps 8 through 11 above can be completed in one step by running `rushchange.bat` from the imodeljs root directory.
 Only use `rushchange.bat` if none of the changes require a changelog entry.
 > Note: The CI build will break if changes are pushed without running `rush change` and `rush extract-api` (if the API was changed). The fix will be to complete steps 6 through 11.
@@ -92,4 +95,4 @@ Use these instructions to update dependencies and devDependencies on external pa
 ## Other NPM Scripts
 
 1. Build TypeDoc documentation for all packages: `rush docs`
-2. Build TypeDoc documentation for a single package: `cd core\backend` and then `npm run docs`
+2. Build TypeDoc documentation for a single package: `cd core\backend` and then `rushx docs`
