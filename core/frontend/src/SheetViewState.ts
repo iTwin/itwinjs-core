@@ -570,7 +570,9 @@ export class SheetViewState extends ViewState2d {
     return args.inSectionDrawingAttachment ? attachment.viewport?.view.getAttachmentViewport({ inSectionDrawingAttachment: true }) : attachment.viewport;
   }
 
-  /** @internal */
+  /** ###TODO
+   * @beta
+   */
   public override computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
     // ###TODO we're currently ignoring model and element Id in args, assuming irrelevant for sheets.
     // Should probably call super or have super call us.
