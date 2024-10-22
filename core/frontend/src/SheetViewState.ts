@@ -581,8 +581,13 @@ export class SheetViewState extends ViewState2d {
       return undefined;
     }
 
-    // ###TODO if args.inSectionDrawingAttachment, get attachment view's transform and multiply
-    return attachment.toSheet.clone(args.output);
+    const sheetTransform = attachment.toSheet;
+    const sectionTransform = args.inSectionDrawingAttachment ? attachment.view.computeDisplayTransform(args) : undefined;
+    if (!sectionTransform) {
+      return sheetTransform.clone(args.output);
+    }
+    
+    return sheetTransform.multiplyTransformTransform(sectionTransform, args.output);
   }
 }
 
