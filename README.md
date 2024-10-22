@@ -70,7 +70,7 @@ For incremental builds, the `rush build` command can be used to only build packa
 11. Add and commit the changelog JSON files and any API signature updates.
 12. Publish changes on the branch and open a pull request.
 
-> If executing scripts from 'package.json` files in any of the subdirectories, we recommend using [`rushx`](https://rushjs.io/pages/commands/rushx/) over `npm`.
+> If executing scripts from `package.json` files in any of the subdirectories, we recommend using [`rushx`](https://rushjs.io/pages/commands/rushx/) over `npm`.
 
 If using the command line, steps 8 through 11 above can be completed in one step by running `rushchange.bat` from the imodeljs root directory.
 Only use `rushchange.bat` if none of the changes require a changelog entry.
