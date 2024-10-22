@@ -382,7 +382,7 @@ export class Settings implements IDisposable {
 
       updateColors();
     };
-    
+
     const updateColors = () => {
       const color = colorElem.checkbox.checked ? convertHexToRgb(colorElem.picker.input.value) : undefined;
       let lineColor;
