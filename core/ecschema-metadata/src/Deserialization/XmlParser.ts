@@ -19,7 +19,6 @@ import {
   PrimitivePropertyProps, PropertyCategoryProps, PropertyProps, RelationshipClassProps, RelationshipConstraintProps, SchemaItemFormatProps, SchemaItemProps,
   SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
-import { propertyTypeToString } from "../PropertyTypes";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
 const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";
