@@ -46,11 +46,10 @@ export class CurveExtendOptions {
     return param;
   }
   /**
-   * Correct faction to be within 0..1 range.
-   * * If fraction is between 0 and 1 return it unchanged.
-   * * If fraction is less than 0 use the variant param to choose the fraction or 0.
-   * * If fraction is greater than 1 use the variant param to choose the fraction or 1.
-   *
+   * Correct fraction to be within [0,1].
+   * * If fraction is in [0,1] return it unchanged.
+   * * If fraction is less than 0 use `extendParam` to decide whether to return it unchanged, or to return 0.
+   * * If fraction is greater than 1 use `extendParam` to decide whether to return it unchanged, or to return 1.
    */
   public static correctFraction(extendParam: VariantCurveExtendParameter, fraction: number): number {
     if (fraction < 0) {
@@ -99,10 +98,9 @@ export class CurveExtendOptions {
   }
 }
 /**
- * Variants of a single parameter.
- * Use this type in a function signature where caller may want simple true/false (`boolean`), same extend mode for
- * both ends (`CurveExtendMode`), or different extend modes on each side (`CurveExtendMode[]`; first entry corresponds
- * to extending the start, the second entry corresponds to extending the end, and other entries are ignored).
+ * Variant options for extending a curve.
+ * * Useful for specifying either a single boolean/`CurveExtendMode` option applicable to both ends of the curve,
+ * or an array of options, the first entry of which applies to the curve start; the second, to curve end.
  * @public
  */
 export type VariantCurveExtendParameter = boolean | CurveExtendMode | CurveExtendMode[];
