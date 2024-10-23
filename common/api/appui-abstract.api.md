@@ -821,7 +821,7 @@ export interface ParseResults {
     // (undocumented)
     parseError?: string;
     // (undocumented)
-    value?: string | number | boolean | {} | string[] | Date | [] | undefined;
+    value?: string | number | boolean | object | string[] | Date | [] | undefined;
 }
 
 // @public @deprecated
@@ -834,7 +834,7 @@ export interface PointProps {
 
 // @public
 export namespace Primitives {
-    export type Boolean = boolean | string | {} | [];
+    export type Boolean = boolean | string | object | [];
     export interface Composite {
         // (undocumented)
         parts: CompositePart[];
@@ -1504,10 +1504,7 @@ export interface UiFlags {
 }
 
 // @public @deprecated
-export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> | MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> | // eslint-disable-line @typescript-eslint/indent
-MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> | // eslint-disable-line @typescript-eslint/indent
-MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> | // eslint-disable-line @typescript-eslint/indent
-MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;
+export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> | MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> | MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> | MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> | MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;
 
 // @public @deprecated
 export interface UiItemProviderRegisteredEventArgs {
