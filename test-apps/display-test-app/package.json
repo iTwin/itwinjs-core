@@ -38,7 +38,7 @@
     "build:mobile-backend": "npm run -s build:backend && webpack --config ./mobile_backend.config --env outdir=./lib/mobile --env entry=./lib/backend/MobileMain.js --env bundlename=main",
     "build:mobile-env-json": "node ./scripts/buildEnvJson.mjs",
     "build:ios-app": "cd ios/imodeljs-test-app && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme imodeljs-test-app -arch x86_64 -sdk iphonesimulator -configuration Debug",
-    "ios": "node ./scripts/runIosSimulator.ts",
+    "ios": "node ./scripts/runIosSimulator.mjs",
     "ios:all": "npm run build:mobile && npm run build:ios-app && npm run ios",
     "build:android-app": "cd android/imodeljs-test-app && ./gradlew --no-daemon build",
     "android": "./scripts/runAndroidEmulator.py",
