@@ -28,9 +28,8 @@ import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 
 const consolidateAdjacentPath = "./src/test/data/curve/";
-/**
- * mutate data so it is an array or undefined.
- */
+
+/** mutate data so it is an array or undefined. */
 function resolveToArray(data: any) {
   if (data === undefined)
     return data;
@@ -97,8 +96,15 @@ function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
       ck.testTrue(child === child1, "collection.getChild matches iterator ");
     }
   }
-
 }
+/** Capture markers at shiftFraction and (1-shiftFraction) on each primitive of curves. */
+function markLimits(allGeometry: GeometryQuery[], primitives: CurvePrimitive[], shiftFraction: number, markerSize0: number, markerSize1: number, x0: number, y0: number) {
+  for (const p of primitives) {
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p.fractionToPoint(shiftFraction), markerSize0, x0, y0);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p.fractionToPoint(1.0 - shiftFraction), markerSize1, x0, y0);
+  }
+}
+
 describe("CurveCollection", () => {
   it("HelloWorld", () => {
     const ck = new Checker();
@@ -150,10 +156,43 @@ describe("CurveCollection", () => {
     }
     expect(ck.getNumErrors()).toBe(0);
   });
+  it("startEndPoint", () => {
+    const ck = new Checker();
+
+    let center = Point3d.create(4, 0);
+    const path = Path.create(
+      LineString3d.create([Point3d.create(-4, -2), Point3d.create(4, -2)]),
+      Arc3d.createXY(center, 2, AngleSweep.createStartEndDegrees(-90, 90)),
+      LineString3d.create([Point3d.create(4, 2), Point3d.create(-4, 2)]),
+    );
+    let expectedStartPoint = Point3d.create(-4, -2);
+    let expectedEndPoint = Point3d.create(-4, 2);
+    let startPoint = path.startPoint()!;
+    let endPoint = path.endPoint()!;
+    ck.testPoint3d(expectedStartPoint, startPoint);
+    ck.testPoint3d(expectedEndPoint, endPoint);
+
+    center = Point3d.create(0, 0);
+    const loop: Loop = Loop.create(
+      Arc3d.createXY(center, 4, AngleSweep.createStartEndDegrees(90, 180)),
+      LineString3d.create([Point3d.create(-4, 0), Point3d.create(-4, -4)]),
+      LineString3d.create([Point3d.create(-4, -4), Point3d.create(0, -4)]),
+      Arc3d.createXY(center, 4, AngleSweep.createStartEndDegrees(-90, 0)),
+      LineString3d.create([Point3d.create(4, 0), Point3d.create(4, 4)]),
+      LineString3d.create([Point3d.create(4, 4), Point3d.create(0, 4)]),
+    );
+    expectedStartPoint = Point3d.create(0, 4);
+    expectedEndPoint = expectedStartPoint;
+    startPoint = loop.startPoint()!;
+    endPoint = loop.endPoint()!;
+    ck.testPoint3d(expectedStartPoint, startPoint);
+    ck.testPoint3d(expectedEndPoint, endPoint);
+
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 describe("ConsolidateAdjacentPrimitives", () => {
-
   it("Lines", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -307,6 +346,9 @@ describe("ConsolidateAdjacentPrimitives", () => {
     ck.testExactNumber(1, singlePointPathB.children.length, "Single point path consolidates to stub");
     expect(ck.getNumErrors()).toBe(0);
   });
+});
+
+describe("ClosestPoint", () => {
   it("ClosestPointInCollection", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
@@ -321,15 +363,15 @@ describe("ConsolidateAdjacentPrimitives", () => {
       for (const y of [-0.4, 0.45, 1.2])
         localPoints.push(Point3d.create(x, y));
     }
+    const detail = new CurveLocationDetail(); // cover pre-allocated result
     for (const c of [...loops, ...paths, ...parityRegions]) {
       const range = c.range();
       collection.tryAddChild(c);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, c, x0, 0, 0);
       for (const xyzLocal of localPoints) {
         const xyz = range.localToWorld(xyzLocal)!;
-        const detail = c.closestPoint(xyz, false);
         GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, xyz, 0.2, x0, 0, 0);
-        if (ck.testType(detail, CurveLocationDetail) && detail) {
+        if (ck.testDefined(c.closestPoint(xyz, false, detail))) {
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, [xyz, detail.point], x0, 0, 0);
           // verify that the close point is closer than a small test set on its own primitive.
           //  (This does not confirm that the correct primitive was chosen)
@@ -344,40 +386,6 @@ describe("ConsolidateAdjacentPrimitives", () => {
       x0 += 2.0 * range.xLength();
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCollection", "ClosestPoint");
-    expect(ck.getNumErrors()).toBe(0);
-  });
-  it("startEndPoint", () => {
-    const ck = new Checker();
-
-    let center = Point3d.create(4, 0);
-    const path = Path.create(
-      LineString3d.create([Point3d.create(-4, -2), Point3d.create(4, -2)]),
-      Arc3d.createXY(center, 2, AngleSweep.createStartEndDegrees(-90, 90)),
-      LineString3d.create([Point3d.create(4, 2), Point3d.create(-4, 2)]),
-    );
-    let expectedStartPoint = Point3d.create(-4, -2);
-    let expectedEndPoint = Point3d.create(-4, 2);
-    let startPoint = path.startPoint()!;
-    let endPoint = path.endPoint()!;
-    ck.testPoint3d(expectedStartPoint, startPoint);
-    ck.testPoint3d(expectedEndPoint, endPoint);
-
-    center = Point3d.create(0, 0);
-    const loop: Loop = Loop.create(
-      Arc3d.createXY(center, 4, AngleSweep.createStartEndDegrees(90, 180)),
-      LineString3d.create([Point3d.create(-4, 0), Point3d.create(-4, -4)]),
-      LineString3d.create([Point3d.create(-4, -4), Point3d.create(0, -4)]),
-      Arc3d.createXY(center, 4, AngleSweep.createStartEndDegrees(-90, 0)),
-      LineString3d.create([Point3d.create(4, 0), Point3d.create(4, 4)]),
-      LineString3d.create([Point3d.create(4, 4), Point3d.create(0, 4)]),
-    );
-    expectedStartPoint = Point3d.create(0, 4);
-    expectedEndPoint = expectedStartPoint;
-    startPoint = loop.startPoint()!;
-    endPoint = loop.endPoint()!;
-    ck.testPoint3d(expectedStartPoint, startPoint);
-    ck.testPoint3d(expectedEndPoint, endPoint);
-
     expect(ck.getNumErrors()).toBe(0);
   });
   it("ClosestPointPath", () => {
@@ -585,18 +593,3 @@ describe("ConsolidateAdjacentPrimitives", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 });
-/**
- * Capture markers at shiftFraction and (1-shiftFraction) on each primitive of curves.
- * @param allGeometry
- * @param curves
- * @param markerSize
- * @param shiftFraction
- * @param x0
- * @param y0
- */
-function markLimits(allGeometry: GeometryQuery[], primitives: CurvePrimitive[], shiftFraction: number, markerSize0: number, markerSize1: number, x0: number, y0: number) {
-  for (const p of primitives) {
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p.fractionToPoint(shiftFraction), markerSize0, x0, y0);
-    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, p.fractionToPoint(1.0 - shiftFraction), markerSize1, x0, y0);
-  }
-}

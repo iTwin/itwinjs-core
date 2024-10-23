@@ -699,7 +699,7 @@ function testOffsetSingle(
       for (const cp of baseCurve.children) {
         for (let u = 0.0738; u < 1.0; u += 0.0467) {
           const basePt = cp.fractionToPoint(u);
-          const offsetDetail = offsetCurve.closestPoint(basePt, false);
+          const offsetDetail = offsetCurve.closestPoint(basePt);
           if (ck.testDefined(offsetDetail, "Closest point to offset computed")) {
             let projectsToVertex = offsetDetail.fraction === 0 || offsetDetail.fraction === 1;
             if (!projectsToVertex && offsetDetail.curve instanceof LineString3d) {
