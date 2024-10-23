@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "When a conflictingLocksError is thrown on the backend during an IPC call, it will be reconstructed on the frontend and thrown again.",
+      "comment": "When a inUseLocks error is thrown on the backend during an IPC call, it will also be thrown on the frontend.",
       "type": "none"
     }
   ],
