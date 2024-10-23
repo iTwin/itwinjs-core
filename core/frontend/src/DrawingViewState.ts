@@ -26,7 +26,7 @@ import { DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { SceneContext } from "./ViewContext";
 import { OffScreenViewport, Viewport } from "./Viewport";
 import { ViewRect } from "./common/ViewRect";
-import { AttachToViewportArgs, ComputeDisplayTransformArgs, ExtentLimits, ViewState2d, ViewState3d } from "./ViewState";
+import { AttachToViewportArgs, ComputeDisplayTransformArgs, ExtentLimits, GetAttachmentViewportArgs, ViewState2d, ViewState3d } from "./ViewState";
 
 /** Strictly for testing.
  * @internal
@@ -211,7 +211,7 @@ class SectionAttachment {
     this._branchOptions = {
       clipVolume,
       hline: view.getDisplayStyle3d().settings.hiddenLineSettings,
-      viewAttachmentId: view.id,
+      inSectionDrawingAttachment: true,
       frustum: {
         is3d: true,
         scale: { x: 1, y: 1 },
@@ -505,16 +505,16 @@ export class DrawingViewState extends ViewState2d {
   }
 
   /** @internal */
-  public override getAttachmentViewport(id: Id64String): Viewport | undefined {
-    return id === this._attachment?.view.id ? this._attachment.viewport : undefined;
+  public override getAttachmentViewport(args: GetAttachmentViewportArgs): Viewport | undefined {
+    const attach = args.inSectionDrawingAttachment ? this._attachment : undefined;
+    return attach?.viewport;
   }
 
-  /** @internal */
+  /** @beta */
   public override computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
-    if (args.viewAttachmentId === undefined || args.viewAttachmentId !== this._attachment?.view.id) {
-      return undefined;
-    }
-
-    return this._attachment.toDrawing;
+    // ###TODO we're currently ignoring model and element Id in args, assuming irrelevant for drawings.
+    // Should probably call super or have super call us.
+    const attach = args.inSectionDrawingAttachment ? this._attachment : undefined;
+    return attach?.toDrawing.clone(args.output);
   }
 }
