@@ -3,11 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { copyFile } from 'fs/promises';
+import { Simctl } from "node-simctl";
 import { fileURLToPath } from 'url';
 import * as path from "path";
-
-// @ts-expect-error - Could not find a declaration file for module 'node-simctl'.
-import Simctl from "node-simctl";
 
 // Constants used in the script for convenience
 const dtaRootDir = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
@@ -23,38 +21,39 @@ const bimFile = "JoesHouse.bim";
  */
 const numericCompareDescending = (a, b) => b.localeCompare(a, undefined, { numeric: true });
 
-/**
- * Similar to the launchApp function but doesn't retry, adds options before the launch command, and allows for args.
- * @param {string} bundleId
- * @param {string[]} options
- * @param {string[]} args
- * @returns {Promise<string>}
- */
-Simctl.prototype.launchAppWithOptions = async function (bundleId, options, args) {
-  const { stdout } = await this.exec('launch', {
-    args: [...options, this.requireUdid('launch'), bundleId, ...args],
-    architectures: "x86_64",
-  });
-  return stdout.trim();
-}
-
-/**
- * Gets the latest runtime version for a given major version and platform.
- * @param {string} majorVersion
- * @param {string} [platform='iOS']
- */
-Simctl.prototype.getLatestRuntimeVersion = async function (majorVersion, platform = 'iOS') {
-  const { stdout } = await this.exec('list', { args: ['runtimes', '--json'] });
-  /** @type {{ version: string, identifier: string, name: string }[]} */
-  const runtimes = (JSON.parse(stdout).runtimes);
-  runtimes.sort((a, b) => numericCompareDescending(a.version, b.version));
-  for (const { version, name } of runtimes) {
-    if (version.startsWith(`${majorVersion}.`) && name.toLowerCase().startsWith(platform.toLowerCase())) {
-      return version;
-    }
+class SimctlWithOpts extends Simctl {
+  /**
+   * Similar to the launchApp function but doesn't retry, adds options before the launch command, and allows for args.
+   * @param {string} bundleId
+   * @param {string[]} options
+   * @param {string[]} args
+   * @returns {Promise<string>}
+   */
+  async launchAppWithOptions(bundleId, options, args) {
+    const { stdout } = await this.exec('launch', {
+      args: [...options, this.requireUdid('launch'), bundleId, ...args],
+      architectures: "x86_64",
+    });
+    return stdout.trim();
   }
-  return undefined;
-};
+
+  /**
+   * @param {string} majorVersion
+   * @param {string} [platform='iOS']
+   */
+  async getLatestRuntimeVersion(majorVersion, platform = 'iOS') {
+    const { stdout } = await this.exec('list', { args: ['runtimes', '--json'] });
+    /** @type {{ version: string, identifier: string, name: string }[]} */
+    const runtimes = (JSON.parse(stdout).runtimes);
+    runtimes.sort((a, b) => numericCompareDescending(a.version, b.version));
+    for (const { version, name } of runtimes) {
+      if (version.startsWith(`${majorVersion}.`) && name.toLowerCase().startsWith(platform.toLowerCase())) {
+        return version;
+      }
+    }
+    return undefined;
+  };
+}
 
 /** @param {string} message */
 function log(message) {
@@ -62,7 +61,7 @@ function log(message) {
 }
 
 async function main() {
-  const simctl = new Simctl();
+  const simctl = new SimctlWithOpts();
 
   // default to exiting with an error, only when we fully complete everything will it get set to 0
   process.exitCode = 1;
@@ -72,7 +71,7 @@ async function main() {
   const allResults = await simctl.getDevices(undefined, 'iOS');
   // If xcode-select picks an earlier Xcode, allResults can contain entries for newer iOS versions with
   // no actual data. The below filters out the empty entries.
-  const results = Object.assign({}, ...Object.entries(allResults).filter(([_k, v]) => v.length > 0).map(([k, v]) => ({[k]:v})));
+  const results = Object.assign({}, ...Object.entries(allResults).filter(([_k, v]) => v.length > 0).map(([k, v]) => ({ [k]: v })));
   var keys = Object.keys(results).sort(numericCompareDescending);
 
   // determine desired device and runtime
