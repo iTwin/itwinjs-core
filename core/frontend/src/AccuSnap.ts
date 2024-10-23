@@ -684,7 +684,12 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const hitVp = thisHit.viewAttachment ? thisHit.viewAttachment.viewport : thisHit.viewport;
+    let hitVp;
+    if (thisHit.path) {
+      hitVp = thisHit.path.sectionDrawingAttachment?.viewport ?? thisHit.path.viewAttachment?.viewport;
+    }
+
+    hitVp = hitVp ?? thisHit.viewport;
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
       const appearance = hitVp.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
@@ -774,7 +779,8 @@ export class AccuSnap implements Decorator {
         displayTransform = thisHit.viewport.view.computeDisplayTransform({
           modelId: thisHit.modelId,
           elementId: thisHit.sourceId,
-          viewAttachmentId: thisHit.viewAttachment?.id,
+          viewAttachmentId: thisHit.path?.viewAttachment?.id,
+          inSectionDrawingAttachment: undefined !== thisHit.path?.sectionDrawingAttachment,
         });
       }
 
