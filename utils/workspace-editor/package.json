@@ -31,12 +31,12 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/yargs": "17.0.19",
     "@types/glob": "^5.0.35",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.6.2"
