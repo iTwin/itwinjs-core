@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module LocatingElements
  */
-import { assert, Id64, Id64String, RequireAtLeastOne } from "@itwin/core-bentley";
+import { assert, Id64, Id64String } from "@itwin/core-bentley";
 import { Arc3d, CurvePrimitive, LineSegment3d, LineString3d, Path, Point3d, Transform, Vector3d, XYZProps } from "@itwin/core-geometry";
 import { GeometryClass, LinePixels } from "@itwin/core-common";
 import { IModelApp } from "./IModelApp";
@@ -277,7 +277,7 @@ export class HitDetail {
     } else {
       // Ignore an empty path.
       const path = arg0.path?.sectionDrawingAttachment || arg0.path?.viewAttachment ? arg0.path : undefined;
-      
+
       // Tempting to use { ...arg0 } but spread operator omits getters so, e.g., if input is a HitDetail we would lose all the properties.
       this._props = {
         testPoint: arg0.testPoint,

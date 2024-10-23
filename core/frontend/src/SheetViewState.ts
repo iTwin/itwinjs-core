@@ -584,7 +584,7 @@ export class SheetViewState extends ViewState2d {
     if (!sectionTransform) {
       return sheetTransform.clone(args.output);
     }
-    
+
     return sheetTransform.multiplyTransformTransform(sectionTransform, args.output);
   }
 }

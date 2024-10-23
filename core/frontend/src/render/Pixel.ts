@@ -8,7 +8,7 @@
 
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { BatchType, Feature, GeometryClass, ModelFeature } from "@itwin/core-common";
-import { HitPath, HitPriority, ViewAttachmentHitInfo } from "../HitDetail";
+import { HitPath, HitPriority } from "../HitDetail";
 import { IModelConnection } from "../IModelConnection";
 import type { Viewport } from "../Viewport";
 import { Transform } from "@itwin/core-geometry";
@@ -194,7 +194,7 @@ export namespace Pixel {
     /** Path through which the hit was located.
      * @beta
      */
-     path?: HitPath;
+    path?: HitPath;
   }
 
   /** Describes the type of geometry that produced the [[Pixel.Data]]. */
