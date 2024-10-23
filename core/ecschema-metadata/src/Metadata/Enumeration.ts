@@ -6,7 +6,7 @@
  * @module Metadata
  */
 
-import { ECXmlVersion, SchemaReadHelper } from "../Deserialization/Helper";
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { EnumerationProps, EnumeratorProps } from "../Deserialization/JsonProps";
 import { PrimitiveType, primitiveTypeToString, SchemaItemType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
@@ -160,7 +160,7 @@ export class Enumeration extends SchemaItem {
       } else if (/string/i.test(enumerationProps.type)) {
         this._type = PrimitiveType.String;
       } else {
-        if (SchemaReadHelper.isECXmlVersionNewer({readVersion: enumerationProps.originalECXmlMajorVersion, writeVersion: enumerationProps.originalECXmlMinorVersion} as ECXmlVersion))
+        if (SchemaReadHelper.isECSpecVersionNewer({readVersion: enumerationProps.originalECSpecMajorVersion, writeVersion: enumerationProps.originalECSpecMinorVersion} as ECSpecVersion))
           this._type = PrimitiveType.String;
         else
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be either "int" or "string".`);

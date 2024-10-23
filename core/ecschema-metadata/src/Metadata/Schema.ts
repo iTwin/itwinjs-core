@@ -7,7 +7,7 @@
  */
 
 import { SchemaContext } from "../Context";
-import { ECXmlVersion, SchemaReadHelper } from "../Deserialization/Helper";
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { JsonParser } from "../Deserialization/JsonParser";
 import { SchemaProps } from "../Deserialization/JsonProps";
 import { XmlParser } from "../Deserialization/XmlParser";
@@ -41,7 +41,7 @@ const SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
  * @beta
  */
 export class Schema implements CustomAttributeContainerProps {
-  private static _currentECXmlVersion = "3.2";
+  private static _currentECSpecVersion = "3.2";
   private _context: SchemaContext;
   protected _schemaKey?: SchemaKey;
   protected _alias?: string;
@@ -50,8 +50,8 @@ export class Schema implements CustomAttributeContainerProps {
   public readonly references: Schema[];
   private readonly _items: Map<string, SchemaItem>;
   private _customAttributes?: Map<string, CustomAttribute>;
-  private _originalECXmlMajorVersion?: number;
-  private _originalECXmlMinorVersion?: number;
+  private _originalECSpecMajorVersion?: number;
+  private _originalECSpecMinorVersion?: number;
   /**
    * Constructs an empty Schema with the given name and version in the provided context.
    * @param context The SchemaContext that will control the lifetime of the schema
@@ -87,8 +87,8 @@ export class Schema implements CustomAttributeContainerProps {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not have the required 'alias' attribute.`);
     }
 
-    this._originalECXmlMajorVersion = Schema.currentECXmlMajorVersion;
-    this._originalECXmlMinorVersion = Schema.currentECXmlMinorVersion;
+    this._originalECSpecMajorVersion = Schema.currentECSpecMajorVersion;
+    this._originalECSpecMinorVersion = Schema.currentECSpecMinorVersion;
   }
 
   public get schemaKey() {
@@ -121,10 +121,10 @@ export class Schema implements CustomAttributeContainerProps {
     return this.schemaKey.minorVersion;
   }
 
-  public get originalECXmlMajorVersion() { return this._originalECXmlMajorVersion; }
-  public get originalECXmlMinorVersion() { return this._originalECXmlMinorVersion; }
-  public static get currentECXmlMajorVersion(): number { return parseInt(Schema._currentECXmlVersion.split(".")[0], 10); }
-  public static get currentECXmlMinorVersion(): number { return parseInt(Schema._currentECXmlVersion.split(".")[1], 10); }
+  public get originalECSpecMajorVersion() { return this._originalECSpecMajorVersion; }
+  public get originalECSpecMinorVersion() { return this._originalECSpecMinorVersion; }
+  public static get currentECSpecMajorVersion(): number { return parseInt(Schema._currentECSpecVersion.split(".")[0], 10); }
+  public static get currentECSpecMinorVersion(): number { return parseInt(Schema._currentECSpecVersion.split(".")[1], 10); }
 
   public get alias() {
     if (this._alias === undefined || this._alias === null) {
@@ -549,8 +549,8 @@ export class Schema implements CustomAttributeContainerProps {
    * Save this Schema's properties to an object for serializing to JSON.
    */
   public toJSON(): SchemaProps {
-    if (!this.isECXmlVersionSupported())
-      throw new ECObjectsError(ECObjectsStatus.NewerSchemaVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be serialized.`);
+    if (!this.isECSpecVersionSupported())
+      throw new ECObjectsError(ECObjectsStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECSpecVersion and cannot be serialized.`);
 
     const schemaJson: { [value: string]: any } = {};
     schemaJson.$schema = SCHEMAURL3_2_JSON; // $schema is required
@@ -581,8 +581,8 @@ export class Schema implements CustomAttributeContainerProps {
    * @param schemaXml An empty DOM document to which the schema will be written
    */
   public async toXml(schemaXml: Document): Promise<Document> {
-    if (!this.isECXmlVersionSupported())
-      throw new ECObjectsError(ECObjectsStatus.NewerSchemaVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be serialized.`);
+    if (!this.isECSpecVersionSupported())
+      throw new ECObjectsError(ECObjectsStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECSpecVersion and cannot be serialized.`);
 
     const schemaMetadata = schemaXml.createElement("ECSchema");
     schemaMetadata.setAttribute("xmlns", SCHEMAURL3_2_XML);
@@ -624,34 +624,34 @@ export class Schema implements CustomAttributeContainerProps {
     return schemaXml;
   }
 
-  // Check if the ECXml Major version is greater than the current ECXml version supported.
-  // If a specific ECXml version is given, check against that version.
-  // If no argument is given, check against the original ECXml version of the schema.
-  private isECXmlMajorVersionSupported(ecXmlMajorVersionToCheck?: number): boolean {
-    // If argument is supplied, check the argument against the current ECXml version supported
-    if (ecXmlMajorVersionToCheck !== undefined)
-      return (Schema.currentECXmlMajorVersion >= ecXmlMajorVersionToCheck);
+  // Check if the ECSpecVersion read-version is greater than the current ECSpecVersion supported.
+  // If a specific ECSpecVersion is given, check against that version.
+  // If no argument is given, check against the original ECSpecVersion of the schema.
+  private isECSpecMajorVersionSupported(ecSpecMajorVersionToCheck?: number): boolean {
+    // If argument is supplied, check the argument against the current ECSpecVersion supported
+    if (ecSpecMajorVersionToCheck !== undefined)
+      return (Schema.currentECSpecMajorVersion >= ecSpecMajorVersionToCheck);
 
-    // If argument is not supplied, check against the original ECXml version of the schema
-    if (this.originalECXmlMajorVersion === undefined)
+    // If argument is not supplied, check against the original ECSpecVersion of the schema
+    if (this.originalECSpecMajorVersion === undefined)
       return false;
-    return (Schema.currentECXmlMajorVersion >= this.originalECXmlMajorVersion);
+    return (Schema.currentECSpecMajorVersion >= this.originalECSpecMajorVersion);
   }
 
-  // Check if the full ECXml version is greater than the current ECXml version supported.
-  // If a specific ECXml version is given, check against that version.
-  // If no argument is given, check against the original ECXml version of the schema.
-  private isECXmlVersionSupported(ecXmlMajorVersionToCheck?: number, ecXmlMinorVersionToCheck?: number): boolean {
-    // If arguments are supplied, check the arguments against the current ECXml version supported
-    if (ecXmlMajorVersionToCheck !== undefined && ecXmlMinorVersionToCheck !== undefined) {
-      if (!this.isECXmlMajorVersionSupported(ecXmlMajorVersionToCheck))
+  // Check if the full ECSpecVersion is greater than the current ECSpecVersion supported.
+  // If a specific ECSpecVersion is given, check against that version.
+  // If no argument is given, check against the original ECSpecVersion of the schema.
+  private isECSpecVersionSupported(ecSpecMajorVersionToCheck?: number, ecSpecMinorVersionToCheck?: number): boolean {
+    // If arguments are supplied, check the arguments against the current ECSpecVersion supported
+    if (ecSpecMajorVersionToCheck !== undefined && ecSpecMinorVersionToCheck !== undefined) {
+      if (!this.isECSpecMajorVersionSupported(ecSpecMajorVersionToCheck))
         return false;
-      return (Schema.currentECXmlMinorVersion >= ecXmlMinorVersionToCheck);
+      return (Schema.currentECSpecMinorVersion >= ecSpecMinorVersionToCheck);
     }
-    // If arguments are not supplied, check against the original ECXml version of the schema
-    if (!this.isECXmlMajorVersionSupported() || this.originalECXmlMinorVersion === undefined)
+    // If arguments are not supplied, check against the original ECSpecVersion of the schema
+    if (!this.isECSpecMajorVersionSupported() || this.originalECSpecMinorVersion === undefined)
       return false;
-    return (Schema.currentECXmlMinorVersion >= this.originalECXmlMinorVersion);
+    return (Schema.currentECSpecMinorVersion >= this.originalECSpecMinorVersion);
   }
 
   /**
@@ -673,18 +673,18 @@ export class Schema implements CustomAttributeContainerProps {
       throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `The Schema '${this.name}' has an unsupported namespace '${schemaProps.$schema}'.`);
 
     // The schema props have not been parsed. Parse the ECXml version from the $schema attribute
-    let ecVersion: ECXmlVersion;
-    if (schemaProps.ecXmlMajorVersion === undefined || schemaProps.ecXmlMinorVersion === undefined) {
-      ecVersion = ((schemaProps.$schema.search("ECXML") !== -1) ? XmlParser.parseXmlNamespace(schemaProps.$schema) : JsonParser.parseJSUri(schemaProps.$schema)) as ECXmlVersion;
+    let ecVersion: ECSpecVersion;
+    if (schemaProps.ecSpecMajorVersion === undefined || schemaProps.ecSpecMinorVersion === undefined) {
+      ecVersion = ((schemaProps.$schema.search("ECXML") !== -1) ? XmlParser.parseXmlNamespace(schemaProps.$schema) : JsonParser.parseJSUri(schemaProps.$schema)) as ECSpecVersion;
     } else {
-      ecVersion = { readVersion: schemaProps.ecXmlMajorVersion, writeVersion: schemaProps.ecXmlMinorVersion } as ECXmlVersion;
+      ecVersion = { readVersion: schemaProps.ecSpecMajorVersion, writeVersion: schemaProps.ecSpecMinorVersion } as ECSpecVersion;
     }
 
-    this._originalECXmlMajorVersion = ecVersion?.readVersion;
-    this._originalECXmlMinorVersion = ecVersion?.writeVersion;
+    this._originalECSpecMajorVersion = ecVersion?.readVersion;
+    this._originalECSpecMinorVersion = ecVersion?.writeVersion;
 
-    if (!this.isECXmlMajorVersionSupported(ecVersion?.readVersion))
-      throw new ECObjectsError(ECObjectsStatus.NewerSchemaVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be loaded.`);
+    if (!this.isECSpecMajorVersionSupported(ecVersion?.readVersion))
+      throw new ECObjectsError(ECObjectsStatus.NewerECSpecVersion, `The Schema '${this.name}' has an unsupported ECVersion and cannot be loaded.`);
 
     if (ECName.validate(schemaProps.alias)) {
       this._alias = schemaProps.alias;

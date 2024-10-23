@@ -624,15 +624,15 @@ describe("Schema", () => {
   });
 
   describe("Schemas with newer ECXml version", async () => {
-    const unsupportedVersionError = `The Schema 'TestSchema' has an unsupported ECVersion and cannot be serialized.`;
+    const unsupportedVersionError = `The Schema 'TestSchema' has an unsupported ECSpecVersion and cannot be serialized.`;
 
     type TestCase = [ xmlVersionMajor: number, xmlVersionMinor: number, deserializtionStatus: boolean, serializationStatus: boolean ];
     const testCases: TestCase[] = [
-      [Schema.currentECXmlMajorVersion, Schema.currentECXmlMinorVersion - 1, true, true],
-      [Schema.currentECXmlMajorVersion, Schema.currentECXmlMinorVersion, true, true],
-      [Schema.currentECXmlMajorVersion, Schema.currentECXmlMinorVersion + 1, true, false],
-      [Schema.currentECXmlMajorVersion + 1, Schema.currentECXmlMinorVersion, false, false],
-      [Schema.currentECXmlMajorVersion + 1, Schema.currentECXmlMinorVersion + 1, false, false],
+      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion - 1, true, true],
+      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion, true, true],
+      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion + 1, true, false],
+      [Schema.currentECSpecMajorVersion + 1, Schema.currentECSpecMinorVersion, false, false],
+      [Schema.currentECSpecMajorVersion + 1, Schema.currentECSpecMinorVersion + 1, false, false],
     ];
 
     async function testSerialization(schema: Schema, serializationStatus: boolean, expectedError: string) {
@@ -671,8 +671,8 @@ describe("Schema", () => {
         }
 
         assert.isTrue(deserializtionStatus);
-        expect(schema.originalECXmlMajorVersion).to.equal(xmlVersionMajor);
-        expect(schema.originalECXmlMinorVersion).to.equal(xmlVersionMinor);
+        expect(schema.originalECSpecMajorVersion).to.equal(xmlVersionMajor);
+        expect(schema.originalECSpecMinorVersion).to.equal(xmlVersionMinor);
         expect(schema.getItemSync("testClass") !== undefined).to.equal(deserializtionStatus);
 
         // Schema serialization should fail if the major ECXml version is newer
@@ -703,8 +703,8 @@ describe("Schema", () => {
         }
 
         assert.isTrue(deserializtionStatus);
-        expect(schema.originalECXmlMajorVersion).to.equal(xmlVersionMajor);
-        expect(schema.originalECXmlMinorVersion).to.equal(xmlVersionMinor);
+        expect(schema.originalECSpecMajorVersion).to.equal(xmlVersionMajor);
+        expect(schema.originalECSpecMinorVersion).to.equal(xmlVersionMinor);
         expect(await schema.getItem("testClass") !== undefined).to.equal(deserializtionStatus);
 
         // Schema serialization should fail if the major ECXml version is newer
@@ -740,7 +740,7 @@ describe("Schema", () => {
 
           // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated and the ECXMl version will remain the deafult latest supported.
           // Hence serialization should succeed in this case.
-          if (ecMajorVersion > Schema.currentECXmlMajorVersion || (ecMajorVersion === Schema.currentECXmlMajorVersion && ecMinorVersion > Schema.currentECXmlMinorVersion))
+          if (ecMajorVersion > Schema.currentECSpecMajorVersion || (ecMajorVersion === Schema.currentECSpecMajorVersion && ecMinorVersion > Schema.currentECSpecMinorVersion))
             serializationStatus = true;
 
           await testSerialization(schema, serializationStatus, unsupportedVersionError);
@@ -748,8 +748,8 @@ describe("Schema", () => {
         }
 
         assert.isTrue(deserializtionStatus);
-        expect(schema.originalECXmlMajorVersion).to.equal(ecMajorVersion);
-        expect(schema.originalECXmlMinorVersion).to.equal(ecMinorVersion);
+        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
         expect(schema.getItemSync("testClass") !== undefined).to.equal(deserializtionStatus);
 
         // Schema serialization should fail if the major ECXml version is newer
@@ -784,7 +784,7 @@ describe("Schema", () => {
 
           // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated and the ECXMl version will remain the deafult latest supported.
           // Hence serialization should succeed in this case.
-          if (ecMajorVersion > Schema.currentECXmlMajorVersion || (ecMajorVersion === Schema.currentECXmlMajorVersion && ecMinorVersion > Schema.currentECXmlMinorVersion))
+          if (ecMajorVersion > Schema.currentECSpecMajorVersion || (ecMajorVersion === Schema.currentECSpecMajorVersion && ecMinorVersion > Schema.currentECSpecMinorVersion))
             serializationStatus = true;
 
           await testSerialization(schema, serializationStatus, unsupportedVersionError);
@@ -792,8 +792,8 @@ describe("Schema", () => {
         }
 
         assert.isTrue(deserializtionStatus);
-        expect(schema.originalECXmlMajorVersion).to.equal(ecMajorVersion);
-        expect(schema.originalECXmlMinorVersion).to.equal(ecMinorVersion);
+        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
         expect(await schema.getItem("testClass") !== undefined).to.equal(deserializtionStatus);
 
         // Schema serialization should fail if the major ECXml version is newer
@@ -823,8 +823,8 @@ describe("Schema", () => {
         }
 
         assert.isTrue(deserializtionStatus);
-        expect(schema.originalECXmlMajorVersion).to.equal(ecMajorVersion);
-        expect(schema.originalECXmlMinorVersion).to.equal(ecMinorVersion);
+        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
 
         // Schema serialization should fail if the major ECXml version is newer
         await testSerialization(schema, serializationStatus, unsupportedVersionError);
@@ -853,8 +853,8 @@ describe("Schema", () => {
         }
 
         assert.isTrue(deserializtionStatus);
-        expect(schema.originalECXmlMajorVersion).to.equal(ecMajorVersion);
-        expect(schema.originalECXmlMinorVersion).to.equal(ecMinorVersion);
+        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
 
         // Schema serialization should fail if the major ECXml version is newer
         await testSerialization(schema, serializationStatus, unsupportedVersionError);
@@ -872,7 +872,7 @@ describe("Schema", () => {
       });
 
       const jsonSchemaTemplate = {
-        $schema: `https://dev.bentley.com/json_schemas/ec/${Schema.currentECXmlMajorVersion}${Schema.currentECXmlMinorVersion + 1}/ecschema`,
+        $schema: `https://dev.bentley.com/json_schemas/ec/${Schema.currentECSpecMajorVersion}${Schema.currentECSpecMinorVersion + 1}/ecschema`,
         name: "TestSchema",
         version: "1.0.0",
         alias: "ts",
@@ -937,7 +937,7 @@ describe("Schema", () => {
           </ECSchema>`));
 
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
-          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECXmlMajorVersion}.${Schema.currentECXmlMinorVersion + 1}">
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
             <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
             <ECEntityClass typeName="ValidClass" description="Test Entity Class" />
             <ECEntityClass typeName="UnknownEntityClass" description="Test Entity Class" modifier="UnknownModifier" />
@@ -1002,7 +1002,7 @@ describe("Schema", () => {
       }
       it("Schema XML with unknown Schema Item Type", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
-          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECXmlMajorVersion}.${Schema.currentECXmlMinorVersion + 1}">
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
             <ECEntityClass typeName="ValidClass" description="Test Entity Class" />
             <UnknownItem typeName="UnknownItem" unknownAttribute="unknownAttr" />
           </ECSchema>`;
@@ -1026,7 +1026,7 @@ describe("Schema", () => {
       });
       it("Schema XML with Schema Item Type having unknown attributes", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
-          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECXmlMajorVersion}.${Schema.currentECXmlMinorVersion + 1}">
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
             <ECEntityClass typeName="ValidClass" description="Test Entity Class" />
             <ECEntityClass typeName="UnknownItem" unknownAttribute="unknownAttr" />
           </ECSchema>`;
@@ -1064,7 +1064,7 @@ describe("Schema", () => {
       }
       it("Schema XML with property having an unknown primitive type", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
-          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECXmlMajorVersion}.${Schema.currentECXmlMinorVersion + 1}">
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
             <ECEntityClass typeName="TestClass">
               <ECProperty propertyName="ValidProperty" typeName="string" />
               <ECProperty propertyName="UnknownPrimitiveProperty" typeName="UnknownType" />
@@ -1116,7 +1116,7 @@ describe("Schema", () => {
       }
       it("Schema XML with property having an unknown property kind", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
-          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECXmlMajorVersion}.${Schema.currentECXmlMinorVersion + 1}">
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
             <ECEntityClass typeName="TestClass">
               <ECProperty propertyName="ValidProperty" typeName="string" />
               <UnknownProperty propertyName="UnknownProperty" />
@@ -1160,7 +1160,7 @@ describe("Schema", () => {
       }
       it("Schema XML with unknown enumeration backing type", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
-          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECXmlMajorVersion}.${Schema.currentECXmlMinorVersion + 1}">
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
             <ECEnumeration typeName="TestEnumeration" backingTypeName="UnknownType" />
           </ECSchema>`;
 
@@ -1197,7 +1197,7 @@ describe("Schema", () => {
       }
       it("Schema XML with relationship class having unknown strength type", async () => {
         const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
-          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECXmlMajorVersion}.${Schema.currentECXmlMinorVersion + 1}">
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
             <ECEntityClass typeName="Source"/>
             <ECEntityClass typeName="Target"/>
 

@@ -34,8 +34,8 @@ export interface SchemaProps {
   readonly references?: SchemaReferenceProps[];
   readonly items?: { [name: string]: SchemaItemProps };
   readonly customAttributes?: Array<{ [value: string]: any }>;
-  readonly ecXmlMajorVersion?: number;
-  readonly ecXmlMinorVersion?: number;
+  readonly ecSpecMajorVersion?: number;
+  readonly ecSpecMinorVersion?: number;
 }
 
 /**
@@ -74,8 +74,8 @@ export interface SchemaItemProps {
   readonly label?: string;
   readonly description?: string;
   readonly customAttributes?: Array<{ [value: string]: any }>;
-  readonly originalECXmlMajorVersion?: number;
-  readonly originalECXmlMinorVersion?: number;
+  readonly originalECSpecMajorVersion?: number;
+  readonly originalECSpecMinorVersion?: number;
 }
 
 /**

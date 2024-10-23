@@ -31,10 +31,10 @@ type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
 type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
 
 /**
- * Specifies the ECXml version for the schema
+ * Specifies the version specification for the schema
  * @internal
  */
-export interface ECXmlVersion {
+export interface ECSpecVersion {
   readVersion: number;
   writeVersion: number;
 }
@@ -881,8 +881,8 @@ export class SchemaReadHelper<T = unknown> {
 
     const loadTypeName = async (typeName: string): Promise<ECObjectsStatus> => {
       if (undefined === parsePrimitiveType(typeName)) {
-        if (SchemaReadHelper.isECXmlVersionNewer(this._parser.getECXmlVersion))
-          return ECObjectsStatus.NewerSchemaVersion;
+        if (SchemaReadHelper.isECSpecVersionNewer(this._parser.getECSpecVersion))
+          return ECObjectsStatus.NewerECSpecVersion;
         await this.findSchemaItem(typeName);
       }
       return ECObjectsStatus.Success;
@@ -893,7 +893,7 @@ export class SchemaReadHelper<T = unknown> {
     switch (lowerCasePropType) {
       case "primitiveproperty":
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
-        if (await loadTypeName(primPropertyProps.typeName) === ECObjectsStatus.NewerSchemaVersion)
+        if (await loadTypeName(primPropertyProps.typeName) === ECObjectsStatus.NewerECSpecVersion)
           (primPropertyProps as any).typeName = "string";
         const primProp = await (classObj as MutableClass).createPrimitiveProperty(propName, primPropertyProps.typeName);
         return this.loadProperty(primProp, primPropertyProps, rawProperty);
@@ -906,7 +906,7 @@ export class SchemaReadHelper<T = unknown> {
 
       case "primitivearrayproperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
-        if (await loadTypeName(primArrPropertyProps.typeName) === ECObjectsStatus.NewerSchemaVersion)
+        if (await loadTypeName(primArrPropertyProps.typeName) === ECObjectsStatus.NewerECSpecVersion)
           (primArrPropertyProps as any).typeName = "string";
         const primArrProp = await (classObj as MutableClass).createPrimitiveArrayProperty(propName, primArrPropertyProps.typeName);
         return this.loadProperty(primArrProp, primArrPropertyProps, rawProperty);
@@ -938,8 +938,8 @@ export class SchemaReadHelper<T = unknown> {
   private loadPropertyTypesSync(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): void {
     const loadTypeName = (typeName: string): ECObjectsStatus => {
       if (undefined === parsePrimitiveType(typeName)) {
-        if (SchemaReadHelper.isECXmlVersionNewer(this._parser.getECXmlVersion))
-          return ECObjectsStatus.NewerSchemaVersion;
+        if (SchemaReadHelper.isECSpecVersionNewer(this._parser.getECSpecVersion))
+          return ECObjectsStatus.NewerECSpecVersion;
         this.findSchemaItemSync(typeName);
       }
       return ECObjectsStatus.Success;
@@ -950,7 +950,7 @@ export class SchemaReadHelper<T = unknown> {
     switch (lowerCasePropType) {
       case "primitiveproperty":
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
-        if (loadTypeName(primPropertyProps.typeName) === ECObjectsStatus.NewerSchemaVersion)
+        if (loadTypeName(primPropertyProps.typeName) === ECObjectsStatus.NewerECSpecVersion)
           (primPropertyProps as any).typeName = "string";
         const primProp = (classObj as MutableClass).createPrimitivePropertySync(propName, primPropertyProps.typeName);
         return this.loadPropertySync(primProp, primPropertyProps, rawProperty);
@@ -963,7 +963,7 @@ export class SchemaReadHelper<T = unknown> {
 
       case "primitivearrayproperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
-        if (loadTypeName(primArrPropertyProps.typeName) === ECObjectsStatus.NewerSchemaVersion)
+        if (loadTypeName(primArrPropertyProps.typeName) === ECObjectsStatus.NewerECSpecVersion)
           (primArrPropertyProps as any).typeName = "string";
         const primArrProp = (classObj as MutableClass).createPrimitiveArrayPropertySync(propName, primArrPropertyProps.typeName);
         return this.loadPropertySync(primArrProp, primArrPropertyProps, rawProperty);
@@ -1065,10 +1065,10 @@ export class SchemaReadHelper<T = unknown> {
     }
   }
 
-  public static isECXmlVersionNewer(ecXmlVersion?: ECXmlVersion): boolean {
-    if (ecXmlVersion === undefined || ecXmlVersion.readVersion === undefined || ecXmlVersion.writeVersion === undefined)
+  public static isECSpecVersionNewer(ecSpecVersion?: ECSpecVersion): boolean {
+    if (ecSpecVersion === undefined || ecSpecVersion.readVersion === undefined || ecSpecVersion.writeVersion === undefined)
       return false;
 
-    return ((ecXmlVersion.readVersion > Schema.currentECXmlMajorVersion) || (ecXmlVersion.readVersion === Schema.currentECXmlMajorVersion && ecXmlVersion.writeVersion > Schema.currentECXmlMinorVersion));
+    return ((ecSpecVersion.readVersion > Schema.currentECSpecMajorVersion) || (ecSpecVersion.readVersion === Schema.currentECSpecMajorVersion && ecSpecVersion.writeVersion > Schema.currentECSpecMinorVersion));
   }
 }

@@ -19,7 +19,7 @@ import {
   PrimitivePropertyProps, PropertyCategoryProps, PropertyProps, RelationshipClassProps, RelationshipConstraintProps, SchemaItemFormatProps, SchemaItemProps,
   SchemaItemUnitProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructClassProps, StructPropertyProps, UnitSystemProps,
 } from "./JsonProps";
-import { ECXmlVersion, SchemaReadHelper } from "./Helper";
+import { ECSpecVersion, SchemaReadHelper } from "./Helper";
 
 const NON_ITEM_SCHEMA_ELEMENTS = ["ECSchemaReference", "ECCustomAttributes"];
 const ECXML_URI = "http://www\\.bentley\\.com/schemas/Bentley\\.ECXML";
@@ -63,14 +63,14 @@ export class XmlParser extends AbstractParser<Element> {
     const xmlNamespace = schemaInfo.getAttribute("xmlns");
     if (xmlNamespace) {
       this._xmlNamespace = xmlNamespace;
-      this._ecXmlVersion = XmlParser.parseXmlNamespace(this._xmlNamespace);
+      this._ecSpecVersion = XmlParser.parseXmlNamespace(this._xmlNamespace);
     }
 
     this._schemaItems = new Map<string, [string, Element]>();
     this._mapIsPopulated = false;
   }
 
-  public get getECXmlVersion(): ECXmlVersion | undefined { return this._ecXmlVersion; }
+  public get getECSpecVersion(): ECSpecVersion | undefined { return this._ecSpecVersion; }
 
   public parseSchema(): SchemaProps {
     const schemaMetadata = this._rawSchema.documentElement;
@@ -90,7 +90,7 @@ export class XmlParser extends AbstractParser<Element> {
     if (this._xmlNamespace === undefined)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECSchema ${this._schemaName} is missing a required 'xmlns' attribute`);
 
-    if (this._ecXmlVersion === undefined)
+    if (this._ecSpecVersion === undefined)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The ECSchema ${this._schemaName} has an invalid 'xmlns' attribute`);
 
     const alias = this.getRequiredAttribute(schemaMetadata, "alias",
@@ -105,8 +105,8 @@ export class XmlParser extends AbstractParser<Element> {
       alias,
       label: displayLabel,
       description,
-      ecXmlMajorVersion: this._ecXmlVersion.readVersion,
-      ecXmlMinorVersion: this._ecXmlVersion.writeVersion,
+      ecSpecMajorVersion: this._ecSpecVersion.readVersion,
+      ecSpecMinorVersion: this._ecSpecVersion.writeVersion,
     };
 
     return schemaProps;
@@ -138,7 +138,7 @@ export class XmlParser extends AbstractParser<Element> {
 
         const itemType = this.getSchemaItemType(rawItemType);
         if (itemType === undefined) {
-          if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion))
+          if (SchemaReadHelper.isECSpecVersionNewer(this._ecSpecVersion))
             continue;
           throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `A SchemaItem in ${this._schemaName} has an invalid type. '${rawItemType}' is not a valid SchemaItem type.`);
         }
@@ -312,7 +312,7 @@ export class XmlParser extends AbstractParser<Element> {
     } else if (/string/i.test(enumType)) {
       tempBackingType = PrimitiveType.String;
     } else {
-      if (SchemaReadHelper.isECXmlVersionNewer(this._ecXmlVersion))
+      if (SchemaReadHelper.isECSpecVersionNewer(this._ecSpecVersion))
         tempBackingType = PrimitiveType.String;
       else
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this._currentItemFullName} has an invalid 'backingTypeName' attribute. It should be either "int" or "string".`);
@@ -359,8 +359,8 @@ export class XmlParser extends AbstractParser<Element> {
       type: enumType,
       isStrict,
       enumerators,
-      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
-      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
+      originalECSpecMajorVersion: this._ecSpecVersion?.readVersion,
+      originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
     };
   }
 
@@ -828,8 +828,8 @@ export class XmlParser extends AbstractParser<Element> {
       ...itemProps,
       modifier,
       baseClass,
-      originalECXmlMajorVersion: this._ecXmlVersion?.readVersion,
-      originalECXmlMinorVersion: this._ecXmlVersion?.writeVersion,
+      originalECSpecMajorVersion: this._ecSpecVersion?.readVersion,
+      originalECSpecMinorVersion: this._ecSpecVersion?.writeVersion,
     };
   }
 
@@ -1007,7 +1007,7 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private getCustomAttributeProvider(xmlCustomAttribute: Element): CAProviderTuple {
-    assert(this._ecXmlVersion !== undefined);
+    assert(this._ecSpecVersion !== undefined);
 
     let ns = xmlCustomAttribute.getAttribute("xmlns");
     if (!ns) {
@@ -1016,7 +1016,7 @@ export class XmlParser extends AbstractParser<Element> {
       ns = `${this._schemaName}.${this._schemaVersion}`;
     }
 
-    if (null === ns || !this.isSchemaFullNameValidForVersion(ns, this._ecXmlVersion))
+    if (null === ns || !this.isSchemaFullNameValidForVersion(ns, this._ecSpecVersion))
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Custom attribute namespaces must contain a valid 3.2 full schema name in the form <schemaName>.RR.ww.mm.`);
 
     const schemaNameParts = ns.split(".");
@@ -1209,10 +1209,10 @@ export class XmlParser extends AbstractParser<Element> {
     return { x, y, z };
   }
 
-  private isSchemaFullNameValidForVersion(schemaFullName: string, ecXmlVersion: ECXmlVersion) {
+  private isSchemaFullNameValidForVersion(schemaFullName: string, ecSpecVersion: ECSpecVersion) {
     const schemaNameParts = schemaFullName.split(".");
 
-    if ((ecXmlVersion.readVersion >= 3 && ecXmlVersion.writeVersion >= 2) || ecXmlVersion.readVersion > 3) {
+    if ((ecSpecVersion.readVersion >= 3 && ecSpecVersion.writeVersion >= 2) || ecSpecVersion.readVersion > 3) {
       if (schemaNameParts.length < 4)
         return false;
     } else {
@@ -1222,7 +1222,7 @@ export class XmlParser extends AbstractParser<Element> {
     return true;
   }
 
-  public static parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined {
+  public static parseXmlNamespace(xmlNamespace: string): ECSpecVersion | undefined {
     const regEx = new RegExp(`^${ECXML_URI}\\.([0-9]+)\\.([0-9]+)$`);
     const match = xmlNamespace.match(regEx);
     if (!match)

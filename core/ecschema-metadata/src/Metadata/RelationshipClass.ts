@@ -7,7 +7,7 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { ECXmlVersion, SchemaReadHelper } from "../Deserialization/Helper";
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import {
@@ -123,7 +123,7 @@ export class RelationshipClass extends ECClass {
 
     let strength = parseStrength(relationshipClassProps.strength);
     if (undefined === strength) {
-      if (SchemaReadHelper.isECXmlVersionNewer({readVersion: relationshipClassProps.originalECXmlMajorVersion, writeVersion: relationshipClassProps.originalECXmlMinorVersion} as ECXmlVersion))
+      if (SchemaReadHelper.isECSpecVersionNewer({readVersion: relationshipClassProps.originalECSpecMajorVersion, writeVersion: relationshipClassProps.originalECSpecMinorVersion} as ECSpecVersion))
         strength = StrengthType.Referencing;
       else
         throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);

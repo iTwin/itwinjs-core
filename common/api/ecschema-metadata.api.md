@@ -425,7 +425,7 @@ export enum ECObjectsStatus {
     // (undocumented)
     MissingSchemaUrl = 35070,
     // (undocumented)
-    NewerSchemaVersion = 35081,
+    NewerECSpecVersion = 35081,
     // (undocumented)
     SchemaContextUndefined = 35075,
     // (undocumented)
@@ -434,6 +434,14 @@ export enum ECObjectsStatus {
     UnableToLoadSchema = 35080,
     // (undocumented)
     UnableToLocateSchema = 35071
+}
+
+// @internal
+export interface ECSpecVersion {
+    // (undocumented)
+    readVersion: number;
+    // (undocumented)
+    writeVersion: number;
 }
 
 // @internal (undocumented)
@@ -488,14 +496,6 @@ export class ECVersion {
     toString(padZeroes?: boolean): string;
     // (undocumented)
     get write(): number;
-}
-
-// @internal
-export interface ECXmlVersion {
-    // (undocumented)
-    readVersion: number;
-    // (undocumented)
-    writeVersion: number;
 }
 
 // @beta
@@ -1634,9 +1634,9 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     protected createUnitSystemSync(name: string): UnitSystem;
     // (undocumented)
-    static get currentECXmlMajorVersion(): number;
+    static get currentECSpecMajorVersion(): number;
     // (undocumented)
-    static get currentECXmlMinorVersion(): number;
+    static get currentECSpecMinorVersion(): number;
     // (undocumented)
     get customAttributes(): CustomAttributeSet | undefined;
     // @alpha
@@ -1683,9 +1683,9 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     get name(): string;
     // (undocumented)
-    get originalECXmlMajorVersion(): number | undefined;
+    get originalECSpecMajorVersion(): number | undefined;
     // (undocumented)
-    get originalECXmlMinorVersion(): number | undefined;
+    get originalECSpecMinorVersion(): number | undefined;
     // (undocumented)
     get readVersion(): number;
     // (undocumented)
@@ -1855,9 +1855,9 @@ export interface SchemaItemProps {
     // (undocumented)
     readonly name?: string;
     // (undocumented)
-    readonly originalECXmlMajorVersion?: number;
+    readonly originalECSpecMajorVersion?: number;
     // (undocumented)
-    readonly originalECXmlMinorVersion?: number;
+    readonly originalECSpecMinorVersion?: number;
     // (undocumented)
     readonly schema?: string;
     // (undocumented)
@@ -2007,9 +2007,9 @@ export interface SchemaProps {
     // (undocumented)
     readonly description?: string;
     // (undocumented)
-    readonly ecXmlMajorVersion?: number;
+    readonly ecSpecMajorVersion?: number;
     // (undocumented)
-    readonly ecXmlMinorVersion?: number;
+    readonly ecSpecMinorVersion?: number;
     // (undocumented)
     readonly items?: {
         [name: string]: SchemaItemProps;
@@ -2031,7 +2031,7 @@ export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 export class SchemaReadHelper<T = unknown> {
     constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor);
     // (undocumented)
-    static isECXmlVersionNewer(ecXmlVersion?: ECXmlVersion): boolean;
+    static isECSpecVersionNewer(ecSpecVersion?: ECSpecVersion): boolean;
     readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U>;
     readSchemaInfo<U extends Schema>(schema: U, rawSchema: T): Promise<SchemaInfo>;
     readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U;
@@ -2229,7 +2229,7 @@ export class XmlParser extends AbstractParser<Element> {
     // (undocumented)
     getClassCustomAttributeProviders(xmlElement: Element): Iterable<CAProviderTuple>;
     // (undocumented)
-    get getECXmlVersion(): ECXmlVersion | undefined;
+    get getECSpecVersion(): ECSpecVersion | undefined;
     // (undocumented)
     getItems(): Iterable<[string, string, Element]>;
     // (undocumented)
@@ -2283,7 +2283,7 @@ export class XmlParser extends AbstractParser<Element> {
     // (undocumented)
     parseUnitSystem(xmlElement: Element): UnitSystemProps;
     // (undocumented)
-    static parseXmlNamespace(xmlNamespace: string): ECXmlVersion | undefined;
+    static parseXmlNamespace(xmlNamespace: string): ECSpecVersion | undefined;
 }
 
 // (No @packageDocumentation comment for this package)
