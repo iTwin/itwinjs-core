@@ -84,7 +84,7 @@ export class Path extends CurveChain {
    * @returns details of the closest point.
    */
   public override closestPoint(
-    spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail,
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
   ): CurveLocationDetail | undefined {
     let detailA: CurveLocationDetail | undefined;
     const detailB = new CurveLocationDetail();
