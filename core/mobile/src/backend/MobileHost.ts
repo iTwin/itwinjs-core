@@ -11,7 +11,7 @@ import { ProgressCallback } from "./Request";
 import { mobileAppStrings } from "../common/MobileAppChannel";
 import { BatteryState, DeviceEvents, MobileAppFunctions, MobileNotifications, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
-import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
+import { MobileAuthorizationClient } from "../common/MobileAuthorizationClient";
 import { setupMobileRpc } from "./MobileRpcServer";
 
 /** @beta */
@@ -195,7 +195,7 @@ export class MobileHost {
 
   /** Start the backend of a mobile app. */
   public static async startup(opt?: MobileHostOpts): Promise<void> {
-    const authorizationClient = new MobileAuthorizationBackend();
+    const authorizationClient = new MobileAuthorizationClient(async () => MobileHost.authGetAccessToken());
     if (!this.isValid) {
       this._device = opt?.mobileHost?.device ?? new (MobileDevice as any)();
       // set global device interface.

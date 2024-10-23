@@ -6,14 +6,13 @@
  * @module OIDC
  */
 
-import { AccessToken } from "@itwin/core-bentley";
+import { AccessToken, BeEvent } from "@itwin/core-bentley";
 import { AuthorizationClient } from "@itwin/core-common";
-import { MobileHost } from "./MobileHost";
 
-/** Utility to provide and cache auth tokens from native mobile apps to IModelHost.
+/** Utility to provide and cache auth tokens from native mobile apps.
  * @internal
  */
-export class MobileAuthorizationBackend implements AuthorizationClient {
+export class MobileAuthorizationClient implements AuthorizationClient {
   private _accessToken: AccessToken = "";
   private _expirationDate: Date | undefined;
   private _expiryBuffer = 60 * 10; // ten minutes
@@ -22,6 +21,8 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
   private get _hasExpired(): boolean {
     return this._expirationDate !== undefined && this._expirationDate.getTime() - Date.now() <= this._expiryBuffer * 1000;
   }
+
+  constructor(private _getAccessToken: () => Promise<[string, string | undefined]>) { }
 
   public async getAccessToken(): Promise<AccessToken> {
     if (this._fetchingToken) {
@@ -35,7 +36,7 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
     } else {
       try {
         this._fetchingToken = true;
-        const result = await MobileHost.authGetAccessToken();
+        const result = await this._getAccessToken();
         this._accessToken = result[0];
         this._expirationDate = result[1] ? new Date(result[1]) : undefined;
         return this._accessToken;
@@ -47,8 +48,11 @@ export class MobileAuthorizationBackend implements AuthorizationClient {
     }
   }
 
+  public readonly onAccessTokenChanged = new BeEvent<(token: AccessToken) => void>();
+
   public setAccessToken(accessToken?: string, expirationDate?: string) {
     this._accessToken = accessToken ?? "";
     this._expirationDate = expirationDate ? new Date(expirationDate) : undefined;
+    this.onAccessTokenChanged.raiseEvent(this._accessToken);
   }
 }
