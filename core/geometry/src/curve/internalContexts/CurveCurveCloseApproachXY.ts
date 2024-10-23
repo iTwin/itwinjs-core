@@ -18,7 +18,8 @@ import { Range3d } from "../../geometry3d/Range";
 import {
   CurveCurveCloseApproachXYRRtoRRD, CurvePointCloseApproachXYRtoRD, Newton1dUnbounded, Newton2dUnboundedWithDerivative,
 } from "../../numerics/Newton";
-import { AnalyticRoots, SmallSystem } from "../../numerics/Polynomials";
+import { AnalyticRoots } from "../../numerics/Polynomials";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import { Arc3d } from "../Arc3d";
 import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
 import { CurveCollection } from "../CurveCollection";

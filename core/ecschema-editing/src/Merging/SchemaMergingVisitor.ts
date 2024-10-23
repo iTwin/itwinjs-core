@@ -2,14 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "../Differencing/SchemaDifference";
+import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "../Differencing/SchemaDifference";
 import { addConstant, modifyConstant } from "./ConstantMerger";
 import { addCustomAttribute } from "./CustomAttributeMerger";
 import { addCustomAttributeClass, modifyCustomAttributeClass } from "./CustomAttributeClassMerger";
 import { addClassMixins, addEntityClass, modifyEntityClass } from "./EntityClassMerger";
 import { addEnumeration, modifyEnumeration } from "./EnumerationMerger";
 import { addEnumerator, modifyEnumerator } from "./EnumeratorMerger";
-import { addKindOfQuantity, modifyKindOfQuantity } from "./KindOfQuantityMerger";
+import { addKindOfQuantity, addPresentationFormat, modifyKindOfQuantity } from "./KindOfQuantityMerger";
 import { addMixinClass, modifyMixinClass } from "./MixinMerger";
 import { addPhenomenon, modifyPhenomenon } from "./PhenomenonMerger";
 import { addPropertyCategory, modifyPropertyCategory } from "./PropertyCategoryMerger";
@@ -330,6 +330,16 @@ export class SchemaMergingVisitor implements SchemaDifferenceVisitor {
       add: addUnitSystem,
       modify: modifyUnitSystem,
     });
+  }
+
+  /**
+  * Visitor implementation for handling KindOfQuantityPresentationFormatDifference.
+  * @internal
+  */
+  public async visitKindOfQuantityPresentationFormatDifference(entry: KindOfQuantityPresentationFormatDifference): Promise<void> {
+    switch(entry.changeType) {
+      case "add": return addPresentationFormat(this._context, entry);
+    }
   }
 }
 

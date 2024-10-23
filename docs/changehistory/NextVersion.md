@@ -6,21 +6,23 @@ publish: false
 Table of contents:
 
 - [Revert timeline changes](#revert-timeline-changes)
- - [Display](#display)
-  - [Instancing](#instancing)
-   - [Overriding line color](#overriding-line-color)
-   - [Context Reality model visibility](#context-reality-model-visibility)
-   - [Contour Display](#contour-display)
+  - [Display](#display)
+    - [Instancing](#instancing)
+    - [Overriding line color](#overriding-line-color)
+    - [Context Reality model visibility](#context-reality-model-visibility)
+    - [Contour Display](#contour-display)
 - [Interactive Tools](#interactive-tools)
-   - [Element Locate](#element-locate)
- - [Presentation](#presentation)
+  - [Locating obscured elements](#locating-obscured-elements)
+  - [Snapping within section drawings](#snapping-within-section-drawings)
+- [Presentation](#presentation)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
- - [Quantity](#quantity)
- - [API deprecations](#api-deprecations)
-   - [@itwin/appui-abstract](#itwinappui-abstract)
-   - [@itwin/core-backend](#itwincore-backend)
-   - [@itwin/core-frontend](#itwincore-frontend)
-   - [@itwin/core-quantity](#itwincore-quantity)
+- [Quantity](#quantity)
+- [Electron 33 support](#electron-33-support)
+- [API deprecations](#api-deprecations)
+  - [@itwin/appui-abstract](#itwinappui-abstract)
+  - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-frontend](#itwincore-frontend)
+  - [@itwin/core-quantity](#itwincore-quantity)
 
 ## Revert timeline changes
 
@@ -98,11 +100,15 @@ Here is a sample screenshot of applying some contour display settings to a terra
 
 ## Interactive Tools
 
-### Element Locate
+### Locating obscured elements
 
 After calling [ElementLocateManager.doLocate]($frontend), Reset may now be used to accept some elements that were obscured by another element. Previously Reset would only choose between visible elements within the locate aperture.
 
 ![locate example](./element-locate.png "Example of using reset to accept obscured element")
+
+### Snapping within section drawings
+
+A [SectionDrawing]($backend) view renders the contents of a [SpatialViewDefinition]($backend) in the context of a [DrawingViewDefinition]($backend). Tools that operate on the drawing view may want to be able to snap to geometry within the "attached" spatial view. For example, you may wish to attach an annotation to a spatial element. [AccuSnap]($frontend) [now automatically snaps](https://github.com/iTwin/itwinjs-core/pull/7267) to the geometry based on the current snap settings when mousing over geometry within the section drawing attachment. Application developers can access information about the attached view via [HitDetail.viewAttachment]($frontend) and [Pixel.Data]($frontend), just as they can when locating elements within [ViewAttachment]($backend)s on [Sheet]($backend)s.
 
 ## Presentation
 
@@ -136,6 +142,10 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 
 - Change azimuth and bearing logic from working with east-based counterclockwise persisted values to working with north-based clockwise values.
 - The previous applies to azimuthBase as well, if provided.
+
+## Electron 33 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 33](https://www.electronjs.org/blog/electron-33-0).
 
 ## API deprecations
 
