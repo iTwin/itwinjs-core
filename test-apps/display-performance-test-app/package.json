@@ -71,7 +71,7 @@
     "chrome-launcher": "^0.15.2",
     "cross-env": "^5.1.4",
     "cpx2": "^3.0.0",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
     "electron": "^33.0.0",
     "eslint": "^8.56.0",

@@ -33,7 +33,7 @@ importers:
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
-      dotenv: ^10.0.0
+      dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       eslint: ^8.56.0
       form-data: ^2.5.1
@@ -95,7 +95,7 @@ importers:
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
-      dotenv: 10.0.0
+      dotenv: 16.4.5
       dotenv-expand: 5.1.0
       eslint: 8.56.0
       internal-tools: link:../../tools/internal
@@ -841,7 +841,7 @@ importers:
       '@types/ws': ^7.0.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
-      dotenv: ^10.0.0
+      dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       eslint: ^8.56.0
       lodash: ^4.17.21
@@ -870,7 +870,7 @@ importers:
       '@types/ws': 7.2.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
-      dotenv: 10.0.0
+      dotenv: 16.4.5
       dotenv-expand: 5.1.0
       eslint: 8.56.0
       mocha: 10.2.0
@@ -1588,7 +1588,7 @@ importers:
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
-      dotenv: ^10.0.0
+      dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       eslint: ^8.56.0
       fs-extra: ^8.1.0
@@ -1633,7 +1633,7 @@ importers:
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
-      dotenv: 10.0.0
+      dotenv: 16.4.5
       dotenv-expand: 5.1.0
       eslint: 8.56.0
       fs-extra: 8.1.0
@@ -1701,7 +1701,7 @@ importers:
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       crypto-browserify: 3.12.0
-      dotenv: ^10.0.0
+      dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       electron: ^33.0.0
       eslint: ^8.56.0
@@ -1775,7 +1775,7 @@ importers:
       babel-plugin-istanbul: 6.1.1
       browserify-zlib: 0.2.0
       crypto-browserify: 3.12.0
-      dotenv: 10.0.0
+      dotenv: 16.4.5
       dotenv-expand: 5.1.0
       eslint: 8.56.0
       glob: 10.3.12
@@ -1827,7 +1827,7 @@ importers:
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
-      dotenv: ^10.0.0
+      dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       eslint: ^8.56.0
       glob: ^10.3.12
@@ -1863,7 +1863,7 @@ importers:
       '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
-      dotenv: 10.0.0
+      dotenv: 16.4.5
       dotenv-expand: 5.1.0
       mocha: 10.2.0
       openid-client: 4.7.4
@@ -1929,7 +1929,7 @@ importers:
       cpx2: ^3.0.0
       cross-env: ^5.1.4
       deep-equal: ^1
-      dotenv: ^10.0.0
+      dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       eslint: ^8.56.0
       eslint-config-prettier: ^9.1.0
@@ -1995,7 +1995,7 @@ importers:
       '@itwin/eslint-plugin': 4.0.2_x57przdx46ek5cbaxnkejbbcoe
       cache-require-paths: 0.3.0
       cross-env: 5.1.4
-      dotenv: 10.0.0
+      dotenv: 16.4.5
       dotenv-expand: 5.1.0
       eslint: 8.56.0
       eslint-config-prettier: 9.1.0_eslint@8.56.0
@@ -2110,7 +2110,7 @@ importers:
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
-      dotenv: ^10.0.0
+      dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       eslint: ^8.56.0
       glob: ^10.3.12
@@ -2145,7 +2145,7 @@ importers:
       '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
-      dotenv: 10.0.0
+      dotenv: 16.4.5
       dotenv-expand: 5.1.0
       mocha: 10.2.0
       openid-client: 4.7.4
@@ -2471,7 +2471,7 @@ importers:
       chrome-launcher: ^0.15.2
       cpx2: ^3.0.0
       cross-env: ^5.1.4
-      dotenv: ^10.0.0
+      dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       electron: ^33.0.0
       eslint: ^8.56.0
@@ -2525,7 +2525,7 @@ importers:
       chrome-launcher: 0.15.2
       cpx2: 3.0.0
       cross-env: 5.1.4
-      dotenv: 10.0.0
+      dotenv: 16.4.5
       dotenv-expand: 5.1.0
       electron: 33.0.0
       eslint: 8.56.0
@@ -2584,13 +2584,14 @@ importers:
       '@types/express': ^4.17.20
       '@types/express-ws': ^3.0.3
       '@types/fs-extra': ^4.0.7
+      '@types/node': ~18.16.20
       '@typescript-eslint/parser': ~6.21.0
       body-parser: ^1.20.3
       browserslist-to-esbuild: ^1.2.0
       child_process: ^1.0.2
       cpx2: ^3.0.0
       cross-env: ^5.1.4
-      dotenv: ^10.0.0
+      dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       electron: ^33.0.0
       eslint: ^8.56.0
@@ -2655,12 +2656,13 @@ importers:
       '@types/express': 4.17.20
       '@types/express-ws': 3.0.3
       '@types/fs-extra': 4.0.7
+      '@types/node': 18.16.20
       '@typescript-eslint/parser': 6.21.0_x57przdx46ek5cbaxnkejbbcoe
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
       cpx2: 3.0.0
       cross-env: 5.1.4
-      dotenv: 10.0.0
+      dotenv: 16.4.5
       dotenv-expand: 5.1.0
       electron: 33.0.0
       eslint: 8.56.0
@@ -2678,9 +2680,9 @@ importers:
       rollup-plugin-ignore: 1.0.10
       rollup-plugin-visualizer: 5.9.2
       rollup-plugin-webpack-stats: 0.2.0
-      ts-node: 10.8.2_typescript@5.6.2
+      ts-node: 10.8.2_vwt7mu2ekz6vrzgxg2zjmlav44
       typescript: 5.6.2
-      vite: 5.4.6
+      vite: 5.4.6_@types+node@18.16.20
       vite-plugin-env-compatible: 2.0.1
       vite-plugin-inspect: 0.8.4_vite@5.4.6
       webpack: 5.76.0
@@ -7719,6 +7721,10 @@ packages:
   /dotenv/10.0.0:
     resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
     engines: {node: '>=10'}
+
+  /dotenv/16.4.5:
+    resolution: {integrity: sha512-ZmdL2rui+eB2YwhsWzjInR8LldtZHGDoQ1ugH85ppHKwpUHL7j7rN0Ti9NCnGiQbhaZ11FpR+7ao1dNsmduNUg==}
+    engines: {node: '>=12'}
 
   /dotenv/8.2.0:
     resolution: {integrity: sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==}
@@ -13254,38 +13260,6 @@ packages:
       typescript: '>=4.2.0'
     dependencies:
       typescript: 5.6.2
-
-  /ts-node/10.8.2_typescript@5.6.2:
-    resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}
-    hasBin: true
-    peerDependencies:
-      '@swc/core': '>=1.2.50'
-      '@swc/wasm': '>=1.2.50'
-      '@types/node': '*'
-      typescript: '>=2.7'
-    peerDependenciesMeta:
-      '@swc/core':
-        optional: true
-      '@swc/wasm':
-        optional: true
-      '@types/node':
-        optional: true
-    dependencies:
-      '@cspotcode/source-map-support': 0.8.1
-      '@tsconfig/node10': 1.0.11
-      '@tsconfig/node12': 1.0.11
-      '@tsconfig/node14': 1.0.3
-      '@tsconfig/node16': 1.0.4
-      acorn: 8.12.1
-      acorn-walk: 8.3.3
-      arg: 4.1.3
-      create-require: 1.1.1
-      diff: 4.0.2
-      make-error: 1.3.6
-      typescript: 5.6.2
-      v8-compile-cache-lib: 3.0.1
-      yn: 3.1.1
-    dev: true
 
   /ts-node/10.8.2_vwt7mu2ekz6vrzgxg2zjmlav44:
     resolution: {integrity: sha512-LYdGnoGddf1D6v8REPtIH+5iq/gTDuZqv2/UJUU7tKjuEU8xVZorBM+buCGNjj+pGEud+sOoM4CX3/YzINpENA==}

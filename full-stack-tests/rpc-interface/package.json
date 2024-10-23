@@ -51,7 +51,7 @@
     "@itwin/service-authorization": "^1.0.0",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
     "mocha": "^10.2.0",
     "openid-client": "^4.7.4"
