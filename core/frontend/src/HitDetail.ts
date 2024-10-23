@@ -106,25 +106,44 @@ export enum HitDetailType {
   Intersection = 3,
 }
 
-/** Describes the [ViewAttachment]($backend), if any, from which the hit represented by a [[HitDetail]] originated.
- * @note Only [[SheetViewState]]s contain view attachments.
+/** As part of a [[HitPath]], describes the [ViewAttachment]($backend), if any, from which the hit represented by a [[HitDetail]] originated.
  * @beta
  */
 export interface ViewAttachmentHitInfo {
   /** The element Id of the [ViewAttachment]($backend) from which the hit originated. */
   readonly id: Id64String;
   /** The viewport that renders the contents of the attached view into the [[ScreenViewport]].
+   * @note Do not alter the state of this viewport.
    * @alpha
    */
   readonly viewport: Viewport;
 }
 
-/** ###TODO
+/** As part of a [[HitPath]], describes the [SectionDrawing]($backend), if any, from which the hit represented by a [[HitDetail]] originated.
+ * @beta
+ */
+export interface SectionDrawingAttachmentHitInfo {
+  /** The viewport that renders the contents of the attached view into the [[ScreenViewport]].
+   * @note Do not alter the state of this viewport.
+   * @alpha
+   */
+  readonly viewport: Viewport;
+}
+
+/** As part of a [[HitDetail]], describes a series of "attached" views through which the hit was located.
+ * Typically, the contents of a view are rendered directly to the screen via [[HitDetail.viewport]].
+ * However, in some contexts one view might be "attached" to the viewport's view via a [ViewAttachment]($backend), [SectionDrawing]($backend), or both.
+ * HitPath captures this information in one of the following possible ways:
+ * 1. A [[SheetViewState]] renders another view through a [ViewAttachment]($backend), in which case [[viewAttachment]] will be defined.
+ * 2. A [[DrawingViewState]] renders a [[SpatialViewState]] through a [SectionDrawing]($backend) attachment, in which case [[sectionDrawingAttachment]] will be defined; or
+ * 3. A combination of 1 and 2 where a [ViewAttachment]($backend) on a sheet renders a [SectionDrawing]($backend) with an attached [[SpatialViewState]], in which both [viewAttachment]] and [[sectionDrawingAttachment]] will be defined.
  * @beta
  */
 export interface HitPath {
+  /** Details about the [ViewAttachment]($backend) through which the hit was obtained. */
   viewAttachment?: ViewAttachmentHitInfo;
-  sectionDrawingAttachment?: { viewport: Viewport };
+  /** Details about the [SectionDrawing]($backend) attachment through which the hit was obtained. */
+  sectionDrawingAttachment?: SectionDrawingAttachmentHitInfo;
 };
 
 /** Arguments supplied to the [[HitDetail]] constructor.
@@ -167,7 +186,7 @@ export interface HitDetailProps {
    * @alpha
    */
   readonly isClassifier?: boolean;
-  /** ###TODO
+  /** Describes the path by which the hit was located through a series of attached views.
    * @beta
    */
   readonly path?: HitPath;
@@ -222,7 +241,7 @@ export class HitDetail {
    * @beta
    */
   public get viewAttachment(): ViewAttachmentHitInfo | undefined { return this._props.path?.viewAttachment; }
-  /** ###TODO
+  /** Describes the path by which the hit was located through a series of attached views.
    * @beta
    */
   public get path(): HitPath | undefined { return this._props.path; }

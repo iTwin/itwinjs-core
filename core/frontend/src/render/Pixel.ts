@@ -42,7 +42,7 @@ export namespace Pixel {
      * @beta
      */
     public readonly viewAttachmentId?: Id64String;
-    /** ###TODO
+    /** True if the pixel originated from a [[SpatialViewState]] attached via a [SectionDrawing]($backend).
      * @beta
      */
     public readonly inSectionDrawingAttachment: boolean;
@@ -191,7 +191,7 @@ export namespace Pixel {
      * @alpha
      */
     isClassifier?: boolean;
-    /** ###TODO
+    /** Path through which the hit was located.
      * @beta
      */
      path?: HitPath;

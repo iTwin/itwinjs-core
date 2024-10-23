@@ -510,9 +510,7 @@ export class DrawingViewState extends ViewState2d {
     return attach?.viewport;
   }
 
-  /** ###TODO
-   * @beta
-   */
+  /** @beta */
   public override computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
     // ###TODO we're currently ignoring model and element Id in args, assuming irrelevant for drawings.
     // Should probably call super or have super call us.

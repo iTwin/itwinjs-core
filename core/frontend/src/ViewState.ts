@@ -93,7 +93,7 @@ export interface ComputeDisplayTransformArgs {
    * @beta
    */
   viewAttachmentId?: Id64String;
-  /** ###TODO
+  /** True if the element or model was drawn through a [[SpatialViewState]] attached to a [SectionDrawing]($backend).
    * @beta
    */
   inSectionDrawingAttachment?: boolean;
@@ -1286,6 +1286,8 @@ export abstract class ViewState extends ElementState {
    *  - [PlanProjectionSettings.elevation]($common) applied to plan projection models by [DisplayStyle3dSettings.planProjectionSettings]($common);
    *  - A per-model transform supplied by this view's [[modelDisplayTransformProvider]]; and/or
    *  - A transform applied to an element by an [RenderSchedule.ElementTimeline]($common) defined by this view's [[scheduleScript]].
+   *  - A transform from the coordinate space of a [ViewAttachment]($backend)'s view to that of the [[SheetViewState]] in which it is displayed.
+   *  - A transform from the coordinate space of a [[SpatialViewState]] to that of the [[DrawingViewState]] in which it is displayed, where the spatial view is attached via a [SectionDrawing]($backend).
    * @param args A description of how to compute the transform.
    * @returns The computed transform, or `undefined` if no display transform is to be applied.
    * @beta
