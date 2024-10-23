@@ -84,6 +84,7 @@ export interface BatchContext {
   iModel?: IModelConnection;
   transformFromIModel?: Transform;
   viewAttachmentId?: Id64String;
+  inSectionDrawingAttachment?: boolean;
 }
 
 /** @internal exported strictly for tests. */
@@ -253,12 +254,14 @@ export class Batch extends Graphic {
   public get batchIModel() { return this._context.iModel; }
   public get transformFromBatchIModel() { return this._context.transformFromIModel; }
   public get viewAttachmentId() { return this._context.viewAttachmentId; }
+  public get inSectionDrawingAttachment() { return this._context.inSectionDrawingAttachment; }
 
   public setContext(batchId: number, branch: BranchState) {
     this._context.batchId = batchId;
     this._context.iModel = branch.iModel;
     this._context.transformFromIModel = branch.transformFromIModel;
     this._context.viewAttachmentId = branch.viewAttachmentId;
+    this._context.inSectionDrawingAttachment = branch.inSectionDrawingAttachment;
   }
 
   public resetContext() {
@@ -266,6 +269,7 @@ export class Batch extends Graphic {
     this._context.iModel = undefined;
     this._context.transformFromIModel = undefined;
     this._context.viewAttachmentId = undefined;
+    this._context.inSectionDrawingAttachment = undefined;
   }
 
   public constructor(graphic: RenderGraphic, features: RenderFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
@@ -342,6 +346,7 @@ export class Branch extends Graphic {
   public readonly appearanceProvider?: FeatureAppearanceProvider;
   public readonly secondaryClassifiers?: PlanarClassifier[];
   public readonly viewAttachmentId?: Id64String;
+  public readonly inSectionDrawingAttachment?: boolean;
   public disableClipStyle?: true;
   public readonly transformFromExternalIModel?: Transform;
 
@@ -361,6 +366,7 @@ export class Branch extends Graphic {
     this.iModel = opts.iModel;
     this.frustum = opts.frustum;
     this.viewAttachmentId = opts.viewAttachmentId;
+    this.inSectionDrawingAttachment = opts.inSectionDrawingAttachment;
     this.disableClipStyle = opts.disableClipStyle;
     this.transformFromExternalIModel = opts.transformFromIModel;
 
