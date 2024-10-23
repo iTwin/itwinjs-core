@@ -13,7 +13,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/core/ecsql-common/file.json --tsIndexFile=./ecsql-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=ecsql-common",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "cover": "nyc npm -s test"
   },

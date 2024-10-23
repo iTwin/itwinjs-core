@@ -9,7 +9,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json coverage",
     "cover": "npm -s test",
     "docs": "",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "npm run -s test:chrome && npm run -s test:electron && npm run -s test:chrome-websocket",
     "test:chrome": "certa -r chrome -b ./lib/backend/http.js",
     "test:chrome-websocket": "certa -r chrome -b ./lib/backend/websocket.js",

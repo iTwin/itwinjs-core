@@ -20,7 +20,7 @@
     "test": "",
     "extract-api": "betools extract-api --entry=core-telemetry",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/telemetry/file.json --tsIndexFile=core-telemetry.ts --onlyJson",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2"
+    "lint": "eslint \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [
     "Bentley",

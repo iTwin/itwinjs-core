@@ -13,7 +13,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/editor-common/file.json --tsIndexFile=./editor-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=editor-common",
-    "lint": "eslint -f visualstudio --max-warnings 0 ./src/**/*.ts 1>&2",
+    "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
     "test": "",
     "cover": ""
   },

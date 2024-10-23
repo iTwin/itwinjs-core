@@ -17,7 +17,7 @@
     "copy:config": "internal-tools copy-config",
     "cover": "",
     "docs": "",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "optest": "certa -r chrome --fgrep \"Operational: \"",
     "start:backend": "node ./lib/test/backend.js",
     "test": "",

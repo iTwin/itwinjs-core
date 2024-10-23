@@ -20,7 +20,7 @@
     "test": "vitest --run",
     "docs": "betools docs --json=../../generated-docs/core/core-bentley/file.json --tsIndexFile=core-bentley.ts --onlyJson",
     "cover": "vitest --run --coverage",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [

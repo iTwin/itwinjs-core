@@ -18,7 +18,7 @@
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "cover": "nyc npm -s test",
     "extract-api": "betools extract-api --entry=core-backend",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "ios:webpack:tests": "TESTS_GLOB=./lib/**/*.test.js webpack --config ../../tools/internal/ios/ios.webpack.config.js",

@@ -17,7 +17,7 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json .nyc_output",
     "extract-api": "betools extract-api --entry=core-quantity",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-quantity/file.json --tsIndexFile=./core-quantity.ts --onlyJson",
     "cover": "nyc npm -s test",

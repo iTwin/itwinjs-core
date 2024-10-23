@@ -33,7 +33,7 @@
     "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-backend/file.json --tsIndexFile=presentation-backend.ts --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-backend",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha --config ../.mocharc.json --file ./lib/cjs/test/index.test.js \"./lib/cjs/test/**/*.test.js\"",
     "test:watch": "npm -s test -- --reporter min --watch-extensions ts --watch",
     "prettier:fix": "prettier --write ."

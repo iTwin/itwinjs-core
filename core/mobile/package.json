@@ -12,7 +12,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-mobile/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
     "extract-api": "betools extract-api --entry=__DOC_ONLY__",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "",
     "cover": ""
   },

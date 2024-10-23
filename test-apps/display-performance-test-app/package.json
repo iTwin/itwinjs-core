@@ -19,7 +19,7 @@
     "build:frontend-vite": "cross-env NODE_OPTIONS=--max_old_space_size=8192 vite build",
     "clean": "rimraf .static-assets lib .rush/temp/package-deps*.json",
     "docs": "",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "mobile": "tsc 1>&2 && webpack --config mobile.backend.webpack.config.js 1>&2 && webpack --config mobile.frontend.webpack.config.js 1>&2 && cpx \"public/**/*\" ./lib/mobile/public && cpx \"assets/**/*\" ./lib/mobile/assets ",
     "start": "cross-env NODE_ENV=development run-p start:webserver start:electron",
     "start:webserver": "vite",

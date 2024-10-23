@@ -18,7 +18,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema2ts",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "docs": "",
     "test": "mocha",
     "cli:dev": "npm run -s clean & npm run -s build & npm link",
