@@ -28,7 +28,7 @@ export type RemoveFunction = () => void;
 /**
  * Payload of an IpcInvoke response. The presence of `error` indicates that the backend threw an exception and the
  * frontend will re-throw a [BackendError]$(frontend) with the `errorNumber` and `message` values.
- * The presence of errorConstructorName indicates that the backend threw an exception and the frontend will re-throw the same error class.
+ * The presence of iTwinError indicates that the backend threw an exception of type [[ITwinError]] and the frontend will re-throw that same error.
  * Otherwise the `result` member holds the response.
  * @internal */
 export type IpcInvokeReturn = { result: any, error?: never, iTwinError?: never } | { result?: never, iTwinError?: never, error: { name: string, message: string, errorNumber: number, stack?: string } } |
