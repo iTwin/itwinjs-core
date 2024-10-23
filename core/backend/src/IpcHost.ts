@@ -9,8 +9,9 @@
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "@itwin/core-bentley";
 import {
-  ChangesetIndex, ChangesetIndexAndId, ConflictingLocksError, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
+  ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
+  ITwinError,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
@@ -168,28 +169,34 @@ export abstract class IpcHandler {
 
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
-        // Returning the ConflictingLocksError class results in information loss due to the way IPC handles error objects, so we get around this by reconstructing on the frontend using the provided
-        // constructorName and args.
-        if (err instanceof ConflictingLocksError) {
-          const ret: IpcInvokeReturn = {
-            errorConstructorName: err.constructor.name,
-            argsForErrorConstructor: [err.message, err.getMetaData(), err.conflictingLocks],
-          };
-          if (!IpcHost.noStack)
-            ret.stack = BentleyError.getErrorStack(err);
-          return ret;
-        } else {
-          const ret: IpcInvokeReturn = {
-            error: {
-              name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
-              message: err.message ?? BentleyError.getErrorMessage(err),
-              errorNumber: err.errorNumber ?? 0,
+        let ret: IpcInvokeReturn;
+        if (ITwinError.isITwinError(err)) {
+          // TODO: Should metadata be left out? It is left out in the original error implementation..
+          const { namespace, errorKey, message, stack, metadata, ...rest } = err;
+          ret = {
+            iTwinError:
+            {
+              namespace,
+              errorKey,
+              message,
+              ...rest,
             },
           };
           if (!IpcHost.noStack)
+            ret.iTwinError.stack = stack;
+        } else {
+          ret = {
+            error:
+              {
+                name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
+                message: err.message ?? BentleyError.getErrorMessage(err),
+                errorNumber: err.errorNumber ?? 0,
+              },
+          };
+          if (!IpcHost.noStack)
             ret.error.stack = BentleyError.getErrorStack(err);
-          return ret;
         }
+        return ret;
       }
     });
   }

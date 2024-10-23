@@ -48,7 +48,7 @@ export enum LockState {
 
 /** Detailed information about a particular object Lock that is causing the Lock update conflict.
  * An example of a lock update conflict would be attempting to use [LockControl.acquireLocks]($backend) on an object that is already locked by another Briefcase.
- * @public
+ * @public @deprecated in 4.10 Use [InUseLock]($common) instead.
 */
 export interface ConflictingLock {
   /** Id of the object that is causing conflict. */
@@ -65,7 +65,7 @@ export interface ConflictingLock {
 /**
  * An error raised when there is a lock conflict detected.
  * Typically this error would be thrown by [LockControl.acquireLocks]($backend) when you are requesting a lock on an element that is already held by another briefcase.
- * @public
+ * @public @deprecated in 4.10 Use [InUseLocksError]($common) instead.
 */
 export class ConflictingLocksError extends IModelError {
   public conflictingLocks?: ConflictingLock[];
@@ -75,16 +75,6 @@ export class ConflictingLocksError extends IModelError {
   }
 
 }
-
-/**
- * A mapping of the error class name to the actual constructor.
- * This is used to reconstruct more complex error objects on the frontend during IPC calls.
- * @beta
- */
-export const nameOfErrorClassToConstructor: { [key: string]: new (...args: any[]) => any } = {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  ConflictingLocksError,
-};
 
 /** @public */
 export class ServerError extends IModelError {

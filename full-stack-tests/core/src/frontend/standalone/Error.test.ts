@@ -2,7 +2,7 @@ import { LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { coreFullStackTestIpc } from "../Editing";
-import { ConflictingLock, ConflictingLocksError, LockState } from "@itwin/core-common";
+import { InUseLock, ITwinError, LockState } from "@itwin/core-common";
 import { expect } from "chai";
 
 if (ProcessDetector.isElectronAppFrontend) {
@@ -19,21 +19,33 @@ if (ProcessDetector.isElectronAppFrontend) {
     });
 
     it("should receive ConflictingLocksError on the frontend", async () => {
-      const message = "test";
-      const conflictingLocks: ConflictingLock[] = [{ briefcaseIds: [1], objectId: "objectId", state: LockState.Exclusive }];
+      const message = "One or more objects are already locked by another briefcase";
+      const inUseLocks: InUseLock[] = [{ briefcaseIds: [1], objectId: "objectId", state: LockState.Exclusive }];
       const metadata: LoggingMetaData = { category: "test", severity: "error" };
+      let caughtError = false;
       try {
-        await coreFullStackTestIpc.throwConflictingLocksError(message, metadata, conflictingLocks);
+        await coreFullStackTestIpc.throwInUseLocksError(inUseLocks, message, metadata);
       } catch (err) {
-        expect(err instanceof ConflictingLocksError).to.be.true;
-        const castedError = err as ConflictingLocksError;
-        // Even though we're on the frontend we should make sure our stack trace includes backend code.
-        expect(castedError.stack?.includes("core\\backend")).to.be.true;
-        expect(castedError.message).to.equal(message);
-        expect(castedError.conflictingLocks).to.deep.equal(conflictingLocks);
-        expect(castedError.getMetaData()).to.deep.equal(metadata);
+        caughtError = true;
+        expect(ITwinError.isInUseLocksError(err)).to.be.true;
+        if (ITwinError.isInUseLocksError(err)) {
+          // Even though we're on the frontend we should make sure our stack trace includes backend code.
+          expect(err.stack?.includes("core\\backend")).to.be.true;
+          console.log(err.stack);
+          expect(err.message).to.equal(message);
+          expect(err.inUseLocks).to.deep.equal(inUseLocks);
+          expect(ITwinError.getMetaData(err)).to.be.undefined; // Currently not propagating metadata.
+        }
       }
+      expect(caughtError).to.be.true;
     });
+
+    // it("should throw error on frontend", async () => {
+    //   const message = "One or more objects are already locked by another briefcase";
+    //   const inUseLocks: InUseLock[] = [{ briefcaseIds: [1], objectId: "objectId", state: LockState.Exclusive }];
+    //   const metadata: LoggingMetaData = { category: "test", severity: "error" };
+    //   await coreFullStackTestIpc.throwInUseLocksError(inUseLocks, message, metadata);
+    // });
   });
 
 }

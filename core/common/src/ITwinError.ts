@@ -1,20 +1,47 @@
-import { LoggingMetaData } from "@itwin/core-bentley";
+import { BentleyError, LoggingMetaData } from "@itwin/core-bentley";
+import { LockState } from "./IModelError";
 
-interface InUseLock {
+/**
+ * Detailed information about a particular object Lock that is causing the Lock update conflict.
+ * An example of a lock update conflict would be attempting to use [LockControl.acquireLocks]($backend) on an object that is already locked by another Briefcase.
+ * @beta
+ */
+export interface InUseLock {
+/** Id of the object that is causing conflict. */
   objectId: string;
-  state: string;
+  /**
+   * The level of conflicting lock. Possible values are {@link LockState.Shared}, {@link LockState.Exclusive}.
+   * See {@link LockState}.
+   */
+  state: LockState;
+  /** An array of Briefcase ids that hold this lock. */
   briefcaseIds: number[];
 }
 
+/**
+ * An interface used to describe an error. This error interface should be extended when needing to throw errors with extra properties defined on them. See [[InUseLocksError]] for an example.
+ * Also see [[ITwinError.throwInUseLocksError]] and [[ITwinError.isInUseLocksError]] for examples of how to throw and check that an error is of type InUseLocksError.
+ * @beta
+ */
 export interface ITwinError {
-  namespace: string;   // Localization namespace
-  errorKey: string; // unique key for error, within namespace
-  message: string; // explanation of what went wrong.
+  /** namespace for the error */
+  namespace: string;
+  /** unique key for error, within namespace */
+  errorKey: string;
+  /** explanation of what went wrong. */
+  message: string;
+  /** stack trace of the error. */
   stack?: string;
+  /** metadata about the exception. */
   metadata?: LoggingMetaData;
 }
 
-interface LockError extends ITwinError {
+/**
+ * An error raised when there is a lock conflict detected.
+ * Typically this error would be thrown by [LockControl.acquireLocks]($backend) when you are requesting a lock on an element that is already held by another briefcase.
+ * @beta
+*/
+export interface InUseLocksError extends ITwinError {
   namespace: "IModelAccess";
   errorKey: "InUseLocks";
   inUseLocks: InUseLock[];
@@ -26,31 +53,40 @@ interface OtherError extends ITwinError {
   description: string;
 }
 
+/**
+ * Functions for throwing ITwinErrors and checking that objects are of a specific ITwinError type.
+ * @beta
+ */
 export namespace ITwinError {
   export function isITwinError(error: unknown): error is ITwinError {
     return error !== undefined && error !== null && typeof error === "object" && "namespace" in error && "errorKey" in error && "message" in error;
   }
-  export function isLockError(error: unknown): error is LockError {
+
+  export function isInUseLocksError(error: unknown): error is InUseLocksError {
     return isITwinError(error) && error.namespace === "IModelAccess" && error.errorKey === "InUseLocks";
   }
 
-  export function throwLockError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never {
-    const lockError: LockError = {
+  export function isOtherError(error: unknown): error is OtherError {
+    return isITwinError(error) && error.namespace === "TestNamespace2" && error.errorKey === "OtherError";
+  }
+
+  /** get the meta data associated with this ITwinError, if any. */
+  export function getMetaData(err: ITwinError): object | undefined {
+    return BentleyError.getMetaData(err.metadata);
+  }
+
+  export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never {
+    const errorObject = new Error();
+    errorObject.name = "InUseLocksError"; // optional but makes it so that when the error is thrown and not caught we see InUseLocksError: 'message' instead of Error: 'message'
+    Error.captureStackTrace(errorObject, throwInUseLocksError); // optional: whether we want to hide throwInUseLocksError or not from the stack. not super important
+    const lockError: InUseLocksError = {
       namespace: "IModelAccess",
       errorKey: "InUseLocks",
-      message: message ?? "This iModel is in use",
-      stack: new Error().stack,
+      message: message ?? "One or more objects are already locked by another briefcase.", // TODO: Should we allow for a custom message to be thrown? Might be unnecessary
       metadata,
       inUseLocks,
     };
-    throw lockError;
+    Object.assign(errorObject, lockError);
+    throw errorObject;
   }
 };
-
-try {
-  ITwinError.throwLockError([{objectId: "0x1", state: "Shared", briefcaseIds: [1,2,3]}]);
-} catch (err) {
-  if (ITwinError.isLockError(err)) {
-    console.log(err.inUseLocks);
-  }
-}
