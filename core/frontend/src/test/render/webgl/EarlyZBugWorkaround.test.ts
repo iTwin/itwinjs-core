@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, describe, expect, it } from "vitest";
 import { Capabilities } from "@itwin/webgl-compatibility";
 import { RenderSystem } from "../../../render/RenderSystem";
 import { IModelApp } from "../../../IModelApp";
@@ -38,7 +38,7 @@ function containsWorkaround(program: ShaderProgram): boolean {
 }
 
 describe("Early Z driver bug workaround", () => {
-  after(async () => {
+  afterAll(async () => {
     await IModelApp.shutdown();
   });
 
@@ -48,27 +48,27 @@ describe("Early Z driver bug workaround", () => {
     const indicesOfShadersLackingDiscard: number[] = [];
     let index = 0;
     TestSystem.instance.techniques.forEachVariedProgram((program: ShaderProgram) => {
-      expect(containsWorkaround(program)).to.be.false;
+      expect(containsWorkaround(program)).toBe(false);
       if (!containsDiscardStatement(program))
         indicesOfShadersLackingDiscard.push(index);
 
       ++index;
     });
 
-    expect(indicesOfShadersLackingDiscard.length === 0).to.be.false;
+    expect(indicesOfShadersLackingDiscard.length).not.toEqual(0);
 
     // Now simulate the bug and confirm (1) workaround applied *only* to shaders that require it and (2) those shaders compile cleanly.
     await IModelApp.shutdown();
     await TestSystem.startIModelApp(true);
     index = 0;
     TestSystem.instance.techniques.forEachVariedProgram((program: ShaderProgram) => {
-      expect(containsDiscardStatement(program)).to.be.true;
+      expect(containsDiscardStatement(program)).toBe(true);
       const needsWorkaround = -1 !== indicesOfShadersLackingDiscard.indexOf(index);
-      expect(containsWorkaround(program)).to.equal(needsWorkaround);
+      expect(containsWorkaround(program)).toEqual(needsWorkaround);
       if (needsWorkaround)
-        expect(program.compile()).to.equal(CompileStatus.Success);
+        expect(program.compile()).toEqual(CompileStatus.Success);
 
       index++;
     });
-  }).timeout(95000);
+  });
 });
