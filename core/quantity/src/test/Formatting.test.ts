@@ -189,9 +189,7 @@ describe("Formatting tests:", () => {
     };
     const testFormat = new Format("test");
 
-    await testFormat.fromJSON(unitsProvider, json).catch(() => {
-      expect.fail();
-    });
+    await expect(testFormat.fromJSON(unitsProvider, json)).resolves.not.toThrow();
   });
 
   it("Bad decimal separator value", async () => {
@@ -222,9 +220,7 @@ describe("Formatting tests:", () => {
     };
     const testFormat = new Format("test");
 
-    await testFormat.fromJSON(unitsProvider, json).catch(() => {
-      expect.fail();
-    });
+    await expect(testFormat.fromJSON(unitsProvider, json)).resolves.not.toThrow();
   });
 
   it("Bad thousand separator value", async () => {
@@ -255,9 +251,7 @@ describe("Formatting tests:", () => {
     };
     const testFormat = new Format("test");
 
-    await testFormat.fromJSON(unitsProvider, json).catch(() => {
-      expect.fail();
-    });
+    await expect(testFormat.fromJSON(unitsProvider, json)).resolves.not.toThrow();
   });
 
   it("Bad uom separator value", async () => {
@@ -286,9 +280,7 @@ describe("Formatting tests:", () => {
     };
     const testFormat = new Format("test");
 
-    await testFormat.fromJSON(unitsProvider, json).catch(() => {
-      expect.fail();
-    });
+    await expect(testFormat.fromJSON(unitsProvider, json)).resolves.not.toThrow();
   });
 
   it("Bad station separator value", async () => {
@@ -321,9 +313,7 @@ describe("Formatting tests:", () => {
     };
     const testFormat = new Format("test");
 
-    await testFormat.fromJSON(unitsProvider, json).catch(() => {
-      expect.fail();
-    });
+    await expect(testFormat.fromJSON(unitsProvider, json)).resolves.not.toThrow();
   });
 
   it("Scientific type is required", async () => {
