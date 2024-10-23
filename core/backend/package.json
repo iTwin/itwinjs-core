@@ -25,7 +25,7 @@
     "ios:copy:assets": "cpx \"./src/test/assets/**/*\" ../../tools/internal/lib/ios/assets/assets && cpx \"./src/assets/**/*\" ../../tools/internal/lib/ios/assets/assets",
     "ios:build:tests": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets",
     "ios:build:core-test-runner": "cd ../../tools/internal/ios/core-test-runner && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme core-test-runner -arch x86_64 -sdk iphonesimulator -configuration Debug",
-    "ios:tests:simulator": "ts-node --skip-project runUnitTestsIosSimulator.ts",
+    "ios:tests:simulator": "node scripts/runUnitTestsIosSimulator.mjs",
     "ios:all": "npm run ios:build:tests && npm run ios:build:core-test-runner && npm run ios:tests:simulator"
   },
   "repository": {
@@ -81,20 +81,19 @@
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
     "eslint": "^8.56.0",
     "fs-extra": "^8.1.0",
     "internal-tools": "workspace:*",
     "mocha": "^10.2.0",
-    "node-simctl": "~7.2.1",
+    "node-simctl": "~7.6.1",
     "null-loader": "^4.0.1",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^17.0.2",
     "source-map-loader": "^4.0.0",
-    "ts-node": "^10.8.2",
-    "typescript": "~5.3.3",
+    "typescript": "~5.6.2",
     "webpack": "^5.76.0"
   },
   "dependencies": {

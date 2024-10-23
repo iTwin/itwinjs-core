@@ -45,7 +45,7 @@
     "@itwin/presentation-frontend": "workspace:*",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
-    "dotenv": "^10.0.0",
+    "dotenv": "^16.4.5",
     "dotenv-expand": "^5.1.0",
     "mocha": "^10.2.0",
     "openid-client": "^4.7.4"
@@ -71,7 +71,7 @@
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "stream-browserify": "^3.0.0",
-    "typescript": "~5.3.3",
+    "typescript": "~5.6.2",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.1"
   }

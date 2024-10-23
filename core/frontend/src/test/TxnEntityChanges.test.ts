@@ -100,7 +100,7 @@ describe("TxnEntityChanges", () => {
       bases = bases ?? [];
 
       expect(entry.baseClasses.length).toBeLessThanOrEqual(bases.length);
-      expect(entry.baseClasses.every((x) => bases!.includes(x.classFullName))).toBe(true);
+      expect(entry.baseClasses.every((x) => bases.includes(x.classFullName))).toBe(true);
 
       bases.push(name); // this.is(this) is always true.
 
