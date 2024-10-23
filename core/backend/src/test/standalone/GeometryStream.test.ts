@@ -179,7 +179,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const brep = ElementGeometry.toBRep(entry);
           assert.exists(brep);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toBRep(expected[i].originalEntry!);
+            const other = ElementGeometry.toBRep(expected[i].originalEntry);
             assert.exists(other);
             // NOTE: Don't compare brep type; set from entity data by backend, ignored if supplied to update...
             const transform = Transform.fromJSON(brep?.transform);
@@ -194,7 +194,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const text = ElementGeometry.toTextString(entry);
           assert.exists(text);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toTextString(expected[i].originalEntry!);
+            const other = ElementGeometry.toTextString(expected[i].originalEntry);
             assert.exists(other);
             assert.isTrue(text?.font === other?.font);
             assert.isTrue(text?.text === other?.text);
@@ -215,7 +215,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
           const image = ElementGeometry.toImageGraphic(entry);
           assert.exists(image);
           if (!isWorld && undefined !== expected[i].originalEntry) {
-            const other = ElementGeometry.toImageGraphic(expected[i].originalEntry!);
+            const other = ElementGeometry.toImageGraphic(expected[i].originalEntry);
             assert.exists(other);
             assert.isTrue(image?.textureId === other?.textureId);
             assert.isTrue(image?.hasBorder === other?.hasBorder);
@@ -241,7 +241,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
       assert.exists(part);
       if (!isWorld && undefined !== expected[i].originalEntry) {
         const otherToElement = Transform.createIdentity();
-        const other = ElementGeometry.toGeometryPart(expected[i].originalEntry!, otherToElement);
+        const other = ElementGeometry.toGeometryPart(expected[i].originalEntry, otherToElement);
         assert.exists(other);
         assert.isTrue(partToElement.isAlmostEqual(otherToElement));
       }
@@ -250,7 +250,7 @@ function validateElementInfo(info: ElementGeometryInfo, expected: ExpectedElemen
         const updated = ElementGeometry.updateGeometryParams(entry, geomParams);
         assert.isTrue(updated);
         if (!isWorld && undefined !== expected[i].geomParams)
-          assert.isTrue(geomParams.isEquivalent(expected[i].geomParams!));
+          assert.isTrue(geomParams.isEquivalent(expected[i].geomParams));
       }
     }
   });

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/perf-tools",
-  "version": "4.10.0-dev.29",
+  "version": "4.10.0-dev.31",
   "description": "Tools for collecting and reporting performance data",
   "main": "lib/cjs/index.js",
   "typings": "lib/cjs/index",
@@ -39,6 +39,6 @@
     "@types/fs-extra": "^4.0.7",
     "eslint": "^8.56.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.6.2"
   }
 }

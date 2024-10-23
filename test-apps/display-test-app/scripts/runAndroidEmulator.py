@@ -31,8 +31,8 @@ class Env:
     ''' The full path to the adb binary. '''
     adb_cmd: str
     ''' The command line to use to run adb. '''
-    script_dir = f'{os.path.dirname(os.path.abspath(__file__))}'
-    ''' The directory containing this Python script. '''
+    script_dir = f'{os.path.dirname(os.path.dirname(os.path.abspath(__file__)))}'
+    ''' The parent of the directory containing this Python script. '''
     upack_dir = f'{script_dir}/upack'
     ''' The directory into which to install upacks. '''
     sdk_dir = f'{upack_dir}/androidsdk_macos'

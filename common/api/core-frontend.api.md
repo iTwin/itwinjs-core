@@ -2147,6 +2147,7 @@ export interface ComputeChordToleranceArgs {
 // @beta
 export interface ComputeDisplayTransformArgs {
     elementId?: Id64String;
+    inSectionDrawingAttachment?: boolean;
     modelId: Id64String;
     output?: Transform;
     timePoint?: number;
@@ -2937,7 +2938,7 @@ export class DrawingViewState extends ViewState2d {
     changeViewedModel(modelId: Id64String): Promise<void>;
     // (undocumented)
     static get className(): string;
-    // @internal (undocumented)
+    // @beta (undocumented)
     computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
@@ -2949,7 +2950,7 @@ export class DrawingViewState extends ViewState2d {
     // @internal (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // @internal (undocumented)
-    getAttachmentViewport(id: Id64String): Viewport | undefined;
+    getAttachmentViewport(args: GetAttachmentViewportArgs): Viewport | undefined;
     getExtents(): Vector3d;
     getOrigin(): Point3d;
     // (undocumented)
@@ -3971,6 +3972,14 @@ export class GeoServices {
 // @internal (undocumented)
 export type GeoServicesOptions = Omit<GeoConverterOptions, "datum">;
 
+// @internal
+export interface GetAttachmentViewportArgs {
+    // (undocumented)
+    inSectionDrawingAttachment?: boolean;
+    // (undocumented)
+    viewAttachmentId?: Id64String;
+}
+
 // @public
 export function getCenteredViewRect(viewRect: ViewRect, aspectRatio?: number): ViewRect;
 
@@ -4572,6 +4581,8 @@ export interface GraphicBranchOptions {
     frustum?: GraphicBranchFrustum;
     hline?: HiddenLine.Settings;
     iModel?: IModelConnection;
+    // @internal (undocumented)
+    inSectionDrawingAttachment?: boolean;
     // @internal
     secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
     transformFromIModel?: Transform;
@@ -4897,6 +4908,8 @@ export class HitDetail {
     get isModelHit(): boolean;
     isSameHit(otherHit?: HitDetail): boolean;
     get modelId(): string | undefined;
+    // @beta
+    get path(): HitPath | undefined;
     get priority(): HitPriority;
     get sourceId(): Id64String;
     // @internal
@@ -4922,6 +4935,8 @@ export interface HitDetailProps {
     // @alpha
     readonly isClassifier?: boolean;
     readonly modelId?: string;
+    // @beta
+    readonly path?: HitPath;
     readonly priority: HitPriority;
     readonly sourceId: Id64String;
     // @internal
@@ -4932,8 +4947,6 @@ export interface HitDetailProps {
     readonly tileId?: string;
     // @internal (undocumented)
     readonly transformFromSourceIModel?: Transform;
-    // @beta
-    readonly viewAttachment?: ViewAttachmentHitInfo;
     readonly viewport: ScreenViewport;
 }
 
@@ -5013,6 +5026,12 @@ export enum HitParentGeomType {
     Text = 5,
     // (undocumented)
     Wire = 1
+}
+
+// @beta
+export interface HitPath {
+    sectionDrawingAttachment?: SectionDrawingAttachmentHitInfo;
+    viewAttachment?: ViewAttachmentHitInfo;
 }
 
 // @public (undocumented)
@@ -8026,11 +8045,11 @@ export class NotificationManager implements MessagePresenter {
 
 // @public
 export class NotifyMessageDetails {
-    constructor(priority: OutputMessagePriority, briefMessage: HTMLElement | string, detailedMessage?: string | HTMLElement | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
+    constructor(priority: OutputMessagePriority, briefMessage: HTMLElement | string, detailedMessage?: (HTMLElement | string) | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
     // (undocumented)
     briefMessage: HTMLElement | string;
     // (undocumented)
-    detailedMessage?: string | HTMLElement | undefined;
+    detailedMessage?: (HTMLElement | string) | undefined;
     // (undocumented)
     displayPoint?: Point2d;
     // (undocumented)
@@ -8574,6 +8593,7 @@ export namespace Pixel {
             iModel?: IModelConnection;
             tileId?: string;
             viewAttachmentId?: string;
+            inSectionDrawingAttachment?: boolean;
             transformFromIModel?: Transform;
         });
         // @internal (undocumented)
@@ -8584,6 +8604,8 @@ export namespace Pixel {
         readonly feature?: Feature;
         get geometryClass(): GeometryClass | undefined;
         readonly iModel?: IModelConnection;
+        // @beta
+        readonly inSectionDrawingAttachment: boolean;
         // @internal (undocumented)
         get isClassifier(): boolean;
         // (undocumented)
@@ -8613,6 +8635,8 @@ export namespace Pixel {
         // @alpha
         isClassifier?: boolean;
         modelId?: Id64String;
+        // @beta
+        path?: HitPath;
         priority: HitPriority;
         sourceId: Id64String;
         // @internal
@@ -8622,8 +8646,6 @@ export namespace Pixel {
         tileId?: string;
         // @internal (undocumented)
         transformFromSourceIModel?: Transform;
-        // @beta
-        viewAttachment?: ViewAttachmentHitInfo;
     }
     export enum Planarity {
         None = 1,
@@ -10602,6 +10624,12 @@ export class ScrollViewTool extends ViewManip {
     static toolId: string;
 }
 
+// @beta
+export interface SectionDrawingAttachmentHitInfo {
+    // @alpha
+    readonly viewport: Viewport;
+}
+
 // @internal
 export interface SectionDrawingInfo {
     // (undocumented)
@@ -10963,7 +10991,7 @@ export class SheetViewState extends ViewState2d {
     static get className(): string;
     // @internal (undocumented)
     collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
-    // @internal (undocumented)
+    // @beta (undocumented)
     computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined;
     // (undocumented)
     computeFitRange(): Range3d;
@@ -10981,7 +11009,7 @@ export class SheetViewState extends ViewState2d {
     detachFromViewport(): void;
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     // @internal (undocumented)
-    getAttachmentViewport(id: Id64String): Viewport | undefined;
+    getAttachmentViewport(args: GetAttachmentViewportArgs): Viewport | undefined;
     // (undocumented)
     getExtents(): Vector3d;
     // (undocumented)
@@ -12852,7 +12880,7 @@ export interface TokenArg {
 export class Tool {
     constructor(..._args: any[]);
     // @internal (undocumented)
-    get ctor(): typeof Tool;
+    get ctor(): ToolType;
     static get description(): string;
     get description(): string;
     static get englishKeyin(): string;
@@ -14902,7 +14930,7 @@ export abstract class ViewState extends ElementState {
     getAspectRatio(): number;
     getAspectRatioSkew(): number;
     // @internal
-    getAttachmentViewport(_id: Id64String): Viewport | undefined;
+    getAttachmentViewport(_args: GetAttachmentViewportArgs): Viewport | undefined;
     getAuxiliaryCoordinateSystemId(): Id64String;
     getCenter(result?: Point3d): Point3d;
     abstract getExtents(): Vector3d;
