@@ -238,12 +238,13 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always succeed
    * @param spacePoint point in space
    * @param _extend ignored. A BSplineCurve3dBase cannot be extended.
-   * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
+   * @param result optional pre-allocated detail to populate and return.
+   * @returns details of the closest point.
    */
-  public override closestPoint(spacePoint: Point3d, _extend: boolean): CurveLocationDetail | undefined {
+  public override closestPoint(spacePoint: Point3d, _extend: boolean, result?: CurveLocationDetail): CurveLocationDetail | undefined {
     // seed at start point -- final point comes with final bezier perpendicular step.
     const point = this.fractionToPoint(0);
-    const result = CurveLocationDetail.createCurveFractionPointDistance(this, 0.0, point, point.distance(spacePoint));
+    result = CurveLocationDetail.createCurveFractionPointDistance(this, 0.0, point, point.distance(spacePoint), result);
 
     let span: BezierCurve3dH | undefined;
     const numSpans = this.numSpan;

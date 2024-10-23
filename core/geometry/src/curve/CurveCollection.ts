@@ -76,20 +76,19 @@ export abstract class CurveCollection extends GeometryQuery {
   /**
    * Return the closest point on the contained curves.
    * @param spacePoint point in space.
-   * @param _extend ignored.
-   * @returns a `CurveLocationDetail` structure that holds the details of the close point.
+   * @param _extend unused here (pass false), but applicable to overrides in [[Path]] and [[BagOfCurves]].
+   * @param result optional pre-allocated detail to populate and return.
+   * @returns details of the closest point.
    */
-  public closestPoint(spacePoint: Point3d, _extend: VariantCurveExtendParameter): CurveLocationDetail | undefined {
+  public closestPoint(
+    spacePoint: Point3d, _extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
     let detailA: CurveLocationDetail | undefined;
+    const detailB = new CurveLocationDetail();
     if (this.children !== undefined) {
       for (const child of this.children) {
-        if (child instanceof CurvePrimitive) {
-          const detailB = child.closestPoint(spacePoint, false);
-          detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
-        } else if (child instanceof CurveCollection) {
-          const detailB = child.closestPoint(spacePoint, _extend);
-          detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
-        }
+        if (child.closestPoint(spacePoint, false, detailB))
+          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
       }
     }
     return detailA;
@@ -291,7 +290,7 @@ export abstract class CurveChain extends CurveCollection {
     else
       return undefined;
   }
-  /** Return the end point of the curve chain (last point of the last child). */
+  /** Return the end point of the curve chain (end point of the last child). */
   public endPoint(result?: Point3d): Point3d | undefined {
     const lastChild = this.getChild(this._curves.length - 1);
     if (lastChild)
@@ -465,16 +464,19 @@ export class BagOfCurves extends CurveCollection {
   /**
    * Return the closest point on the contained curves.
    * @param spacePoint point in space.
-   * @param extend the extend parameter. `extend` is only applied to children of type curve primitive or `Path` children
-   * and is `false` for other curve collection types.
-   * @returns a `CurveLocationDetail` structure that holds the details of the close point.
+   * @param extend applicable only to children of type [[CurvePrimitive]], [[Path]], or [[BagOfCurves]]
+   * @param result optional pre-allocated detail to populate and return.
+   * @returns details of the closest point.
    */
-  public override closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined {
+  public override closestPoint(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
     let detailA: CurveLocationDetail | undefined;
+    const detailB = new CurveLocationDetail();
     if (this.children !== undefined) {
       for (const child of this.children) {
-        const detailB = child.closestPoint(spacePoint, extend);
-        detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+        if (child.closestPoint(spacePoint, extend, detailB))
+          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
       }
     }
     return detailA;

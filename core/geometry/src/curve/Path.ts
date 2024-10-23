@@ -75,40 +75,26 @@ export class Path extends CurveChain {
   /**
    * Return the closest point on the contained curves.
    * @param spacePoint point in space.
-   * @param extend the extend parameter.
-   * @returns a `CurveLocationDetail` structure that holds the details of the close point.
+   * @param extend compute the closest point to the path extended according to variant type:
+   * * false: do not extend the path
+   * * true: extend the path at both start and end
+   * * CurveExtendOptions: extend the path in the specified manner at both start and end
+   * * CurveExtendOptions[]: first entry applies to path start; second, to path end; any other entries ignored
+   * @param result optional pre-allocated detail to populate and return.
+   * @returns details of the closest point.
    */
-  public override closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined {
+  public override closestPoint(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
     let detailA: CurveLocationDetail | undefined;
+    const detailB = new CurveLocationDetail();
     if (this.children !== undefined) {
       for (let i = 0; i < this.children.length; i++) {
-        const child = this.children[i];
-        let childExtend: VariantCurveExtendParameter = extend;
-        if (i === 0) { // head only extends from start
-          if (extend === false)
-            childExtend = false;
-          else if (extend === true)
-            childExtend = [CurveExtendMode.OnCurve, CurveExtendMode.None];
-          else {
-            const mode0 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0);
-            childExtend = [mode0, CurveExtendMode.None];
-          }
-        } else if (i === this.children.length - 1) { // tail only extends from end
-          if (extend === false)
-            childExtend = false;
-          else if (extend === true)
-            childExtend = [CurveExtendMode.None, CurveExtendMode.OnCurve];
-          else if (Array.isArray(extend)) {
-            const mode1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1);
-            childExtend = [CurveExtendMode.None, mode1];
-          } else {
-            childExtend = [CurveExtendMode.None, extend];
-          }
-        } else { // middle children do not extend
-          childExtend = false;
-        }
-        const detailB = child.closestPoint(spacePoint, childExtend);
-        detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
+        const child = this.children[i]; // head only extends at start; tail, only at end. NOTE: child may be both head and tail!
+        const mode0 = (i === 0) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 0) : CurveExtendMode.None;
+        const mode1 = (i === this.children.length - 1) ? CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extend, 1) : CurveExtendMode.None;
+        if (child.closestPoint(spacePoint, [mode0, mode1], detailB))
+          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
       }
     }
     return detailA;
