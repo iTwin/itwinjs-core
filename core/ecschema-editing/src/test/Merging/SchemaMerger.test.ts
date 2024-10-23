@@ -2,11 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
+import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaConflictsError } from "../../Differencing/Errors";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
-import { ConflictCode, SchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
+import { AnySchemaDifference, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { AnySchemaDifferenceConflict, ConflictCode } from "../../Differencing/SchemaConflicts";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
 import "chai-as-promised";
@@ -15,11 +15,18 @@ import "chai-as-promised";
 
 describe("Schema merge tests", () => {
   it("should throw an error if the differences has conflicts.", async () => {
-    const conflict: SchemaDifferenceConflict = {
-      code: ConflictCode.ConflictingPropertyName,
-      schemaType: SchemaItemType.EntityClass,
-      itemName: "ConflictingPropertyEntity",
+    const difference: AnySchemaDifference=  {
+      changeType: "modify",
+      schemaType: SchemaOtherTypes.Property,
+      itemName: "MyEntity",
       path: "MyProperty",
+      difference: {
+        schemaItemType: "boolean",
+      } as any,
+    };
+    const conflict: AnySchemaDifferenceConflict = {
+      code: ConflictCode.ConflictingPropertyName,
+      difference,
       source: "boolean",
       target: "string",
       description: "Target class already contains a property with a different type.",
@@ -30,7 +37,7 @@ describe("Schema merge tests", () => {
       sourceSchemaName: "SourceSchema.01.02.03",
       targetSchemaName: "TargetSchema.01.00.00",
       conflicts: [conflict],
-      differences: [],
+      differences: [difference],
     });
 
     await expect(merge).to.be.rejectedWith(SchemaConflictsError, "Schema's can't be merged if there are unresolved conflicts.")

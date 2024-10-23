@@ -2805,6 +2805,7 @@ export abstract class Viewport implements IDisposable, TileUser {
             modelId,
             elementId: pixel.feature?.elementId,
             viewAttachmentId: pixel.viewAttachmentId,
+            inSectionDrawingAttachment: pixel.inSectionDrawingAttachment,
           });
           transform?.multiplyInversePoint3d(npc, npc);
         }

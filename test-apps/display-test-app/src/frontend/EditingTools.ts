@@ -56,6 +56,10 @@ export class PlaceLineStringTool extends CreateElementTool {
 
   protected override get wantAccuSnap(): boolean { return true; }
   protected override get wantDynamics(): boolean { return true; }
+  public override requireWriteableTarget(): boolean {
+    // Inserting element will fail, but useful for testing AccuSnap and dynamics.
+    return false;
+  }
 
   protected async startCommand(): Promise<string> {
     if (undefined !== this._startedCmd)

@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Id64String } from "@itwin/core-bentley";
 import { Angle, AxisIndex, LineSegment3d, Matrix3d, Point3d, Transform, XYZ, XYZProps } from "@itwin/core-geometry";
 import { EmptyLocalization, GeometryClass, RenderSchedule, SnapRequestProps, SnapResponseProps } from "@itwin/core-common";
@@ -46,8 +46,8 @@ function makeHitDetail(vp: ScreenViewport, props?: HitDetailProps): HitDetail {
 }
 
 describe("AccuSnap", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
 
   describe("requestSnap", () => {
     function overrideRequestSnap(iModel: IModelConnection, impl?: (props: SnapRequestProps) => SnapResponseProps): void {
@@ -70,22 +70,22 @@ describe("AccuSnap", () => {
 
     function expectPoint(actual: XYZ, expected: XYZProps): void {
       const expectedPt = Point3d.fromJSON(expected);
-      expect(Math.abs(actual.x - expectedPt.x)).most(0.0000001);
-      expect(Math.abs(actual.y - expectedPt.y)).most(0.0000001);
-      expect(Math.abs(actual.z - expectedPt.z)).most(0.0000001);
+      expect(Math.abs(actual.x - expectedPt.x)).toBeLessThanOrEqual(0.0000001);
+      expect(Math.abs(actual.y - expectedPt.y)).toBeLessThanOrEqual(0.0000001);
+      expect(Math.abs(actual.z - expectedPt.z)).toBeLessThanOrEqual(0.0000001);
     }
 
     function expectSnapDetail(response: SnapResponse, expected: SnapDetailProps): SnapDetail {
-      expect(response).instanceOf(SnapDetail);
+      expect(response).toBeInstanceOf(SnapDetail);
       const detail = response as SnapDetail;
 
       expectPoint(detail.snapPoint, expected.point);
 
-      expect(detail.normal).not.to.be.undefined;
+      expect(detail.normal).toBeDefined();
       expectPoint(detail.normal!, expected.normal);
 
       const segment = detail.primitive as LineSegment3d;
-      expect(segment).instanceOf(LineSegment3d);
+      expect(segment).toBeInstanceOf(LineSegment3d);
       expectPoint(segment.point0Ref, expected.curve[0]);
       expectPoint(segment.point1Ref, expected.curve[1]);
 
@@ -98,7 +98,7 @@ describe("AccuSnap", () => {
       const response = new LocateResponse();
       const detail = await AccuSnap.requestSnap(makeHitDetail(vp, hit), snapModes, 1, 1, undefined, response);
       if (detail) {
-        expect(response.snapStatus).to.equal(SnapStatus.Success);
+        expect(response.snapStatus).toEqual(SnapStatus.Success);
         return detail;
       } else {
         expect(response.snapStatus).not.to.equal(SnapStatus.Success);
@@ -119,11 +119,11 @@ describe("AccuSnap", () => {
 
     it("fails for intersection on map, model, or classifier", async () => {
       const modes = [SnapMode.Intersection];
-      await testSnap({ sourceId: "0x123", modelId: "0x123" }, (response) => expect(response).to.equal(SnapStatus.NoSnapPossible), modes);
-      await testSnap({ isClassifier: true }, (response) => expect(response).to.equal(SnapStatus.NoSnapPossible), modes);
+      await testSnap({ sourceId: "0x123", modelId: "0x123" }, (response) => expect(response).toEqual(SnapStatus.NoSnapPossible), modes);
+      await testSnap({ isClassifier: true }, (response) => expect(response).toEqual(SnapStatus.NoSnapPossible), modes);
       await testSnap(
         { sourceId: "0x123", modelId: "0x123" },
-        (response) => expect(response).to.equal(SnapStatus.NoSnapPossible),
+        (response) => expect(response).toEqual(SnapStatus.NoSnapPossible),
         modes,
         (vp) => vp.mapLayerFromHit = () => { return [] as any; },
       );

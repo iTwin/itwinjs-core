@@ -13,12 +13,14 @@ Table of contents:
   - [Contour Display](#contour-display)
 - [Interactive Tools](#interactive-tools)
   - [Element Locate](#element-locate)
+  - [Snapping within section drawings](#snapping-within-section-drawings)
 - [Presentation](#presentation)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
 - [Quantity](#quantity)
-- [API Deprecations](#api-deprecations)
+- [Electron 33 support](#electron-33-support)
+- [API deprecations](#api-deprecations)
   - [@itwin/appui-abstract](#itwinappui-abstract)
-  - [@itwin/core-backend](#itwincore-frontend)
+  - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-frontend](#itwincore-frontend)
   - [@itwin/core-quantity](#itwincore-quantity)
 
@@ -104,6 +106,12 @@ After calling [ElementLocateManager.doLocate]($frontend), Reset may now be used 
 
 ![locate example](./element-locate.png "Example of using reset to accept obscured element")
 
+### Snapping within section drawings
+
+A [SectionDrawing]($backend) view renders the contents of a [SpatialViewDefinition]($backend) in the context of a [DrawingViewDefinition]($backend). Tools that operate on the drawing view may want to be able to snap to geometry within the "attached" spatial view. For example, you may wish to attach an annotation to a spatial element. [AccuSnap]($frontend) [now automatically snaps](https://github.com/iTwin/itwinjs-core/pull/7291) to the geometry based on the current snap settings when mousing over geometry within the section drawing attachment. This works when viewing the drawing directly, or indirectly through a [ViewAttachment]($backend) on a sheet.
+
+You can access the [HitPath]($frontend) describing the [ViewAttachment]($backend) and/or [SectionDrawing]($backend) through which a hit was obtained via [[HitDetail.path]].
+
 ## Presentation
 
 ### Calculated properties specification enhancements
@@ -137,6 +145,10 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 - Change azimuth and bearing logic from working with east-based counterclockwise persisted values to working with north-based clockwise values.
 - The previous applies to azimuthBase as well, if provided.
 
+## Electron 33 support
+
+In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 33](https://www.electronjs.org/blog/electron-33-0).
+
 ## API deprecations
 
 ### @itwin/appui-abstract
@@ -154,5 +166,7 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 - [SnapshotConnection.openRemote]($frontend) has been deprecated. Use [CheckpointConnection.openRemote]($frontend) to open a connection to an iModel within web application.
 
 ### @itwin/core-quantity
+
+- Refactored `FormatType`, `ScientificType`, `ShowSignOption` from int enums to string enums and added `RatioType` as a string enum. Relevant toString functions, including [formatTypeToString]($quantity), [scientificTypeToString]($quantity), and [showSignOptionToString]($quantity), have been deprecated because they don't need serialization methods.
 
 - [Parser.parseToQuantityValue]($quantity) have been deprecated. Use the existing method [Parser.parseQuantityString]($quantity) instead.

@@ -14,8 +14,9 @@ import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
 import { WritableXYAndZ, XAndY, XYAndZ } from "../geometry3d/XYZProps";
-import { SmallSystem } from "../numerics/Polynomials";
+import { SmallSystem } from "../numerics/SmallSystem";
 import { MaskManager } from "./MaskManager";
+
 // import { GraphChecker } from "../test/topology/Graph.test"; // used for debugging
 
 /* eslint-disable @typescript-eslint/no-this-alias */
