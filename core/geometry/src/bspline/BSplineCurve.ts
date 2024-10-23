@@ -6,6 +6,7 @@
  * @module Bspline
  */
 
+import { VariantCurveExtendParameter } from "../curve/CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CurveOffsetXYHandler } from "../curve/internalContexts/CurveOffsetXYHandler";
@@ -237,11 +238,11 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    * * If the space point is exactly on the curve, this is the reverse of fractionToPoint.
    * * Since CurvePrimitive should always have start and end available as candidate points, this method should always succeed
    * @param spacePoint point in space
-   * @param _extend ignored. A BSplineCurve3dBase cannot be extended.
+   * @param _extend ignored (pass false). A BSplineCurve3dBase cannot be extended.
    * @param result optional pre-allocated detail to populate and return.
    * @returns details of the closest point.
    */
-  public override closestPoint(spacePoint: Point3d, _extend: boolean, result?: CurveLocationDetail): CurveLocationDetail | undefined {
+  public override closestPoint(spacePoint: Point3d, _extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail): CurveLocationDetail | undefined {
     // seed at start point -- final point comes with final bezier perpendicular step.
     const point = this.fractionToPoint(0);
     result = CurveLocationDetail.createCurveFractionPointDistance(this, 0.0, point, point.distance(spacePoint), result);
