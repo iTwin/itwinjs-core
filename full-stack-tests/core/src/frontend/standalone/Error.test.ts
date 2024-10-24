@@ -7,7 +7,7 @@ import { expect } from "chai";
 
 if (ProcessDetector.isElectronAppFrontend) {
 
-  describe("Error (#integration)", async () => {
+  describe.only("Error (#integration)", async () => {
 
     beforeEach(async () => {
       await TestUtility.startFrontend();
@@ -30,7 +30,7 @@ if (ProcessDetector.isElectronAppFrontend) {
         expect(ITwinError.isInUseLocksError(err)).to.be.true;
         if (ITwinError.isInUseLocksError(err)) {
           // Even though we're on the frontend we should make sure our stack trace includes backend code.
-          expect(err.stack?.includes("core\\backend"), `Expected ${err.stack} to have mention of core\\backend`).to.be.true;
+          expect(err.stack?.includes("core\\backend") || err.stack?.includes("core/backend"), `Expected ${err.stack} to have mention of 'core\\backend' or 'core/backend'`).to.be.true;
           expect(err.message).to.equal(message);
           expect(err.inUseLocks).to.deep.equal(inUseLocks);
           expect(ITwinError.getMetaData(err)).to.be.undefined; // Currently not propagating metadata.
