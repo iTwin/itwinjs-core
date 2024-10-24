@@ -70,6 +70,7 @@ export interface ConflictingLock {
 export class ConflictingLocksError extends IModelError {
   // eslint-disable-next-line deprecation/deprecation
   public conflictingLocks?: ConflictingLock[];
+  // eslint-disable-next-line deprecation/deprecation
   constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]) {
     super(IModelHubStatus.LockOwnedByAnotherBriefcase, message, getMetaData);
     this.conflictingLocks = conflictingLocks;
