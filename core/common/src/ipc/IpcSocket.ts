@@ -27,11 +27,12 @@ export type RemoveFunction = () => void;
 
 /**
  * Payload of an IpcInvoke response. The presence of `error` indicates that the backend threw an exception and the
- * frontend will re-throw a [BackendError]$(frontend) with the `errorNumber` and `message` values. Otherwise the `result`
- * member holds the response.
+ * frontend will re-throw a [BackendError]$(frontend) with the `errorNumber` and `message` values.
+ * The presence of iTwinError indicates that the backend threw an exception of type [[ITwinError]] and the frontend will re-throw that same error.
+ * Otherwise the `result` member holds the response.
  * @internal */
-export type IpcInvokeReturn = { result: any, error?: never } | { result?: never, error: { name: string, message: string, errorNumber: number, stack?: string } };
-
+export type IpcInvokeReturn = { result: any, error?: never, iTwinError?: never } | { result?: never, iTwinError?: never, error: { name: string, message: string, errorNumber: number, stack?: string } } |
+{ result?: never, error?: never, iTwinError: {namespace: string, errorKey: string, message: string, stack?: string, [key: string]: any} };
 /**
  * An inter-process socket connection between a single [IModelHost]($backend) on the backend (the node process), and an [IModelApp]($frontend) on
  * the frontend (the browser process.) Each side will implement this interface to form a two way connection. The frontend and backend

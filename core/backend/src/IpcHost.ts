@@ -11,6 +11,7 @@ import { assert, BentleyError, IModelStatus, Logger, LogLevel, OpenMode } from "
 import {
   ChangesetIndex, ChangesetIndexAndId, EditingScopeNotifications, getPullChangesIpcChannel, IModelConnectionProps, IModelError, IModelRpcProps,
   ipcAppChannels, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel,
+  ITwinError,
   OpenBriefcaseProps, OpenCheckpointArgs, PullChangesOptions, RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
 } from "@itwin/core-common";
 import { ProgressFunction, ProgressStatus } from "./CheckpointManager";
@@ -173,15 +174,34 @@ export abstract class IpcHandler {
 
         return { result: await func.call(impl, ...args) };
       } catch (err: any) {
-        const ret: IpcInvokeReturn = {
-          error: {
-            name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
-            message: err.message ?? BentleyError.getErrorMessage(err),
-            errorNumber: err.errorNumber ?? 0,
-          },
-        };
-        if (!IpcHost.noStack)
-          ret.error.stack = BentleyError.getErrorStack(err);
+        let ret: IpcInvokeReturn;
+        if (ITwinError.isITwinError(err)) {
+          // TODO: Should metadata be left out? It is left out in the original error implementation..
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { namespace, errorKey, message, stack, metadata, ...rest } = err;
+          ret = {
+            iTwinError:
+            {
+              namespace,
+              errorKey,
+              message,
+              ...rest,
+            },
+          };
+          if (!IpcHost.noStack)
+            ret.iTwinError.stack = stack;
+        } else {
+          ret = {
+            error:
+              {
+                name: err.hasOwnProperty("name") ? err.name : err.constructor?.name ?? "Unknown Error",
+                message: err.message ?? BentleyError.getErrorMessage(err),
+                errorNumber: err.errorNumber ?? 0,
+              },
+          };
+          if (!IpcHost.noStack)
+            ret.error.stack = BentleyError.getErrorStack(err);
+        }
         return ret;
       }
     });
