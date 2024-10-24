@@ -31,7 +31,6 @@ if (ProcessDetector.isElectronAppFrontend) {
         if (ITwinError.isInUseLocksError(err)) {
           // Even though we're on the frontend we should make sure our stack trace includes backend code.
           expect(err.stack?.includes("core\\backend")).to.be.true;
-          console.log(err.stack);
           expect(err.message).to.equal(message);
           expect(err.inUseLocks).to.deep.equal(inUseLocks);
           expect(ITwinError.getMetaData(err)).to.be.undefined; // Currently not propagating metadata.

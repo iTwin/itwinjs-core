@@ -68,6 +68,7 @@ export interface ConflictingLock {
  * @public @deprecated in 4.10 Use [InUseLocksError]($common) instead.
 */
 export class ConflictingLocksError extends IModelError {
+  // eslint-disable-next-line deprecation/deprecation
   public conflictingLocks?: ConflictingLock[];
   constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]) {
     super(IModelHubStatus.LockOwnedByAnotherBriefcase, message, getMetaData);
