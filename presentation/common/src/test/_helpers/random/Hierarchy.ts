@@ -125,7 +125,7 @@ export const createRandomECInstancesNode = (props?: Partial<Node>): Node => {
 /**
  * @internal Used for testing only.
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export const createRandomECInstancesNodeJSON = (): NodeJSON => {
   return {
     key: createRandomECInstancesNodeKey(),
@@ -173,9 +173,9 @@ export const createRandomNodePathElement = (depth: number = 1): NodePathElement 
 /**
  * @internal Used for testing only.
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export const createRandomNodePathElementJSON = (depth: number = 1): NodePathElementJSON => {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const el: NodePathElementJSON = {
     node: createRandomECInstancesNodeJSON(),
     index: faker.random.number(999),

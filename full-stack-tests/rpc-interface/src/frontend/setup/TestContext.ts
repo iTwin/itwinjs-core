@@ -19,8 +19,6 @@ import { IModelSession } from "./IModelSession";
 declare const PACKAGE_VERSION: string;
 
 /* eslint-disable no-console */
-/* eslint-disable @typescript-eslint/indent */
-
 export class TestContext {
   public adminUserAccessToken!: AccessToken;
   public clientAccessToken?: AccessToken;
@@ -45,7 +43,7 @@ export class TestContext {
   }
 
   /** Initialize configuration for the rpc interfaces used by the application. */
-  private initializeRpcInterfaces(info: OpenAPIInfo) { // eslint-disable-line deprecation/deprecation
+  private initializeRpcInterfaces(info: OpenAPIInfo) { // eslint-disable-line @typescript-eslint/no-deprecated
     // Url without trailing slash
     const uriPrefix: string = this.settings.Backend.location.replace(/\/$/, "");
     BentleyCloudRpcManager.initializeClient({ info, uriPrefix }, getRpcInterfaces(this.settings));

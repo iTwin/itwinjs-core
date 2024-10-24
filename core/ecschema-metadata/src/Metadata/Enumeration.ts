@@ -29,7 +29,7 @@ export type AnyEnumerator = Enumerator<string | number>;
  * @beta
  */
 export class Enumeration extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Enumeration; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.Enumeration;
   protected _type?: PrimitiveType.Integer | PrimitiveType.String;
   protected _isStrict: boolean;
   protected _enumerators: AnyEnumerator[];

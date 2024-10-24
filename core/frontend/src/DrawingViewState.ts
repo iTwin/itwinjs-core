@@ -337,7 +337,7 @@ export class DrawingViewState extends ViewState2d {
   }
 
   /** Strictly for testing. @internal */
-  public get attachment(): Object | undefined {
+  public get attachment(): object | undefined {
     return this._attachment;
   }
 
@@ -403,7 +403,7 @@ export class DrawingViewState extends ViewState2d {
 
         break;
       }
-    } catch (_ex) {
+    } catch {
       // The version of BisCore ECSchema in the iModel is probably too old to contain the SectionDrawing ECClass.
     }
 

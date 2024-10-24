@@ -17,7 +17,7 @@
     "cover": "",
     "docs": "",
     "extract-api": "betools extract-api --entry=ecschema-rpc-interface",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
   "keywords": [
@@ -42,8 +42,8 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
-    "eslint": "^8.56.0",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "eslint": "^9.13.0",
     "rimraf": "^3.0.2",
     "typescript": "~5.6.2"
   }

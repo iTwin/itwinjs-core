@@ -8,7 +8,7 @@ import {
 } from "../../tile/internal";
 
 // Assumes no minification or uglification.
-function expectClassName(obj: Object, name: string): void {
+function expectClassName(obj: object, name: string): void {
   expect(obj.constructor.name).toEqual(name);
 }
 

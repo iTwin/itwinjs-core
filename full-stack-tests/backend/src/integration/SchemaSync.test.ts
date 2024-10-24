@@ -1121,7 +1121,7 @@ describe("Schema synchronization", function (this: Suite) {
     const findEl = (id: Id64String, b = b1) => {
       try {
         return b.elements.getElementProps(id);
-      } catch (e) {
+      } catch {
         return undefined;
       }
     };

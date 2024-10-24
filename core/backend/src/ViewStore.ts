@@ -1356,7 +1356,7 @@ export namespace ViewStore {
         if (id !== undefined && !hasName(table, id)) { // only delete if the row has no name
           try {
             this.deleteFromTable(table, id);
-          } catch (err) {
+          } catch {
             // ignore constraint error if the row is still referenced by another view
           }
         }
