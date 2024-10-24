@@ -36,6 +36,13 @@ export class InvertedUnit extends SchemaItem {
   public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
 
   /**
+   * @alpha
+   */
+  public static isInvertedUnit(object: any): object is InvertedUnit {
+    return SchemaItem.isSchemaItem(object) && object.schemaItemType === SchemaItemType.InvertedUnit;
+  }
+
+  /**
    * Save this InvertedUnit's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.

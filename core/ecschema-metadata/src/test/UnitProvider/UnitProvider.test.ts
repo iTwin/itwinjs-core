@@ -322,5 +322,15 @@ describe("Unit Provider tests", () => {
       const unit2 = await provider.findUnitByName("Units.KM_PER_HR");
       expect(unit2.name === "Units.KM_PER_HR", `Unit name should be Units.KM_PER_HR and not ${unit2.name}`).to.be.true;
     });
+
+    it("should find VERTICAL_PER_HORIZONTAL by unit name in Units schema", async () => {
+      const unit = await provider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
+      expect(unit.name === "Units.VERTICAL_PER_HORIZONTAL", `Unit name should be Units.VERTICAL_PER_HORIZONTAL and not ${unit.name}`).to.be.true;
+    });
+
+    it("should find inverted unit HORIZONTAL_PER_VERTICAL by unit name in Units schema", async () => {
+      const unit = await provider.findUnitByName("Units.HORIZONTAL_PER_VERTICAL");
+      expect(unit.name === "Units.HORIZONTAL_PER_VERTICAL", `Unit name should be Units.HORIZONTAL_PER_VERTICAL and not ${unit.name}`).to.be.true;
+    });
   });
 });
