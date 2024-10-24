@@ -45,3 +45,13 @@ The iTwin.js API provides for a way to validate (check compatibility) and upgrad
   - Capture domain schema upgrade changes (if any) as a Changeset and push it to iModel Hub.
   - If schema lock was acquired earlier due to a data transform, release the schema lock.
   - Close the briefcase.
+
+## Working with newer schemas having an unsupported ECXml version
+
+With the general evolution of schemas, there may come a time when a schema has been released with a newer ECXml version than the one supported by the ECDb runtime being used.
+A write-incompatable schema can be loaded, but it can be neither imported into an iModel, nor can it be serialized to a file or string.
+
+Such a schema is likely to contain elements that are unknown to the current ECDb runtime being used.
+To know more about how these unknown elements are handled, refer to [Handling Unknown Schema Elements](./HandlingUnknownSchemaElements.md)
+
+To be able to perform read and write operations on a schema with a newer ECXml version, it us recommended to upgrade the ECDb runtime to a version that supports the ECXml version.
