@@ -14,7 +14,7 @@ export {
   BentleyStatus, BentleyError, IModelStatus, BriefcaseStatus, DbResult, ChangeSetStatus,
 } from "@itwin/core-bentley";
 
-export type {GetMetaDataFunction, LogFunction, LoggingMetaData} from "@itwin/core-bentley";
+export type { GetMetaDataFunction, LogFunction, LoggingMetaData } from "@itwin/core-bentley";
 
 /** Numeric values for common errors produced by iTwin.js APIs, typically provided by [[IModelError]].
  * The values within each of these `enum`s are guaranteed not to conflict with one another.
@@ -68,9 +68,9 @@ export interface ConflictingLock {
  * @public @deprecated in 4.10 Use [InUseLocksError]($common) instead.
 */
 export class ConflictingLocksError extends IModelError {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   public conflictingLocks?: ConflictingLock[];
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]) {
     super(IModelHubStatus.LockOwnedByAnotherBriefcase, message, getMetaData);
     this.conflictingLocks = conflictingLocks;
