@@ -124,7 +124,8 @@ export class ElectronHost {
     try {
       assetPath = fs.realpathSync(assetPath);
     } catch {
-      // // eslint-disable-next-line no-console
+      // eslint-disable-next-line no-console
+
       // console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
     }
     if (!assetPath.startsWith(this.webResourcesPath))
