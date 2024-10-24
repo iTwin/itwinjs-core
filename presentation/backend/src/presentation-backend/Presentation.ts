@@ -20,7 +20,7 @@ import { FactoryBasedTemporaryStorage } from "./TemporaryStorage";
  * Properties that can be used to configure [[Presentation]] API.
  * @public
  */
-export interface PresentationProps extends PresentationManagerProps {
+export interface PresentationProps extends Omit<PresentationManagerProps, "enableSchemasPreload"> {
   /**
    * Time in milliseconds after which the request will timeout.
    */
@@ -141,7 +141,7 @@ export class Presentation {
         Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Disposed all PresentationManager instances.`),
     });
 
-    if (this._initProps.enableSchemasPreload) { // eslint-disable-line @typescript-eslint/no-deprecated
+    if (this._initProps.enableSchemasPreload) {
       this._disposeIModelOpenedListener = BriefcaseDb.onOpened.addListener(this.onIModelOpened);
     }
   }

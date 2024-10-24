@@ -334,7 +334,7 @@ export interface PresentationManagerProps {
    * Should schemas preloading be enabled. If true, presentation manager listens
    * for `BriefcaseDb.onOpened` event and force pre-loads all ECSchemas.
    *
-   * @deprecated in 3.x. Use [[PresentationPropsBase.enableSchemasPreload]] instead.
+   * @deprecated in 3.x. Use [[PresentationProps.enableSchemasPreload]] instead.
    */
   enableSchemasPreload?: boolean;
 
