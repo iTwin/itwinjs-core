@@ -95,7 +95,9 @@ export class IpcApp {
     const retVal = (await this.invoke(channelName, methodName, ...args)) as IpcInvokeReturn;
 
     if (undefined !== retVal.iTwinError) {
-      throw retVal.iTwinError;
+      const error = new Error();
+      Object.assign(error, retVal.iTwinError);
+      throw error;
     } else if (undefined !== retVal.error) {
       const err = new BackendError(retVal.error.errorNumber, retVal.error.name, retVal.error.message);
       err.stack = retVal.error.stack;
