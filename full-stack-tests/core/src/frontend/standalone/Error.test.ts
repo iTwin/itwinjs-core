@@ -7,7 +7,7 @@ import { expect } from "chai";
 
 if (ProcessDetector.isElectronAppFrontend) {
 
-  describe.only("Error (#integration)", async () => {
+  describe("Error (#integration)", async () => {
 
     beforeEach(async () => {
       await TestUtility.startFrontend();
