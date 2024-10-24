@@ -418,7 +418,6 @@ describe("Quantity formatter", async () => {
     const overrideImperialParserSpec = await quantityFormatter.getParserSpecByQuantityType(QuantityType.Area, true);
     const overrideValueInMeters1 = quantityFormatter.parseToQuantityValue("1076386.7361", overrideImperialParserSpec);
     const overrideValueInMeters2 = quantityFormatter.parseToQuantityValue("1076386.7361 sussf", overrideImperialParserSpec);
-    // // eslint-disable-next-line no-console
     // console.log(`overrideValueInMeters1=${JSON.stringify(overrideValueInMeters1)}`);
     expect(Parser.isParsedQuantity(overrideValueInMeters1)).toBe(true);
     expect(Parser.isParsedQuantity(overrideValueInMeters2)).toBe(true);

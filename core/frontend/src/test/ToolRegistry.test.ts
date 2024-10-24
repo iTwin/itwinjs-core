@@ -51,7 +51,6 @@ async function setupToolRegistryTests() {
 }
 
 function logResult(..._args: any[]) {
-  // // eslint-disable-next-line no-console
   // console.log(..._args);
 }
 
