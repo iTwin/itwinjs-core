@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import * as crypto from "node:crypto";
+import * as fs from "fs";
 import { emptyDirSync, mkdirsSync } from "fs-extra";
 import { join } from "path";
 import * as azureBlob from "@azure/storage-blob";
-import { BlobContainer, CloudSqlite, IModelHost, SettingsContainer } from "@itwin/core-backend";
-import { AccessToken, Guid } from "@itwin/core-bentley";
+import { BlobContainer, CloudSqlite, IModelHost, KnownLocations, SettingsContainer, SQLiteDb } from "@itwin/core-backend";
+import { AccessToken, Guid, OpenMode } from "@itwin/core-bentley";
 import { LocalDirName, LocalFileName } from "@itwin/core-common";
-import * as crypto from "crypto";
 
 // spell:ignore imodelid itwinid mkdirs devstoreaccount racwdl
 
@@ -51,6 +52,61 @@ export namespace AzuriteTest {
       const azClient = createAzClient(container.containerId);
       const blobClient = azClient.getBlockBlobClient(blockName);
       return blobClient.exists();
+    };
+
+    export const subtractFromCurrentWriteLockExpiryTime = async (container: CloudSqlite.CloudContainer, numOfMin: number, numOfSeconds: number = 0) => {
+      const blockName = "bcv_kv.bcv";
+      const azClient = createAzClient(container.containerId);
+      const blobClient = azClient.getBlockBlobClient(blockName);
+      const tempFilePath = join(KnownLocations.tmpdir, blockName);
+      // download bcv_kv.bcv to local machine
+      await blobClient.downloadToFile(tempFilePath);
+      const bcvDb = new SQLiteDb();
+      bcvDb.openDb(tempFilePath, {openMode: OpenMode.ReadWrite, rawSQLite: true});
+      // read writeLock.expires and modify it
+      bcvDb.withSqliteStatement("SELECT v FROM kv WHERE k = 'writeLock'", (stmt) => {
+        if (stmt.nextRow()) {
+          const writeLockData = JSON.parse(stmt.getValueString(0));
+          const expiresTime = new Date(writeLockData.expires);
+          expiresTime.setMinutes(expiresTime.getMinutes() - numOfMin);
+          expiresTime.setSeconds(expiresTime.getSeconds() - numOfSeconds);
+          writeLockData.expires = expiresTime.toISOString();
+          bcvDb.withSqliteStatement("UPDATE kv SET v = ? WHERE k = 'writeLock'", (stmt1) => {
+            stmt1.bindString(1, JSON.stringify(writeLockData));
+            stmt1.step();
+          });
+          bcvDb.saveChanges();
+        }
+      });
+      await blobClient.uploadFile(tempFilePath);
+      // clean up
+      bcvDb.closeDb();
+      fs.unlinkSync(tempFilePath);
+    };
+
+    export const isWriteLockValidForAtLeast = async (container: CloudSqlite.CloudContainer, currentTime: Date, writeLockTimeRemainsMs: number): Promise<boolean> => {
+      const blockName = "bcv_kv.bcv";
+      const azClient = createAzClient(container.containerId);
+      const blobClient = azClient.getBlockBlobClient(blockName);
+      const tempFilePath = join(KnownLocations.tmpdir, blockName);
+      // download bcv_kv.bcv to local machine
+      await blobClient.downloadToFile(tempFilePath);
+      const bcvDb = new SQLiteDb();
+      bcvDb.openDb(tempFilePath, {openMode: OpenMode.ReadWrite, rawSQLite: true});
+      const result =  new Promise<boolean>((resolve) => {
+        bcvDb.withSqliteStatement("SELECT v FROM kv WHERE k = 'writeLock'", (stmt) => {
+          if (stmt.nextRow()) {
+            const writeLockData = JSON.parse(stmt.getValueString(0));
+            const expiresTime = new Date(writeLockData.expires);
+            resolve(expiresTime >= new Date(currentTime.getTime() + writeLockTimeRemainsMs));
+          } else {
+            resolve(false);
+          }
+        });
+      });
+      bcvDb.closeDb();
+      fs.unlinkSync(tempFilePath);
+      return result;
     };
 
     export const setSasToken = async (container: CloudSqlite.CloudContainer, accessLevel: BlobContainer.RequestAccessLevel) => {
@@ -94,7 +150,7 @@ export namespace AzuriteTest {
       emptyDirSync(name);
     };
 
-    export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }
+    export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean, lockExpireSeconds?: number}
 
     export const makeContainer = async (arg: TestContainerProps): Promise<TestContainer> => {
       const containerProps = { ...arg, writeable: true, baseUri, storageType } as const;
