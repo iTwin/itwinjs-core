@@ -6,16 +6,16 @@ import * as fs from "fs";
 import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { ElectronMainAuthorization } from "@itwin/electron-authorization/Main";
-import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/lib/cjs/ElectronBackend";
+import { ElectronHost, ElectronHostOptions } from "@itwin/core-electron/ElectronBackend";
 import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, produceTextAnnotationGeometry } from "@itwin/core-backend";
 import {
   IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface, TextAnnotation, TextAnnotationProps, TextBlockGeometryProps,
 } from "@itwin/core-common";
-import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
-import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
-import { DtaRpcInterface } from "../common/DtaRpcInterface";
+import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend.js";
+import { DtaConfiguration, getConfig } from "../common/DtaConfiguration.js";
+import { DtaRpcInterface } from "../common/DtaRpcInterface.js";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
 

@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "@itwin/core-bentley";
-import { ElectronHost } from "@itwin/core-electron/lib/cjs/ElectronBackend";
-import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface";
-import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend";
+import { ElectronHost } from "@itwin/core-electron/ElectronBackend";
+import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult, dtaChannel, DtaIpcInterface } from "../common/DtaIpcInterface.js";
+import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Backend.js";
 import { IpcHandler } from "@itwin/core-backend";
-import { getConfig } from "../common/DtaConfiguration";
-import { createSectionDrawing } from "./SectionDrawingImpl";
+import { getConfig } from "../common/DtaConfiguration.js";
+import { createSectionDrawing } from "./SectionDrawingImpl.js";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {

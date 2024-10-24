@@ -10,7 +10,7 @@ import {
 import { TransformProps } from "@itwin/core-geometry";
 import { DbResult, DisplayStyle3dProps, GeometricModel2dProps, RelatedElementProps, SectionDrawingProps, SectionType, SpatialViewDefinitionProps } from "@itwin/core-common";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult } from "../common/DtaIpcInterface";
+import { CreateSectionDrawingViewArgs, CreateSectionDrawingViewResult } from "../common/DtaIpcInterface.js";
 
 /** Find or create a document partition named" DrawingProductionDrawing" to contain all our section drawings. */
 async function getDrawingProductionListModel(db: BriefcaseDb): Promise<Id64String> {

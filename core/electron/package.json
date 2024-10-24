@@ -6,10 +6,22 @@
   "engines": {
     "node": "^18.0.0 || ^20.0.0"
   },
+  "exports": {
+    "./ElectronBackend": {
+      "types": "./lib/esm/ElectronBackend.d.ts",
+      "import": "./lib/esm/ElectronBackend.js",
+      "require": "./lib/cjs/ElectronBackend.js"
+    },
+    "./ElectronFrontend": {
+      "types": "./lib/esm/ElectronFrontend.d.ts",
+      "import": "./lib/esm/ElectronFrontend.js",
+      "require": "./lib/cjs/ElectronFrontend.js"
+    }
+  },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s build:esm && npm run -s webpack:test",
     "build:cjs": "tsc 1>&2 --outDir lib/cjs",
-    "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
+    "build:esm": "tsc 1>&2 --module esnext --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-electron/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
     "extract-api": "betools extract-api --entry=__DOC_ONLY__",
@@ -40,7 +52,7 @@
     "@itwin/core-bentley": "workspace:^4.10.0-dev.30",
     "@itwin/core-common": "workspace:^4.10.0-dev.30",
     "@itwin/core-frontend": "workspace:^4.10.0-dev.30",
-    "electron": ">=23.0.0 <34.0.0"
+    "electron": ">=28.0.0 <34.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -53,16 +65,16 @@
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
-    "@vitest/coverage-v8": "^2.1.0",
+    "chai": "^4.3.10",
     "electron": "^33.0.0",
     "eslint": "^8.56.0",
     "glob": "^10.3.12",
+    "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
     "typescript": "~5.3.3",
     "webpack": "^5.76.0",
-    "webpack-cli": "^5.0.1",
-    "vitest": "^2.1.0"
+    "webpack-cli": "^5.0.1"
   },
   "dependencies": {
     "@openid/appauth": "^1.2.6",

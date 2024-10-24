@@ -5,7 +5,7 @@
 import { IModelRpcProps, RpcInterface, RpcManager, TextAnnotationProps, TextBlockGeometryProps } from "@itwin/core-common";
 import * as http from "http";
 import * as https from "https";
-import { DtaConfiguration } from "./DtaConfiguration";
+import { DtaConfiguration } from "./DtaConfiguration.js";
 
 /** Display Test App RPC interface. */
 export class DtaRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation

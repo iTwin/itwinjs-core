@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
-import { getRpcInterfaces, initializeDtaBackend } from "./Backend";
+import { MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend.js";
+import { getRpcInterfaces, initializeDtaBackend } from "./Backend.js";
 
 const dtaMobileMain = (async () => {
   const opts: MobileHostOpts = {

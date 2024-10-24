@@ -135,8 +135,8 @@ export default defineConfig(() => {
     resolve: {
       alias: {
         ...packageAliases,
-        "@itwin/core-electron/lib/cjs/ElectronFrontend":
-          "@itwin/core-electron/src/ElectronFrontend.ts",
+        // "@itwin/core-electron/ElectronFrontend":
+        //   "@itwin/core-electron/src/ElectronFrontend.ts",
         "@itwin/core-mobile/lib/cjs/MobileFrontend":
           "@itwin/core-mobile/src/MobileFrontend.ts",
         "../../package.json": "../package.json", // in core-frontend
@@ -147,7 +147,7 @@ export default defineConfig(() => {
       force: true, // forces cache dumps on each rebuild. should be turned off once the issue in vite with monorepos not being correctly optimized is fixed. Issue link: https://github.com/vitejs/vite/issues/14099
       // overoptimized dependencies in the same monorepo (vite converts all cjs to esm)
       include: [
-        "@itwin/core-electron/lib/cjs/ElectronFrontend", // import from module error
+        // "@itwin/core-electron/ElectronFrontend", // import from module error
         "@itwin/core-mobile/lib/cjs/MobileFrontend", // import from module error
       ],
       exclude: [
