@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import { AccessToken } from '@itwin/core-bentley';
 import { Angle } from '@itwin/core-geometry';
 import { AngleProps } from '@itwin/core-geometry';
@@ -7395,7 +7393,7 @@ export class QPoint3dBufferBuilder {
 
 // @public
 export class QPoint3dList {
-    [Symbol.iterator](): IterableIterator<QPoint3d>;
+    [Symbol.iterator](): ArrayIterator<QPoint3d>;
     constructor(params?: QParams3d);
     add(pt: Point3d): void;
     clear(): void;
@@ -8929,7 +8927,7 @@ export enum RpcRequestStatus {
 // @public @deprecated (undocumented)
 export namespace RpcRequestStatus {
     // (undocumented)
-    export function isTransientError(status: RpcRequestStatus): boolean;
+    export function isTransientError(status: RpcRequestStatus): status is RpcRequestStatus.BadGateway | RpcRequestStatus.ServiceUnavailable | RpcRequestStatus.GatewayTimeout | RpcRequestStatus.RequestTimeout | RpcRequestStatus.TooManyRequests;
 }
 
 // @internal
@@ -10665,7 +10663,7 @@ export class Tween {
     // (undocumented)
     onStop(callback: TweenCallback): this;
     // (undocumented)
-    onUpdate(callback: UpdateCallback): this;
+    onUpdate(callback: UpdateCallback_2): this;
     // (undocumented)
     pause(time: number): this;
     // (undocumented)
@@ -10698,7 +10696,7 @@ export class Tweens {
     create(from: any, opts?: {
         to: any;
         duration: number;
-        onUpdate: UpdateCallback;
+        onUpdate: UpdateCallback_2;
         onComplete?: TweenCallback;
         delay?: number;
         start?: boolean;
@@ -10797,7 +10795,8 @@ export enum TypeOfChange {
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 // @public (undocumented)
-export type UpdateCallback = (obj: any, t: number) => void;
+type UpdateCallback_2 = (obj: any, t: number) => void;
+export { UpdateCallback_2 as UpdateCallback }
 
 // @beta
 export interface UpgradeOptions {
@@ -11063,7 +11062,7 @@ export interface ViewStateProps {
 // @beta
 export namespace ViewStoreRpc {
     const // @internal
-    version: "4.0.0";
+    version = "4.0.0";
     export interface AddViewArgs {
         readonly categorySelectorProps?: CategorySelectorProps;
         readonly displayStyleProps?: DisplayStyleProps;

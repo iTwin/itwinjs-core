@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-telemetry",
-  "version": "4.10.0-dev.31",
+  "version": "4.10.0-dev.32",
   "description": "iTwin.js Telemetry Client",
   "main": "lib/cjs/core-telemetry.js",
   "module": "lib/esm/core-telemetry.js",
@@ -47,7 +47,7 @@
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.3.3",
+    "typescript": "~5.6.2",
     "webpack": "^5.76.0"
   }
 }
