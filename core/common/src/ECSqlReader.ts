@@ -342,6 +342,10 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       return [];
     }
     const valueFormat = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? DbValueFormat.JsNames : DbValueFormat.ECSqlNames;
+    if (this._options.rowFormat === QueryRowFormat.UseJsPropertyNames && typeof this._options.convertClassIdsToClassNames === "undefined") {
+      this._options.convertClassIdsToClassNames = true;
+    }
+
     const request: DbQueryRequest = {
       ... this._options,
       kind: DbRequestKind.ECSql,
