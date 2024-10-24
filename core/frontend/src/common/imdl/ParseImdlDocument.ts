@@ -30,6 +30,7 @@ import { VertexTable } from "../internal/render/VertexTable";
 import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
+import { MeshoptDecoder } from "meshoptimizer";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -446,7 +447,7 @@ class Parser {
       nodeId = nodeId ?? AnimationNodeId.Untransformed;
       let node = nodesById.get(nodeId);
       if (!node) {
-        node =  {
+        node = {
           animationNodeId: nodeId,
           animationId: `${this._options.batchModelId}_Node_${nodeId}`,
           primitives: [],
@@ -735,7 +736,7 @@ class Parser {
     if (!indexed && imdl.compact)
       indexed = this.parseCompactEdges(imdl.compact, new VertexIndices(indices));
 
-    if (!segments && !silhouettes && !indexed &&!polylines)
+    if (!segments && !silhouettes && !indexed && !polylines)
       return undefined;
 
     return {
@@ -890,9 +891,24 @@ class Parser {
     if (!surf)
       return undefined;
 
-    const indices = this.findBuffer(surf.indices);
+    let indices = this.findBuffer(surf.indices);
     if (!indices)
       return undefined;
+
+    if (surf.compressedIndexCount && surf.compressedIndexCount > 0) {
+      const decompressedIndices = new Uint8Array(surf.compressedIndexCount * 4);
+      MeshoptDecoder.decodeIndexSequence(decompressedIndices, surf.compressedIndexCount, 4, indices);
+
+      // reduce from 32 to 24 bits
+      indices = new Uint8Array(surf.compressedIndexCount * 3);
+      for (let i = 0; i < surf.compressedIndexCount; i++) {
+        const srcIndex = i * 4;
+        const dstIndex = i * 3;
+        indices[dstIndex + 0] = decompressedIndices[srcIndex + 0];
+        indices[dstIndex + 1] = decompressedIndices[srcIndex + 1];
+        indices[dstIndex + 2] = decompressedIndices[srcIndex + 2];
+      }
+    }
 
     const type = surf.type;
     if (!isValidSurfaceType(type))
@@ -960,9 +976,44 @@ class Parser {
     if (!json)
       return undefined;
 
-    const bytes = this.findBuffer(JsonUtils.asString(json.bufferView));
-    if (!bytes)
-      return undefined;
+    let bytes: Uint8Array | undefined;
+    if (json.compressedSize && json.compressedSize > 0) {
+
+      const bufferViewJson = this._document.bufferViews[JsonUtils.asString(json.bufferView)];
+      if (undefined === bufferViewJson)
+        return undefined;
+
+      const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+      const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+      if (0 === byteLength)
+        return undefined;
+
+      const compressedBytes = this._binaryData.subarray(byteOffset, byteOffset + json.compressedSize);
+      if (!compressedBytes)
+        return undefined;
+
+      bytes = new Uint8Array(json.width * json.height * 4);
+      MeshoptDecoder.decodeVertexBuffer(bytes, json.count, json.numRgbaPerVertex * 4, compressedBytes);
+
+      const remainingBytesSize = byteLength - json.compressedSize;
+
+      // if there are remaining bytes, copy the data that did not go through the compression
+      if (remainingBytesSize > 0) {
+        const remainingBytes = this._binaryData.subarray(byteOffset + json.compressedSize, byteOffset + byteLength);
+        if (!remainingBytes)
+          return undefined;
+
+        const decompressedSize = json.count * json.numRgbaPerVertex * 4;
+        for (let i = 0; i < remainingBytesSize; i++) {
+          bytes[decompressedSize + i] = remainingBytes[i];
+        }
+      }
+
+    } else {
+      bytes = this.findBuffer(JsonUtils.asString(json.bufferView));
+      if (!bytes)
+        return undefined;
+    }
 
     const uniformFeatureID = undefined !== json.featureID ? JsonUtils.asInt(json.featureID) : undefined;
 
@@ -1224,7 +1275,7 @@ export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchMo
 }
 
 /** @internal */
-export function parseImdlDocument(options: ParseImdlDocumentArgs): Imdl.Document | ImdlParseError {
+export async function parseImdlDocument(options: ParseImdlDocumentArgs): Promise<Imdl.Document | ImdlParseError> {
   const stream = ByteStream.fromUint8Array(options.data);
   const imdlHeader = new ImdlHeader(stream);
   if (!imdlHeader.isValid)
@@ -1257,13 +1308,13 @@ export function parseImdlDocument(options: ParseImdlDocumentArgs): Imdl.Document
       scene: JsonUtils.asString(sceneValue.scene),
       scenes: JsonUtils.asArray(sceneValue.scenes),
       animationNodes: JsonUtils.asObject(sceneValue.animationNodes),
-      bufferViews: JsonUtils.asObject(sceneValue.bufferViews) ?? { },
+      bufferViews: JsonUtils.asObject(sceneValue.bufferViews) ?? {},
       meshes: JsonUtils.asObject(sceneValue.meshes),
-      nodes: JsonUtils.asObject(sceneValue.nodes) ?? { },
-      materials: JsonUtils.asObject(sceneValue.materials) ?? { },
-      renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials) ?? { },
-      namedTextures: JsonUtils.asObject(sceneValue.namedTextures) ?? { },
-      patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols) ?? { },
+      nodes: JsonUtils.asObject(sceneValue.nodes) ?? {},
+      materials: JsonUtils.asObject(sceneValue.materials) ?? {},
+      renderMaterials: JsonUtils.asObject(sceneValue.renderMaterials) ?? {},
+      namedTextures: JsonUtils.asObject(sceneValue.namedTextures) ?? {},
+      patternSymbols: JsonUtils.asObject(sceneValue.patternSymbols) ?? {},
       rtcCenter: JsonUtils.asArray(sceneValue.rtcCenter),
     };
 
@@ -1275,6 +1326,8 @@ export function parseImdlDocument(options: ParseImdlDocumentArgs): Imdl.Document
       startPos: ftStartPos,
       multiModel: 0 !== (imdlHeader.flags & ImdlFlags.MultiModelFeatureTable),
     };
+
+    await MeshoptDecoder.ready;
 
     const parser = new Parser(imdlDoc, binaryData, options, featureTable, stream);
     return parser.parse();
