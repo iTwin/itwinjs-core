@@ -177,7 +177,7 @@ export namespace ViewStore {
       throw new Error(`illegal ${msg} name "${name}"`);
   };
 
-  export const defaultViewGroupId = 1 as const;
+  export const defaultViewGroupId = 1;
 
   export interface ViewDbCtorArgs {
     guidMap?: IModelDb.GuidMapper;
@@ -1369,7 +1369,7 @@ export namespace ViewStore {
     }
   }
 
-  const viewDbName = "ViewDb" as const;
+  const viewDbName = "ViewDb";
 
   /** methods of cloud `ViewDb` for read access */
   export interface ReadMethods extends ViewStoreRpc.Reader {

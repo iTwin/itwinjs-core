@@ -2305,7 +2305,7 @@ export class AccuDraw {
     if (!this._distanceRoundOff.active || !this._distanceRoundOff.units.size)
       return undefined;
 
-    let roundValue = this._distanceRoundOff.units.values().next().value;
+    let roundValue = this._distanceRoundOff.units.values().next().value!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
     if (this._distanceRoundOff.units.size > 1) {
       // NOTE: Set isn't ordered, find smallest entry...
@@ -2337,7 +2337,7 @@ export class AccuDraw {
     if (!this._angleRoundOff.active || !this._angleRoundOff.units.size)
       return undefined;
 
-    let roundValue = this._angleRoundOff.units.values().next().value;
+    let roundValue = this._angleRoundOff.units.values().next().value!; // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
     if (this._angleRoundOff.units.size > 1) {
       // NOTE: Set isn't ordered, find smallest entry...

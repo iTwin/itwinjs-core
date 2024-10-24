@@ -2414,7 +2414,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row["parent.id"], parentId);
         assert.equal(row["parent.relClassName"], "Test.ParentHasChildren");
         assert.equal(row.myParentId, parentId);
-        assert.isFalse(Id64.isValidId64(row.myParentRelClassId));
+        assert.isTrue(Id64.isValidId64(row.myParentRelClassId));
       }), 2);
 
       const childId: Id64String = childIds[0];
@@ -2454,11 +2454,11 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId as MyId,ECClassId as MyClassId,SourceECInstanceId As MySourceId,SourceECClassId As MySourceClassId,TargetECInstanceId As MyTargetId,TargetECClassId As MyTargetClassId FROM test.ParentHasChildren WHERE TargetECInstanceId=?", QueryBinder.from([childId]), undefined, (row: any) => {
         rowCount++;
         assert.equal(row.myId, childId);
-        assert.isFalse(Id64.isValidId64(row.myClassId));
+        assert.isTrue(Id64.isValidId64(row.myClassId));
         assert.equal(row.mySourceId, parentId);
-        assert.isFalse(Id64.isValidId64(row.mySourceClassId));
+        assert.isTrue(Id64.isValidId64(row.mySourceClassId));
         assert.equal(row.myTargetId, childId);
-        assert.isFalse(Id64.isValidId64(row.myTargetClassId));
+        assert.isTrue(Id64.isValidId64(row.myTargetClassId));
       }), 1);
 
     });

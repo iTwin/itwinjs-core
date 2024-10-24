@@ -1104,7 +1104,10 @@ export class XmlParser extends AbstractParser<Element> {
   }
 
   private readPrimitivePropertyValue(propElement: Element, primitiveType: PrimitiveType): PrimitiveValue {
-    if (!propElement.textContent)
+    if (undefined === propElement.textContent || null === propElement.textContent)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid property value.`);
+
+    if (propElement.textContent === "" && primitiveType !== PrimitiveType.String)
       throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `Primitive property '${propElement.tagName}' has an invalid property value.`);
 
     // TODO: Mapping all primitive types to string, number and boolean
