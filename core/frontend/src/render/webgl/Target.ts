@@ -441,7 +441,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     });
   }
 
-  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<String, T> | undefined, newMap: Map<String, T> | undefined): void {
+  private changeDrapesOrClassifiers<T extends IDisposable>(oldMap: Map<string, T> | undefined, newMap: Map<string, T> | undefined): void {
     if (undefined === newMap) {
       if (undefined !== oldMap)
         for (const value of oldMap.values())
@@ -1001,7 +1001,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.renderSystem.frameBufferStack.execute(this._fbo, true, false, () => {
       try {
         context.readPixels(x, y, w, h, context.RGBA, context.UNSIGNED_BYTE, out);
-      } catch (e) {
+      } catch {
         didSucceed = false;
       }
     });

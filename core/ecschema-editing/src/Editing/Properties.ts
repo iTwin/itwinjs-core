@@ -28,7 +28,7 @@ export class Properties {
     let newName: ECName;
     try {
       newName = new ECName(newPropertyName);
-    } catch(e: any) {
+    } catch {
       throw new SchemaEditingError(ECEditingStatus.SetPropertyName, new PropertyId(this.ecClassType, classKey, propertyName),
         new SchemaEditingError(ECEditingStatus.InvalidECName, new PropertyId(this.ecClassType, classKey, newPropertyName)));
     }
@@ -226,7 +226,7 @@ export class Properties {
   private async findDerivedClasses(mutableClass: MutableClass): Promise<Array<MutableClass>>{
     const derivedClasses: Array<MutableClass> = [];
 
-    for await (const schemaItem of this._schemaEditor.schemaContext.getSchemaItems()) {
+    for (const schemaItem of this._schemaEditor.schemaContext.getSchemaItems()) {
       if(ECClass.isECClass(schemaItem) && await schemaItem.is(mutableClass)) {
         if (!mutableClass.key.matches(schemaItem.key)) {
           derivedClasses.push(schemaItem as MutableClass);

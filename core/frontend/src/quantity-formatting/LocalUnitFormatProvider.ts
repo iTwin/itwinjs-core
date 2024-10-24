@@ -39,7 +39,7 @@ export class LocalUnitFormatProvider extends BaseUnitFormattingSettingsProvider 
     try {
       localStorage.setItem (this.buildUnitSystemKey(), unitSystemKey);
       return true;
-    } catch (_e) {
+    } catch {
       return false;
     }
   }
@@ -54,7 +54,7 @@ export class LocalUnitFormatProvider extends BaseUnitFormattingSettingsProvider 
     try {
       localStorage.setItem (this.buildOverridesKey(quantityTypeKey), JSON.stringify(overrideProps));
       return true;
-    } catch (_e) {
+    } catch {
       return false;
     }
   }

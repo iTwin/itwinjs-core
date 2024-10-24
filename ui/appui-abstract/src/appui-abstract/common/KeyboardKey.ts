@@ -57,6 +57,6 @@ export enum SpecialKey {
  * @public @deprecated in 4.3. Please use a custom implementation moving forward.
  */
 export function isArrowKey(key: string): boolean {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return (key === SpecialKey.ArrowLeft || key === SpecialKey.ArrowRight || key === SpecialKey.ArrowUp || key === SpecialKey.ArrowDown);
 }

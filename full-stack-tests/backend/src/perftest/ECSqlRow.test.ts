@@ -17,7 +17,6 @@ import { IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs
 // eslint-disable-next-line @itwin/import-within-package
 import { version } from "../../../../../core/backend/package.json";
 /** @public */
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const ITWINJS_CORE_VERSION = version as string;
 const CORE_MAJ_MIN = `${ITWINJS_CORE_VERSION.split(".")[0]}.${ITWINJS_CORE_VERSION.split(".")[1]}.x`;
 
@@ -122,7 +121,7 @@ function ensureDirectoryExists(dir: string) {
 describe("ECSqlRowPerformanceTests", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ECSqlRowPerformance");
   const reporter = new Reporter();
-  const eCSqlRowConfig = require(path.join(__dirname, "ECSqlRowConfig.json")).test3d; // eslint-disable-line @typescript-eslint/no-var-requires
+  const eCSqlRowConfig = require(path.join(__dirname, "ECSqlRowConfig.json")).test3d; // eslint-disable-line @typescript-eslint/no-require-imports
 
   before(async () => {
     ensureDirectoryExists(KnownTestLocations.outputDir);
@@ -192,7 +191,7 @@ describe("ECSqlRowPerformanceTests", () => {
 describe("ECSqlRowPerformanceTests2d", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ECSqlRowPerformance2d");
   const reporter = new Reporter();
-  const eCSqlRowConfig = require(path.join(__dirname, "ECSqlRowConfig.json")).test2d; // eslint-disable-line @typescript-eslint/no-var-requires
+  const eCSqlRowConfig = require(path.join(__dirname, "ECSqlRowConfig.json")).test2d; // eslint-disable-line @typescript-eslint/no-require-imports
 
   before(async () => {
     ensureDirectoryExists(KnownTestLocations.outputDir);
