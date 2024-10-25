@@ -707,6 +707,8 @@ export class InvertedUnit extends SchemaItem {
     get invertsUnit(): LazyLoadedUnit | undefined;
     // (undocumented)
     protected _invertsUnit?: LazyLoadedUnit;
+    // @alpha (undocumented)
+    static isInvertedUnit(object: any): object is InvertedUnit;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.InvertedUnit;
     // @alpha
@@ -998,7 +1000,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
+    get units(): [InvertedUnit | Unit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
