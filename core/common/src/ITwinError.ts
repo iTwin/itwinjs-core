@@ -7,7 +7,7 @@ import { LockState } from "./IModelError";
  * @beta
  */
 export interface InUseLock {
-/** Id of the object that is causing conflict. */
+  /** Id of the object that is causing conflict. */
   objectId: string;
   /**
    * The level of conflicting lock. Possible values are {@link LockState.Shared}, {@link LockState.Exclusive}.
@@ -19,14 +19,30 @@ export interface InUseLock {
 }
 
 /**
- * An interface used to describe an error. This error interface should be extended when needing to throw errors with extra properties defined on them. See [[InUseLocksError]] for an example.
+ * An interface used to describe an error for a developer/application. The message is not intended to be displayed to an end user.
+ * This error interface should be extended when needing to throw errors with extra properties defined on them. See [[InUseLocksError]] for an example.
  * Also see [[ITwinError.throwInUseLocksError]] and [[ITwinError.isInUseLocksError]] for examples of how to throw and check that an error is of type InUseLocksError.
+ * @example
+ * ```ts
+ * try {
+ *  await briefcaseDb.locks.acquireLocks({ exclusive: elementId });
+ * } catch (err: unknown) {
+ *  if (ITwinError.isInUseLocksError(err)) {
+ *    const inUseLocks = err.inUseLocks;
+ *    const briefcaseIds = inUseLocks.briefcaseIds;
+ *    const state = inUseLocks.state;
+ *    const objectId = inUseLocks.objectId;
+ *    // Create a user friendly error message
+ *  } else {
+ *    throw err;
+ *  }
+ * ```
  * @beta
  */
 export interface ITwinError {
-  /** namespace for the error */
+  /** namespace for the error. This is a unique qualifier for the errorKey. */
   namespace: string;
-  /** unique key for error, within namespace */
+  /** unique key for error, within namespace. All errorKeys within the same namespace must be unique. */
   errorKey: string;
   /** explanation of what went wrong. */
   message: string;
