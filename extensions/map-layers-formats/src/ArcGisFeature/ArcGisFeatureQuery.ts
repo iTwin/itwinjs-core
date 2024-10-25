@@ -70,12 +70,12 @@ export interface FeatureQueryQuantizationParams {
 
 /** @internal */
 export type ArcGisFeatureFormat = "json" | "pbf";
+
 /**
 * @internal
 */
-
 export const arcgisFeatureFormats = {
-  json:  "json" as ArcGisFeatureFormat,
+  json: "json" as ArcGisFeatureFormat,
   pbf: "pbf"  as ArcGisFeatureFormat,
 }
 
