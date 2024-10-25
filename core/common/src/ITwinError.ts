@@ -60,7 +60,7 @@ export interface ITwinError {
 */
 export interface InUseLocksError extends ITwinError {
   namespace: "itwinjs-core";
-  errorKey: "InUseLocks";
+  errorKey: "in-use-locks";
   inUseLocks: InUseLock[];
 }
 
@@ -74,7 +74,7 @@ export namespace ITwinError {
   }
 
   export function isInUseLocksError(error: unknown): error is InUseLocksError {
-    return isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "InUseLocks";
+    return isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "in-use-locks";
   }
 
   /** get the meta data associated with this ITwinError, if any. */
@@ -88,7 +88,7 @@ export namespace ITwinError {
     Error.captureStackTrace(errorObject, throwInUseLocksError); // optional: whether we want to hide throwInUseLocksError or not from the stack. not super important
     const lockError: InUseLocksError = {
       namespace: "itwinjs-core",
-      errorKey: "InUseLocks",
+      errorKey: "in-use-locks",
       message: message ?? "One or more objects are already locked by another briefcase.", // TODO: Should we allow for a custom message to be thrown? Might be unnecessary
       metadata,
       inUseLocks,
