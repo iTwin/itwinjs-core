@@ -23,20 +23,9 @@ export interface InUseLock {
  * This error interface should be extended when needing to throw errors with extra properties defined on them. See [[InUseLocksError]] for an example.
  * When extending ITwinError, one should typically add a type guard function and a function to throw the error either to a namespace for their error or as free functions.
  * See [[InUseLocksError.throwInUseLocksError]] and [[InUseLocksError.isInUseLocksError]] for examples of how to throw and check that an error is of type InUseLocksError.
- * @example
- * ```ts
- * try {
- *  await briefcaseDb.locks.acquireLocks({ exclusive: elementId });
- * } catch (err: unknown) {
- *  if (ITwinError.isInUseLocksError(err)) {
- *    const inUseLocks = err.inUseLocks;
- *    const briefcaseIds = inUseLocks.briefcaseIds;
- *    const state = inUseLocks.state;
- *    const objectId = inUseLocks.objectId;
- *    // Create a user friendly error message
- *  } else {
- *    throw err;
- *  }
+ * * Example of catching a ITwinError:
+ * ``` ts
+ * [[include:ITwinError.catchAndHandleITwinError]]
  * ```
  * @beta
  */
