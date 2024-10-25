@@ -18,7 +18,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       await TestUtility.shutdownFrontend();
     });
 
-    it("should receive ConflictingLocksError on the frontend", async () => {
+    it("should receive InUseLocksError on the frontend", async () => {
       const message = "One or more objects are already locked by another briefcase";
       const inUseLocks: InUseLock[] = [{ briefcaseIds: [1], objectId: "objectId", state: LockState.Exclusive }];
       const metadata: LoggingMetaData = { category: "test", severity: "error" };
@@ -39,12 +39,6 @@ if (ProcessDetector.isElectronAppFrontend) {
       expect(caughtError).to.be.true;
     });
 
-    // it("should throw error on frontend", async () => {
-    //   const message = "One or more objects are already locked by another briefcase";
-    //   const inUseLocks: InUseLock[] = [{ briefcaseIds: [1], objectId: "objectId", state: LockState.Exclusive }];
-    //   const metadata: LoggingMetaData = { category: "test", severity: "error" };
-    //   await coreFullStackTestIpc.throwInUseLocksError(inUseLocks, message, metadata);
-    // });
   });
 
 }
