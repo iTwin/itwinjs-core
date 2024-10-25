@@ -73,6 +73,7 @@ export namespace InUseLocksError {
       namespace: "itwinjs-core",
       errorKey: "in-use-locks",
       message: message ?? "One or more objects are already locked by another briefcase.",
+      metadata,
       inUseLocks,
     };
     Object.assign(errorObject, lockError);
