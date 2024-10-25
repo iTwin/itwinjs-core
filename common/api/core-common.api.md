@@ -5286,11 +5286,19 @@ export interface InUseLock {
 // @beta
 export interface InUseLocksError extends ITwinError {
     // (undocumented)
-    errorKey: "InUseLocks";
+    errorKey: "in-use-locks";
     // (undocumented)
     inUseLocks: InUseLock[];
     // (undocumented)
-    namespace: "IModelAccess";
+    namespace: "itwinjs-core";
+}
+
+// @beta
+export namespace InUseLocksError {
+    // (undocumented)
+    export function isInUseLocksError(error: unknown): error is InUseLocksError;
+    // (undocumented)
+    export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never;
 }
 
 // @internal (undocumented)
@@ -5522,13 +5530,7 @@ export interface ITwinError {
 export namespace ITwinError {
     export function getMetaData(err: ITwinError): object | undefined;
     // (undocumented)
-    export function isInUseLocksError(error: unknown): error is InUseLocksError;
-    // (undocumented)
     export function isITwinError(error: unknown): error is ITwinError;
-    // (undocumented)
-    export function isOtherError(error: unknown): error is OtherError;
-    // (undocumented)
-    export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never;
 }
 
 // @public

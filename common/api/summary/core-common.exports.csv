@@ -443,6 +443,7 @@ public;const;Interpolation
 public;type;InterpolationFunction
 beta;interface;InUseLock
 beta;interface;InUseLocksError
+beta;namespace;InUseLocksError
 internal;const;ipcAppChannels
 internal;interface;IpcAppFunctions
 internal;interface;IpcAppNotifications
