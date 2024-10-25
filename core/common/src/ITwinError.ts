@@ -44,7 +44,7 @@ export interface ITwinError {
   namespace: string;
   /** unique key for error, within namespace. All errorKeys within the same namespace must be unique. */
   errorKey: string;
-  /** explanation of what went wrong. */
+  /** explanation of what went wrong. Intended to be read by a developer. */
   message: string;
   /** stack trace of the error. */
   stack?: string;
@@ -58,15 +58,9 @@ export interface ITwinError {
  * @beta
 */
 export interface InUseLocksError extends ITwinError {
-  namespace: "IModelAccess";
+  namespace: "itwinjs-core";
   errorKey: "InUseLocks";
   inUseLocks: InUseLock[];
-}
-
-interface OtherError extends ITwinError {
-  namespace: "TestNamespace2";
-  errorKey: "OtherError";
-  description: string;
 }
 
 /**
@@ -79,11 +73,7 @@ export namespace ITwinError {
   }
 
   export function isInUseLocksError(error: unknown): error is InUseLocksError {
-    return isITwinError(error) && error.namespace === "IModelAccess" && error.errorKey === "InUseLocks";
-  }
-
-  export function isOtherError(error: unknown): error is OtherError {
-    return isITwinError(error) && error.namespace === "TestNamespace2" && error.errorKey === "OtherError";
+    return isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "InUseLocks";
   }
 
   /** get the meta data associated with this ITwinError, if any. */
@@ -96,7 +86,7 @@ export namespace ITwinError {
     errorObject.name = "InUseLocksError"; // optional but makes it so that when the error is thrown and not caught we see InUseLocksError: 'message' instead of Error: 'message'
     Error.captureStackTrace(errorObject, throwInUseLocksError); // optional: whether we want to hide throwInUseLocksError or not from the stack. not super important
     const lockError: InUseLocksError = {
-      namespace: "IModelAccess",
+      namespace: "itwinjs-core",
       errorKey: "InUseLocks",
       message: message ?? "One or more objects are already locked by another briefcase.", // TODO: Should we allow for a custom message to be thrown? Might be unnecessary
       metadata,
