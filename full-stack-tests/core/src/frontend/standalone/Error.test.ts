@@ -2,7 +2,7 @@ import { LoggingMetaData, ProcessDetector } from "@itwin/core-bentley";
 import { TestUtility } from "../TestUtility";
 import { TestUsers } from "@itwin/oidc-signin-tool/lib/cjs/TestUsers";
 import { coreFullStackTestIpc } from "../Editing";
-import { InUseLock, ITwinError, LockState } from "@itwin/core-common";
+import { InUseLock, InUseLocksError, ITwinError, LockState } from "@itwin/core-common";
 import { expect } from "chai";
 
 if (ProcessDetector.isElectronAppFrontend) {
@@ -27,8 +27,8 @@ if (ProcessDetector.isElectronAppFrontend) {
         await coreFullStackTestIpc.throwInUseLocksError(inUseLocks, message, metadata);
       } catch (err) {
         caughtError = true;
-        expect(ITwinError.isInUseLocksError(err)).to.be.true;
-        if (ITwinError.isInUseLocksError(err)) {
+        expect(InUseLocksError.isInUseLocksError(err)).to.be.true;
+        if (InUseLocksError.isInUseLocksError(err)) {
           // Even though we're on the frontend we should make sure our stack trace includes backend code.
           expect(err.stack?.includes("core\\backend") || err.stack?.includes("core/backend"), `Expected ${err.stack} to have mention of 'core\\backend' or 'core/backend'`).to.be.true;
           expect(err.message).to.equal(message);
