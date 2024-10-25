@@ -53,16 +53,18 @@ export interface InUseLocksError extends ITwinError {
   inUseLocks: InUseLock[];
 }
 
-/**
- * Functions for working with InUseLocksError, specifically a type guard and a function to throw the error.
- * @beta
- */
+/** @beta */
 export namespace InUseLocksError {
 
+  /**
+   * type guard function that returns whether or not the passed in parameter is an [[InUseLocksError]].
+   * it first checks [[ITwinError.isITwinError]] and then checks that the namespace property is "itwinjs-core" and the errorKey property is "in-use-locks".
+   */
   export function isInUseLocksError(error: unknown): error is InUseLocksError {
     return ITwinError.isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "in-use-locks";
   }
 
+  /** throws an error which passes the [[isInUseLocksError]] type guard function */
   export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never {
     const errorObject = new Error();
     errorObject.name = "InUseLocksError"; // optional but makes it so that when the error is thrown and not caught we see InUseLocksError: 'message' instead of Error: 'message'
@@ -79,11 +81,9 @@ export namespace InUseLocksError {
   }
 
 }
-/**
- * Functions for working with ITwinErrors
- * @beta
- */
+/** @beta */
 export namespace ITwinError {
+  /** type guard function that returns whether or not the passed in parameter is an [[ITwinError]] */
   export function isITwinError(error: unknown): error is ITwinError {
     return error !== undefined && error !== null && typeof error === "object" && "namespace" in error && "errorKey" in error && "message" in error;
   }

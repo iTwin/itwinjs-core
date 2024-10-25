@@ -5293,11 +5293,9 @@ export interface InUseLocksError extends ITwinError {
     namespace: "itwinjs-core";
 }
 
-// @beta
+// @beta (undocumented)
 export namespace InUseLocksError {
-    // (undocumented)
     export function isInUseLocksError(error: unknown): error is InUseLocksError;
-    // (undocumented)
     export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never;
 }
 
@@ -5526,10 +5524,9 @@ export interface ITwinError {
     stack?: string;
 }
 
-// @beta
+// @beta (undocumented)
 export namespace ITwinError {
     export function getMetaData(err: ITwinError): object | undefined;
-    // (undocumented)
     export function isITwinError(error: unknown): error is ITwinError;
 }
 
