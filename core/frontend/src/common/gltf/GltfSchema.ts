@@ -478,7 +478,7 @@ export interface Gltf2Material extends GltfChildOfRootProperty {
      * indicates that the material should be displayed without lighting. The extension adds no additional properties; it is effectively a boolean flag.
      */
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    KHR_materials_unlit?: { };
+    KHR_materials_unlit?: object;
     /** The [KHR_techniques_webgl extension](https://github.com/KhronosGroup/glTF/blob/c1c12bd100e88ff468ccef1cb88cfbec56a69af2/extensions/2.0/Khronos/KHR_techniques_webgl/README.md)
      * allows "techniques" to be associated with [[GltfMaterial]]s. Techniques can supply custom shader programs to render geometry; this was a core feature of glTF 1.0 (see [[GltfTechnique]]).
      * Here, it is only used to extract uniform values.

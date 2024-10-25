@@ -133,7 +133,7 @@ export class OverrideFormat {
       let currPos;
 
       // TODO need to include `,` as a valid search argument.
-      while (-1 !== (currPos = overrideString.indexOf(")", prevPos))) { // eslint-disable-line
+      while (-1 !== (currPos = overrideString.indexOf(")", prevPos))) {
         tokens.push(overrideString.substring(prevPos, currPos));
         prevPos = currPos + 1;
       }

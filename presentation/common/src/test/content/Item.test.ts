@@ -87,7 +87,7 @@ describe("Item", () => {
     });
 
     it("creates valid Item with nested content values", () => {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const nestedContentValueJSON: NestedContentValueJSON = {
         primaryKeys: [createRandomECInstanceKey()],
         values: { nested: null },
@@ -124,7 +124,6 @@ describe("Item", () => {
         createTestContentItem({ values: { a: "b" }, displayValues: { a: "B" } }),
         createTestContentItem({ values: { c: "d" }, displayValues: { c: "D" } }),
       ];
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       expect(Item.listFromJSON(JSON.stringify(items))).to.matchSnapshot();
     });
   });

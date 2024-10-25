@@ -493,7 +493,7 @@ export class CameraPathsMenu extends ToolBarDropDown {
 
     try {
       this._paths = JSON.parse(externalCameraPathsString).map((path: CameraPathProps) => CameraPath.fromJSON(path));
-    } catch (_e) {
+    } catch {
       this._paths = [];
     }
   }

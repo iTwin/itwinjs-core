@@ -9,7 +9,7 @@
 import { Localization } from "@itwin/core-common";
 import { AnyDiagnostic } from "./Diagnostic";
 
-import assert = require("assert");
+import assert = require("assert"); // eslint-disable-line @typescript-eslint/no-require-imports
 
 const translationNamespace = "ECSchemaMetaData";
 const subTranslationNamespace = "Diagnostics";

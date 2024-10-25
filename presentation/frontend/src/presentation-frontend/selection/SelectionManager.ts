@@ -425,7 +425,6 @@ export class ToolSelectionSyncHandler implements IDisposable {
     return this._asyncsTracker.pendingAsyncs;
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onToolSelectionChanged = async (ev: SelectionSetEvent): Promise<void> => {
     // ignore selection change event if the handler is suspended
     if (this.isSuspended) {

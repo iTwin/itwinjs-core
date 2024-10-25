@@ -34,7 +34,7 @@ class OverriddenFunctions {
       const ctx = this.origCreateContext(canvas, useWebGL2, useContextAttributes ? attr : undefined);
       if (undefined !== ctx && undefined !== newGetParameter) {
         const origGetParameter = ctx.getParameter; // eslint-disable-line @typescript-eslint/unbound-method
-        ctx.getParameter = (pname: number) => { // eslint-disable-line @typescript-eslint/unbound-method
+        ctx.getParameter = (pname: number) => {
           const result = newGetParameter(ctx, pname);
           if (result !== undefined)
             return result;

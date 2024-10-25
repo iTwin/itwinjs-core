@@ -9,7 +9,7 @@
 import { RpcOperation } from "../core/RpcOperation";
 import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** An OpenAPI 3.0 root document object.
  * @internal
