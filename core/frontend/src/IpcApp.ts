@@ -96,6 +96,8 @@ export class IpcApp {
 
     if (undefined !== retVal.iTwinError) {
       const error = new Error();
+      if (retVal.iTwinError.stack === undefined)
+        delete retVal.iTwinError.stack;
       Object.assign(error, retVal.iTwinError);
       throw error;
     } else if (undefined !== retVal.error) {
