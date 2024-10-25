@@ -23,6 +23,8 @@ export type { GetMetaDataFunction, LogFunction, LoggingMetaData } from "@itwin/c
 export type IModelErrorNumber = IModelStatus | DbResult | BentleyStatus | BriefcaseStatus | ChangeSetStatus;
 
 /** The error type thrown by this module.
+ * Creating subclasses of IModelError should be avoided. Instead use [[ITwinError]].
+ * @see [[ITwinError]]
  * @see [[IModelErrorNumber]] for commonly-used error codes.
  * @public
  */
