@@ -21,8 +21,8 @@ export interface InUseLock {
 /**
  * An interface used to describe an error for a developer/application. The message is not intended to be displayed to an end user.
  * This error interface should be extended when needing to throw errors with extra properties defined on them. See [[InUseLocksError]] for an example.
- * When extending ITwinError, one should typically add a type guard function and a function to throw the error to the ITwinError namespace for their specific error.
- * See [[ITwinError.throwInUseLocksError]] and [[ITwinError.isInUseLocksError]] for examples of how to throw and check that an error is of type InUseLocksError.
+ * When extending ITwinError, one should typically add a type guard function and a function to throw the error either to a namespace for their error or as free functions.
+ * See [[InUseLocksError.throwInUseLocksError]] and [[InUseLocksError.isInUseLocksError]] for examples of how to throw and check that an error is of type InUseLocksError.
  * @example
  * ```ts
  * try {
@@ -65,21 +65,13 @@ export interface InUseLocksError extends ITwinError {
 }
 
 /**
- * Functions for throwing ITwinErrors and checking that objects are of a specific ITwinError type.
+ * Functions for working with InUseLocksError, specifically a type guard and a function to throw the error.
  * @beta
  */
-export namespace ITwinError {
-  export function isITwinError(error: unknown): error is ITwinError {
-    return error !== undefined && error !== null && typeof error === "object" && "namespace" in error && "errorKey" in error && "message" in error;
-  }
+export namespace InUseLocksError {
 
   export function isInUseLocksError(error: unknown): error is InUseLocksError {
-    return isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "in-use-locks";
-  }
-
-  /** get the meta data associated with this ITwinError, if any. */
-  export function getMetaData(err: ITwinError): object | undefined {
-    return BentleyError.getMetaData(err.metadata);
+    return ITwinError.isITwinError(error) && error.namespace === "itwinjs-core" && error.errorKey === "in-use-locks";
   }
 
   export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never {
@@ -96,4 +88,20 @@ export namespace ITwinError {
     Object.assign(errorObject, lockError);
     throw errorObject;
   }
+
+}
+/**
+ * Functions for working with ITwinErrors
+ * @beta
+ */
+export namespace ITwinError {
+  export function isITwinError(error: unknown): error is ITwinError {
+    return error !== undefined && error !== null && typeof error === "object" && "namespace" in error && "errorKey" in error && "message" in error;
+  }
+
+  /** get the meta data associated with this ITwinError, if any. */
+  export function getMetaData(err: ITwinError): object | undefined {
+    return BentleyError.getMetaData(err.metadata);
+  }
+
 };
