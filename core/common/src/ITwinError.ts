@@ -21,7 +21,8 @@ export interface InUseLock {
 /**
  * An interface used to describe an error for a developer/application. The message is not intended to be displayed to an end user.
  * This error interface should be extended when needing to throw errors with extra properties defined on them. See [[InUseLocksError]] for an example.
- * Also see [[ITwinError.throwInUseLocksError]] and [[ITwinError.isInUseLocksError]] for examples of how to throw and check that an error is of type InUseLocksError.
+ * When extending ITwinError, one should typically add a type guard function and a function to throw the error for their specific error.
+ * See [[ITwinError.throwInUseLocksError]] and [[ITwinError.isInUseLocksError]] for examples of how to throw and check that an error is of type InUseLocksError.
  * @example
  * ```ts
  * try {
