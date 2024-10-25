@@ -58,7 +58,7 @@ export class BingElevationProvider {
     try {
       const tileResponseBody = await request(requestUrl, "json");
       return tileResponseBody.resourceSets[0].resources[0].elevations[0];
-    } catch (error) {
+    } catch {
       return 0.0;
     }
   }
@@ -74,7 +74,7 @@ export class BingElevationProvider {
     try {
       const tileResponseBody = await request(requestUrl, "json");
       return tileResponseBody.resourceSets[0].resources[0].elevations;
-    } catch (error) {
+    } catch {
       return undefined;
     }
   }
@@ -89,7 +89,7 @@ export class BingElevationProvider {
     try {
       const tileResponseBody = await request(requestUrl, "json");
       return tileResponseBody.resourceSets[0].resources[0].offsets[0];
-    } catch (error) {
+    } catch {
       return 0.0;
     }
   }

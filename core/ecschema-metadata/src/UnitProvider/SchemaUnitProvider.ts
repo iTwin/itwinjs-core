@@ -27,7 +27,7 @@ export class SchemaUnitProvider implements UnitsProvider {
    * created and the locater will be added.
    * @param _unitExtraData Additional data like alternate display label not found in Units Schema to match with Units; Defaults to empty array.
    */
-  constructor(contextOrLocater: ISchemaLocater, private _unitExtraData: UnitExtraData[] = []){
+  constructor(contextOrLocater: ISchemaLocater, private _unitExtraData: UnitExtraData[] = []) {
     if (contextOrLocater instanceof SchemaContext) {
       this._context = contextOrLocater;
     } else {
@@ -107,7 +107,7 @@ export class SchemaUnitProvider implements UnitsProvider {
         }
       } else if (InvertedUnit.isInvertedUnit(value)) {
         const invertsUnit = await value.invertsUnit;
-        if(invertsUnit) {
+        if (invertsUnit) {
           const foundPhenomenon = await invertsUnit.phenomenon;
           if (foundPhenomenon && foundPhenomenon.key.matchesFullName(phenomenon)) {
             const unitProps = await this.getUnitsProps(value);
@@ -174,8 +174,8 @@ export class SchemaUnitProvider implements UnitsProvider {
         return { fromUnit, toUnit };
       });
 
-    const {unitName: fromUnitName, isInverted: fromIsInverted} = await this.checkUnitPropsForConversion(fromUnit, this._context);
-    const {unitName: toUnitName, isInverted: toIsInverted} = await this.checkUnitPropsForConversion(toUnit, this._context);
+    const { unitName: fromUnitName, isInverted: fromIsInverted } = await this.checkUnitPropsForConversion(fromUnit, this._context);
+    const { unitName: toUnitName, isInverted: toIsInverted } = await this.checkUnitPropsForConversion(toUnit, this._context);
 
     const conversion = await this._unitConverter.calculateConversion(fromUnitName, toUnitName);
     const result: UnitConversionProps = {
@@ -207,7 +207,7 @@ export class SchemaUnitProvider implements UnitsProvider {
       return { unitName: invertedUnit.invertsUnit.fullName, isInverted: true };
     }
 
-    return { unitName: input.name, isInverted: false};
+    return { unitName: input.name, isInverted: false };
   }
 
   /**

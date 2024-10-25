@@ -8,7 +8,7 @@ import {
   RpcPushChannel, RpcResponseCacheControl, RpcRoutingToken, WipRpcInterface,
 } from "@itwin/core-common";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 export const testChannel = RpcPushChannel.create<number>("test");
 
@@ -46,7 +46,7 @@ export abstract class ZeroMajorRpcInterface extends RpcInterface {
   }
 }
 
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface TokenValues extends IModelRpcProps { }
 
 export abstract class TestRpcInterface extends RpcInterface {

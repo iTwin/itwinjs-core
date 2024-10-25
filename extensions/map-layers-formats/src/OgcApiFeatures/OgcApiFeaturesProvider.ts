@@ -354,7 +354,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
         }
       }
 
-    } catch (_e)  {
+    } catch {
       Logger.logError(loggerCategory, "Unknown error occurred when index static data");
       success = false;
     }
@@ -432,7 +432,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
 
       try {
         data = await this.fetchItems(url, this._tileModeFetchTimeout);
-      } catch (_e) {
+      } catch {
       }
       if (!data) {
         Logger.logError(loggerCategory, "Could not fetch OgcApiFeatures data.");
@@ -525,7 +525,7 @@ export class OgcApiFeaturesProvider extends MapLayerImageryProvider {
     let data: any;
     try {
       data = await this.fetchItems(url, this._tileModeFetchTimeout);
-    } catch (_e) {
+    } catch {
     }
     if (!data) {
       Logger.logError(loggerCategory, "Could not fetch OgcApiFeatures data.");

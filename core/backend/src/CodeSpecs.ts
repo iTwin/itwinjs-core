@@ -62,7 +62,7 @@ export class CodeSpecs {
   public hasId(codeSpecId: Id64String): boolean {
     try {
       return undefined !== this.getById(codeSpecId);
-    } catch (error) {
+    } catch {
       return false;
     }
   }
@@ -87,7 +87,7 @@ export class CodeSpecs {
   public hasName(name: string): boolean {
     try {
       return undefined !== this.getByName(name);
-    } catch (error) {
+    } catch {
       return false;
     }
   }

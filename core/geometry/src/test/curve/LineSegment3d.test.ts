@@ -118,7 +118,6 @@ describe("LineSegment3d", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "LineSegment3d", "PointsAlongLine");
   });
-
   it("ClosestApproachParallelSegments", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

@@ -7,7 +7,6 @@
  * @module Polyface
  */
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 import { assert } from "@itwin/core-bentley";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";

@@ -37,7 +37,7 @@ describe("SchemaLoaderPerformance", () => {
 
     try {
       await iModelDb.importSchemas(bisSchemaPaths);   // will throw an exception if import fails
-    } catch (error) {
+    } catch {
       throw new Error(`Failed to import schemas`);
     }
 

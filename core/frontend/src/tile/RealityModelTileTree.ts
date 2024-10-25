@@ -539,7 +539,7 @@ export class RealityModelTileTree extends RealityTileTree {
     this._isContentUnbounded = this.rootTile.contentRange.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
     if (!this.isContentUnbounded && !this.rootTile.contentRange.isNull) {
       const worldContentRange = this.iModelTransform.multiplyRange(this.rootTile.contentRange);
-      /* eslint-disable-next-line deprecation/deprecation */
+      /* eslint-disable-next-line @typescript-eslint/no-deprecated */
       this.iModel.expandDisplayedExtents(worldContentRange);
     }
   }
@@ -547,7 +547,6 @@ export class RealityModelTileTree extends RealityTileTree {
 }
 
 /** @internal */
-// eslint-disable-next-line no-redeclare
 export namespace RealityModelTileTree {
   export interface ReferenceBaseProps {
     iModel: IModelConnection;

@@ -18,7 +18,7 @@ import { IModelTransformer, ProcessChangesOptions } from "@itwin/imodel-transfor
 import { KnownTestLocations } from "./IModelTestUtils";
 
 // some json will be required later, but we don't want an eslint-disable line in the example code, so just disable for the file
-/* eslint-disable @typescript-eslint/no-var-requires */
+/* eslint-disable @typescript-eslint/no-require-imports */
 
 async function initializeBranch(myITwinId: string, masterIModelId: string, myAccessToken: AccessToken) {
   // __PUBLISH_EXTRACT_START__ IModelBranchingOperations_initialize
