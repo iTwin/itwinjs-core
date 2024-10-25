@@ -93,16 +93,16 @@ function stubGetLayerMetadata(sandbox: sinon.SinonSandbox) {
   });
 }
 
-function stubGetServiceJson(sandbox: sinon.SinonSandbox, json: any ) {
+function stubGetServiceJson(sandbox: sinon.SinonSandbox, getContent: ()=>any ) {
   return sandbox.stub(ArcGisUtilities, "getServiceJson").callsFake(async function _(_args: ArcGisGetServiceJsonArgs) {
-    return json;
+    return getContent();
   });
 }
 
-function getDefaultLayerMetadata() {
+function getDefaultLayerMetadata(supportedFormats?: string) {
   return {
     defaultVisibility: true,
-    supportedQueryFormats: "PBF, JSON",
+    supportedQueryFormats: supportedFormats?? "PBF, JSON",
     supportsCoordinatesQuantization: true,
     minScale: 600000,
     maxScale: 5000,
@@ -122,7 +122,7 @@ async function testGetFeatureInfoGeom(sandbox: sinon.SinonSandbox, fetchStub: an
   fetchStub.restore();  // fetch is always stubbed by default, restore and provide our own stub
 
   stubGetLayerMetadata(sandbox);
-  stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } });
+  stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } }});
   stubJsonFetch(JSON.stringify(dataset));
   const provider = new ArcGisFeatureProvider(settings);
   await provider.initialize();
@@ -175,7 +175,7 @@ describe("ArcGisFeatureProvider", () => {
 
   it("should initialize with valid service metadata", async () => {
 
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: NewYorkDataset.serviceCapabilities });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: NewYorkDataset.serviceCapabilities }});
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "getLayerMetadata" as any).callsFake(async function _(_layerId: unknown) {
       return NewYorkDataset.streetsLayerCapabilities;
@@ -191,7 +191,7 @@ describe("ArcGisFeatureProvider", () => {
 
   it("should initialize and set cartoRange without making extra extent request", async () => {
 
-    stubGetServiceJson(sandbox, {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities});
+    stubGetServiceJson(sandbox, () => {return {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities}});
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "getLayerMetadata" as any).callsFake(async function _(_layerId: unknown) {
       return NewYorkDataset.streetsLayerCapabilities;
@@ -212,7 +212,7 @@ describe("ArcGisFeatureProvider", () => {
 
   it("should make an extra extent request when none available in layer metadata", async () => {
 
-    stubGetServiceJson(sandbox, {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities});
+    stubGetServiceJson(sandbox, () => {return {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities}});
     const setCartoSpy = sandbox.spy(ArcGisFeatureProvider.prototype, "setCartoRangeFromExtentJson" as any);
 
     const layerExtent = {...NewYorkDataset.streetsLayerCapabilities.extent};
@@ -236,7 +236,7 @@ describe("ArcGisFeatureProvider", () => {
 
   it("should make an extra extent request when none available in layer metadata", async () => {
 
-    stubGetServiceJson(sandbox, {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities});
+    stubGetServiceJson(sandbox, () => {return {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities}});
 
     const setCartoSpy = sandbox.spy(ArcGisFeatureProvider.prototype, "setCartoRangeFromExtentJson" as any);
 
@@ -286,7 +286,7 @@ describe("ArcGisFeatureProvider", () => {
   it("should compose proper request to get extent", async () => {
 
     fetchStub.restore();  // fetch is always stubbed by default, restore and provide our own stub
-    stubGetServiceJson(sandbox, {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities});
+    stubGetServiceJson(sandbox, () => {return {accessTokenRequired: false, content:NewYorkDataset.serviceCapabilities}});
 
     const layerCapabilitiesNoExtent = {...NewYorkDataset.streetsLayerCapabilities};
     sandbox.stub(ArcGisFeatureProvider.prototype, "getLayerMetadata" as any).callsFake(async function _(_layerId: unknown) {
@@ -347,7 +347,7 @@ describe("ArcGisFeatureProvider", () => {
   });
 
   it("should not initialize with no service metadata", async () => {
-    stubGetServiceJson(sandbox, undefined);
+    stubGetServiceJson(sandbox, ()=>undefined);
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
     const provider = new ArcGisFeatureProvider(settings);
 
@@ -357,7 +357,7 @@ describe("ArcGisFeatureProvider", () => {
 
   it("should update status when invalid token error from service", async () => {
 
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { error: { code: 499 } } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { error: { code: 499 } } }});
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
     const provider = new ArcGisFeatureProvider(settings);
     const raiseEventSpy = sandbox.spy(provider.onStatusChanged, "raiseEvent");
@@ -368,7 +368,7 @@ describe("ArcGisFeatureProvider", () => {
   });
 
   it("should throw    query capability not supported", async () => {
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Test" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Test" } }});
 
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
     const provider = new ArcGisFeatureProvider(settings);
@@ -376,7 +376,7 @@ describe("ArcGisFeatureProvider", () => {
   });
 
   it("should pick the first visible sub-layer when multiple visible sub-layers", async () => {
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return getDefaultLayerMetadata();
@@ -395,7 +395,7 @@ describe("ArcGisFeatureProvider", () => {
 
   it("should pick sub-layers from service metadata if none provided on layer settings", async () => {
 
-    stubGetServiceJson(sandbox, {
+    stubGetServiceJson(sandbox, () => {return {
       accessTokenRequired: false, content: {
         capabilities: "Query",
         layers: [
@@ -408,7 +408,7 @@ describe("ArcGisFeatureProvider", () => {
           },
         ],
       },
-    });
+    }});
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (id: unknown) {
       if (id === 1) {
@@ -426,7 +426,7 @@ describe("ArcGisFeatureProvider", () => {
   });
 
   it("should throw error if no layers in capabilities", async () => {
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query", layers: [] } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query", layers: [] } }});
 
     const settings = ImageMapLayerSettings.fromJSON(esriFeatureSampleSource);
     const provider = new ArcGisFeatureProvider(settings);
@@ -441,7 +441,7 @@ describe("ArcGisFeatureProvider", () => {
     },
     );
 
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return undefined;
@@ -463,7 +463,7 @@ describe("ArcGisFeatureProvider", () => {
       return getDefaultLayerMetadata();
     });
 
-    let getServiceJsonStub = stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    let getServiceJsonStub = stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     let provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
@@ -471,7 +471,7 @@ describe("ArcGisFeatureProvider", () => {
 
     // PBF requires 'supportsCoordinatesQuantization'
     getServiceJsonStub.restore();
-    getServiceJsonStub = stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } });
+    getServiceJsonStub = stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } }});
 
     getLayerMetadataStub.restore();
     getLayerMetadataStub = sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
@@ -493,7 +493,7 @@ describe("ArcGisFeatureProvider", () => {
     });
 
     getServiceJsonStub.restore();
-    getServiceJsonStub = stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { currentVersion: 10.91, capabilities: "Query", supportsCoordinatesQuantization: true } });
+    getServiceJsonStub = stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { currentVersion: 10.91, capabilities: "Query", supportsCoordinatesQuantization: true } }});
 
     provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
@@ -520,7 +520,7 @@ describe("ArcGisFeatureProvider", () => {
       return getDefaultLayerMetadata();
     });
 
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     const provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
@@ -554,7 +554,7 @@ describe("ArcGisFeatureProvider", () => {
       };
     });
 
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } }});
 
     const provider = new ArcGisFeatureProvider(settings);
     await provider.initialize();
@@ -644,7 +644,7 @@ describe("ArcGisFeatureProvider", () => {
       return getDefaultLayerMetadata();
     });
 
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } }});
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _resultType: ArcGisFeatureResultType, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
       return undefined;
@@ -681,7 +681,7 @@ describe("ArcGisFeatureProvider", () => {
       };
     });
 
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } }});
 
     fetchStub.restore();  // fetch is always stubbed by default, restore and provide our own stub
     sandbox.stub((ArcGISImageryProvider.prototype as any), "fetch").callsFake(async function _(_url: unknown, _options?: unknown) {
@@ -736,7 +736,7 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return getDefaultLayerMetadata();
     });
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
     sandbox.stub((ArcGisFeatureResponse.prototype as any), "getResponseData").callsFake(async function _() {
       return { exceedTransferLimit: true, data: undefined };
     });
@@ -763,7 +763,7 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return getDefaultLayerMetadata();
     });
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     sandbox.stub((ArcGisFeatureResponse.prototype as any), "getResponseData").callsFake(async function _() {
       throw new Error();
@@ -790,7 +790,7 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return getDefaultLayerMetadata();
     });
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     sandbox.stub((ArcGisFeatureResponse.prototype as any), "getResponseData").callsFake(async function _() {
       return {
@@ -876,7 +876,7 @@ describe("ArcGisFeatureProvider", () => {
         drawingInfo: PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo,
       };
     });
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { currentVersion: 11, capabilities: "Query" } }});
 
     sandbox.stub(HTMLCanvasElement.prototype, "getContext").callsFake(function _(_contextId: any, _options?: any) {
       return {} as RenderingContext;
@@ -922,7 +922,7 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return getDefaultLayerMetadata();
     });
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     sandbox.stub(HTMLCanvasElement.prototype, "getContext").callsFake(function _(_contextId: any, _options?: any) {
       return {} as RenderingContext;
@@ -971,7 +971,7 @@ describe("ArcGisFeatureProvider", () => {
         drawingInfo: PhillyLandmarksDataset.phillySimplePolyDrawingInfo.drawingInfo,
       };
     });
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     sandbox.stub(HTMLCanvasElement.prototype, "getContext").callsFake(function _(_contextId: any, _options?: any) {
       return {} as RenderingContext;
@@ -1074,7 +1074,7 @@ describe("ArcGisFeatureProvider", () => {
         drawingInfo: PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo,
       };
     });
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _resultType: ArcGisFeatureResultType, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
       return { url: settings.url };
@@ -1105,7 +1105,7 @@ describe("ArcGisFeatureProvider", () => {
         drawingInfo: PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo,
       };
     });
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _resultType: ArcGisFeatureResultType, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
       return { url: settings.url };
@@ -1132,7 +1132,7 @@ describe("ArcGisFeatureProvider", () => {
       drawingInfo: PhillyLandmarksDataset.phillySimpleLineDrawingInfo.drawingInfo,
     };
 
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _resultType: ArcGisFeatureResultType, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
       return { url: settings.url };
@@ -1199,7 +1199,7 @@ describe("ArcGisFeatureProvider", () => {
     sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
       return {...layerMetadata, geometryType : "esriGeometryPoint" };
     });
-    stubGetServiceJson(sandbox, { accessTokenRequired: false, content: { capabilities: "Query" } });
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { capabilities: "Query" } }});
 
     sandbox.stub(ArcGisFeatureProvider.prototype, "constructFeatureUrl").callsFake(function _(_row: number, _column: number, _zoomLevel: number, _format: ArcGisFeatureFormat, _resultType: ArcGisFeatureResultType, _geomOverride?: ArcGisGeometry, _outFields?: string, _tolerance?: number, _returnGeometry?: boolean) {
       return { url: settings.url };
@@ -1211,6 +1211,43 @@ describe("ArcGisFeatureProvider", () => {
     await provider.initialize();
     const nbMarkerToLoad = layerMetadata.drawingInfo.renderer.uniqueValueInfos.length + 1; // +1 for provider's default symbol
     expect (loadImageSpy.getCalls().length).to.equals(nbMarkerToLoad);
+  });
+
+  it("should pick the first visible sub-layer when multiple visible sub-layers", async () => {
+    let currentVersion = 11;
+    stubGetServiceJson(sandbox, () => {return { accessTokenRequired: false, content: { currentVersion, capabilities: "Query" } }});
+
+    let supportedQueryFormats = "JSON,PBF";
+    sandbox.stub((ArcGisFeatureProvider.prototype as any), "getLayerMetadata").callsFake(async function (_id: unknown) {
+      return getDefaultLayerMetadata(supportedQueryFormats);
+    });
+
+    const settings = ImageMapLayerSettings.fromJSON({
+      ...esriFeatureSampleSource,
+      subLayers: [{ id: 0, name: "layer1", visible: true }, { id: 2, name: "layer2", visible: true }],
+    },
+    );
+    let provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+    expect((provider as any)._format).to.equals(arcgisFeatureFormats.pbf);
+
+    supportedQueryFormats = "JSON"
+    provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+    expect((provider as any)._format).to.equals(arcgisFeatureFormats.json);
+
+    supportedQueryFormats = "PBF";
+    provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+    expect((provider as any)._format).to.equals(arcgisFeatureFormats.pbf);
+
+    // Should default to JSON because PBF is not supported in version 10
+    currentVersion = 10;
+    supportedQueryFormats = "JSON,PBF";
+    provider = new ArcGisFeatureProvider(settings);
+    await provider.initialize();
+    expect((provider as any)._format).to.equals(arcgisFeatureFormats.json);
+
   });
 
 });
