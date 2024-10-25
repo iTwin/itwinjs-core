@@ -130,7 +130,6 @@ describe("DisplayStyle", () => {
       if (undefined !== expected.contextRealityModels)
         compareRealityModels(style, expected);
 
-      // eslint-disable-next-line deprecation/deprecation
       if (undefined !== expected.scheduleScript)
         compareScheduleScripts(style, expected);
     };
@@ -171,10 +170,8 @@ describe("DisplayStyle", () => {
 
     function compareScheduleScripts(style3d: DisplayStyle3dState, expected: DisplayStyle3dSettingsProps): void {
       if (undefined !== style3d.scheduleScript) {
-        // eslint-disable-next-line deprecation/deprecation
         expect(JSON.stringify(style3d.scheduleScript.toJSON())).to.equal(JSON.stringify(expected.scheduleScript));
       } else {
-        // eslint-disable-next-line deprecation/deprecation
         expect(expected.scheduleScript).to.be.undefined;
       }
     }

@@ -6,12 +6,10 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { Compilation, Compiler, ExternalModule, Module, WebpackError } from "webpack";
 import { getAppRelativePath } from "../utils/paths";
-const { resolveRecurse } = require("../utils/resolve-recurse/resolve");
+const { resolveRecurse } = require("../utils/resolve-recurse/resolve"); // eslint-disable-line @typescript-eslint/no-require-imports
 import { Dependency } from "../utils/resolve-recurse/resolve";
 import { externalPrefix } from "./RequireMagicCommentsPlugin";
-/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
-const { builtinModules } = require("module");
-/* eslint-enable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
+const { builtinModules } = require("module"); // eslint-disable-line @typescript-eslint/no-require-imports
 
 type WebpackLogger = ReturnType<Compilation["getLogger"]>;
 
@@ -43,7 +41,7 @@ export class CopyExternalsPlugin {
     let packageJsonPath = "";
     try {
       packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [compilation.moduleGraph.getIssuer(currentModule)?.context ?? ""] });
-    } catch (error) {
+    } catch {
       // Always _log_ missing externals as a warning and add it as a compilation warning.
       const warning = `Can't copy external package "${pkgName}" - it is not installed.`;
       this._logger?.warn(warning);
@@ -58,7 +56,7 @@ export class CopyExternalsPlugin {
 
     this._copiedPackages.add(pkgName);
 
-    const packageJson = require(packageJsonPath);
+    const packageJson = require(packageJsonPath); // eslint-disable-line @typescript-eslint/no-require-imports
     if (!packageJson.dependencies && !packageJson.optionalDependencies)
       return;
 

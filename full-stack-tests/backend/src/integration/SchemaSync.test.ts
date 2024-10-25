@@ -13,7 +13,7 @@ import * as path from "path";
 import { EOL } from "os";
 import { ChangesetType, Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
-const storageType = "azure" as const;
+const storageType = "azure";
 interface TinySchemaRef {
   name: string;
   ver: string;
@@ -112,7 +112,7 @@ async function initializeContainer(containerProps: { containerId: string, isPubl
   await AzuriteTest.Sqlite.createAzContainer(containerProps);
   const accessToken = await CloudSqlite.requestToken({ ...containerProps });
   await SchemaSync.CloudAccess.initializeDb({ ...containerProps, accessToken, storageType });
-  return { ...containerProps, accessToken, storageType };
+  return { ...containerProps, accessToken, storageType } as const;
 };
 
 describe("Schema synchronization", function (this: Suite) {
@@ -1121,7 +1121,7 @@ describe("Schema synchronization", function (this: Suite) {
     const findEl = (id: Id64String, b = b1) => {
       try {
         return b.elements.getElementProps(id);
-      } catch (e) {
+      } catch {
         return undefined;
       }
     };

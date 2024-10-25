@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Support snapping to elements within section drawing attachments.",
+      "comment": "Support snapping within section drawing attachments.",
       "type": "none"
     }
   ],

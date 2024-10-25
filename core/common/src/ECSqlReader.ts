@@ -175,7 +175,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   private _options: QueryOptions = new QueryOptionsBuilder().getOptions();
 
   private _rowProxy = new Proxy<ECSqlReader>(this, {
-    get: (target: ECSqlReader, key: string | Symbol) => {
+    get: (target: ECSqlReader, key: string | symbol) => {
       if (typeof key === "string") {
         const idx = Number.parseInt(key, 10);
         if (!Number.isNaN(idx)) {

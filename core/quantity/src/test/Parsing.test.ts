@@ -130,7 +130,6 @@ describe("Parsing tests:", () => {
       const tokens = Parser.parseQuantitySpecification(test.input, format);
       expect(tokens.length).toEqual(test.expectedTokens.length);
 
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let j = 0; j < tokens.length; j++) {
         expect(tokens[j].value).toEqual(test.expectedTokens[j].value);
       }

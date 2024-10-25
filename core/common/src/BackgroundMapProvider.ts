@@ -74,7 +74,7 @@ export class BackgroundMapProvider {
 
   /** @internal */
   public static fromBackgroundMapProps(props: DeprecatedBackgroundMapProps): BackgroundMapProvider {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.fromJSON({ name: props.providerName as BackgroundMapProviderName, type: props.providerData?.mapType });
   }
 

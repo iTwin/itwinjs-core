@@ -693,7 +693,7 @@ describe("Composite Formats tests:", () => {
       composite: {
         includeZero: true,
         spacer: "",
-        units: [{name: "Units.KM"},{name: "Units.M", label: ""},{name: "Units.CM", label: "CM"},{name: "Units.MM", label: "'"}],
+        units: [{ name: "Units.KM" }, { name: "Units.M", label: "" }, { name: "Units.CM", label: "CM" }, { name: "Units.MM", label: "'" }],
       },
       formatTraits: ["keepSingleZero", "applyRounding"],
       precision: 4,

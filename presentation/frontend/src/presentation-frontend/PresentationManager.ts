@@ -232,7 +232,7 @@ export class PresentationManager implements IDisposable {
 
   private constructor(props?: PresentationManagerProps) {
     if (props) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this._explicitActiveUnitSystem = props.activeUnitSystem;
     }
 
@@ -266,7 +266,6 @@ export class PresentationManager implements IDisposable {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onUpdate = (_evt: Event, report: UpdateInfo) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.handleUpdateAsync(report);
@@ -358,7 +357,7 @@ export class PresentationManager implements IDisposable {
     if (this.activeLocale) {
       defaultOptions.locale = this.activeLocale;
     }
-    defaultOptions.unitSystem = this.activeUnitSystem; // eslint-disable-line deprecation/deprecation
+    defaultOptions.unitSystem = this.activeUnitSystem; // eslint-disable-line @typescript-eslint/no-deprecated
 
     const { imodel, rulesetVariables, ...rpcRequestOptions } = requestOptions;
     return {
@@ -412,7 +411,7 @@ export class PresentationManager implements IDisposable {
         const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
         return {
           total: result.total,
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           items: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
         };
       },
@@ -477,7 +476,7 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodePaths(rpcOptions);
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
@@ -488,7 +487,7 @@ export class PresentationManager implements IDisposable {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
@@ -581,7 +580,7 @@ export class PresentationManager implements IDisposable {
 
       let items = contentSet.items.map((x) => Item.fromJSON(x)).filter((x): x is Item => x !== undefined);
       if (contentFormatter) {
-        items = await contentFormatter.formatContentItems(items, descriptor!);
+        items = await contentFormatter.formatContentItems(items, descriptor);
       }
 
       items = this._localizationHelper.getLocalizedContentItems(items);
@@ -621,7 +620,7 @@ export class PresentationManager implements IDisposable {
    * @deprecated in 4.5. Use [[getContentIterator]] instead.
    */
   public async getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined> {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return (await this.getContentAndSize(requestOptions))?.content;
   }
 
@@ -663,7 +662,7 @@ export class PresentationManager implements IDisposable {
         const response = await this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
         return {
           total: response.total,
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(DisplayValueGroup.fromJSON(x))),
         };
       },

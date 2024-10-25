@@ -171,7 +171,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
 }
 
 /** @internal */
-export namespace MeshBuilderMap { // eslint-disable-line no-redeclare
+export namespace MeshBuilderMap {
   export class Key {
     public order: number = 0;
     public readonly params: DisplayParams;

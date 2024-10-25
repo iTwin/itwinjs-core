@@ -106,7 +106,6 @@ class FractionalNumeric {
  * @beta
  */
 export class Formatter {
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private static FPV_MINTHRESHOLD = 1.0e-14;
 
   private static isNegligible(value: number): boolean { return (Math.abs(value) < Formatter.FPV_MINTHRESHOLD); }
@@ -204,7 +203,6 @@ export class Formatter {
     // Caller will deal with appending +||-||() value sign as specified by formatting options so just format positive value
     let posMagnitude = Math.abs(magnitude);
 
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < spec.unitConversions.length; i++) {
       const currentLabel = spec.unitConversions[i].label;
       const unitConversion = spec.unitConversions[i].conversion;

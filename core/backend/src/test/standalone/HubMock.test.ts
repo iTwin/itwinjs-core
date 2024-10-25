@@ -356,7 +356,7 @@ describe("HubMock", () => {
         targetDir: tmpDir,
         progressCallback,
       });
-    } catch (error: unknown) {
+    } catch {
       errorThrown = true;
     }
     assert.isTrue(errorThrown);
@@ -372,7 +372,7 @@ describe("HubMock", () => {
         targetDir: tmpDir,
         progressCallback,
       });
-    } catch (error: unknown) {
+    } catch {
       errorThrown = true;
     }
     assert.isTrue(errorThrown);

@@ -51,7 +51,7 @@ export interface KeySetJSON {
   /** JSON representation of a list of instance keys */
   instanceKeys: Array<[string, string]>;
   /** An array of serialized node keys */
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   nodeKeys: NodeKeyJSON[];
 }
 
@@ -128,7 +128,7 @@ export class KeySet {
   public get nodeKeys(): Set<NodeKey> {
     const set = new Set<NodeKey>();
     for (const serialized of this._nodeKeys) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const key = NodeKey.fromJSON(JSON.parse(serialized));
       set.add(key);
     }
@@ -168,7 +168,7 @@ export class KeySet {
 
   private addKeySet(keyset: Readonly<KeySet>, pred?: (key: Key) => boolean): void {
     for (const key of (keyset as any)._nodeKeys) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       if (!pred || pred(NodeKey.fromJSON(JSON.parse(key)))) {
         this._nodeKeys.add(key);
       }
@@ -183,7 +183,7 @@ export class KeySet {
       }
       entry["1"].forEach((id: Id64String) => {
         if (!pred || pred({ className, id })) {
-          set!.add(id);
+          set.add(id);
         }
       });
     }
@@ -429,7 +429,7 @@ export class KeySet {
         return true;
       }
     }
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return some(this._nodeKeys, (serializedKey: string) => callback(NodeKey.fromJSON(JSON.parse(serializedKey))));
   }
 
@@ -441,7 +441,7 @@ export class KeySet {
       ids.forEach((id: Id64String) => callback({ className: recentClassName, id }, index++));
     });
     this._nodeKeys.forEach((serializedKey: string) => {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       callback(NodeKey.fromJSON(JSON.parse(serializedKey)), index++);
     });
   }
@@ -481,7 +481,7 @@ export class KeySet {
         instanceKeys.push([className!, compressedIds.length > 0 ? compressedIds : Id64.invalid]);
       }
     }
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const nodeKeys: NodeKeyJSON[] = [];
     for (const serializedKey of this._nodeKeys.values()) {
       nodeKeys.push(JSON.parse(serializedKey));

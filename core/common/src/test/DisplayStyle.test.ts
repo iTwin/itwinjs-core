@@ -122,7 +122,7 @@ describe("DisplayStyleSettings", () => {
         let count = 0;
         const iter = settings.planProjectionSettings;
         if (undefined !== iter)
-          for (const _entry of iter) // eslint-disable-line @typescript-eslint/naming-convention
+          for (const _entry of iter)
             ++count;
 
         return count;

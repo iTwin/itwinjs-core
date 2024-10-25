@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/editor-common",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/editor-common"
+}

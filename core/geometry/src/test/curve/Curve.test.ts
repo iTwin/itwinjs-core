@@ -97,6 +97,7 @@ class StrokeCountSearch extends NullGeometryHandler {
   }
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 function curvePrimitiveHasInstanceOf<T extends Function>(cp: CurvePrimitive, classType: T): boolean {
   if (cp instanceof classType)
     return true;

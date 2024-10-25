@@ -123,8 +123,7 @@ export class ElectronHost {
     // However, if the file doesn't exist, it's fine to return an invalid path here - the request will just fail with net::ERR_FILE_NOT_FOUND
     try {
       assetPath = fs.realpathSync(assetPath);
-    } catch (error) {
-      // eslint-disable-next-line no-console
+    } catch {
       // console.warn(`WARNING: Frontend requested "${requestedUrl}", but ${assetPath} does not exist`);
     }
     if (!assetPath.startsWith(this.webResourcesPath))
@@ -251,7 +250,7 @@ export class ElectronHost {
 
     if (!this._developmentServer) {
       // handle any "electron://" requests and redirect them to "file://" URLs
-      this.electron.protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url))); // eslint-disable-line deprecation/deprecation
+      this.electron.protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url))); // eslint-disable-line @typescript-eslint/no-deprecated
     }
 
     this._openWindow(windowOptions);
@@ -271,7 +270,7 @@ export class ElectronHost {
       throw new Error("Not running under Electron");
 
     if (!this.isValid) {
-      this._electron = require("electron");
+      this._electron = require("electron"); // eslint-disable-line @typescript-eslint/no-require-imports
       this._ipc = new ElectronIpc();
       const app = this.app;
       if (!app.isReady())
@@ -307,7 +306,7 @@ class ElectronDialogHandler extends IpcHandler {
   public get channelName() { return electronIpcStrings.dialogChannel; }
   public async callDialog(method: DialogModuleMethod, ...args: any) {
     const dialog = ElectronHost.electron.dialog;
-    const dialogMethod = dialog[method] as Function;
+    const dialogMethod = dialog[method] as (...args: any[]) => any;
     if (typeof dialogMethod !== "function")
       throw new IModelError(IModelStatus.FunctionNotFound, `illegal electron dialog method`);
 
@@ -315,7 +314,7 @@ class ElectronDialogHandler extends IpcHandler {
   }
 }
 
-function debounce(func: Function, ms: number = 200) {
+function debounce(func: (...args: any[]) => any, ms: number = 200) {
   let timeout: NodeJS.Timeout;
   return function (this: any, ...args: any[]) {
     clearTimeout(timeout);
