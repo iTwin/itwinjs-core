@@ -130,7 +130,6 @@ describe("Parsing tests:", () => {
       const tokens = Parser.parseQuantitySpecification(test.input, format);
       assert.isTrue(tokens.length === test.expectedTokens.length);
 
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let j = 0; j < tokens.length; j++) {
         assert.isTrue(tokens[j].value === test.expectedTokens[j].value);
       }

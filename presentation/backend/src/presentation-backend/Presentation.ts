@@ -20,7 +20,7 @@ import { FactoryBasedTemporaryStorage } from "./TemporaryStorage";
  * Properties that can be used to configure [[Presentation]] API.
  * @public
  */
-export interface PresentationProps extends PresentationManagerProps {
+export interface PresentationProps extends Omit<PresentationManagerProps, "enableSchemasPreload"> {
   /**
    * Time in milliseconds after which the request will timeout.
    */

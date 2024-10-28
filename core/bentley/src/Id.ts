@@ -137,7 +137,7 @@ export namespace Id64 {
   }
 
   // Used when constructing local ID portion of Id64String. Performance optimization.
-  const _localIdPrefixByLocalIdLength = [ // eslint-disable-line @typescript-eslint/naming-convention
+  const _localIdPrefixByLocalIdLength = [
     "0000000000",
     "000000000",
     "00000000",
@@ -373,7 +373,7 @@ export namespace Id64 {
 
   /** Return the first [[Id64String]] of an [[Id64Arg]]. */
   export function getFirst(arg: Id64Arg): Id64String {
-    return typeof arg === "string" ? arg : (Array.isArray(arg) ? arg[0] : arg.values().next().value);
+    return typeof arg === "string" ? arg : (Array.isArray(arg) ? arg[0] : arg.values().next().value) ?? Id64.invalid;
   }
 
   /** Return the number of [[Id64String]]s represented by an [[Id64Arg]]. */

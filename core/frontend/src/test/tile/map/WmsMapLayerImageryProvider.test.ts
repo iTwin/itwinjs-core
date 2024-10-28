@@ -131,7 +131,7 @@ describe("WmsMapLayerImageryProvider", () => {
       expect.fail("Could not create settings");
 
     const createSub = vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
     const provider = new WmsMapLayerImageryProvider(settings);
@@ -146,7 +146,7 @@ describe("WmsMapLayerImageryProvider", () => {
       expect.fail("Could not create settings");
 
     const createSub = vi.spyOn(WmtsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
@@ -161,7 +161,7 @@ describe("WmsMapLayerImageryProvider", () => {
       expect.fail("Could not create settings");
 
     vi.spyOn(WmsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
-      throw { someError: "error" }; // eslint-disable-line no-throw-literal
+      throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmsMapLayerImageryProvider(settings);
     await expect(provider.initialize()).rejects.toThrow(ServerError);
@@ -173,7 +173,7 @@ describe("WmsMapLayerImageryProvider", () => {
       expect.fail("Could not create settings");
 
     vi.spyOn(WmtsCapabilities, "create").mockImplementation(async (_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) => {
-      throw { someError: "error" }; // eslint-disable-line no-throw-literal
+      throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
     await expect(provider.initialize()).rejects.toThrow(ServerError);
@@ -362,7 +362,7 @@ describe("WmsMapLayerImageryProvider", () => {
 
     // Make the tile fetch fails with error 401
     let makeTileRequestStub = vi.spyOn(MapLayerImageryProvider.prototype, "makeTileRequest").mockImplementation(async (_url: string) => {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
 
@@ -389,7 +389,7 @@ describe("WmsMapLayerImageryProvider", () => {
     // .. and now a 401 failure
     makeTileRequestStub.mockRestore();
     makeTileRequestStub = vi.spyOn(MapLayerImageryProvider.prototype, "makeTileRequest").mockImplementation(async (_url: string) => {
-      // eslint-disable-next-line no-throw-literal
+      // eslint-disable-next-line no-throw-literal, @typescript-eslint/only-throw-error
       throw { status: 401 };
     });
     await provider.loadTile(0, 0, 0);

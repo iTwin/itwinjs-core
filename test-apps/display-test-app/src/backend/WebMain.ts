@@ -25,13 +25,13 @@ const dtaWebMain = (async () => {
     Logger.logTrace("SVT", `reading server config from ${process.argv[2]}`);
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       serverConfig = require(process.argv[2]);
       serverOptions = {
         key: fs.readFileSync(serverConfig.keyFile),
         cert: fs.readFileSync(serverConfig.certFile),
       };
-    } catch (_err) { }
+    } catch { }
   }
 
   if (serverConfig === undefined)

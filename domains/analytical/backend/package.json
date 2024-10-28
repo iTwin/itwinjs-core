@@ -1,6 +1,6 @@
 {
   "name": "@itwin/analytical-backend",
-  "version": "4.10.0-dev.30",
+  "version": "4.10.0-dev.33",
   "main": "lib/cjs/analytical-backend.js",
   "typings": "lib/cjs/analytical-backend",
   "license": "MIT",
@@ -14,7 +14,7 @@
     "cover": "nyc npm -s test",
     "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/analytical-backend/file.json --tsIndexFile=./analytical-backend.ts --onlyJson",
     "extract-api": "betools extract-api --entry=analytical-backend",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha"
   },
   "repository": {
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-backend": "workspace:^4.10.0-dev.30",
-    "@itwin/core-bentley": "workspace:^4.10.0-dev.30",
-    "@itwin/core-common": "workspace:^4.10.0-dev.30"
+    "@itwin/core-backend": "workspace:^4.10.0-dev.33",
+    "@itwin/core-bentley": "workspace:^4.10.0-dev.33",
+    "@itwin/core-common": "workspace:^4.10.0-dev.33"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -45,7 +45,7 @@
     "@itwin/core-backend": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai": "4.3.1",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^10.0.6",
@@ -53,12 +53,12 @@
     "@types/semver": "7.3.10",
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "semver": "^7.5.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.6.2"
   },
   "TODO-dependencies": {
     "@bentley/analytical-schema": "~1.0.0"

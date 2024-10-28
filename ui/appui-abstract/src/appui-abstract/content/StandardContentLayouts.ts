@@ -8,7 +8,7 @@
 
 import { ContentLayoutProps } from "./ContentLayoutProps";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /**
  * Class that define Standard Content Layouts that can be used to specify how the content is arranged in a frontstage.

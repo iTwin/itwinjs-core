@@ -65,7 +65,7 @@ export class ArcGisFeatureResponse {
         return {data, exceedTransferLimit: data.exceededTransferLimit};
       }
 
-    } catch(_e) {
+    } catch {
       return undefined;
     }
   }
