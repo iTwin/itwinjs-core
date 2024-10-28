@@ -1548,8 +1548,10 @@ export abstract class GltfReader {
         rangeMax = quantized.decodedMax;
       } else {
         // Assume KHR_mesh_quantization...
-        rangeMin = view.accessor.min;
-        rangeMax = view.accessor.max;
+        // rangeMin = view.accessor.min;
+        // rangeMax = view.accessor.max;
+        rangeMin = [0, 0, 0];
+        rangeMax = [65535, 65535, 65535];
       }
 
       if (undefined === rangeMin || undefined === rangeMax) // required by spec...
