@@ -20,7 +20,7 @@ describe("ArcGisFeatureResponse", () => {
     sandbox.restore();
   });
 
-  it("should return undefined if http error", async () => {
+  it("should return undefined if http error ", async () => {
     const response = new ArcGisFeatureResponse(arcgisFeatureFormats.pbf, Promise.resolve({status: 404} as Response));
     const data = await response.getResponseData();
     expect(data).to.be.undefined;
