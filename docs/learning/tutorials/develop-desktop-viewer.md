@@ -9,19 +9,15 @@
 - Follow these steps to obtain a new OIDC client to use in your viewer application:
   1. Go to <https://developer.bentley.com>
   2. Click the **Sign In** button and sign-in using your Bentley account credentials
-      - If you have not already registered, click **Register now** and complete the registration process.
+     - If you have not already registered, click **Register now** and complete the registration process
   3. Navigate to the [My Apps](https://developer.bentley.com/my-apps/) page
   4. Click the **Register New** button
   5. Give your application a Name
-  6. Select the **Visualization**, **iModels**, **Reality Data**, and **Projects** APIs
-  7. Enable the following scopes:
-      - **Administration**: `projects:read`
-      - **Digital Twin Management**: `imodels:read realitydata:read`
-      - **Visualization**: `imodelaccess:read`
-  8. Select application type **Desktop/Mobile**
-  9. Enter **Redirect URI** `http://localhost:3000/signin-callback`
-  10. Enter **Post logout Redirect URI**: `http://localhost:3000`.
-  11. Click the **Save** button
+  6. Select `Native` as the Application Type
+  7. Select the `itwin-platform` scope
+  8. Set the **Redirect URL** to `http://localhost:3000/signin-callback`
+  9. Set the **Post logout redirect URIs** to `http://localhost:3000`
+  10. Click the **Save** button
 
 Once your new application is saved and a client ID is generated, add the client ID and redirect uri to the following variables in the `.env` file within the application's root directory: `ITWIN_VIEWER_CLIENT_ID` and `ITWIN_VIEWER_REDIRECT_URI`.
 
