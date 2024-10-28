@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { SchemaItemType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
@@ -569,7 +569,7 @@ describe("Schema", () => {
   describe("bulk get methods for schema items", () => {
     let testSchema: Schema;
 
-    before(async () => {
+    beforeAll(async () => {
       testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 2, 3);
       await (testSchema as MutableSchema).createEntityClass("TestEntity");
       await (testSchema as MutableSchema).createMixinClass("TestMixin");
@@ -584,7 +584,7 @@ describe("Schema", () => {
     describe("getItems", () => {
       let schemaItems: IterableIterator<AnySchemaItem>;
 
-      before(() => {
+      beforeAll(() => {
         schemaItems = testSchema.getItems();
       });
 
@@ -607,7 +607,7 @@ describe("Schema", () => {
     describe("getClasses", () => {
       let schemaClasses: IterableIterator<ECClass>;
 
-      before(() => {
+      beforeAll(() => {
         schemaClasses = testSchema.getClasses();
       });
 

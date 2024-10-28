@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { SchemaItem } from "../../Metadata/SchemaItem";
 import { EntityClass } from "../../Metadata/EntityClass";
@@ -18,7 +18,7 @@ describe("SchemaItem", () => {
     let baseClass: any;
     let schema;
 
-    before(() => {
+    beforeAll(() => {
       schema = new Schema(new SchemaContext(), "ExampleSchema", "example", 1, 0, 0);
       baseClass = new EntityClass(schema, "ExampleEntity");
     });
@@ -133,7 +133,7 @@ describe("SchemaItem", () => {
     let schema: Schema;
     let newDom: Document;
 
-    before(() => {
+    beforeAll(() => {
       schema = new Schema(new SchemaContext(), "ExampleSchema", "example", 1, 0, 0);
       baseClass = new EntityClass(schema, "ExampleEntity");
     });

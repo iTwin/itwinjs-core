@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaKeyProps } from "../Deserialization/JsonProps";
 import { SchemaMatchType } from "../ECObjects";
 import { ECObjectsError } from "../Exception";

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { expect } from "chai";
+import { beforeAll, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { UnitConverter } from "../../UnitConversion/UnitConverter";
@@ -27,7 +27,7 @@ describe("Cross Schema unit definitions tests", () => {
     fs.readFileSync(path.join(__dirname, "..", "assets", "./CrossSchemaTests.json"), "utf-8"),
   );
 
-  before(() => {
+  beforeAll(() => {
     const siSchemaFile = path.join(__dirname, "..", "assets", "SIUnits.ecschema.xml");
     const siSchemaXml = fs.readFileSync(siSchemaFile, "utf-8");
     deserializeXmlSync(siSchemaXml, context);

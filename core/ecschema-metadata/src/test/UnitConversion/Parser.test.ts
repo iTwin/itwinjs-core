@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { DefinitionFragment, parseDefinition } from "../../UnitConversion/Parser";
 
 describe("DefinitionParser tests", () => {

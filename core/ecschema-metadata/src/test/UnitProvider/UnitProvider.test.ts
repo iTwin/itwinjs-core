@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
 import * as path from "path";
-import { expect } from "chai";
+import { beforeAll, describe, expect, it } from "vitest";
 import { Schema, SchemaContext, SchemaInfo } from "../../ecschema-metadata";
 import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { SchemaUnitProvider } from "../../UnitProvider/SchemaUnitProvider";
@@ -42,7 +42,7 @@ describe("Unit Provider tests", () => {
 
   describe("Initialized with SchemaContext", () => {
 
-    before(() => {
+    beforeAll(() => {
       context = new SchemaContext();
 
       const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
@@ -310,7 +310,7 @@ describe("Unit Provider tests", () => {
   });
 
   describe("Initialized with ISchemaLocater", () => {
-    before(() => {
+    beforeAll(() => {
       const locater = new TestSchemaLocater();
       provider = new SchemaUnitProvider(locater, UNIT_EXTRA_DATA);
     });

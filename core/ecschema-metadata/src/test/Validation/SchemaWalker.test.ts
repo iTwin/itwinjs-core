@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
-import * as sinon from "sinon";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { JsonParser } from "../../Deserialization/JsonParser";
@@ -174,7 +173,7 @@ describe("SchemaWalker tests", () => {
 
     expect(mockVisitor!.visitFullSchema!.calledOnce).to.be.true;
     expect(mockVisitor!.visitFullSchema!.calledWithExactly(testSchema)).to.be.true;
-    expect(mockVisitor!.visitFullSchema!.calledBefore(mockVisitor!.visitClass!)).to.be.true;
+    expect(mockVisitor!.visitFullSchema!.calledBefore(mockVisitor!.visitClass)).to.be.true;
     expect(mockVisitor!.visitCustomAttributeContainer!.calledWithExactly(testSchema)).to.be.true;
 
     const testEntityBase = await testSchema.getItem("TestEntityBase") as ECClass;

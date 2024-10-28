@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../Context";
 import { PrimitiveType, RelationshipEnd } from "../ECObjects";
 import { ECClass, MutableClass, StructClass } from "../Metadata/Class";
@@ -22,7 +22,6 @@ import { Schema } from "../Metadata/Schema";
 import { Unit } from "../Metadata/Unit";
 import { UnitSystem } from "../Metadata/UnitSystem";
 import { SchemaPartVisitorDelegate } from "../SchemaPartVisitorDelegate";
-import * as sinon from "sinon";
 
 describe("SchemaPartVisitorDelegate Tests", () => {
   let schema: Schema;

@@ -3,17 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import * as chai from "chai";
-import * as chaiAsPromised from "chai-as-promised";
+import { assert, describe, expect, it } from "vitest";
 import { SchemaCache, SchemaContext } from "../../Context";
 import { ECObjectsError } from "../../Exception";
 import { Schema } from "../../Metadata/Schema";
 import { SchemaKey } from "../../SchemaKey";
-
-const assert = chai.assert;
-const expect = chai.expect;
-
-chai.use(chaiAsPromised);
 
 describe("Schema Cache", () => {
   it("adding should succeed", async () => {

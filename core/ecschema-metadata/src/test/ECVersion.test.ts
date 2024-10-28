@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, describe, expect, it } from "vitest";
 import { ECObjectsError } from "../Exception";
 import { ECVersion } from "../SchemaKey";
 

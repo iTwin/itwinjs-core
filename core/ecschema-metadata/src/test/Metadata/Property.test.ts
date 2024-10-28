@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert as bAssert } from "@itwin/core-bentley";
-import { assert, expect } from "chai";
+import { assert, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { PrimitiveType, StrengthDirection } from "../../ECObjects";

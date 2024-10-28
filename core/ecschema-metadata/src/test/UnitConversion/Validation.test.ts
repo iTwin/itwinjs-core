@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { SchemaContext } from "../../Context";
-import { expect } from "chai";
+import { beforeAll, describe, expect, it } from "vitest";
 import * as fs from "fs";
 import * as path from "path";
 import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
@@ -12,7 +12,7 @@ import { UnitConverter } from "../../UnitConversion/UnitConverter";
 describe("Testing when unit conversion should throw", () => {
   const context = new SchemaContext();
 
-  before(() => {
+  beforeAll(() => {
     const siSchemaFile = path.join(__dirname, "..", "assets", "SIUnits.ecschema.xml");
     const siSchemaXml = fs.readFileSync(siSchemaFile, "utf-8");
     deserializeXmlSync(siSchemaXml, context);

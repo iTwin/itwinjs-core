@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as sinon from "sinon";
+import { assert, beforeEach, describe, expect, it } from "vitest";
 import { DOMParser } from "@xmldom/xmldom";
 import { SchemaContext } from "../../Context";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
@@ -637,32 +636,32 @@ describe("Full Schema Deserialization", () => {
       expect(testEnum).to.exist;
       expect(mockVisitor!.visitEnumeration!.calledOnce).to.be.true;
       expect(mockVisitor!.visitEnumeration!.calledWithExactly(testEnum)).to.be.true;
-      expect(mockVisitor!.visitEnumeration!.calledAfter(mockVisitor!.visitEmptySchema!)).to.be.true;
+      expect(mockVisitor!.visitEnumeration!.calledAfter(mockVisitor!.visitEmptySchema)).to.be.true;
 
       const testCategory = await testSchema.getItem("TestCategory");
       expect(testCategory).to.exist;
       expect(mockVisitor!.visitPropertyCategory!.calledOnce).to.be.true;
       expect(mockVisitor!.visitPropertyCategory!.calledWithExactly(testCategory)).to.be.true;
-      expect(mockVisitor!.visitPropertyCategory!.calledAfter(mockVisitor!.visitEmptySchema!)).to.be.true;
+      expect(mockVisitor!.visitPropertyCategory!.calledAfter(mockVisitor!.visitEmptySchema)).to.be.true;
 
       const testClass = await testSchema.getItem("TestClass");
       expect(testClass).to.exist;
       expect(mockVisitor!.visitClass!.calledOnce).to.be.true;
       expect(mockVisitor!.visitClass!.calledWithExactly(testClass)).to.be.true;
-      expect(mockVisitor!.visitClass!.calledAfter(mockVisitor!.visitEmptySchema!)).to.be.true;
+      expect(mockVisitor!.visitClass!.calledAfter(mockVisitor!.visitEmptySchema)).to.be.true;
 
       const testKoq = await testSchema.getItem("TestKoQ");
       expect(testKoq).to.exist;
       expect(mockVisitor!.visitKindOfQuantity!.calledOnce).to.be.true;
       expect(mockVisitor!.visitKindOfQuantity!.calledWithExactly(testKoq)).to.be.true;
-      expect(mockVisitor!.visitKindOfQuantity!.calledAfter(mockVisitor!.visitEmptySchema!)).to.be.true;
+      expect(mockVisitor!.visitKindOfQuantity!.calledAfter(mockVisitor!.visitEmptySchema)).to.be.true;
 
       expect(mockVisitor!.visitFullSchema!.calledOnce).to.be.true;
       expect(mockVisitor!.visitFullSchema!.calledWithExactly(testSchema)).to.be.true;
-      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitEnumeration!)).to.be.true;
-      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitPropertyCategory!)).to.be.true;
-      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitClass!)).to.be.true;
-      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitKindOfQuantity!)).to.be.true;
+      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitEnumeration)).to.be.true;
+      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitPropertyCategory)).to.be.true;
+      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitClass)).to.be.true;
+      expect(mockVisitor!.visitFullSchema!.calledAfter(mockVisitor!.visitKindOfQuantity)).to.be.true;
     });
 
     it("should safely handle Mixin-appliesTo-EntityClass-extends-Mixin cycle", async () => {
