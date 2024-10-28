@@ -105,7 +105,7 @@ export class SchemaUnitProvider implements UnitsProvider {
           const unitProps = await this.getUnitsProps(value);
           filteredUnits.push(unitProps);
         }
-      } else if (InvertedUnit.isInvertedUnit(value)) {
+      } else if (InvertedUnit.isInvertedUnit(value) && value.invertsUnit) {
         const invertsUnit = await value.invertsUnit;
         if (invertsUnit) {
           const foundPhenomenon = await invertsUnit.phenomenon;
@@ -203,6 +203,7 @@ export class SchemaUnitProvider implements UnitsProvider {
 
     const itemKey = new SchemaItemKey(schemaItemName, schema.schemaKey);
     const invertedUnit = await context.getSchemaItem<InvertedUnit>(itemKey);
+    // Check if we found an item, the item is an inverted unit, and it has its invertsUnit property set
     if (invertedUnit && InvertedUnit.isInvertedUnit(invertedUnit) && invertedUnit.invertsUnit) {
       return { unitName: invertedUnit.invertsUnit.fullName, isInverted: true };
     }
@@ -256,7 +257,7 @@ export class SchemaUnitProvider implements UnitsProvider {
           if (!phenomenon || (currPhenomenon && currPhenomenon.key.matchesFullName(phenomenon)))
             if (!unitSystem || (currUnitSystem && currUnitSystem.key.matchesFullName(unitSystem)))
               return this.getUnitsProps(value);
-      } else if (InvertedUnit.isInvertedUnit(value) && value.label?.toLowerCase() === displayLabel) {
+      } else if (InvertedUnit.isInvertedUnit(value) && value.label?.toLowerCase() === displayLabel && value.invertsUnit) {
         const invertsUnit = await value.invertsUnit;
         if (invertsUnit) {
           const currPhenomenon = await invertsUnit.phenomenon;
