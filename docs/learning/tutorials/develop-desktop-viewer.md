@@ -13,7 +13,7 @@
   3. Navigate to the [My Apps](https://developer.bentley.com/my-apps/) page
   4. Click the **Register New** button
   5. Give your application a Name
-  6. Select `Native` as the Application Type
+  6. Select **Native** as the Application Type
   7. Select the `itwin-platform` scope
   8. Set the **Redirect URL** to `http://localhost:3000/signin-callback`
   9. Set the **Post logout redirect URIs** to `http://localhost:3000`
