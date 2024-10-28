@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { Point2d, Range3d, Transform } from "@itwin/core-geometry";
 import { RenderInstancesParamsBuilder } from "../../common/render/RenderInstancesParams";
 import { Id64 } from "@itwin/core-bentley";
@@ -20,7 +20,7 @@ import { _featureTable } from "../../common/internal/Symbols";
 describe("RenderInstancesParamsBuilder", () => {
   it("throws if no instances supplied", () => {
     const builder = RenderInstancesParamsBuilder.create({});
-    expect(() => builder.finish()).to.throw("No instances defined");
+    expect(() => builder.finish()).toThrow("No instances defined");
   });
 
   it("populates feature table IFF features are present", () => {
@@ -34,27 +34,27 @@ describe("RenderInstancesParamsBuilder", () => {
 
     const finish = () => builder.finish() as RenderInstancesParamsImpl;
     addInstance();
-    expect(finish().features).to.be.undefined;
+    expect(finish().features).toBeUndefined();
 
     reset();
     addInstance(Id64.invalid);
-    expect(finish().features).not.to.be.undefined;
+    expect(finish().features).toBeDefined();
 
     reset();
     addInstance("0x123");
-    expect(finish().features).not.to.be.undefined;
+    expect(finish().features).toBeDefined();
 
     reset();
     addInstance();
     addInstance("0x123");
     addInstance(Id64.invalid);
-    expect(finish().features).not.to.be.undefined;
+    expect(finish().features).toBeDefined();
   });
 });
 
 describe("InstanceBuffers", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
 
   function makeInstances(): InstancedGraphicProps {
     const builder = new InstancedGraphicPropsBuilder();
@@ -67,25 +67,25 @@ describe("InstanceBuffers", () => {
     const a = InstanceBuffersData.create(instances)!;
     const b = InstanceBuffersData.create(instances, false)!;
     const c = InstanceBuffersData.create(instances, true)!;
-    expect(a.isDisposed).to.be.false;
-    expect(b.isDisposed).to.be.false;
-    expect(c.isDisposed).to.be.false;
+    expect(a.isDisposed).toBe(false);
+    expect(b.isDisposed).toBe(false);
+    expect(c.isDisposed).toBe(false);
 
     a.dispose();
     b.dispose();
     c.dispose();
-    expect(a.isDisposed).to.be.true;
-    expect(b.isDisposed).to.be.true;
-    expect(c.isDisposed).to.be.false;
+    expect(a.isDisposed).toBe(true);
+    expect(b.isDisposed).toBe(true);
+    expect(c.isDisposed).toBe(false);
   });
 
   it("are disposable when creating from InstancedGraphicParams", () => {
     const params = InstancedGraphicParams.fromProps(makeInstances());
     const buffers = InstanceBuffers.fromParams(params, () => new Range3d())!;
-    expect(buffers.isDisposed).to.be.false;
+    expect(buffers.isDisposed).toBe(false);
 
     buffers.dispose();
-    expect(buffers.isDisposed).to.be.true;
+    expect(buffers.isDisposed).toBe(true);
   });
 
   it("are non-disposable when created from RenderInstances", () => {
@@ -95,16 +95,16 @@ describe("InstanceBuffers", () => {
 
     const instances = IModelApp.renderSystem.createRenderInstances(params)!;
     const buffers = InstanceBuffers.fromRenderInstances(instances, new Range3d());
-    expect(buffers.isDisposed).to.be.false;
+    expect(buffers.isDisposed).toBe(false);
 
     buffers.dispose();
-    expect(buffers.isDisposed).to.be.false;
+    expect(buffers.isDisposed).toBe(false);
   });
 });
 
 describe("RenderInstances", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
 
   it("populates feature table", () => {
     const paramsBuilder = RenderInstancesParamsBuilder.create({ modelId: "0xf" });
@@ -115,18 +115,18 @@ describe("RenderInstances", () => {
     const params = paramsBuilder.finish();
 
     const instances = IModelApp.renderSystem.createRenderInstances(params)!;
-    expect(instances).not.to.be.undefined;
+    expect(instances).toBeDefined();
 
     const ft = instances[_featureTable]!;
-    expect(ft).not.to.be.undefined;
-    expect(ft.numFeatures).to.equal(4);
-    expect(ft.batchModelId).to.equal("0xf");
+    expect(ft).toBeDefined();
+    expect(ft.numFeatures).toEqual(4);
+    expect(ft.batchModelId).toEqual("0xf");
 
     const feat = ModelFeature.create();
-    expect(ft.findFeature(0, feat)?.elementId).to.equal("0x1");
-    expect(ft.findFeature(1, feat)?.elementId).to.equal("0x2");
-    expect(ft.findFeature(2, feat)?.elementId).to.equal("0x3");
-    expect(ft.findFeature(3, feat)?.elementId).to.equal("0x4");
+    expect(ft.findFeature(0, feat)?.elementId).toEqual("0x1");
+    expect(ft.findFeature(1, feat)?.elementId).toEqual("0x2");
+    expect(ft.findFeature(2, feat)?.elementId).toEqual("0x3");
+    expect(ft.findFeature(3, feat)?.elementId).toEqual("0x4");
   });
 
   it("renders multiple instances of glTF model with different features and color overrides", async () => {
@@ -138,13 +138,13 @@ describe("RenderInstances", () => {
           "nodes" : [ 0 ]
         }
       ],
-  
+
       "nodes" : [
         {
           "mesh" : 0
         }
       ],
-  
+
       "meshes" : [
         {
           "primitives" : [ {
@@ -196,7 +196,7 @@ describe("RenderInstances", () => {
           "min" : [ 0.0, 0.0, 0.0 ]
         }
       ],
-  
+
       "asset" : {
         "version" : "2.0"
       }
@@ -220,7 +220,7 @@ describe("RenderInstances", () => {
     });
 
     const template = gltfTemplate!.template;
-    expect(template).not.to.be.undefined;
+    expect(template).toBeDefined();
 
     const instancesBuilder = RenderInstancesParamsBuilder.create({ modelId });
     instancesBuilder.add({
@@ -241,7 +241,7 @@ describe("RenderInstances", () => {
       symbology: { color: {r: 0, g: 0, b: 255 } },
     });
     const instances = IModelApp.renderSystem.createRenderInstances(instancesBuilder.finish())!;
-    expect(instances[_featureTable]!.numFeatures).to.equal(4);
+    expect(instances[_featureTable]!.numFeatures).toEqual(4);
 
     let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
     const branch = new GraphicBranch();
@@ -257,14 +257,14 @@ describe("RenderInstances", () => {
 
     vp.renderFrame();
     const colors = readUniqueColors(vp);
-    expect(colors.length).to.equal(3);
-    expect(colors.containsColorDef(vp.displayStyle.backgroundColor)).to.be.true;
-    expect(colors.containsColorDef(ColorDef.white)).to.be.true;
-    expect(colors.containsColorDef(ColorDef.blue)).to.be.true;
+    expect(colors.length).toEqual(3);
+    expect(colors.containsColorDef(vp.displayStyle.backgroundColor)).toBe(true);
+    expect(colors.containsColorDef(ColorDef.white)).toBe(true);
+    expect(colors.containsColorDef(ColorDef.blue)).toBe(true);
 
     const features = readUniqueFeatures(vp);
-    expect(features.length).to.equal(4);
-    expect(features.contains(new Feature("0x3"))).to.be.true;
+    expect(features.length).toEqual(4);
+    expect(features.contains(new Feature("0x3"))).toBe(true);
 
     vp.dispose();
   });
@@ -308,7 +308,7 @@ describe("RenderInstances", () => {
 
     // Create a graphic from the template+instances, translated to the center of the viewport.
     const instances = IModelApp.renderSystem.createRenderInstances(paramsBuilder.finish())!;
-    expect(instances).not.to.be.undefined;
+    expect(instances).toBeDefined();
 
     let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
     const branch = new GraphicBranch(false);
@@ -327,7 +327,7 @@ describe("RenderInstances", () => {
     vp.renderFrame();
 
     const colors = readColorCounts(vp);
-    expect(colors.size).to.equal(5);
+    expect(colors.size).toEqual(5);
     const background = colors.get(Color.fromColorDef(ColorDef.black))!;
     const red = colors.get(Color.fromColorDef(ColorDef.red))!;
     const blue = colors.get(Color.fromColorDef(ColorDef.blue))!;
@@ -337,7 +337,7 @@ describe("RenderInstances", () => {
     // dashed - fewer pixels
     expect(white).lessThan(red);
     // solid, same width => same number of pixels
-    expect(red).to.equal(blue);
+    expect(red).toEqual(blue);
     // wider => more pixels
     expect(green).greaterThan(red);
     // most of view is background

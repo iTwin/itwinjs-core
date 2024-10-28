@@ -17,7 +17,7 @@ export class ContextShareProvider {
     let attUrl: URL;
     try {
       attUrl = new URL(tilesetUrl);
-    } catch (e) {
+    } catch {
       // Not a valid URL for Context share
       return false;
     }
@@ -47,7 +47,7 @@ export class ContextShareProvider {
     let attUrl: URL;
     try {
       attUrl = new URL(tilesetUrl);
-    } catch (e) {
+    } catch {
       // Not a valid URL and not equal, probably $cesiumAsset
       return invalidUrlInfo;
     }

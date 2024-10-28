@@ -17,7 +17,7 @@ import { AnyDiagnostic } from "./Diagnostic";
  * Just telling us whether a rule is suppressed or not.
  * @beta
  */
-export type ISuppressionRule<T extends AnyECType, U = {}> = (diagnostic: AnyDiagnostic, ecDefinition: T, ...args: U[]) => Promise<boolean>;
+export type ISuppressionRule<T extends AnyECType, U = object> = (diagnostic: AnyDiagnostic, ecDefinition: T, ...args: U[]) => Promise<boolean>;
 
 /** @beta */
 export type BaseSuppressionRule<T extends AnyECType, U extends AnyECType> = ISuppressionRule<T, U>;
@@ -29,7 +29,7 @@ export type AnyRuleSuppressionMap = IRuleSuppressionMap<AnyECType>;
  * Interface used to represent elements of a rule suppression
  * @beta
  */
-export interface IRuleSuppressionMap<T extends AnyECType, U = {}> {
+export interface IRuleSuppressionMap<T extends AnyECType, U = object> {
   ruleCode: string;
   rule: ISuppressionRule<T, U>;
 }

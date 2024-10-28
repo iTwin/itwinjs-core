@@ -21,8 +21,6 @@ import { convertFeatureTable, ImdlParseError, ImdlParserOptions, ImdlTimeline, p
 import { decodeImdlGraphics, IModelTileContent } from "./internal";
 import { BatchOptions } from "../common/render/BatchOptions";
 
-/* eslint-disable no-restricted-syntax */
-
 /** @internal */
 export interface ImdlReaderResult extends IModelTileContent {
   readStatus: TileReadStatus;

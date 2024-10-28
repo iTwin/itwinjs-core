@@ -89,7 +89,6 @@ export class SelectionHandler implements IDisposable {
    * Called when the selection changes. Handles this callback by first checking whether
    * the event should be handled at all (using the `shouldHandle` method) and then calling `onSelect`
    */
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   protected onSelectionChanged = (evt: SelectionChangeEventArgs, provider: ISelectionProvider): void => {
     if (!this.onSelect || !this.shouldHandle(evt)) {
       return;

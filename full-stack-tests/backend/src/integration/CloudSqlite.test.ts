@@ -442,7 +442,6 @@ describe("CloudSqlite", () => {
 
     // when one cache has the lock the other should fail to obtain it
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
-      // eslint-disable-next-line @typescript-eslint/promise-function-async
       expect(() => cont2.acquireWriteLock(user1)).throws("is currently locked").property("errorNumber", DbResult.BE_SQLITE_BUSY);
     });
 
@@ -472,7 +471,6 @@ describe("CloudSqlite", () => {
     await azSqlite.setSasToken(contain1, "read"); // get a read-only token
     contain1.connect(caches[0]); // connect works with readonly token
     expect(contain1.isConnected);
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => contain1.acquireWriteLock(user1)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
     expect(contain1.hasWriteLock).false;
     expect(contain1.hasLocalChanges).false;
@@ -483,7 +481,6 @@ describe("CloudSqlite", () => {
     anonContainer.connect(caches[0]);
     dbs = anonContainer.queryDatabases();
     expect(dbs.length).equals(2);
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => anonContainer.acquireWriteLock(user1)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
 
     // read a database from anonymous container readonly
@@ -613,7 +610,7 @@ describe("CloudSqlite", () => {
   it("Auto refresh container tokens", async () => {
     const contain1 = testContainers[0];
 
-    const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true };
+    const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true } as const;
     // must be valid token so property store can connect
     const accessToken = await CloudSqlite.requestToken(contProps);
 

@@ -94,14 +94,14 @@ export class ThreeDTileFormatInterpreter  {
           }
 
           location = ecefLocation;
-          Logger.logTrace(loggerCategory, "RealityData is worldToEcefTransform.matrix.isIdentity", () => ({ isIdentity: worldToEcefTransform!.matrix.isIdentity }));
+          Logger.logTrace(loggerCategory, "RealityData is worldToEcefTransform.matrix.isIdentity", () => ({ isIdentity: worldToEcefTransform.matrix.isIdentity }));
           // iModelDb.setEcefLocation(ecefLocation);
           const ecefToWorld = ecefLocation.getTransform().inverse()!;
           worldRange.extendRange(Range3d.fromJSON(ecefToWorld.multiplyRange(ecefRange)));
           Logger.logTrace(loggerCategory, "RealityData ecefToWorld", () => ({ ...ecefToWorld }));
         }
       }
-    } catch (e) {
+    } catch {
       Logger.logWarning(loggerCategory, `Error getSpatialLocationAndExtents - cannot interpret json`);
       // return first 1024 char from the json
       const getMetaData: LoggingMetaData = () => {
