@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, describe, expect, it } from "vitest";
+import { assert, describe, expect, it, vi } from "vitest";
 import { CAProviderTuple } from "../../Deserialization/AbstractParser";
 import {
   ConstantProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, EnumeratorProps, InvertedUnitProps, MixinProps,
@@ -2802,7 +2802,12 @@ describe("XmlParser", () => {
 
           const testClass = await getTestCAClass(propertyJson);
           const providers = getCAProviders(itemXml);
-          sinon.stub(testClass!.schema, "lookupItemSync").withArgs("TestSchema.TestStringEnumeration").returns(undefined);
+            vi.spyOn(testClass!.schema, "lookupItemSync").mockImplementation((name) => {
+            if (name === "TestSchema.TestStringEnumeration") {
+              return undefined;
+            }
+            return testClass!.schema.lookupItemSync(name);
+            });
 
           expect(() => providers[0][1](testClass!)).to.throw(ECObjectsError, `The Enumeration class 'TestSchema.TestStringEnumeration' could not be found.`);
         });

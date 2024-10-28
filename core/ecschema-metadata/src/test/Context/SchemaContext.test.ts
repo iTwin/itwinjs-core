@@ -40,7 +40,7 @@ describe("Schema Context", () => {
     const schema2 = new Schema(context, "TestSchema", "ts", 1, 0, 5);
 
     await context.addSchema(schema);
-    await expect(context.addSchema(schema2)).to.be.rejectedWith(ECObjectsError);
+    await expect(context.addSchema(schema2)).rejects.toThrow(ECObjectsError);
   });
 
   it("schema added, getCachedSchema returns the schema", async () => {

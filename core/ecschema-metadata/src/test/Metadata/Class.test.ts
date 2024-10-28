@@ -577,7 +577,7 @@ describe("ECClass", () => {
         },
       };
 
-      await expect(Schema.fromJson(schemaJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError);
+      await expect(Schema.fromJson(schemaJson, new SchemaContext())).rejects.toThrow(ECObjectsError);
     });
 
     const oneCustomAttributeJson = {
@@ -668,7 +668,8 @@ describe("ECClass", () => {
       },
     };
     it("async - Custom Attributes must be an array", async () => {
-      await expect(Schema.fromJson(mustBeAnArrayJson, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      await expect(Schema.fromJson(mustBeAnArrayJson, new SchemaContext())).rejects.toThrow(ECObjectsError);
+      await expect(Schema.fromJson(mustBeAnArrayJson, new SchemaContext())).rejects.toThrow(`The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
     it("sync - Custom Attributes must be an array", async () => {
       assert.throws(() => Schema.fromJsonSync(mustBeAnArrayJson, new SchemaContext()), ECObjectsError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
@@ -1247,7 +1248,7 @@ describe("ECClass", () => {
       childClass.baseClass = new DelayedPromiseWithProps(baseClass!.key, async () => baseClass!);
       (testSchema as MutableSchema).addItem(childClass);
 
-      await expect(childClass!.toXml(newDom)).to.be.rejectedWith(ECObjectsError, `The schema '${refSchema.name}' has an invalid alias.`);
+      await expect(childClass!.toXml(newDom)).rejects.toThrow(ECObjectsError, `The schema '${refSchema.name}' has an invalid alias.`);
     }); */
 
     it("Serialization with one custom attribute defined in ref schema, only class name", async () => {
@@ -1816,7 +1817,7 @@ describe("ECClass", () => {
         ],
       });
 
-      await assert.isRejected(Schema.fromJson(json, new SchemaContext()), "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
+      await expect(Schema.fromJson(json, new SchemaContext())).rejects.toThrow("The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
     });
 
     it("should throw synchronously", () => {
