@@ -4,9 +4,9 @@ import { BisTestHelper } from "../../TestUtils/BisTestHelper";
 import { deserializeXml } from "../../TestUtils/DeserializationHelpers";
 import { expect } from "chai";
 
-describe.only("Iterative Tests", () => {
+describe("Iterative Tests", () => {
 
-  it("shall correctly deal with saved edits", async () => {
+  it.only("shall correctly deal with saved edits", async () => {
 
     async function combineIModelSchemas(handler: (differenceResult: SchemaDifferenceResult) => Promise<void>): Promise<Schema> {
       // Get differences between the two schemas
@@ -166,6 +166,48 @@ describe.only("Iterative Tests", () => {
       await expect(ecClass.getProperty("Address", true)).to.be.eventually.not.undefined;
       await expect(ecClass.getProperty("Height", true)).to.be.eventually.not.undefined;
       await expect(ecClass.getProperty("Tag", true)).to.be.eventually.not.undefined;
+    });
+
+    // Fifth Iteration:
+    sourceSchema = await loadSchemaXml(`
+      <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="CoreCustomAttributes" version="01.00.01" alias="CoreCA"/>
+        <ECCustomAttributes>
+          <DynamicSchema xmlns="CoreCustomAttributes.01.00.03"/>
+        </ECCustomAttributes>
+        <ECEntityClass typeName="CommonBaseClass" modifier="Abstract">
+          <ECProperty propertyName="Tag" typeName="string" />
+        </ECEntityClass>
+        <ECEntityClass typeName="AuxBuilding">
+          <ECCustomAttributes>
+            <IsMixin xmlns="CoreCustomAttributes.01.00.00">
+              <AppliesToEntityClass>Building</AppliesToEntityClass>
+            </IsMixin>
+          </ECCustomAttributes>
+          <ECProperty propertyName="Kind" typeName="int" />
+        </ECEntityClass>
+        <ECEntityClass typeName="Building">
+          <BaseClass>CommonBaseClass</BaseClass>
+          <BaseClass>AuxBuilding</BaseClass>
+          <ECProperty propertyName="Address" typeName="string" />
+          <ECProperty propertyName="Height" typeName="double" />
+        </ECEntityClass>
+      </ECSchema>`);
+
+    targetSchema = await combineIModelSchemas(async (result) => {
+      expect(result.conflicts).to.be.undefined;
+
+      // Rename AbstractBaseClass to CommonBaseClass
+      schemaEdits.items.rename(sourceSchema.name, "AuxBuilding", "AdditionalBuilding");
+    });
+
+    await expect(targetSchema.getItem("Building")).to.be.eventually.fulfilled.then(async (ecClass) => {
+      expect(ecClass).to.exist;
+      expect(ecClass.mixins).to.satisfy((mixins: any) => {
+        expect(mixins).to.have.lengthOf(1);
+        expect(mixins[0]).to.have.a.property("name", "AdditionalBuilding");
+        return true;
+      });
     });
 
     expect(true).is.true;
