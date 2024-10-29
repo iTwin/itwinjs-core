@@ -78,9 +78,9 @@ describe("Unit", () => {
       assert.isTrue((await unit!.unitSystem) === unitSystem);
 
       expect(unit!.definition).to.eql("[MILLI]*Units.MM");
-      expect(unit!.denominator).to.equal(1);
-      expect(unit!.numerator).to.equal(5);
-      expect(unit!.offset).to.equal(4);
+      expect(unit!.denominator).toEqual(1);
+      expect(unit!.numerator).toEqual(5);
+      expect(unit!.offset).toEqual(4);
     });
 
     it("sync - should succeed with fully defined", () => {
@@ -97,9 +97,9 @@ describe("Unit", () => {
       assert.strictEqual(unitSystem, ecSchema.getItemSync<UnitSystem>(unit!.unitSystem!.name));
 
       expect(unit!.definition).to.eql("[MILLI]*Units.MM");
-      expect(unit!.denominator).to.equal(1);
-      expect(unit!.numerator).to.equal(5);
-      expect(unit!.offset).to.equal(4);
+      expect(unit!.denominator).toEqual(1);
+      expect(unit!.numerator).toEqual(5);
+      expect(unit!.offset).toEqual(4);
     });
 
     // Check order of schema items shouldn't matter
@@ -275,9 +275,9 @@ describe("Unit", () => {
       expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
       expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
-      expect(unitSerialization.denominator).to.equal(1);
-      expect(unitSerialization.numerator).to.equal(5);
-      expect(unitSerialization.offset).to.equal(4);
+      expect(unitSerialization.denominator).toEqual(1);
+      expect(unitSerialization.numerator).toEqual(5);
+      expect(unitSerialization.offset).toEqual(4);
     });
 
     it("sync - should succeed with fully defined", () => {
@@ -289,9 +289,9 @@ describe("Unit", () => {
       expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
       expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
-      expect(unitSerialization.denominator).to.equal(1);
-      expect(unitSerialization.numerator).to.equal(5);
-      expect(unitSerialization.offset).to.equal(4);
+      expect(unitSerialization.denominator).toEqual(1);
+      expect(unitSerialization.numerator).toEqual(5);
+      expect(unitSerialization.offset).toEqual(4);
     });
 
     it("async - JSON stringify serialization, should succeed with fully defined", async () => {
@@ -304,9 +304,9 @@ describe("Unit", () => {
       expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
       expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
-      expect(unitSerialization.denominator).to.equal(1);
-      expect(unitSerialization.numerator).to.equal(5);
-      expect(unitSerialization.offset).to.equal(4);
+      expect(unitSerialization.denominator).toEqual(1);
+      expect(unitSerialization.numerator).toEqual(5);
+      expect(unitSerialization.offset).toEqual(4);
     });
 
     it("sync - JSON stringify serialization, should succeed with fully defined", () => {
@@ -319,9 +319,9 @@ describe("Unit", () => {
       expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
       expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
-      expect(unitSerialization.denominator).to.equal(1);
-      expect(unitSerialization.numerator).to.equal(5);
-      expect(unitSerialization.offset).to.equal(4);
+      expect(unitSerialization.denominator).toEqual(1);
+      expect(unitSerialization.numerator).toEqual(5);
+      expect(unitSerialization.offset).toEqual(4);
     });
 
     // Check order of schema items shouldn't matter
@@ -381,9 +381,9 @@ describe("Unit", () => {
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
-      expect(unitSerialization.numerator).to.equal(10);
-      expect(unitSerialization.denominator).to.be.undefined;
-      expect(unitSerialization.offset).to.be.undefined;
+      expect(unitSerialization.numerator).toEqual(10);
+      expect(unitSerialization.denominator).toBeUndefined();
+      expect(unitSerialization.offset).toBeUndefined();
     });
 
     it("Denominator and offset are explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
@@ -402,9 +402,9 @@ describe("Unit", () => {
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
-      expect(unitSerialization.offset).to.equal(10);
-      expect(unitSerialization.denominator).to.equal(12);
-      expect(unitSerialization.numerator).to.be.undefined;
+      expect(unitSerialization.offset).toEqual(10);
+      expect(unitSerialization.denominator).toEqual(12);
+      expect(unitSerialization.numerator).toBeUndefined();
     });
   });
 

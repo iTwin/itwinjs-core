@@ -350,16 +350,16 @@ describe("Property", () => {
 
     function getCustomAttribute(containerElement: Element, name: string): Element {
       const caElements = containerElement.getElementsByTagName("ECCustomAttributes");
-      expect(caElements.length).to.equal(1, "Expected 1 ECCustomAttributes Element");
+      expect(caElements.length).toEqual(1, "Expected 1 ECCustomAttributes Element");
       const caElement = containerElement.getElementsByTagName(name);
-      expect(caElement.length).to.equal(1, `Expected one CustomAttribute Element with the name '${name}`);
+      expect(caElement.length).toEqual(1, `Expected one CustomAttribute Element with the name '${name}`);
       return caElement[0];
     }
 
     function getCAPropertyValueElement(schema: Element, caName: string, propertyName: string): Element {
       const attribute = getCustomAttribute(schema, caName);
       const propArray = attribute.getElementsByTagName(propertyName);
-      expect(propArray.length).to.equal(1, `Expected 1 CustomAttribute Property with the name '${propertyName}'`);
+      expect(propArray.length).toEqual(1, `Expected 1 CustomAttribute Property with the name '${propertyName}'`);
       return propArray[0];
     }
 
@@ -424,7 +424,7 @@ describe("Property", () => {
       const serialized = await property.toXml(newDom);
 
       const attributeElement = getCustomAttribute(serialized, "TestCustomAttribute");
-      expect(attributeElement.getAttribute("xmlns")).to.equal("RefSchema.01.00.05");
+      expect(attributeElement.getAttribute("xmlns")).toEqual("RefSchema.01.00.05");
     });
 
     it("Serialization with one custom attribute defined in same schema, only class name", async () => {
@@ -534,27 +534,27 @@ describe("Property", () => {
       const expectedTimeFromString  = new Date("2021-08-19T16:37:42.278").getTime();
 
       let element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TrueBoolean");
-      expect(element.textContent).to.equal("True");
+      expect(element.textContent).toEqual("True");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "FalseBoolean");
-      expect(element.textContent).to.equal("False");
+      expect(element.textContent).toEqual("False");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Integer");
-      expect(element.textContent).to.equal("1");
+      expect(element.textContent).toEqual("1");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Long");
-      expect(element.textContent).to.equal("100");
+      expect(element.textContent).toEqual("100");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Double");
-      expect(element.textContent).to.equal("200");
+      expect(element.textContent).toEqual("200");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "DateTime");
-      expect(element.textContent).to.equal(nowTicks.toString());
+      expect(element.textContent).toEqual(nowTicks.toString());
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "DateTimeString");
-      expect(element.textContent).to.equal(expectedTimeFromString.toString());
+      expect(element.textContent).toEqual(expectedTimeFromString.toString());
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point2D");
-      expect(element.textContent).to.equal("100,200");
+      expect(element.textContent).toEqual("100,200");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point3D");
-      expect(element.textContent).to.equal("100,200,300");
+      expect(element.textContent).toEqual("100,200,300");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "IGeometry");
-      expect(element.textContent).to.equal("geometry");
+      expect(element.textContent).toEqual("geometry");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Binary");
-      expect(element.textContent).to.equal("binary");
+      expect(element.textContent).toEqual("binary");
     });
 
     it("Serialization with one custom attribute, with PrimitiveArray property values", async () => {
@@ -586,10 +586,10 @@ describe("Property", () => {
 
       const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "BooleanArray");
       const children = element.childNodes;
-      expect(children.length).to.equal(3);
-      expect(children[0].textContent).to.equal("True");
-      expect(children[1].textContent).to.equal("False");
-      expect(children[2].textContent).to.equal("True");
+      expect(children.length).toEqual(3);
+      expect(children[0].textContent).toEqual("True");
+      expect(children[1].textContent).toEqual("False");
+      expect(children[2].textContent).toEqual("True");
     });
 
     it("Serialization with one custom attribute, with Struct property value", async () => {
@@ -639,9 +639,9 @@ describe("Property", () => {
 
       const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Struct");
       const children = element.childNodes;
-      expect(children.length).to.equal(2);
-      expect(children[0].textContent).to.equal("1");
-      expect(children[1].textContent).to.equal("test");
+      expect(children.length).toEqual(2);
+      expect(children[0].textContent).toEqual("1");
+      expect(children[1].textContent).toEqual("test");
     });
 
     it("Serialization with one custom attribute, with StructArray property value", async () => {
@@ -697,23 +697,23 @@ describe("Property", () => {
 
       const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "StructArray");
       const structs = element.getElementsByTagName("TestStruct");
-      expect(structs.length).to.equal(2);
+      expect(structs.length).toEqual(2);
 
       let prop1 = structs[0].getElementsByTagName("Integer");
-      expect(prop1.length).to.equal(1);
-      expect(prop1[0].textContent).to.equal("1");
+      expect(prop1.length).toEqual(1);
+      expect(prop1[0].textContent).toEqual("1");
 
       let prop2 = structs[0].getElementsByTagName("String");
-      expect(prop2.length).to.equal(1);
-      expect(prop2[0].textContent).to.equal("test1");
+      expect(prop2.length).toEqual(1);
+      expect(prop2[0].textContent).toEqual("test1");
 
       prop1 = structs[1].getElementsByTagName("Integer");
-      expect(prop1.length).to.equal(1);
-      expect(prop1[0].textContent).to.equal("2");
+      expect(prop1.length).toEqual(1);
+      expect(prop1[0].textContent).toEqual("2");
 
       prop2 = structs[1].getElementsByTagName("String");
-      expect(prop2.length).to.equal(1);
-      expect(prop2[0].textContent).to.equal("test2");
+      expect(prop2.length).toEqual(1);
+      expect(prop2[0].textContent).toEqual("test2");
     });
   });
 });
@@ -871,7 +871,7 @@ describe("Custom Attributes", () => {
     expect(tpCustomAttributes).to.exist;
     const caInst1 = tpCustomAttributes.get("TestSchema.CaClass1");
     expect(caInst1).to.exist;
-    expect(caInst1!.caProp).to.equal("Derived");
+    expect(caInst1!.caProp).toEqual("Derived");
     expect(tpCustomAttributes.has("TestSchema.CaClass2")).is.true;
   });
 
@@ -1373,7 +1373,7 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
   describe("isProperty", async () => {
     it("should return false if property is undefined", () => {
       const undefinedProperty = undefined;
-      expect(Property.isProperty(undefinedProperty)).to.be.false;
+      expect(Property.isProperty(undefinedProperty)).toBe(false);
     });
 
     it("should return true if object is of Property type", async () => {
@@ -1385,26 +1385,26 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
       const testRelationship = await mutable.createRelationshipClass("TestRelationship");
 
       const primitiveProperty = new PrimitiveProperty(testClass, "A");
-      expect(Property.isProperty(primitiveProperty)).to.be.true;
+      expect(Property.isProperty(primitiveProperty)).toBe(true);
       const enumProperty = new EnumerationProperty(testClass, "B", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
-      expect(Property.isProperty(enumProperty)).to.be.true;
+      expect(Property.isProperty(enumProperty)).toBe(true);
       const structProperty = new StructProperty(testClass, "C", testStruct);
-      expect(Property.isProperty(structProperty)).to.be.true;
+      expect(Property.isProperty(structProperty)).toBe(true);
       const navProperty = new NavigationProperty(testClass, "D", new DelayedPromiseWithProps(testRelationship.key, async () => testRelationship));
-      expect(Property.isProperty(navProperty)).to.be.true;
+      expect(Property.isProperty(navProperty)).toBe(true);
       const primitiveArrayProperty = new PrimitiveArrayProperty(testClass, "E");
-      expect(Property.isProperty(primitiveArrayProperty)).to.be.true;
+      expect(Property.isProperty(primitiveArrayProperty)).toBe(true);
       const enumArrayProperty = new EnumerationArrayProperty(testClass, "F", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
-      expect(Property.isProperty(enumArrayProperty)).to.be.true;
+      expect(Property.isProperty(enumArrayProperty)).toBe(true);
       const structArrayProperty = new StructArrayProperty(testClass, "G", testStruct);
-      expect(Property.isProperty(structArrayProperty)).to.be.true;
+      expect(Property.isProperty(structArrayProperty)).toBe(true);
     });
 
     it("should return false if object is not of Property type", () => {
       const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
       const testClass = new EntityClass(testSchema, "ExampleEntity");
-      expect(Property.isProperty(testClass)).to.be.false;
-      expect(Property.isProperty(testSchema)).to.be.false;
+      expect(Property.isProperty(testClass)).toBe(false);
+      expect(Property.isProperty(testSchema)).toBe(false);
     });
   });
 });

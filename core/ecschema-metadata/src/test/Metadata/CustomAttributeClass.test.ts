@@ -55,11 +55,11 @@ describe("CustomAttributeClass", () => {
       const testCAClass = await ecschema.getItem<CustomAttributeClass>("TestCAClass");
       expect(testCAClass).to.exist;
 
-      expect(testCAClass!.name).to.equal("TestCAClass");
-      expect(testCAClass!.label).to.equal("Test CustomAttribute Class");
-      expect(testCAClass!.description).to.equal("Used for testing");
-      expect(testCAClass!.modifier).to.equal(ECClassModifier.Sealed);
-      expect(testCAClass!.appliesTo).to.equal(CustomAttributeContainerType.AnyClass);
+      expect(testCAClass!.name).toEqual("TestCAClass");
+      expect(testCAClass!.label).toEqual("Test CustomAttribute Class");
+      expect(testCAClass!.description).toEqual("Used for testing");
+      expect(testCAClass!.modifier).toEqual(ECClassModifier.Sealed);
+      expect(testCAClass!.appliesTo).toEqual(CustomAttributeContainerType.AnyClass);
     });
 
     it("should throw for NavigationProperty", async () => {
@@ -67,7 +67,7 @@ describe("CustomAttributeClass", () => {
         appliesTo: "Schema",
         properties: [{ name: "navProp", type: "NavigationProperty" }],
       });
-      await expect(Schema.fromJson(json, new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Navigation Property TestCAClass.navProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
+      await expect(Schema.fromJson(json, new SchemaContext())).rejects.toThrowError(new ECObjectsError(0, `The Navigation Property TestCAClass.navProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`));
     });
   });
 

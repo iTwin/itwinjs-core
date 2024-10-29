@@ -168,53 +168,53 @@ describe("SchemaItemKey", () => {
 
   describe("matches", () => {
     it("should return false if names do not match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinB", schemaKeyA))).to.be.false;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinB", schemaKeyA))).toBe(false);
     });
 
     it("should return false if types do not match", () => {
-      expect(new SchemaItemKey("Name", schemaKeyA).matches(new SchemaItemKey("Name", schemaKeyB))).to.be.false;
+      expect(new SchemaItemKey("Name", schemaKeyA).matches(new SchemaItemKey("Name", schemaKeyB))).toBe(false);
     });
 
     it("should return true if keys match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinA", schemaKeyA))).to.be.true;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matches(new SchemaItemKey("MixinA", schemaKeyA))).toBe(true);
     });
   });
 
   describe("matchesFullName", () => {
     it("should return true if names match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.03.MixinA")).to.be.true;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.03.MixinA")).toBe(true);
     });
 
     it("should return false if schema does not match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTestB.01.02.03.MixinA")).to.be.false;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTestB.01.02.03.MixinA")).toBe(false);
     });
 
     it("should return false if schema version does not match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.00.MixinA")).to.be.false;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.00.MixinA")).toBe(false);
     });
 
     it("should return false if name does not match", () => {
-      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.03.MixinB")).to.be.false;
+      expect(new SchemaItemKey("MixinA", schemaKeyA).matchesFullName("SchemaTest.01.02.03.MixinB")).toBe(false);
     });
   });
 
   describe("isSchemaItem", () => {
     it("should return false if schemaItem is undefined", () => {
       const undefinedSchemaItem = undefined;
-      expect(SchemaItem.isSchemaItem(undefinedSchemaItem)).to.be.false;
+      expect(SchemaItem.isSchemaItem(undefinedSchemaItem)).toBe(false);
     });
 
     it("should return true if object is of SchemaItem type", () => {
       const schema = new Schema(new SchemaContext(), "ExampleSchema", "example", 1, 0, 0);
       const entityClass = new EntityClass(schema, "ExampleEntity");
       expect(entityClass).to.exist;
-      expect(SchemaItem.isSchemaItem(entityClass)).to.be.true;
+      expect(SchemaItem.isSchemaItem(entityClass)).toBe(true);
     });
 
     it("should return false if object is not of SchemaItem type", () => {
       const testSchema = new Schema(new SchemaContext(), "testSchema", "ts", 12, 22, 93);
-      expect(SchemaItem.isSchemaItem(testSchema)).to.be.false;
-      expect(SchemaItem.isSchemaItem("A")).to.be.false;
+      expect(SchemaItem.isSchemaItem(testSchema)).toBe(false);
+      expect(SchemaItem.isSchemaItem("A")).toBe(false);
     });
   });
 });

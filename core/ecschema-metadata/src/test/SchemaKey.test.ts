@@ -32,12 +32,12 @@ describe("SchemaKey", () => {
     });
 
     it("should throw for invalid string", () => {
-      expect(() => SchemaKey.parseString("invalid")).to.throw(ECObjectsError);
+      expect(() => SchemaKey.parseString("invalid")).toThrowError(ECObjectsError);
     });
     it("should throw for out of bounds ECVersions", () => {
-      expect(() => SchemaKey.parseString("SchemaName.01.05.56700000")).to.throw(ECObjectsError);
-      expect(() => SchemaKey.parseString("SchemaName.9999.05.05")).to.throw(ECObjectsError);
-      expect(() => SchemaKey.parseString("SchemaName.01.9999.05")).to.throw(ECObjectsError);
+      expect(() => SchemaKey.parseString("SchemaName.01.05.56700000")).toThrowError(ECObjectsError);
+      expect(() => SchemaKey.parseString("SchemaName.9999.05.05")).toThrowError(ECObjectsError);
+      expect(() => SchemaKey.parseString("SchemaName.01.9999.05")).toThrowError(ECObjectsError);
     });
   });
 
@@ -45,8 +45,8 @@ describe("SchemaKey", () => {
 
     it("should compare against a string", () => {
       const key = new SchemaKey("SchemaName", 1, 2, 3);
-      expect(key.compareByName("SchemaName")).to.be.true;
-      expect(key.compareByName("WrongSchemaName")).to.be.false;
+      expect(key.compareByName("SchemaName")).toBe(true);
+      expect(key.compareByName("WrongSchemaName")).toBe(false);
     });
 
     it("should compare case-insensitive successfully", () => {
@@ -58,8 +58,8 @@ describe("SchemaKey", () => {
       const key = new SchemaKey("SchemaName", 1, 2, 3);
       const matchingKey = new SchemaKey("SchemaName", 1, 2, 3);
       const incompatibleKey = new SchemaKey("WrongSchemaName", 1, 2, 3);
-      expect(key.compareByName(matchingKey)).to.be.true;
-      expect(key.compareByName(incompatibleKey)).to.be.false;
+      expect(key.compareByName(matchingKey)).toBe(true);
+      expect(key.compareByName(incompatibleKey)).toBe(false);
     });
   });
 

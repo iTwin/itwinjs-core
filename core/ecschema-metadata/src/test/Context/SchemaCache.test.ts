@@ -53,8 +53,8 @@ describe("Schema Cache", () => {
     await cache.addSchema(schema2);
 
     const schemas = cache.getAllSchemas();
-    expect(schemas.length).to.equal(2);
-    expect(schemas[0].schemaKey.matches(schema1.schemaKey)).to.be.true;
-    expect(schemas[1].schemaKey.matches(schema2.schemaKey)).to.be.true;
+    expect(schemas.length).toEqual(2);
+    expect(schemas[0].schemaKey.matches(schema1.schemaKey)).toBe(true);
+    expect(schemas[1].schemaKey.matches(schema2.schemaKey)).toBe(true);
   });
 });

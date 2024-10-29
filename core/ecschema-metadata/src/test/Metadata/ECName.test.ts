@@ -11,11 +11,11 @@ describe("ECName", () => {
   it("validates", () => {
     function expectValid(input: string): void {
       const name = new ECName(input);
-      expect(name.name).to.equal(input);
+      expect(name.name).toEqual(input);
     }
 
     function expectInvalid(input: string): void {
-      expect(() => expectValid(input)).to.throw(ECObjectsError);
+      expect(() => expectValid(input)).toThrowError(ECObjectsError);
     }
 
     expectValid("ThisIsAValidName");
@@ -44,18 +44,18 @@ describe("ECName", () => {
   ];
 
   it("encodes", () => {
-    expect(() => ECName.encode("")).to.throw(ECObjectsError);
+    expect(() => ECName.encode("")).toThrowError(ECObjectsError);
 
     for (const testcase of testcases) {
       const name = ECName.encode(testcase[0]);
-      expect(name.name).to.equal(testcase[1]);
+      expect(name.name).toEqual(testcase[1]);
     }
   });
 
   it("decodes", () => {
     for (const testcase of testcases) {
       const name = new ECName(testcase[1]);
-      expect(name.decode()).to.equal(testcase[0]);
+      expect(name.decode()).toEqual(testcase[0]);
     }
   });
 });

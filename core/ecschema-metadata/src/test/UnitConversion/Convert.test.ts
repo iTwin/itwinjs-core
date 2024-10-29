@@ -41,7 +41,7 @@ describe("Unit Conversion tests", () => {
         almostEqual(test.expect, actual, tolerance),
         `${test.input} ${test.from} in ${test.to} should be ${test.expect}
          and not ${actual} error = ${Math.abs(test.expect - actual)} > ${tolerance}`,
-      ).to.be.true;
+      ).toBe(true);
     });
   });
 });

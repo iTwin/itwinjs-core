@@ -90,7 +90,7 @@ describe("KindOfQuantity", () => {
 
       expect(testKoq!.relativeError).eq(1.234);
       expect(testKoq!.presentationFormats.length).eq(0);
-      expect(testKoq!.defaultPresentationFormat).to.be.undefined;
+      expect(testKoq!.defaultPresentationFormat).toBeUndefined();
 
       const testUnit = await schema.lookupItem(koqNoPresUnits.persistenceUnit);
       expect(testUnit).exist;

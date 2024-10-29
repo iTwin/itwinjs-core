@@ -52,11 +52,11 @@ describe("ECClass", () => {
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("PrimProp");
       entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
-      expect(await entityClass.getProperty("BasePrimProp")).to.be.undefined;
-      expect(await entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp")).toBeUndefined();
+      expect(await entityClass.getProperty("BasePrimProp", false)).toBeUndefined();
       expect(await entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
-      expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
+      expect(await entityClass.getInheritedProperty("PrimProp")).toBeUndefined();
     });
 
     it("inherited properties from base class synchronously", () => {
@@ -67,11 +67,11 @@ describe("ECClass", () => {
       (entityClass as ECClass as MutableClass).createPrimitivePropertySync("PrimProp");
       entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
 
-      expect(entityClass.getPropertySync("BasePrimProp")).to.be.undefined;
-      expect(entityClass.getPropertySync("BasePrimProp", false)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp")).toBeUndefined();
+      expect(entityClass.getPropertySync("BasePrimProp", false)).toBeUndefined();
       expect(entityClass.getPropertySync("BasePrimProp", true)).equal(basePrimProp);
       expect(entityClass.getInheritedPropertySync("BasePrimProp")).equal(basePrimProp);
-      expect(entityClass.getInheritedPropertySync("PrimProp")).to.be.undefined;
+      expect(entityClass.getInheritedPropertySync("PrimProp")).toBeUndefined();
     });
 
     it("case-insensitive search", async () => {
@@ -109,53 +109,53 @@ describe("ECClass", () => {
     });
 
     it("should do nothing when deleting property name that is not in class", async () => {
-      expect(entityClass.properties).to.be.undefined;
-      expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
+      expect(entityClass.properties).toBeUndefined();
+      expect(await entityClass.getProperty("TestProp", true)).toBeUndefined();
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp");
 
-      expect(entityClass.properties).to.be.undefined;
-      expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
+      expect(entityClass.properties).toBeUndefined();
+      expect(await entityClass.getProperty("TestProp", true)).toBeUndefined();
     });
 
     it("should do nothing when deleting property name that is not in class, synchronous", async () => {
-      expect(entityClass.properties).to.be.undefined;
-      expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
+      expect(entityClass.properties).toBeUndefined();
+      expect(await entityClass.getProperty("TestProp", true)).toBeUndefined();
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp");
 
-      expect(entityClass.properties).to.be.undefined;
-      expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
+      expect(entityClass.properties).toBeUndefined();
+      expect(await entityClass.getProperty("TestProp", true)).toBeUndefined();
     });
 
     it("should do nothing if a property is already deleted, synchronous", async () => {
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
-      expect([...entityClass.properties!].length).to.equal(1);
+      expect([...entityClass.properties!].length).toEqual(1);
       expect(await entityClass.getProperty("TestProp")).equal(primProp);
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp");
-      expect([...entityClass.properties!].length).to.equal(0);
-      expect(await entityClass.getProperty("TestProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(0);
+      expect(await entityClass.getProperty("TestProp")).toBeUndefined();
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp");
-      expect([...entityClass.properties!].length).to.equal(0);
-      expect(await entityClass.getProperty("TestProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(0);
+      expect(await entityClass.getProperty("TestProp")).toBeUndefined();
     });
 
     it("should do nothing if a property is already deleted", async () => {
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
-      expect([...entityClass.properties!].length).to.equal(1);
+      expect([...entityClass.properties!].length).toEqual(1);
       expect(await entityClass.getProperty("TestProp")).equal(primProp);
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp");
-      expect([...entityClass.properties!].length).to.equal(0);
-      expect(await entityClass.getProperty("TestProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(0);
+      expect(await entityClass.getProperty("TestProp")).toBeUndefined();
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp");
-      expect([...entityClass.properties!].length).to.equal(0);
-      expect(await entityClass.getProperty("TestProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(0);
+      expect(await entityClass.getProperty("TestProp")).toBeUndefined();
     });
 
     it("should add and delete properties by case-insensitive names", async () => {
@@ -163,22 +163,22 @@ describe("ECClass", () => {
       const primProp2 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp2");
       const primProp3 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp3");
 
-      expect([...entityClass.properties!].length).to.equal(3);
+      expect([...entityClass.properties!].length).toEqual(3);
       expect(await entityClass.getProperty("TestProp1")).equal(primProp1);
       expect(await entityClass.getProperty("TestProp2")).equal(primProp2);
       expect(await entityClass.getProperty("TestProp3")).equal(primProp3);
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TestProp1");
-      expect([...entityClass.properties!].length).to.equal(2);
-      expect(await entityClass.getProperty("TestProp1")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(2);
+      expect(await entityClass.getProperty("TestProp1")).toBeUndefined();
 
       await (entityClass as ECClass as MutableClass).deleteProperty("testprop2");
-      expect([...entityClass.properties!].length).to.equal(1);
-      expect(await entityClass.getProperty("TestProp2")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(1);
+      expect(await entityClass.getProperty("TestProp2")).toBeUndefined();
 
       await (entityClass as ECClass as MutableClass).deleteProperty("TESTPROP3");
-      expect([...entityClass.properties!].length).to.equal(0);
-      expect(await entityClass.getProperty("TestProp3")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(0);
+      expect(await entityClass.getProperty("TestProp3")).toBeUndefined();
     });
 
     it("should add and delete properties by case-insensitive names, synchronous", async () => {
@@ -186,22 +186,22 @@ describe("ECClass", () => {
       const primProp2 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp2");
       const primProp3 = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp3");
 
-      expect([...entityClass.properties!].length).to.equal(3);
+      expect([...entityClass.properties!].length).toEqual(3);
       expect(await entityClass.getProperty("TestProp1")).equal(primProp1);
       expect(await entityClass.getProperty("TestProp2")).equal(primProp2);
       expect(await entityClass.getProperty("TestProp3")).equal(primProp3);
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TestProp1");
-      expect([...entityClass.properties!].length).to.equal(2);
-      expect(await entityClass.getProperty("TestProp1")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(2);
+      expect(await entityClass.getProperty("TestProp1")).toBeUndefined();
 
       (entityClass as ECClass as MutableClass).deletePropertySync("testprop2");
-      expect([...entityClass.properties!].length).to.equal(1);
-      expect(await entityClass.getProperty("TestProp2")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(1);
+      expect(await entityClass.getProperty("TestProp2")).toBeUndefined();
 
       (entityClass as ECClass as MutableClass).deletePropertySync("TESTPROP3");
-      expect([...entityClass.properties!].length).to.equal(0);
-      expect(await entityClass.getProperty("TestProp3")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(0);
+      expect(await entityClass.getProperty("TestProp3")).toBeUndefined();
     });
 
     it("should delete for different kinds of properties", async () => {
@@ -211,7 +211,7 @@ describe("ECClass", () => {
       const structArrProp = await (entityClass as ECClass as MutableClass).createStructArrayProperty("StructArrProp", new StructClass(schema, "TestStruct"));
       const navProp = await (entityClass as MutableEntityClass).createNavigationProperty("NavProp", new RelationshipClass(schema, "TestRel"), StrengthDirection.Forward);
 
-      expect([...entityClass.properties!].length).to.equal(5);
+      expect([...entityClass.properties!].length).toEqual(5);
       expect(await entityClass.getProperty("PrimProp")).equal(primProp);
       expect(await entityClass.getProperty("PrimArrProp")).equal(primArrProp);
       expect(await entityClass.getProperty("StructProp")).equal(structProp);
@@ -219,24 +219,24 @@ describe("ECClass", () => {
       expect(await entityClass.getProperty("NavProp")).equal(navProp);
 
       await (entityClass as ECClass as MutableClass).deleteProperty("PrimProp");
-      expect([...entityClass.properties!].length).to.equal(4);
-      expect(await entityClass.getProperty("PrimProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(4);
+      expect(await entityClass.getProperty("PrimProp")).toBeUndefined();
 
       await (entityClass as ECClass as MutableClass).deleteProperty("PrimArrProp");
-      expect([...entityClass.properties!].length).to.equal(3);
-      expect(await entityClass.getProperty("PrimArrProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(3);
+      expect(await entityClass.getProperty("PrimArrProp")).toBeUndefined();
 
       await (entityClass as ECClass as MutableClass).deleteProperty("StructProp");
-      expect([...entityClass.properties!].length).to.equal(2);
-      expect(await entityClass.getProperty("StructProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(2);
+      expect(await entityClass.getProperty("StructProp")).toBeUndefined();
 
       await (entityClass as ECClass as MutableClass).deleteProperty("StructArrProp");
-      expect([...entityClass.properties!].length).to.equal(1);
-      expect(await entityClass.getProperty("StructArrProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(1);
+      expect(await entityClass.getProperty("StructArrProp")).toBeUndefined();
 
       await (entityClass as ECClass as MutableClass).deleteProperty("NavProp");
-      expect([...entityClass.properties!].length).to.equal(0);
-      expect(await entityClass.getProperty("NavProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(0);
+      expect(await entityClass.getProperty("NavProp")).toBeUndefined();
     });
 
     it("should delete for different kinds of properties, synchronous", async () => {
@@ -246,7 +246,7 @@ describe("ECClass", () => {
       const structArrProp = await (entityClass as ECClass as MutableClass).createStructArrayProperty("StructArrProp", new StructClass(schema, "TestStruct"));
       const navProp = await (entityClass as MutableEntityClass).createNavigationProperty("NavProp", new RelationshipClass(schema, "TestRel"), StrengthDirection.Forward);
 
-      expect([...entityClass.properties!].length).to.equal(5);
+      expect([...entityClass.properties!].length).toEqual(5);
       expect(await entityClass.getProperty("PrimProp")).equal(primProp);
       expect(await entityClass.getProperty("PrimArrProp")).equal(primArrProp);
       expect(await entityClass.getProperty("StructProp")).equal(structProp);
@@ -254,24 +254,24 @@ describe("ECClass", () => {
       expect(await entityClass.getProperty("NavProp")).equal(navProp);
 
       (entityClass as ECClass as MutableClass).deletePropertySync("PrimProp");
-      expect([...entityClass.properties!].length).to.equal(4);
-      expect(await entityClass.getProperty("PrimProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(4);
+      expect(await entityClass.getProperty("PrimProp")).toBeUndefined();
 
       (entityClass as ECClass as MutableClass).deletePropertySync("PrimArrProp");
-      expect([...entityClass.properties!].length).to.equal(3);
-      expect(await entityClass.getProperty("PrimArrProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(3);
+      expect(await entityClass.getProperty("PrimArrProp")).toBeUndefined();
 
       (entityClass as ECClass as MutableClass).deletePropertySync("StructProp");
-      expect([...entityClass.properties!].length).to.equal(2);
-      expect(await entityClass.getProperty("StructProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(2);
+      expect(await entityClass.getProperty("StructProp")).toBeUndefined();
 
       (entityClass as ECClass as MutableClass).deletePropertySync("StructArrProp");
-      expect([...entityClass.properties!].length).to.equal(1);
-      expect(await entityClass.getProperty("StructArrProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(1);
+      expect(await entityClass.getProperty("StructArrProp")).toBeUndefined();
 
       (entityClass as ECClass as MutableClass).deletePropertySync("NavProp");
-      expect([...entityClass.properties!].length).to.equal(0);
-      expect(await entityClass.getProperty("NavProp")).to.be.undefined;
+      expect([...entityClass.properties!].length).toEqual(0);
+      expect(await entityClass.getProperty("NavProp")).toBeUndefined();
     });
   });
 
@@ -285,7 +285,7 @@ describe("ECClass", () => {
       mutableEntity.addCustomAttribute({ className: "TestSchema.CustomAttribute3" });
 
       const localCustomAttributes = entityClass.customAttributes;
-      expect(localCustomAttributes).not.to.be.undefined;
+      expect(localCustomAttributes).not.toBeUndefined();
 
       const testInheritanceCA = (inheritedCustomAttributes: CustomAttributeSet) => {
         expect(inheritedCustomAttributes.get("TestSchema.CustomAttribute0")).to.be.equals(localCustomAttributes!.get("TestSchema.CustomAttribute0"));
@@ -332,29 +332,29 @@ describe("ECClass", () => {
       };
 
       schema = await Schema.fromJson(schemaJson, new SchemaContext());
-      expect(schema).not.to.be.undefined;
+      expect(schema).not.toBeUndefined();
 
       // testClass
       const testClass = schema.getItemSync("TestClass") as ECClass;
-      expect(testClass).not.to.be.undefined;
+      expect(testClass).not.toBeUndefined();
 
       const testCAClass0 = testClass.customAttributes!.get("TestSchema.TestCAClass0");
-      expect(testCAClass0).not.to.be.undefined;
+      expect(testCAClass0).not.toBeUndefined();
       const testCAClass1 = testClass.customAttributes!.get("TestSchema.TestCAClass1");
-      expect(testCAClass1).not.to.be.undefined;
+      expect(testCAClass1).not.toBeUndefined();
 
       // testFirstBaseClass
       const testFirstBaseClass = schema.getItemSync("TestFirstBaseClass") as ECClass;
-      expect(testFirstBaseClass).not.to.be.undefined;
+      expect(testFirstBaseClass).not.toBeUndefined();
 
       const testFirstBaseCAClass0 = testFirstBaseClass.customAttributes!.get("TestSchema.TestFirstBaseCAClass0");
-      expect(testFirstBaseCAClass0).not.to.be.undefined;
+      expect(testFirstBaseCAClass0).not.toBeUndefined();
       const testFirstBaseCAClass1 = testFirstBaseClass.customAttributes!.get("TestSchema.TestFirstBaseCAClass1");
-      expect(testFirstBaseCAClass1).not.to.be.undefined;
+      expect(testFirstBaseCAClass1).not.toBeUndefined();
 
       // testSecondBaseClass
       const testSecondBaseClass = schema.getItemSync("TestSecondBaseClass") as ECClass;
-      expect(testSecondBaseClass).not.to.be.undefined;
+      expect(testSecondBaseClass).not.toBeUndefined();
 
       // test inheritance CA
       const testInheritanceCA = (inheritedCustomAttributes: CustomAttributeSet) => {
@@ -434,52 +434,52 @@ describe("ECClass", () => {
       };
 
       schema = await Schema.fromJson(schemaJson, new SchemaContext());
-      expect(schema).not.to.be.undefined;
+      expect(schema).not.toBeUndefined();
 
       // testClass
       const testClass = schema.getItemSync("TestClass") as ECClass;
-      expect(testClass).not.to.be.undefined;
+      expect(testClass).not.toBeUndefined();
 
       const testCAClass0 = testClass.customAttributes!.get("TestSchema.TestCAClass0");
-      expect(testCAClass0).not.to.be.undefined;
+      expect(testCAClass0).not.toBeUndefined();
       const testCAClass1 = testClass.customAttributes!.get("TestSchema.TestCAClass1");
-      expect(testCAClass1).not.to.be.undefined;
+      expect(testCAClass1).not.toBeUndefined();
 
       // testFirstBaseClass
       const testFirstBaseClass = schema.getItemSync("TestBaseClass") as ECClass;
-      expect(testFirstBaseClass).not.to.be.undefined;
+      expect(testFirstBaseClass).not.toBeUndefined();
 
       const testFirstBaseCAClass0 = testFirstBaseClass.customAttributes!.get("TestSchema.TestFirstBaseCAClass0");
-      expect(testFirstBaseCAClass0).not.to.be.undefined;
+      expect(testFirstBaseCAClass0).not.toBeUndefined();
       const testFirstBaseCAClass1 = testFirstBaseClass.customAttributes!.get("TestSchema.TestFirstBaseCAClass1");
-      expect(testFirstBaseCAClass1).not.to.be.undefined;
+      expect(testFirstBaseCAClass1).not.toBeUndefined();
 
       // testMixinClass
       const testMixinClass = schema.getItemSync("TestMixinClass") as Mixin;
-      expect(testMixinClass).not.to.be.undefined;
+      expect(testMixinClass).not.toBeUndefined();
 
       const testMixinCAClass0 = testMixinClass.customAttributes!.get("TestSchema.TestCAClass0");
-      expect(testMixinCAClass0).not.to.be.undefined;
+      expect(testMixinCAClass0).not.toBeUndefined();
       const testMixinCAClass1 = testMixinClass.customAttributes!.get("TestSchema.TestCAClass1");
-      expect(testMixinCAClass1).not.to.be.undefined;
+      expect(testMixinCAClass1).not.toBeUndefined();
 
       // testFirstMixinClass
       const testFirstMixinClass = schema.getItemSync("TestFirstMixinClass") as Mixin;
-      expect(testFirstMixinClass).not.to.be.undefined;
+      expect(testFirstMixinClass).not.toBeUndefined();
 
       const testFirstMixinCAClass0 = testFirstMixinClass.customAttributes!.get("TestSchema.TestFirstMixinCAClass0");
-      expect(testFirstMixinCAClass0).not.to.be.undefined;
+      expect(testFirstMixinCAClass0).not.toBeUndefined();
       const testFirstMixinCAClass1 = testFirstMixinClass.customAttributes!.get("TestSchema.TestFirstMixinCAClass1");
-      expect(testFirstMixinCAClass1).not.to.be.undefined;
+      expect(testFirstMixinCAClass1).not.toBeUndefined();
 
       // testSecondMixinClass
       const testSecondMixinClass = schema.getItemSync("TestSecondMixinClass") as Mixin;
-      expect(testSecondMixinClass).not.to.be.undefined;
+      expect(testSecondMixinClass).not.toBeUndefined();
 
       const testSecondMixinCAClass0 = testSecondMixinClass.customAttributes!.get("TestSchema.TestSecondMixinCAClass0");
-      expect(testSecondMixinCAClass0).not.to.be.undefined;
+      expect(testSecondMixinCAClass0).not.toBeUndefined();
       const testSecondMixinCAClass1 = testSecondMixinClass.customAttributes!.get("TestSchema.TestSecondMixinCAClass1");
-      expect(testSecondMixinCAClass1).not.to.be.undefined;
+      expect(testSecondMixinCAClass1).not.toBeUndefined();
 
       // test inheritance custom attributes
       const testInheritanceCA = (inheritedCustomAttributes: CustomAttributeSet) => {
@@ -1141,16 +1141,16 @@ describe("ECClass", () => {
   describe("toXml", () => {
     function getCustomAttribute(containerElement: Element, name: string): Element {
       const caElements = containerElement.getElementsByTagName("ECCustomAttributes");
-      expect(caElements.length).to.equal(1, "Expected 1 ECCustomAttributes Element");
+      expect(caElements.length).toEqual(1, "Expected 1 ECCustomAttributes Element");
       const caElement = containerElement.getElementsByTagName(name);
-      expect(caElement.length).to.equal(1, `Expected one CustomAttribute Element with the name '${name}`);
+      expect(caElement.length).toEqual(1, `Expected one CustomAttribute Element with the name '${name}`);
       return caElement[0];
     }
 
     function getCAPropertyValueElement(testSchema: Element, caName: string, propertyName: string): Element {
       const attribute = getCustomAttribute(testSchema, caName);
       const propArray = attribute.getElementsByTagName(propertyName);
-      expect(propArray.length).to.equal(1, `Expected 1 CustomAttribute Property with the name '${propertyName}'`);
+      expect(propArray.length).toEqual(1, `Expected 1 CustomAttribute Property with the name '${propertyName}'`);
       return propArray[0];
     }
 
@@ -1264,7 +1264,7 @@ describe("ECClass", () => {
       const serialized = await testClass.toXml(newDom);
 
       const attributeElement = getCustomAttribute(serialized, "TestCustomAttribute");
-      expect(attributeElement.getAttribute("xmlns")).to.equal("RefSchema.01.00.05");
+      expect(attributeElement.getAttribute("xmlns")).toEqual("RefSchema.01.00.05");
     });
 
     it("Serialization with one custom attribute defined in same schema, only class name", async () => {
@@ -1372,27 +1372,27 @@ describe("ECClass", () => {
       const expectedTimeFromString  = new Date("2021-08-19T16:37:42.278").getTime();
 
       let element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "TrueBoolean");
-      expect(element.textContent).to.equal("True");
+      expect(element.textContent).toEqual("True");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "FalseBoolean");
-      expect(element.textContent).to.equal("False");
+      expect(element.textContent).toEqual("False");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Integer");
-      expect(element.textContent).to.equal("1");
+      expect(element.textContent).toEqual("1");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Long");
-      expect(element.textContent).to.equal("100");
+      expect(element.textContent).toEqual("100");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Double");
-      expect(element.textContent).to.equal("200");
+      expect(element.textContent).toEqual("200");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "DateTime");
-      expect(element.textContent).to.equal(nowTicks.toString());
+      expect(element.textContent).toEqual(nowTicks.toString());
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "DateTimeString");
-      expect(element.textContent).to.equal(expectedTimeFromString.toString());
+      expect(element.textContent).toEqual(expectedTimeFromString.toString());
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point2D");
-      expect(element.textContent).to.equal("100,200");
+      expect(element.textContent).toEqual("100,200");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Point3D");
-      expect(element.textContent).to.equal("100,200,300");
+      expect(element.textContent).toEqual("100,200,300");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "IGeometry");
-      expect(element.textContent).to.equal("geometry");
+      expect(element.textContent).toEqual("geometry");
       element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Binary");
-      expect(element.textContent).to.equal("binary");
+      expect(element.textContent).toEqual("binary");
     });
 
     it("Serialization with one custom attribute, with PrimitiveArray property values", async () => {
@@ -1423,10 +1423,10 @@ describe("ECClass", () => {
 
       const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "BooleanArray");
       const children = element.childNodes;
-      expect(children.length).to.equal(3);
-      expect(children[0].textContent).to.equal("True");
-      expect(children[1].textContent).to.equal("False");
-      expect(children[2].textContent).to.equal("True");
+      expect(children.length).toEqual(3);
+      expect(children[0].textContent).toEqual("True");
+      expect(children[1].textContent).toEqual("False");
+      expect(children[2].textContent).toEqual("True");
     });
 
     it("Serialization with one custom attribute, with Struct property value", async () => {
@@ -1475,9 +1475,9 @@ describe("ECClass", () => {
 
       const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "Struct");
       const children = element.childNodes;
-      expect(children.length).to.equal(2);
-      expect(children[0].textContent).to.equal("1");
-      expect(children[1].textContent).to.equal("test");
+      expect(children.length).toEqual(2);
+      expect(children[0].textContent).toEqual("1");
+      expect(children[1].textContent).toEqual("test");
     });
 
     it("Serialization with one custom attribute, with StructArray property value", async () => {
@@ -1532,23 +1532,23 @@ describe("ECClass", () => {
 
       const element = getCAPropertyValueElement(serialized, "TestCustomAttribute", "StructArray");
       const structs = element.getElementsByTagName("TestStruct");
-      expect(structs.length).to.equal(2);
+      expect(structs.length).toEqual(2);
 
       let prop1 = (structs[0]).getElementsByTagName("Integer");
-      expect(prop1.length).to.equal(1);
-      expect(prop1[0].textContent).to.equal("1");
+      expect(prop1.length).toEqual(1);
+      expect(prop1[0].textContent).toEqual("1");
 
       let prop2 = (structs[0]).getElementsByTagName("String");
-      expect(prop2.length).to.equal(1);
-      expect(prop2[0].textContent).to.equal("test1");
+      expect(prop2.length).toEqual(1);
+      expect(prop2[0].textContent).toEqual("test1");
 
       prop1 = (structs[1]).getElementsByTagName("Integer");
-      expect(prop1.length).to.equal(1);
-      expect(prop1[0].textContent).to.equal("2");
+      expect(prop1.length).toEqual(1);
+      expect(prop1[0].textContent).toEqual("2");
 
       prop2 = (structs[1]).getElementsByTagName("String");
-      expect(prop2.length).to.equal(1);
-      expect(prop2[0].textContent).to.equal("test2");
+      expect(prop2.length).toEqual(1);
+      expect(prop2[0].textContent).toEqual("test2");
     });
   });
 
@@ -1693,17 +1693,17 @@ describe("ECClass", () => {
       const gClass = await schema.getItem<ECClass>("G");
       const hClass = await schema.getItem<ECClass>("H");
 
-      expect(await hClass!.is(gClass!)).to.be.true;
-      expect(await hClass!.is(aClass!)).to.be.true;
-      expect(await hClass!.is(bClass!)).to.be.true;
-      expect(await hClass!.is(eClass!)).to.be.true;
-      expect(await hClass!.is(cClass!)).to.be.true;
-      expect(await hClass!.is(fClass!)).to.be.true;
-      expect(await hClass!.is(dClass!)).to.be.true;
+      expect(await hClass!.is(gClass!)).toBe(true);
+      expect(await hClass!.is(aClass!)).toBe(true);
+      expect(await hClass!.is(bClass!)).toBe(true);
+      expect(await hClass!.is(eClass!)).toBe(true);
+      expect(await hClass!.is(cClass!)).toBe(true);
+      expect(await hClass!.is(fClass!)).toBe(true);
+      expect(await hClass!.is(dClass!)).toBe(true);
 
-      expect(await gClass!.is(eClass!)).to.be.false;
-      expect(await gClass!.is(dClass!)).to.be.false;
-      expect(await gClass!.is(hClass!)).to.be.false;
+      expect(await gClass!.is(eClass!)).toBe(false);
+      expect(await gClass!.is(dClass!)).toBe(false);
+      expect(await gClass!.is(hClass!)).toBe(false);
     });
 
     it("class 'is' a base class from different schema", async () => {
@@ -1723,27 +1723,27 @@ describe("ECClass", () => {
       const iClass = await childSchema.getItem<ECClass>("I");
       const jClass = await grandChildSchema.getItem<ECClass>("J");
 
-      expect(await iClass!.is(gClass!)).to.be.true;
-      expect(await iClass!.is(aClass!)).to.be.true;
-      expect(await iClass!.is(bClass!)).to.be.true;
-      expect(await iClass!.is(eClass!)).to.be.true;
-      expect(await iClass!.is(cClass!)).to.be.true;
-      expect(await iClass!.is(fClass!)).to.be.true;
-      expect(await iClass!.is(dClass!)).to.be.true;
-      expect(await iClass!.is(hClass!)).to.be.true;
+      expect(await iClass!.is(gClass!)).toBe(true);
+      expect(await iClass!.is(aClass!)).toBe(true);
+      expect(await iClass!.is(bClass!)).toBe(true);
+      expect(await iClass!.is(eClass!)).toBe(true);
+      expect(await iClass!.is(cClass!)).toBe(true);
+      expect(await iClass!.is(fClass!)).toBe(true);
+      expect(await iClass!.is(dClass!)).toBe(true);
+      expect(await iClass!.is(hClass!)).toBe(true);
 
-      expect(await jClass!.is(gClass!)).to.be.true;
-      expect(await jClass!.is(aClass!)).to.be.true;
-      expect(await jClass!.is(bClass!)).to.be.true;
-      expect(await jClass!.is(eClass!)).to.be.true;
-      expect(await jClass!.is(cClass!)).to.be.true;
-      expect(await jClass!.is(fClass!)).to.be.true;
-      expect(await jClass!.is(dClass!)).to.be.true;
-      expect(await jClass!.is(hClass!)).to.be.true;
-      expect(await jClass!.is(iClass!)).to.be.true;
+      expect(await jClass!.is(gClass!)).toBe(true);
+      expect(await jClass!.is(aClass!)).toBe(true);
+      expect(await jClass!.is(bClass!)).toBe(true);
+      expect(await jClass!.is(eClass!)).toBe(true);
+      expect(await jClass!.is(cClass!)).toBe(true);
+      expect(await jClass!.is(fClass!)).toBe(true);
+      expect(await jClass!.is(dClass!)).toBe(true);
+      expect(await jClass!.is(hClass!)).toBe(true);
+      expect(await jClass!.is(iClass!)).toBe(true);
 
-      expect(await gClass!.is(iClass!)).to.be.false;
-      expect(await gClass!.is(jClass!)).to.be.false;
+      expect(await gClass!.is(iClass!)).toBe(false);
+      expect(await gClass!.is(jClass!)).toBe(false);
     });
 
     it("class 'is' a base class synchronous", () => {
@@ -1759,17 +1759,17 @@ describe("ECClass", () => {
       const gClass = schema.getItemSync<ECClass>("G");
       const hClass = schema.getItemSync<ECClass>("H");
 
-      expect(hClass!.isSync(gClass!)).to.be.true;
-      expect(hClass!.isSync(aClass!)).to.be.true;
-      expect(hClass!.isSync(bClass!)).to.be.true;
-      expect(hClass!.isSync(eClass!)).to.be.true;
-      expect(hClass!.isSync(cClass!)).to.be.true;
-      expect(hClass!.isSync(fClass!)).to.be.true;
-      expect(hClass!.isSync(dClass!)).to.be.true;
+      expect(hClass!.isSync(gClass!)).toBe(true);
+      expect(hClass!.isSync(aClass!)).toBe(true);
+      expect(hClass!.isSync(bClass!)).toBe(true);
+      expect(hClass!.isSync(eClass!)).toBe(true);
+      expect(hClass!.isSync(cClass!)).toBe(true);
+      expect(hClass!.isSync(fClass!)).toBe(true);
+      expect(hClass!.isSync(dClass!)).toBe(true);
 
-      expect(gClass!.isSync(eClass!)).to.be.false;
-      expect(gClass!.isSync(dClass!)).to.be.false;
-      expect(gClass!.isSync(hClass!)).to.be.false;
+      expect(gClass!.isSync(eClass!)).toBe(false);
+      expect(gClass!.isSync(dClass!)).toBe(false);
+      expect(gClass!.isSync(hClass!)).toBe(false);
     });
   });
 
@@ -1846,19 +1846,19 @@ describe("ECClass", () => {
     it("should return false if names do not match", () => {
       const testClassA = new Mixin(schemaA, "MixinA");
       const testClassB = new Mixin(schemaA, "MixinB");
-      expect(SchemaItem.equalByKey(testClassA, testClassB)).to.be.false;
+      expect(SchemaItem.equalByKey(testClassA, testClassB)).toBe(false);
     });
 
     it("should return false if types do not match", () => {
       const testClassA = new Mixin(schemaA, "MixinA");
       const testClassB = new Mixin(schemaB, "MixinA");
-      expect(SchemaItem.equalByKey(testClassA, testClassB)).to.be.false;
+      expect(SchemaItem.equalByKey(testClassA, testClassB)).toBe(false);
     });
 
     it("should return true if keys match", () => {
       const testClassA = new Mixin(schemaA, "MixinA");
       const testClassB = new Mixin(schemaA, "MixinA");
-      expect(SchemaItem.equalByKey(testClassA, testClassB)).to.be.true;
+      expect(SchemaItem.equalByKey(testClassA, testClassB)).toBe(true);
     });
   });
 
@@ -1911,22 +1911,22 @@ describe("ECClass", () => {
     });
 
     it("should return false if class is undefined", () => {
-      expect(ECClass.isECClass(undefined)).to.be.false;
+      expect(ECClass.isECClass(undefined)).toBe(false);
     });
 
     it("should return true if object is of ECClass type", async () => {
       const schemaClass = await Schema.fromJson(testSchema, new SchemaContext());
       expect(schemaClass).to.exist;
       const testMixin = await schemaClass.getItem<Mixin>("TestMixin");
-      expect(ECClass.isECClass(testMixin)).to.be.true;
+      expect(ECClass.isECClass(testMixin)).toBe(true);
       const testEntity = await schemaClass.getItem<EntityClass>("TestEntity");
-      expect(ECClass.isECClass(testEntity)).to.be.true;
+      expect(ECClass.isECClass(testEntity)).toBe(true);
       const testStruct = await schemaClass.getItem<StructClass>("TestStruct");
-      expect(ECClass.isECClass(testStruct)).to.be.true;
+      expect(ECClass.isECClass(testStruct)).toBe(true);
       const testCustomAttribute = await schemaClass.getItem<CustomAttributeClass>("TestCustomAttribute");
-      expect(ECClass.isECClass(testCustomAttribute)).to.be.true;
+      expect(ECClass.isECClass(testCustomAttribute)).toBe(true);
       const testRelationship = await schemaClass.getItem<RelationshipClass>("TestRelationship");
-      expect(ECClass.isECClass(testRelationship)).to.be.true;
+      expect(ECClass.isECClass(testRelationship)).toBe(true);
     });
 
     it("should return false if object is not of ECClass type", async () => {
@@ -1934,8 +1934,8 @@ describe("ECClass", () => {
       const testEntity = await schemaClass.getItem<EntityClass>("TestEntity");
       const testStructProp = await testEntity!.getProperty("testStructProp");
       assert.isDefined(testStructProp);
-      expect(ECClass.isECClass(testSchema)).to.be.false;
-      expect(ECClass.isECClass(testStructProp)).to.be.false;
+      expect(ECClass.isECClass(testSchema)).toBe(false);
+      expect(ECClass.isECClass(testStructProp)).toBe(false);
     });
   });
 });

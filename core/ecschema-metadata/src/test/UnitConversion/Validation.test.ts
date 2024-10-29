@@ -36,13 +36,13 @@ describe("Testing when unit conversion should throw", () => {
       await converter.calculateConversion("MockSchema:CM", "SIUnits:M");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find from's and/or to's schema");
+      expect(err.message).toEqual("Cannot find from's and/or to's schema");
     }
     try {
       await converter.calculateConversion("SIUnits:M", "MockSchema:CM");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find from's and/or to's schema");
+      expect(err.message).toEqual("Cannot find from's and/or to's schema");
     }
   });
 
@@ -52,13 +52,13 @@ describe("Testing when unit conversion should throw", () => {
       await converter.calculateConversion("SIUnits:MockUnit", "MetricUnits:CM");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find schema item");
+      expect(err.message).toEqual("Cannot find schema item");
     }
     try {
       await converter.calculateConversion("MetricUnits:CM", "SIUnits:MockUnit");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find schema item");
+      expect(err.message).toEqual("Cannot find schema item");
     }
   });
 
@@ -68,13 +68,13 @@ describe("Testing when unit conversion should throw", () => {
       await converter.calculateConversion("USUnits:SQ_FT", "SIUnits:M");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Source and target units do not belong to same phenomenon");
+      expect(err.message).toEqual("Source and target units do not belong to same phenomenon");
     }
     try {
       await converter.calculateConversion("SIUnits:M", "USUnits:SQ_FT");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Source and target units do not belong to same phenomenon");
+      expect(err.message).toEqual("Source and target units do not belong to same phenomenon");
     }
   });
 
@@ -85,7 +85,7 @@ describe("Testing when unit conversion should throw", () => {
       await converter.calculateConversion("ValidationUnits:KM", "ValidationUnits:DM");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Cannot find schema item");
+      expect(err.message).toEqual("Cannot find schema item");
     }
   });
 
@@ -95,26 +95,26 @@ describe("Testing when unit conversion should throw", () => {
       await converter.calculateConversion("ValidationUnits:FT", "ValidationUnits:KM");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Source and target units do not have matching base units");
+      expect(err.message).toEqual("Source and target units do not have matching base units");
     }
     try {
       await converter.calculateConversion("ValidationUnits:KM", "ValidationUnits:FT");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Source and target units do not have matching base units");
+      expect(err.message).toEqual("Source and target units do not have matching base units");
     }
 
     try {
       await converter.calculateConversion("ValidationUnits:YRD", "ValidationUnits:M");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Source and target units do not have matching base units");
+      expect(err.message).toEqual("Source and target units do not have matching base units");
     }
     try {
       await converter.calculateConversion("ValidationUnits:M", "ValidationUnits:YRD");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Source and target units do not have matching base units");
+      expect(err.message).toEqual("Source and target units do not have matching base units");
     }
   });
 
@@ -124,26 +124,26 @@ describe("Testing when unit conversion should throw", () => {
       await converter.calculateConversion("ValidationUnits:MM_PER_SEC", "ValidationUnits:FT_PER_DAY");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Source and target units do not have matching base units");
+      expect(err.message).toEqual("Source and target units do not have matching base units");
     }
     try {
       await converter.calculateConversion("ValidationUnits:FT_PER_DAY", "ValidationUnits:MM_PER_SEC");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Source and target units do not have matching base units");
+      expect(err.message).toEqual("Source and target units do not have matching base units");
     }
 
     try {
       await converter.calculateConversion("ValidationUnits:MM_PER_HR", "ValidationUnits:FT_PER_SEC");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Source and target units do not have matching base units");
+      expect(err.message).toEqual("Source and target units do not have matching base units");
     }
     try {
       await converter.calculateConversion("ValidationUnits:FT_PER_SEC", "ValidationUnits:MM_PER_HR");
     } catch (err: any) {
       expect(err).to.be.an("error");
-      expect(err.message).to.equal("Source and target units do not have matching base units");
+      expect(err.message).toEqual("Source and target units do not have matching base units");
     }
   });
 });

@@ -43,15 +43,15 @@ describe("EntityClass", () => {
       entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
       (entityClass as MutableEntityClass).addMixin(mixin);
 
-      expect(await entityClass.getProperty("MixinPrimProp")).to.be.undefined;
+      expect(await entityClass.getProperty("MixinPrimProp")).toBeUndefined();
       expect(await entityClass.getProperty("MixinPrimProp", true)).equal(mixinPrimProp);
       expect(await entityClass.getInheritedProperty("MixinPrimProp")).equal(mixinPrimProp);
 
-      expect(await entityClass.getProperty("BasePrimProp")).to.be.undefined;
-      expect(await entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
+      expect(await entityClass.getProperty("BasePrimProp")).toBeUndefined();
+      expect(await entityClass.getProperty("BasePrimProp", false)).toBeUndefined();
       expect(await entityClass.getProperty("BasePrimProp", true)).equal(basePrimProp);
       expect(await entityClass.getInheritedProperty("BasePrimProp")).equal(basePrimProp);
-      expect(await entityClass.getInheritedProperty("PrimProp")).to.be.undefined;
+      expect(await entityClass.getInheritedProperty("PrimProp")).toBeUndefined();
     });
 
     it("from mixins synchronously", () => {
@@ -66,15 +66,15 @@ describe("EntityClass", () => {
       entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
       (entityClass as MutableEntityClass).addMixin(mixin);
 
-      expect(entityClass.getPropertySync("MixinPrimProp")).to.be.undefined;
+      expect(entityClass.getPropertySync("MixinPrimProp")).toBeUndefined();
       expect(entityClass.getPropertySync("MixinPrimProp", true)).equal(mixinPrimProp);
       expect(entityClass.getInheritedPropertySync("MixinPrimProp")).equal(mixinPrimProp);
 
-      expect(entityClass.getPropertySync("BasePrimProp")).to.be.undefined;
-      expect(entityClass.getPropertySync("BasePrimProp", false)).to.be.undefined;
+      expect(entityClass.getPropertySync("BasePrimProp")).toBeUndefined();
+      expect(entityClass.getPropertySync("BasePrimProp", false)).toBeUndefined();
       expect(entityClass.getPropertySync("BasePrimProp", true)).equal(basePrimProp);
       expect(entityClass.getInheritedPropertySync("BasePrimProp")).equal(basePrimProp);
-      expect(entityClass.getInheritedPropertySync("PrimProp")).to.be.undefined;
+      expect(entityClass.getInheritedPropertySync("PrimProp")).toBeUndefined();
     });
   });
 
@@ -509,7 +509,7 @@ describe("EntityClass", () => {
     it("should throw for invalid mixins synchronously", () => {
       expect(testClass).to.exist;
       const props = { ...baseJson, mixins: ["DoesNotExist"] };
-      expect(() => testClass.fromJSONSync(props)).to.throw(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
+      expect(() => testClass.fromJSONSync(props)).toThrowError(ECObjectsError, `Unable to find the referenced SchemaItem DoesNotExist.`);
     });
   });
 

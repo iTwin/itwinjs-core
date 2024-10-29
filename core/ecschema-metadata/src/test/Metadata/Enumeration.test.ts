@@ -141,21 +141,21 @@ describe("Enumeration", () => {
       expect(enumeration.name).to.eql("TestEnumeration");
       expect(enumeration.label).to.eql("SomeDisplayLabel");
       expect(enumeration.description).to.eql("A really long description...");
-      expect(enumeration.isStrict).to.be.false;
+      expect(enumeration.isStrict).toBe(false);
       expect(enumeration.enumerators).to.exist;
       expect(enumeration.enumerators.length).to.eql(2);
     }
     function assertValidEnumerator(enumeration: Enumeration, enumVal: number | string, label?: string, description?: string) {
       if (typeof (enumVal) === "number") {
-        expect(enumeration.isInt).to.be.true;
-        expect(enumeration.isString).to.be.false;
+        expect(enumeration.isInt).toBe(true);
+        expect(enumeration.isString).toBe(false);
         if (typeof (label) !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
         if (typeof (description) !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.description).to.eql(description);
       } else {
-        expect(enumeration.isInt).to.be.false;
-        expect(enumeration.isString).to.be.true;
+        expect(enumeration.isInt).toBe(false);
+        expect(enumeration.isString).toBe(true);
         if (typeof (label) !== undefined)
           expect(enumeration.getEnumerator(enumVal)!.label).to.eql(label);
         if (typeof (description) !== undefined)
@@ -370,14 +370,14 @@ describe("Enumeration", () => {
         const serialization = testEnumSansPrimType.toJSON(true, true);
         assert.isDefined(serialization);
         expect(serialization.type).eql("int");
-        expect(serialization.isStrict).to.equal(false);
+        expect(serialization.isStrict).toEqual(false);
         expect(serialization.label).eql("SomeDisplayLabel");
         expect(serialization.description).eql("A really long description...");
         expect(serialization.enumerators[0].name).eql("SixValue");
-        expect(serialization.enumerators[0].value).to.equal(6);
+        expect(serialization.enumerators[0].value).toEqual(6);
         expect(serialization.enumerators[0].description).eql("An enumerator description");
         expect(serialization.enumerators[1].name).eql("EightValue");
-        expect(serialization.enumerators[1].value).to.equal(8);
+        expect(serialization.enumerators[1].value).toEqual(8);
         expect(serialization.enumerators[1].label).eql("An enumerator label");
       });
       it("Simple string backingType test", async () => {
@@ -394,7 +394,7 @@ describe("Enumeration", () => {
         const serialization = testEnumSansPrimType.toJSON(true, true);
         assert.isDefined(serialization);
         expect(serialization.type).eql("string");
-        expect(serialization.isStrict).to.equal(true);
+        expect(serialization.isStrict).toEqual(true);
         expect(serialization.enumerators[0].name).eql("SixValue");
         expect(serialization.enumerators[0].value).eql("six");
         expect(serialization.enumerators[0].label).eql("Six label");
@@ -462,14 +462,14 @@ describe("Enumeration", () => {
         const serialization = JSON.parse(enumJson);
         assert.isDefined(serialization);
         expect(serialization.type).eql("int");
-        expect(serialization.isStrict).to.equal(false);
+        expect(serialization.isStrict).toEqual(false);
         expect(serialization.label).eql("SomeDisplayLabel");
         expect(serialization.description).eql("A really long description...");
         expect(serialization.enumerators[0].name).eql("SixValue");
-        expect(serialization.enumerators[0].value).to.equal(6);
+        expect(serialization.enumerators[0].value).toEqual(6);
         expect(serialization.enumerators[0].description).eql("An enumerator description");
         expect(serialization.enumerators[1].name).eql("EightValue");
-        expect(serialization.enumerators[1].value).to.equal(8);
+        expect(serialization.enumerators[1].value).toEqual(8);
         expect(serialization.enumerators[1].label).eql("An enumerator label");
       });
       it("Simple string backingType test", async () => {
@@ -487,7 +487,7 @@ describe("Enumeration", () => {
         const serialization = JSON.parse(enumJson);
         assert.isDefined(serialization);
         expect(serialization.type).eql("string");
-        expect(serialization.isStrict).to.equal(true);
+        expect(serialization.isStrict).toEqual(true);
         expect(serialization.enumerators[0].name).eql("SixValue");
         expect(serialization.enumerators[0].value).eql("six");
         expect(serialization.enumerators[0].label).eql("Six label");
