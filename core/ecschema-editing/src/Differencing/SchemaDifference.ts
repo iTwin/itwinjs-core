@@ -7,6 +7,7 @@
  */
 
 import { AnySchemaDifferenceConflict } from "./SchemaConflicts";
+import { AnySchemaEdits, SchemaEditType } from "../Merging/Edits/SchemaEdits";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
@@ -408,12 +409,20 @@ export interface KindOfQuantityPresentationFormatDifference {
  * @returns             An [[SchemaDifferenceResult]] object.
  * @alpha
  */
-export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferenceResult> {
+export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema, schemaEdits?: ReadonlyArray<AnySchemaEdits>): Promise<SchemaDifferenceResult> {
   const changesList: SchemaChanges[] = [];
   const schemaComparer = new SchemaComparer({ report: changesList.push.bind(changesList) });
+  if(schemaEdits) {
+    schemaEdits.forEach((edit) => {
+      if(edit.type === SchemaEditType.RenameSchemaItem || edit.type === SchemaEditType.RenameProperty) {
+        schemaComparer.nameMappings.set(edit.key, edit.value);
+      }
+    });
+  }
+
   await schemaComparer.compareSchemas(sourceSchema, targetSchema);
 
-  const visitor = new SchemaDiagnosticVisitor();
+  const visitor = new SchemaDiagnosticVisitor(schemaComparer.nameMappings);
   for (const diagnostic of changesList[0].allDiagnostics) {
     visitor.visit(diagnostic);
   }

@@ -1,5 +1,5 @@
-import { PrimitiveType, Schema, SchemaItemKey } from "@itwin/ecschema-metadata";
-import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaContextEditor, SchemaDifferenceResult, SchemaEdits, SchemaEditType, SchemaMerger } from "../../../ecschema-editing";
+import { PrimitiveType, Schema } from "@itwin/ecschema-metadata";
+import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaDifferenceResult, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
 import { BisTestHelper } from "../../TestUtils/BisTestHelper";
 import { deserializeXml } from "../../TestUtils/DeserializationHelpers";
 import { expect } from "chai";
@@ -9,11 +9,8 @@ describe.only("Iterative Tests", () => {
   it("shall correctly deal with saved edits", async () => {
 
     async function combineIModelSchemas(handler: (differenceResult: SchemaDifferenceResult) => Promise<void>): Promise<Schema> {
-      // apply previously made changes to the schemas...
-      sourceSchema = await applyEdits(sourceSchema, schemaEdits);
-
       // Get differences between the two schemas
-      const differenceResult = await getSchemaDifferences(targetSchema, sourceSchema);
+      const differenceResult = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits.toJSON());
       await handler(differenceResult);
 
       // Merge the differences into the target schema
@@ -50,9 +47,9 @@ describe.only("Iterative Tests", () => {
     targetSchema = await combineIModelSchemas(async (result) => {
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
         expect(conflict).to.exist;
-        expect(conflict.code).to.equal(ConflictCode.ConflictingPropertyName);
-        expect(conflict.source).to.equal("double");
-        expect(conflict.target).to.equal("string");
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyName);
+        expect(conflict).to.have.a.property("source", "double");
+        expect(conflict).to.have.a.property("target", "string");
         return true;
       });
 
@@ -82,8 +79,9 @@ describe.only("Iterative Tests", () => {
           <DynamicSchema xmlns="CoreCustomAttributes.01.00.03"/>
         </ECCustomAttributes>
         <ECEntityClass typeName="TestEntity" modifier="Sealed">
-          <ECProperty propertyName="TestProperty" typeName="double" displayLabel="This is a double property" />
+          <ECProperty propertyName="TestProperty" typeName="double" displayLabel="This is a double property" category="Category" />
         </ECEntityClass>
+        <PropertyCategory typeName="Category" displayLabel="My Property Category" priority="100000" />
       </ECSchema>`);
 
     targetSchema = await combineIModelSchemas(async (result) => {
@@ -98,57 +96,80 @@ describe.only("Iterative Tests", () => {
       });
     });
 
+    // Third Iteration: The source schema now adds a structClass called Category which shall conflict with the
+    // existing PropertyCategory. Additionally this struct is referenced by an added property to the TestEntity.
+    // The struct will be renamed.
+    sourceSchema = await loadSchemaXml(`
+      <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="CoreCustomAttributes" version="01.00.01" alias="CoreCA"/>
+        <ECCustomAttributes>
+          <DynamicSchema xmlns="CoreCustomAttributes.01.00.03"/>
+        </ECCustomAttributes>
+        <ECEntityClass typeName="TestEntity" modifier="Sealed">
+          <ECStructProperty propertyName="CategoryProperty" typeName="Category" />
+        </ECEntityClass>
+        <ECStructClass typeName="Category">
+          <ECProperty propertyName="Name" typeName="string" />
+          <ECProperty propertyName="Priority" typeName="int" />
+        </ECStructClass>
+      </ECSchema>`);
+
+    targetSchema = await combineIModelSchemas(async (result) => {
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("source", "StructClass");
+        expect(conflict).to.have.a.property("target", "PropertyCategory");
+        return true;
+      });
+
+      // Solution to resolve the conflict is to rename the source struct.
+      schemaEdits.items.rename(sourceSchema.name, "Category", "CategoryStruct");
+    });
+
+    await expect(targetSchema.getItem("TestEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+      expect(ecClass).to.exist;
+      await expect(ecClass.getProperty("CategoryProperty")).to.be.eventually.fulfilled.then((property) => {
+        expect(property).to.exist;
+        expect(property).to.have.a.nested.property("structClass.name", "CategoryStruct");
+      });
+    });
+
+    // Forth Iteration: A new entity gets added with the also added AbstractBaseClass as a baseClass.
+    // This should not raise any conflicts. Additionally AbstractBaseClass is renamed to CommonBaseClass.
+    sourceSchema = await loadSchemaXml(`
+      <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+        <ECSchemaReference name="CoreCustomAttributes" version="01.00.01" alias="CoreCA"/>
+        <ECCustomAttributes>
+          <DynamicSchema xmlns="CoreCustomAttributes.01.00.03"/>
+        </ECCustomAttributes>
+        <ECEntityClass typeName="AbstractBaseClass" modifier="Abstract">
+          <ECProperty propertyName="Tag" typeName="string" />
+        </ECEntityClass>
+        <ECEntityClass typeName="Building">
+          <BaseClass>AbstractBaseClass</BaseClass>
+          <ECProperty propertyName="Address" typeName="string" />
+          <ECProperty propertyName="Height" typeName="double" />
+        </ECEntityClass>
+      </ECSchema>`);
+
+    targetSchema = await combineIModelSchemas(async (result) => {
+      expect(result.conflicts).to.be.undefined;
+
+      // Rename AbstractBaseClass to CommonBaseClass
+      schemaEdits.items.rename(sourceSchema.name, "AbstractBaseClass", "CommonBaseClass");
+    });
+
+    await expect(targetSchema.getItem("Building")).to.be.eventually.fulfilled.then(async (ecClass) => {
+      expect(ecClass).to.exist;
+      expect(ecClass).to.have.a.nested.property("baseClass.name", "CommonBaseClass");
+    });
+
     expect(true).is.true;
   });
-
 });
 
 async function loadSchemaXml(schemaXml: string): Promise<Schema> {
   const schemaContext = await BisTestHelper.getNewContext();
   return deserializeXml(schemaXml, schemaContext);
 }
-
-async function applyEdits(schema: Schema, edits: SchemaEdits): Promise<Schema> {
-  // TODO: Make a copy of the source schema to not alter the input data.
-
-  const editsEditor = new SchemaContextEditor(schema.context);
-  for (const edit of edits.toJSON()) {
-    if(edit.type === SchemaEditType.RenameProperty) {
-      const [_schemaName, itemName, propertyName] = edit.key.split(".") as [string, string, string];
-      const itemKey = new SchemaItemKey(itemName, schema.schemaKey);
-      await editsEditor.entities.properties.setName(itemKey, propertyName, edit.value);
-    }
-
-    if(edit.type === SchemaEditType.RenameSchemaItem) {
-      const [_schemaName, itemName] = edit.key.split(".") as [string, string];
-      const itemKey = new SchemaItemKey(itemName, schema.schemaKey);
-      await editsEditor.entities.setName(itemKey, edit.value);
-    }
-
-    if(edit.type === SchemaEditType.Skip) {
-      const [_schemaName, itemName, propertyName] = edit.key.split(".") as [string, string, string|undefined];
-      const itemKey = new SchemaItemKey(itemName, schema.schemaKey);
-      if(propertyName === undefined) {
-        await editsEditor.entities.delete(itemKey);
-      } else {
-        await editsEditor.entities.deleteProperty(itemKey, propertyName);
-      }
-    }
-  }
-  return schema;
-}
-
-// Alternative idea with logic in Schema Editor:
-//
-// async function applyEdits(schema: Schema, edits: SchemaEdits): Promise<Schema> {
-//   const editsEditor = new SchemaContextEditor(schema.context);
-//   for (const edit of edits.toJSON()) {
-//     if(edit.type === SchemaEditType.RenameProperty) {
-//       const [_schemaName, itemName, propertyName] = edit.key.split(".") as [string, string, string];
-//       const itemKey = new SchemaItemKey(itemName, schema.schemaKey);
-//
-//       // API does not exists yet!!
-//       await editsEditor.mapProperty(itemKey, propertyName, edit.value);
-//     }
-//   }
-// }

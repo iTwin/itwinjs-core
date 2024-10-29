@@ -51,6 +51,9 @@ export interface ISchemaComparer {
   compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit): void;
   comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon): void;
   compareConstants(constantA: Constant, constantB: Constant): void;
+
+  /** @internal */
+  nameMappings: Map<string, string>;
 }
 
 function labelsMatch(label1?: string, label2?: string) {
@@ -69,6 +72,8 @@ export class SchemaComparer {
   private _reporter!: SchemaCompareResultDelegate;
   private _reporters: ISchemaCompareReporter[];
 
+  public readonly nameMappings: Map<string, string>;
+
   /**
    * Initializes a new SchemaComparer instance.
    * @param reporters The [[IDiagnosticReporter]] object(s) to use to report the results.
@@ -76,6 +81,7 @@ export class SchemaComparer {
   constructor(...reporters: ISchemaCompareReporter[]) {
     this._compareDirection = SchemaCompareDirection.Forward;
     this._reporters = reporters;
+    this.nameMappings = new Map<string, string>();
   }
 
   /**

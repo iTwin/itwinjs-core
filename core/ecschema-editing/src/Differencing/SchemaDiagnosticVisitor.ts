@@ -43,11 +43,14 @@ export class SchemaDiagnosticVisitor {
   public readonly schemaItemPathDifferences: Array<AnySchemaItemPathDifference>;
   public readonly customAttributeDifferences: Array<CustomAttributeDifference>;
 
-  constructor() {
+  private readonly _nameMappings: Map<string, string>;
+
+  constructor(nameMappings: Map<string, string>) {
     this.schemaDifferences = [];
     this.schemaItemDifferences = [];
     this.schemaItemPathDifferences = [];
     this.customAttributeDifferences = [];
+    this._nameMappings = nameMappings;
   }
 
   /**
@@ -175,15 +178,17 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
+    const lookupName = this._nameMappings.get(schemaItem.fullName) || schemaItem.name;
+
     let modifyEntry = this.schemaItemDifferences.find((entry): entry is AnySchemaItemDifference => {
-      return entry.changeType === "modify" && entry.itemName === schemaItem.name;
+      return entry.changeType === "modify" && entry.itemName === lookupName;
     });
 
     if (modifyEntry === undefined) {
       modifyEntry = {
         changeType: "modify",
         schemaType: schemaItem.schemaItemType,
-        itemName: schemaItem.name,
+        itemName: lookupName,
         difference: {},
       } as AnySchemaItemDifference;
       this.schemaItemDifferences.push(modifyEntry);
@@ -259,7 +264,7 @@ export class SchemaDiagnosticVisitor {
       changeType: "add",
       schemaType: SchemaOtherTypes.Property,
       itemName: property.class.name,
-      path: property.name,
+      path:  property.name,
       difference: property.toJSON() as AnyPropertyProps,
     });
   }
@@ -272,8 +277,10 @@ export class SchemaDiagnosticVisitor {
       return this.visitMissingProperty(diagnostic);
     }
 
+    const lookupName = this._nameMappings.get(`${property.class.fullName}.${property.name}`) || property.name;
+
     let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is ClassPropertyDifference => {
-      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Property && entry.itemName === property.class.name && entry.path === property.name;
+      return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Property && entry.itemName === property.class.name && entry.path === lookupName;
     });
 
     if (modifyEntry === undefined) {
@@ -281,7 +288,7 @@ export class SchemaDiagnosticVisitor {
         changeType: "modify",
         schemaType: SchemaOtherTypes.Property,
         itemName: property.class.name,
-        path: property.name,
+        path: lookupName,
         difference: {},
       };
       this.schemaItemPathDifferences.push(modifyEntry);
