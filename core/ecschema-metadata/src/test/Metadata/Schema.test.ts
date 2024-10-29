@@ -878,7 +878,7 @@ describe("Schema", () => {
         alias: "ts",
       };
 
-      async function deserializeAndTestXml(schemaXml: string, testFunction: Function) {
+      async function deserializeAndTestXml(schemaXml: string, testFunction: any) {
         _schema = new Schema(_context);
         try {
           await _xmlReader.readSchema(_schema, new DOMParser().parseFromString(schemaXml));
@@ -888,7 +888,7 @@ describe("Schema", () => {
         testFunction();
         await testSerialization(_schema, false, unsupportedVersionError);
       }
-      function deserializeAndTestXmlSync(schemaXml: string, testFunction: Function) {
+      function deserializeAndTestXmlSync(schemaXml: string, testFunction: any) {
         _schema = new Schema(_context);
         try {
           _xmlReader.readSchemaSync(_schema, new DOMParser().parseFromString(schemaXml));
@@ -898,7 +898,7 @@ describe("Schema", () => {
         testFunction();
       }
 
-      async function deserializeAndTestJSON(schemaJSON: string, testFunction: Function) {
+      async function deserializeAndTestJSON(schemaJSON: string, testFunction: any) {
         _schema = new Schema(_context);
         try {
           _schema = await Schema.fromJson(schemaJSON, _schema.context);
@@ -908,7 +908,7 @@ describe("Schema", () => {
         testFunction();
         await testSerialization(_schema, false, unsupportedVersionError);
       }
-      function deserializeAndTestJSONSync(schemaJSON: string, testFunction: Function) {
+      function deserializeAndTestJSONSync(schemaJSON: string, testFunction: any) {
         _schema = new Schema(_context);
         try {
           _schema = Schema.fromJsonSync(schemaJSON, _schema.context);

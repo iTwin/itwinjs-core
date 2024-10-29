@@ -49,7 +49,7 @@ describe("Schema XML Import Tests", () => {
           await imodelDb.importSchemaStrings(xmlSchema);
         else
           imodelDb.getSchemaProps(xmlSchema[0]);
-      } catch (error: any) {
+      } catch {
         return false;
       }
       return true;
