@@ -172,7 +172,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
    * @see PropertyGroupingValue
    * @deprecated in 3.x. Display value should always be used for grouping.
    */
-  groupingValue?: `${PropertyGroupingValue}`; // eslint-disable-line deprecation/deprecation
+  groupingValue?: `${PropertyGroupingValue}`; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /**
    * Specifies whether nodes should be sorted by their display label or the grouping property's value. In most cases the result
@@ -181,7 +181,7 @@ export interface PropertyGroup extends GroupingSpecificationBase {
    * @see PropertyGroupingValue
    * @deprecated in 3.x. Property grouping nodes should always be sorted by display label.
    */
-  sortingValue?: `${PropertyGroupingValue}`; // eslint-disable-line deprecation/deprecation
+  sortingValue?: `${PropertyGroupingValue}`; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** Ranges into which the grouping values are divided. Instances are grouped by value if no ranges are specified. */
   ranges?: PropertyRangeGroupSpecification[];

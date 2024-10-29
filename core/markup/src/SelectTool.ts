@@ -235,7 +235,7 @@ class MoveHandle extends ModifyHandle {
   }
   public override async onClick(_ev: BeButtonEvent): Promise<void> {
     const el = this.handles.el;
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     if (el instanceof MarkupText || (el instanceof G && el.node.className.baseVal === MarkupApp.boxedTextClass)) // if they click on the move handle of a text element, start the text editor
       await new EditTextTool(el).run();
   }
@@ -411,7 +411,7 @@ export class MarkupSelected {
   public sizeChanged() {
     this.clearEditors();
     if (this.elements.size === 1)
-      this.handles = new Handles(this, this.elements.values().next().value);
+      this.handles = new Handles(this, this.elements.values().next().value!);
     this.onChanged.raiseEvent(this);
   }
   /** Add a new element to the SS */
@@ -446,7 +446,7 @@ export class MarkupSelected {
   public groupAll(undo: UndoManager) {
     if (this.size < 2)
       return;
-    const first = this.elements.values().next().value;
+    const first = this.elements.values().next().value!;
     const parent = first.parent() as Container;
     const group = parent.group();
 

@@ -2051,7 +2051,7 @@ export enum ChangeFlag {
     NeverDrawn = 2,
     None = 0,
     Overrides = 268435319,
-    ViewedCategories = 4,// eslint-disable-line no-shadow
+    ViewedCategories = 4,
     ViewedCategoriesPerModel = 64,
     ViewedModels = 8,
     ViewState = 128
@@ -2928,7 +2928,7 @@ export class DrawingViewState extends ViewState2d {
     // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // @internal
-    get attachment(): Object | undefined;
+    get attachment(): object | undefined;
     // @internal
     get attachmentInfo(): {
         spatialView: Id64String | ViewState3d;
@@ -8003,7 +8003,7 @@ export class NativeAppLogger {
 // @public
 export interface NativeAppOpts extends IpcAppOptions {
     // (undocumented)
-    nativeApp?: {};
+    nativeApp?: object;
 }
 
 // @public
@@ -8045,11 +8045,11 @@ export class NotificationManager implements MessagePresenter {
 
 // @public
 export class NotifyMessageDetails {
-    constructor(priority: OutputMessagePriority, briefMessage: HTMLElement | string, detailedMessage?: string | HTMLElement | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
+    constructor(priority: OutputMessagePriority, briefMessage: HTMLElement | string, detailedMessage?: (HTMLElement | string) | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
     // (undocumented)
     briefMessage: HTMLElement | string;
     // (undocumented)
-    detailedMessage?: string | HTMLElement | undefined;
+    detailedMessage?: (HTMLElement | string) | undefined;
     // (undocumented)
     displayPoint?: Point2d;
     // (undocumented)
@@ -8975,7 +8975,7 @@ export interface ReadGltfGraphicsArgs {
     baseUrl?: URL | string;
     // @alpha (undocumented)
     contentRange?: ElementAlignedBox3d;
-    gltf: Uint8Array | Object;
+    gltf: Uint8Array | object;
     // @alpha (undocumented)
     hasChildren?: boolean;
     // @internal (undocumented)
@@ -10983,7 +10983,7 @@ export class SheetViewState extends ViewState2d {
     // (undocumented)
     get attachmentIds(): Id64Array;
     // @internal
-    get attachments(): Object[] | undefined;
+    get attachments(): object[] | undefined;
     attachToViewport(args: AttachToViewportArgs): void;
     // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
@@ -12880,7 +12880,7 @@ export interface TokenArg {
 export class Tool {
     constructor(..._args: any[]);
     // @internal (undocumented)
-    get ctor(): typeof Tool;
+    get ctor(): ToolType;
     static get description(): string;
     get description(): string;
     static get englishKeyin(): string;

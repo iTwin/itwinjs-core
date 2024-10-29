@@ -304,7 +304,7 @@ export interface PresentationManagerProps {
 }
 
 // @public
-export interface PresentationProps extends PresentationManagerProps {
+export interface PresentationProps extends Omit<PresentationManagerProps, "enableSchemasPreload"> {
     // @internal
     clientManagerFactory?: (clientId: string, props: PresentationManagerProps) => PresentationManager;
     enableSchemasPreload?: boolean;

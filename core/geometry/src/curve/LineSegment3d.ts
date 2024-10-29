@@ -28,8 +28,6 @@ import { LineString3d } from "./LineString3d";
 import { OffsetOptions } from "./OffsetOptions";
 import { StrokeOptions } from "./StrokeOptions";
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
-
 /**
  * A LineSegment3d is:
  * * A 3d line segment represented by its start and end coordinates

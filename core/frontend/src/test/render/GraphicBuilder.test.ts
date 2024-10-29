@@ -145,7 +145,7 @@ describe("GraphicBuilder", () => {
 
     afterEach(() => {
       if (renderSystemCreateMesh)
-        IModelApp.renderSystem.createMeshGeometry = renderSystemCreateMesh; // eslint-disable-line @typescript-eslint/unbound-method
+        IModelApp.renderSystem.createMeshGeometry = renderSystemCreateMesh;
     });
 
     function overrideCreateMesh(verifyParams?: (params: MeshParams) => void, verifyGraphic?: (graphic: MeshRenderGeometry) => void): void {
@@ -154,7 +154,6 @@ describe("GraphicBuilder", () => {
 
       createMeshInvoked = false;
 
-      // eslint-disable-next-line @typescript-eslint/unbound-method
       IModelApp.renderSystem.createMeshGeometry = (params: MeshParams, viOrigin?: Point3d) => {
         createMeshInvoked = true;
         if (verifyParams)

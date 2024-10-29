@@ -906,7 +906,6 @@ public;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
-public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
 public;class;VerticalCRS

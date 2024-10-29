@@ -16,7 +16,7 @@ import { afterAll, beforeAll, describe, expect, it } from "vitest";
 const minimalBin = new Uint8Array([12, 34, 0xfe, 0xdc]);
 const minimalJson = { asset: { version: "02.00" }, meshes: [] };
 
-function jsonToBytes(json: Object, alignment = 4): Uint8Array {
+function jsonToBytes(json: object, alignment = 4): Uint8Array {
   let str = JSON.stringify(json);
   while (str.length % alignment !== 0)
     str += " ";
@@ -69,7 +69,7 @@ function glbFromChunks(chunks: Chunk[], header?: Header): Uint8Array {
   return glb;
 }
 
-function makeGlb(json: Object | undefined, binary?: Uint8Array, header?: Header): Uint8Array {
+function makeGlb(json: object | undefined, binary?: Uint8Array, header?: Header): Uint8Array {
   const chunks = [];
   if (json)
     chunks.push({ type: GltfV2ChunkTypes.JSON, data: jsonToBytes(json) });

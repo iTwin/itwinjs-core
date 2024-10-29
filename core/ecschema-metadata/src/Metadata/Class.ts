@@ -588,9 +588,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
         return false;
 
       for (const [className, customAttribute] of ecClass.customAttributes) {
-        if (customAttributes!.has(className))
+        if (customAttributes.has(className))
           continue;
-        customAttributes!.set(className, customAttribute);
+        customAttributes.set(className, customAttribute);
       }
 
       return false;
@@ -696,7 +696,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
  * @beta
  */
 export class StructClass extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.StructClass; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.StructClass;
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);

@@ -5,7 +5,7 @@
 
 import { CompressedId64Set } from "@itwin/core-bentley";
 import { ColorDef, ContourDisplay, ContourDisplayProps, LinePixels, RgbColor } from "@itwin/core-common";
-import { Viewport, ViewState, ViewState3d } from "@itwin/core-frontend";
+import { Viewport, ViewState } from "@itwin/core-frontend";
 
 // __PUBLISH_EXTRACT_START__ Setup_ContourDisplay
 
@@ -65,7 +65,7 @@ export function setupContourDisplay(viewport: Viewport): boolean {
   const contourDisplay = ContourDisplay.fromJSON(contourDisplayProps);
 
   // Change the contours object on the 3d display style state to contain the new object
-  (view as ViewState3d).getDisplayStyle3d().settings.contours = contourDisplay;
+  view.getDisplayStyle3d().settings.contours = contourDisplay;
 
   // Sync the viewport with the new view state
   viewport.synchWithView();

@@ -91,7 +91,7 @@ function expectEqualFloats(expected: number, actual: number): void {
   expect(Math.abs(expected - actual)).to.be.at.most(epsilon, `Expected: ${expected} Actual: ${actual}`);
 }
 
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function expectMaterialParams(expected: RenderMaterial.Params): void {
   const material = new Material(expected);
   const shaderParams = {
@@ -128,9 +128,9 @@ function expectMaterialParams(expected: RenderMaterial.Params): void {
     expectEqualFloats(1.0 - expected.alpha, actual.transparency);
 }
 
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 function makeMaterialParams(input: MaterialParams): RenderMaterial.Params {
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   const params = RenderMaterial.Params.fromColors(undefined, input.diffuseColor, input.specularColor);
   params.diffuse = input.diffuse;
   params.alpha = 1.0 - input.transparency;
@@ -168,7 +168,7 @@ describe("Material", () => {
       specularColor: ColorDef.blue,
     }));
 
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     expectMaterialParams(RenderMaterial.Params.defaults);
   });
 });

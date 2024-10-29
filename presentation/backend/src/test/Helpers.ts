@@ -5,7 +5,7 @@
 
 import { ECSqlReader } from "@itwin/core-common";
 
-export function stubECSqlReader<TRow extends {}>(rows: TRow[]) {
+export function stubECSqlReader<TRow extends object>(rows: TRow[]) {
   let stepsCount = -1;
   return {
     async step() {

@@ -27,7 +27,7 @@ describe("WmtsMapLayerImageryProvider", () => {
       expect.fail("Could not create settings");
 
     vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      throw { someError: "error" }; // eslint-disable-line no-throw-literal
+      throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
     await expect(provider.initialize()).rejects.toThrow(ServerError);
@@ -39,7 +39,7 @@ describe("WmtsMapLayerImageryProvider", () => {
       expect.fail("Could not create settings");
 
     vi.spyOn(WmtsCapabilities, "create").mockImplementation(async function _(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean) {
-      throw { someError: "error" }; // eslint-disable-line no-throw-literal
+      throw { someError: "error" }; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
     });
     const provider = new WmtsMapLayerImageryProvider(settings);
     await expect(provider.initialize()).rejects.toThrow(ServerError);

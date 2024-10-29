@@ -1784,8 +1784,8 @@ describe("XmlParser", () => {
     it("should return CAProviderTuple(s) properly", () => {
       const itemXml = `
         <ECCustomAttributes>
-          <TestAttribute1 xmlns="TestSchema.1.0"/>
-          <TestAttribute2 xmlns="TestSchema.1.0"/>
+          <TestAttribute1 xmlns="TestSchema.1.0.0"/>
+          <TestAttribute2 xmlns="TestSchema.1.0.0"/>
         </ECCustomAttributes>`;
       const schemaDoc = createSchemaXmlWithItems(itemXml);
       parser = new XmlParser(schemaDoc);
@@ -1818,7 +1818,7 @@ describe("XmlParser", () => {
     it("CustomAttributeProvider should provide valid CustomAttribute.", async () => {
       const itemXml = `
         <ECCustomAttributes>
-          <TestCustomAttribute xmlns="TestSchema.1.0"/>
+          <TestCustomAttribute xmlns="TestSchema.1.0.0"/>
         </ECCustomAttributes>`;
 
       const testClass = await getTestCAClass("");
@@ -1870,7 +1870,7 @@ describe("XmlParser", () => {
       const itemXml = `
         <ECEntityClass typeName="TestEntityClass">
           <ECCustomAttributes>
-            <TestAttribute xmlns="TestSchema.1.0"/>
+            <TestAttribute xmlns="TestSchema.1.0.0"/>
             <IsMixin xmlns="CoreCustomAttributes.1.0">
               <AppliesToEntityClass>Element</AppliesToEntityClass>
             </IsMixin>
@@ -1886,11 +1886,66 @@ describe("XmlParser", () => {
     });
 
     describe("Property Parsing Tests", () => {
+      describe("String Parsing Tests", () => {
+        it("With value set to valid string, CustomAttributeProvider should provide valid instance.", async () => {
+          const itemXml = `
+            <ECCustomAttributes>
+              <TestAttribute xmlns="TestSchema.1.0.0">
+                <TestProperty>TestString</TestProperty>
+              </TestAttribute>
+            </ECCustomAttributes>`;
+
+          const propertyJson = {
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "string",
+              },
+            ],
+          };
+
+          const testClass = await getTestCAClass(propertyJson);
+          const providers = getCAProviders(itemXml);
+
+          // Call Provider
+          const caInstance = providers[0][1](testClass!);
+
+          expect(caInstance.TestProperty).to.equal("TestString");
+        });
+
+        it("Empty property tag, CustomAttributeProvider should provide valid instance.", async () => {
+          const itemXml = `
+            <ECCustomAttributes>
+              <TestAttribute xmlns="TestSchema.1.0.0">
+                <TestProperty />
+              </TestAttribute>
+            </ECCustomAttributes>`;
+
+          const propertyJson = {
+            properties: [
+              {
+                name: "TestProperty",
+                type: "PrimitiveProperty",
+                typeName: "string",
+              },
+            ],
+          };
+
+          const testClass = await getTestCAClass(propertyJson);
+          const providers = getCAProviders(itemXml);
+
+          // Call Provider
+          const caInstance = providers[0][1](testClass!);
+
+          expect(caInstance.TestProperty).to.equal("");
+        });
+      });
       describe("Boolean Parsing Tests", () => {
         it("With value set to 'True', CustomAttributeProvider should provide valid instance.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>True</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -1917,7 +1972,7 @@ describe("XmlParser", () => {
         it("With value set to 'False', CustomAttributeProvider should provide valid instance.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>False</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -1944,7 +1999,7 @@ describe("XmlParser", () => {
         it("With value set to nothing, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty></TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -1969,7 +2024,7 @@ describe("XmlParser", () => {
         it("With invalid value, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>bad</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -1995,7 +2050,7 @@ describe("XmlParser", () => {
         it("With valid value, CustomAttributeProvider should provide valid instance.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>100</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2022,7 +2077,7 @@ describe("XmlParser", () => {
         it("With value set to nothing, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty></TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2047,7 +2102,7 @@ describe("XmlParser", () => {
         it("With invalid value, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>bad</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2071,7 +2126,7 @@ describe("XmlParser", () => {
         it("With float value, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>1.1</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2098,7 +2153,7 @@ describe("XmlParser", () => {
         it("With valid value, CustomAttributeProvider should provide valid instance.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>100.01</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2125,7 +2180,7 @@ describe("XmlParser", () => {
         it("With value set to nothing, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty></TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2150,7 +2205,7 @@ describe("XmlParser", () => {
         it("With invalid value, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>bad</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2178,7 +2233,7 @@ describe("XmlParser", () => {
           const now = Date.now();
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>${now}</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2205,7 +2260,7 @@ describe("XmlParser", () => {
         it("With value set to nothing, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty></TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2230,7 +2285,7 @@ describe("XmlParser", () => {
         it("With invalid value, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>bad</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2257,7 +2312,7 @@ describe("XmlParser", () => {
         it("With valid value, CustomAttributeProvider should provide valid instance.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>100,200</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2285,7 +2340,7 @@ describe("XmlParser", () => {
         it("With value set to nothing, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty></TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2310,7 +2365,7 @@ describe("XmlParser", () => {
         it("With invalid value, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>bad</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2337,7 +2392,7 @@ describe("XmlParser", () => {
         it("With valid value, CustomAttributeProvider should provide valid instance.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>100,200,300</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2366,7 +2421,7 @@ describe("XmlParser", () => {
         it("With value set to nothing, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty></TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2391,7 +2446,7 @@ describe("XmlParser", () => {
         it("With invalid value, throws.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>bad</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2419,7 +2474,7 @@ describe("XmlParser", () => {
         it("With valid value, CustomAttributeProvider should provide valid instance.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>Some Geometry</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2449,7 +2504,7 @@ describe("XmlParser", () => {
         it("With valid value, CustomAttributeProvider should provide valid instance.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>Binary Value</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2478,7 +2533,7 @@ describe("XmlParser", () => {
         it("With string values, parses successfully.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>
                   <string>StringA</string>
                   <string>StringB</string>
@@ -2511,7 +2566,7 @@ describe("XmlParser", () => {
         it("With boolean values, parses successfully.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>
                   <boolean>true</boolean>
                   <boolean>false</boolean>
@@ -2544,7 +2599,7 @@ describe("XmlParser", () => {
         it("With integer values, parses successfully.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>
                   <int>1</int>
                   <int>2</int>
@@ -2577,7 +2632,7 @@ describe("XmlParser", () => {
         it("With double values, parses successfully.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>
                   <double>1.1</double>
                   <double>2.1</double>
@@ -2612,7 +2667,7 @@ describe("XmlParser", () => {
         it("parses successfully.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestStructProperty>
                   <StringProperty>test</StringProperty>
                   <IntProperty>1</IntProperty>
@@ -2648,7 +2703,7 @@ describe("XmlParser", () => {
         it("parses successfully.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestStructArrayProperty>
                   <TestStructProperty>
                     <StringProperty>test1</StringProperty>
@@ -2695,7 +2750,7 @@ describe("XmlParser", () => {
         it("With valid integer value, CustomAttributeProvider should provide valid instance.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>1</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2722,7 +2777,7 @@ describe("XmlParser", () => {
         it("With valid string value, CustomAttributeProvider should provide valid instance.", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>A</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
@@ -2749,7 +2804,7 @@ describe("XmlParser", () => {
         it("Enumeration lookup returns undefined, throws", async () => {
           const itemXml = `
             <ECCustomAttributes>
-              <TestAttribute xmlns="TestSchema.1.0">
+              <TestAttribute xmlns="TestSchema.1.0.0">
                 <TestProperty>A</TestProperty>
               </TestAttribute>
             </ECCustomAttributes>`;
