@@ -21,7 +21,7 @@ import {
   ViewIdString, ViewQueryParams, ViewStateLoadProps, ViewStateProps, ViewStoreRpc,
 } from "@itwin/core-common";
 import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@itwin/core-geometry";
-import type { IModelReadAPI, IModelReadIpcAPI } from "@itwin/imodelread-common";
+import type { IModelReadAPI, IModelReadIpcAPI, QueryRequest } from "@itwin/imodelread-common";
 import { IpcIModelRead } from "@itwin/imodelread-client-ipc";
 import { IModelReadHTTPClient } from "@itwin/imodelread-client-http";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -276,6 +276,7 @@ export abstract class IModelConnection extends IModel {
    * @param config Allow to specify certain flags which control how query is executed.
    * @returns Returns an [ECSqlReader]($common) which helps iterate over the result set and also give access to metadata.
    * @public
+   * @deprecated in 4.10. Use [[runQuery]] instead.
    * */
   public createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader {
     const executor = {
@@ -326,6 +327,10 @@ export abstract class IModelConnection extends IModel {
     const reader = this.createQueryReader(ecsql, params, builder.getOptions());
     while (await reader.step())
       yield reader.formatCurrentRow();
+  }
+
+  public runQuery(query: QueryRequest): AsyncIterable<unknown> {
+    return this._iModelReadApi.runQuery(query);
   }
 
   /** Compute number of rows that would be returned by the ECSQL.
