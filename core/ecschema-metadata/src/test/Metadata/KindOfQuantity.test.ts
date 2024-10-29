@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { ECObjectsError } from "../../Exception";
 import { Format } from "../../Metadata/Format";
@@ -90,7 +90,7 @@ describe("KindOfQuantity", () => {
 
       expect(testKoq!.relativeError).eq(1.234);
       expect(testKoq!.presentationFormats.length).eq(0);
-      expect(testKoq!.defaultPresentationFormat).to.be.undefined;
+      expect(testKoq!.defaultPresentationFormat).toBeUndefined();
 
       const testUnit = await schema.lookupItem(koqNoPresUnits.persistenceUnit);
       expect(testUnit).exist;

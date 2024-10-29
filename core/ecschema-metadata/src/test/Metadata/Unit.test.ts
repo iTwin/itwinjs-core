@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
+import { assert, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
-import { ECObjectsError } from "../../Exception";
+import { ECObjectsError, ECObjectsStatus } from "../../Exception";
 import { Phenomenon } from "../../Metadata/Phenomenon";
 import { Schema } from "../../Metadata/Schema";
 import { Unit } from "../../Metadata/Unit";
@@ -78,9 +78,9 @@ describe("Unit", () => {
       assert.isTrue((await unit!.unitSystem) === unitSystem);
 
       expect(unit!.definition).to.eql("[MILLI]*Units.MM");
-      expect(unit!.denominator).to.equal(1);
-      expect(unit!.numerator).to.equal(5);
-      expect(unit!.offset).to.equal(4);
+      expect(unit!.denominator).toEqual(1);
+      expect(unit!.numerator).toEqual(5);
+      expect(unit!.offset).toEqual(4);
     });
 
     it("sync - should succeed with fully defined", () => {
@@ -97,9 +97,9 @@ describe("Unit", () => {
       assert.strictEqual(unitSystem, ecSchema.getItemSync<UnitSystem>(unit!.unitSystem!.name));
 
       expect(unit!.definition).to.eql("[MILLI]*Units.MM");
-      expect(unit!.denominator).to.equal(1);
-      expect(unit!.numerator).to.equal(5);
-      expect(unit!.offset).to.equal(4);
+      expect(unit!.denominator).toEqual(1);
+      expect(unit!.numerator).toEqual(5);
+      expect(unit!.offset).toEqual(4);
     });
 
     // Check order of schema items shouldn't matter
@@ -142,10 +142,10 @@ describe("Unit", () => {
       definition: "[MILLI]*Units.M",
     };
     it("async - should throw for missing phenomenon", async () => {
-      await expect(Schema.fromJson(createSchemaJson(missingPhenomenonJson), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Unit TestSchema.TestUnit does not have the required 'phenomenon' attribute.`);
+      await expect(Schema.fromJson(createSchemaJson(missingPhenomenonJson), new SchemaContext())).rejects.toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit does not have the required 'phenomenon' attribute.`));
     });
     it("sync - should throw for missing phenomenon", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingPhenomenonJson), new SchemaContext()), ECObjectsError, `The Unit TestSchema.TestUnit does not have the required 'phenomenon' attribute.`);
+      expect(() => Schema.fromJsonSync(createSchemaJson(missingPhenomenonJson), new SchemaContext())).toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit does not have the required 'phenomenon' attribute.`));
     });
 
     // Invalid phenomenon
@@ -155,10 +155,10 @@ describe("Unit", () => {
       definition: "[MILLI]*Units.M",
     };
     it("async - should throw for invalid phenomenon", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidPhenomenonJson), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'phenomenon' attribute. It should be of type 'string'`);
+      await expect(Schema.fromJson(createSchemaJson(invalidPhenomenonJson), new SchemaContext())).rejects.toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'phenomenon' attribute. It should be of type 'string'.`));
     });
     it("sync - should throw for invalid phenomenon", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidPhenomenonJson), new SchemaContext()), ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'phenomenon' attribute. It should be of type 'string'`);
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidPhenomenonJson), new SchemaContext())).toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'phenomenon' attribute. It should be of type 'string'.`));
     });
 
     // Missing UnitSystem
@@ -167,10 +167,10 @@ describe("Unit", () => {
       definition: "[MILLI]*Units.M",
     };
     it("async - should throw for missing unit system", async () => {
-      await expect(Schema.fromJson(createSchemaJson(missingUnitSystemJson), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Unit TestSchema.TestUnit does not have the required 'unitSystem' attribute.`);
+      await expect(Schema.fromJson(createSchemaJson(missingUnitSystemJson), new SchemaContext())).rejects.toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit does not have the required 'unitSystem' attribute.`));
     });
     it("sync - should throw for missing unit system", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingUnitSystemJson), new SchemaContext()), ECObjectsError, `The Unit TestSchema.TestUnit does not have the required 'unitSystem' attribute.`);
+      expect(() => Schema.fromJsonSync(createSchemaJson(missingUnitSystemJson), new SchemaContext())).toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit does not have the required 'unitSystem' attribute.`));
     });
 
     // Invalid UnitSystem
@@ -180,10 +180,10 @@ describe("Unit", () => {
       definition: "[MILLI]*Units.M",
     };
     it("async - should throw for invalid unit system", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidUnitSystemJson), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'unitSystem' attribute. It should be of type 'string'`);
+      await expect(Schema.fromJson(createSchemaJson(invalidUnitSystemJson), new SchemaContext())).rejects.toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'unitSystem' attribute. It should be of type 'string'.`));
     });
     it("sync - should throw for invalid unit system", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidUnitSystemJson), new SchemaContext()), ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'unitSystem' attribute. It should be of type 'string'`);
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidUnitSystemJson), new SchemaContext())).toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'unitSystem' attribute. It should be of type 'string'.`));
     });
 
     // Missing Definition
@@ -192,10 +192,10 @@ describe("Unit", () => {
       unitSystem: "TestSchema.TestUnitSystem",
     };
     it("async - should throw for missing definition", async () => {
-      await expect(Schema.fromJson(createSchemaJson(missingDefinitionJson), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Unit TestSchema.TestUnit does not have the required 'definition' attribute.`);
+      await expect(Schema.fromJson(createSchemaJson(missingDefinitionJson), new SchemaContext())).rejects.toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit does not have the required 'definition' attribute.`));
     });
     it("sync - should throw for missing definition", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingDefinitionJson), new SchemaContext()), ECObjectsError, `The Unit TestSchema.TestUnit does not have the required 'definition' attribute.`);
+      expect(() => Schema.fromJsonSync(createSchemaJson(missingDefinitionJson), new SchemaContext())).toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit does not have the required 'definition' attribute.`));
     });
 
     // Missing Definition
@@ -205,10 +205,10 @@ describe("Unit", () => {
       unitSystem: "TestSchema.TestUnitSystem",
     };
     it("async - should throw for invalid definition", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidDefinitionJson), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'definition' attribute. It should be of type 'string'`);
+      await expect(Schema.fromJson(createSchemaJson(invalidDefinitionJson), new SchemaContext())).rejects.toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'definition' attribute. It should be of type 'string'.`));
     });
     it("sync - should throw for invalid definition", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidDefinitionJson), new SchemaContext()), ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'definition' attribute. It should be of type 'string'`);
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidDefinitionJson), new SchemaContext())).toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'definition' attribute. It should be of type 'string'.`));
     });
 
     // Invalid numerator
@@ -219,10 +219,10 @@ describe("Unit", () => {
       numerator: "5",
     };
     it("async - should throw for invalid numerator", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidNumeratorJson), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'numerator' attribute. It should be of type 'number'.`);
+      await expect(Schema.fromJson(createSchemaJson(invalidNumeratorJson), new SchemaContext())).rejects.toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'numerator' attribute. It should be of type 'number'.`));
     });
     it("sync - should throw for invalid numerator", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidNumeratorJson), new SchemaContext()), ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'numerator' attribute. It should be of type 'number'.`);
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidNumeratorJson), new SchemaContext())).toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'numerator' attribute. It should be of type 'number'.`));
     });
 
     // Invalid denominator
@@ -233,10 +233,10 @@ describe("Unit", () => {
       denominator: "5",
     };
     it("async - should throw for invalid denominator", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidDenominatorJson), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'denominator' attribute. It should be of type 'number'.`);
+      await expect(Schema.fromJson(createSchemaJson(invalidDenominatorJson), new SchemaContext())).rejects.toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'denominator' attribute. It should be of type 'number'.`));
     });
     it("sync - should throw for invalid denominator", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidDenominatorJson), new SchemaContext()), ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'denominator' attribute. It should be of type 'number'.`);
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidDenominatorJson), new SchemaContext())).toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'denominator' attribute. It should be of type 'number'.`));
     });
 
     // Invalid offset
@@ -247,10 +247,10 @@ describe("Unit", () => {
       offset: "5",
     };
     it("async - should throw for invalid offset", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidOffsetJson), new SchemaContext())).to.be.rejectedWith(ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'offset' attribute. It should be of type 'number'.`);
+      await expect(Schema.fromJson(createSchemaJson(invalidOffsetJson), new SchemaContext())).rejects.toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'offset' attribute. It should be of type 'number'.`));
     });
     it("sync - should throw for invalid offset", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidOffsetJson), new SchemaContext()), ECObjectsError, `The Unit TestSchema.TestUnit has an invalid 'offset' attribute. It should be of type 'number'.`);
+      expect(() => Schema.fromJsonSync(createSchemaJson(invalidOffsetJson), new SchemaContext())).toThrowError(new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit TestSchema.TestUnit has an invalid 'offset' attribute. It should be of type 'number'.`));
     });
   });
 
@@ -275,9 +275,9 @@ describe("Unit", () => {
       expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
       expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
-      expect(unitSerialization.denominator).to.equal(1);
-      expect(unitSerialization.numerator).to.equal(5);
-      expect(unitSerialization.offset).to.equal(4);
+      expect(unitSerialization.denominator).toEqual(1);
+      expect(unitSerialization.numerator).toEqual(5);
+      expect(unitSerialization.offset).toEqual(4);
     });
 
     it("sync - should succeed with fully defined", () => {
@@ -289,9 +289,9 @@ describe("Unit", () => {
       expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
       expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
-      expect(unitSerialization.denominator).to.equal(1);
-      expect(unitSerialization.numerator).to.equal(5);
-      expect(unitSerialization.offset).to.equal(4);
+      expect(unitSerialization.denominator).toEqual(1);
+      expect(unitSerialization.numerator).toEqual(5);
+      expect(unitSerialization.offset).toEqual(4);
     });
 
     it("async - JSON stringify serialization, should succeed with fully defined", async () => {
@@ -304,9 +304,9 @@ describe("Unit", () => {
       expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
       expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
-      expect(unitSerialization.denominator).to.equal(1);
-      expect(unitSerialization.numerator).to.equal(5);
-      expect(unitSerialization.offset).to.equal(4);
+      expect(unitSerialization.denominator).toEqual(1);
+      expect(unitSerialization.numerator).toEqual(5);
+      expect(unitSerialization.offset).toEqual(4);
     });
 
     it("sync - JSON stringify serialization, should succeed with fully defined", () => {
@@ -319,9 +319,9 @@ describe("Unit", () => {
       expect(unitSerialization.phenomenon).to.eql("TestSchema.TestPhenomenon");
       expect(unitSerialization.unitSystem).to.eql("TestSchema.TestUnitSystem");
       expect(unitSerialization.definition).to.eql("[MILLI]*Units.MM");
-      expect(unitSerialization.denominator).to.equal(1);
-      expect(unitSerialization.numerator).to.equal(5);
-      expect(unitSerialization.offset).to.equal(4);
+      expect(unitSerialization.denominator).toEqual(1);
+      expect(unitSerialization.numerator).toEqual(5);
+      expect(unitSerialization.offset).toEqual(4);
     });
 
     // Check order of schema items shouldn't matter
@@ -381,9 +381,9 @@ describe("Unit", () => {
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
-      expect(unitSerialization.numerator).to.equal(10);
-      expect(unitSerialization.denominator).to.be.undefined;
-      expect(unitSerialization.offset).to.be.undefined;
+      expect(unitSerialization.numerator).toEqual(10);
+      expect(unitSerialization.denominator).toBeUndefined();
+      expect(unitSerialization.offset).toBeUndefined();
     });
 
     it("Denominator and offset are explicitly set, default values of numerator, denominator and offset should not be serialized", async () => {
@@ -402,9 +402,9 @@ describe("Unit", () => {
       assert.isDefined(unit);
       const unitSerialization = unit!.toJSON(true, true);
 
-      expect(unitSerialization.offset).to.equal(10);
-      expect(unitSerialization.denominator).to.equal(12);
-      expect(unitSerialization.numerator).to.be.undefined;
+      expect(unitSerialization.offset).toEqual(10);
+      expect(unitSerialization.denominator).toEqual(12);
+      expect(unitSerialization.numerator).toBeUndefined();
     });
   });
 

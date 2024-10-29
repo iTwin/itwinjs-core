@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as sinon from "sinon";
+import { afterEach, assert, beforeEach, describe, expect, it } from "vitest";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { StrengthDirection } from "../../ECObjects";
@@ -127,8 +126,8 @@ describe("Mixin", () => {
 
       const navProp = await mixin!.getProperty("testNavProp", false) as NavigationProperty;
       expect(navProp).to.exist;
-      expect(navProp.isNavigation()).to.be.true;
-      expect(navProp.direction).to.equal(StrengthDirection.Forward);
+      expect(navProp.isNavigation()).toBe(true);
+      expect(navProp.direction).toEqual(StrengthDirection.Forward);
     });
 
     it("should succeed with NavigationPropertySynchronously", () => {
@@ -152,8 +151,8 @@ describe("Mixin", () => {
 
       const navProp = mixin!.getPropertySync("testNavProp", false) as NavigationProperty;
       expect(navProp).to.exist;
-      expect(navProp.isNavigation()).to.be.true;
-      expect(navProp.direction).to.equal(StrengthDirection.Forward);
+      expect(navProp.isNavigation()).toBe(true);
+      expect(navProp.direction).toEqual(StrengthDirection.Forward);
     });
 
     it("should throw for invalid appliesTo", async () => {
@@ -187,8 +186,8 @@ describe("Mixin", () => {
 
       const invalidEntity = new EntityClass(schema, "TestEntityB");
 
-      expect(await mixin!.applicableTo(validEntity!)).to.be.true;
-      expect(await mixin!.applicableTo(invalidEntity)).to.be.false;
+      expect(await mixin!.applicableTo(validEntity!)).toBe(true);
+      expect(await mixin!.applicableTo(invalidEntity)).toBe(false);
     });
   });
 
@@ -211,7 +210,7 @@ describe("Mixin", () => {
       expect(testMixin).to.exist;
       await testMixin.fromJSON(json);
       expect(await testMixin.appliesTo).to.eql(testEntity);
-      expect(await testMixin.applicableTo(testEntity)).to.be.true;
+      expect(await testMixin.applicableTo(testEntity)).toBe(true);
     });
 
     it("should throw for invalid appliesTo", async () => {
@@ -277,8 +276,8 @@ describe("Mixin", () => {
 
       const invalidEntity = new EntityClass(schema, "TestEntityB");
 
-      expect(await mixin!.applicableTo(validEntity!)).to.be.true;
-      expect(await mixin!.applicableTo(invalidEntity)).to.be.false;
+      expect(await mixin!.applicableTo(validEntity!)).toBe(true);
+      expect(await mixin!.applicableTo(invalidEntity)).toBe(false);
     });
 
     it("applicableTo, appliesTo undefined, should throw", async () => {
@@ -343,8 +342,8 @@ describe("Mixin", () => {
       expect(mixinA).to.exist;
       const jsonA = JSON.stringify(mixinA);
       const serializedA = JSON.parse(jsonA);
-      expect(serializedA.schemaItemType).to.equal("Mixin");
-      expect(serializedA.appliesTo).to.equal("TestSchema.TestEntity");
+      expect(serializedA.schemaItemType).toEqual("Mixin");
+      expect(serializedA.appliesTo).toEqual("TestSchema.TestEntity");
       expect(serializedA).to.not.have.property("modifier");
 
       testSchema.items.TestMixin.modifier = "Abstract";
@@ -354,8 +353,8 @@ describe("Mixin", () => {
       expect(mixinB).to.exist;
       const jsonB = JSON.stringify(mixinA);
       const serializedB = JSON.parse(jsonB);
-      expect(serializedB.schemaItemType).to.equal("Mixin");
-      expect(serializedB.appliesTo).to.equal("TestSchema.TestEntity");
+      expect(serializedB.schemaItemType).toEqual("Mixin");
+      expect(serializedB.appliesTo).toEqual("TestSchema.TestEntity");
       expect(serializedB).to.not.have.property("modifier");
     });
   });

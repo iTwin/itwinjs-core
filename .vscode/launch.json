@@ -109,13 +109,13 @@
       "cwd": "${workspaceFolder}/core/ecschema-metadata",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
+      "runtimeExecutable": "pnpm",
       "runtimeArgs": [
         "test"
       ],
-      "outFiles": [
-        "${workspaceFolder}/core/*/lib/**/*.js"
-      ]
+      "autoAttachChildProcesses": true,
+      "smartStep": true,
+      "console": "integratedTerminal",
     },
     {
       "name": "EC Schema Locater Tests",
@@ -1123,7 +1123,10 @@
         "group": "0_CoreTests",
         "order": 2
       },
-      "configurations": ["Attach to Vitest Browser", "Run Vitest Browser"],
+      "configurations": [
+        "Attach to Vitest Browser",
+        "Run Vitest Browser"
+      ],
       "stopAll": true
     },
     {

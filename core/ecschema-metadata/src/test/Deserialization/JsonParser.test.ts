@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, beforeEach, describe, it } from "vitest";
 import { JsonParser } from "../../Deserialization/JsonParser";
 import { ECObjectsError } from "../../Exception";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
