@@ -148,7 +148,7 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 
 ## Node 22 support
 
-iTwin.js now officially supports Node 22 starting with LTS version of 22.?.0. Node 22 support is in addition to Node 18 and 20, not a replacement.
+iTwin.js now officially supports Node 22 starting with LTS version of 22.11.0. Node 22 support is in addition to Node 18 and 20, not a replacement.
 
 ## Electron 33 support
 
