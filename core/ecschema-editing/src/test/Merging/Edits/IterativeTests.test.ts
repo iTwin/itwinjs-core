@@ -163,6 +163,9 @@ describe.only("Iterative Tests", () => {
     await expect(targetSchema.getItem("Building")).to.be.eventually.fulfilled.then(async (ecClass) => {
       expect(ecClass).to.exist;
       expect(ecClass).to.have.a.nested.property("baseClass.name", "CommonBaseClass");
+      await expect(ecClass.getProperty("Address", true)).to.be.eventually.not.undefined;
+      await expect(ecClass.getProperty("Height", true)).to.be.eventually.not.undefined;
+      await expect(ecClass.getProperty("Tag", true)).to.be.eventually.not.undefined;
     });
 
     expect(true).is.true;
