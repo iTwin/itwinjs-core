@@ -3,22 +3,93 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { SchemaItemFormatProps } from "../../Deserialization/JsonProps";
 import { Format } from "../../Metadata/Format";
 import { MutableSchema, Schema } from "../../Metadata/Schema";
-import { Formatter, FormatterSpec, Parser, ParserSpec, Format as QFormat, UnitProps } from "@itwin/core-quantity";
+import { Formatter, FormatterSpec, Parser, ParserSpec, Format as QFormat, Quantity, UnitProps } from "@itwin/core-quantity";
 import { deserializeXmlSync } from "../TestUtils/DeserializationHelpers";
 import { SchemaKey, SchemaMatchType, SchemaUnitProvider } from "../../ecschema-metadata";
 import * as fs from "fs";
 import * as path from "path";
 
 describe("Quantity", () => {
-  let schema: Schema;
-  let testFormat: Format;
+  describe("Conversions", () => {
+    let context: SchemaContext;
+    let provider: SchemaUnitProvider;
+
+    before(() => {
+      context = new SchemaContext();
+
+      const schemaFile = path.join(__dirname, "..", "..", "..", "..", "node_modules", "@bentley", "units-schema", "Units.ecschema.xml");
+      const schemaXml = fs.readFileSync(schemaFile, "utf-8");
+      deserializeXmlSync(schemaXml, context);
+      provider = new SchemaUnitProvider(context);
+    });
+
+    it("Convert between inverted and base units", async () => {
+      const invertedUnit = await provider.findUnitByName("Units.HORIZONTAL_PER_VERTICAL");
+      assert.isTrue(invertedUnit.isValid);
+      const baseUnit = await provider.findUnitByName("Units.VERTICAL_PER_HORIZONTAL");
+      assert.isTrue(baseUnit.isValid);
+
+      const invertedValue = 2.0;
+      const baseValue = 0.5;
+
+      const baseQuantity = new Quantity(baseUnit, baseValue);
+      const invertedQuantity = new Quantity(invertedUnit, invertedValue);
+
+      const toInvertedConversion = await provider.getConversion(baseUnit, invertedUnit);
+      const invertedResult = baseQuantity.convertTo(invertedUnit, toInvertedConversion);
+      expect(invertedResult).to.not.be.undefined;
+      if (invertedResult) {
+        expect(invertedResult.magnitude).to.equal(invertedValue);
+        expect(invertedResult.unit.name).to.equal(invertedUnit.name);
+      }
+
+      const toBaseConversion = await provider.getConversion(invertedUnit, baseUnit);
+      const baseResult = invertedQuantity.convertTo(baseUnit, toBaseConversion);
+      expect(baseResult).to.not.be.undefined;
+      if (baseResult) {
+        expect(baseResult.magnitude).to.equal(baseValue);
+        expect(baseResult.unit.name).to.equal(baseUnit.name);
+      }
+    });
+
+    it("Convert between meters and feet", async () => {
+      const metersUnit = await provider.findUnitByName("Units.M");
+      assert.isTrue(metersUnit.isValid);
+      const feetUnit = await provider.findUnitByName("Units.FT");
+      assert.isTrue(feetUnit.isValid);
+
+      const metersValue = 1.0;
+      const feetValue = 3.28084;
+
+      const metersQuantity = new Quantity(metersUnit, metersValue);
+      const feetQuantity = new Quantity(feetUnit, feetValue);
+
+      const toFeetConversion = await provider.getConversion(metersUnit, feetUnit);
+      const feetResult = metersQuantity.convertTo(feetUnit, toFeetConversion);
+      expect(feetResult).to.not.be.undefined;
+      if (feetResult) {
+        expect(feetResult.magnitude).to.be.closeTo(feetValue, 0.00001);
+        expect(feetResult.unit.name).to.equal(feetUnit.name);
+      }
+
+      const toMetersConversion = await provider.getConversion(feetUnit, metersUnit);
+      const metersResult = feetQuantity.convertTo(metersUnit, toMetersConversion);
+      expect(metersResult).to.not.be.undefined;
+      if (metersResult) {
+        expect(metersResult.magnitude).to.be.closeTo(metersValue, 0.00001);
+        expect(metersResult.unit.name).to.equal(metersUnit.name);
+      }
+    });
+  });
 
   describe("Format and Parse Bearing", () => {
+    let schema: Schema;
+    let testFormat: Format;
     const formatProps: SchemaItemFormatProps = {
       schemaItemType: "Format",
       label: "MyCustomFormat",
@@ -76,7 +147,6 @@ describe("Quantity", () => {
 
       const formatterResult = Formatter.formatQuantity(value, bearingDMSFormatter);
       assert.equal(formatterResult, inputString);
-
     });
 
   });

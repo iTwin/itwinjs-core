@@ -36,7 +36,7 @@ importers:
       dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       eslint: ^9.13.0
-      form-data: ^2.5.1
+      form-data: ^4.0.1
       fs-extra: ^8.1.0
       internal-tools: workspace:*
       inversify: ~6.0.1
@@ -62,7 +62,7 @@ importers:
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.5_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/object-storage-core': 2.2.5_scz6qrwecfbbxg4vskopkl3a7u
-      form-data: 2.5.1
+      form-data: 4.0.1
       fs-extra: 8.1.0
       inversify: 6.0.1
       json5: 2.2.3
@@ -1249,7 +1249,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
-      '@itwin/oidc-signin-tool': ^4.3.5
+      '@itwin/oidc-signin-tool': ^4.3.7
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/node': ~18.19.61
@@ -1271,7 +1271,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
-      '@itwin/oidc-signin-tool': 4.3.5_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 4.3.7_67wltvhdskk2oee2c3z2o4tfly
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
       '@types/node': 18.19.61
@@ -1298,7 +1298,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@itwin/imodel-transformer': ^0.4.2
       '@itwin/itwins-client': ^1.2.0
-      '@itwin/oidc-signin-tool': ^4.3.5
+      '@itwin/oidc-signin-tool': ^4.3.7
       '@itwin/service-authorization': ^1.0.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -1306,7 +1306,7 @@ importers:
       '@types/mocha': ^10.0.6
       '@types/node': ~18.19.61
       '@xmldom/xmldom': ~0.8.5
-      azurite: ^3.31.0
+      azurite: ^3.32.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -1332,12 +1332,12 @@ importers:
       '@itwin/itwins-client': 1.2.0
       '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
       '@xmldom/xmldom': 0.8.5
-      azurite: 3.31.0
+      azurite: 3.32.0
       fs-extra: 8.1.0
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
-      '@itwin/oidc-signin-tool': 4.3.5_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 4.3.7_67wltvhdskk2oee2c3z2o4tfly
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
@@ -1575,14 +1575,14 @@ importers:
       '@itwin/imodels-access-backend': ^5.2.1
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/itwins-client': ^1.2.0
-      '@itwin/oidc-signin-tool': ^4.3.5
+      '@itwin/oidc-signin-tool': ^4.3.7
       '@itwin/perf-tools': workspace:*
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
       '@types/sinon': ^17.0.2
-      azurite: ^3.31.0
+      azurite: ^3.32.0
       chai: ^4.3.10
       chai-as-promised: ^7.1.1
       cpx2: ^3.0.0
@@ -1625,9 +1625,9 @@ importers:
       '@itwin/imodels-access-backend': 5.2.1_wj555zckjupkhkzyssqqpl4sei
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/itwins-client': 1.2.0
-      '@itwin/oidc-signin-tool': 4.3.5_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 4.3.7_67wltvhdskk2oee2c3z2o4tfly
       '@itwin/perf-tools': link:../../tools/perf-tools
-      azurite: 3.31.0
+      azurite: 3.32.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
@@ -1682,7 +1682,7 @@ importers:
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/itwins-client': ^1.2.0
       '@itwin/object-storage-core': ^2.2.5
-      '@itwin/oidc-signin-tool': ^4.3.5
+      '@itwin/oidc-signin-tool': ^4.3.7
       '@itwin/reality-data-client': ^1.2.1
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -1692,7 +1692,7 @@ importers:
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
       assert: ^2.0.0
-      azurite: ^3.31.0
+      azurite: ^3.32.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       browserify-zlib: ^0.2.0
@@ -1747,7 +1747,7 @@ importers:
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
       '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
-      azurite: 3.31.0
+      azurite: 3.32.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       electron: 33.0.0
@@ -1760,7 +1760,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       '@itwin/itwins-client': 1.2.0
       '@itwin/object-storage-core': 2.2.5
-      '@itwin/oidc-signin-tool': 4.3.5_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 4.3.7_67wltvhdskk2oee2c3z2o4tfly
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
@@ -1813,7 +1813,7 @@ importers:
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/itwins-client': ^1.2.0
-      '@itwin/oidc-signin-tool': ^4.3.5
+      '@itwin/oidc-signin-tool': ^4.3.7
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@types/chai': 4.3.1
@@ -1856,7 +1856,7 @@ importers:
       '@itwin/imodels-access-frontend': 5.2.1_ueafa4slb6ohrhyf7kbp6egmha
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
-      '@itwin/oidc-signin-tool': 4.3.5_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 4.3.7_67wltvhdskk2oee2c3z2o4tfly
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.10
@@ -2093,7 +2093,7 @@ importers:
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/itwins-client': ^1.2.0
-      '@itwin/oidc-signin-tool': ^4.3.5
+      '@itwin/oidc-signin-tool': ^4.3.7
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2137,7 +2137,7 @@ importers:
       '@itwin/imodels-access-frontend': 5.2.1_ueafa4slb6ohrhyf7kbp6egmha
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
-      '@itwin/oidc-signin-tool': 4.3.5_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 4.3.7_67wltvhdskk2oee2c3z2o4tfly
       '@itwin/presentation-common': link:../../presentation/common
       '@itwin/presentation-frontend': link:../../presentation/frontend
       '@itwin/service-authorization': 1.0.0_67wltvhdskk2oee2c3z2o4tfly
@@ -2456,7 +2456,7 @@ importers:
       '@itwin/imodels-access-frontend': ^5.2.1
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
-      '@itwin/oidc-signin-tool': ^4.3.5
+      '@itwin/oidc-signin-tool': ^4.3.7
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': ^1.2.1
       '@types/body-parser': ^1.17.0
@@ -2507,7 +2507,7 @@ importers:
       '@itwin/imodels-access-frontend': 5.2.1_ueafa4slb6ohrhyf7kbp6egmha
       '@itwin/imodels-client-authoring': 5.8.1
       '@itwin/imodels-client-management': 5.8.1
-      '@itwin/oidc-signin-tool': 4.3.5_67wltvhdskk2oee2c3z2o4tfly
+      '@itwin/oidc-signin-tool': 4.3.7_67wltvhdskk2oee2c3z2o4tfly
       '@itwin/reality-data-client': 1.2.1_mdtbcqczpmeuv6yjzfaigjndwi
       body-parser: 1.20.3
     devDependencies:
@@ -4410,8 +4410,8 @@ packages:
       - debug
     dev: false
 
-  /@itwin/oidc-signin-tool/4.3.5_67wltvhdskk2oee2c3z2o4tfly:
-    resolution: {integrity: sha512-+84Qr2EwfdQ1teOHlS6MQlTWWcIaE94n6xX0awqX9LBhZK2A2a98EIqJtUw1hFEbP6TVwsrEmzOMOctplx0HjQ==}
+  /@itwin/oidc-signin-tool/4.3.7_67wltvhdskk2oee2c3z2o4tfly:
+    resolution: {integrity: sha512-II5l7FxpgLQUbrzvCQfuul3uq3boH6XZwyb57BsgF6uvjSekAuvAVo2CkR5vlx57sWtM+thsEwiZ4xUMPe7Cmw==}
     requiresBuild: true
     peerDependencies:
       '@itwin/core-bentley': ^3.3.0 || ^4.0.0
@@ -4421,6 +4421,7 @@ packages:
       '@itwin/core-common': 4.8.1_67wltvhdskk2oee2c3z2o4tfly
       '@itwin/service-authorization': 1.2.2_67wltvhdskk2oee2c3z2o4tfly
       '@playwright/test': 1.41.2
+      crypto-browserify: 3.12.0
       dotenv: 10.0.0
       dotenv-expand: 5.1.0
       oidc-client-ts: 2.4.0
@@ -4664,7 +4665,7 @@ packages:
       '@types/jquery': 3.5.30
       base64-js: 1.5.1
       follow-redirects: 1.15.6
-      form-data: 4.0.0
+      form-data: 4.0.1
       opener: 1.5.2
     transitivePeerDependencies:
       - debug
@@ -6270,7 +6271,6 @@ packages:
       bn.js: 4.12.0
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
-    dev: true
 
   /assert/2.0.0:
     resolution: {integrity: sha512-se5Cd+js9dXJnu6Ag2JFc00t+HmHOen+8Q+L7O9zI0PqQXr20uk2J0XQqMxZEeo5U50o8Nvmmx7dZrl+Ufr35A==}
@@ -6351,7 +6351,7 @@ packages:
     resolution: {integrity: sha512-t+yRIyySRTp/wua5xEr+z1q60QmLq8ABsS5O9Me1AsE5dfKqgnCFzwiCZZ/cGNd1lq4/7akDWMxdhVlucjmnOQ==}
     dependencies:
       follow-redirects: 1.15.6
-      form-data: 4.0.0
+      form-data: 4.0.1
     transitivePeerDependencies:
       - debug
     dev: false
@@ -6360,7 +6360,7 @@ packages:
     resolution: {integrity: sha512-DukmaFRnY6AzAALSH4J2M3k6PkaC+MfaAGdEERRWcC9q3/TWQwLpHR8ZRLKTdQ3aBDL64EdluRDjJqKw+BPZEw==}
     dependencies:
       follow-redirects: 1.15.6
-      form-data: 4.0.0
+      form-data: 4.0.1
       proxy-from-env: 1.1.0
     transitivePeerDependencies:
       - debug
@@ -6369,8 +6369,8 @@ packages:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
     engines: {node: '>= 0.4'}
 
-  /azurite/3.31.0:
-    resolution: {integrity: sha512-sH7y0/QBeNlu3Keyq6zXyRoobqgEl+jOIic3NiC9jXeXnKHDxjqdp1Qohi6Q1ES2Up85qx+2LNZZgz5LBSineA==}
+  /azurite/3.32.0:
+    resolution: {integrity: sha512-1qwJ8NQpv31V/sr4OIYqUd/DkOTzR6UjRoDv14youv764rnvq0/5/JbAcz/pFvxSDTRaU/hUe58VB2J3vpmaYA==}
     engines: {node: '>=10.0.0', vscode: ^1.39.0}
     hasBin: true
     dependencies:
@@ -6485,11 +6485,9 @@ packages:
 
   /bn.js/4.12.0:
     resolution: {integrity: sha512-c98Bf3tPniI+scsdk237ku1Dc3ujXQTSgyiPUDEOe7tRkhrqridvh8klBv0HCEso1OLOYcHuCv/cS6DNxKH+ZA==}
-    dev: true
 
   /bn.js/5.2.1:
     resolution: {integrity: sha512-eXRvHzWyYPBuB4NBy0cmYQjGitUrtqwbvlzP3G6VFnNRbsZQIxQ10PbKKHt8gZ/HW/D/747aDl+QkDqg3KQLMQ==}
-    dev: true
 
   /body-parser/1.20.3:
     resolution: {integrity: sha512-7rAxByjUMqQ3/bHJy7D6OGXvx/MMc4IqBn/X0fcM1QUcAItpZrBEYhWGem+tzXH90c+G01ypMcYJBO9Y30203g==}
@@ -6545,7 +6543,6 @@ packages:
 
   /brorand/1.1.0:
     resolution: {integrity: sha512-cKV8tMCEpQs4hK/ik71d6LrPOnpkpGBR0wzxqr68g2m/LB2GxVYQroAjMJZRVM1Y4BCjCKc3vAamxSzOY2RP+w==}
-    dev: true
 
   /browser-process-hrtime/1.0.0:
     resolution: {integrity: sha512-9o5UecI3GhkpM6DrXr69PblIuWxPKk9Y0jHBRhdocZ2y7YECBFCsHm79Pr3OyR2AvjhDkabFJaDJMYRazHgsow==}
@@ -6563,7 +6560,6 @@ packages:
       evp_bytestokey: 1.0.3
       inherits: 2.0.4
       safe-buffer: 5.2.1
-    dev: true
 
   /browserify-cipher/1.0.1:
     resolution: {integrity: sha512-sPhkz0ARKbf4rRQt2hTpAHqn47X3llLkUGn+xEJzLjwY8LRs2p0v7ljvI5EyoRO/mexrNunNECisZs+gw2zz1w==}
@@ -6571,7 +6567,6 @@ packages:
       browserify-aes: 1.2.0
       browserify-des: 1.0.2
       evp_bytestokey: 1.0.3
-    dev: true
 
   /browserify-des/1.0.2:
     resolution: {integrity: sha512-BioO1xf3hFwz4kc6iBhI3ieDFompMhrMlnDFC4/0/vd5MokpuAc3R+LYbwTA9A5Yc9pq9UYPqffKpW2ObuwX5A==}
@@ -6580,14 +6575,12 @@ packages:
       des.js: 1.1.0
       inherits: 2.0.4
       safe-buffer: 5.2.1
-    dev: true
 
   /browserify-rsa/4.1.0:
     resolution: {integrity: sha512-AdEER0Hkspgno2aR97SAf6vi0y0k8NuOpGnVH3O99rcA5Q6sh8QxcngtHuJ6uXwnfAXNM4Gn1Gb7/MV1+Ymbog==}
     dependencies:
       bn.js: 5.2.1
       randombytes: 2.1.0
-    dev: true
 
   /browserify-sign/4.2.3:
     resolution: {integrity: sha512-JWCZW6SKhfhjJxO8Tyiiy+XYB7cqd2S5/+WeYHsKdNKFlCBhKbblba1A/HN/90YwtxKc8tCErjffZl++UNmGiw==}
@@ -6603,7 +6596,6 @@ packages:
       parse-asn1: 5.1.7
       readable-stream: 2.3.8
       safe-buffer: 5.2.1
-    dev: true
 
   /browserify-zlib/0.2.0:
     resolution: {integrity: sha512-Z942RysHXmJrhqk88FmKBVq/v5tqmSkDz7p54G/MGyjMnCFFnC79XWNbg+Vta8W6Wb2qtSZTSxIGkJrRpCFEiA==}
@@ -6639,7 +6631,6 @@ packages:
 
   /buffer-xor/1.0.3:
     resolution: {integrity: sha512-571s0T7nZWK6vB67HI5dyUF7wXiNcfaPPPTl6zYCNApANjIvYJTg7hlud/+cJpdAhS7dVzqMLmfhfHR3rAcOjQ==}
-    dev: true
 
   /buffer/6.0.3:
     resolution: {integrity: sha512-FTiCpNxtwiZZHEZbcbTIcZjERVICn9yq/pDFkTl95/AxzD1naBctN7YO68riM/gLSDY7sdrMby8hofADYuuqOA==}
@@ -6924,7 +6915,6 @@ packages:
     dependencies:
       inherits: 2.0.4
       safe-buffer: 5.2.1
-    dev: true
 
   /circular-json/0.3.3:
     resolution: {integrity: sha512-UZK3NBx2Mca+b5LsG7bY183pHWt5Y1xts4P3Pz7ENTwGVnJOUWbRb3ocjvX7hx9tq/yTAdclXm9sZ38gNuem4A==}
@@ -7199,7 +7189,6 @@ packages:
     dependencies:
       bn.js: 4.12.0
       elliptic: 6.5.7
-    dev: true
 
   /create-hash/1.2.0:
     resolution: {integrity: sha512-z00bCGNHDG8mHAkP7CtT1qVu+bFQUPjYq/4Iv3C3kWjTFV10zIjfSoeqXo9Asws8gwSHDGj/hl2u4OGIjapeCg==}
@@ -7209,7 +7198,6 @@ packages:
       md5.js: 1.3.5
       ripemd160: 2.0.2
       sha.js: 2.4.11
-    dev: true
 
   /create-hmac/1.1.7:
     resolution: {integrity: sha512-MJG9liiZ+ogc4TzUwuvbER1JRdgvUFSB5+VR/g5h82fGaIRWMWddtKBHi7/sVhfjQZ6SehlyhvQYrcYkaUIpLg==}
@@ -7220,7 +7208,6 @@ packages:
       ripemd160: 2.0.2
       safe-buffer: 5.2.1
       sha.js: 2.4.11
-    dev: true
 
   /create-require/1.1.1:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
@@ -7295,7 +7282,6 @@ packages:
       public-encrypt: 4.0.3
       randombytes: 2.1.0
       randomfill: 1.0.4
-    dev: true
 
   /crypto-js/4.2.0:
     resolution: {integrity: sha512-KALDyEYgpY+Rlob/iriUtjV6d5Eq+Y191A5g4UqLAi8CyGP9N1+FdVbkc1SxKc2r4YAYqG8JzO2KGL+AizD70Q==}
@@ -7530,7 +7516,6 @@ packages:
     dependencies:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
-    dev: true
 
   /destroy/1.2.0:
     resolution: {integrity: sha512-2sJGJTaXIIaR1w4iJSNoN0hnMY7Gpc/n8D4qSCJw8QqFWXf7cuAgnEHxBpweaVcPevC2l3KpjYCx3NypQQgaJg==}
@@ -7577,7 +7562,6 @@ packages:
       bn.js: 4.12.0
       miller-rabin: 4.0.1
       randombytes: 2.1.0
-    dev: true
 
   /dir-glob/3.0.1:
     resolution: {integrity: sha512-WkrWp9GR4KXfKGYzOLmTuGVi1UWFfws377n9cc55/tb6DuqyF6pcQ5AbiHEshaDpY9v6oaSr2XCDidGmMwdzIA==}
@@ -7696,7 +7680,6 @@ packages:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
       minimalistic-crypto-utils: 1.0.1
-    dev: true
 
   /emoji-regex/8.0.0:
     resolution: {integrity: sha512-MSjYzcWNOA0ewAHpz0MxpYFvwg6yjy1NG3xteoqz644VCo/RPgnr1/GGt+ic3iJTzQ8Eu3TdM14SawnVUmGE6A==}
@@ -8415,7 +8398,6 @@ packages:
     dependencies:
       md5.js: 1.3.5
       safe-buffer: 5.2.1
-    dev: true
 
   /execa/1.0.0:
     resolution: {integrity: sha512-adbxcyWV46qiHyvSp50TKt05tB4tK3HcmF7/nxfAdhnox83seTDbwnaqKO4sXRy7roHAIFqJP/Rw/AuEbX61LA==}
@@ -8725,8 +8707,8 @@ packages:
       mime-types: 2.1.35
     dev: false
 
-  /form-data/4.0.0:
-    resolution: {integrity: sha512-ETEklSGi5t0QMZuiXoA/Q6vcnxcLQP5vdugSpuAyi6SVGi2clPPp+xgEhuMaHC+zGgn31Kd235W35f7Hykkaww==}
+  /form-data/4.0.1:
+    resolution: {integrity: sha512-tzN8e4TX8+kkxGPK8D5u0FNmjPUjw3lwC9lSLxxoB/+GtsJG91CO8bSWy73APlgAZzZbXEYZJuxjkHH2w+Ezhw==}
     engines: {node: '>= 6'}
     dependencies:
       asynckit: 0.4.0
@@ -9163,7 +9145,6 @@ packages:
     dependencies:
       inherits: 2.0.4
       safe-buffer: 5.2.1
-    dev: true
 
   /hash-base/3.1.0:
     resolution: {integrity: sha512-1nmYp/rhMDiE7AYkDw+lLwlAzz0AntGIe51F3RfFfEqyQ3feY2eI/NcwC6umIQVOASPMsWJLJScWKSSvzL9IVA==}
@@ -9172,14 +9153,12 @@ packages:
       inherits: 2.0.4
       readable-stream: 3.6.2
       safe-buffer: 5.2.1
-    dev: true
 
   /hash.js/1.1.7:
     resolution: {integrity: sha512-taOaskGt4z4SOANNseOviYDvjEJinIkRgmp7LbKP2YTTmVxWBl87s/uzK9r+44BclBSp2X7K1hqeNfz9JbBeXA==}
     dependencies:
       inherits: 2.0.4
       minimalistic-assert: 1.0.1
-    dev: true
 
   /hasha/5.2.2:
     resolution: {integrity: sha512-Hrp5vIK/xr5SkeN2onO32H0MgNZ0f17HRNH39WfL0SYUNOTZ5Lz1TJ8Pajo/87dYGEFlLMm7mIc/k/s6Bvz9HQ==}
@@ -9212,7 +9191,6 @@ packages:
       hash.js: 1.1.7
       minimalistic-assert: 1.0.1
       minimalistic-crypto-utils: 1.0.1
-    dev: true
 
   /hosted-git-info/2.8.9:
     resolution: {integrity: sha512-mxIDAb9Lsm6DoOJ7xH+5+X4y1LU/4Hi50L9C5sIswK3JzULS4bwk1FvjdBgvYR4bzT4tuUQiC15FE2f5HbLvYw==}
@@ -9984,7 +9962,7 @@ packages:
       decimal.js: 10.4.3
       domexception: 4.0.0
       escodegen: 2.1.0
-      form-data: 4.0.0
+      form-data: 4.0.1
       html-encoding-sniffer: 3.0.0
       http-proxy-agent: 5.0.0
       https-proxy-agent: 5.0.1
@@ -10486,7 +10464,6 @@ packages:
       hash-base: 3.1.0
       inherits: 2.0.4
       safe-buffer: 5.2.1
-    dev: true
 
   /md5/2.3.0:
     resolution: {integrity: sha512-T1GITYmFaKuO91vxyoQMFETst+O71VUPEU3ze5GNzDm0OWdP8v1ziTaAEPUr/3kLsY3Sftgz242A1SetQiDL7g==}
@@ -10552,7 +10529,6 @@ packages:
     dependencies:
       bn.js: 4.12.0
       brorand: 1.1.0
-    dev: true
 
   /mime-db/1.52.0:
     resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
@@ -10601,7 +10577,6 @@ packages:
 
   /minimalistic-crypto-utils/1.0.1:
     resolution: {integrity: sha512-JIYlbt6g8i5jKfJ3xz7rF0LXmv2TkDxBLUkiBeZ7bAx4GnnNMr8xFpGnOxn6GhTEHx3SjRrZEoU+j04prX1ktg==}
-    dev: true
 
   /minimatch/3.0.8:
     resolution: {integrity: sha512-6FsRAQsxQ61mw+qP1ZzbL9Bc78x2p5OqNgNpnoAFLTrX8n5Kxph0CsnhmKKNXTWjXqU5L0pGPR7hYk+XWZr60Q==}
@@ -11330,7 +11305,6 @@ packages:
       hash-base: 3.0.4
       pbkdf2: 3.1.2
       safe-buffer: 5.2.1
-    dev: true
 
   /parse-imports/2.1.1:
     resolution: {integrity: sha512-TDT4HqzUiTMO1wJRwg/t/hYk8Wdp3iF/ToMIlAoVQfL1Xs/sTxq1dKWSMjMbQmIarfWKymOyly40+zmPHXMqCA==}
@@ -11440,7 +11414,6 @@ packages:
       ripemd160: 2.0.2
       safe-buffer: 5.2.1
       sha.js: 2.4.11
-    dev: true
 
   /pend/1.2.0:
     resolution: {integrity: sha512-F3asv42UuXchdzt+xXqfW1OGlVBe+mxa2mqI0pg5yAHZPvFmY3Y6drSf/GQ1A86WgWEN9Kzh/WrgKa6iGcHXLg==}
@@ -11648,7 +11621,6 @@ packages:
       parse-asn1: 5.1.7
       randombytes: 2.1.0
       safe-buffer: 5.2.1
-    dev: true
 
   /pump/3.0.0:
     resolution: {integrity: sha512-LwZy+p3SFs1Pytd/jYct4wpv49HiYCqd9Rlc5ZVdk0V+8Yzv6jR5Blk3TRmPL1ft69TxP0IMZGJ+WPFU2BFhww==}
@@ -11729,7 +11701,6 @@ packages:
     dependencies:
       randombytes: 2.1.0
       safe-buffer: 5.2.1
-    dev: true
 
   /range-parser/1.2.1:
     resolution: {integrity: sha512-Hrgsx+orqoygnmhFbKaHE6c296J+HTAQXoxEF6gNupROmmGJRoyzfG3ccAveqCBrwr/2yxQ5BVd/GTl5agOwSg==}
@@ -11981,7 +11952,6 @@ packages:
     dependencies:
       hash-base: 3.1.0
       inherits: 2.0.4
-    dev: true
 
   /roarr/2.15.4:
     resolution: {integrity: sha512-CHhPh+UNHD2GTXNYhPWLnU8ONHdI+5DI+4EYIAOaiD63rHeYlZvyh8P+in5999TTSFgUYuKUAjzRI4mdh/p+2A==}
@@ -12377,7 +12347,6 @@ packages:
     dependencies:
       inherits: 2.0.4
       safe-buffer: 5.2.1
-    dev: true
 
   /shallow-clone/3.0.1:
     resolution: {integrity: sha512-/6KqX+GVUdqPuPPd2LxDDxzX6CAbjJehAAOKlNpqqUpAqPM6HeL8f+o3a+JsyGjn2lv0WY8UsTgUJjU9Ok55NA==}
@@ -12816,7 +12785,7 @@ packages:
       cookiejar: 2.1.4
       debug: 4.3.6
       fast-safe-stringify: 2.1.1
-      form-data: 4.0.0
+      form-data: 4.0.1
       formidable: 3.5.1
       methods: 1.1.2
       mime: 2.6.0
