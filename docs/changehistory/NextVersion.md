@@ -17,6 +17,7 @@ Table of contents:
 - [Presentation](#presentation)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
 - [Quantity](#quantity)
+- [Node 22 support](#node-22-support)
 - [Electron 33 support](#electron-33-support)
 - [API deprecations](#api-deprecations)
   - [@itwin/appui-abstract](#itwinappui-abstract)
@@ -144,6 +145,10 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 
 - Change azimuth and bearing logic from working with east-based counterclockwise persisted values to working with north-based clockwise values.
 - The previous applies to azimuthBase as well, if provided.
+
+## Node 22 support
+
+iTwin.js now officially supports Node 22 starting with LTS version of 22.11.0. Node 22 support is in addition to Node 18 and 20, not a replacement.
 
 ## Electron 33 support
 

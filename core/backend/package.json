@@ -6,7 +6,7 @@
   "typings": "lib/cjs/core-backend",
   "license": "MIT",
   "engines": {
-    "node": "^18.0.0 || ^20.0.0"
+    "node": "^18.0.0 || ^20.0.0 || ^22.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s copy:assets && npm run -s copy:test-assets",
@@ -102,7 +102,7 @@
     "@itwin/core-telemetry": "workspace:*",
     "@itwin/object-storage-azure": "^2.2.5",
     "@itwin/object-storage-core": "^2.2.5",
-    "form-data": "^2.5.1",
+    "form-data": "^4.0.1",
     "fs-extra": "^8.1.0",
     "inversify": "~6.0.1",
     "json5": "^2.2.3",
