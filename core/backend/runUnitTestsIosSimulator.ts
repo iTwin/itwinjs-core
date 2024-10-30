@@ -2,18 +2,11 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-<<<<<<< HEAD:core/backend/runUnitTestsIosSimulator.ts
 
-import { createWriteStream } from "fs";
+import { createWriteStream, copyFile } from "fs";
 
 // Can't use import here otherwise Typescript complains: Could not find a declaration file for module 'node-simctl'.
 const Simctl = require("node-simctl").default;
-=======
-import { createWriteStream, copyFile } from 'fs';
-import { Simctl } from "node-simctl";
-import { fileURLToPath } from 'url';
-import * as path from "path";
->>>>>>> 7fb34264fd (iOS tests fix (#7306)):core/backend/scripts/runUnitTestsIosSimulator.mjs
 
 // Constants used in the script for convenience
 const appName = "core-test-runner"
@@ -49,15 +42,7 @@ function log(message: string) {
   console.log(message);
 }
 
-<<<<<<< HEAD:core/backend/runUnitTestsIosSimulator.ts
-function extractXML(xmlFilter: string, inputLog: string, outputXmlFile: string) {
-=======
-/**
- * @param {string} inputLog
- * @param {string} outputXmlFile
- */
-function extractXML(inputLog, outputXmlFile) {
->>>>>>> 7fb34264fd (iOS tests fix (#7306)):core/backend/scripts/runUnitTestsIosSimulator.mjs
+function extractXML(inputLog: string, outputXmlFile: string) {
   const lines = inputLog.split(/\r?\n/)
   const outputStream = createWriteStream(outputXmlFile)
 
@@ -74,11 +59,7 @@ function extractXML(inputLog, outputXmlFile) {
   }
 }
 
-/**
- * @param {string} inputLog
- * @param {string} outputXmlFile
- */
-function copyXML(inputLog, outputXmlFile) {
+function copyXML(inputLog: string, outputXmlFile: string) {
   const start = inputLog.indexOf(xmlFileFilter) + xmlFileFilter.length;
   const end = inputLog.indexOf("\n", start);
   const xmlFile = inputLog.substring(start, end);
@@ -89,11 +70,7 @@ function copyXML(inputLog, outputXmlFile) {
   });
 }
 
-/**
- * @param {string} inputLog
- * @param {string} outputXmlFile
- */
-function extractOrCopyXML(inputLog, outputXmlFile) {
+function extractOrCopyXML(inputLog: string, outputXmlFile: string) {
   if (inputLog.includes(xmlFileFilter)) {
     log(`Copying XML file.`);
     copyXML(inputLog, outputXmlFile);
@@ -182,11 +159,7 @@ async function main() {
     log("Failed.");
     log(`launchOutput:\n${launchOutput}`);
   }
-<<<<<<< HEAD:core/backend/runUnitTestsIosSimulator.ts
-  extractXML(xmlFilter, launchOutput, `${__dirname}/lib/junit_results.xml`);
-=======
-  extractOrCopyXML(launchOutput, `${__dirname}/../lib/junit_results.xml`);
->>>>>>> 7fb34264fd (iOS tests fix (#7306)):core/backend/scripts/runUnitTestsIosSimulator.mjs
+  extractOrCopyXML(launchOutput, `${__dirname}/lib/junit_results.xml`);
 
   // Shut down simulator
   log("Shutting down simulator");

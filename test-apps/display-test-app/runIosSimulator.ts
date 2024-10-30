@@ -16,58 +16,23 @@ const bimFile = "JoesHouse.bim";
 // Sort function that compares strings numerically from high to low
 const numericCompareDescending = (a: string, b: string) => b.localeCompare(a, undefined, { numeric: true });
 
-<<<<<<< HEAD:test-apps/display-test-app/runIosSimulator.ts
 // Similar to the launchApp function but doesn't retry, adds options before the launch command, and allows for args.
 Simctl.prototype.launchAppWithOptions = async function (bundleId: string, options: [string], args: [string]) {
-  const { stdout } = await this.exec('launch', {
+  const { stdout, stderr } = await this.exec('launch', {
     args: [...options, this.requireUdid('launch'), bundleId, ...args],
     architectures: "x86_64",
   });
-  return stdout.trim();
-=======
-class SimctlWithOpts extends Simctl {
-  /**
-   * Similar to the launchApp function but doesn't retry, adds options before the launch command, and allows for args.
-   * @param {string} bundleId
-   * @param {string[]} options
-   * @param {string[]} args
-   * @returns {Promise<string>}
-   */
-  async launchAppWithOptions(bundleId, options, args) {
-    const { stdout, stderr } = await this.exec('launch', {
-      args: [...options, this.requireUdid('launch'), bundleId, ...args],
-      architectures: "x86_64",
-    });
-    const trimmedOut = stdout.trim();
-    const trimmedErr = stderr.trim();
-    if (trimmedOut && trimmedErr) {
-      return `=========stdout=========\n${stdout.trim()}\n=========stderr=========\n${stderr.trim()}`;
-    } else if (trimmedOut) {
-      return `=========stdout=========\n${stdout.trim()}`;
-    } else if (trimmedErr) {
-      return `=========stderr=========\n${stderr.trim()}`;
-    } else {
-      return "";
-    }
+  const trimmedOut = stdout.trim();
+  const trimmedErr = stderr.trim();
+  if (trimmedOut && trimmedErr) {
+    return `=========stdout=========\n${stdout.trim()}\n=========stderr=========\n${stderr.trim()}`;
+  } else if (trimmedOut) {
+    return `=========stdout=========\n${stdout.trim()}`;
+  } else if (trimmedErr) {
+    return `=========stderr=========\n${stderr.trim()}`;
+  } else {
+    return "";
   }
-
-  /**
-   * @param {string} majorVersion
-   * @param {string} [platform='iOS']
-   */
-  async getLatestRuntimeVersion(majorVersion, platform = 'iOS') {
-    const { stdout } = await this.exec('list', { args: ['runtimes', '--json'] });
-    /** @type {{ version: string, identifier: string, name: string }[]} */
-    const runtimes = (JSON.parse(stdout).runtimes);
-    runtimes.sort((a, b) => numericCompareDescending(a.version, b.version));
-    for (const { version, name } of runtimes) {
-      if (version.startsWith(`${majorVersion}.`) && name.toLowerCase().startsWith(platform.toLowerCase())) {
-        return version;
-      }
-    }
-    return undefined;
-  };
->>>>>>> 7fb34264fd (iOS tests fix (#7306)):test-apps/display-test-app/scripts/runIosSimulator.mjs
 }
 
 Simctl.prototype.getLatestRuntimeVersion = async function (majorVersion: string, platform = 'iOS') {
