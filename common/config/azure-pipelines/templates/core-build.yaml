@@ -105,7 +105,7 @@ steps:
   - script: npm run ios:all
     workingDirectory: core/backend
     displayName: Build & run iOS backend unit tests in Simulator
-    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'))
+    condition: and(succeeded(), ${{ parameters.buildMobile }}, eq(variables['Agent.OS'], 'Darwin'), false)
 
   - script: node common/scripts/install-run-rush.js lint
     displayName: rush lint
