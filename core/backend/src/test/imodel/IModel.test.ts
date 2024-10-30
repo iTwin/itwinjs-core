@@ -2866,8 +2866,13 @@ describe("iModel", () => {
 
     const id0 = elements.insertElement(elementProps);
     const id1 = elements.insertElement(elementProps);
+
+    // // Create grouping relationships from 0 to 1 and from 0 to 2
+    // const r1 = ElementGroupsMembers.create(imodel, id0, id1, 1);
+    // r1.insert();
+
     const props: RelationshipProps = {
-      classFullName: "TestRelationship:TestInsertInstance",
+      classFullName: "BisCore:ElementGroupsMembers",
       sourceId: id0,
       targetId: id1,
     };
