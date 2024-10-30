@@ -557,8 +557,8 @@ export class ArcGisFeatureProvider extends ArcGISImageryProvider {
 
       const renderer = new FeatureCanvasRenderer(ctx, this._symbologyRenderer, transfo);
       const featureReader: ArcGisFeatureReader = this.format === arcgisFeatureFormats.pbf
-      ? new ArcGisPbfFeatureReader(this._settings, this._layerMetadata)
-      : new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
+        ? new ArcGisPbfFeatureReader(this._settings, this._layerMetadata)
+        : new ArcGisJsonFeatureReader(this._settings, this._layerMetadata);
 
       const getSubEnvelopes = (envelope: ArcGisExtent): ArcGisExtent[] => {
         const dx = (envelope.xmax - envelope.xmin) * 0.5;

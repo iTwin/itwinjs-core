@@ -77,7 +77,7 @@ export type ArcGisFeatureFormat = "json" | "pbf";
 export const arcgisFeatureFormats = {
   json: "json" as ArcGisFeatureFormat,
   pbf: "pbf"  as ArcGisFeatureFormat,
-}
+};
 
 // Based on official documentation:
 // https://developers.arcgis.com/rest/services-reference/query-feature-service-layer-.htm
