@@ -2,16 +2,24 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+<<<<<<< HEAD:core/backend/runUnitTestsIosSimulator.ts
 
 import { createWriteStream } from "fs";
 
 // Can't use import here otherwise Typescript complains: Could not find a declaration file for module 'node-simctl'.
 const Simctl = require("node-simctl").default;
+=======
+import { createWriteStream, copyFile } from 'fs';
+import { Simctl } from "node-simctl";
+import { fileURLToPath } from 'url';
+import * as path from "path";
+>>>>>>> 7fb34264fd (iOS tests fix (#7306)):core/backend/scripts/runUnitTestsIosSimulator.mjs
 
 // Constants used in the script for convenience
 const appName = "core-test-runner"
 const bundleId = `com.bentley.${appName}`;
 const xmlFilter = "[Mocha_Result_XML]: ";
+const xmlFileFilter = "[Mocha_Result_XML_File]: ";
 
 // Sort function that compares strings numerically from high to low
 const numericCompareDescending = (a: string, b: string) => b.localeCompare(a, undefined, { numeric: true });
@@ -41,7 +49,15 @@ function log(message: string) {
   console.log(message);
 }
 
+<<<<<<< HEAD:core/backend/runUnitTestsIosSimulator.ts
 function extractXML(xmlFilter: string, inputLog: string, outputXmlFile: string) {
+=======
+/**
+ * @param {string} inputLog
+ * @param {string} outputXmlFile
+ */
+function extractXML(inputLog, outputXmlFile) {
+>>>>>>> 7fb34264fd (iOS tests fix (#7306)):core/backend/scripts/runUnitTestsIosSimulator.mjs
   const lines = inputLog.split(/\r?\n/)
   const outputStream = createWriteStream(outputXmlFile)
 
@@ -55,7 +71,36 @@ function extractXML(xmlFilter: string, inputLog: string, outputXmlFile: string) 
       outputStream.write(cleanedXmlLine + "\n", "utf-8");
       // console.log(cleanedXmlLine);
     }
-  };
+  }
+}
+
+/**
+ * @param {string} inputLog
+ * @param {string} outputXmlFile
+ */
+function copyXML(inputLog, outputXmlFile) {
+  const start = inputLog.indexOf(xmlFileFilter) + xmlFileFilter.length;
+  const end = inputLog.indexOf("\n", start);
+  const xmlFile = inputLog.substring(start, end);
+  copyFile(xmlFile, outputXmlFile, (/** @type {any} */ err) => {
+    if (err) {
+      console.log(err);
+    }
+  });
+}
+
+/**
+ * @param {string} inputLog
+ * @param {string} outputXmlFile
+ */
+function extractOrCopyXML(inputLog, outputXmlFile) {
+  if (inputLog.includes(xmlFileFilter)) {
+    log(`Copying XML file.`);
+    copyXML(inputLog, outputXmlFile);
+  } else {
+    log(`Extracting XML from log.`);
+    extractXML(inputLog, outputXmlFile);
+  }
 }
 
 async function main() {
@@ -137,7 +182,11 @@ async function main() {
     log("Failed.");
     log(`launchOutput:\n${launchOutput}`);
   }
+<<<<<<< HEAD:core/backend/runUnitTestsIosSimulator.ts
   extractXML(xmlFilter, launchOutput, `${__dirname}/lib/junit_results.xml`);
+=======
+  extractOrCopyXML(launchOutput, `${__dirname}/../lib/junit_results.xml`);
+>>>>>>> 7fb34264fd (iOS tests fix (#7306)):core/backend/scripts/runUnitTestsIosSimulator.mjs
 
   // Shut down simulator
   log("Shutting down simulator");
