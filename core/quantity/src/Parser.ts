@@ -226,7 +226,6 @@ export class Parser {
       skipCodes.push(uomSeparatorToIgnore);
     }
 
-    // eslint-disable-next-line @typescript-eslint/prefer-for-of
     for (let i = 0; i < str.length; i++) {
       const charCode = str.charCodeAt(i);
       if (Parser.isDigitOrDecimalSeparator(charCode, format)) {
@@ -674,6 +673,7 @@ export class Parser {
    *  @param inString A string that contains text represent a quantity.
    *  @param format   Defines the likely format of inString. Primary unit serves as a default unit if no unit label found in string.
    *  @param unitsConversions dictionary of conversions used to convert from unit used in inString to output quantity
+   *  @deprecated in 4.10. Check [[Parser.parseQuantityString]] for replacements.
    */
   public static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult {
     // TODO: This method is not able to do bearing and azimuth formatting and is overlapping with parseQuantityString.
@@ -729,7 +729,7 @@ export class Parser {
       matchedSuffix = DirectionLabel.West;
     }
 
-    if (matchedPrefix === null && matchedSuffix === null) {
+    if (matchedPrefix === null || matchedSuffix === null) {
       return { ok: false, error: ParseError.BearingPrefixOrSuffixMissing };
     }
 

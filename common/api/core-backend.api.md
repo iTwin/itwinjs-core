@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import { AccessToken } from '@itwin/core-bentley';
 import { Angle } from '@itwin/core-geometry';
 import { AuthorizationClient } from '@itwin/core-common';
@@ -1843,15 +1841,16 @@ export interface ECSqlColumnInfo {
 
 // @public
 export class ECSqlInsertResult {
-    constructor(status: DbResult, id?: string | undefined);
+    constructor(status: DbResult, id?: Id64String | undefined);
     // (undocumented)
-    id?: string | undefined;
+    id?: Id64String | undefined;
     // (undocumented)
     status: DbResult;
 }
 
 // @public
 export interface ECSqlRowArg {
+    classIdsToClassNames?: boolean;
     rowFormat?: QueryRowFormat;
 }
 
@@ -1879,8 +1878,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValues(values: any[] | object): void;
     clearBindings(): void;
     dispose(): void;
-    // @internal (undocumented)
-    formatCurrentRow(currentResp: any, rowFormat?: QueryRowFormat): any[] | object;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
     // @internal
@@ -5276,11 +5273,11 @@ export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 // @beta
 export class SqliteChangesetReader implements IDisposable {
     protected constructor(
-    db?: AnyDb | undefined);
+    db: AnyDb);
     get changeIndex(): number;
     close(): void;
     get columnCount(): number;
-    readonly db?: AnyDb | undefined;
+    readonly db: AnyDb;
     get disableSchemaCheck(): boolean;
     dispose(): void;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
@@ -5305,10 +5302,10 @@ export class SqliteChangesetReader implements IDisposable {
     static openGroup(args: {
         readonly changesetFiles: string[];
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
-    static openLocalChanges(args: {
-        iModel: IModelJsNative.DgnDb;
+    static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & {
+        db: IModelDb;
         includeInMemoryChanges?: true;
-    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    }): SqliteChangesetReader;
     get primaryKeyValues(): SqliteValueArray;
     step(): boolean;
     get tableName(): string;
@@ -5321,7 +5318,7 @@ export class SqliteChangesetReader implements IDisposable {
 
 // @beta
 export interface SqliteChangesetReaderArgs {
-    readonly db?: AnyDb;
+    readonly db: AnyDb;
     readonly disableSchemaCheck?: true;
     readonly invert?: true;
 }
@@ -6134,7 +6131,7 @@ export namespace ViewStore {
     const // @internal (undocumented)
     toRowId: (id: RowIdOrString) => RowId;
     const // (undocumented)
-    defaultViewGroupId: 1;
+    defaultViewGroupId = 1;
     // (undocumented)
     export type TimelineRow = TableRow;
     // (undocumented)

@@ -341,16 +341,16 @@ export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
 
 // @beta
 export enum FormatType {
-    Azimuth = 5,
-    Bearing = 4,
-    Decimal = 0,
-    Fractional = 1,
-    Ratio = 6,
-    Scientific = 2,
-    Station = 3
+    Azimuth = "Azimuth",
+    Bearing = "Bearing",
+    Decimal = "Decimal",
+    Fractional = "Fractional",
+    Ratio = "Ratio",
+    Scientific = "Scientific",
+    Station = "Station"
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export function formatTypeToString(type: FormatType): string;
 
 // @beta
@@ -442,6 +442,7 @@ export class Parser {
     static parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps>;
     static parseQuantitySpecification(quantitySpecification: string, format: Format): ParseToken[];
     static parseQuantityString(inString: string, parserSpec: ParserSpec): QuantityParseResult;
+    // @deprecated
     static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult;
 }
 
@@ -596,22 +597,22 @@ export enum RatioType {
 
 // @beta
 export enum ScientificType {
-    Normalized = 0,
-    ZeroNormalized = 1
+    Normalized = "Normalized",
+    ZeroNormalized = "ZeroNormalized"
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export function scientificTypeToString(scientificType: ScientificType): string;
 
 // @beta
 export enum ShowSignOption {
-    NegativeParentheses = 3,
-    NoSign = 0,
-    OnlyNegative = 1,
-    SignAlways = 2
+    NegativeParentheses = "NegativeParentheses",
+    NoSign = "NoSign",
+    OnlyNegative = "OnlyNegative",
+    SignAlways = "SignAlways"
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export function showSignOptionToString(showSign: ShowSignOption): string;
 
 // @beta

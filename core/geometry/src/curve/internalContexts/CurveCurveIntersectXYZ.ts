@@ -15,7 +15,8 @@ import { RecurseToCurvesGeometryHandler } from "../../geometry3d/GeometryHandler
 import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
+import { TrigPolynomial } from "../../numerics/Polynomials";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import { Arc3d } from "../Arc3d";
 import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
 import { CurveCollection } from "../CurveCollection";
@@ -796,8 +797,7 @@ export class CurveCurveIntersectXYZ extends RecurseToCurvesGeometryHandler {
     if (!this._geometryB || !(this._geometryB instanceof CurveChainWithDistanceIndex))
       return;
     if (geomA instanceof CurveChainWithDistanceIndex) {
-      assert(!"call handleCurveChainWithDistanceIndex(geomA) instead");
-      return;
+      assert(false, "call handleCurveChainWithDistanceIndex(geomA) instead");
     }
     const index0 = this._results.length;
     const geomB = this._geometryB; // save

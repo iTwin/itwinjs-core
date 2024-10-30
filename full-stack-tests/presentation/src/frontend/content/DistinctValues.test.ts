@@ -33,7 +33,7 @@ describeContentTestSuite("Distinct Values", ({ getDefaultSuiteIModel }) => {
     db: IModelConnection,
     ruleset: Ruleset,
     keys: KeySet,
-    descriptor: Descriptor | {},
+    descriptor: Descriptor | object,
     fieldDescriptor: FieldDescriptor,
     expectedResult: DisplayValueGroup[],
   ) {

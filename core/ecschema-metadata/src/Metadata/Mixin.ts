@@ -24,7 +24,7 @@ import { Schema } from "./Schema";
  * @beta
  */
 export class Mixin extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.Mixin; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.Mixin;
   protected _appliesTo?: LazyLoadedEntityClass;
 
   public get appliesTo(): LazyLoadedEntityClass | undefined {

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/frontend-tiles",
-  "version": "4.10.0-dev.13",
+  "version": "4.10.0-dev.34",
   "description": "Experimental alternative technique for visualizing the contents of iModels",
   "main": "lib/cjs/frontend-tiles.js",
   "module": "lib/esm/frontend-tiles.js",
@@ -14,7 +14,7 @@
     "cover": "npm -s test",
     "docs": "",
     "extract-api": "betools extract-api --entry=frontend-tiles",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "npm run -s webpackTests && certa -r chrome",
     "webpackTests": "webpack --config ./src/test/utils/webpack-config.js 1>&2",
@@ -49,8 +49,8 @@
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-webpack-tools": "workspace:*",
-    "@itwin/oidc-signin-tool": "^4.3.5",
-    "@itwin/eslint-plugin": "^4.0.2",
+    "@itwin/oidc-signin-tool": "^4.3.7",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^10.0.6",
@@ -61,13 +61,13 @@
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "dotenv-webpack": "^8.1.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "glob": "^10.3.12",
     "mocha": "^10.2.0",
     "rimraf": "^3.0.2",
     "sinon": "^17.0.2",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.3.3",
+    "typescript": "~5.6.2",
     "webpack": "^5.76.0"
   }
 }

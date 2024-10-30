@@ -15,8 +15,6 @@ import { PolygonOps } from "../geometry3d/PolygonOps";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceData } from "./PolyfaceData";
 
-/* eslint-disable @itwin/prefer-get */
-
 /**
  * An `IndexedPolyfaceVisitor` is an iterator-like object that "visits" facets of a mesh.
  * * The visitor extends `PolyfaceData`, so it can at any time hold all the data of a single facet.

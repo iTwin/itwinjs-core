@@ -130,7 +130,6 @@ describe("Parsing tests:", () => {
       const tokens = Parser.parseQuantitySpecification(test.input, format);
       assert.isTrue(tokens.length === test.expectedTokens.length);
 
-      // eslint-disable-next-line @typescript-eslint/prefer-for-of
       for (let j = 0; j < tokens.length; j++) {
         assert.isTrue(tokens[j].value === test.expectedTokens[j].value);
       }
@@ -455,10 +454,10 @@ describe("Parsing tests:", () => {
     assert.isTrue(format.hasUnits);
 
     const persistenceUnit = await unitsAndAltLabelsProvider.findUnitByName("Units.M");
-    const unitConversions = await Parser.createUnitConversionSpecsForUnit(unitsAndAltLabelsProvider, persistenceUnit, unitsAndAltLabelsProvider);
 
+    const parserSpec = await ParserSpec.create(format, unitsAndAltLabelsProvider, persistenceUnit, unitsAndAltLabelsProvider);
     for (const testEntry of testData) {
-      const result = Parser.parseToQuantityValue(testEntry.value, format, unitConversions);
+      const result = Parser.parseQuantityString(testEntry.value, parserSpec);
       expect(Parser.isParsedQuantity(result)).to.be.true;
       if (Parser.isParsedQuantity(result)) {
         expect(Math.fround(result.value * 1000000)).to.be.eql(Math.fround(testEntry.magnitude * 1000000));
@@ -688,7 +687,7 @@ describe("Synchronous Parsing tests:", async () => {
     }
 
     for (const testEntry of testData) {
-      const parseResult = Parser.parseToQuantityValue(testEntry.value, format, meterConversionSpecs);
+      const parseResult = Parser.parseQuantityString(testEntry.value, parserSpec);
       if (logTestOutput) {
         if (Parser.isParsedQuantity(parseResult))
           console.log(`input=${testEntry.value} output=${parseResult.value}`); // eslint-disable-line no-console
@@ -736,8 +735,9 @@ describe("Synchronous Parsing tests:", async () => {
       }
     }
 
+    const noAllowMathParserSpec = await ParserSpec.create(formatMathNotAllowed, unitsProvider, outUnit, unitsProvider);
     for (const testEntry of testData) {
-      const parseResult = Parser.parseToQuantityValue(testEntry, formatMathNotAllowed, meterConversionSpecs);
+      const parseResult = Parser.parseQuantityString(testEntry, noAllowMathParserSpec);
       if (logTestOutput) {
         if (Parser.isParsedQuantity(parseResult))
           console.log(`input=${testEntry} output=${parseResult.value}`); // eslint-disable-line no-console
@@ -775,8 +775,9 @@ describe("Synchronous Parsing tests:", async () => {
       }
     }
 
+    const unitlessParserSpec = await ParserSpec.create(formatUnitless, unitsProvider, outUnit, unitsProvider);
     for (const testEntry of testData) {
-      const parseResult = Parser.parseToQuantityValue(testEntry.value, formatUnitless, meterConversionSpecs);
+      const parseResult = Parser.parseQuantityString(testEntry.value, unitlessParserSpec);
       if (logTestOutput) {
         if (Parser.isParsedQuantity(parseResult))
           console.log(`input=${testEntry.value} output=${parseResult.value}`); // eslint-disable-line no-console
@@ -825,9 +826,9 @@ describe("Synchronous Parsing tests:", async () => {
         console.log(`unit ${spec.name} factor= ${spec.conversion.factor} labels=${spec.parseLabels}`);
       }
     }
-
+    const newParserSpec = new ParserSpec(outUnit, format, meterConversionSpecs);
     for (const testEntry of testData) {
-      const parseResult = Parser.parseToQuantityValue(testEntry.value, format, meterConversionSpecs);
+      const parseResult = Parser.parseQuantityString(testEntry.value, newParserSpec);
       if (logTestOutput) {
         if (Parser.isParsedQuantity(parseResult))
           console.log(`input=${testEntry.value} output=${parseResult.value}`); // eslint-disable-line no-console

@@ -6,7 +6,7 @@
  * @module ContentView
  */
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** Base interface for layout split properties
  * @public

@@ -18,7 +18,6 @@ import { PerfTestUtility } from "./PerfTestUtils";
 // eslint-disable-next-line @itwin/import-within-package
 import { version } from "../../../../../core/backend/package.json";
 /** @public */
-// eslint-disable-next-line @typescript-eslint/no-var-requires
 const ITWINJS_CORE_VERSION = version as string;
 const CORE_MAJ_MIN = `${ITWINJS_CORE_VERSION.split(".")[0]}.${ITWINJS_CORE_VERSION.split(".")[1]}.x`;
 
@@ -126,7 +125,7 @@ function getCount(imodel: IModelDb, className: string) {
 
 describe("PerformanceElementsTests", () => {
   const reporter = new Reporter();
-  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test3d; // eslint-disable-line @typescript-eslint/no-var-requires
+  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test3d; // eslint-disable-line @typescript-eslint/no-require-imports
 
   before(async () => {
     // Create all of the seed iModels
@@ -222,7 +221,7 @@ describe("PerformanceElementsTests", () => {
             try {
               const elId = minId + elementIdIncrement * i;
               perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            } catch (err) {
+            } catch {
               assert.isTrue(false);
             }
           }
@@ -307,7 +306,7 @@ describe("PerformanceElementsTests", () => {
             editElem.setUserProperties("geom", geometryStream);
             try {
               perfimodel.elements.updateElement(editElem.toJSON());
-            } catch (_err) {
+            } catch {
               assert.fail("Element.update failed");
             }
           }
@@ -331,7 +330,7 @@ describe("PerformanceElementsTests", () => {
 describe("PerformanceElementsTests2d", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d");
   const reporter = new Reporter();
-  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test2d; // eslint-disable-line @typescript-eslint/no-var-requires
+  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test2d; // eslint-disable-line @typescript-eslint/no-require-imports
 
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
@@ -438,7 +437,7 @@ describe("PerformanceElementsTests2d", () => {
             try {
               const elId = minId + elementIdIncrement * i;
               perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
-            } catch (err) {
+            } catch {
               assert.isTrue(false);
             }
           }
@@ -522,7 +521,7 @@ describe("PerformanceElementsTests2d", () => {
             editElem.setUserProperties("geom", geometryStream);
             try {
               perfimodel.elements.updateElement(editElem.toJSON());
-            } catch (_err) {
+            } catch {
               assert.fail("Element.update failed");
             }
           }

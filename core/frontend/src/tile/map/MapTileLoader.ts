@@ -50,7 +50,7 @@ export class MapTileLoader extends RealityTileLoader {
     try {
       const data = await this.terrainProvider.requestMeshData({ tile, isCanceled });
       return undefined !== data ? { data } : undefined;
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }

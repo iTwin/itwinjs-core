@@ -6,7 +6,8 @@
  * @module Differencing
  */
 
-import type { SchemaType } from "./SchemaDifference";
+import type { SchemaItemType } from "@itwin/ecschema-metadata";
+import type { AnySchemaDifference, SchemaOtherTypes, SchemaType } from "./SchemaDifference";
 
 /**
  * The unique conflicts codes for Schema differencing.
@@ -42,6 +43,7 @@ export enum ConflictCode {
 
   ConflictingItemName = "C-001",
   ConflictingReferenceAlias = "C-002",
+  ConflictingReferenceVersion = "C-003",
 
   ConflictingBaseClass = "C-100",
   RemovingBaseClass = "C-101",
@@ -67,25 +69,13 @@ export enum ConflictCode {
  * Defines the interface for a conflict during Schema Differencing. Conflicts were discovered
  * while comparing the changed elements. Conflicts in the whole schema context are not found
  * on that level.
- *
- * @alpha
  */
-export interface SchemaDifferenceConflict {
-  /**
-   * The name of the schema type which is "Schema" for a conflict on the schema, on schema items
-   * or objects that are related to schema items (properties, relationship constraints) it is the
-   * name of the related schema item.
-   */
-  readonly schemaType: SchemaType;
-
-  /** The name of the schema item the conflict appears on. */
-  readonly itemName?: string;
-
-  /** Optional path what on the item was conflicting. */
-  readonly path?: string;
+interface SchemaDifferenceConflict<TCode extends ConflictCode, TType extends SchemaType, TDifference = Extract<AnySchemaDifference, { schemaType: TType }>> {
+  /** The associated schema difference instance */
+  readonly difference: TDifference;
 
   /** The unique conflicting code. */
-  readonly code: ConflictCode;
+  readonly code: TCode;
 
   /** A description of the conflict. */
   readonly description: string;
@@ -96,3 +86,30 @@ export interface SchemaDifferenceConflict {
   /** The value in the target schema. */
   readonly target: unknown;
 }
+
+/** Union type of class types */
+type EcClassTypes = SchemaItemType.CustomAttributeClass |  SchemaItemType.EntityClass | SchemaItemType.StructClass | SchemaItemType.Mixin | SchemaItemType.RelationshipClass;
+
+/**
+ * Union of all supported schema differencing conflict types.
+ * @alpha
+ */
+export type AnySchemaDifferenceConflict =
+  SchemaDifferenceConflict<ConflictCode.ConflictingItemName, SchemaItemType> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingReferenceAlias, SchemaOtherTypes.SchemaReference> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingReferenceVersion, SchemaOtherTypes.SchemaReference> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingBaseClass, EcClassTypes> |
+  SchemaDifferenceConflict<ConflictCode.RemovingBaseClass, EcClassTypes> |
+  SchemaDifferenceConflict<ConflictCode.SealedBaseClass, EcClassTypes> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingClassModifier, EcClassTypes> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingEnumerationType, SchemaItemType.Enumeration> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingEnumeratorValue, SchemaOtherTypes.Enumerator> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingPersistenceUnit, SchemaItemType.KindOfQuantity> |
+  SchemaDifferenceConflict<ConflictCode.MixinAppliedMustDeriveFromConstraint, SchemaOtherTypes.EntityClassMixin> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingPropertyName, SchemaOtherTypes.Property> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantity, SchemaOtherTypes.Property> |
+  SchemaDifferenceConflict<ConflictCode.ConflictingPropertyKindOfQuantityUnit, SchemaOtherTypes.Property> |
+  SchemaDifferenceConflict<ConflictCode.AbstractConstraintMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> |
+  SchemaDifferenceConflict<ConflictCode.DerivedConstraintsMustNarrowBaseConstraints, SchemaOtherTypes.RelationshipConstraint> |
+  SchemaDifferenceConflict<ConflictCode.ConstraintClassesDeriveFromAbstractConstraint, SchemaOtherTypes.RelationshipConstraint>
+;

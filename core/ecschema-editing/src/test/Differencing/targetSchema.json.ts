@@ -24,6 +24,34 @@ export default {
   ],
 
   items: {
+    TestUnitSystem: {
+      schemaItemType: "UnitSystem",
+    },
+    TestFormat: {
+      schemaItemType: "Format",
+      label: "real",
+      type: "Decimal",
+      precision: 6,
+      formatTraits: [
+        "KeepSingleZero",
+        "KeepDecimalPoint",
+        "ShowUnitLabel",
+      ],
+      decimalSeparator: ",",
+      thousandSeparator: " ",
+    },
+    TestUnit: {
+      schemaItemType: "Unit",
+      label: "m",
+      phenomenon: "TargetSchema.AreaPhenomenon",
+      unitSystem: "TargetSchema.TestUnitSystem",
+      definition: "M",
+    },
+    ChangedKoq: {
+      schemaItemType: "KindOfQuantity",
+      relativeError: 0.09290306,
+      persistenceUnit: "TargetSchema.TestUnit",
+    },
     AreaPhenomenon: {
       schemaItemType: "Phenomenon",
       label: "Area",

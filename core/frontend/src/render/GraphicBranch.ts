@@ -160,6 +160,12 @@ export interface GraphicBranchOptions {
    * @internal
    */
   viewAttachmentId?: Id64String;
+  /** @internal */
+  inSectionDrawingAttachment?: boolean;
+  /** If true, the view's [DisplayStyleSettings.clipStyle]($common) will be disabled for this branch.
+   * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
+   */
+  disableClipStyle?: true;
 }
 
 /** Clip/Transform for a branch that are varied over time.

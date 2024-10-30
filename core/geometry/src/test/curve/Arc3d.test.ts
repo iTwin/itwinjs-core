@@ -6,6 +6,7 @@
 import { assert, describe, expect, it } from "vitest";
 import { compareNumbers, OrderedSet } from "@itwin/core-bentley";
 import { Constant } from "../../Constant";
+import { CurveFactory } from "../../core-geometry";
 import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod, FractionMapper } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
@@ -25,7 +26,7 @@ import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { SmallSystem } from "../../numerics/Polynomials";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -716,6 +717,15 @@ describe("Arc3d", () => {
     ck.testPoint3d(circularArc4.endPoint(), end4);
     ck.testPoint3d(circularArc4.center, Point3d.create(0.75, 0, 0.75));
 
+    dx += 10;
+    const start5 = Point3d.create(10, 0, 0);
+    const end5 = Point3d.create(7.0710678118654755, 2.1213203435596424, 0);
+    const tangent5 = Vector3d.create(-0, -18.84955592153876, -0);
+    const circularArc5A = Arc3d.createCircularStartTangentEnd(start5, tangent5, end5) as Arc3d;
+    const circularArc5B = CurveFactory.createArcPointTangentPoint(start5, tangent5, end5) as Arc3d;
+    ck.testTrue(circularArc5A.isAlmostEqual(circularArc5B, 1.0e-13, 1.0e-13), "methods are equivalent");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circularArc5A, circularArc5B], dx);
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "createCircularStartTangentEnd");
     expect(ck.getNumErrors()).toBe(0);
   });
@@ -1054,7 +1064,6 @@ describe("ApproximateArc3d", () => {
               }
             }
           }
-          y0 += yDelta(yWidth);
         }
 
         if (
@@ -1229,13 +1238,13 @@ describe("ApproximateArc3d", () => {
       x += delta;
     }
 
-    // Observed: subdivision wins 90.9% of comparisons to n-sample methods (95.67% with enableLongTests)
+    // Observed: subdivision wins 90.9% of comparisons to n-sample methods (95.7% with enableLongTests)
     const winPct = 100 * Geometry.safeDivideFraction(nSubdivisionComparisonWins, nComparisons, 0);
     GeometryCoreTestIO.consoleLog(`Subdivision wins ${nSubdivisionComparisonWins} of ${nComparisons} comparisons (${winPct}%).`);
     const targetWinPct = GeometryCoreTestIO.enableLongTests ? 90 : 85;
     ck.testLE(targetWinPct, winPct, `Subdivision is more accurate than another n-sample method over ${targetWinPct}% of the time.`);
 
-    // Observed: subdivision is most accurate method in 64% of ellipses tested (82.76% with enableLongTests)
+    // Observed: subdivision is most accurate method in 63.6% of ellipses tested (82.8% with enableLongTests)
     const winOverallPct = 100 * Geometry.safeDivideFraction(nEllipses - nSubdivisionLosses, nEllipses, 0);
     GeometryCoreTestIO.consoleLog(`Subdivision wins overall for ${nEllipses - nSubdivisionLosses} of ${nEllipses} ellipses (${winOverallPct}%).`);
     const targetNSampleWinPct = GeometryCoreTestIO.enableLongTests ? 80 : 60;

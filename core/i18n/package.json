@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-i18n",
-  "version": "4.10.0-dev.13",
+  "version": "4.10.0-dev.34",
   "description": "iTwin.js localization code",
   "main": "lib/cjs/core-i18n.js",
   "module": "lib/esm/core-i18n.js",
@@ -18,7 +18,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-i18n/file.json --tsIndexFile=./core-i18n.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-i18n",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "npm run -s test:chrome",
     "test:chrome": "certa -r chrome",
     "test:debug": "certa -r chrome --debug",
@@ -35,7 +35,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.10.0-dev.13"
+    "@itwin/core-bentley": "workspace:^4.10.0-dev.34"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -46,19 +46,20 @@
     "@itwin/certa": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-common": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai": "4.3.1",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/mocha": "^10.0.6",
+    "@types/node": "~18.16.20",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
     "chai": "^4.3.10",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "glob": "^10.3.12",
     "rimraf": "^3.0.2",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.3.3",
+    "typescript": "~5.6.2",
     "webpack": "^5.76.0",
     "webpack-cli": "^5.0.1"
   },

@@ -3,21 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { testBlankViewport } from "./openBlankViewport";
 import { FeatureSymbology, IModelApp, Viewport, ViewState } from "../core-frontend";
 import { EmptyLocalization } from "@itwin/core-common";
 
 describe("FeatureSymbology.Overrides", () => {
-  before(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => IModelApp.startup({ localization: new EmptyLocalization() }));
+  afterAll(async () => IModelApp.shutdown());
 
   it("combines viewport's never-drawn elements with display style's excluded elements", () => {
     function expectNeverDrawn(view: Viewport | ViewState, ids: string[]): void {
       const ovrs = new FeatureSymbology.Overrides(view);
-      expect(ovrs.neverDrawn.size).to.equal(ids.length);
+      expect(ovrs.neverDrawn.size).toEqual(ids.length);
       for (const id of ids) {
-        expect(ovrs.neverDrawn.hasId(id)).to.be.true;
+        expect(ovrs.neverDrawn.hasId(id)).toBe(true);
       }
     }
 

@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import type { SpanAttributes } from '@opentelemetry/api';
 import type { SpanContext } from '@opentelemetry/api';
 import type { SpanOptions } from '@opentelemetry/api';
@@ -1170,7 +1168,7 @@ export namespace JsonUtils {
     export function asString(json: any, defaultVal?: string): string;
     export function isEmptyObject(json: any): boolean;
     export function isEmptyObjectOrUndefined(json: any): boolean;
-    export function isNonEmptyObject(value: any): value is Object;
+    export function isNonEmptyObject(value: any): value is object;
     export function setOrRemoveBoolean(json: any, key: string, val: boolean, defaultVal: boolean): void;
     export function setOrRemoveNumber(json: any, key: string, val: number, defaultVal: number): void;
     export function toObject(val: any): any;
@@ -1299,13 +1297,16 @@ export class LRUMap<K, V> extends LRUCache<K, V> {
 export type MarkRequired<T, K extends keyof T> = Pick<Required<T>, K> & Omit<T, K>;
 
 // @public
+export type MaybePromise<T> = T | Promise<T>;
+
+// @public
 export type Mutable<T> = {
     -readonly [K in keyof T]: T[K];
 };
 
 // @public
 export class MutableCompressedId64Set implements OrderedId64Iterable {
-    [Symbol.iterator](): Iterator<string, any, undefined>;
+    [Symbol.iterator](): Iterator<string, any, any>;
     constructor(ids?: CompressedId64Set);
     add(id: Id64String): void;
     clear(): void;
@@ -1324,7 +1325,7 @@ export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
 
 // @public
 export type NonFunctionPropertyNamesOf<T> = {
-    [K in keyof T]: T[K] extends Function ? never : K;
+    [K in keyof T]: T[K] extends (...args: any) => any ? never : K;
 }[keyof T];
 
 // @public
@@ -1338,7 +1339,7 @@ export class ObservableSet<T> extends Set<T> {
 }
 
 // @public
-export function omit<T extends {}, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]>;
+export function omit<T extends object, K extends readonly (keyof T)[]>(t: T, keys: K): Omit<T, K[number]>;
 
 // @beta
 export class OneAtATimeAction<T> {
@@ -1416,7 +1417,7 @@ export type PickAsyncMethods<T> = {
 
 // @public
 export type PickMethods<T> = {
-    [P in keyof T]: T[P] extends Function ? T[P] : never;
+    [P in keyof T]: T[P] extends (...args: any) => any ? T[P] : never;
 };
 
 // @public
@@ -1590,7 +1591,7 @@ export enum SpanKind {
 }
 
 // @internal
-export const staticLoggerMetadata: Map<String, LoggingMetaData>;
+export const staticLoggerMetadata: Map<string, LoggingMetaData>;
 
 // @alpha
 export abstract class StatusCategory {

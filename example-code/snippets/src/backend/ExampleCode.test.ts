@@ -83,7 +83,7 @@ describe("Example Code", () => {
       const codeSpecDup: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
       testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
       assert.fail();
-    } catch (err) {
+    } catch {
       // We expect this to fail.
     }
 

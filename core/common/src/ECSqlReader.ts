@@ -175,7 +175,7 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
   private _options: QueryOptions = new QueryOptionsBuilder().getOptions();
 
   private _rowProxy = new Proxy<ECSqlReader>(this, {
-    get: (target: ECSqlReader, key: string | Symbol) => {
+    get: (target: ECSqlReader, key: string | symbol) => {
       if (typeof key === "string") {
         const idx = Number.parseInt(key, 10);
         if (!Number.isNaN(idx)) {
@@ -404,20 +404,11 @@ export class ECSqlReader implements AsyncIterableIterator<QueryRowProxy> {
       return this.getRowInternal();
     }
     const formattedRow = {};
-    const uniqueNames = new Map<string, number>();
     for (const prop of this._props) {
       const propName = this._options.rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
       const val = this.getRowInternal()[prop.index];
       if (typeof val !== "undefined" && val !== null) {
-        let uniquePropName = propName;
-        if (uniqueNames.has(propName)) {
-          uniqueNames.set(propName, uniqueNames.get(propName)! + 1);
-          uniquePropName = `${propName}_${uniqueNames.get(propName)!}`;
-        } else {
-          uniqueNames.set(propName,0);
-        }
-
-        Object.defineProperty(formattedRow, uniquePropName, {
+        Object.defineProperty(formattedRow, propName, {
           value: val,
           enumerable: true,
         });

@@ -46,7 +46,6 @@ describe("Numeric Formats tests:", () => {
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -84,7 +83,6 @@ describe("Numeric Formats tests:", () => {
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -127,7 +125,6 @@ describe("Numeric Formats tests:", () => {
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -160,7 +157,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -193,7 +189,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -228,7 +223,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -261,7 +255,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -294,7 +287,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -327,7 +319,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -391,7 +382,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -424,7 +414,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -457,7 +446,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -516,7 +504,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -549,7 +536,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -582,7 +568,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -618,7 +603,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -660,7 +644,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", clonedFormat, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(`${testEntry.magnitude.toString()} ${testEntry.unit.label} => ${formattedValue}`);
     }
   });
@@ -702,7 +685,6 @@ describe("Numeric Formats tests:", () => {
       const spec = await FormatterSpec.create("test", clonedFormat, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
-      // eslint-disable-next-line no-console
       // console.log(`${testEntry.magnitude.toString()} ${testEntry.unit.label} => ${formattedValue}`);
     }
   });

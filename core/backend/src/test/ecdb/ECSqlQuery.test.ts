@@ -9,6 +9,7 @@ import { ConcurrentQuery } from "../../ConcurrentQuery";
 import { _nativeDb, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
+import * as path from "path";
 
 // cspell:ignore mirukuru ibim
 
@@ -46,23 +47,104 @@ describe("ECSql Query", () => {
     imodel5.close();
     imodel6.close();
   });
-
+  it("verify 4.8.x format for ECClassId", async () => {
+    const queries = [
+      "SELECT ECClassId FROM Bis.Element LIMIT 1",
+      "SELECT ECClassId aClassId FROM Bis.Element LIMIT 1",
+      "SELECT Parent FROM Bis.Element WHERE Parent.Id IS NOT NULL LIMIT 1 ",
+      "SELECT Parent.RelECClassId FROM Bis.Element WHERE Parent.Id IS NOT NULL LIMIT 1",
+      "SELECT Parent aParent FROM Bis.Element WHERE Parent.Id IS NOT NULL LIMIT 1 ",
+      "SELECT Parent.RelECClassId aRelClassId FROM Bis.Element WHERE Parent.Id IS NOT NULL LIMIT 1",
+      "WITH t(aClassId) AS (SELECT ECClassId FROM Bis.Element LIMIT 1) SELECT aClassId FROM t",
+      "WITH t(aClassId) AS (SELECT ECClassId Foo FROM Bis.Element LIMIT 1) SELECT aClassId FROM t",
+      "WITH t(aClassId) AS (SELECT ECClassId FROM Bis.Element LIMIT 1) SELECT aClassId bClassId FROM t",
+      "SELECT * FROM (SELECT ECClassId FROM Bis.Element LIMIT 1)",
+      "SELECT * FROM (SELECT ECClassId aClassId, ECClassId FROM Bis.Element LIMIT 1)",
+      "SELECT * FROM (SELECT Parent FROM Bis.Element WHERE Parent.Id IS NOT NULL LIMIT 1)",
+      "SELECT * FROM (SELECT Parent.RelECClassId FROM Bis.Element WHERE Parent.Id IS NOT NULL LIMIT 1)",
+      "SELECT * FROM (SELECT Parent aParent FROM Bis.Element WHERE Parent.Id IS NOT NULL LIMIT 1)",
+      "SELECT * FROM (SELECT Parent.RelECClassId aRelClassId FROM Bis.Element WHERE Parent.Id IS NOT NULL LIMIT 1)",
+      "SELECT * FROM (WITH t(aClassId) AS (SELECT ECClassId FROM Bis.Element LIMIT 1) SELECT aClassId FROM t)",
+      "SELECT * FROM (WITH t(aClassId) AS (SELECT ECClassId Foo FROM Bis.Element LIMIT 1) SELECT aClassId FROM t)",
+      "SELECT * FROM (WITH t(aClassId) AS (SELECT ECClassId FROM Bis.Element LIMIT 1) SELECT aClassId bClassId FROM t)",
+    ];
+    assert.equal(queries.length, 18);
+    const results = [
+      { className: "BisCore.DrawingCategory" },
+      { aClassId: "0x4c" },
+      { parent: { id: "0x1", relClassName: "BisCore.SubjectOwnsPartitionElements" } },
+      { "parent.relClassName": "BisCore.SubjectOwnsPartitionElements" },
+      { aParent: { id: "0x1", relClassName: "BisCore.SubjectOwnsPartitionElements" } },
+      { aRelClassId: "0xcf" },
+      { aClassId: "0x4c" },
+      { aClassId: "0x4c" },
+      { bClassId: "0x4c" },
+      { className: "BisCore.DrawingCategory" },
+      { aClassId: "0x4c", className: "BisCore.DrawingCategory" },
+      { parent: { id: "0x1", relClassName: "BisCore.SubjectOwnsPartitionElements" } },
+      { "parent.relClassName": "BisCore.SubjectOwnsPartitionElements" },
+      { aParent: { id: "0x1", relClassName: "BisCore.SubjectOwnsPartitionElements" } },
+      { aRelClassId: "0xcf" },
+      { aClassId: "0x4c" },
+      { aClassId: "0x4c" },
+      { bClassId: "0x4c" },
+    ];
+    assert.equal(results.length, 18);
+    const builder = new QueryOptionsBuilder();
+    builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
+    let expectedRows = 0;
+    for (let i = 0; i < queries.length; i++) {
+      imodel1.withPreparedStatement(queries[i], (stmt: ECSqlStatement) => {
+        assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
+        assert.deepEqual(stmt.getRow(), results[i], `(ECSqlStatement) "${queries[i]}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
+        ++expectedRows;
+      });
+      for await (const row of imodel1.createQueryReader(queries[i], undefined, builder.getOptions())) {
+        assert.deepEqual(row.toRow(), results[i], `(ECSqlReader) "${queries[i]}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
+        ++expectedRows;
+      }
+    }
+    assert.equal(expectedRows, 36);
+  });
   it("verify return values for system properties", async () => {
+    /* eslint-disable @typescript-eslint/naming-convention  */
     const testQueries = [
+      //
       {
-        query: "SELECT ECInstanceId, ECClassId FROM Bis.Element LIMIT 1", expected: {
+        query: "SELECT a.ECInstanceId, b.ECInstanceId, a.ECClassId, b.ECClassId FROM BisCore.Element a, BisCore.Element b LIMIT 1",
+        result: {
+          id: "0x19",
+          id_1: "0x19",
+          className: "BisCore.DrawingCategory",
+          className_1: "BisCore.DrawingCategory",
+        },
+      },
+      {
+        query: "SELECT Parent.Id,Parent.RelECClassId, Parent.Id myParentId, Parent.RelECClassId myParentRelClassId FROM BisCore.Element WHERE Parent.Id IS NOT NULL LIMIT 1",
+        result: {
+          "myParentId": "0x1",
+          "myParentRelClassId": "0xcf",
+          "parent.id": "0x1",
+          "parent.relClassName": "BisCore.SubjectOwnsPartitionElements",
+        },
+      },
+      {
+        query: "SELECT ECInstanceId, ECClassId FROM Bis.Element LIMIT 1",
+        result: {
           id: "0x19",
           className: "BisCore.DrawingCategory",
         },
       },
       {
-        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId FROM Bis.Element) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId FROM Bis.Element) LIMIT 1",
+        result: {
           id: "0x19",
           className: "BisCore.DrawingCategory",
         },
       },
       {
-        query: "SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements LIMIT 1", expected: {
+        query: "SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements LIMIT 1",
+        result: {
           id: "0x1",
           className: "BisCore.PartitionOriginatesFromRepository",
           sourceId: "0x1c",
@@ -72,7 +154,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT ECInstanceId, ECClassId, SourceECInstanceId, SourceECClassId, TargetECInstanceid, TargetECClassId FROM Bis.ElementRefersToElements) LIMIT 1",
+        result: {
           id: "0x1",
           className: "BisCore.PartitionOriginatesFromRepository",
           sourceId: "0x1c",
@@ -82,31 +165,36 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT ECInstanceId a, ECClassId b FROM Bis.Element LIMIT 1", expected: {
+        query: "SELECT ECInstanceId a, ECClassId b FROM Bis.Element LIMIT 1",
+        result: {
           a: "0x19",
           b: "0x4c",
         },
       },
       {
-        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b FROM Bis.Element) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b FROM Bis.Element) LIMIT 1",
+        result: {
           a: "0x19",
           b: "0x4c",
         },
       },
       {
-        query: "SELECT ECInstanceId A, ECClassId B FROM Bis.Element LIMIT 1", expected: {
+        query: "SELECT ECInstanceId A, ECClassId B FROM Bis.Element LIMIT 1",
+        result: {
           a: "0x19",
           b: "0x4c",
         },
       },
       {
-        query: "SELECT * FROM (SELECT ECInstanceId A, ECClassId B FROM Bis.Element) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT ECInstanceId A, ECClassId B FROM Bis.Element) LIMIT 1",
+        result: {
           a: "0x19",
           b: "0x4c",
         },
       },
       {
-        query: "SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements LIMIT 1", expected: {
+        query: "SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements LIMIT 1",
+        result: {
           a: "0x1",
           b: "0xa8",
           c: "0x1c",
@@ -116,7 +204,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT ECInstanceId a, ECClassId b, SourceECInstanceId c, SourceECClassId d, TargetECInstanceid e, TargetECClassId f FROM Bis.ElementRefersToElements) LIMIT 1",
+        result: {
           a: "0x1",
           b: "0xa8",
           c: "0x1c",
@@ -126,7 +215,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements LIMIT 1", expected: {
+        query: "SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements LIMIT 1",
+        result: {
           a: "0x1",
           b: "0xa8",
           c: "0x1c",
@@ -136,7 +226,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT ECInstanceId A, ECClassId B, SourceECInstanceId C, SourceECClassId D, TargetECInstanceid E, TargetECClassId F FROM Bis.ElementRefersToElements) LIMIT 1",
+        result: {
           a: "0x1",
           b: "0xa8",
           c: "0x1c",
@@ -146,7 +237,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT Model, Model.Id, Model.RelECClassId from Bis.Element limit 1", expected: {
+        query: "SELECT Model, Model.Id, Model.RelECClassId from Bis.Element limit 1",
+        result: {
           "model": {
             id: "0x1",
             relClassName: "BisCore.ModelContainsElements",
@@ -156,7 +248,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT Model, Model.Id, Model.RelECClassId from Bis.Element) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT Model, Model.Id, Model.RelECClassId from Bis.Element) LIMIT 1",
+        result: {
           "model": {
             id: "0x1",
             relClassName: "BisCore.ModelContainsElements",
@@ -166,7 +259,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1", expected: {
+        query: "SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
+        result: {
           "id": "0x1",
           "className": "BisCore.PartitionOriginatesFromRepository",
           "sourceId": "0x1c",
@@ -182,7 +276,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT r.ECInstanceId, r.ECClassId, r.SourceECInstanceId, r.SourceECClassId, r.TargetECInstanceid, r.TargetECClassId, ele.Model, ele.Model.Id, ele.Model.RelECClassId FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
+        result: {
           "id": "0x1",
           "className": "BisCore.PartitionOriginatesFromRepository",
           "sourceId": "0x1c",
@@ -198,7 +293,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1", expected: {
+        query: "SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
+        result: {
           a: "0x1",
           b: "0xa8",
           c: "0x1c",
@@ -214,7 +310,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT r.ECInstanceId a, r.ECClassId b, r.SourceECInstanceId c, r.SourceECClassId d, r.TargetECInstanceid e, r.TargetECClassId f, ele.Model g, ele.Model.Id h, ele.Model.RelECClassId i FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
+        result: {
           a: "0x1",
           b: "0xa8",
           c: "0x1c",
@@ -230,7 +327,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1", expected: {
+        query: "SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId LIMIT 1",
+        result: {
           a: "0x1",
           b: "0xa8",
           c: "0x1c",
@@ -246,7 +344,8 @@ describe("ECSql Query", () => {
         },
       },
       {
-        query: "SELECT * FROM (SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1", expected: {
+        query: "SELECT * FROM (SELECT r.ECInstanceId A, r.ECClassId B, r.SourceECInstanceId C, r.SourceECClassId D, r.TargetECInstanceid E, r.TargetECClassId F, ele.Model G, ele.Model.Id H, ele.Model.RelECClassId I FROM Bis.ElementRefersToElements r JOIN Bis.Element ele ON ele.ECInstanceId = r.SourceECInstanceId) LIMIT 1",
+        result: {
           a: "0x1",
           b: "0xa8",
           c: "0x1c",
@@ -262,6 +361,7 @@ describe("ECSql Query", () => {
         },
       },
     ];
+    /* eslint-enable @typescript-eslint/naming-convention  */
     const builder = new QueryOptionsBuilder();
     builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
     builder.setConvertClassIdsToNames(true);
@@ -269,12 +369,12 @@ describe("ECSql Query", () => {
     for (const testQuery of testQueries) {
       imodel1.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
-        assert.deepEqual(stmt.getRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+        assert.deepEqual(stmt.getRow(), testQuery.result, `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
       });
 
       let hasRow = false;
       for await (const row of imodel1.createQueryReader(testQuery.query, undefined, builder.getOptions())) {
-        assert.deepEqual(row.toRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+        assert.deepEqual(row.toRow(), testQuery.result, `(ECSqlReader) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
         hasRow = true;
       }
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");
@@ -283,11 +383,11 @@ describe("ECSql Query", () => {
     for (const testQuery of testQueries) {
       imodel6.withPreparedStatement(testQuery.query, (stmt: ECSqlStatement) => {
         assert.equal(DbResult.BE_SQLITE_ROW, stmt.step(), "expected DbResult.BE_SQLITE_ROW");
-        assert.deepEqual(stmt.getRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+        assert.deepEqual(stmt.getRow(), testQuery.result, `(ECSqlStatement) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
       });
       let hasRow = false;
       for await (const row of imodel6.createQueryReader(testQuery.query, undefined, builder.getOptions())) {
-        assert.deepEqual(row.toRow(), testQuery.expected, `${testQuery.query} does not match expected result`);
+        assert.deepEqual(row.toRow(), testQuery.result, `(ECSqlReader) "${testQuery.query}" does not match expected result (${path.basename(imodel1[_nativeDb].getFilePath())})`);
         hasRow = true;
       }
       assert.isTrue(hasRow, "imodel1.query() must return latest one row");

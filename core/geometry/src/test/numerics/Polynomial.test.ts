@@ -23,10 +23,11 @@ import { Transform } from "../../geometry3d/Transform";
 import { Point4d } from "../../geometry4d/Point4d";
 import { BezierCoffs, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, UnivariateBezier } from "../../numerics/BezierPolynomials";
 import {
-  AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, ImplicitLineXY, SmallSystem, SphereImplicit, TorusImplicit,
+  AnalyticRoots, Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, ImplicitLineXY, SphereImplicit, TorusImplicit,
   TrigPolynomial,
 } from "../../numerics/Polynomials";
 import { Quadrature } from "../../numerics/Quadrature";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import { Sphere } from "../../solid/Sphere";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -258,6 +259,63 @@ describe("Ellipse.Intersection", () => {
     }
 
     ck.checkpoint("Ellipse.Intersection");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("Ellipse.RootAtMinus90", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const piOver2Angle = Angle.createDegrees(90);
+    const eRadians: number[] = [];
+    const cRadians: number[] = [];
+    const unitCircle = Arc3d.createUnitCircle();
+    const majorSemiAxis = 3;
+    const minorSemiAxis = unitCircle.circularRadiusXY()!;
+    const center = unitCircle.center;
+    const degreeDelta = 7;
+    let x0 = 0;
+    let y0 = 0;
+    for (let degrees0 = degreeDelta / 2; degrees0 < 360; degrees0 += degreeDelta) {
+      const vec0 = Vector3d.createPolar(majorSemiAxis, Angle.createDegrees(degrees0));
+      for (let degrees90 = degreeDelta; degrees90 < 360; degrees90 += degreeDelta) {
+        const vec90 = Vector3d.createPolar(minorSemiAxis, Angle.createDegrees(degrees90));
+        const e = Arc3d.create(center, vec0, vec90);
+        ck.testFalse(Geometry.isAlmostEqualNumber(0, vec0.dotProduct(vec90)), "ellipse axes are not perpendicular");
+
+        TrigPolynomial.solveUnitCircleEllipseIntersection(e.center.x, e.center.y, e.vector0.x, e.vector0.y, e.vector90.x, e.vector90.y, eRadians, cRadians);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, eRadians.map((a: number) => e.radiansToPoint(a)), 0.1, x0, y0);
+        if (ck.testExactNumber(eRadians.length, 4, "skew ellipse at origin with unit minor axis has four intersections with unit circle")) {
+          let rootsAtPiOver2 = 0;
+          let rootsAtMinusPiOver2 = 0;
+          eRadians.forEach((a: number) => {
+            if (piOver2Angle.isAlmostEqualNoPeriodShift(Angle.createRadians(a)))
+              ++rootsAtPiOver2;
+            else if (piOver2Angle.isAlmostEqualNoPeriodShift(Angle.createRadians(-a)))
+              ++rootsAtMinusPiOver2;
+          });
+          ck.testExactNumber(1, rootsAtPiOver2, "skew ellipse at origin with unit minor axis intersects unit circle at pi/2");
+          ck.testExactNumber(1, rootsAtMinusPiOver2, "skew ellipse at origin with unit minor axis intersects unit circle at -pi/2");
+        }
+
+        const tangent = e.radiansToPointAndDerivative(-Math.PI/2);
+        const perp = e.matrixRef.dotColumnZ(Vector3d.unitZ()) > 0 ? tangent.direction.rotate90CCWXY() : tangent.direction.rotate90CWXY();
+        perp.normalizeInPlace();
+        const delta = perp.plus(vec90);
+        const e1 = e.cloneTransformed(Transform.createTranslation(delta));
+        TrigPolynomial.solveUnitCircleEllipseIntersection(e1.center.x, e1.center.y, e1.vector0.x, e1.vector0.y, e1.vector90.x, e1.vector90.y, eRadians, cRadians);
+        GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, eRadians.map((a: number) => e1.radiansToPoint(a)), 0.05, x0, y0);
+        if (ck.testExactNumber(eRadians.length, 1, "skew ellipse tangent to unit circle has one intersection"))
+          ck.testAngleNoShift(Angle.createRadians(-Math.PI/2), Angle.createRadians(eRadians[0]), "single intersection is at ellipse angle -pi/2");
+
+        const axes = LineString3d.createPoints([Point3d.createAdd2Scaled(e.center, 1.0, e.vector0, 1.0), e.center, Point3d.createAdd2Scaled(e.center, 1.0, e.vector90, 1.0)]);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, [unitCircle, e, e1, axes], x0, y0);
+        x0 += 3 * majorSemiAxis;
+      }
+      x0 = 0;
+      y0 += 3 * majorSemiAxis;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Ellipse", "RootAtMinus90");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
@@ -708,3 +766,74 @@ function sphereSnakeGridPoints(center: Point3d, radius: number, thetaArray: numb
   }
   return points;
 }
+
+function captureUnitCircleEllipseIntersections(
+  allGeometry: any[], ck: any,
+  cx: number, cy: number,
+  ux: number, uy: number,
+  vx: number, vy: number,
+  dx: number, expectedIntersections: number,
+) {
+  const unitCircle = Arc3d.create(
+    Point3d.create(0, 0), Vector3d.create(1, 0), Vector3d.create(0, 1), AngleSweep.createStartEndDegrees(),
+  );
+  const arc = Arc3d.create(
+    Point3d.create(cx, cy), Vector3d.create(ux, uy), Vector3d.create(vx, vy),
+    AngleSweep.createStartEndDegrees(),
+  );
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, unitCircle, dx);
+  GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, dx);
+
+  const ellipseRadians: number[] = [];
+  const circleRadians: number[] = [];
+  TrigPolynomial.solveUnitCircleEllipseIntersection(cx, cy, ux, uy, vx, vy, ellipseRadians, circleRadians);
+  const len = ellipseRadians.length;
+  for (let i = 0; i < len; i++) {
+    const fraction = arc.sweep.radiansToSignedFraction(ellipseRadians[i]);
+    GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, arc.fractionToPoint(fraction), 0.2, dx);
+  }
+  ck.testExactNumber(len, expectedIntersections, `${expectedIntersections} intersection(s) expected`);
+}
+
+it("unitCircleEllipseIntersection", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  let dx = 0;
+  // intersection at lower half of the ellipse
+  let cx = 0, cy = 1.5; // ellipse center
+  let ux = 2, uy = 0;   // ellipse vector0
+  let vx = 0, vy = 1;   // ellipse vector90
+  let expectedIntersections = 2;
+  captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
+  // intersection at t = 0
+  dx += 12;
+  cx = 3, cy = 0;
+  ux = 2, uy = 0;
+  vx = 0, vy = 1;
+  expectedIntersections = 1;
+  captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
+  // intersection at t = 1
+  dx += 12;
+  cx = -3, cy = 0;
+  ux = 2, uy = 0;
+  vx = 0, vy = 1;
+  expectedIntersections = 1;
+  captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
+  // intersection at t = 0,1
+  dx += 12;
+  cx = 0, cy = 0;
+  ux = 1, uy = 0;
+  vx = 0, vy = 0.5;
+  expectedIntersections = 2;
+  captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
+  // intersection at t = infinity
+  dx += 12;
+  cx = 0, cy = 2;
+  ux = 2, uy = 0;
+  vx = 0, vy = 1;
+  expectedIntersections = 1;
+  captureUnitCircleEllipseIntersections(allGeometry, ck, cx, cy, ux, uy, vx, vy, dx, expectedIntersections);
+
+  GeometryCoreTestIO.saveGeometry(allGeometry, "CurveCurveIntersectXY", "unitCircleEllipseIntersection");
+  expect(ck.getNumErrors()).toBe(0);
+});

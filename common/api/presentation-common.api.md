@@ -489,7 +489,7 @@ export enum ContentSpecificationTypes {
 export type ContentUpdateInfo = typeof UPDATE_FULL;
 
 // @public
-export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[];
+export function createFieldHierarchies(fields: Field[], ignoreCategories?: boolean): FieldHierarchy[];
 
 // @public
 export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
@@ -519,7 +519,7 @@ export const DEFAULT_KEYS_BATCH_SIZE = 5000;
 
 // @public
 export enum DefaultContentDisplayTypes {
-    Grid = "Grid",// eslint-disable-line id-blacklist
+    Grid = "Grid",// eslint-disable-line id-denylist
     List = "List",
     PropertyPane = "PropertyPane",
     Undefined = "Undefined",
@@ -2115,7 +2115,7 @@ type Omit_2<T, K> = Pick<T, Exclude<keyof T, K>>;
 export { Omit_2 as Omit }
 
 // @public
-export type Paged<TOptions extends {}> = TOptions & {
+export type Paged<TOptions extends object> = TOptions & {
     paging?: PageOptions;
 };
 
@@ -2276,7 +2276,7 @@ export interface PrimitiveTypeDescription extends BaseTypeDescription {
 }
 
 // @public
-export type Prioritized<TOptions extends {}> = TOptions & {
+export type Prioritized<TOptions extends object> = TOptions & {
     priority?: number;
 };
 
@@ -3322,7 +3322,7 @@ export enum VariableValueTypes {
 }
 
 // @public
-export type WithCancelEvent<TOptions extends {}> = TOptions & {
+export type WithCancelEvent<TOptions extends object> = TOptions & {
     cancelEvent?: BeEvent<() => void>;
 };
 
