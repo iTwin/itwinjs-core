@@ -27,8 +27,13 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
+<<<<<<< HEAD
     "@itwin/eslint-plugin": "^4.0.2",
     "@itwin/oidc-signin-tool": "^4.3.5",
+=======
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/oidc-signin-tool": "^4.3.7",
+>>>>>>> 306fffe880 (Update oidc-signin-tool to 4.3.7 (#7303))
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
     "@types/node": "~18.16.20",
