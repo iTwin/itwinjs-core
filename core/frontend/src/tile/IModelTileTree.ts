@@ -136,7 +136,7 @@ class DynamicState {
 
   public dispose(): void {
     this._dispose();
-    this.rootTile.dispose();
+    this.rootTile[Symbol.dispose]();
   }
 
   public constructor(root: RootTile, elemChanges: Iterable<ElementGeometryChange>, scope: GraphicalEditingScope) {
@@ -220,9 +220,9 @@ class RootTile extends Tile {
     this.loadChildren();
   }
 
-  public override dispose(): void {
+  public override[Symbol.dispose](): void {
     this.transition(disposedState);
-    super.dispose();
+    super[Symbol.dispose]();
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
@@ -392,9 +392,9 @@ export class IModelTileTree extends TileTree {
     });
   }
 
-  public override dispose(): void {
+  public override[Symbol.dispose](): void {
     this.decoder.release();
-    super.dispose();
+    super[Symbol.dispose]();
   }
 
   public get maxDepth() { return 32; }

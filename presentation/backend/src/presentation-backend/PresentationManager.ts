@@ -448,8 +448,13 @@ export class PresentationManager {
   }
 
   /** Dispose the presentation manager. Must be called to clean up native resources. */
-  public dispose() {
+  public [Symbol.dispose]() {
     this._detail.dispose();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /** @internal */
@@ -756,7 +761,7 @@ export class PresentationManager {
       }))!;
     };
 
-    const obs = getClassesWithInstances(requestOptions.imodel, elementClasses ?? /* istanbul ignore next */ ["BisCore.Element"]).pipe(
+    const obs = getClassesWithInstances(requestOptions.imodel, elementClasses ?? /* istanbul ignore next */["BisCore.Element"]).pipe(
       map((classFullName) => ({
         classFullName,
         ruleset: createClassContentRuleset(classFullName),
@@ -856,9 +861,9 @@ export class PresentationManager {
       isComputeSelectionRequestOptions(requestOptions)
         ? requestOptions
         : (function () {
-            const { ids, scopeId, ...rest } = requestOptions;
-            return { ...rest, elementIds: ids, scope: { id: scopeId } };
-          })(),
+          const { ids, scopeId, ...rest } = requestOptions;
+          return { ...rest, elementIds: ids, scope: { id: scopeId } };
+        })(),
     );
   }
 

@@ -123,11 +123,16 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    *
    * > Do not call this method directly on a statement that is being managed by a statement cache.
    */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._stmt) {
       this._stmt.dispose(); // free native statement
       this._stmt = undefined;
     }
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
   }
 
   /** Binds the specified value to the specified ECSQL parameter.

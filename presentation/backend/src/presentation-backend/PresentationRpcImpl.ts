@@ -7,7 +7,7 @@
  */
 
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
-import { assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
+import { assert, BeEvent, Id64String, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
   buildElementProperties,
@@ -84,7 +84,7 @@ const DEFAULT_REQUEST_TIMEOUT = 5000;
  *
  * @internal
  */
-export class PresentationRpcImpl extends PresentationRpcInterface implements IDisposable {
+export class PresentationRpcImpl extends PresentationRpcInterface implements Disposable {
   private _requestTimeout: number;
   private _pendingRequests: TemporaryStorage<PresentationRpcResponse<any>>;
   private _cancelEvents: Map<string, BeEvent<() => void>>;
@@ -112,8 +112,8 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     this._cancelEvents = new Map<string, BeEvent<() => void>>();
   }
 
-  public dispose() {
-    this._pendingRequests.dispose();
+  public [Symbol.dispose]() {
+    this._pendingRequests[Symbol.dispose]();
   }
 
   public get requestTimeout() {

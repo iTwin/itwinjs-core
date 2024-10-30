@@ -302,7 +302,7 @@ describe("Localization", async () => {
     });
 
     afterEach(async () => {
-      frontends.forEach((f) => f.dispose());
+      frontends.forEach((f) => f[Symbol.dispose]());
     });
 
     it("handles multiple simultaneous requests from different frontends with different locales", async () => {

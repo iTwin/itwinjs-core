@@ -195,7 +195,7 @@ export interface PresentationManagerProps {
  *
  * @public
  */
-export class PresentationManager implements IDisposable {
+export class PresentationManager implements IDisposable, Disposable {
   private _requestsHandler: RpcRequestsHandler;
   private _rulesets: RulesetManager;
   private _localizationHelper: FrontendLocalizationHelper;
@@ -259,11 +259,16 @@ export class PresentationManager implements IDisposable {
     this._localizationHelper.locale = locale;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     if (this._clearEventListener) {
       this._clearEventListener();
       this._clearEventListener = undefined;
     }
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   private onUpdate = (_evt: Event, report: UpdateInfo) => {
@@ -301,14 +306,14 @@ export class PresentationManager implements IDisposable {
    * Function that is called when a new IModelConnection is used to retrieve data.
    * @internal
    */
-  public startIModelInitialization(_: IModelConnection) {}
+  public startIModelInitialization(_: IModelConnection) { }
 
   /**
    * Function that should be called to finish initialization that was started at [[PresentationManager.startIModelInitialization]].
    * Can be removed when [[FavoritePropertiesManager.has]] and [[FavoritePropertiesManager.sortFields]] are removed.
    * @internal
    */
-  public async ensureIModelInitialized(_: IModelConnection) {}
+  public async ensureIModelInitialized(_: IModelConnection) { }
 
   /**
    * Create a new PresentationManager instance

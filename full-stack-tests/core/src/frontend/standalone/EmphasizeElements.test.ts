@@ -380,14 +380,14 @@ describe("EmphasizeElements tests", () => {
 
   it("to/from JSON", async () => {
     function roundTrip(populate: (emph: EmphasizeElements, vp: ScreenViewport) => void): void {
-      const vp1 = ScreenViewport.create(viewDiv, spatialView.clone());
+      using vp1 = ScreenViewport.create(viewDiv, spatialView.clone());
       EmphasizeElements.clear(vp1);
       const before = EmphasizeElements.getOrCreate(vp1);
       populate(before, vp1);
 
       const inputJson = JSON.stringify(before.toJSON(vp1));
 
-      const vp2 = ScreenViewport.create(viewDiv, spatialView.clone());
+      using vp2 = ScreenViewport.create(viewDiv, spatialView.clone());
       const after = EmphasizeElements.getOrCreate(vp2);
       after.fromJSON(JSON.parse(inputJson), vp2);
       const outputJson = JSON.stringify(after.toJSON(vp2));
@@ -436,9 +436,6 @@ describe("EmphasizeElements tests", () => {
 
       EmphasizeElements.clear(vp1);
       EmphasizeElements.clear(vp2);
-
-      vp1.dispose();
-      vp2.dispose();
     }
 
     roundTrip((emph, _vp) => {

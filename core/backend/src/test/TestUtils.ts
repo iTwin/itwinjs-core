@@ -40,12 +40,17 @@ export class DisableNativeAssertions implements IDisposable {
     this._native = new IModelNative.platform.DisableNativeAssertions();
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!this._native)
       return;
 
     this._native.dispose();
     this._native = undefined;
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
   }
 }
 

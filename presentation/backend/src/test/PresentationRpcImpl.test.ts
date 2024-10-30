@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { IModelDb, RpcTrace } from "@itwin/core-backend";
-import { BeEvent, Guid, using } from "@itwin/core-bentley";
+import { BeEvent, Guid } from "@itwin/core-bentley";
 import { IModelNotFoundResponse, IModelRpcProps } from "@itwin/core-common";
 import {
   ComputeSelectionRequestOptions,
@@ -104,23 +104,20 @@ describe("PresentationRpcImpl", () => {
     Presentation.initialize({
       addon: moq.Mock.ofType<NativePlatformDefinition>().object,
     });
-    using(new PresentationRpcImpl(), (impl) => {
-      expect(impl.getManager()).is.instanceof(PresentationManager);
-    });
+    using impl = new PresentationRpcImpl();
+    expect(impl.getManager()).is.instanceof(PresentationManager);
   });
 
   it("uses custom requestTimeout", () => {
     const randomRequestTimeout = faker.random.number({ min: 0, max: 90000 });
-    using(new PresentationRpcImpl({ requestTimeout: randomRequestTimeout }), (impl) => {
-      expect(impl.requestTimeout).to.not.throw;
-      expect(impl.requestTimeout).to.equal(randomRequestTimeout);
-    });
+    using impl = new PresentationRpcImpl({ requestTimeout: randomRequestTimeout });
+    expect(impl.requestTimeout).to.not.throw;
+    expect(impl.requestTimeout).to.equal(randomRequestTimeout);
   });
 
   it("doesn't cancel requests if request timeout is 0", () => {
-    using(new PresentationRpcImpl({ requestTimeout: 0 }), (impl) => {
-      expect(impl.pendingRequests.props.unusedValueLifetime).to.be.undefined;
-    });
+    using impl = new PresentationRpcImpl({ requestTimeout: 0 });
+    expect(impl.pendingRequests.props.unusedValueLifetime).to.be.undefined;
   });
 
   it("returns all diagnostics when `PresentationManager` calls diagnostics handler multiple times", async () => {
@@ -138,27 +135,26 @@ describe("PresentationRpcImpl", () => {
     configureForPromiseResult(imodelMock);
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
-    const impl = new PresentationRpcImpl({ requestTimeout: 10 });
-    await using([{ dispose: () => Presentation.terminate() }, impl], async (_) => {
-      presentationManagerMock
-        .setup(async (x) => x.getNodesCount(moq.It.isAny()))
-        .callback((props: HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable> & BackendDiagnosticsAttribute) => {
-          props.diagnostics!.handler({});
-          props.diagnostics!.handler({ logs: [{ scope: "1" }] });
-          props.diagnostics!.handler({ logs: [{ scope: "2" }] });
-        })
-        .returns(async () => 0);
-      const response = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
-      expect(response.diagnostics).to.deep.eq({
-        logs: [
-          {
-            scope: "1",
-          },
-          {
-            scope: "2",
-          },
-        ],
-      });
+    using impl = new PresentationRpcImpl({ requestTimeout: 10 });
+    using _ = { [Symbol.dispose]: () => Presentation.terminate() };
+    presentationManagerMock
+      .setup(async (x) => x.getNodesCount(moq.It.isAny()))
+      .callback((props: HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable> & BackendDiagnosticsAttribute) => {
+        props.diagnostics!.handler({});
+        props.diagnostics!.handler({ logs: [{ scope: "1" }] });
+        props.diagnostics!.handler({ logs: [{ scope: "2" }] });
+      })
+      .returns(async () => 0);
+    const response = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
+    expect(response.diagnostics).to.deep.eq({
+      logs: [
+        {
+          scope: "1",
+        },
+        {
+          scope: "2",
+        },
+      ],
     });
   });
 
@@ -177,23 +173,22 @@ describe("PresentationRpcImpl", () => {
     configureForPromiseResult(imodelMock);
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
-    const impl = new PresentationRpcImpl({ requestTimeout: 10 });
-    await using([{ dispose: () => Presentation.terminate() }, impl], async (_) => {
-      let callsCount = 0;
-      const result = new ResolvablePromise<number>();
-      presentationManagerMock
-        .setup(async (x) => x.getNodesCount(moq.It.isAny()))
-        .callback((props: HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable> & BackendDiagnosticsAttribute) => {
-          props.diagnostics!.handler({ logs: [{ scope: `${callsCount++}` }] });
-        })
-        .returns(async () => result);
-      const response1 = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
-      expect(response1.statusCode).to.eq(PresentationStatus.BackendTimeout);
-      await result.resolve(123);
-      const response2 = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
-      expect(response2.statusCode).to.eq(PresentationStatus.Success);
-      expect(response2.diagnostics).to.deep.eq({ logs: [{ scope: "0" }] });
-    });
+    using impl = new PresentationRpcImpl({ requestTimeout: 10 });
+    using _ = { [Symbol.dispose]: () => Presentation.terminate() };
+    let callsCount = 0;
+    const result = new ResolvablePromise<number>();
+    presentationManagerMock
+      .setup(async (x) => x.getNodesCount(moq.It.isAny()))
+      .callback((props: HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable> & BackendDiagnosticsAttribute) => {
+        props.diagnostics!.handler({ logs: [{ scope: `${callsCount++}` }] });
+      })
+      .returns(async () => result);
+    const response1 = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
+    expect(response1.statusCode).to.eq(PresentationStatus.BackendTimeout);
+    await result.resolve(123);
+    const response2 = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { dev: true } });
+    expect(response2.statusCode).to.eq(PresentationStatus.Success);
+    expect(response2.diagnostics).to.deep.eq({ logs: [{ scope: "0" }] });
   });
 
   it("adds backend version to diagnostics response", async () => {
@@ -211,13 +206,12 @@ describe("PresentationRpcImpl", () => {
     configureForPromiseResult(imodelMock);
     sinon.stub(IModelDb, "findByKey").returns(imodelMock.object);
 
-    const impl = new PresentationRpcImpl({ requestTimeout: 10 });
-    await using([{ dispose: () => Presentation.terminate() }, impl], async (_) => {
-      presentationManagerMock.setup(async (x) => x.getNodesCount(moq.It.isAny())).returns(async () => 123);
-      const response = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { backendVersion: true } });
-      expect(response.statusCode).to.eq(PresentationStatus.Success);
-      expect(response.diagnostics?.backendVersion).to.match(/\d+\.\d+\.\d+/i);
-    });
+    using impl = new PresentationRpcImpl({ requestTimeout: 10 });
+    using _ = { [Symbol.dispose]: () => Presentation.terminate() };
+    presentationManagerMock.setup(async (x) => x.getNodesCount(moq.It.isAny())).returns(async () => 123);
+    const response = await impl.getNodesCount(imodelTokenMock.object, { rulesetOrId: "", diagnostics: { backendVersion: true } });
+    expect(response.statusCode).to.eq(PresentationStatus.Success);
+    expect(response.diagnostics?.backendVersion).to.match(/\d+\.\d+\.\d+/i);
   });
 
   describe("calls forwarding", () => {
@@ -252,7 +246,7 @@ describe("PresentationRpcImpl", () => {
     });
 
     afterEach(() => {
-      impl.dispose();
+      impl[Symbol.dispose]();
     });
 
     it("returns invalid argument status code when using invalid imodel token", async () => {
@@ -295,7 +289,7 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("should return result if `requestTimeout` is set to 0", async () => {
-        impl.dispose();
+        impl[Symbol.dispose]();
         impl = new PresentationRpcImpl({ requestTimeout: 0 });
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
@@ -322,7 +316,7 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("should handle different iModel requests", async () => {
-        impl.dispose();
+        impl[Symbol.dispose]();
         impl = new PresentationRpcImpl({ requestTimeout: 0 });
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,
@@ -480,7 +474,7 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("should return error result if manager throws and `requestTimeout` is set to 0", async () => {
-        impl.dispose();
+        impl[Symbol.dispose]();
         impl = new PresentationRpcImpl({ requestTimeout: 0 });
         const rpcOptions: HierarchyRpcRequestOptions = {
           ...defaultRpcParams,

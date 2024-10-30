@@ -288,7 +288,7 @@ class ViewAttachments {
     }
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     for (const attachment of this._attachments)
       attachment.dispose();
 
@@ -755,7 +755,7 @@ class OrthographicAttachment {
   }
 
   public dispose(): void {
-    this._viewport.dispose();
+    this._viewport[Symbol.dispose]();
   }
 
   public discloseTileTrees(trees: DisclosedTileTreeSet): void {
@@ -981,7 +981,7 @@ class RasterAttachment {
   }
 
   public dispose(): void {
-    this._viewport?.dispose();
+    this._viewport?.[Symbol.dispose]();
   }
 
   public get viewAttachmentProps() {

@@ -5,7 +5,6 @@
 import { expect } from "chai";
 import * as fakeTimers from "@sinonjs/fake-timers";
 import * as sinon from "sinon";
-import { using } from "@itwin/core-bentley";
 import { PresentationError } from "@itwin/presentation-common";
 import { FactoryBasedTemporaryStorage, FactoryBasedTemporaryStorageProps, TemporaryStorage } from "../presentation-backend/TemporaryStorage";
 
@@ -21,23 +20,20 @@ describe("TemporaryStorage", () => {
   describe("constructor", () => {
     it("doesn't set up timer callback when interval is not set", () => {
       const s = sinon.spy(clock, "setInterval");
-      using(new TemporaryStorage<string>({}), (_r) => {
-        expect(s).to.not.be.called;
-      });
+      using _r = new TemporaryStorage<string>({});
+      expect(s).to.not.be.called;
     });
 
     it("doesn't set up timer callback when interval is set to 0", () => {
       const s = sinon.spy(clock, "setInterval");
-      using(new TemporaryStorage<string>({ cleanupInterval: 0 }), (_r) => {
-        expect(s).to.not.be.called;
-      });
+      using _r = new TemporaryStorage<string>({ cleanupInterval: 0 });
+      expect(s).to.not.be.called;
     });
 
     it("sets up timer callback when interval is set to more than 0", () => {
       const s = sinon.spy(clock, "setInterval");
-      using(new TemporaryStorage<string>({ cleanupInterval: 1 }), (_r) => {
-        expect(s).to.be.calledOnce;
-      });
+      using _r = new TemporaryStorage<string>({ cleanupInterval: 1 });
+      expect(s).to.be.calledOnce;
     });
   });
 
@@ -45,7 +41,7 @@ describe("TemporaryStorage", () => {
     it("stops automatic cleanup when cleanup interval is set", () => {
       const s = sinon.spy(clock, "clearInterval");
       const storage = new TemporaryStorage<string>({ cleanupInterval: 1 });
-      storage.dispose();
+      storage[Symbol.dispose]();
       expect(s).to.be.calledOnce;
     });
 
@@ -58,7 +54,7 @@ describe("TemporaryStorage", () => {
       const values = ["a", "b", "c"];
       values.forEach((v) => storage.addValue(v, v));
 
-      storage.dispose();
+      storage[Symbol.dispose]();
 
       expect(cleanupHandler.callCount).to.eq(values.length);
       expect(cleanupHandler.getCall(0)).to.be.calledWithExactly("a", "a", "dispose");
@@ -75,7 +71,7 @@ describe("TemporaryStorage", () => {
       const values = ["a", "b", "c"];
       values.forEach((v) => storage.addValue(v, v));
 
-      storage.dispose();
+      storage[Symbol.dispose]();
 
       expect(spy).to.be.calledOnce;
     });
@@ -87,7 +83,7 @@ describe("TemporaryStorage", () => {
       storage = new TemporaryStorage<string>({});
     });
     afterEach(() => {
-      storage.dispose();
+      storage[Symbol.dispose]();
     });
 
     it("adds a new value", () => {

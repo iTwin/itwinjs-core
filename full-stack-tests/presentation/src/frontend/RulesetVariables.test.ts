@@ -257,7 +257,7 @@ describe("Ruleset Variables", async () => {
 
     afterEach(async () => {
       await imodel.close();
-      frontends.forEach((f) => f.dispose());
+      frontends.forEach((f) => f[Symbol.dispose]());
     });
 
     it("handles multiple simultaneous requests from different frontends with ruleset variables", async () => {
@@ -284,7 +284,7 @@ describe("Ruleset Variables", async () => {
 
     afterEach(async () => {
       await imodel.close();
-      frontend.dispose();
+      frontend[Symbol.dispose]();
     });
 
     it("can use the same frontend-registered ruleset variables after backend is reset", async () => {

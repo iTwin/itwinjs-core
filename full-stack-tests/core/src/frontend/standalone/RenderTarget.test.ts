@@ -658,14 +658,11 @@ describe("RenderTarget", () => {
 
   it("should render off-screen if multiple viewports exist", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
-    const vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    using vp0 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
     expect(vp0.rendersToScreen).to.be.true; // when only one viewport is on the view manager, it should render using system canvas.
-    const vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
+    using vp1 = await createOnScreenTestViewport("0x24", imodel, rect.width, rect.height);
     expect(vp0.rendersToScreen).to.be.false;
     expect(vp1.rendersToScreen).to.be.false;
-
-    vp0.dispose();
-    vp1.dispose();
   });
 
   it("should clip using a single plane", async () => {

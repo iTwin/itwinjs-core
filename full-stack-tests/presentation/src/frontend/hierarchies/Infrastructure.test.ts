@@ -37,7 +37,7 @@ describe("Hierarchies", () => {
     });
 
     afterEach(async () => {
-      frontend.dispose();
+      frontend[Symbol.dispose]();
     });
 
     it("gets child nodes after backend is reset", async () => {

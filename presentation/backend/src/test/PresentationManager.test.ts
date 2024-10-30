@@ -9,7 +9,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IModelJsNative, IModelNative, IpcHost } from "@itwin/core-backend";
-import { DbResult, Id64String, using } from "@itwin/core-bentley";
+import { DbResult, Id64String } from "@itwin/core-bentley";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
   ArrayTypeDescription,
@@ -154,18 +154,17 @@ describe("PresentationManager", () => {
     describe("uses default native library implementation if not overridden", () => {
       it("creates without props", () => {
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
-        using(new PresentationManager(), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWithExactly({
-            id: "",
-            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
-            updateCallback: noopUpdatesHandler,
-            cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
-            contentCacheSize: undefined,
-            workerConnectionCacheSize: undefined,
-            useMmap: undefined,
-            defaultFormats: {},
-          });
+        using manager = new PresentationManager();
+        expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
+        expect(constructorSpy).to.be.calledOnceWithExactly({
+          id: "",
+          taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 2 },
+          updateCallback: noopUpdatesHandler,
+          cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
+          contentCacheSize: undefined,
+          workerConnectionCacheSize: undefined,
+          useMmap: undefined,
+          defaultFormats: {},
         });
       });
 
@@ -206,27 +205,27 @@ describe("PresentationManager", () => {
         const expectedCacheConfig = {
           mode: HierarchyCacheMode.Memory,
         };
-        using(new PresentationManager(props), (manager) => {
-          expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
-          expect(constructorSpy).to.be.calledOnceWithExactly({
-            id: props.id,
-            taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 999 },
-            updateCallback: noopUpdatesHandler,
-            cacheConfig: expectedCacheConfig,
-            contentCacheSize: 999,
-            workerConnectionCacheSize: 123,
-            defaultFormats: {
-              length: [{ unitSystems: [NativePresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) }],
-              area: [{ unitSystems: [NativePresentationUnitSystem.UsCustomary], serializedFormat: JSON.stringify(formatProps) }],
-            },
-            useMmap: 666,
-          });
+        using manager = new PresentationManager(props);
+        expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
+        expect(constructorSpy).to.be.calledOnceWithExactly({
+          id: props.id,
+          taskAllocationsMap: { [Number.MAX_SAFE_INTEGER]: 999 },
+          updateCallback: noopUpdatesHandler,
+          cacheConfig: expectedCacheConfig,
+          contentCacheSize: 999,
+          workerConnectionCacheSize: 123,
+          defaultFormats: {
+            length: [{ unitSystems: [NativePresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) }],
+            area: [{ unitSystems: [NativePresentationUnitSystem.UsCustomary], serializedFormat: JSON.stringify(formatProps) }],
+          },
+          useMmap: 666,
         });
       });
 
       it("creates with disk cache config", () => {
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
-        using(new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Disk } } }), (manager) => {
+        {
+          using manager = new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Disk } } });
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
@@ -238,7 +237,7 @@ describe("PresentationManager", () => {
             useMmap: undefined,
             defaultFormats: {},
           });
-        });
+        }
         constructorSpy.resetHistory();
         const cacheConfig = {
           mode: HierarchyCacheMode.Disk,
@@ -246,7 +245,8 @@ describe("PresentationManager", () => {
           memoryCacheSize: 123,
         };
         const expectedConfig = { ...cacheConfig, directory: path.resolve(cacheConfig.directory) };
-        using(new PresentationManager({ caching: { hierarchies: cacheConfig } }), (manager) => {
+        {
+          using manager = new PresentationManager({ caching: { hierarchies: cacheConfig } });
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
@@ -258,12 +258,13 @@ describe("PresentationManager", () => {
             useMmap: undefined,
             defaultFormats: {},
           });
-        });
+        }
       });
 
       it("creates with hybrid cache config", () => {
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
-        using(new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Hybrid } } }), (manager) => {
+        {
+          using manager = new PresentationManager({ caching: { hierarchies: { mode: HierarchyCacheMode.Hybrid } } });
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
@@ -275,7 +276,7 @@ describe("PresentationManager", () => {
             useMmap: undefined,
             defaultFormats: {},
           });
-        });
+        }
         constructorSpy.resetHistory();
         const cacheConfig: HybridCacheConfig = {
           mode: HierarchyCacheMode.Hybrid,
@@ -289,7 +290,8 @@ describe("PresentationManager", () => {
           ...cacheConfig,
           disk: { ...cacheConfig.disk, directory: path.resolve(cacheConfig.disk!.directory!) },
         };
-        using(new PresentationManager({ caching: { hierarchies: cacheConfig } }), (manager) => {
+        {
+          using manager = new PresentationManager({ caching: { hierarchies: cacheConfig } });
           expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelNative.platform.ECPresentationManager);
           expect(constructorSpy).to.be.calledOnceWithExactly({
             id: "",
@@ -301,23 +303,21 @@ describe("PresentationManager", () => {
             useMmap: undefined,
             defaultFormats: {},
           });
-        });
+        }
       });
 
       it("creates with ipc updates handler for IPC hosts", () => {
         sinon.stub(IpcHost, "isValid").get(() => true);
         const constructorSpy = sinon.spy(IModelNative.platform, "ECPresentationManager");
-        using(new PresentationManager(), (_) => {
-          expect(constructorSpy.firstCall.firstArg.updateCallback).to.eq(ipcUpdatesHandler);
-        });
+        using _ = new PresentationManager()
+        expect(constructorSpy.firstCall.firstArg.updateCallback).to.eq(ipcUpdatesHandler);
       });
     });
 
     it("uses addon implementation supplied through props", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
-      using(new PresentationManager({ addon: nativePlatformMock.object }), (manager) => {
-        expect(manager.getNativePlatform()).eq(nativePlatformMock.object);
-      });
+      using manager = new PresentationManager({ addon: nativePlatformMock.object });
+      expect(manager.getNativePlatform()).eq(nativePlatformMock.object);
     });
 
     describe("addon setup based on props", () => {
@@ -330,9 +330,9 @@ describe("PresentationManager", () => {
         const dirs = ["test1", "test2", "test2"];
         const addonDirs = ["test1", "test2"];
         addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, rulesetDirectories: dirs }), (pm: PresentationManager) => {
-          pm;
-        });
+        {
+          using _pm = new PresentationManager({ addon: addon.object, rulesetDirectories: dirs });
+        }
         addon.verifyAll();
       });
 
@@ -340,31 +340,30 @@ describe("PresentationManager", () => {
         const dirs = ["test1", "test2", "test2"];
         const addonDirs = ["test1", "test2"];
         addon.setup((x) => x.setupSupplementalRulesetDirectories(addonDirs)).verifiable();
-        using(new PresentationManager({ addon: addon.object, supplementalRulesetDirectories: dirs }), (_pm: PresentationManager) => {});
+        {
+          using _pm = new PresentationManager({ addon: addon.object, supplementalRulesetDirectories: dirs });
+        }
         addon.verifyAll();
       });
 
       it("sets up active locale if supplied [deprecated]", () => {
         const locale = faker.random.locale();
-        using(new PresentationManager({ addon: addon.object, defaultLocale: locale }), (manager) => {
-          expect(manager.activeLocale).to.eq(locale); // eslint-disable-line @typescript-eslint/no-deprecated
-        });
+        using manager = new PresentationManager({ addon: addon.object, defaultLocale: locale });
+        expect(manager.activeLocale).to.eq(locale); // eslint-disable-line @typescript-eslint/no-deprecated
       });
     });
   });
 
   describe("props", () => {
     it("returns empty object if initialized without props", () => {
-      using(new PresentationManager(undefined), (newManager) => {
-        expect(newManager.props).to.deep.eq({});
-      });
+      using newManager = new PresentationManager(undefined);
+      expect(newManager.props).to.deep.eq({});
     });
 
     it("returns initialization props", () => {
       const props = {};
-      using(new PresentationManager(props), (newManager) => {
-        expect(newManager.props).to.equal(props);
-      });
+      using newManager = new PresentationManager(props);
+      expect(newManager.props).to.equal(props);
     });
   });
 
@@ -378,70 +377,67 @@ describe("PresentationManager", () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "metric";
-      await using(new PresentationManager({ addon: addonMock.object }), async (manager) => {
-        addonMock
-          .setup(async (x) =>
-            x.handleRequest(
-              moq.It.isAny(),
-              moq.It.is((serializedRequest: string): boolean => {
-                const request = JSON.parse(serializedRequest);
-                return request.params.unitSystem === NativePresentationUnitSystem.Metric;
-              }),
-              undefined,
-            ),
-          )
-          .returns(async () => ({ result: "null" }))
-          .verifiable(moq.Times.once());
-        await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet(), unitSystem });
-        addonMock.verifyAll();
-      });
+      using manager = new PresentationManager({ addon: addonMock.object })
+      addonMock
+        .setup(async (x) =>
+          x.handleRequest(
+            moq.It.isAny(),
+            moq.It.is((serializedRequest: string): boolean => {
+              const request = JSON.parse(serializedRequest);
+              return request.params.unitSystem === NativePresentationUnitSystem.Metric;
+            }),
+            undefined,
+          ),
+        )
+        .returns(async () => ({ result: "null" }))
+        .verifiable(moq.Times.once());
+      await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet(), unitSystem });
+      addonMock.verifyAll();
     });
 
     it("uses manager's defaultUnitSystem when not specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "usSurvey";
-      await using(new PresentationManager({ addon: addonMock.object, defaultUnitSystem: unitSystem }), async (manager) => {
-        addonMock
-          .setup(async (x) =>
-            x.handleRequest(
-              moq.It.isAny(),
-              moq.It.is((serializedRequest: string): boolean => {
-                const request = JSON.parse(serializedRequest);
-                return request.params.unitSystem === NativePresentationUnitSystem.UsSurvey;
-              }),
-              undefined,
-            ),
-          )
-          .returns(async () => ({ result: "null" }))
-          .verifiable(moq.Times.once());
-        await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet() });
-        addonMock.verifyAll();
-      });
+      using manager = new PresentationManager({ addon: addonMock.object, defaultUnitSystem: unitSystem });
+      addonMock
+        .setup(async (x) =>
+          x.handleRequest(
+            moq.It.isAny(),
+            moq.It.is((serializedRequest: string): boolean => {
+              const request = JSON.parse(serializedRequest);
+              return request.params.unitSystem === NativePresentationUnitSystem.UsSurvey;
+            }),
+            undefined,
+          ),
+        )
+        .returns(async () => ({ result: "null" }))
+        .verifiable(moq.Times.once());
+      await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, displayType: "", keys: new KeySet() });
+      addonMock.verifyAll();
     });
 
     it("ignores manager's defaultUnitSystem when unit system is specified in request options", async () => {
       const imodelMock = moq.Mock.ofType<IModelDb>();
       const rulesetId = faker.random.word();
       const unitSystem = "usCustomary";
-      await using(new PresentationManager({ addon: addonMock.object, defaultUnitSystem: "metric" }), async (manager) => {
-        expect(manager.activeUnitSystem).to.not.eq(unitSystem);
-        addonMock
-          .setup(async (x) =>
-            x.handleRequest(
-              moq.It.isAny(),
-              moq.It.is((serializedRequest: string): boolean => {
-                const request = JSON.parse(serializedRequest);
-                return request.params.unitSystem === NativePresentationUnitSystem.UsCustomary;
-              }),
-              undefined,
-            ),
-          )
-          .returns(async () => ({ result: "null" }))
-          .verifiable(moq.Times.once());
-        await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, unitSystem, displayType: "", keys: new KeySet() });
-        addonMock.verifyAll();
-      });
+      using manager = new PresentationManager({ addon: addonMock.object, defaultUnitSystem: "metric" });
+      expect(manager.activeUnitSystem).to.not.eq(unitSystem);
+      addonMock
+        .setup(async (x) =>
+          x.handleRequest(
+            moq.It.isAny(),
+            moq.It.is((serializedRequest: string): boolean => {
+              const request = JSON.parse(serializedRequest);
+              return request.params.unitSystem === NativePresentationUnitSystem.UsCustomary;
+            }),
+            undefined,
+          ),
+        )
+        .returns(async () => ({ result: "null" }))
+        .verifiable(moq.Times.once());
+      await manager.getContentDescriptor({ imodel: imodelMock.object, rulesetOrId: rulesetId, unitSystem, displayType: "", keys: new KeySet() });
+      addonMock.verifyAll();
     });
   });
 
@@ -487,16 +483,16 @@ describe("PresentationManager", () => {
     it("calls native platform dispose when manager is disposed", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
       const manager = new PresentationManager({ addon: nativePlatformMock.object });
-      manager.dispose();
-      manager.dispose();
+      manager[Symbol.dispose]();
+      manager[Symbol.dispose]();
       // note: verify native platform's `dispose` called only once
-      nativePlatformMock.verify((x) => x.dispose(), moq.Times.once());
+      nativePlatformMock.verify((x) => x[Symbol.dispose](), moq.Times.once());
     });
 
     it("throws when attempting to use native platform after disposal", () => {
       const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
       const manager = new PresentationManager({ addon: nativePlatformMock.object });
-      manager.dispose();
+      manager[Symbol.dispose]();
       expect(() => manager.getNativePlatform()).to.throw(PresentationError);
     });
   });
@@ -510,7 +506,7 @@ describe("PresentationManager", () => {
     });
 
     afterEach(() => {
-      manager.dispose();
+      manager[Symbol.dispose]();
     });
 
     it("returns correct id when input is a string", () => {
@@ -774,7 +770,7 @@ describe("PresentationManager", () => {
       recreateManager();
     });
     afterEach(() => {
-      manager.dispose();
+      manager[Symbol.dispose]();
       nativePlatformMock.verifyAll();
     });
 
@@ -817,14 +813,14 @@ describe("PresentationManager", () => {
     };
 
     function recreateManager(props?: Partial<PresentationManagerProps>) {
-      manager && manager.dispose();
+      manager && manager[Symbol.dispose]();
       manager = new PresentationManager({
         addon: nativePlatformMock.object,
         ...props,
       });
       sinon.stub(manager.getDetail(), "rulesets").value(
         sinon.createStubInstance(RulesetManagerImpl, {
-          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
+          add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
         }),
       );
     }
@@ -3251,7 +3247,7 @@ describe("PresentationManager", () => {
         manager = new PresentationManager({ addon: nativePlatformMock.object, getLocalizedString: getLocalizedStringSpy });
         sinon.stub(manager.getDetail(), "rulesets").value(
           sinon.createStubInstance(RulesetManagerImpl, {
-            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => {})),
+            add: sinon.stub<[Ruleset], RegisteredRuleset>().callsFake((ruleset) => new RegisteredRuleset(ruleset, "", () => { })),
           }),
         );
         // what the addon returns
@@ -3295,7 +3291,7 @@ describe("PresentationManager", () => {
     });
 
     afterEach(() => {
-      manager.dispose();
+      manager[Symbol.dispose]();
     });
 
     it("requests scopes from `SelectionScopesHelper`", async () => {
@@ -3319,7 +3315,7 @@ describe("PresentationManager", () => {
     });
 
     afterEach(() => {
-      manager.dispose();
+      manager[Symbol.dispose]();
     });
 
     it("[deprecated] computes selection using `SelectionScopesHelper`", async () => {

@@ -71,13 +71,13 @@ export class Logger {
     return Logger._onLogLevelChanged;
   }
 
-  private static _categoryFilter: {[categoryName: string]: LogLevel | undefined} = {};
+  private static _categoryFilter: { [categoryName: string]: LogLevel | undefined } = {};
 
   /** Maps category names to the least severe level at which messages in that category should be displayed,
    * or `undefined` if a minimum has not been defined.
    * @see [[setLevel]] to change the minimum logging level for a category.
    */
-  public static get categoryFilter(): Readonly<{[categoryName: string]: LogLevel | undefined}> {
+  public static get categoryFilter(): Readonly<{ [categoryName: string]: LogLevel | undefined }> {
     // NOTE: this property is accessed by native code.
     return this._categoryFilter;
   }
@@ -263,7 +263,7 @@ export class Logger {
    */
   public static logException(category: string, err: any, log: LogFunction = (_category, message, metaData) => Logger.logError(_category, message, metaData)): void {
     log(category, Logger.getExceptionMessage(err), () => {
-      return { ...BentleyError.getErrorMetadata(err), exceptionType: err?.constructor?.name ?? "<Unknown>"};
+      return { ...BentleyError.getErrorMetadata(err), exceptionType: err?.constructor?.name ?? "<Unknown>" };
     });
   }
 
@@ -307,7 +307,7 @@ export class Logger {
  * Enable those, if you want to capture timings.
  * @public
  */
-export class PerfLogger implements IDisposable {
+export class PerfLogger implements IDisposable, Disposable {
   private static _severity: LogLevel = LogLevel.Info;
 
   private _operation: string;
@@ -340,8 +340,13 @@ export class PerfLogger implements IDisposable {
     });
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.logMessage();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose(): void {
+    this[Symbol.dispose]();
   }
 }
 

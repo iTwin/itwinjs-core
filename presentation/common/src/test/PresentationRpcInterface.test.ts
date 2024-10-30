@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import * as sinon from "sinon";
-import { Id64String, using } from "@itwin/core-bentley";
+import { Id64String } from "@itwin/core-bentley";
 import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@itwin/core-common";
 import {
   ContentDescriptorRpcRequestOptions,
@@ -53,17 +53,17 @@ describe("PresentationRpcInterface", () => {
     RpcRegistry.instance.initializeRpcInterface(PresentationRpcInterface);
     const client = RpcRegistry.instance.getClientForInterface(PresentationRpcInterface);
     const operation = RpcOperation.lookup(PresentationRpcInterface, "getNodesCount");
-    const disposableRequest = {
-      request: new TestRpcRequest(client, "getNodesCount", parameters),
-      dispose: () => {
-        // no way to properly destroy the created request...
-        (disposableRequest.request as any).dispose();
-      },
-    };
-    using(disposableRequest, (dr) => {
-      const result = operation.policy.token(dr.request);
+    {
+      using disposableRequest = {
+        request: new TestRpcRequest(client, "getNodesCount", parameters),
+        [Symbol.dispose]: () => {
+          // no way to properly destroy the created request...
+          (disposableRequest.request as any).dispose();
+        },
+      };
+      const result = operation.policy.token(disposableRequest.request);
       expect(result).to.eq(token);
-    });
+    }
     RpcRegistry.instance.terminateRpcInterface(PresentationRpcInterface);
   });
 

@@ -324,7 +324,7 @@ export class ViewManager implements Iterable<ScreenViewport> {
     this.updateRenderToScreen();
 
     if (disposeOfViewport)
-      vp.dispose();
+      vp[Symbol.dispose]();
 
     if (this._doIdleWork && this._viewports.length === 0)
       this._beginIdleWork();

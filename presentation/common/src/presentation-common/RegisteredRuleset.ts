@@ -15,7 +15,7 @@ import { VariablesGroup } from "./rules/Variables";
  * A ruleset that is registered in a ruleset manager.
  * @public
  */
-export class RegisteredRuleset implements IDisposable, Ruleset {
+export class RegisteredRuleset implements IDisposable, Disposable, Ruleset {
   private _ruleset: Ruleset;
   private _uniqueIdentifier: string;
   private _disposeFunc: (ruleset: RegisteredRuleset) => void;
@@ -28,8 +28,13 @@ export class RegisteredRuleset implements IDisposable, Ruleset {
   }
 
   /** Dispose registered ruleset. */
-  public dispose() {
+  public [Symbol.dispose]() {
     this._disposeFunc(this);
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   public get uniqueIdentifier() {

@@ -163,7 +163,7 @@ class Bundle implements WebGLDisposable {
       && this.evsmGeom.isDisposed;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     dispose(this.depthTexture);
     dispose(this.shadowMapTexture);
     dispose(this.fbo);
@@ -266,14 +266,14 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
 
   public get isDisposed(): boolean { return undefined === this._bundle && 0 === this._graphics.length; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._bundle = dispose(this._bundle);
     this.clearGraphics(true);
   }
 
   private clearGraphics(notify: boolean) {
     for (const graphic of this._graphics)
-      graphic.dispose();
+      graphic[Symbol.dispose]();
 
     this._graphics.length = 0;
     if (notify)

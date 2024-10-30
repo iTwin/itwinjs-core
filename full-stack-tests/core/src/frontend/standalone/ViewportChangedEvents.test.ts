@@ -61,7 +61,7 @@ describe("Viewport changed events", async () => {
 
   afterEach(() => {
     if (vp)
-      vp.dispose();
+      vp[Symbol.dispose]();
   });
 
   // Make an Id64 for testImodel which has briefcase Id=1
@@ -687,7 +687,7 @@ describe("Viewport changed events", async () => {
     expect(vp.renderPlanValid).to.be.true;
     expect(vp2.renderPlanValid).to.be.true;
 
-    vp2.dispose();
+    vp2[Symbol.dispose]();
     document.body.removeChild(div2);
   });
 

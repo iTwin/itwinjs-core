@@ -89,7 +89,7 @@ export class PointStringGeometry extends LUTGeometry implements RenderGeometry {
       && this.indices.isDisposed;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     if (!this.noDispose) {
       dispose(this.buffers);
       dispose(this.lut);

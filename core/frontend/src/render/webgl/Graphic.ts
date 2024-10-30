@@ -52,7 +52,7 @@ export class GraphicOwner extends Graphic {
   public get isDisposed(): boolean { return this._isDisposed; }
   public dispose(): void { this._isDisposed = true; }
   public disposeGraphic(): void {
-    this.graphic.dispose();
+    this.graphic[Symbol.dispose]();
   }
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.graphic.collectStatistics(stats);
@@ -100,7 +100,7 @@ export class PerTargetBatchData {
 
   public dispose(): void {
     this._thematicSensors = dispose(this._thematicSensors);
-    this._contours = this._contours?.dispose();
+    this._contours = this._contours?.[Symbol.dispose]();
     for (const value of this._featureOverrides.values())
       dispose(value);
 
@@ -133,7 +133,7 @@ export class PerTargetBatchData {
 
   public getContours(batch: Batch): Contours {
     if (this._contours && !this._contours.matchesTargetAndFeatureCount(this.target, batch.featureTable))
-      this._contours = this._contours.dispose();
+      this._contours = this._contours[Symbol.dispose]();
 
     if (!this._contours) {
       this._contours = Contours.createFromTarget(this.target, batch.options);
@@ -162,7 +162,7 @@ export class PerTargetBatchData {
     const ovrs = this._featureOverrides.get(source);
     if (ovrs) {
       this._featureOverrides.delete(source);
-      ovrs.dispose();
+      ovrs[Symbol.dispose]();
     }
   }
 }
@@ -392,7 +392,7 @@ export class Branch extends Graphic {
   }
 
   public dispose() {
-    this.branch.dispose();
+    this.branch[Symbol.dispose]();
   }
 
   public override get isPickable(): boolean {
@@ -445,7 +445,7 @@ export class AnimationTransformBranch extends Graphic {
   }
 
   public override dispose() {
-    this.graphic.dispose();
+    this.graphic[Symbol.dispose]();
   }
 
   public override get isDisposed() {

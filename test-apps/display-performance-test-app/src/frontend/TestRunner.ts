@@ -354,17 +354,15 @@ export class TestRunner {
     if (!test)
       return undefined;
 
-    const vp = test.viewport;
+    using vp = test.viewport;
     if (testConfig.testType === "image" || testConfig.testType === "both") {
       this.updateTestNames(test, undefined, true);
 
       const canvas = vp.readImageToCanvas();
       await savePng(this.getImageName(test), canvas);
 
-      if (testConfig.testType === "image") {
-        vp.dispose();
+      if (testConfig.testType === "image")
         return test;
-      }
     }
 
     // Throw away the first N frames until the timings become more consistent.
@@ -376,7 +374,6 @@ export class TestRunner {
     this.updateTestNames(test);
     await (testConfig.testType === "readPixels" ? this.recordReadPixels(test) : this.recordRender(test));
 
-    vp.dispose();
     return test;
   }
 

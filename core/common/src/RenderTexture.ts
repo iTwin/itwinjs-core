@@ -22,7 +22,7 @@ export type TextureImageSpec = Id64String | string;
  * @see [RenderSystem.createTextureFromElement]($frontend) to obtain a texture from a [Texture]($backend) element.
  * @public
  */
-export abstract class RenderTexture implements IDisposable {
+export abstract class RenderTexture implements IDisposable, Disposable {
   /** Indicates the type of texture. */
   public readonly type: RenderTexture.Type;
   /** Used for ordered comparisons, e.g. in DisplayParams.compareForMerge */
@@ -43,7 +43,12 @@ export abstract class RenderTexture implements IDisposable {
    * the caller is responsible for invoking this method when it is finished using the texture; otherwise, the [RenderSystem]($frontend) will handle
    * its disposal.
    */
-  public abstract dispose(): void;
+  public [Symbol.dispose]() {
+    this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
+  }
+
+  /** @deprecated in 5.0 Will be made protected in a future release. Use [Symbol.dispose] instead. */
+  public abstract dispose(): void; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** An [OrderedComparator]($bentley) that compares this texture against `other`. */
   public compare(other: RenderTexture): number {
