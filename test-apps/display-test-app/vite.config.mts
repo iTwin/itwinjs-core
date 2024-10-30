@@ -76,10 +76,12 @@ export default defineConfig(() => {
       commonjsOptions: {
         // plugin to convert CommonJS modules to ESM, so they can be included in bundle
         include: [
-          /core\/electron/, // prevent error in ElectronApp
           /core\/mobile/, // prevent error in MobileApp
-          /node_modules/, // prevent errors from dependencies
+          // /node_modules/, // prevent errors from dependencies
         ],
+        // exclude: [
+        //   /electron/
+        // ],
         transformMixedEsModules: true, // transforms require statements
       },
       rollupOptions: {

@@ -18,14 +18,17 @@ import { DtaConfiguration, getConfig } from "../common/DtaConfiguration.js";
 import { DtaRpcInterface } from "../common/DtaRpcInterface.js";
 import { EditCommandAdmin } from "@itwin/editor-backend";
 import * as editorBuiltInCommands from "@itwin/editor-backend";
+import dotenv from "dotenv";
+import dotenvExpand from "dotenv-expand";
+import { fileURLToPath } from 'node:url';
+import { dirname } from 'node:path';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 /** Loads the provided `.env` file into process.env */
 function loadEnv(envFile: string) {
   if (!fs.existsSync(envFile))
     return;
-
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error) {
     throw envResult.error;

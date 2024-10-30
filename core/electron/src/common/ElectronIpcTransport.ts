@@ -7,10 +7,10 @@ import { BentleyError, BentleyStatus, ProcessDetector } from "@itwin/core-bentle
 import {
   IModelError, iTwinChannel, RpcPushChannel, RpcPushConnection, RpcRequestFulfillment, RpcSerializedValue, SerializedRpcRequest,
 } from "@itwin/core-common";
-import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush";
-import { ElectronRpcConfiguration } from "./ElectronRpcManager";
-import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
-import { ElectronRpcRequest } from "./ElectronRpcRequest";
+import { ElectronPushConnection, ElectronPushTransport } from "./ElectronPush.js";
+import { ElectronRpcConfiguration } from "./ElectronRpcManager.js";
+import { ElectronRpcProtocol } from "./ElectronRpcProtocol.js";
+import { ElectronRpcRequest } from "./ElectronRpcRequest.js";
 
 const OBJECTS_CHANNEL = iTwinChannel("rpc.objects");
 const DATA_CHANNEL = iTwinChannel("rpc.data");

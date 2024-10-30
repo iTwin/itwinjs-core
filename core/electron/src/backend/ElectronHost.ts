@@ -16,8 +16,8 @@ import * as path from "path";
 import { BeDuration, IModelStatus, ProcessDetector } from "@itwin/core-bentley";
 import { IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@itwin/core-backend";
 import { IModelError, IpcListener, IpcSocketBackend, RemoveFunction, RpcConfiguration, RpcInterfaceDefinition } from "@itwin/core-common";
-import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager";
-import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
+import { ElectronRpcConfiguration, ElectronRpcManager } from "../common/ElectronRpcManager.js";
+import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface.js";
 
 // cSpell:ignore signin devserver webcontents copyfile unmaximize eopt
 
@@ -135,8 +135,8 @@ export class ElectronHost {
     const webPreferences: WebPreferences = {
       ...options?.webPreferences,
 
-      // These web preference variables should not be overriden by the ElectronHostWindowOptions
-      preload: require.resolve(/* webpack: copyfile */"./ElectronPreload.js"),
+      // These web preference variables should not be overridden by the ElectronHostWindowOptions
+      preload: new URL("./ElectronPreload.mjs", import.meta.url).pathname,
       experimentalFeatures: false,
       nodeIntegration: false,
       contextIsolation: true,
@@ -270,7 +270,7 @@ export class ElectronHost {
       throw new Error("Not running under Electron");
 
     if (!this.isValid) {
-      this._electron = require("electron"); // eslint-disable-line @typescript-eslint/no-require-imports
+      this._electron = (await import("electron"));
       this._ipc = new ElectronIpc();
       const app = this.app;
       if (!app.isReady())

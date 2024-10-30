@@ -11,9 +11,9 @@ import { ProcessDetector, PromiseReturnType } from "@itwin/core-bentley";
 import { IpcListener, IpcSocketFrontend } from "@itwin/core-common";
 import { _callIpcChannel, IpcApp, NativeApp, NativeAppOpts } from "@itwin/core-frontend";
 import type { IpcRenderer } from "electron";
-import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface";
-import { ElectronRpcManager } from "../common/ElectronRpcManager";
-import type { ITwinElectronApi } from "../common/ITwinElectronApi";
+import { DialogModuleMethod, electronIpcStrings } from "../common/ElectronIpcInterface.js";
+import { ElectronRpcManager } from "../common/ElectronRpcManager.js";
+import type { ITwinElectronApi } from "../common/ITwinElectronApi.js";
 
 declare global {
   interface Window {

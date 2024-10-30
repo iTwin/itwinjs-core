@@ -10,6 +10,8 @@ import { getRpcInterfaces, initializeDtaBackend, loadBackendConfig } from "./Bac
 import { IpcHandler } from "@itwin/core-backend";
 import { getConfig } from "../common/DtaConfiguration.js";
 import { createSectionDrawing } from "./SectionDrawingImpl.js";
+import { fileURLToPath } from "node:url";
+import { dirname } from "node:path";
 
 const mainWindowName = "mainWindow";
 const getWindowSize = (winSize?: string) => {
@@ -51,6 +53,8 @@ const dtaElectronMain = async () => {
   // Need to load the config first to get the electron options
   loadBackendConfig();
 
+  const __filename = fileURLToPath(import.meta.url);
+  const __dirname = dirname(__filename);
   const opts = {
     webResourcesPath: path.join(__dirname, "..", "..", "lib"),
     iconName: "display-test-app.ico",

@@ -6,6 +6,7 @@
   "engines": {
     "node": "^18.0.0 || ^20.0.0"
   },
+  "type": "module",
   "exports": {
     "./ElectronBackend": {
       "types": "./lib/esm/ElectronBackend.d.ts",
@@ -30,7 +31,7 @@
     "test:integration": "npm run test:integration:backend && npm run test:integration:frontend",
     "test:integration:backend": "mocha --config src/test/backend/.mocharc.json",
     "test:integration:frontend": "certa -r electron --config src/test/frontend/utils/certa.json",
-    "webpack:test": "webpack --config ./src/test/frontend/utils/webpack.config.js 1>&2",
+    "webpack:test": "webpack --config ./src/test/frontend/utils/webpack.config.cjs 1>&2",
     "cover": ""
   },
   "repository": {
