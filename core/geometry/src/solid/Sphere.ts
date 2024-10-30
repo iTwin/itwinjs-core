@@ -51,32 +51,32 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   private constructor(localToWorld: Transform, latitudeSweep: AngleSweep, capped: boolean) {
     super(capped);
     this._localToWorld = localToWorld;
-    this._latitudeSweep = latitudeSweep ? latitudeSweep : AngleSweep.createFullLatitude();
+    this._latitudeSweep = latitudeSweep;
     this._latitudeSweep.capLatitudeInPlace();
   }
   /** return a deep clone */
   public clone(): Sphere {
     return new Sphere(this._localToWorld.clone(), this._latitudeSweep.clone(), this.capped);
   }
-  /** Transform the sphere in place.
+  /**
+   * Transform the sphere in place.
    * * Fails if the transform is singular.
    */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
+    if (transform.matrix.determinant() < 0.0)
+      this._latitudeSweep.reverseInPlace();
     return true;
   }
-  /** Return a transformed clone. */
+  /**
+   * Return a transformed clone.
+   * * Fails if the transform is singular.
+  */
   public cloneTransformed(transform: Transform): Sphere | undefined {
     const sphere1 = this.clone();
-    transform.multiplyTransformTransform(sphere1._localToWorld, sphere1._localToWorld);
-    if (transform.matrix.determinant() < 0.0) {
-      if (sphere1._latitudeSweep !== undefined) {
-        sphere1._latitudeSweep.reverseInPlace();
-      }
-    }
-    return sphere1;
+    return sphere1.tryTransformInPlace(transform) ? sphere1 : undefined;
   }
   /** Return a coordinate frame (right handed, unit axes)
    * * origin at sphere center
@@ -162,13 +162,18 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     return false;
   }
   /**
-   *  return strokes for a cross-section (elliptic arc) at specified fraction v along the axis.
-   * * if strokeOptions is supplied, it is applied to the equator radii.
-   * @param v fractional position along the cone axis
-   * @param strokes stroke count or options.
+   * Return strokes for the elliptical arc cross-section at latitude sweep fraction v.
+   * * Optional inputs control the number of strokes along the cross-section:
+   *   * If `fixedStrokeCount` is supplied, it is taken as the cross-section stroke count.
+   *   * If `fixedStrokeCount` is undefined, stroke count is computed by applying `options` to the cross-section.
+   *   * If neither input is supplied, the stroke count default is 16.
+   *   * In any case, stroke count is clamped to the interval [4,64].
+   * @param v fractional position along the sphere axis
+   * @param fixedStrokeCount optional stroke count in u-direction
+   * @param options optional stroke options in u-direction
+   * @return strokes as line string
    */
-  public strokeConstantVSection(v: number, fixedStrokeCount: number | undefined,
-    options?: StrokeOptions): LineString3d {
+  public strokeConstantVSection(v: number, fixedStrokeCount?: number, options?: StrokeOptions): LineString3d {
     let strokeCount = 16;
     if (fixedStrokeCount !== undefined && Number.isFinite(fixedStrokeCount)) {
       strokeCount = fixedStrokeCount;
@@ -181,7 +186,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     const c1 = Math.cos(phi);
     const s1 = Math.sin(phi);
     let c0, s0;
-    const result = LineString3d.createForStrokes(fixedStrokeCount, options);
+    const result = LineString3d.createForStrokes(strokeCount, options);
     const deltaRadians = Math.PI * 2.0 / strokeCount;
     const fractions = result.fractions;     // possibly undefined !!!
     const derivatives = result.packedDerivatives; // possibly undefined !!!

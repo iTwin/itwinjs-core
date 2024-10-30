@@ -26,6 +26,7 @@ import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 import { MomentData } from "../../geometry4d/MomentData";
@@ -1927,40 +1928,65 @@ describe("SphericalMeshData", () => {
   it("Mirror", () => {
     const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    const delta = 5;
 
     // accumulator for ray intersection params, ignoring hits at the ray origin
     const rayHits = new OrderedSet<number>((a: number, b: number) => compareWithTolerance(a, b, Geometry.smallMetricDistance));
     const intersectOptions = new FacetIntersectOptions();
     intersectOptions.acceptIntersection = (d: FacetLocationDetail) => { if (d.a > Geometry.smallMetricDistance) rayHits.add(d.a); return false; };
 
+    const normalPointsOutward = (closedMesh: Polyface, normal: Ray3d): boolean => {
+      rayHits.clear();
+      PolyfaceQuery.intersectRay3d(closedMesh, normal, intersectOptions);
+      return 0 === rayHits.size % 2; // ASSUME mesh is closed and adjacent facets have dihedral angle < 180
+    };
+
     const hasOutwardOrientationAndFacetNormals = (closedMesh: Polyface): boolean => {
       for (const visitor = closedMesh.createVisitor(0); visitor.moveToNextFacet(); ) {
-        rayHits.clear();
-        const computedNormal = PolygonOps.centroidAreaNormal(visitor.point);
-        if (ck.testDefined(computedNormal, "successfully computed the facet normal")) {
-          PolyfaceQuery.intersectRay3d(closedMesh, computedNormal, intersectOptions);
-          if (!ck.testExactNumber(0, rayHits.size % 2, "facet orientation (computed normal) points outward"))
-            return false; // ASSUME mesh is closed and has no nearly 180-degree dihedral angles
-          const explicitNormal = visitor.getNormal(0);
-          if (explicitNormal) { // ASSUME if mesh has explicit normals, they are per-facet normals
-            if (!ck.testVector3d(computedNormal.direction, explicitNormal, "stored normal points outward"))
+        const ray = PolygonOps.centroidAreaNormal(visitor.point);
+        if (ck.testDefined(ray, "computed implicit normal")) {
+          if (!ck.testTrue(normalPointsOutward(closedMesh, ray), "facet orientation (computed normal) points outward"))
+            return false;
+          for (let i = 0; visitor.getNormal(i, ray.direction); ++i)
+            if (!ck.testTrue(normalPointsOutward(closedMesh, ray), "stored normal points outward"))
               return false;
-          }
         }
       }
       return true;
     };
 
-    const mesh = ImportedSample.createPolyhedron62();
-    if (ck.testDefined(mesh, "imported closed mesh")) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
-      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh));
-      ck.testTrue(hasOutwardOrientationAndFacetNormals(mesh), "original mesh facets and normals point outward");
-      const mirrorTrans = Transform.createOriginAndMatrix(Point3d.create(0,0,5), Matrix3d.createDirectionalScale(Vector3d.createNormalized(1, 1)!, -2.0));
-      const mirrorMesh = mesh.cloneTransformed(mirrorTrans);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mirrorMesh);
+    const testMirror = (g: IndexedPolyface | SolidPrimitive | undefined, t: Transform): void => {
+      if (!ck.testDefined(g, "geometry is defined"))
+        return;
+      ck.testTrue(t.matrix.determinant() < 0, "transform is a mirror");
+      let closedMesh = g;
+      if (closedMesh instanceof SolidPrimitive) {
+        const options = StrokeOptions.createForFacets();
+        options.needNormals = true;
+        const builder = PolyfaceBuilder.create(options);
+        builder.addGeometryQuery(closedMesh);
+        closedMesh = builder.claimPolyface();
+      }
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedMesh, x0);
+      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(closedMesh));
+      ck.testTrue(hasOutwardOrientationAndFacetNormals(closedMesh), "original mesh facets and normals point outward");
+      const mirrorMesh = closedMesh.cloneTransformed(t);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mirrorMesh, x0, 0, delta);
       ck.testTrue(hasOutwardOrientationAndFacetNormals(mirrorMesh), "mirrored mesh facets and normals point outward");
-    }
+    };
+
+    const center = Point3d.createZero();
+    const mirrorMatrix = Matrix3d.createDirectionalScale(Vector3d.createNormalized(1, 1)!, -2.0);
+    const mirrorTrans = Transform.createFixedPointAndMatrix(center, mirrorMatrix);
+
+    const mesh = ImportedSample.createPolyhedron62();
+    testMirror(mesh, mirrorTrans);
+    x0 += delta;
+
+    const solid = Sphere.createEllipsoid(Transform.createOriginAndMatrix(center, Matrix3d.createScale(2, 3, 1)), AngleSweep.createStartEndDegrees(-45, 0), true);
+    testMirror(solid, mirrorTrans);
+    x0 += delta;
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Mirror");
     expect(ck.getNumErrors()).toBe(0);
