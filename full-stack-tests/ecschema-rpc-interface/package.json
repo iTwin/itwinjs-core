@@ -58,7 +58,7 @@
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
+    "@types/node": "~18.19.61",
     "assert": "^2.0.0",
     "browserify-zlib": "^0.2.0",
     "cpx2": "^3.0.0",
