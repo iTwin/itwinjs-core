@@ -494,14 +494,26 @@ export class PolyfaceData {
     return result;
   }
   /**
-   * Apply `transform` to point and normal arrays and to auxData.
-   * * IMPORTANT This base class is just a data carrier. It does not know if the index order and normal directions
-   * have special meaning, i.e., caller must separately reverse index order and normal direction if needed.
+   * Apply a transform to the mesh data.
+   * * Transform the data as follows:
+   *   * apply `transform` to points.
+   *   * apply inverse transpose of `transform` to normals and renormalize. This preserves outward-facing
+   * normals for closed meshes.
+   *   * apply `transform` to auxData.
+   *   * scale faceData distances by the cube root of the absolute value of the determinant of `transform.matrix`.
+   * * Note that if the transform is a mirror, this method does NOT reverse index order. This is the caller's
+   * responsibility. This base class is just a data carrier: PolyfaceData does not know if the index order has
+   * special meaning.
    */
   public tryTransformInPlace(transform: Transform): boolean {
     this.point.multiplyTransformInPlace(transform);
     if (this.normal && !transform.matrix.isIdentity)
       this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
+    if (this.face.length > 0) {
+      const distScale = Math.cbrt(Math.abs(transform.matrix.determinant()));
+      for (const faceData of this.face)
+        faceData.scaleDistances(distScale);
+    }
     return undefined === this.auxData || this.auxData.tryTransformInPlace(transform);
   }
   /**
