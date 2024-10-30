@@ -62,9 +62,10 @@ export function isIDisposable(obj: unknown): obj is IDisposable {
 export function dispose(disposable?: Disposable): undefined;
 /**
  * @deprecated in 5.0 Use builtin Disposable type instead.
+ * @public
  */
 export function dispose(disposable?: IDisposable): undefined; // eslint-disable-line @typescript-eslint/unified-signatures
-export function dispose(disposable?: Disposable | IDisposable): undefined { // eslint-disable-line @typescript-eslint/no-redundant-type-constituents
+export function dispose(disposable?: Disposable | IDisposable): undefined {
   if (undefined !== disposable) {
     if (Symbol.dispose in disposable)
       disposable[Symbol.dispose]();
@@ -82,6 +83,7 @@ export function dispose(disposable?: Disposable | IDisposable): undefined { // e
 export function disposeArray(list?: Disposable[]): undefined;
 /**
  * @deprecated in 5.0 Use builtin Disposable type instead.
+ * @public
  */
 export function disposeArray(list?: IDisposable[]): undefined; // eslint-disable-line @typescript-eslint/unified-signatures
 export function disposeArray(list?: Disposable[] | IDisposable[]): undefined {

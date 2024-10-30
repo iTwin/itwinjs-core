@@ -313,14 +313,16 @@ export enum PresentationFrontendLoggerCategory {
 }
 
 // @public
-export class PresentationManager implements IDisposable {
+export class PresentationManager implements IDisposable, Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
     get activeLocale(): string | undefined;
     set activeLocale(locale: string | undefined);
     // @deprecated
     get activeUnitSystem(): UnitSystemKey;
     set activeUnitSystem(value: UnitSystemKey | undefined);
     static create(props?: PresentationManagerProps): PresentationManager;
-    // (undocumented)
+    // @deprecated (undocumented)
     dispose(): void;
     // @internal
     ensureIModelInitialized(_: IModelConnection): Promise<void>;
@@ -555,7 +557,7 @@ export class SelectionManager implements ISelectionProvider {
     readonly scopes: SelectionScopesManager;
     readonly selectionChange: SelectionChangeEvent;
     setSyncWithIModelToolSelection(imodel: IModelConnection, sync?: boolean): void;
-    suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable;
+    suspendIModelToolSelectionSync(imodel: IModelConnection): IDisposable & Disposable;
 }
 
 // @public

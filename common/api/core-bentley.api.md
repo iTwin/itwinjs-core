@@ -522,9 +522,15 @@ export class DisposableList implements IDisposable {
 }
 
 // @public
+export function dispose(disposable?: Disposable): undefined;
+
+// @public @deprecated (undocumented)
 export function dispose(disposable?: IDisposable): undefined;
 
 // @public
+export function disposeArray(list?: Disposable[]): undefined;
+
+// @public @deprecated (undocumented)
 export function disposeArray(list?: IDisposable[]): undefined;
 
 // @public
@@ -695,7 +701,7 @@ export type Id64Set = Set<Id64String>;
 // @public
 export type Id64String = string;
 
-// @public
+// @public @deprecated
 export interface IDisposable {
     dispose(): void;
 }
@@ -1404,9 +1410,11 @@ export class OrderedSet<T> extends ReadonlyOrderedSet<T> {
 export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number;
 
 // @public
-export class PerfLogger implements IDisposable {
-    constructor(operation: string, metaData?: LoggingMetaData);
+export class PerfLogger implements IDisposable, Disposable {
     // (undocumented)
+    [Symbol.dispose](): void;
+    constructor(operation: string, metaData?: LoggingMetaData);
+    // @deprecated (undocumented)
     dispose(): void;
 }
 
@@ -1744,7 +1752,7 @@ export class UnexpectedErrors {
     static setHandler(handler: OnUnexpectedError): OnUnexpectedError;
 }
 
-// @public
+// @public @deprecated
 export function using<T extends IDisposable, TResult>(resources: T | T[], func: (...r: T[]) => TResult): TResult;
 
 // @public

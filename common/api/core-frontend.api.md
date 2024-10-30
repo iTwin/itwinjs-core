@@ -2597,10 +2597,12 @@ export interface DecorateContextCreateArgs {
 }
 
 // @public
-export class Decorations implements IDisposable {
+export class Decorations implements IDisposable, Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
     // (undocumented)
     canvasDecorations?: CanvasDecorationList;
-    // (undocumented)
+    // @deprecated (undocumented)
     dispose(): void;
     get normal(): GraphicList | undefined;
     set normal(normal: GraphicList | undefined);
@@ -3349,11 +3351,11 @@ export class EntityState implements EntityProps {
 
 // @internal (undocumented)
 export class EnvironmentDecorations {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(view: ViewState3d, onLoaded: () => void, onDispose: () => void);
     // (undocumented)
     decorate(context: DecorateContext): void;
-    // (undocumented)
-    dispose(): void;
     // (undocumented)
     protected _environment: Environment;
     // (undocumented)
@@ -4532,7 +4534,8 @@ export interface GraphicAssemblerOptions {
 }
 
 // @public
-export class GraphicBranch implements IDisposable {
+export class GraphicBranch implements IDisposable, Disposable {
+    [Symbol.dispose](): void;
     constructor(ownsEntries?: boolean);
     add(graphic: RenderGraphic): void;
     // @internal
@@ -4542,6 +4545,7 @@ export class GraphicBranch implements IDisposable {
     clear(): void;
     // @internal (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
+    // @deprecated (undocumented)
     dispose(): void;
     readonly entries: RenderGraphic[];
     getViewFlags(flags: ViewFlags): ViewFlags;
@@ -5154,11 +5158,11 @@ export class ImageryMapLayerTreeReference extends MapLayerTileTreeReference {
 
 // @internal (undocumented)
 export class ImageryMapTile extends RealityTile {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(params: TileParams, imageryTree: ImageryMapTileTree, quadId: QuadId, rectangle: MapCartoRectangle);
     // (undocumented)
     protected _collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
-    dispose(): void;
     // (undocumented)
     disposeContents(): void;
     // (undocumented)
@@ -5739,6 +5743,8 @@ export class IModelTileRequestChannels {
 
 // @internal
 export class IModelTileTree extends TileTree {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId);
     // (undocumented)
     get batchType(): BatchType;
@@ -5751,8 +5757,6 @@ export class IModelTileTree extends TileTree {
     debugMaxDepth?: number;
     // (undocumented)
     readonly decoder: ImdlDecoder;
-    // (undocumented)
-    dispose(): void;
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
@@ -7677,9 +7681,9 @@ export namespace MockRender {
         // (undocumented)
         readonly [_implementationProhibited] = "renderAreaPattern";
         // (undocumented)
-        collectStatistics(): void;
+        [Symbol.dispose](): void;
         // (undocumented)
-        dispose(): void;
+        collectStatistics(): void;
     }
     // (undocumented)
     export class Batch extends Graphic {
@@ -7711,13 +7715,13 @@ export namespace MockRender {
     }
     // (undocumented)
     export class Geometry implements RenderGeometry {
+        // (undocumented)
+        [Symbol.dispose](): void;
         constructor(renderGeometryType: "mesh" | "polyline" | "point-string");
         // (undocumented)
         collectStatistics(): void;
         // (undocumented)
         computeRange(): Range3d;
-        // (undocumented)
-        dispose(): void;
         // (undocumented)
         isDisposed: boolean;
         // (undocumented)
@@ -8102,6 +8106,8 @@ export class NullTarget extends RenderTarget {
     // (undocumented)
     protected readonly [_implementationProhibited]: undefined;
     // (undocumented)
+    [Symbol.dispose](): void;
+    // (undocumented)
     get analysisFraction(): number;
     set analysisFraction(_fraction: number);
     // (undocumented)
@@ -8115,8 +8121,6 @@ export class NullTarget extends RenderTarget {
     changeRenderPlan(): void;
     // (undocumented)
     changeScene(): void;
-    // (undocumented)
-    dispose(): void;
     // (undocumented)
     drawFrame(_sceneMilSecElapsed?: number): void;
     // (undocumented)
@@ -8218,6 +8222,8 @@ export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) 
 
 // @internal
 export class OnScreenTarget extends Target {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(canvas: HTMLCanvasElement);
     // (undocumented)
     protected _assignDC(): boolean;
@@ -8231,8 +8237,6 @@ export class OnScreenTarget extends Target {
     // (undocumented)
     get devicePixelRatioOverride(): number | undefined;
     set devicePixelRatioOverride(ovr: number | undefined);
-    // (undocumented)
-    dispose(): void;
     // (undocumented)
     protected drawOverlayDecorations(): void;
     // (undocumented)
@@ -8269,11 +8273,11 @@ export function openImageDataUrlInNewWindow(url: string, title?: string): void;
 
 // @internal (undocumented)
 export class OrbitGtTileTree extends TileTree {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(treeParams: TileTreeParams, _dataManager: OrbitGtDataManager, cloudRange: Range3d, _centerOffset: Vector3d, _ecefTransform: Transform);
     // (undocumented)
     collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
-    dispose(): void;
     // (undocumented)
     draw(args: TileDrawArgs): void;
     // (undocumented)
@@ -9626,7 +9630,7 @@ export interface RemoteExtensionProviderProps {
 }
 
 // @internal
-export interface RenderAreaPattern extends IDisposable, RenderMemory.Consumer {
+export interface RenderAreaPattern extends Disposable, RenderMemory.Consumer {
     // (undocumented)
     readonly [_implementationProhibited]: "renderAreaPattern";
 }
@@ -9666,10 +9670,12 @@ export enum RenderDiagnostics {
 }
 
 // @public
-export abstract class RenderGraphic implements IDisposable {
+export abstract class RenderGraphic implements IDisposable, Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
     // @internal (undocumented)
     abstract collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
+    // @deprecated (undocumented)
     abstract dispose(): void;
     // @internal
     abstract unionRange(range: Range3d): void;
@@ -9985,11 +9991,11 @@ export interface RenderPlan {
 }
 
 // @internal
-export abstract class RenderPlanarClassifier implements IDisposable {
+export abstract class RenderPlanarClassifier implements Disposable {
+    // (undocumented)
+    abstract [Symbol.dispose](): void;
     // (undocumented)
     abstract collectGraphics(context: SceneContext, target: PlanarClassifierTarget): void;
-    // (undocumented)
-    abstract dispose(): void;
     // (undocumented)
     abstract setSource(classifierTreeRef?: SpatialClassifierTileTreeReference, planarClipMask?: PlanarClipMaskState): void;
 }
@@ -10041,7 +10047,9 @@ export interface RenderSkySphereParams {
 }
 
 // @public
-export abstract class RenderSystem implements IDisposable {
+export abstract class RenderSystem implements IDisposable, Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
     // @internal
     protected constructor(options?: RenderSystem.Options);
     // @beta
@@ -10141,7 +10149,7 @@ export abstract class RenderSystem implements IDisposable {
     createWorkerGraphicDescriptionContextProps(iModel: IModelConnection): WorkerGraphicDescriptionContextProps;
     // @beta
     get debugControl(): RenderSystemDebugControl | undefined;
-    // @internal (undocumented)
+    // @deprecated (undocumented)
     abstract dispose(): void;
     // @internal
     abstract doIdleWork(): boolean;
@@ -10218,9 +10226,11 @@ export interface RenderSystemDebugControl {
 }
 
 // @public
-export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderTarget implements Disposable, RenderMemory.Consumer {
     // @internal (undocumented)
     protected abstract readonly [_implementationProhibited]: unknown;
+    // @internal (undocumented)
+    [Symbol.dispose](): void;
     // @internal (undocumented)
     adjustPixelSizeForLOD(cssPixelSize: number): number;
     // @internal (undocumented)
@@ -10254,8 +10264,6 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
     get debugControl(): RenderTargetDebugControl | undefined;
     // @internal (undocumented)
     get devicePixelRatio(): number;
-    // @internal (undocumented)
-    dispose(): void;
     // @internal (undocumented)
     abstract drawFrame(sceneMilSecElapsed?: number): void;
     // @internal (undocumented)
@@ -10336,23 +10344,23 @@ export interface RenderTargetDebugControl {
 }
 
 // @internal (undocumented)
-export abstract class RenderTerrainGeometry implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderTerrainGeometry implements Disposable, RenderMemory.Consumer {
+    // (undocumented)
+    abstract [Symbol.dispose](): void;
     // (undocumented)
     abstract collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
-    abstract dispose(): void;
     // (undocumented)
     abstract get transform(): Transform | undefined;
 }
 
 // @internal
-export abstract class RenderTextureDrape implements IDisposable {
+export abstract class RenderTextureDrape implements Disposable {
+    // (undocumented)
+    abstract [Symbol.dispose](): void;
     // (undocumented)
     abstract collectGraphics(context: SceneContext): void;
     // (undocumented)
     abstract collectStatistics(stats: RenderMemory.Statistics): void;
-    // (undocumented)
-    abstract dispose(): void;
 }
 
 // @public
@@ -10520,6 +10528,8 @@ export interface ScreenSpaceEffectSource {
 
 // @public
 export class ScreenViewport extends Viewport {
+    // @internal (undocumented)
+    [Symbol.dispose](): void;
     protected constructor(canvas: HTMLCanvasElement, parentDiv: HTMLDivElement, target: RenderTarget);
     protected addDecorations(decorations: Decorations): void;
     // @internal (undocumented)
@@ -10552,8 +10562,6 @@ export class ScreenViewport extends Viewport {
     static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport;
     // @internal
     readonly decorationDiv: HTMLDivElement;
-    // @internal (undocumented)
-    dispose(): void;
     doRedo(animationTime?: BeDuration): void;
     doUndo(animationTime?: BeDuration): void;
     // @internal (undocumented)
@@ -11450,6 +11458,8 @@ export function synchronizeViewportViews(source: Viewport): SynchronizeViewports
 export abstract class Target extends RenderTarget implements RenderTargetDebugControl, WebGLDisposable {
     // (undocumented)
     protected readonly [_implementationProhibited]: undefined;
+    // (undocumented)
+    [Symbol.dispose](): void;
     protected constructor(rect?: ViewRect);
     // (undocumented)
     activeVolumeClassifierModelId?: Id64String;
@@ -11555,8 +11565,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     displayRealityTilePreload: boolean;
     // (undocumented)
     displayRealityTileRanges: boolean;
-    // (undocumented)
-    dispose(): void;
     // (undocumented)
     protected disposeFbo(): void;
     // (undocumented)
@@ -11928,6 +11936,7 @@ export class ThreeDTileFormatInterpreter {
 
 // @public
 export abstract class Tile {
+    [Symbol.dispose](): void;
     protected constructor(params: TileParams, tree: TileTree);
     // @internal (undocumented)
     protected addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void;
@@ -11950,6 +11959,7 @@ export abstract class Tile {
     protected _contentRange?: ElementAlignedBox3d;
     countDescendants(): number;
     readonly depth: number;
+    // @deprecated (undocumented)
     dispose(): void;
     protected disposeChildren(): void;
     disposeContents(): void;
@@ -12655,6 +12665,7 @@ export class TileStorage {
 
 // @public
 export abstract class TileTree {
+    [Symbol.dispose](): void;
     protected constructor(params: TileTreeParams);
     // @internal (undocumented)
     accumulateTransformedRange(range: Range3d, matrix: Matrix4d, location: Transform, frustumPlanes?: FrustumPlanes): void;
@@ -12668,6 +12679,7 @@ export abstract class TileTree {
     collectTileGeometry(_collector: TileGeometryCollector): void;
     readonly contentRange?: ElementAlignedBox3d;
     countTiles(): number;
+    // @deprecated (undocumented)
     dispose(): void;
     abstract draw(args: TileDrawArgs): void;
     readonly expirationTime: BeDuration;
@@ -14431,7 +14443,9 @@ export abstract class ViewManip extends ViewTool {
 }
 
 // @public
-export abstract class Viewport implements IDisposable, TileUser {
+export abstract class Viewport implements IDisposable, Disposable, TileUser {
+    // (undocumented)
+    [Symbol.dispose](): void;
     // @internal
     protected constructor(target: RenderTarget);
     protected addDecorations(_decorations: Decorations): void;
@@ -14503,7 +14517,7 @@ export abstract class Viewport implements IDisposable, TileUser {
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
     get displayStyle(): DisplayStyleState;
     set displayStyle(style: DisplayStyleState);
-    // (undocumented)
+    // @deprecated (undocumented)
     dispose(): void;
     // @internal
     get drawingToSheetTransform(): Transform | undefined;

@@ -8087,11 +8087,13 @@ export namespace RenderSchedule {
 }
 
 // @public
-export abstract class RenderTexture implements IDisposable {
+export abstract class RenderTexture implements IDisposable, Disposable {
+    [Symbol.dispose](): void;
     protected constructor(type: RenderTexture.Type);
     // (undocumented)
     abstract get bytesUsed(): number;
     compare(other: RenderTexture): number;
+    // @deprecated (undocumented)
     abstract dispose(): void;
     // (undocumented)
     get isGlyph(): boolean;

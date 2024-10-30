@@ -218,6 +218,7 @@ export enum PresentationBackendNativeLoggerCategory {
 
 // @public
 export class PresentationManager {
+    [Symbol.dispose](): void;
     constructor(props?: PresentationManagerProps);
     // @deprecated
     activeLocale: string | undefined;
@@ -230,6 +231,7 @@ export class PresentationManager {
         scopeId: string;
     } & BackendDiagnosticsAttribute): Promise<KeySet>;
     computeSelection(requestOptions: ComputeSelectionRequestOptions<IModelDb> & BackendDiagnosticsAttribute): Promise<KeySet>;
+    // @deprecated (undocumented)
     dispose(): void;
     getContent(requestOptions: WithCancelEvent<Prioritized<Paged<ContentRequestOptions<IModelDb, Descriptor | DescriptorOverrides, KeySet, RulesetVariable>>>> & BackendDiagnosticsAttribute): Promise<Content | undefined>;
     getContentDescriptor(requestOptions: WithCancelEvent<Prioritized<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>>> & BackendDiagnosticsAttribute): Promise<Descriptor | undefined>;

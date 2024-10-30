@@ -1729,9 +1729,10 @@ export abstract class DriverBundleElement extends InformationContentElement {
 }
 
 // @public
-export class ECDb implements IDisposable {
+export class ECDb implements IDisposable, Disposable {
     // @internal (undocumented)
     get [_nativeDb](): IModelJsNative.ECDb;
+    [Symbol.dispose](): void;
     constructor();
     abandonChanges(): void;
     // @internal
@@ -1739,6 +1740,7 @@ export class ECDb implements IDisposable {
     closeDb(): void;
     createDb(pathName: string): void;
     createQueryReader(ecsql: string, params?: QueryBinder, config?: QueryOptions): ECSqlReader;
+    // @deprecated (undocumented)
     dispose(): void;
     // @internal
     getCachedStatementCount(): number;
@@ -1856,6 +1858,7 @@ export interface ECSqlRowArg {
 
 // @public
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
+    [Symbol.dispose](): void;
     [Symbol.iterator](): IterableIterator<any>;
     bindArray(parameter: number | string, val: any[]): void;
     bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void;
@@ -1877,6 +1880,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValue(parameter: number | string, val: any): void;
     bindValues(values: any[] | object): void;
     clearBindings(): void;
+    // @deprecated (undocumented)
     dispose(): void;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
@@ -5427,7 +5431,8 @@ export namespace SQLiteDb {
 }
 
 // @public
-export class SqliteStatement implements IterableIterator<any>, IDisposable {
+export class SqliteStatement implements IterableIterator<any>, IDisposable, Disposable {
+    [Symbol.dispose](): void;
     [Symbol.iterator](): IterableIterator<any>;
     constructor(_sql: string);
     bindBlob(parameter: BindParameter, blob: Uint8Array): void;
@@ -5443,6 +5448,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
     bindValue(parameter: BindParameter, value: any): void;
     bindValues(values: any[] | object): void;
     clearBindings(): void;
+    // @deprecated (undocumented)
     dispose(): void;
     getColumnBytes(colIndex: number): number;
     getColumnCount(): number;

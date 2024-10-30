@@ -34,7 +34,7 @@ export type AnyECType = Schema | SchemaItem | AnyProperty | RelationshipConstrai
 export type AnyEnumerationProperty = EnumerationProperty | EnumerationArrayProperty;
 
 // @beta (undocumented)
-export type AnyEnumerator = Enumerator_2<string | number>;
+export type AnyEnumerator = Enumerator<string | number>;
 
 // @beta (undocumented)
 export type AnyPrimitiveProperty = PrimitiveProperty | PrimitiveArrayProperty;
@@ -539,9 +539,9 @@ export class Enumeration extends SchemaItem {
     fromJSON(enumerationProps: EnumerationProps): Promise<void>;
     // (undocumented)
     fromJSONSync(enumerationProps: EnumerationProps): void;
-    getEnumerator(value: string): Enumerator_2<string> | undefined;
+    getEnumerator(value: string): Enumerator<string> | undefined;
     // (undocumented)
-    getEnumerator(value: number): Enumerator_2<number> | undefined;
+    getEnumerator(value: number): Enumerator<number> | undefined;
     getEnumeratorByName(name: string): AnyEnumerator | undefined;
     // (undocumented)
     get isInt(): boolean;
@@ -602,7 +602,7 @@ export interface EnumerationProps extends SchemaItemProps {
 }
 
 // @beta (undocumented)
-interface Enumerator_2<T> {
+export interface Enumerator<T> {
     // (undocumented)
     readonly description?: string;
     // (undocumented)
@@ -612,7 +612,6 @@ interface Enumerator_2<T> {
     // (undocumented)
     readonly value: T;
 }
-export { Enumerator_2 as Enumerator }
 
 // @beta (undocumented)
 export interface EnumeratorProps {

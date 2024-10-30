@@ -908,9 +908,9 @@ export function formatMemory(numBytes: number): string;
 
 // @beta
 export class FpsTracker {
-    constructor(parent: HTMLElement, viewport: Viewport);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement, viewport: Viewport);
 }
 
 // @beta
@@ -949,9 +949,9 @@ export class GaussianBlurEffect extends ConvolutionEffect {
 
 // @alpha (undocumented)
 export class GpuProfiler {
-    constructor(parent: HTMLElement);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement);
 }
 
 // @beta
@@ -1332,9 +1332,9 @@ export class MeasureTileLoadTimeTool extends Tool {
 
 // @beta
 export class MemoryTracker {
-    constructor(parent: HTMLElement, vp: Viewport);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement, vp: Viewport);
 }
 
 // @alpha (undocumented)
@@ -2218,16 +2218,16 @@ export interface TextBoxProps {
 
 // @beta
 export class TileMemoryBreakdown {
-    constructor(parent: HTMLElement);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement);
 }
 
 // @beta
 export class TileStatisticsTracker {
-    constructor(parent: HTMLElement, vp: Viewport);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement, vp: Viewport);
 }
 
 // @beta
@@ -2567,9 +2567,9 @@ export interface ToolArgs {
 
 // @alpha
 export class ToolSettingsTracker {
-    constructor(parent: HTMLElement, _vp: Viewport);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(parent: HTMLElement, _vp: Viewport);
 }
 
 // @beta
