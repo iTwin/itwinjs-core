@@ -44,13 +44,8 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/certa": "workspace:*",
-<<<<<<< HEAD
     "@itwin/eslint-plugin": "^4.0.2",
-    "@itwin/oidc-signin-tool": "^4.3.5",
-=======
-    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@itwin/oidc-signin-tool": "^4.3.7",
->>>>>>> 306fffe880 (Update oidc-signin-tool to 4.3.7 (#7303))
     "@itwin/presentation-common": "workspace:*",
     "@itwin/presentation-frontend": "workspace:*",
     "@itwin/service-authorization": "^1.0.0",
