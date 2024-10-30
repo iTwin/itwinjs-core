@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
 import { randomInt } from "crypto";
 import * as fs from "fs";
-import { CloneFunction, Dictionary, OrderedComparator } from "@itwin/core-bentley";
+import { describe, expect, it } from "vitest";
+import { CloneFunction, compareWithTolerance, Dictionary, OrderedComparator, OrderedSet } from "@itwin/core-bentley";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
@@ -24,11 +24,13 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
 import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 import { MomentData } from "../../geometry4d/MomentData";
 import { FacetFaceData } from "../../polyface/FacetFaceData";
+import { FacetIntersectOptions, FacetLocationDetail } from "../../polyface/FacetLocationDetail";
 import { IndexedPolyfaceSubsetVisitor } from "../../polyface/IndexedPolyfaceVisitor";
 import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
@@ -1919,6 +1921,48 @@ describe("SphericalMeshData", () => {
     sectorsWithSameNormalAtVertexShareUVParamAndColor(ck, mesh1.data);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Triangulate");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("Mirror", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+
+    // accumulator for ray intersection params, ignoring hits at the ray origin
+    const rayHits = new OrderedSet<number>((a: number, b: number) => compareWithTolerance(a, b, Geometry.smallMetricDistance));
+    const intersectOptions = new FacetIntersectOptions();
+    intersectOptions.acceptIntersection = (d: FacetLocationDetail) => { if (d.a > Geometry.smallMetricDistance) rayHits.add(d.a); return false; };
+
+    const hasOutwardOrientationAndFacetNormals = (closedMesh: Polyface): boolean => {
+      for (const visitor = closedMesh.createVisitor(0); visitor.moveToNextFacet(); ) {
+        rayHits.clear();
+        const computedNormal = PolygonOps.centroidAreaNormal(visitor.point);
+        if (ck.testDefined(computedNormal, "successfully computed the facet normal")) {
+          PolyfaceQuery.intersectRay3d(closedMesh, computedNormal, intersectOptions);
+          if (!ck.testExactNumber(0, rayHits.size % 2, "facet orientation (computed normal) points outward"))
+            return false; // ASSUME mesh is closed and has no nearly 180-degree dihedral angles
+          const explicitNormal = visitor.getNormal(0);
+          if (explicitNormal) { // ASSUME if mesh has explicit normals, they are per-facet normals
+            if (!ck.testVector3d(computedNormal.direction, explicitNormal, "stored normal points outward"))
+              return false;
+          }
+        }
+      }
+      return true;
+    };
+
+    const mesh = ImportedSample.createPolyhedron62();
+    if (ck.testDefined(mesh, "imported closed mesh")) {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh);
+      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh));
+      ck.testTrue(hasOutwardOrientationAndFacetNormals(mesh), "original mesh facets and normals point outward");
+      const mirrorTrans = Transform.createOriginAndMatrix(Point3d.create(0,0,5), Matrix3d.createDirectionalScale(Vector3d.createNormalized(1, 1)!, -2.0));
+      const mirrorMesh = mesh.cloneTransformed(mirrorTrans);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mirrorMesh);
+      ck.testTrue(hasOutwardOrientationAndFacetNormals(mirrorMesh), "mirrored mesh facets and normals point outward");
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Mirror");
     expect(ck.getNumErrors()).toBe(0);
   });
 });
