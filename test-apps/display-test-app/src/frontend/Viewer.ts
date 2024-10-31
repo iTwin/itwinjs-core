@@ -396,38 +396,6 @@ export class Viewer extends Window {
       tooltip: "Override feature symbology",
     });
 
-    this.toolBar.addDropDown({
-      iconUnicode: "\ue923", // "pencil"  ###TODO where to get real icon?
-      createDropDown: async (container: HTMLElement) => {
-        const panel = new RealityModelSettingsPanel(this.viewport, container);
-        await panel.populate();
-        return panel;
-      },
-      tooltip: "Point cloud settings",
-    });
-
-    this.toolBar.addItem(createToolButton({
-      iconUnicode: "\ue9b6", // "redo"
-      click: async () => {
-        this.viewport.displayStyle.attachMapLayerProps({
-          props: {
-            url: "https://fs.qa.api.geo.moata.com/pg/rest/services/uk1.safebydesign.hazard_safebydesign_v2/FeatureServer",
-            formatId: "ArcGISFeature",
-            name: "safebydesign",
-            queryParams: {
-              token: "uYMrNkXGmnZGPL2cUR208YVVybSPGNy_ClB5cUNV2pj-c1OoJOqdQwgIvaFtgTukjFZ91PMu6XD72k0iA978XBUjP79B2-UxL7xf5lckgsg="
-            }
-          },
-          mapLayerIndex: {
-            index: 0,
-            isOverlay: true,
-          }
-
-        });
-      },
-      tooltip: "View redo",
-    }));
-
     this.updateTitle();
     this.updateActiveSettings();
   }
