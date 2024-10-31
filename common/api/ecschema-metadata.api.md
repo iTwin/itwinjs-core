@@ -707,6 +707,8 @@ export class InvertedUnit extends SchemaItem {
     get invertsUnit(): LazyLoadedUnit | undefined;
     // (undocumented)
     protected _invertsUnit?: LazyLoadedUnit;
+    // @alpha (undocumented)
+    static isInvertedUnit(object: any): object is InvertedUnit;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.InvertedUnit;
     // @alpha
