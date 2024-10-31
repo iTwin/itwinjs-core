@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-common",
+      "comment": "Add ITwinError interface and namespace",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-common"
+}
