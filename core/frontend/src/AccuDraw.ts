@@ -641,7 +641,6 @@ export class AccuDraw {
     let rMatrix: Matrix3d;
     let myAxes: ThreeAxes;
     const vecP = Vector3d.createZero();
-    /* eslint-disable max-statements-per-line */
     switch (this.flags.baseRotation) {
       case RotationMode.Top:
         switch (whichVec) {
@@ -696,7 +695,6 @@ export class AccuDraw {
         }
         break;
     }
-    /* eslint-enable max-statements-per-line */
 
     return vecP;
   }
@@ -2305,7 +2303,7 @@ export class AccuDraw {
     if (!this._distanceRoundOff.active || !this._distanceRoundOff.units.size)
       return undefined;
 
-    let roundValue = this._distanceRoundOff.units.values().next().value;
+    let roundValue = this._distanceRoundOff.units.values().next().value!;
 
     if (this._distanceRoundOff.units.size > 1) {
       // NOTE: Set isn't ordered, find smallest entry...
@@ -2337,7 +2335,7 @@ export class AccuDraw {
     if (!this._angleRoundOff.active || !this._angleRoundOff.units.size)
       return undefined;
 
-    let roundValue = this._angleRoundOff.units.values().next().value;
+    let roundValue = this._angleRoundOff.units.values().next().value!;
 
     if (this._angleRoundOff.units.size > 1) {
       // NOTE: Set isn't ordered, find smallest entry...

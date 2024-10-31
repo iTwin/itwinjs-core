@@ -79,7 +79,7 @@ export class RobotWorld extends Schema {
 }
 
 /** Export the schema names so that they appear to be enums nested in the RobotWorldSchema class/ns */
-export namespace RobotWorld { // eslint-disable-line no-redeclare
+export namespace RobotWorld {
   /** The full names of the classes in the RobotWorld schema */
   export const Class = _schemaNames.Class;
 

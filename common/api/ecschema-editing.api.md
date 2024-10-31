@@ -744,9 +744,9 @@ export enum DiagnosticType {
     // (undocumented)
     CustomAttributeContainer = 4,
     // (undocumented)
-    None = 0,// eslint-disable-line @typescript-eslint/no-shadow
+    None = 0,
     // (undocumented)
-    Property = 3,// eslint-disable-line @typescript-eslint/no-shadow
+    Property = 3,
     // (undocumented)
     RelationshipConstraint = 5,
     // (undocumented)
@@ -1139,7 +1139,7 @@ export interface IRelationshipConstraintIdentifier extends ISchemaTypeIdentifier
 }
 
 // @beta
-export type IRule<T extends AnyECType, U = {}> = (ecDefinition: T, ...args: U[]) => AsyncIterable<BaseDiagnostic<T, any[]>>;
+export type IRule<T extends AnyECType, U = object> = (ecDefinition: T, ...args: U[]) => AsyncIterable<BaseDiagnostic<T, any[]>>;
 
 // @beta
 export interface IRuleSet {
@@ -1169,7 +1169,7 @@ export interface IRuleSet {
 }
 
 // @beta
-export interface IRuleSuppressionMap<T extends AnyECType, U = {}> {
+export interface IRuleSuppressionMap<T extends AnyECType, U = object> {
     // (undocumented)
     rule: ISuppressionRule<T, U>;
     // (undocumented)
@@ -1380,7 +1380,7 @@ export function isStructClassDifference(difference: AnySchemaDifference): differ
 export function isUnitSystemDifference(difference: AnySchemaDifference): difference is UnitSystemDifference;
 
 // @beta
-export type ISuppressionRule<T extends AnyECType, U = {}> = (diagnostic: AnyDiagnostic, ecDefinition: T, ...args: U[]) => Promise<boolean>;
+export type ISuppressionRule<T extends AnyECType, U = object> = (diagnostic: AnyDiagnostic, ecDefinition: T, ...args: U[]) => Promise<boolean>;
 
 // @alpha
 export class KindOfQuantityChanges extends SchemaItemChanges {

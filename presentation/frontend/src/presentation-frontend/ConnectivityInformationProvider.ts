@@ -45,7 +45,6 @@ export class ConnectivityInformationProvider implements IConnectivityInformation
     this._unsubscribeFromInternetConnectivityChangedEvent && this._unsubscribeFromInternetConnectivityChangedEvent();
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onNativeAppInternetConnectivityChanged = (status: InternetConnectivityStatus) => {
     if (this._currentStatus === status) {
       return;

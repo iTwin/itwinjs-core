@@ -1,6 +1,6 @@
 {
   "name": "@itwin/linear-referencing-common",
-  "version": "4.10.0-dev.26",
+  "version": "4.10.0-dev.35",
   "main": "lib/cjs/linear-referencing-common.js",
   "typings": "lib/cjs/linear-referencing-common",
   "license": "MIT",
@@ -11,7 +11,7 @@
     "cover": "nyc npm -s test",
     "docs": "betools docs --includes=../../../generated-docs/extract --json=../../../generated-docs/domains/linear-referencing-common/file.json --tsIndexFile=./linear-referencing-common.ts --onlyJson",
     "extract-api": "betools extract-api --entry=linear-referencing-common",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
   "repository": {
@@ -29,8 +29,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.10.0-dev.26",
-    "@itwin/core-common": "workspace:^4.10.0-dev.26"
+    "@itwin/core-bentley": "workspace:^4.10.0-dev.35",
+    "@itwin/core-common": "workspace:^4.10.0-dev.35"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -38,18 +38,18 @@
   ],
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@itwin/core-common": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@types/chai": "4.3.1",
     "@types/fs-extra": "^4.0.7",
     "@types/mocha": "^10.0.6",
     "chai": "^4.3.10",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.6.2"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

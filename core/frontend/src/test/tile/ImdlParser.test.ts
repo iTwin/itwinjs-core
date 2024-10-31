@@ -2,18 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect, use } from "chai";
-import chaiAsPromised from "chai-as-promised";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { RenderSchedule as RS, TileReadStatus } from "@itwin/core-common";
 import { ImdlTimeline } from "../../common/imdl/ParseImdlDocument";
 import { acquireImdlParser, ImdlParser } from "../../tile/internal";
 import { IModelApp } from "../../IModelApp";
 
-use(chaiAsPromised);
-
 describe("acquireImdlParser", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => {
+    await IModelApp.startup({ publicPath: "/" });
+  });
+  afterAll(async () => IModelApp.shutdown());
 
   const model1Props: RS.ModelTimelineProps = { modelId: "0x1", elementTimelines: [] };
   const model2Props: RS.ModelTimelineProps = { modelId: "0x2", elementTimelines: [] };
@@ -22,10 +21,10 @@ describe("acquireImdlParser", () => {
 
   it("returns the same parser every time if no timeline, even after the parser is released", () => {
     const parser = acquireImdlParser({});
-    expect(acquireImdlParser({})).to.equal(parser);
+    expect(acquireImdlParser({})).toEqual(parser);
 
     parser.release();
-    expect(acquireImdlParser({})).to.equal(parser);
+    expect(acquireImdlParser({})).toEqual(parser);
   });
 
   function acquire(timeline: ImdlTimeline) {
@@ -36,13 +35,13 @@ describe("acquireImdlParser", () => {
     const model = RS.ModelTimeline.fromJSON(model1Props);
 
     const modelParser = acquire(model);
-    expect(acquire(model)).to.equal(modelParser);
-    expect(acquire(RS.ModelTimeline.fromJSON(model1Props))).to.equal(modelParser);
+    expect(acquire(model)).toEqual(modelParser);
+    expect(acquire(RS.ModelTimeline.fromJSON(model1Props))).toEqual(modelParser);
 
     const script = RS.Script.fromJSON(script2Props)!;
     const scriptParser = acquire(script);
-    expect(acquire(script)).to.equal(scriptParser);
-    expect(acquire(RS.Script.fromJSON(script2Props)!)).to.equal(scriptParser);
+    expect(acquire(script)).toEqual(scriptParser);
+    expect(acquire(RS.Script.fromJSON(script2Props)!)).toEqual(scriptParser);
 
     modelParser.release();
     modelParser.release();
@@ -55,11 +54,11 @@ describe("acquireImdlParser", () => {
   it("returns different parsers for different timelines", () => {
     const m1 = acquire(RS.ModelTimeline.fromJSON(model1Props));
     const m2 = acquire(RS.ModelTimeline.fromJSON(model2Props));
-    expect(m1).not.to.equal(m2);
+    expect(m1).not.toEqual(m2);
 
     const s1 = acquire(RS.Script.fromJSON(script1Props)!);
     const s2 = acquire(RS.Script.fromJSON(script2Props)!);
-    expect(s1).not.to.equal(s2);
+    expect(s1).not.toEqual(s2);
 
     m1.release();
     m2.release();
@@ -71,17 +70,17 @@ describe("acquireImdlParser", () => {
     const m = RS.ModelTimeline.fromJSON(model1Props);
     const mp1 = acquire(m); // ref-count = 1
     const mp2 = acquire(m); // ref-count = 2
-    expect(mp1).to.equal(mp2);
+    expect(mp1).toEqual(mp2);
 
     mp1.release(); // ref-count = 1
     const mp3 = acquire(m); // ref-count = 2
-    expect(mp3).to.equal(mp1);
+    expect(mp3).toEqual(mp1);
 
     mp1.release(); // ref-count = 1
     mp1.release(); // ref-count = 0
     const mp4 = acquire(m);
-    expect(mp4).not.to.equal(mp1);
-    expect(acquire(m)).to.equal(mp4);
+    expect(mp4).not.toEqual(mp1);
+    expect(acquire(m)).toEqual(mp4);
 
     mp4.release();
     mp4.release();
@@ -89,17 +88,17 @@ describe("acquireImdlParser", () => {
     const s = RS.Script.fromJSON(script1Props)!;
     const sp1 = acquire(s); // ref-count = 1
     const sp2 = acquire(s); // ref-count = 2
-    expect(sp1).to.equal(sp2);
+    expect(sp1).toEqual(sp2);
 
     sp1.release(); // ref-count = 1
     const sp3 = acquire(s); // ref-count = 2
-    expect(sp3).to.equal(sp1);
+    expect(sp3).toEqual(sp1);
 
     sp1.release(); // ref-count = 1
     sp1.release(); // ref-count = 0
     const sp4 = acquire(s);
-    expect(sp4).not.to.equal(sp1);
-    expect(acquire(s)).to.equal(sp4);
+    expect(sp4).not.toEqual(sp1);
+    expect(acquire(s)).toEqual(sp4);
 
     sp4.release();
     sp4.release();
@@ -109,7 +108,7 @@ describe("acquireImdlParser", () => {
     const parsers = new Set<ImdlParser>();
     const getParser = (timeline?: ImdlTimeline) => {
       const parser = acquireImdlParser({ noWorker: true, timeline });
-      expect(parsers.has(parser)).to.be.false;
+      expect(parsers.has(parser)).toBe(false);
       parsers.add(parser);
     };
 
@@ -125,8 +124,10 @@ describe("acquireImdlParser", () => {
 });
 
 describe("ImdlParser", () => {
-  before(async () => IModelApp.startup());
-  after(async () => IModelApp.shutdown());
+  beforeAll(async () => {
+    await IModelApp.startup({ publicPath: "/" });
+  });
+  afterAll(async () => IModelApp.shutdown());
 
   it("produces an error upon invalid tile header", async () => {
     const parser = acquireImdlParser({});
@@ -137,30 +138,34 @@ describe("ImdlParser", () => {
       maxVertexTableSize: 4096,
     });
 
-    expect(document).to.equal(TileReadStatus.InvalidHeader);
+    expect(document).toEqual(TileReadStatus.InvalidHeader);
   });
 
   it("produces an error when reading outside tile data", async () => {
     const parser = acquireImdlParser({});
-    await expect(parser.parse({
-      data: new Uint8Array(12),
-      batchModelId: "0x123",
-      is3d: true,
-      maxVertexTableSize: 4096,
-    })).to.be.eventually.rejectedWith(RangeError);
+    await expect(
+      parser.parse({
+        data: new Uint8Array(12),
+        batchModelId: "0x123",
+        is3d: true,
+        maxVertexTableSize: 4096,
+      }),
+    ).rejects.toThrow(RangeError);
   });
 
   it("transfers the array buffer to the worker", async () => {
     const parser = acquireImdlParser({});
     const data = new Uint8Array(12);
-    expect(data.length).to.equal(12);
-    await expect(parser.parse({
-      data,
-      batchModelId: "0x123",
-      is3d: true,
-      maxVertexTableSize: 4096,
-    })).to.be.eventually.rejectedWith(RangeError);
-    expect(data.length).to.equal(0);
+    expect(data.length).toEqual(12);
+    await expect(
+      parser.parse({
+        data,
+        batchModelId: "0x123",
+        is3d: true,
+        maxVertexTableSize: 4096,
+      }),
+    ).rejects.toThrow(RangeError);
+    expect(data.length).toEqual(0);
   });
 
   it("successfully parses the document", async () => {
@@ -269,7 +274,7 @@ describe("ImdlParser", () => {
       maxVertexTableSize: 4096,
     });
 
-    expect(typeof document).to.equal("object");
+    expect(typeof document).toEqual("object");
 
     parser.release();
   });

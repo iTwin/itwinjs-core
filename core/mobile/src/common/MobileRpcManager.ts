@@ -6,7 +6,7 @@
 import { RpcConfiguration, RpcEndpoint, RpcInterfaceDefinition } from "@itwin/core-common";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** RPC supported mobile platforms.
  * @internal

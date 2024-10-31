@@ -411,6 +411,7 @@ export class BagOfCurves extends CurveCollection {
     protected _children: AnyCurve[];
     cloneEmptyPeer(): BagOfCurves;
     cloneStroked(options?: StrokeOptions): BagOfCurves;
+    closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     static create(...data: AnyCurve[]): BagOfCurves;
     readonly curveCollectionType = "bagOfCurves";
     dgnBoundaryType(): number;
@@ -815,7 +816,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     abstract clone(): BSplineCurve3dBase;
     clonePartialCurve(fractionA: number, fractionB: number): BSplineCurve3dBase;
     cloneTransformed(transform: Transform): BSplineCurve3dBase;
-    closestPoint(spacePoint: Point3d, _extend: boolean): CurveLocationDetail | undefined;
+    closestPoint(spacePoint: Point3d, _extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     collectBezierSpans(prefer3dH: boolean): BezierCurveBase[];
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     copyKnots(includeExtraEndKnot: boolean): number[];
@@ -1490,11 +1491,13 @@ export abstract class CurveChain extends CurveCollection {
     abstract cloneStroked(options?: StrokeOptions): CurveChain;
     protected _curves: CurvePrimitive[];
     cyclicCurvePrimitive(index: number, cyclic?: boolean): CurvePrimitive | undefined;
+    endPoint(result?: Point3d): Point3d | undefined;
     extendRange(range: Range3d, transform?: Transform): void;
     getChild(i: number): CurvePrimitive | undefined;
     getPackedStrokes(options?: StrokeOptions): GrowableXYZArray | undefined;
     primitiveIndexAndFractionToCurveLocationDetailPointAndDerivative(index: number, fraction: number, cyclic?: boolean, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     reverseChildrenInPlace(): void;
+    startPoint(result?: Point3d): Point3d | undefined;
     tryAddChild(child: AnyCurve | undefined): boolean;
 }
 
@@ -1506,10 +1509,10 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     clone(options?: StrokeOptions): CurveChainWithDistanceIndex;
     clonePartialCurve(fractionA: number | CurveLocationDetail, fractionB: number | CurveLocationDetail, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined;
     cloneTransformed(transform: Transform, options?: StrokeOptions): CurveChainWithDistanceIndex | undefined;
-    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined;
+    closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     collectCurvePrimitivesGo(collectorArray: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): void;
     computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap): void;
-    computeChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined;
+    computeChainDetail(childDetail: CurveLocationDetail, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     computeStrokeCountForOptions(options?: StrokeOptions): number;
     constructOffsetXY(offsetDistanceOrOptions: number | OffsetOptions): CurvePrimitive | CurvePrimitive[] | undefined;
     // @internal
@@ -1557,7 +1560,7 @@ export abstract class CurveCollection extends GeometryQuery {
     abstract cloneStroked(options?: StrokeOptions): CurveCollection;
     cloneTransformed(transform: Transform): CurveCollection | undefined;
     cloneWithExpandedLineStrings(): CurveCollection;
-    closestPoint(spacePoint: Point3d): CurveLocationDetail | undefined;
+    closestPoint(spacePoint: Point3d, _extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     collectCurvePrimitives(collectorArray?: CurvePrimitive[], smallestPossiblePrimitives?: boolean, explodeLineStrings?: boolean): CurvePrimitive[];
     static createCurveLocationDetailOnAnyCurvePrimitive(source: GeometryQuery | undefined, fraction?: number): CurveLocationDetail | undefined;
     abstract readonly curveCollectionType: CurveCollectionType;
@@ -2820,10 +2823,10 @@ export class IndexedPolyface extends Polyface {
     reverseNormals(): void;
     reverseSingleFacet(facetId: number): void;
     setNewFaceData(endFacetIndex?: number): boolean;
-    terminateFacet(validateAllIndices?: boolean): String[] | undefined;
+    terminateFacet(validateAllIndices?: boolean): string[] | undefined;
     tryGetFaceData(i: number): FacetFaceData | undefined;
     tryTransformInPlace(transform: Transform): boolean;
-    validateAllIndices(index0?: number, errors?: String[]): boolean;
+    validateAllIndices(index0?: number, errors?: string[]): boolean;
     get zeroTerminatedIndexCount(): number;
 }
 
@@ -3468,6 +3471,7 @@ export class Matrix3d implements BeJSONFunctions {
     dotRowZXYZ(x: number, y: number, z: number): number;
     factorOrthogonalScaleOrthogonal(matrixV: Matrix3d, scale: Point3d, matrixU: Matrix3d): boolean;
     factorPerpendicularColumns(matrixVD: Matrix3d, matrixU: Matrix3d): boolean;
+    factorRigidSkew(rotation: Matrix3d, skew: Matrix3d, axisOrder?: AxisOrder): boolean;
     factorRigidWithSignedScale(result?: Matrix3d): {
         rigidAxes: Matrix3d;
         scale: number;
@@ -3966,6 +3970,7 @@ export class Path extends CurveChain {
     announceToCurveProcessor(processor: RecursiveCurveProcessor, indexInParent?: number): void;
     cloneEmptyPeer(): Path;
     cloneStroked(options?: StrokeOptions): Path;
+    closestPoint(spacePoint: Point3d, extend?: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     static create(...curves: Array<CurvePrimitive | Point3d[]>): Path;
     static createArray(curves: CurvePrimitive[]): Path;
     readonly curveCollectionType = "path";

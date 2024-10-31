@@ -13,6 +13,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
+import { VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveLocationDetail } from "./CurveLocationDetail";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { RecursiveCurveProcessor } from "./CurveProcessor";
@@ -72,18 +73,22 @@ export abstract class CurveCollection extends GeometryQuery {
   public sumLengths(): number {
     return SumLengthsContext.sumLengths(this);
   }
-  /** Return the closest point on the contained curves */
-  public closestPoint(spacePoint: Point3d): CurveLocationDetail | undefined {
+  /**
+   * Return the closest point on the contained curves.
+   * @param spacePoint point in space.
+   * @param _extend unused here (pass false), but applicable to overrides in [[Path]] and [[BagOfCurves]].
+   * @param result optional pre-allocated detail to populate and return.
+   * @returns details of the closest point.
+   */
+  public closestPoint(
+    spacePoint: Point3d, _extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
     let detailA: CurveLocationDetail | undefined;
+    const detailB = new CurveLocationDetail();
     if (this.children !== undefined) {
       for (const child of this.children) {
-        if (child instanceof CurvePrimitive) {
-          const detailB = child.closestPoint(spacePoint, false);
-          detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
-        } else if (child instanceof CurveCollection) {
-          const detailB = child.closestPoint(spacePoint);
-          detailA = CurveLocationDetail.chooseSmallerA(detailA, detailB);
-        }
+        if (child.closestPoint(spacePoint, false, detailB))
+          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
       }
     }
     return detailA;
@@ -277,6 +282,22 @@ export abstract class CurveChain extends CurveCollection {
   public override get children(): CurvePrimitive[] {
     return this._curves;
   }
+  /** Return the start point of the curve chain (start point of the first child). */
+  public startPoint(result?: Point3d): Point3d | undefined {
+    const firstChild = this.getChild(0);
+    if (firstChild)
+      return firstChild.fractionToPoint(0.0, result);
+    else
+      return undefined;
+  }
+  /** Return the end point of the curve chain (end point of the last child). */
+  public endPoint(result?: Point3d): Point3d | undefined {
+    const lastChild = this.getChild(this._curves.length - 1);
+    if (lastChild)
+      return lastChild.fractionToPoint(1.0, result);
+    else
+      return undefined;
+  }
   /**
    * Return the curve primitive at the given `index`, optionally using `modulo` to map `index` to the cyclic indexing.
    * * In particular, `-1` is the final curve.
@@ -439,6 +460,26 @@ export class BagOfCurves extends CurveCollection {
       }
     }
     return clone;
+  }
+  /**
+   * Return the closest point on the contained curves.
+   * @param spacePoint point in space.
+   * @param extend applicable only to children of type [[CurvePrimitive]], [[Path]], or [[BagOfCurves]]
+   * @param result optional pre-allocated detail to populate and return.
+   * @returns details of the closest point.
+   */
+  public override closestPoint(
+    spacePoint: Point3d, extend: VariantCurveExtendParameter = false, result?: CurveLocationDetail,
+  ): CurveLocationDetail | undefined {
+    let detailA: CurveLocationDetail | undefined;
+    const detailB = new CurveLocationDetail();
+    if (this.children !== undefined) {
+      for (const child of this.children) {
+        if (child.closestPoint(spacePoint, extend, detailB))
+          detailA = result = CurveLocationDetail.chooseSmallerA(detailA, detailB)!.clone(result);
+      }
+    }
+    return detailA;
   }
   /** Return an empty `BagOfCurves` */
   public cloneEmptyPeer(): BagOfCurves {

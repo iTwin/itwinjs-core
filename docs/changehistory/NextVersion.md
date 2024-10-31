@@ -6,22 +6,24 @@ publish: false
 Table of contents:
 
 - [Revert timeline changes](#revert-timeline-changes)
- - [Display](#display)
+- [Display](#display)
   - [Instancing](#instancing)
-   - [Overriding line color](#overriding-line-color)
-   - [Context Reality model visibility](#context-reality-model-visibility)
-   - [Contour Display](#contour-display)
+  - [Overriding line color](#overriding-line-color)
+  - [Context Reality model visibility](#context-reality-model-visibility)
+  - [Contour Display](#contour-display)
 - [Interactive Tools](#interactive-tools)
-   - [Element Locate](#element-locate)
- - [Presentation](#presentation)
+  - [Element Locate](#element-locate)
+  - [Snapping within section drawings](#snapping-within-section-drawings)
+- [Presentation](#presentation)
   - [Calculated properties specification enhancements](#calculated-properties-specification-enhancements)
- - [Quantity](#quantity)
- - [Electron 33 support](#electron-33-support)
- - [API deprecations](#api-deprecations)
-   - [@itwin/appui-abstract](#itwinappui-abstract)
-   - [@itwin/core-backend](#itwincore-backend)
-   - [@itwin/core-frontend](#itwincore-frontend)
-   - [@itwin/core-quantity](#itwincore-quantity)
+- [Quantity](#quantity)
+- [Node 22 support](#node-22-support)
+- [Electron 33 support](#electron-33-support)
+- [API deprecations](#api-deprecations)
+  - [@itwin/appui-abstract](#itwinappui-abstract)
+  - [@itwin/core-backend](#itwincore-backend)
+  - [@itwin/core-frontend](#itwincore-frontend)
+  - [@itwin/core-quantity](#itwincore-quantity)
 
 ## Revert timeline changes
 
@@ -105,6 +107,12 @@ After calling [ElementLocateManager.doLocate]($frontend), Reset may now be used 
 
 ![locate example](./element-locate.png "Example of using reset to accept obscured element")
 
+### Snapping within section drawings
+
+A [SectionDrawing]($backend) view renders the contents of a [SpatialViewDefinition]($backend) in the context of a [DrawingViewDefinition]($backend). Tools that operate on the drawing view may want to be able to snap to geometry within the "attached" spatial view. For example, you may wish to attach an annotation to a spatial element. [AccuSnap]($frontend) [now automatically snaps](https://github.com/iTwin/itwinjs-core/pull/7291) to the geometry based on the current snap settings when mousing over geometry within the section drawing attachment. This works when viewing the drawing directly, or indirectly through a [ViewAttachment]($backend) on a sheet.
+
+You can access the [HitPath]($frontend) describing the [ViewAttachment]($backend) and/or [SectionDrawing]($backend) through which a hit was obtained via [[HitDetail.path]].
+
 ## Presentation
 
 ### Calculated properties specification enhancements
@@ -137,6 +145,10 @@ ratioFormat.fromJSON(unitsProvider, ratioFormatProps).catch(() => {});
 
 - Change azimuth and bearing logic from working with east-based counterclockwise persisted values to working with north-based clockwise values.
 - The previous applies to azimuthBase as well, if provided.
+
+## Node 22 support
+
+iTwin.js now officially supports Node 22 starting with LTS version of 22.11.0. Node 22 support is in addition to Node 18 and 20, not a replacement.
 
 ## Electron 33 support
 

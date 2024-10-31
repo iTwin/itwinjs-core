@@ -42,7 +42,7 @@ class ElectronIpc implements IpcSocketFrontend {
   constructor() {
     // use the methods on window.itwinjs exposed by ElectronPreload.ts, or ipcRenderer directly if running with nodeIntegration=true (**only** for tests).
     // Note that `require("electron")` doesn't work with nodeIntegration=false - that's what it stops
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
     this._api = window.itwinjs ?? require("electron").ipcRenderer;
   }
 }
@@ -68,7 +68,7 @@ export class ElectronApp {
       throw new Error("Not running under Electron");
     if (!this.isValid) {
       this._ipc = new ElectronIpc();
-      ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces); // eslint-disable-line deprecation/deprecation
+      ElectronRpcManager.initializeFrontend(this._ipc, opts?.iModelApp?.rpcInterfaces); // eslint-disable-line @typescript-eslint/no-deprecated
     }
     await NativeApp.startup(this._ipc!, opts);
   }
