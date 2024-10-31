@@ -1341,7 +1341,10 @@ export abstract class GltfReader {
         } else {
           // Assume KHR_mesh_quantization...
           min = [0, 0, 0];
-          max = [65535, 65535, 65535];
+          if (GltfDataType.UnsignedShort === posView.type)
+            max = [65535, 65535, 65535];
+          else
+            max = [255, 255, 255];
           }
 
         if (undefined === min || undefined === max) {
