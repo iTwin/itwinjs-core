@@ -29,7 +29,6 @@ import { HierarchyCompareOptions } from '@itwin/presentation-common';
 import { HierarchyLevelDescriptorRequestOptions } from '@itwin/presentation-common';
 import { HierarchyRequestOptions } from '@itwin/presentation-common';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { IModelDb } from '@itwin/core-backend';
 import { InstanceKey } from '@itwin/presentation-common';
 import { Item } from '@itwin/presentation-common';

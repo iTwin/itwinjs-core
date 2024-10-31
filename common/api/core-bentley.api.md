@@ -1015,6 +1015,9 @@ export class IndexMap<T> {
 }
 
 // @public
+export function isDisposable(obj: unknown): obj is Disposable;
+
+// @public @deprecated
 export function isIDisposable(obj: unknown): obj is IDisposable;
 
 // @public
@@ -1410,7 +1413,7 @@ export class OrderedSet<T> extends ReadonlyOrderedSet<T> {
 export function partitionArray<T>(array: T[], criterion: (element: T) => boolean): number;
 
 // @public
-export class PerfLogger implements IDisposable, Disposable {
+export class PerfLogger implements Disposable {
     // (undocumented)
     [Symbol.dispose](): void;
     constructor(operation: string, metaData?: LoggingMetaData);

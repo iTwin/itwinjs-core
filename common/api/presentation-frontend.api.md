@@ -111,12 +111,14 @@ export const FAVORITE_PROPERTIES_ORDER_INFO_SETTING_NAME = "FavoritePropertiesOr
 export const FAVORITE_PROPERTIES_SETTING_NAME = "FavoriteProperties";
 
 // @public
-export class FavoritePropertiesManager implements IDisposable {
+export class FavoritePropertiesManager implements Disposable {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(props: FavoritePropertiesManagerProps);
     add(field: Field, imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
     changeFieldPriority(imodel: IModelConnection, field: Field, afterField: Field | undefined, visibleFields: Field[]): Promise<void>;
     clear(imodel: IModelConnection, scope: FavoritePropertiesScope): Promise<void>;
-    // (undocumented)
+    // @deprecated (undocumented)
     dispose(): void;
     // @internal
     ensureInitialized(imodel: IModelConnection): Promise<void>;
@@ -263,10 +265,10 @@ export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage
 }
 
 // @internal (undocumented)
-export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, IDisposable {
-    constructor(props: OfflineCachingFavoritePropertiesStorageProps);
+export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, Disposable {
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(props: OfflineCachingFavoritePropertiesStorageProps);
     // (undocumented)
     get impl(): IFavoritePropertiesStorage;
     // (undocumented)
@@ -313,7 +315,7 @@ export enum PresentationFrontendLoggerCategory {
 }
 
 // @public
-export class PresentationManager implements IDisposable, Disposable {
+export class PresentationManager implements Disposable {
     // (undocumented)
     [Symbol.dispose](): void;
     get activeLocale(): string | undefined;
@@ -504,10 +506,12 @@ export enum SelectionChangeType {
 }
 
 // @public
-export class SelectionHandler implements IDisposable {
+export class SelectionHandler implements Disposable {
+    [Symbol.dispose](): void;
     constructor(props: SelectionHandlerProps);
     addToSelection(keys: Keys, level?: number): void;
     clearSelection(level?: number): void;
+    // @deprecated (undocumented)
     dispose(): void;
     getSelection(level?: number): Readonly<KeySet>;
     getSelectionLevels(): number[];
@@ -538,12 +542,12 @@ export class SelectionHelper {
 
 // @public
 export class SelectionManager implements ISelectionProvider {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor(props: SelectionManagerProps);
     addToSelection(source: string, imodel: IModelConnection, keys: Keys, level?: number, rulesetId?: string): void;
     addToSelectionWithScope(source: string, imodel: IModelConnection, ids: Id64Arg, scope: SelectionScopeProps | SelectionScope | string, level?: number, rulesetId?: string): Promise<void>;
     clearSelection(source: string, imodel: IModelConnection, level?: number, rulesetId?: string): void;
-    // (undocumented)
-    dispose(): void;
     getHiliteSet(imodel: IModelConnection): Promise<HiliteSet>;
     getHiliteSetIterator(imodel: IModelConnection): AsyncIterableIterator<HiliteSet>;
     getSelection(imodel: IModelConnection, level?: number): Readonly<KeySet>;
@@ -583,9 +587,11 @@ export interface SelectionScopesManagerProps {
 }
 
 // @internal (undocumented)
-export class ToolSelectionSyncHandler implements IDisposable {
-    constructor(imodel: IModelConnection, logicalSelection: SelectionManager);
+export class ToolSelectionSyncHandler implements Disposable {
     // (undocumented)
+    [Symbol.dispose](): void;
+    constructor(imodel: IModelConnection, logicalSelection: SelectionManager);
+    // @deprecated (undocumented)
     dispose(): void;
     // (undocumented)
     isSuspended?: boolean;

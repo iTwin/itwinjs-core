@@ -142,7 +142,6 @@ import { Id64Arg } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64Set } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { ImageBuffer } from '@itwin/core-common';
 import { ImageBufferFormat } from '@itwin/core-common';
 import { ImageMapLayerSettings } from '@itwin/core-common';
@@ -2597,7 +2596,7 @@ export interface DecorateContextCreateArgs {
 }
 
 // @public
-export class Decorations implements IDisposable, Disposable {
+export class Decorations implements Disposable {
     // (undocumented)
     [Symbol.dispose](): void;
     // (undocumented)
@@ -4534,7 +4533,7 @@ export interface GraphicAssemblerOptions {
 }
 
 // @public
-export class GraphicBranch implements IDisposable, Disposable {
+export class GraphicBranch implements Disposable {
     [Symbol.dispose](): void;
     constructor(ownsEntries?: boolean);
     add(graphic: RenderGraphic): void;
@@ -7136,7 +7135,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): 0 | -1;
+    get rootLevel(): -1 | 0;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
@@ -9670,7 +9669,7 @@ export enum RenderDiagnostics {
 }
 
 // @public
-export abstract class RenderGraphic implements IDisposable, Disposable {
+export abstract class RenderGraphic implements Disposable {
     // (undocumented)
     [Symbol.dispose](): void;
     // @internal (undocumented)
@@ -10047,7 +10046,7 @@ export interface RenderSkySphereParams {
 }
 
 // @public
-export abstract class RenderSystem implements IDisposable, Disposable {
+export abstract class RenderSystem implements Disposable {
     // (undocumented)
     [Symbol.dispose](): void;
     // @internal
@@ -14443,7 +14442,7 @@ export abstract class ViewManip extends ViewTool {
 }
 
 // @public
-export abstract class Viewport implements IDisposable, Disposable, TileUser {
+export abstract class Viewport implements Disposable, TileUser {
     // (undocumented)
     [Symbol.dispose](): void;
     // @internal

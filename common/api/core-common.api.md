@@ -31,7 +31,6 @@ import { GuidString } from '@itwin/core-bentley';
 import { Id64 } from '@itwin/core-bentley';
 import { Id64Array } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { IModelJson } from '@itwin/core-geometry';
 import { IModelStatus } from '@itwin/core-bentley';
 import { IndexedPolyface } from '@itwin/core-geometry';
@@ -8087,7 +8086,7 @@ export namespace RenderSchedule {
 }
 
 // @public
-export abstract class RenderTexture implements IDisposable, Disposable {
+export abstract class RenderTexture implements Disposable {
     [Symbol.dispose](): void;
     protected constructor(type: RenderTexture.Type);
     // (undocumented)

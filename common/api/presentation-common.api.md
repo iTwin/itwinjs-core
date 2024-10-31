@@ -13,7 +13,6 @@ import { FormatterSpec } from '@itwin/core-quantity';
 import { GetMetaDataFunction } from '@itwin/core-bentley';
 import { GuidString } from '@itwin/core-bentley';
 import { Id64String } from '@itwin/core-bentley';
-import { IDisposable } from '@itwin/core-bentley';
 import { IModelRpcProps } from '@itwin/core-common';
 import { ParserSpec } from '@itwin/core-quantity';
 import { RpcInterface } from '@itwin/core-common';
@@ -2551,7 +2550,7 @@ export enum QuerySpecificationTypes {
 }
 
 // @public
-export class RegisteredRuleset implements IDisposable, Disposable, Ruleset {
+export class RegisteredRuleset implements Disposable, Ruleset {
     [Symbol.dispose](): void;
     constructor(ruleset: Ruleset, uniqueIdentifier: string, disposeFunc: (ruleset: RegisteredRuleset) => void);
     // @deprecated (undocumented)

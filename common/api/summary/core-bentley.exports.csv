@@ -68,7 +68,9 @@ public;enum;IModelHubStatus
 public;enum;IModelStatus
 public;class;IndexedValue
 public;class;IndexMap
+public;function;isDisposable
 public;function;isIDisposable
+deprecated;function;isIDisposable
 public;function;isInstanceOf
 public;function;isProperSubclassOf
 public;function;isSubclassOf
