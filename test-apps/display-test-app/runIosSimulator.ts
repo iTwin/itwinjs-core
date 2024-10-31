@@ -18,11 +18,21 @@ const numericCompareDescending = (a: string, b: string) => b.localeCompare(a, un
 
 // Similar to the launchApp function but doesn't retry, adds options before the launch command, and allows for args.
 Simctl.prototype.launchAppWithOptions = async function (bundleId: string, options: [string], args: [string]) {
-  const { stdout } = await this.exec('launch', {
+  const { stdout, stderr } = await this.exec('launch', {
     args: [...options, this.requireUdid('launch'), bundleId, ...args],
     architectures: "x86_64",
   });
-  return stdout.trim();
+  const trimmedOut = stdout.trim();
+  const trimmedErr = stderr.trim();
+  if (trimmedOut && trimmedErr) {
+    return `=========stdout=========\n${stdout.trim()}\n=========stderr=========\n${stderr.trim()}`;
+  } else if (trimmedOut) {
+    return `=========stdout=========\n${stdout.trim()}`;
+  } else if (trimmedErr) {
+    return `=========stderr=========\n${stderr.trim()}`;
+  } else {
+    return "";
+  }
 }
 
 Simctl.prototype.getLatestRuntimeVersion = async function (majorVersion: string, platform = 'iOS') {
