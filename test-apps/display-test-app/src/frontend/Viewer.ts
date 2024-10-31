@@ -28,7 +28,6 @@ import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
-import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
