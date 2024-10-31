@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { createWriteStream } from "fs";
+import { createWriteStream, copyFile } from "fs";
 
 // Can't use import here otherwise Typescript complains: Could not find a declaration file for module 'node-simctl'.
 const Simctl = require("node-simctl").default;
@@ -12,6 +12,7 @@ const Simctl = require("node-simctl").default;
 const appName = "core-test-runner"
 const bundleId = `com.bentley.${appName}`;
 const xmlFilter = "[Mocha_Result_XML]: ";
+const xmlFileFilter = "[Mocha_Result_XML_File]: ";
 
 // Sort function that compares strings numerically from high to low
 const numericCompareDescending = (a: string, b: string) => b.localeCompare(a, undefined, { numeric: true });
@@ -41,7 +42,7 @@ function log(message: string) {
   console.log(message);
 }
 
-function extractXML(xmlFilter: string, inputLog: string, outputXmlFile: string) {
+function extractXML(inputLog: string, outputXmlFile: string) {
   const lines = inputLog.split(/\r?\n/)
   const outputStream = createWriteStream(outputXmlFile)
 
@@ -55,7 +56,28 @@ function extractXML(xmlFilter: string, inputLog: string, outputXmlFile: string) 
       outputStream.write(cleanedXmlLine + "\n", "utf-8");
       // console.log(cleanedXmlLine);
     }
-  };
+  }
+}
+
+function copyXML(inputLog: string, outputXmlFile: string) {
+  const start = inputLog.indexOf(xmlFileFilter) + xmlFileFilter.length;
+  const end = inputLog.indexOf("\n", start);
+  const xmlFile = inputLog.substring(start, end);
+  copyFile(xmlFile, outputXmlFile, (/** @type {any} */ err) => {
+    if (err) {
+      console.log(err);
+    }
+  });
+}
+
+function extractOrCopyXML(inputLog: string, outputXmlFile: string) {
+  if (inputLog.includes(xmlFileFilter)) {
+    log(`Copying XML file.`);
+    copyXML(inputLog, outputXmlFile);
+  } else {
+    log(`Extracting XML from log.`);
+    extractXML(inputLog, outputXmlFile);
+  }
 }
 
 async function main() {
@@ -137,7 +159,7 @@ async function main() {
     log("Failed.");
     log(`launchOutput:\n${launchOutput}`);
   }
-  extractXML(xmlFilter, launchOutput, `${__dirname}/lib/junit_results.xml`);
+  extractOrCopyXML(launchOutput, `${__dirname}/lib/junit_results.xml`);
 
   // Shut down simulator
   log("Shutting down simulator");
