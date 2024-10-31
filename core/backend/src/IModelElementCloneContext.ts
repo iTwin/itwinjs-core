@@ -44,7 +44,7 @@ export class IModelElementCloneContext {
   public static async create(...args: ConstructorParameters<typeof IModelElementCloneContext>): Promise<IModelElementCloneContext> {
     const instance = new this(...args);
     await instance.initialize();
-    return instance; nnnnnnnnnnnnnnnn
+    return instance;
   }
 
   /** Returns `true` if this context is for transforming between 2 iModels and `false` if it for transforming within the same iModel. */
