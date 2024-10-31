@@ -44,14 +44,19 @@ export class IModelElementCloneContext {
   public static async create(...args: ConstructorParameters<typeof IModelElementCloneContext>): Promise<IModelElementCloneContext> {
     const instance = new this(...args);
     await instance.initialize();
-    return instance;
+    return instance; nnnnnnnnnnnnnnnn
   }
 
   /** Returns `true` if this context is for transforming between 2 iModels and `false` if it for transforming within the same iModel. */
   public get isBetweenIModels(): boolean { return this.sourceDb !== this.targetDb; }
 
   /** Dispose any native resources associated with this IModelElementCloneContext. */
-  public dispose(): void { this._nativeContext.dispose(); }
+  public [Symbol.dispose](): void { this._nativeContext.dispose(); }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
+  }
 
   /** Debugging aid that dumps the Id remapping details and other information to the specified output file.
    * @internal

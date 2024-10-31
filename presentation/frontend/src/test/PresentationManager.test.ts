@@ -113,12 +113,12 @@ describe("PresentationManager", () => {
   });
 
   afterEach(() => {
-    manager.dispose();
+    manager[Symbol.dispose]();
     Presentation.terminate();
   });
 
   function recreateManager(props?: Partial<PresentationManagerProps>) {
-    manager && manager.dispose();
+    manager && manager[Symbol.dispose]();
     manager = PresentationManager.create({
       rpcRequestsHandler: rpcRequestsHandlerMock.object,
       ...props,
@@ -415,7 +415,7 @@ describe("PresentationManager", () => {
     it("does not inject ruleset variables into request options in IpcApp", async () => {
       sinon.stub(IpcApp, "isValid").get(() => true);
       sinon.stub(IpcApp, "addListener");
-      manager.dispose();
+      manager[Symbol.dispose]();
       manager = PresentationManager.create({
         rpcRequestsHandler: rpcRequestsHandlerMock.object,
       });

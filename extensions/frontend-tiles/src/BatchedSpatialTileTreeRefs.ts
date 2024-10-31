@@ -206,7 +206,7 @@ class ProxyTileTreeReference extends TileTreeReference {
       tileTree: undefined,
       loadStatus: TileTreeLoadStatus.NotLoaded,
       load: () => undefined,
-      dispose: () => { },
+      [Symbol.dispose]: () => { },
       loadTree: async () => Promise.resolve(undefined),
     };
   }

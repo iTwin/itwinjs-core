@@ -45,7 +45,7 @@ class TerrainDraper implements TileUser {
     IModelApp.tileAdmin.registerUser(this);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     IModelApp.tileAdmin.forgetUser(this);
   }
 
@@ -121,7 +121,7 @@ export class TerrainDrapeTool extends PrimitiveTool {
   }
 
   private disposeDraper(): void {
-    this._draper?.dispose();
+    this._draper?.[Symbol.dispose]();
     this._draper = undefined;
   }
 

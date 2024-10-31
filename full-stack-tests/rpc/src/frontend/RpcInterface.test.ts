@@ -614,10 +614,10 @@ describe("RpcInterface", () => {
         return RpcSerializedValue.create(this.parameters[0]);
       }
 
-      public override dispose(): void {
+      public override[Symbol.dispose](): void {
         ++completed;
         assert.equal(this.parameters[0], (this as any)._raw);
-        super.dispose();
+        super[Symbol.dispose]();
       }
     }
 

@@ -58,7 +58,7 @@ describe("PresentationRpcInterface", () => {
         request: new TestRpcRequest(client, "getNodesCount", parameters),
         [Symbol.dispose]: () => {
           // no way to properly destroy the created request...
-          (disposableRequest.request as any).dispose();
+          (disposableRequest.request as any)[Symbol.dispose]();
         },
       };
       const result = operation.policy.token(disposableRequest.request);

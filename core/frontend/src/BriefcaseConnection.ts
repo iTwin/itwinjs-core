@@ -313,7 +313,7 @@ export class BriefcaseConnection extends IModelConnection {
     await this._modelsMonitor.close();
 
     this.beforeClose();
-    this.txns.dispose();
+    this.txns[Symbol.dispose]();
 
     this._isClosed = true;
     await IpcApp.appFunctionIpc.closeIModel(this._fileKey);

@@ -24,7 +24,7 @@ class TransparencyDecorator {
   private readonly _graphics: RenderGraphicOwner[] = [];
   private readonly _symbologyOverrides = new Map<string, FeatureAppearance>();
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     for (const graphic of this._graphics)
       graphic.disposeGraphic();
 
@@ -33,7 +33,7 @@ class TransparencyDecorator {
   }
 
   public reset(): void {
-    this.dispose();
+    this[Symbol.dispose]();
   }
 
   public decorate(context: DecorateContext): void {
@@ -106,7 +106,7 @@ describe("Transparency", async () => {
   });
 
   afterEach(() => {
-    decorator.dispose();
+    decorator[Symbol.dispose]();
     IModelApp.viewManager.dropDecorator(decorator);
   });
 

@@ -98,7 +98,7 @@ export class PerTargetBatchData {
     this.target = target;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._thematicSensors = dispose(this._thematicSensors);
     this._contours = this._contours?.[Symbol.dispose]();
     for (const value of this._featureOverrides.values())
@@ -176,10 +176,10 @@ export class PerTargetData {
     this._batch = batch;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     for (const data of this._data) {
       data.target.onBatchDisposed(this._batch);
-      data.dispose();
+      data[Symbol.dispose]();
     }
 
     this._data.length = 0;
@@ -198,7 +198,7 @@ export class PerTargetData {
       return;
 
     const data = this._data[index];
-    data.dispose();
+    data[Symbol.dispose]();
     this._data.splice(index, 1);
   }
 
@@ -289,7 +289,7 @@ export class Batch extends Graphic {
   public dispose() {
     dispose(this.graphic);
 
-    this.perTargetData.dispose();
+    this.perTargetData[Symbol.dispose]();
     this._isDisposed = true;
   }
 
