@@ -391,7 +391,7 @@ export class Viewer extends Window {
     });
 
     this.toolBar.addDropDown({
-      iconUnicode: "\ue90a", // "isolate "
+      iconUnicode: "\ue90a", // "isolate"
       createDropDown: async (container: HTMLElement) => new FeatureOverridesPanel(this.viewport, container),
       tooltip: "Override feature symbology",
     });
