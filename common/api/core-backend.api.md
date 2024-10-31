@@ -3324,10 +3324,12 @@ export namespace IModelDb {
 
 // @beta
 export class IModelElementCloneContext {
+    [Symbol.dispose](): void;
     constructor(sourceDb: IModelDb, targetDb?: IModelDb);
     // @internal
     cloneElement(sourceElement: Element_2, cloneOptions?: IModelJsNative.CloneElementOptions): ElementProps;
     static create(...args: ConstructorParameters<typeof IModelElementCloneContext>): Promise<IModelElementCloneContext>;
+    // @deprecated (undocumented)
     dispose(): void;
     // @internal
     dump(outputFileName: string): void;

@@ -1892,12 +1892,12 @@ export abstract class BriefcaseNotificationHandler extends NotificationHandler {
 
 // @public
 export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNotifications {
+    // @internal (undocumented)
+    [Symbol.dispose](): void;
     // @internal
     constructor(iModel: BriefcaseConnection);
     // @internal (undocumented)
     get briefcaseChannelName(): "itwinjs-core/txns";
-    // @internal (undocumented)
-    dispose(): void;
     getRedoString(): Promise<string>;
     getUndoString(): Promise<string>;
     hasPendingTxns(): Promise<boolean>;
@@ -4420,6 +4420,8 @@ export interface GpuMemoryLimits {
 export class GraphicalEditingScope extends BriefcaseNotificationHandler implements EditingScopeNotifications {
     // (undocumented)
     get briefcaseChannelName(): "itwinjs-core/editing-scope";
+    // @deprecated (undocumented)
+    dispose(): void;
     // @internal
     static enter(imodel: BriefcaseConnection): Promise<GraphicalEditingScope>;
     exit(): Promise<void>;
@@ -6236,6 +6238,8 @@ export class LookViewTool extends ViewManip {
 
 // @internal
 export class LRUTileList {
+    // (undocumented)
+    [Symbol.dispose](): void;
     constructor();
     add(tile: Tile): void;
     // (undocumented)
@@ -6245,8 +6249,6 @@ export class LRUTileList {
     clearUsed(userId: number): void;
     // (undocumented)
     protected computeBytesUsed(tile: Tile): number;
-    // (undocumented)
-    dispose(): void;
     drop(tile: Tile): void;
     freeMemory(maxBytes: number): void;
     // (undocumented)
@@ -7135,7 +7137,7 @@ export abstract class MapTilingScheme {
     readonly numberOfLevelZeroTilesX: number;
     readonly numberOfLevelZeroTilesY: number;
     // @alpha (undocumented)
-    get rootLevel(): -1 | 0;
+    get rootLevel(): 0 | -1;
     readonly rowZeroAtNorthPole: boolean;
     tileBordersNorthPole(row: number, level: number): boolean;
     tileBordersSouthPole(row: number, level: number): boolean;
@@ -11382,9 +11384,9 @@ export class SubCategoriesCache {
 // @internal
 export namespace SubCategoriesCache {
     export class Queue {
+        [Symbol.dispose](): void;
         // (undocumented)
         protected _current?: QueueEntry;
-        dispose(): void;
         // (undocumented)
         protected _disposed: boolean;
         // (undocumented)
@@ -12624,6 +12626,8 @@ export class Tiles implements Iterable<{
     id: any;
     owner: TileTreeOwner;
 }> {
+    // @internal (undocumented)
+    [Symbol.dispose](): void;
     [Symbol.iterator](): Iterator<{
         supplier: TileTreeSupplier;
         id: any;
@@ -12631,8 +12635,6 @@ export class Tiles implements Iterable<{
     }>;
     // @internal
     constructor(iModel: IModelConnection);
-    // @internal (undocumented)
-    dispose(): void;
     dropSupplier(supplier: TileTreeSupplier): void;
     forEachTreeOwner(func: (owner: TileTreeOwner) => void): void;
     getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner;
@@ -12726,7 +12728,7 @@ export enum TileTreeLoadStatus {
 // @public
 export interface TileTreeOwner {
     // @internal
-    dispose(): void;
+    [Symbol.dispose](): void;
     readonly iModel: IModelConnection;
     load(): TileTree | undefined;
     readonly loadStatus: TileTreeLoadStatus;

@@ -719,9 +719,9 @@ export class DetachRealityModelTool extends Tool {
 
 // @beta
 export class DiagnosticsPanel {
-    constructor(vp: Viewport, props?: DiagnosticsPanelProps);
     // (undocumented)
-    dispose(): void;
+    [Symbol.dispose](): void;
+    constructor(vp: Viewport, props?: DiagnosticsPanelProps);
     // (undocumented)
     get element(): HTMLElement;
     // (undocumented)
@@ -2105,10 +2105,10 @@ export interface SliderProps {
 
 // @beta
 export class SnowDecorator implements Decorator {
+    readonly [Symbol.dispose]: VoidFunction;
     configure(params: Partial<SnowParams>): void;
     // (undocumented)
     decorate(context: DecorateContext): void;
-    readonly dispose: VoidFunction;
     static toggle(viewport: Viewport, enable?: boolean): Promise<void>;
     readonly viewport: Viewport;
 }
