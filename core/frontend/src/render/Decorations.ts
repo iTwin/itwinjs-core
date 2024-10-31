@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { dispose, disposeArray, IDisposable } from "@itwin/core-bentley";
+import { dispose, disposeArray } from "@itwin/core-bentley";
 import { CanvasDecorationList } from "./CanvasDecoration";
 import { GraphicList, RenderGraphic } from "./RenderGraphic";
 
@@ -14,7 +14,7 @@ import { GraphicList, RenderGraphic } from "./RenderGraphic";
  * @public
  * @extensions
  */
-export class Decorations implements IDisposable, Disposable {
+export class Decorations implements Disposable {
   private _skyBox?: RenderGraphic;
   private _viewBackground?: RenderGraphic; // drawn first, view units, with no zbuffer, smooth shading, default lighting. e.g., a skybox
   private _normal?: GraphicList;       // drawn with zbuffer, with scene lighting

@@ -83,7 +83,7 @@ export class SelectionManager implements ISelectionProvider {
     );
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._selectionEventsSubscription.unsubscribe();
     this._listeners.forEach((dispose) => dispose());
   }
@@ -122,7 +122,7 @@ export class SelectionManager implements ISelectionProvider {
           this._imodelToolSelectionSyncHandlers.set(imodel, { ...registration, requestorsCount });
         } else {
           this._imodelToolSelectionSyncHandlers.delete(imodel);
-          registration.handler.dispose();
+          registration.handler[Symbol.dispose]();
         }
       }
     }
@@ -403,7 +403,7 @@ export class SelectionManager implements ISelectionProvider {
 export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
 
 /** @internal */
-export class ToolSelectionSyncHandler implements IDisposable {
+export class ToolSelectionSyncHandler implements Disposable {
   private _selectionSourceName = "Tool";
   private _logicalSelection: SelectionManager;
   private _imodel: IModelConnection;
@@ -417,8 +417,13 @@ export class ToolSelectionSyncHandler implements IDisposable {
     this._imodelToolSelectionListenerDisposeFunc = imodel.selectionSet.onChanged.addListener(this.onToolSelectionChanged);
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     this._imodelToolSelectionListenerDisposeFunc();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /** note: used only it tests */

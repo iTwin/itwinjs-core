@@ -6,7 +6,6 @@
  * @module Rendering
  */
 
-import { IDisposable } from "@itwin/core-bentley";
 import { RenderMemory } from "./RenderMemory";
 import { Range3d } from "@itwin/core-geometry";
 
@@ -18,7 +17,7 @@ import { Range3d } from "@itwin/core-geometry";
  * @public
  * @extensions
  */
-export abstract class RenderGraphic implements IDisposable, Disposable /* , RenderMemory.Consumer */ {
+export abstract class RenderGraphic implements Disposable /* , RenderMemory.Consumer */ {
   public [Symbol.dispose](): void {
     this.dispose(); // eslint-disable-line @typescript-eslint/no-deprecated
   }

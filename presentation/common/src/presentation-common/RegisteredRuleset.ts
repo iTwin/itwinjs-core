@@ -6,7 +6,6 @@
  * @module Core
  */
 
-import { IDisposable } from "@itwin/core-bentley";
 import { Rule } from "./rules/Rule";
 import { Ruleset, SupplementationInfo } from "./rules/Ruleset";
 import { VariablesGroup } from "./rules/Variables";
@@ -15,7 +14,7 @@ import { VariablesGroup } from "./rules/Variables";
  * A ruleset that is registered in a ruleset manager.
  * @public
  */
-export class RegisteredRuleset implements IDisposable, Disposable, Ruleset {
+export class RegisteredRuleset implements Disposable, Ruleset {
   private _ruleset: Ruleset;
   private _uniqueIdentifier: string;
   private _disposeFunc: (ruleset: RegisteredRuleset) => void;

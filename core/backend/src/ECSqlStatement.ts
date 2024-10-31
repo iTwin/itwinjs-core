@@ -6,7 +6,7 @@
  * @module ECSQL
  */
 
-import { assert, DbResult, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
+import { assert, DbResult, GuidString, Id64String } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
 import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -64,7 +64,7 @@ export interface ECSqlRowArg {
  * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iTwin.js API for executing and working with ECSQL
  * @public
  */
-export class ECSqlStatement implements IterableIterator<any>, IDisposable {
+export class ECSqlStatement implements IterableIterator<any>, Disposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _sql: string | undefined;
   private _props = new PropertyMetaDataMap([]);

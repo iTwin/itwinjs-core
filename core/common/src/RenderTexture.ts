@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { compareStrings, Guid, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
+import { compareStrings, Guid, GuidString, Id64String } from "@itwin/core-bentley";
 
 /** Identifies an image to be used to produce a [[RenderTexture]] for a given purpose - for example,
  * as part of a [[SkyBox]]. If the string is a valid `Id64String`, it refers to a persistent [Texture]($backend) element stored in an iModel.
@@ -22,7 +22,7 @@ export type TextureImageSpec = Id64String | string;
  * @see [RenderSystem.createTextureFromElement]($frontend) to obtain a texture from a [Texture]($backend) element.
  * @public
  */
-export abstract class RenderTexture implements IDisposable, Disposable {
+export abstract class RenderTexture implements Disposable {
   /** Indicates the type of texture. */
   public readonly type: RenderTexture.Type;
   /** Used for ordered comparisons, e.g. in DisplayParams.compareForMerge */

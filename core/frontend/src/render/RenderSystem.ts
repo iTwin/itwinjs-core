@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { base64StringToUint8Array, Id64String, IDisposable } from "@itwin/core-bentley";
+import { base64StringToUint8Array, Id64String } from "@itwin/core-bentley";
 import {
   ColorDef, ColorIndex, ElementAlignedBox3d, FeatureIndex, FeatureIndexType, FillFlags, Frustum, Gradient, ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat,
   isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderFeatureTable, RenderMaterial, RenderTexture, SkyGradient, TextureProps, TextureTransparency,
@@ -295,7 +295,7 @@ export interface CreateGraphicFromTemplateArgs {
  * @public
  * @extensions
  */
-export abstract class RenderSystem implements IDisposable, Disposable {
+export abstract class RenderSystem implements Disposable {
   /** Options used to initialize the RenderSystem. These are primarily used for feature-gating.
    * This object is frozen and cannot be modified after the RenderSystem is created.
    * @internal

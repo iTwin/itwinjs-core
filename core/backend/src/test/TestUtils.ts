@@ -5,7 +5,7 @@
 
 import * as path from "path";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { BentleyLoggerCategory, IDisposable, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
+import { BentleyLoggerCategory, Logger, LogLevel, ProcessDetector } from "@itwin/core-bentley";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
 import { IModelHost, IModelHostOptions } from "../IModelHost";
 import { IModelNative } from "../internal/NativePlatform";
@@ -33,7 +33,7 @@ export class Timer {
  * would fail unexpectedly in a debug build. In that case the native code assertions can be disabled with
  * this class.
  */
-export class DisableNativeAssertions implements IDisposable {
+export class DisableNativeAssertions implements Disposable {
   private _native: IModelJsNative.DisableNativeAssertions | undefined;
 
   constructor() {

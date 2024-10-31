@@ -35,10 +35,19 @@ export interface IDisposable {
 
 /**
  * A type guard that checks whether the given argument implements `IDisposable` interface
+ * @deprecated in 5.0 Use isDisposable instead.
  * @public
  */
 export function isIDisposable(obj: unknown): obj is IDisposable {
   return !!obj && (obj instanceof Object) && !!(obj as IDisposable).dispose && (typeof (obj as IDisposable).dispose === "function");
+}
+
+/**
+ * A type guard that checks whether the given argument implements `Disposable` interface
+ * @public
+ */
+export function isDisposable(obj: unknown): obj is Disposable {
+  return !!obj && (obj instanceof Object) && !!(obj as Disposable)[Symbol.dispose] && (typeof (obj as Disposable)[Symbol.dispose] === "function");
 }
 
 /** Convenience function for disposing of a disposable object that may be undefined.

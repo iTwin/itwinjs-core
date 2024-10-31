@@ -6,7 +6,7 @@
  * @module SQLite
  */
 
-import { assert, BentleyError, DbResult, GuidString, Id64String, IDisposable, LRUMap } from "@itwin/core-bentley";
+import { assert, BentleyError, DbResult, GuidString, Id64String, LRUMap } from "@itwin/core-bentley";
 import { ECJsNames, IModelError } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { IModelNative } from "./internal/NativePlatform";
@@ -56,7 +56,7 @@ function checkBind(stat: DbResult) {
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
  * @public
  */
-export class SqliteStatement implements IterableIterator<any>, IDisposable, Disposable {
+export class SqliteStatement implements IterableIterator<any>, Disposable {
   private _stmt: IModelJsNative.SqliteStatement | undefined;
   private _db: IModelJsNative.AnyDb | undefined;
 

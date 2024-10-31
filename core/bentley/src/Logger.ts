@@ -9,7 +9,6 @@
 import { BeEvent } from "./BeEvent";
 import { BentleyError, IModelStatus, LoggingMetaData } from "./BentleyError";
 import { BentleyLoggerCategory } from "./BentleyLoggerCategory";
-import { IDisposable } from "./Disposable";
 import { staticLoggerMetadata } from "./internal/staticLoggerMetadata";
 
 /** Defines the *signature* for a log function.
@@ -307,7 +306,7 @@ export class Logger {
  * Enable those, if you want to capture timings.
  * @public
  */
-export class PerfLogger implements IDisposable, Disposable {
+export class PerfLogger implements Disposable {
   private static _severity: LogLevel = LogLevel.Info;
 
   private _operation: string;

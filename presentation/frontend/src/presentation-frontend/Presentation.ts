@@ -123,12 +123,12 @@ export class Presentation {
     presentationManager = undefined;
 
     if (favoritePropertiesManager) {
-      favoritePropertiesManager.dispose();
+      favoritePropertiesManager[Symbol.dispose]();
     }
     favoritePropertiesManager = undefined;
 
     if (selectionManager) {
-      selectionManager.dispose();
+      selectionManager[Symbol.dispose]();
     }
     selectionManager = undefined;
     localization = undefined;
@@ -185,7 +185,7 @@ export class Presentation {
   /** @internal */
   public static setFavoritePropertiesManager(value: FavoritePropertiesManager) {
     if (favoritePropertiesManager) {
-      favoritePropertiesManager.dispose();
+      favoritePropertiesManager[Symbol.dispose]();
     }
     favoritePropertiesManager = value;
   }

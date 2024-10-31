@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { BeEvent, IDisposable, isIDisposable } from "@itwin/core-bentley";
+import { BeEvent, isDisposable, isIDisposable } from "@itwin/core-bentley";
 import { QueryRowFormat } from "@itwin/core-common";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ClassId, Field, NestedContentField, PropertiesField } from "@itwin/presentation-common";
@@ -60,7 +60,7 @@ export interface FavoritePropertiesManagerProps {
  *
  * @public
  */
-export class FavoritePropertiesManager implements IDisposable {
+export class FavoritePropertiesManager implements Disposable {
   /**
    * Used in tests to avoid collisions between multiple runs using the same storage
    * @internal
@@ -89,11 +89,18 @@ export class FavoritePropertiesManager implements IDisposable {
     this._imodelInitializationPromises = new Map<IModelConnection, Promise<void>>();
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     // istanbul ignore else
-    if (isIDisposable(this._storage)) {
+    if (isDisposable(this._storage)) {
+      this._storage[Symbol.dispose]();
+    } else if (isIDisposable(this._storage)) { /* eslint-disable-line @typescript-eslint/no-deprecated */
       this._storage.dispose();
     }
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /**

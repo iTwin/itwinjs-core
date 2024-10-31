@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { AccessToken, compareStrings, Dictionary, Guid, IDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
+import { AccessToken, compareStrings, Dictionary, Guid, isDisposable, isIDisposable, OrderedComparator } from "@itwin/core-bentley";
 import { InternetConnectivityStatus } from "@itwin/core-common";
 import { IModelApp } from "@itwin/core-frontend";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
@@ -187,7 +187,7 @@ export interface OfflineCachingFavoritePropertiesStorageProps {
   connectivityInfo?: IConnectivityInformationProvider;
 }
 /** @internal */
-export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, IDisposable {
+export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropertiesStorage, Disposable {
   private _connectivityInfo: IConnectivityInformationProvider;
   private _impl: IFavoritePropertiesStorage;
   private _propertiesOfflineCache = new DictionaryWithReservations<ITwinAndIModelIdsKey, Set<PropertyFullName>>(iTwinAndIModelIdsKeyComparer);
@@ -200,8 +200,11 @@ export class OfflineCachingFavoritePropertiesStorage implements IFavoritePropert
     this._connectivityInfo.onInternetConnectivityChanged.addListener(this.onConnectivityStatusChanged);
   }
 
-  public dispose() {
-    if (isIDisposable(this._connectivityInfo)) {
+  public [Symbol.dispose]() {
+    if (isDisposable(this._connectivityInfo)) {
+      this._connectivityInfo[Symbol.dispose]();
+    }
+    else if (isIDisposable(this._connectivityInfo)) { /* eslint-disable-line @typescript-eslint/no-deprecated */
       this._connectivityInfo.dispose();
     }
   }
@@ -331,13 +334,13 @@ export class NoopFavoritePropertiesStorage implements IFavoritePropertiesStorage
     return undefined;
   }
   // istanbul ignore next
-  public async saveProperties(_properties: Set<PropertyFullName>, _iTwinId?: string, _imodelId?: string) {}
+  public async saveProperties(_properties: Set<PropertyFullName>, _iTwinId?: string, _imodelId?: string) { }
   // istanbul ignore next
   public async loadPropertiesOrder(_iTwinId: string | undefined, _imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
     return undefined;
   }
   // istanbul ignore next
-  public async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _iTwinId: string | undefined, _imodelId: string): Promise<void> {}
+  public async savePropertiesOrder(_orderInfos: FavoritePropertiesOrderInfo[], _iTwinId: string | undefined, _imodelId: string): Promise<void> { }
 }
 
 /** @internal */

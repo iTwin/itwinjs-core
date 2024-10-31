@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { disposeArray, Id64String, IDisposable } from "@itwin/core-bentley";
+import { disposeArray, Id64String } from "@itwin/core-bentley";
 import {
   FeatureAppearanceProvider, HiddenLine, RealityModelDisplaySettings, RenderSchedule, ViewFlagOverrides, ViewFlags,
 } from "@itwin/core-common";
@@ -40,7 +40,7 @@ export interface GraphicBranchFrustum {
  * @public
  * @extensions
  */
-export class GraphicBranch implements IDisposable, Disposable /* , RenderMemory.Consumer */ {
+export class GraphicBranch implements Disposable /* , RenderMemory.Consumer */ {
   /** The child nodes of this branch */
   public readonly entries: RenderGraphic[] = [];
   /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */

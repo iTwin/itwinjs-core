@@ -7,7 +7,7 @@
  */
 
 import {
-  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, IDisposable, isInstanceOf,
+  asInstanceOf, assert, BeDuration, BeEvent, BeTimePoint, Constructor, dispose, Id64, Id64Arg, Id64Set, Id64String, isInstanceOf,
   StopWatch,
 } from "@itwin/core-bentley";
 import {
@@ -288,7 +288,7 @@ export interface ReadPixelsArgs {
  * @public
  * @extensions
  */
-export abstract class Viewport implements IDisposable, Disposable, TileUser {
+export abstract class Viewport implements Disposable, TileUser {
   /** Event called whenever this viewport is synchronized with its [[ViewState]].
    * @note This event is invoked *very* frequently. To avoid negatively impacting performance, consider using one of the more specific Viewport events;
    * otherwise, avoid performing excessive computations in response to this event.

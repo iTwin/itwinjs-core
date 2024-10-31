@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module ECDb
  */
-import { assert, DbResult, IDisposable, Logger, OpenMode } from "@itwin/core-bentley";
+import { assert, DbResult, Logger, OpenMode } from "@itwin/core-bentley";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { DbQueryRequest, ECSchemaProps, ECSqlReader, IModelError, QueryBinder, QueryOptions, QueryOptionsBuilder } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -30,7 +30,7 @@ export enum ECDbOpenMode {
 /** An ECDb file
  * @public
  */
-export class ECDb implements IDisposable, Disposable {
+export class ECDb implements Disposable {
   private _nativeDb?: IModelJsNative.ECDb;
   private readonly _statementCache = new StatementCache<ECSqlStatement>();
   private _sqliteStatementCache = new StatementCache<SqliteStatement>();
