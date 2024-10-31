@@ -1342,9 +1342,9 @@ export abstract class GltfReader {
           // Assume KHR_mesh_quantization...
           min = [0, 0, 0];
           if (GltfDataType.UnsignedShort === posView.type)
-            max = [65535, 65535, 65535];
+            max = [0xFFFF, 0xFFFF, 0xFFFF];
           else
-            max = [255, 255, 255];
+            max = [0xFF, 0xFF, 0xFF];
           }
 
         if (undefined === min || undefined === max) {
@@ -1550,7 +1550,7 @@ export abstract class GltfReader {
       } else {
         // Assume KHR_mesh_quantization...
         rangeMin = [0, 0, 0];
-        rangeMax = [65535, 65535, 65535];
+        rangeMax = [0xFFFF, 0xFFFF, 0xFFFF];
       }
 
       if (undefined === rangeMin || undefined === rangeMax) // required by spec...
