@@ -152,7 +152,7 @@ export class QuadrantFractions {
       return { quadrant: 4, angle0: Angle.pi3Over2Radians, angle1: Angle.pi2Radians };
     return undefined;
   }
-  /** Compute the fractional range of Quadrant 1 for the given full sweep (e.g., 0..180, 20..200, -90..270). */
+  /** Compute the fractional range of Quadrant 1 for the given full sweep. */
   public static getQ1FractionalRange(fullSweep: AngleSweep): Range1d {
     const angle0 = 0;
     const angle90 = 0.5 * Math.PI;
@@ -722,7 +722,7 @@ export class EllipticalArcApproximationContext {
     const data = ellipticalArc.toScaledMatrix3d();
     this._ellipticalArc = Arc3d.createScaledXYColumns(
       data.center, data.axes, data.r0, data.r90, data.sweep,
-    ); // _ellipticalArc is same as _ellipticalArc but with perpendicular axes
+    ); // work on the major-minor axis version of the arc to take advantage of its symmetry
     this._localToWorld = Transform.createRefs(data.center, data.axes);
     if (this._localToWorld.matrix.isSingular())
       return;
@@ -834,7 +834,7 @@ export class EllipticalArcApproximationContext {
     const createInnerArc = (f0: number, f1: number, f2: number) => {
       // This arc starts at f1 and ends at f2
       let fPrev = f0;
-      if (processor.getPreviousFraction) // if processor object has a getPreviousFraction method
+      if (processor.getPreviousFraction)
         fPrev = processor.getPreviousFraction(f1) ?? f0;
       ellipticalArc.fractionToPoint(fPrev, pt0);
       ellipticalArc.fractionToPoint(f1, pt1);
