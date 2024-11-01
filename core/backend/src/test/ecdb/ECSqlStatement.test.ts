@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { DbResult, Guid, GuidString, Id64, Id64String, using } from "@itwin/core-bentley";
 import { NavigationValue, QueryBinder, QueryOptions, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import { Point2d, Point3d, Range3d, XAndY, XYAndZ } from "@itwin/core-geometry";
-import { _nativeDb, ECDb, ECEnumValue, ECSqlColumnInfo, ECSqlInsertResult, ECSqlStatement, ECSqlValue, SnapshotDb } from "../../core-backend";
+import { _nativeDb, ECDb, ECEnumValue, ECSqlColumnInfo, ECSqlInsertResult, ECSqlStatement, ECSqlValue, ECSqlWriteStatement, SnapshotDb } from "../../core-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { SequentialLogMatcher } from "../SequentialLogMatcher";
@@ -68,7 +68,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      const r = await ecdb.withStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
+      const r = await ecdb.withWriteStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlWriteStatement) => {
         return stmt.stepForInsert();
       });
       ecdb.saveChanges();
@@ -88,10 +88,10 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      await ecdb.withStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
+      await ecdb.withWriteStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlWriteStatement) => {
         stmt.stepForInsert();
       });
-      await ecdb.withStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(30,TIMESTAMP '2019-10-18T12:00:00Z',30)", async (stmt: ECSqlStatement) => {
+      await ecdb.withWriteStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(30,TIMESTAMP '2019-10-18T12:00:00Z',30)", async (stmt: ECSqlWriteStatement) => {
         stmt.stepForInsert();
       });
       ecdb.saveChanges();
@@ -128,7 +128,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 27;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withWriteStatement(`INSERT into ts.Foo(n) values(${i})`, async (stmt: ECSqlWriteStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -168,7 +168,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 100;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withWriteStatement(`INSERT into ts.Foo(n) values(${i})`, async (stmt: ECSqlWriteStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -200,7 +200,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 100;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withWriteStatement(`INSERT into ts.Foo(n) values(${i})`, async (stmt: ECSqlWriteStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -257,7 +257,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 27;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withWriteStatement(`INSERT into ts.Foo(n) values(${i})`, async (stmt: ECSqlWriteStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -285,7 +285,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
       for (let i = 1; i <= 5; i++) {
-        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withCachedWriteStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlWriteStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -317,7 +317,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
       for (let i = 1; i <= 2; i++) {
-        const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withWriteStatement(`INSERT into ts.Foo(n) values(${i})`, async (stmt: ECSqlWriteStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -340,7 +340,7 @@ describe("ECSqlStatement", () => {
       const maxRows = 10;
       const guids: GuidString[] = [];
       for (let i = 0; i < maxRows; i++) {
-        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(guid) values(?)`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withCachedWriteStatement(`insert into ts.Foo(guid) values(?)`, async (stmt: ECSqlWriteStatement) => {
           guids.push(Guid.createValue());
           stmt.bindGuid(1, guids[i]);
           return stmt.stepForInsert();
@@ -448,7 +448,7 @@ describe("ECSqlStatement", () => {
       };
 
       let expectedId = Id64.fromLocalAndBriefcaseIds(4444, 0);
-      let r: ECSqlInsertResult = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt: ECSqlStatement) => {
+      let r: ECSqlInsertResult = ecdb.withCachedWriteStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindId(1, expectedId);
         stmt.bindString(2, "4444.txt");
         return stmt.stepForInsert();
@@ -456,7 +456,7 @@ describe("ECSqlStatement", () => {
       await verify(ecdb, r, expectedId);
 
       expectedId = Id64.fromLocalAndBriefcaseIds(4445, 0);
-      r = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)", (stmt: ECSqlStatement) => {
+      r = ecdb.withCachedWriteStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)", (stmt: ECSqlWriteStatement) => {
         stmt.bindId("id", expectedId);
         stmt.bindString("name", "4445.txt");
 
@@ -465,14 +465,14 @@ describe("ECSqlStatement", () => {
       await verify(ecdb, r, expectedId);
 
       expectedId = Id64.fromLocalAndBriefcaseIds(4446, 0);
-      r = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt: ECSqlStatement) => {
+      r = ecdb.withCachedWriteStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindValues([expectedId, "4446.txt"]);
         return stmt.stepForInsert();
       });
       await verify(ecdb, r, expectedId);
 
       expectedId = Id64.fromLocalAndBriefcaseIds(4447, 0);
-      r = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)", (stmt: ECSqlStatement) => {
+      r = ecdb.withCachedWriteStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)", (stmt: ECSqlWriteStatement) => {
         stmt.bindValues({ id: expectedId, name: "4447.txt" });
         return stmt.stepForInsert();
       });
@@ -511,7 +511,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      const r: ECSqlInsertResult = ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", (stmt: ECSqlStatement) => {
+      const r: ECSqlInsertResult = ecdb.withCachedWriteStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", (stmt: ECSqlWriteStatement) => {
         return stmt.stepForInsert();
       });
       ecdb.saveChanges();
@@ -809,7 +809,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(ecdb.isOpen);
 
       const doubleVal: number = 3.5;
-      let id = await ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindDouble')", async (stmt: ECSqlStatement) => {
+      let id = await ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindDouble')", async (stmt: ECSqlWriteStatement) => {
         stmt.bindDouble(1, doubleVal);
         stmt.bindDouble(2, doubleVal);
         stmt.bindDouble(3, doubleVal);
@@ -837,7 +837,7 @@ describe("ECSqlStatement", () => {
       }), 1);
 
       const smallIntVal: number = 3;
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, small int')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, small int')", (stmt: ECSqlWriteStatement) => {
         stmt.bindInteger(1, smallIntVal);
         stmt.bindInteger(2, smallIntVal);
         stmt.bindInteger(3, smallIntVal);
@@ -869,7 +869,7 @@ describe("ECSqlStatement", () => {
       const largeUnsafeNumberStr: string = "12312312312312323654";
       const largeUnsafeNumberHexStr: string = "0xaade1ed08b0b5e46";
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large unsafe number as string')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large unsafe number as string')", (stmt: ECSqlWriteStatement) => {
         stmt.bindInteger(1, largeUnsafeNumberStr);
         stmt.bindInteger(2, largeUnsafeNumberStr);
         stmt.bindInteger(3, largeUnsafeNumberStr);
@@ -896,7 +896,7 @@ describe("ECSqlStatement", () => {
       //   assert.equal(row.hl, largeUnsafeNumberHexStr);
       // }), 1);
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large unsafe number as hexstring')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large unsafe number as hexstring')", (stmt: ECSqlWriteStatement) => {
         stmt.bindInteger(1, largeUnsafeNumberHexStr);
         stmt.bindInteger(2, largeUnsafeNumberHexStr);
         stmt.bindInteger(3, largeUnsafeNumberHexStr);
@@ -923,7 +923,7 @@ describe("ECSqlStatement", () => {
       //   assert.equal(row.hl, largeUnsafeNumberHexStr);
       // }), 1);
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large unsafe number as string')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large unsafe number as string')", (stmt: ECSqlWriteStatement) => {
         stmt.bindString(1, largeUnsafeNumberStr);
         stmt.bindString(2, largeUnsafeNumberStr);
         stmt.bindString(3, largeUnsafeNumberStr);
@@ -951,7 +951,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, largeUnsafeNumberStr);
       }), 1);
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large unsafe number as hexstring')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large unsafe number as hexstring')", (stmt: ECSqlWriteStatement) => {
         stmt.bindString(1, largeUnsafeNumberHexStr);
         stmt.bindString(2, largeUnsafeNumberHexStr);
         stmt.bindString(3, largeUnsafeNumberHexStr);
@@ -982,7 +982,7 @@ describe("ECSqlStatement", () => {
       assert.isFalse(Number.isSafeInteger(largeNegUnsafeNumber));
       const largeNegUnsafeNumberStr: string = "-123123123123123236";
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large negative unsafe number as string')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large negative unsafe number as string')", (stmt: ECSqlWriteStatement) => {
         stmt.bindInteger(1, largeNegUnsafeNumberStr);
         stmt.bindInteger(2, largeNegUnsafeNumberStr);
         stmt.bindInteger(3, largeNegUnsafeNumberStr);
@@ -1007,7 +1007,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, largeNegUnsafeNumberStr);
       }), 1);
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large negative unsafe number as string')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large negative unsafe number as string')", (stmt: ECSqlWriteStatement) => {
         stmt.bindString(1, largeNegUnsafeNumberStr);
         stmt.bindString(2, largeNegUnsafeNumberStr);
         stmt.bindString(3, largeNegUnsafeNumberStr);
@@ -1037,7 +1037,7 @@ describe("ECSqlStatement", () => {
       const largeSafeNumberStr: string = largeSafeNumber.toString();
       const largeSafeNumberHexStr: string = "0x45fcc5c2c8500";
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large safe number')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large safe number')", (stmt: ECSqlWriteStatement) => {
         stmt.bindInteger(1, largeSafeNumber);
         stmt.bindInteger(2, largeSafeNumber);
         stmt.bindInteger(3, largeSafeNumber);
@@ -1072,7 +1072,7 @@ describe("ECSqlStatement", () => {
       //   assert.equal(row.s, largeSafeNumberStr);
       // });
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large safe number as string')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large safe number as string')", (stmt: ECSqlWriteStatement) => {
         stmt.bindInteger(1, largeSafeNumberStr);
         stmt.bindInteger(2, largeSafeNumberStr);
         stmt.bindInteger(3, largeSafeNumberStr);
@@ -1099,7 +1099,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, largeSafeNumberStr);
       }), 1);
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large safe number as hexstring')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large safe number as hexstring')", (stmt: ECSqlWriteStatement) => {
         stmt.bindInteger(1, largeSafeNumberHexStr);
         stmt.bindInteger(2, largeSafeNumberHexStr);
         stmt.bindInteger(3, largeSafeNumberHexStr);
@@ -1126,7 +1126,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, largeSafeNumberStr); // even though it was bound as hex str, it gets converted to int64 before persisting
       }), 1);
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large safe number as string')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large safe number as string')", (stmt: ECSqlWriteStatement) => {
         stmt.bindString(1, largeSafeNumberStr);
         stmt.bindString(2, largeSafeNumberStr);
         stmt.bindString(3, largeSafeNumberStr);
@@ -1154,7 +1154,7 @@ describe("ECSqlStatement", () => {
       }), 1);
 
       // SQLite does not parse hex strs bound as strings.
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large safe number as hexstring')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large safe number as hexstring')", (stmt: ECSqlWriteStatement) => {
         stmt.bindString(1, largeSafeNumberHexStr);
         stmt.bindString(2, largeSafeNumberHexStr);
         stmt.bindString(3, largeSafeNumberHexStr);
@@ -1185,7 +1185,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(Number.isSafeInteger(largeNegSafeNumber));
       const largeNegSafeNumberStr: string = largeNegSafeNumber.toString();
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large negative safe number')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large negative safe number')", (stmt: ECSqlWriteStatement) => {
         stmt.bindInteger(1, largeNegSafeNumber);
         stmt.bindInteger(2, largeNegSafeNumber);
         stmt.bindInteger(3, largeNegSafeNumber);
@@ -1212,7 +1212,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, largeNegSafeNumberStr);
       }), 1);
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large negative safe number as string')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindInteger, large negative safe number as string')", (stmt: ECSqlWriteStatement) => {
         stmt.bindInteger(1, largeNegSafeNumberStr);
         stmt.bindInteger(2, largeNegSafeNumberStr);
         stmt.bindInteger(3, largeNegSafeNumberStr);
@@ -1239,7 +1239,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, largeNegSafeNumberStr);
       });
 
-      id = ecdb.withPreparedStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large negative safe number as string')", (stmt: ECSqlStatement) => {
+      id = ecdb.withCachedWriteStatement("INSERT INTO Test.Foo(D,I,L,S,Description) VALUES(?,?,?,?,'bindString, large negative safe number as string')", (stmt: ECSqlWriteStatement) => {
         stmt.bindString(1, largeNegSafeNumberStr);
         stmt.bindString(2, largeNegSafeNumberStr);
         stmt.bindString(3, largeNegSafeNumberStr);
@@ -1372,7 +1372,7 @@ describe("ECSqlStatement", () => {
       };
 
       const ids = new Array<Id64String>();
-      ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl,Struct.Bo,Struct.D,Struct.Dt,Struct.I,Struct.P2d,Struct.P3d,Struct.S) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (stmt: ECSqlStatement) => {
+      ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl,Struct.Bo,Struct.D,Struct.Dt,Struct.I,Struct.P2d,Struct.P3d,Struct.S) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindBlob(1, blobVal);
         stmt.bindBoolean(2, boolVal);
         stmt.bindDouble(3, doubleVal);
@@ -1402,7 +1402,7 @@ describe("ECSqlStatement", () => {
         ids.push(res.id!);
       });
 
-      ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl,Struct.Bo,Struct.D,Struct.Dt,Struct.I,Struct.P2d,Struct.P3d,Struct.S) VALUES(:bl,:bo,:d,:dt,:i,:p2d,:p3d,:s,:s_bl,:s_bo,:s_d,:s_dt,:s_i,:s_p2d,:s_p3d,:s_s)", (stmt: ECSqlStatement) => {
+      ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,P2d,P3d,S,Struct.Bl,Struct.Bo,Struct.D,Struct.Dt,Struct.I,Struct.P2d,Struct.P3d,Struct.S) VALUES(:bl,:bo,:d,:dt,:i,:p2d,:p3d,:s,:s_bl,:s_bo,:s_d,:s_dt,:s_i,:s_p2d,:s_p3d,:s_s)", (stmt: ECSqlWriteStatement) => {
         stmt.bindBlob("bl", blobVal);
         stmt.bindBoolean("bo", boolVal);
         stmt.bindDouble("d", doubleVal);
@@ -1503,7 +1503,7 @@ describe("ECSqlStatement", () => {
           }), 1);
         });
       };
-      await ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(?)", async (stmt: ECSqlStatement) => {
+      await ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Struct) VALUES(?)", async (stmt: ECSqlWriteStatement) => {
         stmt.bindStruct(1, structVal);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -1511,7 +1511,7 @@ describe("ECSqlStatement", () => {
         await verify(res.id!);
       });
 
-      await ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(?)", async (stmt: ECSqlStatement) => {
+      await ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Struct) VALUES(?)", async (stmt: ECSqlWriteStatement) => {
         stmt.bindValues([structVal]);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -1519,7 +1519,7 @@ describe("ECSqlStatement", () => {
         await verify(res.id!);
       });
 
-      await ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(:str)", async (stmt: ECSqlStatement) => {
+      await ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Struct) VALUES(:str)", async (stmt: ECSqlWriteStatement) => {
         stmt.bindStruct("str", structVal);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -1527,7 +1527,7 @@ describe("ECSqlStatement", () => {
         await verify(res.id!);
       });
 
-      await ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(:str)", async (stmt: ECSqlStatement) => {
+      await ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Struct) VALUES(:str)", async (stmt: ECSqlWriteStatement) => {
         stmt.bindValues({ str: structVal });
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -1601,7 +1601,7 @@ describe("ECSqlStatement", () => {
         }), 1);
       };
 
-      await ecdb.withPreparedStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(?,?,?)", async (stmt: ECSqlStatement) => {
+      await ecdb.withCachedWriteStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(?,?,?)", async (stmt: ECSqlWriteStatement) => {
         stmt.bindArray(1, intArray);
         stmt.bindArray(2, dtArray);
         stmt.bindArray(3, addressArray);
@@ -1611,7 +1611,7 @@ describe("ECSqlStatement", () => {
         await verify(res.id!);
       });
 
-      await ecdb.withPreparedStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(?,?,?)", async (stmt: ECSqlStatement) => {
+      await ecdb.withCachedWriteStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(?,?,?)", async (stmt: ECSqlWriteStatement) => {
         stmt.bindValues([intArray, dtArray, addressArray]);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -1619,7 +1619,7 @@ describe("ECSqlStatement", () => {
         await verify(res.id!);
       });
 
-      await ecdb.withPreparedStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(:iarray,:dtarray,:addresses)", async (stmt: ECSqlStatement) => {
+      await ecdb.withCachedWriteStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(:iarray,:dtarray,:addresses)", async (stmt: ECSqlWriteStatement) => {
         stmt.bindArray("iarray", intArray);
         stmt.bindArray("dtarray", dtArray);
         stmt.bindArray("addresses", addressArray);
@@ -1629,7 +1629,7 @@ describe("ECSqlStatement", () => {
         await verify(res.id!);
       });
 
-      await ecdb.withPreparedStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(:iarray,:dtarray,:addresses)", async (stmt: ECSqlStatement) => {
+      await ecdb.withCachedWriteStatement("INSERT INTO test.Foo(I_Array,Dt_Array,Addresses) VALUES(:iarray,:dtarray,:addresses)", async (stmt: ECSqlWriteStatement) => {
         stmt.bindValues({ iarray: intArray, dtarray: dtArray, addresses: addressArray });
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -1661,7 +1661,7 @@ describe("ECSqlStatement", () => {
 
       assert.isTrue(ecdb.isOpen);
 
-      const parentId: Id64String = ecdb.withStatement("INSERT INTO test.Parent(Code) VALUES('Parent 1')", (stmt: ECSqlStatement) => {
+      const parentId: Id64String = ecdb.withWriteStatement("INSERT INTO test.Parent(Code) VALUES('Parent 1')", (stmt: ECSqlWriteStatement) => {
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
@@ -1669,7 +1669,7 @@ describe("ECSqlStatement", () => {
       });
 
       const childIds = new Array<Id64String>();
-      ecdb.withStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt: ECSqlStatement) => {
+      ecdb.withWriteStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindString(1, "Child 1");
         stmt.bindNavigation(2, { id: parentId, relClassName: "Test.ParentHasChildren" });
         let res: ECSqlInsertResult = stmt.stepForInsert();
@@ -1687,7 +1687,7 @@ describe("ECSqlStatement", () => {
         childIds.push(res.id!);
       });
 
-      ecdb.withStatement("INSERT INTO test.Child(Name,Parent) VALUES(:name,:parent)", (stmt: ECSqlStatement) => {
+      ecdb.withWriteStatement("INSERT INTO test.Child(Name,Parent) VALUES(:name,:parent)", (stmt: ECSqlWriteStatement) => {
         stmt.bindString("name", "Child 3");
         stmt.bindNavigation("parent", { id: parentId, relClassName: "Test.ParentHasChildren" });
         let res: ECSqlInsertResult = stmt.stepForInsert();
@@ -1760,7 +1760,7 @@ describe("ECSqlStatement", () => {
 
       assert.isTrue(ecdb.isOpen);
 
-      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo([Range3d]) VALUES(?)", (stmt: ECSqlStatement) => {
+      const id: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Foo([Range3d]) VALUES(?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindRange3d(1, testRange);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -1785,7 +1785,7 @@ describe("ECSqlStatement", () => {
       assert.isTrue(ecdb.isOpen);
 
       const idNumbers: number[] = [4444, 4545, 1234, 6758, 1312];
-      ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt: ECSqlStatement) => {
+      ecdb.withCachedWriteStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt: ECSqlWriteStatement) => {
         idNumbers.forEach((idNum: number) => {
           const expectedId = Id64.fromLocalAndBriefcaseIds(idNum, 0);
           stmt.bindId(1, expectedId);
@@ -1991,7 +1991,7 @@ describe("ECSqlStatement", () => {
       });
 
       // *** test withstatement cache
-      ecdb.withPreparedStatement("INSERT INTO test.Person(Name,Age,Location) VALUES(?,?,?)", (stmt: ECSqlStatement) => {
+      ecdb.withCachedWriteStatement("INSERT INTO test.Person(Name,Age,Location) VALUES(?,?,?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindString(1, "Mary Miller");
         stmt.bindInteger(2, 30);
         stmt.bindStruct(3, { Street: "2000 Main Street", City: "New York", Zip: 12311 });
@@ -2067,7 +2067,7 @@ describe("ECSqlStatement", () => {
       const p3dVal = new Point3d(1, 2, 3);
       const strVal: string = "Hello world";
 
-      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,P2d,P3d,S) VALUES(?,?,?,?,?,?,?,?)", (stmt: ECSqlStatement) => {
+      const id: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,P2d,P3d,S) VALUES(?,?,?,?,?,?,?,?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindBlob(1, blobVal);
         stmt.bindBoolean(2, boolVal);
         stmt.bindDouble(3, doubleVal);
@@ -2222,28 +2222,28 @@ describe("ECSqlStatement", () => {
       const abbreviatedSingleBlobVal = `{"bytes":${singleBlobVal.byteLength}}`;
       const emptyBlobVal = new Uint8Array();
 
-      const fullId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlStatement) => {
+      const fullId: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindBlob(1, blobVal);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         return res.id!;
       });
 
-      const singleId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlStatement) => {
+      const singleId: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindBlob(1, singleBlobVal);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         return res.id!;
       });
 
-      const emptyId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlStatement) => {
+      const emptyId: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindBlob(1, emptyBlobVal);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         return res.id!;
       });
 
-      const nullId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlStatement) => {
+      const nullId: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Bl) VALUES(?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindNull(1);
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -2345,7 +2345,7 @@ describe("ECSqlStatement", () => {
         </ECSchema>`), async (ecdb) => {
       assert.isTrue(ecdb.isOpen);
       let rowCount: number;
-      const parentId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Parent(Code) VALUES('Parent 1')", (stmt: ECSqlStatement) => {
+      const parentId: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Parent(Code) VALUES('Parent 1')", (stmt: ECSqlWriteStatement) => {
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
@@ -2353,7 +2353,7 @@ describe("ECSqlStatement", () => {
       });
 
       const childIds = new Array<Id64String>();
-      ecdb.withPreparedStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt: ECSqlStatement) => {
+      ecdb.withCachedWriteStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindString(1, "Child 1");
         stmt.bindNavigation(2, { id: parentId, relClassName: "Test.ParentHasChildren" });
         let res: ECSqlInsertResult = stmt.stepForInsert();
@@ -2491,7 +2491,7 @@ describe("ECSqlStatement", () => {
       const p3dVal: XYAndZ = { x: 1, y: 2, z: 3 };
       const stringVal: string = "Hello World";
 
-      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(?)", (stmt: ECSqlStatement) => {
+      const id: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Struct) VALUES(?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindStruct(1, { bl: blobVal, bo: boolVal, d: doubleVal, dt: dtVal, i: intVal, p2d: p2dVal, p3d: p3dVal, s: stringVal });
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
@@ -2612,7 +2612,7 @@ describe("ECSqlStatement", () => {
         i: 3, l: 12312312312312, p2d: { x: 1, y: 2 }, p3d: { x: 1, y: 2, z: 3 }, s: "Hello World",
       };
 
-      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,L,P2d,P3d,S) VALUES(:bl,:bo,:d,:dt,:i,:l,:p2d,:p3d,:s)", (stmt: ECSqlStatement) => {
+      const id: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,L,P2d,P3d,S) VALUES(:bl,:bo,:d,:dt,:i,:l,:p2d,:p3d,:s)", (stmt: ECSqlWriteStatement) => {
         stmt.bindValues({
           bl: blobVal, bo: expectedRow.bo, d: expectedRow.d,
           dt: expectedRow.dt, i: expectedRow.i, l: expectedRow.l, p2d: expectedRow.p2d, p3d: expectedRow.p3d, s: expectedRow.s,
@@ -2701,7 +2701,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Foo(MyStat,MyStats,MyDomain,MyDomains) VALUES(test.Status.[On],?,test.Domain.Org,?)", (stmt: ECSqlStatement) => {
+      const id: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.Foo(MyStat,MyStats,MyDomain,MyDomains) VALUES(test.Status.[On],?,test.Domain.Org,?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindValue(1, [1, 2]);
         stmt.bindValue(2, ["Org", "Com"]);
         const res: ECSqlInsertResult = stmt.stepForInsert();
@@ -2814,7 +2814,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      const ids: { unored: Id64String, ored: Id64String, unmatched: Id64String } = ecdb.withPreparedStatement("INSERT INTO test.Foo(MyColor,MyDomain) VALUES(?,?)", (stmt: ECSqlStatement) => {
+      const ids: { unored: Id64String, ored: Id64String, unmatched: Id64String } = ecdb.withCachedWriteStatement("INSERT INTO test.Foo(MyColor,MyDomain) VALUES(?,?)", (stmt: ECSqlWriteStatement) => {
         stmt.bindValue(1, 4);
         stmt.bindValue(2, "com");
         let res: ECSqlInsertResult = stmt.stepForInsert();
@@ -2956,7 +2956,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      const r = await ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
+      const r = await ecdb.withCachedWriteStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlWriteStatement) => {
         const nativesql: string = stmt.getNativeSql();
         assert.isTrue(nativesql.startsWith("INSERT INTO [ts_Foo]"));
         return stmt.stepForInsert();
@@ -2976,7 +2976,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      const id: Id64String = ecdb.withPreparedStatement("INSERT INTO test.MyClass(MyProperty) VALUES('Value')", (stmt: ECSqlStatement) => {
+      const id: Id64String = ecdb.withCachedWriteStatement("INSERT INTO test.MyClass(MyProperty) VALUES('Value')", (stmt: ECSqlWriteStatement) => {
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
@@ -3047,7 +3047,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      ecdb.withPreparedStatement("INSERT INTO Test.A (f.c.a, f.c.b, f.d, g) VALUES ('f.c.a' ,'f.c.b', 'f.d', 'g')", (stmt: ECSqlStatement) => {
+      ecdb.withCachedWriteStatement("INSERT INTO Test.A (f.c.a, f.c.b, f.d, g) VALUES ('f.c.a' ,'f.c.b', 'f.d', 'g')", (stmt: ECSqlWriteStatement) => {
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
@@ -3113,7 +3113,7 @@ describe("ECSqlStatement", () => {
         assert.equal(originPropertyName4, "g");
       });
 
-      ecdb.withPreparedStatement("INSERT INTO Test.B (h.a, h.b, i) VALUES ('h.a' ,'h.b', 'i')", (stmt: ECSqlStatement) => {
+      ecdb.withCachedWriteStatement("INSERT INTO Test.B (h.a, h.b, i) VALUES ('h.a' ,'h.b', 'i')", (stmt: ECSqlWriteStatement) => {
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);

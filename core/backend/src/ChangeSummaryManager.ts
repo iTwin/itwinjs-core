@@ -12,7 +12,7 @@ import * as path from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
-import { ECSqlStatement } from "./ECSqlStatement";
+import { ECSqlInsertResult, ECSqlStatement, ECSqlWriteStatement } from "./ECSqlStatement";
 import { BriefcaseDb, IModelDb, TokenArg } from "./IModelDb";
 import { IModelHost, KnownLocations } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -195,8 +195,8 @@ export class ChangeSummaryManager {
   }
 
   private static addExtendedInfos(changesFile: ECDb, changeSummaryId: Id64String, changesetWsgId: GuidString, changesetParentWsgId?: GuidString, description?: string, changesetPushDate?: string, changeSetUserCreated?: GuidString): void {
-    changesFile.withPreparedStatement("INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,Description,PushDate,UserCreated) VALUES(?,?,?,?,?,?)",
-      (stmt: ECSqlStatement) => {
+    changesFile.withCachedWriteStatement("INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,Description,PushDate,UserCreated) VALUES(?,?,?,?,?,?)",
+      (stmt: ECSqlWriteStatement) => {
         stmt.bindId(1, changeSummaryId);
         stmt.bindString(2, changesetWsgId);
         if (changesetParentWsgId)
@@ -211,9 +211,9 @@ export class ChangeSummaryManager {
         if (changeSetUserCreated)
           stmt.bindString(6, changeSetUserCreated);
 
-        const r: DbResult = stmt.step();
-        if (r !== DbResult.BE_SQLITE_DONE)
-          throw new IModelError(r, `Failed to add changeset information to extracted change summary ${changeSummaryId}`);
+        const r: ECSqlInsertResult = stmt.stepForInsert();
+        if (r.status !== DbResult.BE_SQLITE_DONE)
+          throw new IModelError(r.status, `Failed to add changeset information to extracted change summary ${changeSummaryId}`);
       });
   }
 
