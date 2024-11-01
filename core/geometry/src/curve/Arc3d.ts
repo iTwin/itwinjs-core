@@ -334,11 +334,11 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Create an arc from center, x column to be scaled, and y column to be scaled.
-   * @param center center of ellipse
-   * @param matrix matrix whose x and y columns are unit vectors to be scaled by radius0 and radius90
+   * @param center center of ellipse.
+   * @param matrix matrix whose x and y columns are scaled by radius0 and radius90.
    * @param radius0 radius in x direction.
    * @param radius90 radius in y direction.
-   * @param sweep sweep limits
+   * @param sweep sweep limits.
    * @param result optional preallocated result.
    */
   public static createScaledXYColumns(
@@ -1037,19 +1037,19 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Create a new arc which is parallel to the xy plane, with given center and radius and optional angle sweep.
-   * @param center center of arc
-   * @param radius radius of arc
-   * @param sweep sweep limits.  defaults to full circle.
+   * @param center center of arc.
+   * @param radius radius of arc.
+   * @param sweep sweep limits defaults to full circle.
    */
   public static createXY(center: Point3d, radius: number, sweep: AngleSweep = AngleSweep.create360()): Arc3d {
     return new Arc3d(center.clone(), Matrix3d.createScale(radius, radius, 1.0), sweep.clone());
   }
   /**
    * Create a new arc which is parallel to the xy plane, with given center and x,y radii, and optional angle sweep
-   * @param center center of ellipse
-   * @param radiusA x axis radius
-   * @param radiusB y axis radius
-   * @param sweep angle sweep
+   * @param center center of ellipse.
+   * @param radiusA x axis radius.
+   * @param radiusB y axis radius.
+   * @param sweep angle sweep.
    */
   public static createXYEllipse(
     center: Point3d,
@@ -1060,15 +1060,15 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Replace the arc's 0 and 90 degree vectors.
-   * @param vector0 vector from center to ellipse point at 0 degrees in parameter space
-   * @param vector90 vector from center to ellipse point at 90 degrees in parameter space
+   * @param vector0 vector from center to ellipse point at 0 degrees in parameter space.
+   * @param vector90 vector from center to ellipse point at 90 degrees in parameter space.
    */
   public setVector0Vector90(vector0: Vector3d, vector90: Vector3d) {
     this._matrix.setColumns(vector0, vector90,
-      vector0.unitCrossProductWithDefault(vector90, 0, 0, 0), // normal will be 000 for degenerate case !!!;
+      vector0.unitCrossProductWithDefault(vector90, 0, 0, 0), // normal will be 000 for degenerate case
     );
   }
-  /** Return the arc definition with rigid matrix form with axis radii */
+  /** Return the arc definition with rigid matrix form with axis radii. */
   public toScaledMatrix3d(): { center: Point3d, axes: Matrix3d, r0: number, r90: number, sweep: AngleSweep } {
     const angleData = Angle.dotProductsToHalfAngleTrigValues(
       this._matrix.columnXMagnitudeSquared(),
@@ -1087,7 +1087,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       sweep: this.sweep.cloneMinusRadians(angleData.radians),
     };
   }
-  /** Return the arc definition with center, two vectors, and angle sweep; */
+  /** Return the arc definition with center, two vectors, and angle sweep. */
   public toVectors(): ArcVectors {
     return {
       center: this.center.clone(),
@@ -1378,7 +1378,6 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public override projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined {
     return PlaneAltitudeRangeContext.findExtremeFractionsAlongDirection(this, ray, lowHigh);
   }
-
   /**
    * Construct a circular arc chain approximation to the instance elliptical arc.
    * @param options bundle of options for sampling an elliptical arc (use default options if undefined)
