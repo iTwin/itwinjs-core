@@ -115,7 +115,7 @@ async function initializeContainer(containerProps: { containerId: string, isPubl
   return { ...containerProps, accessToken, storageType } as const;
 };
 
-describe.only("Schema synchronization", function (this: Suite) {
+describe("Schema synchronization", function (this: Suite) {
   this.timeout(0);
 
   before(async () => {
