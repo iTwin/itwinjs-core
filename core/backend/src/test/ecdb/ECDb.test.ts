@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
 import { DbResult, Id64, Id64String, Logger, using } from "@itwin/core-bentley";
-import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
+import { ECDb, ECDbOpenMode, ECSqlInsertResult, ECSqlStatement, ECSqlWriteStatement, IModelJsFs, SqliteStatement, SqliteValue, SqliteValueType } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 
@@ -71,7 +71,7 @@ describe("ECDb", () => {
       </ECEntityClass>
       </ECSchema>`), (testECDb: ECDb) => {
       assert.isTrue(testECDb.isOpen);
-      id = testECDb.withPreparedStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlStatement) => {
+      id = testECDb.withCachedWriteStatement("INSERT INTO test.Person(Name,Age) VALUES('Mary', 45)", (stmt: ECSqlWriteStatement) => {
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
