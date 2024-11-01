@@ -413,6 +413,11 @@ namespace DateTime {
 export class PartialECChangeUnifier {
   private _cache = new Map<string, ChangedECInstance>();
   private _readonly = false;
+
+  public constructor(db: AnyDb) {
+    this.createTempTable(db);
+  }
+
   /**
    * Get root class id for a given class
    * @param classId given class id
@@ -460,7 +465,8 @@ export class PartialECChangeUnifier {
       throw new Error("PartialECChange being combine must have '$meta' property");
     }
     const key = PartialECChangeUnifier.buildKey(rhs, db);
-    const lhs = this._cache.get(key);
+    // const lhs = this._cache.get(key); // get from temp db instead
+    const lhs = this.getInstance(key, db!); // get from temp db instead
     if (lhs) {
       const { $meta: _, ...restOfRhs } = rhs;
       Object.assign(lhs, restOfRhs);
@@ -485,9 +491,54 @@ export class PartialECChangeUnifier {
         }
       }
     } else {
-      this._cache.set(key, rhs);
+      // this._cache.set(key, rhs); // set to temp db instead
+      this.setInstance(key, rhs, db!);
     }
   }
+
+  public getAllRows(db: AnyDb): IterableIterator<ChangedECInstance> {
+    return db.withPreparedSqliteStatement("SELECT [value] FROM temp._changesetCache", (stmt) => {
+      const iterator = {
+        next: (): IteratorResult<ChangedECInstance> => {
+          if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+            return { value: JSON.parse(stmt.getValueString(0)) as ChangedECInstance, done: false };
+          }
+          return { value: undefined, done: true };
+        },
+        [Symbol.iterator]: function () { return this; }
+      };
+      return iterator;
+    });
+  }
+
+  private getInstance(key: string, db: AnyDb): ChangedECInstance | undefined {
+    return db.withPreparedSqliteStatement("SELECT [value] FROM temp._changesetCache WHERE [key]=?", (stmt) => {
+      stmt.bindString(1, key);
+      if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+        return JSON.parse(stmt.getValueString(0)) as ChangedECInstance;
+      }
+      return undefined;
+    });
+  }
+
+  private setInstance(key: string, value: ChangedECInstance, db: AnyDb): void {
+    db.withPreparedSqliteStatement("INSERT INTO temp._changesetCache ([key], [value]) VALUES (?, ?) ON CONFLICT ([key]) DO UPDATE SET [value] = [Excluded].[Value]", (stmt) => {
+      stmt.bindString(1, key);
+      stmt.bindString(2, JSON.stringify(value));
+      stmt.step();
+    });
+  }
+
+  private createTempTable(db: AnyDb): void {
+    // table name should be unique in case two PartialECChangeUnifiers are made
+    db.withPreparedSqliteStatement("CREATE TABLE temp._changesetCache ([key] text primary key, [value] text)", (stmt) => {
+      if (DbResult.BE_SQLITE_DONE !== stmt.step()) {
+        // throw new Error(db.nativeDb.getLastError());
+        throw new Error("unable to create temp table");
+      }
+    });
+  }
+
   /**
    * Build key from EC change.
    * @param change EC change
@@ -519,6 +570,8 @@ export class PartialECChangeUnifier {
     if (this._readonly) {
       throw new Error("this instance is marked as readonly.");
     }
+
+    // todo: create table here if not exist on adapter.reader.db
 
     if (adaptor.op === "Updated" && adaptor.inserted && adaptor.deleted) {
       this.combine(adaptor.inserted, adaptor.reader.db);
