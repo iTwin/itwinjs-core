@@ -8,7 +8,7 @@ import { Suite } from "mocha";
 import { _nativeDb, BriefcaseDb, BriefcaseManager, ChannelControl, CloudSqlite, DrawingCategory, HubMock, IModelDb, IModelHost, SchemaSync, SnapshotDb, SqliteStatement } from "@itwin/core-backend";
 import { AzuriteTest } from "./AzuriteTest";
 import { HubWrappers, IModelTestUtils, KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { AccessToken, DbResult, Guid, Id64String, LogLevel, Logger, OpenMode } from "@itwin/core-bentley";
+import { AccessToken, DbResult, Guid, Id64String, OpenMode } from "@itwin/core-bentley";
 import * as path from "path";
 import { EOL } from "os";
 import { ChangesetType, Code, ColorDef, GeometryStreamProps, IModel, SubCategoryAppearance } from "@itwin/core-common";
@@ -505,16 +505,7 @@ describe.only("Schema synchronization", function (this: Suite) {
     HubMock.shutdown();
   });
 
-  it.only("test schema sync with profile and domain schema upgrade (from 4.0.0.1)", async () => {
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Error);
-    Logger.setLevel("imodeljs-backend.IModelDb", LogLevel.Trace);
-    Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
-    Logger.setLevel("BeSQLite", LogLevel.Trace);
-    Logger.setLevel("ECDb", LogLevel.Trace);
-    Logger.setLevel("ECObjectsNative", LogLevel.Error);
-    Logger.setLevel("DgnCore", LogLevel.Trace);
-
+  it("test schema sync with profile and domain schema upgrade (from 4.0.0.1)", async () => {
     const containerProps = await initializeContainer({ baseUri: AzuriteTest.baseUri, containerId: "imodel-sync-itwin-1" });
 
     const iTwinId = Guid.createValue();
@@ -611,7 +602,7 @@ describe.only("Schema synchronization", function (this: Suite) {
     await BriefcaseDb.upgradeSchemas(b1Props);
     b1 = await BriefcaseDb.open(b1Props);
     const latestProfileVersion = JSON.parse(`{"major":4,"minor":0,"sub1":0,"sub2":5}`);
-    let b1LatestProfileVersion = JSON.parse(queryProfileVer(b1));
+    const b1LatestProfileVersion = JSON.parse(queryProfileVer(b1));
     expect(b1LatestProfileVersion.major).equals(latestProfileVersion.major);
     expect(b1LatestProfileVersion.minor).equals(latestProfileVersion.minor);
     expect(b1LatestProfileVersion.sub1).equals(latestProfileVersion.sub1);
