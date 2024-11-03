@@ -36,7 +36,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
   /** String name for schema properties */
   public readonly solidPrimitiveType = "sphere";
 
-  private _localToWorld: Transform;  // unit sphere maps to world through the transform0 part of this map.
+  private _localToWorld: Transform;  // local coordinates = unit sphere at origin
   private _latitudeSweep: AngleSweep;
   /** Return the latitude (in radians) all fractional v. */
   public vFractionToRadians(v: number): number {
@@ -75,8 +75,8 @@ export class Sphere extends SolidPrimitive implements UVSurface {
    * * Fails if the transform is singular.
   */
   public cloneTransformed(transform: Transform): Sphere | undefined {
-    const sphere1 = this.clone();
-    return sphere1.tryTransformInPlace(transform) ? sphere1 : undefined;
+    const result = this.clone();
+    return result.tryTransformInPlace(transform) ? result : undefined;
   }
   /** Return a coordinate frame (right handed, unit axes)
    * * origin at sphere center

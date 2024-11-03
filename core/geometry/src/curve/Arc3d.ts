@@ -1068,7 +1068,12 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       vector0.unitCrossProductWithDefault(vector90, 0, 0, 0), // normal will be 000 for degenerate case !!!;
     );
   }
-  /** Return the arc definition with rigid matrix form with axis radii */
+  /**
+   * Return the symmetric definition of the arc, with rigid axes and radii.
+   * * The caller can send the returned data into [[createScaledXYColumns]] to construct the major-minor axis
+   * version of the instance arc. This formulation of the arc has the same shape, but has perpendicular axes,
+   * from which the arc's symmetry is readily apparent.
+   */
   public toScaledMatrix3d(): { center: Point3d, axes: Matrix3d, r0: number, r90: number, sweep: AngleSweep } {
     const angleData = Angle.dotProductsToHalfAngleTrigValues(
       this._matrix.columnXMagnitudeSquared(),

@@ -1983,8 +1983,8 @@ export class PolyfaceQuery {
   /**
    * Search facets for the first one that intersects the infinite line.
    * * To process _all_ intersections, callers can supply an `options.acceptIntersection` callback that always
-   * returns `false`.
-   * In this case, `intersectRay3d` will return `undefined`, but the callback will be invoked for each intersection.
+   * returns `false`. In this case, `intersectRay3d` will return `undefined`, but the callback will be invoked for
+   * each intersection.
    * * Example callback logic:
    *    * Accept the first found facet that intersects the half-line specified by the ray: `return detail.a >= 0.0;`
    *    * Collect all intersections: `myIntersections.push(detail.clone()); return false;` Then after `intersectRay3d`
