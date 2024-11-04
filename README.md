@@ -15,7 +15,7 @@ iTwin.js
     </a>
 </a>
 <p align="center">
-An open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
+An open source library for creating, querying, modifying, and displaying Infrastructure Digital Twins.
 </p>
 
 ## About this Repository
