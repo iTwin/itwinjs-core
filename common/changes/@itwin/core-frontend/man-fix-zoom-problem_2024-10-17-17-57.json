@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Fixed problem with zoom when background map is on and allow3dManipulations is on.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

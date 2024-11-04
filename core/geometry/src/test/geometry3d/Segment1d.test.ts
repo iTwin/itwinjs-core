@@ -45,7 +45,7 @@ describe("Segment1d", () => {
     ck.testFalse(sab.isExact01, "exact01 not");
     ck.testFalse(sab.isExact01Reversed, "exact01Reversed not");
     ck.checkpoint("Segment1d.Create");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

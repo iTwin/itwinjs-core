@@ -62,7 +62,7 @@ describe("ECSql Query", () => {
             cancelled++;
             resolve();
           } else {
-            reject(err);
+            reject(err); // eslint-disable-line @typescript-eslint/prefer-promise-reject-errors
           }
         }
       });

@@ -608,7 +608,6 @@ export class TileAdmin {
    * @internal
    */
   public isTileInUse(marker: TileUsageMarker): boolean {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
     for (const [_user, markers] of this._tileUsagePerUser)
       if (markers.has(marker))
         return true;
@@ -951,12 +950,12 @@ export class TileAdmin {
 
     const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
-    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable; // eslint-disable-line deprecation/deprecation
+    policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
   }
 }
 
 /** @public */
-export namespace TileAdmin { // eslint-disable-line no-redeclare
+export namespace TileAdmin {
   /** Statistics regarding the current and cumulative state of the [[TileAdmin]]. Useful for monitoring performance and diagnosing problems.
    * @public
    */

@@ -6,9 +6,9 @@
  * @module Differencing
  */
 
-import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
-import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaOtherTypes, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
-import { ConflictCode, SchemaDifferenceConflict } from "./SchemaConflicts";
+import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumeration, KindOfQuantity, LazyLoadedSchemaItem, Mixin, parseClassModifier, primitiveTypeToString, Property, propertyTypeToString, Schema, SchemaItem, SchemaItemKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
+import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
 
 /**
@@ -35,7 +35,7 @@ export async function validateDifferences(differences: AnySchemaDifference[], ta
  */
 class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
 
-  public readonly conflicts: Array<SchemaDifferenceConflict>;
+  public readonly conflicts: Array<AnySchemaDifferenceConflict>;
   private readonly _sourceSchema: Schema;
   private readonly _targetSchema: Schema;
 
@@ -46,7 +46,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     this._sourceSchema = sourceSchema;
   }
 
-  private addConflict(conflict: SchemaDifferenceConflict) {
+  private addConflict(conflict: AnySchemaDifferenceConflict) {
     this.conflicts.push(conflict);
   }
 
@@ -63,14 +63,28 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    */
   public async visitSchemaReferenceDifference(entry: SchemaReferenceDifference) {
     const sourceSchemaReference = await this._sourceSchema.getReference(entry.difference.name) as Schema;
-    const targetSchemaReference = this._targetSchema.getReferenceNameByAlias(sourceSchemaReference.alias);
-    if (targetSchemaReference && targetSchemaReference !== sourceSchemaReference.name) {
+    const targetSchemaReferenceName = this._targetSchema.getReferenceNameByAlias(sourceSchemaReference.alias);
+    if (targetSchemaReferenceName && targetSchemaReferenceName !== sourceSchemaReference.name) {
       this.addConflict({
         code: ConflictCode.ConflictingReferenceAlias,
-        schemaType: SchemaOtherTypes.SchemaReference,
+        difference: entry,
         source: entry.difference.name,
-        target: targetSchemaReference,
+        target: targetSchemaReferenceName,
         description: "Target schema already references a different schema with this alias.",
+      });
+    }
+
+    const sourceSchemaKey = sourceSchemaReference.schemaKey;
+    const targetSchemaKey = await this._targetSchema.getReference(entry.difference.name)
+      .then((schema) => schema?.schemaKey);
+
+    if(entry.changeType === "modify" && targetSchemaKey && !sourceSchemaKey.matches(targetSchemaKey, SchemaMatchType.LatestWriteCompatible)) {
+      return this.addConflict({
+        code: ConflictCode.ConflictingReferenceVersion,
+        difference: entry,
+        description: "Schema reference cannot be updated, incompatible versions",
+        source: sourceSchemaKey.toString(),
+        target: targetSchemaKey.toString(),
       });
     }
   }
@@ -84,8 +98,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     if (entry.changeType === "add" && targetSchemaItem !== undefined) {
       this.addConflict({
         code: ConflictCode.ConflictingItemName,
-        schemaType: targetSchemaItem.schemaItemType,
-        itemName: targetSchemaItem.name,
+        difference: entry,
         source: entry.schemaType,
         target: targetSchemaItem.schemaItemType,
         description: "Target schema already contains a schema item with the name but different type.",
@@ -100,12 +113,10 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * Shared base-class validation for all types of ClassItemDifference union.
    */
   private async visitBaseClassDifference(entry: AnyClassItemDifference, targetClassItem: ECClass) {
-    if (entry.difference.baseClass === undefined && targetClassItem.baseClass !== undefined) {
+    if ("baseClass" in entry.difference && entry.difference.baseClass === undefined && targetClassItem.baseClass !== undefined) {
       return this.addConflict({
         code: ConflictCode.RemovingBaseClass,
-        schemaType: targetClassItem.schemaItemType,
-        itemName: targetClassItem.name,
-        path: "$baseClass",
+        difference: entry,
         source: null,
         target: resolveLazyItemFullName(targetClassItem.baseClass),
         description: "BaseClass cannot be removed, if there has been a baseClass before.",
@@ -120,9 +131,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     if (sourceBaseClass.modifier === ECClassModifier.Sealed) {
       return this.addConflict({
         code: ConflictCode.SealedBaseClass,
-        schemaType: targetClassItem.schemaItemType,
-        itemName: targetClassItem.name,
-        path: "$baseClass",
+        difference: entry,
         source: sourceBaseClass.fullName,
         target: resolveLazyItemFullName(targetClassItem.baseClass) || null,
         description: "BaseClass is sealed.",
@@ -132,9 +141,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     if (targetClassItem.baseClass && !await this.derivedFrom(sourceBaseClass, targetClassItem.baseClass)) {
       return this.addConflict({
         code: ConflictCode.ConflictingBaseClass,
-        schemaType: targetClassItem.schemaItemType,
-        itemName: targetClassItem.name,
-        path: "$baseClass",
+        difference: entry,
         source: sourceBaseClass.fullName,
         target: resolveLazyItemFullName(targetClassItem.baseClass),
         description: "BaseClass is not valid, source class must derive from target.",
@@ -166,8 +173,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       if (changedModifier !== undefined && changedModifier !== ECClassModifier.None) {
         this.addConflict({
           code: ConflictCode.ConflictingClassModifier,
-          schemaType: targetClass.schemaItemType,
-          itemName: targetClass.name,
+          difference: entry,
           source: entry.difference.modifier,
           target: classModifierToString(targetClass.modifier),
           description: "Class has conflicting modifiers.",
@@ -212,7 +218,6 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    * @internal
    */
   public async visitEntityClassMixinDifference(entry: EntityClassMixinDifference) {
-    const targetEntityClass = await this._targetSchema.getItem(entry.itemName) as EntityClass;
     for (const addedMixin of entry.difference) {
       // To validate the added mixins, the instance from the source schema it fetched,
       // otherwise validation gets too complicated as the mixin must not be existing in
@@ -222,9 +227,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       if (sourceMixin.appliesTo && !await sourceSchemaItem.is(await sourceMixin.appliesTo)) {
         this.addConflict({
           code: ConflictCode.MixinAppliedMustDeriveFromConstraint,
-          schemaType: targetEntityClass.schemaItemType,
-          itemName: targetEntityClass.name,
-          path: "$mixins",
+          difference: entry,
           source: addedMixin,
           target: undefined,
           description: "Mixin cannot applied to this class.",
@@ -247,8 +250,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       if (entry.difference.type) {
         this.addConflict({
           code: ConflictCode.ConflictingEnumerationType,
-          schemaType: SchemaItemType.Enumeration,
-          itemName: enumeration.name,
+          difference: entry,
           source: entry.difference.type,
           target: primitiveTypeToString(enumeration.type!),
           description: "Enumeration has a different primitive type.",
@@ -275,9 +277,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     if (entry.difference.value) {
       this.addConflict({
         code: ConflictCode.ConflictingEnumeratorValue,
-        schemaType: SchemaItemType.Enumeration,
-        itemName: enumeration.name,
-        path: enumerator.name,
+        difference: entry,
         source: entry.difference.value,
         target: enumerator.value,
         description: "Enumerators must have unique values.",
@@ -315,8 +315,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
       if (entry.difference.persistenceUnit) {
         this.addConflict({
           code: ConflictCode.ConflictingPersistenceUnit,
-          schemaType: SchemaItemType.KindOfQuantity,
-          itemName: kindOfQuantity.name,
+          difference: entry,
           source: entry.difference.persistenceUnit,
           target: resolveLazyItemFullName(kindOfQuantity.persistenceUnit),
           description: "Kind of Quantity has a different persistence unit.",
@@ -357,9 +356,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     if (entry.changeType === "add" && targetProperty !== undefined) {
       return this.addConflict({
         code: ConflictCode.ConflictingPropertyName,
-        schemaType: targetProperty.class.schemaItemType,
-        itemName: targetProperty.class.name,
-        path: targetProperty.name,
+        difference: entry,
         source: resolvePropertyTypeName(sourceProperty),
         target: resolvePropertyTypeName(targetProperty),
         description: "Target class already contains a property with a different type.",
@@ -373,9 +370,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
         if(!targetKoQ) {
           return this.addConflict({
             code: ConflictCode.ConflictingPropertyKindOfQuantity,
-            schemaType: targetClass.schemaItemType,
-            itemName: targetClass.name,
-            path: targetProperty.name,
+            difference: entry,
             source: entry.difference.kindOfQuantity,
             target: null,
             description: "The kind of quantity cannot be assiged if the property did not have a kind of quantities before.",
@@ -385,9 +380,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
         if(!sourceKoQ) {
           return this.addConflict({
             code: ConflictCode.ConflictingPropertyKindOfQuantity,
-            schemaType: targetClass.schemaItemType,
-            itemName: targetClass.name,
-            path: targetProperty.name,
+            difference: entry,
             source: null,
             target: resolveLazyItemFullName(targetProperty.kindOfQuantity),
             description: "The kind of quantity cannot be undefined if the property had a kind of quantities before.",
@@ -397,9 +390,7 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
         if (resolveLazyItemName(sourceKoQ.persistenceUnit) !== resolveLazyItemName(targetKoQ.persistenceUnit)) {
           this.addConflict({
             code: ConflictCode.ConflictingPropertyKindOfQuantityUnit,
-            schemaType: targetClass.schemaItemType,
-            itemName: targetClass.name,
-            path: targetProperty.name,
+            difference: entry,
             source: entry.difference.kindOfQuantity,
             target: resolveLazyItemFullName(targetProperty.kindOfQuantity),
             description: "The property has different kind of quantities with conflicting units.",
@@ -461,6 +452,13 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    */
   public async visitUnitSystemDifference(entry: UnitSystemDifference) {
     await this.visitSchemaItemDifference(entry, await this._targetSchema.getItem(entry.itemName));
+  }
+
+  /**
+   * Visitor implementation for handling KindOfQuantityPresentationFormatDifference.
+   * @internal
+   */
+  public async visitKindOfQuantityPresentationFormatDifference(_entry: KindOfQuantityPresentationFormatDifference) {
   }
 
   /**

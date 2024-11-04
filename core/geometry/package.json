@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-geometry",
-  "version": "4.10.0-dev.8",
+  "version": "4.10.0-dev.37",
   "description": "iTwin.js Core Geometry library",
   "main": "lib/cjs/core-geometry.js",
   "module": "lib/esm/core-geometry.js",
@@ -20,7 +20,7 @@
     "extract-api-test": "betools extract-api --entry=core-geometry",
     "docs": "betools docs --tsIndexFile=./core-geometry.ts --json=../../generated-docs/core/core-geometry/file.json --onlyJson",
     "cover": "vitest --run --coverage",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2"
   },
   "repository": {
@@ -38,13 +38,13 @@
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/flatbuffers": "~1.10.0",
     "@types/node": "~18.16.20",
-    "@vitest/coverage-istanbul": "^2.1.0",
-    "eslint": "^8.56.0",
+    "@vitest/coverage-v8": "^2.1.0",
+    "eslint": "^9.13.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3",
+    "typescript": "~5.6.2",
     "vitest": "^2.1.0"
   },
   "dependencies": {

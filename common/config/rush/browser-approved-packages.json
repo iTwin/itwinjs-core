@@ -387,8 +387,12 @@
       "allowedCategories": [ "internal" ]
     },
     {
-      "name": "@vitest/coverage-istanbul",
-      "allowedCategories": [ "backend", "common" ]
+      "name": "@vitest/browser",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "@vitest/coverage-v8",
+      "allowedCategories": [ "common", "frontend" ]
     },
     {
       "name": "@xmldom/xmldom",
@@ -731,12 +735,16 @@
       "allowedCategories": [ "integration-testing" ]
     },
     {
+      "name": "os-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "path-browserify",
       "allowedCategories": [ "integration-testing", "internal" ]
     },
     {
       "name": "playwright",
-      "allowedCategories": [ "tools" ]
+      "allowedCategories": [ "frontend", "tools" ]
     },
     {
       "name": "prettier",
@@ -847,6 +855,10 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "tty-browserify",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "typedoc",
       "allowedCategories": [ "tools" ]
     },
@@ -883,6 +895,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "vite-multiple-assets",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "vite-plugin-env-compatible",
       "allowedCategories": [ "internal" ]
     },
@@ -891,8 +907,12 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "vite-plugin-static-copy",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "vitest",
-      "allowedCategories": [ "backend", "common" ]
+      "allowedCategories": [ "backend", "common", "frontend" ]
     },
     {
       "name": "webpack",

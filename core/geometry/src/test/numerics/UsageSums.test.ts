@@ -56,6 +56,6 @@ describe("UsageSums", () => {
     usageSumsFromA.setOrigin(origin);
     usageSumsFromA.accumulateArray(data);
     ck.testCoordinate(usageSumsFromA.standardDeviation, usageSumsFrom0.standardDeviation, "recheck with different origin.");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

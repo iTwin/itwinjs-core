@@ -24,7 +24,7 @@ import { Schema } from "./Schema";
  * @beta
  */
 export class EntityClass extends ECClass {
-  public override readonly schemaItemType!: SchemaItemType.EntityClass; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.EntityClass;
   protected _mixins?: LazyLoadedMixin[];
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
@@ -248,7 +248,7 @@ export async function createNavigationProperty(ecClass: ECClass, name: string, r
     direction = tmpDirection;
   }
 
-  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
+  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship);
   return new NavigationProperty(ecClass, name, lazyRelationship, direction);
 }
 
@@ -273,6 +273,6 @@ export function createNavigationPropertySync(ecClass: ECClass, name: string, rel
     direction = tmpDirection;
   }
 
-  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship!);
+  const lazyRelationship = new DelayedPromiseWithProps(resolvedRelationship.key, async () => resolvedRelationship);
   return new NavigationProperty(ecClass, name, lazyRelationship, direction);
 }

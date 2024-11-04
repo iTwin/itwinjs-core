@@ -32,7 +32,7 @@ async function waitFor<T>(check: () => Promise<T> | T, timeout: number = 5000): 
       return res instanceof Promise ? await res : res;
     } catch (e) {
       lastError = e;
-      await BeDuration.wait(0);
+      await BeDuration.wait(2);
     }
   } while (timer.current.milliseconds < timeout);
   throw lastError;
@@ -239,8 +239,13 @@ describe("CloudSqlite", () => {
     expect(dirtyBlockLogMsg).to.be.true;
     // resetHistory is sometimes occurring before all of the logs make it to logTrace and logInfo causing our assert.notCalled to fail.
     // Looking at the analytics for our pipeline, all the failures are due to the below two log messages. Wait for them to show up before we reset history.
-    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("enters DELETE state")));
-    await waitFor(() => logInfo.getCalls().some((call) => call.args[1].includes("leaves DELETE state")));
+    const assertFoundMessage = (message: string) => {
+      const found = logInfo.getCalls().some((call) => call.args[1].includes(message));
+      if (!found)
+        throw new Error(`Expected ${message} to be found in logInfo calls.`);
+    };
+    await waitFor(() => assertFoundMessage("enters DELETE state"));
+    await waitFor(() => assertFoundMessage("leaves DELETE state"));
     logTrace.resetHistory();
     logInfo.resetHistory();
 
@@ -437,7 +442,6 @@ describe("CloudSqlite", () => {
 
     // when one cache has the lock the other should fail to obtain it
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
-      // eslint-disable-next-line @typescript-eslint/promise-function-async
       expect(() => cont2.acquireWriteLock(user1)).throws("is currently locked").property("errorNumber", DbResult.BE_SQLITE_BUSY);
     });
 
@@ -467,7 +471,6 @@ describe("CloudSqlite", () => {
     await azSqlite.setSasToken(contain1, "read"); // get a read-only token
     contain1.connect(caches[0]); // connect works with readonly token
     expect(contain1.isConnected);
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => contain1.acquireWriteLock(user1)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
     expect(contain1.hasWriteLock).false;
     expect(contain1.hasLocalChanges).false;
@@ -478,7 +481,6 @@ describe("CloudSqlite", () => {
     anonContainer.connect(caches[0]);
     dbs = anonContainer.queryDatabases();
     expect(dbs.length).equals(2);
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => anonContainer.acquireWriteLock(user1)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
 
     // read a database from anonymous container readonly
@@ -608,7 +610,7 @@ describe("CloudSqlite", () => {
   it("Auto refresh container tokens", async () => {
     const contain1 = testContainers[0];
 
-    const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true };
+    const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true } as const;
     // must be valid token so property store can connect
     const accessToken = await CloudSqlite.requestToken(contProps);
 

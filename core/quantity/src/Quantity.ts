@@ -6,7 +6,8 @@
  * @module Quantity
  */
 
-import { QuantityProps, UnitConversionProps, UnitProps } from "./Interfaces";
+import { QuantityError, QuantityStatus } from "./Exception";
+import { QuantityProps, UnitConversionInvert, UnitConversionProps, UnitProps } from "./Interfaces";
 
 /**
  * Checks if two numbers are approximately equal within given relative tolerance.
@@ -57,7 +58,48 @@ export class Quantity implements QuantityProps {
    *                     returned from the UnitsProvider.
    */
   public convertTo(toUnit: UnitProps, conversion: UnitConversionProps): Quantity | undefined {
-    const newMagnitude = (this.magnitude * conversion.factor) + conversion.offset;
+    const newMagnitude = applyConversion(this.magnitude, conversion);
     return new Quantity(toUnit, newMagnitude);
   }
+}
+
+function invert(input: number): number {
+  if (almostZero(input)) // mimic the behavior of native here. We don't want to invert those very small values
+    throw new QuantityError(QuantityStatus.InvertingZero, "Cannot invert zero value");
+  return 1 / input;
+}
+
+/** Determines if a value is almost zero. (less than 1e-16)
+ * @param value - The value to be checked.
+ * @returns `true` if the value is almost zero, `false` otherwise.
+ * @internal
+ */
+export function almostZero(value: number): boolean {
+  return almostEqual(value, 0.0);
+}
+
+/**
+ * Applies a unit conversion to a given value.
+ * @param value - The value to be converted.
+ * @param props - The unit conversion properties.
+ * @returns The converted value.
+ * @internal
+ */
+export function applyConversion(value: number, props: UnitConversionProps): number {
+  let convertedValue = value;
+
+  // Apply pre-conversion inversion if specified
+  if (props.inversion === UnitConversionInvert.InvertPreConversion) {
+    convertedValue = invert(convertedValue);
+  }
+
+  // Apply the conversion factor and offset
+  convertedValue = (convertedValue * props.factor) + props.offset;
+
+  // Apply post-conversion inversion if specified
+  if (props.inversion === UnitConversionInvert.InvertPostConversion) {
+    convertedValue = invert(convertedValue);
+  }
+
+  return convertedValue;
 }

@@ -24,7 +24,7 @@ import { UnitSystem } from "./UnitSystem";
  * @beta
  */
 export class Unit extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.Unit; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.Unit;
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _unitSystem?: LazyLoadedUnitSystem;
   protected _definition: string;

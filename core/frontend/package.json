@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-frontend",
-  "version": "4.10.0-dev.8",
+  "version": "4.10.0-dev.37",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/core-frontend.js",
   "module": "lib/esm/core-frontend.js",
@@ -18,12 +18,12 @@
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-frontend/file.json --tsIndexFile=./core-frontend.ts --onlyJson --excludes=webgl/**/*,**/map/*.d.ts,**/tile/*.d.ts,**/*-css.ts",
     "extract-api": "betools extract-api --entry=core-frontend && npm run extract-extension-api",
     "extract-extension-api": "eslint --no-inline-config -c extraction.eslint.config.js  \"./src/**/*.ts\" 1>&2",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "lint-fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
-    "test": "npm run -s webpackTests && certa -r chrome",
-    "cover": "npm -s test",
-    "test:debug": "certa -r chrome --debug",
+    "test": "npm run webpackTestWorker && vitest --run",
+    "cover": "npm run webpackTestWorker && vitest --run --coverage",
+    "test:debug": "vitest --run",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2 && npm run -s webpackTestWorker",
     "webpackTestWorker": "webpack --config ./src/test/worker/webpack.config.js 1>&2 && cpx \"./lib/test/test-worker.js\" ./lib/test",
     "webpackWorkers": "webpack --config ./src/workers/ImdlParser/webpack.config.js 1>&2"
@@ -45,12 +45,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^4.10.0-dev.8",
-    "@itwin/core-bentley": "workspace:^4.10.0-dev.8",
-    "@itwin/core-common": "workspace:^4.10.0-dev.8",
-    "@itwin/core-geometry": "workspace:^4.10.0-dev.8",
-    "@itwin/core-orbitgt": "workspace:^4.10.0-dev.8",
-    "@itwin/core-quantity": "workspace:^4.10.0-dev.8"
+    "@itwin/appui-abstract": "workspace:^4.10.0-dev.37",
+    "@itwin/core-bentley": "workspace:^4.10.0-dev.37",
+    "@itwin/core-common": "workspace:^4.10.0-dev.37",
+    "@itwin/core-geometry": "workspace:^4.10.0-dev.37",
+    "@itwin/core-orbitgt": "workspace:^4.10.0-dev.37",
+    "@itwin/core-quantity": "workspace:^4.10.0-dev.37"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -64,26 +64,23 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/certa": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
-    "@types/chai": "4.3.1",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai-as-promised": "^7",
-    "@types/mocha": "^10.0.6",
-    "@types/sinon": "^17.0.2",
+    "@vitest/browser": "^2.1.0",
+    "@vitest/coverage-v8": "^2.1.0",
     "babel-loader": "~8.2.5",
     "babel-plugin-istanbul": "~6.1.1",
-    "chai": "^4.3.10",
-    "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "glob": "^10.3.12",
-    "mocha": "^10.2.0",
-    "nyc": "^15.1.0",
+    "playwright": "~1.47.1",
     "rimraf": "^3.0.2",
-    "sinon": "^17.0.2",
     "source-map-loader": "^4.0.0",
-    "typescript": "~5.3.3",
+    "typescript": "~5.6.2",
     "typemoq": "^2.1.0",
+    "vitest": "^2.1.0",
+    "vite-multiple-assets": "^1.3.1",
+    "vite-plugin-static-copy": "1.0.6",
     "webpack": "^5.76.0"
   },
   "//dependencies": [
@@ -101,8 +98,5 @@
     "fuse.js": "^3.3.0",
     "meshoptimizer": "~0.20.0",
     "wms-capabilities": "0.4.0"
-  },
-  "nyc": {
-    "extends": "./node_modules/@itwin/build-tools/.nycrc"
   }
 }

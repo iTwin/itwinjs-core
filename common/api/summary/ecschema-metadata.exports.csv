@@ -33,6 +33,7 @@ beta;enum;ECClassModifier
 public;class;ECName
 internal;class;ECObjectsError
 beta;enum;ECObjectsStatus
+internal;interface;ECSpecVersion
 internal;class;ECStringConstants
 beta;class;ECVersion
 beta;class;EntityClass
@@ -76,6 +77,7 @@ beta;class;NavigationProperty
 beta;interface;NavigationPropertyProps
 beta;interface;NoDelayedPromiseMethods
 beta;class;OverrideFormat
+beta;interface;OverrideFormatProps
 beta;function;parseClassModifier
 beta;function;parseCustomAttributeContainerType
 beta;function;parsePrimitiveType

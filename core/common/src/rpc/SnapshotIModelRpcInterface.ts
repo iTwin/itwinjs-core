@@ -22,7 +22,7 @@ const unknownIModelId: RpcRequestTokenSupplier_T = (req) => ({ iModelId: "undefi
  * @internal
  * @deprecated in 4.10. Check [[IpcAppFunctions]] or [[CheckpointConnection]] for replacements.
  */
-export abstract class SnapshotIModelRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class SnapshotIModelRpcInterface extends RpcInterface {
   /** Returns the SnapshotIModelRpcInterface client instance for the frontend. */
   public static getClient(): SnapshotIModelRpcInterface { return RpcManager.getClientForInterface(SnapshotIModelRpcInterface); }
 

@@ -55,13 +55,27 @@ export interface UnitConversionSpec {
   parseLabels?: string[];
 }
 
+/** Indicates the way in which unit values are inverted during conversion
+ * @beta
+ */
+export enum UnitConversionInvert {
+  /** Invert value before applying the other conversion steps (the from-unit is the inverted unit) */
+  InvertPreConversion = "InvertPreConversion",
+  /** Invert value after applying the other conversion steps (the to-unit is the inverted unit) */
+  InvertPostConversion = "InvertPostConversion"
+}
+
 /** This interface defines the properties required to convert a quantity value from one unit to another such as from meters to feet
  * or from Celsius to Fahrenheit.
  * @beta
  */
 export interface UnitConversionProps {
+  /** The factor to multiply the input value by to convert to the output value. */
   factor: number;
+  /** The offset to add to the input value to convert to the output value. */
   offset: number;
+  /** If set, inverts the unit value (1/x) before or after conversion. */
+  inversion?: UnitConversionInvert;
 }
 
 /** Interface that defines potential parse units that may be found in user's string input of a quantity value.

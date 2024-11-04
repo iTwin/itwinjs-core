@@ -207,7 +207,7 @@ describe("RegionOps", () => {
     context.setDebugControls(10, 1);
     context.testBooleans(Sample.createRectangleXY(0, 0, 5, 2), Sample.createRectangleXY(1, 1, 2, 3));
     context.saveAndReset("RegionOps", "BooleanRectangles");
-    expect(context.getNumErrors()).equals(0);
+    expect(context.getNumErrors()).toBe(0);
   });
 
   it("BooleanDisjointRectangles", () => {
@@ -215,7 +215,7 @@ describe("RegionOps", () => {
     context.setDebugControls(10, 1);
     context.testBooleans(Sample.createRectangleXY(0, 0, 5, 2), Sample.createRectangleXY(1, 4, 2, 3));
     context.saveAndReset("RegionOps", "BooleanDisjointRectangles");
-    expect(context.getNumErrors()).equals(0);
+    expect(context.getNumErrors()).toBe(0);
   });
   it("BooleanFractalAB", () => {
     const context = new PolygonBooleanTests();
@@ -224,7 +224,7 @@ describe("RegionOps", () => {
     const fractalB = Sample.createFractalHatReversingPattern(1, 0.7);
     context.testBooleans(fractalA, fractalB);
     context.saveAndReset("RegionOps", "BooleanFractalAB");
-    expect(context.getNumErrors()).equals(0);
+    expect(context.getNumErrors()).toBe(0);
   });
 
   it("BooleanFractalABRotated", () => {
@@ -239,7 +239,7 @@ describe("RegionOps", () => {
     const fractalB1 = transform.multiplyInversePoint3dArray(fractalB)!;
     context.testBooleans(fractalA1, fractalB1);
     context.saveAndReset("RegionOps", "BooleanFractalABRotated");
-    expect(context.getNumErrors()).equals(0);
+    expect(context.getNumErrors()).toBe(0);
   });
 
   it("BooleanFlat", () => {
@@ -259,7 +259,7 @@ describe("RegionOps", () => {
       Point3d.create(2, 1)];
     context.testBooleans(rectangle, splat);
     context.saveAndReset("RegionOps", "BooleanSplat");
-    expect(context.getNumErrors()).equals(0);
+    expect(context.getNumErrors()).toBe(0);
   });
 
   it("CleanupSawTooth", () => {
@@ -302,7 +302,7 @@ describe("RegionOps", () => {
       x0 += dx;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "CleanupSawTooth");
-    expect(context.getNumErrors()).equals(0);
+    expect(context.getNumErrors()).toBe(0);
   });
 
   it("BooleanNullFaces", () => {
@@ -318,7 +318,7 @@ describe("RegionOps", () => {
       context.testBooleans(outerRectangle, innerRectangle);
       context.saveAndReset("RegionOps", "BooleanSplat");
     }
-    expect(context.getNumErrors()).equals(0);
+    expect(context.getNumErrors()).toBe(0);
   });
 
 });
@@ -357,7 +357,7 @@ function testPolygonOffset(
   }
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", caseName);
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 }
 
 /**
@@ -411,7 +411,7 @@ function testFilteredPolygonOffset(
   }
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", caseName);
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 }
 
 describe("PolygonOffset", () => {
@@ -557,7 +557,7 @@ describe("RegionInOut", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CircleInOut", () => {
@@ -580,7 +580,7 @@ describe("RegionInOut", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MixedInOut", () => {
@@ -643,7 +643,7 @@ describe("RegionInOut", () => {
       x0 += 20.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "MixedInOut");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -845,7 +845,7 @@ describe("CloneSplitCurves", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "PathSplits");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ChainCollector", () => {
@@ -861,7 +861,7 @@ describe("CloneSplitCurves", () => {
     chainCollector.announceCurvePrimitive(segment2);
     ck.testTrue(singleton instanceof LineSegment3d);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ChainCollectorBreaks", () => {
     const ck = new Checker();
@@ -878,7 +878,7 @@ describe("CloneSplitCurves", () => {
     ck.testTrue(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, undefined), "A0B0..undefined");
     ck.testTrue(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, segmentB1C1), "A0B0..B1C1");
     ck.testFalse(ChainCollectorContext.needBreakBetweenPrimitives(segmentA0B0, segmentB1C1, true), "A0B0..B0C1XY");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("GeneralChainA", () => {
     const allGeometry: GeometryQuery[] = [];
@@ -915,7 +915,7 @@ describe("CloneSplitCurves", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chains, 20, 0, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "GeneralChainA");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
 
   });
   it("GeneralChainB", () => {
@@ -953,7 +953,7 @@ describe("CloneSplitCurves", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, chains, 20, 0, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "GeneralChainB");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("GeneralPathC", () => {
@@ -981,7 +981,7 @@ describe("CloneSplitCurves", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "ChainAndOffset");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OffsetCurves", () => {
@@ -1056,7 +1056,7 @@ describe("CloneSplitCurves", () => {
     );
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "OffsetCurves");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("InOutSplits", () => {
@@ -1116,7 +1116,7 @@ describe("CloneSplitCurves", () => {
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps", "InOutSplits");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1161,7 +1161,7 @@ describe("RectangleRecognizer", () => {
     ck.testUndefined(RegionOps.rectangleEdgeTransform(LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 2)));
     ck.testUndefined(RegionOps.rectangleEdgeTransform(Path.create(Arc3d.createUnitCircle())));
     ck.testUndefined(RegionOps.rectangleEdgeTransform(BagOfCurves.create()));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("3PointTurnChecks", () => {
     // const ck = new Checker();
@@ -1271,7 +1271,7 @@ describe("RegionOps2", () => {
       x = 0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps2", "TriangulateSortedLoops");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MaximallyConvexFacets", () => {
@@ -1329,7 +1329,7 @@ describe("RegionOps2", () => {
       x = 0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionOps2", "MaximallyConvexFacets");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1541,5 +1541,36 @@ describe("RegionOps.constructCurveXYOffset", () => {
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "EllipsePreserveEllipticalArcsFalse");
+  });
+  it("constructCurveXYOffsetMaxChamferDegree", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const origin = Point3d.create(0, 0, 0);
+    const circleSize: number = 4;
+    const loop = Loop.create(
+      Arc3d.createXY(origin, circleSize, AngleSweep.createStartEndDegrees(0, 180)),
+      LineString3d.create([Point3d.create(-circleSize, 0), Point3d.create(circleSize, 0)]),
+    );
+    let dx = 0;
+    const offsetDistance = -2;
+    const minArcDegree = 180;
+    const maxChamferDegrees: number[] = [89, 90, 91];
+    const preserveEllipticalArc = false;
+    const expectedNumPoints0: number[] = [4, 3, 3];
+    const expectedNumPoints1: number[] = [4, 3, 3];
+    for (let i = 0; i <= 2; i++) {
+      const jointOption = new JointOptions(offsetDistance, minArcDegree, maxChamferDegrees[i], preserveEllipticalArc);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
+      const curveCollection = RegionOps.constructCurveXYOffset(loop, jointOption)!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection, dx);
+      const lineString0 = curveCollection.getChild(0) as LineString3d;
+      const lineString1 = curveCollection.getChild(2) as LineString3d;
+      ck.testCoordinate(lineString0.numPoints(), expectedNumPoints0[i], "Number of points in offset first child");
+      ck.testCoordinate(lineString1.numPoints(), expectedNumPoints1[i], "Number of points in offset last child");
+      dx += 15;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "constructCurveXYOffsetMaxChamferDegree");
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

@@ -42,9 +42,9 @@ describe("Background map", () => {
       expect(prevTree).not.to.be.undefined;
 
       vp.changeBackgroundMapProps(props as BackgroundMapProps);
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       if (props.providerName || props.providerData) {
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         vp.displayStyle.changeBackgroundMapProvider({ name: props.providerName as BackgroundMapProviderName, type: props.providerData?.mapType });
       }
 

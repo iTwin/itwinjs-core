@@ -122,7 +122,7 @@ describe("CutFill", () => {
       y0 += 10;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, clips.outside, x0, y0);
       GeometryCoreTestIO.saveGeometry(allGeometry, "CutFill", "RangeBoxClipA");
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }
 
   });
@@ -150,7 +150,7 @@ describe("CutFill", () => {
         ck.announceError(bigClip, clipRange);
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CutFill", "RangeBoxClipB");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

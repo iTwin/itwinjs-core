@@ -54,7 +54,7 @@ describe("GraphMerge", () => {
       edges.removeArrayMembersWithY1Below(q.faceSuccessor.y);
 
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MergeQuadQuad", () => {
@@ -98,6 +98,6 @@ describe("GraphMerge", () => {
       x0 += dy;
       y0 = 0.0;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

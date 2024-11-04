@@ -24,7 +24,7 @@ describe("Regions", () => {
     ck.testTrue(region.tryAddChild(loop));
     ck.testPointer(region.getChild(0));
     ck.testUndefined(region.getChild(3));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ParityRegion", () => {
@@ -38,6 +38,6 @@ describe("Regions", () => {
     ck.testTrue(region.tryAddChild(loop));
     ck.testPointer(region.getChild(0));
     ck.testUndefined(region.getChild(3));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

@@ -29,7 +29,7 @@ describe("HalfEdgeMarkSet", () => {
       vertexSet.teardown();
       faceSet.teardown();
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SmallGraph", () => {
@@ -141,7 +141,7 @@ describe("HalfEdgeMarkSet", () => {
     ck.testUndefined(MarkedEdgeSet.create(graph));
     ck.testUndefined(MarkedFaceSet.create(graph));
     ck.testUndefined(MarkedVertexSet.create(graph));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

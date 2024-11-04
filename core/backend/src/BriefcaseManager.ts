@@ -159,7 +159,7 @@ export class BriefcaseManager {
       try {
         if (!IModelJsFs.lstatSync(bcPath)?.isDirectory)
           continue;
-      } catch (err) {
+      } catch {
         continue;
       }
 
@@ -172,8 +172,7 @@ export class BriefcaseManager {
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
             briefcaseList.push({ fileName, iTwinId: db.getITwinId(), iModelId: db.getIModelId(), briefcaseId: db.getBriefcaseId(), changeset: db.getCurrentChangeset(), fileSize });
             db.closeFile();
-          } catch (_err) {
-          }
+          } catch { }
         }
       }
     }
@@ -320,8 +319,7 @@ export class BriefcaseManager {
           await BriefcaseManager.releaseBriefcase(accessToken, briefcase);
         }
       }
-    } catch (error) {
-    }
+    } catch { }
 
     // first try to delete the briefcase file
     try {
@@ -340,8 +338,7 @@ export class BriefcaseManager {
         if (file.startsWith(fileName))
           this.deleteFile(path.join(dirName, file)); // don't throw on error
       }
-    } catch (err) {
-    }
+    } catch { }
   }
 
   /** Deletes a file
@@ -369,7 +366,7 @@ export class BriefcaseManager {
         return false;
 
       IModelJsFs.rmdirSync(folderPathname);
-    } catch (error) {
+    } catch {
       Logger.logError(loggerCategory, `Cannot delete folder: ${folderPathname}`);
       return false;
     }

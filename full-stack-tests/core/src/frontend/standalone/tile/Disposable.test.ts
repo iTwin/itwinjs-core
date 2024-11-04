@@ -150,16 +150,16 @@ describe("Disposal of System", () => {
     assert.isDefined(imageBuff);
 
     // Texture from image buffer
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const textureParams0 = new RenderTexture.Params("-192837465");
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const texture0 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams0);
     assert.isDefined(texture0);
 
     // Texture from image source
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const textureParams1 = new RenderTexture.Params("-918273645");
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const texture1 = system.createTextureFromImageBuffer(imageBuff, imodel0, textureParams1);
     assert.isDefined(texture1);
 
@@ -441,9 +441,9 @@ describe("Disposal of WebGL Resources", () => {
     const exposedTarget = new ExposedTarget(target);
 
     // Create a graphic and a texture
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const textureParams = new RenderTexture.Params("-192837465");
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1), imodel0, textureParams);
     const graphicBuilder = target.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
     graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
@@ -462,7 +462,7 @@ describe("Disposal of WebGL Resources", () => {
     assert.isTrue(isDisposed(texture));
     assert.isTrue(isDisposed(graphic));
 
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1), imodel0, textureParams);
     assert.isFalse(isDisposed(texture));
 

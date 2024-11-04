@@ -176,7 +176,7 @@ export function insertSpatialCategory(
 }
 
 /** Insert a physical element into created imodel. Return created element's className and Id. */
-export function insertPhysicalElement<TAdditionalProps extends {}>(
+export function insertPhysicalElement<TAdditionalProps extends object>(
   props: { db: IModelDb; modelId: Id64String; categoryId: Id64String; parentId?: Id64String } & Partial<
     Omit<PhysicalElementProps, "id" | "model" | "category" | "parent">
   > &
@@ -204,7 +204,7 @@ export function insertPhysicalElement<TAdditionalProps extends {}>(
 }
 
 /** Insert an aspect into created imodel, return its key */
-export function insertElementAspect<TAdditionalProps extends {}>(
+export function insertElementAspect<TAdditionalProps extends object>(
   props: { db: IModelDb; elementId: Id64String } & Partial<Omit<ElementAspectProps, "element">> & TAdditionalProps,
 ) {
   const { db, classFullName, elementId, ...aspectProps } = props;

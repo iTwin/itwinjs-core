@@ -6,6 +6,7 @@
 import { assert, describe, expect, it } from "vitest";
 import { compareNumbers, OrderedSet } from "@itwin/core-bentley";
 import { Constant } from "../../Constant";
+import { CurveFactory } from "../../core-geometry";
 import { Arc3d, EllipticalArcApproximationOptions, EllipticalArcSampleMethod, FractionMapper } from "../../curve/Arc3d";
 import { CoordinateXYZ } from "../../curve/CoordinateXYZ";
 import { CurveChainWithDistanceIndex } from "../../curve/CurveChainWithDistanceIndex";
@@ -25,7 +26,7 @@ import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { SmallSystem } from "../../numerics/Polynomials";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -141,7 +142,7 @@ describe("Arc3d", () => {
     const sweepRadians = 0.3423423;
     Arc3d.create(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), AngleSweep.createStartSweepRadians(0.2, sweepRadians), arcC);
     ck.testCoordinate(arcC.curveLength(), sweepRadians);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("QuickLength", () => {
     const ck = new Checker();
@@ -180,7 +181,7 @@ describe("Arc3d", () => {
     ck.testLT(factorRange.high, 1.06, "QuickLength FactorRange Low");
 
     ck.checkpoint("Arc3d.QuickLength");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("EccentricEllipseLengthAccuracyTable", () => {
     const noisy = false;
@@ -232,7 +233,7 @@ describe("Arc3d", () => {
         ck.testLE(maxFactor, 20.0, "Eccentric Ellipse integration factor");
     }
     ck.checkpoint("Arc3d.EccentricEllipseLengthAccuracyTable");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ValidateEllipseIntegrationHeuristic", () => {
     const ck = new Checker();
@@ -257,7 +258,7 @@ describe("Arc3d", () => {
       }
     }
     ck.checkpoint("Arc3d.ValidateEllipseIntegrationHeuristic");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ScaledForm", () => {
@@ -276,7 +277,7 @@ describe("Arc3d", () => {
       }
     }
     ck.checkpoint("Arc3d.ScaledForm");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("FilletArc", () => {
@@ -306,7 +307,7 @@ describe("Arc3d", () => {
       y0 += outputStep;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "FilletArc");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // cspell:word Arnoldas
   it("PreciseRange", () => {
@@ -348,7 +349,7 @@ describe("Arc3d", () => {
     }
     GeometryCoreTestIO.consoleLog(`chord error range ${JSON.stringify(rangeE.toJSON())}`);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "PreciseRange");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // cspell:word Arnoldas
   it("ArnoldasFailureLinearSys3d", () => {
@@ -372,7 +373,7 @@ describe("Arc3d", () => {
       ck.testCoordinate(r, point1.distance(arc.center));
       ck.testCoordinate(r, point2.distance(arc.center));
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // Test near-rectangular offset transitions
   it("CodeCheckerArcTransitionA", () => {
@@ -430,7 +431,7 @@ describe("Arc3d", () => {
         x0 = 0.0;
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CodeCheckerArcTransitionA");
   });
   it("CodeCheckerArcTransitionB", () => {
@@ -454,7 +455,7 @@ describe("Arc3d", () => {
     GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, fullOffsetB, x0, y0);
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CodeCheckerArcTransitionB");
   });
   it("CodeCheckerArcTransitionC", () => {
@@ -490,7 +491,7 @@ describe("Arc3d", () => {
       }
       x0 += 15.0;
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CodeCheckerArcTransitionC");
   });
   it("CodeCheckerArcTransitionD", () => {
@@ -514,7 +515,7 @@ describe("Arc3d", () => {
       y0 += 5.0;
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CodeCheckerArcTransitionD");
   });
   it("CreateCenterNormalRadius", () => {
@@ -526,7 +527,7 @@ describe("Arc3d", () => {
     }
 
     ck.checkpoint("Arc3d.CreateCenterNormalRadius");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // compare arc properties as CurvePrimitive and in equivalent 2-arc CurveChainWithDistanceIndex
   it("CurvatureTest", () => {
@@ -555,7 +556,7 @@ describe("Arc3d", () => {
       ck.testVector3d(circleDerivatives.vectorU, pathDerivatives.vectorU, "vectorU");
       ck.testVector3d(circleDerivatives.vectorV, pathDerivatives.vectorV, "vectorV");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   // Test 3-point elliptical arc constructor
   it("CreateThreePointEllipse", () => {
@@ -649,7 +650,7 @@ describe("Arc3d", () => {
       ck.testCoordinate(0, ellipse7.closestPoint(p1, false).a, "middle point is on the ellipse");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CreateThreePointEllipse");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("createCircularStartTangentEnd", () => {
     const ck = new Checker();
@@ -716,8 +717,17 @@ describe("Arc3d", () => {
     ck.testPoint3d(circularArc4.endPoint(), end4);
     ck.testPoint3d(circularArc4.center, Point3d.create(0.75, 0, 0.75));
 
+    dx += 10;
+    const start5 = Point3d.create(10, 0, 0);
+    const end5 = Point3d.create(7.0710678118654755, 2.1213203435596424, 0);
+    const tangent5 = Vector3d.create(-0, -18.84955592153876, -0);
+    const circularArc5A = Arc3d.createCircularStartTangentEnd(start5, tangent5, end5) as Arc3d;
+    const circularArc5B = CurveFactory.createArcPointTangentPoint(start5, tangent5, end5) as Arc3d;
+    ck.testTrue(circularArc5A.isAlmostEqual(circularArc5B, 1.0e-13, 1.0e-13), "methods are equivalent");
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, [circularArc5A, circularArc5B], dx);
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "createCircularStartTangentEnd");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("createCircularStartEndRadius", () => {
     const ck = new Checker();
@@ -725,7 +735,7 @@ describe("Arc3d", () => {
     let x0 = 0;
 
     const start = Point3d.createZero();
-    const end = Point3d.create(1,1,1);
+    const end = Point3d.create(1, 1, 1);
     const mid = start.interpolate(0.5, end);
     const helperPoint = Point3d.create(1, -1, 0);
     const radius = start.distance(end) * 0.75;
@@ -764,7 +774,7 @@ describe("Arc3d", () => {
     ck.testUndefined(arc3, "insufficient radius yields undefined");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "createCircularStartEndRadius");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -864,7 +874,7 @@ describe("ApproximateArc3d", () => {
     ck.testCoordinate(error0, error1, "approximation error is invariant under arc rotation");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ApproximateArc3d", "Defaults");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("EllipseSampler", () => {
@@ -1054,7 +1064,6 @@ describe("ApproximateArc3d", () => {
               }
             }
           }
-          y0 += yDelta(yWidth);
         }
 
         if (
@@ -1088,7 +1097,7 @@ describe("ApproximateArc3d", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ApproximateArc3d", "EllipseSampler");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("SubdivisionSampler", () => {
@@ -1229,16 +1238,16 @@ describe("ApproximateArc3d", () => {
       x += delta;
     }
 
-    // Observed: subdivision wins 90.9% of comparisons to n-sample methods (95.67% with enableLongTests)
+    // Observed: subdivision wins 90.9% of comparisons to n-sample methods (95.7% with enableLongTests)
     const winPct = 100 * Geometry.safeDivideFraction(nSubdivisionComparisonWins, nComparisons, 0);
     GeometryCoreTestIO.consoleLog(`Subdivision wins ${nSubdivisionComparisonWins} of ${nComparisons} comparisons (${winPct}%).`);
     const targetWinPct = GeometryCoreTestIO.enableLongTests ? 90 : 85;
     ck.testLE(targetWinPct, winPct, `Subdivision is more accurate than another n-sample method over ${targetWinPct}% of the time.`);
 
-    // Observed: subdivision is most accurate method in 64% of ellipses tested (82.76% with enableLongTests)
+    // Observed: subdivision is most accurate method in 63.6% of ellipses tested (82.8% with enableLongTests)
     const winOverallPct = 100 * Geometry.safeDivideFraction(nEllipses - nSubdivisionLosses, nEllipses, 0);
     GeometryCoreTestIO.consoleLog(`Subdivision wins overall for ${nEllipses - nSubdivisionLosses} of ${nEllipses} ellipses (${winOverallPct}%).`);
-    const targetNSampleWinPct = GeometryCoreTestIO.enableLongTests ? 80: 60;
+    const targetNSampleWinPct = GeometryCoreTestIO.enableLongTests ? 80 : 60;
     ck.testLE(targetNSampleWinPct, winOverallPct, `Subdivision is more accurate than all other n-sample methods over ${targetNSampleWinPct}% of the time.`);
 
     // test forcePath behavior on closed input
@@ -1270,6 +1279,6 @@ describe("ApproximateArc3d", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "ApproximateArc3d", "SubdivisionSampler");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

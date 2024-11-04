@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-quantity",
+      "comment": "Change default azimuth/bearing base from east to north",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-quantity"
+}

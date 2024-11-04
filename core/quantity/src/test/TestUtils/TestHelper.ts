@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { AlternateUnitLabelsProvider, UnitConversionProps, UnitProps, UnitsProvider } from "../../Interfaces";
+import { AlternateUnitLabelsProvider, UnitConversionInvert, UnitConversionProps, UnitProps, UnitsProvider } from "../../Interfaces";
 import { BadUnit, BasicUnit } from "../../Unit";
 
 interface ConversionDef {
@@ -18,6 +18,7 @@ interface UnitDefinition {
   readonly altDisplayLabels: string[];
   readonly conversion: ConversionDef;
   readonly system: string;
+  readonly isInverted?: boolean;
 }
 
 // cSpell:ignore MILLIINCH, MICROINCH, MILLIFOOT
@@ -70,12 +71,16 @@ const unitData: UnitDefinition[] = [
   { name: "Units.CUB_US_SURVEY_FT", phenomenon: "Units.VOLUME", system: "Units.USSURVEY", conversion: { numerator: 1, denominator: 0.0283170164937591, offset: 0.0 }, displayLabel: "ft³", altDisplayLabels: ["cf"] },
   { name: "Units.CUB_YRD", phenomenon: "Units.VOLUME", system: "Units.USCUSTOM", conversion: { numerator: 1.0, denominator: 0.76455486, offset: 0.0 }, displayLabel: "yd³", altDisplayLabels: ["cy"] },
   { name: "Units.CUB_M", phenomenon: "Units.VOLUME", system: "Units.SI", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "m³", altDisplayLabels: ["cm"] },
+
+  { name: "Units.VERTICAL_PER_HORIZONTAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, displayLabel: "ft/ft", altDisplayLabels: ["ft/ft"] },
+  { name: "Units.HORIZONTAL_PER_VERTICAL", phenomenon: "Units.SLOPE", system: "Units.INTERNATIONAL", conversion: { numerator: 1.0, denominator: 1.0, offset: 0.0 }, isInverted: true, displayLabel: "m/m", altDisplayLabels: ["m/m"] },
 ];
 
 export class ConversionData implements UnitConversionProps {
   public factor: number = 1.0;
   public offset: number = 0.0;
   public error: boolean = false;
+  public inversion?: UnitConversionInvert = undefined;
 }
 
 export class TestUnitsProvider implements UnitsProvider, AlternateUnitLabelsProvider {
@@ -153,6 +158,12 @@ export class TestUnitsProvider implements UnitsProvider, AlternateUnitLabelsProv
       const conversionData = new ConversionData();
       conversionData.factor = deltaNumerator / deltaDenominator;
       conversionData.offset = deltaOffset;
+      if (fromUnitData.isInverted && !toUnitData.isInverted) {
+        conversionData.inversion = UnitConversionInvert.InvertPreConversion;
+      } else if (!fromUnitData.isInverted && toUnitData.isInverted) {
+        conversionData.inversion = UnitConversionInvert.InvertPostConversion;
+      }
+
       return conversionData;
     }
 

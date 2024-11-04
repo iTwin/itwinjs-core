@@ -3,8 +3,8 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 
-import { AccessToken, Logger} from "@itwin/core-bentley";
-import { loggerCategory} from "../LoggerCategory";
+import { AccessToken, Logger } from "@itwin/core-bentley";
+import { loggerCategory } from "../LoggerCategory";
 import { IModelApp, ITWINJS_CORE_VERSION } from "@itwin/core-frontend";
 
 /** The expected format of the Graphic Representation
@@ -63,7 +63,7 @@ export type GraphicRepresentation = {
   /** The expected format of the Graphic Representation
    * @see [[GraphicRepresentationFormat]] for possible values.
    */
-  format:  GraphicRepresentationFormat;
+  format: GraphicRepresentationFormat;
   /** The data source that the representation originates from.
    * For example, a GraphicRepresentation in the 3D Tiles format might have a dataSource that is a specific iModel changeset.
    */
@@ -83,7 +83,7 @@ export type GraphicRepresentation = {
 /** Creates a URL used to query for Graphic Representations */
 function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean }): string {
   const prefix = args.urlPrefix ?? "";
-  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc`;
+  let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc&$top=5`;
   if (args.changeId)
     url = `${url}&changesetId=${args.changeId}`;
 
@@ -111,7 +111,7 @@ export interface QueryGraphicRepresentationsArgs {
   /** The expected format of the graphic representations
    * @see [[GraphicRepresentationFormat]] for possible values.
    */
-  format:  GraphicRepresentationFormat;
+  format: GraphicRepresentationFormat;
   /** Chiefly used in testing environments. */
   urlPrefix?: string;
   /** If true, exports whose status is not "Complete" (indicating the export successfully finished) will be included in the results */
@@ -216,7 +216,7 @@ export interface ObtainGraphicRepresentationUrlArgs {
   /** The expected format of the graphic representations
    * @see [[GraphicRepresentationFormat]] for possible values.
    */
-  format:  GraphicRepresentationFormat;
+  format: GraphicRepresentationFormat;
   /** Chiefly used in testing environments. */
   urlPrefix?: string;
   /** If true, only data produced for a specific data source version will be considered;

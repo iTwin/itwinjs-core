@@ -82,7 +82,7 @@ export class GriddedRaggedRange2dSetWithOverflow<T> implements Range2dSearchInte
       result = Range2d.createNull();
     this.visitChildren(0, (_depth, child) => {
       const childRange = GriddedRaggedRange2dSetWithOverflow._workRange = child.totalRange(GriddedRaggedRange2dSetWithOverflow._workRange);
-      result!.extendRange(childRange);
+      result.extendRange(childRange);
     });
     return result;
   }
