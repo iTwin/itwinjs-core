@@ -8,7 +8,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { ChangedElementsDb } from "./ChangedElementsDb";
 import { IModelJsFs } from "./IModelJsFs";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 /** @internal */
 interface ChangedElementsDbCacheEntry {

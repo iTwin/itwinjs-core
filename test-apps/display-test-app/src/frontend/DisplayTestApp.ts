@@ -229,7 +229,7 @@ const dtaFrontendMain = async () => {
           const response = await fetch(`${url}tileset.json`);
           await response.json();
           return url;
-        } catch (_) {
+        } catch {
           // No tileset available.
           return undefined;
         }
@@ -341,7 +341,7 @@ async function initView(iModel: IModelConnection | undefined) {
 
 // Set up the HTML UI elements and wire them to our functions
 async function displayUi() {
-  return new Promise<void>(async (resolve) => { // eslint-disable-line @typescript-eslint/no-misused-promises
+  return new Promise<void>(async (resolve) => {
     showSpinner();
     resolve();
   });

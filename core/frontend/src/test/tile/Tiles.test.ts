@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { Range3d, Transform } from "@itwin/core-geometry";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
@@ -187,24 +187,24 @@ describe("Tiles", () => {
     for ( const _item of imodel.tiles) {
       nbItems++;
     }
-    expect(nbItems).to.equals(2);
+    expect(nbItems).toEqual(2);
 
     // Make sure the right tree is removed / disposed
-    expect(tree1.isDisposed).to.be.false;
-    expect(tree2.isDisposed).to.be.false;
+    expect(tree1.isDisposed).toBe(false);
+    expect(tree2.isDisposed).toBe(false);
     imodel.tiles.resetTileTreeOwner(tree1, supplier);
-    expect(tree1.isDisposed).to.be.true;
-    expect(tree2.isDisposed).to.be.false;
+    expect(tree1.isDisposed).toBe(true);
+    expect(tree2.isDisposed).toBe(false);
 
     nbItems = 0;
     for ( const item of imodel.tiles) {
-      expect(item.id.id).to.equals(tree2.id);
+      expect(item.id.id).toEqual(tree2.id);
       nbItems++;
     }
-    expect(nbItems).to.equals(1);
+    expect(nbItems).toEqual(1);
 
     // Removing an invalid tree should be no-op
     imodel.tiles.resetTileTreeOwner(tree1, supplier);
-    expect(nbItems).to.equals(1);
+    expect(nbItems).toEqual(1);
   });
 });

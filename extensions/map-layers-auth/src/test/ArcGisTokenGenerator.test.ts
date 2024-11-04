@@ -18,7 +18,7 @@ describe("ArcGisTokenGenerator", () => {
   });
 
   it("should make proper info request and extract tokenServicesUrl from response", async () => {
-    const fetchStub = sandbox.stub(global, "fetch").callsFake(async function (_input, _init) {
+    const fetchStub = sandbox.stub(globalThis, "fetch").callsFake(async function (_input, _init) {
 
       return Promise.resolve((({
         status: 200,

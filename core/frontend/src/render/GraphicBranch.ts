@@ -156,10 +156,12 @@ export interface GraphicBranchOptions {
   appearanceProvider?: FeatureAppearanceProvider;
   /** @internal Secondary planar classifiers (map layers) */
   secondaryClassifiers?: Map<number, RenderPlanarClassifier>;
-  /** See HitDetail.viewAttachmentId.
+  /** The Id of the [ViewAttachment]($backend) from which this branch's graphics originated.
    * @internal
    */
   viewAttachmentId?: Id64String;
+  /** @internal */
+  inSectionDrawingAttachment?: boolean;
   /** If true, the view's [DisplayStyleSettings.clipStyle]($common) will be disabled for this branch.
    * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
    */

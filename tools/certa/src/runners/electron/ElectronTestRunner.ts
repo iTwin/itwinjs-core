@@ -22,12 +22,12 @@ export class ElectronTestRunner {
     if (config.debug)
       app.commandLine.appendSwitch("remote-debugging-port", String(config.ports.frontendDebugging));
 
-    const timeout = new Promise((_resolve, reject) => setTimeout(() => reject("Timed out after 2 minutes when starting electron"), 2 * 60 * 1000));
+    const timeout = new Promise((_resolve, reject) => setTimeout(() => reject(new Error("Timed out after 2 minutes when starting electron")), 2 * 60 * 1000));
     await Promise.race([app.whenReady(), timeout]);
   }
 
   public static async runTests(config: CertaConfig): Promise<void> {
-    const { BrowserWindow, app, ipcMain } = require("electron"); // eslint-disable-line @typescript-eslint/naming-convention
+    const { BrowserWindow, app, ipcMain } = require("electron");
 
     const webPreferences: WebPreferences = {
       nodeIntegration: true,

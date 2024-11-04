@@ -89,8 +89,7 @@ export class ArcGisTokenGenerator {
       const response = await fetch(infoUrl, { method: "GET" });
       const json = await response.json();
       tokenServicesUrl = ArcGisTokenGenerator.getTokenServiceFromInfoJson(json);
-    } catch (_error) {
-    }
+    } catch { }
     return tokenServicesUrl;
   }
 
@@ -157,8 +156,7 @@ export class ArcGisTokenGenerator {
       // Check a token was really generated (an error could be part of the body)
       token = await response.json();
 
-    } catch (_error) {
-    }
+    } catch { }
     return token;
   }
 

@@ -7,6 +7,7 @@
  */
 
 import { DelayedPromiseWithProps } from "../DelayedPromise";
+import { ECSpecVersion, SchemaReadHelper } from "../Deserialization/Helper";
 import { RelationshipClassProps, RelationshipConstraintProps } from "../Deserialization/JsonProps";
 import { XmlSerializationUtils } from "../Deserialization/XmlSerializationUtils";
 import {
@@ -31,8 +32,8 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
  * @beta
  */
 export class RelationshipClass extends ECClass {
-  public override readonly schema!: Schema; // eslint-disable-line
-  public override readonly schemaItemType!: SchemaItemType.RelationshipClass; // eslint-disable-line
+  public override readonly schema!: Schema;
+  public override readonly schemaItemType!: SchemaItemType.RelationshipClass;
   protected _strength: StrengthType;
   protected _strengthDirection: StrengthDirection;
   protected _source: RelationshipConstraint;
@@ -120,9 +121,13 @@ export class RelationshipClass extends ECClass {
   public override fromJSONSync(relationshipClassProps: RelationshipClassProps) {
     super.fromJSONSync(relationshipClassProps);
 
-    const strength = parseStrength(relationshipClassProps.strength);
-    if (undefined === strength)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);
+    let strength = parseStrength(relationshipClassProps.strength);
+    if (undefined === strength) {
+      if (SchemaReadHelper.isECSpecVersionNewer({readVersion: relationshipClassProps.originalECSpecMajorVersion, writeVersion: relationshipClassProps.originalECSpecMinorVersion} as ECSpecVersion))
+        strength = StrengthType.Referencing;
+      else
+        throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);
+    }
 
     const strengthDirection = parseStrengthDirection(relationshipClassProps.strengthDirection);
     if (undefined === strengthDirection)

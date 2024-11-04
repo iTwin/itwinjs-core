@@ -160,6 +160,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 
 ## Updates to the package.json should avoid requesting review by everyone
 ## If the version updates or
+/common/changes/**/*.json                         @iTwin/itwinjs-core
 /**/package.json                                  @iTwin/itwinjs-core
 /**/CHANGELOG.json                                @iTwin/itwinjs-core
 /**/CHANGELOG.md                                  @iTwin/itwinjs-core
