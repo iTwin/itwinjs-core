@@ -58,7 +58,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   public getConstructiveFrame(): Transform | undefined {
     return this._localToWorld.cloneRigid();
   }
-  /** Apply the transform to this cone's locla to world coordinates.
+  /** Apply the transform to this cone's local to world coordinates.
    * * Note that the radii are not changed.  Scaling is absorbed into the frame.
    * * This fails if the transformation is singular.
    */
@@ -70,11 +70,11 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
   }
   /**
    * Create a clone and immediately transform the clone.
+   * * This fails if the transformation is singular.
    */
   public cloneTransformed(transform: Transform): Cone | undefined {
     const result = this.clone();
-    transform.multiplyTransformTransform(result._localToWorld, result._localToWorld);
-    return result;
+    return result.tryTransformInPlace(transform) ? result : undefined;
   }
   /** create a cylinder or cone from two endpoints and their radii.   The circular cross sections are perpendicular to the axis line
    * from start to end point.
