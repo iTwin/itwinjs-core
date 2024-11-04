@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Constant, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaMerger, SchemaMergingError } from "../../Merging/SchemaMerger";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
@@ -170,8 +170,10 @@ describe("Constant merger tests", () => {
         },
       ],
     });
-    await expect(merge).to.be.rejectedWith("The Constant testConstant has an invalid 'definition' attribute.");
 
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "The Constant testConstant has an invalid 'definition' attribute.");
+    });
   });
 
   it("it should throw error if numerator conflict exist", async () => {
@@ -213,7 +215,10 @@ describe("Constant merger tests", () => {
         },
       ],
     });
-    await expect(merge).to.be.rejectedWith(Error, "Failed to merged, constant numerator conflict: 5.5 -> 4.5");
+
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "Failed to merged, constant numerator conflict: 5.5 -> 4.5");
+    });
   });
 
   it("it should throw error if denominator conflict exist", async () => {
@@ -255,6 +260,9 @@ describe("Constant merger tests", () => {
         },
       ],
     });
-    await expect(merge).to.be.rejectedWith(Error, "Failed to merged, constant denominator conflict: 5.1 -> 4.2");
+
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "Failed to merged, constant denominator conflict: 5.1 -> 4.2");
+    });
   });
 });

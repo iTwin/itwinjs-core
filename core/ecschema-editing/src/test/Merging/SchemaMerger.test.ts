@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Schema, SchemaContext } from "@itwin/ecschema-metadata";
 import { SchemaConflictsError } from "../../Differencing/Errors";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaMerger, SchemaMergingError } from "../../Merging/SchemaMerger";
 import { AnySchemaDifference, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { AnySchemaDifferenceConflict, ConflictCode } from "../../Differencing/SchemaConflicts";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
@@ -57,7 +57,9 @@ describe("Schema merge tests", () => {
       differences: [],
     });
 
-    await expect(merge).to.be.rejectedWith("The target schema 'TargetSchema' could not be found in the editing context.");
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "The target schema 'TargetSchema' could not be found in the editing context.");
+    });
   });
 
   it("should throw an error if the target schema cannot be located", async () => {
@@ -75,7 +77,9 @@ describe("Schema merge tests", () => {
       differences: [],
     });
 
-    await expect(merge).to.be.rejectedWith("The target schema 'TargetSchema' is not dynamic. Only dynamic schemas are supported for merging.");
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "The target schema 'TargetSchema' is not dynamic. Only dynamic schemas are supported for merging.");
+    });
   });
 
   it("should merge label and description from schema", async () => {

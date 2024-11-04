@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { KindOfQuantity, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaMerger, SchemaMergingError } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
@@ -504,6 +504,8 @@ describe("KindOfQuantity merge tests", () => {
       conflicts: undefined,
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the kind of quantity 'TestKoq' persistenceUnit is not supported.");
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "Changing the kind of quantity 'TestKoq' persistenceUnit is not supported.");
+    });
   });
 });

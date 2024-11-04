@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttributeClass, CustomAttributeContainerType, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
-import { SchemaMerger } from "../../Merging/SchemaMerger";
+import { SchemaMerger, SchemaMergingError } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
 import { ECEditingStatus } from "../../Editing/Exception";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
@@ -172,7 +172,9 @@ describe("CustomAttributeClass merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.rejectedWith("Changing the class 'testCAClass' baseClass is not supported.");
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).has.a.nested.property("mergeError.message", "Changing the class 'testCAClass' baseClass is not supported.");
+    });
   });
 
   it("should throw an error when merging custom attribute base class to one that doesn't derive from", async () => {
@@ -224,10 +226,10 @@ describe("CustomAttributeClass merger tests", () => {
       ],
     });
 
-    await expect(merge).to.be.eventually.rejected.then(function (error) {
-      expect(error).to.have.property("errorNumber", ECEditingStatus.SetBaseClass);
-      expect(error).to.have.nested.property("innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
-      expect(error).to.have.nested.property("innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
+    await expect(merge).to.be.eventually.rejectedWith(SchemaMergingError).then((error) => {
+      expect(error).to.have.nested.property("mergeError.errorNumber", ECEditingStatus.SetBaseClass);
+      expect(error).to.have.nested.property("mergeError.innerError.message", `Base class TargetSchema.TestBase must derive from TargetSchema.TargetBase.`);
+      expect(error).to.have.nested.property("mergeError.innerError.errorNumber", ECEditingStatus.InvalidBaseClass);
     });
   });
 });
