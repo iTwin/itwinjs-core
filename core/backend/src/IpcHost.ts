@@ -254,7 +254,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     if (IModelHost.snapshotFileNameResolver) { // eslint-disable-line @typescript-eslint/no-deprecated
       resolvedFileName = IModelHost.snapshotFileNameResolver.tryResolveFileName(filePath); // eslint-disable-line @typescript-eslint/no-deprecated
       if (!resolvedFileName)
-        throw new IModelNotFoundResponse();
+        throw new IModelNotFoundResponse(); // eslint-disable-line @typescript-eslint/only-throw-error
     }
     return SnapshotDb.openFile(resolvedFileName, opts).getConnectionProps();
   }

@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 import { IModelConnectionProps, IModelRpcProps, SnapshotOpenOptions } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
