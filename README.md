@@ -1,6 +1,6 @@
 ﻿<p align="center">
  <a href="https://www.itwinjs.org/" target="_blank" rel="noopener noreferrer">
-    <img width="180" src="./docs/assets/imodeljs-icon.svg" alt="iTwin.js Logo">
+    <img width="180" src="./docs/assets/imodeljs.svg" alt="iTwin.js Logo">
   </a>
 </p>
 
