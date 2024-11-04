@@ -313,7 +313,9 @@ export class PresentationRpcInterface extends RpcInterface {
     _ids: Id64String[],
     _scopeId: string,
   ): PresentationRpcResponse<KeySetJSON>;
+  /** @deprecated in 4.10. Use [PresentationManager]($presentation-backend) instead of calling the RPC interface directly. */
   public async computeSelection(_token: IModelRpcProps, _options: ComputeSelectionRpcRequestOptions): PresentationRpcResponse<KeySetJSON>;
+  /** @deprecated in 4.10. Use [PresentationManager]($presentation-backend) instead of calling the RPC interface directly. */
   public async computeSelection(
     _token: IModelRpcProps,
     _options: ComputeSelectionRpcRequestOptions | SelectionScopeRpcRequestOptions,

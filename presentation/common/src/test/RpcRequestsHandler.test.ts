@@ -700,6 +700,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = new KeySet().toJSON();
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.computeSelection(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
