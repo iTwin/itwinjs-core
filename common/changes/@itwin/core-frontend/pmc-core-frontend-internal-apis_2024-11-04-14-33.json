@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Promote some overridden methods/properties from internal to public.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
