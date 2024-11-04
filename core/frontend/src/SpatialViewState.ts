@@ -109,7 +109,6 @@ export class SpatialViewState extends ViewState3d {
     this._treeRefs = SpatialTileTreeReferences.create(this);
   }
 
-  /** @internal */
   public override isSpatialView(): this is SpatialViewState { return true; }
 
   public override equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
