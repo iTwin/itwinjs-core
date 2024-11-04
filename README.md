@@ -1,20 +1,20 @@
-﻿<p align="center">
+﻿<p style="display: flex; justify-content: center; align-items: center;">
  <a href="https://www.itwinjs.org/" target="_blank" rel="noopener noreferrer">
-    <img width="180" src="./docs/assets/imodeljs.svg" alt="iTwin.js Logo">
+    <img width="180" src="./docs/assets/itwinjs-logo-colorized.svg" alt="iTwin.js Logo">
   </a>
 </p>
 
-<h1 align="center">
+<h1 style="text-align: center;">
 iTwin.js
 </h1>
-<p align="center">
+<p style="text-align: center;">
     <a href="https://github.com/iTwin/itwinjs-core/releases/latest"><img src="https://img.shields.io/github/v/release/iTwin/itwinjs-core?label=latest" alt="Latest version"></a>
     <a href="https://nodejs.org/en/about/previous-releases">
     <img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2FiTwin%2Fitwinjs-core%2Fraw%2Fmaster%2Frush.json&query=%24.nodeSupportedVersionRange&label=node&color=33a921"
     alt="Supported Node Versions">
     </a>
 </a>
-<p align="center">
+<p style="text-align: center;">
 An open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
 </p>
 
