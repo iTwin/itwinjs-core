@@ -100,7 +100,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
       const normals = geometry.ensureEmptySurfaceNormals();
       if (derivatives && normals) {
         const vectorU = Vector3d.create();
-        const vectorV = Vector3d.create();  // v direction (forwward along sweep) for surface of rotation.
+        const vectorV = Vector3d.create();  // v direction (forward along sweep) for surface of rotation.
         const xyz = Point3d.create();
         const n = points.length;
         for (let i = 0; i < n; i++) {
