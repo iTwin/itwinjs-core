@@ -671,6 +671,10 @@
       "allowedCategories": [ "backend", "tools" ]
     },
     {
+      "name": "marked",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "memfs",
       "allowedCategories": [ "tools" ]
     },

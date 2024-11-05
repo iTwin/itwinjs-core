@@ -1,0 +1,144 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="AllProperties" alias="aps" version="01.00.00"
+  xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="BisCore" version="01.00.16" alias="bis"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.04" alias="CoreCA"/>
+  <ECEntityClass typeName="TestElement" modifier="None">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <BaseClass>IPrimitive</BaseClass>
+    <BaseClass>IPrimitiveArray</BaseClass>
+    <ECProperty propertyName="DirectStr" typeName="string"/>
+    <ECProperty propertyName="DirectLong" typeName="long"/>
+    <ECProperty propertyName="DirectDouble" typeName="double"/>
+  </ECEntityClass>
+  <ECEntityClass typeName="TestElementAspect" modifier="None">
+    <BaseClass>bis:ElementUniqueAspect</BaseClass>
+    <BaseClass>IPrimitiveAspect</BaseClass>
+    <BaseClass>IPrimitiveArrayAspect</BaseClass>
+  </ECEntityClass>
+  <ECRelationshipClass typeName="TestElementRefersToElements" strength="referencing" modifier="Sealed">
+    <BaseClass>bis:ElementRefersToElements</BaseClass>
+    <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+      <Class class="TestElement"/>
+    </Source>
+    <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+      <Class class="TestElement"/>
+    </Target>
+    <ECProperty propertyName="i" typeName="int"/>
+    <ECProperty propertyName="l" typeName="long"/>
+    <ECProperty propertyName="d" typeName="double"/>
+    <ECProperty propertyName="b" typeName="boolean"/>
+    <ECProperty propertyName="dt" typeName="dateTime"/>
+    <ECProperty propertyName="s" typeName="string"/>
+    <ECProperty propertyName="bin" typeName="binary"/>
+    <ECProperty propertyName="p2d" typeName="point2d"/>
+    <ECProperty propertyName="p3d" typeName="point3d"/>
+    <ECProperty propertyName="g" typeName="Bentley.Geometry.Common.IGeometry"/>
+    <!--<ECStructProperty propertyName="st" typeName="ComplexStruct"/>-->
+    <ECArrayProperty propertyName="array_i" typeName="int" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_l" typeName="long" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_d" typeName="double" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_b" typeName="boolean" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_dt" typeName="dateTime" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_s" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_bin" typeName="binary" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_p2d" typeName="point2d" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_p3d" typeName="point3d" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_g" typeName="Bentley.Geometry.Common.IGeometry" minOccurs="0" maxOccurs="unbounded"/>
+    <!--<ECStructArrayProperty propertyName="array_st" typeName="ComplexStruct" minOccurs="0" maxOccurs="unbounded"/>-->
+  </ECRelationshipClass>
+  <ECEntityClass typeName="IPrimitive" modifier="Abstract">
+    <ECCustomAttributes>
+      <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+        <AppliesToEntityClass>bis:PhysicalElement</AppliesToEntityClass>
+      </IsMixin>
+    </ECCustomAttributes>
+    <ECProperty propertyName="i" typeName="int"/>
+    <ECProperty propertyName="l" typeName="long"/>
+    <ECProperty propertyName="d" typeName="double"/>
+    <ECProperty propertyName="b" typeName="boolean"/>
+    <ECProperty propertyName="dt" typeName="dateTime"/>
+    <ECProperty propertyName="s" typeName="string"/>
+    <ECProperty propertyName="bin" typeName="binary"/>
+    <ECProperty propertyName="p2d" typeName="point2d"/>
+    <ECProperty propertyName="p3d" typeName="point3d"/>
+    <ECProperty propertyName="g" typeName="Bentley.Geometry.Common.IGeometry"/>
+    <ECStructProperty propertyName="st" typeName="ComplexStruct"/>
+  </ECEntityClass>
+  <ECEntityClass typeName="IPrimitiveAspect" modifier="Abstract">
+    <ECCustomAttributes>
+      <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+        <AppliesToEntityClass>bis:ElementUniqueAspect</AppliesToEntityClass>
+      </IsMixin>
+    </ECCustomAttributes>
+    <ECProperty propertyName="i" typeName="int"/>
+    <ECProperty propertyName="l" typeName="long"/>
+    <ECProperty propertyName="d" typeName="double"/>
+    <ECProperty propertyName="b" typeName="boolean"/>
+    <ECProperty propertyName="dt" typeName="dateTime"/>
+    <ECProperty propertyName="s" typeName="string"/>
+    <ECProperty propertyName="bin" typeName="binary"/>
+    <ECProperty propertyName="p2d" typeName="point2d"/>
+    <ECProperty propertyName="p3d" typeName="point3d"/>
+    <ECProperty propertyName="g" typeName="Bentley.Geometry.Common.IGeometry"/>
+    <ECStructProperty propertyName="st" typeName="ComplexStruct"/>
+  </ECEntityClass>
+  <ECEntityClass typeName="IPrimitiveArray" modifier="Abstract">
+    <ECCustomAttributes>
+      <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+        <AppliesToEntityClass>bis:PhysicalElement</AppliesToEntityClass>
+      </IsMixin>
+    </ECCustomAttributes>
+    <ECArrayProperty propertyName="array_i" typeName="int" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_l" typeName="long" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_d" typeName="double" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_b" typeName="boolean" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_dt" typeName="dateTime" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_s" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_bin" typeName="binary" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_p2d" typeName="point2d" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_p3d" typeName="point3d" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_g" typeName="Bentley.Geometry.Common.IGeometry" minOccurs="0" maxOccurs="unbounded"/>
+    <ECStructArrayProperty propertyName="array_st" typeName="ComplexStruct" minOccurs="0" maxOccurs="unbounded"/>
+  </ECEntityClass>
+  <ECEntityClass typeName="IPrimitiveArrayAspect" modifier="Abstract">
+    <ECCustomAttributes>
+      <IsMixin xmlns="CoreCustomAttributes.01.00.03">
+        <AppliesToEntityClass>bis:ElementUniqueAspect</AppliesToEntityClass>
+      </IsMixin>
+    </ECCustomAttributes>
+    <ECArrayProperty propertyName="array_i" typeName="int" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_l" typeName="long" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_d" typeName="double" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_b" typeName="boolean" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_dt" typeName="dateTime" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_s" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_bin" typeName="binary" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_p2d" typeName="point2d" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_p3d" typeName="point3d" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_g" typeName="Bentley.Geometry.Common.IGeometry" minOccurs="0" maxOccurs="unbounded"/>
+    <ECStructArrayProperty propertyName="array_st" typeName="ComplexStruct" minOccurs="0" maxOccurs="unbounded"/>
+  </ECEntityClass>
+  <ECStructClass typeName="ComplexStruct" modifier="None">
+    <ECProperty propertyName="i" typeName="int"/>
+    <ECProperty propertyName="l" typeName="long"/>
+    <ECProperty propertyName="d" typeName="double"/>
+    <ECProperty propertyName="b" typeName="boolean"/>
+    <ECProperty propertyName="dt" typeName="dateTime"/>
+    <ECProperty propertyName="s" typeName="string"/>
+    <ECProperty propertyName="bin" typeName="binary"/>
+    <ECProperty propertyName="p2d" typeName="point2d"/>
+    <ECProperty propertyName="p3d" typeName="point3d"/>
+    <ECProperty propertyName="g" typeName="Bentley.Geometry.Common.IGeometry"/>
+    <ECArrayProperty propertyName="array_i" typeName="int" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_l" typeName="long" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_d" typeName="double" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_b" typeName="boolean" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_dt" typeName="dateTime" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_s" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_bin" typeName="binary" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_p2d" typeName="point2d" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_p3d" typeName="point3d" minOccurs="0" maxOccurs="unbounded"/>
+    <ECArrayProperty propertyName="array_g" typeName="Bentley.Geometry.Common.IGeometry" minOccurs="0" maxOccurs="unbounded"/>
+  </ECStructClass>
+</ECSchema>
