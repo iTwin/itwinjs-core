@@ -1178,17 +1178,28 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /** Construct facets for a rotational sweep. */
   public addRotationalSweep(surface: RotationalSweep): void {
-    const contour = surface.getCurves();
-    const section0 = StrokeCountSection.createForParityRegionOrChain(contour, this._options);
+    const contour = surface.getSweepContourRef();
+    const section0 = StrokeCountSection.createForParityRegionOrChain(contour.getCurves(), this._options);
     const baseStrokes = section0.getStrokes();
+    // ensure sweep is positive for swingVector
     const axis = surface.cloneAxisRay();
+    const sweepAngle = surface.getSweep();
+    if (sweepAngle.radians < 0.0) {
+      axis.direction.scaleInPlace(-1);
+      sweepAngle.setRadians(-sweepAngle.radians);
+    }
+    // swingVector points in the direction of positive sweep
     const perpendicularVector = CylindricalRangeQuery.computeMaxVectorFromRay(axis, baseStrokes);
     const swingVector = axis.direction.crossProduct(perpendicularVector);
+    // ensure contour computed normal is aligned with swingVector
+    const contourNormalAgreesWithSwingDir = contour.localToWorld.matrix.dotColumnZ(swingVector) > 0;
+    if (!contourNormalAgreesWithSwingDir)
+      baseStrokes.reverseInPlace();
     if (this._options.needNormals)
       CylindricalRangeQuery.buildRotationalNormalsInLineStrings(baseStrokes, axis, swingVector);
     const maxDistance = perpendicularVector.magnitude();
-    const maxPath = Math.abs(maxDistance * surface.getSweep().radians);
-    let numStep = StrokeOptions.applyAngleTol(this._options, 1, surface.getSweep().radians, undefined);
+    const maxPath = Math.abs(maxDistance * sweepAngle.radians);
+    let numStep = StrokeOptions.applyAngleTol(this._options, 1, sweepAngle.radians, undefined);
     numStep = StrokeOptions.applyMaxEdgeLength(this._options, numStep, maxPath);
     for (let i = 1; i <= numStep; i++) {
       const transformA = surface.getFractionalRotationTransform((i - 1) / numStep);
@@ -1196,11 +1207,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       this.addBetweenRotatedStrokeSets(baseStrokes, transformA, i - 1, transformB, i);
     }
     if (surface.capped) {
-      const capContour = surface.getSweepContourRef();
-      capContour.purgeFacets();
-      capContour.emitFacets(this, true, undefined);
-      // final loop pass left transformA at end
-      capContour.emitFacets(this, false, surface.getFractionalRotationTransform(1.0));
+      contour.purgeFacets();
+      const reverseNearCap = contourNormalAgreesWithSwingDir;
+      contour.emitFacets(this, reverseNearCap, undefined);
+      contour.emitFacets(this, !reverseNearCap, surface.getFractionalRotationTransform(1.0));
     }
   }
   /** Construct facets for any planar region. */
@@ -1263,9 +1273,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const normalIndices = ls.ensureEmptyNormalIndices();
       const normalIndex0 = this.findOrAddNormalInLineString(ls, 0, transform);
       normalIndices.push(normalIndex0!);
-      let normalIndexA = normalIndex0;
-      let normalIndexB: number | undefined;
       if (n > 1) {
+        let normalIndexA = normalIndex0;
+        let normalIndexB: number | undefined;
         for (let i = 1; i + 1 < n; i++) {
           normalIndexB = this.findOrAddNormalInLineString(ls, i, transform, normalIndexA);
           normalIndices.push(normalIndexB!);
@@ -1280,9 +1290,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       const uvIndices = ls.ensureEmptyUVIndices();
       const uvIndex0 = this.findOrAddParamInLineString(ls, 0, vParam);
       uvIndices.push(uvIndex0!);
-      let uvIndexA = uvIndex0;
-      let uvIndexB: number | undefined;
       if (n > 1) {
+        let uvIndexA = uvIndex0;
+        let uvIndexB: number | undefined;
         for (let i = 1; i + 1 < n; i++) {
           uvIndexB = this.findOrAddParamInLineString(ls, i, vParam, uvIndexA);
           uvIndices.push(uvIndexB!);
