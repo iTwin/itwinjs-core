@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import * as fs from "fs";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyCurve } from "../../curve/CurveTypes";
@@ -122,7 +122,7 @@ it("PartitionFacetsByConnectivity", () => {
     x0 += (numVertexConnectedComponents + 10) * a;
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "PartitionFacetsByConnectivity");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("ExpandToMaximalPlanarFacetsA", () => {
@@ -158,7 +158,7 @@ it("ExpandToMaximalPlanarFacetsA", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFaces");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 /**
@@ -239,7 +239,7 @@ it("ExpandToMaximalPlanarFacetsWithHole", () => {
     dx += 20;
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "ExpandToMaximalPlanarFacesWithHoles");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 // implement a minimal visitor NOT backed by a Polyface
@@ -310,7 +310,7 @@ it("CountVisitableFacets", () => {
   const visitor0 = new VisitorSansMesh(5);
   ck.testExactNumber(5, PolyfaceQuery.visitorClientPointCount(visitor0));
   ck.testExactNumber(5, PolyfaceQuery.visitorClientFacetCount(visitor0));
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("FillHoles", () => {
@@ -355,7 +355,7 @@ it("FillHoles", () => {
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, unfilledChainsA, dx, dy, zShift);
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "FillHoles");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("SimplestTriangulation", () => {
@@ -408,7 +408,7 @@ it("SimplestTriangulation", () => {
   ck.testFalse(SpacePolygonTriangulation.triangulateSimplestSpaceLoop([points[0], points[1], points[3], points[2]], announceTriangles, 2.0), "perimeter trigger");
 
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "SimplestTriangulation");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("GreedyEarCutTriangulation", () => {
@@ -458,7 +458,7 @@ it("GreedyEarCutTriangulation", () => {
     }
   }
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "GreedyEarCutTriangulation");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("cloneWithTVertexFixup", () => {
@@ -487,7 +487,7 @@ it("cloneWithTVertexFixup", () => {
   // !!! this does NOT remove the T vertex additions !!!
   GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh2, sectorRadius, true, x0 + dy, y0 + 2 * dy);
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "cloneWithTVertexFixup");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 it("cloneWithColinearEdgeFixup", () => {
@@ -518,7 +518,7 @@ it("cloneWithColinearEdgeFixup", () => {
   GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh1, x0, y0 + dy);
   GeometryCoreTestIO.createAndCaptureSectorMarkup(allGeometry, mesh1, sectorRadius, true, x0 + dy, y0 + dy);
   GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceQuery", "cloneWithColinearEdgeFixup");
-  expect(ck.getNumErrors()).equals(0);
+  expect(ck.getNumErrors()).toBe(0);
 });
 
 describe("MarkVisibility", () => {
@@ -536,7 +536,7 @@ describe("MarkVisibility", () => {
     PolyfaceQuery.markPairedEdgesInvisible(mesh);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx, dy, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "MarkVisibility", "SimpleBoundary");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("NonManifold", () => {
@@ -568,7 +568,7 @@ describe("MarkVisibility", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, y0, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "MarkVisibility", "NonManifold");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -603,7 +603,7 @@ describe("ReorientFacets", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, meshB, x0, y0 + dy, 0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "ReorientFacets", "TwoFacets");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ManyFlips", () => {
@@ -626,7 +626,7 @@ describe("ReorientFacets", () => {
       x0 += dx;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ReorientFacets", "ManyFlips");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MeshClosure", () => {
@@ -654,7 +654,7 @@ describe("ReorientFacets", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ReorientFacets", "MeshClosure");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("MoebiusStrip", () => {
@@ -743,7 +743,7 @@ describe("ReorientFacets", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ReorientFacets", "MoebiusStrip");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("DuplicateFacetPurge", () => {
     const ck = new Checker();
@@ -785,7 +785,7 @@ describe("ReorientFacets", () => {
     // and again ..
     meshDataA.indexedMesh.pointIndex.push(6, 10, 3, 0);
     testDuplicateFacetCounts(ck, "Additional Triangle Duplicate", meshDataA, 3, 2, 1, 1);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("XYBoundaryHoles", () => {
@@ -809,7 +809,7 @@ describe("ReorientFacets", () => {
     exerciseMultiUnionDiff(ck, allGeometry, [[rectangleA, rectangleZ]], [rectangleC], x0 += 20, y0);
     exerciseMultiUnionDiff(ck, allGeometry, [[rectangleA, rectangleZ]], [rectangleC, rectangleE], x0 += 20, y0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "MarkVisibility", "XYBoundaryHoles");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("ComputeNormals", () => {
     const ck = new Checker();
@@ -856,7 +856,7 @@ describe("ReorientFacets", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "ComputeNormals");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("NullNormal", () => {
@@ -871,7 +871,7 @@ describe("ReorientFacets", () => {
       ck.testTrue(undefined !== mesh.data.normalIndex && (mesh.data.normalIndex.length === mesh.data.pointIndex.length), "normal indices were added");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "NullNormal");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("isConvex", () => {
@@ -925,7 +925,7 @@ describe("ReorientFacets", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "isConvex");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("isConvexWithBoundary", () => {
@@ -943,7 +943,7 @@ describe("ReorientFacets", () => {
     ck.testFalse(PolyfaceQuery.isConvexByDihedralAngleCount(polyface, false), "isConvexByDihedralPairing reject boundary");
     ck.testTrue(PolyfaceQuery.isConvexByDihedralAngleCount(polyface, true), "isConvexByDihedralPairing with boundary");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("isConvexWithAllPlanar", () => {
@@ -960,7 +960,7 @@ describe("ReorientFacets", () => {
     ck.testExactNumber(0, PolyfaceQuery.dihedralAngleSummary(polyface, true), "dihedral with boundary and planar");
     ck.testFalse(PolyfaceQuery.isConvexByDihedralAngleCount(polyface, true), "isConvexByDihedralPairing with boundary and planar");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("dihedralAngleSummary", () => {
@@ -1088,7 +1088,7 @@ describe("ReorientFacets", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "ComputeSilhouettes");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1263,7 +1263,7 @@ describe("Intersections", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectRay3dClosedConvexMesh");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("IntersectRay3dSingleFaceMesh", () => {
@@ -1375,7 +1375,7 @@ describe("Intersections", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "IntersectRay3dSingleFaceMesh");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -1412,6 +1412,6 @@ describe("FacetShape", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "FacetShape", "Convexity");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

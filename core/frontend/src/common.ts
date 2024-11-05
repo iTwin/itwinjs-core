@@ -15,6 +15,7 @@ export * from "./common/render/GraphicPrimitive";
 export * from "./common/render/GraphicType";
 export * from "./common/render/InstancedGraphicParams";
 export * from "./common/render/MaterialParams";
+export * from "./common/render/RenderInstancesParams";
 export * from "./common/render/TextureParams";
 export * from "./common/ViewRect";
 export * from "./common/WorkerProxy";

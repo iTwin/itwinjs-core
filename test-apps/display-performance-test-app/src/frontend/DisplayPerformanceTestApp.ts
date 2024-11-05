@@ -78,7 +78,7 @@ export class DisplayPerfTestApp {
       ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
       : new FrontendIModelsAccess();
 
-    iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]; // eslint-disable-line deprecation/deprecation
+    iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]; // eslint-disable-line @typescript-eslint/no-deprecated
     if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup({ iModelApp });
     else
@@ -109,7 +109,7 @@ export class DisplayPerfTestApp {
           await response.json();
           runner.curConfig.urlStr = urlStr;
           return url;
-        } catch (_) {
+        } catch {
           runner.curConfig.urlStr = `${urlStr}tileset.json - Not found`;
           // No tileset available.
           return undefined;

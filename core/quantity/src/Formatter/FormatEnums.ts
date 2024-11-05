@@ -101,45 +101,69 @@ export enum DecimalPrecision {
  *  @beta */
 export enum FormatType {
   /** Decimal display (ie 2.125) */
-  Decimal,
+  Decimal = "Decimal",
   /** Fractional display (ie 2-1/8) */
-  Fractional,
+  Fractional = "Fractional",
   /** Scientific Notation (ie 1.04e3) */
-  Scientific,
+  Scientific = "Scientific",
   /** Civil Engineering Stationing (ie 1+00). */
-  Station,
+  Station = "Station",
   /** Bearing angle e.g. N05:00:00E. Requires provided quantities to be of the angle phenomenon */
-  Bearing,
+  Bearing = "Bearing",
   /** Azimuth angle e.g. 45°30'00". Requires provided quantities to be of the angle phenomenon */
-  Azimuth,
+  Azimuth = "Azimuth",
+  /** Ratio display e,g. 1:2 or 0.3:1.  */
+  Ratio = "Ratio",
 }
 
 /** required if type is scientific
  * @beta */
 export enum ScientificType {
   /** Non-zero value left of decimal point (ie 1.2345e3) */
-  Normalized,
+  Normalized = "Normalized",
   /** Zero value left of decimal point (ie 0.12345e4) */
-  ZeroNormalized,
+  ZeroNormalized = "ZeroNormalized",
+}
+
+/** required if type is ratio
+ * @beta */
+export enum RatioType {
+  /** One to N ratio (ie 1:N) */
+  OneToN = "OneToN",
+  /** N to One ratio (ie N:1) */
+  NToOne = "NToOne",
+  /**  the lesser value scales to 1. e.g. input 0.5 turns into 2:1 | input 2 turns into 1:2 */
+  ValueBased = "ValueBased",
+  /**  scales the input ratio to its simplest integer form using the greatest common divisor (GCD) of the values. e.g. 0.3 turns into 3:10 */
+  UseGreatestCommonDivisor = "UseGreatestCommonDivisor",
 }
 
 /** Determines how the sign of values are displayed
  * @beta */
 export enum ShowSignOption {
   /** Never show a sign even if the value is negative. */
-  NoSign,
+  NoSign = "NoSign",
   /** Only show a sign when the value is negative. */
-  OnlyNegative,
+  OnlyNegative = "OnlyNegative",
   /** Always show a sign whether the value is positive or negative. */
-  SignAlways,
+  SignAlways = "SignAlways",
   /** Only show a sign when the value is negative but use parentheses instead of a negative sign. For example, -10 is formatted as `(10)`. */
-  NegativeParentheses,
+  NegativeParentheses = "NegativeParentheses",
 }
 
 // parse and toString methods
 
-/**  @beta   */
+/**
+ * @beta
+ * @deprecated in 4.10. ScientificType is now a string enum and doesn't need a serialization method. You can access the enum directly.
+*/
+export function scientificTypeToString(scientificType: ScientificType): string {
+  return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
+}
 
+/**
+ * @beta
+*/
 export function parseScientificType(scientificType: string, formatName: string): ScientificType {
   switch (scientificType.toLowerCase()) {
     case "normalized": return ScientificType.Normalized;
@@ -150,8 +174,17 @@ export function parseScientificType(scientificType: string, formatName: string):
 }
 
 /**  @beta   */
-export function scientificTypeToString(scientificType: ScientificType): string {
-  return (scientificType === ScientificType.Normalized) ? "Normalized" : "ZeroNormalized";
+export function parseRatioType(ratioType: string, formatName: string): RatioType {
+  const normalizedValue = ratioType.toLowerCase();
+  for (const key in RatioType) {
+    if (RatioType.hasOwnProperty(key)) {
+      const enumValue = RatioType[key as keyof typeof RatioType];
+      if (enumValue.toLowerCase() === normalizedValue) {
+        return enumValue as RatioType;
+      }
+    }
+  }
+  throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'ratioType' attribute.`);
 }
 
 /** @beta    */
@@ -166,7 +199,10 @@ export function parseShowSignOption(showSignOption: string, formatName: string):
   }
 }
 
-/**  @beta  */
+/**
+ * @beta
+ * @deprecated in 4.10. ShowSignOption is now a string enum and doesn't need a serialization method. You can access the enum directly.
+*/
 export function showSignOptionToString(showSign: ShowSignOption): string {
   switch (showSign) {
     case ShowSignOption.NegativeParentheses: return "NegativeParentheses";
@@ -256,12 +292,15 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
     case "fractional": return FormatType.Fractional;
     case "bearing": return FormatType.Bearing;
     case "azimuth": return FormatType.Azimuth;
+    case "ratio": return FormatType.Ratio;
     default:
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${formatName} has an invalid 'type' attribute.`);
   }
 }
 
-/** @beta    */
+/** @beta
+ *  @deprecated in 4.10. FormatType is now a string enum and doesn't need a serialization method. You can access the enum directly.
+*/
 export function formatTypeToString(type: FormatType): string {
   switch (type) {
     case FormatType.Decimal: return "Decimal";
@@ -270,6 +309,7 @@ export function formatTypeToString(type: FormatType): string {
     case FormatType.Fractional: return "Fractional";
     case FormatType.Bearing: return "Bearing";
     case FormatType.Azimuth: return "Azimuth";
+    case FormatType.Ratio: return "Ratio";
   }
 }
 
@@ -317,6 +357,7 @@ export function parsePrecision(precision: number, type: FormatType, formatName: 
     case FormatType.Decimal:
     case FormatType.Scientific:
     case FormatType.Station:
+    case FormatType.Ratio:
     case FormatType.Bearing:
     case FormatType.Azimuth:
       return parseDecimalPrecision(precision, formatName);

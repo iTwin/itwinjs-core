@@ -30,7 +30,6 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
   private _allLayersRange?: MapCartoRectangle;
   private _subLayerRanges = new Map<string, MapCartoRectangle>();
   private _baseUrl: string;
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private _crsSupport: WmsCrsSupport|undefined;
 
   constructor(settings: ImageMapLayerSettings) {
@@ -188,7 +187,7 @@ export class WmsMapLayerImageryProvider extends MapLayerImageryProvider {
     const infoFormats = this._capabilities?.featureInfoFormats;
     if (!doToolTips || undefined === infoFormats)
       return;
-    let formatString = infoFormats.find((format) => format === "text/html");
+    let formatString: string | undefined = infoFormats.find((format) => format === "text/html");
     if (!formatString)
       formatString = infoFormats[0];
 

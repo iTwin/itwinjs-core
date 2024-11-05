@@ -399,7 +399,7 @@ export class AccuSnap implements Decorator {
         const msg = await IModelApp.toolAdmin.getToolTip(hit);
         if (this._toolTipPromise === promise) // have we abandoned this request while awaiting getToolTip?
           this.showLocateMessage(viewPt, vp, msg);
-      } catch (error) { } // happens if getToolTip was canceled
+      } catch { } // happens if getToolTip was canceled
     });
   }
 
@@ -684,7 +684,12 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    const hitVp = thisHit.viewAttachment ? thisHit.viewAttachment.viewport : thisHit.viewport;
+    let hitVp;
+    if (thisHit.path) {
+      hitVp = thisHit.path.sectionDrawingAttachment?.viewport ?? thisHit.path.viewAttachment?.viewport;
+    }
+
+    hitVp = hitVp ?? thisHit.viewport;
     if (undefined !== thisHit.subCategoryId && !thisHit.isExternalIModelHit) {
       const appearance = hitVp.getSubCategoryAppearance(thisHit.subCategoryId);
       if (appearance.dontSnap) {
@@ -707,6 +712,7 @@ export class AccuSnap implements Decorator {
       snapDivisor: keypointDivisor,
       subCategoryId: thisHit.subCategoryId,
       geometryClass: thisHit.geometryClass,
+      modelToWorld: thisHit.transformFromSourceIModel?.toJSON(),
     };
 
     const thisGeom = (thisHit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(thisHit) : IModelApp.viewManager.getDecorationGeometry(thisHit));
@@ -768,12 +774,17 @@ export class AccuSnap implements Decorator {
         return parsed instanceof GeometryQuery && "curvePrimitive" === parsed.geometryCategory ? parsed : undefined;
       };
 
+      let displayTransform;
+      if (undefined !== thisHit.modelId) {
+        displayTransform = thisHit.viewport.view.computeDisplayTransform({
+          modelId: thisHit.modelId,
+          elementId: thisHit.sourceId,
+          viewAttachmentId: thisHit.path?.viewAttachment?.id,
+          inSectionDrawingAttachment: undefined !== thisHit.path?.sectionDrawingAttachment,
+        });
+      }
+
       const snapPoint = Point3d.fromJSON(result.snapPoint);
-      const displayTransform = undefined !== thisHit.modelId ? thisHit.viewport.view.computeDisplayTransform({
-        modelId: thisHit.modelId,
-        elementId: thisHit.sourceId,
-        viewAttachmentId: thisHit.viewAttachment?.id,
-      }) : undefined;
       displayTransform?.multiplyPoint3d(snapPoint, snapPoint);
 
       const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);
@@ -807,7 +818,7 @@ export class AccuSnap implements Decorator {
 
       const intersect = new IntersectDetail(snap, snap.heat, snap.snapPoint, otherPrimitive, result.intersectId);
       return intersect;
-    } catch (_err) {
+    } catch {
       if (out)
         out.snapStatus = SnapStatus.Aborted;
 
@@ -1204,7 +1215,7 @@ export class TentativeOrAccuSnap {
 }
 
 /** @public */
-export namespace AccuSnap { // eslint-disable-line no-redeclare
+export namespace AccuSnap {
   export class ToolState {
     public enabled = false;
     public locate = false;

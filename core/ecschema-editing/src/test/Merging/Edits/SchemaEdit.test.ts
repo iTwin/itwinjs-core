@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
 import { EntityClass, PrimitiveProperty, PrimitiveType, Schema, SchemaContext, StructClass } from "@itwin/ecschema-metadata";
 import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
+import { BisTestHelper } from "../../TestUtils/BisTestHelper";
+import { expect } from "chai";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -15,6 +16,17 @@ describe("Schema Edit tests", () => {
       name: "ConflictSchema",
       version: "1.0.0",
       alias: "conflict",
+      references: [
+        {
+          name: "CoreCustomAttributes",
+          version: "01.00.01",
+        },
+      ],
+      customAttributes: [
+        {
+          className: "CoreCustomAttributes.DynamicSchema",
+        },
+      ],
       items: {
         SameNameOtherItemType: {
           schemaItemType: "EntityClass",
@@ -27,7 +39,7 @@ describe("Schema Edit tests", () => {
           ],
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const sourceSchemas: Schema[] = [
       // 1st case: Conflicting name
@@ -104,11 +116,11 @@ describe("Schema Edit tests", () => {
 
       if (differences.conflicts) {
         for (const conflict of differences.conflicts) {
-          if (conflict.code === ConflictCode.ConflictingItemName && conflict.itemName === "SameNameOtherItemType") {
-            schemaEdits.items.rename(sourceSchema.name, conflict.itemName, `${conflict.itemName}_1`);
+          if (conflict.code === ConflictCode.ConflictingItemName && conflict.difference.itemName === "SameNameOtherItemType") {
+            schemaEdits.items.rename(sourceSchema.name, conflict.difference.itemName, `${conflict.difference.itemName}_1`);
           }
-          if (conflict.code === ConflictCode.ConflictingPropertyName && conflict.path === "MyProperty") {
-            schemaEdits.properties.rename(sourceSchema.name, conflict.itemName!, conflict.path, `${conflict.path}_1`);
+          if (conflict.code === ConflictCode.ConflictingPropertyName && conflict.difference.path === "MyProperty") {
+            schemaEdits.properties.rename(sourceSchema.name, conflict.difference.itemName, conflict.difference.path, `${conflict.difference.path}_1`);
           }
         }
       }

@@ -10,7 +10,7 @@
 
 import * as path from "path";
 import {
-  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, StopWatch,
+  AccessToken, BeDuration, ChangeSetStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, Optional, StopWatch,
 } from "@itwin/core-bentley";
 import {
   BriefcaseId, BriefcaseIdValue, BriefcaseProps, ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, ChangesetType, IModelError, IModelVersion, LocalBriefcaseProps,
@@ -74,6 +74,20 @@ export type PullChangesArgs = ToChangesetArgs & {
    * @note return non-zero from this function to abort the download.
    */
   onProgress?: ProgressFunction;
+};
+
+/** Arguments for [[BriefcaseManager.revertTimelineChanges]]
+ * @public
+ */
+export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
+  /** If present, a function called periodically during the download to indicate progress.
+   * @note return non-zero from this function to abort the download.
+   */
+  onProgress?: ProgressFunction;
+  /** The index of the changeset to revert to */
+  toIndex: ChangesetIndex;
+  /** If present, schema changes are skipped during the revert operation. */
+  skipSchemaChanges?: true;
 };
 
 /** Manages downloading Briefcases and downloading and uploading changesets.
@@ -145,7 +159,7 @@ export class BriefcaseManager {
       try {
         if (!IModelJsFs.lstatSync(bcPath)?.isDirectory)
           continue;
-      } catch (err) {
+      } catch {
         continue;
       }
 
@@ -158,8 +172,7 @@ export class BriefcaseManager {
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
             briefcaseList.push({ fileName, iTwinId: db.getITwinId(), iModelId: db.getIModelId(), briefcaseId: db.getBriefcaseId(), changeset: db.getCurrentChangeset(), fileSize });
             db.closeFile();
-          } catch (_err) {
-          }
+          } catch { }
         }
       }
     }
@@ -306,8 +319,7 @@ export class BriefcaseManager {
           await BriefcaseManager.releaseBriefcase(accessToken, briefcase);
         }
       }
-    } catch (error) {
-    }
+    } catch { }
 
     // first try to delete the briefcase file
     try {
@@ -326,8 +338,7 @@ export class BriefcaseManager {
         if (file.startsWith(fileName))
           this.deleteFile(path.join(dirName, file)); // don't throw on error
       }
-    } catch (err) {
-    }
+    } catch { }
   }
 
   /** Deletes a file
@@ -355,7 +366,7 @@ export class BriefcaseManager {
         return false;
 
       IModelJsFs.rmdirSync(folderPathname);
-    } catch (error) {
+    } catch {
       Logger.logError(loggerCategory, `Cannot delete folder: ${folderPathname}`);
       return false;
     }
@@ -433,6 +444,59 @@ export class BriefcaseManager {
   }
 
   /** @internal */
+  public static async revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void> {
+    if (!db.isOpen || db[_nativeDb].isReadonly())
+      throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to revert timeline changes");
+
+    let currentIndex = db.changeset.index;
+    if (currentIndex === undefined)
+      currentIndex = (await IModelHost.hubAccess.queryChangeset({ accessToken: arg.accessToken, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
+
+    if (!arg.toIndex) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "toIndex must be specified to revert changesets");
+    }
+    if (arg.toIndex > currentIndex) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "toIndex must be less than or equal to the current index");
+    }
+    if (!db.holdsSchemaLock) {
+      throw new IModelError(ChangeSetStatus.ApplyError, "Cannot revert timeline changesets without holding a schema lock");
+    }
+
+    // Download change sets
+    const changesets = await IModelHost.hubAccess.downloadChangesets({
+      accessToken: arg.accessToken,
+      iModelId: db.iModelId,
+      range: { first: arg.toIndex, end: currentIndex },
+      targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId),
+      progressCallback: arg.onProgress,
+    });
+
+    if (changesets.length === 0)
+      return;
+
+    changesets.reverse();
+    db.clearCaches();
+
+    const stopwatch = new StopWatch(`Reverting changes`, true);
+    Logger.logInfo(loggerCategory, `Starting reverting timeline changes from ${arg.toIndex} to ${currentIndex}`);
+
+    /**
+     * Revert timeline changes from the current index to the specified index.
+     * It does not change parent of the current changeset.
+     * All changes during revert operation are stored in a new changeset.
+     * Revert operation require schema lock as we do not acquire individual locks for each element.
+     * Optionally schema changes can be skipped (required for schema sync case).
+     */
+    db[_nativeDb].revertTimelineChanges(changesets, arg.skipSchemaChanges ?? false);
+    Logger.logInfo(loggerCategory, `Reverted timeline changes from ${arg.toIndex} to ${currentIndex} (${stopwatch.elapsedSeconds} seconds)`);
+
+    changesets.forEach((changeset) => {
+      IModelJsFs.removeSync(changeset.pathname);
+    });
+    db.notifyChangesetApplied();
+  }
+
+  /** @internal */
   public static async pullAndApplyChangesets(db: IModelDb, arg: PullChangesArgs): Promise<void> {
     if (!db.isOpen || db[_nativeDb].isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
@@ -467,7 +531,6 @@ export class BriefcaseManager {
     // notify listeners
     db.notifyChangesetApplied();
   }
-
   /** create a changeset from the current changes, and push it to iModelHub */
   private static async pushChanges(db: BriefcaseDb, arg: PushChangesArgs): Promise<void> {
     const changesetProps = db[_nativeDb].startCreateChangeset() as ChangesetFileProps;
@@ -521,7 +584,8 @@ export class BriefcaseManager {
     while (true) {
       try {
         await BriefcaseManager.pullAndApplyChangesets(db, arg);
-        await SchemaSync.pull(db);
+        if (!db.skipSyncSchemasOnPullAndPush)
+          await SchemaSync.pull(db);
         return await BriefcaseManager.pushChanges(db, arg);
       } catch (err: any) {
         if (retryCount-- <= 0 || err.errorNumber !== IModelHubStatus.PullIsRequired)

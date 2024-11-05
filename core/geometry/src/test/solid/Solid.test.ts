@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../../curve/ConstructCurveBetweenCurves";
@@ -132,7 +132,7 @@ describe("Solids", () => {
       ck.testLE(rA, rMax);
       ck.testLE(rB, rMax);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ConeUVToPoint", () => {
@@ -155,7 +155,7 @@ describe("Solids", () => {
         }
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ConeConstructionErrors", () => {
@@ -179,7 +179,7 @@ describe("Solids", () => {
     // hm .. just make sure these default cases come back.
     ck.testPointer(coneABCapped.strokeConstantVSection(0.2, undefined, undefined));
     ck.testPointer(coneABCapped.strokeConstantVSection(0.2, undefined, StrokeOptions.createForFacets()));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Spheres", () => {
@@ -215,7 +215,7 @@ describe("Solids", () => {
     ck.testFalse(northA.isAlmostEqual(LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 6)), "sphere.isAlmostEqual(nonSphere)");
     ck.testFalse(northA.isAlmostEqual(northB), "capping difference");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("TransformedSpheres", () => {
@@ -236,7 +236,7 @@ describe("Solids", () => {
       x0 += 5.0 * radius;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TransformedSpheres");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("RoundTrippedEllipsoids", () => {
@@ -245,7 +245,7 @@ describe("Solids", () => {
     const radii = Point3d.create(1, 3, 4);
     const ellipsoid = Sphere.createEllipsoid(Transform.createFixedPointAndMatrix(origin, Matrix3d.createScale(radii.x, radii.y, radii.z)), AngleSweep.create(), false);
     testGeometryQueryRoundTrip(ck, ellipsoid);
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Boxes", () => {
@@ -285,7 +285,7 @@ describe("Solids", () => {
       x0 += 10.0 * rangeA.xLength();
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "Boxes");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("TorusPipes", () => {
     const ck = new Checker();
@@ -310,7 +310,7 @@ describe("Solids", () => {
     const torusC = TorusPipe.createInFrame(frameA, 3, 1, negativeSweep, true)!;
     ck.testTrue(torusC.getSweepAngle().degrees > 0.0);    // confirm that the angle got reversed
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("TorusPipeNonCircular", () => {
@@ -331,13 +331,13 @@ describe("Solids", () => {
       ck.testTrue(vec0Near && vec90Near, "TorusPipe frame is near the original arc's frame");
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "TorusPipeNonCircular");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("LinearSweeps", () => {
     const ck = new Checker();
     exerciseSolids(ck, Sample.createSimpleLinearSweeps(), "LinearSweeps");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("RotationalSweeps", () => {
@@ -348,7 +348,7 @@ describe("Solids", () => {
     const line = LineSegment3d.createXYXY(1, 4, 2, -1);
     const contour = Path.create(line);
     ck.testUndefined(RotationalSweep.create(contour, Ray3d.createXYZUVW(0, 0, 0, 0, 0, 0), Angle.createDegrees(180), false));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("RotationalSweepTransform", () => {
     const ck = new Checker();
@@ -400,7 +400,7 @@ describe("Solids", () => {
       dy += 100.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "RotationalSweep");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("RuledSweeps", () => {
@@ -421,7 +421,7 @@ describe("Solids", () => {
     const sweep2 = RuledSweep.create([rectangleA.clone(), rectangleB.clone()], false)!;
     const sweep3 = RuledSweep.create([rectangleA.clone(), rectangleB.clone(), rectangleC.clone()], false)!;
     ck.testFalse(sweep2.isAlmostEqual(sweep3));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Ellipsoids", () => {
@@ -433,7 +433,7 @@ describe("Solids", () => {
       ck.testUndefined(radius, "Ellipsoid is nonSpherical");
       const localToWorld = e.cloneLocalToWorld();
       ck.testPoint3d(localToWorld.getOrigin(), e.cloneCenter());
-      expect(ck.getNumErrors()).equals(0);
+      expect(ck.getNumErrors()).toBe(0);
     }
   });
   it("SweepContour", () => {
@@ -457,7 +457,7 @@ describe("Solids", () => {
     ck.testFalse(contourA.isAlmostEqual(contourB));
     ck.testFalse(contourA.isAlmostEqual(path));
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solid", "SweepContour");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -476,7 +476,7 @@ describe("CurveCurve", () => {
     ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(linestring, 0.5, arc));
     ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(arc, 0.5, bcurve));
     ck.testUndefined(ConstructCurveBetweenCurves.interpolateBetween(bcurve, 0.5, segment));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 

@@ -7,7 +7,7 @@
  */
 
 import type { RenamePropertyEdit, RenameSchemaItemEdit } from "./SchemaEdits";
-import { AnySchemaItemDifference, ClassItemDifference, ClassPropertyDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, SchemaDifferenceResult, SchemaOtherTypes, SchemaType } from "../../Differencing/SchemaDifference";
+import { AnyClassItemDifference, AnySchemaItemDifference, ClassPropertyDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, SchemaDifferenceResult, SchemaOtherTypes, SchemaType } from "../../Differencing/SchemaDifference";
 import { NavigationPropertyProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, RelationshipConstraintProps, SchemaItem, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps, StructPropertyProps } from "@itwin/ecschema-metadata";
 import * as Utils from "../../Differencing/Utils";
 
@@ -36,7 +36,7 @@ export function applyRenamePropertyEdit(result: SchemaDifferenceResult, edit: Re
   propertyDifference.path = edit.value;
 
   if (result.conflicts) {
-    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === itemName && entry.path === path);
+    const conflictIndex = result.conflicts.findIndex((entry) => entry.difference === propertyDifference);
     if (conflictIndex > -1) {
       result.conflicts.splice(conflictIndex, 1);
     }
@@ -64,7 +64,7 @@ export function applyRenameSchemaItemEdit(result: SchemaDifferenceResult, edit: 
   renameName(itemDifference, itemName, edit.value);
 
   if (result.conflicts) {
-    const conflictIndex = result.conflicts.findIndex((entry) => entry.itemName === itemName && entry.path === undefined);
+    const conflictIndex = result.conflicts.findIndex((entry) => entry.difference === itemDifference);
     if (conflictIndex > -1) {
       result.conflicts.splice(conflictIndex, 1);
     }
@@ -120,7 +120,7 @@ function renameSchemaItem(result: SchemaDifferenceResult, edit: RenameSchemaItem
   }
 }
 
-function renameBaseClass(difference: ClassItemDifference["difference"], oldKey: SchemaItemKey, newKey: SchemaItemKey) {
+function renameBaseClass(difference: AnyClassItemDifference["difference"], oldKey: SchemaItemKey, newKey: SchemaItemKey) {
   if (difference.baseClass && oldKey.matchesFullName(difference.baseClass)) {
     difference.baseClass = newKey.fullName;
   }

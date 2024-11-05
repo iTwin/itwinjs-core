@@ -139,7 +139,9 @@ alpha;enum;ConcreteEntityTypes
 alpha;namespace;ConcreteEntityTypes
 internal;function;toBisCoreRootClassFullName
 public;interface;ConflictingLock
+deprecated;interface;ConflictingLock
 public;class;ConflictingLocksError
+deprecated;class;ConflictingLocksError
 alpha;enum;ContentFlags
 internal;class;ContentIdProvider
 public;class;ContextRealityModel
@@ -148,6 +150,18 @@ public;namespace;ContextRealityModelProps
 public;class;ContextRealityModels
 public;interface;ContextRealityModelsArgs
 public;interface;ContextRealityModelsContainer
+public;class;Contour
+public;class;ContourDisplay
+public;type;ContourDisplayProperties
+public;interface;ContourDisplayProps
+public;class;ContourGroup
+public;type;ContourGroupProperties
+public;interface;ContourGroupProps
+public;type;ContourProperties
+public;interface;ContourProps
+public;class;ContourStyle
+public;type;ContourStyleProperties
+public;interface;ContourStyleProps
 public;type;CreateEmptySnapshotIModelProps
 internal;type;CreateEmptyStandaloneIModelProps
 public;interface;CreateIModelProps
@@ -223,6 +237,9 @@ public;interface;ElementAspectProps
 beta;namespace;ElementGeometry
 public;interface;ElementGeometryBuilderParams
 public;interface;ElementGeometryBuilderParamsForPart
+beta;interface;ElementGeometryCacheOperationRequestProps
+beta;interface;ElementGeometryCacheRequestProps
+beta;interface;ElementGeometryCacheResponseProps
 public;type;ElementGeometryChange
 public;namespace;ElementGeometryChange
 public;interface;ElementGeometryDataEntry
@@ -424,6 +441,9 @@ internal;interface;InterceptedRpcRequest
 beta;enum;InternetConnectivityStatus
 public;const;Interpolation
 public;type;InterpolationFunction
+beta;interface;InUseLock
+beta;interface;InUseLocksError
+beta;namespace;InUseLocksError
 internal;const;ipcAppChannels
 internal;interface;IpcAppFunctions
 internal;interface;IpcAppNotifications
@@ -446,6 +466,8 @@ public;function;isPlacement3dProps
 public;function;isPowerOfTwo
 internal;function;isValidImageSourceFormat
 internal;const;iTwinChannel
+beta;interface;ITwinError
+beta;namespace;ITwinError
 public;interface;JsonGeometryStream
 internal;interface;LegacyAnalysisStyleProps
 internal;interface;LightLocationProps
@@ -755,7 +777,11 @@ public;class;ServerError
 public;class;ServerTimeoutError
 public;interface;SessionProps
 beta;interface;SheetBorderTemplateProps
+beta;interface;SheetIndexEntryProps
+beta;type;SheetIndexFolderProps
+beta;interface;SheetIndexReferenceProps
 public;interface;SheetProps
+beta;interface;SheetReferenceProps
 beta;interface;SheetTemplateProps
 internal;class;SilhouetteEdgeArgs
 public;class;SkyBox
@@ -887,7 +913,6 @@ public;interface;TypeDefinitionElementProps
 internal;type;TypedGltfChunk
 public;enum;TypeOfChange
 public;type;UnitType
-public;type;UpdateCallback
 beta;interface;UpgradeOptions
 public;interface;UrlLinkProps
 public;class;VerticalCRS
@@ -918,5 +943,6 @@ internal;class;WebAppRpcRequest
 public;interface;WhiteOnWhiteReversalProps
 public;class;WhiteOnWhiteReversalSettings
 internal;class;WipRpcInterface
+deprecated;class;WipRpcInterface
 public;class;XyzRotation
 public;interface;XyzRotationProps

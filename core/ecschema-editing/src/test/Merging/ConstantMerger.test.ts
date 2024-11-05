@@ -2,9 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Constant, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
+import { Constant, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
 
 describe("Constant merger tests", () => {
@@ -13,6 +14,12 @@ describe("Constant merger tests", () => {
     name: "TargetSchema",
     version: "1.0.0",
     alias: "target",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
   };
   const referenceJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -33,17 +40,7 @@ describe("Constant merger tests", () => {
           definition: "Units.LENGTH(2)",
         },
       },
-    }, new SchemaContext());
-
-    const testConstant = {
-      schemaItemType: "Constant",
-      label: "Test Constant",
-      description: "testing a constant",
-      phenomenon: "TargetSchema.testPhenomenon",
-      definition: "PI",
-      numerator: 5.5,
-      denominator: 5.1,
-    };
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge({
@@ -66,14 +63,20 @@ describe("Constant merger tests", () => {
       ],
     });
 
-    const mergedConstant = await mergedSchema.getItem<Constant>("testConstant");
-    const mergedConstantToJSON = mergedConstant!.toJSON(false, false);
-
-    expect(mergedConstantToJSON).deep.eq(testConstant);
+    await expect(mergedSchema.getItem("testConstant")).to.be.eventually.not.undefined
+      .then((constant: Constant) => {
+        expect(constant).to.have.a.property("schemaItemType", SchemaItemType.Constant);
+        expect(constant).to.have.a.property("label", "Test Constant");
+        expect(constant).to.have.a.property("description", "testing a constant");
+        expect(constant).to.have.a.nested.property("phenomenon.fullName", "TargetSchema.testPhenomenon");
+        expect(constant).to.have.a.property("definition", "PI");
+        expect(constant).to.have.a.property("numerator", 5.5);
+        expect(constant).to.have.a.property("denominator", 5.1);
+      });
   });
 
   it("it should merge missing constant with referenced phenomenon", async () => {
-    const targetContext = new SchemaContext();
+    const targetContext = await BisTestHelper.getNewContext();
     await Schema.fromJson({
       ...referenceJson,
       items: {
@@ -118,8 +121,16 @@ describe("Constant merger tests", () => {
       ],
     });
 
-    const mergedConstant = await mergedSchema.getItem<Constant>("testConstant");
-    expect((mergedConstant?.phenomenon)?.fullName).to.be.equals("ReferenceSchema.testPhenomenon");
+    await expect(mergedSchema.getItem("testConstant")).to.be.eventually.not.undefined
+      .then((constant: Constant) => {
+        expect(constant).to.have.a.property("schemaItemType", SchemaItemType.Constant);
+        expect(constant).to.have.a.property("label", "Test Constant");
+        expect(constant).to.have.a.property("description", "testing a constant");
+        expect(constant).to.have.a.nested.property("phenomenon.fullName", "ReferenceSchema.testPhenomenon");
+        expect(constant).to.have.a.property("definition", "PI");
+        expect(constant).to.have.a.property("numerator", 5);
+        expect(constant).to.have.a.property("denominator", 5.1);
+      });
   });
 
   it("it should throw error if definition conflict exist", async () => {
@@ -141,7 +152,7 @@ describe("Constant merger tests", () => {
           phenomenon: "TargetSchema.testPhenomenon",
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const merge = merger.merge({
@@ -184,7 +195,7 @@ describe("Constant merger tests", () => {
           denominator: 5.1,
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const merge = merger.merge({
@@ -226,7 +237,7 @@ describe("Constant merger tests", () => {
           denominator: 4.2,
         },
       },
-    }, new SchemaContext());
+    }, await BisTestHelper.getNewContext());
 
     const merger = new SchemaMerger(targetSchema.context);
     const merge = merger.merge({

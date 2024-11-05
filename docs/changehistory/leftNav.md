@@ -76,4 +76,3 @@ closedPanels: ["Previous Versions", "Changelogs"]
 - [core-common](../reference/core-common/changelog)
 - [core-geometry](../reference/core-geometry/changelog)
 - [core-bentley](../reference/core-bentley/changelog)
-

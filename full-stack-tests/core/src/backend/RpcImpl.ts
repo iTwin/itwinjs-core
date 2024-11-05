@@ -13,17 +13,17 @@ import { AzuriteTest } from "./AzuriteTest";
 import { OpenMode } from "@itwin/core-bentley";
 
 const viewContainer = "views-itwin1";
-const storageType = "azure" as const;
+const storageType = "azure";
 let removeViewStore: VoidFunction;
 let saveAuthClient: AzuriteTest.AuthorizationClient;
 
 async function initializeContainer(containerId: string) {
   await AzuriteTest.Sqlite.createAzContainer({ containerId });
-  const accessToken = await CloudSqlite.requestToken({ baseUri: AzuriteTest.baseUri, containerId });
+  const accessToken = await CloudSqlite.requestToken({ containerId });
   await ViewStore.CloudAccess.initializeDb({ baseUri: AzuriteTest.baseUri, storageType, containerId, accessToken });
 }
 
-export class TestRpcImpl extends RpcInterface implements TestRpcInterface { // eslint-disable-line deprecation/deprecation
+export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public static register() {
     RpcManager.registerImpl(TestRpcInterface, TestRpcImpl);
   }

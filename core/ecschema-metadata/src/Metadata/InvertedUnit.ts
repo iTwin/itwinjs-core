@@ -23,7 +23,7 @@ import { UnitSystem } from "./UnitSystem";
  * @beta
  */
 export class InvertedUnit extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.InvertedUnit; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.InvertedUnit;
   protected _invertsUnit?: LazyLoadedUnit; // required
   protected _unitSystem?: LazyLoadedUnitSystem; // required
 
@@ -34,6 +34,13 @@ export class InvertedUnit extends SchemaItem {
 
   public get invertsUnit(): LazyLoadedUnit | undefined { return this._invertsUnit; }
   public get unitSystem(): LazyLoadedUnitSystem | undefined { return this._unitSystem; }
+
+  /**
+   * @alpha
+   */
+  public static isInvertedUnit(object: any): object is InvertedUnit {
+    return SchemaItem.isSchemaItem(object) && object.schemaItemType === SchemaItemType.InvertedUnit;
+  }
 
   /**
    * Save this InvertedUnit's properties to an object for serializing to JSON.

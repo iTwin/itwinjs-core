@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { assert, describe, expect, it } from "vitest";
 import { BentleyError, LoggingMetaData } from "../BentleyError";
 import { using } from "../Disposable";
 import { Logger, LogLevel, PerfLogger } from "../Logger";
@@ -14,13 +14,13 @@ let outwarn: any[];
 let outinfo: any[];
 let outtrace: any[];
 
-/* eslint-disable no-template-curly-in-string, @typescript-eslint/naming-convention */
+/* eslint-disable @typescript-eslint/naming-convention */
 
 function callLoggerConfigLevels(cfg: any, expectRejection: boolean) {
   try {
     Logger.configureLevels(cfg);
     assert.isFalse(expectRejection, "should have rejected config as invalid");
-  } catch (err) {
+  } catch {
     assert.isTrue(expectRejection, "should not have rejected config as invalid");
   }
 }

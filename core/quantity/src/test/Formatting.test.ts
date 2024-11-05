@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { QuantityError } from "../Exception";
 import { Format } from "../Formatter/Format";
-import { DecimalPrecision, FormatTraits, formatTypeToString, parseFormatTrait } from "../Formatter/FormatEnums";
+import { DecimalPrecision, FormatTraits, parseFormatTrait } from "../Formatter/FormatEnums";
 import { CustomFormatProps, FormatProps } from "../Formatter/Interfaces";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
 
@@ -727,7 +727,7 @@ describe("Formatting tests:", () => {
       await format.fromJSON(unitsProvider, formatData).catch(() => { });
       if (formatData.hasOwnProperty("precision"))
         assert.isTrue(format.precision === formatData.precision);
-      assert.isTrue(formatTypeToString(format.type).toUpperCase() === formatData.type.toUpperCase());
+      assert.isTrue(format.type.toUpperCase() === formatData.type.toUpperCase());
       if (formatData.hasOwnProperty("uomSeparator"))
         assert.isTrue(format.uomSeparator === formatData.uomSeparator);
       for (const traitStr of formatData.formatTraits) {
@@ -742,7 +742,7 @@ describe("Formatting tests:", () => {
       }
 
       const jsonData = format.toJSON();
-      assert.isTrue(jsonData.type.toUpperCase() === formatTypeToString(format.type).toUpperCase());
+      assert.isTrue(jsonData.type.toUpperCase() === format.type.toUpperCase());
       if (formatData.hasOwnProperty("showSignOption")) {
         assert.isTrue(formatData.showSignOption!.toUpperCase() === jsonData.showSignOption!.toUpperCase());
       }
@@ -907,6 +907,18 @@ describe("Formatting tests:", () => {
           spacer: "",
           units: [
             { name: "Units.ARC_DEG", label: "°" },
+          ],
+        },
+      },
+      {
+        type: "Ratio",
+        ratioType: "OneToN",
+        precision: 3,
+        composite: {
+          includeZero: true,
+          spacer: "",
+          units: [
+            { name: "Units.VERTICAL_PER_HORIZONTAL" }, // presentation unit
           ],
         },
       },

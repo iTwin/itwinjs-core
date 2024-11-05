@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { beforeAll, describe, expect, it } from "vitest";
 import { ClipPlane } from "../../clipping/ClipPlane";
 import { ClipMaskXYZRangePlanes, ClipPrimitive, ClipShape } from "../../clipping/ClipPrimitive";
 import { ClipUtilities } from "../../clipping/ClipUtils";
@@ -245,7 +245,7 @@ function sortConvexSetPlanesToBoundary(convexSet: ConvexClipPlaneSet) {
   for (const plane of tempSortedPlanes)
     newPlanes.push(plane);
 
-  expect(newPlanes.length).equals(planes.length);
+  expect(newPlanes.length).toBe(planes.length);
   convexSet.planes.length = 0;
   for (const plane of newPlanes)
     convexSet.planes.push(plane);
@@ -320,7 +320,7 @@ describe("ClipPrimitive", () => {
   let polygonB: Point3d[];
   let polygonC: Point3d[];
 
-  before(() => {
+  beforeAll(() => {
     clipPointsA = [
       Point3d.create(0, 0, 0),
       Point3d.create(100, 0, 0),
@@ -403,7 +403,7 @@ describe("ClipPrimitive", () => {
     }
 
     ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Transformations", () => {
@@ -429,7 +429,7 @@ describe("ClipPrimitive", () => {
     ck.testPoint3d(testPoint, originalPoint, "Point should be translated when transformed with ClipShape containing translation transform");
 
     ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClipShape creation (linear) and point classification", () => {
@@ -445,7 +445,7 @@ describe("ClipPrimitive", () => {
     ck.testExactNumber(clipShape.classifyPointContainment([Point3d.create(4.999, 0, 2.999), Point3d.create(0, 0, 0)], true), 1, "Points fall on line and is within sides - strongly inside");
 
     ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClipShapePointTests", () => {
@@ -508,7 +508,7 @@ describe("ClipPrimitive", () => {
     ck.testFalse(clipShape2.isXYPolygon);
     ck.checkpoint();
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPrimitive", "ClipShapePointTests");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClipShape plane parsing for simple concave polygon", () => {
@@ -535,7 +535,7 @@ describe("ClipPrimitive", () => {
       ck.testTrue(unionArea <= areaRestriction, "Total area of union of convex triangles should be less than or equal to area of entire range.");
     }
     ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClipShape with simple concave area clips simple polygon", () => {
@@ -580,7 +580,7 @@ describe("ClipPrimitive", () => {
       ck.testCoordinate(clippedPolygonArea, clipShapeArea, "Polygon that completely encompasses clipShape should have same area as clipShape after clipping.");
     }
     ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClipShape with complex concave area clips polygon", () => {
@@ -609,7 +609,7 @@ describe("ClipPrimitive", () => {
     }
 
     ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ClipPrimitive base class", () => {
@@ -631,7 +631,7 @@ describe("ClipPrimitive", () => {
 
     }
     ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("NonConvexClipShapeClipPolygon", () => {
@@ -667,7 +667,7 @@ describe("ClipPrimitive", () => {
       x0 += delta;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPrimitive", "NonConvexClipShapeClipPolygon");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("jsonFragment", () => {
     const ck = new Checker();
@@ -721,7 +721,7 @@ describe("ClipPrimitive", () => {
       }
     }
     ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // EDL Sept 2021
@@ -784,7 +784,7 @@ describe("ClipPrimitive", () => {
       // GeometryCoreTestIO.consoleLog("clippedRange", clippedRange);
     }
     ck.checkpoint();
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // EDL Sept 2021
@@ -816,7 +816,7 @@ describe("ClipPrimitive", () => {
     clipAndOutput(allGeometry, boxPrimitiveA, mesh, clipRange, x0 += outputStep, y0, outputStep / 2.0);
     clipAndOutput(allGeometry, boxPrimitiveB, mesh, clipRange, x0 += outputStep, y0, outputStep / 2.0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "ClipPrimitive", "ClipPrimitiveMasking");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

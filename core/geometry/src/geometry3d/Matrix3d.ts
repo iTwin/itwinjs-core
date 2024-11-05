@@ -852,14 +852,19 @@ export class Matrix3d implements BeJSONFunctions {
         result,
       );
   }
-  /** Create a matrix with each column's _x,y_ parts given `XAndY` and separate numeric z values.
+  /**
+   * Create a matrix with each column's _x,y_ parts given `XAndY` and separate numeric z values.
    * ```
    * equation
    * \begin{bmatrix}U_x & V_x & W_x \\ U_y & V_y & W_y \\ u & v & w \end{bmatrix}
    * ```
    */
-  public static createColumnsXYW(vectorU: XAndY, u: number, vectorV: XAndY, v: number,
-    vectorW: XAndY, w: number, result?: Matrix3d): Matrix3d {
+  public static createColumnsXYW(
+    vectorU: XAndY, u: number,
+    vectorV: XAndY, v: number,
+    vectorW: XAndY, w: number,
+    result?: Matrix3d,
+  ): Matrix3d {
     return Matrix3d.createRowValues
       (
         vectorU.x, vectorV.x, vectorW.x,
@@ -1646,24 +1651,29 @@ export class Matrix3d implements BeJSONFunctions {
     return Matrix3d.createUniformScale(scale);
   }
   /**
-   * Create a matrix which sweeps a vector along `sweepVector` until it hits the plane through the origin with the given normal.
-   * * To sweep an arbitrary vector U0 along direction W to the vector U1 in the plane through the origin with normal N:
-   *   *   `U1 = U0 + W * alpha`
-   *   *   `U1 DOT N = (U0 + W * alpha) DOT N = 0`
-   *   *   `U0 DOT N = - alpha * W DOT N`
-   *   *   `alpha = - U0 DOT N / W DOT N`
-   * * Insert the alpha definition in U1:
-   *   *   `U1 = U0 -  W * N DOT U0 / W DOT N`
-   * * Write vector dot expression N DOT U0 as a matrix product (^T indicates transpose):
-   *   *   `U1 = U0 -  W * N^T * U0 / W DOT N`
-   * * Note W * N^T is an outer product, i.e. a 3x3 matrix. By associativity of matrix multiplication:
-   *   *   `U1 = (I - W * N^T / W DOT N) * U0`
-   * * and the matrix to do the sweep for any vector in place of U0 is `I - W * N^T / W DOT N`.
-   * @param sweepVector sweep direction
+   * Create a matrix which sweeps a vector along `sweepVector` until it hits the plane through the origin with the
+   * given normal.
+   * * Geometrically, the returned matrix `M` acts on a vector `u` by rotating and scaling it to lie in the plane.
+   * Specifically, `Mu = u + sw` is perpendicular to `n` for some scalar `s`, where `w` is the sweep direction, and
+   * `n` is the plane normal.
+   * * Symbolically, `M = I - w⊗n / w.n`, where `I` is the identity, and ⊗ is the vector outer product.
+   * @param sweepVector sweep direction. If same as `planeNormal`, the resulting matrix flattens to the plane.
    * @param planeNormal normal to the target plane
    */
   public static createFlattenAlongVectorToPlane(sweepVector: Vector3d, planeNormal: Vector3d): Matrix3d | undefined {
-    const result = Matrix3d.createIdentity();
+    // To sweep an arbitrary vector U0 along direction W to the vector U1 in the plane through the origin with normal N:
+    //   `U1 = U0 + W * alpha`
+    //   `U1 DOT N = (U0 + W * alpha) DOT N = 0`
+    //   `U0 DOT N = - alpha * W DOT N`
+    //   `alpha = - U0 DOT N / W DOT N`
+    // Insert the alpha definition in U1:
+    //   `U1 = U0 -  W * N DOT U0 / W DOT N`
+    // Write W * N DOT U0 in terms of a vector outer product (^T indicates transpose):
+    //   `U1 = U0 -  W * N^T * U0 / W DOT N`
+    // Note W * N^T is a 3x3 matrix. By associativity of matrix multiplication:
+    //   `U1 = (I - W * N^T / W DOT N) * U0`
+    // and the matrix to do the sweep for any vector in place of U0 is `I - W * N^T / W DOT N`.
+     const result = Matrix3d.createIdentity();
     const dot = sweepVector.dotProduct(planeNormal);
     const inverse = Geometry.conditionalDivideCoordinate(1.0, -dot);
     if (inverse !== undefined) {
@@ -2729,8 +2739,8 @@ export class Matrix3d implements BeJSONFunctions {
     return Math.sqrt(sumLow) <= Geometry.smallAngleRadians * (1.0 + Math.sqrt(sumAll));
   }
   /**
-   * If the matrix is diagonal and all diagonals are almost equal, return the first diagonal (entry 0
-   * which is same as entry 4 and 8). Otherwise return `undefined`.
+   * If the matrix is diagonal with almost equal diagonal entries, return the first diagonal entry.
+   * Otherwise return `undefined`.
    */
   public sameDiagonalScale(): number | undefined {
     const sumAll = this.sumSquares();
@@ -2744,32 +2754,31 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
   /**
-   * Test if all rows and columns are unit length and are perpendicular to each other, i.e., the matrix is either
-   * a `pure rotation` (determinant is +1) or is a `mirror` (determinant is -1).
-   * * **Note:** such a matrix is called `orthogonal` and its inverse is its transpose.
+   * Test if all rows and columns are unit length and perpendicular to each other.
+   * * If so, the matrix is either a rotation (determinant is +1) or a mirror (determinant is -1).
+   * * Such a matrix is called "orthogonal" and its inverse is its transpose.
    */
   public testPerpendicularUnitRowsAndColumns(): boolean {
     const product = this.multiplyMatrixMatrixTranspose(this);
     return product.isIdentity;
   }
   /**
-   * Test if the matrix is a `rigid` matrix (or `pure rotation`, i.e., columns and rows are unit length and
-   * pairwise perpendicular and determinant is +1).
-   * @param allowMirror whether to widen the test to return true if the matrix is a `mirror` (determinant is -1).
+   * Test if the matrix is a rigid matrix.
+   * * A rigid matrix is a rotation: its columns and rows are unit length and pairwise perpendicular, and its
+   * determinant is +1.
+   * @param allowMirror whether to widen the test to also return true if the matrix is a mirror (determinant is -1).
   */
   public isRigid(allowMirror: boolean = false): boolean {
     return this.testPerpendicularUnitRowsAndColumns() && (allowMirror || this.determinant() > 0);
   }
   /**
-   * Test if all rows and columns are perpendicular to each other and have equal length.
-   * If so, the length (or its negative) is the `scale` factor from a set of `orthonormal axes` to
-   * the set of axes created by columns of `this` matrix. Otherwise, returns `undefined`.
+   * Test if the instance is the product of a rigid matrix and a signed scale, and return both.
+   * * Specifically, this is a test of whether the instance rows and columns are pairwise perpendicular and have equal
+   * length. If so, the scale factor is this length, or its negative if the instance is a mirror, and dividing the
+   * columns by this scale factor produces a rigid matrix (a rotation).
    * @param result optional pre-allocated object to populate and return
-   * @returns returns `{ rigidAxes, scale }` where `rigidAxes` is a Matrix3d with its columns as the rigid axes
-   * (with the scale factor removed) and `scale` is the scale factor.
-   * * Note that determinant of a rigid matrix is +1.
-   * * The context for this method is to determine if the matrix is the product a `rotation` matrix and a uniform
-   * `scale` matrix (diagonal matrix with all diagonal entries the same nonzero number).
+   * @returns the factorization `{ rigidAxes, scale }` where `rigidAxes` is the instance matrix with `scale` factor
+   * removed, or undefined if the factorization failed.
    */
   public factorRigidWithSignedScale(result?: Matrix3d): { rigidAxes: Matrix3d, scale: number } | undefined {
     const product = this.multiplyMatrixMatrixTranspose(this);
@@ -2779,6 +2788,25 @@ export class Matrix3d implements BeJSONFunctions {
     const scale = this.determinant() > 0 ? Math.sqrt(scaleSquare) : -Math.sqrt(scaleSquare);
     const scaleInverse = 1.0 / scale;
     return { rigidAxes: this.scaleColumns(scaleInverse, scaleInverse, scaleInverse, result), scale };
+  }
+  /**
+   * Compute the factorization M = R*G, where R is rigid (a rotation) and G is whatever is left over (skew, scale,
+   * mirror, etc).
+   * * The rotation is computed from the instance by passing `axisOrder` into [[createRigidFromMatrix3d]].
+   * @param rotation the rigid factor R
+   * @param skew the non-rotation factor G = R^t * M (since R transposed is its inverse)
+   * @param axisOrder optional cross product ordering for computing R
+   * @return whether [[createRigidFromMatrix3d]] succeeded; if not, `rotation` is set to the identity, and `skew` is
+   * set to this instance.
+   */
+  public factorRigidSkew(rotation: Matrix3d, skew: Matrix3d, axisOrder: AxisOrder = AxisOrder.XYZ): boolean {
+    if (Matrix3d.createRigidFromMatrix3d(this, axisOrder, rotation)) {
+      rotation.multiplyMatrixTransposeMatrix(this, skew);
+      return true;
+    }
+    rotation.setIdentity();
+    skew.setFrom(this);
+    return false;
   }
   /** Test if `this` matrix reorders and/or negates the columns of the `identity` matrix. */
   public get isSignedPermutation(): boolean {

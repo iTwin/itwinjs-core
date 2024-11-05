@@ -13,5 +13,5 @@ export const initializeRpcInterface = (rpcInterface: RpcInterfaceDefinition) => 
   // calling it more than once throws, so we have to wrap it with try/catch.
   try {
     RpcManager.initializeInterface(rpcInterface);
-  } catch (_e) {}
+  } catch {}
 };

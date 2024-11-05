@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@itwin/core-geometry";
 import { GraphicBuilder } from "../../render/GraphicBuilder";
 import { GraphicType } from "../../common/render/GraphicType";
@@ -16,7 +16,7 @@ describe("GraphicPrimitive", () => {
     private _primitive?: GraphicPrimitive;
 
     protected set primitive(primitive: GraphicPrimitive) {
-      expect(this._primitive).to.be.undefined;
+      expect(this._primitive).toBeUndefined();
       this._primitive = primitive;
     }
 
@@ -30,6 +30,7 @@ describe("GraphicPrimitive", () => {
     public override activateGraphicParams() { }
     public override resolveGradient() { return undefined; }
     public finish() { return {} as any; }
+    public finishTemplate() { return {} as any; }
 
     public override addLineString(points: Point3d[]) { this.primitive = { type: "linestring", points }; }
     public override addLineString2d(points: Point2d[], zDepth: number) { this.primitive = { type: "linestring2d", points, zDepth }; }
@@ -45,8 +46,8 @@ describe("GraphicPrimitive", () => {
     public override addSolidPrimitive(solidPrimitive: SolidPrimitive) { this.primitive = { type: "solidPrimitive", solidPrimitive }; }
 
     public expectPrimitive(expected: GraphicPrimitive) {
-      expect(this._primitive).not.to.be.undefined;
-      expect(this._primitive).to.deep.equal(expected);
+      expect(this._primitive).toBeDefined();
+      expect(this._primitive).toEqual(expected);
       this._primitive = undefined;
     }
   }

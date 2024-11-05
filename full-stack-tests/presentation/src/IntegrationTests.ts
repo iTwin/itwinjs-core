@@ -43,8 +43,8 @@ function loadEnv(envFile: string) {
     return;
   }
 
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error) {
     throw envResult.error;

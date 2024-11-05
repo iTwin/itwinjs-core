@@ -8,9 +8,9 @@
 
 import { SchemaItemType } from "@itwin/ecschema-metadata";
 import {
+  type AnyClassItemDifference,
   type AnySchemaDifference,
   type AnySchemaItemDifference,
-  type ClassItemDifference,
   type ClassPropertyDifference,
   type ConstantDifference,
   type CustomAttributeClassDifference,
@@ -197,7 +197,7 @@ export function isSchemaItemDifference(difference: AnySchemaDifference): differe
  * Indicates whether the given difference is type of ClassItemDifference.
  * @alpha
  */
-export function isClassDifference(difference: AnySchemaDifference): difference is ClassItemDifference {
+export function isClassDifference(difference: AnySchemaDifference): difference is AnyClassItemDifference {
   return isStructClassDifference(difference)
     || isCustomAttributeClassDifference(difference)
     || isEntityClassDifference(difference)

@@ -72,7 +72,7 @@ export class SubCategoriesCache {
       if (undefined !== results){
         this.processResults(results, new Set<string>(), false);
       }
-    } catch (e) {
+    } catch {
       // In case of a truncated response, gracefully handle the error and exit.
     }
 
@@ -178,7 +178,7 @@ export class SubCategoriesCache {
 /** This namespace and the types within it are exported strictly for use in tests.
  * @internal
  */
-export namespace SubCategoriesCache { // eslint-disable-line no-redeclare
+export namespace SubCategoriesCache {
   export type Result = SubCategoryResultRow[];
 
   export class Request {

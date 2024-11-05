@@ -27,8 +27,8 @@ export namespace SchemaSync {
   }
 
   const syncProperty = { namespace: "itwinjs", name: "SchemaSync" };
-  const defaultDbName = "SchemaSyncDb" as const;
-  const testSyncCachePropKey = "test.schema_sync.cache_name" as const;
+  const defaultDbName = "SchemaSyncDb";
+  const testSyncCachePropKey = "test.schema_sync.cache_name";
   // for tests only
   export const setTestCache = (iModel: IModelDb, cacheName?: string) => {
     if (cacheName)
@@ -84,6 +84,10 @@ export namespace SchemaSync {
     } finally {
       access.close();
     }
+  };
+
+  export const isEnabled = (iModel: IModelDb) => {
+    return iModel[_nativeDb].schemaSyncEnabled();
   };
 
   /** Synchronize local briefcase schemas with cloud container */
