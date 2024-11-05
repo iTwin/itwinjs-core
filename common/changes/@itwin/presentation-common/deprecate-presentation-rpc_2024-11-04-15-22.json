@@ -2,8 +2,8 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "deprecate PresentationRpcInterface",
-      "type": "none"
+      "comment": "All public methods of `PresentationRpcInterface` have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as `PresentationManager` should be used instead.",
+      "type": "minor"
     }
   ],
   "packageName": "@itwin/presentation-common"
