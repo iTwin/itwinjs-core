@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Deprecate `SnapshotConnection.openRemote`. `SnapshotConnection.openFile` is now only available in IPC apps",
+      "comment": "`SnapshotConnection.openFile` is now only available in IPC apps",
       "type": "none"
     }
   ],
