@@ -915,7 +915,10 @@ export class PolygonOps {
    * * Compare to [[closestPoint]].
    * @param polygon points of the polygon, closure point optional
    * @param testPoint point p to project onto the polygon edges. Works best when p is in the plane of the polygon.
-   * @param tolerance optional distance tolerance to determine point-vertex and point-edge coincidence.
+   * @param tolerance optional tolerance(s) to determine point-vertex and point-edge coincidence. A single number
+   * is interpreted as distance tolerance. If an array is given, the first number is interpreted as distance tolerance;
+   * the second, as parametric tolerance. Default values are [[Geometry.smallMetricDistance]] for distance tolerance
+   * and 0.0 for parameter tolerance.
    * @param result optional pre-allocated object to fill and return
    * @returns details d of the closest point `d.point`:
    * * `d.isValid()` returns true if and only if the polygon is nontrivial.
@@ -924,11 +927,17 @@ export class PolygonOps {
    * * `d.a` is the distance from testPoint to the closest point.
    * * `d.v` can be used to classify p (if p and polygon are coplanar): if n is the polygon normal then `d.v.dotProduct(n)` is +/-/0 if and only if p is inside/outside/on the polygon.
   */
-  public static closestPointOnBoundary(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance: number = Geometry.smallMetricDistance, result?: PolygonLocationDetail): PolygonLocationDetail {
+  public static closestPointOnBoundary(
+    polygon: Point3d[] | IndexedXYZCollection,
+    testPoint: Point3d,
+    tolerance: number | [number, number] = Geometry.smallMetricDistance,
+    result?: PolygonLocationDetail,
+  ): PolygonLocationDetail {
     if (!(polygon instanceof IndexedXYZCollection))
       return this.closestPointOnBoundary(new Point3dArrayCarrier(polygon), testPoint, tolerance, result);
-
-    const distTol2 = tolerance * tolerance;
+    const distTol = Array.isArray(tolerance) ? tolerance[0] : tolerance;
+    const paramTol = Array.isArray(tolerance) ? Math.abs(tolerance[1]) : 0.0;
+    const distTol2 = distTol * distTol;
 
     let numPoints = polygon.length;
     while (numPoints > 1) {
@@ -940,33 +949,65 @@ export class PolygonOps {
     result = PolygonLocationDetail.create(result);
     if (0 === numPoints)
       return result;  // invalid
-    if (1 === numPoints) {
-      polygon.getPoint3dAtUncheckedPointIndex(0, result.point);
+
+    const constructSingletonPoint = (index: number): PolygonLocationDetail => {
+      polygon.getPoint3dAtUncheckedPointIndex(index, result.point);
       result.a = result.point.distance(testPoint);
       result.v.setZero();
       result.code = PolygonLocation.OnPolygonVertex;
-      result.closestEdgeIndex = 0;
+      result.closestEdgeIndex = index;
       result.closestEdgeParam = 0.0;
       return result;
-    }
+    };
+    if (1 === numPoints)
+      return constructSingletonPoint(0);
 
+    // lambda for computing edge parameter at which testPoint projects onto the edge starting at iEdgeStart
+    const projectToEdge = (iEdgeStart: number): { isValid: boolean, edgeParam: number, uDotU: number, vDotV: number } => {
+      let isValid = false;
+      let edgeParam = 0.0;
+      let uDotU = 0.0;
+      let vDotV = 0.0;
+      if (iEdgeStart >= 0 && iEdgeStart < numPoints) {
+        let iEdgeEnd = iEdgeStart + 1;
+        if (iEdgeEnd === numPoints)
+          iEdgeEnd = 0;
+        uDotU = polygon.distanceSquaredIndexIndex(iEdgeStart, iEdgeEnd)!;
+        if (uDotU > distTol2) { // nontrivial edge
+          vDotV = polygon.distanceSquaredIndexXYAndZ(iEdgeStart, testPoint)!;
+          const uDotV = polygon.dotProductIndexIndexXYAndZ(iEdgeStart, iEdgeEnd, testPoint)!;
+          edgeParam = uDotV / uDotU; // param of projection of testPoint onto edge [iEdgeStart, iEdgeEnd]
+          isValid = true;
+        }
+      }
+      return { isValid, edgeParam, uDotU, vDotV };
+    };
+
+    // find the previous nontrivial edge's projection status before processing the first edge
+    let projBeyondPrevEdge = false;
     let iPrev = numPoints - 1;
+    for (; iPrev >= 0; --iPrev) {
+      const projData = projectToEdge(iPrev);
+      if (projData.isValid) {
+        projBeyondPrevEdge = projData.edgeParam > 1.0 + paramTol;
+        break;
+      }
+    }
+    if (iPrev < 0)  // all segments trivial, so treat like single point case
+      return constructSingletonPoint(0);
+
     let minDist2 = Geometry.largeCoordinateResult;
     for (let iBase = 0; iBase < numPoints; ++iBase) {
       let iNext = iBase + 1;
       if (iNext === numPoints)
         iNext = 0;
 
-      const uDotU = polygon.distanceSquaredIndexIndex(iBase, iNext)!;
-      if (uDotU <= distTol2)
-        continue; // ignore trivial polygon edge (keep iPrev)
+      const projData = projectToEdge(iBase);
+      if (!projData.isValid)
+        continue; // ignore trivial polygon edge (keep iPrev, projBeyondPrevEdge)
 
-      const vDotV = polygon.distanceSquaredIndexXYAndZ(iBase, testPoint)!;
-      const uDotV = polygon.dotProductIndexIndexXYAndZ(iBase, iNext, testPoint)!;
-      const edgeParam = uDotV / uDotU;  // param of projection of testPoint onto this edge
-
-      if (edgeParam <= 0.0) { // testPoint projects to/before edge start
-        const distToStart2 = vDotV;
+      if (projData.edgeParam <= paramTol) { // testPoint projects to/before edge start
+        const distToStart2 = projData.vDotV;
         if (distToStart2 <= distTol2) {
           // testPoint is at edge start; we are done
           polygon.getPoint3dAtUncheckedPointIndex(iBase, result.point);
@@ -977,24 +1018,24 @@ export class PolygonOps {
           result.closestEdgeParam = 0.0;
           return result;
         }
-        if (distToStart2 < minDist2) {
-          if (polygon.dotProductIndexIndexXYAndZ(iBase, iPrev, testPoint)! <= 0.0) {
-            // update candidate (to edge start) only if testPoint projected beyond previous edge end
-            polygon.getPoint3dAtUncheckedPointIndex(iBase, result.point);
-            result.a = Math.sqrt(distToStart2);
-            polygon.crossProductIndexIndexIndex(iBase, iPrev, iNext, result.v)!;
-            result.code = PolygonLocation.OnPolygonVertex;
-            result.closestEdgeIndex = iBase;
-            result.closestEdgeParam = 0.0;
-            minDist2 = distToStart2;
-          }
+        if (distToStart2 < minDist2 && projBeyondPrevEdge) {
+          // update candidate (to edge start) only if testPoint projected beyond previous edge end
+          polygon.getPoint3dAtUncheckedPointIndex(iBase, result.point);
+          result.a = Math.sqrt(distToStart2);
+          polygon.crossProductIndexIndexIndex(iBase, iPrev, iNext, result.v)!;
+          result.code = PolygonLocation.OnPolygonVertex;
+          result.closestEdgeIndex = iBase;
+          result.closestEdgeParam = 0.0;
+          minDist2 = distToStart2;
         }
-      } else if (edgeParam <= 1.0) {  // testPoint projects inside edge, or to edge end
-        const projDist2 = vDotV - edgeParam * edgeParam * uDotU;
+        projBeyondPrevEdge = false;
+      } else if (projData.edgeParam <= 1.0 + paramTol) {  // testPoint projects inside edge, or to edge end
+        projData.edgeParam = Geometry.clamp(projData.edgeParam, 0.0, 1.0);
+        const projDist2 = projData.vDotV - projData.edgeParam * projData.edgeParam * projData.uDotU;
         if (projDist2 <= distTol2) {
           // testPoint is on edge; we are done
-          const distToStart2 = vDotV;
-          if (edgeParam <= 0.5 && distToStart2 <= distTol2) {
+          const distToStart2 = projData.vDotV;
+          if (projData.edgeParam <= 0.5 && distToStart2 <= distTol2) {
             // testPoint is at edge start
             polygon.getPoint3dAtUncheckedPointIndex(iBase, result.point);
             result.a = Math.sqrt(distToStart2);
@@ -1004,8 +1045,8 @@ export class PolygonOps {
             result.closestEdgeParam = 0.0;
             return result;
           }
-          const distToEnd2 = projDist2 + (1.0 - edgeParam) * (1.0 - edgeParam) * uDotU;
-          if (edgeParam > 0.5 && distToEnd2 <= distTol2) {
+          const distToEnd2 = projDist2 + (1.0 - projData.edgeParam) * (1.0 - projData.edgeParam) * projData.uDotU;
+          if (projData.edgeParam > 0.5 && distToEnd2 <= distTol2) {
             // testPoint is at edge end
             polygon.getPoint3dAtUncheckedPointIndex(iNext, result.point);
             result.a = Math.sqrt(distToEnd2);
@@ -1016,26 +1057,27 @@ export class PolygonOps {
             return result;
           }
           // testPoint is on edge interior
-          polygon.interpolateIndexIndex(iBase, edgeParam, iNext, result.point);
+          polygon.interpolateIndexIndex(iBase, projData.edgeParam, iNext, result.point);
           result.a = Math.sqrt(projDist2);
           result.v.setZero();
           result.code = PolygonLocation.OnPolygonEdgeInterior;
           result.closestEdgeIndex = iBase;
-          result.closestEdgeParam = edgeParam;
+          result.closestEdgeParam = projData.edgeParam;
           return result;
         }
         if (projDist2 < minDist2) {
-          // update candidate (to edge interior)
-          polygon.interpolateIndexIndex(iBase, edgeParam, iNext, result.point);
+          // update candidate
+          polygon.interpolateIndexIndex(iBase, projData.edgeParam, iNext, result.point);
           result.a = Math.sqrt(projDist2);
           polygon.crossProductIndexIndexXYAndZ(iBase, iNext, testPoint, result.v)!;
-          result.code = PolygonLocation.OnPolygonEdgeInterior;
+          result.code = projData.edgeParam < 1.0 ? PolygonLocation.OnPolygonEdgeInterior : PolygonLocation.OnPolygonVertex;;
           result.closestEdgeIndex = iBase;
-          result.closestEdgeParam = edgeParam;
+          result.closestEdgeParam = projData.edgeParam;
           minDist2 = projDist2;
         }
-      } else {  // edgeParam > 1.0
-        // NOOP: testPoint projects beyond edge end, handled by next edge
+        projBeyondPrevEdge = false;
+      } else {
+        projBeyondPrevEdge = true; // to be handled by next edge
       }
       iPrev = iBase;
     }
@@ -1090,7 +1132,10 @@ export class PolygonOps {
   /** Compute the intersection of a line (parameterized as a ray) with the plane of this polygon.
    * @param polygon points of the polygon, closure point optional
    * @param ray infinite line to intersect, as a ray
-   * @param tolerance optional distance tolerance to determine point-vertex and point-edge coincidence.
+   * @param tolerance optional tolerance(s) to determine point-vertex and point-edge coincidence. A single number
+   * is interpreted as distance tolerance. If an array is given, the first number is interpreted as distance tolerance;
+   * the second, as parametric tolerance. Default values are [[Geometry.smallMetricDistance]] for distance tolerance
+   * and 0.0 for parameter tolerance.
    * @param result optional pre-allocated object to fill and return
    * @returns details d of the line-plane intersection `d.point`:
    * * `d.isValid()` returns true if and only if the line intersects the plane.
@@ -1098,12 +1143,23 @@ export class PolygonOps {
    * * `d.a` is the ray intersection parameter. If `d.a` >= 0, the ray intersects the plane of the polygon.
    * * `d.edgeIndex` and `d.edgeParam` specify the location of the closest point on the polygon to the intersection, within `distTol`.
    */
-  public static intersectRay3d(polygon: Point3d[] | IndexedXYZCollection, ray: Ray3d, tolerance: number = Geometry.smallMetricDistance, result?: PolygonLocationDetail): PolygonLocationDetail {
+  public static intersectRay3d(
+    polygon: Point3d[] | IndexedXYZCollection,
+    ray: Ray3d,
+    tolerance: number | [number, number] = Geometry.smallMetricDistance,
+    result?: PolygonLocationDetail,
+  ): PolygonLocationDetail {
     if (!(polygon instanceof IndexedXYZCollection))
       return this.intersectRay3d(new Point3dArrayCarrier(polygon), ray, tolerance, result);
     if (!this.unitNormal(polygon, this._normal))
       return PolygonLocationDetail.create(result); // invalid
-    this._workPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(polygon.getXAtUncheckedPointIndex(0), polygon.getYAtUncheckedPointIndex(0), polygon.getZAtUncheckedPointIndex(0), this._normal.x, this._normal.y, this._normal.z, this._workPlane)!;
+    this._workPlane = Plane3dByOriginAndUnitNormal.createXYZUVW(
+      polygon.getXAtUncheckedPointIndex(0),
+      polygon.getYAtUncheckedPointIndex(0),
+      polygon.getZAtUncheckedPointIndex(0),
+      this._normal.x, this._normal.y, this._normal.z,
+      this._workPlane,
+    )!;
     const intersectionPoint = this._workXYZ = Point3d.createZero(this._workXYZ);
     const rayParam = ray.intersectionWithPlane(this._workPlane, intersectionPoint);
     if (undefined === rayParam)
@@ -1116,11 +1172,17 @@ export class PolygonOps {
       if (dot === 0.0) {
         // NOOP: intersectionPoint is on the polygon, so result.code already classifies it
       } else {
-        // intersectionPoint is not on polygon, so result.code refers to the closest point. Update it to refer to intersectionPoint.
-        if (PolygonLocation.OnPolygonVertex === result.code)
-          result.code = (dot > 0.0) ? PolygonLocation.InsidePolygonProjectsToVertex : PolygonLocation.OutsidePolygonProjectsToVertex;
-        else if (PolygonLocation.OnPolygonEdgeInterior === result.code)
-          result.code = (dot > 0.0) ? PolygonLocation.InsidePolygonProjectsToEdgeInterior : PolygonLocation.OutsidePolygonProjectsToEdgeInterior;
+        // intersectionPoint is not on the polygon, so result.code refers to the closest point;
+        // update it to refer to intersectionPoint.
+        if (PolygonLocation.OnPolygonVertex === result.code) {
+          result.code = (dot > 0.0)
+            ? PolygonLocation.InsidePolygonProjectsToVertex
+            : PolygonLocation.OutsidePolygonProjectsToVertex;
+        } else if (PolygonLocation.OnPolygonEdgeInterior === result.code) {
+          result.code = (dot > 0.0)
+            ? PolygonLocation.InsidePolygonProjectsToEdgeInterior
+            : PolygonLocation.OutsidePolygonProjectsToEdgeInterior;
+        }
       }
     }
     return result;
@@ -1139,7 +1201,13 @@ export class PolygonOps {
    * * `d.edgeIndex` and `d.edgeParam` specify the location of the closest point on the polygon to the intersection, within `distTol`.
    * @see intersectRay3d
    */
-  public static intersectSegment(polygon: Point3d[] | IndexedXYZCollection, point0: Point3d, point1: Point3d, tolerance: number = Geometry.smallMetricDistance, result?: PolygonLocationDetail): PolygonLocationDetail {
+  public static intersectSegment(
+    polygon: Point3d[] | IndexedXYZCollection,
+    point0: Point3d,
+    point1: Point3d,
+    tolerance: number = Geometry.smallMetricDistance,
+    result?: PolygonLocationDetail,
+  ): PolygonLocationDetail {
     this._workRay = Ray3d.createStartEnd(point0, point1, this._workRay);
     return this.intersectRay3d(polygon, this._workRay, tolerance, result);
   }
@@ -1153,7 +1221,14 @@ export class PolygonOps {
    * @param result optional pre-allocated result
    * @returns x: signed projection distance of `point` to the edge, y: edge parameter of the projection
    */
-  private static computeEdgeDataXY(polygon: IndexedXYZCollection, edgeStartVertexIndex: number, point: XYAndZ, edgeOutwardUnitNormal: Vector3d, tolerance: number = Geometry.smallMetricDistance, result?: Point2d): Point2d {
+  private static computeEdgeDataXY(
+    polygon: IndexedXYZCollection,
+    edgeStartVertexIndex: number,
+    point: XYAndZ,
+    edgeOutwardUnitNormal: Vector3d,
+    tolerance: number = Geometry.smallMetricDistance,
+    result?: Point2d,
+  ): Point2d {
     const i0 = edgeStartVertexIndex % polygon.length;
     const i1 = (i0 + 1) % polygon.length;
     polygon.vectorIndexIndex(i0, i1, edgeOutwardUnitNormal)!.unitPerpendicularXY(edgeOutwardUnitNormal).negate(edgeOutwardUnitNormal);  // z is zero
@@ -1183,7 +1258,16 @@ export class PolygonOps {
    * @param coords pre-allocated barycentric coordinate array to return, assumed to have length at least `polygon.length`
    * @returns barycentric coordinates, or undefined if not on either edge
    */
-  private static convexBarycentricCoordinatesOnEdge(polygon: IndexedXYZCollection, iPrev: number, prevNormal: Vector3d, prevProj: XAndY, i: number, normal: Vector3d, proj: XAndY, coords: number[]): number[] | undefined {
+  private static convexBarycentricCoordinatesOnEdge(
+    polygon: IndexedXYZCollection,
+    iPrev: number,
+    prevNormal: Vector3d,
+    prevProj: XAndY,
+    i: number,
+    normal: Vector3d,
+    proj: XAndY,
+    coords: number[],
+  ): number[] | undefined {
     // ignore degenerate edges
     const pointIsOnPrevEdge = !prevNormal.isZero && (0.0 === prevProj.x) && Geometry.isIn01(prevProj.y);
     const pointIsOnEdge = !normal.isZero && (0.0 === proj.x) && Geometry.isIn01(proj.y);
@@ -1222,7 +1306,11 @@ export class PolygonOps {
    * @return barycentric coordinates of the interior point, or undefined if invalid polygon or exterior point. Length is same as `polygon.length`.
    * @see BarycentricTriangle.pointToFraction
    */
-  public static convexBarycentricCoordinates(polygon: Point3d[] | IndexedXYZCollection, point: Point3d, tolerance: number = Geometry.smallMetricDistance): number[] | undefined {
+  public static convexBarycentricCoordinates(
+    polygon: Point3d[] | IndexedXYZCollection,
+    point: Point3d,
+    tolerance: number = Geometry.smallMetricDistance,
+  ): number[] | undefined {
     // cf. "Barycentric Coordinates for Convex Sets", by Warren et al., CAGD (2003)
     if (Array.isArray(polygon))
       return this.convexBarycentricCoordinates(new Point3dArrayCarrier(polygon), point);

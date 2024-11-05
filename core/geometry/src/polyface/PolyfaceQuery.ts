@@ -2004,6 +2004,7 @@ export class PolyfaceQuery {
     if (visitor instanceof Polyface)
       return PolyfaceQuery.intersectRay3d(visitor.createVisitor(0), ray, options);
     let detail: FacetLocationDetail;
+    const tol: [number, number] | undefined = options ? [options.distanceTolerance, options.parameterTolerance] : undefined;
     visitor.setNumWrap(0);
     while (visitor.moveToNextFacet()) {
       const numEdges = visitor.pointCount; // #vertices = #edges since numWrap is zero
@@ -2021,9 +2022,7 @@ export class PolyfaceQuery {
           visitor.currentReadIndex(), detail3, this._workFacetDetail3,
         );
       } else {
-        const detailN = this._workPolyDetail = PolygonOps.intersectRay3d(
-          vertices, ray, options?.distanceTolerance, this._workPolyDetail,
-        );
+        const detailN = this._workPolyDetail = PolygonOps.intersectRay3d(vertices, ray, tol, this._workPolyDetail);
         if (PolygonOps.isConvex(vertices))
           detail = this._workFacetDetailC = ConvexFacetLocationDetail.create(
             visitor.currentReadIndex(), numEdges, detailN, this._workFacetDetailC,
