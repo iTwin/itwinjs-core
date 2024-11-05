@@ -34,16 +34,16 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
   /**
    * Lookup a schema item from the schema to compare and consider item might be remapped.
    */
-  private async lookupItem<TItem extends SchemaItem>(itemName: string): Promise<TItem | undefined> {
-    itemName = this._schemaComparer.nameMappings.get(`${this._schemaB.name}.${itemName}`) || itemName;
+  private async lookupItem<TItem extends SchemaItem>(item: SchemaItem): Promise<TItem | undefined> {
+    const itemName = this._schemaComparer.nameMappings.get(item.fullName) || item.name;
     return this._schemaB.lookupItem<TItem>(itemName);
   }
 
   /**
    * Lookup a class property from the schema to compare and consider property might be remapped.
    */
-  private async lookupProperty(ecClass: ECClass, propertyName: string): Promise<AnyProperty | undefined> {
-    propertyName = this._schemaComparer.nameMappings.get(`${ecClass.fullName}.${propertyName}`) || propertyName;
+  private async lookupProperty(ecClass: ECClass, propertyA: AnyProperty): Promise<AnyProperty | undefined> {
+    const propertyName = this._schemaComparer.nameMappings.get(`${propertyA.class.fullName}.${propertyA.name}`) || propertyA.name;
     return ecClass.getProperty(propertyName) as Promise<AnyProperty | undefined>;
   }
 
@@ -60,7 +60,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param schemaItem a SchemaItem object.
    */
   public async visitSchemaItem(schemaItemA: SchemaItem) {
-    const schemaItemB = await this.lookupItem(schemaItemA.name);
+    const schemaItemB = await this.lookupItem(schemaItemA);
     this._schemaComparer.compareSchemaItems(schemaItemA, schemaItemB);
   }
 
@@ -69,7 +69,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param ecClass an ECClass object.
    */
   public async visitClass(classA: AnyClass): Promise<void> {
-    const classB = await this.lookupItem<AnyClass>(classA.name);
+    const classB = await this.lookupItem<AnyClass>(classA);
     if (classB && classA.schemaItemType === classB.schemaItemType)
       this._schemaComparer.compareClasses(classA, classB);
   }
@@ -81,9 +81,9 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
   public async visitProperty(propertyA: AnyProperty): Promise<void> {
     let propertyB: AnyProperty | undefined;
 
-    const classB = await this.lookupItem<ECClass>(propertyA.class.name);
+    const classB = await this.lookupItem<ECClass>(propertyA.class);
     if (classB && propertyA.class.schemaItemType === classB.schemaItemType){
-      propertyB = await this.lookupProperty(classB, propertyA.name);
+      propertyB = await this.lookupProperty(classB, propertyA);
       this._schemaComparer.compareProperties(propertyA, propertyB);
     }
   }
@@ -93,7 +93,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param entityClass an EntityClass object.
    */
   public async visitEntityClass(entityA: EntityClass): Promise<void> {
-    const entityB = await this.lookupItem<EntityClass>(entityA.name);
+    const entityB = await this.lookupItem<EntityClass>(entityA);
     if (entityB && entityB.schemaItemType === SchemaItemType.EntityClass)
       this._schemaComparer.compareEntityClasses(entityA, entityB);
   }
@@ -111,7 +111,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param mixin a Mixin object.
    */
   public async visitMixin(mixinA: Mixin): Promise<void> {
-    const mixinB = await this.lookupItem<Mixin>(mixinA.name);
+    const mixinB = await this.lookupItem<Mixin>(mixinA);
     if (mixinB && mixinB.schemaItemType === SchemaItemType.Mixin)
       this._schemaComparer.compareMixins(mixinA, mixinB);
   }
@@ -121,7 +121,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param relationshipClass a RelationshipClass object.
    */
   public async visitRelationshipClass(relationshipA: RelationshipClass): Promise<void> {
-    const relationshipB = await this.lookupItem<RelationshipClass>(relationshipA.name);
+    const relationshipB = await this.lookupItem<RelationshipClass>(relationshipA);
     if (relationshipB && relationshipB.schemaItemType === SchemaItemType.RelationshipClass)
       this._schemaComparer.compareRelationshipClasses(relationshipA, relationshipB);
   }
@@ -132,7 +132,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    */
   public async visitRelationshipConstraint(constraintA: RelationshipConstraint): Promise<void> {
     let constraintB: RelationshipConstraint | undefined;
-    const relationshipB = await this.lookupItem<RelationshipClass>(constraintA.relationshipClass.name);
+    const relationshipB = await this.lookupItem<RelationshipClass>(constraintA.relationshipClass);
     if (relationshipB && relationshipB.schemaItemType === SchemaItemType.RelationshipClass) {
       constraintB = constraintA.isSource ? relationshipB.source : relationshipB.target;
       if (constraintB) {
@@ -146,7 +146,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param customAttributeClass a CustomAttributeClass object.
    */
   public async visitCustomAttributeClass(customAttributeA: CustomAttributeClass): Promise<void> {
-    const customAttributeB = await this.lookupItem<CustomAttributeClass>(customAttributeA.name);
+    const customAttributeB = await this.lookupItem<CustomAttributeClass>(customAttributeA);
     if (customAttributeB && customAttributeB.schemaItemType === SchemaItemType.CustomAttributeClass)
       this._schemaComparer.compareCustomAttributeClasses(customAttributeA, customAttributeB);
   }
@@ -163,13 +163,13 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
     if (Schema.isSchema(containerA)) {
       containerB = this._schemaB;
     } else if (ECClass.isECClass(containerA)) {
-      const parent = await this.lookupItem<ECClass>(containerA.name);
+      const parent = await this.lookupItem<ECClass>(containerA);
       containerB = parent && parent.schemaItemType === containerA.schemaItemType ? parent : undefined;
     } else if (Property.isProperty(containerA)) {
-      const parent = await this.lookupItem<ECClass>(containerA.class.name);
+      const parent = await this.lookupItem<ECClass>(containerA.class);
       containerB = parent && parent.schemaItemType === containerA.class.schemaItemType ? await parent.getProperty(shortName) : undefined;
     } else if (RelationshipConstraint.isRelationshipConstraint(containerA)) {
-      const parent = await this.lookupItem<RelationshipClass>(containerA.relationshipClass.name);
+      const parent = await this.lookupItem<RelationshipClass>(containerA.relationshipClass);
       containerB = parent ? containerA.isSource ? parent.source : parent.target : undefined;
     }
 
@@ -182,7 +182,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param enumeration an Enumeration object.
    */
   public async visitEnumeration(enumA: Enumeration) {
-    const enumB = await this.lookupItem<Enumeration>(enumA.name);
+    const enumB = await this.lookupItem<Enumeration>(enumA);
     if (enumB && enumB.schemaItemType === SchemaItemType.Enumeration)
       this._schemaComparer.compareEnumerations(enumA, enumB);
   }
@@ -192,7 +192,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param koq a KindOfQuantity object.
    */
   public async visitKindOfQuantity(koqA: KindOfQuantity) {
-    const koqB = await this.lookupItem<KindOfQuantity>(koqA.name);
+    const koqB = await this.lookupItem<KindOfQuantity>(koqA);
     if (koqB && koqB.schemaItemType === SchemaItemType.KindOfQuantity)
       this._schemaComparer.compareKindOfQuantities(koqA, koqB);
   }
@@ -202,7 +202,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param category a PropertyCategory object.
    */
   public async visitPropertyCategory(categoryA: PropertyCategory) {
-    const categoryB = await this.lookupItem<PropertyCategory>(categoryA.name);
+    const categoryB = await this.lookupItem<PropertyCategory>(categoryA);
     if (categoryB && categoryB.schemaItemType === SchemaItemType.PropertyCategory)
       this._schemaComparer.comparePropertyCategories(categoryA, categoryB);
   }
@@ -212,7 +212,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param format a Format object.
    */
   public async visitFormat(formatA: Format): Promise<void> {
-    const formatB = await this.lookupItem<Format>(formatA.name);
+    const formatB = await this.lookupItem<Format>(formatA);
     if (formatB && formatB.schemaItemType === SchemaItemType.Format)
       this._schemaComparer.compareFormats(formatA, formatB);
   }
@@ -222,7 +222,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param unit a Unit object.
    */
   public async visitUnit(unitA: Unit): Promise<void> {
-    const unitB = await this.lookupItem<Unit>(unitA.name);
+    const unitB = await this.lookupItem<Unit>(unitA);
     if (unitB && Unit.isUnit(unitB))
       this._schemaComparer.compareUnits(unitA, unitB);
   }
@@ -232,7 +232,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param invertedUnit an InvertedUnit object.
    */
   public async visitInvertedUnit(invertedUnitA: InvertedUnit): Promise<void> {
-    const invertedUnitB = await this.lookupItem<InvertedUnit>(invertedUnitA.name);
+    const invertedUnitB = await this.lookupItem<InvertedUnit>(invertedUnitA);
     if (invertedUnitB && invertedUnitB.schemaItemType === SchemaItemType.InvertedUnit)
       this._schemaComparer.compareInvertedUnits(invertedUnitA, invertedUnitB);
   }
@@ -250,7 +250,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param phenomena a Phenomenon object.
    */
   public async visitPhenomenon(phenomenonA: Phenomenon): Promise<void> {
-    const phenomenonB = await this.lookupItem<Phenomenon>(phenomenonA.name);
+    const phenomenonB = await this.lookupItem<Phenomenon>(phenomenonA);
     if (phenomenonB && phenomenonB.schemaItemType === SchemaItemType.Phenomenon)
       this._schemaComparer.comparePhenomenons(phenomenonA, phenomenonB);
   }
@@ -260,7 +260,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param constant a Constant object.
    */
   public async visitConstant(constantA: Constant): Promise<void> {
-    const constantB = await this.lookupItem<Constant>(constantA.name);
+    const constantB = await this.lookupItem<Constant>(constantA);
     if (constantB && constantB.schemaItemType === SchemaItemType.Constant)
       this._schemaComparer.compareConstants(constantA, constantB);
   }

@@ -85,6 +85,29 @@ export class SchemaComparer {
   }
 
   /**
+   * Resolve the remapped schema item name.
+   * @param item 
+   * @returns 
+   */
+  private resolveItemName(item: Readonly<SchemaItemKey> | SchemaItem): string {
+    return item && this.nameMappings.get(item.fullName) || item.name;
+  }
+
+  /**
+   * Resolve the remapped schema item full name.
+   * @param item 
+   * @returns 
+   */
+  private resolveItemFullName(item?: Readonly<SchemaItemKey> | SchemaItem): string | undefined {
+    if (undefined === item)
+      return undefined;
+
+    const value =  this.resolveItemName(item);
+    const [schemaName, _itemName] = SchemaItem.parseFullName(item.fullName);
+    return `${schemaName}.${value}`;
+  }
+
+  /**
    * Compares two schemas to identify differences.
    * @param schemaA The first Schema.
    * @param schemaB The second Schema.
@@ -189,7 +212,7 @@ export class SchemaComparer {
     }
 
     if (classA.baseClass || classB.baseClass) {
-      const fullNameA = classA.baseClass?.fullName;
+      const fullNameA = this.resolveItemFullName(classA.baseClass);
       const fullNameB = classB.baseClass?.fullName;
 
       if (fullNameA !== fullNameB) {
@@ -243,7 +266,7 @@ export class SchemaComparer {
       promises.push(this._reporter.reportPropertyDelta(propertyA, "priority", propertyA.priority, propertyB.priority, this._compareDirection));
 
     if (propertyA.category || propertyB.category) {
-      const catKeyA = propertyA.category?.fullName;
+      const catKeyA = this.resolveItemFullName(propertyA.category);
       const catKeyB = propertyB.category?.fullName;
       if (catKeyA !== catKeyB) {
         const areSameByName = this.areItemsSameByName(propertyA.category, propertyB.category, propertyA.schema.name, propertyB.schema.name);
@@ -253,7 +276,7 @@ export class SchemaComparer {
     }
 
     if (propertyA.kindOfQuantity || propertyB.kindOfQuantity) {
-      const koqKeyA = propertyA.kindOfQuantity?.fullName;
+      const koqKeyA = this.resolveItemFullName(propertyA.kindOfQuantity);
       const koqKeyB = propertyB.kindOfQuantity?.fullName;
       if (koqKeyA !== koqKeyB) {
         const areSameByName = this.areItemsSameByName(propertyA.kindOfQuantity, propertyB.kindOfQuantity, propertyA.schema.name, propertyB.schema.name);
@@ -291,7 +314,7 @@ export class SchemaComparer {
       return;
 
     if (mixinA.appliesTo || mixinB.appliesTo) {
-      const appliesToA = mixinA.appliesTo?.fullName;
+      const appliesToA = this.resolveItemFullName(mixinA.appliesTo);
       const appliesToB = mixinB.appliesTo?.fullName;
       if (appliesToA !== appliesToB) {
         const areSameByName = this.areItemsSameByName(mixinA.appliesTo, mixinB.appliesTo, mixinA.schema.name, mixinB.schema.name);
@@ -362,7 +385,7 @@ export class SchemaComparer {
       promises.push(this._reporter.reportRelationshipConstraintDelta(constraintA, "polymorphic", constraintA.polymorphic, constraintB.polymorphic, this._compareDirection));
 
     if (constraintA.abstractConstraint || constraintB.abstractConstraint) {
-      const abstractA = constraintA.abstractConstraint?.fullName;
+      const abstractA = this.resolveItemFullName(constraintA.abstractConstraint);
       const abstractB = constraintB.abstractConstraint?.fullName;
       if (abstractA !== abstractB) {
         const areSameByName = this.areItemsSameByName(constraintA.abstractConstraint, constraintB.abstractConstraint, constraintA.schema.name, constraintB.schema.name);
@@ -467,7 +490,7 @@ export class SchemaComparer {
     }
 
     if (koqA.persistenceUnit || koqB.persistenceUnit) {
-      const unitNameA = koqA.persistenceUnit?.fullName;
+      const unitNameA = this.resolveItemFullName(koqA.persistenceUnit);
       const unitNameB = koqB.persistenceUnit?.fullName;
       if (unitNameA !== unitNameB) {
         const eqByName = this.areItemsSameByName(koqA.persistenceUnit, koqB.persistenceUnit, koqA.schema.name, koqB.schema.name);
@@ -576,7 +599,7 @@ export class SchemaComparer {
     const promises: Array<Promise<void>> = [];
 
     if (unitA.phenomenon || unitB.phenomenon) {
-      const fullNameA = unitA.phenomenon?.fullName;
+      const fullNameA = this.resolveItemFullName(unitA.phenomenon);
       const fullNameB = unitB.phenomenon?.fullName;
       if (fullNameA !== fullNameB) {
         const eqByName = this.areItemsSameByName(unitA.phenomenon, unitB.phenomenon, unitA.schema.name, unitB.schema.name);
@@ -586,7 +609,7 @@ export class SchemaComparer {
     }
 
     if (unitA.unitSystem || unitB.unitSystem) {
-      const fullNameA = unitA.unitSystem?.fullName;
+      const fullNameA = this.resolveItemFullName(unitA.unitSystem);
       const fullNameB = unitB.unitSystem?.fullName;
       if (fullNameA !== fullNameB) {
         const eqByName = this.areItemsSameByName(unitA.unitSystem, unitB.unitSystem, unitA.schema.name, unitB.schema.name);
@@ -622,7 +645,7 @@ export class SchemaComparer {
     const promises: Array<Promise<void>> = [];
 
     if (invertedUnitA.invertsUnit || invertedUnitB.invertsUnit) {
-      const fullNameA = invertedUnitA.invertsUnit?.fullName;
+      const fullNameA = this.resolveItemFullName(invertedUnitA.invertsUnit);
       const fullNameB = invertedUnitB.invertsUnit?.fullName;
       if (fullNameA !== fullNameB) {
         const eqByName = this.areItemsSameByName(invertedUnitA.invertsUnit, invertedUnitB.invertsUnit, invertedUnitA.schema.name, invertedUnitB.schema.name);
@@ -632,7 +655,7 @@ export class SchemaComparer {
     }
 
     if (invertedUnitA.unitSystem || invertedUnitB.unitSystem) {
-      const fullNameA = invertedUnitA.unitSystem?.fullName;
+      const fullNameA = this.resolveItemFullName(invertedUnitA.unitSystem);
       const fullNameB = invertedUnitB.unitSystem?.fullName;
       if (fullNameA !== fullNameB) {
         const eqByName = this.areItemsSameByName(invertedUnitA.unitSystem, invertedUnitB.unitSystem, invertedUnitA.schema.name, invertedUnitB.schema.name);
@@ -669,7 +692,7 @@ export class SchemaComparer {
     const promises: Array<Promise<void>> = [];
 
     if (constantA.phenomenon || constantB.phenomenon) {
-      const fullNameA = constantA.phenomenon?.fullName;
+      const fullNameA = this.resolveItemFullName(constantA.phenomenon);
       const fullNameB = constantB.phenomenon?.fullName;
       if (fullNameA !== fullNameB) {
         const eqByName = this.areItemsSameByName(constantA.phenomenon, constantB.phenomenon, constantA.schema.name, constantB.schema.name);
@@ -708,7 +731,7 @@ export class SchemaComparer {
     if (propertyA.isEnumeration()) {
       const enumerationB = propertyB.isEnumeration() ? propertyB.enumeration : undefined;
       if (propertyA.enumeration || enumerationB) {
-        const enumA = propertyA.enumeration?.fullName;
+        const enumA = this.resolveItemFullName(propertyA.enumeration);
         const enumB = enumerationB?.fullName;
         if (enumA !== enumB) {
           const areSameByName = this.areItemsSameByName(propertyA.enumeration, enumerationB, propertyA.schema.name, propertyB.schema.name);
@@ -729,7 +752,7 @@ export class SchemaComparer {
 
       if (propertyA.relationshipClass) { // eslint-disable-line @typescript-eslint/no-misused-promises
         const relationshipClassB = propertyB.isNavigation() ? propertyB.relationshipClass : undefined;
-        const relA = propertyA.relationshipClass.fullName;
+        const relA = this.resolveItemFullName(propertyA.relationshipClass);
         const relB = relationshipClassB ? relationshipClassB.fullName : undefined;
         if (relA !== relB){
           const areSameByName = this.areItemsSameByName(propertyA.relationshipClass, relationshipClassB, propertyA.schema.name, propertyB.schema.name);
@@ -778,7 +801,7 @@ export class SchemaComparer {
       const structA = propertyA.structClass;
       const structB = propertyB.isStruct() ? propertyB.structClass : undefined;
       if (structA || structB) {
-        const structNameA = structA.fullName;
+        const structNameA = this.resolveItemFullName(structA);
         const structNameB = structB?.fullName;
         if (structNameA !== structNameB) {
           const areSameByName = this.areItemsSameByName(structA.key, structB?.key, propertyA.schema.name, propertyB.schema.name);
@@ -869,7 +892,7 @@ export class SchemaComparer {
     topLevelSchemaNameA: string,
     topLevelSchemaNameB: string | undefined ): boolean {
 
-    const nameA = itemKeyA ? itemKeyA.name.toUpperCase() : undefined;
+    const nameA = itemKeyA ? this.resolveItemName(itemKeyA).toUpperCase() : undefined;
     const nameB = itemKeyB ? itemKeyB.name.toUpperCase() : undefined;
 
     const schemaNameA = itemKeyA
