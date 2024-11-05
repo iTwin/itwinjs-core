@@ -65,6 +65,7 @@
     "@itwin/core-orbitgt": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
     "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "@itwin/imodelread-common": "workspace:^",
     "@types/chai-as-promised": "^7",
     "@vitest/browser": "^2.1.0",
     "@vitest/coverage-v8": "^2.1.0",
