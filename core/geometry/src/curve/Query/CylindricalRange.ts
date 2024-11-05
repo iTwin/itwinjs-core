@@ -84,34 +84,37 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
   }
 
   /**
-   * Recurse through geometry.children to find linestrings.
-   * In each linestring, compute the surface normal annotation from
+   * Recurse through `geometry.children` to find linestrings.
+   * For each linestring, compute and store the normal of the rotational surface resulting from sweeping the
+   * geometry around `axis` using:
    *  * the curve tangent stored in the linestring
    *  * the axis of rotation
-   *  * a default V vector to be used when the linestring point is close to the axis.
-   * @param geometry
-   * @param axis
-   * @param defaultVectorV
+   *  * a default V vector to be used when the linestring point is close to the axis
+   * @param geometry profile curve (e.g., linestring, parity region)
+   * @param axis rotational axis
+   * @param defaultVectorFromAxis default vector perpendicular to `axis` (e.g., sweepVector)
    */
-  public static buildRotationalNormalsInLineStrings(geometry: AnyCurve, axis: Ray3d, defaultVectorFromAxis: Vector3d) {
+  public static buildRotationalNormalsInLineStrings(geometry: AnyCurve, axis: Ray3d, defaultVectorFromAxis: Vector3d): void {
     if (geometry instanceof LineString3d) {
       const points = geometry.packedPoints;
       const derivatives = geometry.packedDerivatives;
       const normals = geometry.ensureEmptySurfaceNormals();
       if (derivatives && normals) {
         const vectorU = Vector3d.create();
-        const vectorV = Vector3d.create();  // v direction (forward along sweep) for surface of rotation.
+        const vectorV = Vector3d.create();
         const xyz = Point3d.create();
         const n = points.length;
         for (let i = 0; i < n; i++) {
           points.getPoint3dAtUncheckedPointIndex(i, xyz);
           axis.perpendicularPartOfVectorToTarget(xyz, vectorU);
+          // compute the positive sweep direction
           if (vectorU.isAlmostZero)
             axis.direction.crossProduct(defaultVectorFromAxis, vectorV);
           else
             axis.direction.crossProduct(vectorU, vectorV);
-          geometry.packedDerivatives.getVector3dAtCheckedVectorIndex(i, vectorU); // reuse vector U as curve derivative
-          vectorU.crossProduct(vectorV, vectorV);  // reuse vector V as normal!
+          // ASSUME: orientation-based profile normal is in the same half-space as vectorV
+          geometry.packedDerivatives.getVector3dAtCheckedVectorIndex(i, vectorU); // reuse vectorU
+          vectorU.crossProduct(vectorV, vectorV);  // reuse vectorV
           vectorV.normalizeInPlace();
           normals.push(vectorV);
         }
