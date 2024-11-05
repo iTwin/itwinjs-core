@@ -1,12 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<ECSchema schemaName="AllPropertiesSchema" alias="aps" version="01.00.00"
+<ECSchema schemaName="AllProperties" alias="aps" version="01.00.00"
   xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-  <ECSchemaReference name="BisCore" version="01.00.17" alias="bis"/>
-  <ECSchemaReference name="CoreCustomAttributes" version="01.00.05" alias="CoreCA"/>
+  <ECSchemaReference name="BisCore" version="01.00.16" alias="bis"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.04" alias="CoreCA"/>
   <ECEntityClass typeName="TestElement" modifier="None">
     <BaseClass>bis:PhysicalElement</BaseClass>
     <BaseClass>IPrimitive</BaseClass>
     <BaseClass>IPrimitiveArray</BaseClass>
+    <ECProperty propertyName="DirectStr" typeName="string"/>
+    <ECProperty propertyName="DirectLong" typeName="long"/>
+    <ECProperty propertyName="DirectDouble" typeName="double"/>
   </ECEntityClass>
   <ECEntityClass typeName="TestElementAspect" modifier="None">
     <BaseClass>bis:ElementUniqueAspect</BaseClass>

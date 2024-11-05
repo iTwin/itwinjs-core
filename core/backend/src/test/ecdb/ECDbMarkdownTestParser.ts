@@ -38,6 +38,21 @@ export interface ECDbColumnInfoProps {
   isDynamicProp?: boolean;
 }
 
+function isECDbColumnInfoProps(obj: any): obj is ECDbColumnInfoProps {
+  return typeof obj === "object" &&
+    typeof obj.accessString === "string" &&
+    (obj.propertyName === undefined || typeof obj.propertyName === "string") &&
+    (obj.originPropertyName === undefined || typeof obj.originPropertyName === "string") &&
+    (obj.rootClassAlias === undefined || typeof obj.rootClassAlias === "string") &&
+    (obj.rootClassName === undefined || typeof obj.rootClassName === "string") &&
+    (obj.rootClassTableSpace === undefined || typeof obj.rootClassTableSpace === "string") &&
+    (obj.type === undefined || typeof obj.type === "string") &&
+    (obj.isEnum === undefined || typeof obj.isEnum === "boolean") &&
+    (obj.isGeneratedProperty === undefined || typeof obj.isGeneratedProperty === "boolean") &&
+    (obj.isSystemProperty === undefined || typeof obj.isSystemProperty === "boolean") &&
+    (obj.isDynamicProp === undefined || typeof obj.isDynamicProp === "boolean");
+}
+
 export class ECDbMarkdownTestParser {
   public static parse(): ECDbTestProps[] {
     const testAssetsDir = IModelTestUtils.resolveAssetFile("ECDbTests");
@@ -135,11 +150,26 @@ export class ECDbMarkdownTestParser {
     if (token.lang === "sql") {
       currentTest.sql = token.text;
     } else if (token.lang === "json") {
-      const json = JSON.parse(token.text);
-      if (!Array.isArray(json)) {
-        this.logWarning(`Expected an array of expected results in file ${markdownFilePath}. Skipping.`);
+      let json: any;
+      try {
+        json = JSON.parse(token.text);
+      } catch (error) {
+        if (error instanceof Error) {
+          this.logWarning(`Failed to parse JSON in file ${markdownFilePath}. ${error.message} Skipping.`);
+        } else {
+          this.logWarning(`Failed to parse JSON in file ${markdownFilePath}. Unknown error. Skipping.`);
+        }
+      }
+
+      if (typeof json === "object" && Array.isArray(json.columns)) {
+        if (json.columns.every(isECDbColumnInfoProps)) {
+          currentTest.columns = json.columns;
+        } else {
+          this.logWarning(`Columns format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard. Skipping.`);
+        }
         return;
       }
+
       currentTest.expectedResults = json; // TODO: validate the expected results
     } else {
       this.logWarning(`Unknown code language ${token.lang} found in file ${markdownFilePath}. Skipping.`);
