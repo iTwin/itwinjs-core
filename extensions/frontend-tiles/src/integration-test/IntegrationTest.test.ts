@@ -1,4 +1,4 @@
-import { IModelApp } from "@itwin/core-frontend";
+import { TileAdmin } from "@itwin/core-frontend";
 import { expect } from "chai";
 import { TestContext } from "./TestContext";
 import { GraphicRepresentationStatus } from "../GraphicsProvider/GraphicRepresentationProvider";
@@ -15,10 +15,9 @@ async function getExport(exportId: string, accessToken: string, urlPrefix?: stri
   const url = `https://${urlPrefix}api.bentley.com/mesh-export/${exportId}`;
   try {
     const response = await fetch(url, { headers });
-    const result = await response.json();
-    return result;
+    return await response.json();
   } catch (err) {
-    return undefined;
+    throw new Error(`Failed to get export: ${err}`);
   }
 }
 
@@ -33,10 +32,9 @@ describe("MeshExportServiceIntegrationTest", () => {
     const testContext = await TestContext.instance();
     accessToken = testContext.getAccessToken();
 
-    const iModelId = process.env.mes_imodel_id || "";
-    urlPrefix = process.env.imjs_url_prefix || "";
+    const iModelId = process.env.MES_IMODEL_ID || "";
+    urlPrefix = process.env.IMJS_URL_PREFIX || "";
 
-    await IModelApp.startup();
     const requestOptions: RequestInit = {
       method: "POST",
       headers: {
@@ -44,7 +42,7 @@ describe("MeshExportServiceIntegrationTest", () => {
         "Authorization": accessToken,
         /* eslint-disable-next-line @typescript-eslint/naming-convention */
         "Accept": "application/vnd.bentley.itwin-platform.v1+json",
-        /* eslint-disable-next-line @typescript-eslint/naming-convention */
+         
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -56,11 +54,9 @@ describe("MeshExportServiceIntegrationTest", () => {
 
     // initiate mesh export
     const response = await fetch(`https://${urlPrefix}api.bentley.com/mesh-export/`, requestOptions);
-    const result = JSON.parse(JSON.stringify(await response.json()));
+    const result = await response.json();
     exportId = result.export.id;
   });
-
-  after(async () => IModelApp.shutdown());
 
   it ("should obtain a tileset with a tile version supported by the frontend", async () => {
     let exportComplete = false;
@@ -90,7 +86,8 @@ describe("MeshExportServiceIntegrationTest", () => {
     const tilesetMajorTileVersion = tileset.asset.version.slice(0,4);
 
     // obtain frontend major tile version
-    const frontendMajorTileVersion = IModelApp.tileAdmin.maximumMajorTileFormatVersion;
+    const tileAdmin = await TileAdmin.create();
+    const frontendMajorTileVersion = tileAdmin.maximumMajorTileFormatVersion;
 
     // check if the frontend will support the tileset version
     // the version included in the tileset is in hex, so first convert it

@@ -20,17 +20,17 @@ export class TestContext {
   }
 
   private async initialize() {
-    const urlPrefix = process.env.imjs_url_prefix || "";
+    const urlPrefix = process.env.IMJS_URL_PREFIX || "";
     const oidcConfig = {
-      clientId: process.env.mes_oidc_client_id || "",
-      redirectUri: process.env.mes_oidc_redirect || "",
-      scope: process.env.mes_oidc_scope || "",
+      clientId: process.env.MES_OIDC_CLIENT_ID || "",
+      redirectUri: "http://localhost:3000/signin-callback",
+      scope: "itwin-platform",
       authority: `https://${urlPrefix}ims.bentley.com`,
     };
 
     const user = {
-      email: process.env.mes_integration_testuser || "",
-      password: process.env.mes_integration_testpassword || "",
+      email: process.env.IMJS_TEST_REGULAR_USER_NAME || "",
+      password: process.env.IMJS_TEST_REGULAR_USER_PASSWORD || "",
     };
 
     // Generate access token
