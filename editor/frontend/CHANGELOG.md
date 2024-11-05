@@ -1,6 +1,11 @@
 # Change Log - @itwin/editor-frontend
 
-This log was last generated on Tue, 22 Oct 2024 20:01:40 GMT and should not be manually modified.
+This log was last generated on Tue, 05 Nov 2024 15:22:46 GMT and should not be manually modified.
+
+## 4.9.6
+Tue, 05 Nov 2024 15:22:46 GMT
+
+_Version update only_
 
 ## 4.9.5
 Tue, 22 Oct 2024 20:01:40 GMT
