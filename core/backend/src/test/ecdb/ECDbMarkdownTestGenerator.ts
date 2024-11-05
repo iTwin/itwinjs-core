@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as fs from "fs";
 import * as path from "path";
 import { Id64, Id64String } from "@itwin/core-bentley";
-import { IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "../../core-backend";
+import { _nativeDb, IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Code, ColorDef, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
@@ -70,7 +70,9 @@ export class ECDbMarkdownTestGenerator {
       spatialCategoryId = SpatialCategory.insert(iModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
     props.mySpatialCategoryId = spatialCategoryId;
-    props.testElementClassId = "0x152"; // TODO: is there a convenient way to get and store the id here?
+    const classId = iModel[_nativeDb].classNameToId("AllProperties.TestElement");
+    if(classId !== undefined)
+      props.testElementClassId = classId;
 
     for (let m = 0; m < 10; ++m) {
       const elementProps = createElemProps("TestElement", iModel, newModelId, spatialCategoryId, m);
