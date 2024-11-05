@@ -2,6 +2,12 @@
   "name": "@itwin/core-frontend",
   "entries": [
     {
+      "version": "4.9.6",
+      "tag": "@itwin/core-frontend_v4.9.6",
+      "date": "Tue, 05 Nov 2024 15:22:45 GMT",
+      "comments": {}
+    },
+    {
       "version": "4.9.5",
       "tag": "@itwin/core-frontend_v4.9.5",
       "date": "Tue, 22 Oct 2024 20:01:40 GMT",
