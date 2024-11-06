@@ -7,6 +7,7 @@
  */
 
 import type { SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
+import { NameMapping } from "./NameMapping";
 import { applyRenamePropertyEdit, applyRenameSchemaItemEdit } from "./RenameEditHandler";
 import { applySkipEdit } from "./SkipEditHandler";
 
@@ -118,7 +119,7 @@ class ItemEditor extends Editor {
  * is to support saving of edits and load them again if needed.
  * @alpha
  */
-export class SchemaEdits {
+export class SchemaEdits implements Iterable<AnySchemaEdits> {
   private readonly _edits: Array<AnySchemaEdits>;
 
   public readonly properties: PropertyEditor;
@@ -141,26 +142,27 @@ export class SchemaEdits {
   /**
    * @internal
    */
-  public async applyTo(differenceResult: SchemaDifferenceResult): Promise<void> {
-    const postProcessing: Array<() => void> = [];
+  public async applyTo(differenceResult: SchemaDifferenceResult, nameMapping: NameMapping): Promise<void> {
     for (const schemaEdit of this._edits) {
       if (schemaEdit.type === SchemaEditType.RenameSchemaItem) {
-        applyRenameSchemaItemEdit(differenceResult, schemaEdit, postProcessing.push.bind(postProcessing));
+        applyRenameSchemaItemEdit(differenceResult, schemaEdit);
+        nameMapping.addItemMapping(schemaEdit.key, schemaEdit.value);
       }
       if (schemaEdit.type === SchemaEditType.RenameProperty) {
         applyRenamePropertyEdit(differenceResult, schemaEdit);
+        nameMapping.addPropertyMapping(schemaEdit.key, schemaEdit.value);
       }
       if (schemaEdit.type === SchemaEditType.Skip) {
         applySkipEdit(differenceResult, schemaEdit);
       }
     }
-
-    for (const callback of postProcessing) {
-      callback();
-    }
   }
 
   public toJSON(): ReadonlyArray<AnySchemaEdits> {
     return this._edits;
+  }
+
+  public [Symbol.iterator](): Iterator<AnySchemaEdits> {
+    return this._edits[Symbol.iterator]();
   }
 }

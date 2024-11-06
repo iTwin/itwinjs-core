@@ -147,19 +147,5 @@ describe("Primitive Type conflict iterative resolutions", () => {
         });        
       });
     });
-
-    /* await expect(targetSchema.getItem("ARCWALL")).to.be.eventually.fulfilled.then(async (ecClass: EntityClass) => {
-      expect(ecClass).instanceOf(EntityClass);
-      await expect(ecClass.getProperty("OVERAL_HEIGHT")).to.be.eventually.fulfilled.then((property) => {
-        expect(property, "Failed to find OVERAL_HEIGHT property").to.be.not.undefined;
-        expect(property).instanceOf(PrimitiveProperty);
-        expect(property).has.property("primitiveType").equals(PrimitiveType.String);
-      });
-      await expect(ecClass.getProperty("MERGED_OVERAL_HEIGHT")).to.be.eventually.fulfilled.then((property)=> {
-        expect(property, "Failed to find MERGED_OVERAL_HEIGHT property").to.be.not.undefined;
-        expect(property).instanceOf(PrimitiveProperty);
-        expect(property).has.property("primitiveType").equals(PrimitiveType.Double);
-      });
-    }); */
   });
 });

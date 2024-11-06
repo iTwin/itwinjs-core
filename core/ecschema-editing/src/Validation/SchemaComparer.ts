@@ -86,8 +86,8 @@ export class SchemaComparer {
 
   /**
    * Resolve the remapped schema item name.
-   * @param item 
-   * @returns 
+   * @param item
+   * @returns
    */
   private resolveItemName(item: Readonly<SchemaItemKey> | SchemaItem): string {
     return item && this.nameMappings.get(item.fullName) || item.name;
@@ -95,8 +95,8 @@ export class SchemaComparer {
 
   /**
    * Resolve the remapped schema item full name.
-   * @param item 
-   * @returns 
+   * @param item
+   * @returns
    */
   private resolveItemFullName(item?: Readonly<SchemaItemKey> | SchemaItem): string | undefined {
     if (undefined === item)

@@ -409,15 +409,15 @@ export interface KindOfQuantityPresentationFormatDifference {
  * @returns             An [[SchemaDifferenceResult]] object.
  * @alpha
  */
-export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema, schemaEdits?: ReadonlyArray<AnySchemaEdits>): Promise<SchemaDifferenceResult> {
+export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema, schemaEdits?: Iterable<AnySchemaEdits>): Promise<SchemaDifferenceResult> {
   const changesList: SchemaChanges[] = [];
   const schemaComparer = new SchemaComparer({ report: changesList.push.bind(changesList) });
   if(schemaEdits) {
-    schemaEdits.forEach((edit) => {
+    for(const edit of schemaEdits) {
       if(edit.type === SchemaEditType.RenameSchemaItem || edit.type === SchemaEditType.RenameProperty) {
         schemaComparer.nameMappings.set(edit.key, edit.value);
       }
-    });
+    }
   }
 
   await schemaComparer.compareSchemas(sourceSchema, targetSchema);
