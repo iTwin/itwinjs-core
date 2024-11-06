@@ -151,7 +151,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
    * @param fixedStrokeCount optional stroke count.
    * @param options optional stroke options.
    */
-  public strokeConstantVSection(v: number, fixedStrokeCount: number | undefined, options: StrokeOptions | undefined): LineString3d {
+  public strokeConstantVSection(v: number, fixedStrokeCount?: number, options?: StrokeOptions): LineString3d {
     let strokeCount = 16;
     if (fixedStrokeCount !== undefined)
       strokeCount = fixedStrokeCount;

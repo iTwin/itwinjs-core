@@ -368,7 +368,7 @@ describe("OffsetByClip", () => {
     for (const degrees of [0, 10, 20, 45, 90, 125]) {
       const rotation = Transform.createFixedPointAndMatrix(Point3d.create(0, 0, 0),
         Matrix3d.createRotationAroundAxisIndex(0, Angle.createDegrees(degrees)));
-      const grid1 = grid0.cloneTransformed(rotation);
+      const grid1 = grid0.cloneTransformed(rotation)!;
       const clipper1 = rectangleClipper.clone();
       clipper1.transformInPlace(rotation);
       y0 = 0.0;

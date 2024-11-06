@@ -179,10 +179,9 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
    * Return a deep clone with transformed points and normals.
    * @see [[IndexedPolyface.tryTransformInPlace]] for details of how transform is done.
    */
-  public cloneTransformed(transform: Transform): IndexedPolyface {
+  public cloneTransformed(transform: Transform): IndexedPolyface | undefined {
     const result = this.clone();
-    result.tryTransformInPlace(transform);
-    return result;
+    return result.tryTransformInPlace(transform) ? result : undefined;
   }
   /** Reverse the order of indices around all facets. */
   public reverseIndices() {

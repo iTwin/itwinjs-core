@@ -2800,7 +2800,7 @@ export class IndexedPolyface extends Polyface {
     // @deprecated
     cleanupOpenFacet(): void;
     clone(): IndexedPolyface;
-    cloneTransformed(transform: Transform): IndexedPolyface;
+    cloneTransformed(transform: Transform): IndexedPolyface | undefined;
     get colorCount(): number;
     static create(needNormals?: boolean, needParams?: boolean, needColors?: boolean, twoSided?: boolean): IndexedPolyface;
     createVisitor(numWrap?: number): IndexedPolyfaceVisitor;
