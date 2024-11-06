@@ -8,7 +8,7 @@
 
 import {
   AnyClass, AnyEnumerator, AnyProperty, classModifierToString, Constant, containerTypeToString, CustomAttribute, CustomAttributeClass,
-  CustomAttributeContainerProps, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Phenomenon,
+  CustomAttributeContainerProps, ECClass, EntityClass, Enumeration, Format, InvertedUnit, KindOfQuantity, Mixin, OverrideFormat, Phenomenon,
   primitiveTypeToString, PropertyCategory, propertyTypeToString, RelationshipClass, RelationshipConstraint, Schema,
   SchemaItem, SchemaItemKey, strengthDirectionToString, strengthToString, Unit,
 } from "@itwin/ecschema-metadata";
@@ -53,7 +53,9 @@ export interface ISchemaComparer {
   compareConstants(constantA: Constant, constantB: Constant): void;
 
   /** @internal */
-  nameMappings: Map<string, string>;
+  resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined>;
+  /** @internal */
+  resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined>;
 }
 
 function labelsMatch(label1?: string, label2?: string) {
@@ -72,8 +74,6 @@ export class SchemaComparer {
   private _reporter!: SchemaCompareResultDelegate;
   private _reporters: ISchemaCompareReporter[];
 
-  public readonly nameMappings: Map<string, string>;
-
   /**
    * Initializes a new SchemaComparer instance.
    * @param reporters The [[IDiagnosticReporter]] object(s) to use to report the results.
@@ -81,7 +81,6 @@ export class SchemaComparer {
   constructor(...reporters: ISchemaCompareReporter[]) {
     this._compareDirection = SchemaCompareDirection.Forward;
     this._reporters = reporters;
-    this.nameMappings = new Map<string, string>();
   }
 
   /**
@@ -90,7 +89,7 @@ export class SchemaComparer {
    * @returns
    */
   private resolveItemName(item: Readonly<SchemaItemKey> | SchemaItem): string {
-    return item && this.nameMappings.get(item.fullName) || item.name;
+    return item && item.name;
   }
 
   /**
@@ -105,6 +104,20 @@ export class SchemaComparer {
     const value =  this.resolveItemName(item);
     const [schemaName, _itemName] = SchemaItem.parseFullName(item.fullName);
     return `${schemaName}.${value}`;
+  }
+
+  /**
+   *
+   */
+  public async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
+    return lookupSchema.lookupItem<TItem>(item.name);
+  }
+
+  /**
+   *
+   */
+  public async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {
+    return ecClass.getProperty(propertyA.name) as Promise<AnyProperty | undefined>;
   }
 
   /**

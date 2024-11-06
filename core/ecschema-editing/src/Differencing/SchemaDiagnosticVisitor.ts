@@ -29,6 +29,7 @@ import {
   SchemaOtherTypes,
   type SchemaReferenceDifference,
 } from "./SchemaDifference";
+import { NameMapping, PropertyKey } from "../Merging/Edits/NameMapping";
 
 /**
  * The SchemaDiagnosticVisitor is a visitor implementation for diagnostic entries
@@ -43,9 +44,9 @@ export class SchemaDiagnosticVisitor {
   public readonly schemaItemPathDifferences: Array<AnySchemaItemPathDifference>;
   public readonly customAttributeDifferences: Array<CustomAttributeDifference>;
 
-  private readonly _nameMappings: Map<string, string>;
+  private readonly _nameMappings: NameMapping;
 
-  constructor(nameMappings: Map<string, string>) {
+  constructor(nameMappings: NameMapping) {
     this.schemaDifferences = [];
     this.schemaItemDifferences = [];
     this.schemaItemPathDifferences = [];
@@ -178,8 +179,7 @@ export class SchemaDiagnosticVisitor {
       return;
     }
 
-    const lookupName = this._nameMappings.get(schemaItem.fullName) || schemaItem.name;
-
+    const lookupName = this._nameMappings.resolveItemKey(schemaItem.key).name;
     let modifyEntry = this.schemaItemDifferences.find((entry): entry is AnySchemaItemDifference => {
       return entry.changeType === "modify" && entry.itemName === lookupName;
     });
@@ -277,8 +277,8 @@ export class SchemaDiagnosticVisitor {
       return this.visitMissingProperty(diagnostic);
     }
 
-    const lookupName = this._nameMappings.get(`${property.class.fullName}.${property.name}`) || property.name;
-
+    const propertyKey = new PropertyKey(property.name, property.class.key);
+    const lookupName = this._nameMappings.resolvePropertyKey(propertyKey).propertyName;
     let modifyEntry = this.schemaItemPathDifferences.find((entry): entry is ClassPropertyDifference => {
       return entry.changeType === "modify" && entry.schemaType === SchemaOtherTypes.Property && entry.itemName === property.class.name && entry.path === lookupName;
     });

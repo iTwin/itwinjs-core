@@ -12,12 +12,14 @@ import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
 import {
-  AnyEnumerator, AnyPropertyProps, ConstantProps, CustomAttribute,
-  CustomAttributeClassProps, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps,
+  AnyEnumerator, AnyProperty, AnyPropertyProps, ConstantProps, CustomAttribute,
+  CustomAttributeClassProps, ECClass, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps,
   MixinProps, PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, RelationshipConstraintProps,
-  type Schema, SchemaItemFormatProps, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
+  type Schema, SchemaItem, SchemaItemFormatProps, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
 } from "@itwin/ecschema-metadata";
 import { validateDifferences } from "./SchemaDifferenceValidator";
+import { AnyDiagnostic } from "../Validation/Diagnostic";
+import { NameMapping, PropertyKey } from "../Merging/Edits/NameMapping";
 
 /** Utility-Type to remove possible readonly flags on the given type. */
 type PartialEditable<T> = {
@@ -410,12 +412,14 @@ export interface KindOfQuantityPresentationFormatDifference {
  * @alpha
  */
 export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema, schemaEdits?: Iterable<AnySchemaEdits>): Promise<SchemaDifferenceResult> {
-  const changesList: SchemaChanges[] = [];
-  const schemaComparer = new SchemaComparer({ report: changesList.push.bind(changesList) });
+  const schemaComparer = new DifferenceSchemaComparer();
   if(schemaEdits) {
     for(const edit of schemaEdits) {
-      if(edit.type === SchemaEditType.RenameSchemaItem || edit.type === SchemaEditType.RenameProperty) {
-        schemaComparer.nameMappings.set(edit.key, edit.value);
+      if(edit.type === SchemaEditType.RenameSchemaItem) {
+        schemaComparer.nameMappings.addItemMapping(edit.key, edit.value);
+      }
+      if(edit.type === SchemaEditType.RenameProperty) {
+        schemaComparer.nameMappings.addPropertyMapping(edit.key, edit.value);
       }
     }
   }
@@ -423,7 +427,7 @@ export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: S
   await schemaComparer.compareSchemas(sourceSchema, targetSchema);
 
   const visitor = new SchemaDiagnosticVisitor(schemaComparer.nameMappings);
-  for (const diagnostic of changesList[0].allDiagnostics) {
+  for (const diagnostic of schemaComparer.diagnostics) {
     visitor.visit(diagnostic);
   }
 
@@ -442,4 +446,42 @@ export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: S
     conflicts: conflicts.length > 0 ? conflicts : undefined,
     differences,
   };
+}
+
+/**
+ *
+ */
+class DifferenceSchemaComparer extends SchemaComparer {
+  public readonly nameMappings: NameMapping;
+  private readonly _changes: Array<SchemaChanges>;
+
+  public get diagnostics(): Iterable<AnyDiagnostic> {
+    return this._changes[0].allDiagnostics;
+  }
+
+  /**
+   *
+   */
+  constructor() {
+    super({ report: (changes) => this._changes.push(changes as SchemaChanges) });
+
+    this._changes = [];
+    this.nameMappings = new NameMapping();
+  }
+
+  /**
+   *
+   */
+  public override async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
+    const itemName = this.nameMappings.resolveItemKey(item.key);
+    return lookupSchema.lookupItem<TItem>(itemName);
+  }
+
+  /**
+   *
+   */
+  public override async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {
+    const propertyKey = this.nameMappings.resolvePropertyKey(new PropertyKey(propertyA.name, ecClass.key));
+    return ecClass.getProperty(propertyKey.propertyName) as Promise<AnyProperty | undefined>;
+  }
 }
