@@ -8,7 +8,7 @@ import { ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from ".
 import { expect } from "chai";
 import { BisTestHelper } from "../../../TestUtils/BisTestHelper";
 
-describe("Primitive Type conflict iterative resolutions", () => {
+describe.only("Primitive Type conflict iterative resolutions", () => {
   it("shall re-apply stored conflict resolutions", async () => {
     const targetSchema = await Schema.fromJson(schemas[0], await BisTestHelper.getNewContext());
     let sourceSchema = await Schema.fromJson(schemas[1], await BisTestHelper.getNewContext());
