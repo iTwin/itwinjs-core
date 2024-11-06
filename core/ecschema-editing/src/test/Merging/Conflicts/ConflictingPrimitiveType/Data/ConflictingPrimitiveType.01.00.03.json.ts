@@ -66,6 +66,7 @@ export default {
           name: "WALL_WIDTH_TYPE",
           type: "PrimitiveProperty",
           label: "Width Constraint",
+          category: "ConflictingPrimitiveType.CONSTRAINTS",
           typeName: "string",
         },
       ],

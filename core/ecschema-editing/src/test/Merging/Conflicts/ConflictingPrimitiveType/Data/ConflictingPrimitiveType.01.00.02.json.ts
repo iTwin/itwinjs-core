@@ -53,12 +53,6 @@ export default {
           label: "Top Constraint",
           typeName: "string",
         },
-        {
-          name: "WALL_WIDTH_TYPE",
-          type: "PrimitiveProperty",
-          label: "Width Constraint",
-          typeName: "string",
-        },
       ],
     },
   },

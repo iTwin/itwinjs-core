@@ -22,6 +22,14 @@ export default {
     },
   ],
   items: {
+    CONSTRAINTS: {
+      schemaItemType: "UnitSystem",
+      label: "Constraints",
+    },
+    MEASUREINFO: {
+      schemaItemType: "PropertyCategory",
+      priority: 1000,
+    },
     ARCWALL: {
       schemaItemType: "EntityClass",
       properties: [
