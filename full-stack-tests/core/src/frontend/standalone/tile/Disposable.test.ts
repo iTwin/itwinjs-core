@@ -7,7 +7,7 @@ import { ByteStream, IDisposable } from "@itwin/core-bentley";
 import { ColorByName, ColorDef, ColorIndex, FeatureIndex, FillFlags, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@itwin/core-common";
 import {
   Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
-  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
+  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, TextureDrapeMap,
   TileTreeReference,
 } from "@itwin/core-frontend";
 import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@itwin/core-frontend/lib/cjs/webgl";
@@ -16,6 +16,7 @@ import { TestUtility } from "../../TestUtility";
 import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
+import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
@@ -133,7 +134,7 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 describe("Disposal of System", () => {
   before(async () => {
     await TestUtility.startFrontend({ renderSys: { doIdleWork: false } });
-    imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel0 = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -180,8 +181,8 @@ describe("Disposal of WebGL Resources", () => {
   before(async () => {
     await TestUtility.startFrontend({ renderSys: { doIdleWork: false } });
 
-    imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel1 = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel0 = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel1 = await TestSnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -198,7 +199,7 @@ describe("Disposal of WebGL Resources", () => {
     const colors = new ColorIndex();
     colors.initUniform(ColorByName.tan);
 
-    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10 ,0)];
+    const points = [new Point3d(0, 0, 0), new Point3d(10, 0, 0), new Point3d(0, 10, 0)];
     const qpoints = new QPoint3dList(QParams3d.fromRange(Range3d.createArray(points)));
     for (const point of points)
       qpoints.add(point);

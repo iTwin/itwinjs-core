@@ -4,9 +4,10 @@
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { RpcManager } from "@itwin/core-common";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { PresentationRpcInterface } from "@itwin/presentation-common";
 import { initialize, terminate } from "../IntegrationTests";
+import { TestIModelConnection } from "../IModelSetupUtils";
 
 describe("PresentationRpcInterface", () => {
   let imodel: IModelConnection;
@@ -14,7 +15,7 @@ describe("PresentationRpcInterface", () => {
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.openFile(testIModelName);
+    imodel = TestIModelConnection.openFile(testIModelName);
     expect(imodel).is.not.null;
   });
 
