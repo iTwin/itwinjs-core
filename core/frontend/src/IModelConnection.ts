@@ -329,7 +329,7 @@ export abstract class IModelConnection extends IModel {
       yield reader.formatCurrentRow();
   }
 
-  public runQuery(query: QueryRequest): AsyncIterable<unknown> {
+  public runQuery(query: QueryRequest): AsyncIterable<object> {
     return this._iModelReadApi.runQuery(query);
   }
 
