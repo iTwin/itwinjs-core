@@ -1635,14 +1635,14 @@ export namespace ConcreteEntityTypes {
     export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
 }
 
-// @public
+// @public @deprecated
 export interface ConflictingLock {
     briefcaseIds: number[];
     objectId: string;
     state: LockState;
 }
 
-// @public
+// @public @deprecated
 export class ConflictingLocksError extends IModelError {
     constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
     // (undocumented)
@@ -5276,6 +5276,29 @@ export const Interpolation: {
 // @public (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
+// @beta
+export interface InUseLock {
+    briefcaseIds: number[];
+    objectId: string;
+    state: LockState;
+}
+
+// @beta
+export interface InUseLocksError extends ITwinError {
+    // (undocumented)
+    errorKey: "in-use-locks";
+    // (undocumented)
+    inUseLocks: InUseLock[];
+    // (undocumented)
+    namespace: "itwinjs-core";
+}
+
+// @beta (undocumented)
+export namespace InUseLocksError {
+    export function isInUseLocksError(error: unknown): error is InUseLocksError;
+    export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never;
+}
+
 // @internal (undocumented)
 export const ipcAppChannels: {
     readonly functions: "itwinjs-core/ipc-app";
@@ -5300,6 +5323,7 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
+    openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
     openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
     pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
     pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
@@ -5327,13 +5351,25 @@ export interface IpcAppNotifications {
 export type IpcInvokeReturn = {
     result: any;
     error?: never;
+    iTwinError?: never;
 } | {
     result?: never;
+    iTwinError?: never;
     error: {
         name: string;
         message: string;
         errorNumber: number;
         stack?: string;
+    };
+} | {
+    result?: never;
+    error?: never;
+    iTwinError: {
+        namespace: string;
+        errorKey: string;
+        message: string;
+        stack?: string;
+        [key: string]: any;
     };
 };
 
@@ -5479,6 +5515,21 @@ export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 
 // @internal
 export const iTwinChannel: (channel: string) => string;
+
+// @beta
+export interface ITwinError {
+    errorKey: string;
+    message: string;
+    metadata?: LoggingMetaData;
+    namespace: string;
+    stack?: string;
+}
+
+// @beta (undocumented)
+export namespace ITwinError {
+    export function getMetaData(err: ITwinError): object | undefined;
+    export function isITwinError(error: unknown): error is ITwinError;
+}
 
 // @public
 export interface JsonGeometryStream {
@@ -9321,15 +9372,15 @@ export interface SnapResponseProps {
     status: number;
 }
 
-// @internal
+// @internal @deprecated
 export abstract class SnapshotIModelRpcInterface extends RpcInterface {
-    // (undocumented)
+    // @deprecated (undocumented)
     close(_iModelRpcProps: IModelRpcProps): Promise<boolean>;
     static getClient(): SnapshotIModelRpcInterface;
     static getClientForRouting(token: RpcRoutingToken): SnapshotIModelRpcInterface;
     static readonly interfaceName = "SnapshotIModelRpcInterface";
     static interfaceVersion: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
     // @deprecated (undocumented)
     openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "polyface and primitive solid mirror transform",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}

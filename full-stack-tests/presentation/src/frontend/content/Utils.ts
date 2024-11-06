@@ -5,10 +5,11 @@
 
 import { expect } from "chai";
 import { assert } from "@itwin/core-bentley";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { Content, Descriptor, DisplayValue, Field, NestedContentField, Value } from "@itwin/presentation-common";
 import { ECClassHierarchyInfo } from "../../ECClasHierarchy";
 import { initialize, terminate, testLocalization } from "../../IntegrationTests";
+import { TestIModelConnection } from "../../IModelSetupUtils";
 
 interface ContentTestSuiteParams {
   getDefaultSuiteIModel: () => Promise<IModelConnection>;
@@ -25,7 +26,7 @@ export function createContentTestSuite(): ContentTestSuiteFunction {
     let suiteIModel: IModelConnection;
     const openDefaultSuiteIModel = async () => {
       if (!suiteIModel || !suiteIModel.isOpen) {
-        suiteIModel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+        suiteIModel = TestIModelConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
       }
       expect(suiteIModel).is.not.null;
       return suiteIModel;
