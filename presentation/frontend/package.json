@@ -42,7 +42,7 @@
     "prettier:fix": "prettier --write ."
   },
   "dependencies": {
-    "@itwin/unified-selection": "^0.1.0",
+    "@itwin/unified-selection": "^1.1.1",
     "rxjs": "^7.8.1",
     "rxjs-for-await": "^1.0.0"
   },
