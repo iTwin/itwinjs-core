@@ -295,6 +295,43 @@ describe("RenderSchedule", () => {
 
       expect(script.finish()).to.deep.equal(expected);
     });
+
+    // Bug: https://github.com/iTwin/itwinjs-core/discussions/7330
+    it.only("creates a script that correctly interpolates visibility", () => {
+      function computeTimePoint(percent: number): number {
+        const start = Date.parse("2022/06/26") / 1000;
+        const end = Date.parse("2022/06/27") / 1000;
+        return (start + (end - start) * percent * 0.01);
+      }
+
+      function createTimeline(endVisibility: number): RS.ElementTimeline {
+        const scriptBuilder = new RS.ScriptBuilder()
+        const modelBuilder = scriptBuilder.addModelTimeline('0x2000000000f')
+        const elementBuilder = modelBuilder.addElementTimeline([ '0x20000000141' ])
+  
+        const startTime = Date.parse('2022/06/26') / 1000
+        const endTime = Date.parse('2022/06/28') / 1000
+  
+        elementBuilder.addVisibility(startTime, 0)
+        elementBuilder.addVisibility(endTime, endVisibility)
+  
+        elementBuilder.addColor(endTime, new RgbColor(255, 0, 0))
+  
+        const props = elementBuilder.finish();
+        return RS.ElementTimeline.fromJSON(props);
+      }
+
+      function test(endVisibility: number): void {
+        const timeline = createTimeline(endVisibility);
+        expect(timeline.getVisibility(computeTimePoint(0))).to.equal(0);
+        expect(timeline.getVisibility(computeTimePoint(100))).to.equal(endVisibility / 2);
+        expect(timeline.getVisibility(computeTimePoint(200))).to.equal(endVisibility);
+      }
+      
+      test(20);
+      test(10);
+      test(19.6);
+    });
   });
 
   interface HasEquals<T> {
