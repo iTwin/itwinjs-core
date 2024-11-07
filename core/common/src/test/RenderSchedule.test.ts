@@ -323,6 +323,7 @@ describe("RenderSchedule", () => {
 
       function test(endVisibility: number): void {
         const timeline = createTimeline(endVisibility);
+        expect(timeline.getVisibility(computeTimePoint(-100))).to.equal(0);
         expect(timeline.getVisibility(computeTimePoint(0))).to.equal(0);
         expect(timeline.getVisibility(computeTimePoint(100))).to.equal(endVisibility / 2);
         expect(timeline.getVisibility(computeTimePoint(200))).to.equal(endVisibility);
