@@ -143,6 +143,7 @@ export class RpcRequestsHandler {
   }
 
   public async getNodesCount(options: HierarchyRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> & ClientDiagnosticsAttribute): Promise<number> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<number, typeof options>(this.rpcClient.getNodesCount.bind(this.rpcClient), options);
   }
 
@@ -157,6 +158,7 @@ export class RpcRequestsHandler {
   public async getNodesDescriptor(
     options: HierarchyLevelDescriptorRequestOptions<IModelRpcProps, NodeKey, RulesetVariableJSON> & ClientDiagnosticsAttribute,
   ): Promise<DescriptorJSON | undefined> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const response = await this.request<string | DescriptorJSON | undefined, typeof options>(this.rpcClient.getNodesDescriptor.bind(this.rpcClient), options);
     if (typeof response === "string") {
       return JSON.parse(response);
@@ -181,22 +183,26 @@ export class RpcRequestsHandler {
   }
 
   public async getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<ContentSourcesRpcResult> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<ContentSourcesRpcResult, typeof options>(this.rpcClient.getContentSources.bind(this.rpcClient), options);
   }
   public async getContentDescriptor(
     options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute,
   ): Promise<DescriptorJSON | undefined> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<DescriptorJSON | undefined, typeof options>(this.rpcClient.getContentDescriptor.bind(this.rpcClient), options);
   }
   public async getContentSetSize(
     options: ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute,
   ): Promise<number> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<number, typeof options>(this.rpcClient.getContentSetSize.bind(this.rpcClient), options);
   }
   public async getPagedContent(
     options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>,
   ) {
     return this.request<{ descriptor: DescriptorJSON; contentSet: PagedResponse<ItemJSON> } | undefined, typeof options>(
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this.rpcClient.getPagedContent.bind(this.rpcClient),
       options,
     );
@@ -204,6 +210,7 @@ export class RpcRequestsHandler {
   public async getPagedContentSet(
     options: Paged<ContentRequestOptions<IModelRpcProps, DescriptorOverrides, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute>,
   ) {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<PagedResponse<ItemJSON>, typeof options>(this.rpcClient.getPagedContentSet.bind(this.rpcClient), options);
   }
 
@@ -218,21 +225,25 @@ export class RpcRequestsHandler {
   public async getContentInstanceKeys(
     options: ContentInstanceKeysRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON> & ClientDiagnosticsAttribute,
   ): Promise<{ total: number; items: KeySetJSON }> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<{ total: number; items: KeySetJSON }, typeof options>(this.rpcClient.getContentInstanceKeys.bind(this.rpcClient), options);
   }
 
   public async getDisplayLabelDefinition(
     options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKey> & ClientDiagnosticsAttribute,
   ): Promise<LabelDefinition> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<LabelDefinition, typeof options>(this.rpcClient.getDisplayLabelDefinition.bind(this.rpcClient), options);
   }
   public async getPagedDisplayLabelDefinitions(
     options: DisplayLabelsRequestOptions<IModelRpcProps, InstanceKey> & ClientDiagnosticsAttribute,
   ): Promise<PagedResponse<LabelDefinition>> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<PagedResponse<LabelDefinition>, typeof options>(this.rpcClient.getPagedDisplayLabelDefinitions.bind(this.rpcClient), options);
   }
 
   public async getSelectionScopes(options: SelectionScopeRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<SelectionScope[]> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.request<SelectionScope[], typeof options>(this.rpcClient.getSelectionScopes.bind(this.rpcClient), options);
   }
   public async computeSelection(options: ComputeSelectionRequestOptions<IModelRpcProps> & ClientDiagnosticsAttribute): Promise<KeySetJSON> {
