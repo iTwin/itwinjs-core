@@ -171,7 +171,7 @@ it("Polyface.HelloWorld", () => {
 
   const polyface1 = polyface0.clone();
   const mirrorX = Transform.createFixedPointAndMatrix(Point3d.createZero(), Matrix3d.createScale(-1, 1, 1));
-  const polyface2 = polyface0.cloneTransformed(mirrorX)!;
+  const polyface2 = polyface0.cloneTransformed(mirrorX);
   const expectedArea = (numX - 1) * (numY - 1);
   const numExpectedFacets = 2 * (numX - 1) * (numY - 1); // 2 triangles per quad
   const expectedEdgeLength = numExpectedFacets * (2.0 + Math.sqrt(2.0));
@@ -416,7 +416,7 @@ function writeMeshes(
       const rotationTransform = Transform.createFixedPointAndMatrix(
         Point3d.create(0.25, 0.25, 0), Matrix3d.createRotationAroundAxisIndex(2, Angle.createDegrees(10)),
       );
-      const polyfaceA = polyface.cloneTransformed(rotationTransform)!;
+      const polyfaceA = polyface.cloneTransformed(rotationTransform);
       polyfaceA.tryTranslateInPlace(0, 1.5 * (gRange.high.y - gRange.low.y));
       polyfaceA.tryTransformInPlace(transformForPolyface);
       polyface.tryTransformInPlace(transformForPolyface);
@@ -1992,7 +1992,7 @@ describe("SphericalMeshData", () => {
       ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(closedMesh), `${type} mesh is closed`);
       ck.testTrue(hasOutwardOrientationAndFacetNormals(closedMesh), `${type} facets and normals point outward`);
       y0 = delta;
-      const mirrorMesh = closedMesh.cloneTransformed(t)!;
+      const mirrorMesh = closedMesh.cloneTransformed(t);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mirrorMesh, x0, y0);
       ck.testTrue(hasOutwardOrientationAndFacetNormals(mirrorMesh), `${type} mirrored facets and normals point outward`);
     };

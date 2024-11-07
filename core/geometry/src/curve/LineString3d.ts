@@ -745,7 +745,11 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         this._normalIndices.reverseInPlace();
     }
   }
-  /** Apply `transform` to each point of this linestring. */
+  /**
+   * Apply `transform` to each point of this linestring.
+   * * Note that this method always returns true. If transforming the surface normals fails (due to singular matrix or zero
+   * normal), the original normal(s) are left unchanged.
+  */
   public tryTransformInPlace(transform: Transform): boolean {
     this._points.multiplyTransformInPlace(transform);
     if (this._derivatives)

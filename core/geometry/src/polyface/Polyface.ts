@@ -158,11 +158,12 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /**
    * Transform the mesh.
-   * * If transform is a mirror, also reverse index order around each facet.
+   * * If `transform` is a mirror, also reverse the index order around each facet.
+   * * Note that this method always returns true. If transforming the normals fails (due to singular matrix or zero
+   * normal), the original normal(s) are left unchanged.
    */
-  public tryTransformInPlace(transform: Transform) {
-    if (!this.data.tryTransformInPlace(transform))
-      return false;
+  public tryTransformInPlace(transform: Transform): boolean {
+    this.data.tryTransformInPlace(transform);
     if (transform.matrix.determinant() < 0)
       this.reverseIndices();
     return true;
@@ -179,9 +180,10 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
    * Return a deep clone with transformed points and normals.
    * @see [[IndexedPolyface.tryTransformInPlace]] for details of how transform is done.
    */
-  public cloneTransformed(transform: Transform): IndexedPolyface | undefined {
+  public cloneTransformed(transform: Transform): IndexedPolyface { // we know tryTransformInPlace succeeds.
     const result = this.clone();
-    return result.tryTransformInPlace(transform) ? result : undefined;
+    result.tryTransformInPlace(transform);
+    return result;
   }
   /** Reverse the order of indices around all facets. */
   public reverseIndices() {

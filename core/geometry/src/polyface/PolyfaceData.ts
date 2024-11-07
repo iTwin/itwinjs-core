@@ -498,26 +498,28 @@ export class PolyfaceData {
    * * Transform the data as follows:
    *   * apply `transform` to points.
    *   * apply inverse transpose of `transform` to normals and renormalize. This preserves normals perpendicular
-   * to transformed facets, and keeps them pointing outward, e.g, if the mesh is closed.
+   * to transformed facets, and keeps them pointing outward, e.g, if the mesh is closed. If the transform is not
+   * invertible or a normal has zero length, the normal(s) are left unchanged, and this error is silently ignored.
    *   * apply `transform` to auxData.
    *   * scale faceData distances by the cube root of the absolute value of the determinant of `transform.matrix`.
    * * Note that if the transform is a mirror, this method does NOT reverse index order. This is the caller's
    * responsibility. This base class is just a data carrier: PolyfaceData does not know if the index order has
    * special meaning.
-   * @returns false if and only if the transform is singular (and we needed it to transform normals).
+  * * Note that this method always returns true. If transforming normals fails (due to singular matrix or zero
+   * normal), the original normal(s) are left unchanged.
    */
   public tryTransformInPlace(transform: Transform): boolean {
     this.point.multiplyTransformInPlace(transform);
-    if (this.normal && !transform.matrix.isIdentity) {
-      if (!this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix))
-        return false;
-    }
+    if (this.normal && !transform.matrix.isIdentity)
+      this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
     if (this.face.length > 0) {
       const distScale = Math.cbrt(Math.abs(transform.matrix.determinant()));
       for (const faceData of this.face)
         faceData.scaleDistances(distScale);
     }
-    return undefined === this.auxData || this.auxData.tryTransformInPlace(transform);
+    if (this.auxData)
+      this.auxData.tryTransformInPlace(transform);
+    return true;
   }
   /**
    * Compress the instance by equating duplicate data.

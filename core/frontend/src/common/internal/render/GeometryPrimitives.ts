@@ -222,7 +222,7 @@ export class PrimitivePolyfaceGeometry extends Geometry {
 
   public constructor(polyface: IndexedPolyface, tf: Transform, range: Range3d, params: DisplayParams, feature: Feature | undefined) {
     super(tf, range, params, feature);
-    this.polyface = tf.isIdentity ? polyface : (polyface.cloneTransformed(tf) ?? polyface);
+    this.polyface = tf.isIdentity ? polyface : polyface.cloneTransformed(tf);
   }
 
   protected _getPolyfaces(facetOptions: StrokeOptions): PolyfacePrimitiveList | undefined {
