@@ -48,7 +48,6 @@
     "@itwin/core-common": "workspace:*",
     "@itwin/core-frontend": "workspace:*",
     "@itwin/core-geometry": "workspace:*",
-    "@itwin/core-webpack-tools": "workspace:*",
     "@itwin/oidc-signin-tool": "^4.3.7",
     "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai": "4.3.1",

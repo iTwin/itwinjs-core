@@ -3,6 +3,7 @@ import { expect } from "chai";
 import { TestContext } from "./TestContext";
 import { GraphicRepresentationStatus } from "../GraphicsProvider/GraphicRepresentationProvider";
 
+// get mesh export for specified export id
 async function getExport(exportId: string, accessToken: string, urlPrefix?: string): Promise<any> {
   const headers = {
     /* eslint-disable-next-line @typescript-eslint/naming-convention */
@@ -13,12 +14,12 @@ async function getExport(exportId: string, accessToken: string, urlPrefix?: stri
 
   // obtain export for specified export id
   const url = `https://${urlPrefix}api.bentley.com/mesh-export/${exportId}`;
-  try {
-    const response = await fetch(url, { headers });
-    return await response.json();
-  } catch (err) {
-    throw new Error(`Failed to get export: ${err}`);
+  const response = await fetch(url, { headers });
+  if (!response.ok) {
+    throw new Error(`Failed to obtain mesh export: ${response.statusText}`);
   }
+  const result = await response.json();
+  return result;
 }
 
 describe("MeshExportServiceIntegrationTest", () => {
@@ -32,7 +33,7 @@ describe("MeshExportServiceIntegrationTest", () => {
     const testContext = await TestContext.instance();
     accessToken = testContext.getAccessToken();
 
-    const iModelId = process.env.MES_IMODEL_ID || "";
+    const iModelId = process.env.IMJS_MES_INTEGRATION_IMODEL_ID || "";
     urlPrefix = process.env.IMJS_URL_PREFIX || "";
 
     const requestOptions: RequestInit = {
@@ -54,6 +55,9 @@ describe("MeshExportServiceIntegrationTest", () => {
 
     // initiate mesh export
     const response = await fetch(`https://${urlPrefix}api.bentley.com/mesh-export/`, requestOptions);
+    if (!response.ok) {
+      throw new Error(`Failed to initiate mesh export: ${response.statusText}`);
+    }
     const result = await response.json();
     exportId = result.export.id;
   });
@@ -64,6 +68,10 @@ describe("MeshExportServiceIntegrationTest", () => {
 
     // poll for export status
     while (!exportComplete) {
+      //delay for three seconds to avoid spamming the MES
+      const delay = async (ms: number) => new Promise(res => setTimeout(res, ms));
+      await delay(3000);
+
       const result = await getExport(exportId, accessToken, urlPrefix);
       const status = result.export.status;
 

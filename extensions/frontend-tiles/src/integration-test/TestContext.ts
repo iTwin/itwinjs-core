@@ -22,7 +22,7 @@ export class TestContext {
   private async initialize() {
     const urlPrefix = process.env.IMJS_URL_PREFIX || "";
     const oidcConfig = {
-      clientId: process.env.MES_OIDC_CLIENT_ID || "",
+      clientId: process.env.IMJS_MES_INTEGRATION_OIDC_CLIENT_ID || "",
       redirectUri: "http://localhost:3000/signin-callback",
       scope: "itwin-platform",
       authority: `https://${urlPrefix}ims.bentley.com`,

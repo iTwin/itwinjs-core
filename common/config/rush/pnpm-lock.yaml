@@ -1361,7 +1361,6 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
-      '@itwin/core-webpack-tools': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@itwin/oidc-signin-tool': ^4.3.7
       '@types/chai': 4.3.1
@@ -1389,7 +1388,6 @@ importers:
       '@itwin/core-common': link:../../core/common
       '@itwin/core-frontend': link:../../core/frontend
       '@itwin/core-geometry': link:../../core/geometry
-      '@itwin/core-webpack-tools': link:../../tools/webpack-core
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       '@itwin/oidc-signin-tool': 4.3.7_67wltvhdskk2oee2c3z2o4tfly
       '@types/chai': 4.3.1
