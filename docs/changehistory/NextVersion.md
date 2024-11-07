@@ -5,7 +5,6 @@ publish: false
 # NextVersion
 
 Table of contents:
-<<<<<<< HEAD
 
 - [Revert timeline changes](#revert-timeline-changes)
 - [Display](#display)
