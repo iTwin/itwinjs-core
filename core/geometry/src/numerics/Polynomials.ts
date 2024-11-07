@@ -1172,7 +1172,7 @@ export class TrigPolynomial {
       degree--;
     const roots = new GrowableFloat64Array();
     if (degree === -1) {
-      // do nothing
+      // p(t) is identically zero (degenerate); do nothing.
     } else {
       if (degree === 0) {
         // p(t) is a nonzero constant; no roots but not degenerate.
