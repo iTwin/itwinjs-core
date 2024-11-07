@@ -1,10 +1,22 @@
-﻿# iTwin.js
+﻿<p align="center">
+ <a href="https://www.itwinjs.org/" target="_blank" rel="noopener noreferrer">
+    <img width="180" src="./docs/assets/itwinjs-logo-colorized.svg" alt="iTwin.js Logo">
+  </a>
+</p>
 
-Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](./LICENSE.md) for license terms and full copyright notice.
-
-[iTwin.js](http://www.itwinjs.org) is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
-
-If you have questions, or wish to contribute to iTwin.js, see our [Contributing guide](./CONTRIBUTING.md).
+<h1 align="center">
+iTwin.js
+</h1>
+<p align="center">
+    <a href="https://github.com/iTwin/itwinjs-core/releases/latest"><img src="https://img.shields.io/github/v/release/iTwin/itwinjs-core?label=latest" alt="Latest version"></a>
+    <a href="https://nodejs.org/en/about/previous-releases">
+    <img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2FiTwin%2Fitwinjs-core%2Fraw%2Fmaster%2Frush.json&query=%24.nodeSupportedVersionRange&label=node&color=33a921"
+    alt="Supported Node Versions">
+    </a>
+</a>
+<p align="center">
+An open source library for creating, querying, modifying, and displaying Infrastructure Digital Twins.
+</p>
 
 ## About this Repository
 
@@ -96,3 +108,11 @@ Use these instructions to update dependencies and devDependencies on external pa
 
 1. Build TypeDoc documentation for all packages: `rush docs`
 2. Build TypeDoc documentation for a single package: `cd core\backend` and then `rushx docs`
+
+## Contribution
+
+If you have questions, or wish to contribute to iTwin.js, see our [Contributing guide](./CONTRIBUTING.md).
+
+## Licensing
+
+Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](./LICENSE.md) for license terms and full copyright notice.
