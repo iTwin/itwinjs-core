@@ -5,16 +5,17 @@
 import { assert, expect } from "chai";
 import { Id64, Id64Arg } from "@itwin/core-bentley";
 import {
-  ElementAgenda, HiliteSet, IModelConnection, ModifyElementSource, SelectionSet, SelectionSetEventType, SnapshotConnection,
+  ElementAgenda, HiliteSet, IModelConnection, ModifyElementSource, SelectionSet, SelectionSetEventType,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Tools", () => {
   let imodel: IModelConnection;
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
   after(async () => {
     await imodel?.close();
@@ -161,7 +162,7 @@ describe("HiliteSet", () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     selected = imodel.selectionSet;
     hilited = imodel.hilited;
   });
