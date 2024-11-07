@@ -986,14 +986,14 @@ export class PolygonOps {
     // find the previous nontrivial edge's projection status before processing the first edge
     let projBeyondPrevEdge = false;
     let iPrev = numPoints - 1;
-    for (; iPrev >= 0; --iPrev) {
+    for (; iPrev > 0; --iPrev) {
       const projData = projectToEdge(iPrev);
       if (projData.isValid) {
         projBeyondPrevEdge = projData.edgeParam > 1.0 + paramTol;
         break;
       }
     }
-    if (iPrev < 0)  // all segments trivial, so treat like single point case
+    if (iPrev <= 0)  // all segments trivial, so treat like single point case
       return constructSingletonPoint(0);
 
     let minDist2 = Geometry.largeCoordinateResult;
