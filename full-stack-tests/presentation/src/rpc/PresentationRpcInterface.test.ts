@@ -32,6 +32,7 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("returns properties for requested element", async () => {
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const result = await rpcInterface.getElementProperties(imodel.getRpcProps(), {
         elementId: "0x1",
       });
