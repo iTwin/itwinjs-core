@@ -1,6 +1,7 @@
 ---
 publish: false
 ---
+
 # NextVersion
 
 Table of contents:
@@ -24,6 +25,7 @@ Table of contents:
   - [@itwin/core-backend](#itwincore-backend)
   - [@itwin/core-frontend](#itwincore-frontend)
   - [@itwin/core-quantity](#itwincore-quantity)
+  - [@itwin/presentation-common](#itwinpresentation-common)
 
 ## Revert timeline changes
 
@@ -67,7 +69,7 @@ To address this discrepancy, we've [added](https://github.com/iTwin/itwinjs-core
 
 ### Context Reality model visibility
 
-Context reality models that have been attached using `DisplayStyleState.attachRealityModel`, can now be hidden by turning ON the `ContextRealityModel.invisible` flag.  Previous implementation requiered context reality models to be detached in order to hide it from the scene.
+Context reality models that have been attached using `DisplayStyleState.attachRealityModel`, can now be hidden by turning ON the `ContextRealityModel.invisible` flag. Previous implementation requiered context reality models to be detached in order to hide it from the scene.
 
 ### Contour Display
 
@@ -175,3 +177,7 @@ In addition to [already supported Electron versions](../learning/SupportedPlatfo
 - Refactored `FormatType`, `ScientificType`, `ShowSignOption` from int enums to string enums and added `RatioType` as a string enum. Relevant toString functions, including [formatTypeToString]($quantity), [scientificTypeToString]($quantity), and [showSignOptionToString]($quantity), have been deprecated because they don't need serialization methods.
 
 - [Parser.parseToQuantityValue]($quantity) have been deprecated. Use the existing method [Parser.parseQuantityString]($quantity) instead.
+
+### @itwin/presentation-common
+
+- All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.
