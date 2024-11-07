@@ -80,7 +80,9 @@ export type GraphicRepresentation = {
   url: string;
 });
 
-/** Creates a URL used to query for Graphic Representations */
+/** Creates a URL used to query for Graphic Representations
+ * @internal
+ */
 export function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean, numExports?: number }): string {
   const prefix = args.urlPrefix ?? "";
   const numExports = args.numExports ?? 5;

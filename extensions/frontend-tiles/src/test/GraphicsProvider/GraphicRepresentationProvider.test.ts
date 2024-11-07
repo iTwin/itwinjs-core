@@ -125,7 +125,7 @@ const testArgs = {
   format: "IMDL",
 };
 
-describe.only("queryGraphicRepresentations", () => {
+describe("queryGraphicRepresentations", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
