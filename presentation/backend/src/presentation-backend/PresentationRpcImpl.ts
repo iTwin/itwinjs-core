@@ -412,6 +412,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     token: IModelRpcProps,
     requestOptions: Paged<ContentRpcRequestOptions>,
   ): PresentationRpcResponse<PagedResponse<ItemJSON>> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const response = await this.getPagedContent(token, requestOptions);
     if (response.statusCode !== PresentationStatus.Success) {
       return this.errorResponse(response.statusCode, response.errorMessage, response.diagnostics);
