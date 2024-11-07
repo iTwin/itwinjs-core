@@ -81,7 +81,7 @@ export type GraphicRepresentation = {
 });
 
 /** Creates a URL used to query for Graphic Representations */
-function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean, numExports?: number }): string {
+export function createGraphicRepresentationsQueryUrl(args: { sourceId: string, sourceType: string, urlPrefix?: string, changeId?: string, enableCDN?: boolean, numExports?: number }): string {
   const prefix = args.urlPrefix ?? "";
   const numExports = args.numExports ?? 5;
   let url = `https://${prefix}api.bentley.com/mesh-export/?iModelId=${args.sourceId}&$orderBy=date:desc&$top=${numExports}`;
