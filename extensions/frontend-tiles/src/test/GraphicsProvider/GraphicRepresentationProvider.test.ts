@@ -169,7 +169,7 @@ describe("queryGraphicRepresentations", () => {
       async () => {
         await expectSources(["a"], testArgs);
         await expectSources(["a", "b"], { ...testArgs, includeIncomplete: true }),
-          await expectSources(["a"], { ...testArgs, includeIncomplete: false });
+        await expectSources(["a"], { ...testArgs, includeIncomplete: false });
       },
     );
   });
