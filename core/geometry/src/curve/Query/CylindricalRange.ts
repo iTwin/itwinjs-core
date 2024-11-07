@@ -86,11 +86,12 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
   /**
    * Recurse through `geometry.children` to find linestrings.
    * For each linestring, compute and store the normal of the rotational surface resulting from sweeping the
-   * geometry around `axis` using:
+   * geometry around `axis` through a positive angle, using:
    *  * the curve tangent stored in the linestring
    *  * the axis of rotation
    *  * a default V vector to be used when the linestring point is close to the axis
-   * @param geometry profile curve (e.g., linestring, parity region)
+   * @param geometry profile curve (e.g., linestring, parity region). The orientation of the curve should be such that
+   * the computed normal lies in the same half-space as the rotational sweep direction.
    * @param axis rotational axis
    * @param defaultVectorFromAxis default vector perpendicular to `axis` (e.g., sweepVector)
    */
@@ -107,7 +108,7 @@ export class CylindricalRangeQuery extends RecurseToCurvesGeometryHandler {
         for (let i = 0; i < n; i++) {
           points.getPoint3dAtUncheckedPointIndex(i, xyz);
           axis.perpendicularPartOfVectorToTarget(xyz, vectorU);
-          // compute the positive sweep direction
+          // compute the positive sweep direction. ASSUME: the rotational sweep angle is positive!
           if (vectorU.isAlmostZero)
             axis.direction.crossProduct(defaultVectorFromAxis, vectorV);
           else

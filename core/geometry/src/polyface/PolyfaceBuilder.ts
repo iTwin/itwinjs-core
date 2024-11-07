@@ -1181,7 +1181,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const contour = surface.getSweepContourRef();
     const section0 = StrokeCountSection.createForParityRegionOrChain(contour.getCurves(), this._options);
     const baseStrokes = section0.getStrokes();
-    // ensure sweep is positive for swingVector
+    // ensure sweep is positive for buildRotationalNormalsInLineStrings
     const axis = surface.cloneAxisRay();
     const sweepAngle = surface.getSweep();
     if (sweepAngle.radians < 0.0) {
@@ -1191,7 +1191,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     // swingVector points in the direction of positive sweep
     const perpendicularVector = CylindricalRangeQuery.computeMaxVectorFromRay(axis, baseStrokes);
     const swingVector = axis.direction.crossProduct(perpendicularVector);
-    // ensure contour computed normal is aligned with swingVector
+    // ensure contour computed normal is aligned with swingVector for buildRotationalNormalsInLineStrings
     const contourNormalAgreesWithSwingDir = contour.localToWorld.matrix.dotColumnZ(swingVector) > 0;
     if (!contourNormalAgreesWithSwingDir)
       baseStrokes.reverseInPlace();

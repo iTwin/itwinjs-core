@@ -1221,7 +1221,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /**
    * Return an arc whose basis vectors are rotated by given angle within the current basis space.
    * * The returned arc will have `vector0 = this.vector0 * cos(theta) + this.vector90 * sin(theta)`.
-   * * The returned arc's sweep is adjusted so that all fractional parameters evaluate to the same points.
+   * * The returned arc has the same shape as the instance.
+   *   * In other words, the arc's sweep is adjusted so that all fractional parameters evaluate to the same points.
    *   * Specifically, theta is subtracted from the original start and end angles.
    * @param theta the angle (in the input arc space) which is to become the 0-degree point in the new arc.
    */
