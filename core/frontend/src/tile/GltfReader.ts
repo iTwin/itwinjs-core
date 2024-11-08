@@ -449,7 +449,9 @@ export abstract class GltfReader {
   private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
   private _containsPointCloud = false;
   protected _instanceFeatures: Feature[] = [];
+  protected _meshFeatures: Feature[] = [];
   protected _instanceElementIdToFeatureId: Map<string, number> = new Map<string, number>();
+  protected _meshElementIdToFeatureId: Map<string, number> = new Map<string, number>();
   protected _structuralMetadata?: StructuralMetadata;
   protected readonly _idMap?: BatchedTileIdMap;
 
@@ -552,6 +554,13 @@ export abstract class GltfReader {
       featureTable = new FeatureTable(this._instanceFeatures.length, featureTableModelId);
       for(let instanceFeatureId = 0; instanceFeatureId < this._instanceFeatures.length; instanceFeatureId++){
         featureTable.insertWithIndex(this._instanceFeatures[instanceFeatureId], instanceFeatureId);
+      }
+    }
+
+    if(this._meshFeatures.length > 0 && this._idMap){
+      featureTable = new FeatureTable(this._meshFeatures.length, featureTableModelId);
+      for(let meshFeatureId = 0; meshFeatureId < this._meshFeatures.length; meshFeatureId++){
+        featureTable.insertWithIndex(this._meshFeatures[meshFeatureId], meshFeatureId);
       }
     }
 
@@ -1599,8 +1608,68 @@ export abstract class GltfReader {
   protected readBatchTable(_mesh: Mesh, _json: GltfMeshPrimitive) {
   }
 
-  protected readPrimitiveFeatures(_primitive: GltfMeshPrimitive): Feature | number[] | undefined {
-    return undefined;
+  protected readPrimitiveFeatures(primitive: GltfMeshPrimitive): Feature | number[] | undefined {
+    primitive.attributes;
+    return new Feature("0x1");
+    // const ext = primitive.extensions?.EXT_mesh_features;
+    // if (ext) {
+    //   // ###TODO making assumptions here.
+    //   const view = this.getBufferView(primitive.attributes, `_FEATURE_ID_${ext.featureIds[0].attribute}`);
+    //   // NB: 32-bit integers are not supported, but 8- and 16-bit integers will be converted to them.
+    //   // With more than 64k features in the tile we represent the Ids as floats instead.
+    //   const bufferData = view?.toBufferData(GltfDataType.Float) ?? view?.toBufferData(GltfDataType.UInt32);
+    //   if (view && bufferData) {
+    //     const featureIds = [];
+    //     for (let i = 0; i < bufferData.count; i++) {
+    //       const featureId = bufferData.buffer[i * view.stride];
+    //       featureIds.push(featureId);
+    //     }
+
+    //     // if(this._structuralMetadata && this._idMap && featureIds.size() > 0){
+
+    //     // const vertexProps: any = {};
+    //     // const table = this._structuralMetadata.tables[featureIdDesc.propertyTable];
+    //     //   instanceProps[table.name] = {};
+    //     //   // If the attribute is not defined, then the feature id corresponds to the instance id
+    //     //   if(featureIdDesc.attribute === undefined){
+    //     //     for(const entries of table.entries){
+    //     //       if(entries.values[localInstanceId] !== undefined){
+    //     //         instanceProps[table.name][entries.name] = entries.values[localInstanceId];
+    //     //       }
+    //     //     }
+    //     //   } else if(featureBuffers.has(featureIdDesc.attribute)) {
+    //     //     const featureBuffer = featureBuffers.get(featureIdDesc.attribute);
+    //     //     if(!featureBuffer){
+    //     //       continue;
+    //     //     }
+    //     //     const featureId = featureBuffer[localInstanceId];
+
+    //     //     if(featureIdDesc.nullFeatureId !== undefined && featureId === featureIdDesc.nullFeatureId){
+    //     //       continue;
+    //     //     }
+
+    //     //     for(const entries of table.entries){
+    //     //       if(entries.values[featureId] !== undefined){
+    //     //         instanceProps[table.name][entries.name] = entries.values[featureId];
+    //     //       }
+    //     //     }
+    //     //   }
+    //     // }
+
+    //     // const vertexElementId = this._idMap.getBatchId(vertexProps);
+
+    //     // If the element id is already assigned to a previous instance,
+    //     // reuse the previous feature id to avoid collision in the feature table
+    //     // if(!this._meshElementIdToFeatureId.has(vertexElementId)){
+    //     // this._meshElementIdToFeatureId.set(vertexElementId, this._meshFeatures.length);
+    //     // this._meshFeatures.push(new Feature(vertexElementId));
+    //     // }
+    //     // }
+    //   }
+    // }
+
+    // // so that previous logic is ignored
+    // return undefined;
   }
 
   protected readMeshIndices(mesh: GltfMeshData, json: { [k: string]: any }): boolean {
