@@ -48,7 +48,7 @@ describe.only("Markdown based ECDb test runner", async () => {
 
     const datasetFilePath = path.join(KnownTestLocations.outputDir, "ECDbTests" ,test.dataset);
 
-    if(test.testForECSqlStatement)
+    if(test.ecsqlStatementProps)
     {
       it(`ECSqlStatement: ${test.title}`, () => {
         let imodel: IModelDb | undefined;
@@ -99,13 +99,13 @@ describe.only("Markdown based ECDb test runner", async () => {
           let resultCount = 0;
           let stepResult: DbResult;
           while ((stepResult = stmt.step()) === DbResult.BE_SQLITE_ROW) {
-            if (resultCount === 0 && test.columnInfoECSqlStatement) {
+            if (resultCount === 0 && test.ecsqlStatementProps?.columnInfo) {
               // Verify the columns on the first result row (TODO: for dynamic columns we have to do this every item)
               const colCount = stmt.getColumnCount();
-              assert.strictEqual(colCount, test.columnInfoECSqlStatement.length, `Expected ${test.columnInfoECSqlStatement.length} columns but got ${colCount}`);
+              assert.strictEqual(colCount, test.ecsqlStatementProps?.columnInfo.length, `Expected ${test.ecsqlStatementProps?.columnInfo.length} columns but got ${colCount}`);
               for (let i = 0; i < colCount; i++) {
                 const colInfo = stmt.getValue(i).columnInfo;
-                const expectedColInfo = test.columnInfoECSqlStatement[i];
+                const expectedColInfo = test.ecsqlStatementProps?.columnInfo[i];
                 // cannot directly compare against colInfo because it has methods instead of getters
                 assert.strictEqual(colInfo.getAccessString(), expectedColInfo.accessString, `Expected access string ${expectedColInfo.accessString} but got ${colInfo.getAccessString()} for column index ${i}`);
                 //if (expectedColInfo.isDynamicProp !== undefined) TODO: Is this not exposed?
@@ -133,8 +133,8 @@ describe.only("Markdown based ECDb test runner", async () => {
               }
             }
 
-            if (test.expectedResultsECSqlStatement !== undefined && test.expectedResultsECSqlStatement.length > resultCount) {
-              let expectedResult = test.expectedResultsECSqlStatement[resultCount];
+            if (test.ecsqlStatementProps?.expectedResults !== undefined && test.ecsqlStatementProps?.expectedResults.length > resultCount) {
+              let expectedResult = test.ecsqlStatementProps?.expectedResults[resultCount];
               // replace props in expected result, TODO: optimize this
               const expectedJson = JSON.stringify(expectedResult);
               const compiledExpectedJson = replacePropsInString(expectedJson, props);
@@ -153,8 +153,8 @@ describe.only("Markdown based ECDb test runner", async () => {
             assert.strictEqual(stepResultString, test.stepStatus, `Expected step status ${test.stepStatus} but got ${stepResultString}`);
           }
 
-          if (test.expectedResultsECSqlStatement && test.expectedResultsECSqlStatement.length !== resultCount) {
-            assert.fail(`Expected ${test.expectedResultsECSqlStatement.length} rows but got ${resultCount}`);
+          if (test.ecsqlStatementProps?.expectedResults && test.ecsqlStatementProps?.expectedResults.length !== resultCount) {
+            assert.fail(`Expected ${test.ecsqlStatementProps?.expectedResults.length} rows but got ${resultCount}`);
           }
 
 
@@ -168,7 +168,7 @@ describe.only("Markdown based ECDb test runner", async () => {
       });
     }
 
-    if(test.testForConcurrentQuery)
+    if(test.concurrentQueryProps)
     {
       it(`ConcurrentQuery: ${test.title}`, async () => {
 
@@ -225,13 +225,13 @@ describe.only("Markdown based ECDb test runner", async () => {
           let resultCount = 0;
           const rows = await reader.toArray()
           while (resultCount < rows.length) {
-            if (resultCount === 0 && test.columnInfoConcurrentQuery) {
+            if (resultCount === 0 && test.concurrentQueryProps?.columnInfo) {
               // Verify the columns on the first result row (TODO: for dynamic columns we have to do this every item)
               const colMetaData = await reader.getMetaData();
-              assert.strictEqual(colMetaData.length, test.columnInfoConcurrentQuery.length, `Expected ${test.columnInfoConcurrentQuery.length} columns but got ${colMetaData.length}`);
+              assert.strictEqual(colMetaData.length, test.concurrentQueryProps?.columnInfo.length, `Expected ${test.concurrentQueryProps?.columnInfo.length} columns but got ${colMetaData.length}`);
               for (let i = 0; i < colMetaData.length; i++) {
                 const colInfo = colMetaData[i];
-                const expectedColInfo = test.columnInfoConcurrentQuery[i];
+                const expectedColInfo = test.concurrentQueryProps?.columnInfo[i];
                 // cannot directly compare against colInfo because it has methods instead of getters
                 assert.strictEqual(colInfo.className, expectedColInfo.className, `Expected class name ${expectedColInfo.className} but got ${colInfo.className} for column index ${i}`);
                 if (expectedColInfo.generated !== undefined)
@@ -251,8 +251,8 @@ describe.only("Markdown based ECDb test runner", async () => {
               }
             }
 
-            if (test.expectedResultsConcurrentQuery !== undefined && test.expectedResultsConcurrentQuery.length > resultCount) {
-              let expectedResult = test.expectedResultsConcurrentQuery[resultCount];
+            if (test.concurrentQueryProps?.expectedResults !== undefined && test.concurrentQueryProps?.expectedResults.length > resultCount) {
+              let expectedResult = test.concurrentQueryProps?.expectedResults[resultCount];
               // replace props in expected result, TODO: optimize this
               const expectedJson = JSON.stringify(expectedResult);
               const compiledExpectedJson = replacePropsInString(expectedJson, props);
@@ -269,8 +269,8 @@ describe.only("Markdown based ECDb test runner", async () => {
           //   assert.strictEqual(stepResultString, test.stepStatus, `Expected step status ${test.stepStatus} but got ${stepResultString}`);
           // }
 
-          if (test.expectedResultsConcurrentQuery && test.expectedResultsConcurrentQuery.length !== resultCount) {
-            assert.fail(`Expected ${test.expectedResultsConcurrentQuery.length} rows but got ${resultCount}`);
+          if (test.concurrentQueryProps?.expectedResults && test.concurrentQueryProps?.expectedResults.length !== resultCount) {
+            assert.fail(`Expected ${test.concurrentQueryProps?.expectedResults.length} rows but got ${resultCount}`);
           }
 
 
