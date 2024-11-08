@@ -8,6 +8,7 @@ import { CompressedId64Set } from "@itwin/core-bentley";
 import { Matrix3d, Point3d, Point4d, Transform, TransformProps } from "@itwin/core-geometry";
 import { RenderSchedule as RS } from "../RenderSchedule";
 import { RgbColor } from "../RgbColor";
+import { FeatureAppearance, FeatureOverrides } from "../FeatureSymbology";
 
 describe("RenderSchedule", () => {
   it("interpolates transforms", () => {
@@ -330,10 +331,29 @@ describe("RenderSchedule", () => {
         expect(timeline.getVisibility(computeTimePoint(100))).to.equal(endVisibility / 2);
         expect(timeline.getVisibility(computeTimePoint(200))).to.equal(endVisibility);
 
+        class Overrides extends FeatureOverrides {
+          public appearance?: FeatureAppearance;
+          public invisible?: boolean;
+
+          public reset() { this.appearance = this.invisible = undefined; }
+
+          public override setAnimationNodeNeverDrawn(): void {
+            this.invisible = true;
+          }
+
+          public override overrideAnimationNode(_id: number, app: FeatureAppearance): void {
+            this.appearance = app;
+          }
+        }
+
+        const ovrs = new Overrides();
         for (let p = 0; p < 200; p++) {
           const t = computeTimePoint(p);
           const v = timeline.getVisibility(t);
           expect(v).approximately(p * endVisibility / 200, .00000001);
+
+          timeline.addSymbologyOverrides(ovrs, t);
+          console.log(`p=${p} t=${ovrs.appearance?.transparency}`);
         }
       }
       
