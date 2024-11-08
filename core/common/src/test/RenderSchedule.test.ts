@@ -325,12 +325,13 @@ describe("RenderSchedule", () => {
         const timeline = createTimeline(endVisibility);
         expect(timeline.getVisibility(computeTimePoint(-100))).to.equal(0);
         expect(timeline.getVisibility(computeTimePoint(0))).to.equal(0);
+        expect(timeline.getVisibility(computeTimePoint(1))).to.equal(endVisibility / 200);
         expect(timeline.getVisibility(computeTimePoint(100))).to.equal(endVisibility / 2);
         expect(timeline.getVisibility(computeTimePoint(200))).to.equal(endVisibility);
       }
       
-      test(20);
       test(10);
+      test(20);
       test(19.6);
     });
   });
