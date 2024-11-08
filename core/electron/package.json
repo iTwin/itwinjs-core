@@ -39,7 +39,7 @@
     "@itwin/core-bentley": "workspace:^5.0.0-dev.3",
     "@itwin/core-common": "workspace:^5.0.0-dev.3",
     "@itwin/core-frontend": "workspace:^5.0.0-dev.3",
-    "electron": ">=23.0.0 <34.0.0"
+    "electron": "^33.0.0"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
