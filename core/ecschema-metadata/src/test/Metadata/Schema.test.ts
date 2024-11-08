@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { SchemaContext } from "../../Context";
-import { SchemaItemType } from "../../ECObjects";
+import { ECClassModifier, PrimitiveType, PropertyType, SchemaItemType, StrengthType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { AnySchemaItem } from "../../Interfaces";
 import { ECClass, StructClass } from "../../Metadata/Class";
@@ -17,7 +17,7 @@ import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";
 import { SchemaKey } from "../../SchemaKey";
 
-import { Constant, CustomAttributeClass, Enumeration, Format, KindOfQuantity, Phenomenon, PropertyCategory, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
+import { Constant, CustomAttributeClass, Enumeration, Format, KindOfQuantity, Phenomenon, Property, PropertyCategory, RelationshipClass, SchemaItem, Unit, UnitSystem } from "../../ecschema-metadata";
 import { DOMParser, XMLSerializer } from "@xmldom/xmldom";
 
 /* eslint-disable @typescript-eslint/naming-convention */
@@ -623,6 +623,621 @@ describe("Schema", () => {
     });
   });
 
+  describe("Schemas with newer ECXml version", async () => {
+    const unsupportedVersionError = `The Schema 'TestSchema' has an unsupported ECSpecVersion and cannot be serialized.`;
+
+    type TestCase = [ xmlVersionMajor: number, xmlVersionMinor: number, deserializtionStatus: boolean, serializationStatus: boolean ];
+    const testCases: TestCase[] = [
+      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion - 1, true, true],
+      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion, true, true],
+      [Schema.currentECSpecMajorVersion, Schema.currentECSpecMinorVersion + 1, true, false],
+      [Schema.currentECSpecMajorVersion + 1, Schema.currentECSpecMinorVersion, false, false],
+      [Schema.currentECSpecMajorVersion + 1, Schema.currentECSpecMinorVersion + 1, false, false],
+    ];
+
+    async function testSerialization(schema: Schema, serializationStatus: boolean, expectedError: string) {
+      const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
+      if (serializationStatus) {
+        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECObjectsError, expectedError);
+        expect(() => schema.toJSON()).to.not.throw(ECObjectsError, expectedError);
+      } else {
+        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECObjectsError, expectedError);
+        expect(() => schema.toJSON()).to.throw(ECObjectsError, expectedError);
+      }
+    }
+
+    it("Deserialize and serialize newer XML schemas - sync", async () => {
+      for (const [xmlVersionMajor, xmlVersionMinor, deserializtionStatus, serializationStatus] of testCases) {
+        const parser = new DOMParser();
+        const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${xmlVersionMajor}.${xmlVersionMinor}">
+            <ECEntityClass typeName="testClass" description="Test Entity Class" />
+          </ECSchema>`;
+
+        const document = parser.parseFromString(schemaXml);
+        const context = new SchemaContext();
+        const reader = new SchemaReadHelper(XmlParser, context);
+        const schema: Schema = new Schema(context);
+
+        try {
+          reader.readSchemaSync(schema, document);
+        } catch (err: any) {
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.isFalse(deserializtionStatus);
+
+          // Schema serialization should fail if the major ECXml version is newer
+          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          continue;
+        }
+
+        assert.isTrue(deserializtionStatus);
+        expect(schema.originalECSpecMajorVersion).to.equal(xmlVersionMajor);
+        expect(schema.originalECSpecMinorVersion).to.equal(xmlVersionMinor);
+        expect(schema.getItemSync("testClass") !== undefined).to.equal(deserializtionStatus);
+
+        // Schema serialization should fail if the major ECXml version is newer
+        await testSerialization(schema, serializationStatus, unsupportedVersionError);
+      }
+    });
+
+    it("Deserialize and serialize newer XML schemas - async", async () => {
+      for (const [xmlVersionMajor, xmlVersionMinor, deserializtionStatus, serializationStatus] of testCases) {
+        const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${xmlVersionMajor}.${xmlVersionMinor}">
+            <ECEntityClass typeName="testClass" description="Test Entity Class" />
+          </ECSchema>`;
+
+        const context = new SchemaContext();
+        const reader = new SchemaReadHelper(XmlParser, context);
+        const schema: Schema = new Schema(context);
+
+        try {
+          await reader.readSchema(schema, new DOMParser().parseFromString(schemaXml));
+        } catch (err: any) {
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.isFalse(deserializtionStatus);
+
+          // Schema serialization should fail if the major ECXml version is newer
+          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          continue;
+        }
+
+        assert.isTrue(deserializtionStatus);
+        expect(schema.originalECSpecMajorVersion).to.equal(xmlVersionMajor);
+        expect(schema.originalECSpecMinorVersion).to.equal(xmlVersionMinor);
+        expect(await schema.getItem("testClass") !== undefined).to.equal(deserializtionStatus);
+
+        // Schema serialization should fail if the major ECXml version is newer
+        await testSerialization(schema, serializationStatus, unsupportedVersionError);
+      }
+    });
+
+    it("Deserialize and serialize newer JS schemas - sync", async () => {
+      // eslint-disable-next-line prefer-const
+      for (let [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
+        const schemaJson = {
+          $schema: `https://dev.bentley.com/json_schemas/ec/${ecMajorVersion}${ecMinorVersion}/ecschema`,
+          name: "TestSchema",
+          version: "1.0.0",
+          alias: "ts",
+          items: {
+            testClass: {
+              schemaItemType: "EntityClass",
+              name: "EntityTest",
+              label: "EntityTest",
+              description: "An example entity class.",
+            },
+          },
+        };
+
+        let schema = new Schema(new SchemaContext());
+
+        try {
+          schema = Schema.fromJsonSync(schemaJson, new SchemaContext());
+        } catch (err: any) {
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.isFalse(deserializtionStatus);
+
+          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated and the ECXMl version will remain the deafult latest supported.
+          // Hence serialization should succeed in this case.
+          if (ecMajorVersion > Schema.currentECSpecMajorVersion || (ecMajorVersion === Schema.currentECSpecMajorVersion && ecMinorVersion > Schema.currentECSpecMinorVersion))
+            serializationStatus = true;
+
+          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          continue;
+        }
+
+        assert.isTrue(deserializtionStatus);
+        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
+        expect(schema.getItemSync("testClass") !== undefined).to.equal(deserializtionStatus);
+
+        // Schema serialization should fail if the major ECXml version is newer
+        await testSerialization(schema, serializationStatus, unsupportedVersionError);
+      }
+    });
+
+    it("Deserialize and serialize newer JS schemas - async", async () => {
+      // eslint-disable-next-line prefer-const
+      for (let [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
+        const schemaJson = {
+          $schema: `https://dev.bentley.com/json_schemas/ec/${ecMajorVersion}${ecMinorVersion}/ecschema`,
+          name: "TestSchema",
+          version: "1.0.0",
+          alias: "ts",
+          items: {
+            testClass: {
+              schemaItemType: "EntityClass",
+              name: "EntityTest",
+              label: "EntityTest",
+              description: "An example entity class.",
+            },
+          },
+        };
+
+        let schema = new Schema(new SchemaContext());
+        try {
+          schema = await Schema.fromJson(schemaJson, new SchemaContext());
+        } catch (err: any) {
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.isFalse(deserializtionStatus);
+
+          // When the ECXML major version is newer, deserialization will throw an error and the schema object will never get updated and the ECXMl version will remain the deafult latest supported.
+          // Hence serialization should succeed in this case.
+          if (ecMajorVersion > Schema.currentECSpecMajorVersion || (ecMajorVersion === Schema.currentECSpecMajorVersion && ecMinorVersion > Schema.currentECSpecMinorVersion))
+            serializationStatus = true;
+
+          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          continue;
+        }
+
+        assert.isTrue(deserializtionStatus);
+        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
+        expect(await schema.getItem("testClass") !== undefined).to.equal(deserializtionStatus);
+
+        // Schema serialization should fail if the major ECXml version is newer
+        await testSerialization(schema, serializationStatus, unsupportedVersionError);
+      }
+    });
+
+    it("Deserialize and serialize newer JS schemas without a parser - sync", async () => {
+      for (const [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
+        const schemaJson = {
+          $schema: `https://dev.bentley.com/json_schemas/ec/${ecMajorVersion}${ecMinorVersion}/ecschema`,
+          name: "TestSchema",
+          version: "1.0.0",
+          alias: "ts",
+        };
+
+        const schema = new Schema(new SchemaContext());
+        try {
+          schema.fromJSONSync(schemaJson);
+        } catch (err: any) {
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.isFalse(deserializtionStatus);
+
+          // Schema serialization should fail if the major ECXml version is newer
+          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          continue;
+        }
+
+        assert.isTrue(deserializtionStatus);
+        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
+
+        // Schema serialization should fail if the major ECXml version is newer
+        await testSerialization(schema, serializationStatus, unsupportedVersionError);
+      }
+    });
+
+    it("Deserialize and serialize newer JS schemas without a parser - async", async () => {
+      for (const [ecMajorVersion, ecMinorVersion, deserializtionStatus, serializationStatus] of testCases) {
+        const schemaJson = {
+          $schema: `https://dev.bentley.com/json_schemas/ec/${ecMajorVersion}${ecMinorVersion}/ecschema`,
+          name: "TestSchema",
+          version: "1.0.0",
+          alias: "ts",
+        };
+
+        const schema = new Schema(new SchemaContext());
+        try {
+          await schema.fromJSON(schemaJson);
+        } catch (err: any) {
+          assert.equal(err.message, `The Schema 'TestSchema' has an unsupported ECVersion and cannot be loaded.`);
+          assert.isFalse(deserializtionStatus);
+
+          // Schema serialization should fail if the major ECXml version is newer
+          await testSerialization(schema, serializationStatus, unsupportedVersionError);
+          continue;
+        }
+
+        assert.isTrue(deserializtionStatus);
+        expect(schema.originalECSpecMajorVersion).to.equal(ecMajorVersion);
+        expect(schema.originalECSpecMinorVersion).to.equal(ecMinorVersion);
+
+        // Schema serialization should fail if the major ECXml version is newer
+        await testSerialization(schema, serializationStatus, unsupportedVersionError);
+      }
+    });
+
+    describe("Schema with newer ECXml version and unknowns", async () => {
+      let _schema: Schema;
+      let _xmlReader: SchemaReadHelper<Document>;
+      let _context: SchemaContext;
+
+      beforeEach(async () => {
+        _context = new SchemaContext();
+        _xmlReader = new SchemaReadHelper(XmlParser, _context);
+      });
+
+      const jsonSchemaTemplate = {
+        $schema: `https://dev.bentley.com/json_schemas/ec/${Schema.currentECSpecMajorVersion}${Schema.currentECSpecMinorVersion + 1}/ecschema`,
+        name: "TestSchema",
+        version: "1.0.0",
+        alias: "ts",
+      };
+
+      async function deserializeAndTestXml(schemaXml: string, testFunction: any) {
+        _schema = new Schema(_context);
+        try {
+          await _xmlReader.readSchema(_schema, new DOMParser().parseFromString(schemaXml));
+        } catch (err: any) {
+          assert(false, `The schema should have been deserialized, instead error was thrown: ${err.message}`);
+        }
+        testFunction();
+        await testSerialization(_schema, false, unsupportedVersionError);
+      }
+      function deserializeAndTestXmlSync(schemaXml: string, testFunction: any) {
+        _schema = new Schema(_context);
+        try {
+          _xmlReader.readSchemaSync(_schema, new DOMParser().parseFromString(schemaXml));
+        } catch (err: any) {
+          assert(false, `The schema should have been deserialized, instead error was thrown: ${err.message}`);
+        }
+        testFunction();
+      }
+
+      async function deserializeAndTestJSON(schemaJSON: string, testFunction: any) {
+        _schema = new Schema(_context);
+        try {
+          _schema = await Schema.fromJson(schemaJSON, _schema.context);
+        } catch (err: any) {
+          assert(false, `The schema should have been deserialized, instead error was thrown: ${err.message}`);
+        }
+        testFunction();
+        await testSerialization(_schema, false, unsupportedVersionError);
+      }
+      function deserializeAndTestJSONSync(schemaJSON: string, testFunction: any) {
+        _schema = new Schema(_context);
+        try {
+          _schema = Schema.fromJsonSync(schemaJSON, _schema.context);
+        } catch (err: any) {
+          assert(false, `The schema should have been deserialized, instead error was thrown: ${err.message}`);
+        }
+        testFunction();
+      }
+
+      function testUnknownClassModifiers() {
+        assert.isTrue(_schema !== undefined);
+        expect(_schema.getItemSync("ValidClass")).to.not.be.undefined;
+
+        for (const className of [`UnknownEntityClass`, `UnknownStructClass`, `UnknownRelationshipClass`, `UnknownMixinClass`]) {
+          const unknownItem = _schema.getItemSync(className) as EntityClass | StructClass | RelationshipClass | CustomAttributeClass | Mixin;
+          expect(unknownItem).to.not.be.undefined;
+          expect(unknownItem.modifier).to.eql(ECClassModifier.None);
+        }
+      }
+      it("Schema XML with unknown class modifier", async () => {
+        await new SchemaReadHelper(XmlParser, _context).readSchema(new Schema(_context), new DOMParser().parseFromString(`<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="CoreCustomAttributes" alias="CoreCA" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+            <ECCustomAttributeClass typeName="IsMixin" description="Applied to abstract ECEntityClasses which serve as secondary base classes for normal ECEntityClasses." displayLabel="Is Mixin" appliesTo="EntityClass" modifier="Sealed" >
+              <ECProperty propertyName="AppliesToEntityClass" typeName="string" description="This mixin may only be applied to entity classes which derive from this class.  Class Name should be fully specified as 'alias:ClassName'" />
+            </ECCustomAttributeClass>
+          </ECSchema>`));
+
+        const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
+            <ECSchemaReference name="CoreCustomAttributes" version="1.0.0" alias="CoreCA" />
+            <ECEntityClass typeName="ValidClass" description="Test Entity Class" />
+            <ECEntityClass typeName="UnknownEntityClass" description="Test Entity Class" modifier="UnknownModifier" />
+            <ECStructClass typeName="UnknownStructClass" description="Test Entity Class" modifier="UnknownModifier" />
+            <ECRelationshipClass typeName="UnknownRelationshipClass" strength="referencing" modifier="UnknownModifier">
+              <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+                <Class class="ValidClass"/>
+              </Source>
+              <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+                <Class class="ValidClass"/>
+              </Target>
+            </ECRelationshipClass>
+            <ECEntityClass typeName="UnknownMixinClass" description="Test Entity Class" modifier="UnknownModifier">
+              <ECCustomAttributes>
+                <IsMixin>
+                  <AppliesToEntityClass>ValidClass</AppliesToEntityClass>
+                </IsMixin>
+              </ECCustomAttributes>
+            </ECEntityClass>
+          </ECSchema>`;
+
+        await deserializeAndTestXml(schemaXml, testUnknownClassModifiers);
+        deserializeAndTestXmlSync(schemaXml, testUnknownClassModifiers);
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+      it("Schema JSON with unknown class modifier", async () => {
+        const schemaJson = {
+          ...jsonSchemaTemplate,
+          items: {
+            ValidClass:  { schemaItemType: "EntityClass", name: "ValidClass" },
+            UnknownEntityClass: { schemaItemType: "EntityClass", name: "UnknownEntityClass", modifier: "UnknownModifier" },
+            UnknownStructClass: { schemaItemType: "StructClass", name: "UnknownStructClass", modifier: "UnknownModifier" },
+            UnknownRelationshipClass: { schemaItemType: "RelationshipClass", name: "UnknownRelationshipClass", strength: "Referencing", strengthDirection: "Forward", modifier: "UnknownModifier",
+              source: { multiplicity: "(0..*)", roleLabel: "refers to", polymorphic: true,
+                constraintClasses: [ "TestSchema.ValidClass" ],
+              },
+              target: { multiplicity: "(0..*)", roleLabel: "Target RoleLabel", polymorphic: true,
+                constraintClasses: [ "TestSchema.ValidClass" ],
+              },
+            },
+            UnknownMixinClass: {
+              schemaItemType: "Mixin",
+              appliesTo: "TestSchema.ValidClass",
+              modifier: "UnknownModifier",
+            },
+            UnknownCustomAttributeClass: {
+              schemaItemType: "CustomAttributeClass",
+              appliesTo: "AnyClass, Schema, AnyProperty",
+              modifier: "UnknownModifier",
+            },
+          },
+        };
+
+        await deserializeAndTestJSON(JSON.stringify(schemaJson), testUnknownClassModifiers);
+        deserializeAndTestJSONSync(JSON.stringify(schemaJson), testUnknownClassModifiers);
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+
+      function testClasses(isUnknownItemUndefined: boolean) {
+        expect(_schema.getItemSync("ValidClass")).to.not.be.undefined;
+        expect(_schema.getItemSync("UnknownItem") === undefined).to.equal(isUnknownItemUndefined);
+      }
+      it("Schema XML with unknown Schema Item Type", async () => {
+        const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
+            <ECEntityClass typeName="ValidClass" description="Test Entity Class" />
+            <UnknownItem typeName="UnknownItem" unknownAttribute="unknownAttr" />
+          </ECSchema>`;
+
+        await deserializeAndTestXml(schemaXml, testClasses.bind(this, true));
+        deserializeAndTestXmlSync(schemaXml, testClasses.bind(this, true));
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+      it("Schema JSON with unknown Schema Item Type", async () => {
+        const schemaJson = {
+          ...jsonSchemaTemplate,
+          items: {
+            ValidClass:  { schemaItemType: "EntityClass", name: "ValidClass" },
+            UnknownItem: { schemaItemType: "UnknownItem", name: "UnknownItem" },
+          },
+        };
+
+        await deserializeAndTestJSON(JSON.stringify(schemaJson), testClasses.bind(this, true));
+        deserializeAndTestJSONSync(JSON.stringify(schemaJson), testClasses.bind(this, true));
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+      it("Schema XML with Schema Item Type having unknown attributes", async () => {
+        const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
+            <ECEntityClass typeName="ValidClass" description="Test Entity Class" />
+            <ECEntityClass typeName="UnknownItem" unknownAttribute="unknownAttr" />
+          </ECSchema>`;
+
+        await deserializeAndTestXml(schemaXml, testClasses.bind(this, false));
+        deserializeAndTestXmlSync(schemaXml, testClasses.bind(this, false));
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+      it("Schema JSON with Schema Item Type having unknown attributes", async () => {
+        const schemaJson = {
+          ...jsonSchemaTemplate,
+          items: {
+            ValidClass:  { schemaItemType: "EntityClass", name: "ValidClass" },
+            UnknownItem: { schemaItemType: "EntityClass", name: "UnknownItem", unknownAttribute: "unknownAttr" },
+          },
+        };
+
+        await deserializeAndTestJSON(JSON.stringify(schemaJson), testClasses.bind(this, false));
+        deserializeAndTestJSONSync(JSON.stringify(schemaJson), testClasses.bind(this, false));
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+
+      function testUnknownProperty() {
+        const testClass = _schema.getItemSync("TestClass") as EntityClass;
+        expect(testClass).to.not.be.undefined;
+        expect(testClass.getPropertySync("ValidProperty")).to.not.be.undefined;
+
+        let unknownProperty = testClass.getPropertySync(`UnknownPrimitiveProperty`) as Property;
+        expect(unknownProperty).to.not.be.undefined;
+        expect(unknownProperty.propertyType).to.equal(PropertyType.String);
+
+        unknownProperty = testClass.getPropertySync(`UnknownArrayProperty`) as Property;
+        expect(unknownProperty).to.not.be.undefined;
+        expect(unknownProperty.propertyType).to.equal(PropertyType.String_Array);
+      }
+      it("Schema XML with property having an unknown primitive type", async () => {
+        const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
+            <ECEntityClass typeName="TestClass">
+              <ECProperty propertyName="ValidProperty" typeName="string" />
+              <ECProperty propertyName="UnknownPrimitiveProperty" typeName="UnknownType" />
+              <ECArrayProperty propertyName="UnknownArrayProperty" typeName="string"/>
+            </ECEntityClass>
+          </ECSchema>`;
+
+        await deserializeAndTestXml(schemaXml, testUnknownProperty);
+        deserializeAndTestXmlSync(schemaXml,testUnknownProperty);
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+      it("Schema JSON with property having an unknown primitive type", async () => {
+        const schemaJson = {
+          ...jsonSchemaTemplate,
+          items: {
+            TestClass: {
+              schemaItemType: "EntityClass",
+              properties: [
+                {
+                  name: "ValidProperty",
+                  type: "PrimitiveProperty",
+                  typeName: "string",
+                },
+                {
+                  name: "UnknownPrimitiveProperty",
+                  type: "PrimitiveProperty",
+                  typeName: "UnknownType",
+                },
+                {
+                  name: "UnknownArrayProperty",
+                  type: "PrimitiveArrayProperty",
+                  typeName: "UnknownType",
+                },
+              ],
+            },
+          },
+        };
+
+        await deserializeAndTestJSON(JSON.stringify(schemaJson), testUnknownProperty);
+        deserializeAndTestJSONSync(JSON.stringify(schemaJson), testUnknownProperty);
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+
+      function testUnknownPropertyType() {
+        const testClass = _schema.getItemSync("TestClass") as EntityClass;
+        expect(testClass).to.not.be.undefined;
+        expect(testClass.getPropertySync("ValidProperty")).to.not.be.undefined;
+        expect(testClass.getPropertySync("UnknownProperty")).to.be.undefined;
+      }
+      it("Schema XML with property having an unknown property kind", async () => {
+        const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
+            <ECEntityClass typeName="TestClass">
+              <ECProperty propertyName="ValidProperty" typeName="string" />
+              <UnknownProperty propertyName="UnknownProperty" />
+            </ECEntityClass>
+          </ECSchema>`;
+
+        await deserializeAndTestXml(schemaXml, testUnknownPropertyType);
+        deserializeAndTestXmlSync(schemaXml, testUnknownPropertyType);
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+      it("Schema JSON with property having an unknown property kind", async () => {
+        const schemaJson = {
+          ...jsonSchemaTemplate,
+          items: {
+            TestClass: {
+              schemaItemType: "EntityClass",
+              properties: [
+                {
+                  name: "ValidProperty",
+                  type: "PrimitiveProperty",
+                  typeName: "string",
+                },
+                {
+                  name: "UnknownProperty",
+                  type: "UnknownProperty",
+                },
+              ],
+            },
+          },
+        };
+
+        await deserializeAndTestJSON(JSON.stringify(schemaJson), testUnknownPropertyType);
+        deserializeAndTestJSONSync(JSON.stringify(schemaJson), testUnknownPropertyType);
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+
+      function testEnumBackingType() {
+        const enumVal = _schema.getItemSync("TestEnumeration") as Enumeration;
+        expect(enumVal).to.not.be.undefined;
+        expect(enumVal.type).to.equal(PrimitiveType.String);
+      }
+      it("Schema XML with unknown enumeration backing type", async () => {
+        const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
+            <ECEnumeration typeName="TestEnumeration" backingTypeName="UnknownType" />
+          </ECSchema>`;
+
+        await deserializeAndTestXml(schemaXml, testEnumBackingType);
+        deserializeAndTestXmlSync(schemaXml, testEnumBackingType);
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+      it("Schema JSON with unknown enumeration backing type", async () => {
+        const schemaJson = {
+          ...jsonSchemaTemplate,
+          items: {
+            TestEnumeration: {
+              schemaItemType: "Enumeration",
+              type: "UnknownType",
+              isStrict: true,
+              enumerators: [{
+                name: "TestValue",
+                label: "TestValue",
+                value: "T",
+              }],
+            },
+          },
+        };
+
+        await deserializeAndTestJSON(JSON.stringify(schemaJson), testEnumBackingType);
+        deserializeAndTestJSONSync(JSON.stringify(schemaJson), testEnumBackingType);
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+
+      function testRelationshipStrength() {
+        const relationshipClass = _schema.getItemSync("TestRelationship") as RelationshipClass;
+        expect(relationshipClass).to.not.be.undefined;
+        expect(relationshipClass.strength).to.equal(StrengthType.Referencing);
+      }
+      it("Schema XML with relationship class having unknown strength type", async () => {
+        const schemaXml = `<?xml version="1.0" encoding="utf-8"?>
+          <ECSchema schemaName="TestSchema" alias="ts" version="1.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.${Schema.currentECSpecMajorVersion}.${Schema.currentECSpecMinorVersion + 1}">
+            <ECEntityClass typeName="Source"/>
+            <ECEntityClass typeName="Target"/>
+
+            <ECRelationshipClass typeName="TestRelationship" modifier="None" direction="forward" strength="UnknownType">
+              <Source multiplicity="(1..1)" roleLabel="likes" polymorphic="False">
+                <Class class="Source" />
+              </Source>
+              <Target multiplicity="(1..1)" roleLabel="is liked by" polymorphic="True">
+                <Class class="Target" />
+              </Target>
+            </ECRelationshipClass>
+          </ECSchema>`;
+
+        await deserializeAndTestXml(schemaXml, testRelationshipStrength);
+        deserializeAndTestXmlSync(schemaXml, testRelationshipStrength);
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+      it("Schema JSON with relationship class having unknown strength type", async () => {
+        const schemaJson = {
+          ...jsonSchemaTemplate,
+          items: {
+            ValidClass:  { schemaItemType: "EntityClass", name: "ValidClass" },
+            TestRelationship: { schemaItemType: "RelationshipClass", name: "TestRelationship", strength: "UnknownType", strengthDirection: "Forward",
+              source: { multiplicity: "(0..*)", roleLabel: "refers to", polymorphic: true,
+                constraintClasses: [ "TestSchema.ValidClass" ],
+              },
+              target: { multiplicity: "(0..*)", roleLabel: "Target RoleLabel", polymorphic: true,
+                constraintClasses: [ "TestSchema.ValidClass" ],
+              },
+            },
+          },
+        };
+
+        await deserializeAndTestJSON(JSON.stringify(schemaJson), testRelationshipStrength);
+        deserializeAndTestJSONSync(JSON.stringify(schemaJson), testRelationshipStrength);
+        await testSerialization(_schema, false, unsupportedVersionError);
+      });
+    });
+  });
+
   describe("fromJson", () => {
     describe("should successfully deserialize valid JSON", () => {
       function assertValidSchema(testSchema: Schema) {
@@ -688,8 +1303,8 @@ describe("Schema", () => {
         const context = new SchemaContext();
         const testSchema = new Schema(context, "InvalidSchema", "is", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJSON(schemaJson as any)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
-        await expect(Schema.fromJson(schemaJson as any, context)).to.be.rejectedWith(ECObjectsError, "The Schema InvalidSchema has an unsupported namespace 'https://badmetaschema.com'.");
+        await expect(testSchema.fromJSON(schemaJson as any)).to.be.rejectedWith(ECObjectsError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
+        await expect(Schema.fromJson(schemaJson as any, context)).to.be.rejectedWith(ECObjectsError, "The Schema 'InvalidSchema' has an unsupported namespace 'https://badmetaschema.com'.");
       });
 
       it("should throw for mismatched name", async () => {
@@ -718,6 +1333,15 @@ describe("Schema", () => {
     });
 
     describe("toJSON", () => {
+      it("Simple JSON serialization of an empty schema", async () => {
+        const context = new SchemaContext();
+        let schema: Schema = new Schema(context);
+        expect(() => schema.toJSON()).to.throw(ECObjectsError, "The schema has an invalid or missing SchemaKey.");
+
+        schema = new Schema(context, "EmptySchema", "es", 1, 2, 3);
+        expect(() => schema.toJSON()).to.not.throw(ECObjectsError, "The schema has an invalid or missing SchemaKey.");
+      });
+
       it("Simple serialization", async () => {
         const schemaJson = {
           $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -1064,6 +1688,17 @@ describe("Schema", () => {
         expect(propArray.length).to.equal(1, `Expected 1 CustomAttribute Property with the name '${propertyName}'`);
         return propArray[0];
       }
+
+      it("Simple XML serialization of an empty schema", async () => {
+        const context = new SchemaContext();
+        let schema: Schema = new Schema(context);
+        const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
+
+        await expect(schema.toXml(xmlDoc)).to.be.rejectedWith(ECObjectsError, `The schema has an invalid or missing SchemaKey.`);
+
+        schema = new Schema(context, "EmptySchema", "ts", 1, 2, 3);
+        await expect(schema.toXml(xmlDoc)).to.not.be.rejectedWith(ECObjectsError, `The schema has an invalid or missing SchemaKey.`);
+      });
 
       it("Simple serialization", async () => {
         const schemaJson = {
