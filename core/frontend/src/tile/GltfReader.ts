@@ -1639,20 +1639,21 @@ export abstract class GltfReader {
         const featureIdView = featureIdViews[featureIdDescCount];
         const featureIdBuffer = featureIdBuffers[featureIdDescCount];
         featureIdDescCount++;
-        const featureId = featureIdBuffer.buffer[ vertexId * featureIdView.stride];
+        const featureId = featureIdBuffer.buffer[vertexId * featureIdView.stride];
         const propertyTableId = featureIdDesc.propertyTable ?? 0;
-        vertexUniqueId = `${vertexUniqueId}-${featureId}-${propertyTableId}`;
+        vertexUniqueId = `${featureIdDescCount > 0 ? `${vertexUniqueId}-` : ""}${featureId}-${propertyTableId}`;
       }
 
       if(!vertexPropsSet.has(vertexUniqueId)){
         const vertexProps: any = {};
 
+        featureIdDescCount = 0;
         for(const featureIdDesc of ext.featureIds){
           const featureIdView = featureIdViews[featureIdDescCount];
           const featureIdBuffer = featureIdBuffers[featureIdDescCount];
           featureIdDescCount++;
 
-          const featureId = featureIdBuffer.buffer[ vertexId * featureIdView.stride];
+          const featureId = featureIdBuffer.buffer[vertexId * featureIdView.stride];
 
           const table = this._structuralMetadata.tables[featureIdDesc.propertyTable ?? 0];
           vertexProps[table.name] = {};
@@ -1663,8 +1664,8 @@ export abstract class GltfReader {
           }
         }
 
-        const vertexElementId = this._idMap.getBatchId(vertexProps);
         vertexPropsSet.add(vertexUniqueId);
+        const vertexElementId = this._idMap.getBatchId(vertexProps);
 
         //  If the element id is already assigned to a previous instance,
         //  reuse the previous feature id to avoid collision in the feature table
