@@ -6,6 +6,8 @@ import * as path from "path";
 import * as fs from "fs";
 import { marked, Tokens } from "marked";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { ECSqlRowArg } from "../../ECSqlStatement";
+import { QueryLimit, QueryOptions, QueryOptionsBuilder, QueryQuota, QueryRowFormat } from "@itwin/core-common";
 
 export interface ECDbTestProps {
   title: string;
@@ -20,15 +22,35 @@ export interface ECDbTestProps {
 }
 
 export interface ConcurrentQueryProps{
+  rowOptions?: ConcurrentQueryRowOptions;
   columnInfo?: ConcurrentQueryECDbColumnInfoProps[];
   expectedResults?: { [key: string]: any }[];
 }
 
 export interface ECSqlStatementProps{
+  rowOptions?: ECSqlStatementRowOptions;
   columnInfo?: ECSqlStatementECDbColumnInfoProps[];
   expectedResults?: { [key: string]: any }[];
 }
 
+export interface ECSqlStatementRowOptions{
+  rowFormat?: string;
+  classIdsToClassNames?: boolean;
+}
+
+export interface ConcurrentQueryRowOptions{
+  abbreviateBlobs?: boolean;
+  suppressLogErrors?: boolean;
+  includeMetaData?: boolean;
+  limit?: QueryLimit;
+  convertClassIdsToClassNames?: boolean;
+  rowFormat?: string;
+  priority?: number;
+  restartToken?: string;
+  usePrimaryConn?: boolean;
+  quota?: QueryQuota;
+  delay?: number;
+}
 
 export interface ECDbTestBinderProps {
   indexOrName: string;
@@ -66,8 +88,31 @@ enum TypeOfQuery{
   ConcurrentQuery = 1
 };
 
-function isECSqlStatementECDbColumnInfoProps(obj: any): obj is ECSqlStatementECDbColumnInfoProps {
+function isValidRowFormat(str: string): boolean {
+  const toLowerCase = str.toLowerCase();
+  return toLowerCase === "useecsqlpropertynames" || toLowerCase === "useecsqlpropertyindexes" || toLowerCase === "usejspropertynames"
+}
+
+function isValidQueryLimit(obj: any): obj is QueryLimit {
+  const numberOfKeys = typeof obj === "object" ? Object.keys(obj).length : 0;
   return typeof obj === "object" &&
+      (numberOfKeys >= 0 && numberOfKeys<=2) &&
+      (obj.count === undefined || typeof obj.count === "number") &&
+      (obj.offset === undefined || typeof obj.offset === "number");
+}
+
+function isValidQueryQuota(obj: any): obj is QueryQuota {
+  const numberOfKeys = typeof obj === "object" ? Object.keys(obj).length : 0;
+  return typeof obj === "object" &&
+      (numberOfKeys >= 0 && numberOfKeys<=2) &&
+      (obj.time === undefined || typeof obj.time === "number") &&
+      (obj.memory === undefined || typeof obj.memory === "number");
+}
+
+function isECSqlStatementECDbColumnInfoProps(obj: any): obj is ECSqlStatementECDbColumnInfoProps {
+  const numberOfKeys = typeof obj === "object" ? Object.keys(obj).length : 0;
+  return typeof obj === "object" &&
+    (numberOfKeys >=1 && numberOfKeys <= 11) &&
     typeof obj.accessString === "string" &&
     (obj.propertyName === undefined || typeof obj.propertyName === "string") &&
     (obj.originPropertyName === undefined || typeof obj.originPropertyName === "string") &&
@@ -81,8 +126,34 @@ function isECSqlStatementECDbColumnInfoProps(obj: any): obj is ECSqlStatementECD
     (obj.isDynamicProp === undefined || typeof obj.isDynamicProp === "boolean");
 }
 
-function isConcurrentQueryECDbColumnInfoProps(obj: any): obj is ConcurrentQueryECDbColumnInfoProps {
+function isECSqlStatementRowOptions(obj: any): obj is ECSqlStatementRowOptions {
+  const numberOfKeys = typeof obj === "object" ? Object.keys(obj).length : 0;
   return typeof obj === "object" &&
+    (numberOfKeys >=0 && numberOfKeys <= 2) &&
+    (obj.rowFormat === undefined || (typeof obj.rowFormat === "string" && isValidRowFormat(obj.rowFormat))) &&
+    (obj.classIdsToClassNames === undefined || typeof obj.classIdsToClassNames === "boolean");
+}
+
+function isConcurrentQueryRowOptions(obj: any): obj is ConcurrentQueryRowOptions {
+  const numberOfKeys = typeof obj === "object" ? Object.keys(obj).length : 0;
+  return typeof obj === "object" &&
+    (numberOfKeys >=0 && numberOfKeys <= 11) &&
+    (obj.rowFormat === undefined || (typeof obj.rowFormat === "string" && isValidRowFormat(obj.rowFormat))) &&
+    (obj.abbreviateBlobs === undefined || typeof obj.abbreviateBlobs === "boolean") &&
+    (obj.limit === undefined || (typeof obj.limit === "object" && isValidQueryLimit(obj.limit)))&&
+    (obj.convertClassIdsToClassNames === undefined || typeof obj.convertClassIdsToClassNames === "boolean")&&
+    (obj.rowFormat === undefined || typeof obj.rowFormat === "string")&&
+    (obj.priority === undefined || typeof obj.priority === "number")&&
+    (obj.restartToken === undefined || typeof obj.restartToken === "string")&&
+    (obj.usePrimaryConn === undefined || typeof obj.usePrimaryConn === "boolean")&&
+    (obj.delay === undefined || typeof obj.delay === "number")&&
+    (obj.quota === undefined || (typeof obj.quota === "object" && isValidQueryQuota(obj.quota)));
+}
+
+function isConcurrentQueryECDbColumnInfoProps(obj: any): obj is ConcurrentQueryECDbColumnInfoProps {
+  const numberOfKeys = typeof obj === "object" ? Object.keys(obj).length : 0;
+  return typeof obj === "object" &&
+    (numberOfKeys >= 1 && numberOfKeys <= 8) &&
     typeof obj.className === "string" &&
     (obj.accessString === undefined || typeof obj.accessString === "string") &&
     (obj.generated === undefined || typeof obj.generated === "boolean") &&
@@ -93,11 +164,42 @@ function isConcurrentQueryECDbColumnInfoProps(obj: any): obj is ConcurrentQueryE
     (obj.typeName === undefined || typeof obj.typeName === "string");
 }
 
+export function buildECSqlRowArgs(object: ECSqlStatementRowOptions | undefined) : ECSqlRowArg | undefined {
+  if(object === undefined)
+    return undefined;
+  const rowArgs: ECSqlRowArg = {classIdsToClassNames: object.classIdsToClassNames};
+  if(object.rowFormat && object.rowFormat.toLowerCase() === "useecsqlpropertynames")
+    rowArgs.rowFormat = QueryRowFormat.UseECSqlPropertyNames;
+  else if(object.rowFormat && object.rowFormat.toLowerCase() === "useecsqlpropertyindexes")
+    rowArgs.rowFormat = QueryRowFormat.UseECSqlPropertyIndexes;
+  else if(object.rowFormat && object.rowFormat.toLowerCase() === "usejspropertynames")
+    rowArgs.rowFormat = QueryRowFormat.UseJsPropertyNames;
+  return rowArgs;
+}
+
+export function buildQueryOptionsBuilder(object: ConcurrentQueryRowOptions | undefined) : QueryOptions | undefined {
+  if(object === undefined)
+    return undefined;
+  const queryOptions: QueryOptions = {abbreviateBlobs: object.abbreviateBlobs, suppressLogErrors : object.suppressLogErrors,
+    includeMetaData: object.includeMetaData, limit: object.limit, convertClassIdsToClassNames: object.convertClassIdsToClassNames,
+    priority: object.priority, restartToken: object.restartToken, usePrimaryConn: object.usePrimaryConn, quota: object.quota,
+    delay: object.delay
+  };
+  if(object.rowFormat && object.rowFormat.toLowerCase() === "useecsqlpropertynames")
+    queryOptions.rowFormat = QueryRowFormat.UseECSqlPropertyNames;
+  else if(object.rowFormat && object.rowFormat.toLowerCase() === "useecsqlpropertyindexes")
+    queryOptions.rowFormat = QueryRowFormat.UseECSqlPropertyIndexes;
+  else if(object.rowFormat && object.rowFormat.toLowerCase() === "usejspropertynames")
+    queryOptions.rowFormat = QueryRowFormat.UseJsPropertyNames;
+  return queryOptions;
+}
+
 export class ECDbMarkdownTestParser {
   public static parse(): ECDbTestProps[] {
     const testAssetsDir = IModelTestUtils.resolveAssetFile("ECDbTests");
     const testFiles = fs.readdirSync(testAssetsDir, "utf-8").filter((fileName) => fileName.toLowerCase().endsWith("ecdbtest.md"));
     const out: ECDbTestProps[] = [];
+    const outOnly: ECDbTestProps[] = [];
 
     for (const fileName of testFiles) {
       const markdownFilePath = path.join(testAssetsDir, fileName);
@@ -118,6 +220,8 @@ export class ECDbMarkdownTestParser {
               {
                 if (currentTest !== undefined) {
                   out.push(currentTest);
+                  if(currentTest.title.startsWith("only:"))
+                    outOnly.push(currentTest);
                 }
                 currentTest = { title: token.text, queryType: undefined, ecsqlStatementProps: undefined, concurrentQueryProps: undefined };
               }
@@ -141,9 +245,12 @@ export class ECDbMarkdownTestParser {
 
       if (currentTest !== undefined) {
         out.push(currentTest);
+        if(currentTest.title.startsWith("only:"))
+          outOnly.push(currentTest);
       }
     }
-
+    if(outOnly.length >= 1)
+      return outOnly;
     return out;
   }
 
@@ -218,6 +325,11 @@ export class ECDbMarkdownTestParser {
         }
       }
 
+      if (typeof json === "object" && typeof json.rowOptions === "object") {
+        this.handleJSONRowOptionsMetaData(json, currentTest, markdownFilePath);
+        return;
+      }
+
       if (typeof json === "object" && Array.isArray(json.columns)) {
         this.handleJSONColumnMetadata(json, currentTest, markdownFilePath);
         return;
@@ -226,6 +338,29 @@ export class ECDbMarkdownTestParser {
       this.handleJSONExpectedResults(json, currentTest, markdownFilePath); // TODO: validate the expected results
     } else {
       this.logWarning(`Unknown code language ${token.lang} found in file ${markdownFilePath}. Skipping.`);
+    }
+  }
+
+  private static handleJSONRowOptionsMetaData(json: any, currentTest: ECDbTestProps, markdownFilePath: string) {
+    if(currentTest.queryType && currentTest.queryType.at(-1) == TypeOfQuery.ECSqlStatement)
+    {
+      if (isECSqlStatementRowOptions(json.rowOptions)) {
+        currentTest.ecsqlStatementProps!.rowOptions = json.rowOptions;    // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
+      } else {
+        this.logWarning(`Row Options format in file '${markdownFilePath}' test '${currentTest.title}' for type ECSqlStatement failed type guard. Skipping.`);
+      }
+    }
+    else if(currentTest.queryType && currentTest.queryType.at(-1) == TypeOfQuery.ConcurrentQuery)
+    {
+      if (isConcurrentQueryRowOptions(json.rowOptions)) {
+        currentTest.concurrentQueryProps!.rowOptions = json.rowOptions;   // We are sure that concurrentQueryProps will not be undefined because if queryType == TypeOfQuery.ConcurrentQuery then concurrentQueryProps will not be undefined
+      } else {
+        this.logWarning(`Row Options format in file '${markdownFilePath}' test '${currentTest.title}' for type Concurrent Query failed type guard. Skipping.`);
+      }
+    }
+    else if(currentTest.queryType === undefined)
+    {
+      this.logWarning(`Row Options format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard because no suitable header for type of query is specified. Skipping.`);
     }
   }
 

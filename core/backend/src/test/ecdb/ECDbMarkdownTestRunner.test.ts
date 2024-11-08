@@ -7,7 +7,7 @@ import { DbResult } from "@itwin/core-bentley";
 import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-import { ECDbMarkdownTestParser, ECDbTestProps } from "./ECDbMarkdownTestParser";
+import { buildECSqlRowArgs, buildQueryOptionsBuilder, ECDbMarkdownTestParser, ECDbTestProps } from "./ECDbMarkdownTestParser";
 import * as path from "path";
 import * as fs from "fs";
 import { ECDbMarkdownTestGenerator } from "./ECDbMarkdownTestGenerator";
@@ -140,7 +140,7 @@ describe.only("Markdown based ECDb test runner", async () => {
               const compiledExpectedJson = replacePropsInString(expectedJson, props);
               expectedResult = JSON.parse(compiledExpectedJson);
 
-              const actualResult = stmt.getRow({ rowFormat: QueryRowFormat.UseECSqlPropertyNames}); // TODO: should we test getValue() as well?
+              const actualResult = stmt.getRow(buildECSqlRowArgs(test.ecsqlStatementProps?.rowOptions)); // TODO: should we test getValue() as well?
               assert.deepEqual(actualResult, expectedResult, `Expected ${JSON.stringify(expectedResult)} but got ${JSON.stringify(actualResult)}`);
             }
             resultCount++;
@@ -214,10 +214,7 @@ describe.only("Markdown based ECDb test runner", async () => {
 
 
           try {
-            // TODO: statement options should be exposed through the markdown
-            const builder = new QueryOptionsBuilder();
-            builder.setRowFormat(QueryRowFormat.UseJsPropertyNames);
-            reader = imodel.createQueryReader(compiledSql, params, builder.getOptions()); // TODO: Wire up logic for tests we expect to fail during prepare
+            reader = imodel.createQueryReader(compiledSql, params, buildQueryOptionsBuilder(test.concurrentQueryProps?.rowOptions)); // TODO: Wire up logic for tests we expect to fail during prepare
           } catch (error: any) {
             assert.fail(`Error during prepare: ${error.name}`);
           }

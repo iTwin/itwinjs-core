@@ -8,6 +8,14 @@ Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4
 
 ## ECSqlStatement
 
+```json
+{
+  "rowOptions": {
+    "rowFormat": "useECsqlPropertyNames"
+  }
+}
+```
+
 | AccessString | Type   |
 | ------------ | ------ |
 | Name         | String |
@@ -29,6 +37,14 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
 ```
 
 ## ECSqlStatement
+
+```json
+{
+  "rowOptions": {
+    "rowFormat": "useECsqlPropertyNames"
+  }
+}
+```
 
 ```json
 {
@@ -77,6 +93,14 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
 ```
 
 ## Concurrent Query
+
+```json
+{
+  "rowOptions": {
+    "rowFormat": "UseJSPropertyNames"
+  }
+}
+```
 
 ```json
 {
