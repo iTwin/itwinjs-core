@@ -1618,6 +1618,7 @@ export abstract class GltfReader {
     const featureIdViews = [];
     const featureIdBuffers = [];
 
+    const itwinFeatureIndices:number[] = [];
     for(const featureIdDesc of ext.featureIds){
       const view = this.getBufferView(primitive.attributes, `_FEATURE_ID_${featureIdDesc.attribute}`);
       // NB: 32-bit integers are not supported, but 8- and 16-bit integers will be converted to them.
@@ -1673,11 +1674,13 @@ export abstract class GltfReader {
           this._meshElementIdToFeatureId.set(vertexElementId, this._meshFeatures.length);
           this._meshFeatures.push(new Feature(vertexElementId));
         }
+
+        itwinFeatureIndices.push(this._meshElementIdToFeatureId.get(vertexElementId) ?? 0);
       }
     }
 
     // so that previous logic is ignored
-    return undefined;
+    return itwinFeatureIndices;
   }
 
   protected readMeshIndices(mesh: GltfMeshData, json: { [k: string]: any }): boolean {
