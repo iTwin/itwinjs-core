@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Format } from "../Formatter/Format";
 import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
@@ -35,21 +35,16 @@ describe("Composite Formats tests:", () => {
       uomSeparator: "",
     };
 
-    try {
-      const format = new Format("test");
-      await format.fromJSON(unitsProvider, formatData).catch(() => { });
-      assert.isTrue(format.hasUnits);
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    expect(format.hasUnits).to.be.true;
 
-      const testEntry = { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2" };
+    const testEntry = { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2" };
 
-      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+    const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+    const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
-      Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(false);
-    } catch (err: any) {
-      assert.strictEqual(err.message, "The Format test has a invalid unit specification..");
-    }
+    expect(() => Formatter.formatQuantity(testEntry.magnitude, spec)).to.throw("The Format test has a invalid unit specification.");
   });
 
   it("Bad Composite unit with offset", async () => {
@@ -76,24 +71,18 @@ describe("Composite Formats tests:", () => {
       uomSeparator: "",
     };
 
-    try {
-      const format = new Format("test");
-      await format.fromJSON(unitsProvider, formatData).catch(() => { });
-      assert.isTrue(format.hasUnits);
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    expect(format.hasUnits).to.be.true;
 
-      const testEntry = {
-        magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2",
-      };
+    const testEntry = {
+      magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12:6 1/2",
+    };
 
-      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
-      const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+    const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+    const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
-      Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(false);
-    } catch (err: any) {
-      assert.strictEqual(err.message, "The Format test has a invalid unit specification..");
-      // console.log(err.message);
-    }
+    expect(() => Formatter.formatQuantity(testEntry.magnitude, spec)).toThrow("The Format test has a invalid unit specification.");
   });
 
   it("Single Composite with label override", async () => {
@@ -118,7 +107,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.5417'" },
@@ -133,9 +122,8 @@ describe("Composite Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue.length > 0);
-      assert.strictEqual(formattedValue, testEntry.result);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      expect(formattedValue.length).toBeGreaterThan(0);
+      expect(formattedValue).toEqual(testEntry.result);
     }
   });
 
@@ -203,15 +191,15 @@ describe("Composite Formats tests:", () => {
 
       const format = new Format("test");
       await format.fromJSON(unitsProvider, formatData).catch(() => { });
-      assert.isTrue(format.hasUnits, `Test case number ${testEntry.testCaseNum} failed`);
-      assert.equal(format.hasFormatTraitSet(FormatTraits.KeepSingleZero), testEntry.keepSingleZero, `Test case number ${testEntry.testCaseNum} failed`);
-      assert.equal(format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint), testEntry.keepDecimalPoint, `Test case number ${testEntry.testCaseNum} failed`);
-      assert.equal(format.hasFormatTraitSet(FormatTraits.TrailZeroes), testEntry.trailZeroes, `Test case number ${testEntry.testCaseNum} failed`);
+      expect(format.hasUnits).to.be.true;
+      expect(format.hasFormatTraitSet(FormatTraits.KeepSingleZero)).toEqual(testEntry.keepSingleZero);
+      expect(format.hasFormatTraitSet(FormatTraits.KeepDecimalPoint)).toEqual(testEntry.keepDecimalPoint);
+      expect(format.hasFormatTraitSet(FormatTraits.TrailZeroes)).toEqual(testEntry.trailZeroes);
 
       const spec = await FormatterSpec.create("test", format, unitsProvider, new BasicUnit(unit.name, unit.label, unit.contextId));
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.equal(formattedValue, testEntry.result, `Test case number ${testEntry.testCaseNum} failed`);
-      assert.isTrue(formattedValue.length > 0, `Test case number ${testEntry.testCaseNum} failed`);
+      expect(formattedValue).toEqual(testEntry.result);
+      expect(formattedValue.length).toBeGreaterThan(0);
     }
   });
 
@@ -241,7 +229,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12'-6 1/2\"" },
@@ -257,9 +245,8 @@ describe("Composite Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue.length > 0);
-      assert.strictEqual(formattedValue, testEntry.result);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      expect(formattedValue.length).toBeGreaterThan(0);
+      expect(formattedValue).toEqual(testEntry.result);
     }
   });
 
@@ -289,7 +276,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12:6 1/2" },
@@ -305,9 +292,8 @@ describe("Composite Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue.length > 0);
-      assert.strictEqual(formattedValue, testEntry.result);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      expect(formattedValue.length).toBeGreaterThan(0);
+      expect(formattedValue).toEqual(testEntry.result);
     }
   });
 
@@ -333,7 +319,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-150 1/2\"" },
@@ -349,8 +335,9 @@ describe("Composite Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue.length > 0);
-      assert.strictEqual(formattedValue, testEntry.result);
+      expect(formattedValue.length).toBeGreaterThan(0);
+      expect(formattedValue).toEqual(testEntry.result);
+      // eslint-disable-next-line no-console
       // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
     }
   });
@@ -376,7 +363,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-150 1/2 in" },
@@ -391,9 +378,8 @@ describe("Composite Formats tests:", () => {
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue.length > 0);
-      assert.strictEqual(formattedValue, testEntry.result);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      expect(formattedValue.length).toBeGreaterThan(0);
+      expect(formattedValue).toEqual(testEntry.result);
     }
   });
 
@@ -419,7 +405,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-150.5\"" },
@@ -434,8 +420,7 @@ describe("Composite Formats tests:", () => {
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.strictEqual(formattedValue, testEntry.result);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      expect(formattedValue).toEqual(testEntry.result);
     }
   });
 
@@ -465,7 +450,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: -1.0, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, result: "-3'-3 3/8\"" },
@@ -479,9 +464,8 @@ describe("Composite Formats tests:", () => {
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue.length > 0);
-      assert.isTrue(formattedValue === testEntry.result);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      expect(formattedValue.length).toBeGreaterThan(0);
+      expect(formattedValue).toEqual(testEntry.result);
     }
   });
 
@@ -511,7 +495,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: -1.0, unit: { name: "Units.M", label: "m", contextId: "Units.LENGTH" }, result: "-3'-3.37\"" },
@@ -525,9 +509,8 @@ describe("Composite Formats tests:", () => {
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue === testEntry.result);
-      assert.isTrue(formattedValue.length > 0);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      expect(formattedValue).toEqual(testEntry.result);
+      expect(formattedValue.length).toBeGreaterThan(0);
     }
   });
 
@@ -553,7 +536,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30.27146435�" },
@@ -564,9 +547,8 @@ describe("Composite Formats tests:", () => {
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue === testEntry.result);
-      assert.isTrue(formattedValue.length > 0);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      expect(formattedValue).toEqual(testEntry.result);
+      expect(formattedValue.length).toBeGreaterThan(0);
     }
   });
 
@@ -592,7 +574,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30.0�" },
@@ -603,9 +585,8 @@ describe("Composite Formats tests:", () => {
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue === testEntry.result);
-      assert.isTrue(formattedValue.length > 0);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      expect(formattedValue).toEqual(testEntry.result);
+      expect(formattedValue.length).toBeGreaterThan(0);
     }
   });
 
@@ -639,7 +620,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30�16'17.27166\"" },
@@ -650,9 +631,8 @@ describe("Composite Formats tests:", () => {
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
-      assert.isTrue(formattedValue === testEntry.result);
-      assert.isTrue(formattedValue.length > 0);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      expect(formattedValue).toEqual(testEntry.result);
+      expect(formattedValue.length).toBeGreaterThan(0);
     }
   });
   it("Rad to DMS (precision 3)", async () => {
@@ -685,7 +665,7 @@ describe("Composite Formats tests:", () => {
 
     const format = new Format("test");
     await format.fromJSON(unitsProvider, formatData).catch(() => { });
-    assert.isTrue(format.hasUnits);
+    expect(format.hasUnits).to.be.true;
 
     const testQuantityData = [
       { magnitude: 0.5283367223037165, unit: { name: "Units.RAD", label: "rad", contextId: "Units.ANGLE" }, result: "30�16'17.272\"" },
@@ -702,8 +682,7 @@ describe("Composite Formats tests:", () => {
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       expect(formattedValue).to.be.eql(testEntry.result);
-      assert.isTrue(formattedValue.length > 0);
-      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+      expect(formattedValue.length).toBeGreaterThan(0);
     }
   });
 
@@ -714,7 +693,7 @@ describe("Composite Formats tests:", () => {
       composite: {
         includeZero: true,
         spacer: "",
-        units: [{name: "Units.KM"},{name: "Units.M", label: ""},{name: "Units.CM", label: "CM"},{name: "Units.MM", label: "'"}],
+        units: [{ name: "Units.KM" }, { name: "Units.M", label: "" }, { name: "Units.CM", label: "CM" }, { name: "Units.MM", label: "'" }],
       },
       formatTraits: ["keepSingleZero", "applyRounding"],
       precision: 4,
@@ -722,7 +701,7 @@ describe("Composite Formats tests:", () => {
       uomSeparator: "",
     };
     const format = new Format("test");
-    assert.isDefined(format);
+    expect(format).toBeDefined();
 
     await format.fromJSON(unitsProvider, compositeFormat).catch(() => { });
     expect(JSON.stringify(format.toJSON().composite)).to.eql(`{"spacer":"","includeZero":true,"units":[{"name":"Units.KM"},{"name":"Units.M","label":""},{"name":"Units.CM","label":"CM"},{"name":"Units.MM","label":"'"}]}`);
