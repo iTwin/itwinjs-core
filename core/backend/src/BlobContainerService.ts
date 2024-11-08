@@ -178,7 +178,7 @@ export namespace BlobContainer {
     queryMetadata(container: AccessContainerProps): Promise<Metadata>;
 
     /** Returns all containers and their metadata associated with a given iTwinId. Can be further queried by label and containerType. */
-    queryContainersMetadata?(userToken: UserToken, args: QueryContainerProps): Promise<MetadataResponse[]>;
+    queryContainersMetadata(userToken: UserToken, args: QueryContainerProps): Promise<MetadataResponse[]>;
 
     /** update the json properties of this container */
     updateJson(container: AccessContainerProps, json: SettingsContainer): Promise<void>;
