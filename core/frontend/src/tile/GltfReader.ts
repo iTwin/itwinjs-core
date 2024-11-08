@@ -1609,67 +1609,74 @@ export abstract class GltfReader {
   }
 
   protected readPrimitiveFeatures(primitive: GltfMeshPrimitive): Feature | number[] | undefined {
-    primitive.attributes;
-    return new Feature("0x1");
-    // const ext = primitive.extensions?.EXT_mesh_features;
-    // if (ext) {
-    //   // ###TODO making assumptions here.
-    //   const view = this.getBufferView(primitive.attributes, `_FEATURE_ID_${ext.featureIds[0].attribute}`);
-    //   // NB: 32-bit integers are not supported, but 8- and 16-bit integers will be converted to them.
-    //   // With more than 64k features in the tile we represent the Ids as floats instead.
-    //   const bufferData = view?.toBufferData(GltfDataType.Float) ?? view?.toBufferData(GltfDataType.UInt32);
-    //   if (view && bufferData) {
-    //     const featureIds = [];
-    //     for (let i = 0; i < bufferData.count; i++) {
-    //       const featureId = bufferData.buffer[i * view.stride];
-    //       featureIds.push(featureId);
-    //     }
 
-    //     // if(this._structuralMetadata && this._idMap && featureIds.size() > 0){
+    const ext = primitive.extensions?.EXT_mesh_features;
+    if (!ext || !this._structuralMetadata || !this._idMap) {
+      return undefined;
+    }
 
-    //     // const vertexProps: any = {};
-    //     // const table = this._structuralMetadata.tables[featureIdDesc.propertyTable];
-    //     //   instanceProps[table.name] = {};
-    //     //   // If the attribute is not defined, then the feature id corresponds to the instance id
-    //     //   if(featureIdDesc.attribute === undefined){
-    //     //     for(const entries of table.entries){
-    //     //       if(entries.values[localInstanceId] !== undefined){
-    //     //         instanceProps[table.name][entries.name] = entries.values[localInstanceId];
-    //     //       }
-    //     //     }
-    //     //   } else if(featureBuffers.has(featureIdDesc.attribute)) {
-    //     //     const featureBuffer = featureBuffers.get(featureIdDesc.attribute);
-    //     //     if(!featureBuffer){
-    //     //       continue;
-    //     //     }
-    //     //     const featureId = featureBuffer[localInstanceId];
+    const featureIdViews = [];
+    const featureIdBuffers = [];
 
-    //     //     if(featureIdDesc.nullFeatureId !== undefined && featureId === featureIdDesc.nullFeatureId){
-    //     //       continue;
-    //     //     }
+    for(const featureIdDesc of ext.featureIds){
+      const view = this.getBufferView(primitive.attributes, `_FEATURE_ID_${featureIdDesc.attribute}`);
+      // NB: 32-bit integers are not supported, but 8- and 16-bit integers will be converted to them.
+      // With more than 64k features in the tile we represent the Ids as floats instead.
+      const buffer = view?.toBufferData(GltfDataType.Float) ?? view?.toBufferData(GltfDataType.UInt32);
+      if (!view || !buffer) {
+        return undefined;
+      }
+      featureIdViews.push(view);
+      featureIdBuffers.push(buffer);
+    }
 
-    //     //     for(const entries of table.entries){
-    //     //       if(entries.values[featureId] !== undefined){
-    //     //         instanceProps[table.name][entries.name] = entries.values[featureId];
-    //     //       }
-    //     //     }
-    //     //   }
-    //     // }
+    const vertexPropsSet = new Set<string>();
+    for (let vertexId = 0;  vertexId < featureIdBuffers[0].count;  vertexId++) {
 
-    //     // const vertexElementId = this._idMap.getBatchId(vertexProps);
+      let vertexUniqueId = "";
+      let featureIdDescCount = 0;
+      for(const featureIdDesc of ext.featureIds){
+        const featureIdView = featureIdViews[featureIdDescCount];
+        const featureIdBuffer = featureIdBuffers[featureIdDescCount];
+        featureIdDescCount++;
+        const featureId = featureIdBuffer.buffer[ vertexId * featureIdView.stride];
+        const propertyTableId = featureIdDesc.propertyTable ?? 0;
+        vertexUniqueId = `${vertexUniqueId}-${featureId}-${propertyTableId}`;
+      }
 
-    //     // If the element id is already assigned to a previous instance,
-    //     // reuse the previous feature id to avoid collision in the feature table
-    //     // if(!this._meshElementIdToFeatureId.has(vertexElementId)){
-    //     // this._meshElementIdToFeatureId.set(vertexElementId, this._meshFeatures.length);
-    //     // this._meshFeatures.push(new Feature(vertexElementId));
-    //     // }
-    //     // }
-    //   }
-    // }
+      if(!vertexPropsSet.has(vertexUniqueId)){
+        const vertexProps: any = {};
 
-    // // so that previous logic is ignored
-    // return undefined;
+        for(const featureIdDesc of ext.featureIds){
+          const featureIdView = featureIdViews[featureIdDescCount];
+          const featureIdBuffer = featureIdBuffers[featureIdDescCount];
+          featureIdDescCount++;
+
+          const featureId = featureIdBuffer.buffer[ vertexId * featureIdView.stride];
+
+          const table = this._structuralMetadata.tables[featureIdDesc.propertyTable ?? 0];
+          vertexProps[table.name] = {};
+          for(const entries of table.entries){
+            if(entries.values[featureId] !== undefined){
+              vertexProps[table.name][entries.name] = entries.values[featureId];
+            }
+          }
+        }
+
+        const vertexElementId = this._idMap.getBatchId(vertexProps);
+        vertexPropsSet.add(vertexUniqueId);
+
+        //  If the element id is already assigned to a previous instance,
+        //  reuse the previous feature id to avoid collision in the feature table
+        if(!this._meshElementIdToFeatureId.has(vertexElementId)){
+          this._meshElementIdToFeatureId.set(vertexElementId, this._meshFeatures.length);
+          this._meshFeatures.push(new Feature(vertexElementId));
+        }
+      }
+    }
+
+    // so that previous logic is ignored
+    return undefined;
   }
 
   protected readMeshIndices(mesh: GltfMeshData, json: { [k: string]: any }): boolean {
