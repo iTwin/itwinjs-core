@@ -418,7 +418,7 @@ export namespace BlobContainer {
     export interface ContainerService {
         create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
         delete(container: AccessContainerProps): Promise<void>;
-        queryContainersMetadata?(userToken: UserToken, args: QueryContainerProps): Promise<MetadataResponse[]>;
+        queryContainersMetadata(userToken: UserToken, args: QueryContainerProps): Promise<MetadataResponse[]>;
         queryMetadata(container: AccessContainerProps): Promise<Metadata>;
         queryScope(container: AccessContainerProps): Promise<Scope>;
         requestToken(props: RequestTokenProps): Promise<TokenProps>;
