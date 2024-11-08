@@ -10,12 +10,17 @@ import { IModelTestUtils } from "../IModelTestUtils";
 export interface ECDbTestProps {
   title: string;
   dataset?: string;
+  queryType?: TypeOfQuery
+  testForConcurrentQuery?: boolean;
+  testForECSqlStatement?: boolean;
   sql?: string;
   binders?: ECDbTestBinderProps[];
   errorDuringPrepare?: string;
   stepStatus?: string;
-  columns?: ECDbColumnInfoProps[];
-  expectedResults?: { [key: string]: any }[];
+  columnInfoECSqlStatement?: ECSqlStatementECDbColumnInfoProps[];
+  columnInfoConcurrentQuery?: ConcurrentQueryECDbColumnInfoProps[];
+  expectedResultsConcurrentQuery?: { [key: string]: any }[];
+  expectedResultsECSqlStatement?: { [key: string]: any }[];
 }
 
 export interface ECDbTestBinderProps {
@@ -24,7 +29,7 @@ export interface ECDbTestBinderProps {
   value: string;
 }
 
-export interface ECDbColumnInfoProps {
+export interface ECSqlStatementECDbColumnInfoProps {
   accessString: string;
   propertyName?: string;
   originPropertyName?: string;
@@ -38,7 +43,23 @@ export interface ECDbColumnInfoProps {
   isDynamicProp?: boolean;
 }
 
-function isECDbColumnInfoProps(obj: any): obj is ECDbColumnInfoProps {
+export interface ConcurrentQueryECDbColumnInfoProps {
+  className: string;
+  accessString?: string;
+  generated?: boolean;
+  index?: number;
+  jsonName?: string;
+  name?: string;
+  extendType?: string;
+  typeName?: string;
+}
+
+enum TypeOfQuery{
+  ECSqlStatement = 0,
+  ConcurrentQuery = 1
+};
+
+function isECSqlStatementECDbColumnInfoProps(obj: any): obj is ECSqlStatementECDbColumnInfoProps {
   return typeof obj === "object" &&
     typeof obj.accessString === "string" &&
     (obj.propertyName === undefined || typeof obj.propertyName === "string") &&
@@ -51,6 +72,18 @@ function isECDbColumnInfoProps(obj: any): obj is ECDbColumnInfoProps {
     (obj.isGeneratedProperty === undefined || typeof obj.isGeneratedProperty === "boolean") &&
     (obj.isSystemProperty === undefined || typeof obj.isSystemProperty === "boolean") &&
     (obj.isDynamicProp === undefined || typeof obj.isDynamicProp === "boolean");
+}
+
+function isConcurrentQueryECDbColumnInfoProps(obj: any): obj is ConcurrentQueryECDbColumnInfoProps {
+  return typeof obj === "object" &&
+    typeof obj.className === "string" &&
+    (obj.accessString === undefined || typeof obj.accessString === "string") &&
+    (obj.generated === undefined || typeof obj.generated === "boolean") &&
+    (obj.index === undefined || typeof obj.index === "number") &&
+    (obj.jsonName === undefined || typeof obj.jsonName === "string") &&
+    (obj.name === undefined || typeof obj.name === "string") &&
+    (obj.extendType === undefined || typeof obj.extendType === "string") &&
+    (obj.typeName === undefined || typeof obj.typeName === "string");
 }
 
 export class ECDbMarkdownTestParser {
@@ -74,10 +107,15 @@ export class ECDbMarkdownTestParser {
           case "hr":
             continue;
           case "heading":
-            if (currentTest !== undefined) {
-              out.push(currentTest);
-            }
-            currentTest = { title: token.text };
+            if(token.depth == 1)
+              {
+                if (currentTest !== undefined) {
+                  out.push(currentTest);
+                }
+                currentTest = { title: token.text };
+              }
+            else if(token.depth == 2)
+              this.handleHeadingToken(token as Tokens.Heading, currentTest, markdownFilePath)
             break;
           case "list":
             this.handleListToken(token as Tokens.List, currentTest, markdownFilePath);
@@ -102,11 +140,21 @@ export class ECDbMarkdownTestParser {
     return out;
   }
 
-  private static handleHeadingToken(token: Tokens.Heading, currentTest: ECDbTestProps | undefined, out: ECDbTestProps[]): ECDbTestProps {
-    if (currentTest !== undefined) {
-      out.push(currentTest);
+  private static handleHeadingToken(token: Tokens.Heading, currentTest: ECDbTestProps | undefined, markdownFilePath: string) {
+    if (currentTest === undefined) {
+      this.logWarning(`List token found without a test title in file ${markdownFilePath}. Skipping.`);
+      return;
     }
-    return { title: token.text };
+    if(token.text == "Concurrent Query")
+    {
+      currentTest.testForConcurrentQuery = true
+      currentTest.queryType = TypeOfQuery.ConcurrentQuery
+    }
+    if(token.text == "ECSqlStatement")
+    {
+      currentTest.testForECSqlStatement = true
+      currentTest.queryType = TypeOfQuery.ECSqlStatement
+    }
   }
 
   private static handleListToken(token: Tokens.List, currentTest: ECDbTestProps | undefined, markdownFilePath: string) {
@@ -162,17 +210,51 @@ export class ECDbMarkdownTestParser {
       }
 
       if (typeof json === "object" && Array.isArray(json.columns)) {
-        if (json.columns.every(isECDbColumnInfoProps)) {
-          currentTest.columns = json.columns;
-        } else {
-          this.logWarning(`Columns format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard. Skipping.`);
-        }
+        this.handleJSONColumnMetadata(json, currentTest, markdownFilePath);
         return;
       }
 
-      currentTest.expectedResults = json; // TODO: validate the expected results
+      this.handleJSONExpectedResults(json, currentTest, markdownFilePath); // TODO: validate the expected results
     } else {
       this.logWarning(`Unknown code language ${token.lang} found in file ${markdownFilePath}. Skipping.`);
+    }
+  }
+
+  private static handleJSONColumnMetadata(json: any, currentTest: ECDbTestProps, markdownFilePath: string) {
+    if(currentTest.queryType == TypeOfQuery.ECSqlStatement)
+    {
+      if (json.columns.every(isECSqlStatementECDbColumnInfoProps)) {
+        currentTest.columnInfoECSqlStatement = json.columns;
+      } else {
+        this.logWarning(`Columns format in file '${markdownFilePath}' test '${currentTest.title}' for type ECSqlStatement failed type guard. Skipping.`);
+      }
+    }
+    else if(currentTest.queryType == TypeOfQuery.ConcurrentQuery)
+    {
+      if (json.columns.every(isConcurrentQueryECDbColumnInfoProps)) {
+        currentTest.columnInfoConcurrentQuery = json.columns;
+      } else {
+        this.logWarning(`Columns format in file '${markdownFilePath}' test '${currentTest.title}' for type Concurrent Query failed type guard. Skipping.`);
+      }
+    }
+    else if(currentTest.queryType === undefined)
+    {
+      this.logWarning(`Columns format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard because no suitable header for type of query is specified. Skipping.`);
+    }
+  }
+
+  private static handleJSONExpectedResults(json: any, currentTest: ECDbTestProps, markdownFilePath: string) {
+    if(currentTest.queryType == TypeOfQuery.ECSqlStatement)
+    {
+      currentTest.expectedResultsECSqlStatement = json
+    }
+    else if(currentTest.queryType == TypeOfQuery.ConcurrentQuery)
+    {
+      currentTest.expectedResultsConcurrentQuery = json
+    }
+    else if(currentTest.queryType === undefined)
+    {
+      this.logWarning(`Expected Results format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard because no suitable header for type of query is specified. Skipping.`);
     }
   }
 
@@ -181,21 +263,40 @@ export class ECDbMarkdownTestParser {
       this.logWarning(`Table token found without a test title in file ${markdownFilePath}. Skipping.`);
       return;
     }
-    if (token.header.length > 0 && token.header[0]?.text?.toLowerCase() === "accessstring") {
-      this.handleColumnTable(token, currentTest, markdownFilePath);
-    } else {
-      this.handleExpectedResultsTable(token, currentTest, markdownFilePath);
+    this.handleTable(token, currentTest, markdownFilePath);
+  }
+
+  private static handleTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
+    if(currentTest.queryType == TypeOfQuery.ECSqlStatement)
+    {
+      if (token.header.length > 0 && token.header[0]?.text?.toLowerCase() === "accessstring") {
+        this.handleColumnTableECSqlStatement(token, currentTest, markdownFilePath);
+      } else {
+        this.handleExpectedResultsTableECsqlStatement(token, currentTest, markdownFilePath);
+      }
+    }
+    else if(currentTest.queryType == TypeOfQuery.ConcurrentQuery)
+    {
+      if (token.header.length > 0 && token.header[0]?.text?.toLowerCase() === "classname") {
+        this.handleColumnTableConcurrentQuery(token, currentTest, markdownFilePath);
+      } else {
+        this.handleExpectedResultsTableConcurrentQuery(token, currentTest, markdownFilePath);
+      }
+    }
+    else if(currentTest.queryType === undefined)
+    {
+      this.logWarning(`Table format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard because no suitable header for type of query is specified. Skipping.`);
     }
   }
 
-  private static handleColumnTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
-    currentTest.columns = currentTest.columns || [];
+  private static handleColumnTableECSqlStatement(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
+    currentTest.columnInfoECSqlStatement = currentTest.columnInfoECSqlStatement || [];
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
         this.logWarning(`Rows in a column table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
         continue;
       }
-      const column: ECDbColumnInfoProps = { accessString: row[0].text };
+      const column: ECSqlStatementECDbColumnInfoProps = { accessString: row[0].text };
       for (let i = 1; i < token.header.length; i++) {
         const header = token.header[i].text.toLowerCase();
         const cell = row[i].text;
@@ -234,12 +335,12 @@ export class ECDbMarkdownTestParser {
             this.logWarning(`Unknown column header ${header} found in file ${markdownFilePath}. Skipping.`);
         }
       }
-      currentTest.columns.push(column);
+      currentTest.columnInfoECSqlStatement.push(column);
     }
   }
 
-  private static handleExpectedResultsTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
-    currentTest.expectedResults = currentTest.expectedResults || [];
+  private static handleExpectedResultsTableECsqlStatement(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
+    currentTest.expectedResultsECSqlStatement = currentTest.expectedResultsECSqlStatement || [];
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
         this.logWarning(`Rows in a column table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
@@ -252,7 +353,66 @@ export class ECDbMarkdownTestParser {
         const cell = row[i].text;
         expectedResult[header] = cell;
       }
-      currentTest.expectedResults.push(expectedResult);
+      currentTest.expectedResultsECSqlStatement.push(expectedResult);
+    }
+  }
+
+  private static handleColumnTableConcurrentQuery(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
+    currentTest.columnInfoConcurrentQuery = currentTest.columnInfoConcurrentQuery || [];
+    for (const row of token.rows) {
+      if (row.length < 1 || row.length !== token.header.length) {
+        this.logWarning(`Rows in a column table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
+        continue;
+      }
+      const column: ConcurrentQueryECDbColumnInfoProps = { className: row[0].text };
+      for (let i = 1; i < token.header.length; i++) {
+        const header = token.header[i].text.toLowerCase();
+        const cell = row[i].text;
+        switch (header) {
+          case "accessString":
+            column.accessString = cell;
+            break;
+          case "generated":
+            column.generated = cell.toLowerCase() == "true";
+            break;
+          case "index":
+            column.index = parseInt(cell);
+            break;
+          case "jsonName":
+            column.jsonName = cell;
+            break;
+          case "name":
+            column.name = cell;
+            break;
+          case "extendType":
+            column.extendType = cell;
+            break;
+          case "typeName":
+            column.typeName = cell;
+            break;
+          default:
+            this.logWarning(`Unknown column header ${header} found in file ${markdownFilePath}. Skipping.`);
+        }
+      }
+      currentTest.columnInfoConcurrentQuery.push(column);
+    }
+  }
+
+  private static handleExpectedResultsTableConcurrentQuery(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
+    currentTest.expectedResultsECSqlStatement = currentTest.expectedResultsECSqlStatement || [];
+    for (const row of token.rows) {
+      if (row.length < 1 || row.length !== token.header.length) {
+        this.logWarning(`Rows in a column table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
+        continue;
+      }
+
+      const expectedResult: { [key: string]: any } = {};
+      for (let i = 0; i < token.header.length; i++) {
+        const header = token.header[i].text;
+        const cell = row[i].text;
+        expectedResult[header] = cell;
+      }
+      currentTest.expectedResultsECSqlStatement.push(expectedResult);
     }
   }
 

@@ -6,17 +6,19 @@
 Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4;
 ```
 
-| AccessString | Type    |
-|--------------|---------|
-| Name         | String  |
-| Alias        | String  |
+## ECSqlStatement
 
-| Name              | Alias   |
-|-------------------|---------|
-| ECDbFileInfo      | ecdbf   |
-| ECDbMap           | ecdbmap |
-| ECDbMeta          | meta    |
-| ECDbSchemaPolicies| ecdbpol |
+| AccessString | Type   |
+| ------------ | ------ |
+| Name         | String |
+| Alias        | String |
+
+| Name               | Alias   |
+| ------------------ | ------- |
+| ECDbFileInfo       | ecdbf   |
+| ECDbMap            | ecdbmap |
+| ECDbMeta           | meta    |
+| ECDbSchemaPolicies | ecdbpol |
 
 # Select Test elements from sample dataset using Json
 
@@ -25,6 +27,8 @@ Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4
 ```sql
 SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005 ORDER BY e.DirectLong LIMIT 2
 ```
+
+## ECSqlStatement
 
 ```json
 {
@@ -36,7 +40,7 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
       "rootClassAlias": "e",
       "rootClassName": "AllProperties.TestElement",
       "rootClassTableSpace": "main",
-      "type":"Id",
+      "type": "Id",
       "isEnum": false,
       "isGeneratedProperty": false,
       "isSystemProperty": true,
@@ -49,7 +53,7 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
       "rootClassAlias": "e",
       "rootClassName": "AllProperties.TestElement",
       "rootClassTableSpace": "main",
-      "type":"String",
+      "type": "String",
       "isEnum": false,
       "isGeneratedProperty": false,
       "isSystemProperty": false,
@@ -68,6 +72,46 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
   {
     "ECClassId": "$(testElementClassId)",
     "DirectStr": "str7"
+  }
+]
+```
+
+## Concurrent Query
+
+```json
+{
+  "columns": [
+    {
+      "className": "",
+      "accessString": "ECClassId",
+      "generated": false,
+      "index": 0,
+      "jsonName": "className",
+      "name": "ECClassId",
+      "typeName": "long"
+    },
+    {
+      "className": "AllProperties:TestElement",
+      "accessString": "DirectStr",
+      "generated": false,
+      "index": 1,
+      "jsonName": "directStr",
+      "name": "DirectStr",
+      "typeName": "string"
+    }
+  ]
+}
+```
+
+```json
+[
+  {
+    "className": "AllProperties.TestElement",
+    "directStr": "str6"
+  },
+  {
+    "className": "AllProperties.TestElement",
+    "directStr": "str7"
   }
 ]
 ```
