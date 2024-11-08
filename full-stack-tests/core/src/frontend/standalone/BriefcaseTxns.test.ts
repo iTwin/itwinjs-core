@@ -147,7 +147,6 @@ describe("BriefcaseTxns", () => {
         ]);
 
         await rwConn.txns.reinstateTxn();
-        Logger.logTrace("Nick", "BeforeAllRedo");
         await expectRedo([
           "onElementsChanged", "onChangesApplied",
           "onElementsChanged", "onModelsChanged", "onChangesApplied",
