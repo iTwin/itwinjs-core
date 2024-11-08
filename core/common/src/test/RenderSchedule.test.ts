@@ -346,14 +346,25 @@ describe("RenderSchedule", () => {
           }
         }
 
+        let prevTransp = 1.0;
         const ovrs = new Overrides();
-        for (let p = 0; p < 200; p++) {
+        for (let p = 0; p <= 200; p++) {
           const t = computeTimePoint(p);
           const v = timeline.getVisibility(t);
           expect(v).approximately(p * endVisibility / 200, .00000001);
 
           timeline.addSymbologyOverrides(ovrs, t);
-          console.log(`p=${p} t=${ovrs.appearance?.transparency}`);
+          if (p === 0) {
+            expect(ovrs.invisible).to.be.true;
+            expect(ovrs.appearance).to.be.undefined;
+          } else {
+            expect(ovrs.invisible).to.be.undefined;
+            expect(ovrs.appearance?.transparency).not.to.be.undefined;
+            expect(ovrs.appearance?.transparency).lessThan(prevTransp);
+            prevTransp = ovrs.appearance!.transparency!;
+          }
+          
+          ovrs.reset();
         }
       }
       
