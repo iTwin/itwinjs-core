@@ -20,7 +20,9 @@ describe.only("Property Type conflict iterative resolutions", () => {
     expect(conflict.code).equals(ConflictCode.ConflictingPropertyName, "Unexpected conflict code");
 
     const schemaEdits = new SchemaEdits();
-    schemaEdits.properties.rename(sourceSchema.name, "DAMPER", "TYPE", "MERGED_TYPE");
+
+    const damperItem = await sourceSchema.getItem("DAMPER") as EntityClass;
+    schemaEdits.properties.rename(damperItem, "TYPE", "MERGED_TYPE");
 
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge(differences, schemaEdits);

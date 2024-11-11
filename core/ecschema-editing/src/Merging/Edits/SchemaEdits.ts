@@ -6,6 +6,7 @@
  * @module Merging
  */
 
+import type { ECClass, SchemaItem } from "@itwin/ecschema-metadata";
 import type { SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
 import { NameMapping } from "./NameMapping";
 import { applyRenamePropertyEdit, applyRenameSchemaItemEdit } from "./RenameEditHandler";
@@ -81,35 +82,35 @@ abstract class Editor {
 
 class PropertyEditor extends Editor {
 
-  public rename(schemaName: string, className: string, propertyName: string, newName: string) {
+  public rename(ecClass: ECClass, propertyName: string, newName: string) {
     this.add({
       type: SchemaEditType.RenameProperty,
-      key: `${schemaName}.${className}.${propertyName}`,
+      key: `${ecClass.fullName}.${propertyName}`,
       value: newName,
     });
   }
 
-  public skip(schemaName: string, className: string, propertyName: string) {
+  public skip(ecClass: ECClass, propertyName: string) {
     this.add({
       type: SchemaEditType.Skip,
-      key: `${schemaName}.${className}.${propertyName}`,
+      key: `${ecClass.fullName}.${propertyName}`,
     });
   }
 }
 
 class ItemEditor extends Editor {
-  public rename(schemaName: string, itemName: string, newName: string) {
+  public rename(schemaItem: SchemaItem, newName: string) {
     this.add({
       type: SchemaEditType.RenameSchemaItem,
-      key: `${schemaName}.${itemName}`,
+      key: schemaItem.key.fullName,
       value: newName,
     });
   }
 
-  public skip(schemaName: string, itemName: string) {
+  public skip(schemaItem: SchemaItem) {
     this.add({
       type: SchemaEditType.Skip,
-      key: `${schemaName}.${itemName}`,
+      key: schemaItem.fullName,
     });
   }
 }

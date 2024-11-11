@@ -27,8 +27,8 @@ describe.only("Failing Iterative Tests", () => {
     const merger = new SchemaMerger(targetSchema.context);
     return merger.merge(differenceResult, schemaEdits);
   }
-  
- /**
+
+  /**
   *  {
     changeType: "add",
     schemaType: "EntityClass",
@@ -46,11 +46,11 @@ describe.only("Failing Iterative Tests", () => {
         <ECCustomAttributes>
           <DynamicSchema xmlns="CoreCustomAttributes.01.00.03"/>
         </ECCustomAttributes>
-        <ECStructClass typeName="TestBaseClass" modifier="Sealed"> 
+        <ECStructClass typeName="TestBaseClass" modifier="Sealed">
         </ECStructClass>
       </ECSchema>`);
 
-    // First iteration 
+    // First iteration
     sourceSchema = await loadSchemaXml(`
       <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="CoreCustomAttributes" version="01.00.01" alias="CoreCA"/>
@@ -61,7 +61,7 @@ describe.only("Failing Iterative Tests", () => {
         </ECEntityClass>
       </ECSchema>`);
 
-    targetSchema = await combineIModelSchemas(async(result) => {
+    targetSchema = await combineIModelSchemas(async (result) => {
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
         expect(conflict).to.exist;
         expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
@@ -70,7 +70,8 @@ describe.only("Failing Iterative Tests", () => {
         return true;
       });
 
-      schemaEdits.items.rename(sourceSchema.name, "TestBaseClass", "Merged_BaseEntityClass");
+      const testBaseClassItem = await sourceSchema.getItem("TestBaseClass");
+      schemaEdits.items.rename(testBaseClassItem!, "Merged_BaseEntityClass");
     });
 
     await expect(targetSchema.getItem("TestBaseClass")).to.be.eventually.fulfilled.then((ecClass) => {
@@ -80,9 +81,9 @@ describe.only("Failing Iterative Tests", () => {
     await expect(targetSchema.getItem("Merged_BaseEntityClass")).to.be.eventually.fulfilled.then((ecClass) => {
       expect(ecClass).to.exist;
       expect(ecClass).to.have.a.property("schemaItemType", SchemaItemType.EntityClass);
-    });    
+    });
 
-    // Second iteration 
+    // Second iteration
     sourceSchema = await loadSchemaXml(`
       <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="CoreCustomAttributes" version="01.00.01" alias="CoreCA"/>
@@ -94,7 +95,7 @@ describe.only("Failing Iterative Tests", () => {
         </ECEntityClass>
         <ECEntityClass typeName="TestBaseClass" modifier="Sealed">
         </ECEntityClass>
-      </ECSchema>`);   
+      </ECSchema>`);
 
     targetSchema = await combineIModelSchemas(async (result) => {
       expect(result.conflicts).to.be.undefined;
@@ -105,7 +106,6 @@ describe.only("Failing Iterative Tests", () => {
       expect(ecClass).to.have.a.nested.property("baseClass.name", "Merged_BaseEntityClass");
     });
   });
-
 
   /**
    * {
@@ -126,27 +126,27 @@ describe.only("Failing Iterative Tests", () => {
         <ECCustomAttributes>
           <DynamicSchema xmlns="CoreCustomAttributes.01.00.03"/>
         </ECCustomAttributes>
-        <UnitSystem typeName="TestSystem"> 
+        <UnitSystem typeName="TestSystem">
         </UnitSystem>
         <ECEntityClass typeName="TestClass" modifier="Sealed">
         </ECEntityClass>
       </ECSchema>`);
 
-    // First iteration 
+    // First iteration
     sourceSchema = await loadSchemaXml(`
       <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="CoreCustomAttributes" version="01.00.01" alias="CoreCA"/>
         <ECCustomAttributes>
           <DynamicSchema xmlns="CoreCustomAttributes.01.00.03"/>
         </ECCustomAttributes>
-        <PropertyCategory typeName="TestSystem" priority="10000"> 
+        <PropertyCategory typeName="TestSystem" priority="10000">
         </PropertyCategory>
         <ECEntityClass typeName="TestClass" modifier="Sealed">
           <ECProperty propertyName="Height" typeName="double" category="TestSystem" />
         </ECEntityClass>
       </ECSchema>`);
 
-    targetSchema = await combineIModelSchemas(async(result) => {
+    targetSchema = await combineIModelSchemas(async (result) => {
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
         expect(conflict).to.exist;
         expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
@@ -155,7 +155,8 @@ describe.only("Failing Iterative Tests", () => {
         return true;
       });
 
-      schemaEdits.items.rename(sourceSchema.name, "TestSystem", "Merged_PropertyCategory");
+      const testSystemItem = await sourceSchema.getItem("TestSystem");
+      schemaEdits.items.rename(testSystemItem!, "Merged_PropertyCategory");
     });
 
     await expect(targetSchema.getItem("TestSystem")).to.be.eventually.fulfilled.then((ecClass) => {
@@ -165,21 +166,21 @@ describe.only("Failing Iterative Tests", () => {
     await expect(targetSchema.getItem("Merged_PropertyCategory")).to.be.eventually.fulfilled.then((ecClass) => {
       expect(ecClass).to.exist;
       expect(ecClass).to.have.a.property("schemaItemType", SchemaItemType.PropertyCategory);
-    });    
+    });
 
-    // Second iteration 
+    // Second iteration
     sourceSchema = await loadSchemaXml(`
       <ECSchema schemaName="TestSchema" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECSchemaReference name="CoreCustomAttributes" version="01.00.01" alias="CoreCA"/>
         <ECCustomAttributes>
           <DynamicSchema xmlns="CoreCustomAttributes.01.00.03"/>
         </ECCustomAttributes>
-        <PropertyCategory typeName="TestSystem" priority="10000"> 
+        <PropertyCategory typeName="TestSystem" priority="10000">
         </PropertyCategory>
         <ECEntityClass typeName="TestClass" modifier="Sealed">
           <ECProperty propertyName="Height" typeName="double" category="TestSystem" displayLabel="Test" />
         </ECEntityClass>
-      </ECSchema>`); 
+      </ECSchema>`);
 
     targetSchema = await combineIModelSchemas(async (result) => {
       expect(result.conflicts).to.be.undefined;

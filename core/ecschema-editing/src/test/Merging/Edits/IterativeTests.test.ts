@@ -1,4 +1,4 @@
-import { PrimitiveType, Schema } from "@itwin/ecschema-metadata";
+import { EntityClass, PrimitiveType, Schema } from "@itwin/ecschema-metadata";
 import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaDifferenceResult, SchemaEdits, SchemaMerger } from "../../../ecschema-editing";
 import { BisTestHelper } from "../../TestUtils/BisTestHelper";
 import { deserializeXml } from "../../TestUtils/DeserializationHelpers";
@@ -54,7 +54,8 @@ describe("Iterative Tests", () => {
       });
 
       // Solution to resolve the conflict is to rename the source property.
-      schemaEdits.properties.rename(sourceSchema.name, "TestEntity", "TestProperty", "TestProperty_double");
+      const propertyItem = await sourceSchema.getItem("TestEntity") as EntityClass;
+      schemaEdits.properties.rename(propertyItem,"TestProperty" , "TestProperty_double");
     });
 
     await expect(targetSchema.getItem("TestEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
@@ -149,7 +150,8 @@ describe("Iterative Tests", () => {
       });
 
       // Solution to resolve the conflict is to rename the source struct.
-      schemaEdits.items.rename(sourceSchema.name, "Category", "CategoryStruct");
+      const categoryItem = await sourceSchema.getItem("Category");
+      schemaEdits.items.rename(categoryItem!, "CategoryStruct");
     });
 
     await expect(targetSchema.getItem("TestEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
@@ -176,17 +178,16 @@ describe("Iterative Tests", () => {
           <ECProperty propertyName="Address" typeName="string" />
           <ECProperty propertyName="Height" typeName="double" />
         </ECEntityClass>
-        <!--
-        This is failing with a conflict of two identical PropertyCategories. Need to investigate why this is happening.
-        <PropertyCategory typeName="Category" displayLabel="My changed Property Category label" priority="100000" />
-        -->
+        <PropertyCategory typeName="Category" displayLabel="I changed the Property Category label again" priority="100000" />
+        <ECStructClass typeName="CategoryStruct" displayLabel="I changed the StructClass label as well :P" />
       </ECSchema>`);
 
     targetSchema = await combineIModelSchemas(async (result) => {
       expect(result.conflicts).to.be.undefined;
 
       // Rename AbstractBaseClass to CommonBaseClass
-      schemaEdits.items.rename(sourceSchema.name, "AbstractBaseClass", "CommonBaseClass");
+      const abstractBaseClassItem = await sourceSchema.getItem("AbstractBaseClass");
+      schemaEdits.items.rename(abstractBaseClassItem!, "CommonBaseClass");
     });
 
     await expect(targetSchema.getItem("Building")).to.be.eventually.fulfilled.then(async (ecClass) => {
@@ -195,6 +196,16 @@ describe("Iterative Tests", () => {
       await expect(ecClass.getProperty("Address", true)).to.be.eventually.not.undefined;
       await expect(ecClass.getProperty("Height", true)).to.be.eventually.not.undefined;
       await expect(ecClass.getProperty("Tag", true)).to.be.eventually.not.undefined;
+    });
+
+    await expect(targetSchema.getItem("Category")).to.be.eventually.fulfilled.then(async (category) => {
+      expect(category).to.exist;
+      expect(category).to.have.a.property("label", "I changed the Property Category label again");
+    });
+
+    await expect(targetSchema.getItem("CategoryStruct")).to.be.eventually.fulfilled.then(async (categoryStruct) => {
+      expect(categoryStruct).to.exist;
+      expect(categoryStruct).to.have.a.property("label", "I changed the StructClass label as well :P");
     });
 
     // Fifth Iteration: Add a mixin to the schema and apply it to the Building schema. Rename the mixin to ensure references
@@ -228,7 +239,8 @@ describe("Iterative Tests", () => {
       expect(result.conflicts).to.be.undefined;
 
       // Rename AbstractBaseClass to CommonBaseClass
-      schemaEdits.items.rename(sourceSchema.name, "AuxBuilding", "AdditionalBuilding");
+      const auxBuildingItem = await sourceSchema.getItem("AuxBuilding");
+      schemaEdits.items.rename(auxBuildingItem!, "AdditionalBuilding");
     });
 
     await expect(targetSchema.getItem("Building")).to.be.eventually.fulfilled.then(async (ecClass) => {

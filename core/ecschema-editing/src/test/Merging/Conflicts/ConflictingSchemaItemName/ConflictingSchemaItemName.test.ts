@@ -20,7 +20,8 @@ describe.only("Schema Item Name conflict iterative resolutions", () => {
     expect(conflict.code).equals(ConflictCode.ConflictingItemName, "Unexpected conflict code");
 
     const schemaEdits = new SchemaEdits();
-    schemaEdits.items.rename(sourceSchema.name, "PIPE", "MERGED_PIPE");
+    const pipeItem = await sourceSchema.getItem("PIPE");
+    schemaEdits.items.rename(pipeItem!, "MERGED_PIPE");
 
     const merger = new SchemaMerger(targetSchema.context);
     const mergedSchema = await merger.merge(differences, schemaEdits);

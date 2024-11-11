@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import schemas from "./Data/index";
-import { PrimitiveType, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
+import { EntityClass, PrimitiveType, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, SchemaEdits, SchemaMerger } from "../../../../ecschema-editing";
 import { expect } from "chai";
 import { BisTestHelper } from "../../../TestUtils/BisTestHelper";
@@ -26,7 +26,8 @@ describe("Primitive Type conflict iterative resolutions", () => {
     });
 
     const schemaEdits = new SchemaEdits();
-    schemaEdits.properties.rename(sourceSchema.name, "ARCWALL", "OVERAL_HEIGHT", "MERGED_OVERAL_HEIGHT");
+    const arcWallItem = await targetSchema.getItem("ARCWALL") as EntityClass;
+    schemaEdits.properties.rename(arcWallItem, "OVERAL_HEIGHT", "MERGED_OVERAL_HEIGHT");
 
     let merger = new SchemaMerger(targetSchema.context);
     let mergedSchema = await merger.merge(result, schemaEdits);
@@ -50,7 +51,7 @@ describe("Primitive Type conflict iterative resolutions", () => {
 
     merger = new SchemaMerger(mergedSchema.context);
     mergedSchema = await merger.merge(result, schemaEdits);
-    
+
     await expect(mergedSchema.getItem("ARCWALL")).to.be.eventually.fulfilled.then(async (ecClass) => {
       expect(ecClass).to.exist;
       await expect(ecClass.getProperty("MERGED_OVERAL_HEIGHT")).to.be.eventually.fulfilled.then((property) => {
@@ -59,9 +60,9 @@ describe("Primitive Type conflict iterative resolutions", () => {
         expect(property).has.property("label").equals("Overall Height");
       });
     });
-    
+
     // Third iteration: A PropertyCategory is added with the name of existing UnitSystem. Source item
-    // will be renamed and used as category for merged property. 
+    // will be renamed and used as category for merged property.
     sourceSchema = await Schema.fromJson(schemas[3], await BisTestHelper.getNewContext());
     result = await getSchemaDifferences(mergedSchema, sourceSchema, schemaEdits.toJSON());
     expect(result.differences).has.lengthOf(5, "Unexpected length of differences");
@@ -73,7 +74,8 @@ describe("Primitive Type conflict iterative resolutions", () => {
       return true;
     });
 
-    schemaEdits.items.rename(sourceSchema.name, "CONSTRAINTS", "MERGED_CONSTRAINTS");
+    const constraintItem = await sourceSchema.getItem("CONSTRAINTS");
+    schemaEdits.items.rename(constraintItem!, "MERGED_CONSTRAINTS");
     merger = new SchemaMerger(mergedSchema.context);
     mergedSchema = await merger.merge(result, schemaEdits);
 
@@ -116,7 +118,8 @@ describe("Primitive Type conflict iterative resolutions", () => {
       return true;
     });
 
-    schemaEdits.items.rename(sourceSchema.name, "MEASUREINFO", "MERGED_MEASUREINFO");
+    const measuereItem = await sourceSchema.getItem("MEASUREINFO");
+    schemaEdits.items.rename(measuereItem!, "MERGED_MEASUREINFO");
     merger = new SchemaMerger(mergedSchema.context);
     mergedSchema = await merger.merge(result, schemaEdits);
 
@@ -144,7 +147,7 @@ describe("Primitive Type conflict iterative resolutions", () => {
         expect(property).to.have.a.property("customAttributes").is.not.undefined;
         expect(property).to.have.a.property("customAttributes").satisfies((customAttributes: any) => {
           return customAttributes.has("ConflictingPrimitiveType.MERGED_MEASUREINFO");
-        });        
+        });
       });
     });
   });
