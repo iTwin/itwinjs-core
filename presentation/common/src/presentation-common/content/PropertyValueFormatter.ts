@@ -120,21 +120,26 @@ export class ContentPropertyValueFormatter {
         }
       : async (rawValue: number) => formatDouble(rawValue);
 
-    return this.formatValue(field.type, value, { doubleFormatter });
+    return this.formatValue(field.type, value, field, { doubleFormatter });
   }
 
-  private async formatValue(type: TypeDescription, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string> }): Promise<DisplayValue> {
+  private async formatValue(
+    type: TypeDescription,
+    value: Value,
+    field: Field,
+    ctx?: { doubleFormatter: (raw: number) => Promise<string> },
+  ): Promise<DisplayValue> {
     switch (type.valueFormat) {
       case PropertyValueFormat.Primitive:
-        return this.formatPrimitiveValue(type, value, ctx);
+        return this.formatPrimitiveValue(type, value, field, ctx);
       case PropertyValueFormat.Array:
-        return this.formatArrayValue(type, value);
+        return this.formatArrayValue(type, value, field);
       case PropertyValueFormat.Struct:
-        return this.formatStructValue(type, value);
+        return this.formatStructValue(type, value, field);
     }
   }
 
-  private async formatPrimitiveValue(type: PrimitiveTypeDescription, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string> }) {
+  private async formatPrimitiveValue(type: PrimitiveTypeDescription, value: Value, field: Field, ctx?: { doubleFormatter: (raw: number) => Promise<string> }) {
     if (value === undefined) {
       return "";
     }
@@ -168,28 +173,31 @@ export class ContentPropertyValueFormatter {
       return value.label.displayValue;
     }
 
+    if (type.typeName === "enum" && field.isPropertiesField()) {
+      return field.properties[0].property.enumerationInfo?.choices.find(({ value: enumValue }) => enumValue === value)?.label;
+    }
     // eslint-disable-next-line @typescript-eslint/no-base-to-string
     return value.toString();
   }
 
-  private async formatStructValue(type: StructTypeDescription, value: Value) {
+  private async formatStructValue(type: StructTypeDescription, value: Value, field: Field) {
     if (!Value.isMap(value)) {
       return {};
     }
 
     const formattedMember: DisplayValuesMap = {};
     for (const member of type.members) {
-      formattedMember[member.name] = await this.formatValue(member.type, value[member.name]);
+      formattedMember[member.name] = await this.formatValue(member.type, value[member.name], field);
     }
     return formattedMember;
   }
 
-  private async formatArrayValue(type: ArrayTypeDescription, value: Value) {
+  private async formatArrayValue(type: ArrayTypeDescription, value: Value, field: Field) {
     if (!Value.isArray(value)) {
       return [];
     }
 
-    return Promise.all(value.map(async (arrayVal) => this.formatValue(type.memberType, arrayVal)));
+    return Promise.all(value.map(async (arrayVal) => this.formatValue(type.memberType, arrayVal, field)));
   }
 }
 
