@@ -68,9 +68,12 @@ export interface ElectronHostOpts extends NativeHostOpts {
 
 /** @beta */
 export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptions {
+  /** Name used to construct key for saving window size, position and maximize status to the settings store */
   storeWindowName?: string;
   /** The style of window title bar. Default is `default`. */
   titleBarStyle?: ("default" | "hidden" | "hiddenInset" | "customButtonsOnHover");
+  /** Web page settings */
+  webPreferences?: Omit<WebPreferences, "preload" | "experimentalFeatures" | "nodeIntegration" | "contextIsolation" | "sandbox" | "nodeIntegrationInWorker" | "nodeIntegrationInSubFrames">;
 }
 
 /** the size and position of a window as stored in the settings file.
