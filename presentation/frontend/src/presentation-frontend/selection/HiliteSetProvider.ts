@@ -12,8 +12,8 @@ import { Id64String } from "@itwin/core-bentley";
 import { IModelConnection } from "@itwin/core-frontend";
 import { ContentFlags, DEFAULT_KEYS_BATCH_SIZE, DefaultContentDisplayTypes, DescriptorOverrides, Item, Key, KeySet, Ruleset } from "@itwin/presentation-common";
 import { Presentation } from "../Presentation";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "./SelectionManager";
 import hiliteRuleset from "./HiliteRules.json";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 
 const HILITE_RULESET = hiliteRuleset as Ruleset;
 
