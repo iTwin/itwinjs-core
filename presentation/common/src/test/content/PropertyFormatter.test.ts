@@ -278,6 +278,12 @@ describe("ContentPropertyValueFormatter", () => {
       expect(await formatter.formatPropertyValue(field, value)).to.be.eq("Test Target Instance");
     });
 
+    it("'enum' property value", async () => {
+      const field = createField({ valueFormat: PropertyValueFormat.Primitive, typeName: "enum" });
+      field.properties = [{ property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 0, label: "formatted value" }], isStrict: false } }) }];
+      expect(await formatter.formatPropertyValue(field, 0)).to.be.eq("formatted value");
+    });
+
     it("KOQ property value", async () => {
       const field = createField({ valueFormat: PropertyValueFormat.Primitive, typeName: "double" });
       field.properties = [{ property: createTestPropertyInfo({ kindOfQuantity: { label: "KOQ Label", name: "KOQProp", persistenceUnit: "Unit" } }) }];
