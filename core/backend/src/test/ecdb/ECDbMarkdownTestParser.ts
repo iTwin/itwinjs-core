@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { marked, Tokens } from "marked";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ECSqlRowArg } from "../../ECSqlStatement";
-import { QueryLimit, QueryOptions, QueryOptionsBuilder, QueryQuota, QueryRowFormat } from "@itwin/core-common";
+import { QueryLimit, QueryOptions, QueryQuota, QueryRowFormat } from "@itwin/core-common";
 
 export interface ECDbTestProps {
   title: string;
@@ -24,13 +24,13 @@ export interface ECDbTestProps {
 export interface ConcurrentQueryProps{
   rowOptions?: ConcurrentQueryRowOptions;
   columnInfo?: ConcurrentQueryECDbColumnInfoProps[];
-  expectedResults?: { [key: string]: any }[];
+  expectedResults?: { [key: string]: any }[] | any[];
 }
 
 export interface ECSqlStatementProps{
   rowOptions?: ECSqlStatementRowOptions;
   columnInfo?: ECSqlStatementECDbColumnInfoProps[];
-  expectedResults?: { [key: string]: any }[];
+  expectedResults?: { [key: string]: any }[] | any[];
 }
 
 export interface ECSqlStatementRowOptions{
@@ -73,12 +73,12 @@ export interface ECSqlStatementECDbColumnInfoProps {
 }
 
 export interface ConcurrentQueryECDbColumnInfoProps {
-  className: string;
+  name: string;
+  className?: string;
   accessString?: string;
   generated?: boolean;
   index?: number;
   jsonName?: string;
-  name?: string;
   extendType?: string;
   typeName?: string;
 }
@@ -154,12 +154,12 @@ function isConcurrentQueryECDbColumnInfoProps(obj: any): obj is ConcurrentQueryE
   const numberOfKeys = typeof obj === "object" ? Object.keys(obj).length : 0;
   return typeof obj === "object" &&
     (numberOfKeys >= 1 && numberOfKeys <= 8) &&
-    typeof obj.className === "string" &&
+    typeof obj.name === "string" &&
     (obj.accessString === undefined || typeof obj.accessString === "string") &&
     (obj.generated === undefined || typeof obj.generated === "boolean") &&
     (obj.index === undefined || typeof obj.index === "number") &&
     (obj.jsonName === undefined || typeof obj.jsonName === "string") &&
-    (obj.name === undefined || typeof obj.name === "string") &&
+    (obj.className === undefined || typeof obj.className === "string") &&
     (obj.extendType === undefined || typeof obj.extendType === "string") &&
     (obj.typeName === undefined || typeof obj.typeName === "string");
 }
@@ -413,16 +413,20 @@ export class ECDbMarkdownTestParser {
   private static handleTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
     if(currentTest.queryType && currentTest.queryType.at(-1) == TypeOfQuery.ECSqlStatement)
     {
-      if (token.header.length > 0 && token.header[0]?.text?.toLowerCase() === "accessstring") {
+      if (token.header.length > 0 && token.header[0].text.toLowerCase() === "accessstring") {
         this.handleColumnTableECSqlStatement(token, currentTest, markdownFilePath);
+      } else if(token.header.length > 0 && token.header[0].text === ""){
+        this.handleExpectedResultsTableECsqlStatementForECSqlPropertyIndexesOption(token, currentTest, markdownFilePath);
       } else {
         this.handleExpectedResultsTableECsqlStatement(token, currentTest, markdownFilePath);
       }
     }
     else if(currentTest.queryType && currentTest.queryType.at(-1) == TypeOfQuery.ConcurrentQuery)
     {
-      if (token.header.length > 0 && token.header[0]?.text?.toLowerCase() === "classname") {
+      if (token.header.length > 0 && token.header[0].text.toLowerCase() === "name") {
         this.handleColumnTableConcurrentQuery(token, currentTest, markdownFilePath);
+      } else if(token.header.length > 0 && token.header[0].text === ""){
+        this.handleExpectedResultsTableConcurrentQueryForECSqlPropertyIndexesOption(token, currentTest, markdownFilePath);
       } else {
         this.handleExpectedResultsTableConcurrentQuery(token, currentTest, markdownFilePath);
       }
@@ -487,7 +491,7 @@ export class ECDbMarkdownTestParser {
     currentTest.ecsqlStatementProps!.expectedResults = currentTest.ecsqlStatementProps!.expectedResults || [];  // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
-        this.logWarning(`Rows in a column table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
+        this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
         continue;
       }
 
@@ -501,19 +505,36 @@ export class ECDbMarkdownTestParser {
     }
   }
 
+  private static handleExpectedResultsTableECsqlStatementForECSqlPropertyIndexesOption(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
+    currentTest.ecsqlStatementProps!.expectedResults = currentTest.ecsqlStatementProps!.expectedResults || [];  // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
+    for (const row of token.rows) {
+      if (row.length < 1 || row.length !== token.header.length) {
+        this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
+        continue;
+      }
+
+      const expectedResult: any[] = [];
+      for (let i = 0; i < token.header.length; i++) {
+        const cell = row[i].text;
+        expectedResult.push(cell);
+      }
+      currentTest.ecsqlStatementProps!.expectedResults.push(expectedResult); // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
+    }
+  }
+
   private static handleColumnTableConcurrentQuery(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
     currentTest.concurrentQueryProps!.columnInfo = currentTest.concurrentQueryProps!.columnInfo || [];  // We are sure that concurrentQueryProps will not be undefined because if queryType == TypeOfQuery.ConcurrentQuery then concurrentQueryProps will not be undefined
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
-        this.logWarning(`Rows in a column table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
+        this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
         continue;
       }
-      const column: ConcurrentQueryECDbColumnInfoProps = { className: row[0].text };
+      const column: ConcurrentQueryECDbColumnInfoProps = { name: row[0].text };
       for (let i = 1; i < token.header.length; i++) {
         const header = token.header[i].text.toLowerCase();
         const cell = row[i].text;
         switch (header) {
-          case "accessString":
+          case "accessstring":
             column.accessString = cell;
             break;
           case "generated":
@@ -522,16 +543,16 @@ export class ECDbMarkdownTestParser {
           case "index":
             column.index = parseInt(cell);
             break;
-          case "jsonName":
+          case "jsonname":
             column.jsonName = cell;
             break;
-          case "name":
-            column.name = cell;
+          case "classname":
+            column.className = cell;
             break;
-          case "extendType":
+          case "extendtype":
             column.extendType = cell;
             break;
-          case "typeName":
+          case "typename":
             column.typeName = cell;
             break;
           default:
@@ -539,6 +560,23 @@ export class ECDbMarkdownTestParser {
         }
       }
       currentTest.concurrentQueryProps!.columnInfo.push(column);   // We are sure that concurrentQueryProps will not be undefined because if queryType == TypeOfQuery.ConcurrentQuery then concurrentQueryProps will not be undefined
+    }
+  }
+
+  private static handleExpectedResultsTableConcurrentQueryForECSqlPropertyIndexesOption(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
+    currentTest.concurrentQueryProps!.expectedResults = currentTest.concurrentQueryProps!.expectedResults || [];  // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
+    for (const row of token.rows) {
+      if (row.length < 1 || row.length !== token.header.length) {
+        this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
+        continue;
+      }
+
+      const expectedResult: any[] = [];
+      for (let i = 0; i < token.header.length; i++) {
+        const cell = row[i].text;
+        expectedResult.push(cell);
+      }
+      currentTest.concurrentQueryProps!.expectedResults.push(expectedResult); // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
     }
   }
 

@@ -1,6 +1,6 @@
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](./LICENSE.md) for license terms and full copyright notice.
 
-# Select ECDb schemas from ECDbMeta using tables
+# Select ECDb schemas from ECDbMeta using tables but using ECSqlPropertyIndexes
 
 - dataset: AllProperties.bim
 
@@ -13,7 +13,7 @@ Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4
 ```json
 {
   "rowOptions": {
-    "rowFormat": "useECsqlPropertyNames"
+    "rowFormat": "useecsqlpropertyindexes"
   }
 }
 ```
@@ -23,14 +23,14 @@ Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4
 | Name         | String |
 | Alias        | String |
 
-| Name               | Alias   |
+|                    |         |
 | ------------------ | ------- |
 | ECDbFileInfo       | ecdbf   |
 | ECDbMap            | ecdbmap |
 | ECDbMeta           | meta    |
 | ECDbSchemaPolicies | ecdbpol |
 
-# Select Test elements from sample dataset using Json
+# Select Test elements from sample dataset using Json using ECSqlPropertyIndexes row option and also using tables to validate column metadata
 
 - dataset: AllProperties.bim
 
@@ -43,7 +43,7 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
 ```json
 {
   "rowOptions": {
-    "rowFormat": "useECsqlPropertyNames"
+    "rowFormat": "useecsqlpropertyindexes"
   }
 }
 ```
@@ -83,14 +83,8 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
 
 ```json
 [
-  {
-    "ECClassId": "$(testElementClassId)",
-    "DirectStr": "str6"
-  },
-  {
-    "ECClassId": "$(testElementClassId)",
-    "DirectStr": "str7"
-  }
+  ["$(testElementClassId)", "str6"],
+  ["$(testElementClassId)", "str7"]
 ]
 ```
 
@@ -99,45 +93,17 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
 ```json
 {
   "rowOptions": {
-    "rowFormat": "UseJSPropertyNames"
+    "rowFormat": "useecsqlpropertyindexes"
   }
 }
 ```
 
-```json
-{
-  "columns": [
-    {
-      "className": "",
-      "accessString": "ECClassId",
-      "generated": false,
-      "index": 0,
-      "jsonName": "className",
-      "name": "ECClassId",
-      "typeName": "long"
-    },
-    {
-      "className": "AllProperties:TestElement",
-      "accessString": "DirectStr",
-      "generated": false,
-      "index": 1,
-      "jsonName": "directStr",
-      "name": "DirectStr",
-      "typeName": "string"
-    }
-  ]
-}
-```
+| Name      | ClassName                 | AccessString | JsonName  | TypeName | Generated | Index |
+| --------- | ------------------------- | ------------ | --------- | -------- | --------- | ----- |
+| ECClassId |                           | ECClassId    | className | long     | false     | 0     |
+| DirectStr | AllProperties:TestElement | DirectStr    | directStr | string   | false     | 1     |
 
-```json
-[
-  {
-    "className": "AllProperties.TestElement",
-    "directStr": "str6"
-  },
-  {
-    "className": "AllProperties.TestElement",
-    "directStr": "str7"
-  }
-]
-```
+|       |      |
+| ----- | ---- |
+| 0x152 | str6 |
+| 0x152 | str7 |

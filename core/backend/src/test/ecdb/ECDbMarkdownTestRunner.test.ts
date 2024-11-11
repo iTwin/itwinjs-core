@@ -230,7 +230,7 @@ describe.only("Markdown based ECDb test runner", async () => {
                 const colInfo = colMetaData[i];
                 const expectedColInfo = test.concurrentQueryProps?.columnInfo[i];
                 // cannot directly compare against colInfo because it has methods instead of getters
-                assert.strictEqual(colInfo.className, expectedColInfo.className, `Expected class name ${expectedColInfo.className} but got ${colInfo.className} for column index ${i}`);
+                assert.strictEqual(colInfo.name, expectedColInfo.name, `Expected name ${expectedColInfo.name} but got ${colInfo.name} for column index ${i}`);
                 if (expectedColInfo.generated !== undefined)
                   assert.strictEqual(colInfo.generated, expectedColInfo.generated, `Expected generated property ${expectedColInfo.generated} but got ${colInfo.generated} for column index ${i}`);
                 if (expectedColInfo.accessString !== undefined)
@@ -239,8 +239,8 @@ describe.only("Markdown based ECDb test runner", async () => {
                   assert.strictEqual(colInfo.index, expectedColInfo.index, `Expected index ${expectedColInfo.index} but got ${colInfo.index} for column index ${i}`);
                 if (expectedColInfo.jsonName !== undefined)
                   assert.strictEqual(colInfo.jsonName, expectedColInfo.jsonName, `Expected json name ${expectedColInfo.jsonName} but got ${colInfo.jsonName} for column index ${i}`);
-                if (expectedColInfo.name !== undefined)
-                  assert.strictEqual(colInfo.name, expectedColInfo.name, `Expected name ${expectedColInfo.name} but got ${colInfo.name} for column index ${i}`);
+                if (expectedColInfo.className !== undefined)
+                  assert.strictEqual(colInfo.className, expectedColInfo.className, `Expected class name ${expectedColInfo.className} but got ${colInfo.className} for column index ${i}`);
                 if (expectedColInfo.extendType !== undefined)
                   assert.strictEqual(colInfo.extendType, expectedColInfo.extendType, `Expected extended type ${expectedColInfo.extendType} but got ${colInfo.extendType} for column index ${i}`);
                 if (expectedColInfo.typeName !== undefined)

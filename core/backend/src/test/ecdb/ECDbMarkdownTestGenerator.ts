@@ -10,10 +10,46 @@ import { _nativeDb, IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "..
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { Code, ColorDef, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
-import { Arc3d, IModelJson, Point3d } from "@itwin/core-geometry";
+import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 
-interface TestElementProps extends PhysicalElementProps {
+
+interface IPrimitiveBase {
+  i?: number;
+  l?: number;
+  d?: number;
+  b?: boolean;
+  dt?: string;
   s?: string;
+  bin?: Uint8Array;
+  p2d?: Point2d;
+  p3d?: Point3d;
+  g?: GeometryStreamProps;
+}
+
+interface IPrimitive extends IPrimitiveBase {
+  st?: ComplexStruct;
+}
+
+interface IPrimitiveArrayBase {
+  array_i?: number[];
+  array_l?: number[];
+  array_d?: number[];
+  array_b?: boolean[];
+  array_dt?: string[];
+  array_s?: string[];
+  array_bin?: Uint8Array[];
+  array_p2d?: Point2d[];
+  array_p3d?: Point3d[];
+  array_g?: GeometryStreamProps[];
+}
+
+interface IPrimitiveArray extends IPrimitiveArrayBase {
+  array_st?: ComplexStruct[];
+}
+
+interface ComplexStruct extends IPrimitiveArrayBase, IPrimitiveBase { }
+
+interface TestElementProps extends PhysicalElementProps, IPrimitive, IPrimitiveArray {
   directStr?: string;
   directLong?: number;
   directDouble?: number;
@@ -38,6 +74,14 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
     category: catId,
     code: Code.createEmpty(),
     geom: geometryStream,
+    i: 100 + index,
+    l: 1000 + index,
+    d: 0.1 + index,
+    s: `str${index}`,
+    dt: index%2 === 0? "2017-01-01T00:00:00.000" : "2010-01-01T11:11:11.000",
+    bin: index%2 === 0 ? new Uint8Array([1, 2, 3]) : new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22]),
+    p2d: index%2 === 0 ? new Point2d(1.034, 2.034) : new Point2d(1111.11, 2222.22),
+    p3d: index%2 === 0 ? new Point3d(-1.0, 2.3, 3.0001) : new Point3d(-111.11, -222.22, -333.33)
   };
 
   elementProps.directStr = `str${index}`;
