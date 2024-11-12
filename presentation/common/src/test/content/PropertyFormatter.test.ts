@@ -342,14 +342,42 @@ describe("ContentPropertyValueFormatter", () => {
     });
 
     it("value with different type members", async () => {
-      const field = createField({
-        valueFormat: PropertyValueFormat.Struct,
-        typeName: "struct",
-        members: [
-          { name: "doubleProp", label: "Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } },
-          { name: "intProp", label: "Int Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "int" } },
-          { name: "pointProp", label: "Point Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "point2d" } },
+      const structPropField = createTestStructPropertiesContentField({
+        name: "structPropFieldName",
+        properties: [
+          {
+            property: createTestPropertyInfo({ name: "structProperty" }),
+          },
         ],
+        memberFields: [
+          createTestPropertiesContentField({
+            name: "doubleProp",
+            label: "Double Property",
+            properties: [{ property: createTestPropertyInfo() }],
+            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+          }),
+          createTestPropertiesContentField({
+            name: "intProp",
+            label: "Int Property",
+            properties: [{ property: createTestPropertyInfo() }],
+            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "int" },
+          }),
+          createTestPropertiesContentField({
+            name: "pointProp",
+            label: "Point Property",
+            properties: [{ property: createTestPropertyInfo() }],
+            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "point2d" },
+          }),
+        ],
+        type: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: "struct",
+          members: [
+            { name: "doubleProp", label: "Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } },
+            { name: "intProp", label: "Int Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "int" } },
+            { name: "pointProp", label: "Point Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "point2d" } },
+          ],
+        },
       });
 
       const structValue = {
@@ -359,7 +387,7 @@ describe("ContentPropertyValueFormatter", () => {
         pointProp: { x: 1.234, y: 4.567 },
       };
 
-      const formattedValue = (await formatter.formatPropertyValue(field, structValue)) as DisplayValuesMap;
+      const formattedValue = (await formatter.formatPropertyValue(structPropField, structValue)) as DisplayValuesMap;
       expect(Object.keys(formattedValue)).to.have.lengthOf(3);
       expect(formattedValue.doubleProp).to.be.eq("1.50");
       expect(formattedValue.intProp).to.be.eq("1");
@@ -367,14 +395,42 @@ describe("ContentPropertyValueFormatter", () => {
     });
 
     it("value with struct members", async () => {
-      const field = createField({
-        valueFormat: PropertyValueFormat.Struct,
-        typeName: "struct",
-        members: [
-          { name: "doubleProp", label: "Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } },
+      const structPropField = createTestStructPropertiesContentField({
+        name: "structPropFieldName",
+        properties: [
           {
+            property: createTestPropertyInfo({ name: "structProperty" }),
+          },
+        ],
+        memberFields: [
+          createTestPropertiesContentField({
+            name: "doubleProp",
+            label: "Double Property",
+            properties: [{ property: createTestPropertyInfo() }],
+            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+          }),
+          createTestStructPropertiesContentField({
             name: "structProp",
             label: "Struct Property",
+            properties: [
+              {
+                property: createTestPropertyInfo({ name: "structProperty" }),
+              },
+            ],
+            memberFields: [
+              createTestPropertiesContentField({
+                name: "nestedDoubleProp",
+                label: "Nested Double Property",
+                properties: [{ property: createTestPropertyInfo() }],
+                type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+              }),
+              createTestPropertiesContentField({
+                name: "nestedIntProp",
+                label: "Nested Int Property",
+                properties: [{ property: createTestPropertyInfo() }],
+                type: { valueFormat: PropertyValueFormat.Primitive, typeName: "int" },
+              }),
+            ],
             type: {
               valueFormat: PropertyValueFormat.Struct,
               typeName: "struct",
@@ -383,8 +439,27 @@ describe("ContentPropertyValueFormatter", () => {
                 { name: "nestedIntProp", label: "Nested Int Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "int" } },
               ],
             },
-          },
+          }),
         ],
+        type: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: "struct",
+          members: [
+            { name: "doubleProp", label: "Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } },
+            {
+              name: "structProp",
+              label: "Struct Property",
+              type: {
+                valueFormat: PropertyValueFormat.Struct,
+                typeName: "struct",
+                members: [
+                  { name: "nestedDoubleProp", label: "Nested Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } },
+                  { name: "nestedIntProp", label: "Nested Int Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "int" } },
+                ],
+              },
+            },
+          ],
+        },
       });
 
       const structValue = {
@@ -395,7 +470,7 @@ describe("ContentPropertyValueFormatter", () => {
         },
       };
 
-      const formattedValue = (await formatter.formatPropertyValue(field, structValue)) as DisplayValuesMap;
+      const formattedValue = (await formatter.formatPropertyValue(structPropField, structValue)) as DisplayValuesMap;
       expect(Object.keys(formattedValue)).to.have.lengthOf(2);
       expect(formattedValue.doubleProp).to.be.eq("1.50");
       const structProp = formattedValue.structProp as DisplayValuesMap;
@@ -427,28 +502,74 @@ describe("ContentPropertyValueFormatter", () => {
     });
 
     it("value with primitive items", async () => {
-      const field = createField({
-        valueFormat: PropertyValueFormat.Array,
-        typeName: "array",
-        memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+      const arrayPropField = createTestArrayPropertiesContentField({
+        name: "arrayPropFieldName",
+        properties: [
+          {
+            property: createTestPropertyInfo({ name: "arrayProperty" }),
+          },
+        ],
+        itemsField: createTestPropertiesContentField({
+          properties: [{ property: createTestPropertyInfo() }],
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+        }),
+        type: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: "array",
+          memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+        },
       });
-      const formattedValue = (await formatter.formatPropertyValue(field, [1.234, 5.678])) as DisplayValuesArray;
+
+      const formattedValue = (await formatter.formatPropertyValue(arrayPropField, [1.234, 5.678])) as DisplayValuesArray;
       expect(formattedValue).to.have.lengthOf(2);
       expect(formattedValue[0]).to.be.eq("1.23");
       expect(formattedValue[1]).to.be.eq("5.68");
     });
 
     it("value with struct items", async () => {
-      const field = createField({
-        valueFormat: PropertyValueFormat.Array,
-        typeName: "array",
-        memberType: {
-          valueFormat: PropertyValueFormat.Struct,
-          typeName: "struct",
-          members: [
-            { name: "doubleProp", label: "Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } },
-            { name: "pointProp", label: "Point Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "point2d" } },
+      const arrayPropField = createTestArrayPropertiesContentField({
+        name: "arrayPropFieldName",
+        properties: [
+          {
+            property: createTestPropertyInfo({ name: "arrayProperty" }),
+          },
+        ],
+        itemsField: createTestStructPropertiesContentField({
+          properties: [{ property: createTestPropertyInfo() }],
+          memberFields: [
+            createTestPropertiesContentField({
+              name: "doubleProp",
+              label: "Double Property",
+              properties: [{ property: createTestPropertyInfo() }],
+              type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+            }),
+            createTestPropertiesContentField({
+              name: "pointProp",
+              label: "Point Property",
+              properties: [{ property: createTestPropertyInfo() }],
+              type: { valueFormat: PropertyValueFormat.Primitive, typeName: "point2d" },
+            }),
           ],
+          type: {
+            valueFormat: PropertyValueFormat.Struct,
+            typeName: "struct",
+            members: [
+              { name: "doubleProp", label: "Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } },
+              { name: "pointProp", label: "Point Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "point2d" } },
+            ],
+          },
+        }),
+        type: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: "array",
+          memberType: {
+            valueFormat: PropertyValueFormat.Struct,
+            typeName: "struct",
+            members: [
+              { name: "doubleProp", label: "Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } },
+              { name: "pointProp", label: "Point Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "point2d" } },
+            ],
+          },
         },
       });
 
@@ -463,7 +584,7 @@ describe("ContentPropertyValueFormatter", () => {
         },
       ];
 
-      const formattedValue = (await formatter.formatPropertyValue(field, value)) as DisplayValuesArray;
+      const formattedValue = (await formatter.formatPropertyValue(arrayPropField, value)) as DisplayValuesArray;
       expect(formattedValue).to.have.lengthOf(2);
       const item1 = formattedValue[0] as DisplayValuesMap;
       expect(item1.doubleProp).to.be.eq("1.23");

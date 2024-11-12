@@ -15,7 +15,7 @@ import { Content } from "./Content";
 import { Descriptor } from "./Descriptor";
 import { ArrayPropertiesField, Field, PropertiesField, StructPropertiesField } from "./Fields";
 import { Item } from "./Item";
-import { ArrayTypeDescription, PrimitiveTypeDescription, PropertyValueFormat, StructTypeDescription, TypeDescription } from "./TypeDescription";
+import { ArrayTypeDescription, PropertyValueFormat, StructTypeDescription } from "./TypeDescription";
 import { DisplayValue, DisplayValuesMap, NestedContentValue, Value, ValuesArray, ValuesMap } from "./Value";
 
 /** @internal */
@@ -120,60 +120,55 @@ export class ContentPropertyValueFormatter {
         }
       : async (rawValue: number) => formatDouble(rawValue);
 
-    return this.formatValue(field.type, value, field, { doubleFormatter });
+    return this.formatValue(field, value, { doubleFormatter });
   }
 
-  private async formatValue(
-    type: TypeDescription,
-    value: Value,
-    field: Field,
-    ctx?: { doubleFormatter: (raw: number) => Promise<string> },
-  ): Promise<DisplayValue> {
-    switch (type.valueFormat) {
+  private async formatValue(field: Field, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string> }): Promise<DisplayValue> {
+    switch (field.type.valueFormat) {
       case PropertyValueFormat.Primitive:
-        return this.formatPrimitiveValue(type, value, field, ctx);
+        return this.formatPrimitiveValue(field, value, ctx);
       case PropertyValueFormat.Array:
-        return this.formatArrayValue(type, value, field);
+        return this.formatArrayValue(field.type, value, field);
       case PropertyValueFormat.Struct:
-        return this.formatStructValue(type, value, field);
+        return this.formatStructValue(field.type, value, field);
     }
   }
 
-  private async formatPrimitiveValue(type: PrimitiveTypeDescription, value: Value, field: Field, ctx?: { doubleFormatter: (raw: number) => Promise<string> }) {
+  private async formatPrimitiveValue(field: Field, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string> }) {
     if (value === undefined) {
       return "";
     }
 
     const formatDoubleValue = async (raw: number) => (ctx ? ctx.doubleFormatter(raw) : formatDouble(raw));
 
-    if (type.typeName === "point2d" && isPoint2d(value)) {
+    if (field.type.typeName === "point2d" && isPoint2d(value)) {
       return `X: ${await formatDoubleValue(value.x)}; Y: ${await formatDoubleValue(value.y)}`;
     }
-    if (type.typeName === "point3d" && isPoint3d(value)) {
+    if (field.type.typeName === "point3d" && isPoint3d(value)) {
       return `X: ${await formatDoubleValue(value.x)}; Y: ${await formatDoubleValue(value.y)}; Z: ${await formatDoubleValue(value.z)}`;
     }
-    if (type.typeName === "dateTime") {
+    if (field.type.typeName === "dateTime") {
       assert(typeof value === "string");
       return value;
     }
-    if (type.typeName === "bool" || type.typeName === "boolean") {
+    if (field.type.typeName === "bool" || field.type.typeName === "boolean") {
       assert(typeof value === "boolean");
       return value ? "@Presentation:value.true@" : "@Presentation:value.false@";
     }
-    if (type.typeName === "int" || type.typeName === "long") {
+    if (field.type.typeName === "int" || field.type.typeName === "long") {
       assert(isNumber(value));
       return value.toFixed(0);
     }
-    if (type.typeName === "double") {
+    if (field.type.typeName === "double") {
       assert(isNumber(value));
       return formatDoubleValue(value);
     }
-    if (type.typeName === "navigation") {
+    if (field.type.typeName === "navigation") {
       assert(Value.isNavigationValue(value));
       return value.label.displayValue;
     }
 
-    if (type.typeName === "enum" && field.isPropertiesField()) {
+    if (field.type.typeName === "enum" && field.isPropertiesField()) {
       return field.properties[0].property.enumerationInfo?.choices.find(({ value: enumValue }) => enumValue === value)?.label;
     }
     // eslint-disable-next-line @typescript-eslint/no-base-to-string
@@ -181,23 +176,30 @@ export class ContentPropertyValueFormatter {
   }
 
   private async formatStructValue(type: StructTypeDescription, value: Value, field: Field) {
-    if (!Value.isMap(value)) {
+    if (!Value.isMap(value) || !field.isPropertiesField() || !field.isStructPropertiesField()) {
       return {};
     }
 
     const formattedMember: DisplayValuesMap = {};
     for (const member of type.members) {
-      formattedMember[member.name] = await this.formatValue(member.type, value[member.name], field);
+      const fieldMember = field.memberFields.find((memberField) => {
+        return memberField.name === member.name;
+      });
+      formattedMember[member.name] = await this.formatValue(fieldMember!, value[member.name]);
     }
     return formattedMember;
   }
 
-  private async formatArrayValue(type: ArrayTypeDescription, value: Value, field: Field) {
-    if (!Value.isArray(value)) {
+  private async formatArrayValue(_type: ArrayTypeDescription, value: Value, field: Field) {
+    if (!Value.isArray(value) || !field.isPropertiesField() || !field.isArrayPropertiesField()) {
       return [];
     }
 
-    return Promise.all(value.map(async (arrayVal) => this.formatValue(type.memberType, arrayVal, field)));
+    return Promise.all(
+      value.map(async (arrayVal) => {
+        return this.formatValue(field.itemsField, arrayVal);
+      }),
+    );
   }
 }
 
