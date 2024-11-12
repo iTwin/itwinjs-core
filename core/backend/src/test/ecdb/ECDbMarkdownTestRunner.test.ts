@@ -7,7 +7,7 @@ import { DbResult } from "@itwin/core-bentley";
 import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-import { buildECSqlRowArgs, buildQueryOptionsBuilder, ECDbMarkdownTestParser, ECDbTestProps } from "./ECDbMarkdownTestParser";
+import { buildBinaryData, buildECSqlRowArgs, buildQueryOptionsBuilder, ECDbMarkdownTestParser, ECDbTestProps } from "./ECDbMarkdownTestParser";
 import * as path from "path";
 import * as fs from "fs";
 import { ECDbMarkdownTestGenerator } from "./ECDbMarkdownTestGenerator";
@@ -139,6 +139,7 @@ describe.only("Markdown based ECDb test runner", async () => {
               const expectedJson = JSON.stringify(expectedResult);
               const compiledExpectedJson = replacePropsInString(expectedJson, props);
               expectedResult = JSON.parse(compiledExpectedJson);
+              expectedResult = buildBinaryData(expectedResult);
 
               const actualResult = stmt.getRow(buildECSqlRowArgs(test.ecsqlStatementProps?.rowOptions)); // TODO: should we test getValue() as well?
               assert.deepEqual(actualResult, expectedResult, `Expected ${JSON.stringify(expectedResult)} but got ${JSON.stringify(actualResult)}`);
@@ -254,6 +255,7 @@ describe.only("Markdown based ECDb test runner", async () => {
               const expectedJson = JSON.stringify(expectedResult);
               const compiledExpectedJson = replacePropsInString(expectedJson, props);
               expectedResult = JSON.parse(compiledExpectedJson);
+              expectedResult = buildBinaryData(expectedResult);
 
               const actualResult = rows[resultCount] // TODO: should we test getValue() as well?
               assert.deepEqual(actualResult, expectedResult, `Expected ${JSON.stringify(expectedResult)} but got ${JSON.stringify(actualResult)}`);

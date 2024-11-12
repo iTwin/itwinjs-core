@@ -194,6 +194,40 @@ export function buildQueryOptionsBuilder(object: ConcurrentQueryRowOptions | und
   return queryOptions;
 }
 
+export function buildBinaryData(obj: any): any {
+  for(const key in obj) {
+    if(typeof obj[key] === "string")
+    {
+      const [isBinary, arrayVal] = UnderstandAndReplaceBinaryData(obj[key])
+      if(isBinary)
+        obj[key] = arrayVal;
+    }
+    else if(typeof obj[key] === "object")
+      obj[key] = buildBinaryData(obj[key])
+  }
+  return obj;
+}
+
+function UnderstandAndReplaceBinaryData(str: string): [boolean,any]{
+  if(str.startsWith("BIN(") && str.endsWith(")"))
+  {
+    const startInd = str.indexOf("(") + 1;
+    const endInd = str.indexOf(")");
+    str = str.slice(startInd, endInd);
+    let ans: number[] = []
+    const numbers: string[] = str.split(",");
+    numbers.forEach((value:string)=>
+      {
+        value = value.trim();
+        ans.push(parseInt(value));
+      }
+    );
+    return [true, Uint8Array.of(...ans)]
+  }
+
+  return [false,""]
+}
+
 export class ECDbMarkdownTestParser {
   public static parse(): ECDbTestProps[] {
     const testAssetsDir = IModelTestUtils.resolveAssetFile("ECDbTests");
