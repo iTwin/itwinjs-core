@@ -2610,6 +2610,9 @@ export class UnsharpenEffect extends ConvolutionEffect {
     static toolId: string;
 }
 
+// @alpha (undocumented)
+export function updateSliderValue(sliderCtrl: Slider, value: string): void;
+
 // @beta
 export class ViewportAddRealityModel extends Tool {
     // (undocumented)

@@ -25,7 +25,7 @@ import {
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { ChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 chai.use(chaiAsPromised);
-import sinon = require("sinon");
+import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 
 async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   try {

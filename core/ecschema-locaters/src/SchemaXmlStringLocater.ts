@@ -65,7 +65,6 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
     if (!candidates || candidates.length === 0)
       return undefined;
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaText = maxCandidate.schemaText;
 
@@ -91,7 +90,6 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
     if (!candidates || candidates.length === 0)
       return undefined;
 
-    // eslint-disable-next-line @typescript-eslint/unbound-method
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaText = maxCandidate.schemaText;
 

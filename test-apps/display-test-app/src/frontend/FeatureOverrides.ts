@@ -5,9 +5,9 @@
 
 import { dispose, Id64String, IDisposable } from "@itwin/core-bentley";
 import {
-  ColorInputProps, ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
+  ComboBox, ComboBoxHandler, convertHexToRgb, createButton, createCheckBox, createColorInput, createComboBox, createNumericInput,
 } from "@itwin/frontend-devtools";
-import { FeatureAppearance, FeatureAppearanceProps, LinePixels, RgbColor } from "@itwin/core-common";
+import { FeatureAppearance, FeatureAppearanceProps, LinePixels } from "@itwin/core-common";
 import { FeatureOverrideProvider, FeatureSymbology, Viewport } from "@itwin/core-frontend";
 import { ToolBarDropDown } from "./ToolBar";
 
@@ -111,10 +111,10 @@ export class Settings implements IDisposable {
     this._element.style.cssFloat = "left";
     this._element.style.display = "block";
 
-    this.addColor(this._element);
-    this.addTransparency(this._element);
-    this.addWeight(this._element);
+    this.addColors(this._element);
+    this.addTransparencies(this._element);
     Settings.addStyle(this._element, LinePixels.Invalid, (select: HTMLSelectElement) => this.updateStyle(parseInt(select.value, 10)));
+    this.addWeight(this._element);
 
     createCheckBox({
       parent: this._element,
@@ -135,13 +135,6 @@ export class Settings implements IDisposable {
       name: "Emphasized",
       id: "ovr_emphasized",
       handler: (cb) => this.updateAppearance("emphasized", cb.checked ? true : undefined),
-    });
-
-    createCheckBox({
-      parent: this._element,
-      name: "View-dependent transparency",
-      id: "ovr_viewDep",
-      handler: (cb) => this.updateAppearance("viewDependentTransparency", cb.checked ? true : undefined),
     });
 
     const buttonDiv = document.createElement("div");
@@ -182,14 +175,12 @@ export class Settings implements IDisposable {
 
   // private reset() { this._appearance = FeatureSymbology.Appearance.defaults; }
 
-  private updateAppearance(field: "rgb" | "transparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable" | "emphasized" | "viewDependentTransparency", value: any): void {
+  private updateAppearance(field: "rgb" | "transparency" | "lineRgb" | "lineTransparency" | "linePixels" | "weight" | "ignoresMaterial" | "nonLocatable" | "emphasized" | "viewDependentTransparency", value: any): void {
     const props = this._appearance.toJSON();
     props[field] = value;
     this._appearance = FeatureAppearance.fromJSON(props);
   }
 
-  private updateColor(rgb: RgbColor | undefined): void { this.updateAppearance("rgb", rgb); }
-  private updateTransparency(transparency: number | undefined): void { this.updateAppearance("transparency", transparency); }
   private updateWeight(weight: number | undefined): void { this.updateAppearance("weight", weight); }
   private updateIgnoreMaterial(ignoresMaterial: true | undefined): void { this.updateAppearance("ignoresMaterial", ignoresMaterial); }
   private updateNonLocatable(nonLocatable: true | undefined): void { this.updateAppearance("nonLocatable", nonLocatable); }
@@ -198,36 +189,77 @@ export class Settings implements IDisposable {
     this.updateAppearance("linePixels", linePixels);
   }
 
-  private addTransparency(parent: HTMLElement): void {
-    const div = document.createElement("div");
+  private addTransparencies(parent: HTMLElement): void {
+    const addTransparency = (name: string) => {
+      const div = document.createElement("div");
+      parent.appendChild(div);
 
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.id = "cb_ovrTrans";
-    div.appendChild(cb);
+      const cb = createCheckBox({
+        parent: div,
+        name,
+        id: "whatever...",
+        handler: () => updateCheckboxesAndTransparencies(),
+      });
 
-    const label = document.createElement("label");
-    label.htmlFor = "cb_ovrTrans";
-    label.innerText = "Transparency ";
-    div.appendChild(label);
+      const input = createNumericInput({
+        parent: cb.div,
+        display: "inline",
+        value: 0,
+        disabled: true,
+        min: 0,
+        max: 255,
+        step: 1,
+        handler: () => updateTransparencies(),
+      });
 
-    const num = createNumericInput({
-      parent: div,
-      value: 0,
-      disabled: true,
-      min: 0,
-      max: 255,
-      step: 1,
-      handler: (value) => this.updateTransparency(value / 255),
+      return { checkbox: cb.checkbox, input };
+    };
+
+    const transElem = addTransparency("Transp ");
+
+    const applyToLineCb = createCheckBox({
+      parent,
+      id: "ugh",
+      name: "Apply to lines",
+      handler: () => updateCheckboxesAndTransparencies(),
+    }).checkbox;
+    applyToLineCb.disabled = true;
+
+    const lineTransElem = addTransparency("Line Transp ");
+
+    createCheckBox({
+      parent: this._element,
+      name: "View-dependent",
+      id: "ovr_viewDep",
+      handler: (cb) => this.updateAppearance("viewDependentTransparency", cb.checked ? true : undefined),
     });
-    div.appendChild(num);
 
-    cb.addEventListener("click", () => {
-      num.disabled = !cb.checked;
-      this.updateTransparency(cb.checked ? parseInt(num.value, 10) / 255 : undefined);
-    });
+    parent.appendChild(document.createElement("hr"));
 
-    parent.appendChild(div);
+    const updateCheckboxesAndTransparencies = () => {
+      if (!transElem.checkbox.checked) {
+        applyToLineCb.checked = false;
+      }
+
+      applyToLineCb.disabled = !transElem.checkbox.checked || lineTransElem.checkbox.checked;
+      lineTransElem.checkbox.disabled = applyToLineCb.checked;
+
+      transElem.input.disabled = !transElem.checkbox.checked;
+      lineTransElem.input.disabled = !lineTransElem.checkbox.checked;
+
+      updateTransparencies();
+    };
+
+    const updateTransparencies = () => {
+      const trans = transElem.checkbox.checked ? parseInt(transElem.input.value, 10) / 255 : undefined;
+      let lineTrans;
+      if (!applyToLineCb.checked) {
+        lineTrans = lineTransElem.checkbox.checked ? parseInt(lineTransElem.input.value, 10) / 255 : false;
+      }
+
+      this.updateAppearance("transparency", trans);
+      this.updateAppearance("lineTransparency", lineTrans);
+    };
   }
 
   private addWeight(parent: HTMLElement): void {
@@ -287,35 +319,69 @@ export class Settings implements IDisposable {
     });
   }
 
-  private addColor(parent: HTMLElement): void {
-    const div = document.createElement("div");
+  private addColors(parent: HTMLElement): void {
+    const addColorPicker = (label: string) => {
+      const div = document.createElement("div");
+      parent.appendChild(div);
 
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.id = "cb_ovrColor";
-    div.appendChild(cb);
+      const checkbox = document.createElement("input");
+      checkbox.type = "checkbox";
+      div.appendChild(checkbox);
 
-    const update = () => this.updateColor(convertHexToRgb(input.value));
-    const props: ColorInputProps = {
-      parent: div,
-      id: "color_ovrColor",
-      label: "Color",
-      value: "#ffffff",
-      display: "inline",
-      disabled: true,
-      handler: update,
+      const picker = createColorInput({
+        parent: div,
+        label,
+        value: "#ffffff",
+        display: "inline",
+        disabled: true,
+        handler: () => updateColors(),
+      });
+
+      checkbox.addEventListener("click", () => updateCheckboxesAndColors());
+
+      return { checkbox, picker };
     };
-    const input: HTMLInputElement = createColorInput(props).input;
 
-    cb.addEventListener("click", () => {
-      input.disabled = !cb.checked;
+    const colorElem = addColorPicker("Color");
 
-      if (cb.checked)
-        update();
-      else
-        this.updateColor(undefined);
+    const applyToLineCb = createCheckBox({
+      parent,
+      id: "why is this required...",
+      name: "Apply to lines",
+      handler: () => updateCheckboxesAndColors(),
     });
-    parent.appendChild(div);
+
+    const lineColorElem = addColorPicker("Line Color");
+    lineColorElem.checkbox.addEventListener("click", () => updateCheckboxesAndColors());
+
+    parent.appendChild(document.createElement("hr"));
+
+    const updateCheckboxesAndColors = () => {
+      if (!colorElem.checkbox.checked) {
+        applyToLineCb.checkbox.checked = false;
+      }
+
+      applyToLineCb.checkbox.disabled = !colorElem.checkbox.checked || lineColorElem.checkbox.checked;
+      lineColorElem.checkbox.disabled = applyToLineCb.checkbox.checked;
+
+      colorElem.picker.input.disabled = !colorElem.checkbox.checked;
+      lineColorElem.picker.input.disabled = !lineColorElem.checkbox.checked;
+
+      updateColors();
+    };
+
+    const updateColors = () => {
+      const color = colorElem.checkbox.checked ? convertHexToRgb(colorElem.picker.input.value) : undefined;
+      let lineColor;
+      if (!applyToLineCb.checkbox.checked) {
+        lineColor = lineColorElem.checkbox.checked ? convertHexToRgb(lineColorElem.picker.input.value) : false;
+      }
+
+      this.updateAppearance("rgb", color);
+      this.updateAppearance("lineRgb", lineColor);
+    };
+
+    updateCheckboxesAndColors();
   }
 }
 

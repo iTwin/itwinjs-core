@@ -16,7 +16,7 @@ import { Map4d } from "../../geometry4d/Map4d";
 import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { PlaneByOriginAndVectors4d } from "../../geometry4d/PlaneByOriginAndVectors4d";
 import { Point4d } from "../../geometry4d/Point4d";
-import { SmallSystem } from "../../numerics/Polynomials";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import * as bsiChecker from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";

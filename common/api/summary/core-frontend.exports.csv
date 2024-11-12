@@ -252,6 +252,7 @@ public;class;GeometricModelState
 public;interface;GeometryTileTreeReference
 public;class;GeoServices
 internal;type;GeoServicesOptions
+internal;interface;GetAttachmentViewportArgs
 public;function;getCenteredViewRect
 internal;function;getCesiumAccessTokenAndEndpointUrl
 public;function;getCesiumAssetUrl
@@ -334,6 +335,7 @@ public;enum;HitGeomType
 public;class;HitList
 public;interface;HitListHolder
 public;enum;HitParentGeomType
+beta;interface;HitPath
 public;enum;HitPriority
 public;enum;HitSource
 internal;class;I3dmReader
@@ -667,6 +669,7 @@ public;interface;ScreenSpaceEffectContext
 public;interface;ScreenSpaceEffectSource
 public;class;ScreenViewport
 public;class;ScrollViewTool
+beta;interface;SectionDrawingAttachmentHitInfo
 internal;interface;SectionDrawingInfo
 public;class;SectionDrawingModelState
 public;interface;SelectAddEvent

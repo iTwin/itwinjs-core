@@ -6,7 +6,7 @@
  * @module Differencing
  */
 
-import { SchemaDifferenceConflict } from "./SchemaConflicts";
+import { AnySchemaDifferenceConflict } from "./SchemaConflicts";
 import { SchemaDiagnosticVisitor } from "./SchemaDiagnosticVisitor";
 import { SchemaChanges } from "../Validation/SchemaChanges";
 import { SchemaComparer } from "../Validation/SchemaComparer";
@@ -51,6 +51,7 @@ export enum SchemaOtherTypes {
   RelationshipConstraint = "RelationshipConstraint",
   RelationshipConstraintClass = "RelationshipConstraintClass",
   EntityClassMixin = "EntityClassMixin",
+  KindOfQuantityPresentationFormat = "KindOfQuantityPresentationFormat",
 }
 
 /**
@@ -73,7 +74,7 @@ export interface SchemaDifferenceResult {
   readonly differences: AnySchemaDifference[];
 
   /** List of conflicts found while comparing the schemas. */
-  readonly conflicts?: SchemaDifferenceConflict[];
+  readonly conflicts?: AnySchemaDifferenceConflict[];
 }
 
 /**
@@ -85,7 +86,9 @@ export type AnySchemaDifference =
   SchemaReferenceDifference |
   AnySchemaItemDifference |
   AnySchemaItemPathDifference |
-  CustomAttributeDifference;
+  EntityClassMixinDifference |
+  CustomAttributeDifference |
+  KindOfQuantityPresentationFormatDifference;
 
 /**
  * Differencing entry for changes on a Schema.
@@ -118,7 +121,6 @@ export type AnySchemaItemDifference =
   AnyClassItemDifference |
   ConstantDifference |
   EnumerationDifference |
-  EntityClassMixinDifference |
   FormatDifference |
   KindOfQuantityDifference |
   InvertedUnitDifference |
@@ -385,6 +387,17 @@ export interface RelationshipConstraintClassDifference {
   readonly schemaType: SchemaOtherTypes.RelationshipConstraintClass;
   readonly itemName: string;
   readonly path: "$source" | "$target";
+  readonly difference: string[];
+}
+
+/**
+ * Differencing entry for presentation formats added to KindOfQuantities.
+ * @alpha
+ */
+export interface KindOfQuantityPresentationFormatDifference {
+  readonly changeType: "add";
+  readonly schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat;
+  readonly itemName: string;
   readonly difference: string[];
 }
 

@@ -6,15 +6,16 @@ import { expect } from "chai";
 import { Guid } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { PersistentGraphicsRequestProps } from "@itwin/core-common";
-import { IModelApp, MockRender, readElementGraphics, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelApp, MockRender, readElementGraphics } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
+import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 describe("requestElementGraphics", () => {
-  let imodel: SnapshotConnection;
+  let imodel: TestSnapshotConnection;
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("mirukuru.ibim");
+    imodel = await TestSnapshotConnection.openFile("mirukuru.ibim");
   });
 
   after(async () => {
@@ -67,7 +68,7 @@ describe("requestElementGraphics", () => {
     let elemRtc: number[];
 
     before(async () => {
-      const placement = (await imodel.elements.getPlacements("0x29", {type: "3d"}))[0];
+      const placement = (await imodel.elements.getPlacements("0x29", { type: "3d" }))[0];
       expect(placement).not.to.be.undefined;
       const range = placement.calculateRange();
       const rangeCenter = range.center;

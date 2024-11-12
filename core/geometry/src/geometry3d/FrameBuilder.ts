@@ -24,8 +24,6 @@ import { PolygonOps } from "./PolygonOps";
 import { Range3d } from "./Range";
 import { Transform } from "./Transform";
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
-
 /**
  * Helper class to accumulate points and vectors until there is enough data to define a coordinate system.
  *

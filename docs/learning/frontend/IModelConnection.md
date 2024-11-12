@@ -22,7 +22,7 @@ closes it.
 
 Obviously (because Checkpoints are immutable) `CheckpointConnection`s only allow readonly access.
 
-A [SnapshotConnection]($frontend) can be used for readonly connections to a Snapshot iModel. It uses RPC, so may be used from web or native applications.
+A [SnapshotConnection]($frontend) can be used for readonly connections to a Snapshot iModel. It uses IPC, so may only be used from native applications.
 
 A [BriefcaseConnection]($frontend) may be used to connect to an editable [BriefcaseDb]($backend). A `BriefcaseConnection` connects to a *dedicated* backend through [Ipc](../IpcInterface.md). That means to create a `BriefcaseConnection`, the backend must have an active [IpcHost]($backend) and the frontend must have an active [IpcApp]($frontend). This will be true for [NativeApp]($frontend)s, the various `MobileApp`s, and `WebEditApps`.
 

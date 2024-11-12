@@ -741,9 +741,10 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    * has pointer to an additional detail for the child curve.
    * @param spacePoint point in space
    * @param extend true to extend the curve
-   * @returns a CurveLocationDetail structure that holds the details of the close point.
+   * @param result optional pre-allocated detail to populate and return.
+   * @returns details of the closest point
    */
-  public override closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter): CurveLocationDetail | undefined {
+  public override closestPoint(spacePoint: Point3d, extend: VariantCurveExtendParameter, result?: CurveLocationDetail): CurveLocationDetail | undefined {
     let childDetail: CurveLocationDetail | undefined;
     let aMin = Number.MAX_VALUE;
     const numChildren = this.path.children.length;
@@ -783,7 +784,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     }
     if (!childDetail)
       return undefined;
-    return this.computeChainDetail(childDetail);
+    return this.computeChainDetail(childDetail, result);
   }
   /**
    * Construct an offset of each child as viewed in the xy-plane (ignoring z).
@@ -821,17 +822,18 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   /**
    * Compute the global chain detail corresponding to a local child detail.
    * @param childDetail the local (fragment) detail, captured as-is.
-   * @returns newly allocated global (chain) detail with its `childDetail` field pointing to the input, and its `a`
-   * field copied from the input.
+   * @param result optional pre-allocated detail to populate and return.
+   * @returns global (chain) detail with its `childDetail` field pointing to the input and its `a`
+   * field copied from the input, but if a PathFragment for `childDetail` cannot be resolved, return undefined.
    */
-  public computeChainDetail(childDetail: CurveLocationDetail): CurveLocationDetail | undefined {
+  public computeChainDetail(childDetail: CurveLocationDetail, result?: CurveLocationDetail): CurveLocationDetail | undefined {
     if (!childDetail.curve)
       return undefined;
     const fragment = this.curveAndChildFractionToFragment(childDetail.curve, childDetail.fraction);
     if (fragment) {
       const chainDistance = fragment.childFractionToChainDistance(childDetail.fraction);
       const chainFraction = this.chainDistanceToChainFraction(chainDistance);
-      const chainDetail = CurveLocationDetail.createCurveFractionPoint(this, chainFraction, childDetail.point);
+      const chainDetail = CurveLocationDetail.createCurveFractionPoint(this, chainFraction, childDetail.point, result);
       chainDetail.childDetail = childDetail;
       chainDetail.a = childDetail.a;
       return chainDetail;
