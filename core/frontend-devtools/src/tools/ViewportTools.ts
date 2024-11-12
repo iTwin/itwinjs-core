@@ -607,3 +607,70 @@ export class ChangeCameraTool extends Tool {
     return this.run(camera);
   }
 }
+
+export class RepositoryApiTool extends Tool {
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+  public static override toolId = "RepositoryApi";
+
+  public override async run(url: string): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp) {
+      return false;
+    }
+
+    vp.displayStyle.attachRealityModel({ tilesetUrl: url });
+
+    return true;
+  }
+
+  public override async parseAndRun(): Promise<boolean> {
+    const itwinId = "d78c258c-1a6f-4abe-8339-13820ce0f975";
+    const accessToken = "Bearer eyJhbGciOiJSUzI1NiIsImtpZCI6IlFBSU1TLkJFTlRMRVkyMyIsInBpLmF0bSI6ImE4bWUifQ.eyJzY29wZSI6WyJpdHdpbi1wbGF0Zm9ybSIsIml0d2luLXNlcnZpY2UtaW50ZXJuYWw6cmVhZCJdLCJjbGllbnRfaWQiOiJpbW9kZWwtYnJpZGdlLXNlcnZpY2UtcG9zdG1hbi1jbGllbnQiLCJhdWQiOlsiaHR0cHM6Ly9xYS1pbXMuYmVudGxleS5jb20vYXMvdG9rZW4ub2F1dGgyIiwiaHR0cHM6Ly9xYS1pbXNvaWRjLmJlbnRsZXkuY29tL2FzL3Rva2VuLm9hdXRoMiIsImh0dHBzOi8vcWEyLWltcy5iZW50bGV5LmNvbS9hcy90b2tlbi5vYXV0aDIiLCJodHRwczovL3FhMi1pbXNvaWRjLmJlbnRsZXkuY29tL2FzL3Rva2VuLm9hdXRoMiIsImh0dHBzOi8vcWEtaW1zb2lkYy5iZW50bGV5LmNvbS9yZXNvdXJjZXMiLCJodHRwczovL3FhMi1pbXMuYmVudGxleS5jb20vcmVzb3VyY2VzIiwiYmVudGxleS1hcGktbWFuYWdlbWVudCIsImNvbnRleHQtcmVnaXN0cnktMjc3NyJdLCJzdWIiOiI0Y2YwODVjZS1kMzg2LTRlOWItYjc3MC1kMmExZmJkZDZkMDMiLCJyb2xlIjpbIkJFTlRMRVlfRU1QTE9ZRUUiLCJCRU5UTEVZX0VNUExPWUVFIl0sIm9yZyI6IjcyYWRhZDMwLWMwN2MtNDY1ZC1hMWZlLTJmMmRmYWM5NTBhNCIsInN1YmplY3QiOiI0Y2YwODVjZS1kMzg2LTRlOWItYjc3MC1kMmExZmJkZDZkMDMiLCJpc3MiOiJodHRwczovL3FhLWltc29pZGMuYmVudGxleS5jb20iLCJlbnRpdGxlbWVudCI6WyJTRUxFQ1RfMjAwNiJdLCJwcmVmZXJyZWRfdXNlcm5hbWUiOiJBbmRyZS5NaWdsaW9yZUBiZW50bGV5LmNvbSIsImdpdmVuX25hbWUiOiJBbmRyZSIsInNpZCI6IndYdGNGTmtOYW5hZHBnaUx4d0FSOW41cEswOC5VVUZKVFZNdFFtVnVkR3hsZVMxVlV3Lk0yZnQuUzlwWEJZbUdwSndoSzB1ZnJheW5QSk9VZCIsIm5iZiI6MTczMTQyMTg5MiwidWx0aW1hdGVfc2l0ZSI6IjEwMDEzODkxMTciLCJ1c2FnZV9jb3VudHJ5X2lzbyI6IlVTIiwiYXV0aF90aW1lIjoxNzMxNDIyMTkyLCJuYW1lIjoiQW5kcmUuTWlnbGlvcmVAYmVudGxleS5jb20iLCJvcmdfbmFtZSI6IkJlbnRsZXkgU3lzdGVtcyBJbmMiLCJmYW1pbHlfbmFtZSI6Ik1pZ2xpb3JlIiwiZW1haWwiOiJBbmRyZS5NaWdsaW9yZUBiZW50bGV5LmNvbSIsImV4cCI6MTczMTQyNTc5Mn0.Pi8dGQbToK_M9xXHrUnYRIsIIpjRE_yBmuQfb6fEAh5zujSxnaa7HLmVuAWFJnsnn5kfYylVvC_BYrZRhxZnxTx3kjBbwSvqzpDmKOMwncpkbe0PWxiFlZDYx8XDbZM5tpnKyte3NAsfkg9IEWdxRlcjObgAqwIbwu1wdMVjMZNE5wM3sT0_zEaHMlTUTLHsTC0_K25-r7P9vJsd-Vn1oOWBxblyVIp3YlPAFYgKqxeLHGTa_AW6por9Rlj6jNDa3d8prlInFjhxjBKV7WYMuGhySA9XeCW5ew-tMXKfPEvftuZwTlxlYzQBoeXnV0zjitvJJuNceF5wGb4KuNGXZg";
+    const resources = await this.getResources(itwinId, accessToken);
+    if (!resources) {
+      return false;
+    }
+    const tilesetUrl = await this.getTilesetUrl(resources[0], accessToken);
+    if (!tilesetUrl) {
+      return false;
+    }
+    return this.run(tilesetUrl);
+  }
+
+  // get all resources for an itwin
+  private async getResources(iTwinId: string, accessToken: string) {
+  const headers = {
+    "Authorization": accessToken,
+    "Accept": "application/vnd.bentley.itwin-platform.v1+json",
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+  };
+
+  const url = `https://dev-connect-contextregistry.bentley.com/v1/itwins/${iTwinId}/repositories/resources`;
+
+  try {
+    const response = await fetch(url, {headers});
+    const result = await response.json();
+    return result.repositories[0].resources;
+  }
+  catch {
+    return undefined;
+  }
+}
+
+// get a tileset url for a specific resource
+private async getTilesetUrl(resource: any, accessToken: string): Promise<string> {
+  const headers = {
+    "Authorization": accessToken,
+    "Accept": "application/vnd.bentley.itwin-platform.v1+json",
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+  };
+  const split = resource.detailsUrl.split("/itwins/");
+  const url = `https://dev-connect-contextregistry.bentley.com/v1/itwins/${split[1]}`;
+  const response = await fetch(url, {headers});
+  const responseJson = await response.json();
+  return responseJson.graphics.url;
+}
+}
