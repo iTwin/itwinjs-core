@@ -408,7 +408,7 @@ describe("Snapping", () => {
       // This is what we expect if the snap is completed before the cancellation is processed.
       expect(snap.status).not.to.be.undefined;
     } catch (err: any) {
-      // Check the request to confirm that the error message equals request aborted.
+      // This is what we expect if the cancellation occurs in time to really cancel the snap.
       expect(err.message).to.equal("request aborted.");
     }
   });
