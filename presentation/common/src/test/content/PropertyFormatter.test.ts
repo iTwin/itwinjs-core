@@ -229,6 +229,11 @@ describe("ContentPropertyValueFormatter", () => {
     });
   }
 
+  it("Returns undefined when provided a field without properties", async () => {
+    const field = createTestSimpleContentField();
+    expect(await formatter.formatPropertyValue(field, undefined)).to.be.eq(undefined);
+  });
+
   describe("formats primitive", () => {
     it("'undefined' value", async () => {
       const field = createField({ valueFormat: PropertyValueFormat.Primitive, typeName: "string" });
@@ -282,6 +287,18 @@ describe("ContentPropertyValueFormatter", () => {
       const field = createField({ valueFormat: PropertyValueFormat.Primitive, typeName: "enum" });
       field.properties = [{ property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 0, label: "formatted value" }], isStrict: false } }) }];
       expect(await formatter.formatPropertyValue(field, 0)).to.be.eq("formatted value");
+    });
+
+    it("'enum' property value when provided value is not included in choices and isStrict is false", async () => {
+      const field = createField({ valueFormat: PropertyValueFormat.Primitive, typeName: "enum" });
+      field.properties = [{ property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 0, label: "formatted value" }], isStrict: false } }) }];
+      expect(await formatter.formatPropertyValue(field, 1)).to.be.eq("1");
+    });
+
+    it("'enum' property value when provided value is not included in choices and isStrict is true", async () => {
+      const field = createField({ valueFormat: PropertyValueFormat.Primitive, typeName: "enum" });
+      field.properties = [{ property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 0, label: "formatted value" }], isStrict: true } }) }];
+      expect(await formatter.formatPropertyValue(field, 1)).to.be.eq(undefined);
     });
 
     it("KOQ property value", async () => {
@@ -353,12 +370,6 @@ describe("ContentPropertyValueFormatter", () => {
     });
 
     it("value without members", async () => {
-      const field = createField({ valueFormat: PropertyValueFormat.Struct, typeName: "struct", members: [] });
-      const formattedValue = (await formatter.formatPropertyValue(field, {})) as DisplayValuesMap;
-      expect(Object.keys(formattedValue)).to.be.empty;
-    });
-
-    it("returns undefined when property name in type does not exist in memberFields", async () => {
       const structPropField = createTestStructPropertiesContentField({
         name: "structPropFieldName",
         properties: [
@@ -366,23 +377,11 @@ describe("ContentPropertyValueFormatter", () => {
             property: createTestPropertyInfo({ name: "structProperty" }),
           },
         ],
-        memberFields: [
-          createTestPropertiesContentField({
-            name: "enumProp",
-            label: "Enum Property",
-            properties: [{ property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 0, label: "formatedLabel" }], isStrict: false } }) }],
-            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "enum" },
-          }),
-        ],
-        type: {
-          valueFormat: PropertyValueFormat.Struct,
-          typeName: "struct",
-          members: [{ name: "nonExistingProp", label: "Enum Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "enum" } }],
-        },
+        memberFields: [],
       });
 
-      const formattedValue = (await formatter.formatPropertyValue(structPropField, { enumProp: 0 })) as DisplayValuesMap;
-      expect(formattedValue.enumProp).to.be.undefined;
+      const formattedValue = (await formatter.formatPropertyValue(structPropField, {})) as DisplayValuesMap;
+      expect(Object.keys(formattedValue)).to.be.empty;
     });
 
     it("'enum' value", async () => {
