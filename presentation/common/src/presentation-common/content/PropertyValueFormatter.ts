@@ -195,8 +195,8 @@ export class ContentPropertyValueFormatter {
     return formattedMember;
   }
 
-  private async formatArrayValue(field: Field, value: Value) {
-    if (!Value.isArray(value) || !field.isPropertiesField() || !field.isArrayPropertiesField()) {
+  private async formatArrayValue(field: ArrayPropertiesField, value: Value) {
+    if (!Value.isArray(value)) {
       return [];
     }
 
