@@ -82,6 +82,60 @@ SELECT e.i, e.l, e.d, e.s, e.dt FROM aps.TestElement e LIMIT 2;
 ]
 ```
 
+# Select different properties from TestElement using Tables
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT e.i, e.l, e.d, e.s, e.dt FROM aps.TestElement e LIMIT 2;
+```
+
+## Concurrent Query
+
+```json
+{
+  "rowOptions": {
+    "rowFormat": "useecsqlpropertynames"
+  }
+}
+```
+
+| Name | ClassName                | AccessString | JsonName | TypeName | Generated | Index |
+| ---- | ------------------------ | ------------ | -------- | -------- | --------- | ----- |
+| i    | AllProperties:IPrimitive | i            | i        | int      | false     | 0     |
+| l    | AllProperties:IPrimitive | l            | l        | long     | false     | 1     |
+| d    | AllProperties:IPrimitive | d            | d        | double   | false     | 2     |
+| s    | AllProperties:IPrimitive | s            | s        | string   | false     | 3     |
+| dt   | AllProperties:IPrimitive | dt           | dt       | dateTime | false     | 4     |
+
+| i   | l    | d   | s    | dt                      |
+| --- | ---- | --- | ---- | ----------------------- |
+| 100 | 1000 | 0.1 | str0 | 2017-01-01T00:00:00.000 |
+| 101 | 1001 | 1.1 | str1 | 2010-01-01T11:11:11.000 |
+
+## ECSqlStatement
+
+```json
+{
+  "rowOptions": {
+    "rowFormat": "useecsqlpropertynames"
+  }
+}
+```
+
+| AccessString | Type     | PropertyName | OriginPropertyName | RootClassAlias | RootClassName             | RootClassTableSpace | IsEnum | IsGeneratedProperty | IsSystemProperty | IsDynamicprop |
+| ------------ | -------- | ------------ | ------------------ | -------------- | ------------------------- | ------------------- | ------ | ------------------- | ---------------- | ------------- |
+| i            | Int      | i            | i                  | e              | AllProperties.TestElement | main                | false  | false               | false            | false         |
+| l            | Int64    | l            | l                  | e              | AllProperties.TestElement | main                | false  | false               | false            | false         |
+| d            | Double   | d            | d                  | e              | AllProperties.TestElement | main                | false  | false               | false            | false         |
+| s            | String   | s            | s                  | e              | AllProperties.TestElement | main                | false  | false               | false            | false         |
+| dt           | DateTime | dt           | dt                 | e              | AllProperties.TestElement | main                | false  | false               | false            | false         |
+
+| i   | l    | d   | s    | dt                      |
+| --- | ---- | --- | ---- | ----------------------- |
+| 100 | 1000 | 0.1 | str0 | 2017-01-01T00:00:00.000 |
+| 101 | 1001 | 1.1 | str1 | 2010-01-01T11:11:11.000 |
+
 # Select point2d and point3d from TestElement
 
 - dataset: AllProperties.bim
@@ -174,7 +228,55 @@ SELECT e.p2d, e.p3d FROM aps.TestElement e LIMIT 2;
 ]
 ```
 
-# only: Select binary data from TestElement
+# Select point2d and point3d from TestElement using Tables
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT e.p2d, e.p3d FROM aps.TestElement e LIMIT 2;
+```
+
+## Concurrent Query
+
+```json
+{
+  "rowOptions": {
+    "rowFormat": "useecsqlpropertynames"
+  }
+}
+```
+
+| Name | ClassName                | AccessString | JsonName | TypeName | Generated | Index |
+| ---- | ------------------------ | ------------ | -------- | -------- | --------- | ----- |
+| p2d  | AllProperties:IPrimitive | p2d          | p2d      | point2d  | false     | 0     |
+| p3d  | AllProperties:IPrimitive | p3d          | p3d      | point3d  | false     | 1     |
+
+| p2d                         | p3d                                      |
+| --------------------------- | ---------------------------------------- |
+| {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
+| {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
+
+## ECSqlStatement
+
+```json
+{
+  "rowOptions": {
+    "rowFormat": "useecsqlpropertynames"
+  }
+}
+```
+
+| AccessString | Type    | PropertyName | OriginPropertyName | RootClassAlias | RootClassName             | RootClassTableSpace | IsEnum | IsGeneratedProperty | IsSystemProperty | IsDynamicprop |
+| ------------ | ------- | ------------ | ------------------ | -------------- | ------------------------- | ------------------- | ------ | ------------------- | ---------------- | ------------- |
+| p2d          | Point2d | p2d          | p2d                | e              | AllProperties.TestElement | main                | false  | false               | false            | false         |
+| p3d          | Point3d | p3d          | p3d                | e              | AllProperties.TestElement | main                | false  | false               | false            | false         |
+
+| p2d                         | p3d                                      |
+| --------------------------- | ---------------------------------------- |
+| {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
+| {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
+
+# Select binary data from TestElement
 
 - dataset: AllProperties.bim
 
@@ -231,3 +333,49 @@ SELECT e.bin FROM aps.TestElement e LIMIT 2;
   }
 ]
 ```
+
+# Select binary data from TestElement using Tables
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT e.bin FROM aps.TestElement e LIMIT 2;
+```
+
+## Concurrent Query
+
+```json
+{
+  "rowOptions": {
+    "rowFormat": "useecsqlpropertynames"
+  }
+}
+```
+
+| Name | ClassName                | AccessString | JsonName | TypeName | Generated | Index |
+| ---- | ------------------------ | ------------ | -------- | -------- | --------- | ----- |
+| bin  | AllProperties:IPrimitive | bin          | bin      | string   | false     | 0     |
+
+| bin                                         |
+| ------------------------------------------- |
+| BIN(1,2,3)                                  |
+| BIN(11, 21, 31, 34, 53, 21, 14, 14, 55, 22) |
+
+## ECSqlStatement
+
+```json
+{
+  "rowOptions": {
+    "rowFormat": "useecsqlpropertynames"
+  }
+}
+```
+
+| AccessString | Type | PropertyName | OriginPropertyName | RootClassAlias | RootClassName             | RootClassTableSpace | IsEnum | IsGeneratedProperty | IsSystemProperty | IsDynamicprop |
+| ------------ | ---- | ------------ | ------------------ | -------------- | ------------------------- | ------------------- | ------ | ------------------- | ---------------- | ------------- |
+| bin          | Blob | bin          | bin                | e              | AllProperties.TestElement | main                | false  | false               | false            | false         |
+
+| bin                                         |
+| ------------------------------------------- |
+| BIN(1,2,3)                                  |
+| BIN(11, 21, 31, 34, 53, 21, 14, 14, 55, 22) |

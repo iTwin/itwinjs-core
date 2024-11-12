@@ -6,8 +6,8 @@ import * as path from "path";
 import * as fs from "fs";
 import { marked, Tokens } from "marked";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { ECSqlRowArg } from "../../ECSqlStatement";
-import { QueryLimit, QueryOptions, QueryQuota, QueryRowFormat } from "@itwin/core-common";
+import { ECSqlRowArg, ECSqlStatement } from "../../core-backend";
+import { ECSqlValueType, QueryLimit, QueryOptions, QueryPropertyMetaData, QueryQuota, QueryRowFormat } from "@itwin/core-common";
 
 export interface ECDbTestProps {
   title: string;
@@ -25,12 +25,14 @@ export interface ConcurrentQueryProps{
   rowOptions?: ConcurrentQueryRowOptions;
   columnInfo?: ConcurrentQueryECDbColumnInfoProps[];
   expectedResults?: { [key: string]: any }[] | any[];
+  isResultsFromTable?: boolean
 }
 
 export interface ECSqlStatementProps{
   rowOptions?: ECSqlStatementRowOptions;
   columnInfo?: ECSqlStatementECDbColumnInfoProps[];
   expectedResults?: { [key: string]: any }[] | any[];
+  isResultsFromTable?: boolean
 }
 
 export interface ECSqlStatementRowOptions{
@@ -192,6 +194,62 @@ export function buildQueryOptionsBuilder(object: ConcurrentQueryRowOptions | und
   else if(object.rowFormat && object.rowFormat.toLowerCase() === "usejspropertynames")
     queryOptions.rowFormat = QueryRowFormat.UseJsPropertyNames;
   return queryOptions;
+}
+
+export function buildECSqlStatementDataFromTableResults(obj: any, stmt: ECSqlStatement): any {
+  let index: number = 0
+  for(const key in obj) {
+    const colInfo = stmt.getValue(index).columnInfo;
+    const type: string = ECSqlValueType[colInfo.getType()];
+    switch (type){
+      case "Boolean":
+        obj[key] = obj[key].toLowerCase() === "true"
+        break;
+      case "Double":
+        obj[key] = parseFloat(obj[key])
+        break;
+      case "Int":
+      case "Int64":
+        if(!obj[key].startsWith("0x")) // so that not to convert ids
+          obj[key] = parseInt(obj[key])
+        break;
+      case "Struct":
+      case "Point3d":
+      case "Point2d":
+        obj[key] = JSON.parse(obj[key])
+        break;
+    }
+    index++;
+  }
+  return obj;
+}
+
+export function buildConcurrentQueryDataFromTableResults(obj: any, colMetaData: QueryPropertyMetaData[]): any {
+  let index: number = 0;
+  for(const key in obj) {
+    const colInfo = colMetaData[index];
+    const type: string = colInfo.typeName;
+    switch (type){
+      case "boolean":
+        obj[key] = obj[key].toLowerCase() === "true"
+        break;
+      case "double":
+        obj[key] = parseFloat(obj[key])
+        break;
+      case "int":
+      case "long":
+        if(!obj[key].startsWith("0x"))
+          obj[key] = parseInt(obj[key])
+        break;
+      case "struct":
+      case "point3d":
+      case "point2d":
+        obj[key] = JSON.parse(obj[key])
+        break;
+    }
+    index++;
+  }
+  return obj;
 }
 
 export function buildBinaryData(obj: any): any {
@@ -424,10 +482,12 @@ export class ECDbMarkdownTestParser {
   private static handleJSONExpectedResults(json: any, currentTest: ECDbTestProps, markdownFilePath: string) {
     if(currentTest.queryType && currentTest.queryType.at(-1) == TypeOfQuery.ECSqlStatement)
     {
+      currentTest.ecsqlStatementProps!.isResultsFromTable = false;
       currentTest.ecsqlStatementProps!.expectedResults = json   // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
     }
     else if(currentTest.queryType && currentTest.queryType.at(-1) == TypeOfQuery.ConcurrentQuery)
     {
+      currentTest.concurrentQueryProps!.isResultsFromTable = false;
       currentTest.concurrentQueryProps!.expectedResults = json    // We are sure that concurrentQueryProps will not be undefined because if queryType == TypeOfQuery.ConcurrentQuery then concurrentQueryProps will not be undefined
     }
     else if(currentTest.queryType === undefined)
@@ -450,8 +510,10 @@ export class ECDbMarkdownTestParser {
       if (token.header.length > 0 && token.header[0].text.toLowerCase() === "accessstring") {
         this.handleColumnTableECSqlStatement(token, currentTest, markdownFilePath);
       } else if(token.header.length > 0 && token.header[0].text === ""){
+        currentTest.ecsqlStatementProps!.isResultsFromTable = true;
         this.handleExpectedResultsTableECsqlStatementForECSqlPropertyIndexesOption(token, currentTest, markdownFilePath);
       } else {
+        currentTest.ecsqlStatementProps!.isResultsFromTable = true;
         this.handleExpectedResultsTableECsqlStatement(token, currentTest, markdownFilePath);
       }
     }
@@ -460,8 +522,10 @@ export class ECDbMarkdownTestParser {
       if (token.header.length > 0 && token.header[0].text.toLowerCase() === "name") {
         this.handleColumnTableConcurrentQuery(token, currentTest, markdownFilePath);
       } else if(token.header.length > 0 && token.header[0].text === ""){
+        currentTest.concurrentQueryProps!.isResultsFromTable = true;
         this.handleExpectedResultsTableConcurrentQueryForECSqlPropertyIndexesOption(token, currentTest, markdownFilePath);
       } else {
+        currentTest.concurrentQueryProps!.isResultsFromTable = true;
         this.handleExpectedResultsTableConcurrentQuery(token, currentTest, markdownFilePath);
       }
     }

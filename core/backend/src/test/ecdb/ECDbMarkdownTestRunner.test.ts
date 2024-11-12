@@ -7,7 +7,7 @@ import { DbResult } from "@itwin/core-bentley";
 import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
-import { buildBinaryData, buildECSqlRowArgs, buildQueryOptionsBuilder, ECDbMarkdownTestParser, ECDbTestProps } from "./ECDbMarkdownTestParser";
+import { buildBinaryData, buildConcurrentQueryDataFromTableResults, buildECSqlRowArgs, buildECSqlStatementDataFromTableResults, buildQueryOptionsBuilder, ECDbMarkdownTestParser, ECDbTestProps } from "./ECDbMarkdownTestParser";
 import * as path from "path";
 import * as fs from "fs";
 import { ECDbMarkdownTestGenerator } from "./ECDbMarkdownTestGenerator";
@@ -139,6 +139,10 @@ describe.only("Markdown based ECDb test runner", async () => {
               const expectedJson = JSON.stringify(expectedResult);
               const compiledExpectedJson = replacePropsInString(expectedJson, props);
               expectedResult = JSON.parse(compiledExpectedJson);
+              if(test.ecsqlStatementProps?.isResultsFromTable)
+                {
+                  expectedResult = buildECSqlStatementDataFromTableResults(expectedResult, stmt);
+                }
               expectedResult = buildBinaryData(expectedResult);
 
               const actualResult = stmt.getRow(buildECSqlRowArgs(test.ecsqlStatementProps?.rowOptions)); // TODO: should we test getValue() as well?
@@ -221,11 +225,11 @@ describe.only("Markdown based ECDb test runner", async () => {
           }
 
           let resultCount = 0;
-          const rows = await reader.toArray()
+          const rows = await reader.toArray();
+          const colMetaData = await reader.getMetaData();
           while (resultCount < rows.length) {
             if (resultCount === 0 && test.concurrentQueryProps?.columnInfo) {
               // Verify the columns on the first result row (TODO: for dynamic columns we have to do this every item)
-              const colMetaData = await reader.getMetaData();
               assert.strictEqual(colMetaData.length, test.concurrentQueryProps?.columnInfo.length, `Expected ${test.concurrentQueryProps?.columnInfo.length} columns but got ${colMetaData.length}`);
               for (let i = 0; i < colMetaData.length; i++) {
                 const colInfo = colMetaData[i];
@@ -255,6 +259,10 @@ describe.only("Markdown based ECDb test runner", async () => {
               const expectedJson = JSON.stringify(expectedResult);
               const compiledExpectedJson = replacePropsInString(expectedJson, props);
               expectedResult = JSON.parse(compiledExpectedJson);
+              if(test.concurrentQueryProps?.isResultsFromTable)
+              {
+                expectedResult = buildConcurrentQueryDataFromTableResults(expectedResult, colMetaData);
+              }
               expectedResult = buildBinaryData(expectedResult);
 
               const actualResult = rows[resultCount] // TODO: should we test getValue() as well?
