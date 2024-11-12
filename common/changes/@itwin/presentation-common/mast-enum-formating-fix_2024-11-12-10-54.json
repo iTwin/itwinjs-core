@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Fixed enum formatting issue, where enum value is used instead of label when determining displayValue.",
+      "comment": "Fixed enum property values formatting issue, where raw value was used instead of enum's display value.",
       "type": "none"
     }
   ],
