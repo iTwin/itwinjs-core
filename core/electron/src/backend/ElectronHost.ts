@@ -107,13 +107,13 @@ export class ElectronHost {
   private constructor() { }
 
   /**
-   * Converts an "electron://frontend/" URL to an absolute file path.
+   * Converts an "electron://frontend/" URL to an "file://{absolute file path}" URL.
    *
    * We use this protocol in production builds because our frontend must be built with absolute URLs,
    * however, since we're loading everything directly from the install directory, we cannot know the
    * absolute path at build time.
    */
-  private static parseElectronUrl(requestedUrl: string): string {
+  private static transformElectronUrlToFileUrl(requestedUrl: string): string {
     // Note that the "frontend/" path is arbitrary - this is just so we can handle *some* relative URLs...
     let assetPath = requestedUrl.substring(this._electronFrontend.length);
     if (assetPath.length === 0)
@@ -128,7 +128,7 @@ export class ElectronHost {
     }
     if (!assetPath.startsWith(this.webResourcesPath))
       throw new Error(`Access to files outside installation directory (${this.webResourcesPath}) is prohibited`);
-    return assetPath;
+    return `file://${assetPath}`;
   }
 
   private static _openWindow(options?: ElectronHostWindowOptions) {
@@ -250,7 +250,7 @@ export class ElectronHost {
 
     if (!this._developmentServer) {
       // handle any "electron://" requests and redirect them to "file://" URLs
-      this.electron.protocol.registerFileProtocol("electron", (request, callback) => callback(this.parseElectronUrl(request.url))); // eslint-disable-line @typescript-eslint/no-deprecated
+      this.electron.protocol.handle("electron", async (request) => ElectronHost.electron.net.fetch(this.transformElectronUrlToFileUrl(request.url)));
     }
 
     this._openWindow(windowOptions);
