@@ -237,17 +237,17 @@ describe("BackendSchemasXmlFileLocater tests", () => {
 
     // Add a new search path
     locater.addSchemaSearchPath(jsonFilePath);
-    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
+    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath, jsonFilePath]);
 
     // Add another new search path
     locater.addSchemaSearchPath(xmlFilePath);
-    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
+    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath, jsonFilePath, xmlFilePath]);
 
     // Add a duplicate search path : should get ignored
     locater.addSchemaSearchPath(xmlFilePath);
     locater.addSchemaSearchPath(standardSchemaPath);
 
-    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
+    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath, jsonFilePath, xmlFilePath]);
   });
 
   it("BackendSchemasXmlFileLocater - check schema order with registerSchemaSearchPaths", () => {
@@ -259,10 +259,10 @@ describe("BackendSchemasXmlFileLocater tests", () => {
 
     // Add 2 new search paths
     locater.addSchemaSearchPaths([jsonFilePath, xmlFilePath]);
-    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
+    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath, jsonFilePath, xmlFilePath]);
 
     // Add a duplicate search path : should get ignored
     locater.addSchemaSearchPaths([xmlFilePath, standardSchemaPath]);
-    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
+    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath, jsonFilePath, xmlFilePath]);
   });
 });

@@ -165,12 +165,8 @@ export class BackendSchemasXmlFileLocater extends SchemaXmlFileLocater implement
    * @param schemaPaths An array of search paths to add
    */
   public override addSchemaSearchPaths(schemaPaths: string[]): void {
-    // Remove any standard schema paths that might have been specified by the user
-    const filteredSchemaPaths = schemaPaths.filter((schemaPath) => !this._standardSchemaSearchPaths.has(schemaPath) && !this._standardSchemaSearchPaths.has(`\\\\?\\${schemaPath}`));
-    const defaultSchemas = this.searchPaths.splice(this.searchPaths.length - this._standardSchemaSearchPaths.size, this._standardSchemaSearchPaths.size);
-
     // Add a schema path if it doesn't exist in the locater's search paths
-    filteredSchemaPaths.forEach((schemaPath) => {
+    schemaPaths.forEach((schemaPath) => {
       if (!this.searchPaths.includes(schemaPath) && !this.searchPaths.includes(`\\\\?\\${schemaPath}`)) {
         this.searchPaths.push(schemaPath);
 
@@ -179,7 +175,5 @@ export class BackendSchemasXmlFileLocater extends SchemaXmlFileLocater implement
           this.searchPathPrecedence.set(schemaPath, 0);
       }
     });
-    // Re-add the default standard schemas at the end to ensure lower precedence
-    this.searchPaths.push(...defaultSchemas);
   }
 }
