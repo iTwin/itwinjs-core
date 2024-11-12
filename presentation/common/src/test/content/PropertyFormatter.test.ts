@@ -358,6 +358,60 @@ describe("ContentPropertyValueFormatter", () => {
       expect(Object.keys(formattedValue)).to.be.empty;
     });
 
+    it("returns undefined when property name in type does not exist in memberFields", async () => {
+      const structPropField = createTestStructPropertiesContentField({
+        name: "structPropFieldName",
+        properties: [
+          {
+            property: createTestPropertyInfo({ name: "structProperty" }),
+          },
+        ],
+        memberFields: [
+          createTestPropertiesContentField({
+            name: "enumProp",
+            label: "Enum Property",
+            properties: [{ property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 0, label: "formatedLabel" }], isStrict: false } }) }],
+            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "enum" },
+          }),
+        ],
+        type: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: "struct",
+          members: [{ name: "nonExistingProp", label: "Enum Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "enum" } }],
+        },
+      });
+
+      const formattedValue = (await formatter.formatPropertyValue(structPropField, { enumProp: 0 })) as DisplayValuesMap;
+      expect(formattedValue.enumProp).to.be.undefined;
+    });
+
+    it("'enum' value", async () => {
+      const structPropField = createTestStructPropertiesContentField({
+        name: "structPropFieldName",
+        properties: [
+          {
+            property: createTestPropertyInfo({ name: "structProperty" }),
+          },
+        ],
+        memberFields: [
+          createTestPropertiesContentField({
+            name: "enumProp",
+            label: "Enum Property",
+            properties: [{ property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 0, label: "formatedLabel" }], isStrict: false } }) }],
+            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "enum" },
+          }),
+        ],
+        type: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: "struct",
+          members: [{ name: "enumProp", label: "Enum Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "enum" } }],
+        },
+      });
+
+      const formattedValue = (await formatter.formatPropertyValue(structPropField, { enumProp: 0 })) as DisplayValuesMap;
+      expect(formattedValue.enumProp).to.be.eq("formatedLabel");
+    });
+
     it("value with different type members", async () => {
       const structPropField = createTestStructPropertiesContentField({
         name: "structPropFieldName",
@@ -542,6 +596,29 @@ describe("ContentPropertyValueFormatter", () => {
 
       const formattedValue = (await formatter.formatPropertyValue(arrayPropField, [])) as DisplayValuesArray;
       expect(formattedValue).to.be.empty;
+    });
+
+    it("'enum' value", async () => {
+      const arrayPropField = createTestArrayPropertiesContentField({
+        name: "arrayPropFieldName",
+        properties: [
+          {
+            property: createTestPropertyInfo({ name: "arrayProperty" }),
+          },
+        ],
+        itemsField: createTestPropertiesContentField({
+          properties: [{ property: createTestPropertyInfo({ enumerationInfo: { choices: [{ value: 0, label: "formatedLabel" }], isStrict: false } }) }],
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "enum" },
+        }),
+        type: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: "array",
+          memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "enum" },
+        },
+      });
+
+      const formattedValue = (await formatter.formatPropertyValue(arrayPropField, [0])) as DisplayValuesArray;
+      expect(formattedValue[0]).to.be.eq("formatedLabel");
     });
 
     it("value with primitive items", async () => {

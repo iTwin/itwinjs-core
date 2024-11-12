@@ -185,7 +185,10 @@ export class ContentPropertyValueFormatter {
       const fieldMember = field.memberFields.find((memberField) => {
         return memberField.name === member.name;
       });
-      formattedMember[member.name] = await this.formatValue(fieldMember!, value[member.name]);
+
+      if (fieldMember !== undefined) {
+        formattedMember[member.name] = await this.formatValue(fieldMember, value[member.name]);
+      }
     }
     return formattedMember;
   }
