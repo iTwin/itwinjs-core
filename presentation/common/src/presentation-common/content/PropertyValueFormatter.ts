@@ -123,22 +123,20 @@ export class ContentPropertyValueFormatter {
   }
 
   private async formatValue(field: Field, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string> }): Promise<DisplayValue> {
-    if (!field.isPropertiesField()) {
-      return;
-    }
+    if (field.isPropertiesField()) {
+      if (field.isArrayPropertiesField()) {
+        return this.formatArrayValue(field, value);
+      }
 
-    if (field.isArrayPropertiesField()) {
-      return this.formatArrayValue(field, value);
-    }
-
-    if (field.isStructPropertiesField()) {
-      return this.formatStructValue(field, value);
+      if (field.isStructPropertiesField()) {
+        return this.formatStructValue(field, value);
+      }
     }
 
     return this.formatPrimitiveValue(field, value, ctx);
   }
 
-  private async formatPrimitiveValue(field: PropertiesField, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string> }) {
+  private async formatPrimitiveValue(field: Field, value: Value, ctx?: { doubleFormatter: (raw: number) => Promise<string> }) {
     if (value === undefined) {
       return "";
     }
@@ -172,7 +170,7 @@ export class ContentPropertyValueFormatter {
       return value.label.displayValue;
     }
 
-    if (field.type.typeName === "enum") {
+    if (field.type.typeName === "enum" && field.isPropertiesField()) {
       const defaultValue = !field.properties[0].property.enumerationInfo?.isStrict
         ? value.toString() // eslint-disable-line @typescript-eslint/no-base-to-string
         : undefined;

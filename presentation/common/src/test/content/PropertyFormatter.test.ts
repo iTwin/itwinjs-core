@@ -229,9 +229,9 @@ describe("ContentPropertyValueFormatter", () => {
     });
   }
 
-  it("Returns undefined when provided a field without properties", async () => {
+  it("Returns empty string when provided a field without properties", async () => {
     const field = createTestSimpleContentField();
-    expect(await formatter.formatPropertyValue(field, undefined)).to.be.eq(undefined);
+    expect(await formatter.formatPropertyValue(field, undefined)).to.be.eq("");
   });
 
   describe("formats primitive", () => {
