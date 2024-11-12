@@ -40,5 +40,5 @@ The following previously-deprecated APIs have been removed:
 
 **@itwin/core-electron**:
 
-- `ElectronApp.callDialog`
-- `ElectronHost.getWindowSizeSetting`
+- `ElectronApp.callDialog` - replaced by [ElectronApp.dialogIpc]($electron)
+- `ElectronHost.getWindowSizeSetting` - replaced by [ElectronHost.getWindowSizeAndPositionSetting]($electron)
