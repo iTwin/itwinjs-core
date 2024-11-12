@@ -326,12 +326,29 @@ describe("ContentPropertyValueFormatter", () => {
 
   describe("formats struct", () => {
     it("'undefined' value", async () => {
-      const field = createField({
-        valueFormat: PropertyValueFormat.Struct,
-        typeName: "struct",
-        members: [{ name: "doubleProp", label: "Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } }],
+      const structPropField = createTestStructPropertiesContentField({
+        name: "structPropFieldName",
+        properties: [
+          {
+            property: createTestPropertyInfo({ name: "structProperty" }),
+          },
+        ],
+        memberFields: [
+          createTestPropertiesContentField({
+            name: "doubleProp",
+            label: "Double Property",
+            properties: [{ property: createTestPropertyInfo() }],
+            type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+          }),
+        ],
+        type: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: "struct",
+          members: [{ name: "doubleProp", label: "Double Property", type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" } }],
+        },
       });
-      const formattedValue = (await formatter.formatPropertyValue(field, undefined)) as DisplayValuesMap;
+
+      const formattedValue = (await formatter.formatPropertyValue(structPropField, undefined)) as DisplayValuesMap;
       expect(Object.keys(formattedValue)).to.be.empty;
     });
 
@@ -482,22 +499,48 @@ describe("ContentPropertyValueFormatter", () => {
 
   describe("formats array", () => {
     it("'undefined' value", async () => {
-      const field = createField({
-        valueFormat: PropertyValueFormat.Array,
-        typeName: "array",
-        memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+      const arrayPropField = createTestArrayPropertiesContentField({
+        name: "arrayPropFieldName",
+        properties: [
+          {
+            property: createTestPropertyInfo({ name: "arrayProperty" }),
+          },
+        ],
+        itemsField: createTestPropertiesContentField({
+          properties: [{ property: createTestPropertyInfo() }],
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+        }),
+        type: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: "array",
+          memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+        },
       });
-      const formattedValue = (await formatter.formatPropertyValue(field, undefined)) as DisplayValuesArray;
+
+      const formattedValue = (await formatter.formatPropertyValue(arrayPropField, undefined)) as DisplayValuesArray;
       expect(formattedValue).to.be.empty;
     });
 
     it("empty value", async () => {
-      const field = createField({
-        valueFormat: PropertyValueFormat.Array,
-        typeName: "array",
-        memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+      const arrayPropField = createTestArrayPropertiesContentField({
+        name: "arrayPropFieldName",
+        properties: [
+          {
+            property: createTestPropertyInfo({ name: "arrayProperty" }),
+          },
+        ],
+        itemsField: createTestPropertiesContentField({
+          properties: [{ property: createTestPropertyInfo() }],
+          type: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+        }),
+        type: {
+          valueFormat: PropertyValueFormat.Array,
+          typeName: "array",
+          memberType: { valueFormat: PropertyValueFormat.Primitive, typeName: "double" },
+        },
       });
-      const formattedValue = (await formatter.formatPropertyValue(field, [])) as DisplayValuesArray;
+
+      const formattedValue = (await formatter.formatPropertyValue(arrayPropField, [])) as DisplayValuesArray;
       expect(formattedValue).to.be.empty;
     });
 
