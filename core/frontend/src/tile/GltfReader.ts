@@ -1642,7 +1642,7 @@ export abstract class GltfReader {
         featureIdDescCount++;
         const featureId = featureIdBuffer.buffer[vertexId * featureIdView.stride];
         const propertyTableId = featureIdDesc.propertyTable ?? 0;
-        vertexUniqueId = `${featureIdDescCount > 0 ? `${vertexUniqueId}-` : ""}${featureId}-${propertyTableId}`;
+        vertexUniqueId = `${vertexUniqueId}-${featureId}-${propertyTableId}`;
       }
 
       let vertexElementId;
@@ -1669,7 +1669,7 @@ export abstract class GltfReader {
         vertexElementId = this._idMap.getBatchId(vertexProps);
         vertexPropsMap.set(vertexUniqueId, vertexElementId);
 
-        //  If the element id is already assigned to a previous instance,
+        //  If the element id is already assigned to a previous vertex,
         //  reuse the previous feature id to avoid collision in the feature table
         if(!this._meshElementIdToFeatureId.has(vertexElementId)){
           this._meshElementIdToFeatureId.set(vertexElementId, this._meshFeatures.length);
@@ -1681,7 +1681,6 @@ export abstract class GltfReader {
       itwinFeatureIndices.push(this._meshElementIdToFeatureId.get(vertexElementId) ?? 0);
     }
 
-    // so that previous logic is ignored
     return itwinFeatureIndices;
   }
 

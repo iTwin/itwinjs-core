@@ -1069,4 +1069,256 @@ describe("GltfReader", () => {
       expect(entryCount === 4).toBe(true);
     });
   });
+
+  const meshFeaturesExt: GltfDocument = JSON.parse(`
+{
+  "extensions": {
+    "EXT_structural_metadata": {
+      "schema": {
+        "id": "schema",
+        "classes": {
+          "default": {
+            "properties": {
+              "color": {
+                "type": "STRING"
+              },
+              "id": {
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "height": {
+                "type": "SCALAR",
+                "componentType": "FLOAT64"
+              }
+            }
+          }
+        }
+      },
+      "propertyTables": [
+        {
+          "class": "default",
+          "count": 4,
+          "properties": {
+            "color": {
+              "values": 4,
+              "stringOffsets": 5
+            },
+            "id": {
+              "values": 6
+            },
+            "height": {
+              "values": 7
+            }
+          }
+        }
+      ]
+    }
+  },
+  "extensionsUsed": [
+    "EXT_structural_metadata",
+    "EXT_mesh_features"
+  ],
+  "accessors": [
+    {
+      "bufferView": 0,
+      "byteOffset": 0,
+      "componentType": 5123,
+      "count": 132,
+      "type": "SCALAR",
+      "max": [
+        71
+      ],
+      "min": [
+        0
+      ]
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 0,
+      "componentType": 5126,
+      "count": 72,
+      "type": "VEC3",
+      "max": [
+        1,
+        1,
+        1
+      ],
+      "min": [
+        -1,
+        -1,
+        -1
+      ]
+    },
+    {
+      "bufferView": 3,
+      "byteOffset": 864,
+      "componentType": 5126,
+      "count": 72,
+      "type": "VEC3",
+      "max": [
+        0.84034216,
+        0.97562474,
+        0.86005926
+      ],
+      "min": [
+        -0.85006464,
+        -0.84470725,
+        -0.86005926
+      ]
+    },
+    {
+      "bufferView": 1,
+      "byteOffset": 0,
+      "componentType": 5121,
+      "count": 72,
+      "type": "SCALAR"
+    },
+    {
+      "bufferView": 2,
+      "byteOffset": 0,
+      "componentType": 5121,
+      "normalized": true,
+      "count": 72,
+      "type": "VEC4",
+      "max": [
+        255,
+        255,
+        0,
+        255
+      ],
+      "min": [
+        0,
+        0,
+        0,
+        255
+      ]
+    }
+  ],
+  "asset": {
+    "copyright": "2023 (c) Bentley Systems Inc.",
+    "generator": "A3XtoGltf 1.0",
+    "version": "2.0"
+  },
+  "buffers": [
+    {
+      "uri": "data:application/octet-stream;base64,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",
+      "byteLength": 2448
+    }
+  ],
+  "bufferViews": [
+    {
+      "buffer": 0,
+      "byteOffset": 0,
+      "byteLength": 264,
+      "target": 34963
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 264,
+      "byteLength": 72,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 336,
+      "byteLength": 288,
+      "byteStride": 4,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 624,
+      "byteLength": 1728,
+      "byteStride": 12,
+      "target": 34962
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2352,
+      "byteLength": 28
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2380,
+      "byteLength": 20
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2400,
+      "byteLength": 16
+    },
+    {
+      "buffer": 0,
+      "byteOffset": 2416,
+      "byteLength": 32
+    }
+  ],
+  "materials": [
+    {
+      "pbrMetallicRoughness": {
+        "metallicFactor": 0
+      }
+    }
+  ],
+  "meshes": [
+    {
+      "primitives": [
+        {
+          "attributes": {
+            "POSITION": 1,
+            "NORMAL": 2,
+            "_FEATURE_ID_0": 3,
+            "COLOR_0": 4
+          },
+          "indices": 0,
+          "material": 0,
+          "mode": 4
+        }
+      ]
+    }
+  ],
+  "nodes": [
+    {
+      "extensions": {
+        "EXT_mesh_features": {
+          "featureIds": [
+            {
+              "featureCount": 4,
+              "attribute": 0,
+              "propertyTable": 0
+            }
+          ]
+        }
+      },
+      "mesh": 0
+    }
+  ],
+  "scene": 0,
+  "scenes": [
+    {
+      "nodes": [
+        0
+      ]
+    }
+  ]
+}`);
+
+  describe("EXT_mesh_features", () => {
+    it.only("test something", async () => {
+      const idMap = new BatchedTileIdMap(iModel);
+
+      const reader = createReader(meshFeaturesExt, idMap)!;
+      expect(reader).toBeDefined();
+
+      const result = await reader.read();
+      expect(result).toBeDefined();
+
+      let count = 0;
+      for (const _ of idMap.entries()) {
+        count = count + 1;
+      }
+      expect(idMap).toEqual(50);
+    });
+  });
+
 });
