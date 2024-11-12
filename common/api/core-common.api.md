@@ -11344,6 +11344,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     handleOperationGetRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
     handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse): Promise<void>;
     abstract info: OpenAPIInfo;
+    isClientClosedRequest(code: number): boolean;
     isTimeout(code: number): boolean;
     get openAPIDescription(): RpcOpenAPIDescription;
     pathPrefix: string;
