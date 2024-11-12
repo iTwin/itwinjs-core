@@ -86,6 +86,7 @@ namespace HTTP {
   export class UpgradeRequired extends ErrorCategory { public name = "UpgradeRequired"; public code = 426; }
   export class PreconditionRequired extends ErrorCategory { public name = "PreconditionRequired"; public code = 428; }
   export class TooManyRequests extends ErrorCategory { public name = "TooManyRequests"; public code = 429; }
+  export class ClientClosedRequest extends ErrorCategory { public name = "ClientClosedRequest"; public code = 499; }
 
   export class InternalServerError extends ErrorCategory { public name = "InternalServerError"; public code = 500; }
   export class NotImplemented extends ErrorCategory { public name = "NotImplemented"; public code = 501; }
@@ -137,7 +138,7 @@ class UnknownError extends HTTP.InternalServerError { }
 
 class NotImplemented extends HTTP.NotImplemented { }
 
-class Aborted extends HTTP.BadRequest { }
+class Aborted extends HTTP.ClientClosedRequest { }
 
 function lookupHttpStatusCategory(statusCode: number): StatusCategory {
   switch (statusCode) {
