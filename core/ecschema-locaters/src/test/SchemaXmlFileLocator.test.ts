@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { FileSchemaKey } from "../SchemaFileLocater";
-import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
+import { BackendSchemasXmlFileLocater, SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
 
 describe("SchemaXmlFileLocater tests:", () => {
   let locater: SchemaXmlFileLocater;
@@ -209,5 +209,60 @@ describe("SchemaXmlFileLocater tests:", () => {
   it("getSchemaKey, invalid version, throws", () => {
     const schemaXml = `<ECSchema schemaName="SchemaA" version=""> </ECSchema>`;
     expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
+  });
+});
+
+describe("BackendSchemasXmlFileLocater tests", () => {
+
+  function testLocaterSearchPaths(actualSchemas: string[], expectedSchemas: string[]) {
+    assert.equal(actualSchemas.length, expectedSchemas.length);
+
+    for (let i = 0; i < actualSchemas.length; i++)
+      assert.equal(actualSchemas[i], expectedSchemas[i]);
+  }
+
+  const dgnSchemaPath = path.join(__dirname, "assets", "ECSchemas", "Dgn");
+  const domainSchemaPath = path.join(__dirname, "assets", "ECSchemas", "Domain");
+  const ecdbSchemaPath = path.join(__dirname, "assets", "ECSchemas", "ECDb");
+  const standardSchemaPath = path.join(__dirname, "assets", "ECSchemas", "Standard");
+  const jsonFilePath = path.join(__dirname, "assets", "json");
+  const xmlFilePath = path.join(__dirname, "assets", "xml");
+
+  it("BackendSchemasXmlFileLocater - check schema order with registerSchemaSearchPath", () => {
+    // Empty list with just default released schemas
+    const locater = new BackendSchemasXmlFileLocater(path.join(__dirname, `assets`));
+
+    // Default search order
+    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
+
+    // Add a new search path
+    locater.addSchemaSearchPath(jsonFilePath);
+    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
+
+    // Add another new search path
+    locater.addSchemaSearchPath(xmlFilePath);
+    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
+
+    // Add a duplicate search path : should get ignored
+    locater.addSchemaSearchPath(xmlFilePath);
+    locater.addSchemaSearchPath(standardSchemaPath);
+
+    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
+  });
+
+  it("BackendSchemasXmlFileLocater - check schema order with registerSchemaSearchPaths", () => {
+    // Empty list with just default released schemas
+    const locater = new BackendSchemasXmlFileLocater(path.join(__dirname, `assets`));
+
+    // Default search order
+    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
+
+    // Add 2 new search paths
+    locater.addSchemaSearchPaths([jsonFilePath, xmlFilePath]);
+    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
+
+    // Add a duplicate search path : should get ignored
+    locater.addSchemaSearchPaths([xmlFilePath, standardSchemaPath]);
+    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
   });
 });

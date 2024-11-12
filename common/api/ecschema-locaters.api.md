@@ -12,6 +12,13 @@ import { SchemaKey } from '@itwin/ecschema-metadata';
 import { SchemaMatchType } from '@itwin/ecschema-metadata';
 
 // @beta
+export class BackendSchemasXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
+    constructor(assetsDir: string);
+    addSchemaSearchPath(schemaPath: string): void;
+    addSchemaSearchPaths(schemaPaths: string[]): void;
+}
+
+// @beta
 export class FileSchemaKey extends SchemaKey {
     constructor(key: SchemaKey, fileName: string, schemaJson?: string);
     // (undocumented)
@@ -39,6 +46,8 @@ export abstract class SchemaFileLocater {
     readUtf8FileToString(filePath: string): Promise<string | undefined>;
     // (undocumented)
     readUtf8FileToStringSync(filePath: string): string | undefined;
+    // (undocumented)
+    protected searchPathPrecedence: Map<string, number>;
     // (undocumented)
     searchPaths: string[];
 }
