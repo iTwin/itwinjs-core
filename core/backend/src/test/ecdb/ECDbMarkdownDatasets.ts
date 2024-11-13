@@ -31,19 +31,30 @@ interface IPrimitive extends IPrimitiveBase {
 }
 
 interface IPrimitiveArrayBase {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   array_i?: number[];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   array_l?: number[];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   array_d?: number[];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   array_b?: boolean[];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   array_dt?: string[];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   array_s?: string[];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   array_bin?: Uint8Array[];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   array_p2d?: Point2d[];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   array_p3d?: Point3d[];
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   array_g?: GeometryStreamProps[];
 }
 
 interface IPrimitiveArray extends IPrimitiveArrayBase {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
   array_st?: ComplexStruct[];
 }
 

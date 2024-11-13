@@ -55,8 +55,9 @@ export interface ECDbTestBinderProps {
 export interface ColumnInfoProps{
   propName: string;
   accessString?: string;
-  type?: string;
-  typeName?: string;
+  type?: string; // type is used on ECSqlStatement because it can differ from TypeName
+  typeName?: string; // typeName is used on ConcurrentQuery
+  extendedTypeName?: string;
   isGeneratedProperty?: boolean;
 }
 
@@ -86,7 +87,7 @@ export interface ConcurrentQueryECDbColumnInfoProps {
 }
 
 export enum TypeOfQuery{
-  ECSqlStatement = 0,
+  ECSqlStatement = 0, //TODO: rename, it conflicts with a type of that name
   ConcurrentQuery = 1,
   Both = 2
 };
@@ -120,6 +121,7 @@ function isColumnInfoProps(obj: any): obj is ColumnInfoProps{
     (obj.accessString === undefined || typeof obj.accessString === "string") &&
     (obj.type === undefined || typeof obj.type === "string") &&
     (obj.typeName === undefined || typeof obj.typeName === "string") &&
+    (obj.extendedTypeName === undefined || typeof obj.extendedTypeName === "string") &&
     (obj.isGeneratedProperty === undefined || typeof obj.isGeneratedProperty === "boolean");
 }
 
@@ -172,6 +174,9 @@ export function buildQueryOptionsBuilder(object: ConcurrentQueryRowOptions | und
 export function buildECSqlStatementDataFromTableResults(obj: any, stmt: ECSqlStatement): any {
   let index: number = 0
   for(const key in obj) {
+    if(!obj.hasOwnProperty(key))
+      continue;
+
     const colInfo = stmt.getValue(index).columnInfo;
     const type: string = ECSqlValueType[colInfo.getType()];
     switch (type){
@@ -184,7 +189,7 @@ export function buildECSqlStatementDataFromTableResults(obj: any, stmt: ECSqlSta
       case "Int":
       case "Int64":
         if(!obj[key].startsWith("0x")) // so that not to convert ids
-          obj[key] = parseInt(obj[key])
+          obj[key] = parseInt(obj[key], 16)
         break;
       case "Struct":
       case "Point3d":
@@ -200,6 +205,8 @@ export function buildECSqlStatementDataFromTableResults(obj: any, stmt: ECSqlSta
 export function buildConcurrentQueryDataFromTableResults(obj: any, colMetaData: QueryPropertyMetaData[]): any {
   let index: number = 0;
   for(const key in obj) {
+    if(!obj.hasOwnProperty(key))
+      continue;
     const colInfo = colMetaData[index];
     const type: string = colInfo.typeName;
     switch (type){
@@ -212,7 +219,7 @@ export function buildConcurrentQueryDataFromTableResults(obj: any, colMetaData: 
       case "int":
       case "long":
         if(!obj[key].startsWith("0x"))  // so that not to convert ids
-          obj[key] = parseInt(obj[key])
+          obj[key] = parseInt(obj[key], 16)
         break;
       case "struct":
       case "point3d":
@@ -229,7 +236,7 @@ export function buildBinaryData(obj: any): any {
   for(const key in obj) {
     if(typeof obj[key] === "string")
     {
-      const [isBinary, arrayVal] = UnderstandAndReplaceBinaryData(obj[key])
+      const [isBinary, arrayVal] = understandAndReplaceBinaryData(obj[key])
       if(isBinary)
         obj[key] = arrayVal;
     }
@@ -239,17 +246,18 @@ export function buildBinaryData(obj: any): any {
   return obj;
 }
 
-function UnderstandAndReplaceBinaryData(str: string): [boolean,any]{
+function understandAndReplaceBinaryData(str: string): [boolean,any]{
   if(str.startsWith("BIN(") && str.endsWith(")"))
   {
     const startInd = str.indexOf("(") + 1;
     const endInd = str.indexOf(")");
     str = str.slice(startInd, endInd);
-    let ans: number[] = []
+    const ans: number[] = []
     const numbers: string[] = str.split(",");
     numbers.forEach((value:string)=>
       {
         value = value.trim();
+        // eslint-disable-next-line radix
         ans.push(parseInt(value));
       }
     );
@@ -458,17 +466,23 @@ export class ECDbMarkdownTestParser {
         const header = token.header[i].text.toLowerCase();
         const cell = row[i].text;
         switch (header) {
+          case "propname":
+            column.propName = cell;
+            break;
           case "accessstring":
             column.accessString = cell;
             break;
           case "isgeneratedproperty":
-            column.isGeneratedProperty = cell.toLowerCase() == "true";
+            column.isGeneratedProperty = cell.toLowerCase() === "true";
             break;
           case "typename":
             column.typeName = cell;
             break;
           case "type":
             column.type = cell;
+            break;
+          case "extendedtypename":
+            column.extendedTypeName = cell;
             break;
           default:
             this.logWarning(`Unknown column header ${header} found in file ${markdownFilePath}. Skipping.`);
