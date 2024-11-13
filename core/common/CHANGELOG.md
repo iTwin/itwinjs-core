@@ -1,6 +1,20 @@
 # Change Log - @itwin/core-common
 
-This log was last generated on Tue, 22 Oct 2024 20:03:09 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Nov 2024 15:23:38 GMT and should not be manually modified.
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:38 GMT
+
+### Updates
+
+- Added props for Sheet Index elements
+- fix regression related to classid
+- improve doc for Placement3d.multiplyTransform
+- Deprecate `WipRpcInterface`
+- Add ITwinError interface and namespace
+- Permit FeatureAppearance to independently override line color and transparency.
+- Allow context reality model visibility to be toggled on/off
+- Add ContourDisplay API.
 
 ## 4.9.5
 Tue, 22 Oct 2024 20:01:40 GMT
