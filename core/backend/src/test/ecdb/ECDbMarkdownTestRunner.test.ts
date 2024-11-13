@@ -10,7 +10,7 @@ import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptionsBuilder, QueryRow
 import { buildBinaryData, buildConcurrentQueryDataFromTableResults, buildECSqlRowArgs, buildECSqlStatementDataFromTableResults, buildQueryOptionsBuilder, ECDbMarkdownTestParser, ECDbTestProps } from "./ECDbMarkdownTestParser";
 import * as path from "path";
 import * as fs from "fs";
-import { ECDbMarkdownTestGenerator } from "./ECDbMarkdownTestGenerator";
+import { ECDbMarkdownDatasets } from "./ECDbMarkdownDatasets";
 
 function replacePropsInString(input: string, props: { [key: string]: any }): string {
   const regex = /\$\(([^)]+)\)/g;
@@ -35,7 +35,7 @@ function logWarning(message: string) {
 
 describe.only("Markdown based ECDb test runner", async () => {
   before(async () => {
-    await ECDbMarkdownTestGenerator.generateFiles();
+    await ECDbMarkdownDatasets.generateFiles();
   });
 
   const tests: ECDbTestProps[] = ECDbMarkdownTestParser.parse();
@@ -60,7 +60,7 @@ describe.only("Markdown based ECDb test runner", async () => {
           }
           const props = readPropsFromFile(datasetFilePath);
 
-          const compiledSql = replacePropsInString(test.sql!, props);
+          const compiledSql = replacePropsInString(test.sql, props);
 
           try {
             // TODO: statement options should be exposed through the markdown
@@ -186,8 +186,8 @@ describe.only("Markdown based ECDb test runner", async () => {
           }
           const props = readPropsFromFile(datasetFilePath);
 
-          const compiledSql = replacePropsInString(test.sql!, props);
-          let params: QueryBinder | undefined = undefined;
+          const compiledSql = replacePropsInString(test.sql, props);
+          let params: QueryBinder | undefined;
           if(test.binders !== undefined) {
             params = new QueryBinder();
             for (const binder of test.binders) {

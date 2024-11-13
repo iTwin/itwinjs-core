@@ -97,7 +97,7 @@ export interface AllPropertiesProps {
 }
 
 
-export class ECDbMarkdownTestGenerator {
+export class ECDbMarkdownDatasets {
   public static async generateFiles(): Promise<void> {
     const fileName = "AllProperties.bim";
 
