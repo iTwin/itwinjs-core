@@ -2,16 +2,17 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { describe, expect, it } from "vitest";
 import { randomInt } from "crypto";
 import * as fs from "fs";
-import { CloneFunction, Dictionary, OrderedComparator } from "@itwin/core-bentley";
+import { describe, expect, it } from "vitest";
+import { CloneFunction, compareWithTolerance, Dictionary, OrderedComparator, OrderedSet } from "@itwin/core-bentley";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Path } from "../../curve/Path";
+import { RegionOps } from "../../curve/RegionOps";
 import { StrokeOptions } from "../../curve/StrokeOptions";
 import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
@@ -24,11 +25,14 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Plane3dByOriginAndVectors } from "../../geometry3d/Plane3dByOriginAndVectors";
 import { Point2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
+import { PolygonOps } from "../../geometry3d/PolygonOps";
 import { Range2d, Range3d } from "../../geometry3d/Range";
+import { Ray3d } from "../../geometry3d/Ray3d";
 import { Transform } from "../../geometry3d/Transform";
 import { XAndY, XYAndZ } from "../../geometry3d/XYZProps";
 import { MomentData } from "../../geometry4d/MomentData";
 import { FacetFaceData } from "../../polyface/FacetFaceData";
+import { FacetIntersectOptions, FacetLocationDetail } from "../../polyface/FacetLocationDetail";
 import { IndexedPolyfaceSubsetVisitor } from "../../polyface/IndexedPolyfaceVisitor";
 import { IndexedPolyface, Polyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
@@ -38,6 +42,9 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { IModelJson } from "../../serialization/IModelJsonSchema";
 import { Box } from "../../solid/Box";
 import { Cone } from "../../solid/Cone";
+import { LinearSweep } from "../../solid/LinearSweep";
+import { RotationalSweep } from "../../solid/RotationalSweep";
+import { RuledSweep } from "../../solid/RuledSweep";
 import { SolidPrimitive } from "../../solid/SolidPrimitive";
 import { Sphere } from "../../solid/Sphere";
 import { TorusPipe } from "../../solid/TorusPipe";
@@ -1919,6 +1926,121 @@ describe("SphericalMeshData", () => {
     sectorsWithSameNormalAtVertexShareUVParamAndColor(ck, mesh1.data);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Triangulate");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("Mirror", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+    let y0 = 0;
+    const delta = 10;
+
+    // accumulator for ray intersection params, ignoring hits at the ray origin
+    const rayHits = new OrderedSet<FacetLocationDetail>((d0: FacetLocationDetail, d1: FacetLocationDetail) => compareWithTolerance(d0.a, d1.a, Geometry.smallMetricDistance));
+    const intersectOptions = new FacetIntersectOptions();
+    intersectOptions.parameterTolerance = Geometry.smallFraction;
+    intersectOptions.acceptIntersection = (d: FacetLocationDetail) => { if (d.a > Geometry.smallMetricDistance) rayHits.add(d.clone()); return false; };
+
+    const normalPointsOutward = (closedMesh: Polyface, normal: Ray3d): boolean => {
+      rayHits.clear();
+      PolyfaceQuery.intersectRay3d(closedMesh, normal, intersectOptions);
+      return 0 === rayHits.size % 2; // ASSUME mesh is closed and adjacent facets have dihedral angle < 180
+    };
+
+    const hasOutwardOrientationAndFacetNormals = (closedMesh: Polyface): boolean => {
+      let outward = true;
+      const storedNormal = Ray3d.createZero();
+      for (const visitor = closedMesh.createVisitor(0); visitor.moveToNextFacet(); ) {
+        for (let i = 0; i < visitor.point.length; ++i) {
+          if (!visitor.getNormal(i, storedNormal.direction))
+            outward = false;
+          else if (!visitor.getPoint(i, storedNormal.origin))
+            outward = false;
+          else if (!normalPointsOutward(closedMesh, storedNormal)) { // stored normal points outward
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [storedNormal.origin, storedNormal.fractionToPoint(2.5)], x0, y0);
+            outward = false;
+          }
+        }
+        const computedNormal = PolygonOps.centroidAreaNormal(visitor.point);
+        if (!computedNormal)
+          outward = false;
+        else if (!normalPointsOutward(closedMesh, computedNormal)) { // facet orientation points outward
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [computedNormal.origin, computedNormal.fractionToPoint(4)], x0, y0);
+          outward = false;
+        }
+      }
+      return outward;
+    };
+
+    const testMirror = (g: IndexedPolyface | SolidPrimitive | undefined, t: Transform): void => {
+      if (!ck.testDefined(g, "geometry is defined"))
+        return;
+      ck.testTrue(t.matrix.determinant() < 0, "transform is a mirror");
+      let closedMesh = g;
+      let type = g.geometryCategory;
+      if (closedMesh instanceof SolidPrimitive) {
+        type = closedMesh.solidPrimitiveType;
+        const options = StrokeOptions.createForFacets();
+        options.needNormals = true;
+        const builder = PolyfaceBuilder.create(options);
+        builder.addGeometryQuery(closedMesh);
+        closedMesh = builder.claimPolyface();
+      }
+      y0 = 0;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedMesh, x0, y0);
+      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(closedMesh), `${type} mesh is closed`);
+      ck.testTrue(hasOutwardOrientationAndFacetNormals(closedMesh), `${type} facets and normals point outward`);
+      y0 = delta;
+      const mirrorMesh = closedMesh.cloneTransformed(t);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mirrorMesh, x0, y0);
+      ck.testTrue(hasOutwardOrientationAndFacetNormals(mirrorMesh), `${type} mirrored facets and normals point outward`);
+    };
+
+    // mirror across plane at origin with normal (1,1,0)
+    const mirrorMatrix = Matrix3d.createDirectionalScale(Vector3d.createNormalized(1, 1)!, -1.0);
+    const mirrorTrans = Transform.createFixedPointAndMatrix(Point3d.createZero(), mirrorMatrix);
+
+    // all solids are centered at zero
+    const geometry: (IndexedPolyface | SolidPrimitive | undefined)[] = [];
+    geometry.push(ImportedSample.createPolyhedron62());
+    geometry.push(Box.createRange(Range3d.create(Point3d.create(-1.5, -1, -0.5), Point3d.create(1.5, 1, 0.5)), true));
+    geometry.push(Cone.createAxisPoints(Point3d.create(-1), Point3d.create(1), 2, 1, true));
+    const sweepLength = 3;
+    const washer = RegionOps.sortOuterAndHoleLoopsXY([
+      Loop.create(Arc3d.createXY(Point3d.create(0, 0, -sweepLength / 2), 2)),
+      Loop.create(Arc3d.createXY(Point3d.create(0, 0, -sweepLength / 2), 1.5))
+    ]);
+    const arcNormal = Vector3d.createNormalized(3, 0, -1)!;
+    washer.tryTransformInPlace(
+      Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationVectorToVector(Vector3d.unitZ(), arcNormal)),
+    );
+    geometry.push(LinearSweep.create(washer, arcNormal.scale(sweepLength), true));
+    const polygonCCW = [Point3d.create(-1, -1), Point3d.create(-1, -2), Point3d.create(1, -2), Point3d.create(1, -1)];
+    const polygonCW = polygonCCW.slice().reverse();
+    const sweepRay = Ray3d.create(Point3d.createZero(), Vector3d.unitX());
+    const sweepAngle = Angle.createDegrees(20);
+    geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCCW), sweepRay, sweepAngle, true));
+    geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCCW), sweepRay, sweepAngle.cloneScaled(-1), true));
+    geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCW), sweepRay, sweepAngle, true));
+    geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCW), sweepRay, sweepAngle.cloneScaled(-1), true));
+    geometry.push(RuledSweep.create(
+      [Loop.create(Arc3d.createXY(Point3d.create(0, -1, -1), 1)), Loop.create(Arc3d.createXY(Point3d.create(0, 1, 1), 1.5))],
+      true
+    ));
+    geometry.push(Sphere.createEllipsoid(
+      Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createScale(2, 3, 1)),
+      AngleSweep.createStartEndDegrees(-45, 0), true
+    ));
+    geometry.push(TorusPipe.createAlongArc(Arc3d.createCenterNormalRadius(Point3d.createZero(), Vector3d.unitY(-1), 2), 0.25, true));
+
+    // verify outward normals for closed mesh and all flavors of primitive solids, both before and after mirroring
+    for (const geom of geometry) {
+      testMirror(geom, mirrorTrans);
+      x0 += delta;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Mirror");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

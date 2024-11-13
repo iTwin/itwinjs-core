@@ -234,6 +234,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     circularRadiusXY(): number | undefined;
     clone(): Arc3d;
     cloneAtZ(z?: number): Arc3d;
+    cloneAxisAligned(): Arc3d | undefined;
     cloneInRotatedBasis(theta: Angle): Arc3d;
     clonePartialCurve(fractionA: number, fractionB: number): Arc3d;
     cloneTransformed(transform: Transform): Arc3d;
@@ -1354,7 +1355,7 @@ export class Cone extends SolidPrimitive implements UVSurface, UVSurfaceIsoParam
     isSameGeometryClass(other: any): boolean;
     maxIsoParametricDistance(): Vector2d;
     readonly solidPrimitiveType = "cone";
-    strokeConstantVSection(v: number, fixedStrokeCount: number | undefined, options: StrokeOptions | undefined): LineString3d;
+    strokeConstantVSection(v: number, fixedStrokeCount?: number, options?: StrokeOptions): LineString3d;
     tryTransformInPlace(transform: Transform): boolean;
     uvFractionToPoint(uFraction: number, vFraction: number, result?: Point3d): Point3d;
     uvFractionToPointAndTangents(uFraction: number, vFraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors;
@@ -1497,6 +1498,7 @@ export abstract class CurveChain extends CurveCollection {
     getPackedStrokes(options?: StrokeOptions): GrowableXYZArray | undefined;
     primitiveIndexAndFractionToCurveLocationDetailPointAndDerivative(index: number, fraction: number, cyclic?: boolean, result?: CurveLocationDetail): CurveLocationDetail | undefined;
     reverseChildrenInPlace(): void;
+    reverseInPlace(): void;
     startPoint(result?: Point3d): Point3d | undefined;
     tryAddChild(child: AnyCurve | undefined): boolean;
 }
@@ -1577,6 +1579,7 @@ export abstract class CurveCollection extends GeometryQuery {
     isPath(): this is Path;
     maxGap(): number;
     projectedParameterRange(ray: Vector3d | Ray3d, lowHigh?: Range1d): Range1d | undefined;
+    reverseInPlace(): void;
     sumLengths(): number;
     abstract tryAddChild(child: AnyCurve | undefined): boolean;
     tryTransformInPlace(transform: Transform): boolean;
@@ -2353,6 +2356,7 @@ export class GrowableFloat64Array {
     reassign(index: number, value: number): void;
     resize(newLength: number, padValue?: number): void;
     restrictToInterval(a: number, b: number): void;
+    reverseInPlace(): void;
     setAtUncheckedIndex(index: number, value: number): void;
     sort(compareMethod?: (a: any, b: any) => number): void;
     swap(i: number, j: number): void;
@@ -3127,7 +3131,7 @@ export type LinearCurvePrimitive = LineSegment3d | LineString3d;
 export class LinearSweep extends SolidPrimitive {
     clone(): LinearSweep;
     cloneSweepVector(): Vector3d;
-    cloneTransformed(transform: Transform): LinearSweep;
+    cloneTransformed(transform: Transform): LinearSweep | undefined;
     constantVSection(vFraction: number): CurveCollection | undefined;
     static create(contour: AnyCurve, direction: Vector3d, capped: boolean): LinearSweep | undefined;
     static createZSweep(xyPoints: XAndY[], z: number, zSweep: number, capped: boolean): LinearSweep | undefined;
@@ -4784,11 +4788,11 @@ export class PolygonOps {
     static classifyPointInPolygonXY(x: number, y: number, points: IndexedXYZCollection): number | undefined;
     static closestApproach(polygonA: Point3d[] | IndexedXYZCollection, polygonB: Point3d[] | IndexedXYZCollection, dMax?: number, _searchInterior?: boolean): PolygonLocationDetailPair | undefined;
     static closestPoint(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
-    static closestPointOnBoundary(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
+    static closestPointOnBoundary(polygon: Point3d[] | IndexedXYZCollection, testPoint: Point3d, tolerance?: number | [number, number], result?: PolygonLocationDetail): PolygonLocationDetail;
     static convexBarycentricCoordinates(polygon: Point3d[] | IndexedXYZCollection, point: Point3d, tolerance?: number): number[] | undefined;
     static ensureClosed(polygon: Point3d[] | IndexedXYZCollection, tolerance?: number): Point3d[] | IndexedXYZCollection;
     static forceClosure(polygon: Point3d[] | GrowableXYZArray, tolerance?: number): void;
-    static intersectRay3d(polygon: Point3d[] | IndexedXYZCollection, ray: Ray3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
+    static intersectRay3d(polygon: Point3d[] | IndexedXYZCollection, ray: Ray3d, tolerance?: number | [number, number], result?: PolygonLocationDetail): PolygonLocationDetail;
     static intersectSegment(polygon: Point3d[] | IndexedXYZCollection, point0: Point3d, point1: Point3d, tolerance?: number, result?: PolygonLocationDetail): PolygonLocationDetail;
     static isConvex(polygon: Point3d[] | IndexedXYZCollection): boolean;
     static orientLoopsCCWForOutwardNormalInPlace(loops: IndexedReadWriteXYZCollection | IndexedReadWriteXYZCollection[], outwardNormal: Vector3d): number;
@@ -5309,7 +5313,7 @@ export class RegionOps {
 export class RotationalSweep extends SolidPrimitive {
     clone(): RotationalSweep;
     cloneAxisRay(): Ray3d;
-    cloneTransformed(transform: Transform): RotationalSweep;
+    cloneTransformed(transform: Transform): RotationalSweep | undefined;
     constantVSection(vFraction: number): CurveCollection | undefined;
     static create(contour: AnyCurve, axis: Ray3d, sweepAngle: Angle, capped: boolean): RotationalSweep | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
@@ -5331,7 +5335,7 @@ export class RuledSweep extends SolidPrimitive {
     clone(): RuledSweep;
     cloneContours(): CurveCollection[];
     cloneSweepContours(): SweepContour[];
-    cloneTransformed(transform: Transform): RuledSweep;
+    cloneTransformed(transform: Transform): RuledSweep | undefined;
     constantVSection(vFraction: number): CurveCollection | undefined;
     static create(contours: AnyCurve[], capped: boolean): RuledSweep | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
@@ -5634,7 +5638,7 @@ export class Sphere extends SolidPrimitive implements UVSurface {
     maxAxisRadius(): number;
     maxIsoParametricDistance(): Vector2d;
     readonly solidPrimitiveType = "sphere";
-    strokeConstantVSection(v: number, fixedStrokeCount: number | undefined, options?: StrokeOptions): LineString3d;
+    strokeConstantVSection(v: number, fixedStrokeCount?: number, options?: StrokeOptions): LineString3d;
     trueSphereRadius(): number | undefined;
     tryTransformInPlace(transform: Transform): boolean;
     uFractionToRadians(u: number): number;
