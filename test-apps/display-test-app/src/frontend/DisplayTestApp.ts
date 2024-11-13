@@ -224,9 +224,13 @@ const dtaFrontendMain = async () => {
         urlStr = urlStr.replace("{iModel.filename}", getFileName(iModel.key));
         urlStr = urlStr.replace("{iModel.extension}", getFileExt(iModel.key));
         const url = new URL(urlStr);
+        const tilesetUrl = new URL("tileset.json", url);
+        tilesetUrl.search = url.search;
+
+        // Check if a tileset has been published for this iModel.
         try {
-          // See if a tileset has been published for this iModel.
-          const response = await fetch(`${url}tileset.json`);
+          console.log(`Checking for tileset at ${tilesetUrl.toString()}`); // eslint-disable-line no-console
+          const response = await fetch(tilesetUrl);
           await response.json();
           return url;
         } catch {
