@@ -12,7 +12,7 @@ import { ECDbMarkdownDatasets } from "./ECDbMarkdownDatasets";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 // Call like this:
-// node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT * from meta.ECSchemaDef LIMIT 4"
+// node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT * from meta.ECSchemaDef LIMIT 4" -t
 async function runConcurrentQuery(datasetFilePath: string, sql: string): Promise<{metadata: any[], rows: any[] }> {
   const imodel: IModelDb = SnapshotDb.openFile(datasetFilePath);
   const queryOptions: QueryOptionsBuilder = new QueryOptionsBuilder();
@@ -24,28 +24,59 @@ async function runConcurrentQuery(datasetFilePath: string, sql: string): Promise
   return {metadata, rows };
 }
 
+function arrayToMarkdownTable(data: any[]): string {
+  if (data.length === 0) {
+    return "";
+  }
+
+  const headers = Object.keys(data[0]);
+  const columnWidths = headers.map(header =>
+    Math.max(header.length, ...data.map(row => String(row[header]).length))
+  );
+
+  const formatRow = (row: any) =>
+    `| ${headers.map((header, i) => String(row[header]).padEnd(columnWidths[i])).join(" | ")} |`;
+
+  const headerRow = formatRow(headers.reduce((acc, header) => ({ ...acc, [header]: header }), {}));
+  const separatorRow = `| ${columnWidths.map(width => "-".repeat(width)).join(" | ")} |`;
+  const dataRows = data.map(formatRow);
+
+  return [headerRow, separatorRow, ...dataRows].join("\n");
+}
+
 function generateHash(input: string): string {
   return crypto.createHash('sha256').update(input).digest('hex').substring(0, 8);
 }
 
-function writeMarkdownFile(dataset: string, sql: string, columns: any[], results: any[]): void {
+function writeMarkdownFile(dataset: string, sql: string, columns: any[], results: any[], useTables: boolean): void {
   const hash = generateHash(sql);
-  const markdownContent = `# Query Results for ${dataset} - ${hash}
+
+  let markdownContent = `# Query Results for ${dataset} - ${hash}
 
 - dataset: ${dataset}
 
 \`\`\`sql
 ${sql}
 \`\`\`
+`;
 
+  if (useTables) {
+    markdownContent += `
+${arrayToMarkdownTable(columns)}
+
+${arrayToMarkdownTable(results)}
+`;
+  } else {
+    markdownContent += `
 \`\`\`json
-${JSON.stringify(columns, null, 2)}
+${JSON.stringify({columns}, null, 2)}
 \`\`\`
 
 \`\`\`json
 ${JSON.stringify(results, null, 2)}
 \`\`\`
 `;
+  }
 
   const outputFilePath = path.join(__dirname, "generated.ecdbtest.md");
   fs.appendFileSync(outputFilePath, markdownContent, "utf-8");
@@ -61,12 +92,13 @@ async function main() {
     process.exit(1);
   }
 
-  const [dataset, sql] = args;
+  const [dataset, sql, tablesFlag] = args;
+  const useTables = tablesFlag === "-t";
   try {
     await ECDbMarkdownDatasets.generateFiles();
     const datasetFilePath = path.join(KnownTestLocations.outputDir, "ECDbTests", dataset);
     const { metadata, rows } = await runConcurrentQuery(datasetFilePath, sql);
-    writeMarkdownFile(dataset, sql, metadata, rows);
+    writeMarkdownFile(dataset, sql, metadata, rows, useTables);
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("Error running query:", error);
