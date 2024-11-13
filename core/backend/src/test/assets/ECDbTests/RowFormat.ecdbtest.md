@@ -2,13 +2,12 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md
 
 # Select ECDb schemas from ECDbMeta using tables but using ECSqlPropertyIndexes
 
+- Mode: ECSqlStatement
 - dataset: AllProperties.bim
 
 ```sql
 Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4;
 ```
-
-## ECSqlStatement
 
 ```json
 {
@@ -18,10 +17,10 @@ Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4
 }
 ```
 
-| AccessString | Type   |
-| ------------ | ------ |
-| Name         | String |
-| Alias        | String |
+| PropName | Type   |
+| -------- | ------ |
+| Name     | String |
+| Alias    | String |
 
 |                    |         |
 | ------------------ | ------- |
@@ -30,15 +29,13 @@ Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4
 | ECDbMeta           | meta    |
 | ECDbSchemaPolicies | ecdbpol |
 
-# Select Test elements from sample dataset using Json using ECSqlPropertyIndexes row option and also using tables to validate column metadata
+# Select Test elements from sample dataset using Json using ECSqlPropertyIndexes row option
 
 - dataset: AllProperties.bim
 
 ```sql
 SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005 ORDER BY e.DirectLong LIMIT 2
 ```
-
-## ECSqlStatement
 
 ```json
 {
@@ -53,29 +50,17 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
   "columns": [
     {
       "accessString": "ECClassId",
-      "propertyName": "ECClassId",
-      "originPropertyName": "ECClassId",
-      "rootClassAlias": "e",
-      "rootClassName": "AllProperties.TestElement",
-      "rootClassTableSpace": "main",
+      "propName": "ECClassId",
       "type": "Id",
-      "isEnum": false,
-      "isGeneratedProperty": false,
-      "isSystemProperty": true,
-      "isDynamicProp": false
+      "typeName": "long",
+      "isGeneratedProperty": false
     },
     {
       "accessString": "DirectStr",
-      "propertyName": "DirectStr",
-      "originPropertyName": "DirectStr",
-      "rootClassAlias": "e",
-      "rootClassName": "AllProperties.TestElement",
-      "rootClassTableSpace": "main",
+      "propName": "DirectStr",
       "type": "String",
-      "isEnum": false,
-      "isGeneratedProperty": false,
-      "isSystemProperty": false,
-      "isDynamicProp": false
+      "typeName": "string",
+      "isGeneratedProperty": false
     }
   ]
 }
@@ -87,23 +72,3 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
   ["$(testElementClassId)", "str7"]
 ]
 ```
-
-## Concurrent Query
-
-```json
-{
-  "rowOptions": {
-    "rowFormat": "useecsqlpropertyindexes"
-  }
-}
-```
-
-| Name      | ClassName                 | AccessString | JsonName  | TypeName | Generated | Index |
-| --------- | ------------------------- | ------------ | --------- | -------- | --------- | ----- |
-| ECClassId |                           | ECClassId    | className | long     | false     | 0     |
-| DirectStr | AllProperties:TestElement | DirectStr    | directStr | string   | false     | 1     |
-
-|       |      |
-| ----- | ---- |
-| 0x152 | str6 |
-| 0x152 | str7 |
