@@ -53,12 +53,53 @@ export interface ECDbTestBinderProps {
 }
 
 export interface ColumnInfoProps{
-  propName: string;
+  name: string;
+  className?: string;
   accessString?: string;
+  generated?: boolean;
+  index?: number;
+  jsonName?: string;
+  extendedType?: string;
   type?: string; // type is used on ECSqlStatement because it can differ from TypeName
   typeName?: string; // typeName is used on ConcurrentQuery
-  extendedTypeName?: string;
-  isGeneratedProperty?: boolean;
+}
+
+export const columnInfoPropsKeys: Set<keyof ColumnInfoProps> = new Set([
+  "name",
+  "className",
+  "accessString",
+  "generated",
+  "index",
+  "jsonName",
+  "extendedType",
+  "type",
+  "typeName",
+]);
+
+/* interface QueryPropertyMetaData
+  className: string;
+  accessString?: string;
+  generated: boolean;
+  index: number;
+  jsonName: string;
+  name: string;
+  extendType: string;
+  typeName: string;
+*/
+
+function isColumnInfoProps(obj: any): obj is ColumnInfoProps {
+  const numberOfKeys = typeof obj === "object" ? Object.keys(obj).length : 0;
+  return typeof obj === "object" &&
+    (numberOfKeys >= 1 && numberOfKeys <= 7) &&
+    typeof obj.name === "string" &&
+    (obj.className === undefined || typeof obj.className === "string") &&
+    (obj.accessString === undefined || typeof obj.accessString === "string") &&
+    (obj.generated === undefined || typeof obj.generated === "boolean") &&
+    (obj.index === undefined || typeof obj.index === "number") &&
+    (obj.jsonName === undefined || typeof obj.jsonName === "string") &&
+    (obj.extendedType === undefined || typeof obj.extendedType === "string") &&
+    (obj.type === undefined || typeof obj.type === "string") &&
+    (obj.typeName === undefined || typeof obj.typeName === "string");
 }
 
 export interface ECSqlStatementECDbColumnInfoProps {
@@ -87,6 +128,7 @@ export interface ConcurrentQueryECDbColumnInfoProps {
 }
 
 export enum TypeOfQuery{
+  // eslint-disable-next-line @typescript-eslint/no-shadow
   ECSqlStatement = 0, //TODO: rename, it conflicts with a type of that name
   ConcurrentQuery = 1,
   Both = 2
@@ -113,17 +155,7 @@ function isValidQueryQuota(obj: any): obj is QueryQuota {
       (obj.memory === undefined || typeof obj.memory === "number");
 }
 
-function isColumnInfoProps(obj: any): obj is ColumnInfoProps{
-  const numberOfKeys = typeof obj === "object" ? Object.keys(obj).length : 0;
-  return typeof obj === "object" &&
-    (numberOfKeys >=1 && numberOfKeys <= 5) &&
-    typeof obj.propName === "string" &&
-    (obj.accessString === undefined || typeof obj.accessString === "string") &&
-    (obj.type === undefined || typeof obj.type === "string") &&
-    (obj.typeName === undefined || typeof obj.typeName === "string") &&
-    (obj.extendedTypeName === undefined || typeof obj.extendedTypeName === "string") &&
-    (obj.isGeneratedProperty === undefined || typeof obj.isGeneratedProperty === "boolean");
-}
+
 
 function isConcurrentQueryRowOptions(obj: any): obj is ConcurrentQueryRowOptions {
   const numberOfKeys = typeof obj === "object" ? Object.keys(obj).length : 0;
@@ -420,8 +452,21 @@ export class ECDbMarkdownTestParser {
   }
 
   private static handleJSONColumnMetadata(json: any, currentTest: ECDbTestProps, markdownFilePath: string) {
+    const extraProps: string[] = [];
+
     if (json.columns.every(isColumnInfoProps)) {
-      currentTest.columnInfo = json.columns;    // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
+      currentTest.columnInfo = json.columns;
+      for (const column of json.columns) {
+        for (const key in column) {
+          if (!columnInfoPropsKeys.has(key as keyof ColumnInfoProps)) {
+          extraProps.push(key);
+          }
+        }
+      }
+
+      if (extraProps.length > 0) {
+        this.logWarning(`Found extra properties in column infos: ${extraProps.join(", ")} in file '${markdownFilePath}' test '${currentTest.title}'.`);
+      }
     } else {
       this.logWarning(`Columns format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard. Skipping.`);
     }
@@ -455,41 +500,22 @@ export class ECDbMarkdownTestParser {
   }
 
   private static handleColumnTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
-    currentTest.columnInfo = currentTest.columnInfo || [];  // We are sure that concurrentQueryProps will not be undefined because if queryType == TypeOfQuery.ConcurrentQuery then concurrentQueryProps will not be undefined
+    const columnInfos: any[] = [];
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
         this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
         continue;
       }
-      const column: ColumnInfoProps = { propName: row[0].text };
-      for (let i = 1; i < token.header.length; i++) {
-        const header = token.header[i].text.toLowerCase();
+      const columnInfo: { [key: string]: any } = {};
+      for (let i = 0; i < token.header.length; i++) {
+        const header = token.header[i].text;
         const cell = row[i].text;
-        switch (header) {
-          case "propname":
-            column.propName = cell;
-            break;
-          case "accessstring":
-            column.accessString = cell;
-            break;
-          case "isgeneratedproperty":
-            column.isGeneratedProperty = cell.toLowerCase() === "true";
-            break;
-          case "typename":
-            column.typeName = cell;
-            break;
-          case "type":
-            column.type = cell;
-            break;
-          case "extendedtypename":
-            column.extendedTypeName = cell;
-            break;
-          default:
-            this.logWarning(`Unknown column header ${header} found in file ${markdownFilePath}. Skipping.`);
-        }
+        columnInfo[header] = cell;
       }
-      currentTest.columnInfo.push(column);   // We are sure that concurrentQueryProps will not be undefined because if queryType == TypeOfQuery.ConcurrentQuery then concurrentQueryProps will not be undefined
+      columnInfos.push(columnInfo);
     }
+
+    this.handleJSONColumnMetadata({columns: [columnInfos]}, currentTest, markdownFilePath);
   }
 
   private static handleExpectedResultsTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {

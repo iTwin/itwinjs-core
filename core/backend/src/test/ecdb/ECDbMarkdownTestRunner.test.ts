@@ -107,12 +107,12 @@ describe.only("Markdown based ECDb test runner", async () => {
                 const colInfo = stmt.getValue(i).columnInfo;
                 const expectedColInfo = test.columnInfo[i];
                 // cannot directly compare against colInfo because it has methods instead of getters
-                assert.strictEqual(colInfo.getPropertyName(), expectedColInfo.propName, `Expected property name ${expectedColInfo.propName} but got ${colInfo.getPropertyName()} for column index ${i}`);
+                assert.strictEqual(colInfo.getPropertyName(), expectedColInfo.name, `Expected property name ${expectedColInfo.name} but got ${colInfo.getPropertyName()} for column index ${i}`);
                 //if (expectedColInfo.isDynamicProp !== undefined) TODO: Is this not exposed?
                 //  assert.strictEqual(colInfo..isDynamicProperty, expectedColInfo.isDynamicProp, `Expected dynamic property ${expectedColInfo.isDynamicProp} but got ${colInfo.isDynamicProperty} for column index ${i}`);
                 // TODO: Extended type name not exposed??
-                if (expectedColInfo.isGeneratedProperty !== undefined)
-                  assert.strictEqual(colInfo.isGeneratedProperty(), expectedColInfo.isGeneratedProperty, `Expected generated property ${expectedColInfo.isGeneratedProperty} but got ${colInfo.isGeneratedProperty()} for column index ${i}`);
+                if (expectedColInfo.generated !== undefined)
+                  assert.strictEqual(colInfo.isGeneratedProperty(), expectedColInfo.generated, `Expected generated property ${expectedColInfo.generated} but got ${colInfo.isGeneratedProperty()} for column index ${i}`);
                 if (expectedColInfo.accessString !== undefined)
                   assert.strictEqual(colInfo.getAccessString(), expectedColInfo.accessString, `Expected access string ${expectedColInfo.accessString} but got ${colInfo.getAccessString()} for column index ${i}`);
                 if (expectedColInfo.type !== undefined)
@@ -223,16 +223,16 @@ describe.only("Markdown based ECDb test runner", async () => {
                 const colInfo = colMetaData[i];
                 const expectedColInfo = test.columnInfo[i];
                 // cannot directly compare against colInfo because it has methods instead of getters
-                assert.strictEqual(colInfo.name, expectedColInfo.propName, `Expected name ${expectedColInfo.propName} but got ${colInfo.name} for column index ${i}`);
-                if (expectedColInfo.isGeneratedProperty !== undefined)
-                  assert.strictEqual(colInfo.generated, expectedColInfo.isGeneratedProperty, `Expected generated property ${expectedColInfo.isGeneratedProperty} but got ${colInfo.generated} for column index ${i}`);
+                assert.strictEqual(colInfo.name, expectedColInfo.name, `Expected name ${expectedColInfo.name} but got ${colInfo.name} for column index ${i}`);
+                if (expectedColInfo.generated !== undefined)
+                  assert.strictEqual(colInfo.generated, expectedColInfo.generated, `Expected generated property ${expectedColInfo.generated} but got ${colInfo.generated} for column index ${i}`);
                 if (expectedColInfo.accessString !== undefined)
                   assert.strictEqual(colInfo.accessString, expectedColInfo.accessString, `Expected access string ${expectedColInfo.accessString} but got ${colInfo.accessString} for column index ${i}`);
                 if (expectedColInfo.typeName !== undefined)
                   assert.strictEqual(colInfo.typeName, expectedColInfo.typeName, `Expected type name ${expectedColInfo.typeName} but got ${colInfo.typeName} for column index ${i}`);
-                if(expectedColInfo.extendedTypeName !== undefined) {
-                   
-                  assert.strictEqual(colInfo as any["extendedType"], expectedColInfo.extendedTypeName, `Expected extended type ${expectedColInfo.extendedTypeName} but got ${colInfo as any["extendedType"]} for column index ${i}`);
+                if(expectedColInfo.extendedType !== undefined) {
+
+                  assert.strictEqual(colInfo as any["extendedType"], expectedColInfo.extendedType, `Expected extended type ${expectedColInfo.extendedType} but got ${colInfo as any["extendedType"]} for column index ${i}`);
                 }
               }
             }
