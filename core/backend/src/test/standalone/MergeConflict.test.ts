@@ -156,11 +156,11 @@ describe("Merge conflict & locking", () => {
     b2.close();
     b3.close();
   });
-  it("pull/merge causing update conflict - cascade delete causing local changes (with no lock)", async () => {
+  it("pull/merge causing update conflict - update causing local changes (with no lock)", async () => {
     /**
      * To simulate a incorrect changeset we disable lock and make some changes where we add
      * aspect for a deleted element and try to pull/push/merge it. Which will fail with following error.
-     * "UPDATE/DELETE before value do not match with one in db or CASCADE action was triggered."
+     * "UPDATE before value do not match with one in db or CASCADE action was triggered."
      */
     const accessToken1 = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     const accessToken2 = await HubWrappers.getAccessToken(TestUserType.Regular);
@@ -210,7 +210,16 @@ describe("Merge conflict & locking", () => {
       identifier: "test identifier",
     } as ElementAspectProps);
 
-    b1.elements.deleteElement(el1);
+    b1.elements.insertAspect({
+      classFullName: "BisCore:ExternalSourceAspect",
+      element: {
+        relClassName: "BisCore:ElementOwnsExternalSourceAspects",
+        id: el1,
+      },
+      kind: "",
+      identifier: "test identifier 2",
+    } as ElementAspectProps);
+
     b1.saveChanges();
 
     await b1.pushChanges({ accessToken: accessToken1, description: `deleted element ${el1}` });
