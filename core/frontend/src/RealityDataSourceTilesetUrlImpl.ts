@@ -118,9 +118,9 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   private getTileUrl(tilePath: string){
     if (this.isValidURL(tilePath)) {
       const url = new URL(tilePath);
-      return url.search === "" ? tilePath + this._searchParams : tilePath;
+      return url.search === "" ? `${tilePath}${this._searchParams}` : tilePath;
     }
-    return tilePath.includes("?") ? this._baseUrl + tilePath : this._baseUrl + tilePath + this._searchParams;
+    return tilePath.includes("?") ? `${this._baseUrl}${tilePath}` : `${this._baseUrl}${tilePath}${this._searchParams}`;
   }
 
   /**
