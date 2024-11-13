@@ -31,9 +31,6 @@ yargs.strict(true)
         "baseUrl": {
           describe: "Specify a baseUrl to resolve modules"
         },
-        "includes": {
-          describe: "Specify a baseUrl to resolve modules"
-        },
         "excludes": {
           describe: "Specify a directory, filename, or pattern to be excluded"
         },
@@ -140,14 +137,13 @@ function docsCommand(options) {
   const outOpt = options.out ? ["--out", options.out] : [];
   const jsonOpt = options.json ? ["--json", options.json] : [];
   const baseUrlOpt = options.baseUrl ? ["--baseUrl", options.baseUrl] : [];
-  const includesOpt = options.includes ? ["--includes", options.includes] : [];
   const excludesOpt = options.excludes ? ["--excludes", options.excludes] : [];
   const excludesGlobOpt = options.excludeGlob ? ["--excludeGlob", options.excludeGlob] : [];
   const testExcludeGlobOpt = options.testExcludeGlob ? ["--testExcludeGlob", options.testExcludeGlob] : [];
   const indexFileOpt = options.tsIndexFile ? ["--tsIndexFile", options.tsIndexFile] : [];
   const onlyJsonOpt = options.onlyJson ? ["--onlyJson"] : [];
   exec("node", [getScriptPath("docs.js"),
-  ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt, ...includesOpt,
+  ...sourceOpt, ...outOpt, ...jsonOpt, ...baseUrlOpt,
   ...excludesOpt, ...excludesGlobOpt, ...testExcludeGlobOpt, ...indexFileOpt, ...onlyJsonOpt]);
 }
 
