@@ -2,6 +2,45 @@
   "name": "@itwin/core-backend",
   "entries": [
     {
+      "version": "4.10.0",
+      "tag": "@itwin/core-backend_v4.10.0",
+      "date": "Wed, 13 Nov 2024 15:23:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added basic TS implementation for Sheet Indexes"
+          },
+          {
+            "comment": "Comply with 4.8.x ECSql row format"
+          },
+          {
+            "comment": "fix regression related to classid"
+          },
+          {
+            "comment": "Allow revert timeline changes"
+          },
+          {
+            "comment": "Add support for Node 22"
+          },
+          {
+            "comment": "`Object` methods are now prohibited through IPC."
+          },
+          {
+            "comment": "Deprecate `IModelHost.snapshotFileNameResolver` and `FileNameResolver`"
+          },
+          {
+            "comment": "Require db in `SqliteChangesetReaderArgs`"
+          },
+          {
+            "comment": "omit baseuri from RequestTokenProps interface"
+          },
+          {
+            "comment": "Removed added tests for boolean exps in select statement"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.9.5",
       "tag": "@itwin/core-backend_v4.9.5",
       "date": "Tue, 22 Oct 2024 20:01:40 GMT",

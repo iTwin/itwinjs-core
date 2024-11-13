@@ -1,6 +1,25 @@
 # Change Log - @itwin/core-frontend
 
-This log was last generated on Tue, 22 Oct 2024 20:03:09 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Nov 2024 15:23:38 GMT and should not be manually modified.
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:38 GMT
+
+### Updates
+
+- Deprecate `SnapshotConnection.openRemote`
+- Fixed problem with zoom when background map is on and allow3dManipulations is on.
+- Fixed reading of KHR compressed meshes in GLTF reader.
+- When a inUseLocks error is thrown on the backend during an IPC call, it will also be thrown on the frontend.
+- Promote some overridden methods/properties from internal to public.
+- Fix WorkerReturnType for async implementations.
+- Add support for instancing to GraphicBuilder, GraphicDescriptionBuilder, and glTF.
+- Add support for snapping to secondary iModels within a viewport.
+- Permit FeatureAppearance to independently override line color and transparency.
+- Add option to temporarily hide specific elements for Viewport.readPixels.
+- Support snapping within section drawing attachments.
+- Allow context reality model visibility to be toggled on/off
+- Support ContourDisplay rendering.
 
 ## 4.9.5
 Tue, 22 Oct 2024 20:01:40 GMT

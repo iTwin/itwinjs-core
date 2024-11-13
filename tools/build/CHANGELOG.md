@@ -1,6 +1,13 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Tue, 22 Oct 2024 20:03:09 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Nov 2024 15:23:38 GMT and should not be manually modified.
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:38 GMT
+
+### Updates
+
+- Allow specifying a relative directory for the `entry` argument in the `extract-api` command.
 
 ## 4.9.5
 Tue, 22 Oct 2024 20:01:40 GMT

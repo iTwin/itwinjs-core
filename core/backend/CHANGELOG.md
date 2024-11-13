@@ -1,6 +1,22 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Tue, 22 Oct 2024 20:03:09 GMT and should not be manually modified.
+This log was last generated on Wed, 13 Nov 2024 15:23:38 GMT and should not be manually modified.
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:38 GMT
+
+### Updates
+
+- Added basic TS implementation for Sheet Indexes
+- Comply with 4.8.x ECSql row format
+- fix regression related to classid
+- Allow revert timeline changes
+- Add support for Node 22
+- `Object` methods are now prohibited through IPC.
+- Deprecate `IModelHost.snapshotFileNameResolver` and `FileNameResolver`
+- Require db in `SqliteChangesetReaderArgs`
+- omit baseuri from RequestTokenProps interface
+- Removed added tests for boolean exps in select statement
 
 ## 4.9.5
 Tue, 22 Oct 2024 20:01:40 GMT
