@@ -230,6 +230,10 @@ describe.only("Markdown based ECDb test runner", async () => {
                   assert.strictEqual(colInfo.accessString, expectedColInfo.accessString, `Expected access string ${expectedColInfo.accessString} but got ${colInfo.accessString} for column index ${i}`);
                 if (expectedColInfo.typeName !== undefined)
                   assert.strictEqual(colInfo.typeName, expectedColInfo.typeName, `Expected type name ${expectedColInfo.typeName} but got ${colInfo.typeName} for column index ${i}`);
+                if(expectedColInfo.extendedTypeName !== undefined) {
+                   
+                  assert.strictEqual(colInfo as any["extendedType"], expectedColInfo.extendedTypeName, `Expected extended type ${expectedColInfo.extendedTypeName} but got ${colInfo as any["extendedType"]} for column index ${i}`);
+                }
               }
             }
 
