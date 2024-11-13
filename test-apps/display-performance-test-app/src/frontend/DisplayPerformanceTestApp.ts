@@ -103,14 +103,18 @@ export class DisplayPerfTestApp {
         urlStr = urlStr.replace("{iModel.filename}", getFileName(runner.curConfig.iModelName));
         urlStr = urlStr.replace("{iModel.extension}", getFileExt(runner.curConfig.iModelName));
         const url = new URL(urlStr);
+        const tilesetUrl = new URL("tileset.json", url);
+        tilesetUrl.search = url.search;
+
+        // Check if a tileset has been published for this iModel.
         try {
-          // See if a tileset has been published for this iModel.
-          const response = await fetch(`${url}tileset.json`);
+          console.log(`Checking for tileset at ${tilesetUrl.toString()}`); // eslint-disable-line no-console
+          const response = await fetch(tilesetUrl);
           await response.json();
           runner.curConfig.urlStr = urlStr;
           return url;
         } catch {
-          runner.curConfig.urlStr = `${urlStr}tileset.json - Not found`;
+          runner.curConfig.urlStr = `${tilesetUrl.toString()} - Not found`;
           // No tileset available.
           return undefined;
         }
