@@ -11398,23 +11398,6 @@ export class WhiteOnWhiteReversalSettings {
     toJSON(): WhiteOnWhiteReversalProps | undefined;
 }
 
-// @internal @deprecated
-export abstract class WipRpcInterface extends RpcInterface {
-    // (undocumented)
-    attachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;
-    // (undocumented)
-    getChangedElements(_iModelToken: IModelRpcProps, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined>;
-    static getClient(): WipRpcInterface;
-    static readonly interfaceName = "WipRpcInterface";
-    static interfaceVersion: string;
-    // (undocumented)
-    isChangeCacheAttached(_iModelToken: IModelRpcProps): Promise<boolean>;
-    // (undocumented)
-    isChangesetProcessed(_iModelToken: IModelRpcProps, _changesetId: string): Promise<boolean>;
-    // (undocumented)
-    placeholder(_iModelToken: IModelRpcProps): Promise<string>;
-}
-
 // @public
 export class XyzRotation implements XyzRotationProps {
     constructor(data?: XyzRotationProps);
