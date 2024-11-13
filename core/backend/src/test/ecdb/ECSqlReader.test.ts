@@ -552,7 +552,7 @@ describe("ECSqlReader", (() => {
 
     });
 
-    describe("Tests for extendedType and extendType Anomaly", () => {
+    describe("Tests for extendedType and extendType property behaviour of QueryPropertyMetaData", () => {
 
       it("Id type column with alias", async () => {
         reader = iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC");

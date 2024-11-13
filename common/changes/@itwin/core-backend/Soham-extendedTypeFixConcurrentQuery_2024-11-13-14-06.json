@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Added test case to document the behaviour of properties extendType and extendedType of QueryPropertyMetaData",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
