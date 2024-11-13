@@ -159,11 +159,6 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
     return code === 504;
   }
 
-  /** Whether an HTTP status code indicates that the client closed or cancelled the request. */
-  public isClientClosedRequest(code: number): boolean {
-    return code === 499;
-  }
-
   /** An OpenAPI-compatible description of this protocol.
    * @internal
    */

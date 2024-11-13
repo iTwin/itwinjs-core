@@ -127,8 +127,6 @@ export class WebAppRpcRequest extends RpcRequest {
   protected override handleUnknownResponse(code: number) {
     if (this.protocol.isTimeout(code)) {
       this.reject(new ServerTimeoutError("Request timeout."));
-    } else if (this.protocol.isClientClosedRequest(code)) {
-      this.reject(new ServerError(code, "request aborted."));
     } else {
       this.reject(new ServerError(code, "Unknown server response code."));
     }
