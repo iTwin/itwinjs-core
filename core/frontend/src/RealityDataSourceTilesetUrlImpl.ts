@@ -26,6 +26,8 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   /** For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container*/
   private _baseUrl: string = "";
 
+  private _queryParams: string = "";
+
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
    */
@@ -71,6 +73,8 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   // The tile's path root will need to be reinserted for child tiles to return a 200
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
+    const queryParts = urlParts[urlParts.length - 1].split("?");
+    this._queryParams = `?${queryParts[1]}`;
     urlParts.pop();
     if (urlParts.length === 0)
       this._baseUrl = "";
@@ -107,7 +111,7 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
 
   /** Returns the tile URL. If the tile path is a full URL, it is returned as is. Otherwise, the base URL is prepended to the tile path. */
   private getTileUrl(tilePath: string){
-    return this.isValidURL(tilePath) ? tilePath : this._baseUrl + tilePath;
+    return this.isValidURL(tilePath) ? tilePath : this._baseUrl + tilePath + this._queryParams;
   }
 
   /**

@@ -490,6 +490,9 @@
     },
     "ChangeBackgroundColor": {
       "keyin": "fdt bgcolor"
+    },
+    "RepositoryApi": {
+      "keyin": "fdt repo"
     }
   }
 }

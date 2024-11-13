@@ -607,3 +607,70 @@ export class ChangeCameraTool extends Tool {
     return this.run(camera);
   }
 }
+
+export class RepositoryApiTool extends Tool {
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
+  public static override toolId = "RepositoryApi";
+
+  public override async run(url: string): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (!vp) {
+      return false;
+    }
+
+    vp.displayStyle.attachRealityModel({ tilesetUrl: url });
+
+    return true;
+  }
+
+  public override async parseAndRun(): Promise<boolean> {
+    const itwinId = "d78c258c-1a6f-4abe-8339-13820ce0f975";
+    const accessToken = "";
+    const resources = await this.getResources(itwinId, accessToken);
+    if (!resources) {
+      return false;
+    }
+    const tilesetUrl = await this.getTilesetUrl(resources[0], accessToken);
+    if (!tilesetUrl) {
+      return false;
+    }
+    return this.run(tilesetUrl);
+  }
+
+  // get all resources for an itwin
+  private async getResources(iTwinId: string, accessToken: string) {
+  const headers = {
+    "Authorization": accessToken,
+    "Accept": "application/vnd.bentley.itwin-platform.v1+json",
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+  };
+
+  const url = `https://dev-connect-contextregistry.bentley.com/v1/itwins/${iTwinId}/repositories/resources`;
+
+  try {
+    const response = await fetch(url, {headers});
+    const result = await response.json();
+    return result.repositories[0].resources;
+  }
+  catch {
+    return undefined;
+  }
+}
+
+// get a tileset url for a specific resource
+private async getTilesetUrl(resource: any, accessToken: string): Promise<string> {
+  const headers = {
+    "Authorization": accessToken,
+    "Accept": "application/vnd.bentley.itwin-platform.v1+json",
+    "Content-Type": "application/json",
+    "Prefer": "return=representation"
+  };
+  const split = resource.detailsUrl.split("/itwins/");
+  const url = `https://dev-connect-contextregistry.bentley.com/v1/itwins/${split[1]}`;
+  const response = await fetch(url, {headers});
+  const responseJson = await response.json();
+  return responseJson.graphics.url;
+}
+}
