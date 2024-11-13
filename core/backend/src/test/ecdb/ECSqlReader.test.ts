@@ -551,5 +551,33 @@ describe("ECSqlReader", (() => {
       });
 
     });
+
+    describe("Tests for extendedType and extendType Anomaly", () => {
+
+      it("Id type column with alias", async () => {
+        reader = iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal("Id", metaData[0].extendedType);
+        assert.equal("Id", metaData[0].extendType);
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);
+      });
+
+      it("Id type column without alias", async () => {
+        reader = iModel.createQueryReader("SELECT ECInstanceId FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal("Id", metaData[0].extendedType);
+        assert.equal("Id", metaData[0].extendType);
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);
+      });
+
+      it("ClassId type column", async () => {
+        reader = iModel.createQueryReader("SELECT ECClassId FROM bis.Element ORDER BY ECClassId ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal("ClassId", metaData[0].extendedType);
+        assert.equal("ClassId", metaData[0].extendType);
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);
+      });
+
+    });
   });
 }));
