@@ -51,7 +51,6 @@ if (argv.onlyJson === undefined)
 const readmeOption = (argv.readme === undefined) ? "none" : argv.readme;
 
 const options = [
-  "--excludePrivate",
   "--hideGenerator",
   "--logLevel",
   "Error"
