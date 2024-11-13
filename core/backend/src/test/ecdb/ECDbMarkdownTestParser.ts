@@ -555,6 +555,6 @@ export class ECDbMarkdownTestParser {
 
   private static logWarning(message: string) {
     // eslint-disable-next-line no-console
-    console.log(message);
+    console.log(`\x1b[33m${message}\x1b[0m`);
   }
 }
