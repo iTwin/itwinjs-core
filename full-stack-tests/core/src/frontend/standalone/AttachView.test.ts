@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { ScreenViewport, SnapshotConnection, SpatialViewState } from "@itwin/core-frontend";
+import { ScreenViewport, SpatialViewState } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("ViewState attached to Viewport", async () => {
-  let imodel: SnapshotConnection;
+  let imodel: TestSnapshotConnection;
   let vp: ScreenViewport;
 
   const div = document.createElement("div");
@@ -16,7 +17,7 @@ describe("ViewState attached to Viewport", async () => {
 
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("test.bim");
+    imodel = await TestSnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {
@@ -42,7 +43,7 @@ describe("ViewState attached to Viewport", async () => {
     expect(view.isAttachedToViewport).to.be.true;
   });
 
-  it("should detch when viewport is disposed", async () => {
+  it("should detach when viewport is disposed", async () => {
     const view = await loadView();
     vp = ScreenViewport.create(div, view);
     expect(view.isAttachedToViewport).to.be.true;

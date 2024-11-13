@@ -396,9 +396,7 @@ export class SheetViewState extends ViewState2d {
     return this._attachments?.attachments;
   }
 
-  /** @internal */
   public override isDrawingView(): this is DrawingViewState { return false; }
-  /** @internal */
   public override isSheetView(): this is SheetViewState { return true; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
@@ -449,12 +447,10 @@ export class SheetViewState extends ViewState2d {
       this._attachments.collectStatistics(stats);
   }
 
-  /** @internal */
   public override get defaultExtentLimits() {
     return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 };
   }
 
-  /** @internal */
   public override getViewedExtents(): AxisAlignedBox3d {
     return this._viewedExtents;
   }
@@ -509,7 +505,6 @@ export class SheetViewState extends ViewState2d {
     return ids;
   }
 
-  /** @internal */
   public override async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const attachmentIds = await this.queryAttachmentIds();
@@ -531,7 +526,6 @@ export class SheetViewState extends ViewState2d {
     this._attachments = dispose(this._attachments);
   }
 
-  /** @internal */
   public override get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded);
   }

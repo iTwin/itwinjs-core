@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-electron",
+      "comment": "Dropped support for Electron 32 and older",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-electron"
+}

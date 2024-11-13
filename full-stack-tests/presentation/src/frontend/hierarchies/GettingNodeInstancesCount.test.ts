@@ -5,11 +5,12 @@
 
 import { expect } from "chai";
 import * as faker from "faker";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
+import { IModelConnection } from "@itwin/core-frontend";
 import { ChildNodeSpecificationTypes, ECInstancesNodeKey, getInstancesCount, KeySet, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation } from "@itwin/presentation-frontend";
 import { initialize, terminate } from "../../IntegrationTests";
 import { collect } from "../../Utils";
+import { TestIModelConnection } from "../../IModelSetupUtils";
 
 describe("Hierarchies", () => {
   before(async () => {
@@ -25,7 +26,7 @@ describe("Hierarchies", () => {
 
     before(async () => {
       const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-      imodel = await SnapshotConnection.openFile(testIModelName);
+      imodel = TestIModelConnection.openFile(testIModelName);
     });
 
     after(async () => {

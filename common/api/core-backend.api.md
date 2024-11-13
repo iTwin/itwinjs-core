@@ -417,6 +417,7 @@ export namespace BlobContainer {
     export interface ContainerService {
         create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
         delete(container: AccessContainerProps): Promise<void>;
+        queryContainersMetadata(userToken: UserToken, args: QueryContainerProps): Promise<MetadataResponse[]>;
         queryMetadata(container: AccessContainerProps): Promise<Metadata>;
         queryScope(container: AccessContainerProps): Promise<Scope>;
         requestToken(props: RequestTokenProps): Promise<TokenProps>;
@@ -439,7 +440,17 @@ export namespace BlobContainer {
         json?: SettingsContainer;
         label: string;
     }
+    export interface MetadataResponse extends Metadata {
+        // (undocumented)
+        containerId: string;
+    }
     export type Provider = "azure" | "google";
+    export interface QueryContainerProps {
+        containerType?: GuidString;
+        iModelId?: GuidString;
+        iTwinId: GuidString;
+        label?: GuidString;
+    }
     export type RequestAccessLevel = "write" | "read" | "admin" | "writeIfPossible";
     export interface RequestTokenProps extends Omit<AccessContainerProps, "baseUri"> {
         accessLevel?: RequestAccessLevel;

@@ -3,11 +3,12 @@
  * See LICENSE.md in the project root for license terms and full copyright notice.
  *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IModelConnection, SnapshotConnection } from "@itwin/core-frontend";
-import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@itwin/presentation-common";
+import { IModelConnection } from "@itwin/core-frontend";
+import { ChildNodeSpecificationTypes, RegisteredRuleset, Ruleset, RuleTypes } from "@itwin/presentation-common";
 import { Presentation, PresentationManager } from "@itwin/presentation-frontend";
 import { initialize, resetBackend, terminate } from "../IntegrationTests";
 import { collect } from "../Utils";
+import { TestIModelConnection } from "../IModelSetupUtils";
 
 const RULESET_1: Ruleset = {
   id: "ruleset_1",
@@ -47,7 +48,7 @@ describe("Rulesets", async () => {
   before(async () => {
     await initialize();
     const testIModelName: string = "assets/datasets/Properties_60InstancesWithUrl2.ibim";
-    imodel = await SnapshotConnection.openFile(testIModelName);
+    imodel = TestIModelConnection.openFile(testIModelName);
   });
 
   after(async () => {
