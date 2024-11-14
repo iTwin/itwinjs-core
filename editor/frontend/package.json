@@ -12,7 +12,7 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:locale": "cpx \"./src/public/**/*\" ./lib/public",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/editor-frontend/file.json --tsIndexFile=./editor-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
+    "docs": "betools docs --json=../../generated-docs/editor/editor-frontend/file.json --tsIndexFile=./editor-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
     "extract-api": "betools extract-api --entry=editor-frontend",
     "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
