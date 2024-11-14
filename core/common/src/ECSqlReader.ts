@@ -19,7 +19,7 @@ export class PropertyMetaDataMap implements Iterable<QueryPropertyMetaData> {
 
   public constructor(public readonly properties: QueryPropertyMetaData[]) {
     for (const property of this.properties) {
-      property.extendType = property.extendedType !== undefined ? property.extendedType : "";
+      property.extendType = property.extendedType !== undefined ? property.extendedType : "";   // eslint-disable-line @typescript-eslint/no-deprecated
       property.extendedType = property.extendedType === "" ? undefined : property.extendedType;
       this._byPropName.set(property.name, property.index);
       this._byJsonName.set(property.jsonName, property.index);
