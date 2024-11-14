@@ -14,7 +14,8 @@ import { format } from "sql-formatter";
 
 
 // Call like this:
-// node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT sd.Name, sd.DisplayLabel, sd.ECInstanceId, sd.Alias from meta.ECSchemaDef sd Where sd.Name LIKE 'ecdb%' LIMIT 4" -t
+// node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT " -t
+// node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT te.ECInstanceId [MyId], te.s, te.DT [Date], row_number() over(PARTITION BY te.DT ORDER BY te.ECInstanceId) as [RowNumber] from aps.TestElement te WHERE te.i < 1006" -t
 async function runConcurrentQuery(datasetFilePath: string, sql: string): Promise<{metadata: any[], rows: any[] }> {
   const imodel: IModelDb = SnapshotDb.openFile(datasetFilePath);
   const queryOptions: QueryOptionsBuilder = new QueryOptionsBuilder();
@@ -63,6 +64,14 @@ function writeMarkdownFile(dataset: string, sql: string, columns: any[], results
 \`\`\`sql
 ${sql}
 \`\`\`
+
+\`\`\`json
+{
+  "rowOptions": {
+    "rowFormat": "useecsqlpropertynames"
+  }
+}
+\`\`\`
 `;
 
   if (useTables) {
@@ -70,6 +79,7 @@ ${sql}
 ${arrayToMarkdownTable(columns)}
 
 ${arrayToMarkdownTable(results)}
+
 `;
   } else {
     markdownContent += `
