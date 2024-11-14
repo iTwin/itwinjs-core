@@ -1,6 +1,20 @@
 # Change Log - @itwin/rpcinterface-full-stack-tests
 
-This log was last generated on Wed, 06 Nov 2024 19:24:30 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Nov 2024 18:13:56 GMT and should not be manually modified.
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+### Updates
+
+- change the assert in the test 'should be able to cancel a snap' to match the error message thrown on the frontend when a snap is successfully cancelled.
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:39 GMT
+
+### Updates
+
+- Update oidc-signin to latest
 
 ## 4.9.7
 Wed, 06 Nov 2024 19:23:04 GMT
