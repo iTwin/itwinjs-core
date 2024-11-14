@@ -179,5 +179,9 @@ export class AtmosphereUniforms implements WebGLDisposable, SyncTarget {
     return true;
   }
 
-  public dispose() { }
+  public [Symbol.dispose]() { }
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
+  }
 }

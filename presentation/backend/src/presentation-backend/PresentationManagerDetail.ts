@@ -5,7 +5,7 @@
 import * as hash from "object-hash";
 import * as path from "path";
 import { IModelDb, IModelJsNative, IpcHost } from "@itwin/core-backend";
-import { BeEvent, IDisposable, Logger } from "@itwin/core-bentley";
+import { BeEvent, Logger } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import {
   Content,
@@ -62,7 +62,7 @@ import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { BackendDiagnosticsAttribute, BackendDiagnosticsOptions, combineDiagnosticsOptions, getElementKey, reportDiagnostics } from "./Utils";
 
 /** @internal */
-export class PresentationManagerDetail implements IDisposable {
+export class PresentationManagerDetail implements Disposable {
   private _disposed: boolean;
   private _nativePlatform: NativePlatformDefinition | undefined;
   private _onManagerUsed: (() => void) | undefined;
@@ -93,12 +93,12 @@ export class PresentationManagerDetail implements IDisposable {
     this._diagnosticsOptions = params.diagnostics;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (this._disposed) {
       return;
     }
 
-    this.getNativePlatform().dispose();
+    this.getNativePlatform()[Symbol.dispose]();
     this._nativePlatform = undefined;
 
     this._disposed = true;
@@ -268,10 +268,10 @@ export class PresentationManagerDetail implements IDisposable {
     const reviver = (key: string, value: any) => {
       return key === ""
         ? {
-            total: value.total,
-            // eslint-disable-next-line @typescript-eslint/no-deprecated
-            items: value.items.map(DisplayValueGroup.fromJSON),
-          }
+          total: value.total,
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
+          items: value.items.map(DisplayValueGroup.fromJSON),
+        }
         : value;
     };
     return JSON.parse(await this.request(params), reviver);
@@ -615,4 +615,4 @@ export function ipcUpdatesHandler(info: UpdateInfo | undefined) {
 
 /** @internal */
 // istanbul ignore next
-export function noopUpdatesHandler(_info: UpdateInfo | undefined) {}
+export function noopUpdatesHandler(_info: UpdateInfo | undefined) { }

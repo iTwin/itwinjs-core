@@ -55,7 +55,7 @@ export class AuxChannelLUT implements WebGLDisposable {
 
   public get isDisposed(): boolean { return this.texture.isDisposed; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this.texture);
   }
 
@@ -115,7 +115,7 @@ export class VertexLUT implements WebGLDisposable {
 
   public get isDisposed(): boolean { return this.texture.isDisposed; }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this.texture);
   }
 }

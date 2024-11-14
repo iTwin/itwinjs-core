@@ -222,7 +222,7 @@ export class LRUTileList {
     this._head = this._tail = this._sentinel = { bytesUsed: 0 };
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     let node: LRUTileListNode | undefined = this._head;
     let next: LRUTileListNode | undefined;
     while (node) {

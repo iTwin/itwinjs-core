@@ -60,8 +60,8 @@ export class FrameBuffer implements WebGLDisposable {
   public getColorTargets(useMSBuffers: boolean, ndx: number): { tex: TextureHandle, msBuf: RenderBufferMultiSample | undefined } {
     let msBuf;
     if (useMSBuffers) {
-      assert (ndx < this._colorMsBuffers.length);
-      msBuf =  this._colorMsBuffers[ndx];
+      assert(ndx < this._colorMsBuffers.length);
+      msBuf = this._colorMsBuffers[ndx];
     }
     assert(ndx < this._colorTextures.length);
     return { tex: this._colorTextures[ndx], msBuf };
@@ -140,7 +140,7 @@ export class FrameBuffer implements WebGLDisposable {
     return new FrameBuffer(fbo, colorTextures, depthBuffer, colorMsBuffers, msFilters, depthBufferMs);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     // NB: The FrameBuffer does not *own* the textures and depth buffer.
     if (!this.isDisposed) {
       System.instance.context.deleteFramebuffer(this._fbo!);

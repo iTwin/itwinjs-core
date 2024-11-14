@@ -217,8 +217,8 @@ class OrbitGtTileGraphic extends TileUsageMarker {
     this.mark(viewport, time);
   }
 
-  public dispose(): void {
-    this.graphic.dispose();
+  public [Symbol.dispose](): void {
+    this.graphic[Symbol.dispose]();
   }
 }
 
@@ -243,15 +243,15 @@ export class OrbitGtTileTree extends TileTree {
     return this._ecefTransform;
   }
 
-  public override dispose(): void {
+  public override[Symbol.dispose](): void {
     if (this.isDisposed)
       return;
 
     for (const graphic of this._tileGraphics.values())
-      graphic.dispose();
+      graphic[Symbol.dispose]();
 
     this._tileGraphics.clear();
-    super.dispose();
+    super[Symbol.dispose]();
   }
 
   protected _selectTiles(_args: TileDrawArgs): Tile[] { return []; }
@@ -262,7 +262,7 @@ export class OrbitGtTileTree extends TileTree {
   private _doPrune(olderThan: BeTimePoint) {
     for (const [key, graphic] of this._tileGraphics)
       if (graphic.isExpired(olderThan)) {
-        graphic.dispose();
+        graphic[Symbol.dispose]();
         this._tileGraphics.delete(key);
       }
   }
@@ -365,7 +365,7 @@ export namespace OrbitGtTileTree {
   function isValidSASToken(downloadUrl: string): boolean {
 
     // Create fake URL for and parameter parsing and SAS token URI parsing
-    if(!downloadUrl.startsWith("http"))
+    if (!downloadUrl.startsWith("http"))
       downloadUrl = `http://x.com/x?${downloadUrl}`;
 
     const sasUrl = new URL(downloadUrl);
@@ -384,7 +384,7 @@ export namespace OrbitGtTileTree {
   function isValidOrbitGtBlobProps(props: OrbitGtBlobProps): boolean {
 
     // Check main OrbitGtBlobProps fields are defined
-    if(!props.accountName || !props.containerName || !props.blobFileName || !props.sasToken)
+    if (!props.accountName || !props.containerName || !props.blobFileName || !props.sasToken)
       return false;
 
     // Check SAS token is valid
@@ -399,7 +399,7 @@ export namespace OrbitGtTileTree {
     let blobStringUrl: string;
     if (isContextShare) {
       const realityData = rdSource ? rdSource.realityData : undefined;
-      if (rdSource === undefined || realityData === undefined )
+      if (rdSource === undefined || realityData === undefined)
         return undefined;
       const docRootName = realityData.rootDocument;
       if (!docRootName)
@@ -413,7 +413,7 @@ export namespace OrbitGtTileTree {
       const orbitGtBlobProps = RealityDataSource.createOrbitGtBlobPropsFromKey(rdSourceKey);
       if (orbitGtBlobProps === undefined)
         return undefined;
-      if(!isValidOrbitGtBlobProps(orbitGtBlobProps))
+      if (!isValidOrbitGtBlobProps(orbitGtBlobProps))
         return undefined;
       const { accountName, containerName, blobFileName, sasToken } = orbitGtBlobProps;
       blobStringUrl = blobFileName;

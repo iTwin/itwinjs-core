@@ -49,7 +49,7 @@ export class SurfaceGeometry extends MeshGeometry {
       && this._indices.isDisposed;
   }
 
-  public dispose() {
+  public [Symbol.dispose]() {
     dispose(this._buffers);
     dispose(this._indices);
   }

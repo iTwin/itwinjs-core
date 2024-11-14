@@ -166,10 +166,15 @@ export abstract class Tile {
   }
 
   /** Dispose of resources held by this tile and all of its children, marking it and all of its children as "abandoned". */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.disposeContents();
     this._state = TileState.Abandoned;
     this.disposeChildren();
+  }
+
+  /** @deprecated in 5.0 Use [Symbol.dispose] instead. */
+  public dispose() {
+    this[Symbol.dispose]();
   }
 
   /** This tile's child tiles, if they exist and are loaded. The children are fully contained within this tile's volume and provide higher-resolution graphics than this tile.
@@ -194,7 +199,7 @@ export abstract class Tile {
    * @see [[ImageryMapTile.isOutOfLodRange]].
    * @alpha
    */
-  public get isOutOfLodRange(): boolean { return false;}
+  public get isOutOfLodRange(): boolean { return false; }
 
   /** @public */
   public setNotFound(): void {
@@ -376,7 +381,7 @@ export abstract class Tile {
       return;
 
     for (const child of children)
-      child.dispose();
+      child[Symbol.dispose]();
 
     this._childrenLoadStatus = TileTreeLoadStatus.NotLoaded;
     this._children = undefined;

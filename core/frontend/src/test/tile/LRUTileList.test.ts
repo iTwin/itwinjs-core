@@ -319,7 +319,7 @@ describe("LRUTileList", () => {
       expect(tile.tileUserIds).toBeDefined();
     }
 
-    list.dispose();
+    list[Symbol.dispose]();
     expect(list.head).toEqual(list.sentinel);
     expect(list.tail).toEqual(list.sentinel);
     expect(list.totalBytesUsed).toEqual(0);

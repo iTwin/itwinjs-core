@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { assert, IDisposable } from "@itwin/core-bentley";
+import { assert } from "@itwin/core-bentley";
 import { PresentationError, PresentationStatus } from "@itwin/presentation-common";
 
 /**
@@ -64,7 +64,7 @@ interface TemporaryValue<T> {
  *
  * @internal
  */
-export class TemporaryStorage<T> implements IDisposable {
+export class TemporaryStorage<T> implements Disposable {
   private _timer?: NodeJS.Timeout;
   protected _values: Map<string, TemporaryValue<T>>;
   public readonly props: TemporaryStorageProps<T>;
@@ -84,7 +84,7 @@ export class TemporaryStorage<T> implements IDisposable {
    * Destructor. Must be called to clean up the stored values
    * and other resources
    */
-  public dispose() {
+  public [Symbol.dispose]() {
     if (this._timer) {
       clearInterval(this._timer);
     }

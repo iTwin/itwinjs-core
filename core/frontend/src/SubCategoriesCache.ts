@@ -69,7 +69,7 @@ export class SubCategoriesCache {
   public async loadAllUsedSpatialSubCategories(): Promise<void> {
     try {
       const results = await this._imodel.queryAllUsedSpatialSubCategories();
-      if (undefined !== results){
+      if (undefined !== results) {
         this.processResults(results, new Set<string>(), false);
       }
     } catch {
@@ -110,7 +110,7 @@ export class SubCategoriesCache {
   }
 
   private processResults(result: SubCategoriesCache.Result, missing: Id64Set, override: boolean = true): void {
-    for (const row of result){
+    for (const row of result) {
       this.add(row.parentId, row.id, SubCategoriesCache.createSubCategoryAppearance(row.appearance), override);
     }
 
@@ -271,7 +271,7 @@ export namespace SubCategoriesCache {
     }
 
     /** Cancel all requests and empty the queue. */
-    public dispose(): void {
+    public [Symbol.dispose](): void {
       if (undefined !== this._request) {
         assert(undefined !== this._current);
         this._request.cancel();

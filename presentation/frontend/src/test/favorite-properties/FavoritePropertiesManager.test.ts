@@ -61,7 +61,7 @@ describe("FavoritePropertiesManager", () => {
   });
 
   afterEach(() => {
-    manager.dispose();
+    manager[Symbol.dispose]();
     storageMock.reset();
     imodelMock.reset();
   });

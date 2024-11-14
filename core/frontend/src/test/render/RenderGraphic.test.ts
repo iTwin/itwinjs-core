@@ -2,20 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable @typescript-eslint/unbound-method */
+
 
 import { describe, expect, it } from "vitest";
-import { IDisposable } from "@itwin/core-bentley";
 import { Transform } from "@itwin/core-geometry";
 import { ElementAlignedBox3d, RenderFeatureTable } from "@itwin/core-common";
 import { GraphicBranch, GraphicBranchOptions } from "../../render/GraphicBranch";
 import { MockRender } from "../../render/MockRender";
 import { RenderGraphic } from "../../render/RenderGraphic";
 
-function addIsDisposed(disposable: IDisposable): void {
+function addIsDisposed(disposable: Disposable): void {
   (disposable as any).isDisposed = false;
-  const dispose = disposable.dispose;
-  disposable.dispose = () => {
+  const dispose = disposable[Symbol.dispose];
+  disposable[Symbol.dispose] = () => {
     (disposable as any).isDisposed = true;
     dispose.call(disposable);
   };
@@ -28,9 +27,9 @@ class Branch extends GraphicBranch {
     super(ownsEntries);
   }
 
-  public override dispose() {
+  public override[Symbol.dispose]() {
     this.isDisposed = true;
-    super.dispose();
+    super[Symbol.dispose]();
   }
 }
 
@@ -78,8 +77,8 @@ describe("RenderGraphic", () => {
     const owned = system.makeGraphic();
     const owner = system.createGraphicOwner(owned);
 
-    unowned.dispose();
-    owner.dispose();
+    unowned[Symbol.dispose]();
+    owner[Symbol.dispose]();
 
     expect(isDisposed(unowned)).toBe(true);
     expect(isDisposed(owner)).toBe(true);
@@ -101,12 +100,12 @@ describe("GraphicBranch", () => {
     const branch = new Branch(false);
     branch.add(unowned);
 
-    owningBranch.dispose();
+    owningBranch[Symbol.dispose]();
     expect(isDisposed(owningBranch)).toBe(true);
     expect(isDisposed(owned)).toBe(true);
     expect(owningBranch.entries.length).toBe(0);
 
-    branch.dispose();
+    branch[Symbol.dispose]();
     expect(isDisposed(branch)).toBe(true);
     expect(isDisposed(unowned)).toBe(false);
     expect(branch.entries.length).toBe(0);
@@ -122,7 +121,7 @@ describe("GraphicBranch", () => {
     branch.add(owner);
     branch.add(unowned);
 
-    branch.dispose();
+    branch[Symbol.dispose]();
     expect(isDisposed(branch)).toBe(true);
     expect(branch.entries.length).toBe(0);
     expect(isDisposed(owner)).toBe(true);

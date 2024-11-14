@@ -196,7 +196,7 @@ class AnalysisDecorator {
     this.mesh = mesh;
     this._id = viewport.iModel.transientIds.getNext();
 
-    const removeDisposalListener = viewport.onDisposed.addOnce(() => this.dispose());
+    const removeDisposalListener = viewport.onDisposed.addOnce(() => this[Symbol.dispose]());
     const removeAnalysisStyleListener = viewport.addOnAnalysisStyleChangedListener(() => {
       this._graphic?.disposeGraphic();
       this._graphic = undefined;
@@ -210,7 +210,7 @@ class AnalysisDecorator {
     IModelApp.viewManager.addDecorator(this);
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     if (!this._dispose) {
       assert(undefined === this._graphic);
       return;
@@ -257,7 +257,7 @@ export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
   meshPicker.onchange = () => {
     const type = meshPicker.value as AnalysisMeshType;
     if (type !== decorator.mesh.type) {
-      decorator.dispose();
+      decorator[Symbol.dispose]();
       decorator = new AnalysisDecorator(viewer.viewport, meshes[meshPicker.selectedIndex]);
       populateStylePicker();
     }

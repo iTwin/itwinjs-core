@@ -6,7 +6,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as semver from "semver";
 import * as sinon from "sinon";
-import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector, using } from "@itwin/core-bentley";
+import { DbResult, Guid, GuidString, Id64, Id64String, Logger, OpenMode, ProcessDetector } from "@itwin/core-bentley";
 import {
   AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, ChangesetIdWithIndex, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps,
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
@@ -695,25 +695,24 @@ describe("iModel", () => {
   });
 
   it("should throw on invalid tile requests", async () => {
-    await using(new DisableNativeAssertions(), async (_r) => {
-      let error = await getIModelError(imodel1.tiles.requestTileTreeProps("0x12345"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    using _r = new DisableNativeAssertions();
+    let error = await getIModelError(imodel1.tiles.requestTileTreeProps("0x12345"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileTreeProps("NotAValidId"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileTreeProps("NotAValidId"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "0/0/0/0"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "0/0/0/0"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x12345", "0/0/0/0/1"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x12345", "0/0/0/0/1"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "V/W/X/Y/Z"));
-      expectIModelError(IModelStatus.InvalidId, error);
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "V/W/X/Y/Z"));
+    expectIModelError(IModelStatus.InvalidId, error);
 
-      error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "NotAValidId"));
-      expectIModelError(IModelStatus.InvalidId, error);
-    });
+    error = await getIModelError(imodel1.tiles.requestTileContent("0x1c", "NotAValidId"));
+    expectIModelError(IModelStatus.InvalidId, error);
   });
 
   // NOTE: this test can be removed when the deprecated executeQuery method is removed
@@ -2532,10 +2531,9 @@ describe("iModel", () => {
     const invalidSql = "SELECT * FROM InvalidSchemaName:InvalidClassName LIMIT 1";
     assert.throws(() => imodel1.prepareStatement(invalidSql, false));
     assert.isUndefined(imodel1.tryPrepareStatement(invalidSql));
-    const statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
+    using statement: ECSqlStatement | undefined = imodel1.tryPrepareStatement(sql);
     assert.isDefined(statement);
     assert.isTrue(statement?.isPrepared);
-    statement!.dispose();
   });
 
   it("containsClass", () => {

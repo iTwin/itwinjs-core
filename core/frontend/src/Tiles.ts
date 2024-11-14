@@ -39,7 +39,7 @@ class TreeOwner implements TileTreeOwner {
     return this.tileTree;
   }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this._tileTree = dispose(this._tileTree);
     this._loadStatus = TileTreeLoadStatus.NotLoaded;
   }
@@ -101,7 +101,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
   }
 
   /** @internal */
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     this.reset();
     this._disposed = true;
   }
@@ -111,7 +111,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
    */
   public reset(): void {
     for (const supplier of this._treesBySupplier)
-      supplier[1].forEach((_key, value) => value.dispose());
+      supplier[1].forEach((_key, value) => value[Symbol.dispose]());
 
     this._treesBySupplier.clear();
   }
@@ -186,7 +186,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
     const trees = this._treesBySupplier.get(supplier);
     const tree = trees?.get(id);
     if (tree) {
-      tree.dispose();
+      tree[Symbol.dispose]();
       trees?.delete(id);
     }
   }
@@ -197,7 +197,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
     if (undefined === trees)
       return;
 
-    trees.forEach((_key, value) => value.dispose());
+    trees.forEach((_key, value) => value[Symbol.dispose]());
     this._treesBySupplier.delete(supplier);
   }
 
@@ -208,7 +208,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
   }
 
   /** Iterate over all of the TileTreeOwners. */
-  public * [Symbol.iterator](): Iterator<{ supplier: TileTreeSupplier, id: any, owner: TileTreeOwner }> {
+  public *[Symbol.iterator](): Iterator<{ supplier: TileTreeSupplier, id: any, owner: TileTreeOwner }> {
     for (const [supplier, dict] of this._treesBySupplier) {
       for (const entry of dict)
         yield { supplier, id: entry.key, owner: entry.value };
@@ -239,7 +239,7 @@ export class Tiles implements Iterable<{ supplier: TileTreeSupplier, id: any, ow
         const tree = owner.tileTree;
         if (undefined !== tree && tree.lastSelectedTime.milliseconds < olderThan.milliseconds)
           if (undefined === exclude || !exclude.has(tree))
-            owner.dispose();
+            owner[Symbol.dispose]();
       });
     }
   }

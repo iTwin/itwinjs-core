@@ -118,7 +118,7 @@ describe("RulesetManager", () => {
       const result = await manager.add(ruleset);
       const eventSpy = sinon.spy(manager, "remove");
 
-      result.dispose();
+      result[Symbol.dispose]();
       expect(eventSpy).to.have.been.calledOnce;
     });
   });

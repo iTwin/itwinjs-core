@@ -6,7 +6,7 @@
  * @module Core
  */
 
-import { Guid, GuidString, IDisposable } from "@itwin/core-bentley";
+import { Guid, GuidString } from "@itwin/core-bentley";
 
 /**
  * A helper to track ongoing async tasks. Usage:
@@ -26,11 +26,11 @@ export class AsyncTasksTracker {
   public get pendingAsyncs() {
     return this._asyncsInProgress;
   }
-  public trackAsyncTask(): IDisposable {
+  public trackAsyncTask(): Disposable {
     const id = Guid.createValue();
     this._asyncsInProgress.add(id);
     return {
-      dispose: () => this._asyncsInProgress.delete(id),
+      [Symbol.dispose]: () => this._asyncsInProgress.delete(id),
     };
   }
 }

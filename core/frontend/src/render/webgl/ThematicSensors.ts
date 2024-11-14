@@ -63,7 +63,7 @@ export class ThematicSensors implements WebGLDisposable {
 
   public get isDisposed(): boolean { return this._texture.handle.isDisposed; }
 
-  public dispose(): void {
+  public [Symbol.dispose](): void {
     dispose(this._texture.handle);
   }
 
