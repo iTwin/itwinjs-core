@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "5.0.0-dev.5",
+  "version": "5.0.0-dev.6",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -33,7 +33,7 @@
     "cover": "nyc npm -s test",
     "docs": "npm run -s docs:reference && npm run -s docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-frontend",
-    "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-frontend/file.json --tsIndexFile=presentation-frontend.ts --onlyJson",
+    "docs:reference": "betools docs --json=../../generated-docs/presentation/presentation-frontend/file.json --tsIndexFile=presentation-frontend.ts --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-frontend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
@@ -47,12 +47,12 @@
     "rxjs-for-await": "^1.0.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^5.0.0-dev.5",
-    "@itwin/core-common": "workspace:^5.0.0-dev.5",
-    "@itwin/core-frontend": "workspace:^5.0.0-dev.5",
-    "@itwin/core-quantity": "workspace:^5.0.0-dev.5",
-    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.5",
-    "@itwin/presentation-common": "workspace:^5.0.0-dev.5"
+    "@itwin/core-bentley": "workspace:^5.0.0-dev.6",
+    "@itwin/core-common": "workspace:^5.0.0-dev.6",
+    "@itwin/core-frontend": "workspace:^5.0.0-dev.6",
+    "@itwin/core-quantity": "workspace:^5.0.0-dev.6",
+    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.6",
+    "@itwin/presentation-common": "workspace:^5.0.0-dev.6"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
