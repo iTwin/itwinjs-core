@@ -29,14 +29,14 @@ describe.only("Markdown based ECDb test runner", async () => {
 
     if(test.queryType === undefined || test.queryType === TypeOfQuery.Both || test.queryType === TypeOfQuery.ECSqlStatement)
     {
-      it(`ECSqlStatement: ${test.title}`, () => {
+      it(`${test.fileName}: ${test.title} (ECSqlStatement)`, () => {
         runECSqlStatementTest(test, datasetFilePath);
       });
     }
 
     if(test.queryType === undefined || test.queryType === TypeOfQuery.Both || test.queryType === TypeOfQuery.ConcurrentQuery)
     {
-      it(`ConcurrentQuery: ${test.title}`, async () => {
+      it(`${test.fileName}: ${test.title} (ConcurrentQuery)`, async () => {
         await runConcurrentQueryTest(test, datasetFilePath);
       });
     }

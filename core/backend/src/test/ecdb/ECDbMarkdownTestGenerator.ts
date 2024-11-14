@@ -80,6 +80,7 @@ ${JSON.stringify({columns}, null, 2)}
 \`\`\`json
 ${JSON.stringify(results, null, 2)}
 \`\`\`
+
 `;
   }
 

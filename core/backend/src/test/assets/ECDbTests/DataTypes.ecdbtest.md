@@ -36,7 +36,7 @@ SELECT e.i, e.l, e.d, e.s, e.dt FROM aps.TestElement e LIMIT 2;
 ]
 ```
 
-| PropName | AccessString | Type     | TypeName | IsGeneratedProperty |
+| name     | accessString | type     | typeName | generated |
 | -------- | ------------ | -------- | -------- | ------------------- |
 | i        | i            | Int      | int      | false               |
 | l        | l            | Int64    | long     | false               |
@@ -65,7 +65,7 @@ SELECT e.i, e.l, e.d, e.s, e.dt FROM aps.TestElement e LIMIT 2;
 | 100 | 1000 | 0.1 | str0 | 2017-01-01T00:00:00.000 |
 | 101 | 1001 | 1.1 | str1 | 2010-01-01T11:11:11.000 |
 
-| PropName | AccessString | Type     | TypeName | IsGeneratedProperty |
+| name     | accessString | type     | typeName | generated |
 | -------- | ------------ | -------- | -------- | ------------------- |
 | i        | i            | Int      | int      | false               |
 | l        | l            | Int64    | long     | false               |
@@ -116,7 +116,7 @@ SELECT e.p2d, e.p3d FROM aps.TestElement e LIMIT 2;
 ]
 ```
 
-| PropName | AccessString | Type    | TypeName | IsGeneratedProperty |
+| name     | accessString | type    | typeName | generated |
 | -------- | ------------ | ------- | -------- | ------------------- |
 | p2d      | p2d          | Point2d | point2d  | false               |
 | p3d      | p3d          | Point3d | point3d  | false               |
@@ -137,7 +137,7 @@ SELECT e.p2d, e.p3d FROM aps.TestElement e LIMIT 2;
 }
 ```
 
-| PropName | AccessString | Type    | TypeName | IsGeneratedProperty |
+| name     | accessString | type    | typeName | generated |
 | -------- | ------------ | ------- | -------- | ------------------- |
 | p2d      | p2d          | Point2d | point2d  | false               |
 | p3d      | p3d          | Point3d | point3d  | false               |
@@ -163,7 +163,7 @@ SELECT e.bin FROM aps.TestElement e LIMIT 2;
 }
 ```
 
-| PropName | AccessString | Type | TypeName | IsGeneratedProperty |
+| name     | accessString | type | typeName | generated |
 | -------- | ------------ | ---- | -------- | ------------------- |
 | bin      | bin          | Blob | string   | false               |
 
@@ -195,7 +195,7 @@ SELECT e.bin FROM aps.TestElement e LIMIT 2;
 }
 ```
 
-| PropName | AccessString | Type | TypeName | IsGeneratedProperty |
+| name     | accessString | type | typeName | generated |
 | -------- | ------------ | ---- | -------- | ------------------- |
 | bin      | bin          | Blob | string   | false               |
 

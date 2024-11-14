@@ -10,6 +10,7 @@ import { ECSqlRowArg } from "../../core-backend";
 import { QueryLimit, QueryOptions, QueryQuota, QueryRowFormat } from "@itwin/core-common";
 
 export interface ECDbTestProps {
+  fileName: string;
   title: string;
   dataset?: string;
   queryType?: TypeOfQuery
@@ -20,25 +21,6 @@ export interface ECDbTestProps {
   rowOptions?: ConcurrentQueryRowOptions;
   expectedResults?: { [key: string]: any }[] | any[];
   columnInfo?: ColumnInfoProps[];
-}
-
-export interface ConcurrentQueryProps{
-  rowOptions?: ConcurrentQueryRowOptions;
-  columnInfo?: ConcurrentQueryECDbColumnInfoProps[];
-  expectedResults?: { [key: string]: any }[] | any[];
-  isResultsFromTable?: boolean
-}
-
-export interface ECSqlStatementProps{
-  rowOptions?: ECSqlStatementRowOptions;
-  columnInfo?: ECSqlStatementECDbColumnInfoProps[];
-  expectedResults?: { [key: string]: any }[] | any[];
-  isResultsFromTable?: boolean
-}
-
-export interface ECSqlStatementRowOptions{
-  rowFormat?: string;
-  classIdsToClassNames?: boolean;
 }
 
 export interface ConcurrentQueryRowOptions extends Omit<QueryOptions,"rowFormat">{
@@ -213,12 +195,18 @@ function tableTextToValue(text: string) : any {
     return text.slice(1,text.length-1);
   if(text.startsWith("0x"))
     return text; // we use this for IDs and they are handled as strings, the parseInt below would attempt to convert them to numbers
-  if(text.includes("."))
-    return parseFloat(text);
-  // eslint-disable-next-line radix
-  const asInt = parseInt(text);
-  if(!Number.isNaN(asInt))
-    return asInt;
+  if(/^-?\d+(\.\d+)?$/.test(text)) {
+    const flt = parseFloat(text);
+    if(!Number.isNaN(flt))
+      return flt;
+  }
+
+  if(/^-?\d+$/.test(text)) {
+    // eslint-disable-next-line radix
+    const asInt = parseInt(text);
+    if(!Number.isNaN(asInt))
+      return asInt;
+  }
 
   return text;
 }
@@ -267,6 +255,7 @@ export class ECDbMarkdownTestParser {
 
     for (const fileName of testFiles) {
       const markdownFilePath = path.join(testAssetsDir, fileName);
+      const baseFileName = fileName.replace(/\.ecdbtest\.md$/i, "");
       const markdownContent = fs.readFileSync(markdownFilePath, "utf-8");
       const tokens = marked.lexer(markdownContent);
 
@@ -285,7 +274,7 @@ export class ECDbMarkdownTestParser {
                 if(currentTest.title.startsWith("only:"))
                   outOnly.push(currentTest);
               }
-              currentTest = { title: token.text, queryType: undefined};
+              currentTest = { title: token.text, queryType: undefined, fileName: baseFileName };
             break;
           case "list":
             this.handleListToken(token as Tokens.List, currentTest, markdownFilePath);
@@ -432,7 +421,6 @@ export class ECDbMarkdownTestParser {
   }
 
   private static handleJSONExpectedResults(json: any, currentTest: ECDbTestProps) {
-    currentTest.isResultsFromTable = false;
     currentTest.expectedResults = json
   }
 
@@ -445,15 +433,13 @@ export class ECDbMarkdownTestParser {
   }
 
   private static handleTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
-    if (token.header.length > 0 && currentTest.columnInfo !== undefined && columnInfoPropsKeys.has(token.header[0].text as keyof ColumnInfoProps)) {
+    if (token.header.length > 0 && currentTest.columnInfo === undefined && columnInfoPropsKeys.has(token.header[0].text as keyof ColumnInfoProps)) {
       this.handleColumnTable(token, currentTest, markdownFilePath);
       return;
     }
     else if(token.header.length > 0 && token.header[0].text === ""){
-      currentTest.isResultsFromTable = true;
       this.handleExpectedResultsTableForECSqlPropertyIndexesOption(token, currentTest, markdownFilePath);
     } else {
-      currentTest.isResultsFromTable = true;
       this.handleExpectedResultsTable(token, currentTest, markdownFilePath);
     }
   }
@@ -469,16 +455,20 @@ export class ECDbMarkdownTestParser {
       for (let i = 0; i < token.header.length; i++) {
         const header = token.header[i].text;
         const cell = row[i].text;
-        columnInfo[header] = cell;
+        columnInfo[header] = tableTextToValue(cell);
       }
       columnInfos.push(columnInfo);
     }
 
-    this.handleJSONColumnMetadata({columns: [columnInfos]}, currentTest, markdownFilePath);
+    this.handleJSONColumnMetadata({columns: columnInfos}, currentTest, markdownFilePath);
   }
 
   private static handleExpectedResultsTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
-    currentTest.expectedResults = currentTest.expectedResults || [];
+    if(currentTest.expectedResults !== undefined) {
+      this.logWarning(`Expected results already set for test ${currentTest.title} in file ${markdownFilePath}. Skipping.`);
+      return;
+    }
+    currentTest.expectedResults = [];
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
         this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
@@ -496,7 +486,11 @@ export class ECDbMarkdownTestParser {
   }
 
   private static handleExpectedResultsTableForECSqlPropertyIndexesOption(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
-    currentTest.expectedResults = currentTest.expectedResults || [];
+    if(currentTest.expectedResults !== undefined) {
+      this.logWarning(`Expected results already set for test ${currentTest.title} in file ${markdownFilePath}. Skipping.`);
+      return;
+    }
+    currentTest.expectedResults = [];
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
         this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);

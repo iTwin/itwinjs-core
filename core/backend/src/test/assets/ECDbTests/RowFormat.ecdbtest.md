@@ -17,7 +17,7 @@ Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4
 }
 ```
 
-| PropName | Type   |
+| name     | type   |
 | -------- | ------ |
 | Name     | String |
 | Alias    | String |
@@ -50,17 +50,17 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
   "columns": [
     {
       "accessString": "ECClassId",
-      "propName": "ECClassId",
+      "name": "ECClassId",
       "type": "Id",
       "typeName": "long",
-      "isGeneratedProperty": false
+      "generated": false
     },
     {
       "accessString": "DirectStr",
-      "propName": "DirectStr",
+      "name": "DirectStr",
       "type": "String",
       "typeName": "string",
-      "isGeneratedProperty": false
+      "generated": false
     }
   ]
 }
