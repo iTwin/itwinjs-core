@@ -19,7 +19,7 @@
     "extract-api": "betools extract-api --entry=core-quantity",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-quantity/file.json --tsIndexFile=./core-quantity.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/core-quantity/file.json --tsIndexFile=./core-quantity.ts --onlyJson",
     "cover": "nyc npm -s test",
     "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs"
   },
