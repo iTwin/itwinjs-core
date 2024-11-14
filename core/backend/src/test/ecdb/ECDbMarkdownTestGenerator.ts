@@ -10,9 +10,11 @@ import * as fs from "fs";
 import * as crypto from "crypto";
 import { ECDbMarkdownDatasets } from "./ECDbMarkdownDatasets";
 import { KnownTestLocations } from "../KnownTestLocations";
+import { format } from "sql-formatter";
+
 
 // Call like this:
-// node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT * from meta.ECSchemaDef LIMIT 4" -t
+// node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT sd.Name, sd.DisplayLabel, sd.ECInstanceId, sd.Alias from meta.ECSchemaDef sd Where sd.Name LIKE 'ecdb%' LIMIT 4" -t
 async function runConcurrentQuery(datasetFilePath: string, sql: string): Promise<{metadata: any[], rows: any[] }> {
   const imodel: IModelDb = SnapshotDb.openFile(datasetFilePath);
   const queryOptions: QueryOptionsBuilder = new QueryOptionsBuilder();
@@ -50,8 +52,11 @@ function generateHash(input: string): string {
 
 function writeMarkdownFile(dataset: string, sql: string, columns: any[], results: any[], useTables: boolean): void {
   const hash = generateHash(sql);
+  if (sql.length > 100) { // we format the SQL if it's too long
+    sql = format(sql, {language: "sqlite", keywordCase: "upper", "tabWidth": 2, indentStyle: "standard", logicalOperatorNewline: "after"});
+  }
 
-  let markdownContent = `# Query Results for ${dataset} - ${hash}
+  let markdownContent = `# GeneratedTest #${dataset} - ${hash}
 
 - dataset: ${dataset}
 

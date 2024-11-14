@@ -6,8 +6,8 @@ import * as path from "path";
 import * as fs from "fs";
 import { marked, Tokens } from "marked";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { ECSqlRowArg, ECSqlStatement } from "../../core-backend";
-import { ECSqlValueType, QueryLimit, QueryOptions, QueryPropertyMetaData, QueryQuota, QueryRowFormat } from "@itwin/core-common";
+import { ECSqlRowArg } from "../../core-backend";
+import { QueryLimit, QueryOptions, QueryQuota, QueryRowFormat } from "@itwin/core-common";
 
 export interface ECDbTestProps {
   title: string;
@@ -19,7 +19,6 @@ export interface ECDbTestProps {
   stepStatus?: string;
   rowOptions?: ConcurrentQueryRowOptions;
   expectedResults?: { [key: string]: any }[] | any[];
-  isResultsFromTable?: boolean;
   columnInfo?: ColumnInfoProps[];
 }
 
@@ -128,7 +127,7 @@ export interface ConcurrentQueryECDbColumnInfoProps {
 }
 
 export enum TypeOfQuery{
-  // eslint-disable-next-line @typescript-eslint/no-shadow
+
   ECSqlStatement = 0, //TODO: rename, it conflicts with a type of that name
   ConcurrentQuery = 1,
   Both = 2
@@ -203,68 +202,28 @@ export function buildQueryOptionsBuilder(object: ConcurrentQueryRowOptions | und
   return queryOptions;
 }
 
-export function buildECSqlStatementDataFromTableResults(obj: any, stmt: ECSqlStatement): any {
-  let index: number = 0
-  for(const key in obj) {
-    if(!obj.hasOwnProperty(key))
-      continue;
+function tableTextToValue(text: string) : any {
+  if(text === "null")
+    return null;
+  if(text.startsWith("{"))
+    return JSON.parse(text);
+  if(text === "true" || text === "false")
+    return text === "true";
+  if(text.startsWith("\"") && text.endsWith("\""))
+    return text.slice(1,text.length-1);
+  if(text.startsWith("0x"))
+    return text; // we use this for IDs and they are handled as strings, the parseInt below would attempt to convert them to numbers
+  if(text.includes("."))
+    return parseFloat(text);
+  // eslint-disable-next-line radix
+  const asInt = parseInt(text);
+  if(!Number.isNaN(asInt))
+    return asInt;
 
-    const colInfo = stmt.getValue(index).columnInfo;
-    const type: string = ECSqlValueType[colInfo.getType()];
-    switch (type){
-      case "Boolean":
-        obj[key] = obj[key].toLowerCase() === "true"
-        break;
-      case "Double":
-        obj[key] = parseFloat(obj[key])
-        break;
-      case "Int":
-      case "Int64":
-        if(!obj[key].startsWith("0x")) // so that not to convert ids
-          obj[key] = parseInt(obj[key], 16)
-        break;
-      case "Struct":
-      case "Point3d":
-      case "Point2d":
-        obj[key] = JSON.parse(obj[key])
-        break;
-    }
-    index++;
-  }
-  return obj;
+  return text;
 }
 
-export function buildConcurrentQueryDataFromTableResults(obj: any, colMetaData: QueryPropertyMetaData[]): any {
-  let index: number = 0;
-  for(const key in obj) {
-    if(!obj.hasOwnProperty(key))
-      continue;
-    const colInfo = colMetaData[index];
-    const type: string = colInfo.typeName;
-    switch (type){
-      case "boolean":
-        obj[key] = obj[key].toLowerCase() === "true"
-        break;
-      case "double":
-        obj[key] = parseFloat(obj[key])
-        break;
-      case "int":
-      case "long":
-        if(!obj[key].startsWith("0x"))  // so that not to convert ids
-          obj[key] = parseInt(obj[key], 16)
-        break;
-      case "struct":
-      case "point3d":
-      case "point2d":
-        obj[key] = JSON.parse(obj[key])
-        break;
-    }
-    index++;
-  }
-  return obj;
-}
-
-export function buildBinaryData(obj: any): any {
+export function buildBinaryData(obj: any): any { //TODO: we should do this during table parsing
   for(const key in obj) {
     if(typeof obj[key] === "string")
     {
@@ -444,7 +403,7 @@ export class ECDbMarkdownTestParser {
 
   private static handleJSONRowOptionsMetaData(json: any, currentTest: ECDbTestProps, markdownFilePath: string) {
     if (isConcurrentQueryRowOptions(json.rowOptions)) {
-      currentTest.rowOptions = json.rowOptions;    // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
+      currentTest.rowOptions = json.rowOptions;
     } else {
       this.logWarning(`Row Options format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard. Skipping.`);
     }
@@ -486,7 +445,7 @@ export class ECDbMarkdownTestParser {
   }
 
   private static handleTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
-    if (token.header.length > 0 && token.header[0].text.toLowerCase() === "propname") {
+    if (token.header.length > 0 && currentTest.columnInfo !== undefined && columnInfoPropsKeys.has(token.header[0].text as keyof ColumnInfoProps)) {
       this.handleColumnTable(token, currentTest, markdownFilePath);
       return;
     }
@@ -519,7 +478,7 @@ export class ECDbMarkdownTestParser {
   }
 
   private static handleExpectedResultsTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
-    currentTest.expectedResults = currentTest.expectedResults || [];  // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
+    currentTest.expectedResults = currentTest.expectedResults || [];
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
         this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
@@ -530,14 +489,14 @@ export class ECDbMarkdownTestParser {
       for (let i = 0; i < token.header.length; i++) {
         const header = token.header[i].text;
         const cell = row[i].text;
-        expectedResult[header] = cell;
+        expectedResult[header] = tableTextToValue(cell);
       }
-      currentTest.expectedResults.push(expectedResult); // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
+      currentTest.expectedResults.push(expectedResult);
     }
   }
 
   private static handleExpectedResultsTableForECSqlPropertyIndexesOption(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
-    currentTest.expectedResults = currentTest.expectedResults || [];  // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
+    currentTest.expectedResults = currentTest.expectedResults || [];
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
         this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
@@ -547,9 +506,9 @@ export class ECDbMarkdownTestParser {
       const expectedResult: any[] = [];
       for (let i = 0; i < token.header.length; i++) {
         const cell = row[i].text;
-        expectedResult.push(cell);
+        expectedResult.push(tableTextToValue(cell));
       }
-      currentTest.expectedResults.push(expectedResult); // We are sure that ecsqlStatementProps will not be undefined because if queryType == TypeOfQuery.ECSqlStatement then ecsqlStatementProps will not be undefined
+      currentTest.expectedResults.push(expectedResult);
     }
   }
 

@@ -831,6 +831,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "sql-formatter",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "stream-browserify",
       "allowedCategories": [ "integration-testing", "internal" ]
     },

@@ -7,7 +7,7 @@ import { DbResult } from "@itwin/core-bentley";
 import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECSqlReader, ECSqlValueType, QueryBinder } from "@itwin/core-common";
-import { buildBinaryData, buildConcurrentQueryDataFromTableResults, buildECSqlRowArgs, buildECSqlStatementDataFromTableResults, buildQueryOptionsBuilder, ECDbMarkdownTestParser, ECDbTestProps, TypeOfQuery } from "./ECDbMarkdownTestParser";
+import { buildBinaryData, buildECSqlRowArgs, buildQueryOptionsBuilder, ECDbMarkdownTestParser, ECDbTestProps, TypeOfQuery } from "./ECDbMarkdownTestParser";
 import * as path from "path";
 import * as fs from "fs";
 import { ECDbMarkdownDatasets } from "./ECDbMarkdownDatasets";
@@ -120,10 +120,6 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
         const expectedJson = JSON.stringify(expectedResult);
         const compiledExpectedJson = replacePropsInString(expectedJson, props);
         expectedResult = JSON.parse(compiledExpectedJson);
-        if(test.isResultsFromTable)
-          {
-            expectedResult = buildECSqlStatementDataFromTableResults(expectedResult, stmt);
-          }
         expectedResult = buildBinaryData(expectedResult);
 
         const actualResult = stmt.getRow(buildECSqlRowArgs(test.rowOptions)); // TODO: should we test getValue() as well?
@@ -231,10 +227,6 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
         const expectedJson = JSON.stringify(expectedResult);
         const compiledExpectedJson = replacePropsInString(expectedJson, props);
         expectedResult = JSON.parse(compiledExpectedJson);
-        if(test.isResultsFromTable)
-        {
-          expectedResult = buildConcurrentQueryDataFromTableResults(expectedResult, colMetaData);
-        }
         expectedResult = buildBinaryData(expectedResult);
 
         const actualResult = rows[resultCount] // TODO: should we test getValue() as well?
