@@ -27,7 +27,6 @@ const out = (argv.out === undefined) ? paths.appDocs : argv.out;
 const json = (argv.json === undefined) ? paths.appJsonDocs : argv.json;
 
 const baseUrlOptions = (argv.baseUrl === undefined) ? [] : ["--baseUrl", argv.baseUrl];
-const includeOptions = (argv.includes === undefined) ? [] : ["--includes", argv.includes];
 
 const testExclude = argv.testExcludeGlob ?? "**/*test*/**/*";
 const excludeInternalFolders = "**/internal/**/*"
@@ -51,7 +50,6 @@ if (argv.onlyJson === undefined)
 const readmeOption = (argv.readme === undefined) ? "none" : argv.readme;
 
 const options = [
-  "--excludePrivate",
   "--hideGenerator",
   "--logLevel",
   "Error"
@@ -74,7 +72,6 @@ const args = [
   "--readme", readmeOption,
   ...pluginOptions,
   ...baseUrlOptions,
-  ...includeOptions
 ];
 
 console.log("Arguments to TypeDoc: " + JSON.stringify(args, null, 2));

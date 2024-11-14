@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-quantity",
-  "version": "5.0.0-dev.5",
+  "version": "5.0.0-dev.6",
   "description": "Quantity parsing, formatting and conversions for iModel.js",
   "main": "lib/cjs/core-quantity.js",
   "module": "lib/esm/core-quantity.js",
@@ -19,7 +19,7 @@
     "extract-api": "betools extract-api --entry=core-quantity",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-quantity/file.json --tsIndexFile=./core-quantity.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/core-quantity/file.json --tsIndexFile=./core-quantity.ts --onlyJson",
     "cover": "nyc npm -s test",
     "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs"
   },
@@ -51,7 +51,7 @@
     "typescript": "~5.6.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^5.0.0-dev.5"
+    "@itwin/core-bentley": "workspace:^5.0.0-dev.6"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"
