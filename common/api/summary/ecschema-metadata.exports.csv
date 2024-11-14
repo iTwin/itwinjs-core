@@ -33,6 +33,7 @@ beta;enum;ECClassModifier
 public;class;ECName
 internal;class;ECObjectsError
 beta;enum;ECObjectsStatus
+internal;interface;ECSpecVersion
 internal;class;ECStringConstants
 beta;class;ECVersion
 beta;class;EntityClass

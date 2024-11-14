@@ -590,9 +590,6 @@ export class ToolSelectionSyncHandler implements IDisposable {
     get pendingAsyncs(): Set<string>;
 }
 
-// @internal (undocumented)
-export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
-
 // (No @packageDocumentation comment for this package)
 
 ```

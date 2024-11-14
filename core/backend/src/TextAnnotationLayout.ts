@@ -7,7 +7,7 @@
  */
 
 import { BaselineShift, FontId, FractionRun, LineLayoutResult, Paragraph, Run, RunLayoutResult, TextBlock, TextBlockLayoutResult, TextRun, TextStyleSettings, TextStyleSettingsProps } from "@itwin/core-common";
-import { Range2d } from "@itwin/core-geometry";
+import { Geometry, Range2d } from "@itwin/core-geometry";
 import { IModelDb } from "./IModelDb";
 import { assert, NonFunctionPropertiesOf } from "@itwin/core-bentley";
 import * as LineBreaker from "linebreak";
@@ -357,7 +357,7 @@ export class RunLayout {
     return this.source.type === "text";
   }
 
-  private cloneForWrap(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number}): RunLayout {
+  private cloneForWrap(args: { ranges: TextLayoutRanges, charOffset: number, numChars: number }): RunLayout {
     assert(this.canWrap());
 
     return new RunLayout({
@@ -560,7 +560,7 @@ export class TextBlockLayout {
 
         const runWidth = run.range.xLength();
         const lineWidth = curLine.range.xLength();
-        if (runWidth + lineWidth <= doc.width) {
+        if (runWidth + lineWidth < doc.width || Geometry.isAlmostEqualNumber(runWidth + lineWidth, doc.width, Geometry.smallMetricDistance)) {
           curLine.append(run);
           continue;
         }
