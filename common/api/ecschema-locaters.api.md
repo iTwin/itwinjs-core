@@ -19,6 +19,13 @@ export class BackendSchemasXmlFileLocater extends SchemaXmlFileLocater implement
 }
 
 // @beta
+export class BackendSchemaXmlStringLocater extends SchemaXmlStringLocater implements ISchemaLocater {
+    constructor(assetsDir: string);
+    addSchemaString(schemaString: string): void;
+    addSchemaStrings(schemaStrings: string[]): void;
+}
+
+// @beta
 export class FileSchemaKey extends SchemaKey {
     constructor(key: SchemaKey, fileName: string, schemaJson?: string);
     // (undocumented)

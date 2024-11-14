@@ -3,60 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECVersion, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { BackendSchemasXmlFileLocater, SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
-import { KnownLocations } from "@itwin/core-backend";
-import path from "path";
-import { assert } from "chai";
 import * as fs from "fs-extra";
+import { KnownLocations } from "@itwin/core-backend";
+import { BackendSchemaXmlStringLocater } from "@itwin/ecschema-locaters";
+import { ECVersion, Schema, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
+import { assert } from "chai";
+import path from "path";
 
-describe("SchemaXmlFileLocater - locate standard schema", () => {
-  it("Schema path is less than 260 character long", async () => {
-    const cont = new SchemaContext();
-    const loc = new SchemaXmlFileLocater();
-    cont.addLocater(loc);
-    const schemaPath: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Standard");
-    loc.addSchemaSearchPath(schemaPath);
 
-    assert.isTrue(schemaPath.length < 260);
-    const schemaKey = new SchemaKey("Units", 1, 0, 0);
-    const schema = await cont.getSchema(schemaKey, SchemaMatchType.Latest);
-
-    assert.isDefined(schema);
-    assert.strictEqual(schema?.name, "Units");
-  });
-
-  it("Schema path is between 260 and 1024 character long", async () => {
-    const cont = new SchemaContext();
-    const loc = new SchemaXmlFileLocater();
-    cont.addLocater(loc);
-    const oldSchemaPath: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Standard");
-    let longSchemaPath: string = path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy");
-    for (let i = 0; i < 20; i++) {
-      longSchemaPath = path.join(longSchemaPath, "ThisIsA35CharacterLongSubFolderName");
-    }
-    if (!fs.existsSync(longSchemaPath)) {
-      fs.mkdirSync(longSchemaPath, {recursive: true});
-    }
-    fs.copySync(oldSchemaPath, longSchemaPath, {recursive: true});
-    assert.isTrue(longSchemaPath.length > 260);
-    assert.isTrue(longSchemaPath.length < 1024);
-    loc.addSchemaSearchPath(longSchemaPath);
-
-    const schemaKey = new SchemaKey("Units", 1, 0, 0);
-    const schema = await cont.getSchema(schemaKey, SchemaMatchType.Latest);
-
-    assert.isDefined(schema);
-    assert.strictEqual(schema?.name, "Units");
-    if (fs.existsSync(path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy"))) {
-      fs.rmSync(path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "StandardCopy"), {recursive: true});
-    }
-  });
-});
-
-describe("BackendSchemasXmlFileLocater - locate standard schemas", () => {
+describe("BackendSchemaXmlStringLocater - locate standard schemas", () => {
   const lrSchemaKey = new SchemaKey("LinearReferencing");
   const unitsSchemaKey = new SchemaKey("Units");
+
+  const lrSchemaText = fs.readFileSync(path.join(__dirname, "assets", "DummyTestSchemas", "Domain", "LinearReferencing.ecschema.xml"));
+  const unitsSchemaText = fs.readFileSync(path.join(__dirname, "assets", "DummyTestSchemas", "Standard", "Units.ecschema.xml"));
 
   async function checkSchema(context: SchemaContext, schemaKey: SchemaKey) {
     const schema = await context.getSchema(schemaKey);
@@ -64,9 +24,9 @@ describe("BackendSchemasXmlFileLocater - locate standard schemas", () => {
     assert.strictEqual(schema?.name, schemaKey.name);
   }
 
-  it("BackendSchemasXmlFileLocater - check default schema paths", async () => {
+  it("BackendSchemaXmlStringLocater - check default schema paths", async () => {
     const context = new SchemaContext();
-    context.addLocater(new BackendSchemasXmlFileLocater(KnownLocations.nativeAssetsDir));
+    context.addLocater(new BackendSchemaXmlStringLocater(KnownLocations.nativeAssetsDir));
 
     await checkSchema(context, new SchemaKey("BisCore")); // Get BisCore
     await checkSchema(context, new SchemaKey("Generic")); // Get a Dgn schema
@@ -80,9 +40,9 @@ describe("BackendSchemasXmlFileLocater - locate standard schemas", () => {
     assert.equal(locatedSchema?.getItemSync(schemaItemName) !== undefined, isSchemaItemDefined);
   }
 
-  it("BackendSchemasXmlFileLocater - check search path precedence - sync", () => {
+  it("BackendSchemaXmlStringLocater - check search path precedence - sync", () => {
     let context = new SchemaContext();
-    const locater = new BackendSchemasXmlFileLocater(KnownLocations.nativeAssetsDir);
+    const locater = new BackendSchemaXmlStringLocater(KnownLocations.nativeAssetsDir);
 
     // The locater has been setup to use the default standard schemas released by core-backend package.
     context.addLocater(locater);
@@ -99,10 +59,8 @@ describe("BackendSchemasXmlFileLocater - locate standard schemas", () => {
     context = new SchemaContext();
     context.addLocater(locater);
 
-    // Now give the locater specific search paths to the dummy "LinearReferencing" and "Units" schemas
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Dgn"));
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Domain"));
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Standard"));
+    locater.addSchemaString(lrSchemaText.toString());
+    locater.addSchemaString(unitsSchemaText.toString());
 
     linearReferencingSchema = context.getSchemaSync(lrSchemaKey);
     testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", true); // should be loaded
@@ -114,11 +72,12 @@ describe("BackendSchemasXmlFileLocater - locate standard schemas", () => {
 
     // Test case 2: Register multiple search paths at a time
     context = new SchemaContext();
-    const newLocater = new BackendSchemasXmlFileLocater(KnownLocations.nativeAssetsDir);
+    const newLocater = new BackendSchemaXmlStringLocater(KnownLocations.nativeAssetsDir);
     context.addLocater(newLocater);
 
     // Now give the locater specific search paths to the dummy "LinearReferencing" and "Units" schemas
-    newLocater.addSchemaSearchPaths([path.join(__dirname, "assets", "DummyTestSchemas", "Dgn"), path.join(__dirname, "assets", "DummyTestSchemas", "Domain"), path.join(__dirname, "assets", "DummyTestSchemas", "Standard")]);
+    newLocater.addSchemaString(lrSchemaText.toString());
+    newLocater.addSchemaString(unitsSchemaText.toString());
 
     linearReferencingSchema = context.getSchemaSync(lrSchemaKey);
     testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", true);  // should be loaded
@@ -129,9 +88,9 @@ describe("BackendSchemasXmlFileLocater - locate standard schemas", () => {
     testLocatedSchema(unitsSchema, "Units", "FAHRENHEIT", true); // should be loaded
   });
 
-  it("BackendSchemasXmlFileLocater - check search path precedence - async", async () => {
+  it("BackendSchemaXmlStringLocater - check search path precedence - async", async () => {
     let context = new SchemaContext();
-    const locater = new BackendSchemasXmlFileLocater(KnownLocations.nativeAssetsDir);
+    const locater = new BackendSchemaXmlStringLocater(KnownLocations.nativeAssetsDir);
 
     // The locater has been setup to use the default standard schemas released by core-backend package.
     context.addLocater(locater);
@@ -149,9 +108,8 @@ describe("BackendSchemasXmlFileLocater - locate standard schemas", () => {
     context.addLocater(locater);
 
     // Now give the locater specific search paths to the dummy "LinearReferencing" and "Units" schemas
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Dgn"));
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Domain"));
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Standard"));
+    locater.addSchemaString(lrSchemaText.toString());
+    locater.addSchemaString(unitsSchemaText.toString());
 
     linearReferencingSchema = await context.getSchema(lrSchemaKey);
     testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", true); // should be loaded
@@ -163,14 +121,15 @@ describe("BackendSchemasXmlFileLocater - locate standard schemas", () => {
 
     // Test case 2: Register multiple search paths at a time
     context = new SchemaContext();
-    const newLocater = new BackendSchemasXmlFileLocater(KnownLocations.nativeAssetsDir);
+    const newLocater = new BackendSchemaXmlStringLocater(KnownLocations.nativeAssetsDir);
     context.addLocater(newLocater);
 
     // Now give the locater specific search paths to the dummy "LinearReferencing" and "Units" schemas
-    newLocater.addSchemaSearchPaths([path.join(__dirname, "assets", "DummyTestSchemas", "Dgn"), path.join(__dirname, "assets", "DummyTestSchemas", "Domain"), path.join(__dirname, "assets", "DummyTestSchemas", "Standard")]);
+    newLocater.addSchemaString(lrSchemaText.toString());
+    newLocater.addSchemaString(unitsSchemaText.toString());
 
     linearReferencingSchema = await context.getSchema(lrSchemaKey);
-    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", true); // should be loaded
+    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", true);  // should be loaded
     testLocatedSchema(linearReferencingSchema, "LinearReferencing", "LinearLocationElement", true); // should be loaded
 
     unitsSchema = await context.getSchema(unitsSchemaKey);
@@ -178,18 +137,18 @@ describe("BackendSchemasXmlFileLocater - locate standard schemas", () => {
     testLocatedSchema(unitsSchema, "Units", "FAHRENHEIT", true); // should be loaded
   });
 
-  it("BackendSchemasXmlFileLocater - schema version check", () => {
+  it("BackendSchemaXmlStringLocater - schema version check", () => {
     for (const schemaVersion of [new ECVersion(2, 0, 0), new ECVersion(2, 5, 0), new ECVersion(5, 0, 0)]) {
       const context = new SchemaContext();
       // The locater has been setup to use the default standard schemas released by core-backend package.
-      context.addLocater(new BackendSchemasXmlFileLocater(KnownLocations.nativeAssetsDir));
+      context.addLocater(new BackendSchemaXmlStringLocater(KnownLocations.nativeAssetsDir));
 
       const linearReferencingSchema = context.getSchemaSync(new SchemaKey("LinearReferencing", schemaVersion));
       assert.isDefined(linearReferencingSchema);
       assert.strictEqual(linearReferencingSchema?.name, "LinearReferencing");
       assert.strictEqual(linearReferencingSchema?.schemaKey.version.read, 2);
       assert.strictEqual(linearReferencingSchema?.schemaKey.version.write, 0);
-      assert.isAbove(linearReferencingSchema?.schemaKey.version?.minor ?? -1, 0);
+      assert.isAbove(linearReferencingSchema?.schemaKey.version.minor ?? -1, 0);
     }
   });
 });

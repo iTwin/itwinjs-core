@@ -3,7 +3,7 @@
 |  * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 |  * See LICENSE.md in the project root for license terms and full copyright notice.
 ======================================================================================= -->
-<ECSchema schemaName="Units" alias="u" version="01.00.08" description="Standard Set of Unit definitions for the system" displayLabel="Units"
+<ECSchema schemaName="Units" alias="u" version="01.00.99" description="Dummy Units Schema" displayLabel="Units"
     xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
     <UnitSystem typeName="SI" />
     <UnitSystem typeName="CGS" />
