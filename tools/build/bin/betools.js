@@ -31,6 +31,9 @@ yargs.strict(true)
         "baseUrl": {
           describe: "Specify a baseUrl to resolve modules"
         },
+        "includes": {
+          describe: "Deprecated - this flag does nothing and will be removed in @itwin/build-tools 5.x"
+        },
         "excludes": {
           describe: "Specify a directory, filename, or pattern to be excluded"
         },
