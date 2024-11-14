@@ -324,31 +324,30 @@ export class CurveFactory {
   }
 
   /**
-   * * Create section arcs for mitered pipe.
+   * Create section arcs for mitered pipe.
    * * At each end of each pipe, the pipe is cut by the plane that bisects the angle between successive pipe centerlines.
    * * The arc definitions are constructed so that lines between corresponding fractional positions on the arcs are
-   *     axial lines on the pipes.
+   *   axial lines on the pipes.
    * * This means that each arc definition axes (aka vector0 and vector90) are _not_ perpendicular to each other.
    * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis lengths, or a full Arc3d.
    *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
    *    * The center of Arc3d input is translated to the centerline start point to act as initial cross section.
-   * @param centerline centerline of pipe
-   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d
+   * @param centerline centerline of pipe.
+   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d (if not full, function makes it full).
    */
   public static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[] {
     const arcs: Arc3d[] = [];
     if (centerline.length < 2)
       return [];
-
     const vector0 = Vector3d.create();
     const vector90 = Vector3d.create();
     const vectorBC = Vector3d.create();
     const currentCenter = Point3d.create();
     centerline.vectorIndexIndex(0, 1, vectorBC)!;
     centerline.getPoint3dAtUncheckedPointIndex(0, currentCenter);
-
     let initialSection: Arc3d;
     if (sectionData instanceof Arc3d) {
+      sectionData.sweep = AngleSweep.create360(); // ensure full ellipse and CCW orientation
       initialSection = sectionData.clone();
       initialSection.center.setFrom(currentCenter);
       vector0.setFrom(sectionData.vector0);
@@ -364,21 +363,18 @@ export class CurveFactory {
       return [];
     }
     arcs.push(initialSection);
-
     const vectorAB = Vector3d.create();
     const bisector = Vector3d.create();
     for (let i = 1; i < centerline.length; i++) {
       vectorAB.setFromVector3d(vectorBC);
       centerline.getPoint3dAtUncheckedPointIndex(i, currentCenter);
-      if (i + 1 < centerline.length) {
+      if (i + 1 < centerline.length)
         centerline.vectorIndexIndex(i, i + 1, vectorBC)!;
-      } else {
+      else
         vectorBC.setFromVector3d(vectorAB);
-      }
       if (vectorAB.normalizeInPlace() && vectorBC.normalizeInPlace()) {
         vectorAB.interpolate(0.5, vectorBC, bisector);
-        // On the end ellipse for this pipe section. ..
-        // center comes directly from centerline[i]
+        // on the end ellipse for this pipe section. center comes directly from centerline[i].
         // vector0 and vector90 are obtained by sweeping the corresponding vectors of the start ellipse to the split plane.
         moveVectorToPlane(vector0, vectorAB, bisector, vector0);
         moveVectorToPlane(vector90, vectorAB, bisector, vector90);
@@ -665,9 +661,7 @@ export class CurveFactory {
 
 }
 
-/**
- * Starting at vectorR, move parallel to vectorV until perpendicular to planeNormal
- */
+/** Starting at vectorR, move parallel to vectorV until perpendicular to planeNormal. */
 function moveVectorToPlane(vectorR: Vector3d, vectorV: Vector3d, planeNormal: Vector3d, result?: Vector3d): Vector3d {
   // find s such that (vectorR + s * vectorV) DOT planeNormal = 0.
   const dotRN = vectorR.dotProduct(planeNormal);

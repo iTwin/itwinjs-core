@@ -2001,8 +2001,12 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       (triangle: BarycentricTriangle) => { this.addTriangleFacet(triangle.points); },
     );
   }
+  /** Doc is same as `addMiteredPipes` doc. */
   private addMiteredPipesFromPoints(
-    centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d, numFacetAround: number = 12,
+    centerline: IndexedXYZCollection,
+    sectionData: number | XAndY | Arc3d,
+    numFacetAround: number = 12,
+    addCap: boolean = false,
   ): void {
     const sections = CurveFactory.createMiteredPipeSections(centerline, sectionData);
     const pointA0 = Point3d.create();
@@ -2012,6 +2016,15 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     if (numFacetAround < 3)
       numFacetAround = 3;
     const df = 1.0 / numFacetAround;
+    // generate start cap
+    if (addCap) {
+      const startLineString = LineString3d.create();
+      for (let i = 0; i < numFacetAround; i++)
+        startLineString.addPoint(sections[0].fractionToPoint(i * df));
+      this.addTrianglesInUncheckedConvexPolygon(startLineString, true);
+      this.endFace();
+    }
+    // generate side facets
     for (let i = 1; i < sections.length; i++) {
       const arcA = sections[i - 1];
       const arcB = sections[i];
@@ -2021,8 +2034,16 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         const f = k * df;
         arcA.fractionToPoint(f, pointA1);
         arcB.fractionToPoint(f, pointB1);
-        this.addQuadFacet([pointA0, pointB0, pointB1, pointA1]);
+        this.addQuadFacet([pointA1, pointB1, pointB0, pointA0]); // this order ensures outward normals
       }
+    }
+    // generate end cap
+    if (addCap) {
+      const endLineString = LineString3d.create();
+      for (let i = 0; i < numFacetAround; i++)
+        endLineString.addPoint(sections[sections.length - 1].fractionToPoint(i * df));
+      this.addTrianglesInUncheckedConvexPolygon(endLineString, false);
+      this.endFace();
     }
   }
   /**
@@ -2032,26 +2053,26 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
    *    * For Arc3d input, the center is translated to the centerline start point to act as initial cross section.
    * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions.
-   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d.
+   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d (if not full, function makes it full).
    * @param numFacetAround how many equal parameter-space chords around each section.
+   * @param addCap if `true`, add a cap at each end of the pipe; defaults to `false`.
    */
   public addMiteredPipes(
     centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive,
     sectionData: number | XAndY | Arc3d,
     numFacetAround: number = 12,
+    addCap: boolean = false,
   ): void {
     if (Array.isArray(centerline)) {
-      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), sectionData, numFacetAround);
-    } else if (centerline instanceof GrowableXYZArray) {
-      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround);
-    } else if (centerline instanceof IndexedXYZCollection) {
-      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround);
+      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), sectionData, numFacetAround, addCap);
+    } else if (centerline instanceof GrowableXYZArray || centerline instanceof IndexedXYZCollection) {
+      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround, addCap);
     } else if (centerline instanceof LineString3d) {
-      this.addMiteredPipesFromPoints(centerline.packedPoints, sectionData, numFacetAround);
+      this.addMiteredPipesFromPoints(centerline.packedPoints, sectionData, numFacetAround, addCap);
     } else if (centerline instanceof GeometryQuery) {
       const linestring = LineString3d.create();
       centerline.emitStrokes(linestring, this._options);
-      this.addMiteredPipesFromPoints(linestring.packedPoints, sectionData, numFacetAround);
+      this.addMiteredPipesFromPoints(linestring.packedPoints, sectionData, numFacetAround, addCap);
     }
   }
   /** Return the polyface index array indices corresponding to the given edge, or `undefined` if error. */

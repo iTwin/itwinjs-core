@@ -58,13 +58,13 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param destOffset copy to instance array starting at this point index; zero if undefined
    * @return count and offset of points copied
    */
-  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): {count: number, offset: number} {
+  protected copyData(source: Float64Array | number[], sourceCount?: number, destOffset?: number): { count: number, offset: number } {
     // validate inputs and convert from points to entries
     let myOffset = (undefined !== destOffset) ? destOffset * 3 : 0;
     if (myOffset < 0)
       myOffset = 0;
     if (myOffset >= this._data.length)
-      return {count: 0, offset: 0};
+      return { count: 0, offset: 0 };
     let myCount = (undefined !== sourceCount) ? sourceCount * 3 : source.length;
     if (myCount > 0) {
       if (myCount > source.length)
@@ -75,14 +75,14 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
         myCount -= myCount % 3;
     }
     if (myCount <= 0)
-      return {count: 0, offset: 0};
+      return { count: 0, offset: 0 };
     if (myCount === source.length)
       this._data.set(source, myOffset);
     else if (source instanceof Float64Array)
       this._data.set(source.subarray(0, myCount), myOffset);
     else
       this._data.set(source.slice(0, myCount), myOffset);
-    return {count: myCount / 3, offset: myOffset / 3};
+    return { count: myCount / 3, offset: myOffset / 3 };
   }
 
   /** The number of points in use. When the length is increased, the array is padded with zeroes. */
@@ -468,7 +468,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       result.push(Point3d.create(data[i], data[i + 1], data[i + 2]));
     return result;
   }
-    /** multiply each point by the transform, replace values. */
+  /** multiply each point by the transform, replace values. */
   public static multiplyTransformInPlace(transform: Transform, data: GrowableXYZArray[] | GrowableXYZArray) {
     if (Array.isArray(data)) {
       for (const d of data)
@@ -753,7 +753,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return 0.5 * area;
   }
 
-  /** Compute a vector from index origin i to indexed target j  */
+  /** Compute a vector from index origin i to indexed target j. */
   public vectorIndexIndex(i: number, j: number, result?: Vector3d): Vector3d | undefined {
     if (!this.isIndexValid(i) || !this.isIndexValid(j))
       return undefined;
@@ -763,10 +763,12 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     return Vector3d.create(
       data[j] - data[i],
       data[j + 1] - data[i + 1],
-      data[j + 2] - data[i + 2], result);
+      data[j + 2] - data[i + 2],
+      result,
+    );
   }
 
-  /** Compute a vector from origin to indexed target j */
+  /** Compute a vector from origin to indexed target j. */
   public vectorXYAndZIndex(origin: XYAndZ, j: number, result?: Vector3d): Vector3d | undefined {
     if (this.isIndexValid(j)) {
       const data = this._data;
@@ -774,12 +776,14 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       return Vector3d.create(
         data[j] - origin.x,
         data[j + 1] - origin.y,
-        data[j + 2] - origin.z, result);
+        data[j + 2] - origin.z,
+        result,
+      );
     }
     return undefined;
   }
 
-  /** Compute the cross product of vectors from from indexed origin to indexed targets i and j */
+  /** Compute the cross product of vectors from from indexed origin to indexed targets i and j. */
   public crossProductIndexIndexIndex(originIndex: number, targetAIndex: number, targetBIndex: number, result?: Vector3d): Vector3d | undefined {
     if (this.isIndexValid(originIndex) && this.isIndexValid(targetAIndex) && this.isIndexValid(targetBIndex)) {
       const i = originIndex * 3;
@@ -789,7 +793,8 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       return Geometry.crossProductXYZXYZ(
         data[j] - data[i], data[j + 1] - data[i + 1], data[j + 2] - data[i + 2],
         data[k] - data[i], data[k + 1] - data[i + 1], data[k + 2] - data[i + 2],
-        result);
+        result,
+      );
     }
     return undefined;
   }
@@ -821,7 +826,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
         data[i], data[i + 1], data[i + 2],
         data[j], data[j + 1], data[j + 2],
         data[k], data[k + 1], data[k + 2]);
-      }
+    }
   }
 
   /**

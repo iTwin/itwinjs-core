@@ -250,9 +250,12 @@ describe("PipeConnections", () => {
 
     for (const numPoints of [8, 20, 40]) {
       const path = new Point3dArrayCarrier(
-        Sample.createPointSineWave(undefined, numPoints, 10.0 / numPoints,
+        Sample.createPointSineWave(
+          undefined, numPoints, 10.0 / numPoints,
           5.0, AngleSweep.createStartEndDegrees(0, 520),
-          3.0, AngleSweep.createStartEndDegrees(0, 100)));
+          3.0, AngleSweep.createStartEndDegrees(0, 100),
+        ),
+      );
       allPaths.push(path);
     }
 
@@ -279,14 +282,16 @@ describe("PipeConnections", () => {
         startPoint.setFrom(startRay.origin);
         startTangent.setFrom(startRay.direction);
       }
-      const startFrame = Matrix3d.createRotationAroundVector(startTangent, v0Angle)!.multiplyMatrixMatrix(Matrix3d.createRigidHeadsUp(startTangent, AxisOrder.ZXY));
+      const startFrame = Matrix3d.createRotationAroundVector(startTangent, v0Angle)!.multiplyMatrixMatrix(
+        Matrix3d.createRigidHeadsUp(startTangent, AxisOrder.ZXY),
+      );
       const v0 = startFrame.columnX().scaleToLength(radius)!;
       const v90 = startFrame.columnY().scaleToLength(radius * minorFraction)!;
 
       for (const angleTol of [Angle.createDegrees(22), Angle.createDegrees(15), Angle.createDegrees(5)]) {
-        for (const sectionData of [radius,
-          { x: radius, y: radius * minorFraction },
-          Arc3d.create(startPoint, v0, v90, AngleSweep.create360())]) {
+        for (const sectionData of
+          [radius, { x: radius, y: radius * minorFraction }, Arc3d.create(startPoint, v0, v90, AngleSweep.create360())]
+        ) {
           y0 += 10.0;
           const builder = PolyfaceBuilder.create();
           builder.options.angleTol = angleTol;
@@ -296,7 +301,8 @@ describe("PipeConnections", () => {
         }
         y0 = 0;
         z0 += 10;
-        if (isLinear) break; // no need to re-stroke centerline
+        if (isLinear)
+          break; // no need to re-stroke centerline
       }
       x0 += 10;
       y0 = z0 = 0;

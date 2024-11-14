@@ -4486,7 +4486,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addIndexedPolyface(source: IndexedPolyface, reversed?: boolean, transform?: Transform): void;
     addLinearSweep(surface: LinearSweep): void;
     addLinearSweepLineStringsXYZOnly(contour: AnyCurve, vector: Vector3d): void;
-    addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d, numFacetAround?: number): void;
+    addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d, numFacetAround?: number, addCap?: boolean): void;
     addParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined;
     addParamXY(x: number, y: number): number;
     addPoint(xyz: Point3d): number;
