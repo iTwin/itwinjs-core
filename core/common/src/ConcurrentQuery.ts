@@ -67,7 +67,7 @@ export interface QueryPropertyMetaData {
   */
   extendType: string;
   /** If this property is a PrimitiveECProperty, extend type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extended type is set to an empty string. */
-  extendedType: string;
+  extendedType?: string;
   /** The type name is set to 'navigation' if the property is a navigation property, otherwise, it is the type name for the property. */
   typeName: string;
 }

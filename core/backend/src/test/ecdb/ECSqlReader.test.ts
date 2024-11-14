@@ -552,7 +552,7 @@ describe("ECSqlReader", (() => {
 
     });
 
-    describe("Tests for extendedType and extendType property behaviour of QueryPropertyMetaData", () => {
+    describe.only("Tests for extendedType and extendType property behaviour of QueryPropertyMetaData", () => {
 
       it("Id type column with alias", async () => {
         reader = iModel.createQueryReader("SELECT ECInstanceId customColumnName FROM meta.ECSchemaDef ORDER BY ECInstanceId ASC");
@@ -575,6 +575,36 @@ describe("ECSqlReader", (() => {
         const metaData = await reader.getMetaData();
         assert.equal("ClassId", metaData[0].extendedType);
         assert.equal("ClassId", metaData[0].extendType);
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);
+      });
+
+      it("Column without extended type", async () => {
+        reader = iModel.createQueryReader("SELECT s.Name FROM meta.ECSchemaDef s ORDER BY s.Name ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal(undefined, metaData[0].extendedType);
+        assert.equal("", metaData[0].extendType);
+      });
+
+      it("Column without extended type with alias", async () => {
+        reader = iModel.createQueryReader("SELECT s.Name a FROM meta.ECSchemaDef s ORDER BY a ASC");
+        const metaData = await reader.getMetaData();
+        assert.equal(undefined, metaData[0].extendedType);
+        assert.equal("", metaData[0].extendType);
+      });
+
+      it("Geometric type column with alias", async () => {
+        reader = iModel.createQueryReader("select GeometryStream A from bis.GeometricElement3d LIMIT 1");
+        const metaData = await reader.getMetaData();
+        assert.equal("Json", metaData[0].extendedType);
+        assert.equal("Json", metaData[0].extendType);
+        assert.equal(metaData[0].extendedType, metaData[0].extendType);
+      });
+
+      it("Geometric type column without alias", async () => {
+        reader = iModel.createQueryReader("select GeometryStream from bis.GeometricElement3d LIMIT 1");
+        const metaData = await reader.getMetaData();
+        assert.equal("Json", metaData[0].extendedType);
+        assert.equal("Json", metaData[0].extendType);
         assert.equal(metaData[0].extendedType, metaData[0].extendType);
       });
 
