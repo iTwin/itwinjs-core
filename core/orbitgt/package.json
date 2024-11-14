@@ -12,7 +12,7 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/core-orbitgt/file.json --tsIndexFile=./core-orbitgt.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/core-orbitgt/file.json --tsIndexFile=./core-orbitgt.ts --onlyJson",
     "extract-api": "betools extract-api --entry=core-orbitgt",
     "lint": "",
     "test": "mocha",
