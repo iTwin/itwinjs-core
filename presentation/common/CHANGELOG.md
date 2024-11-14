@@ -1,6 +1,13 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Wed, 13 Nov 2024 15:23:39 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Nov 2024 18:11:00 GMT and should not be manually modified.
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+### Updates
+
+- Fixed enum property values formatting issue, where raw value was used instead of enum's display value.
 
 ## 4.10.0
 Wed, 13 Nov 2024 15:23:39 GMT
