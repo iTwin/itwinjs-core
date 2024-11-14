@@ -38,7 +38,15 @@ iTwin.js now supports only the latest Electron release (Electron 33) and has dro
 
 The following previously-deprecated APIs have been removed:
 
-**@itwin/core-electron**:
+#### @itwin/appui-abstract
 
-- `ElectronApp.callDialog` - replaced by [ElectronApp.dialogIpc]($electron)
-- `ElectronHost.getWindowSizeSetting` - replaced by [ElectronHost.getWindowSizeAndPositionSetting]($electron)
+| Removed                     | Replacement |
+| --------------------------- | ----------- |
+| `EditorPosition.columnSpan` | N/A         |
+
+#### @itwin/core-electron
+
+| Removed                             | Replacement                                               |
+| ----------------------------------- | --------------------------------------------------------- |
+| `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
+| `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
