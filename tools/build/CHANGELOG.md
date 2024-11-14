@@ -1,6 +1,21 @@
 # Change Log - @itwin/build-tools
 
-This log was last generated on Wed, 06 Nov 2024 19:23:04 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Nov 2024 18:12:27 GMT and should not be manually modified.
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+### Updates
+
+- Bump `typedoc` dependency to a version that supports typescript `5.6`.
+- Deprecate  unused --includes flag
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:38 GMT
+
+### Updates
+
+- Allow specifying a relative directory for the `entry` argument in the `extract-api` command.
 
 ## 4.9.7
 Wed, 06 Nov 2024 19:23:04 GMT
