@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-backend",
-      "comment": "IModel.test.ts now validates that FontMap.getFont uses case insensitive matching for font names",
+      "comment": "",
       "type": "none"
     }
   ],
