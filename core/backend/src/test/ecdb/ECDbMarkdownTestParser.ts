@@ -70,8 +70,7 @@ export const columnInfoPropsKeys: Set<keyof ColumnInfoProps> = new Set([
 
 function isColumnInfoProps(obj: any): obj is ColumnInfoProps {
   const numberOfKeys = typeof obj === "object" ? Object.keys(obj).length : 0;
-  return typeof obj === "object" &&
-    (numberOfKeys >= 1 && numberOfKeys <= 7) &&
+  const isValid = typeof obj === "object" &&
     typeof obj.name === "string" &&
     (obj.className === undefined || typeof obj.className === "string") &&
     (obj.accessString === undefined || typeof obj.accessString === "string") &&
@@ -81,6 +80,24 @@ function isColumnInfoProps(obj: any): obj is ColumnInfoProps {
     (obj.extendedType === undefined || typeof obj.extendedType === "string") &&
     (obj.type === undefined || typeof obj.type === "string") &&
     (obj.typeName === undefined || typeof obj.typeName === "string");
+
+  if (!isValid) {
+    const errors: string[] = [];
+    if (typeof obj !== "object") errors.push("Object is not of type 'object'");
+    if (numberOfKeys < 1 || numberOfKeys > 7) errors.push("Number of keys is not between 1 and 7");
+    if (typeof obj.name !== "string") errors.push("Property 'name' is not of type 'string'");
+    if (obj.className !== undefined && typeof obj.className !== "string") errors.push("Property 'className' is not of type 'string'");
+    if (obj.accessString !== undefined && typeof obj.accessString !== "string") errors.push("Property 'accessString' is not of type 'string'");
+    if (obj.generated !== undefined && typeof obj.generated !== "boolean") errors.push("Property 'generated' is not of type 'boolean'");
+    if (obj.index !== undefined && typeof obj.index !== "number") errors.push("Property 'index' is not of type 'number'");
+    if (obj.jsonName !== undefined && typeof obj.jsonName !== "string") errors.push("Property 'jsonName' is not of type 'string'");
+    if (obj.extendedType !== undefined && typeof obj.extendedType !== "string") errors.push("Property 'extendedType' is not of type 'string'");
+    if (obj.type !== undefined && typeof obj.type !== "string") errors.push("Property 'type' is not of type 'string'");
+    if (obj.typeName !== undefined && typeof obj.typeName !== "string") errors.push("Property 'typeName' is not of type 'string'");
+    logWarning(`Validation failed for ColumnInfoProps. Object: ${JSON.stringify(obj)}. Errors: ${errors.join(", ")}`);
+  }
+
+  return isValid;
 }
 
 export interface ECSqlStatementECDbColumnInfoProps {
@@ -286,7 +303,7 @@ export class ECDbMarkdownTestParser {
             this.handleTableToken(token as Tokens.Table, currentTest, markdownFilePath);
             break;
           default:
-            this.logWarning(`Unknown token type ${token.type} found in file ${markdownFilePath}. Skipping.`);
+            logWarning(`Unknown token type ${token.type} found in file ${markdownFilePath}. Skipping.`);
             break;
         }
       }
@@ -304,7 +321,7 @@ export class ECDbMarkdownTestParser {
 
   private static handleListToken(token: Tokens.List, currentTest: ECDbTestProps | undefined, markdownFilePath: string) {
     if (currentTest === undefined) {
-      this.logWarning(`List token found without a test title in file ${markdownFilePath}. Skipping.`);
+      logWarning(`List token found without a test title in file ${markdownFilePath}. Skipping.`);
       return;
     }
     const variableRegex = /^(\w+):\s*(.+)$/;
@@ -352,12 +369,12 @@ export class ECDbMarkdownTestParser {
         currentTest.queryType = TypeOfQuery.Both;
         break;
       default:
-        this.logWarning(`Mode value is not recognised in file ${markdownFilePath} and test ${currentTest.title}. Skipping.`)
+        logWarning(`Mode value is not recognised in file ${markdownFilePath} and test ${currentTest.title}. Skipping.`)
     }
   }
   private static handleCodeToken(token: Tokens.Code, currentTest: ECDbTestProps | undefined, markdownFilePath: string) {
     if (currentTest === undefined) {
-      this.logWarning(`Code token found without a test title in file ${markdownFilePath}. Skipping.`);
+      logWarning(`Code token found without a test title in file ${markdownFilePath}. Skipping.`);
       return;
     }
     if (token.lang === "sql") {
@@ -368,9 +385,9 @@ export class ECDbMarkdownTestParser {
         json = JSON.parse(token.text);
       } catch (error) {
         if (error instanceof Error) {
-          this.logWarning(`Failed to parse JSON ${token.text} in file ${markdownFilePath}. ${error.message} Skipping.`);
+          logWarning(`Failed to parse JSON ${token.text} in file ${markdownFilePath}. ${error.message} Skipping.`);
         } else {
-          this.logWarning(`Failed to parse SON ${token.text} in file ${markdownFilePath}. Unknown error. Skipping.`);
+          logWarning(`Failed to parse SON ${token.text} in file ${markdownFilePath}. Unknown error. Skipping.`);
         }
       }
 
@@ -386,7 +403,7 @@ export class ECDbMarkdownTestParser {
 
       this.handleJSONExpectedResults(json, currentTest); // TODO: validate the expected results
     } else {
-      this.logWarning(`Unknown code language ${token.lang} found in file ${markdownFilePath}. Skipping.`);
+      logWarning(`Unknown code language ${token.lang} found in file ${markdownFilePath}. Skipping.`);
     }
   }
 
@@ -394,7 +411,7 @@ export class ECDbMarkdownTestParser {
     if (isConcurrentQueryRowOptions(json.rowOptions)) {
       currentTest.rowOptions = json.rowOptions;
     } else {
-      this.logWarning(`Row Options format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard. Skipping.`);
+      logWarning(`Row Options format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard. Skipping.`);
     }
     currentTest.rowOptions = json.rowOptions;
   }
@@ -413,10 +430,10 @@ export class ECDbMarkdownTestParser {
       }
 
       if (extraProps.length > 0) {
-        this.logWarning(`Found extra properties in column infos: ${extraProps.join(", ")} in file '${markdownFilePath}' test '${currentTest.title}'.`);
+        logWarning(`Found extra properties in column infos: ${extraProps.join(", ")} in file '${markdownFilePath}' test '${currentTest.title}'.`);
       }
     } else {
-      this.logWarning(`Columns format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard. Skipping.`);
+      logWarning(`Columns format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard. Skipping.`);
     }
   }
 
@@ -426,7 +443,7 @@ export class ECDbMarkdownTestParser {
 
   private static handleTableToken(token: Tokens.Table, currentTest: ECDbTestProps | undefined, markdownFilePath: string) {
     if (currentTest === undefined) {
-      this.logWarning(`Table token found without a test title in file ${markdownFilePath}. Skipping.`);
+      logWarning(`Table token found without a test title in file ${markdownFilePath}. Skipping.`);
       return;
     }
     this.handleTable(token, currentTest, markdownFilePath);
@@ -448,7 +465,7 @@ export class ECDbMarkdownTestParser {
     const columnInfos: any[] = [];
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
-        this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
+        logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
         continue;
       }
       const columnInfo: { [key: string]: any } = {};
@@ -465,13 +482,13 @@ export class ECDbMarkdownTestParser {
 
   private static handleExpectedResultsTable(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
     if(currentTest.expectedResults !== undefined) {
-      this.logWarning(`Expected results already set for test ${currentTest.title} in file ${markdownFilePath}. Skipping.`);
+      logWarning(`Expected results already set for test ${currentTest.title} in file ${markdownFilePath}. Skipping.`);
       return;
     }
     currentTest.expectedResults = [];
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
-        this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
+        logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
         continue;
       }
 
@@ -487,13 +504,13 @@ export class ECDbMarkdownTestParser {
 
   private static handleExpectedResultsTableForECSqlPropertyIndexesOption(token: Tokens.Table, currentTest: ECDbTestProps, markdownFilePath: string) {
     if(currentTest.expectedResults !== undefined) {
-      this.logWarning(`Expected results already set for test ${currentTest.title} in file ${markdownFilePath}. Skipping.`);
+      logWarning(`Expected results already set for test ${currentTest.title} in file ${markdownFilePath}. Skipping.`);
       return;
     }
     currentTest.expectedResults = [];
     for (const row of token.rows) {
       if (row.length < 1 || row.length !== token.header.length) {
-        this.logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
+        logWarning(`Rows in a expected result table must have a minimum of 1 cell, and as many cells as there are headers. ${markdownFilePath}. Skipping.`);
         continue;
       }
 
@@ -505,9 +522,9 @@ export class ECDbMarkdownTestParser {
       currentTest.expectedResults.push(expectedResult);
     }
   }
+}
 
-  private static logWarning(message: string) {
-    // eslint-disable-next-line no-console
-    console.log(`\x1b[33m${message}\x1b[0m`);
-  }
+function logWarning(message: string) {
+  // eslint-disable-next-line no-console
+  console.log(`\x1b[33m${message}\x1b[0m`);
 }

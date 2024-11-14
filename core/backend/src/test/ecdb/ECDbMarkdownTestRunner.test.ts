@@ -215,8 +215,7 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
           if (expectedColInfo.typeName !== undefined)
             assert.strictEqual(colInfo.typeName, expectedColInfo.typeName, `Expected type name ${expectedColInfo.typeName} but got ${colInfo.typeName} for column index ${i}`);
           if(expectedColInfo.extendedType !== undefined) {
-
-            assert.strictEqual(colInfo as any["extendedType"], expectedColInfo.extendedType, `Expected extended type ${expectedColInfo.extendedType} but got ${colInfo as any["extendedType"]} for column index ${i}`);
+            assert.strictEqual((colInfo as any).extendedType, expectedColInfo.extendedType, `Expected extended type ${expectedColInfo.extendedType} but got ${(colInfo as any).extendedType} for column index ${i}`);
           }
         }
       }
