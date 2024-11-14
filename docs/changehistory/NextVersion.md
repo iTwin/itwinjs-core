@@ -10,6 +10,9 @@ Table of contents:
   - [@itwin/presentation-common](#itwinpresentation-common)
 - [Breaking Changes](#breaking-changes)
   - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
+  - [Updated minimum requirements](#updated-minimum-requirements)
+    - [Electron](#electron)
+  - [Deprecated API removals](#deprecated-api-removals)
 
 ## API deprecations
 
@@ -22,3 +25,20 @@ Table of contents:
 ### Opening connection to local snapshot requires IPC
 
 [SnapshotConnection.openFile]($frontend) now requires applications to have set up a valid IPC communication. If you're using this API in an Electron or Mobile application, no additional action is needed as long as you call `ElectronHost.startup` or `MobileHost.startup` respectively. This API shouldn't be used in Web applications, so it has no replacement there.
+
+### Updated minimum requirements
+
+A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
+
+#### Electron
+
+iTwin.js now supports only the latest Electron release (Electron 33) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
+
+### Deprecated API removals
+
+The following previously-deprecated APIs have been removed:
+
+**@itwin/core-electron**:
+
+- `ElectronApp.callDialog` - replaced by [ElectronApp.dialogIpc]($electron)
+- `ElectronHost.getWindowSizeSetting` - replaced by [ElectronHost.getWindowSizeAndPositionSetting]($electron)

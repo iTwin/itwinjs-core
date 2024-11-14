@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-telemetry",
-  "version": "5.0.0-dev.4",
+  "version": "5.0.0-dev.6",
   "description": "iTwin.js Telemetry Client",
   "main": "lib/cjs/core-telemetry.js",
   "module": "lib/esm/core-telemetry.js",
@@ -19,7 +19,7 @@
     "cover": "",
     "test": "",
     "extract-api": "betools extract-api --entry=core-telemetry",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/telemetry/file.json --tsIndexFile=core-telemetry.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/telemetry/file.json --tsIndexFile=core-telemetry.ts --onlyJson",
     "lint": "eslint \"./src/**/*.ts\" 1>&2"
   },
   "keywords": [
