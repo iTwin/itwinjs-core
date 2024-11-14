@@ -7513,8 +7513,8 @@ export enum QueryParamType {
 export interface QueryPropertyMetaData {
     accessString?: string;
     className: string;
-    extendedType: string;
-    // @deprecated (undocumented)
+    extendedType?: string;
+    // @deprecated
     extendType: string;
     generated: boolean;
     index: number;
