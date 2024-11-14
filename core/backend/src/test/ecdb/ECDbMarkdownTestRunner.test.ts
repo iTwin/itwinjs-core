@@ -29,16 +29,26 @@ describe.only("Markdown based ECDb test runner", async () => {
 
     if(test.queryType === undefined || test.queryType === TypeOfQuery.Both || test.queryType === TypeOfQuery.ECSqlStatement)
     {
-      it(`${test.fileName}: ${test.title} (ECSqlStatement)`, () => {
-        runECSqlStatementTest(test, datasetFilePath);
-      });
+      if(test.only)
+        it.only(`${test.fileName}: ${test.title} (ECSqlStatement)`, () => {
+          runECSqlStatementTest(test, datasetFilePath);
+        });
+      else
+        it(`${test.fileName}: ${test.title} (ECSqlStatement)`, () => {
+          runECSqlStatementTest(test, datasetFilePath);
+        });
     }
 
     if(test.queryType === undefined || test.queryType === TypeOfQuery.Both || test.queryType === TypeOfQuery.ConcurrentQuery)
     {
-      it(`${test.fileName}: ${test.title} (ConcurrentQuery)`, async () => {
-        await runConcurrentQueryTest(test, datasetFilePath);
-      });
+      if(test.only)
+        it.only(`${test.fileName}: ${test.title} (ConcurrentQuery)`, async () => {
+          await runConcurrentQueryTest(test, datasetFilePath);
+        });
+      else
+        it(`${test.fileName}: ${test.title} (ConcurrentQuery)`, async () => {
+          await runConcurrentQueryTest(test, datasetFilePath);
+        });
     }
   }
 });

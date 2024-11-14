@@ -12,7 +12,7 @@ import { QueryLimit, QueryOptions, QueryQuota, QueryRowFormat } from "@itwin/cor
 export interface ECDbTestProps {
   fileName: string;
   title: string;
-  toBeIncluded: boolean;    //  This flag handles the only: business and modifies accordingly
+  only?: boolean;    //  This flag handles the only property to filter tests
   dataset?: string;
   queryType?: TypeOfQuery
   sql?: string;
@@ -265,27 +265,7 @@ function understandAndReplaceBinaryData(str: string): [boolean,any]{
 }
 
 export class ECDbMarkdownTestParser {
-  // This method only goes through files and eraches if it finds one test with only: keyword
-  public static parseOnlyHeaders(): boolean {
-    const testAssetsDir = IModelTestUtils.resolveAssetFile("ECDbTests");
-    const testFiles = fs.readdirSync(testAssetsDir, "utf-8").filter((fileName) => fileName.toLowerCase().endsWith("ecdbtest.md"));
-    for (const fileName of testFiles) {
-      const markdownFilePath = path.join(testAssetsDir, fileName);
-      const markdownContent = fs.readFileSync(markdownFilePath, "utf-8");
-      const tokens = marked.lexer(markdownContent);
-      for (const token of tokens) {
-        switch (token.type) {
-          case "heading":
-              if(token.text.toLowerCase().startsWith("only:"))
-                return true;
-        }
-      }
-    }
-    return false;
-  }
-
   public static parse(): ECDbTestProps[] {
-    const isOnlyTestsFound = this.parseOnlyHeaders();
     const testAssetsDir = IModelTestUtils.resolveAssetFile("ECDbTests");
     const testFiles = fs.readdirSync(testAssetsDir, "utf-8").filter((fileName) => fileName.toLowerCase().endsWith("ecdbtest.md"));
     const out: ECDbTestProps[] = [];
@@ -306,10 +286,10 @@ export class ECDbMarkdownTestParser {
           case "hr":
             continue;
           case "heading":
-              if (currentTest !== undefined && currentTest.toBeIncluded) {
+              if (currentTest !== undefined) {
                 out.push(currentTest);
               }
-              currentTest = { title: token.text, queryType: undefined, toBeIncluded: isOnlyTestsFound ? (token.text.toLowerCase().startsWith("only:") ? true : false) : true, fileName: baseFileName };   // toBeIncluded: isOnlyTestsFound ? (token.text.toLowerCase().startsWith("only:") ? true : false) : true     This signifies that if no onlyTests are found then all are valid tests otherwise the onlyTests are only valid tests
+              currentTest = { title: token.text, queryType: undefined, fileName: baseFileName };
             break;
           case "list":
             this.handleListToken(token as Tokens.List, currentTest, markdownFilePath);
@@ -326,7 +306,7 @@ export class ECDbMarkdownTestParser {
         }
       }
 
-      if (currentTest !== undefined && currentTest.toBeIncluded) {
+      if (currentTest !== undefined) {
         out.push(currentTest);
       }
     }
@@ -339,9 +319,6 @@ export class ECDbMarkdownTestParser {
       return;
     }
 
-    if(!currentTest.toBeIncluded)
-      return;
-
     const variableRegex = /^(\w+):\s*(.+)$/;
     const bindRegex = /^bind(\w+)\s([^,\s]+),\s?(.+)$/;
     for (const item of token.items) {
@@ -349,17 +326,20 @@ export class ECDbMarkdownTestParser {
       if (match) {
         const key = match[1];
         const value = match[2];
-        switch (key) {
+        switch (key.toLowerCase()) {
           case "dataset":
             currentTest.dataset = value;
             continue;
-          case "errorDuringPrepare":
+          case "errorduringprepare":
             currentTest.errorDuringPrepare = value;
             continue;
-          case "stepStatus":
+          case "stepstatus":
             currentTest.stepStatus = value;
             continue;
-          case "Mode":
+          case "only":
+            currentTest.only = value.toLowerCase() === "true";
+            continue;
+          case "mode":
             this.handleQueryType(value, currentTest, markdownFilePath);
             continue;
         }
@@ -395,9 +375,6 @@ export class ECDbMarkdownTestParser {
       logWarning(`Code token found without a test title in file ${markdownFilePath}. Skipping.`);
       return;
     }
-
-    if(!currentTest.toBeIncluded)
-      return;
 
     if (token.lang === "sql") {
       currentTest.sql = token.text;
@@ -468,9 +445,6 @@ export class ECDbMarkdownTestParser {
       logWarning(`Table token found without a test title in file ${markdownFilePath}. Skipping.`);
       return;
     }
-
-    if(!currentTest.toBeIncluded)
-      return;
 
     this.handleTable(token, currentTest, markdownFilePath);
   }
