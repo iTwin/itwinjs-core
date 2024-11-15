@@ -4,7 +4,7 @@
   "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
-    "node": "^18.0.0 || ^20.0.0 || ^22.0.0"
+    "node": "^20.0.0 || ^22.0.0"
   },
   "scripts": {
     "build": "npm run -s build:cjs && npm run -s webpack:test && npm run -s copy:test-assets",
@@ -52,7 +52,7 @@
     "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/chai": "4.3.1",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
+    "@types/node": "~20.9.5",
     "chai": "^4.3.10",
     "cpx2": "^3.0.0",
     "electron": "^33.0.0",
