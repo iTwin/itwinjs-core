@@ -45,7 +45,7 @@
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
+    "@types/node": "~20.9.5",
     "@types/sinon": "^17.0.2",
     "@xmldom/xmldom": "~0.8.5",
     "benchmark": "^2.1.4",

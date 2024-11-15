@@ -98,7 +98,7 @@ async function makeExportsResponse(props: ExportsProps): Promise<Response> {
 
 const accessToken = "this-is-a-fake-access-token";
 
-async function fetchExports(resource: RequestInfo | URL, exportProps: ExportProps[]): Promise<Response> {
+async function fetchExports(resource: unknown, exportProps: ExportProps[]): Promise<Response> {
   expect(typeof resource).to.equal("string");
   const url = resource as string;
 
