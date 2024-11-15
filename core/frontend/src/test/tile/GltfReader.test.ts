@@ -896,186 +896,8 @@ describe("GltfReader", () => {
   }
 }`);
 
-  const compareArrays = (a: any[], b: any[]) => {
-    for (let i = 0; i < a.length; i++) {
-      if(Array.isArray(a[i])){
-        if (!compareArrays(a[i], b[i])){
-          return false;
-        }
-      } else{
-        if (a[i] !== b[i]){
-          return false;
-        }
-      }
-    }
-    return true;
-  };
-
-  describe("EXT_structural_metadata", () => {
-
-    const instanceFeatures = [2,1,3,0];
-    const expectedValuesUnsigned = [1,2,3,undefined];
-    const expectedValuesBigUnsigned = ["1","2","3",undefined];
-    const expectedValuesSigned = [-1,-2,-3,undefined];
-    const expectedValuesBigSigned = ["-1","-2","-3",undefined];
-    const expectedValuesString = ["one","two","three",undefined];
-
-    const expectedValuesVec2 = [[1,2],[3,4],[5,6],[7,8]];
-    const expectedValuesVec3 = [[1,2,3],[4,5,6],[7,8,9],[10,11,12]];
-    const expectedValuesVec4 = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]];
-    const expectedValuesMat3 = [[1,2,3,4,5,6,7,8,9],[10,11,12,13,14,15,16,17,18],[19,20,21,22,23,24,25,26,27],[28,29,30,31,32,33,34,35,36]];
-    const expectedValuesMat4 = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],[17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32], [33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48], [49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64]];
-
-    it("parses structural metadata", async () => {
-      const reader = createReader(instanceFeaturesExt)!;
-      expect(reader).toBeDefined();
-      const result = await reader.read();
-      expect(result.graphic).toBeDefined();
-      expect(reader.structuralMetadata).toBeDefined();
-      const structuralMetadata = reader.structuralMetadata!;
-
-      expect(structuralMetadata.tables.length === 2);
-      expect(structuralMetadata.tables[0].entries.length === 11);
-
-      for(const entry of structuralMetadata.tables[0].entries ?? []) {
-        if(entry.name === "UINT8_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
-        } else if(entry.name === "UINT16_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
-        } else if(entry.name === "UINT32_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
-        } else if(entry.name === "UINT64_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesBigUnsigned)).toBe(true);
-        } else if(entry.name === "INT8_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesSigned)).toBe(true);
-        } else if(entry.name === "INT16_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesSigned)).toBe(true);
-        } else if(entry.name === "INT32_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesSigned)).toBe(true);
-        } else if(entry.name === "INT64_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesBigSigned)).toBe(true);
-        }else if(entry.name === "FLOAT32_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
-        } else if(entry.name === "FLOAT64_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
-        } else if(entry.name === "STRING_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesString)).toBe(true);
-        }
-      }
-
-      expect(structuralMetadata.tables[1].entries.length === 6);
-      for(const entry of structuralMetadata.tables[1].entries ?? []) {
-        if(entry.name === "UINT8_VEC2_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesVec2)).toBe(true);
-        } else if(entry.name === "UINT8_VEC3_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesVec3)).toBe(true);
-        } else if(entry.name === "UINT8_VEC4_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesVec4)).toBe(true);
-        } else if(entry.name === "UINT8_MAT2_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesVec4)).toBe(true);
-        } else if(entry.name === "UINT8_MAT3_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesMat3)).toBe(true);
-        } else if(entry.name === "UINT8_MAT4_VALUES") {
-          expect(compareArrays(entry.values, expectedValuesMat4)).toBe(true);
-        }
-      }
-    });
-
-    it("parses instance features", async () => {
-      const idMap = new BatchedTileIdMap(iModel);
-
-      const reader = createReader(instanceFeaturesExt, idMap)!;
-      expect(reader).toBeDefined();
-
-      const result = await reader.read();
-      expect(result).toBeDefined();
-
-      let entryCount = 0;
-      for(const entry of idMap.entries()) {
-        expect(entry).toBeDefined();
-
-        // Expect empty property set for noData = 4 | -4 | "four"
-        if(entryCount === 3){
-          expect(JSON.stringify(entry.properties.propertySet0) === JSON.stringify({})).toBe(true);
-        } else {
-          let propertyCount0 = 0;
-          for(const [key, value] of Object.entries(entry.properties.propertySet0)){
-            if(key === "UINT8_VALUES") {
-              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
-              propertyCount0++;
-            } else if(key === "UINT16_VALUES") {
-              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
-              propertyCount0++;
-            } else if(key === "UINT32_VALUES") {
-              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
-              propertyCount0++;
-            } else if(key === "UINT64_VALUES") {
-              expect(value === expectedValuesBigUnsigned[entryCount]).toBe(true);
-              propertyCount0++;
-            } else if(key === "INT8_VALUES") {
-              expect(value === expectedValuesSigned[entryCount]).toBe(true);
-              propertyCount0++;
-            } else if(key === "INT16_VALUES") {
-              expect(value === expectedValuesSigned[entryCount]).toBe(true);
-              propertyCount0++;
-            } else if(key === "INT32_VALUES") {
-              expect(value === expectedValuesSigned[entryCount]).toBe(true);
-              propertyCount0++;
-            } else if(key === "INT64_VALUES") {
-              expect(value === expectedValuesBigSigned[entryCount]).toBe(true);
-              propertyCount0++;
-            } else if(key === "FLOAT32_VALUES") {
-              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
-              propertyCount0++;
-            } else if(key === "FLOAT64_VALUES") {
-              expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
-              propertyCount0++;
-            } else if(key === "STRING_VALUES") {
-              expect(value === expectedValuesString[entryCount]).toBe(true);
-              propertyCount0++;
-            }
-          }
-          expect(propertyCount0 === 11).toBe(true);
-        }
-
-        // Expect empty property set for null feature id = 3
-        if(instanceFeatures[entryCount] === 3){
-          expect(JSON.stringify(entry.properties.propertySet1) === JSON.stringify({})).toBe(true);
-        } else {
-          let propertyCount1 = 0;
-          for(const [key, value] of Object.entries(entry.properties.propertySet1)){
-            const array = value as any[];
-            if(key === "UINT8_VEC2_VALUES") {
-              expect(compareArrays(array, expectedValuesVec2[instanceFeatures[entryCount]])).toBe(true);
-              propertyCount1++;
-            } else if(key === "UINT8_VEC3_VALUES") {
-              expect(compareArrays(array, expectedValuesVec3[instanceFeatures[entryCount]])).toBe(true);
-              propertyCount1++;
-            } else if(key === "UINT8_VEC4_VALUES") {
-              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).toBe(true);
-              propertyCount1++;
-            } else if(key === "UINT8_MAT2_VALUES") {
-              expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).toBe(true);
-              propertyCount1++;
-            } else if(key === "UINT8_MAT3_VALUES") {
-              expect(compareArrays(array, expectedValuesMat3[instanceFeatures[entryCount]])).toBe(true);
-              propertyCount1++;
-            }else if(key === "UINT8_MAT4_VALUES") {
-              expect(compareArrays(array, expectedValuesMat4[instanceFeatures[entryCount]])).toBe(true);
-              propertyCount1++;
-            }
-          }
-          expect(propertyCount1 === 6).toBe(true);
-        }
-
-        entryCount ++;
-      }
-      expect(entryCount === 4).toBe(true);
-    });
-  });
-
-  // this mesh contains two objects with different colors (physical colors of each object should match the colors defined in object's feature property table)
-  const meshFeaturesExt: GltfDocument = JSON.parse(`
+// this mesh contains two objects with different colors (physical colors of each object should match the colors defined in object's feature property table)
+const meshFeaturesExt: GltfDocument = JSON.parse(`
 {
   "extensions": {
     "EXT_structural_metadata": {
@@ -1342,54 +1164,233 @@ describe("GltfReader", () => {
   ]
 }`);
 
-  describe("EXT_mesh_features", () => {
-    it.only("feature indices should map to correct vertices", async () => {
-      const elementIdToStructuralMetadataMap = new BatchedTileIdMap(iModel);
-
-      const reader = createReader(meshFeaturesExt, elementIdToStructuralMetadataMap)!;
-      expect(reader).toBeDefined();
-
-      const result = await reader.read();
-      expect(result).toBeDefined();
-
-      const idMapEntries = Array.from(elementIdToStructuralMetadataMap.entries());
-      const uniqueEntriesSize = idMapEntries.length;
-      expect(uniqueEntriesSize).toEqual(2);
-
-      const attributes = (meshFeaturesExt as any).meshes[0].primitives[0].attributes;
-      const colorBufferView = reader.getBufferView(attributes, `COLOR_0`);
-      const colorBuffer = colorBufferView?.toBufferData(GltfDataType.UInt32);
-      expect(colorBuffer).toBeDefined();
-
-      const extractedFeatureIndices = reader.meshes?.primitive.features?.indices;
-      expect(extractedFeatureIndices).toBeDefined();
-      expect(extractedFeatureIndices!.length).toEqual(colorBuffer!.count); // each mesh vertex should have a feature index
-
-      const elementIdToFeatureIndexMap = reader.meshElementIdToFeatureIndex;
-      expect(elementIdToFeatureIndexMap.size).toEqual(uniqueEntriesSize);
-      expect(elementIdToFeatureIndexMap.size).toEqual(new Set(elementIdToFeatureIndexMap.values()).size); // all key-value pairs should be unique
-      const featureIndexToStructuralMetadataMap = new Map(idMapEntries
-        .map(({id, properties}) => [elementIdToFeatureIndexMap.get(id), properties] as [number, Record<string, any>]));
-
-      const featureIndexToColorMap = new Map<number, string>();
-      extractedFeatureIndices!.forEach((featureIndex, i) => {
-        const color = colorBuffer!.buffer.slice(i*4, i*4+3);
-        const colorHex = convertToHexColorString(color);
-        if (featureIndexToColorMap.has(featureIndex)) {
-          const existingColorHex = featureIndexToColorMap.get(featureIndex);
-          expect(existingColorHex).toEqual(colorHex); // all vertices with the same feature index should map to the same object (physical color indicates object)
-        } else {
-          featureIndexToColorMap.set(featureIndex, colorHex);
+  const compareArrays = (a: any[], b: any[]) => {
+    for (let i = 0; i < a.length; i++) {
+      if(Array.isArray(a[i])){
+        if (!compareArrays(a[i], b[i])){
+          return false;
         }
+      } else{
+        if (a[i] !== b[i]){
+          return false;
+        }
+      }
+    }
+    return true;
+  };
 
-        const properties = featureIndexToStructuralMetadataMap.get(featureIndex);
-        expect(properties?.class0?.color0).toBeDefined();
-        expect(properties?.class0?.color0).toEqual(colorHex); // physical color of the object should match the color defined in the feature property table
-        expect(properties?.class1?.color1).toBeDefined();
-        expect(properties?.class1?.color1).toEqual(colorHex); // multiple feature property tables should be supported
+  describe("EXT_structural_metadata", () => {
+
+    const instanceFeatures = [2,1,3,0];
+    const expectedValuesUnsigned = [1,2,3,undefined];
+    const expectedValuesBigUnsigned = ["1","2","3",undefined];
+    const expectedValuesSigned = [-1,-2,-3,undefined];
+    const expectedValuesBigSigned = ["-1","-2","-3",undefined];
+    const expectedValuesString = ["one","two","three",undefined];
+
+    const expectedValuesVec2 = [[1,2],[3,4],[5,6],[7,8]];
+    const expectedValuesVec3 = [[1,2,3],[4,5,6],[7,8,9],[10,11,12]];
+    const expectedValuesVec4 = [[1,2,3,4],[5,6,7,8],[9,10,11,12],[13,14,15,16]];
+    const expectedValuesMat3 = [[1,2,3,4,5,6,7,8,9],[10,11,12,13,14,15,16,17,18],[19,20,21,22,23,24,25,26,27],[28,29,30,31,32,33,34,35,36]];
+    const expectedValuesMat4 = [[1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],[17,18,19,20,21,22,23,24,25,26,27,28,29,30,31,32], [33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48], [49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64]];
+
+    it("parses structural metadata", async () => {
+      const reader = createReader(instanceFeaturesExt)!;
+      expect(reader).toBeDefined();
+      const result = await reader.read();
+      expect(result.graphic).toBeDefined();
+      expect(reader.structuralMetadata).toBeDefined();
+      const structuralMetadata = reader.structuralMetadata!;
+
+      expect(structuralMetadata.tables.length === 2);
+      expect(structuralMetadata.tables[0].entries.length === 11);
+
+      for(const entry of structuralMetadata.tables[0].entries ?? []) {
+        if(entry.name === "UINT8_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
+        } else if(entry.name === "UINT16_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
+        } else if(entry.name === "UINT32_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
+        } else if(entry.name === "UINT64_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesBigUnsigned)).toBe(true);
+        } else if(entry.name === "INT8_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesSigned)).toBe(true);
+        } else if(entry.name === "INT16_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesSigned)).toBe(true);
+        } else if(entry.name === "INT32_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesSigned)).toBe(true);
+        } else if(entry.name === "INT64_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesBigSigned)).toBe(true);
+        }else if(entry.name === "FLOAT32_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
+        } else if(entry.name === "FLOAT64_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesUnsigned)).toBe(true);
+        } else if(entry.name === "STRING_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesString)).toBe(true);
+        }
+      }
+
+      expect(structuralMetadata.tables[1].entries.length === 6);
+      for(const entry of structuralMetadata.tables[1].entries ?? []) {
+        if(entry.name === "UINT8_VEC2_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec2)).toBe(true);
+        } else if(entry.name === "UINT8_VEC3_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec3)).toBe(true);
+        } else if(entry.name === "UINT8_VEC4_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec4)).toBe(true);
+        } else if(entry.name === "UINT8_MAT2_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesVec4)).toBe(true);
+        } else if(entry.name === "UINT8_MAT3_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesMat3)).toBe(true);
+        } else if(entry.name === "UINT8_MAT4_VALUES") {
+          expect(compareArrays(entry.values, expectedValuesMat4)).toBe(true);
+        }
+      }
+    });
+
+    describe("EXT_instance_features", () => {
+      it("parses instance features", async () => {
+        const idMap = new BatchedTileIdMap(iModel);
+
+        const reader = createReader(instanceFeaturesExt, idMap)!;
+        expect(reader).toBeDefined();
+
+        const result = await reader.read();
+        expect(result).toBeDefined();
+
+        let entryCount = 0;
+        for(const entry of idMap.entries()) {
+          expect(entry).toBeDefined();
+
+          // Expect empty property set for noData = 4 | -4 | "four"
+          if(entryCount === 3){
+            expect(JSON.stringify(entry.properties.propertySet0) === JSON.stringify({})).toBe(true);
+          } else {
+            let propertyCount0 = 0;
+            for(const [key, value] of Object.entries(entry.properties.propertySet0)){
+              if(key === "UINT8_VALUES") {
+                expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+                propertyCount0++;
+              } else if(key === "UINT16_VALUES") {
+                expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+                propertyCount0++;
+              } else if(key === "UINT32_VALUES") {
+                expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+                propertyCount0++;
+              } else if(key === "UINT64_VALUES") {
+                expect(value === expectedValuesBigUnsigned[entryCount]).toBe(true);
+                propertyCount0++;
+              } else if(key === "INT8_VALUES") {
+                expect(value === expectedValuesSigned[entryCount]).toBe(true);
+                propertyCount0++;
+              } else if(key === "INT16_VALUES") {
+                expect(value === expectedValuesSigned[entryCount]).toBe(true);
+                propertyCount0++;
+              } else if(key === "INT32_VALUES") {
+                expect(value === expectedValuesSigned[entryCount]).toBe(true);
+                propertyCount0++;
+              } else if(key === "INT64_VALUES") {
+                expect(value === expectedValuesBigSigned[entryCount]).toBe(true);
+                propertyCount0++;
+              } else if(key === "FLOAT32_VALUES") {
+                expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+                propertyCount0++;
+              } else if(key === "FLOAT64_VALUES") {
+                expect(value === expectedValuesUnsigned[entryCount]).toBe(true);
+                propertyCount0++;
+              } else if(key === "STRING_VALUES") {
+                expect(value === expectedValuesString[entryCount]).toBe(true);
+                propertyCount0++;
+              }
+            }
+            expect(propertyCount0 === 11).toBe(true);
+          }
+
+          // Expect empty property set for null feature id = 3
+          if(instanceFeatures[entryCount] === 3){
+            expect(JSON.stringify(entry.properties.propertySet1) === JSON.stringify({})).toBe(true);
+          } else {
+            let propertyCount1 = 0;
+            for(const [key, value] of Object.entries(entry.properties.propertySet1)){
+              const array = value as any[];
+              if(key === "UINT8_VEC2_VALUES") {
+                expect(compareArrays(array, expectedValuesVec2[instanceFeatures[entryCount]])).toBe(true);
+                propertyCount1++;
+              } else if(key === "UINT8_VEC3_VALUES") {
+                expect(compareArrays(array, expectedValuesVec3[instanceFeatures[entryCount]])).toBe(true);
+                propertyCount1++;
+              } else if(key === "UINT8_VEC4_VALUES") {
+                expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).toBe(true);
+                propertyCount1++;
+              } else if(key === "UINT8_MAT2_VALUES") {
+                expect(compareArrays(array, expectedValuesVec4[instanceFeatures[entryCount]])).toBe(true);
+                propertyCount1++;
+              } else if(key === "UINT8_MAT3_VALUES") {
+                expect(compareArrays(array, expectedValuesMat3[instanceFeatures[entryCount]])).toBe(true);
+                propertyCount1++;
+              }else if(key === "UINT8_MAT4_VALUES") {
+                expect(compareArrays(array, expectedValuesMat4[instanceFeatures[entryCount]])).toBe(true);
+                propertyCount1++;
+              }
+            }
+            expect(propertyCount1 === 6).toBe(true);
+          }
+
+          entryCount ++;
+        }
+        expect(entryCount === 4).toBe(true);
       });
-      expect(featureIndexToColorMap.size).toEqual(uniqueEntriesSize);
+    });
+
+    describe("EXT_mesh_features", () => {
+      it("feature indices should map to correct vertices", async () => {
+        const elementIdToStructuralMetadataMap = new BatchedTileIdMap(iModel);
+
+        const reader = createReader(meshFeaturesExt, elementIdToStructuralMetadataMap)!;
+        expect(reader).toBeDefined();
+
+        const result = await reader.read();
+        expect(result).toBeDefined();
+
+        const idMapEntries = Array.from(elementIdToStructuralMetadataMap.entries());
+        const uniqueEntriesSize = idMapEntries.length;
+        expect(uniqueEntriesSize).toEqual(2);
+
+        const attributes = (meshFeaturesExt as any).meshes[0].primitives[0].attributes;
+        const colorBufferView = reader.getBufferView(attributes, `COLOR_0`);
+        const colorBuffer = colorBufferView?.toBufferData(GltfDataType.UInt32);
+        expect(colorBuffer).toBeDefined();
+
+        const extractedFeatureIndices = reader.meshes?.primitive.features?.indices;
+        expect(extractedFeatureIndices).toBeDefined();
+        expect(extractedFeatureIndices!.length).toEqual(colorBuffer!.count); // each mesh vertex should have a feature index
+
+        const elementIdToFeatureIndexMap = reader.meshElementIdToFeatureIndex;
+        expect(elementIdToFeatureIndexMap.size).toEqual(uniqueEntriesSize);
+        expect(elementIdToFeatureIndexMap.size).toEqual(new Set(elementIdToFeatureIndexMap.values()).size); // all key-value pairs should be unique
+        const featureIndexToStructuralMetadataMap = new Map(idMapEntries
+          .map(({id, properties}) => [elementIdToFeatureIndexMap.get(id), properties] as [number, Record<string, any>]));
+
+        const featureIndexToColorMap = new Map<number, string>();
+        extractedFeatureIndices!.forEach((featureIndex, i) => {
+          const color = colorBuffer!.buffer.slice(i*4, i*4+3);
+          const colorHex = convertToHexColorString(color);
+          if (featureIndexToColorMap.has(featureIndex)) {
+            const existingColorHex = featureIndexToColorMap.get(featureIndex);
+            expect(existingColorHex).toEqual(colorHex); // all vertices with the same feature index should map to the same object (physical color indicates object)
+          } else {
+            featureIndexToColorMap.set(featureIndex, colorHex);
+          }
+
+          const properties = featureIndexToStructuralMetadataMap.get(featureIndex);
+          expect(properties?.class0?.color0).toBeDefined();
+          expect(properties?.class0?.color0).toEqual(colorHex); // physical color of the object should match the color defined in the feature property table
+          expect(properties?.class1?.color1).toBeDefined();
+          expect(properties?.class1?.color1).toEqual(colorHex); // multiple feature property tables should be supported
+        });
+        expect(featureIndexToColorMap.size).toEqual(uniqueEntriesSize);
+      });
     });
   });
-
 });
