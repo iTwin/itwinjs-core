@@ -2845,7 +2845,7 @@ describe("iModel", () => {
     expect(() => imodel.elements.getElement<Subject>(IModel.rootSubjectId)).to.throw(IModelError, "Element=0x1", "Not Found");
   });
 
-  it("should throw \"Error: constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)\" to insert instance with same props twice", () => {
+  it("should throw \"Error: constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)\" when inserting an instance with same props twice", () => {
     const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "insertDuplicateInstance.bim");
     const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "insertDuplicateInstance" } });
     const elements = imodel.elements;
@@ -2866,10 +2866,6 @@ describe("iModel", () => {
 
     const id0 = elements.insertElement(elementProps);
     const id1 = elements.insertElement(elementProps);
-
-    // // Create grouping relationships from 0 to 1 and from 0 to 2
-    // const r1 = ElementGroupsMembers.create(imodel, id0, id1, 1);
-    // r1.insert();
 
     const props: RelationshipProps = {
       classFullName: "BisCore:ElementGroupsMembers",
