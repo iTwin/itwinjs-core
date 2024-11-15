@@ -2878,7 +2878,7 @@ describe("iModel", () => {
     };
 
     imodel.relationships.insertInstance(props)
-    expect(() => imodel.relationships.insertInstance(props)).to.throw("Failed to insert relationship [D:\\itwinjs-core\\core\\backend\\lib\\cjs\\test\\output\\IModel\\insertDuplicateInstance.bim]: rc=2067, constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)");
+    expect(() => imodel.relationships.insertInstance(props)).to.throw(`Failed to insert relationship [${imodelPath}]: rc=2067, constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)`);
 
     imodel.close();
   });
