@@ -8,7 +8,7 @@ import { assert } from "chai";
 import { ECVersion, Schema, SchemaContext, SchemaKey } from "@itwin/ecschema-metadata";
 import { PublishedSchemaJsonFileLocater } from "@itwin/ecschema-locaters";
 
-describe.only("PublishedSchemaJsonFileLocater - locate standard schemas", () => {
+describe("PublishedSchemaJsonFileLocater - locate standard schemas", () => {
   const lrSchemaKey = new SchemaKey("LinearReferencing");
   const unitsSchemaKey = new SchemaKey("Units");
 
