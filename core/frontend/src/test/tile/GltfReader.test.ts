@@ -1070,6 +1070,7 @@ describe("GltfReader", () => {
     });
   });
 
+  // this mesh contains two objects with different colors (physical colors of each object should match the colors defined in object's feature property table)
   const meshFeaturesExt: GltfDocument = JSON.parse(`
 {
   "extensions": {
@@ -1077,9 +1078,24 @@ describe("GltfReader", () => {
       "schema": {
         "id": "schema",
         "classes": {
-          "default": {
+          "class0": {
             "properties": {
-              "color": {
+              "color0": {
+                "type": "STRING"
+              },
+              "id": {
+                "type": "SCALAR",
+                "componentType": "INT32"
+              },
+              "height": {
+                "type": "SCALAR",
+                "componentType": "FLOAT64"
+              }
+            }
+          },
+          "class1": {
+            "properties": {
+              "color1": {
                 "type": "STRING"
               },
               "id": {
@@ -1096,10 +1112,26 @@ describe("GltfReader", () => {
       },
       "propertyTables": [
         {
-          "class": "default",
+          "class": "class0",
           "count": 4,
           "properties": {
-            "color": {
+            "color0": {
+              "values": 4,
+              "stringOffsets": 5
+            },
+            "id": {
+              "values": 6
+            },
+            "height": {
+              "values": 7
+            }
+          }
+        },
+        {
+          "class": "class1",
+          "count": 4,
+          "properties": {
+            "color1": {
               "values": 4,
               "stringOffsets": 5
             },
@@ -1195,8 +1227,6 @@ describe("GltfReader", () => {
     }
   ],
   "asset": {
-    "copyright": "2023 (c) Bentley Systems Inc.",
-    "generator": "A3XtoGltf 1.0",
     "version": "2.0"
   },
   "buffers": [
@@ -1264,6 +1294,22 @@ describe("GltfReader", () => {
     {
       "primitives": [
         {
+          "extensions": {
+            "EXT_mesh_features": {
+              "featureIds": [
+                {
+                  "featureCount": 4,
+                  "attribute": 0,
+                  "propertyTable": 0
+                },
+                {
+                  "featureCount": 4,
+                  "attribute": 0,
+                  "propertyTable": 1
+                }
+              ]
+            }
+          },
           "attributes": {
             "POSITION": 1,
             "NORMAL": 2,
@@ -1279,17 +1325,6 @@ describe("GltfReader", () => {
   ],
   "nodes": [
     {
-      "extensions": {
-        "EXT_mesh_features": {
-          "featureIds": [
-            {
-              "featureCount": 4,
-              "attribute": 0,
-              "propertyTable": 0
-            }
-          ]
-        }
-      },
       "mesh": 0
     }
   ],
@@ -1304,20 +1339,52 @@ describe("GltfReader", () => {
 }`);
 
   describe("EXT_mesh_features", () => {
-    it.only("test something", async () => {
-      const idMap = new BatchedTileIdMap(iModel);
+    it.only("feature indices should map to correct vertices", async () => {
+      const elementIdToStructuralMetadataMap = new BatchedTileIdMap(iModel);
 
-      const reader = createReader(meshFeaturesExt, idMap)!;
-      expect(reader).toBeDefined();
+      const reader = createReader(meshFeaturesExt, elementIdToStructuralMetadataMap)!;
+      expect(reader).not.to.be.undefined;
 
       const result = await reader.read();
-      expect(result).toBeDefined();
+      expect(result).not.to.be.undefined;
 
-      let count = 0;
-      for (const _ of idMap.entries()) {
-        count = count + 1;
-      }
-      expect(idMap).toEqual(50);
+      const idMapEntries = Array.from(elementIdToStructuralMetadataMap.entries());
+      const uniqueEntriesSize = idMapEntries.length;
+      expect(uniqueEntriesSize).to.be.equal(2);
+
+      const attributes = (meshFeaturesExt as any).meshes[0].primitives[0].attributes;
+      const colorBufferView = reader.getBufferView(attributes, `COLOR_0`);
+      const colorBuffer = colorBufferView?.toBufferData(GltfDataType.UInt32);
+      expect(colorBuffer).not.to.be.undefined;
+
+      const extractedFeatureIndices = reader.meshes?.primitive.features?.indices;
+      expect(extractedFeatureIndices).not.to.be.undefined;
+      expect(extractedFeatureIndices!.length).to.be.equal(colorBuffer!.count); // each mesh vertex should have a feature index
+
+      const elementIdToFeatureIndexMap = reader.meshElementIdToFeatureIndex;
+      expect(elementIdToFeatureIndexMap.size).to.be.equal(uniqueEntriesSize);
+      expect(elementIdToFeatureIndexMap.size).to.be.equal(new Set(elementIdToFeatureIndexMap.values()).size); // all key-value pairs should be unique
+      const featureIndexToStructuralMetadataMap = new Map(idMapEntries
+        .map(({id, properties}) => [elementIdToFeatureIndexMap.get(id), properties] as [number, Record<string, any>]));
+
+      const featureIndexToColorMap = new Map<number, string>();
+      extractedFeatureIndices!.forEach((featureIndex, i) => {
+        const color = colorBuffer!.buffer.slice(i*4, i*4+3);
+        const colorHex = convertToHexColorString(color);
+        if (featureIndexToColorMap.has(featureIndex)) {
+          const existingColorHex = featureIndexToColorMap.get(featureIndex);
+          expect(existingColorHex).to.be.equal(colorHex); // all vertices with the same feature index should map to the same object (physical color indicates object)
+        } else {
+          featureIndexToColorMap.set(featureIndex, colorHex);
+        }
+
+        const properties = featureIndexToStructuralMetadataMap.get(featureIndex);
+        expect(properties?.class0?.color0).not.to.be.undefined;
+        expect(properties?.class0?.color0).to.be.equal(colorHex); // physical color of the object should match the color defined in the feature property table
+        expect(properties?.class1?.color1).not.to.be.undefined;
+        expect(properties?.class1?.color1).to.be.equal(colorHex); // multiple feature property tables should be supported
+      });
+      expect(featureIndexToColorMap.size).to.be.equal(uniqueEntriesSize);
     });
   });
 
