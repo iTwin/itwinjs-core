@@ -276,7 +276,7 @@ Tue, 17 Oct 2023 15:14:32 GMT
 
 ### Updates
 
-- Expose the SchemaFileUtility class to allow users to export in memory Schemas to xml files. 
+- Expose the SchemaFileUtility class to allow users to export in memory Schemas to xml files.
 - extract-api run
 - Export SchemaFileUtility and make beta
 - Change SchemaFileUtility class to SchemaXml namespace, update class names
