@@ -30,10 +30,10 @@ Each package has its own **node_modules** directory that contains symbolic links
 
 ## Features
 
-✅ Create infrastructure digitals twins of assets or projects
-✅ Aggregate BIM, Reality, GIS, and IoT and other standard formats together
-✅ Visualize data and engineering changes in 3D and 4D
-✅ Analyze data to gain insights and drive new business outcomes across multiple platforms
+- ✅ Create infrastructure digitals twins of assets or projects
+- ✅ Aggregate BIM, Reality, GIS, and IoT and other standard formats together
+- ✅ Visualize data and engineering changes in 3D and 4D
+- ✅ Analyze data to gain insights and drive new business outcomes across multiple platforms
 
 ## Prerequisites
 
