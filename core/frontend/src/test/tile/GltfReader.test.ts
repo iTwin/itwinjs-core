@@ -1352,6 +1352,7 @@ const meshFeaturesExt: GltfDocument = JSON.parse(`
 
         const result = await reader.read();
         expect(result).toBeDefined();
+        expect((result.graphic as any).branch.entries[0].graphic.meshData.hasFeatures).toBe(true);
 
         const idMapEntries = Array.from(elementIdToStructuralMetadataMap.entries());
         const uniqueEntriesSize = idMapEntries.length;
