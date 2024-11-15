@@ -161,13 +161,6 @@ describe("PublishedSchemaJsonFileLocater tests", () => {
     }
   });
 
-  function testLocaterSearchPaths(actualSchemas: string[], expectedSchemas: string[]) {
-    assert.equal(actualSchemas.length, expectedSchemas.length);
-
-    for (let i = 0; i < actualSchemas.length; i++)
-      assert.equal(actualSchemas[i], expectedSchemas[i]);
-  }
-
   const standardSchemaPath = path.join(__dirname, "assets", "ECSchemas", "Standard");
   const jsonFilePath = path.join(__dirname, "assets", "json");
   const xmlFilePath = path.join(__dirname, "assets", "xml");
