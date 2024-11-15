@@ -33,7 +33,7 @@ describe("ArcGISImageryProvider", () => {
 
     const provider = new TestArcGISProvider(settings, true);
 
-    const fetchStub = vi.spyOn(globalThis, "fetch").mockImplementation(async function () {
+    const fetchStub = vi.spyOn(globalThis, "fetch").mockImplementation(async function (_input: NodeJS.fetch.RequestInfo, _init?: RequestInit) {
       return Promise.resolve({
         status: 200,
         headers: new Headers({ "content-type": "application/json" }),
