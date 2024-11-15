@@ -7,6 +7,7 @@
  */
 
 import * as path from "path";
+import * as fs from "fs";
 import { DOMParser } from "@xmldom/xmldom";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
@@ -133,27 +134,69 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
 export class BackendSchemasXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
   private _standardSchemaSearchPaths: Set<string>;
 
-  public constructor(assetsDir: string) {
+  public static defaultSchemaSearchPaths = new Set([
+    // Dgn schemas
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "bis-core-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "generic-schema"),
+    // Domain schemas
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "analytical-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "functional-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "linear-referencing-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "physical-material-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "presentation-rules-schema"),
+    // ECDb schemas
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-file-info-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-map-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-meta-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-schema-policies-schema"),
+    // Standard schemas
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "bis-custom-attributes-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "core-custom-attributes-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "formats-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "schema-upgrade-custom-attributes-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema"),
+    // Misc schemas
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "aec-units-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "architectural-physical-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "construction-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "plant-custom-attributes-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "quantity-takeoffs-aspects-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "spatial-composition-schema"),
+    path.join(__dirname, "..", "..", "node_modules", "@bentley", "structural-physical-schema"),
+  ]);
+
+  /**
+   * Constructs a new BackendSchemasXmlFileLocater
+   * @param knownBackendAssetsDir The assets directory where the core-backend package is installed.
+   */
+  public constructor(knownBackendAssetsDir?: string) {
     super();
-    // Pre-defined set of standard schema search paths
-    this._standardSchemaSearchPaths = new Set([
-      path.join(assetsDir, "ECSchemas", "Dgn"),
-      path.join(assetsDir, "ECSchemas", "Domain"),
-      path.join(assetsDir, "ECSchemas", "ECDb"),
-      path.join(assetsDir, "ECSchemas", "Standard"),
-    ]);
 
-    this.searchPaths.push(...Array.from(this._standardSchemaSearchPaths));
+    if (!knownBackendAssetsDir) {
+      this._standardSchemaSearchPaths = BackendSchemasXmlFileLocater.defaultSchemaSearchPaths;
+    } else {
+      // Pre-defined set of standard schema search paths
+      this._standardSchemaSearchPaths = new Set([
+        path.join(knownBackendAssetsDir, "ECSchemas", "Dgn"),
+        path.join(knownBackendAssetsDir, "ECSchemas", "Domain"),
+        path.join(knownBackendAssetsDir, "ECSchemas", "ECDb"),
+        path.join(knownBackendAssetsDir, "ECSchemas", "Standard"),
+      ]);
+    }
 
-    // The precedence of the standard schema search paths is set to the lower priority of 1
-    // This is to ensure that user-defined search paths have higher precedence which will be set with the priority of 0
     this._standardSchemaSearchPaths.forEach((schemaPath) => {
-      this.searchPathPrecedence.set(schemaPath, 1);
+      if (fs.existsSync(schemaPath)) {
+        this.searchPaths.push(schemaPath);
+
+        // The precedence of the standard schema search paths is set to the lower priority of 1
+        // This is to ensure that user-defined search paths have higher precedence which will be set with the priority of 0
+        this.searchPathPrecedence.set(schemaPath, 1);
+      }
     });
   }
 
   /**
-   * Add one search path used by this locator to find the Schema files.
+   * Add one search path to be used by this locator to find the Schema files.
    * @param schemaPath A search path to add
    */
   public override addSchemaSearchPath(schemaPath: string): void {
@@ -161,7 +204,7 @@ export class BackendSchemasXmlFileLocater extends SchemaXmlFileLocater implement
   }
 
   /**
-   * Adds more search paths used by this locator to find the Schema files.
+   * Adds more search paths to be used by this locator to find the Schema files.
    * @param schemaPaths An array of search paths to add
    */
   public override addSchemaSearchPaths(schemaPaths: string[]): void {
