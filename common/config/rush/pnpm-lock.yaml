@@ -7,7 +7,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 5.0.2
+      '@bentley/imodeljs-native': 5.0.3
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.2.4
       '@itwin/core-bentley': workspace:*
@@ -57,7 +57,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.10
     dependencies:
-      '@bentley/imodeljs-native': 5.0.2
+      '@bentley/imodeljs-native': 5.0.3
       '@itwin/cloud-agnostic-core': 2.2.4_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.5_scz6qrwecfbbxg4vskopkl3a7u
@@ -2899,7 +2899,7 @@ importers:
       rimraf: ^3.0.2
       tree-kill: ^1.2.2
       typedoc: ^0.26.11
-      typedoc-plugin-merge-modules: ^5.1.0
+      typedoc-plugin-merge-modules: ^6.0.3
       typescript: ~5.6.2
       wtfnode: ^0.9.1
       yargs: ^17.4.0
@@ -2915,7 +2915,7 @@ importers:
       rimraf: 3.0.2
       tree-kill: 1.2.2
       typedoc: 0.26.11_typescript@5.6.2
-      typedoc-plugin-merge-modules: 5.1.0_typedoc@0.26.11
+      typedoc-plugin-merge-modules: 6.0.3_typedoc@0.26.11
       typescript: 5.6.2
       wtfnode: 0.9.1
       yargs: 17.4.0
@@ -3699,8 +3699,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/5.0.2:
-    resolution: {integrity: sha512-ydmgFnJEZaP5kTOgV3uiwMGifWnYssdMZUiylKXviW9vhwjeo87N6UyOHt93M8LvCTco3VNmatNXerSNGS0B/Q==}
+  /@bentley/imodeljs-native/5.0.3:
+    resolution: {integrity: sha512-qIQcO2/px6dlsQpZM4TCFACMcViuRYheN7jHkYtBa080+5C0OXeeJF6+DIrb7kslHIu92fNtDWZhGphZvUvN3A==}
     requiresBuild: true
     dev: false
 
@@ -13423,10 +13423,10 @@ packages:
     dependencies:
       is-typedarray: 1.0.0
 
-  /typedoc-plugin-merge-modules/5.1.0_typedoc@0.26.11:
-    resolution: {integrity: sha512-jXH27L/wlxFjErgBXleh3opVgjVTXFEuBo68Yfl18S9Oh/IqxK6NV94jlEJ9hl4TXc9Zm2l7Rfk41CEkcCyvFQ==}
+  /typedoc-plugin-merge-modules/6.0.3_typedoc@0.26.11:
+    resolution: {integrity: sha512-66mKhcU3RqjLnFzrC4jObqKpnKg+yCyBmTYfzGHjuVlBb1ZhPyD64kLBR6ZsSx5oy99W/Kizu5xc5NBN2nY3kQ==}
     peerDependencies:
-      typedoc: 0.24.x || 0.25.x
+      typedoc: 0.26.x
     dependencies:
       typedoc: 0.26.11_typescript@5.6.2
     dev: false
