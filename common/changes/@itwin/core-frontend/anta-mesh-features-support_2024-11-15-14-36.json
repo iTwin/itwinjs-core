@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-frontend",
-      "comment": "Exposed some variables strictly for tests in a test class.",
+      "comment": "Add support for reading and interpreting Cesium tiles containing EXT_mesh_features extension.",
       "type": "none"
     }
   ],
