@@ -131,7 +131,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
  * that are released in the core-backend package.
  * @beta This is a workaround the current lack of a full xml parser.
  */
-export class BackendSchemasXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
+export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
   private _standardSchemaSearchPaths: Set<string>;
 
   public static defaultSchemaSearchPaths = new Set([
@@ -166,14 +166,14 @@ export class BackendSchemasXmlFileLocater extends SchemaXmlFileLocater implement
   ]);
 
   /**
-   * Constructs a new BackendSchemasXmlFileLocater
+   * Constructs a new PublishedSchemaXmlFileLocater
    * @param knownBackendAssetsDir The assets directory where the core-backend package is installed.
    */
   public constructor(knownBackendAssetsDir?: string) {
     super();
 
     if (!knownBackendAssetsDir) {
-      this._standardSchemaSearchPaths = BackendSchemasXmlFileLocater.defaultSchemaSearchPaths;
+      this._standardSchemaSearchPaths = PublishedSchemaXmlFileLocater.defaultSchemaSearchPaths;
     } else {
       // Pre-defined set of standard schema search paths
       this._standardSchemaSearchPaths = new Set([

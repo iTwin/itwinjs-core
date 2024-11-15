@@ -12,26 +12,39 @@ import { SchemaKey } from '@itwin/ecschema-metadata';
 import { SchemaMatchType } from '@itwin/ecschema-metadata';
 
 // @beta
-export class BackendSchemasXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
-    constructor(assetsDir: string);
-    addSchemaSearchPath(schemaPath: string): void;
-    addSchemaSearchPaths(schemaPaths: string[]): void;
-}
-
-// @beta
-export class BackendSchemaXmlStringLocater extends SchemaXmlStringLocater implements ISchemaLocater {
-    constructor(assetsDir: string);
-    addSchemaString(schemaString: string): void;
-    addSchemaStrings(schemaStrings: string[]): void;
-}
-
-// @beta
 export class FileSchemaKey extends SchemaKey {
     constructor(key: SchemaKey, fileName: string, schemaJson?: string);
     // (undocumented)
     fileName: string;
     // (undocumented)
     schemaText?: string;
+}
+
+// @beta
+export class PublishedSchemaJsonFileLocater extends SchemaJsonFileLocater implements ISchemaLocater {
+    constructor();
+    addSchemaSearchPath(schemaPath: string): void;
+    addSchemaSearchPaths(schemaPaths: string[]): void;
+    // (undocumented)
+    static defaultSchemaSearchPaths: Set<string>;
+}
+
+// @beta
+export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
+    constructor(knownBackendAssetsDir?: string);
+    addSchemaSearchPath(schemaPath: string): void;
+    addSchemaSearchPaths(schemaPaths: string[]): void;
+    // (undocumented)
+    static defaultSchemaSearchPaths: Set<string>;
+}
+
+// @beta
+export class PublishedSchemaXmlStringLocater extends SchemaXmlStringLocater implements ISchemaLocater {
+    constructor(knownBackendAssetsDir?: string);
+    addSchemaString(schemaString: string): void;
+    addSchemaStrings(schemaStrings: string[]): void;
+    // (undocumented)
+    static defaultSchemaSearchPaths: Set<string>;
 }
 
 // @beta

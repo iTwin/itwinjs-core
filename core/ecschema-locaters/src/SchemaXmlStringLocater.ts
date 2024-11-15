@@ -131,7 +131,7 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
  * that are released in the core-backend package and loading the schemas.
  * @beta This is a workaround the current lack of a full xml parser.
  */
-export class BackendSchemaXmlStringLocater extends SchemaXmlStringLocater implements ISchemaLocater {
+export class PublishedSchemaXmlStringLocater extends SchemaXmlStringLocater implements ISchemaLocater {
   private _standardSchemaSearchPaths: Set<string>;
   private _schemasToIgnore: Set<string>;
   public static defaultSchemaSearchPaths = new Set([
@@ -166,7 +166,7 @@ export class BackendSchemaXmlStringLocater extends SchemaXmlStringLocater implem
   ]);
 
   /**
-   * Constructs a new BackendSchemaXmlStringLocater
+   * Constructs a new PublishedSchemaXmlStringLocater
    * @param knownBackendAssetsDir The assets directory where the core-backend package is installed.
    */
   public constructor(knownBackendAssetsDir?: string) {
@@ -175,7 +175,7 @@ export class BackendSchemaXmlStringLocater extends SchemaXmlStringLocater implem
     this._schemasToIgnore = new Set<string>();
 
     if (!knownBackendAssetsDir) {
-      this._standardSchemaSearchPaths = BackendSchemaXmlStringLocater.defaultSchemaSearchPaths
+      this._standardSchemaSearchPaths = PublishedSchemaXmlStringLocater.defaultSchemaSearchPaths
     } else {
       this._standardSchemaSearchPaths = new Set<string>([
         path.join(knownBackendAssetsDir, "ECSchemas", "Dgn"),

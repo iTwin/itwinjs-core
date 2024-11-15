@@ -8,7 +8,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { globSync } from "glob";
 import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { BackendSchemaXmlStringLocater, SchemaXmlStringLocater } from "../SchemaXmlStringLocater";
+import { PublishedSchemaXmlStringLocater, SchemaXmlStringLocater } from "../SchemaXmlStringLocater";
 import { StringSchemaKey } from "../SchemaStringLocater";
 
 describe("SchemaXmlStringLocater tests:", () => {
@@ -261,11 +261,11 @@ describe("SchemaXmlStringLocater tests:", () => {
   });
 });
 
-describe("BackendSchemaXmlStringLocater tests:", () => {
-  it("BackendSchemaXmlStringLocater - general use", () => {
+describe("PublishedSchemaXmlStringLocater tests:", () => {
+  it("PublishedSchemaXmlStringLocater - general use", () => {
     const context = new SchemaContext();
     // Empty list with just default released schemas
-    context.addLocater(new BackendSchemaXmlStringLocater());
+    context.addLocater(new PublishedSchemaXmlStringLocater());
 
     for (const schemaName of ["BisCore", "Analytical", "ECDbMeta", "Formats", "AecUnits", "Functional"]) {
       const schema = context.getSchemaSync(new SchemaKey(schemaName));
@@ -274,23 +274,23 @@ describe("BackendSchemaXmlStringLocater tests:", () => {
     }
   });
 
-  it("BackendSchemaXmlStringLocater - check schema order without specifying location", () => {
+  it("PublishedSchemaXmlStringLocater - check schema order without specifying location", () => {
     const schemaAText = fs.readFileSync(path.join(__dirname, "assets", "SchemaA.ecschema.xml"));
     const schemaBText = fs.readFileSync(path.join(__dirname, "assets", "SchemaB.ecschema.xml"));
 
     // Empty list with just default released schemas
-    const locater = new BackendSchemaXmlStringLocater();
+    const locater = new PublishedSchemaXmlStringLocater();
 
     // Default search order
-    assert.equal(locater.schemaStrings.length, BackendSchemaXmlStringLocater.defaultSchemaSearchPaths.size);
+    assert.equal(locater.schemaStrings.length, PublishedSchemaXmlStringLocater.defaultSchemaSearchPaths.size);
 
     // Add 2 new search paths
     locater.addSchemaStrings([schemaAText.toString(), schemaBText.toString()]);
-    assert.equal(locater.schemaStrings.length, BackendSchemaXmlStringLocater.defaultSchemaSearchPaths.size + 2);
+    assert.equal(locater.schemaStrings.length, PublishedSchemaXmlStringLocater.defaultSchemaSearchPaths.size + 2);
 
     // Add a duplicate search path : should get ignored
     locater.addSchemaStrings([schemaAText.toString(), schemaBText.toString()]);
-    assert.equal(locater.schemaStrings.length, BackendSchemaXmlStringLocater.defaultSchemaSearchPaths.size + 2);
+    assert.equal(locater.schemaStrings.length, PublishedSchemaXmlStringLocater.defaultSchemaSearchPaths.size + 2);
   });
 });
 

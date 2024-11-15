@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { FileSchemaKey } from "../SchemaFileLocater";
-import { BackendSchemasXmlFileLocater, SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
+import { PublishedSchemaXmlFileLocater, SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
 
 describe("SchemaXmlFileLocater tests:", () => {
   let locater: SchemaXmlFileLocater;
@@ -212,13 +212,16 @@ describe("SchemaXmlFileLocater tests:", () => {
   });
 });
 
-describe("BackendSchemasXmlFileLocater tests", () => {
+describe("PublishedSchemaXmlFileLocater tests", () => {
 
-  it("BackendSchemasXmlFileLocater - general use", () => {
+  it("PublishedSchemaXmlFileLocater - general use", () => {
     for (const schemaName of ["BisCore", "Analytical", "ECDbMeta", "Formats", "AecUnits", "Functional"]) {
       const context = new SchemaContext();
-      // Empty list with just default released schemas
-      context.addLocater(new BackendSchemasXmlFileLocater());
+      const locater = new PublishedSchemaXmlFileLocater();
+      context.addLocater(locater);
+
+      // Default search order
+      assert.equal(locater.searchPaths.length, PublishedSchemaXmlFileLocater.defaultSchemaSearchPaths.size);
 
       const schema = context.getSchemaSync(new SchemaKey(schemaName));
       assert.isDefined(schema, `Failed to locate ${schemaName} schema`);
@@ -237,9 +240,9 @@ describe("BackendSchemasXmlFileLocater tests", () => {
   const jsonFilePath = path.join(__dirname, "assets", "json");
   const xmlFilePath = path.join(__dirname, "assets", "xml");
 
-  it("BackendSchemasXmlFileLocater - check schema order with addSchemaSearchPath", () => {
+  it("PublishedSchemaXmlFileLocater - check schema order with addSchemaSearchPath", () => {
     // Empty list with just default released schemas
-    const locater = new BackendSchemasXmlFileLocater(path.join(__dirname, `assets`));
+    const locater = new PublishedSchemaXmlFileLocater(path.join(__dirname, `assets`));
 
     // Add a new search path
     locater.addSchemaSearchPath(jsonFilePath);
@@ -256,9 +259,9 @@ describe("BackendSchemasXmlFileLocater tests", () => {
     testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, standardSchemaPath]);
   });
 
-  it("BackendSchemasXmlFileLocater - check schema order with addSchemaSearchPaths", () => {
+  it("PublishedSchemaXmlFileLocater - check schema order with addSchemaSearchPaths", () => {
     // Empty list with just default released schemas
-    const locater = new BackendSchemasXmlFileLocater(path.join(__dirname, `assets`));
+    const locater = new PublishedSchemaXmlFileLocater(path.join(__dirname, `assets`));
 
     // Add 2 new search paths
     locater.addSchemaSearchPaths([jsonFilePath, xmlFilePath]);
@@ -269,19 +272,19 @@ describe("BackendSchemasXmlFileLocater tests", () => {
     testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, standardSchemaPath]);
   });
 
-  it("BackendSchemasXmlFileLocater - check schema order without specifying path arg", () => {
+  it("PublishedSchemaXmlFileLocater - check schema order without specifying path arg", () => {
     // Empty list with just default released schemas
-    const locater = new BackendSchemasXmlFileLocater();
+    const locater = new PublishedSchemaXmlFileLocater();
 
     // Default search order
-    assert.equal(locater.searchPaths.length, BackendSchemasXmlFileLocater.defaultSchemaSearchPaths.size);
+    assert.equal(locater.searchPaths.length, PublishedSchemaXmlFileLocater.defaultSchemaSearchPaths.size);
 
     // Add 2 new search paths
     locater.addSchemaSearchPaths([jsonFilePath, xmlFilePath]);
-    assert.equal(locater.searchPaths.length, BackendSchemasXmlFileLocater.defaultSchemaSearchPaths.size + 2);
+    assert.equal(locater.searchPaths.length, PublishedSchemaXmlFileLocater.defaultSchemaSearchPaths.size + 2);
 
     // Add a duplicate search path : should get ignored
     locater.addSchemaSearchPaths([xmlFilePath, jsonFilePath]);
-    assert.equal(locater.searchPaths.length, BackendSchemasXmlFileLocater.defaultSchemaSearchPaths.size + 2);
+    assert.equal(locater.searchPaths.length, PublishedSchemaXmlFileLocater.defaultSchemaSearchPaths.size + 2);
   });
 });
