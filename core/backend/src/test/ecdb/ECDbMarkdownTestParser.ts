@@ -122,6 +122,8 @@ export enum ECDbTestRowFormat {
 function tableTextToValue(text: string) : any {
   if(text === "null")
     return null;
+  if(text === "undefined")
+    return undefined;
   if(text.startsWith("{"))
     return JSON.parse(text);
   if(text === "true" || text === "false")
