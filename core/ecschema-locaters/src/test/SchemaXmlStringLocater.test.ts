@@ -8,7 +8,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { globSync } from "glob";
 import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
-import { BackendSchemaXmlStringLocater, SchemaXmlStringLocater } from "../SchemaXmlStringLocater";
+import { SchemaXmlStringLocater } from "../SchemaXmlStringLocater";
 import { StringSchemaKey } from "../SchemaStringLocater";
 
 describe("SchemaXmlStringLocater tests:", () => {
@@ -258,39 +258,6 @@ describe("SchemaXmlStringLocater tests:", () => {
   it("getSchemaKey, invalid version, throws", () => {
     const schemaXml = `<ECSchema schemaName="SchemaA" version=""> </ECSchema>`;
     expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
-  });
-});
-
-describe("BackendSchemaXmlStringLocater tests:", () => {
-  it("BackendSchemaXmlStringLocater - general use", () => {
-    const context = new SchemaContext();
-    // Empty list with just default released schemas
-    context.addLocater(new BackendSchemaXmlStringLocater());
-
-    for (const schemaName of ["BisCore", "Analytical", "ECDbMeta", "Formats", "AecUnits", "Functional"]) {
-      const schema = context.getSchemaSync(new SchemaKey(schemaName));
-      assert.isDefined(schema);
-      assert.equal(schema!.schemaKey.name, schemaName);
-    }
-  });
-
-  it("BackendSchemaXmlStringLocater - check schema order without specifying location", () => {
-    const schemaAText = fs.readFileSync(path.join(__dirname, "assets", "SchemaA.ecschema.xml"));
-    const schemaBText = fs.readFileSync(path.join(__dirname, "assets", "SchemaB.ecschema.xml"));
-
-    // Empty list with just default released schemas
-    const locater = new BackendSchemaXmlStringLocater();
-
-    // Default search order
-    assert.equal(locater.schemaStrings.length, BackendSchemaXmlStringLocater.defaultSchemaSearchPaths.size);
-
-    // Add 2 new search paths
-    locater.addSchemaStrings([schemaAText.toString(), schemaBText.toString()]);
-    assert.equal(locater.schemaStrings.length, BackendSchemaXmlStringLocater.defaultSchemaSearchPaths.size + 2);
-
-    // Add a duplicate search path : should get ignored
-    locater.addSchemaStrings([schemaAText.toString(), schemaBText.toString()]);
-    assert.equal(locater.schemaStrings.length, BackendSchemaXmlStringLocater.defaultSchemaSearchPaths.size + 2);
   });
 });
 

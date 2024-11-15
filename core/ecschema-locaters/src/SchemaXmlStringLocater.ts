@@ -134,92 +134,52 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
 export class BackendSchemaXmlStringLocater extends SchemaXmlStringLocater implements ISchemaLocater {
   private _standardSchemaSearchPaths: Set<string>;
   private _schemasToIgnore: Set<string>;
-  public static defaultSchemaSearchPaths = new Set([
-    // Dgn schemas
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "bis-core-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "generic-schema"),
-    // Domain schemas
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "analytical-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "functional-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "linear-referencing-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "physical-material-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "presentation-rules-schema"),
-    // ECDb schemas
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-file-info-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-map-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-meta-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-schema-policies-schema"),
-    // Standard schemas
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "bis-custom-attributes-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "core-custom-attributes-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "formats-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "schema-upgrade-custom-attributes-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema"),
-    // Misc schemas
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "aec-units-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "architectural-physical-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "construction-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "plant-custom-attributes-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "quantity-takeoffs-aspects-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "spatial-composition-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "structural-physical-schema"),
-  ]);
 
-  /**
-   * Constructs a new BackendSchemaXmlStringLocater
-   * @param knownBackendAssetsDir The assets directory where the core-backend package is installed.
-   */
-  public constructor(knownBackendAssetsDir?: string) {
+  public constructor(assetsDir: string) {
     super();
 
-    this._schemasToIgnore = new Set<string>();
+    // Few standard schemas are still using ECXml version 2.0.0 which is not supported by the current implementation.
+    // Set the locater to ignore those schemas.
+    this._schemasToIgnore = new Set<string>([
+      path.join(assetsDir, "ECSchemas", "Standard", "Bentley_Common_Classes.01.01.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "Bentley_ECSchemaMap.01.00.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "Bentley_Standard_Classes.01.01.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "Bentley_Standard_CustomAttributes.01.14.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "Dimension_Schema.01.00.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "ECDbMap.01.00.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "ECv3ConversionAttributes.01.01.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "EditorCustomAttributes.01.03.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "iip_mdb_customAttributes.01.00.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "KindOfQuantity_Schema.01.01.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "rdl_customAttributes.01.00.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "SIUnitSystemDefaults.01.00.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "Units_Schema.01.00.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "Unit_Attributes.01.00.ecschema.xml"),
+      path.join(assetsDir, "ECSchemas", "Standard", "USCustomaryUnitSystemDefaults.01.00.ecschema.xml"),
+    ]);
 
-    if (!knownBackendAssetsDir) {
-      this._standardSchemaSearchPaths = BackendSchemaXmlStringLocater.defaultSchemaSearchPaths
-    } else {
-      this._standardSchemaSearchPaths = new Set<string>([
-        path.join(knownBackendAssetsDir, "ECSchemas", "Dgn"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Domain"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "ECDb"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard"),
-      ]);
-
-      // Few standard schemas are still using ECXml version 2.0.0 which is not supported by the current implementation.
-      // Set the locater to ignore those schemas.
-      this._schemasToIgnore = new Set<string>([
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "Bentley_Common_Classes.01.01.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "Bentley_ECSchemaMap.01.00.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "Bentley_Standard_Classes.01.01.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "Bentley_Standard_CustomAttributes.01.14.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "Dimension_Schema.01.00.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "ECDbMap.01.00.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "ECv3ConversionAttributes.01.01.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "EditorCustomAttributes.01.03.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "iip_mdb_customAttributes.01.00.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "KindOfQuantity_Schema.01.01.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "rdl_customAttributes.01.00.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "SIUnitSystemDefaults.01.00.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "Units_Schema.01.00.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "Unit_Attributes.01.00.ecschema.xml"),
-        path.join(knownBackendAssetsDir, "ECSchemas", "Standard", "USCustomaryUnitSystemDefaults.01.00.ecschema.xml"),
-      ]);
-    }
+    this._standardSchemaSearchPaths = new Set<string>([
+      path.join(assetsDir, "ECSchemas", "Dgn"),
+      path.join(assetsDir, "ECSchemas", "Domain"),
+      path.join(assetsDir, "ECSchemas", "ECDb"),
+      path.join(assetsDir, "ECSchemas", "Standard"),
+    ]);
 
     // Load all the standard schemas
     this._standardSchemaSearchPaths.forEach((searchPath) => {
-      if (!fs.existsSync(searchPath))
-        return;
+      if (!fs.existsSync(searchPath)) return;
 
       fs.readdirSync(searchPath)
         .map((file) => path.join(searchPath, file))
-        .filter((filePath) => !this._schemasToIgnore.has(filePath) && path.extname(filePath) === ".xml")
+        .filter((filePath) => !this._schemasToIgnore.has(filePath) && fs.statSync(filePath).isFile())
         .forEach((filePath) => {
-          const schemaString = fs.readFileSync(filePath).toString();
-          this.schemaStrings.push(schemaString);
-
-          // Set all default schemas to have a lower precedence value of 1
-          this.searchPathPrecedence.set(this.getSchemaKey(schemaString).toString(), 1);
+          this.schemaStrings.push(fs.readFileSync(filePath).toString());
         });
+    });
+
+    // Set all default schemas to have a lower precedence value of 1
+    this.schemaStrings.forEach((schema) => {
+      this.searchPathPrecedence.set(this.getSchemaKey(schema).toString(), 1);
     });
   }
 
