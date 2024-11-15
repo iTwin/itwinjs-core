@@ -50,11 +50,23 @@ export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, reques
       return {};
   }
 
-  const requestTemplate = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token={CesiumRequestToken}`;
-  const apiUrl: string = requestTemplate.replace("{CesiumRequestToken}", requestKey);
+  // const apiUrl = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token=${requestKey}`;
+  const iTwinId = "8b3d0653-02b5-4a76-832e-7c16ed50ff21";
+  const apiUrl = `https://qa-api.bentley.com/curated-content/cesium/${assetId}/tiles?iTwinId=${iTwinId}`;
+
+  const accessToken = await IModelApp.authorizationClient?.getAccessToken();
 
   try {
-    const apiResponse = await request(apiUrl, "json");
+    const apiResponse = await request(apiUrl, "json", {
+      headers: {
+        /* eslint-disable-next-line @typescript-eslint/naming-convention */
+        Authorization: accessToken,
+        /* eslint-disable-next-line @typescript-eslint/naming-convention */
+        Accept: "application/vnd.bentley.itwin-platform.v1+json",
+        /* eslint-disable-next-line @typescript-eslint/naming-convention */
+        Prefer: "return=representation",
+      },
+    });
     if (undefined === apiResponse || undefined === apiResponse.url) {
       assert(false);
       return {};
