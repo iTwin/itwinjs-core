@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/physical-material-backend",
+      "comment": "Dropped support for Node 18",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/physical-material-backend"
+}
