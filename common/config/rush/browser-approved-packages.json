@@ -11,6 +11,10 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "@bentley/analytical-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/architectural-physical-schema",
       "allowedCategories": [ "backend" ]
     },
@@ -75,7 +79,15 @@
       "allowedCategories": [ "backend" ]
     },
     {
+      "name": "@bentley/ecdb-file-info-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/ecdb-map-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/ecdb-meta-schema",
       "allowedCategories": [ "backend" ]
     },
     {
@@ -84,6 +96,14 @@
     },
     {
       "name": "@bentley/formats-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/functional-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
+      "name": "@bentley/generic-schema",
       "allowedCategories": [ "backend" ]
     },
     {
@@ -111,6 +131,10 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "@bentley/presentation-rules-schema",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "@bentley/process-functional-schema",
       "allowedCategories": [ "internal" ]
     },
@@ -125,6 +149,10 @@
     {
       "name": "@bentley/road-rail-units-schema",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@bentley/schema-upgrade-custom-attributes-schema",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "@bentley/spatial-composition-schema",

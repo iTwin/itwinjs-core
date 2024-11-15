@@ -214,6 +214,18 @@ describe("SchemaXmlFileLocater tests:", () => {
 
 describe("BackendSchemasXmlFileLocater tests", () => {
 
+  it("BackendSchemasXmlFileLocater - general use", () => {
+    for (const schemaName of ["BisCore", "Analytical", "ECDbMeta", "Formats", "AecUnits", "Functional"]) {
+      const context = new SchemaContext();
+      // Empty list with just default released schemas
+      context.addLocater(new BackendSchemasXmlFileLocater());
+
+      const schema = context.getSchemaSync(new SchemaKey(schemaName));
+      assert.isDefined(schema, `Failed to locate ${schemaName} schema`);
+      assert.equal(schema!.schemaKey.name, schemaName);
+    }
+  });
+
   function testLocaterSearchPaths(actualSchemas: string[], expectedSchemas: string[]) {
     assert.equal(actualSchemas.length, expectedSchemas.length);
 
@@ -221,48 +233,55 @@ describe("BackendSchemasXmlFileLocater tests", () => {
       assert.equal(actualSchemas[i], expectedSchemas[i]);
   }
 
-  const dgnSchemaPath = path.join(__dirname, "assets", "ECSchemas", "Dgn");
-  const domainSchemaPath = path.join(__dirname, "assets", "ECSchemas", "Domain");
-  const ecdbSchemaPath = path.join(__dirname, "assets", "ECSchemas", "ECDb");
   const standardSchemaPath = path.join(__dirname, "assets", "ECSchemas", "Standard");
   const jsonFilePath = path.join(__dirname, "assets", "json");
   const xmlFilePath = path.join(__dirname, "assets", "xml");
 
-  it("BackendSchemasXmlFileLocater - check schema order with registerSchemaSearchPath", () => {
+  it("BackendSchemasXmlFileLocater - check schema order with addSchemaSearchPath", () => {
     // Empty list with just default released schemas
     const locater = new BackendSchemasXmlFileLocater(path.join(__dirname, `assets`));
 
-    // Default search order
-    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
-
     // Add a new search path
     locater.addSchemaSearchPath(jsonFilePath);
-    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath, jsonFilePath]);
+    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath]);
 
     // Add another new search path
     locater.addSchemaSearchPath(xmlFilePath);
-    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath, jsonFilePath, xmlFilePath]);
+    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath]);
 
     // Add a duplicate search path : should get ignored
     locater.addSchemaSearchPath(xmlFilePath);
     locater.addSchemaSearchPath(standardSchemaPath);
 
-    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath, jsonFilePath, xmlFilePath]);
+    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, standardSchemaPath]);
   });
 
-  it("BackendSchemasXmlFileLocater - check schema order with registerSchemaSearchPaths", () => {
+  it("BackendSchemasXmlFileLocater - check schema order with addSchemaSearchPaths", () => {
     // Empty list with just default released schemas
     const locater = new BackendSchemasXmlFileLocater(path.join(__dirname, `assets`));
 
-    // Default search order
-    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath]);
-
     // Add 2 new search paths
     locater.addSchemaSearchPaths([jsonFilePath, xmlFilePath]);
-    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath, jsonFilePath, xmlFilePath]);
+    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath]);
 
     // Add a duplicate search path : should get ignored
     locater.addSchemaSearchPaths([xmlFilePath, standardSchemaPath]);
-    testLocaterSearchPaths(locater.searchPaths, [dgnSchemaPath, domainSchemaPath, ecdbSchemaPath, standardSchemaPath, jsonFilePath, xmlFilePath]);
+    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, standardSchemaPath]);
+  });
+
+  it("BackendSchemasXmlFileLocater - check schema order without specifying path arg", () => {
+    // Empty list with just default released schemas
+    const locater = new BackendSchemasXmlFileLocater();
+
+    // Default search order
+    assert.equal(locater.searchPaths.length, BackendSchemasXmlFileLocater.defaultSchemaSearchPaths.size);
+
+    // Add 2 new search paths
+    locater.addSchemaSearchPaths([jsonFilePath, xmlFilePath]);
+    assert.equal(locater.searchPaths.length, BackendSchemasXmlFileLocater.defaultSchemaSearchPaths.size + 2);
+
+    // Add a duplicate search path : should get ignored
+    locater.addSchemaSearchPaths([xmlFilePath, jsonFilePath]);
+    assert.equal(locater.searchPaths.length, BackendSchemasXmlFileLocater.defaultSchemaSearchPaths.size + 2);
   });
 });
