@@ -19,14 +19,6 @@ WHERE
   te.i < 106
 ```
 
-```json
-{
-  "rowOptions": {
-    "rowFormat": "useecsqlpropertynames"
-  }
-}
-```
-
 | className                | accessString | generated | index | jsonName  | name      | extendedType | typeName |
 | ------------------------ | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- |
 |                          | MyId         | true      | 0     | myId      | MyId      | Id           | long     |

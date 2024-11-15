@@ -2,19 +2,10 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md
 
 # Select different properties from TestElement
 
-- Mode: Both
 - dataset: AllProperties.bim
 
 ```sql
 SELECT e.i, e.l, e.d, e.s, e.dt FROM aps.TestElement e LIMIT 2;
-```
-
-```json
-{
-  "rowOptions": {
-    "rowFormat": "useecsqlpropertynames"
-  }
-}
 ```
 
 ```json
@@ -52,14 +43,6 @@ SELECT e.i, e.l, e.d, e.s, e.dt FROM aps.TestElement e LIMIT 2;
 SELECT e.i, e.l, e.d, e.s, e.dt FROM aps.TestElement e LIMIT 2;
 ```
 
-```json
-{
-  "rowOptions": {
-    "rowFormat": "useecsqlpropertynames"
-  }
-}
-```
-
 | i   | l    | d   | s    | dt                      |
 | --- | ---- | --- | ---- | ----------------------- |
 | 100 | 1000 | 0.1 | str0 | 2017-01-01T00:00:00.000 |
@@ -79,14 +62,6 @@ SELECT e.i, e.l, e.d, e.s, e.dt FROM aps.TestElement e LIMIT 2;
 
 ```sql
 SELECT e.p2d, e.p3d FROM aps.TestElement e LIMIT 2;
-```
-
-```json
-{
-  "rowOptions": {
-    "rowFormat": "useecsqlpropertynames"
-  }
-}
 ```
 
 ```json
@@ -129,14 +104,6 @@ SELECT e.p2d, e.p3d FROM aps.TestElement e LIMIT 2;
 SELECT e.p2d, e.p3d FROM aps.TestElement e LIMIT 2;
 ```
 
-```json
-{
-  "rowOptions": {
-    "rowFormat": "useecsqlpropertynames"
-  }
-}
-```
-
 | name     | accessString | type    | typeName | generated |
 | -------- | ------------ | ------- | -------- | ------------------- |
 | p2d      | p2d          | Point2d | point2d  | false               |
@@ -153,14 +120,6 @@ SELECT e.p2d, e.p3d FROM aps.TestElement e LIMIT 2;
 
 ```sql
 SELECT e.bin FROM aps.TestElement e LIMIT 2;
-```
-
-```json
-{
-  "rowOptions": {
-    "rowFormat": "useecsqlpropertynames"
-  }
-}
 ```
 
 | name     | accessString | type | typeName | generated |
@@ -180,19 +139,10 @@ SELECT e.bin FROM aps.TestElement e LIMIT 2;
 
 # Select binary data from TestElement using Tables
 
-- Mode: Both
 - dataset: AllProperties.bim
 
 ```sql
 SELECT e.bin FROM aps.TestElement e LIMIT 2;
-```
-
-```json
-{
-  "rowOptions": {
-    "rowFormat": "useecsqlpropertynames"
-  }
-}
 ```
 
 | name     | accessString | type | typeName | generated |

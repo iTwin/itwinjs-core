@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { DbResult } from "@itwin/core-bentley";
-import { ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
+import { ECSqlRowArg, ECSqlStatement, IModelDb, SnapshotDb } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ECSqlReader, ECSqlValueType, QueryBinder } from "@itwin/core-common";
-import { buildBinaryData, buildECSqlRowArgs, buildQueryOptionsBuilder, ECDbMarkdownTestParser, ECDbTestProps, TypeOfQuery } from "./ECDbMarkdownTestParser";
+import { ECSqlReader, ECSqlValueType, QueryBinder, QueryOptions, QueryRowFormat } from "@itwin/core-common";
+import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, ECDbTestRowFormat } from "./ECDbMarkdownTestParser";
 import * as path from "path";
 import * as fs from "fs";
 import { ECDbMarkdownDatasets } from "./ECDbMarkdownDatasets";
@@ -27,19 +27,19 @@ describe.only("Markdown based ECDb test runner", async () => {
 
     const datasetFilePath = path.join(KnownTestLocations.outputDir, "ECDbTests" ,test.dataset);
 
-    if(test.queryType === undefined || test.queryType === TypeOfQuery.Both || test.queryType === TypeOfQuery.ECSqlStatement)
+    if(test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.Statement)
     {
       if(test.only)
-        it.only(`${test.fileName}: ${test.title} (ECSqlStatement)`, () => {
+        it.only(`${test.fileName}: ${test.title} (Statement)`, () => {
           runECSqlStatementTest(test, datasetFilePath);
         });
       else
-        it(`${test.fileName}: ${test.title} (ECSqlStatement)`, () => {
+        it(`${test.fileName}: ${test.title} (Statement)`, () => {
           runECSqlStatementTest(test, datasetFilePath);
         });
     }
 
-    if(test.queryType === undefined || test.queryType === TypeOfQuery.Both || test.queryType === TypeOfQuery.ConcurrentQuery)
+    if(test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.ConcurrentQuery)
     {
       if(test.only)
         it.only(`${test.fileName}: ${test.title} (ConcurrentQuery)`, async () => {
@@ -120,7 +120,8 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
             assert.strictEqual(colInfo.getAccessString(), expectedColInfo.accessString, `Expected access string ${expectedColInfo.accessString} but got ${colInfo.getAccessString()} for column index ${i}`);
           if (expectedColInfo.type !== undefined)
             assert.strictEqual(ECSqlValueType[colInfo.getType()], expectedColInfo.type, `Expected type ${expectedColInfo.type} but got ${ECSqlValueType[colInfo.getType()]} for column index ${i}`);
-
+          if (expectedColInfo.originPropertyName !== undefined)
+            assert.strictEqual(colInfo.getOriginPropertyName(), expectedColInfo.originPropertyName, `Expected extended type ${expectedColInfo.originPropertyName} but got ${colInfo.getOriginPropertyName()} for column index ${i}`);
         }
       }
 
@@ -131,8 +132,12 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
         const compiledExpectedJson = replacePropsInString(expectedJson, props);
         expectedResult = JSON.parse(compiledExpectedJson);
         expectedResult = buildBinaryData(expectedResult);
+        const rowArgs: ECSqlRowArg = { rowFormat: getRowFormat(test.rowFormat), classIdsToClassNames: test.convertClassIdsToClassNames };
+        // TODO: abbreviate blobs is not supported here?
+        if(test.abbreviateBlobs)
+          logWarning("Abbreviate blobs is not supported for statement tests");
 
-        const actualResult = stmt.getRow(buildECSqlRowArgs(test.rowOptions)); // TODO: should we test getValue() as well?
+        const actualResult = stmt.getRow(rowArgs);
         assert.deepEqual(actualResult, expectedResult, `Expected ${JSON.stringify(expectedResult)} but got ${JSON.stringify(actualResult)}`);
       }
       resultCount++;
@@ -155,6 +160,19 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
       stmt.dispose();
     if(imodel !== undefined)
       imodel.close();
+  }
+}
+
+function getRowFormat(rowFormat: ECDbTestRowFormat) : QueryRowFormat {
+  switch(rowFormat) {
+    case ECDbTestRowFormat.ECSqlNames:
+      return QueryRowFormat.UseECSqlPropertyNames;
+    case ECDbTestRowFormat.ECSqlIndexes:
+      return QueryRowFormat.UseECSqlPropertyIndexes;
+    case ECDbTestRowFormat.JsNames:
+      return QueryRowFormat.UseJsPropertyNames;
+    default:
+      return QueryRowFormat.UseECSqlPropertyNames;
   }
 }
 
@@ -199,9 +217,15 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
       } // for binder
     } // if test.binders
 
+    const queryOptions: QueryOptions = {};
+    queryOptions.rowFormat = getRowFormat(test.rowFormat);
+    if (test.abbreviateBlobs)
+      queryOptions.abbreviateBlobs = true;
+    if (test.convertClassIdsToClassNames)
+      queryOptions.convertClassIdsToClassNames = true;
 
     try {
-      reader = imodel.createQueryReader(compiledSql, params, buildQueryOptionsBuilder(test.rowOptions)); // TODO: Wire up logic for tests we expect to fail during prepare
+      reader = imodel.createQueryReader(compiledSql, params, queryOptions); // TODO: Wire up logic for tests we expect to fail during prepare
     } catch (error: any) {
       assert.fail(`Error during prepare: ${error.name}`);
     }

@@ -2,20 +2,14 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md
 
 # Select ECDb schemas from ECDbMeta using tables but using ECSqlPropertyIndexes
 
-- Mode: ECSqlStatement
+- mode: Statement
 - dataset: AllProperties.bim
 
 ```sql
 Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4;
 ```
 
-```json
-{
-  "rowOptions": {
-    "rowFormat": "useecsqlpropertyindexes"
-  }
-}
-```
+- rowFormat: ECSqlIndexes
 
 | name     | type   |
 | -------- | ------ |
@@ -37,13 +31,7 @@ Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4
 SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005 ORDER BY e.DirectLong LIMIT 2
 ```
 
-```json
-{
-  "rowOptions": {
-    "rowFormat": "useecsqlpropertyindexes"
-  }
-}
-```
+- rowFormat: ECSqlIndexes
 
 ```json
 {
