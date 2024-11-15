@@ -31,7 +31,7 @@ Each package has its own **node_modules** directory that contains symbolic links
 ## Features
 
 - ✅ Create infrastructure digital twins of assets or projects
-- ✅ Aggregate Engineering Models, Reality Data, Geographic Information Systems, 'Internet of Things' Data, and other standard formats together
+- ✅ Aggregate Engineering Models, Reality Data, Geographic Information Systems, Internet of Things (IoT) Data, and other standard formats
 - ✅ Visualize data and engineering changes in 3D and 4D
 - ✅ Analyze data to gain insights and drive new business outcomes across multiple platforms
 
