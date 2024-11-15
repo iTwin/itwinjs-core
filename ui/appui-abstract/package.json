@@ -1,6 +1,6 @@
 {
   "name": "@itwin/appui-abstract",
-  "version": "5.0.0-dev.4",
+  "version": "5.0.0-dev.7",
   "description": "iTwin.js UI abstractions",
   "main": "lib/cjs/appui-abstract.js",
   "module": "lib/esm/appui-abstract.js",
@@ -19,7 +19,7 @@
     "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./public/locales/en-PSEUDO",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "npm -s test",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/appui-abstract/file.json --tsIndexFile=./appui-abstract.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/ui/appui-abstract/file.json --tsIndexFile=./appui-abstract.ts --onlyJson",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "extract-api": "betools extract-api --entry=appui-abstract",
     "test": "npm run -s webpackTests && certa -r chrome",
@@ -37,7 +37,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^5.0.0-dev.4"
+    "@itwin/core-bentley": "workspace:^5.0.0-dev.7"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

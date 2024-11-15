@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-common",
-  "version": "5.0.0-dev.4",
+  "version": "5.0.0-dev.7",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
@@ -33,7 +33,7 @@
     "cover": "nyc npm -s test",
     "docs": "npm run -s docs:reference && npm run -s docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-common",
-    "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-common/file.json --tsIndexFile=presentation-common.ts --onlyJson",
+    "docs:reference": "betools docs --json=../../generated-docs/presentation/presentation-common/file.json --tsIndexFile=presentation-common.ts --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-common",
     "ruleset-json-schema": "npm run -s ruleset-json-schema:generate && npm run -s ruleset-json-schema:post-process",
@@ -47,10 +47,10 @@
     "prettier:fix": "prettier --write ."
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^5.0.0-dev.4",
-    "@itwin/core-common": "workspace:^5.0.0-dev.4",
-    "@itwin/core-quantity": "workspace:^5.0.0-dev.4",
-    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.4"
+    "@itwin/core-bentley": "workspace:^5.0.0-dev.7",
+    "@itwin/core-common": "workspace:^5.0.0-dev.7",
+    "@itwin/core-quantity": "workspace:^5.0.0-dev.7",
+    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.7"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",

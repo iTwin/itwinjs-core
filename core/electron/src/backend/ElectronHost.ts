@@ -68,9 +68,12 @@ export interface ElectronHostOpts extends NativeHostOpts {
 
 /** @beta */
 export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptions {
+  /** Name used to construct key for saving window size, position and maximize status to the settings store */
   storeWindowName?: string;
   /** The style of window title bar. Default is `default`. */
   titleBarStyle?: ("default" | "hidden" | "hiddenInset" | "customButtonsOnHover");
+  /** Web page settings */
+  webPreferences?: Omit<WebPreferences, "preload" | "experimentalFeatures" | "nodeIntegration" | "contextIsolation" | "sandbox" | "nodeIntegrationInWorker" | "nodeIntegrationInSubFrames">;
 }
 
 /** the size and position of a window as stored in the settings file.
@@ -88,9 +91,6 @@ export interface WindowSizeAndPositionProps {
  * @beta
  */
 export class ElectronHost {
-  private static readonly _deprecatedSizeAndPosStoreKey = "windowPos";
-  private static readonly _sizeAndPosStoreKey = "windowSizeAndPos";
-
   private static _ipc: ElectronIpc;
   private static _developmentServer: boolean;
   private static _electron: typeof ElectronModule;
@@ -160,28 +160,23 @@ export class ElectronHost {
     /** Monitors and saves main window size, position and maximized state */
     if (options?.storeWindowName) {
       const mainWindow = this._mainWindow;
-      const name = options.storeWindowName;
-      const saveWindowPosition = (key: string) => {
+      const windowName = options.storeWindowName;
+      const saveWindowPosition = () => {
         const bounds: WindowSizeAndPositionProps = mainWindow.getBounds();
-        NativeHost.settingsStore.setData(`${key}-${name}`, JSON.stringify(bounds));
+        NativeHost.settingsStore.setData(`windowSizeAndPos-${windowName}`, JSON.stringify(bounds));
       };
       const saveMaximized = (maximized: boolean) => {
-        if (!maximized)
-          saveWindowPosition(this._deprecatedSizeAndPosStoreKey);
-        NativeHost.settingsStore.setData(`windowMaximized-${name}`, maximized);
+        NativeHost.settingsStore.setData(`windowMaximized-${windowName}`, maximized);
       };
 
       mainWindow.on("maximize", () => saveMaximized(true));
       mainWindow.on("unmaximize", () => saveMaximized(false));
       saveMaximized(mainWindow.isMaximized());
 
-      mainWindow.on("resized", () => saveWindowPosition(this._deprecatedSizeAndPosStoreKey));
-      mainWindow.on("moved", () => saveWindowPosition(this._deprecatedSizeAndPosStoreKey));
-
-      const debouncedSaveWindowSizeAndPos = debounce(() => saveWindowPosition(this._sizeAndPosStoreKey));
+      const debouncedSaveWindowSizeAndPos = debounce(() => saveWindowPosition());
       mainWindow.on("resize", () => debouncedSaveWindowSizeAndPos());
       mainWindow.on("move", () => debouncedSaveWindowSizeAndPos());
-      saveWindowPosition(this._sizeAndPosStoreKey);
+      saveWindowPosition();
     }
   }
 
@@ -190,22 +185,9 @@ export class ElectronHost {
 
   /**
    * Gets window size and position for a window, by name, from settings file, if present.
-   * @note Size and position values in the settings file will be updated differently depending on platform.
-   *       On Linux values are only updated on window "unmaximize".
-   *       On Windows and MacOS values are also updated on window manual resize or move.
-   *       To get consistent behavior across different platforms, use [[ElectronHost.getWindowSizeAndPositionSetting]].
-   * @deprecated in 3.6. Use [[ElectronHost.getWindowSizeAndPositionSetting]].
-   */
-  public static getWindowSizeSetting(windowName: string): WindowSizeAndPositionProps | undefined {
-    const saved = NativeHost.settingsStore.getString(`${this._deprecatedSizeAndPosStoreKey}-${windowName}`);
-    return saved ? JSON.parse(saved) as WindowSizeAndPositionProps : undefined;
-  }
-
-  /**
-   * Gets window size and position for a window, by name, from settings file, if present.
    */
   public static getWindowSizeAndPositionSetting(windowName: string): WindowSizeAndPositionProps | undefined {
-    const saved = NativeHost.settingsStore.getString(`${this._sizeAndPosStoreKey}-${windowName}`);
+    const saved = NativeHost.settingsStore.getString(`windowSizeAndPos-${windowName}`);
     return saved ? JSON.parse(saved) as WindowSizeAndPositionProps : undefined;
   }
 

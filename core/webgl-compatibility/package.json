@@ -1,6 +1,6 @@
 {
   "name": "@itwin/webgl-compatibility",
-  "version": "5.0.0-dev.4",
+  "version": "5.0.0-dev.7",
   "description": "APIs for determining the level of compatibility of a browser+device with the iTwin.js rendering system.",
   "license": "MIT",
   "main": "lib/cjs/webgl-compatibility.js",
@@ -12,7 +12,7 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "cover": "npm -s test",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/webgl-compatibility/file.json --tsIndexFile=./webgl-compatibility.ts --onlyJson",
     "extract-api": "betools extract-api --entry=webgl-compatibility",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "npm run -s webpackTests && certa -r chrome",
