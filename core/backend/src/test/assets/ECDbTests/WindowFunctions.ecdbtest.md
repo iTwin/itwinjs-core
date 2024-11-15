@@ -19,12 +19,12 @@ WHERE
   te.i < 106
 ```
 
-| className                | accessString | generated | index | jsonName  | name      | extendedType | typeName |
-| ------------------------ | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- |
-|                          | MyId         | true      | 0     | myId      | MyId      | Id           | long     |
-| AllProperties:IPrimitive | s            | false     | 1     | s         | s         |              | string   |
-|                          | Date         | true      | 2     | date      | Date      |              | dateTime |
-|                          | RowNumber    | true      | 3     | rowNumber | RowNumber |              | long     |
+| className                | accessString | generated | index | jsonName  | name      | extendedType | typeName | type     | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------- | ------------------ |
+|                          | MyId         | true      | 0     | myId      | MyId      | Id           | long     | Id       | ECInstanceId       |
+| AllProperties:IPrimitive | s            | false     | 1     | s         | s         |              | string   | String   | s                  |
+|                          | Date         | true      | 2     | date      | Date      |              | dateTime | DateTime | dt                 |
+|                          | RowNumber    | true      | 3     | rowNumber | RowNumber |              | long     | Int64    | undefined          |
 
 | MyId | s    | Date                    | RowNumber |
 | ---- | ---- | ----------------------- | --------- |

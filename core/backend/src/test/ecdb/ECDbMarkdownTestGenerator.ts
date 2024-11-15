@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelDb, SnapshotDb } from "../../core-backend";
-import { QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { DbResult, ECSqlValueType, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
 import * as path from "path";
 import * as fs from "fs";
 import * as crypto from "crypto";
@@ -15,16 +15,35 @@ import { format } from "sql-formatter";
 
 // Call like this:
 // node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT * FROM meta.ECSchemaDef LIMIT 2" -t
-// node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT te.ECInstanceId [MyId], te.s, te.DT [Date], row_number() over(PARTITION BY te.DT ORDER BY te.ECInstanceId) as [RowNumber] from aps.TestElement te WHERE te.i < 1006" -t
-async function runConcurrentQuery(datasetFilePath: string, sql: string): Promise<{metadata: any[], rows: any[] }> {
-  const imodel: IModelDb = SnapshotDb.openFile(datasetFilePath);
+// node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT te.ECInstanceId [MyId], te.s, te.DT [Date], row_number() over(PARTITION BY te.DT ORDER BY te.ECInstanceId) as [RowNumber] from aps.TestElement te WHERE te.i < 106" -t
+async function runConcurrentQuery(imodel: IModelDb, sql: string): Promise<{metadata: any[], rows: any[] }> {
   const queryOptions: QueryOptionsBuilder = new QueryOptionsBuilder();
   queryOptions.setRowFormat(QueryRowFormat.UseECSqlPropertyNames);
   const reader = imodel.createQueryReader(sql, undefined, queryOptions.getOptions());
   const rows = await reader.toArray();
   const metadata = await reader.getMetaData();
-  imodel.close();
   return {metadata, rows };
+}
+
+function pullAdditionalMetadataThroughECSqlStatement(imodel: IModelDb, metadata: any[], sql: string): void {
+  const stmt = imodel.prepareStatement(sql);
+  if (stmt.step() === DbResult.BE_SQLITE_ROW) {
+    const colCount = stmt.getColumnCount();
+    if(colCount !== metadata.length) {
+      // eslint-disable-next-line no-console
+      console.error(`Column count mismatch: ${colCount} != ${metadata.length}. Not generating metadata from statement.`);
+      stmt.dispose();
+      return;
+    }
+    for (let i = 0; i < colCount; i++) {
+      const colInfo = stmt.getValue(i).columnInfo;
+      metadata[i].type = ECSqlValueType[colInfo.getType()];
+      const originPropertyName = colInfo.getOriginPropertyName();
+      if (originPropertyName !== undefined)
+        metadata[i].originPropertyName = originPropertyName;
+    }
+    stmt.dispose();
+  }
 }
 
 function arrayToMarkdownTable(data: any[]): string {
@@ -64,14 +83,6 @@ function writeMarkdownFile(dataset: string, sql: string, columns: any[], results
 \`\`\`sql
 ${sql}
 \`\`\`
-
-\`\`\`json
-{
-  "rowOptions": {
-    "rowFormat": "useecsqlpropertynames"
-  }
-}
-\`\`\`
 `;
 
   if (useTables) {
@@ -110,14 +121,22 @@ async function main() {
 
   const [dataset, sql, tablesFlag] = args;
   const useTables = tablesFlag === "-t";
+  let imodel: IModelDb | undefined;
   try {
     await ECDbMarkdownDatasets.generateFiles();
     const datasetFilePath = path.join(KnownTestLocations.outputDir, "ECDbTests", dataset);
-    const { metadata, rows } = await runConcurrentQuery(datasetFilePath, sql);
+    imodel = SnapshotDb.openFile(datasetFilePath);
+    const { metadata, rows } = await runConcurrentQuery(imodel, sql);
+    pullAdditionalMetadataThroughECSqlStatement(imodel, metadata, sql);
     writeMarkdownFile(dataset, sql, metadata, rows, useTables);
+    imodel.close();
+    imodel = undefined;
   } catch (error) {
     // eslint-disable-next-line no-console
     console.error("Error running query:", error);
+    if (imodel) {
+      imodel.close();
+    }
     process.exit(1);
   }
 }
