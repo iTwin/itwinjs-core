@@ -451,7 +451,7 @@ export abstract class GltfReader {
   protected _instanceFeatures: Feature[] = [];
   protected _meshFeatures: Feature[] = [];
   protected _instanceElementIdToFeatureId: Map<string, number> = new Map<string, number>();
-  protected _meshElementIdToFeatureId: Map<string, number> = new Map<string, number>();
+  protected _meshElementIdToFeatureIndex: Map<string, number> = new Map<string, number>();
   protected _structuralMetadata?: StructuralMetadata;
   protected readonly _idMap?: BatchedTileIdMap;
 
@@ -1609,38 +1609,37 @@ export abstract class GltfReader {
   }
 
   protected readPrimitiveFeatures(primitive: GltfMeshPrimitive): Feature | number[] | undefined {
-
     const ext = primitive.extensions?.EXT_mesh_features;
-    if (!ext || !this._structuralMetadata || !this._idMap) {
+    if (!ext || !primitive.attributes || !this._structuralMetadata || !this._idMap) {
       return undefined;
     }
 
-    const featureIdViews = [];
-    const featureIdBuffers = [];
-
-    const itwinFeatureIndices:number[] = [];
+    let vertexCount = 0;
+    const featureIdBuffers = new Map<number, {buffer: GltfDataBuffer, stride: number}>();
     for(const featureIdDesc of ext.featureIds){
-      const view = this.getBufferView(primitive.attributes, `_FEATURE_ID_${featureIdDesc.attribute}`);
-      // NB: 32-bit integers are not supported, but 8- and 16-bit integers will be converted to them.
-      // With more than 64k features in the tile we represent the Ids as floats instead.
-      const buffer = view?.toBufferData(GltfDataType.Float) ?? view?.toBufferData(GltfDataType.UInt32);
-      if (!view || !buffer) {
+      if(featureIdDesc.attribute === undefined){
+        continue;
+      }
+      const bufferView = this.getBufferView(primitive.attributes, `_FEATURE_ID_${featureIdDesc.attribute}`);
+      const bufferData = bufferView?.toBufferData(bufferView.type);
+      const buffer = bufferData?.buffer;
+      if (!bufferView || !buffer) {
         return undefined;
       }
-      featureIdViews.push(view);
-      featureIdBuffers.push(buffer);
+      vertexCount = bufferData.count ?? 0;
+      featureIdBuffers.set(featureIdDesc.attribute, {buffer, stride: bufferView.stride});
     }
 
+    const itwinFeatureIndices: number[] = [];
     const vertexPropsMap = new Map<string, string>();
-    for (let vertexId = 0;  vertexId < featureIdBuffers[0].count;  vertexId++) {
-
+    for (let vertexId = 0;  vertexId < vertexCount;  vertexId++) {
       let vertexUniqueId = "";
-      let featureIdDescCount = 0;
       for(const featureIdDesc of ext.featureIds){
-        const featureIdView = featureIdViews[featureIdDescCount];
-        const featureIdBuffer = featureIdBuffers[featureIdDescCount];
-        featureIdDescCount++;
-        const featureId = featureIdBuffer.buffer[vertexId * featureIdView.stride];
+        if (featureIdDesc.attribute === undefined) {
+          continue;
+        }
+        const {buffer, stride} = featureIdBuffers.get(featureIdDesc.attribute)!;
+        const featureId = buffer[vertexId * stride];
         const propertyTableId = featureIdDesc.propertyTable ?? 0;
         vertexUniqueId = `${vertexUniqueId}-${featureId}-${propertyTableId}`;
       }
@@ -1649,13 +1648,12 @@ export abstract class GltfReader {
       if(!vertexPropsMap.has(vertexUniqueId)){
         const vertexProps: any = {};
 
-        featureIdDescCount = 0;
         for(const featureIdDesc of ext.featureIds){
-          const featureIdView = featureIdViews[featureIdDescCount];
-          const featureIdBuffer = featureIdBuffers[featureIdDescCount];
-          featureIdDescCount++;
-
-          const featureId = featureIdBuffer.buffer[vertexId * featureIdView.stride];
+          if (featureIdDesc.attribute === undefined) {
+            continue;
+          }
+          const {buffer, stride} = featureIdBuffers.get(featureIdDesc.attribute)!;
+          const featureId = buffer[vertexId * stride];
 
           const table = this._structuralMetadata.tables[featureIdDesc.propertyTable ?? 0];
           vertexProps[table.name] = {};
@@ -1671,14 +1669,14 @@ export abstract class GltfReader {
 
         //  If the element id is already assigned to a previous vertex,
         //  reuse the previous feature id to avoid collision in the feature table
-        if(!this._meshElementIdToFeatureId.has(vertexElementId)){
-          this._meshElementIdToFeatureId.set(vertexElementId, this._meshFeatures.length);
+        if(!this._meshElementIdToFeatureIndex.has(vertexElementId)){
+          this._meshElementIdToFeatureIndex.set(vertexElementId, this._meshFeatures.length);
           this._meshFeatures.push(new Feature(vertexElementId));
         }
       }
 
       vertexElementId = vertexPropsMap.get(vertexUniqueId) ?? "";
-      itwinFeatureIndices.push(this._meshElementIdToFeatureId.get(vertexElementId) ?? 0);
+      itwinFeatureIndices.push(this._meshElementIdToFeatureIndex.get(vertexElementId) ?? 0);
     }
 
     return itwinFeatureIndices;
@@ -2229,6 +2227,7 @@ export class GltfGraphicsReader extends GltfReader {
   private readonly _transform?: Transform;
   private readonly _isLeaf: boolean;
   public readonly binaryData?: Uint8Array; // strictly for tests
+  public meshes?: GltfMeshData; // strictly for tests
 
   public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
     super({
@@ -2255,6 +2254,16 @@ export class GltfGraphicsReader extends GltfReader {
       whiteOnWhiteReversal: false,
       renderMode: RenderMode.SmoothShade,
     };
+  }
+
+  public get meshElementIdToFeatureIndex(): Map<string, number> { // strictly for tests
+    return this._meshElementIdToFeatureIndex;
+  }
+
+  protected override readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined {
+    const meshes = super.readMeshPrimitive(primitive, featureTable, pseudoRtcBias);
+    this.meshes = meshes instanceof GltfMeshData ? meshes : undefined;
+    return meshes;
   }
 
   private getGltfStructuralMetadataBuffer(id: GltfId, type: GltfStructuralMetadata.ClassPropertyComponentType){

@@ -7,8 +7,8 @@ import { Range3d } from "@itwin/core-geometry";
 import { EmptyLocalization, GltfV2ChunkTypes, GltfVersions, RenderTexture, TileFormat } from "@itwin/core-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
-import { GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
-import { GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
+import { GltfDataType, GltfDocument, GltfId, GltfNode, GltfSampler, GltfWrapMode } from "../../common/gltf/GltfSchema";
+import { GltfDataBuffer, GltfGraphicsReader, GltfReaderProps } from "../../tile/GltfReader";
 import { createBlankConnection } from "../createBlankConnection";
 import { BatchedTileIdMap } from "../../core-frontend";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -86,6 +86,10 @@ function expectBinaryData(reader: GltfGraphicsReader, expected: Uint8Array | und
     expect(Array.from(reader.binaryData!)).toEqual(Array.from(expected));
 }
 
+function convertToHexColorString(gltfColorBufferSplice: GltfDataBuffer): string {
+  return `#${Array.from(gltfColorBufferSplice).map((n) => n.toString(16).padStart(2, "0")).join("")}`;
+}
+
 describe("GltfReader", () => {
   let iModel: IModelConnection;
 
@@ -101,7 +105,7 @@ describe("GltfReader", () => {
 
   function createReader(gltf: Uint8Array | GltfDocument, idMap: BatchedTileIdMap | undefined = undefined): GltfGraphicsReader | undefined {
     const props = GltfReaderProps.create(gltf, true);
-    return props ? new GltfGraphicsReader(props, { gltf, iModel, idMap }) : undefined;
+    return props ? new GltfGraphicsReader(props, { gltf, iModel, idMap, pickableOptions: {id: "0x01"} }) : undefined;
   }
 
   it("accepts minimal glb", () => {
@@ -1343,27 +1347,27 @@ describe("GltfReader", () => {
       const elementIdToStructuralMetadataMap = new BatchedTileIdMap(iModel);
 
       const reader = createReader(meshFeaturesExt, elementIdToStructuralMetadataMap)!;
-      expect(reader).not.to.be.undefined;
+      expect(reader).toBeDefined();
 
       const result = await reader.read();
-      expect(result).not.to.be.undefined;
+      expect(result).toBeDefined();
 
       const idMapEntries = Array.from(elementIdToStructuralMetadataMap.entries());
       const uniqueEntriesSize = idMapEntries.length;
-      expect(uniqueEntriesSize).to.be.equal(2);
+      expect(uniqueEntriesSize).toEqual(2);
 
       const attributes = (meshFeaturesExt as any).meshes[0].primitives[0].attributes;
       const colorBufferView = reader.getBufferView(attributes, `COLOR_0`);
       const colorBuffer = colorBufferView?.toBufferData(GltfDataType.UInt32);
-      expect(colorBuffer).not.to.be.undefined;
+      expect(colorBuffer).toBeDefined();
 
       const extractedFeatureIndices = reader.meshes?.primitive.features?.indices;
-      expect(extractedFeatureIndices).not.to.be.undefined;
-      expect(extractedFeatureIndices!.length).to.be.equal(colorBuffer!.count); // each mesh vertex should have a feature index
+      expect(extractedFeatureIndices).toBeDefined();
+      expect(extractedFeatureIndices!.length).toEqual(colorBuffer!.count); // each mesh vertex should have a feature index
 
       const elementIdToFeatureIndexMap = reader.meshElementIdToFeatureIndex;
-      expect(elementIdToFeatureIndexMap.size).to.be.equal(uniqueEntriesSize);
-      expect(elementIdToFeatureIndexMap.size).to.be.equal(new Set(elementIdToFeatureIndexMap.values()).size); // all key-value pairs should be unique
+      expect(elementIdToFeatureIndexMap.size).toEqual(uniqueEntriesSize);
+      expect(elementIdToFeatureIndexMap.size).toEqual(new Set(elementIdToFeatureIndexMap.values()).size); // all key-value pairs should be unique
       const featureIndexToStructuralMetadataMap = new Map(idMapEntries
         .map(({id, properties}) => [elementIdToFeatureIndexMap.get(id), properties] as [number, Record<string, any>]));
 
@@ -1373,18 +1377,18 @@ describe("GltfReader", () => {
         const colorHex = convertToHexColorString(color);
         if (featureIndexToColorMap.has(featureIndex)) {
           const existingColorHex = featureIndexToColorMap.get(featureIndex);
-          expect(existingColorHex).to.be.equal(colorHex); // all vertices with the same feature index should map to the same object (physical color indicates object)
+          expect(existingColorHex).toEqual(colorHex); // all vertices with the same feature index should map to the same object (physical color indicates object)
         } else {
           featureIndexToColorMap.set(featureIndex, colorHex);
         }
 
         const properties = featureIndexToStructuralMetadataMap.get(featureIndex);
-        expect(properties?.class0?.color0).not.to.be.undefined;
-        expect(properties?.class0?.color0).to.be.equal(colorHex); // physical color of the object should match the color defined in the feature property table
-        expect(properties?.class1?.color1).not.to.be.undefined;
-        expect(properties?.class1?.color1).to.be.equal(colorHex); // multiple feature property tables should be supported
+        expect(properties?.class0?.color0).toBeDefined();
+        expect(properties?.class0?.color0).toEqual(colorHex); // physical color of the object should match the color defined in the feature property table
+        expect(properties?.class1?.color1).toBeDefined();
+        expect(properties?.class1?.color1).toEqual(colorHex); // multiple feature property tables should be supported
       });
-      expect(featureIndexToColorMap.size).to.be.equal(uniqueEntriesSize);
+      expect(featureIndexToColorMap.size).toEqual(uniqueEntriesSize);
     });
   });
 
