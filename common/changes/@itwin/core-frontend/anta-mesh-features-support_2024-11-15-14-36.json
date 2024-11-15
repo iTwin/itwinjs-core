@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-frontend",
+      "comment": "Exposed some variables strictly for tests in a test class.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-frontend"
+}
