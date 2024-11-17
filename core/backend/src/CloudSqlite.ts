@@ -917,7 +917,7 @@ export namespace CloudSqlite {
         throw new Error("no authorization client available");
 
       const userToken = await auth.getAccessToken();
-      const cloudContainer = await service.create({ scope: args.scope, metadata: { ...args.metadata, containerType: "property-store" }, userToken });
+      const cloudContainer = await service.create({ scope: args.scope, metadata: args.metadata, userToken });
       return { baseUri: cloudContainer.baseUri, containerId: cloudContainer.containerId, storageType: cloudContainer.provider };
     }
 
