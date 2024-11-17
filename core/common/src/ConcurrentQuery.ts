@@ -62,7 +62,7 @@ export interface QueryPropertyMetaData {
   /** The name is the property's alias if the property is a generated one, otherwise, it is the name of the property. */
   name: string;
   /** If this property is a PrimitiveECProperty, extend type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extend type is set to an empty string.
-   * @deprecated in 4.10 Use extendedType instead
+   * @deprecated in 4.11 Use extendedType instead
    */
   extendType: string;
   /** If this property is a PrimitiveECProperty, extended type is the extended type name of this property, if it is not defined locally will be inherited from base property if one exists, otherwise extended type will be undefined. */
