@@ -6,10 +6,10 @@
 
 export default {
   $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-  name: "ConflictingPrimitiveType",
-  version: "01.00.01",
+  name: "ConflictingPropertyName",
+  version: "01.00.00",
   alias: "c_1300",
-  label: "Conflicting Primitive Type",
+  label: "Conflicting Property Name",
   references: [
     {
       name: "CoreCustomAttributes",
@@ -22,31 +22,58 @@ export default {
     },
   ],
   items: {
+    AREA: {
+      schemaItemType: "UnitSystem",
+    },
+    CONSTRUCTION_STATUS: {
+      schemaItemType: "Phenomenon",
+      definition: "ConstructionStatus",
+    },
+    WALL_HAS_LAYER: {
+      schemaItemType: "PropertyCategory",
+    },
+    WALL_TYPE: {
+      schemaItemType: "StructClass",
+    },
+    DEFINITION_ARCWALL: {
+      schemaItemType: "CustomAttributeClass",
+      properties: [{
+        name: "LABEL",
+        type: "PrimitiveProperty",
+        typeName: "string",
+      }],
+      appliesTo: "Any",
+    },
+    CATEGORY_WALL_COMMON: {
+      schemaItemType: "Mixin",
+      appliesTo: "ConflictingPropertyName.ARCWALL",
+    },
     ARCWALL: {
-      label: "Basic Wall",
       schemaItemType: "EntityClass",
       properties: [
         {
-          name: "OVERAL_HEIGHT",
+          name: "HEIGHT",
           type: "PrimitiveProperty",
-          typeName: "double",
+          typeName: "string",
         },
         {
-          name: "OVERAL_WIDTH",
+          name: "TYPE",
           type: "PrimitiveProperty",
-          label: "Overall Width",
-          typeName: "double",
+          typeName: "int",
         },
         {
-          name: "OVERAL_LENGTH",
+          name: "DEFINITION",
           type: "PrimitiveProperty",
-          description: "overall length along the centerline of the wall",
-          typeName: "double",
+          typeName: "string",
         },
         {
-          name: "WALL_HEIGHT_TYPE",
+          name: "LAYER",
+          type: "PrimitiveArrayProperty",
+          typeName: "string",
+        },
+        {
+          name: "AREA",
           type: "PrimitiveProperty",
-          label: "Top Constraint",
           typeName: "string",
         },
       ],

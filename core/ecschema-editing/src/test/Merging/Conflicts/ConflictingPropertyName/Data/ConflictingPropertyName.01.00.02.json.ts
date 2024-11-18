@@ -6,10 +6,10 @@
 
 export default {
   $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-  name: "ConflictingPropertyType",
+  name: "ConflictingPropertyName",
   version: "01.00.02",
   alias: "c_1300",
-  label: "Conflicting Property Type",
+  label: "Conflicting Property Name",
   references: [
     {
       name: "CoreCustomAttributes",
@@ -22,44 +22,45 @@ export default {
     },
   ],
   items: {
-    DAMPER_TYPES: {
+    CONSTRAINTS: {
+      schemaItemType: "PropertyCategory",
+      label: "Constraints",
+      priority: 200000,
+    },
+    WALL_TYPE: {
       schemaItemType: "Enumeration",
-      isStrict: false,
       type: "int",
+      isStrict: false,
       enumerators: [
         {
-          name: "FIRE_DAMPER",
-          value: 0,
+          name: "WallType10",
+          value: 10,
+          label: "Load Bearing",
         },
         {
-          name: "SMOKE_DAMPER",
-          value: 1,
-        },
-        {
-          name: "VOLUME_DAMPER",
-          value: 2,
+          name: "WallType20",
+          value: 20,
+          label: "Self Bearing",
         },
       ],
     },
-    DAMPER: {
+    ARCWALL: {
       schemaItemType: "EntityClass",
-      label: "Damper",
-      description: "A device for suppressing unfavourable characteristics or behavior",
       properties: [
         {
-          name: "TYPE",
-          type: "PrimitiveArrayProperty",
-          typeName: "ConflictingPropertyType.DAMPER_TYPES",
-          label: "Damper Type",
-          minOccurs: 1,
-          maxOccurs: 5,
-          priority: 1,
+          name: "HEIGHT",
+          type: "PrimitiveProperty",
+          label: "Wall Height",
+          category: "ConflictingPropertyName.CONSTRAINTS",
+          minValue: 1.0,
+          typeName: "double",
         },
         {
-          name: "NAME",
-          type: "PrimitiveProperty",
-          typeName: "string",
-          label: "Damper Name",
+          name: "TYPE",
+          description: "Type",
+          type: "PrimitiveArrayProperty",
+          typeName: "ConflictingPropertyName.WALL_TYPE",
+          category: "ConflictingPropertyName.CONSTRAINTS",
         },
       ],
     },

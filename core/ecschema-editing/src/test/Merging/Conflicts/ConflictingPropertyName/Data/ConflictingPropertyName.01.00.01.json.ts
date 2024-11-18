@@ -6,10 +6,10 @@
 
 export default {
   $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
-  name: "ConflictingPropertyType",
-  version: "01.00.00",
+  name: "ConflictingPropertyName",
+  version: "01.00.01",
   alias: "c_1300",
-  label: "Conflicting Property Type",
+  label: "Conflicting Property Name",
   references: [
     {
       name: "CoreCustomAttributes",
@@ -22,16 +22,13 @@ export default {
     },
   ],
   items: {
-    DAMPER: {
+    ARCWALL: {
       schemaItemType: "EntityClass",
-      label: "Damper",
-      description: "A device for suppressing unfavourable characteristics or behavior",
       properties: [
         {
-          name: "TYPE",
+          name: "HEIGHT",
           type: "PrimitiveProperty",
-          typeName: "int",
-          label: "Damper Type",
+          typeName: "double",
         },
       ],
     },
