@@ -1936,10 +1936,9 @@ describe("SphericalMeshData", () => {
     let y0 = 0;
     const delta = 10;
     // accumulator for ray intersection params, ignoring hits at the ray origin
-    const rayHits = new OrderedSet<FacetLocationDetail>((
-      d0: FacetLocationDetail,
-      d1: FacetLocationDetail) => compareWithTolerance(d0.a, d1.a, Geometry.smallMetricDistance,
-      ));
+    const rayHits = new OrderedSet<FacetLocationDetail>(
+      (f0: FacetLocationDetail, f1: FacetLocationDetail) => compareWithTolerance(f0.a, f1.a, Geometry.smallMetricDistance),
+    );
     const intersectOptions = new FacetIntersectOptions();
     intersectOptions.parameterTolerance = Geometry.smallFraction;
     intersectOptions.acceptIntersection = (d: FacetLocationDetail) => {
@@ -1980,7 +1979,7 @@ describe("SphericalMeshData", () => {
       }
       return outward;
     };
-    const testMirror = (g: IndexedPolyface | SolidPrimitive | undefined, t: Transform): void => {
+    const testMirror = (g: IndexedPolyface | SolidPrimitive | undefined, t: Transform, verifyClosure: boolean = true): void => {
       if (!ck.testDefined(g, "geometry is defined"))
         return;
       ck.testTrue(t.matrix.determinant() < 0, "transform is a mirror");
@@ -1996,7 +1995,8 @@ describe("SphericalMeshData", () => {
       }
       y0 = 0;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedMesh, x0, y0);
-      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(closedMesh), `${type} mesh is closed`);
+      if (verifyClosure)
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(closedMesh), `${type} mesh is closed`);
       ck.testTrue(hasOutwardOrientationAndFacetNormals(closedMesh), `${type} facets and normals point outward`);
       y0 = delta;
       const mirrorMesh = closedMesh.cloneTransformed(t);
@@ -2006,21 +2006,26 @@ describe("SphericalMeshData", () => {
     // mirror across plane at origin with normal (1,1,0)
     const mirrorMatrix = Matrix3d.createDirectionalScale(Vector3d.createNormalized(1, 1)!, -1.0);
     const mirrorTrans = Transform.createFixedPointAndMatrix(Point3d.createZero(), mirrorMatrix);
+
     // all solids are centered at zero
     const geometry: (IndexedPolyface | SolidPrimitive | undefined)[] = [];
+
     geometry.push(ImportedSample.createPolyhedron62());
+
     geometry.push(Box.createRange(Range3d.create(Point3d.create(-1.5, -1, -0.5), Point3d.create(1.5, 1, 0.5)), true));
+
     geometry.push(Cone.createAxisPoints(Point3d.create(-1), Point3d.create(1), 2, 1, true));
+
     const sweepLength = 3;
     const washer = RegionOps.sortOuterAndHoleLoopsXY([
       Loop.create(Arc3d.createXY(Point3d.create(0, 0, -sweepLength / 2), 2)),
       Loop.create(Arc3d.createXY(Point3d.create(0, 0, -sweepLength / 2), 1.5))
     ]);
     const arcNormal = Vector3d.createNormalized(3, 0, -1)!;
-    washer.tryTransformInPlace(
-      Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationVectorToVector(Vector3d.unitZ(), arcNormal)),
-    );
+    const rotation = Matrix3d.createRotationVectorToVector(Vector3d.unitZ(), arcNormal);
+    washer.tryTransformInPlace(Transform.createOriginAndMatrix(undefined, rotation));
     geometry.push(LinearSweep.create(washer, arcNormal.scale(sweepLength), true));
+
     const polygonCCW = [Point3d.create(-1, -1), Point3d.create(-1, -2), Point3d.create(1, -2), Point3d.create(1, -1)];
     const polygonCW = polygonCCW.slice().reverse();
     const sweepRay = Ray3d.create(Point3d.createZero(), Vector3d.unitX());
@@ -2029,37 +2034,38 @@ describe("SphericalMeshData", () => {
     geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCCW), sweepRay, sweepAngle.cloneScaled(-1), true));
     geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCW), sweepRay, sweepAngle, true));
     geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCW), sweepRay, sweepAngle.cloneScaled(-1), true));
-    geometry.push(RuledSweep.create(
-      [Loop.create(Arc3d.createXY(Point3d.create(0, -1, -1), 1)), Loop.create(Arc3d.createXY(Point3d.create(0, 1, 1), 1.5))],
-      true
-    ));
-    geometry.push(Sphere.createEllipsoid(
-      Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createScale(2, 3, 1)),
-      AngleSweep.createStartEndDegrees(-45, 0), true
-    ));
-    geometry.push(
-      TorusPipe.createAlongArc(Arc3d.createCenterNormalRadius(Point3d.createZero(), Vector3d.unitY(-1), 2), 0.25, true),
-    );
-    // add a mitered pipe with caps
+
+    const sections = [
+      Loop.create(Arc3d.createXY(Point3d.create(0, -1, -1), 1)),
+      Loop.create(Arc3d.createXY(Point3d.create(0, 1, 1), 1.5)),
+    ];
+    geometry.push(RuledSweep.create(sections, true));
+
+    const eAxes = Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createScale(2, 3, 1))
+    geometry.push(Sphere.createEllipsoid(eAxes, AngleSweep.createStartEndDegrees(-45, 0), true));
+
+    geometry.push(TorusPipe.createAlongArc(Arc3d.createCenterNormalRadius(undefined, Vector3d.unitY(-1), 2), 0.25, true));
+
     const centerline = Arc3d.createXY(Point3d.create(0, 0), 1.0, AngleSweep.createStartEndDegrees(0, 90));
-    const sectionData = Arc3d.create(
-      Point3d.create(1, 0, 0),
-      Vector3d.create(0, 0, 1),
-      Vector3d.create(0.5, 0, 0),
-      AngleSweep.createStartEndDegrees(360, 90), // partial arc with CW orientation
-    );
+    const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5, 0, 0));
     const pipeBuilder = PolyfaceBuilder.create();
     pipeBuilder.options.angleTol = Angle.createDegrees(5);
     pipeBuilder.options.needNormals = true;
-    const numFacetAround = 8;
-    pipeBuilder.addMiteredPipes(centerline, sectionData, numFacetAround, true);
-    const miteredPipe = pipeBuilder.claimPolyface();
-    geometry.push(miteredPipe);
-    // verify outward normals for closed mesh and all flavors of primitive solids, both before and after mirroring
+    pipeBuilder.addMiteredPipes(centerline, sectionData, 8, true);
+    geometry.push(pipeBuilder.claimPolyface());
+
+    // verify outward normals for closed meshes/solids, both before and after mirroring
     for (const geom of geometry) {
       testMirror(geom, mirrorTrans);
       x0 += delta;
     }
+
+    // open pipe
+    sectionData.sweep.setStartEndDegrees(0, 90);
+    const pipeBuilder2 = PolyfaceBuilder.create(pipeBuilder.options);
+    pipeBuilder2.addMiteredPipes(centerline, sectionData, 8, true);
+    testMirror(pipeBuilder2.claimPolyface(), mirrorTrans, false);
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Mirror");
     expect(ck.getNumErrors()).toBe(0);
   });
