@@ -26,6 +26,10 @@ This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that hol
 
 See [rush.json](./rush.json) for the complete list of packages and [Versioning.md](./Versioning.md) for package and API versioning policies.
 
+## Quick Start
+
+- This is a [sample](https://www.itwinjs.org/sandboxes/iTwinPlatform/3d%20Viewer) of an iTwin viewer - a frontend application that displays infrastructure projects on browsers. It uses many of the APIs and libraries published from this repository.
+- You can also look at [other samples](https://developer.bentley.com/samples/) which showcases the capabilities of iTwin.js, and the iTwin Platform.
 ## Prerequisites
 
 - [Git](https://git-scm.com/)
@@ -40,7 +44,17 @@ See [rush.json](./rush.json) for the complete list of packages and [Versioning.m
 
 ## Contribution
 
-If you have questions, or wish to contribute to iTwin.js, see our [Contributing guide](./CONTRIBUTING.md).
+### Build Instructions
+
+The following instructions will quickly set the repo up for you to edit the source code and contribute:
+
+1. Clone the repository locally
+2. Install dependencies: `rush install`
+3. Clean: `rush clean`
+4. Build source: `rush build`
+5. Run tests: `rush cover`
+
+For more information on our contributing guidelines and FAQs, see our [Contributing guide](./CONTRIBUTING.md).
 
 ## Licensing
 
