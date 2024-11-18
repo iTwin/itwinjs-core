@@ -9,7 +9,7 @@ import * as fs from "fs-extra";
 import { join } from "path";
 import {
   CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainerProps,
-  WorkspaceDbCloudProps, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames,
+  WorkspaceDbCloudProps, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbProps, WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames,
 } from "@itwin/core-backend";
 import { assert, Guid } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
@@ -23,10 +23,12 @@ describe("Cloud workspace containers", () => {
   let orgContainer: EditableWorkspaceContainer;
   let itwin2Container: EditableWorkspaceContainer;
   let branchContainer: EditableWorkspaceContainer;
+  let testContainer: EditableWorkspaceContainer;
   let editor: WorkspaceEditor;
   let orgContainerProps: WorkspaceContainerProps;
   let branchContainerProps: WorkspaceContainerProps;
   let itwin2ContainerProps: WorkspaceContainerProps;
+  let testContainerProps: WorkspaceContainerProps;
   let styles1: EditableWorkspaceContainer;
   let styles2: EditableWorkspaceContainer;
 
@@ -62,6 +64,7 @@ describe("Cloud workspace containers", () => {
     branchContainer = await editor.createNewCloudContainer({ metadata: { label: "iModel container", description: "imodel workspace" }, scope: { iTwinId: iTwin2Id, iModelId: iModel1 }, manifest: { workspaceName: iModelWsName } });
     styles1 = await editor.createNewCloudContainer({ metadata: { label: "styles 1 container", description: "styles definitions 1" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "styles 1 ws" } });
     styles2 = await editor.createNewCloudContainer({ metadata: { label: "styles 2 container", description: "styles definitions 2" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "styles 2 ws" } });
+    testContainer = await editor.createNewCloudContainer({ metadata: { label: "test container", description: "test container" }, scope: { iTwinId: iTwin1Id }, manifest: { workspaceName: "test container" }, dbName: "wsdb-all-settings" });
     AzuriteTest.userToken = AzuriteTest.service.userToken.readWrite;
 
     const makeV1 = async (container: EditableWorkspaceContainer) => {
@@ -74,20 +77,91 @@ describe("Cloud workspace containers", () => {
       return container;
     };
 
+    const makeV1Test = async (container: EditableWorkspaceContainer) => {
+      container.acquireWriteLock("before-user");
+      const copied = (await container.createNewWorkspaceDbVersion({ versionType: "major", fromProps: { dbName: "wsdb-all-settings" } })).newDb;
+      const wsDbEdit = container.getEditableDb(copied);
+      wsDbEdit.open();
+      wsDbEdit.close();
+      container.releaseWriteLock();
+      return container;
+    };
+
     // Make v1.0.0
     await Promise.all([orgContainer, itwin2Container, branchContainer, styles1, styles2].map(async (container) => makeV1(container)));
+
+    // Make v1.0.0 for test container
+    await makeV1Test(testContainer);
 
     itwin2ContainerProps = itwin2Container.cloudProps!;
     orgContainerProps = orgContainer.cloudProps!;
     branchContainerProps = branchContainer.cloudProps!;
+    testContainerProps = testContainer.cloudProps!;
 
     assert(itwin2ContainerProps !== undefined);
     assert(orgContainerProps !== undefined);
     assert(branchContainerProps !== undefined);
+    assert(testContainerProps !== undefined);
   });
   after(async () => {
     editor.close();
     IModelHost.authorizationClient = undefined;
+  });
+
+  it("create additional workspace db in workspace container", async () => {
+    const user: string = "test admin";
+
+    expect(testContainer.cloudContainer).not.undefined;
+
+    testContainer.acquireWriteLock(user);
+
+    const manifest: WorkspaceDbManifest = {
+      workspaceName: "new workspacedb test",
+      contactName: "substation admin",
+    };
+    const workspaceDbProps: WorkspaceDbProps & WorkspaceContainerProps = {
+      containerId: testContainer.fromProps.containerId,
+      dbName: "new workspacedb test",
+      baseUri: testContainer.fromProps.baseUri,
+      storageType: "azure",
+    };
+
+    // Create another workspacedb in the Container `testContainer`
+    // wsDb = container.getEditableDb({ dbName: workspaceDbName });
+    const wsDbEditPre = await testContainer.createDb({ ...workspaceDbProps, manifest });
+    wsDbEditPre.open();
+    wsDbEditPre.updateString("string 1", "value of string 1");
+    wsDbEditPre.close();
+    testContainer.releaseWriteLock();
+
+    testContainer.acquireWriteLock("substation editor example");
+
+    // Mint version 1.0.0 of the newly creted workspacedb
+    const wsDbMajorProps = (await testContainer.createNewWorkspaceDbVersion({
+      fromProps: {
+        dbName: "new workspacedb test",
+      },
+      versionType: "major",
+    }));
+
+    const wsDbEditOne = testContainer.getEditableDb(wsDbMajorProps.newDb);
+    wsDbEditOne.open();
+    wsDbEditOne.close();
+
+    testContainer.releaseWriteLock();
+
+    // Try to retrieve v1.0.0 of newly created workspacedb
+    // In Substation app, this is getting v0.0.0 instead of v1.0.0
+    const newWorkspaceDb = await IModelHost.appWorkspace.getWorkspaceDb(
+      {
+        storageType: "azure",
+        baseUri: testContainer.fromProps.baseUri,
+        containerId: testContainer.fromProps.containerId,
+        dbName: "new workspacedb test",
+      }
+    );
+
+    expect(newWorkspaceDb.version).equal("1.0.0");
   });
 
   it("edit cloud workspace", async () => {
