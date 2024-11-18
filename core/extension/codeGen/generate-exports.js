@@ -6,7 +6,6 @@
 import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
-// `with` is available from Node 18.20. If you need to run this in older Node version, replace `with` with `assert`
 import pkgJson from "../package.json" with { type: "json" };
 
 const declarationFilePath = "index.d.ts";

@@ -1,6 +1,6 @@
 {
   "name": "@itwin/map-layers-formats",
-  "version": "5.0.0-dev.0",
+  "version": "5.0.0-dev.8",
   "description": "Enables additional map-layers formats in iTwin.js",
   "main": "lib/cjs/map-layers-formats.js",
   "module": "lib/esm/map-layers-formats.js",
@@ -13,7 +13,7 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:locale": "cpx \"./src/public/**/*\" ./lib/public",
     "cover": "nyc npm -s test",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/map-layers-formats/file.json --tsIndexFile=./map-layers-formats.ts --onlyJson --excludes=**/ArcGisFeature/*.ts,**/*.gen.ts",
+    "docs": "betools docs --json=../../generated-docs/core/map-layers-formats/file.json --tsIndexFile=./map-layers-formats.ts --onlyJson --excludes=**/ArcGisFeature/*.ts,**/*.gen.ts",
     "extract-api": "betools extract-api --entry=map-layers-formats",
     "lint": "eslint \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./src/public/locales/en-PSEUDO",

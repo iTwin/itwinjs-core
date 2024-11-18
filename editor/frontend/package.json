@@ -1,6 +1,6 @@
 {
   "name": "@itwin/editor-frontend",
-  "version": "5.0.0-dev.0",
+  "version": "5.0.0-dev.8",
   "description": "iTwin.js frontend components",
   "main": "lib/cjs/editor-frontend.js",
   "module": "lib/esm/editor-frontend.js",
@@ -12,7 +12,7 @@
     "build:esm": "tsc 1>&2 --module ES2020 --outDir lib/esm",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:locale": "cpx \"./src/public/**/*\" ./lib/public",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/editor/editor-frontend/file.json --tsIndexFile=./editor-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
+    "docs": "betools docs --json=../../generated-docs/editor/editor-frontend/file.json --tsIndexFile=./editor-frontend.ts --onlyJson --excludes=webgl/**/*,**/primitives --excludeGlob=**/*-css.ts",
     "extract-api": "betools extract-api --entry=editor-frontend",
     "lint": "eslint --max-warnings 0 ./src/**/*.ts 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir ./src/public/locales/en --out ./public/locales/en-PSEUDO",
@@ -36,11 +36,11 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/appui-abstract": "workspace:^5.0.0-dev.0",
-    "@itwin/core-bentley": "workspace:^5.0.0-dev.0",
-    "@itwin/core-common": "workspace:^5.0.0-dev.0",
-    "@itwin/core-frontend": "workspace:^5.0.0-dev.0",
-    "@itwin/core-geometry": "workspace:^5.0.0-dev.0"
+    "@itwin/appui-abstract": "workspace:^5.0.0-dev.8",
+    "@itwin/core-bentley": "workspace:^5.0.0-dev.8",
+    "@itwin/core-common": "workspace:^5.0.0-dev.8",
+    "@itwin/core-frontend": "workspace:^5.0.0-dev.8",
+    "@itwin/core-geometry": "workspace:^5.0.0-dev.8"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

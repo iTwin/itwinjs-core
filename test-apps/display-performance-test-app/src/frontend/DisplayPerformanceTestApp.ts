@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@itwin/core-bentley";
 import {
-  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, IModelReadRpcInterface, IModelTileRpcInterface, RpcConfiguration,
 } from "@itwin/core-common";
 import { ElectronApp } from "@itwin/core-electron/lib/cjs/ElectronFrontend";
 import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Renderer";
@@ -78,7 +78,7 @@ export class DisplayPerfTestApp {
       ? new FrontendIModelsAccess(new IModelsClient({ api: { baseUrl: `https://${process.env.IMJS_URL_PREFIX}api.bentley.com/imodels` } }))
       : new FrontendIModelsAccess();
 
-    iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]; // eslint-disable-line @typescript-eslint/no-deprecated
+    iModelApp.rpcInterfaces = [DisplayPerfRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface]; // eslint-disable-line @typescript-eslint/no-deprecated
     if (ProcessDetector.isElectronAppFrontend)
       await ElectronApp.startup({ iModelApp });
     else
@@ -89,7 +89,7 @@ export class DisplayPerfTestApp {
 
     const frontendTilesNopFallback = (runner && runner.curConfig && runner.curConfig.frontendTilesNopFallback) ? runner.curConfig.frontendTilesNopFallback : false;
 
-    if(frontendTilesNopFallback){
+    if (frontendTilesNopFallback) {
       await DisplayPerfRpcInterface.getClient().consoleLog("Nop fallback enabled for frontend tiles.");
     }
 
@@ -103,14 +103,18 @@ export class DisplayPerfTestApp {
         urlStr = urlStr.replace("{iModel.filename}", getFileName(runner.curConfig.iModelName));
         urlStr = urlStr.replace("{iModel.extension}", getFileExt(runner.curConfig.iModelName));
         const url = new URL(urlStr);
+        const tilesetUrl = new URL("tileset.json", url);
+        tilesetUrl.search = url.search;
+
+        // Check if a tileset has been published for this iModel.
         try {
-          // See if a tileset has been published for this iModel.
-          const response = await fetch(`${url}tileset.json`);
+          console.log(`Checking for tileset at ${tilesetUrl.toString()}`); // eslint-disable-line no-console
+          const response = await fetch(tilesetUrl);
           await response.json();
           runner.curConfig.urlStr = urlStr;
           return url;
         } catch {
-          runner.curConfig.urlStr = `${urlStr}tileset.json - Not found`;
+          runner.curConfig.urlStr = `${tilesetUrl.toString()} - Not found`;
           // No tileset available.
           return undefined;
         }
@@ -181,7 +185,7 @@ window.onload = async () => {
 
   if (!ProcessDetector.isElectronAppFrontend && !ProcessDetector.isMobileAppFrontend) {
     const uriPrefix = "http://localhost:3001";
-    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface, IModelReadRpcInterface]);
+    BentleyCloudRpcManager.initializeClient({ info: { title: "DisplayPerformanceTestApp", version: "v1.0" }, uriPrefix }, [DisplayPerfRpcInterface, IModelTileRpcInterface, IModelReadRpcInterface]);
   }
 
   await DisplayPerfTestApp.startup();
