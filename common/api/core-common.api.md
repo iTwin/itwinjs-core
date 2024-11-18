@@ -7513,7 +7513,7 @@ export enum QueryParamType {
 export interface QueryPropertyMetaData {
     accessString?: string;
     className: string;
-    extendType: string;
+    extendedType: string;
     generated: boolean;
     index: number;
     jsonName: string;

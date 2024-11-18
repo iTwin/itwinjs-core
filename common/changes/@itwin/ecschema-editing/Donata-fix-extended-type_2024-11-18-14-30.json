@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-editing",
+      "comment": "renamed extendType to extendedType",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-editing"
+}
