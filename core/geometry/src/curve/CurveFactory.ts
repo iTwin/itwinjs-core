@@ -325,13 +325,18 @@ export class CurveFactory {
 
   /**
    * Create section arcs for mitered pipe.
-   * * At each end of each pipe, the pipe is cut by the plane that bisects the angle between successive pipe centerlines.
-   * * The arc definitions are constructed so that lines between corresponding fractional positions on the arcs are
+   * * At the end of each pipe segment, the pipe is mitered by the plane that bisects the angle between successive
+   * centerline segments.
+   * * The section arcs are constructed so that lines between corresponding fractional positions on the arcs are
    *   axial lines on the pipes.
-   * * This means that each arc definition axes (aka vector0 and vector90) are _not_ perpendicular to each other.
-   * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis lengths, or a full Arc3d.
-   *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
-   *    * The center of Arc3d input is translated to the centerline start point to act as initial cross section.
+   * * This means that the initial arc's vector0 and vector90 lengths and angular separation are _not_ preserved in
+   * the section arcs.
+   * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis
+   * lengths, or an Arc3d:
+   *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
+   * start tangent.
+   *    * For Arc3d input, the center is translated to the centerline start point, but otherwise the arc is used as-is
+   * for the first section.
    * @param centerline centerline of pipe.
    * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d (if not full, function makes it full).
    */
@@ -342,43 +347,43 @@ export class CurveFactory {
     const vector0 = Vector3d.create();
     const vector90 = Vector3d.create();
     const vectorBC = Vector3d.create();
-    const currentCenter = Point3d.create();
+    const sweep = AngleSweep.create360();
     centerline.vectorIndexIndex(0, 1, vectorBC)!;
-    centerline.getPoint3dAtUncheckedPointIndex(0, currentCenter);
     let initialSection: Arc3d;
     if (sectionData instanceof Arc3d) {
-      sectionData.sweep = AngleSweep.create360(); // ensure full ellipse and CCW orientation
       initialSection = sectionData.clone();
-      initialSection.center.setFrom(currentCenter);
       vector0.setFrom(sectionData.vector0);
       vector90.setFrom(sectionData.vector90);
+      sweep.setFrom(sectionData.sweep); // allow e.g., half-pipe
     } else if (typeof sectionData === "number" || Point3d.isXAndY(sectionData)) {
       const length0 = (typeof sectionData === "number") ? sectionData : sectionData.x;
       const length90 = (typeof sectionData === "number") ? sectionData : sectionData.y;
       const baseFrame = Matrix3d.createRigidHeadsUp(vectorBC, AxisOrder.ZXY);
       baseFrame.columnX(vector0).scaleInPlace(length0);
       baseFrame.columnY(vector90).scaleInPlace(length90);
-      initialSection = Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360());
+      initialSection = Arc3d.create(undefined, vector0, vector90, sweep);
     } else {
       return [];
     }
+    centerline.getPoint3dAtUncheckedPointIndex(0, initialSection.centerRef);
     arcs.push(initialSection);
     const vectorAB = Vector3d.create();
     const bisector = Vector3d.create();
+    const center = Point3d.create();
     for (let i = 1; i < centerline.length; i++) {
       vectorAB.setFromVector3d(vectorBC);
-      centerline.getPoint3dAtUncheckedPointIndex(i, currentCenter);
+      centerline.getPoint3dAtUncheckedPointIndex(i, center);
       if (i + 1 < centerline.length)
         centerline.vectorIndexIndex(i, i + 1, vectorBC)!;
       else
         vectorBC.setFromVector3d(vectorAB);
       if (vectorAB.normalizeInPlace() && vectorBC.normalizeInPlace()) {
         vectorAB.interpolate(0.5, vectorBC, bisector);
-        // on the end ellipse for this pipe section. center comes directly from centerline[i].
-        // vector0 and vector90 are obtained by sweeping the corresponding vectors of the start ellipse to the split plane.
+        // At pipe end, the ellipse center comes directly from centerline[i], and vector0/vector90 are
+        // obtained by sweeping the corresponding vectors of the pipe start ellipse to the bisector plane.
         moveVectorToPlane(vector0, vectorAB, bisector, vector0);
         moveVectorToPlane(vector90, vectorAB, bisector, vector90);
-        arcs.push(Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360()));
+        arcs.push(Arc3d.create(center, vector0, vector90, sweep));
       }
     }
     return arcs;
