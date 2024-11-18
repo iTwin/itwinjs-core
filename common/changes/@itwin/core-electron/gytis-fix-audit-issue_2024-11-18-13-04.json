@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/core-electron",
-      "comment": "Bumper `username` to `7.0.0`",
+      "comment": "Bumped `username` to `7.0.0`",
       "type": "none"
     }
   ],
