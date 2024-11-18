@@ -1274,6 +1274,7 @@ export abstract class MeasureElementTool extends PrimitiveTool {
   public override async onCleanup() {
     if (0 !== this._acceptedIds.length)
       this.iModel.hilited.setHilite(this._acceptedIds, false);
+    return super.onCleanup();
   }
 
   /** @internal */
