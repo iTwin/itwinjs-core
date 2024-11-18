@@ -115,7 +115,6 @@ ORDER BY re.[rank] DESC
 # Several window functions (percent, cume_dist, ntile, lag, lead) in combination
 
 - dataset: AllProperties.bim
-- Mode: ConcurrentQuery
 
 ```sql
 SELECT
@@ -123,8 +122,8 @@ SELECT
   percent_rank() OVER (PARTITION BY te.DT) AS [percent],
   cume_dist() OVER (PARTITION BY te.DT) AS [cumeDist],
   ntile(2) OVER (ORDER BY te.i) AS [half],
-  lag(te.ECInstanceId, 1, 0) OVER (ORDER BY te.i) AS [previousId],
-  lead(te.ECInstanceId, 1, 0) OVER (ORDER BY te.i) AS [nextId]
+  lag(te.ECInstanceId, 1, null) OVER (ORDER BY te.i) AS [previousId],
+  lead(te.ECInstanceId, 1, null) OVER (ORDER BY te.i) AS [nextId]
 FROM
   aps.TestElement te
 WHERE
