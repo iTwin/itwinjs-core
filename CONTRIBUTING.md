@@ -37,26 +37,24 @@ Each package has its own **node_modules** directory that contains symbolic links
 3. Build source: `rush build`
 4. Run tests: `rush cover`
 
-The `-v` option for `rush` is short for `--verbose` which results in a more verbose command.
-
 The above commands iterate and perform their action against each package in the monorepo.
 
 ## Source Code Edit Workflow
 Once you've set up the repo, you can move on to making changes to the source code by following the steps below:
-1. At the root of the repo, run `git checkout -b "<your-branch-name>"`
-2. Make source code changes
-3. Rebuild the repo by running `rush build`
-4. Ensure unit tests pass when run locally: `rush cover`
-5. Ensure linting passes when run locally: `rush lint`
-6. Locally commit changes: `git commit` (or use the Visual Studio Code user interface)
-7. Repeat steps 1-4 until ready to push changes
+1. At the root of the repo, run `git checkout -b "<your-branch-name>"`.
+2. Make source code changes.
+3. Rebuild the repo by running `rush build`.
+4. Ensure unit tests pass when run locally: `rush cover`.
+5. Ensure linting passes when run locally: `rush lint`.
+6. Locally commit changes: `git commit` (or use the Visual Studio Code user interface).
+7. Repeat steps 1-4 until ready to push changes.
 8. Check for API signature changes: `rush extract-api`. This will update the signature files, located in `common/api`. **Note:** before doing this, first do the following:
-    - Be sure that your branch is up to date with the target branch (i.e. `git merge origin/master`)
-    - Cleanup your build output: `rush clean`
-    - Rebuild the project: `rush build`
+    - Be sure that your branch is up to date with the target branch (i.e. `git merge origin/master`).
+    - Clean up your build output: `rush clean`.
+    - Rebuild the project: `rush build`.
 9. Review any diffs to the API signature files in the `common/api` directory to ensure they are compatible with the intended release of the package.
     - If any differences are in packages not modified on this branch, revert the changes before committing.
-10. Add changelog entry (which could potentially cover several commits): `rush change`
+10. Add changelog entry (which could potentially cover several commits): `rush change`.
 11. Follow prompts to enter a change description or press ENTER if the change does not warrant a changelog entry. If multiple packages have changed, multiple sets of prompts will be presented. If the changes are only to non-published packages (like **display-test-app**), then `rush change` will indicate that a changelog entry is not needed.
 12. Completing the `rush change` prompts will cause new changelog entry JSON files to be created.
 13. Add and commit the changelog JSON files and any API signature updates.
@@ -64,9 +62,9 @@ Once you've set up the repo, you can move on to making changes to the source cod
 
 > If executing scripts from `package.json` files in any of the subdirectories, we recommend using [`rushx`](https://rushjs.io/pages/commands/rushx/) over `npm`.
 
-If using the command line, steps 8 through 11 above can be completed in one step by running `rushchange.bat` from the imodeljs root directory.
+If using the command line on Windows, steps 8 through 11 above can be completed in one step by running `rushchange.bat` from the imodeljs root directory.
 Only use `rushchange.bat` if none of the changes require a changelog entry.
-> Note: The CI build will break if changes are pushed without running `rush change` and `rush extract-api` (if the API was changed). The fix will be to complete steps 6 through 11.
+> The CI build will break if changes are pushed without running `rush change` and `rush extract-api` (if the API was changed). The fix will be to complete steps 6 through 11.
 
 Here is a sample [changelog](https://github.com/microsoft/rushstack/blob/master/apps/rush/CHANGELOG.md) to demonstrate the level of detail expected.
 
@@ -169,7 +167,7 @@ Thank you for taking the time to contribute to open source and making great proj
 
 If your source code change only impacts the subdirectory you are working on, you can use a package manager to run local commands, without affecting other packages.
 
-Eg. I add a new method within `core/frontend`, also adding a relevant unit test in that folder's `src/test`. I can navigate to the root of that subdirectory, and run `pnpm build`, followed by `pnpm test` or `pnpm cover`.
+Eg. I add a new method within `core/frontend`, also adding a relevant unit test in that folder's `src/test`. I can navigate to the root of that subdirectory, and run `rushx build`, followed by `rushx test` or `rushx cover`.
 
 ### Do I have to rebuild all packages in the repo, even those I didn't work on?
 No. For incremental builds, the `rush build` command can be used to only build packages that have changes versus `rush rebuild` which always rebuilds all packages.
