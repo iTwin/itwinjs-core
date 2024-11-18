@@ -18,9 +18,9 @@ export interface ECDbTestProps {
   rowFormat: ECDbTestRowFormat;
   abbreviateBlobs: boolean;
   convertClassIdsToClassNames: boolean;
+  errorDuringPrepare?: boolean;
 
   // TODO: implement, it's currently being parsed but not used
-  errorDuringPrepare?: string;
   stepStatus?: string;
 
   // Things from code blocks or tables
@@ -120,6 +120,8 @@ export enum ECDbTestRowFormat {
 }
 
 function tableTextToValue(text: string) : any {
+  if(text.startsWith("\"") && text.endsWith("\""))
+    return text.slice(1,text.length-1);
   if(text === "null")
     return null;
   if(text === "undefined")
@@ -128,8 +130,6 @@ function tableTextToValue(text: string) : any {
     return JSON.parse(text);
   if(text === "true" || text === "false")
     return text === "true";
-  if(text.startsWith("\"") && text.endsWith("\""))
-    return text.slice(1,text.length-1);
   if(text.startsWith("0x"))
     return text; // we use this for IDs and they are handled as strings, the parseInt below would attempt to convert them to numbers
   if(/^-?\d+(\.\d+)?$/.test(text)) {
@@ -251,7 +251,7 @@ export class ECDbMarkdownTestParser {
             currentTest.dataset = value;
             continue;
           case "errorduringprepare":
-            currentTest.errorDuringPrepare = value;
+            currentTest.errorDuringPrepare = value.toLowerCase() === "true";
             continue;
           case "stepstatus":
             currentTest.stepStatus = value;

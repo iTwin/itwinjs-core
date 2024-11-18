@@ -69,8 +69,15 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
       // TODO: statement options should be exposed through the markdown
       stmt = imodel.prepareStatement(compiledSql); // TODO: Wire up logic for tests we expect to fail during prepare
     } catch (error: any) {
-      assert.fail(`Error during prepare: ${error.name}`);
+      if(test.errorDuringPrepare)
+        return;
+      else
+        assert.fail(`Error during prepare: ${error.name}`);
     }
+
+    if(test.errorDuringPrepare)
+      assert.fail(`Statement is expected to fail during prepare`);
+
     if(test.binders !== undefined) {
       for (const binder of test.binders) {
         // eslint-disable-next-line radix
@@ -227,8 +234,14 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
     try {
       reader = imodel.createQueryReader(compiledSql, params, queryOptions); // TODO: Wire up logic for tests we expect to fail during prepare
     } catch (error: any) {
-      assert.fail(`Error during prepare: ${error.name}`);
+      if(test.errorDuringPrepare)
+        return;
+      else
+        assert.fail(`Error during prepare: ${error.name}`);
     }
+
+    if(test.errorDuringPrepare)
+      assert.fail(`Statement is expected to fail during prepare`);
 
     let resultCount = 0;
     const rows = await reader.toArray();
