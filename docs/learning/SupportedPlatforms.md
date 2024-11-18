@@ -36,7 +36,7 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 
 ## Supported Browsers
 
-iTwin.js strives to support as many modern browsers as possible, though it requires complete JavaScript ES6 support. The quality of the web browser's WebGL implementation has a substantial impact on display performance.
+iTwin.js strives to support as many modern browsers as possible, though it requires JavaScript ES2023 support. The quality of the web browser's WebGL implementation has a substantial impact on display performance.
 
 - Chrome (recommended for development)
 - Firefox
