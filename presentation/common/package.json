@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-common",
-  "version": "5.0.0-dev.7",
+  "version": "5.0.0-dev.8",
   "description": "Common pieces for iModel.js presentation packages",
   "license": "MIT",
   "repository": {
@@ -47,10 +47,10 @@
     "prettier:fix": "prettier --write ."
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^5.0.0-dev.7",
-    "@itwin/core-common": "workspace:^5.0.0-dev.7",
-    "@itwin/core-quantity": "workspace:^5.0.0-dev.7",
-    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.7"
+    "@itwin/core-bentley": "workspace:^5.0.0-dev.8",
+    "@itwin/core-common": "workspace:^5.0.0-dev.8",
+    "@itwin/core-quantity": "workspace:^5.0.0-dev.8",
+    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.8"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -74,7 +74,7 @@
     "chai-jest-snapshot": "^2.0.0",
     "chai-subset": "1.6.0",
     "cpx2": "^3.0.0",
-    "cross-env": "^5.1.4",
+    "cross-env": "^7.0.3",
     "deep-equal": "^1",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
