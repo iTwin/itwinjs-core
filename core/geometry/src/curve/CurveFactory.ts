@@ -336,7 +336,7 @@ export class CurveFactory {
    *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
    * start tangent.
    *    * For Arc3d input, the center is translated to the centerline start point, but otherwise the arc is used as-is
-   * for the first section.
+   * for the first section. For best results, the arc should be perpendicular to the centerline start tangent.
    * @param centerline centerline of pipe.
    * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d (if not full, function makes it full).
    */
