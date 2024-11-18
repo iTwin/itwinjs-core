@@ -2006,26 +2006,25 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     centerline: IndexedXYZCollection,
     sectionData: number | XAndY | Arc3d,
     numFacetAround: number = 12,
-    addCap: boolean = false,
+    capped: boolean = false,
   ): void {
     const sections = CurveFactory.createMiteredPipeSections(centerline, sectionData);
     const pointA0 = Point3d.create();
     const pointA1 = Point3d.create();
     const pointB0 = Point3d.create();
     const pointB1 = Point3d.create();
+    const wantCaps = capped && (!(sectionData instanceof Arc3d) || sectionData.sweep.isFullCircle);
     if (numFacetAround < 3)
       numFacetAround = 3;
     const df = 1.0 / numFacetAround;
-    // generate start cap
-    if (addCap) {
+    if (wantCaps) { // start cap facets
       const startLineString = LineString3d.create();
       for (let i = 0; i < numFacetAround; i++)
         startLineString.addPoint(sections[0].fractionToPoint(i * df));
       this.addTrianglesInUncheckedConvexPolygon(startLineString, true);
       this.endFace();
     }
-    // generate side facets
-    for (let i = 1; i < sections.length; i++) {
+    for (let i = 1; i < sections.length; i++) { // side facets
       const arcA = sections[i - 1];
       const arcB = sections[i];
       arcA.fractionToPoint(0.0, pointA0);
@@ -2034,11 +2033,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
         const f = k * df;
         arcA.fractionToPoint(f, pointA1);
         arcB.fractionToPoint(f, pointB1);
-        this.addQuadFacet([pointA1, pointB1, pointB0, pointA0]); // this order ensures outward normals
+        this.addQuadFacet([pointA0, pointA1, pointB1, pointB0]); // ASSUME: CCW section traversal wrt rail tangent
       }
     }
-    // generate end cap
-    if (addCap) {
+    if (wantCaps) { // end cap facets
       const endLineString = LineString3d.create();
       for (let i = 0; i < numFacetAround; i++)
         endLineString.addPoint(sections[sections.length - 1].fractionToPoint(i * df));
@@ -2048,31 +2046,35 @@ export class PolyfaceBuilder extends NullGeometryHandler {
   }
   /**
    * Add quad facets along a mitered pipe that follows a centerline curve.
+   * * At the end of each pipe segment, the pipe is mitered by the plane that bisects the angle between successive
+   * centerline segments.
    * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis
-   * lengths, or a full Arc3d:
-   *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
-   *    * For Arc3d input, the center is translated to the centerline start point to act as initial cross section.
+   * lengths, or an Arc3d:
+   *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
+   * start tangent.
+   *    * For Arc3d input, the center is translated to the centerline start point, but otherwise the arc is used as-is
+   * for the first section.
    * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions.
-   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d (if not full, function makes it full).
+   * @param sectionData circle radius, ellipse semi-axis lengths, or Arc3d.
    * @param numFacetAround how many equal parameter-space chords around each section.
-   * @param addCap if `true`, add a cap at each end of the pipe; defaults to `false`.
+   * @param capped if `true`, add a cap at each end of the pipe; defaults to `false`.
    */
   public addMiteredPipes(
     centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive,
     sectionData: number | XAndY | Arc3d,
     numFacetAround: number = 12,
-    addCap: boolean = false,
+    capped: boolean = false,
   ): void {
     if (Array.isArray(centerline)) {
-      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), sectionData, numFacetAround, addCap);
+      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), sectionData, numFacetAround, capped);
     } else if (centerline instanceof GrowableXYZArray || centerline instanceof IndexedXYZCollection) {
-      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround, addCap);
+      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround, capped);
     } else if (centerline instanceof LineString3d) {
-      this.addMiteredPipesFromPoints(centerline.packedPoints, sectionData, numFacetAround, addCap);
+      this.addMiteredPipesFromPoints(centerline.packedPoints, sectionData, numFacetAround, capped);
     } else if (centerline instanceof GeometryQuery) {
       const linestring = LineString3d.create();
       centerline.emitStrokes(linestring, this._options);
-      this.addMiteredPipesFromPoints(linestring.packedPoints, sectionData, numFacetAround, addCap);
+      this.addMiteredPipesFromPoints(linestring.packedPoints, sectionData, numFacetAround, capped);
     }
   }
   /** Return the polyface index array indices corresponding to the given edge, or `undefined` if error. */
