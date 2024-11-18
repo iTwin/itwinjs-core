@@ -172,7 +172,7 @@ Eg. I add a new method within `core/frontend`, also adding a relevant unit test 
 ### Do I have to rebuild all packages in the repo, even those I didn't work on?
 No. For incremental builds, the `rush build` command can be used to only build packages that have changes versus `rush rebuild` which always rebuilds all packages.
 
-> Note: It is a good idea to `rush install` after each `git pull` as dependencies may have changed.
+> It is a good idea to `rush install` after each `git pull` as dependencies may have changed.
 >
 ### A subdirectory can not find a node_modules file or directory
 If you get an error similar to the following:
