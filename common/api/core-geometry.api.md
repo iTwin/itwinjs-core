@@ -230,6 +230,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     areaToChordXY(fraction0: number, fraction1: number): number;
     get center(): Point3d;
+    set center(center: XYAndZ);
+    get centerRef(): Point3d;
     circularRadius(): number | undefined;
     circularRadiusXY(): number | undefined;
     clone(): Arc3d;
@@ -4486,7 +4488,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     addIndexedPolyface(source: IndexedPolyface, reversed?: boolean, transform?: Transform): void;
     addLinearSweep(surface: LinearSweep): void;
     addLinearSweepLineStringsXYZOnly(contour: AnyCurve, vector: Vector3d): void;
-    addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d, numFacetAround?: number, addCap?: boolean): void;
+    addMiteredPipes(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d, numFacetAround?: number, capped?: boolean): void;
     addParamInGrowableXYArray(data: GrowableXYArray, index: number): number | undefined;
     addParamXY(x: number, y: number): number;
     addPoint(xyz: Point3d): number;

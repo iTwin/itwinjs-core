@@ -34,7 +34,7 @@ import { Angle } from "../geometry3d/Angle";
 export class StrokeOptions {
   /** Distance from stroke to actual geometry */
   public chordTol?: number;
-  /** Turning angle between strokes. Larger tol leads to fewer strokes. */
+  /** Turning angle between strokes. Larger value leads to fewer strokes. */
   public angleTol?: Angle;
   /** Maximum length of a single stroke. */
   public maxEdgeLength?: number;
