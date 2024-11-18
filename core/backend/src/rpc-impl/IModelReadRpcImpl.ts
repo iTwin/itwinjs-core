@@ -119,6 +119,17 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return viewHydrater.getHydrateResponseProps(options);
   }
 
+  public async hydrateDefaultViewState(tokenProps: IModelRpcProps): Promise<HydrateViewStateResponseProps> {
+    const iModelDb = await getIModelForRpc(tokenProps);
+    const modelIds = await iModelDb.queryAllSpatial3dModelIds();
+    const options: HydrateViewStateRequestProps = {
+      notLoadedModelSelectorStateModels: CompressedId64Set.compressArray(modelIds)
+    }
+
+    const viewHydrator = new ViewStateHydrator(iModelDb);
+    return viewHydrator.getHydrateResponseProps(options);
+  }
+
   public async queryAllUsedSpatialSubCategories(tokenProps: IModelRpcProps): Promise<SubCategoryResultRow[]> {
     const iModelDb = await getIModelForRpc(tokenProps);
     return iModelDb.queryAllUsedSpatialSubCategories();

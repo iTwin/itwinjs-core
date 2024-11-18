@@ -5100,6 +5100,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     // @deprecated (undocumented)
     getViewThumbnail(_iModelToken: IModelRpcProps, _viewId: string): Promise<Uint8Array>;
     // (undocumented)
+    hydrateDefaultViewState(_iModelToken: IModelRpcProps): Promise<HydrateViewStateResponseProps>;
+    // (undocumented)
     hydrateViewState(_iModelToken: IModelRpcProps, _options: HydrateViewStateRequestProps): Promise<HydrateViewStateResponseProps>;
     static readonly interfaceName = "IModelReadRpcInterface";
     static interfaceVersion: string;

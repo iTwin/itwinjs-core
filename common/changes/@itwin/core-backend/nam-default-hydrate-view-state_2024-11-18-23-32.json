@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "add method to get all spatially located models of an iModel",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

@@ -643,6 +643,36 @@ export abstract class IModelDb extends IModel {
     return result;
   }
 
+  /** Get the Ids of all spatially-located, non-template 3d models in the iModel.
+   * @returns an array of Id64 strings
+   * @internal
+   */
+  public async queryAllSpatial3dModelIds(): Promise<Id64Array> {
+    let models = [];
+    Logger.logInfo(loggerCategory, "Starting queryAllSpatial3dModelIds query.");
+
+    // IsNotSpatiallyLocated was introduced in a later version of the BisCore ECSchema.
+    // If the iModel has an earlier version, the statement will throw because the property does not exist.
+    // If the iModel was created from an earlier version and later upgraded to a newer version, the property may be NULL for models created prior to the upgrade.
+    const select = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
+    const spatialCriterion = "AND (IsNotSpatiallyLocated IS NULL OR IsNotSpatiallyLocated = false)";
+    try {
+      const query = `${select} ${spatialCriterion}`;
+      const rows = [];
+      for await (const row of this.createQueryReader(query))
+        rows.push(row.id);
+      models = rows;
+    } catch {
+      const query = select;
+      const rows = [];
+      for await (const row of this.createQueryReader(query))
+        rows.push(row.id);
+      models = rows;
+    }
+
+    Logger.logInfo(loggerCategory, "Finished queryAllSpatial3dModelIds query.");
+    return models;
+  }
   /**
    * queries the BisCore.SubCategory table for the entries that are children of the passed categoryIds.
    * @param categoryIds categoryIds to query
