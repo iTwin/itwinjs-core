@@ -1927,7 +1927,7 @@ importers:
       chai-jest-snapshot: ^2.0.0
       chai-subset: 1.6.0
       cpx2: ^3.0.0
-      cross-env: ^5.1.4
+      cross-env: ^7.0.3
       deep-equal: ^1
       dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
@@ -1994,7 +1994,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       cache-require-paths: 0.3.0
-      cross-env: 5.1.4
+      cross-env: 7.0.3
       dotenv: 16.4.5
       dotenv-expand: 5.1.0
       eslint: 9.13.0
@@ -2205,7 +2205,7 @@ importers:
       chai-jest-snapshot: ^2.0.0
       chai-subset: 1.6.0
       cpx2: ^3.0.0
-      cross-env: ^5.1.4
+      cross-env: ^7.0.3
       deep-equal: ^1
       eslint: ^9.13.0
       eslint-config-prettier: ^9.1.0
@@ -2257,7 +2257,7 @@ importers:
       chai-jest-snapshot: 2.0.0_chai@4.3.10
       chai-subset: 1.6.0
       cpx2: 3.0.0
-      cross-env: 5.1.4
+      cross-env: 7.0.3
       deep-equal: 1.0.0
       eslint: 9.13.0
       eslint-config-prettier: 9.1.0_eslint@9.13.0
@@ -2295,7 +2295,7 @@ importers:
       chai-jest-snapshot: ^2.0.0
       chai-subset: 1.6.0
       cpx2: ^3.0.0
-      cross-env: ^5.1.4
+      cross-env: ^7.0.3
       deep-equal: ^1
       eslint: ^9.13.0
       eslint-config-prettier: ^9.1.0
@@ -2334,7 +2334,7 @@ importers:
       chai-jest-snapshot: 2.0.0_chai@4.3.10
       chai-subset: 1.6.0
       cpx2: 3.0.0
-      cross-env: 5.1.4
+      cross-env: 7.0.3
       deep-equal: 1.0.0
       eslint: 9.13.0
       eslint-config-prettier: 9.1.0_eslint@9.13.0
@@ -2376,7 +2376,7 @@ importers:
       chai-as-promised: ^7.1.1
       chai-jest-snapshot: ^2.0.0
       cpx2: ^3.0.0
-      cross-env: ^5.1.4
+      cross-env: ^7.0.3
       deep-equal: ^1
       eslint: ^9.13.0
       eslint-config-prettier: ^9.1.0
@@ -2420,7 +2420,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.10
       chai-jest-snapshot: 2.0.0_chai@4.3.10
       cpx2: 3.0.0
-      cross-env: 5.1.4
+      cross-env: 7.0.3
       deep-equal: 1.0.0
       eslint: 9.13.0
       eslint-config-prettier: 9.1.0_eslint@9.13.0
@@ -2470,7 +2470,7 @@ importers:
       child_process: ^1.0.2
       chrome-launcher: ^0.15.2
       cpx2: ^3.0.0
-      cross-env: ^5.1.4
+      cross-env: ^7.0.3
       dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       electron: ^33.0.0
@@ -2524,7 +2524,7 @@ importers:
       child_process: 1.0.2
       chrome-launcher: 0.15.2
       cpx2: 3.0.0
-      cross-env: 5.1.4
+      cross-env: 7.0.3
       dotenv: 16.4.5
       dotenv-expand: 5.1.0
       electron: 33.0.0
@@ -2590,7 +2590,7 @@ importers:
       browserslist-to-esbuild: ^1.2.0
       child_process: ^1.0.2
       cpx2: ^3.0.0
-      cross-env: ^5.1.4
+      cross-env: ^7.0.3
       dotenv: ^16.4.5
       dotenv-expand: ^5.1.0
       electron: ^33.0.0
@@ -2660,7 +2660,7 @@ importers:
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
       cpx2: 3.0.0
-      cross-env: 5.1.4
+      cross-env: 7.0.3
       dotenv: 16.4.5
       dotenv-expand: 5.1.0
       electron: 33.0.0
@@ -5155,7 +5155,7 @@ packages:
   /@types/cpx/1.5.2:
     resolution: {integrity: sha512-CL9DbTAdf5NYcbYpBTli6JxVIpCAhJp1FeQiXd9SNjbC4o9k6McnHkU0FHgj9UYoN7TVX3poaaBrwFabTY7Skw==}
     dependencies:
-      '@types/node': 18.16.20
+      '@types/node': 20.9.5
     dev: false
 
   /@types/debug/4.1.12:
@@ -5355,10 +5355,6 @@ packages:
   /@types/node/16.18.119:
     resolution: {integrity: sha512-ia7V9a2FnhUFfetng4/sRPBMTwHZUkPFY736rb1cg9AgG7MZdR97q7/nLR9om+sq5f1la9C857E0l/nrI0RiFQ==}
     dev: true
-
-  /@types/node/18.16.20:
-    resolution: {integrity: sha512-nL54VfDjThdP2UXJXZao5wp76CDiDw4zSRO8d4Tk7UgDqNKGKVEQB0/t3ti63NS+YNNkIQDvwEAF04BO+WYu7Q==}
-    dev: false
 
   /@types/node/20.9.5:
     resolution: {integrity: sha512-Uq2xbNq0chGg+/WQEU0LJTSs/1nKxz6u1iemLcGomkSnKokbW1fbLqc3HOqCf2JP7KjlL4QkS7oZZTrOQHQYgQ==}
@@ -7291,13 +7287,12 @@ packages:
     resolution: {integrity: sha512-dcKFX3jn0MpIaXjisoRvexIJVEKzaq7z2rZKxf+MSr9TkdmHmsU4m2lcLojrj/FHl8mk5VxMmYA+ftRkP/3oKQ==}
     dev: true
 
-  /cross-env/5.1.4:
-    resolution: {integrity: sha512-Mx8mw6JWhfpYoEk7PGvHxJMLQwQHORAs8+2bX+C1lGQ4h3GkDb1zbzC2Nw85YH9ZQMlO0BHZxMacgrfPmMFxbg==}
-    engines: {node: '>=4.0'}
+  /cross-env/7.0.3:
+    resolution: {integrity: sha512-+/HKd6EgcQCJGh2PSjZuUitQBQynKor4wrFbRg4DtAgS1aWO+gU52xpH7M9ScGgXSYmAVS9bIJ8EzuaGw0oNAw==}
+    engines: {node: '>=10.14', npm: '>=6', yarn: '>=1'}
     hasBin: true
     dependencies:
-      cross-spawn: 5.1.0
-      is-windows: 1.0.2
+      cross-spawn: 7.0.5
     dev: true
 
   /cross-fetch/3.1.5:
@@ -7306,14 +7301,6 @@ packages:
       node-fetch: 2.6.7
     transitivePeerDependencies:
       - encoding
-
-  /cross-spawn/5.1.0:
-    resolution: {integrity: sha512-pTgQJ5KC0d2hcY8eyL1IzlBPYjTkyH72XRZPnLyKus2mBfNjQs3klqbJU2VILqZryAZUt9JOb3h/mWMy23/f5A==}
-    dependencies:
-      lru-cache: 4.1.5
-      shebang-command: 1.2.0
-      which: 1.3.1
-    dev: true
 
   /cross-spawn/6.0.5:
     resolution: {integrity: sha512-eTVLrBSt7fjbDygz805pMnstIs2VTBNkRm0qxZd+M7A5XDdxVRWO5MxGBXZhjY4cqLYLdtrGqRf8mBPmzwSpWQ==}
@@ -7332,6 +7319,7 @@ packages:
       path-key: 3.1.1
       shebang-command: 2.0.0
       which: 2.0.2
+    dev: false
 
   /cross-spawn/7.0.5:
     resolution: {integrity: sha512-ZVJrKKYunU38/76t0RMOulHOnUcbU9GbpWKAOZ0mhjr7CX6FVrH+4FrAapSOekrgFQ3f/8gwMEuIft0aKq6Hug==}
@@ -8775,14 +8763,14 @@ packages:
     resolution: {integrity: sha512-dCIq9FpEcyQyXKCkyzmlPTFNgrCzPudOe+mhvJU5zAtlBnGVy2yKxtfsxK2tQBThwq225jcvBjpw1Gr40uzZCA==}
     engines: {node: '>=8.0.0'}
     dependencies:
-      cross-spawn: 7.0.1
+      cross-spawn: 7.0.5
       signal-exit: 3.0.7
 
   /foreground-child/3.3.0:
     resolution: {integrity: sha512-Ld2g8rrAyMYFXBhEqMz8ZAHBi4J4uS1i/CxGMDnjyFWddMXLVcDp051DZfu+t7+ab7Wv6SMqpWmyFIj5UbfFvg==}
     engines: {node: '>=14'}
     dependencies:
-      cross-spawn: 7.0.1
+      cross-spawn: 7.0.5
       signal-exit: 4.1.0
 
   /form-data-encoder/2.1.4:
@@ -10474,13 +10462,6 @@ packages:
   /lru-cache/10.4.3:
     resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
 
-  /lru-cache/4.1.5:
-    resolution: {integrity: sha512-sWZlbEP2OsHNkXrMl5GYk/jKk70MBng6UU4YI/qGDYbgf6YbP4EvmqISbXCoJiRKs+1bSpFHVgQxvJ17F2li5g==}
-    dependencies:
-      pseudomap: 1.0.2
-      yallist: 2.1.2
-    dev: true
-
   /lru-cache/5.1.1:
     resolution: {integrity: sha512-KpNARQA3Iwv+jTA0utUVVbrh+Jlrr1Fv0e56GGzAFOXN7dk/FviaDW8LHmK52DlcH4WP2n6gI8vN1aesBFgo9w==}
     dependencies:
@@ -11779,10 +11760,6 @@ packages:
 
   /proxy-from-env/1.1.0:
     resolution: {integrity: sha512-D+zkORCbA9f1tdWRK0RaCR3GPv50cMxcrz4X8k5LTSUD1Dkw47mKJEZQNunItRTkWwgtaUSo1RVFRIG9ZXiFYg==}
-
-  /pseudomap/1.0.2:
-    resolution: {integrity: sha512-b/YwNhb8lk1Zz2+bXXpS/LK9OisiZZ1SNsSLxN1x2OXVEhW2Ckr/7mWE5vrC1ZTiJlD9g19jWszTmJsB+oEpFQ==}
-    dev: true
 
   /psl/1.10.0:
     resolution: {integrity: sha512-KSKHEbjAnpUuAUserOq0FxGXCUrzC3WniuSJhvdbs102rL55266ZcHBqLWOsG30spQMlPdpy7icATiAQehg/iA==}
@@ -14462,10 +14439,6 @@ packages:
   /y18n/5.0.8:
     resolution: {integrity: sha512-0pfFzegeDWJHJIAmTLRP2DwHjdF5s7jo9tuztdQxAhINCdvS+3nGINqPd00AphqJR/0LhANUS6/+7SCb98YOfA==}
     engines: {node: '>=10'}
-
-  /yallist/2.1.2:
-    resolution: {integrity: sha512-ncTzHV7NvsQZkYe1DW7cbDLm0YpzHmZF5r/iyP3ZnQtMiJ+pjzisCiMNI+Sj+xQF5pXhSHxSB3uDbsBTzY/c2A==}
-    dev: true
 
   /yallist/3.1.1:
     resolution: {integrity: sha512-a4UGQaWPH59mOXUYnAG2ewncQS4i4F43Tv3JoAM+s2VDAmS9NsK8GpDMLrCHPksFT7h3K6TOoUNn2pb7RoXx4g==}
