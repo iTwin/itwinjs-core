@@ -100,11 +100,11 @@ FROM RankedElements re
 ORDER BY re.[rank] DESC
 ```
 
-| className | accessString | generated | index | jsonName   | name       | extendedType | typeName | type  |
-| --------- | ------------ | --------- | ----- | ---------- | ---------- | ------------ | -------- | ----- |
-|           | i            | true      | 0     | i          | i          |              | int      | Int   |
-|           | rank         | true      | 1     | rank       | rank       |              | long     | Int64 |
-|           | copyOfRank   | true      | 2     | copyOfRank | copyOfRank |              | long     | Int64 |
+| className | accessString | generated | index | jsonName   | name       | extendedType | typeName | type  | originPropertyName |
+| --------- | ------------ | --------- | ----- | ---------- | ---------- | ------------ | -------- | ----- | ------------------ |
+|           | i            | true      | 0     | i          | i          |              | int      | Int   | undefined          |
+|           | rank         | true      | 1     | rank       | rank       |              | long     | Int64 | undefined          |
+|           | copyOfRank   | true      | 2     | copyOfRank | copyOfRank |              | long     | Int64 | undefined          |
 
 | i   | rank | copyOfRank |
 | --- | ---- | ---------- |
