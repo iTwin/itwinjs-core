@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/presentation-common",
-      "comment": "Bumped `cross-env` to `7.0.3`",
+      "comment": "",
       "type": "none"
     }
   ],
