@@ -437,12 +437,15 @@ export class SchemaDiagnosticVisitor {
     }
 
     if (Property.isProperty(ecType)) {
+      const propertyKey = new PropertyKey(ecType.name, ecType.class.key);
+      const lookupName = this._nameMappings.resolvePropertyKey(propertyKey).propertyName;
+
       return this.customAttributeDifferences.push({
         changeType: "add",
         schemaType: SchemaOtherTypes.CustomAttributeInstance,
         appliedTo: "Property",
         itemName: ecType.class.name,
-        path: ecType.name,
+        path: lookupName,
         difference: customAttribute,
       });
     }

@@ -15,7 +15,7 @@ import {
   AnyEnumerator, AnyProperty, AnyPropertyProps, ConstantProps, CustomAttribute,
   CustomAttributeClassProps, ECClass, EntityClassProps, EnumerationProps, InvertedUnitProps, KindOfQuantityProps,
   MixinProps, PhenomenonProps, PropertyCategoryProps, RelationshipClassProps, RelationshipConstraintProps,
-  type Schema, SchemaItem, SchemaItemFormatProps, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
+  type Schema, SchemaItem, SchemaItemFormatProps, SchemaItemKey, SchemaItemProps, SchemaItemType, SchemaItemUnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
 } from "@itwin/ecschema-metadata";
 import { validateDifferences } from "./SchemaDifferenceValidator";
 import { AnyDiagnostic } from "../Validation/Diagnostic";
@@ -483,5 +483,14 @@ class DifferenceSchemaComparer extends SchemaComparer {
   public override async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {
     const propertyKey = this.nameMappings.resolvePropertyKey(new PropertyKey(propertyA.name, ecClass.key));
     return ecClass.getProperty(propertyKey.propertyName) as Promise<AnyProperty | undefined>;
+  }
+
+  public override areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean {
+    if (itemKeyA) {
+      if (SchemaItem.isSchemaItem(itemKeyA))
+        itemKeyA = itemKeyA.key;
+      itemKeyA = this.nameMappings.resolveItemKey(itemKeyA);
+    }
+    return super.areEqualByName(itemKeyA, itemKeyB);
   }
 }

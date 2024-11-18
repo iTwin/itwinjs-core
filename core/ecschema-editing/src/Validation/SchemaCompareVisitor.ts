@@ -140,8 +140,6 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
    * @param customAttributeContainer a [[CustomAttributeContainerProps]] object.
    */
   public async visitCustomAttributeContainer(containerA: CustomAttributeContainerProps): Promise<void> {
-    const nameParts = containerA.fullName.split(".");
-    const shortName = nameParts.length === 1 ? nameParts[0] : nameParts[1];
     let containerB: CustomAttributeContainerProps | undefined;
 
     if (Schema.isSchema(containerA)) {
@@ -151,7 +149,7 @@ export class SchemaCompareVisitor implements ISchemaPartVisitor {
       containerB = parent && parent.schemaItemType === containerA.schemaItemType ? parent : undefined;
     } else if (Property.isProperty(containerA)) {
       const parent = await this._schemaComparer.resolveItem<ECClass>(containerA.class, this._schemaB);
-      containerB = parent && parent.schemaItemType === containerA.class.schemaItemType ? await parent.getProperty(shortName) : undefined;
+      containerB = parent && parent.schemaItemType === containerA.class.schemaItemType ? await this._schemaComparer.resolveProperty(containerA, parent) : undefined;
     } else if (RelationshipConstraint.isRelationshipConstraint(containerA)) {
       const parent = await this._schemaComparer.resolveItem<RelationshipClass>(containerA.relationshipClass, this._schemaB);
       containerB = parent ? containerA.isSource ? parent.source : parent.target : undefined;
