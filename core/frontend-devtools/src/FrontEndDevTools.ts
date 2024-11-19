@@ -53,7 +53,7 @@ import { ChangePlanProjectionSettingsTool, DumpPlanProjectionSettingsTool, Overr
 import { ToggleProjectExtentsTool } from "./tools/ProjectExtents";
 import {
   AttachCesiumAssetTool, AttachRealityModelTool, ClearRealityModelAppearanceOverrides, DetachRealityModelTool, SaveRealityModelTool,
-  SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool, ToggleOSMBuildingDisplay,
+  SetRealityModelBackgroundDrapeTool, SetRealityModelColorTool, SetRealityModelEmphasizedTool, SetRealityModelLocateTool, SetRealityModelTransparencyTool, ToggleOSMBuildingDisplay,
 } from "./tools/RealityModelTools";
 import { RealityTransitionTool } from "./tools/RealityTransitionTool";
 import { CompileShadersTool, LoseWebGLContextTool, ToggleDPIForLODTool } from "./tools/RenderSystemTools";
@@ -217,6 +217,8 @@ export class FrontendDevTools {
       SetRealityModelLocateTool,
       SetRealityModelEmphasizedTool,
       SetRealityModelTransparencyTool,
+      SetRealityModelTransparencyTool,
+      SetRealityModelBackgroundDrapeTool,
       SetRealityModelColorTool,
       SetModelLocateTool,
       SetModelEmphasizedTool,

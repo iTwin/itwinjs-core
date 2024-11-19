@@ -5,7 +5,7 @@
 
 import { describe, expect, it } from "vitest";
 import {
-  PointCloudDisplayProps, PointCloudDisplaySettings, RealityModelDisplayProps, RealityModelDisplaySettings,
+  PointCloudDisplayProps, PointCloudDisplaySettings, RealityMeshDisplayProps, RealityMeshDisplaySettings, RealityModelDisplayProps, RealityModelDisplaySettings,
 } from "../RealityModelDisplaySettings";
 
 describe("PointCloudDisplaySettings", () => {
@@ -60,6 +60,46 @@ describe("PointCloudDisplaySettings", () => {
   });
 });
 
+describe("RealityMeshDisplaySettings", () => {
+  it("round-trips through JSON", () => {
+    const roundTrip = (props: RealityMeshDisplayProps | undefined, expected: RealityMeshDisplayProps | undefined | "input") => {
+      if ("input" === expected)
+        expected = props;
+
+      const settings = RealityMeshDisplaySettings.fromJSON(props);
+      const actual = settings.toJSON();
+      expect(actual).to.deep.equal(expected);
+
+      const actualSettings = RealityMeshDisplaySettings.fromJSON(actual);
+      expect(actualSettings.equals(settings)).to.be.true;
+      expect(actualSettings === RealityMeshDisplaySettings.defaults).to.equal(settings.equals(RealityMeshDisplaySettings.defaults));
+      expect(actualSettings === RealityMeshDisplaySettings.defaults).to.equal(undefined === actual);
+    };
+
+    roundTrip(undefined, undefined);
+    roundTrip({ bgMapDrape: false }, undefined);
+    roundTrip({ bgMapDrape: true }, "input");
+    roundTrip({ bgMapDrape: true }, { bgMapDrape: true });
+  });
+
+  it("clones", () => {
+    const test = (baseProps: RealityMeshDisplayProps | undefined, changedProps: RealityMeshDisplayProps, expected: RealityMeshDisplayProps | undefined | "input") => {
+      if (expected === "input")
+        expected = baseProps;
+
+      const baseSettings = RealityMeshDisplaySettings.fromJSON(baseProps);
+      const clone = baseSettings.clone(changedProps);
+      const actual = clone.toJSON();
+      expect(actual).to.deep.equal(expected);
+    };
+
+    test(undefined, { bgMapDrape: false }, "input");
+    test({ bgMapDrape: false }, { bgMapDrape: true }, { bgMapDrape: true });
+    test({ bgMapDrape: true }, { bgMapDrape: false }, undefined);
+    test({ bgMapDrape: true }, { bgMapDrape: undefined }, undefined );
+  });
+});
+
 describe("RealityModelDisplaySettings", () => {
   it("round-trips through JSON", () => {
     const roundTrip = (props: RealityModelDisplayProps | undefined, expected: RealityModelDisplayProps | undefined | "input") => {
@@ -79,7 +119,10 @@ describe("RealityModelDisplaySettings", () => {
     roundTrip(undefined, undefined);
     roundTrip({ overrideColorRatio: 0.5 }, undefined);
     roundTrip({ overrideColorRatio: 0.5, pointCloud: undefined }, undefined);
+    roundTrip({ overrideColorRatio: 0.5, pointCloud: undefined, mesh: undefined }, undefined);
     roundTrip({ overrideColorRatio: 0.5, pointCloud: { sizeMode: "voxel", voxelScale: 1, minPixelsPerVoxel: 2, maxPixelsPerVoxel: 20, pixelSize: 1, shape: "round" } }, undefined);
+    roundTrip({ overrideColorRatio: 0.5, pointCloud: undefined, mesh: { bgMapDrape: false } }, undefined);
+    roundTrip({ overrideColorRatio: 0.5, pointCloud: { sizeMode: "voxel", voxelScale: 1, minPixelsPerVoxel: 2, maxPixelsPerVoxel: 20, pixelSize: 1, shape: "round" }, mesh: { bgMapDrape: false } }, undefined);
 
     roundTrip({ overrideColorRatio: 0.1 }, "input");
     roundTrip({ overrideColorRatio: 0 }, "input");
@@ -87,7 +130,8 @@ describe("RealityModelDisplaySettings", () => {
     roundTrip({ overrideColorRatio: -12.5 }, "input");
 
     roundTrip({ pointCloud: { sizeMode: "pixel", pixelSize: 1, shape: "square" } }, { pointCloud: { sizeMode: "pixel", shape: "square" } });
-    roundTrip({ overrideColorRatio: 12.5, pointCloud: { voxelScale: 2 } }, "input");
+    roundTrip({ mesh: { bgMapDrape: true } }, { mesh: { bgMapDrape: true } });
+    roundTrip({ overrideColorRatio: 12.5, pointCloud: { voxelScale: 2 }, mesh: { bgMapDrape: true } }, "input");
   });
 
   it("clones", () => {
@@ -108,5 +152,11 @@ describe("RealityModelDisplaySettings", () => {
     test({ pointCloud: { sizeMode: "pixel" } }, { pointCloud: { pixelSize: 2 } }, { pointCloud: { sizeMode: "pixel", pixelSize: 2 } });
     test({ pointCloud: { sizeMode: "pixel" }, overrideColorRatio: 2 }, { pointCloud: { sizeMode: undefined} }, { overrideColorRatio: 2 });
     test({ pointCloud: { sizeMode: "pixel" }, overrideColorRatio: 2 }, { pointCloud: { } }, { overrideColorRatio: 2, pointCloud: { sizeMode: "pixel" } });
+    test({ mesh: { bgMapDrape: true } }, { mesh: { bgMapDrape: false } }, undefined);
+    test({ mesh: { bgMapDrape: false } }, { mesh: { bgMapDrape: true } }, { mesh: { bgMapDrape: true } });
+    test({ mesh: { bgMapDrape: true } }, { mesh: { } }, "input");
+    test({ overrideColorRatio: 2 }, { mesh: { bgMapDrape: true } }, { overrideColorRatio: 2, mesh: { bgMapDrape: true } });
+    test({ overrideColorRatio: 2, pointCloud: { sizeMode: "pixel" }, mesh: { bgMapDrape: true } }, { overrideColorRatio: 0.5, pointCloud: { sizeMode: "voxel" }, mesh: { bgMapDrape: false } }, undefined);
+    test({ overrideColorRatio: 2, pointCloud: { sizeMode: "pixel" }, mesh: { bgMapDrape: false } }, { overrideColorRatio: 1, pointCloud: { sizeMode: "voxel" } }, { overrideColorRatio: 1 });
   });
 });

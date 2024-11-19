@@ -7,8 +7,8 @@
  * @module Tools
  */
 
-import { FeatureAppearance, FeatureAppearanceProps, RgbColorProps } from "@itwin/core-common";
-import { getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@itwin/core-frontend";
+import { FeatureAppearance, FeatureAppearanceProps, RealityModelDisplaySettings, RgbColorProps } from "@itwin/core-common";
+import { getCesiumAssetUrl, IModelApp, NotifyMessageDetails, OutputMessagePriority, RealityTreeReference, Tool, Viewport } from "@itwin/core-frontend";
 import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
@@ -211,6 +211,58 @@ export class DetachRealityModelTool extends Tool {
   }
 }
 
+/** Set reality model background drape flag.
+ * @beta
+ */
+export class SetRealityModelBackgroundDrapeTool extends Tool {
+  public static override toolId = "SetRealityModelBackgroundDrapeTool";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
+
+  public override async run(bgDrape: boolean, index: number): Promise<boolean> {
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp === undefined)
+      return false;
+
+    if (vp.displayStyle.settings.contextRealityModels.models.length > 0) {
+      if (index < 0) {
+        vp.displayStyle.settings.contextRealityModels.models.forEach((model) => {
+          model.displaySettings = model.displaySettings.clone({ mesh: {bgMapDrape: bgDrape} });
+        });
+      } else {
+        const model = vp.displayStyle.settings.contextRealityModels.models[index];
+        if (!model)
+          return false;
+        model.displaySettings = model.displaySettings.clone({ mesh: {bgMapDrape: bgDrape} });
+      }
+    } else {
+      let count = 0;
+      vp.forEachTileTreeRef((tree) => {
+        if (tree instanceof RealityTreeReference) {
+          if (index < 0 || index >= 0 && index === count) {
+            const ds = vp.displayStyle.settings.getRealityModelDisplaySettings(tree.modelId);
+            if (undefined !== ds) {
+              vp.displayStyle.settings.setRealityModelDisplaySettings(tree.modelId, ds.clone({ mesh: {bgMapDrape: bgDrape} }));
+            } else {
+              vp.displayStyle.settings.setRealityModelDisplaySettings(tree.modelId, RealityModelDisplaySettings.defaults.clone({ mesh: {bgMapDrape: bgDrape} }));
+            }
+          }
+          ++count;
+        }
+      });
+    }
+
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `${appearanceChangedString(index)} set to bgMapDrape: ${bgDrape}`));
+
+    return true;
+  }
+
+  public override async parseAndRun(...args: string[]): Promise<boolean> {
+    const bgDrape = parseBoolean(args[0]);
+    return bgDrape === undefined ? false : this.run(bgDrape, args.length > 1 ? parseInt(args[1], 10) : -1);
+  }
+}
+
 /** Set reality model appearance override for color in display style.
  * @beta
  */
@@ -250,11 +302,17 @@ export class ClearRealityModelAppearanceOverrides extends Tool {
     if (!vp)
       return false;
 
-    const model = vp.displayStyle.settings.contextRealityModels.models[index];
-    if (!model)
-      return false;
+    if (index < 0) {
+      vp.displayStyle.settings.contextRealityModels.models.forEach((model) => {
+        model.appearanceOverrides = undefined;
+      });
+    } else {
+      const model = vp.displayStyle.settings.contextRealityModels.models[index];
+      if (!model)
+        return false;
+      model.appearanceOverrides = undefined;
+    }
 
-    model.appearanceOverrides = undefined;
     return true;
   }
 

@@ -271,6 +271,9 @@
     "SaveRealityModelTool": {
       "keyin": "fdt save reality properties"
     },
+    "SetRealityModelBackgroundDrapeTool": {
+      "keyin": "fdt set reality model bgdrape"
+    },
     "SetRealityModelColorTool": {
       "keyin": "fdt set reality model color"
     },

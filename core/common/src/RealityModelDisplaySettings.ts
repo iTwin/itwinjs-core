@@ -63,6 +63,14 @@ export interface PointCloudDisplayProps {
   edlMixWts4?: number;
 }
 
+/** The JSON representation of [[RealityMeshDisplaySettings]].
+ * @beta
+ */
+export interface RealityMeshDisplayProps {
+  /** See [[RealityMeshDisplaySettings.bgMapDrape]]. */
+  bgMapDrape?: boolean;
+}
+
 /** The JSON representation of [[RealityModelDisplaySettings]].
  * @beta
  */
@@ -71,7 +79,8 @@ export interface RealityModelDisplayProps {
   pointCloud?: PointCloudDisplayProps;
   /** See [[RealityModelDisplaySettings.overrideColorRatio]]. */
   overrideColorRatio?: number;
-  // ###TODO when we need it: mesh?: RealityMeshDisplayProps;
+  /** See [[RealityModelDisplaySettings.mesh]]. */
+  mesh?: RealityMeshDisplayProps;
 }
 
 /** Settings that control how a point cloud reality model is displayed within a [Viewport]($frontend).
@@ -249,6 +258,59 @@ export class PointCloudDisplaySettings {
   }
 }
 
+/** Settings that control how a reality mesh model is displayed within a [Viewport]($frontend).
+ * @note This is an immutable type - to modify its properties, use [[clone]].
+ * @see [[RealityModelDisplaySettings.mesh]].
+ * @beta
+ */
+export class RealityMeshDisplaySettings {
+  /** When true will drape the background map onto the reality mesh.
+   * Default: "false".
+   */
+  public readonly bgMapDrape: boolean;
+
+  /** Settings with all properties initialized to their default values. */
+  public static defaults = new RealityMeshDisplaySettings();
+
+  private constructor(props?: RealityMeshDisplayProps) {
+    this.bgMapDrape = props?.bgMapDrape ?? false;
+  }
+
+  /** Create display settings from their JSON representation. If `props` is `undefined`, the default settings are returned. */
+  public static fromJSON(props?: RealityMeshDisplayProps): RealityMeshDisplaySettings {
+    return props ? new RealityMeshDisplaySettings(props) : this.defaults;
+  }
+
+  /** Convert these settings to their JSON representation. */
+  public toJSON(): RealityMeshDisplayProps | undefined {
+    const defs = RealityMeshDisplaySettings.defaults;
+    if (this.equals(defs))
+      return undefined;
+
+    const props: RealityMeshDisplayProps = { };
+    if (this.bgMapDrape !== defs.bgMapDrape)
+      props.bgMapDrape = this.bgMapDrape;
+
+    return props;
+  }
+
+  /** Create a copy of these settings, identical except for any properties explicitly specified by `changedProps`. */
+  public clone(changedProps: RealityMeshDisplayProps): RealityMeshDisplaySettings {
+    return RealityMeshDisplaySettings.fromJSON({
+      ...this.toJSON(),
+      ...changedProps,
+    });
+  }
+
+  /** Returns true if these settings are identical to `other`. */
+  public equals(other: RealityMeshDisplaySettings): boolean {
+    if (this === other)
+      return true;
+
+    return this.bgMapDrape === other.bgMapDrape;
+  }
+}
+
 /** Settings that control how a reality model - whether a [[ContextRealityModel]] or a persistent reality [Model]($backend) - is displayed within a [Viewport]($frontend).
  * @see [[ContextRealityModel.displaySettings]] to apply these settings to a context reality model.
  * @see [[DisplayStyleSettings.setRealityModelDisplaySettings]] to apply these settings to a persistent reality model.
@@ -266,13 +328,18 @@ export class RealityModelDisplaySettings {
    * Default: [[PointCloudDisplaySettings.defaults]].
    */
   public readonly pointCloud: PointCloudDisplaySettings;
+  /** Settings that apply specifically to mesh reality models.
+   * Default: [[RealityMeshDisplaySettings.defaults]].
+   */
+  public readonly mesh: RealityMeshDisplaySettings;
 
   /** Settings with all properties initialized to their default values. */
-  public static defaults = new RealityModelDisplaySettings(undefined, PointCloudDisplaySettings.defaults);
+  public static defaults = new RealityModelDisplaySettings(undefined, PointCloudDisplaySettings.defaults, RealityMeshDisplaySettings.defaults);
 
-  private constructor(overrideColorRatio: number | undefined, pointCloud: PointCloudDisplaySettings) {
+  private constructor(overrideColorRatio: number | undefined, pointCloud: PointCloudDisplaySettings, mesh?: RealityMeshDisplaySettings) {
     this.overrideColorRatio = overrideColorRatio ?? 0.5;
     this.pointCloud = pointCloud;
+    this.mesh = mesh ?? RealityMeshDisplaySettings.defaults;
   }
 
   /** Create display settings from their JSON representation. If `props` is `undefined`, the default settings are returned. */
@@ -280,20 +347,24 @@ export class RealityModelDisplaySettings {
     if (!props)
       return this.defaults;
 
-    return new RealityModelDisplaySettings(props.overrideColorRatio, PointCloudDisplaySettings.fromJSON(props.pointCloud));
+    return new RealityModelDisplaySettings(props.overrideColorRatio, PointCloudDisplaySettings.fromJSON(props.pointCloud), RealityMeshDisplaySettings.fromJSON(props.mesh));
   }
 
   /** Convert these settings to their JSON representation, which is `undefined` if all of their properties match the default settings. */
   public toJSON(): RealityModelDisplayProps | undefined {
     const pointCloud = this.pointCloud.toJSON();
+    const mesh = this.mesh.toJSON();
     const overrideColorRatio = this.overrideColorRatio === RealityModelDisplaySettings.defaults.overrideColorRatio ? undefined : this.overrideColorRatio;
 
-    if (undefined === pointCloud && undefined === overrideColorRatio)
+    if (undefined === pointCloud && undefined === mesh && undefined === overrideColorRatio)
       return undefined;
 
     const props: RealityModelDisplayProps = { };
     if (undefined !== pointCloud)
       props.pointCloud = pointCloud;
+
+    if (undefined !== mesh)
+      props.mesh = mesh;
 
     if (undefined !== overrideColorRatio)
       props.overrideColorRatio = overrideColorRatio;
@@ -306,13 +377,14 @@ export class RealityModelDisplaySettings {
     if (this === other)
       return true;
 
-    return this.overrideColorRatio === other.overrideColorRatio && this.pointCloud.equals(other.pointCloud);
+    return this.overrideColorRatio === other.overrideColorRatio && this.pointCloud.equals(other.pointCloud) && this.mesh.equals(other.mesh);
   }
 
   /** Create a copy of these settings, identical except for any properties explicitly specified by `changedProps`. */
   public clone(changedProps: RealityModelDisplayProps): RealityModelDisplaySettings {
     const pointCloud = changedProps.pointCloud ? this.pointCloud.clone(changedProps.pointCloud) : this.pointCloud;
+    const mesh = changedProps.mesh ? this.mesh.clone(changedProps.mesh) : this.mesh;
     const colorRatio = changedProps.hasOwnProperty("overrideColorRatio") ? changedProps.overrideColorRatio : this.overrideColorRatio;
-    return new RealityModelDisplaySettings(colorRatio, pointCloud);
+    return new RealityModelDisplaySettings(colorRatio, pointCloud, mesh);
   }
 }
