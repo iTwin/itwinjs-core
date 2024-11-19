@@ -132,7 +132,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     if (undefined === cloudContainer)
       return join(this.dirName, `${props.dbName}.${workspaceDbFileExt}`); // local file, versions not allowed
 
-    cloudContainer.checkForChanges();
+    //  cloudContainer.checkForChanges();
     const dbName = workspaceDbNameWithDefault(props.dbName);
     const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
 
@@ -564,10 +564,10 @@ class EditorContainerImpl extends WorkspaceContainerImpl implements EditableWork
     const db = this._wsDbs.get(workspaceDbNameWithDefault(props.dbName)) as EditableDbImpl | undefined ?? new EditableDbImpl(props, this);
     const isPrerelease = semver.major(db.version) === 0 || semver.prerelease(db.version);
 
-    if (!isPrerelease && this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied") {
-      this._wsDbs.delete(workspaceDbNameWithDefault(props.dbName));
-      throw new Error(`${db.dbFileName} has been published and is not editable. Make a new version first.`);
-    }
+    // if (!isPrerelease && this.cloudContainer && this.cloudContainer.queryDatabase(db.dbFileName)?.state !== "copied") {
+    //   this._wsDbs.delete(workspaceDbNameWithDefault(props.dbName));
+    //   throw new Error(`${db.dbFileName} has been published and is not editable. Make a new version first.`);
+    // }
 
     return db;
   }

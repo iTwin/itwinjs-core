@@ -11,7 +11,7 @@ import {
   CreateNewWorkspaceDbVersionArgs, EditableWorkspaceContainer, EditableWorkspaceDb, IModelDb, IModelHost, IModelJsFs, SettingsContainer, SettingsPriority, StandaloneDb, Workspace, WorkspaceContainerProps,
   WorkspaceDbCloudProps, WorkspaceDbLoadError, WorkspaceDbLoadErrors, WorkspaceDbManifest, WorkspaceDbProps, WorkspaceDbQueryResourcesArgs, WorkspaceEditor, WorkspaceSettingNames,
 } from "@itwin/core-backend";
-import { assert, Guid } from "@itwin/core-bentley";
+import { assert, Guid, Logger, LogLevel } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 // cspell:ignore premajor
@@ -384,12 +384,15 @@ describe("Cloud workspace containers", () => {
     const copied = (await container.createNewWorkspaceDbVersion({ versionType: "major", fromProps: { dbName: "wsdb-all-settings" } })).newDb;
     const wsDbEdit = container.getEditableDb(copied);
     wsDbEdit.open();
+    wsDbEdit.updateString("string 1", "value of string 1");
     wsDbEdit.close();
     container.releaseWriteLock();
     return container;
   };
 
-  it("create additional workspace db in workspace container after retrieving container", async () => {
+  it.only("create additional workspace db in workspace container after retrieving container", async () => {
+    Logger.initializeToConsole();
+    Logger.setLevel("CloudSqlite", LogLevel.Trace);
     editor.close();
     editor = WorkspaceEditor.construct();
 
@@ -415,6 +418,10 @@ describe("Cloud workspace containers", () => {
     });
 
     expect(defaultWorkspaceDb.version).equal("1.0.0");
+    defaultWorkspaceDb.open();
+    const resources = [];
+    // defaultWorkspaceDb.queryResources({callback: (names) => resources.push(...names)});
+    // const stringResource = defaultWorkspaceDb.getString("string 1");
 
     const newWorkspaceDbName: string = "new workspacedb test";
     const manifest: WorkspaceDbManifest = {
@@ -435,6 +442,12 @@ describe("Cloud workspace containers", () => {
     wsDbEditPre.open();
     wsDbEditPre.updateString("string 1", "value of string 1");
     wsDbEditPre.close();
+
+    const wsDbEditNickPre = testContainer.getEditableDb({dbName: "wsdb-all-settings"});
+    wsDbEditNickPre.open();
+    wsDbEditNickPre.updateString("string 1", "value of string 1 updated");
+    wsDbEditNickPre.close();
+
     testContainer.releaseWriteLock();
 
     testContainer.acquireWriteLock("substation editor example");
@@ -453,6 +466,16 @@ describe("Cloud workspace containers", () => {
 
     testContainer.releaseWriteLock();
 
+    const cont = IModelHost.appWorkspace.findContainer(testContainer.cloudContainer?.containerId!);
+    cont?.cloudContainer?.checkForChanges();
+
+    // const newVal = defaultWorkspaceDb.getString("string 1");
+    // expect(newVal).equal("value of string 1 updated");
+    defaultWorkspaceDb.close();
+    defaultWorkspaceDb.open();
+    const newVal2 = defaultWorkspaceDb.getString("string 1");
+    expect(newVal2).equal("value of string 1 updated");
+
     // Try to retrieve v1.0.0 of newly created workspacedb
     // In Substation app, this is getting v0.0.0 instead of v1.0.0
     const newWorkspaceDb = await IModelHost.appWorkspace.getWorkspaceDb({
@@ -463,6 +486,10 @@ describe("Cloud workspace containers", () => {
     });
 
     expect(newWorkspaceDb.version).equal("1.0.0");
+    newWorkspaceDb.open();
+
+    cont?.cloudContainer?.checkForChanges();
+    expect(true).equal(true);
   });
 });
 
