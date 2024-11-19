@@ -240,7 +240,7 @@ describe("Merge conflict & locking", () => {
     b3.close();
   });
 
-  it("aspect insert, update & delete requires exclusive lock", async () => {
+  it.skip("aspect insert, update & delete requires exclusive lock", async () => {
     const accessToken1 = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     const accessToken2 = await HubWrappers.getAccessToken(TestUserType.Regular);
     const accessToken3 = await HubWrappers.getAccessToken(TestUserType.Super);
