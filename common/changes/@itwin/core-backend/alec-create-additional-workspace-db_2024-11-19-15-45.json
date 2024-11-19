@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "sync local cloudcache  with remote cloudcache when calling WorkspaceContainer.resolveDbFileName",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}
