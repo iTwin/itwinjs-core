@@ -70,9 +70,12 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
       stmt = imodel.prepareStatement(compiledSql); // TODO: Wire up logic for tests we expect to fail during prepare
     } catch (error: any) {
       if(test.errorDuringPrepare)
+      {
+        logWarning(`Error during prepare of Statement: ${error.message}`);
         return;
+      }
       else
-        assert.fail(`Error during prepare: ${error.name}`);
+        assert.fail(`Error during prepare of Statement: ${error.message}`);
     }
 
     if(test.errorDuringPrepare)
@@ -234,17 +237,27 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
     try {
       reader = imodel.createQueryReader(compiledSql, params, queryOptions); // TODO: Wire up logic for tests we expect to fail during prepare
     } catch (error: any) {
+        assert.fail(`Error during creating QueryReader: ${error.message}`);
+    }
+
+    let resultCount = 0;
+    let rows;
+    try{
+      rows = await reader.toArray();
+    }
+    catch (error: any) {
       if(test.errorDuringPrepare)
+      {
+        logWarning(`Error during prepare of Concurrent Query: ${error.message}`);
         return;
+      }
       else
-        assert.fail(`Error during prepare: ${error.name}`);
+        assert.fail(`Error during prepare of Concurrent Query: ${error.message}`);
     }
 
     if(test.errorDuringPrepare)
       assert.fail(`Statement is expected to fail during prepare`);
 
-    let resultCount = 0;
-    const rows = await reader.toArray();
     const colMetaData = await reader.getMetaData();
     while (resultCount < rows.length) {
       if (resultCount === 0 && test.columnInfo) {
