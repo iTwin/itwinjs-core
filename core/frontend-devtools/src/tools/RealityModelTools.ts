@@ -236,6 +236,7 @@ export class SetRealityModelBackgroundDrapeTool extends Tool {
         model.displaySettings = model.displaySettings.clone({ mesh: {bgMapDrape: bgDrape} });
       }
     } else {
+      // If there are no context reality models, apply to reality tree references instead.
       let count = 0;
       vp.forEachTileTreeRef((tree) => {
         if (tree instanceof RealityTreeReference) {
