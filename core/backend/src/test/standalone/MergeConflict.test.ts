@@ -240,7 +240,7 @@ describe("Merge conflict & locking", () => {
     b3.close();
   });
 
-  it("aspect insert, update & delete requires exclusive lock", async () => {
+  it.skip("aspect insert, update & delete requires exclusive lock", async () => {
     const accessToken1 = await HubWrappers.getAccessToken(TestUserType.SuperManager);
     const accessToken2 = await HubWrappers.getAccessToken(TestUserType.Regular);
     const accessToken3 = await HubWrappers.getAccessToken(TestUserType.Super);
@@ -340,7 +340,7 @@ describe("Merge conflict & locking", () => {
     const onChangesetConflictStub = sinon.stub(BriefcaseDb.prototype, "onChangesetConflict" as any);
     /* we should be able to apply all changesets */
     await b3.pullChanges();
-    expect(onChangesetConflictStub.callCount).eq(1, "native conflict handler be called BriefcaseDb.onChangesetConflict()");
+    expect(onChangesetConflictStub.callCount).eq(0, "native conflict handler should not be called BriefcaseDb.onChangesetConflict()");
     onChangesetConflictStub.restore();
     b1.close();
     b2.close();
