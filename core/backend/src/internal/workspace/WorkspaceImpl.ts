@@ -132,6 +132,7 @@ class WorkspaceContainerImpl implements WorkspaceContainer {
     if (undefined === cloudContainer)
       return join(this.dirName, `${props.dbName}.${workspaceDbFileExt}`); // local file, versions not allowed
 
+    cloudContainer.checkForChanges();
     const dbName = workspaceDbNameWithDefault(props.dbName);
     const dbs = cloudContainer.queryDatabases(`${dbName}*`); // get all databases that start with dbName
 
