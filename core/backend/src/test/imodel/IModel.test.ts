@@ -811,7 +811,7 @@ describe("iModel", () => {
     });
   });
 
-  it.only("should query for all spatially located models", async () => {
+  it("should query for all spatially located models", async () => {
     const results = await imodel2.queryAllSpatial3dModelIds();
     assert.isAtLeast(results.length, 1, "Expected query to find some spatially locaated models");
   })
