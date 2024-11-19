@@ -469,8 +469,8 @@ describe("Cloud workspace containers", () => {
     const cont = IModelHost.appWorkspace.findContainer(testContainer.cloudContainer?.containerId!);
     cont?.cloudContainer?.checkForChanges();
 
-    // const newVal = defaultWorkspaceDb.getString("string 1");
-    // expect(newVal).equal("value of string 1 updated");
+    const newVal = defaultWorkspaceDb.getString("string 1");
+    expect(newVal).equal("value of string 1");
     defaultWorkspaceDb.close();
     defaultWorkspaceDb.open();
     const newVal2 = defaultWorkspaceDb.getString("string 1");
