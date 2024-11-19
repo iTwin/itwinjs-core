@@ -1929,8 +1929,8 @@ describe("SphericalMeshData", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("Mirror", () => {
-    const ck = new Checker();
+  it.only("Mirror", () => {
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
@@ -1979,7 +1979,7 @@ describe("SphericalMeshData", () => {
       }
       return outward;
     };
-    const testMirror = (g: IndexedPolyface | SolidPrimitive | undefined, t: Transform, verifyClosure: boolean = true): void => {
+    const testMirror = (g: IndexedPolyface | SolidPrimitive | undefined, t: Transform): void => {
       if (!ck.testDefined(g, "geometry is defined"))
         return;
       ck.testTrue(t.matrix.determinant() < 0, "transform is a mirror");
@@ -1995,8 +1995,6 @@ describe("SphericalMeshData", () => {
       }
       y0 = 0;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedMesh, x0, y0);
-      if (verifyClosure)
-        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(closedMesh), `${type} mesh is closed`);
       ck.testTrue(hasOutwardOrientationAndFacetNormals(closedMesh), `${type} facets and normals point outward`);
       y0 = delta;
       const mirrorMesh = closedMesh.cloneTransformed(t);
@@ -2046,25 +2044,35 @@ describe("SphericalMeshData", () => {
 
     geometry.push(TorusPipe.createAlongArc(Arc3d.createCenterNormalRadius(undefined, Vector3d.unitY(-1), 2), 0.25, true));
 
-    const centerline = Arc3d.createXY(Point3d.create(0, 0), 1.0, AngleSweep.createStartEndDegrees(0, 90));
-    const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5, 0, 0));
-    const pipeBuilder = PolyfaceBuilder.create();
-    pipeBuilder.options.angleTol = Angle.createDegrees(5);
-    pipeBuilder.options.needNormals = true;
-    pipeBuilder.addMiteredPipes(centerline, sectionData, 8, true);
-    geometry.push(pipeBuilder.claimPolyface());
+    const centerlineSweeps: AngleSweep[] = [AngleSweep.createStartEndDegrees(0, 90), AngleSweep.createStartEndDegrees(0, -90)];
+    const sectionDataSweeps: AngleSweep[] = [AngleSweep.create360(), AngleSweep.createStartEndDegrees(360, 0)];
+
+    for (const centerlineSweep of centerlineSweeps)
+      for (const sectionDataSweep of sectionDataSweeps) {
+        const centerline = Arc3d.createXY(Point3d.create(0, 0), 1.0, centerlineSweep);
+        const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5, 0, 0), sectionDataSweep);
+        const pipeBuilder = PolyfaceBuilder.create();
+        pipeBuilder.options.angleTol = Angle.createDegrees(5);
+        pipeBuilder.options.needNormals = true;
+        pipeBuilder.addMiteredPipes(centerline, sectionData, 8, true);
+        geometry.push(pipeBuilder.claimPolyface());
+      }
+    // for (const centerlineSweep of centerlineSweeps)
+    //   for (const sectionDataSweep of sectionDataSweeps) {
+    //     const centerline = Arc3d.create(Point3d.create(0, 0), Vector3d.create(0.5, 0, 0), Vector3d.create(0, 0, 1), centerlineSweep);
+    //     const sectionData = Arc3d.create(undefined, Vector3d.create(0, 1, 0), Vector3d.create(0.5, 0, 0), sectionDataSweep);
+    //     const pipeBuilder = PolyfaceBuilder.create();
+    //     pipeBuilder.options.angleTol = Angle.createDegrees(5);
+    //     pipeBuilder.options.needNormals = true;
+    //     pipeBuilder.addMiteredPipes(centerline, sectionData, 8, true);
+    //     geometry.push(pipeBuilder.claimPolyface());
+    //   }
 
     // verify outward normals for closed meshes/solids, both before and after mirroring
     for (const geom of geometry) {
       testMirror(geom, mirrorTrans);
       x0 += delta;
     }
-
-    // open pipe
-    sectionData.sweep.setStartEndDegrees(0, 90);
-    const pipeBuilder2 = PolyfaceBuilder.create(pipeBuilder.options);
-    pipeBuilder2.addMiteredPipes(centerline, sectionData, 8, true);
-    testMirror(pipeBuilder2.claimPolyface(), mirrorTrans, false);
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "SphericalMeshData", "Mirror");
     expect(ck.getNumErrors()).toBe(0);

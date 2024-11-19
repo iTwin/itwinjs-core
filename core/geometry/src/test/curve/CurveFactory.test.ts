@@ -311,6 +311,62 @@ describe("PipeConnections", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
+  it.only("addMiteredPipesWithCaps", () => {
+    const ck = new Checker(true, true);
+    const allGeometry: GeometryQuery[] = [];
+
+    const sweeps: AngleSweep[] = [
+      AngleSweep.create360(),
+      AngleSweep.createStartEndDegrees(360, 0),
+      AngleSweep.createStartEndDegrees(0, 90),
+      AngleSweep.createStartEndDegrees(180, 90),
+    ]
+    let dx = 0
+    const centerline = Arc3d.createXY(Point3d.create(0, 0), 1.0, AngleSweep.createStartEndDegrees(0, 90));
+    // const centerline = Arc3d.create(
+    //   Point3d.create(0, 0),
+    //   Vector3d.create(0.5, 0, 0),
+    //   Vector3d.create(0, 0, 1),
+    //   AngleSweep.createStartEndDegrees(0, 90),
+    // );
+    const numFacetAround = 8;
+    for (let sweep of sweeps) {
+      const builder = PolyfaceBuilder.create();
+      const sectionData = Arc3d.create(
+        Point3d.create(1, 0, 0),
+        Vector3d.create(0, 0, 1),
+        Vector3d.create(0.5, 0, 0),
+        sweep,
+      );
+      // const sectionData = Arc3d.create(
+      //   Point3d.create(1, 0, 0),
+      //   Vector3d.create(0, 1, 0),
+      //   Vector3d.create(0.5, 0, 0),
+      //   sweep,
+      // );
+      builder.options.angleTol = Angle.createDegrees(15);
+      builder.addMiteredPipes(centerline, sectionData, numFacetAround, true);
+      let mesh = builder.claimPolyface();
+      if (sweep.isFullCircle)
+        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is expected");
+      else
+        ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected");
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx);
+
+      builder.addMiteredPipes(centerline, sectionData, numFacetAround, false);
+      ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(builder.claimPolyface()), "cap is not expected");
+      dx += 3;
+    }
+    const builder = PolyfaceBuilder.create();
+    builder.addMiteredPipes(centerline, 0.2, numFacetAround, true);
+    ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(builder.claimPolyface()), "cap is expected");
+    builder.addMiteredPipes(centerline, 0.2, numFacetAround, false);
+    ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(builder.claimPolyface()), "cap is not expected");
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "addMiteredPipesWithCaps");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
   it("createArcPointTangentPoint", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

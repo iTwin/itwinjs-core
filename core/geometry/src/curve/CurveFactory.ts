@@ -347,24 +347,32 @@ export class CurveFactory {
     const vector0 = Vector3d.create();
     const vector90 = Vector3d.create();
     const vectorBC = Vector3d.create();
-    const sweep = AngleSweep.create360();
+    let sweep = AngleSweep.create360();
     centerline.vectorIndexIndex(0, 1, vectorBC)!;
     let initialSection: Arc3d;
     if (sectionData instanceof Arc3d) {
       initialSection = sectionData.clone();
       vector0.setFrom(sectionData.vector0);
       vector90.setFrom(sectionData.vector90);
-      sweep.setFrom(sectionData.sweep); // allow e.g., half-pipe
+      sweep = sectionData.sweep;
+      let i = 1;
+      while (centerline.almostEqualIndexIndex(0, i))
+        i++;
+      let startTangent = Vector3d.create();
+      centerline.vectorIndexIndex(0, i, startTangent);
+      const dotProduct = sectionData.matrixRef.columnDotXYZ(AxisIndex.Z, startTangent.x, startTangent.y, startTangent.z);
+      if ((dotProduct > 0) !== sectionData.sweep.isCCW)
+        sweep.reverseInPlace();
     } else if (typeof sectionData === "number" || Point3d.isXAndY(sectionData)) {
       const length0 = (typeof sectionData === "number") ? sectionData : sectionData.x;
       const length90 = (typeof sectionData === "number") ? sectionData : sectionData.y;
       const baseFrame = Matrix3d.createRigidHeadsUp(vectorBC, AxisOrder.ZXY);
       baseFrame.columnX(vector0).scaleInPlace(length0);
       baseFrame.columnY(vector90).scaleInPlace(length90);
-      initialSection = Arc3d.create(undefined, vector0, vector90, sweep);
     } else {
       return [];
     }
+    initialSection = Arc3d.create(undefined, vector0, vector90, sweep);
     centerline.getPoint3dAtUncheckedPointIndex(0, initialSection.centerRef);
     arcs.push(initialSection);
     const vectorAB = Vector3d.create();
