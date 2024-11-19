@@ -260,7 +260,7 @@ SELECT te.i, first_value(i) OVER (order by i ROWS CURRENT ROW) as [first] from a
 | 108 | 108   |
 | 109 | 109   |
 
-# Rows with Frame Between
+# Rows with frame between
 
 - dataset: AllProperties.bim
 
@@ -285,3 +285,119 @@ SELECT te.i, first_value(i) OVER (order by i ROWS BETWEEN UNBOUNDED PRECEDING AN
 | 107 | 100   |
 | 108 | 100   |
 | 109 | 100   |
+
+# Groups with frame start
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT te.i, last_value(i) OVER (order by dt GROUPS UNBOUNDED PRECEDING) as [group] from aps.TestElement te
+```
+
+| className                | accessString | generated | index | jsonName | name  | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ---- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i     |              | int      | Int  | i                  |
+|                          | group        | true      | 1     | group    | group |              | int      | Int  | undefined          |
+
+| i   | group |
+| --- | ----- |
+| 101 | 109   |
+| 103 | 109   |
+| 105 | 109   |
+| 107 | 109   |
+| 109 | 109   |
+| 100 | 108   |
+| 102 | 108   |
+| 104 | 108   |
+| 106 | 108   |
+| 108 | 108   |
+
+# Range with frame start
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT te.i, first_value(i) OVER (order by dt RANGE 0 + 1 PRECEDING EXCLUDE NO OTHERS) as [range] from aps.TestElement te
+```
+
+| className                | accessString | generated | index | jsonName | name  | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ---- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i     |              | int      | Int  | i                  |
+|                          | range        | true      | 1     | range    | range |              | int      | Int  | undefined          |
+
+| i   | range |
+| --- | ----- |
+| 101 | 101   |
+| 103 | 101   |
+| 105 | 101   |
+| 107 | 101   |
+| 109 | 101   |
+| 100 | 100   |
+| 102 | 100   |
+| 104 | 100   |
+| 106 | 100   |
+| 108 | 100   |
+
+# Named window
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i,
+  te.DT [Date],
+  row_number() OVER win AS [RowNumber]
+FROM
+  aps.TestElement te
+WHERE
+  te.i < 106
+WINDOW
+  win as (PARTITION BY te.DT ORDER BY te.i)
+```
+
+| className                | accessString | generated | index | jsonName  | name      | extendedType | typeName | type     | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i         | i         |              | int      | Int      | i                  |
+|                          | Date         | true      | 1     | date      | Date      |              | dateTime | DateTime | dt                 |
+|                          | RowNumber    | true      | 2     | rowNumber | RowNumber |              | long     | Int64    | undefined          |
+
+| i   | Date                    | RowNumber |
+| --- | ----------------------- | --------- |
+| 101 | 2010-01-01T11:11:11.000 | 1         |
+| 103 | 2010-01-01T11:11:11.000 | 2         |
+| 105 | 2010-01-01T11:11:11.000 | 3         |
+| 100 | 2017-01-01T00:00:00.000 | 1         |
+| 102 | 2017-01-01T00:00:00.000 | 2         |
+| 104 | 2017-01-01T00:00:00.000 | 3         |
+
+# Window chaining
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i,
+  group_concat(i) OVER (win ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW) AS [othersInGroup]
+FROM
+  aps.TestElement te
+WINDOW
+  win AS (PARTITION BY te.DT ORDER BY te.i)
+```
+
+| className                | accessString  | generated | index | jsonName      | name          | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------- | --------- | ----- | ------------- | ------------- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:IPrimitive | i             | false     | 0     | i             | i             |              | int      | Int    | i                  |
+|                          | othersInGroup | true      | 1     | othersInGroup | othersInGroup |              | string   | String | undefined          |
+
+| i   | othersInGroup       |
+| --- | ------------------- |
+| 101 | "101"               |
+| 103 | 101,103             |
+| 105 | 101,103,105         |
+| 107 | 101,103,105,107     |
+| 109 | 101,103,105,107,109 |
+| 100 | "100"               |
+| 102 | 100,102             |
+| 104 | 100,102,104         |
+| 106 | 100,102,104,106     |
+| 108 | 100,102,104,106,108 |

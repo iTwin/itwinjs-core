@@ -34,6 +34,7 @@ Specifies the row format option given to ECDb. Possible values are: ECSqlNames, 
 
 Optional, defaults to false
 It abbreviate blobs to single bytes.
+Only works on ConcurrentQuery as statement does not have the option.
 
 - convertClassIdsToClassNames: true
 
