@@ -212,6 +212,159 @@ with tmp(x) as (SELECT e.ECInstanceId FROM aps.TestElement e order by e.ECInstan
 | ---- |
 | 0x14 |
 
+# Testing prop aliasing in CTE
+
+- dataset: AllProperties.bim
+
+```sql
+with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x y from tmp
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
+|           | y            | true      | 0     | y        | y    |              | int      | Int  |
+
+| y   |
+| --- |
+| 100 |
+
+# Testing prop aliasing in CTE subquery
+
+- dataset: AllProperties.bim
+
+```sql
+select y from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x y from tmp)
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
+|           | y            | true      | 0     | y        | y    |              | int      | Int  |
+
+| y   |
+| --- |
+| 100 |
+
+# Testing table aliasing in CTE for ConcurrentQuery
+
+- dataset: AllProperties.bim
+- mode: ConcurrentQuery
+
+```sql
+with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select temp1.x from tmp temp1
+```
+
+| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ---- |
+|           | temp1.x      | true      | 0     | temp1.x  | temp1.x |              | int      | Int  |
+
+| temp1.x |
+| ------- |
+| 100     |
+
+# Testing table aliasing in CTE for ECSqlStatement
+
+- dataset: AllProperties.bim
+- mode: Statement
+
+```sql
+with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select temp1.x from tmp temp1
+```
+
+```json
+{
+  "columns": [
+    {
+      "accessString": "temp1.x",
+      "name": "temp1__x002E__x",
+      "type": "Int",
+      "typeName": "int",
+      "generated": true,
+      "index": 0,
+      "className": "",
+      "jsonName": "temp.x",
+      "extendedType": ""
+    }
+  ]
+}
+```
+
+| temp1.x |
+| ------- |
+| 100     |
+
+# Testing table aliasing in CTE subquery
+
+- dataset: AllProperties.bim
+
+```sql
+select x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x from tmp) a;
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
+|           | x            | true      | 0     | x        | x    |              | int      | Int  |
+
+| x   |
+| --- |
+| 100 |
+
+# Testing table aliasing on both inner and outer tables in CTE subquery for ConcurrentQuery
+
+- dataset: AllProperties.bim
+- mode: ConcurrentQuery
+
+```sql
+select temp1.x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select temp1.x from tmp temp1) a;
+```
+
+| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ---- |
+|           | temp1.x      | true      | 0     | temp1.x  | temp1.x |              | int      | Int  |
+
+| temp1.x |
+| ------- |
+| 100     |
+
+# Testing table aliasing on both inner and outer tables in CTE subquery for Statement
+
+- dataset: AllProperties.bim
+- mode: Statement
+
+```sql
+select temp1.x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select temp1.x from tmp temp1) a;
+```
+
+```json
+{
+  "columns": [
+    {
+      "accessString": "temp1.x",
+      "name": "temp1__x002E__x",
+      "type": "Int",
+      "typeName": "int",
+      "generated": true,
+      "index": 0,
+      "className": "",
+      "jsonName": "temp.x",
+      "extendedType": ""
+    }
+  ]
+}
+```
+
+| temp1.x |
+| ------- |
+| 100     |
+
+# Expected table aliasing to fail in CTE subquery due to prop name being wrong
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+select a.x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x from tmp) a;
+```
+
 # Expected classId prop test to fail with CTE subquery due to prop name being wrong
 
 - dataset: AllProperties.bim
