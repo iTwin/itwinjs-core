@@ -40,6 +40,11 @@ It abbreviate blobs to single bytes.
 Optional, defaults to false
 Convert ECClassId, SourceECClassId, TargetECClassId and RelClassId to respective name.
 
+- errorDuringPrepare: true
+
+Optional, defaults to false
+If true, the statement is expected to fail during prepare.
+
 ## SQL
 
 The first sql code block found after a header indicates the sql to execute
@@ -69,31 +74,31 @@ SELECT * from meta.ECSchemaDef LIMIT 5
 
 > If we expect prepare to fail use:
 >
-> - errorDuringPrepare: "Statement failed to prepare"
 > If we expect a status other than OK/Done, use:
+>
 > - stepStatus: BE_SQLITE_DONE
 
 ## Asserting results
 
 The first table asserts column infos after the first step. It is optional and can be omitted. It is recognized from other tables by matching ColumnInfo property names
 
-| name     | type   |
-| -------- | ------ |
-| Name     | String |
-| Alias    | String |
+| name  | type   |
+| ----- | ------ |
+| Name  | String |
+| Alias | String |
 
 Possible column names are:
 
-  name: string;
-  className?: string;
-  accessString?: string;
-  generated?: boolean;
-  index?: number;
-  jsonName?: string;
-  extendedType?: string;
-  type?: string; // type is used on ECSqlStatement because it can differ from TypeName
-  typeName?: string; // typeName is used on ConcurrentQuery only
-  originPropertyName?: string // currently only used by statement (concurrent query does not provide the data)
+name: string;
+className?: string;
+accessString?: string;
+generated?: boolean;
+index?: number;
+jsonName?: string;
+extendedType?: string;
+type?: string; // type is used on ECSqlStatement because it can differ from TypeName
+typeName?: string; // typeName is used on ConcurrentQuery only
+originPropertyName?: string // currently only used by statement (concurrent query does not provide the data)
 
 As an alternative, column infos can be formatted as json in a code block like this:
 
@@ -118,11 +123,11 @@ As an alternative, column infos can be formatted as json in a code block like th
 
 > The result rows can be represented as a table
 
-| c26   | c27 | c28 | c29 | c30 | c31       |
-|-------|-----|-----|-----|-----|-----------|
-| True  | 1   | 1   | 1.0 | 1   | 2021-01-01|
-| False | 1   | 1   | 1.0 | 1   | 2021-01-02|
-| True  | 1   | 1   | 1.0 | 1   | 2021-01-03|
+| c26   | c27 | c28 | c29 | c30 | c31        |
+| ----- | --- | --- | --- | --- | ---------- |
+| True  | 1   | 1   | 1.0 | 1   | 2021-01-01 |
+| False | 1   | 1   | 1.0 | 1   | 2021-01-02 |
+| True  | 1   | 1   | 1.0 | 1   | 2021-01-03 |
 
 > As an alternative, json can be used, whatever is preferred or more readable
 

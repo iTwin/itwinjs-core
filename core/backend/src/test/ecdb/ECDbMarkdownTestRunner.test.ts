@@ -70,10 +70,7 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
       stmt = imodel.prepareStatement(compiledSql); // TODO: Wire up logic for tests we expect to fail during prepare
     } catch (error: any) {
       if(test.errorDuringPrepare)
-      {
-        logWarning(`Error during prepare of Statement: ${error.message}`);
         return;
-      }
       else
         assert.fail(`Error during prepare of Statement: ${error.message}`);
     }
@@ -247,10 +244,7 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
     }
     catch (error: any) {
       if(test.errorDuringPrepare)
-      {
-        logWarning(`Error during prepare of Concurrent Query: ${error.message}`);
         return;
-      }
       else
         assert.fail(`Error during prepare of Concurrent Query: ${error.message}`);
     }
