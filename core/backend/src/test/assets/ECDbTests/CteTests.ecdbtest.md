@@ -16,6 +16,26 @@ with tmp(x) as (SELECT e.bin FROM aps.TestElement e LIMIT 1) select * from tmp
 | ---------- |
 | BIN(1,2,3) |
 
+# Testing binary array props using CTE
+
+- dataset: AllProperties.bim
+
+```sql
+with tmp(x) as (SELECT e.array_bin FROM aps.TestElement e LIMIT 1) select * from tmp
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
+|           | x            | true      | 0     | x        | x    | Json         | string   | PrimitiveArray |
+
+```json
+[
+  {
+    "x": ["BIN(1,2,3)", "BIN(11, 21, 31, 34, 53, 21, 14, 14, 55, 22)"]
+  }
+]
+```
+
 # Testing binary props using abbreviateBlobs using CTE
 
 - dataset: AllProperties.bim
@@ -50,6 +70,38 @@ with tmp as (SELECT e.p2d FROM aps.TestElement e LIMIT 1) select * from tmp
 | ----------------------- |
 | {"X": 1.034,"Y": 2.034} |
 
+# Testing Point2d x coord value using CTE
+
+- dataset: AllProperties.bim
+
+```sql
+with tmp as (SELECT e.p2d FROM aps.TestElement e LIMIT 1) select p2d.x from tmp
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
+|           | p2d.X        | false     | 0     | X        | X    |              | double   | Double |
+
+| X     |
+| ----- |
+| 1.034 |
+
+# Testing Point2d array props using CTE
+
+- dataset: AllProperties.bim
+
+```sql
+with tmp as (SELECT e.array_p2d FROM aps.TestElement e LIMIT 1) select array_p2d from tmp
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
+|           | array_p2d    | false     | 0     | array_p2d | array_p2d |              | point2d  | PrimitiveArray |
+
+| array_p2d                                             |
+| ----------------------------------------------------- |
+| [{"X": 1.034,"Y": 2.034},{"X": 1111.11,"Y": 2222.22}] |
+
 # Testing Point3d props using CTE
 
 - dataset: AllProperties.bim
@@ -65,6 +117,38 @@ with tmp as (SELECT e.p3d FROM aps.TestElement e LIMIT 1) select * from tmp
 | p3d                            |
 | ------------------------------ |
 | {"X": -1,"Y": 2.3,"Z": 3.0001} |
+
+# Testing Point3d props using CTE subquery
+
+- dataset: AllProperties.bim
+
+```sql
+select p3d from (with tmp as (SELECT e.p3d FROM aps.TestElement e LIMIT 1) select p3d from tmp)
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type    |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- |
+|           | p3d          | false     | 0     | p3d      | p3d  |              | point3d  | Point3d |
+
+| p3d                            |
+| ------------------------------ |
+| {"X": -1,"Y": 2.3,"Z": 3.0001} |
+
+# Testing Point3d array props using CTE
+
+- dataset: AllProperties.bim
+
+```sql
+with tmp as (SELECT e.array_p3d FROM aps.TestElement e LIMIT 1) select array_p3d from tmp
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
+|           | array_p3d    | false     | 0     | array_p3d | array_p3d |              | point3d  | PrimitiveArray |
+
+| array_p3d                                                                 |
+| ------------------------------------------------------------------------- |
+| [{"X": -1,"Y": 2.3,"Z": 3.0001},{"X": -111.11,"Y": -222.22,"Z": -333.33}] |
 
 # Testing Integer props using CTE
 
@@ -82,6 +166,22 @@ with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x
 | --- |
 | 100 |
 
+# Testing Integer array props using CTE
+
+- dataset: AllProperties.bim
+
+```sql
+with tmp(x) as (SELECT e.array_i FROM aps.TestElement e LIMIT 1) select x from tmp
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
+|           | x            | true      | 0     | x        | x    |              | int      | PrimitiveArray |
+
+| x         |
+| --------- |
+| [0, 1, 2] |
+
 # Testing Long props using CTE
 
 - dataset: AllProperties.bim
@@ -97,6 +197,22 @@ with tmp(x) as (SELECT e.l FROM aps.TestElement e order by e.l LIMIT 1) select x
 | x    |
 | ---- |
 | 1000 |
+
+# Testing Long array props using CTE
+
+- dataset: AllProperties.bim
+
+```sql
+with tmp(x) as (SELECT e.array_l FROM aps.TestElement e LIMIT 1) select x from tmp
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
+|           | x            | true      | 0     | x        | x    |              | long     | PrimitiveArray |
+
+| x                     |
+| --------------------- |
+| [10000, 20000, 30000] |
 
 # Testing Decimal props using CTE
 
@@ -114,6 +230,22 @@ with tmp(x) as (SELECT e.d FROM aps.TestElement e order by e.d LIMIT 1) select x
 | --- |
 | 0.1 |
 
+# Testing Decimal array props using CTE
+
+- dataset: AllProperties.bim
+
+```sql
+with tmp(x) as (SELECT e.array_d FROM aps.TestElement e LIMIT 1) select x from tmp
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
+|           | x            | true      | 0     | x        | x    |              | double   | PrimitiveArray |
+
+| x               |
+| --------------- |
+| [0.0, 1.1, 2.2] |
+
 # Testing Date time props using CTE
 
 - dataset: AllProperties.bim
@@ -130,6 +262,22 @@ with tmp(x) as (SELECT e.dt FROM aps.TestElement e order by e.dt LIMIT 1) select
 | ----------------------- |
 | 2010-01-01T11:11:11.000 |
 
+# Testing Date time array props using CTE
+
+- dataset: AllProperties.bim
+
+```sql
+with tmp(x) as (SELECT e.array_dt FROM aps.TestElement e LIMIT 1) select x from tmp
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
+|           | x            | true      | 0     | x        | x    |              | dateTime | PrimitiveArray |
+
+| x                                                      |
+| ------------------------------------------------------ |
+| ["2017-01-01T00:00:00.000", "2010-01-01T11:11:11.000"] |
+
 # Testing string props using CTE
 
 - dataset: AllProperties.bim
@@ -145,6 +293,22 @@ with tmp(x) as (SELECT e.s FROM aps.TestElement e order by e.s LIMIT 1) select x
 | x    |
 | ---- |
 | str0 |
+
+# Testing string array props using CTE
+
+- dataset: AllProperties.bim
+
+```sql
+with tmp(x) as (SELECT e.array_s FROM aps.TestElement e LIMIT 1) select x from tmp
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
+|           | x            | true      | 0     | x        | x    |              | string   | PrimitiveArray |
+
+| x                  |
+| ------------------ |
+| ["s0", "s1", "s2"] |
 
 # Testing classId props using CTE
 

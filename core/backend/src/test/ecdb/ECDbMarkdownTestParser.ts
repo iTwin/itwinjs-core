@@ -126,7 +126,7 @@ function tableTextToValue(text: string) : any {
     return null;
   if(text === "undefined")
     return undefined;
-  if(text.startsWith("{"))
+  if(text.startsWith("{") || text.startsWith("["))
     return JSON.parse(text);
   if(text === "true" || text === "false")
     return text === "true";
@@ -150,21 +150,15 @@ function tableTextToValue(text: string) : any {
 
 export function buildBinaryData(obj: any): any { //TODO: we should do this during table parsing
   for(const key in obj) {
-    if(typeof obj[key] === "string")
-    {
-      const [isBinary, arrayVal] = understandAndReplaceBinaryData(obj[key])
-      if(isBinary)
-        obj[key] = arrayVal;
-    }
-    else if(typeof obj[key] === "object")
+    if(typeof obj[key] === "string" && obj[key].startsWith("BIN(") && obj[key].endsWith(")"))
+      obj[key] = understandAndReplaceBinaryData(obj[key])
+    else if(typeof obj[key] === "object" || Array.isArray(obj[key]))
       obj[key] = buildBinaryData(obj[key])
   }
   return obj;
 }
 
-function understandAndReplaceBinaryData(str: string): [boolean,any]{
-  if(str.startsWith("BIN(") && str.endsWith(")"))
-  {
+function understandAndReplaceBinaryData(str: string): any{
     const startInd = str.indexOf("(") + 1;
     const endInd = str.indexOf(")");
     str = str.slice(startInd, endInd);
@@ -177,11 +171,9 @@ function understandAndReplaceBinaryData(str: string): [boolean,any]{
         ans.push(parseInt(value));
       }
     );
-    return [true, Uint8Array.of(...ans)]
-  }
-
-  return [false,""]
+    return  Uint8Array.of(...ans);
 }
+
 
 export class ECDbMarkdownTestParser {
   public static parse(): ECDbTestProps[] {
