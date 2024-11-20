@@ -21,16 +21,16 @@ export interface UiItemsProvider {
   readonly id: string;
 
   /** UiItemsManager calls following method to get items to populate specific toolbars */
-  provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[]; // eslint-disable-line deprecation/deprecation
+  provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[]; // eslint-disable-line @typescript-eslint/no-deprecated
   /** UiItemsManager calls following method to augment base statusbar for stages that allow it. */
-  provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[]; // eslint-disable-line deprecation/deprecation
+  provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[]; // eslint-disable-line @typescript-eslint/no-deprecated
   /** UiItemsManager calls following method to augment backstage items. */
-  provideBackstageItems?: () => BackstageItem[]; // eslint-disable-line deprecation/deprecation
+  provideBackstageItems?: () => BackstageItem[]; // eslint-disable-line @typescript-eslint/no-deprecated
   /** UiItemsManager calls following method to augment Widget lists.
    * @note Returned widgets must provide unique `AbstractWidgetProps["id"]` to correctly save/restore App layout.
    */
-  provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, // eslint-disable-line deprecation/deprecation
-    zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>; // eslint-disable-line deprecation/deprecation
+  provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, // eslint-disable-line @typescript-eslint/no-deprecated
+    zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>; // eslint-disable-line @typescript-eslint/no-deprecated
   /** Function called when the provider is unregistered via `ItemsManager.unregister` to allow provider to do cleanup. */
   onUnregister?: () => void;
 }

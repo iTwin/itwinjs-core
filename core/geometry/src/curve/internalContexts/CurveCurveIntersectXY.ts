@@ -26,7 +26,8 @@ import { Matrix4d } from "../../geometry4d/Matrix4d";
 import { Point4d } from "../../geometry4d/Point4d";
 import { UnivariateBezier } from "../../numerics/BezierPolynomials";
 import { CurveCurveIntersectionXYRRToRRD, Newton2dUnboundedWithDerivative } from "../../numerics/Newton";
-import { AnalyticRoots, SmallSystem, TrigPolynomial } from "../../numerics/Polynomials";
+import { AnalyticRoots, TrigPolynomial } from "../../numerics/Polynomials";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import { Arc3d } from "../Arc3d";
 import { CurveChainWithDistanceIndex } from "../CurveChainWithDistanceIndex";
 import { CurveCollection } from "../CurveCollection";
@@ -967,7 +968,6 @@ export class CurveCurveIntersectXY extends RecurseToCurvesGeometryHandler {
       return;
     if (geomA instanceof CurveChainWithDistanceIndex) {
       assert(false, "call handleCurveChainWithDistanceIndex(geomA) instead");
-      return;
     }
     const index0 = this._results.length;
     const geomB = this._geometryB; // save

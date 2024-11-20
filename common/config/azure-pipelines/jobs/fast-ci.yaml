@@ -75,7 +75,7 @@ jobs:
         persistCredentials: true
       - task: NodeTool@0
         inputs:
-          versionSpec: "18.x"
+          versionSpec: "22.x"
 
       - bash: |
           if [[ "$(Build.Reason)" == "PullRequest" ]]; then
@@ -110,13 +110,13 @@ jobs:
     condition: succeeded()
     strategy:
       matrix:
-        "Windows_Node_20":
+        "Windows_Node_22":
           platform: Windows_NT
           name: $(win_pool)
-        "Linux_Node_20":
+        "Linux_Node_22":
           platform: Linux
           name: $(linux_pool)
-        "MacOS_Node_20":
+        "MacOS_Node_22":
           platform: Darwin
           name: $(mac_pool)
 
@@ -135,12 +135,12 @@ jobs:
         clean: true
       - template: ../templates/core-build.yaml
         parameters:
-          nodeVersion: 20.x
+          nodeVersion: 22.x
           buildMobile: true
       # Will run if even there is a failure somewhere else in the pipeline.
       - template: ../templates/publish-test-results.yaml
         parameters:
-          nodeVersion: 20.x
+          nodeVersion: 22.x
       # The publish script identifies any new packages not previously published and tags the build
       - template: ../templates/publish.yaml
 

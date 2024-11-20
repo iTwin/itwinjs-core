@@ -1,6 +1,33 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Wed, 09 Oct 2024 20:23:41 GMT and should not be manually modified.
+This log was last generated on Thu, 14 Nov 2024 18:13:56 GMT and should not be manually modified.
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+_Version update only_
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:38 GMT
+
+### Updates
+
+- Add support for Electron 33
+
+## 4.9.7
+Wed, 06 Nov 2024 19:23:04 GMT
+
+_Version update only_
+
+## 4.9.6
+Tue, 05 Nov 2024 15:22:45 GMT
+
+_Version update only_
+
+## 4.9.5
+Tue, 22 Oct 2024 20:01:40 GMT
+
+_Version update only_
 
 ## 4.9.4
 Wed, 09 Oct 2024 20:22:04 GMT

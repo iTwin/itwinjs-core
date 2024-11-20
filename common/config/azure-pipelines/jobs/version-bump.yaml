@@ -93,12 +93,12 @@ jobs:
         displayName: Get Branch Name
         name: getBranchName
 
-      - bash: git checkout -b $(releaseBranchName)
+      - bash: git checkout -b $(getBranchName.releaseBranchName)
         displayName: Create release branch and checkout
 
       - bash: |
           docsYamlPath="common/config/azure-pipelines/templates/gather-docs.yaml"
-          releaseBranch=$(releaseBranchName)
+          releaseBranch=$(getBranchName.releaseBranchName)
 
           # delimiter
           IFS="."
@@ -132,13 +132,15 @@ jobs:
           fi
         displayName: Update 'gather-docs.yaml' and commit to release branch
 
-      - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(releaseBranchName) -q
+      - bash: git push --set-upstream https://$(GITHUBTOKEN)@github.com/iTwin/itwinjs-core $(getBranchName.releaseBranchName) -q
         displayName: Publish the release branch
 
   - job: Bump
     displayName: Bump Version
-    dependsOn: CreateBranch
-    condition: in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped')
+    dependsOn:
+    - CreateBranch
+    - CheckPrevCommit
+    condition: and(in(dependencies.CreateBranch.result, 'Succeeded', 'Skipped'), in(dependencies.CheckPrevCommit.result, 'Succeeded', 'Skipped'))
     variables:
       releaseBranchName: $[ dependencies.CreateBranch.outputs['getBranchName.releaseBranchName'] ]
     steps:

@@ -339,6 +339,132 @@ describe("KindOfQuantity merge tests", () => {
     });
   });
 
+  describe("merge kind of quantity changes for presentation format", () => {
+    it("should merge missing presentation format", async () => {
+      await Schema.fromJson(referenceJson, targetContext);
+      await Schema.fromJson({
+        ...targetJson,
+        references: [
+          ...targetJson.references,
+          {
+            name: "ReferenceSchema",
+            version: "1.2.0",
+          },
+        ],
+        items: {
+          TestKoq: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.01264587,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+        },
+      }, targetContext);
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.merge({
+        sourceSchemaName: "SourceSchema.01.02.03",
+        targetSchemaName: "TargetSchema.01.00.00",
+        differences: [
+          {
+            changeType: "add",
+            schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat,
+            itemName: "TestKoq",
+            difference: [
+              "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU_PER_TU|tu/tu][ReferenceSchema.KILOTU|undefined]",
+            ],
+          },
+        ],
+      });
+
+      const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+      expect(mergedItem!.toJSON()).deep.equals({
+        schemaItemType: "KindOfQuantity",
+        relativeError: 0.01264587,
+        persistenceUnit: "ReferenceSchema.TU",
+        presentationUnits: [
+          "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU_PER_TU|tu/tu][ReferenceSchema.KILOTU|undefined]",
+        ],
+      });
+    });
+
+    it("should merge changes for presentation formats", async () => {
+      await Schema.fromJson(referenceJson, targetContext);
+      await Schema.fromJson({
+        ...targetJson,
+        references: [
+          ...targetJson.references,
+          {
+            name: "ReferenceSchema",
+            version: "1.2.0",
+          },
+        ],
+        items: {
+          PI_TU: {
+            schemaItemType: "Unit",
+            unitSystem: "ReferenceSchema.TestUnitSystem",
+            phenomenon: "ReferenceSchema.TestPhenomenon",
+            definition: "3.14*TU",
+          },
+          TestReal: {
+            schemaItemType: "Format",
+            type: "Decimal",
+            precision: 6,
+            formatTraits: [
+              "KeepSingleZero",
+              "KeepDecimalPoint",
+            ],
+            decimalSeparator: ",",
+            thousandSeparator: " ",
+          },
+          TestKoq: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "TargetSchema.PI_TU",
+            presentationUnits: [
+              "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU_PER_TU|tu/tu]",
+            ],
+          },
+        },
+      }, targetContext);
+
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.merge({
+        sourceSchemaName: "SourceSchema.01.02.03",
+        targetSchemaName: "TargetSchema.01.00.00",
+        differences: [
+          {
+            changeType: "add",
+            schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat,
+            itemName: "TestKoq",
+            difference: [
+              "ReferenceSchema.TestDecimal(8)[ReferenceSchema.TU_PER_TU|tu/tu]",
+            ],
+          },
+          {
+            changeType: "add",
+            schemaType: SchemaOtherTypes.KindOfQuantityPresentationFormat,
+            itemName: "TestKoq",
+            difference: [
+              "SourceSchema.TestReal(4)[SourceSchema.PI_TU|pi*tu]",
+            ],
+          },
+        ],
+      });
+
+      const mergedItem = await mergedSchema.getItem<KindOfQuantity>("TestKoq");
+      expect(mergedItem!.toJSON()).deep.equals({
+        schemaItemType: "KindOfQuantity",
+        relativeError: 0.0001,
+        persistenceUnit: "TargetSchema.PI_TU",
+        presentationUnits: [
+          "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU_PER_TU|tu/tu]",
+          "ReferenceSchema.TestDecimal(8)[ReferenceSchema.TU_PER_TU|tu/tu]",
+          "TargetSchema.TestReal(4)[TargetSchema.PI_TU|pi*tu]",
+        ],
+      });
+    });
+  });
+
   it("should throw an error when merging kind of quantity persistenceUnit changed", async () => {
     await Schema.fromJson(referenceJson, targetContext);
     await Schema.fromJson({

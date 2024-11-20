@@ -17,7 +17,7 @@ import { LineSegment3d } from "../../curve/LineSegment3d";
 import { LineString3d } from "../../curve/LineString3d";
 import { Path } from "../../curve/Path";
 import { StrokeOptions } from "../../curve/StrokeOptions";
-import { Geometry } from "../../Geometry";
+import { AxisIndex, Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { AngleSweep } from "../../geometry3d/AngleSweep";
 import { Matrix3d } from "../../geometry3d/Matrix3d";
@@ -26,7 +26,7 @@ import { Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Transform } from "../../geometry3d/Transform";
-import { SmallSystem } from "../../numerics/Polynomials";
+import { SmallSystem } from "../../numerics/SmallSystem";
 import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
@@ -774,6 +774,93 @@ describe("Arc3d", () => {
     ck.testUndefined(arc3, "insufficient radius yields undefined");
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "createCircularStartEndRadius");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+  it("rotatedBasis", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let x0 = 0;
+
+    const drawArc = (arc: Arc3d, deltaX: number): void => {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, arc, deltaX);
+      const deg0Pt = arc.center.plus(arc.vector0);
+      const deg90Pt = arc.center.plus(arc.vector90);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [deg0Pt, arc.center, deg90Pt], deltaX);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, deg0Pt, 0.05, deltaX);
+      GeometryCoreTestIO.createAndCaptureXYCircle(allGeometry, deg90Pt, 0.1, deltaX);
+    };
+
+    const testSameArcGeometry = (arcA: Arc3d, arcB: Arc3d): boolean => {
+      return ck.testPoint3d(arcA.fractionToPoint(0), arcB.fractionToPoint(0), "arcs have same start point") &&
+        ck.testPoint3d(arcA.fractionToPoint(0.5), arcB.fractionToPoint(0.5), "arcs have same middle point") &&
+        ck.testPoint3d(arcA.fractionToPoint(1), arcB.fractionToPoint(1), "arcs have same end point");
+    };
+
+    // Challenge: change the basis of an xy-arc so that it is aligned to the global axes without changing the geometry
+
+    // Test case: an xy-arc with arbitrary start angle and normal pointing down
+    const angle = Angle.createDegrees(-10);
+    const center = Point3d.createZero();
+    const basis = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, angle);
+    basis.scaleColumnsInPlace(1, -1, -1); // flipped
+    const sweep = AngleSweep.createStartEndDegrees(0, 120);
+    const arc0 = Arc3d.createRefs(center, basis, sweep);
+    drawArc(arc0, x0);
+    const radius0 = arc0.circularRadiusXY();
+    ck.testDefined(radius0, "arc0 is a circle");
+    ck.testTrue(arc0.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane(arc0.center)), "arc is horizontal");
+    const isFlippedNormal = arc0.perpendicularVector.dotProduct(Vector3d.unitZ()) < 0.0;
+    ck.testTrue(isFlippedNormal, "arc normal points down");
+    x0 += 2;
+
+    // First step: rotate the xy-arc so that vector0 is aligned to the positive x-axis
+    let arc1 = arc0.clone();
+    const toUnitX = arc0.vector0.signedAngleTo(Vector3d.unitX(), arc0.perpendicularVector);
+    if (!toUnitX.isExactZero) {
+      arc1 = arc0.cloneInRotatedBasis(toUnitX);
+      drawArc(arc1, x0);
+    }
+    const radius1 = arc1.circularRadiusXY();
+    if (ck.testDefined(radius1, "arc1 is a circle"))
+      ck.testNearNumber(radius0!, radius1, Geometry.smallAngleRadians, "cloneInRotatedBasis preserves radius");
+    ck.testVector3d(arc1.vector0, Vector3d.unitX(radius1), "cloneInRotatedBasis rotates vector0 to positive x-axis");
+    ck.testTrue(testSameArcGeometry(arc0, arc1), "cloneInRotatedBasis preserves geometry");
+    x0 += 2;
+
+    // Second step: ensure the xy-arc has normal aligned to the positive z-axis
+    let arc2 = arc1.clone();
+    if (isFlippedNormal) {
+      const flip = Transform.createRowValues(1, 0, 0, 0, 0, -1, 0, 0, 0, 0, -1, 0);
+      arc2 = arc1.cloneTransformed(flip);
+      arc2.sweep.setStartEndDegrees(-arc2.sweep.startDegrees, -arc2.sweep.endDegrees);
+      drawArc(arc2, x0);
+    }
+    ck.testTrue(arc2.perpendicularVector.dotProduct(Vector3d.unitZ()) > 0.0, "flipped arc has normal pointing up");
+    ck.testTrue(testSameArcGeometry(arc0, arc2), "flipping arc preserves geometry");
+    const scaledBasis = arc2.matrixRef.scaleColumns(1, 1, radius1!);  // arc colZ is stored normalized
+    const factors = scaledBasis.factorRigidWithSignedScale();
+    if (ck.testDefined(factors, "flipped arc basis is factored")) {
+      ck.testTrue(factors.rigidAxes.isIdentity, "flipped arc basis is global axes");
+      ck.testNearNumber(factors.scale, radius1!, Geometry.smallAngleRadians, "flipped arc basis has expected scale");
+    }
+    x0 += 2;
+
+    // test new API
+    const arc3 = arc0.cloneAxisAligned();
+    if (ck.testDefined(arc3, "cloneAxisAligned succeeded on arc0"))
+      ck.testTrue(arc2.isAlmostEqual(arc3, Geometry.smallAngleRadians, Geometry.smallAngleRadians), "cloneAxisAligned returns expected arc");
+
+    // test non-horizontal, ellipse
+    const arc4 = arc0.cloneTransformed(Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationAroundVector(Vector3d.create(1,2,3), Angle.createDegrees(-35))));
+    arc4.matrixRef.scaleColumnsInPlace(1, 0.6, 1);
+    drawArc(arc4, x0);
+    x0 += 2;
+    const arc5 = arc4.cloneAxisAligned();
+    if (ck.testDefined(arc5, "cloneAxisAligned succeeded on arc4")) {
+      drawArc(arc5, x0);
+      ck.testTrue(testSameArcGeometry(arc4, arc5), "cloneAxisAligned preserves geometry");
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "rotatedBasis");
     expect(ck.getNumErrors()).toBe(0);
   });
 });

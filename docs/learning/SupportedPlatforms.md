@@ -15,16 +15,15 @@ They should run on most Windows, Linux and MacOS versions with [Tier 1 support](
 
 The following Node.js versions are officially supported by the iTwin.js backend code.
 
-> The minimum requirements are driven by Node's compatibility with a specific N-API version. iTwin.js currently requires N-API version 8. See the [Node compatibility matrix](https://nodejs.org/api/n-api.html#n_api_node_api_version_matrix) for more details.
-
-| iTwin.js - Node Support | iTwin.js 1.x | iTwin.js 2.x | iTwin.js 3.x | iTwin.js 4.x |
-| ----------------------- | ------------ | ------------ | ------------ | ------------ |
-| Node 20 (>=20.9)        | ❌           | ❌           | ❌           | ✅ (>= 4.3)  |
-| Node 18 (>=18.12)       | ❌           | ❌           | ✅ (>= 3.5)  | ✅           |
-| Node 16 (>=16.13)       | ❌           | ❌           | ✅           | ❌           |
-| Node 14 (>=14.17)       | ❌           | ✅ (>= 2.13) | ✅           | ❌           |
-| Node 12 (>=12.22)       | ✅           | ✅           | ✅           | ❌           |
-| Node 10                 | ❌           | ❌           | ❌           | ❌           |
+| iTwin.js - Node Support | iTwin.js 3.x | iTwin.js 4.x | iTwin.js 5.x |
+| ----------------------- | ------------ | ------------ | ------------ |
+| Node 22 (>=22.11)       | ❌           | ✅ (>= 4.10) | ✅          |
+| Node 20 (>=20.9)        | ❌           | ✅ (>= 4.3)  | ✅          |
+| Node 18 (>=18.12)       | ✅ (>= 3.5)  | ✅           | ❌          |
+| Node 16 (>=16.13)       | ✅           | ❌           | ❌          |
+| Node 14 (>=14.17)       | ✅           | ❌           | ❌          |
+| Node 12 (>=12.22)       | ✅           | ❌           | ❌          |
+| Node 10                 | ❌           | ❌           | ❌          |
 
 ### Backend Prerequisites
 
@@ -51,7 +50,7 @@ iTwin.js strives to support as many modern browsers as possible, though it requi
 
 ## Electron
 
-To enable the development of desktop applications, iTwin.js supports the latest Electron releases. As of iTwin.js 4.0, Electron 23 is the minimum requirement. See [Electron platform requirements](https://github.com/electron/electron/#platform-support) for supported Windows, Linux and MacOS versions.
+To enable the development of desktop applications, iTwin.js supports the latest Electron releases. As of iTwin.js 5.0, Electron 33 is the minimum requirement. See [Electron platform requirements](https://github.com/electron/electron/#platform-support) for supported Windows, Linux and MacOS versions.
 
 ## Mobile Native
 

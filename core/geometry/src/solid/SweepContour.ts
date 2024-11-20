@@ -91,7 +91,7 @@ export class SweepContour {
     return undefined;
   }
   /** Create for rotational sweep.
-   * @param contour curve to sweep, CAPTURED. For best results, contour should be planar.
+   * @param contour curve to sweep, CAPTURED. For best results, contour should be coplanar with axis.
    * @param axis rotation axis
    */
   public static createForRotation(contour: AnyCurve, axis: Ray3d): SweepContour | undefined {

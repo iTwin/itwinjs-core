@@ -10,6 +10,7 @@ import * as sinon from "sinon";
 import { ArcGisFeatureResponse } from "../../ArcGisFeature/ArcGisFeatureResponse";
 import { esriPBuffer } from "../../ArcGisFeature/esriPBuffer.gen";
 import { PhillyLandmarksDataset } from "./PhillyLandmarksDataset";
+import { arcgisFeatureFormats } from "../../ArcGisFeature/ArcGisFeatureQuery";
 
 describe("ArcGisFeatureResponse", () => {
 
@@ -19,14 +20,14 @@ describe("ArcGisFeatureResponse", () => {
     sandbox.restore();
   });
 
-  it("should return undefined if http error", async () => {
-    const response = new ArcGisFeatureResponse("PBF", Promise.resolve({status: 404} as Response));
+  it("should return undefined if http error ", async () => {
+    const response = new ArcGisFeatureResponse(arcgisFeatureFormats.pbf, Promise.resolve({status: 404} as Response));
     const data = await response.getResponseData();
     expect(data).to.be.undefined;
   });
 
   it("should return undefined if invalid PBF data", async () => {
-    const response = new ArcGisFeatureResponse("PBF", Promise.resolve({
+    const response = new ArcGisFeatureResponse(arcgisFeatureFormats.pbf, Promise.resolve({
       status: 404,
       arrayBuffer: async () => {
         return Promise.resolve(undefined);
@@ -39,7 +40,7 @@ describe("ArcGisFeatureResponse", () => {
   it("should create FeatureCollectionPBuffer from PBF data", async () => {
 
     const fakeResponse  = {
-      headers: { "content-type" : "pbf"},
+      headers: { "content-type" : arcgisFeatureFormats.pbf},
       arrayBuffer: async () => {
         const byteArray = Base64EncodedString.toUint8Array(PhillyLandmarksDataset.phillyTransportationGetFeatureInfoQueryEncodedPbf);
         return Promise.resolve(byteArray ? ByteStream.fromUint8Array(byteArray).arrayBuffer : undefined);
@@ -47,7 +48,7 @@ describe("ArcGisFeatureResponse", () => {
       status: 200,
     } as unknown;
 
-    const response = new ArcGisFeatureResponse("PBF", Promise.resolve(fakeResponse as Response));
+    const response = new ArcGisFeatureResponse(arcgisFeatureFormats.pbf, Promise.resolve(fakeResponse as Response));
     const data = await response.getResponseData();
     expect(data?.exceedTransferLimit).to.be.false;
     expect(data?.data instanceof esriPBuffer.FeatureCollectionPBuffer).to.be.true;
@@ -58,7 +59,7 @@ describe("ArcGisFeatureResponse", () => {
     const collection = esriPBuffer.FeatureCollectionPBuffer.fromObject(PhillyLandmarksDataset.phillyExceededTransferLimitPbf);
 
     const fakeResponse  = {
-      headers: { "content-type" : "pbf"},
+      headers: { "content-type" : arcgisFeatureFormats.pbf},
       arrayBuffer: async () => {
         const byteArray = collection.serialize();
         return Promise.resolve(byteArray ? ByteStream.fromUint8Array(byteArray).arrayBuffer : undefined);
@@ -66,14 +67,14 @@ describe("ArcGisFeatureResponse", () => {
       status: 200,
     } as unknown;
 
-    const response = new ArcGisFeatureResponse("PBF", Promise.resolve(fakeResponse as Response));
+    const response = new ArcGisFeatureResponse(arcgisFeatureFormats.pbf, Promise.resolve(fakeResponse as Response));
     const data = await response.getResponseData();
     expect(data?.exceedTransferLimit).to.be.true;
     expect(data?.data instanceof esriPBuffer.FeatureCollectionPBuffer).to.be.true;
   });
 
   it("should return undefined if invalid JSON", async () => {
-    const response = new ArcGisFeatureResponse("JSON", Promise.resolve({
+    const response = new ArcGisFeatureResponse(arcgisFeatureFormats.json, Promise.resolve({
       status: 404,
       json: async () => {
         return undefined;
@@ -84,7 +85,7 @@ describe("ArcGisFeatureResponse", () => {
   });
 
   it("should return JSON data", async () => {
-    const response = new ArcGisFeatureResponse("JSON", Promise.resolve({
+    const response = new ArcGisFeatureResponse(arcgisFeatureFormats.json, Promise.resolve({
       status: 200,
       json: async () => {
         return {exceededTransferLimit: false};
@@ -96,7 +97,7 @@ describe("ArcGisFeatureResponse", () => {
   });
 
   it("should report exceededTransferLimit from JSON object", async () => {
-    const response = new ArcGisFeatureResponse("JSON", Promise.resolve({
+    const response = new ArcGisFeatureResponse(arcgisFeatureFormats.json, Promise.resolve({
       status: 200,
       json: async () => {
         return {exceededTransferLimit: true};

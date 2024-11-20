@@ -210,7 +210,6 @@ export class ColorDef {
 
           break;
       }
-      // eslint-disable-next-line no-cond-assign
     } else if (m = /^\#([a-f0-9]+)$/.exec(val)) {  // hex color
       const hex = m[1];
       const size = hex.length;
@@ -589,14 +588,12 @@ export class ColorDef {
 
     let r = 0, b = 0, g = 0;
     switch (hueIntpart) {
-      /* eslint-disable max-statements-per-line */
       case 0: r = v; g = t; b = p; break; // reddish
       case 1: r = q, g = v; b = p; break; // yellowish
       case 2: r = p, g = v; b = t; break; // greenish
       case 3: r = p, g = q; b = v; break; // cyanish
       case 4: r = t, g = p; b = v; break; // bluish
       case 5: r = v, g = p; b = q; break; // magenta-ish
-      /* eslint-enable max-statements-per-line */
     }
 
     return ColorDef.from(r, g, b, transparency);

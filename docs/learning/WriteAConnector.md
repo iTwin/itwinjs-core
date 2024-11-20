@@ -362,7 +362,7 @@ The framework will automatically detect and delete elements and models if the co
 
 ### Getting started
 
-You'll need to install a supported version of Node.js, Node 20 LTS is suggested. Please refer to [development prerequisites](./tutorials/development-prerequisites.md) for more details.
+You'll need to install a supported version of Node.js, Node 22 LTS is suggested. Please refer to [development prerequisites](./tutorials/development-prerequisites.md) for more details.
 
 The node packages you'll need can be installed using
 
@@ -591,7 +591,7 @@ Job-subject scoping also prevents problems with locks and codes. The codes used 
 
 ### Unmap
 
-The Unmap mode allows removing all data from a given input source from the iModel. This is important because iModels contain data from many sources and users may need to selectively remove data (e.g. maybe it moved, maybe there's now a better Connector, or maybe it was added by mistake).  **shouldUnmapSource** is a job argument (i.e. this.jobArgs.shouldUnmapSource) that can be passed to the ConnectorRunner and it will call the connector's **unmapSource** method.
+The Unmap mode allows removing all data from a given input source from the iModel. This is important because iModels contain data from many sources and users may need to selectively remove data (e.g. maybe it moved, maybe there's now a better Connector, or maybe it was added by mistake). **shouldUnmapSource** is a job argument (i.e. this.jobArgs.shouldUnmapSource) that can be passed to the ConnectorRunner and it will call the connector's **unmapSource** method.
 
 ConnectorRunner calls the unmapSource method if argument is defined:
 
@@ -609,7 +609,7 @@ unmapSource method in TestConnector:
 
 ### Shared Channels
 
-New to iTwinjs 4.6 (connector-framework version 2.1) is the concept of shared channels.  The connector framework is updated to work with either shared channels or with channels requiring a channel key.  Shared channels will be the default.  The BaseConnector's getChannelKey method returns the shared channel.  Note: beginning in iTwinjs 5.0, this will likely reverse and the default will require a channel key and the connector will need to override this method to get the shared channel key.
+New to iTwinjs 4.6 (connector-framework version 2.1) is the concept of shared channels. The connector framework is updated to work with either shared channels or with channels requiring a channel key. Shared channels will be the default. The BaseConnector's getChannelKey method returns the shared channel. Note: beginning in iTwinjs 5.0, this will likely reverse and the default will require a channel key and the connector will need to override this method to get the shared channel key.
 
 BaseConnector's getChannelKey method:
 
@@ -629,11 +629,11 @@ For more information on channels see [Working with "Editing Channels" in iModels
 
 ### Deletion Detection
 
-Deletion detection is simply the synchronizer's deleting of an existing element on subsequent connector runs based on the element's omission.  For example, if a connector publishes elements a,b and c in the first run and then b,c and d in a subsequent run, a is determined to be deleted and the syncronizer will delete it along with any of a's children from the imodel.
+Deletion detection is simply the synchronizer's deleting of an existing element on subsequent connector runs based on the element's omission. For example, if a connector publishes elements a,b and c in the first run and then b,c and d in a subsequent run, a is determined to be deleted and the syncronizer will delete it along with any of a's children from the imodel.
 
 ### Deletion Detection Params
 
-When detectecting deletions, it is necessary to locate child elements of deleted elements to in turn delete the children and search for their children and so on.  This location requires navigating from the top down through the hierarchy of elements.  Unfortunately, earlier versions of the TestConnector, demonstrated external source aspects relating elements to partions rather than repository links which ultimately point back to files as the convention for model provinence requires.  Some connector developers in turn, followed this example and similarly created the external source aspect relating to partitions rather than repository links.  Therefore, it became necessary to support both 'channel based' (navigating from the JobSubject down) and 'file based' (navigating from a repository link down associated with an external source file).  Thus, deletion detection params were introduced to allow a connector developer to steer the logic toward either file based (preferred) or channel based deletion detection.
+When detectecting deletions, it is necessary to locate child elements of deleted elements to in turn delete the children and search for their children and so on. This location requires navigating from the top down through the hierarchy of elements. Unfortunately, earlier versions of the TestConnector, demonstrated external source aspects relating elements to partions rather than repository links which ultimately point back to files as the convention for model provinence requires. Some connector developers in turn, followed this example and similarly created the external source aspect relating to partitions rather than repository links. Therefore, it became necessary to support both 'channel based' (navigating from the JobSubject down) and 'file based' (navigating from a repository link down associated with an external source file). Thus, deletion detection params were introduced to allow a connector developer to steer the logic toward either file based (preferred) or channel based deletion detection.
 
 ```ts
 [[include:Syncronizer-DeletionDetectionParams.cf-code]]
@@ -651,7 +651,7 @@ For an example of overriding getDeletionDetectionParams see:
 [[include:TestConnector-getDeletionDetectionParams.cf-code]]
 ```
 
-The above example checks an environment variable which is strictly intended for the test connector as it allows us to test BOTH file based AND legacy (channel based) deletion detection with the same connector.  Any new connector author/developer should choose file-based.
+The above example checks an environment variable which is strictly intended for the test connector as it allows us to test BOTH file based AND legacy (channel based) deletion detection with the same connector. Any new connector author/developer should choose file-based.
 
 The tests which run the test connector with file-based deletion detection is located at:
 
@@ -667,7 +667,7 @@ Its channel based counterpart is located at:
 
 ### Changeset Groups
 
-Each connector run will create approximately five changesets for a given run.  Some find it preferable to see a single entry for the complete run rather than several granular, intermediate changes.  Changeset Groups were introduced to wrap these smaller changes under a single description.
+Each connector run will create approximately five changesets for a given run. Some find it preferable to see a single entry for the complete run rather than several granular, intermediate changes. Changeset Groups were introduced to wrap these smaller changes under a single description.
 
 It is easy to implement Changeset Groups in your connector, simply override the shouldCreateChangeSetGroup method to return true.
 
