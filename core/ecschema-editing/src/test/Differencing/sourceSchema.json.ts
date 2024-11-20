@@ -89,6 +89,7 @@ export default {
       schemaItemType: "Enumeration",
       type: "string",
       label: "Source ChangedEnumeration",
+      isStrict: false,
       enumerators: [
         {
           name: "EnumeratorOne",
