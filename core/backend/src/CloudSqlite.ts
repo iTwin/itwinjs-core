@@ -502,8 +502,7 @@ export namespace CloudSqlite {
      * Notes:
      * - no changes made by other processes are visible to this CloudContainer unless/until this method is called.
      * - note this is automatically called whenever the write lock is obtained to ensure all changes are against the latest version.
-     * - any open database within the container at the time of calling checkForChanges will not reflect any new changes
-     *    pulled in, if any, until the database is closed and reopened.
+     * - any existing transactions on databases within the container will continue to use the old version of the manifest and therefore see no new changes pulled in.
      */
     checkForChanges(): void;
 
