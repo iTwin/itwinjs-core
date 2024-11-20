@@ -13,7 +13,7 @@ variables:
   - name: win_pool
     value: "iModelTechCI"
   - name: linux_pool
-    value: "iModeljs Linux"
+    value: "imodelNative-Debian12"
   - name: mac_pool
     value: "iModelTechMacArm"
   - name: BUILD_URL
