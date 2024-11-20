@@ -45,7 +45,7 @@ export interface ColumnInfoProps{
   generated?: boolean;
   index?: number;
   jsonName?: string;
-  extendedType?: string;
+  extendedType?: string; // expected extendedType value should be given when we know that the actual column info extendedType will be a valid non empty string for test to pass
   type?: string; // type is used on ECSqlStatement because it can differ from TypeName
   typeName?: string; // typeName is used on ConcurrentQuery
   originPropertyName?: string; // only supported for ECSqlStatement

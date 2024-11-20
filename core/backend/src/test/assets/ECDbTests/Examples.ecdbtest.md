@@ -37,7 +37,8 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
       "name": "ECClassId",
       "type": "Id",
       "typeName": "long",
-      "generated": false
+      "generated": false,
+      "extendedType": "ClassId"
     },
     {
       "accessString": "DirectStr",
@@ -63,7 +64,7 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
 ]
 ```
 
-# Select Test elements from sample dataset using Json
+# Select Test elements from sample dataset with convertClassIdsToClassNames flag using Json
 
 - dataset: AllProperties.bim
 - convertClassIdsToClassNames: true
@@ -80,7 +81,8 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
       "name": "ECClassId",
       "type": "Id",
       "typeName": "long",
-      "generated": false
+      "generated": false,
+      "extendedType": "ClassId"
     },
     {
       "accessString": "DirectStr",

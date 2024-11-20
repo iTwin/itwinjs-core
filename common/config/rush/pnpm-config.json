@@ -9,7 +9,9 @@
       "@typescript-eslint/parser"
     ]
   },
-  "globalOverrides": {},
+  "globalOverrides": {
+    "cross-spawn": "^7.0.5" // https://github.com/advisories/GHSA-3xgq-45jj-v275 npm-run-all>cross-spawn
+  },
   // A list of temporary advisories excluded from the High and Critical list.
   // Warning this should only be used as a temporary measure to avoid build failures
   // for development dependencies only.

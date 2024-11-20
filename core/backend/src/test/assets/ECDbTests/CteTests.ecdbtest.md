@@ -64,7 +64,7 @@ with tmp as (SELECT e.p2d FROM aps.TestElement e LIMIT 1) select * from tmp
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type    |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- |
-|           | p2d          | false     | 0     | p2d      | p2d  |              | point2d  | Point2d |
+|           | p2d          | false     | 0     | p2d      | p2d  | undefined    | point2d  | Point2d |
 
 | p2d                     |
 | ----------------------- |
@@ -80,7 +80,7 @@ with tmp as (SELECT e.p2d FROM aps.TestElement e LIMIT 1) select p2d.x from tmp
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
-|           | p2d.X        | false     | 0     | X        | X    |              | double   | Double |
+|           | p2d.X        | false     | 0     | X        | X    | undefined    | double   | Double |
 
 | X     |
 | ----- |
@@ -96,7 +96,7 @@ with tmp as (SELECT e.array_p2d FROM aps.TestElement e LIMIT 1) select array_p2d
 
 | className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
 | --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
-|           | array_p2d    | false     | 0     | array_p2d | array_p2d |              | point2d  | PrimitiveArray |
+|           | array_p2d    | false     | 0     | array_p2d | array_p2d | undefined    | point2d  | PrimitiveArray |
 
 | array_p2d                                             |
 | ----------------------------------------------------- |
@@ -112,7 +112,7 @@ with tmp as (SELECT e.p3d FROM aps.TestElement e LIMIT 1) select * from tmp
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type    |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- |
-|           | p3d          | false     | 0     | p3d      | p3d  |              | point3d  | Point3d |
+|           | p3d          | false     | 0     | p3d      | p3d  | undefined    | point3d  | Point3d |
 
 | p3d                            |
 | ------------------------------ |
@@ -128,7 +128,7 @@ select p3d from (with tmp as (SELECT e.p3d FROM aps.TestElement e LIMIT 1) selec
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type    |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- |
-|           | p3d          | false     | 0     | p3d      | p3d  |              | point3d  | Point3d |
+|           | p3d          | false     | 0     | p3d      | p3d  | undefined    | point3d  | Point3d |
 
 | p3d                            |
 | ------------------------------ |
@@ -144,7 +144,7 @@ with tmp as (SELECT e.array_p3d FROM aps.TestElement e LIMIT 1) select array_p3d
 
 | className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
 | --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
-|           | array_p3d    | false     | 0     | array_p3d | array_p3d |              | point3d  | PrimitiveArray |
+|           | array_p3d    | false     | 0     | array_p3d | array_p3d | undefined    | point3d  | PrimitiveArray |
 
 | array_p3d                                                                 |
 | ------------------------------------------------------------------------- |
@@ -160,7 +160,7 @@ with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | x            | true      | 0     | x        | x    |              | int      | Int  |
+|           | x            | true      | 0     | x        | x    | undefined    | int      | Int  |
 
 | x   |
 | --- |
@@ -176,7 +176,7 @@ with tmp(x) as (SELECT e.array_i FROM aps.TestElement e LIMIT 1) select x from t
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
-|           | x            | true      | 0     | x        | x    |              | int      | PrimitiveArray |
+|           | x            | true      | 0     | x        | x    | undefined    | int      | PrimitiveArray |
 
 | x         |
 | --------- |
@@ -192,7 +192,7 @@ with tmp(x) as (SELECT e.l FROM aps.TestElement e order by e.l LIMIT 1) select x
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type  |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ----- |
-|           | x            | true      | 0     | x        | x    |              | long     | Int64 |
+|           | x            | true      | 0     | x        | x    | undefined    | long     | Int64 |
 
 | x    |
 | ---- |
@@ -208,7 +208,7 @@ with tmp(x) as (SELECT e.array_l FROM aps.TestElement e LIMIT 1) select x from t
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
-|           | x            | true      | 0     | x        | x    |              | long     | PrimitiveArray |
+|           | x            | true      | 0     | x        | x    | undefined    | long     | PrimitiveArray |
 
 | x                     |
 | --------------------- |
@@ -224,7 +224,7 @@ with tmp(x) as (SELECT e.d FROM aps.TestElement e order by e.d LIMIT 1) select x
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
-|           | x            | true      | 0     | x        | x    |              | double   | Double |
+|           | x            | true      | 0     | x        | x    | undefined    | double   | Double |
 
 | x   |
 | --- |
@@ -240,7 +240,7 @@ with tmp(x) as (SELECT e.array_d FROM aps.TestElement e LIMIT 1) select x from t
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
-|           | x            | true      | 0     | x        | x    |              | double   | PrimitiveArray |
+|           | x            | true      | 0     | x        | x    | undefined    | double   | PrimitiveArray |
 
 | x               |
 | --------------- |
@@ -256,7 +256,7 @@ with tmp(x) as (SELECT e.dt FROM aps.TestElement e order by e.dt LIMIT 1) select
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type     |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------- |
-|           | x            | true      | 0     | x        | x    |              | dateTime | DateTime |
+|           | x            | true      | 0     | x        | x    | undefined    | dateTime | DateTime |
 
 | x                       |
 | ----------------------- |
@@ -272,7 +272,7 @@ with tmp(x) as (SELECT e.array_dt FROM aps.TestElement e LIMIT 1) select x from 
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
-|           | x            | true      | 0     | x        | x    |              | dateTime | PrimitiveArray |
+|           | x            | true      | 0     | x        | x    | undefined    | dateTime | PrimitiveArray |
 
 | x                                                      |
 | ------------------------------------------------------ |
@@ -288,7 +288,7 @@ with tmp(x) as (SELECT e.s FROM aps.TestElement e order by e.s LIMIT 1) select x
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
-|           | x            | true      | 0     | x        | x    |              | string   | String |
+|           | x            | true      | 0     | x        | x    | undefined    | string   | String |
 
 | x    |
 | ---- |
@@ -304,7 +304,7 @@ with tmp(x) as (SELECT e.array_s FROM aps.TestElement e LIMIT 1) select x from t
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type           |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------------- |
-|           | x            | true      | 0     | x        | x    |              | string   | PrimitiveArray |
+|           | x            | true      | 0     | x        | x    | undefined    | string   | PrimitiveArray |
 
 | x                  |
 | ------------------ |
@@ -386,7 +386,7 @@ with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | y            | true      | 0     | y        | y    |              | int      | Int  |
+|           | y            | true      | 0     | y        | y    | undefined    | int      | Int  |
 
 | y   |
 | --- |
@@ -402,7 +402,7 @@ select y from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LI
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | y            | true      | 0     | y        | y    |              | int      | Int  |
+|           | y            | true      | 0     | y        | y    | undefined    | int      | Int  |
 
 | y   |
 | --- |
@@ -419,7 +419,7 @@ with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select t
 
 | className | accessString | generated | index | jsonName | name    | extendedType | typeName | type |
 | --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ---- |
-|           | temp1.x      | true      | 0     | temp1.x  | temp1.x |              | int      | Int  |
+|           | temp1.x      | true      | 0     | temp1.x  | temp1.x | undefined    | int      | Int  |
 
 | temp1.x |
 | ------- |
@@ -445,8 +445,7 @@ with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select t
       "generated": true,
       "index": 0,
       "className": "",
-      "jsonName": "temp.x",
-      "extendedType": ""
+      "jsonName": "temp.x"
     }
   ]
 }
@@ -466,7 +465,7 @@ select x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LI
 
 | className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | x            | true      | 0     | x        | x    |              | int      | Int  |
+|           | x            | true      | 0     | x        | x    | undefined    | int      | Int  |
 
 | x   |
 | --- |
@@ -483,7 +482,7 @@ select temp1.x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by 
 
 | className | accessString | generated | index | jsonName | name    | extendedType | typeName | type |
 | --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ---- |
-|           | temp1.x      | true      | 0     | temp1.x  | temp1.x |              | int      | Int  |
+|           | temp1.x      | true      | 0     | temp1.x  | temp1.x | undefined    | int      | Int  |
 
 | temp1.x |
 | ------- |

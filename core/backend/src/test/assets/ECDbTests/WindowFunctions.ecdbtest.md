@@ -22,9 +22,9 @@ WHERE
 | className                | accessString | generated | index | jsonName  | name      | extendedType | typeName | type     | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------- | ------------------ |
 |                          | MyId         | true      | 0     | myId      | MyId      | Id           | long     | Id       | ECInstanceId       |
-| AllProperties:IPrimitive | s            | false     | 1     | s         | s         |              | string   | String   | s                  |
-|                          | Date         | true      | 2     | date      | Date      |              | dateTime | DateTime | dt                 |
-|                          | RowNumber    | true      | 3     | rowNumber | RowNumber |              | long     | Int64    | undefined          |
+| AllProperties:IPrimitive | s            | false     | 1     | s         | s         | undefined    | string   | String   | s                  |
+|                          | Date         | true      | 2     | date      | Date      | undefined    | dateTime | DateTime | dt                 |
+|                          | RowNumber    | true      | 3     | rowNumber | RowNumber | undefined    | long     | Int64    | undefined          |
 
 | MyId | s    | Date                    | RowNumber |
 | ---- | ---- | ----------------------- | --------- |
@@ -45,8 +45,8 @@ SELECT i, rank() over(ORDER BY dt) as [rank] from aps.TestElement
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type  | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ----- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i        | i    |              | int      | Int   | i                  |
-|                          | rank         | true      | 1     | rank     | rank |              | long     | Int64 | undefined          |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      | Int   | i                  |
+|                          | rank         | true      | 1     | rank     | rank | undefined    | long     | Int64 | undefined          |
 
 | i   | rank |
 | --- | ---- |
@@ -71,8 +71,8 @@ SELECT i, dense_rank() over(ORDER BY dt) as [rank] from aps.TestElement WHERE i 
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type  | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ----- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i        | i    |              | int      | Int   | i                  |
-|                          | rank         | true      | 1     | rank     | rank |              | long     | Int64 | undefined          |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      | Int   | i                  |
+|                          | rank         | true      | 1     | rank     | rank | undefined    | long     | Int64 | undefined          |
 
 | i   | rank |
 | --- | ---- |
@@ -102,9 +102,9 @@ ORDER BY re.[rank] DESC
 
 | className | accessString | generated | index | jsonName   | name       | extendedType | typeName | type  | originPropertyName |
 | --------- | ------------ | --------- | ----- | ---------- | ---------- | ------------ | -------- | ----- | ------------------ |
-|           | i            | true      | 0     | i          | i          |              | int      | Int   | undefined          |
-|           | rank         | true      | 1     | rank       | rank       |              | long     | Int64 | undefined          |
-|           | copyOfRank   | true      | 2     | copyOfRank | copyOfRank |              | long     | Int64 | undefined          |
+|           | i            | true      | 0     | i          | i          | undefined    | int      | Int   | undefined          |
+|           | rank         | true      | 1     | rank       | rank       | undefined    | long     | Int64 | undefined          |
+|           | copyOfRank   | true      | 2     | copyOfRank | copyOfRank | undefined    | long     | Int64 | undefined          |
 
 | i   | rank | copyOfRank |
 | --- | ---- | ---------- |
@@ -133,9 +133,9 @@ WHERE
 | className | accessString | generated | index | jsonName   | name       | extendedType | typeName | type   | originPropertyName |
 | --------- | ------------ | --------- | ----- | ---------- | ---------- | ------------ | -------- | ------ | ------------------ |
 |           | MyId         | true      | 0     | myId       | MyId       | Id           | long     | Id     | ECInstanceId       |
-|           | percent      | true      | 1     | percent    | percent    |              | double   | Double | undefined          |
-|           | cumeDist     | true      | 2     | cumeDist   | cumeDist   |              | double   | Double | undefined          |
-|           | half         | true      | 3     | half       | half       |              | long     | Int64  | undefined          |
+|           | percent      | true      | 1     | percent    | percent    | undefined    | double   | Double | undefined          |
+|           | cumeDist     | true      | 2     | cumeDist   | cumeDist   | undefined    | double   | Double | undefined          |
+|           | half         | true      | 3     | half       | half       | undefined    | long     | Int64  | undefined          |
 |           | previousId   | true      | 4     | previousId | previousId | Id           | long     | Id     | undefined          |
 |           | nextId       | true      | 5     | nextId     | nextId     | Id           | long     | Id     | undefined          |
 
@@ -163,9 +163,9 @@ SELECT
 
 | className                | accessString | generated | index | jsonName | name    | extendedType | typeName | type | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ---- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i        | i       |              | int      | Int  | i                  |
-|                          | firstId      | true      | 1     | firstId  | firstId |              | int      | Int  | undefined          |
-|                          | lastId       | true      | 2     | lastId   | lastId  |              | int      | Int  | undefined          |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i       | undefined    | int      | Int  | i                  |
+|                          | firstId      | true      | 1     | firstId  | firstId | undefined    | int      | Int  | undefined          |
+|                          | lastId       | true      | 2     | lastId   | lastId  | undefined    | int      | Int  | undefined          |
 
 | i   | firstId | lastId |
 | --- | ------- | ------ |
@@ -190,9 +190,9 @@ SELECT te.i, te.dt, MAX(i) OVER (partition by dt) as [max] from aps.TestElement 
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type     | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i        | i    |              | int      | Int      | i                  |
-| AllProperties:IPrimitive | dt           | false     | 1     | dt       | dt   |              | dateTime | DateTime | dt                 |
-|                          | max          | true      | 2     | max      | max  |              | int      | Int      | undefined          |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      | Int      | i                  |
+| AllProperties:IPrimitive | dt           | false     | 1     | dt       | dt   | undefined    | dateTime | DateTime | dt                 |
+|                          | max          | true      | 2     | max      | max  | undefined    | int      | Int      | undefined          |
 
 | i   | dt                      | max |
 | --- | ----------------------- | --- |
@@ -217,9 +217,9 @@ SELECT te.i, te.dt, MAX(i) FILTER(WHERE i < 105) OVER (partition by dt) as [max]
 
 | className                | accessString | generated | index | jsonName | name | extendedType | typeName | type     | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i        | i    |              | int      | Int      | i                  |
-| AllProperties:IPrimitive | dt           | false     | 1     | dt       | dt   |              | dateTime | DateTime | dt                 |
-|                          | max          | true      | 2     | max      | max  |              | int      | Int      | undefined          |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      | Int      | i                  |
+| AllProperties:IPrimitive | dt           | false     | 1     | dt       | dt   | undefined    | dateTime | DateTime | dt                 |
+|                          | max          | true      | 2     | max      | max  | undefined    | int      | Int      | undefined          |
 
 | i   | dt                      | max |
 | --- | ----------------------- | --- |
@@ -244,8 +244,8 @@ SELECT te.i, first_value(i) OVER (order by i ROWS CURRENT ROW) as [first] from a
 
 | className                | accessString | generated | index | jsonName | name  | extendedType | typeName | type | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ---- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i        | i     |              | int      | Int  | i                  |
-|                          | first        | true      | 1     | first    | first |              | int      | Int  | undefined          |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i     | undefined    | int      | Int  | i                  |
+|                          | first        | true      | 1     | first    | first | undefined    | int      | Int  | undefined          |
 
 | i   | first |
 | --- | ----- |
@@ -270,8 +270,8 @@ SELECT te.i, first_value(i) OVER (order by i ROWS BETWEEN UNBOUNDED PRECEDING AN
 
 | className                | accessString | generated | index | jsonName | name  | extendedType | typeName | type | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ---- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i        | i     |              | int      | Int  | i                  |
-|                          | first        | true      | 1     | first    | first |              | int      | Int  | undefined          |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i     | undefined    | int      | Int  | i                  |
+|                          | first        | true      | 1     | first    | first | undefined    | int      | Int  | undefined          |
 
 | i   | first |
 | --- | ----- |
@@ -296,8 +296,8 @@ SELECT te.i, last_value(i) OVER (order by dt GROUPS UNBOUNDED PRECEDING) as [gro
 
 | className                | accessString | generated | index | jsonName | name  | extendedType | typeName | type | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ---- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i        | i     |              | int      | Int  | i                  |
-|                          | group        | true      | 1     | group    | group |              | int      | Int  | undefined          |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i     | undefined    | int      | Int  | i                  |
+|                          | group        | true      | 1     | group    | group | undefined    | int      | Int  | undefined          |
 
 | i   | group |
 | --- | ----- |
@@ -322,8 +322,8 @@ SELECT te.i, first_value(i) OVER (order by dt RANGE 0 + 1 PRECEDING EXCLUDE NO O
 
 | className                | accessString | generated | index | jsonName | name  | extendedType | typeName | type | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ---- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i        | i     |              | int      | Int  | i                  |
-|                          | range        | true      | 1     | range    | range |              | int      | Int  | undefined          |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i     | undefined    | int      | Int  | i                  |
+|                          | range        | true      | 1     | range    | range | undefined    | int      | Int  | undefined          |
 
 | i   | range |
 | --- | ----- |
@@ -357,9 +357,9 @@ WINDOW
 
 | className                | accessString | generated | index | jsonName  | name      | extendedType | typeName | type     | originPropertyName |
 | ------------------------ | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i         | i         |              | int      | Int      | i                  |
-|                          | Date         | true      | 1     | date      | Date      |              | dateTime | DateTime | dt                 |
-|                          | RowNumber    | true      | 2     | rowNumber | RowNumber |              | long     | Int64    | undefined          |
+| AllProperties:IPrimitive | i            | false     | 0     | i         | i         | undefined    | int      | Int      | i                  |
+|                          | Date         | true      | 1     | date      | Date      | undefined    | dateTime | DateTime | dt                 |
+|                          | RowNumber    | true      | 2     | rowNumber | RowNumber | undefined    | long     | Int64    | undefined          |
 
 | i   | Date                    | RowNumber |
 | --- | ----------------------- | --------- |
@@ -386,8 +386,8 @@ WINDOW
 
 | className                | accessString  | generated | index | jsonName      | name          | extendedType | typeName | type   | originPropertyName |
 | ------------------------ | ------------- | --------- | ----- | ------------- | ------------- | ------------ | -------- | ------ | ------------------ |
-| AllProperties:IPrimitive | i             | false     | 0     | i             | i             |              | int      | Int    | i                  |
-|                          | othersInGroup | true      | 1     | othersInGroup | othersInGroup |              | string   | String | undefined          |
+| AllProperties:IPrimitive | i             | false     | 0     | i             | i             | undefined    | int      | Int    | i                  |
+|                          | othersInGroup | true      | 1     | othersInGroup | othersInGroup | undefined    | string   | String | undefined          |
 
 | i   | othersInGroup       |
 | --- | ------------------- |

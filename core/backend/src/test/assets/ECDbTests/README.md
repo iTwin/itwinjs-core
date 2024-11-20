@@ -96,6 +96,7 @@ accessString?: string;
 generated?: boolean;
 index?: number;
 jsonName?: string;
+// expected extendedType value should be given when we know that the actual column info extendedType will be a valid non empty string for test to pass
 extendedType?: string;
 type?: string; // type is used on ECSqlStatement because it can differ from TypeName
 typeName?: string; // typeName is used on ConcurrentQuery only

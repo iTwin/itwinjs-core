@@ -268,9 +268,8 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
             assert.strictEqual(colInfo.accessString, expectedColInfo.accessString, `Expected access string ${expectedColInfo.accessString} but got ${colInfo.accessString} for column index ${i}`);
           if (expectedColInfo.typeName !== undefined)
             assert.strictEqual(colInfo.typeName, expectedColInfo.typeName, `Expected type name ${expectedColInfo.typeName} but got ${colInfo.typeName} for column index ${i}`);
-          if(expectedColInfo.extendedType !== undefined) {
-            assert.strictEqual((colInfo as any).extendedType, expectedColInfo.extendedType, `Expected extended type ${expectedColInfo.extendedType} but got ${(colInfo as any).extendedType} for column index ${i}`);
-          }
+          assert.strictEqual(colInfo.extendedType, expectedColInfo.extendedType, `Expected extended type ${expectedColInfo.extendedType} but got ${colInfo.extendedType} for column index ${i}`);
+          assert.strictEqual(colInfo.extendType, expectedColInfo.extendedType === undefined ? "" : expectedColInfo.extendedType, `Expected extend type ${expectedColInfo.extendedType === undefined ? "" : expectedColInfo.extendedType} but got ${colInfo.extendType} for column index ${i}`);  // eslint-disable-line @typescript-eslint/no-deprecated
         }
       }
 

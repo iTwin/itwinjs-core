@@ -11,10 +11,10 @@ Select s.Name, s.Alias from meta.ECSchemaDef s WHERE s.Name LIKE 'ECDb%' LIMIT 4
 
 - rowFormat: ECSqlIndexes
 
-| name     | type   |
-| -------- | ------ |
-| Name     | String |
-| Alias    | String |
+| name  | type   |
+| ----- | ------ |
+| Name  | String |
+| Alias | String |
 
 |                    |         |
 | ------------------ | ------- |
@@ -41,7 +41,8 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
       "name": "ECClassId",
       "type": "Id",
       "typeName": "long",
-      "generated": false
+      "generated": false,
+      "extendedType": "ClassId"
     },
     {
       "accessString": "DirectStr",
