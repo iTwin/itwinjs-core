@@ -104,7 +104,7 @@ It is not relevant for someone trying to bring in data for which a Connector alr
 
 ### Ways to sync data to an iTwin
 
-[The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Synchronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provide a two different [Ways to sync your data to an iTwin](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin#LimPortal) Lastly, the [iTwin Snapshot Application](./tutorials/itwin-snapshot-app) is a free tool for developers to create a read-only, static "snapshot" of an iModel and visualize it.
+[The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Synchronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provide a two different [Ways to sync your data to an iTwin](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin#LimPortal)
 
 The following are the various steps involved in that workflow.
 ![iTwin workflow](https://communities.bentley.com/resized-image/__size/650x340/__key/communityserver-wikis-components-files/00-00-00-05-55/pastedimage1591602805184v1.png)
