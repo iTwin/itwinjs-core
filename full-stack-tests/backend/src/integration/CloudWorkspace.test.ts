@@ -471,8 +471,9 @@ describe("Cloud workspace containers", () => {
 
     const newVal = defaultWorkspaceDb.getString("string 1");
     expect(newVal).equal("value of string 1");
-    defaultWorkspaceDb.close();
-    defaultWorkspaceDb.open();
+    //defaultWorkspaceDb.close();
+    //defaultWorkspaceDb.open();
+    defaultWorkspaceDb.sqliteDb.nativeDb.restartDefaultTxn();
     const newVal2 = defaultWorkspaceDb.getString("string 1");
     expect(newVal2).equal("value of string 1 updated");
 
