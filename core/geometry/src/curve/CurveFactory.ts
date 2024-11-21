@@ -347,14 +347,14 @@ export class CurveFactory {
     const vector0 = Vector3d.create();
     const vector90 = Vector3d.create();
     const vectorBC = Vector3d.create();
-    let sweep = AngleSweep.create360();
+    const sweep = AngleSweep.create360();
     centerline.vectorIndexIndex(0, 1, vectorBC)!;
     let initialSection: Arc3d;
     if (sectionData instanceof Arc3d) {
       initialSection = sectionData.clone();
       vector0.setFrom(sectionData.vector0);
       vector90.setFrom(sectionData.vector90);
-      sweep = sectionData.sweep;
+      sweep.setFrom(sectionData.sweep); // allow e.g., half-pipe
       let i = 1;
       while (centerline.almostEqualIndexIndex(0, i))
         i++;
