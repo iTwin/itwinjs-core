@@ -207,7 +207,7 @@ SELECT te.i, te.dt, MAX(i) OVER (partition by dt) as [max] from aps.TestElement 
 | 106 | 2017-01-01T00:00:00.000 | 108 |
 | 108 | 2017-01-01T00:00:00.000 | 108 |
 
-# Max aggregate function
+# Max aggregate function with filter
 
 - dataset: AllProperties.bim
 
