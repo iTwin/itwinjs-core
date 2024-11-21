@@ -1,6 +1,11 @@
 # Change Log - @itwin/core-i18n
 
-This log was last generated on Thu, 14 Nov 2024 18:11:00 GMT and should not be manually modified.
+This log was last generated on Thu, 21 Nov 2024 15:22:20 GMT and should not be manually modified.
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+_Version update only_
 
 ## 4.10.1
 Thu, 14 Nov 2024 18:11:00 GMT
