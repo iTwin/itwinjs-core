@@ -1,6 +1,13 @@
 # Change Log - @itwin/core-electron
 
-This log was last generated on Thu, 14 Nov 2024 18:12:27 GMT and should not be manually modified.
+This log was last generated on Thu, 21 Nov 2024 15:23:49 GMT and should not be manually modified.
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+### Updates
+
+- Bumped `username` to `7.0.0`
 
 ## 4.10.1
 Thu, 14 Nov 2024 18:11:00 GMT
