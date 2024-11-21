@@ -8,8 +8,8 @@
 
 import { assert } from "@itwin/core-bentley";
 import { RenderSchedule } from "@itwin/core-common";
-import { collectTransferables } from "../../common/imdl/ImdlModel";
-import { ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common/imdl/ParseImdlDocument";
+import { collectTransferables, ImdlModel } from "../../common/imdl/ImdlModel";
+import { ImdlParseError, ImdlParserOptions, ImdlTimeline, parseImdlDocument } from "../../common/imdl/ParseImdlDocument";
 import { registerWorker } from "../RegisterWorker";
 
 let timeline: ImdlTimeline | undefined;
@@ -25,7 +25,7 @@ export interface ParseImdlWorker {
   /** Parse the binary content into a document.
    * @note The [[Uint8Array]] containing the binary data is transferred from the caller to the worker - it will become unusable for the caller.
    */
-  parse(options: ImdlParserOptions): Promise<any>;
+  parse(options: ImdlParserOptions): ImdlModel.Document | ImdlParseError;
 }
 
 registerWorker<ParseImdlWorker>({
