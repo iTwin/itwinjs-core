@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { IModelDb, SnapshotDb } from "../../core-backend";
-import { DbResult, ECSqlValueType, QueryOptionsBuilder, QueryRowFormat } from "@itwin/core-common";
+import { DbResult, ECSqlValueType, QueryOptionsBuilder, QueryPropertyMetaData, QueryRowFormat } from "@itwin/core-common";
 import * as path from "path";
 import * as fs from "fs";
 import * as crypto from "crypto";
@@ -22,6 +22,7 @@ async function runConcurrentQuery(imodel: IModelDb, sql: string): Promise<{metad
   const reader = imodel.createQueryReader(sql, undefined, queryOptions.getOptions());
   const rows = await reader.toArray();
   const metadata = await reader.getMetaData();
+  metadata.forEach((value: QueryPropertyMetaData)=> delete (value as any)["extendType"]);
   return {metadata, rows };
 }
 
