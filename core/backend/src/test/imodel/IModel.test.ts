@@ -12,7 +12,7 @@ import {
   DisplayStyleProps, DisplayStyleSettings, DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps,
   FontMap, FontType, GeoCoordinatesRequestProps, GeoCoordStatus, GeographicCRS, GeographicCRSProps, GeometricElementProps, GeometryParams, GeometryStreamBuilder,
   ImageSourceFormat, IModel, IModelCoordinatesRequestProps, IModelError, IModelStatus, LightLocationProps, MapImageryProps, PhysicalElementProps,
-  PointWithStatus, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
+  PointWithStatus, PrimitiveTypeCode, RelatedElement, RelationshipProps, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance, SubjectProps, TextureMapping,
   TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@itwin/core-common";
 import {
@@ -2843,5 +2843,39 @@ describe("iModel", () => {
     imodel.close();
 
     expect(() => imodel.elements.getElement<Subject>(IModel.rootSubjectId)).to.throw(IModelError, "Element=0x1", "Not Found");
+  });
+
+  it("should throw \"constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)\" when inserting a relationsip instance with the same prop twice", () => {
+    const imodelPath = IModelTestUtils.prepareOutputFile("IModel", "insertDuplicateInstance.bim");
+    const imodel = SnapshotDb.createEmpty(imodelPath, { rootSubject: { name: "insertDuplicateInstance" } });
+    const elements = imodel.elements;
+
+    // Create a new physical model
+    const newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
+
+    // create a SpatialCategory
+    const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+
+    // Create a couple of physical elements.
+    const elementProps: GeometricElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: newModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+    };
+
+    const id0 = elements.insertElement(elementProps);
+    const id1 = elements.insertElement(elementProps);
+
+    const props: RelationshipProps = {
+      classFullName: "BisCore:ElementGroupsMembers",
+      sourceId: id0,
+      targetId: id1,
+    };
+
+    imodel.relationships.insertInstance(props)
+    expect(() => imodel.relationships.insertInstance(props)).to.throw(`Failed to insert relationship [${imodelPath}]: rc=2067, constraint failed (BE_SQLITE_CONSTRAINT_UNIQUE)`);
+
+    imodel.close();
   });
 });
