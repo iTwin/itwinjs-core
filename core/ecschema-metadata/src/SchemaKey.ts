@@ -165,13 +165,9 @@ export class SchemaKey {
    * @param rhs The SchemaKey to compare with
    * @param matchType The match type to use for comparison.
    */
-  public matches(rhs: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Identical): boolean {
+  public matches(rhs: Readonly<SchemaKey>, matchType: SchemaMatchType = SchemaMatchType.Exact): boolean {
     switch (matchType) {
       case SchemaMatchType.Identical:
-        // TODO: if (this.checksum && rhs.checksum)
-        // TODO:   return this.checksum === rhs.checksum;
-        return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
-          this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;
       case SchemaMatchType.Exact:
         return this.compareByName(rhs.name) && this.readVersion === rhs.readVersion &&
           this.writeVersion === rhs.writeVersion && this.minorVersion === rhs.minorVersion;

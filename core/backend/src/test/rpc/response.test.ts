@@ -5,7 +5,7 @@ import { HttpServerRequest, HttpServerResponse, RpcRequestFulfillment, RpcReques
 import { sendResponse } from "../../rpc/web/response";
 import { brotliDecompressSync, unzipSync } from "node:zlib";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 class StubResponse extends Writable implements HttpServerResponse {
   public chunks: any[] = [];

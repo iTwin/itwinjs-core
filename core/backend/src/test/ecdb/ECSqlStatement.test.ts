@@ -265,7 +265,7 @@ describe("ECSqlStatement", () => {
       ecdb.saveChanges();
       // check if varying page number does not require prepare new statements
       ecdb.clearStatementCache();
-      for (const _testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) { // eslint-disable-line @typescript-eslint/no-unused-vars
+      for (const _testPageSize of [1, 2, 4, 5, 6, 7, 10, ROW_COUNT]) {
         let rowNo = 1;
         for await (const row of ecdb.createQueryReader("SELECT n FROM ts.Foo WHERE n != ? and ECInstanceId < ?", new QueryBinder().bindInt(1, 123).bindInt(2, 30), { rowFormat: QueryRowFormat.UseJsPropertyNames })) {
           assert.equal(row.n, rowNo);
@@ -864,7 +864,6 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, "3");
       }), 1);
 
-      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
       const largeUnsafeNumber: number = 12312312312312323654; // too large for int64, but fits into uint64
       assert.isFalse(Number.isSafeInteger(largeUnsafeNumber));
       const largeUnsafeNumberStr: string = "12312312312312323654";
@@ -979,7 +978,6 @@ describe("ECSqlStatement", () => {
         assert.equal(row.s, largeUnsafeNumberHexStr);
       }), 1);
 
-      // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
       const largeNegUnsafeNumber: number = -123123123123123236;
       assert.isFalse(Number.isSafeInteger(largeNegUnsafeNumber));
       const largeNegUnsafeNumberStr: string = "-123123123123123236";
@@ -2297,7 +2295,7 @@ describe("ECSqlStatement", () => {
         assert.equal(row["parent.id"], parentId);
         assert.equal(row["parent.relClassName"], "Test.ParentHasChildren");
         assert.equal(row.myParentId, parentId);
-        assert.isFalse(Id64.isValidId64(row.myParentRelClassId));
+        assert.isTrue(Id64.isValidId64(row.myParentRelClassId));
       }), 2);
 
       const childId: Id64String = childIds[0];
@@ -2337,11 +2335,11 @@ describe("ECSqlStatement", () => {
       assert.equal(await query(ecdb, "SELECT ECInstanceId as MyId,ECClassId as MyClassId,SourceECInstanceId As MySourceId,SourceECClassId As MySourceClassId,TargetECInstanceId As MyTargetId,TargetECClassId As MyTargetClassId FROM test.ParentHasChildren WHERE TargetECInstanceId=?", QueryBinder.from([childId]), undefined, (row: any) => {
         rowCount++;
         assert.equal(row.myId, childId);
-        assert.isFalse(Id64.isValidId64(row.myClassId));
+        assert.isTrue(Id64.isValidId64(row.myClassId));
         assert.equal(row.mySourceId, parentId);
-        assert.isFalse(Id64.isValidId64(row.mySourceClassId));
+        assert.isTrue(Id64.isValidId64(row.mySourceClassId));
         assert.equal(row.myTargetId, childId);
-        assert.isFalse(Id64.isValidId64(row.myTargetClassId));
+        assert.isTrue(Id64.isValidId64(row.myTargetClassId));
       }), 1);
 
     });

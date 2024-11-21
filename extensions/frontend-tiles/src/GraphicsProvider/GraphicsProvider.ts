@@ -37,7 +37,7 @@ export interface ObtainIModelTilesetUrlArgs {
  * @beta
  */
 export async function obtainIModelTilesetUrl(args: ObtainIModelTilesetUrlArgs):
-Promise<URL|undefined> {
+  Promise<URL | undefined> {
   if (!args.iModelId) {
     Logger.logInfo(loggerCategory, "Cannot obtain Graphics Data for an iModel with no iModelId");
     return undefined;

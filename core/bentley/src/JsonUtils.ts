@@ -111,7 +111,7 @@ export namespace JsonUtils {
    * @param value The value to test.
    * @returns true if `value` is an Object with at least one key.
    */
-  export function isNonEmptyObject(value: any): value is Object {
+  export function isNonEmptyObject(value: any): value is object {
     return !isEmptyObjectOrUndefined(value);
   }
 

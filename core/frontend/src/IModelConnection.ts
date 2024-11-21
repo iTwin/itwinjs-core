@@ -35,6 +35,7 @@ import { BingElevationProvider } from "./tile/internal";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 import { _requestSnap } from "./common/internal/Symbols";
+import { IpcApp } from "./IpcApp";
 
 const loggerCategory: string = FrontendLoggerCategory.IModelConnection;
 
@@ -227,12 +228,12 @@ export abstract class IModelConnection extends IModel {
 
     this.tiles = new Tiles(this);
     this.geoServices = GeoServices.createForIModel(this);
-    /* eslint-disable-next-line deprecation/deprecation */
+    /* eslint-disable-next-line @typescript-eslint/no-deprecated */
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
-      /* eslint-disable-next-line deprecation/deprecation */
+      /* eslint-disable-next-line @typescript-eslint/no-deprecated */
       this.expandDisplayedExtents(this._extentsExpansion);
     });
 
@@ -642,9 +643,9 @@ export abstract class IModelConnection extends IModel {
    */
   public expandDisplayedExtents(range: Range3d): void {
     this._extentsExpansion.extendRange(range);
-    /* eslint-disable-next-line deprecation/deprecation */
+    /* eslint-disable-next-line @typescript-eslint/no-deprecated */
     this.displayedExtents.setFrom(this.projectExtents);
-    /* eslint-disable-next-line deprecation/deprecation */
+    /* eslint-disable-next-line @typescript-eslint/no-deprecated */
     this.displayedExtents.extendRange(this._extentsExpansion);
   }
 
@@ -776,17 +777,18 @@ export class SnapshotConnection extends IModelConnection {
   private _isRemote?: boolean;
 
   /** Open an IModelConnection to a read-only snapshot iModel from a file name.
-   * @note This method is intended for desktop or mobile applications and should not be used for web applications.
+   * @note This method is intended for desktop or mobile applications and is not available for web applications.
    */
   public static async openFile(filePath: string): Promise<SnapshotConnection> {
-    const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
-    RpcManager.setIModel({ iModelId: "undefined", key: filePath });
+    if (!IpcApp.isValid)
+      throw new Error("IPC required to open a snapshot");
 
-    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openFile(filePath);
     Logger.logTrace(loggerCategory, "SnapshotConnection.openFile", () => ({ filePath }));
-    const connection = new SnapshotConnection(openResponse);
-    connection.routingContext = routingContext;
+
+    const connectionProps = await IpcApp.appFunctionIpc.openSnapshot(filePath);
+    const connection = new SnapshotConnection(connectionProps);
     IModelConnection.onOpen.raiseEvent(connection);
+
     return connection;
   }
 
@@ -798,7 +800,7 @@ export class SnapshotConnection extends IModelConnection {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
     RpcManager.setIModel({ iModelId: "undefined", key: fileKey });
 
-    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey); // eslint-disable-line deprecation/deprecation
+    const openResponse = await SnapshotIModelRpcInterface.getClientForRouting(routingContext.token).openRemote(fileKey); // eslint-disable-line @typescript-eslint/no-deprecated
     Logger.logTrace(loggerCategory, "SnapshotConnection.openRemote", () => ({ fileKey }));
     const connection = new SnapshotConnection(openResponse);
     connection.routingContext = routingContext;
@@ -819,7 +821,7 @@ export class SnapshotConnection extends IModelConnection {
     this.beforeClose();
     try {
       if (!this.isRemote) {
-        await SnapshotIModelRpcInterface.getClientForRouting(this.routingContext.token).close(this.getRpcProps());
+        await IpcApp.appFunctionIpc.closeIModel(this.key);
       }
     } finally {
       this._isClosed = true;
@@ -828,7 +830,7 @@ export class SnapshotConnection extends IModelConnection {
 }
 
 /** @public */
-export namespace IModelConnection { // eslint-disable-line no-redeclare
+export namespace IModelConnection {
 
   /** The id/name/class of a ViewDefinition. Returned by [[IModelConnection.Views.getViewList]] */
   export interface ViewSpec {
@@ -904,7 +906,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       try {
         const propArray = await this.getProps(notLoaded);
         await this.updateLoadedWithModelProps(propArray);
-      } catch (err) {
+      } catch {
         // ignore error, we had nothing to do.
       }
     }
@@ -919,7 +921,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
             this._loaded.set(modelState.id, modelState); // save it in loaded set
           }
         }
-      } catch (err) {
+      } catch {
         // ignore error, we had nothing to do.
       }
     }
@@ -1304,7 +1306,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
      * @deprecated in 3.x use ViewStore apis
      */
     public async getThumbnail(_viewId: Id64String): Promise<ThumbnailProps> {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const val = await IModelReadRpcInterface.getClientForRouting(this._iModel.routingContext.token).getViewThumbnail(this._iModel.getRpcProps(), _viewId.toString());
       const intValues = new Uint32Array(val.buffer, 0, 4);
 

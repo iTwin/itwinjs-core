@@ -58,13 +58,13 @@ export class FontMap {
     this.fonts.forEach((font) => fonts.push(font));
     return { fonts };
   }
-  /** look up a font by name or number and return its FontProps */
+  /** look up a font by case insensitive name or number and return its FontProps */
   public getFont(arg: string | FontId): FontProps | undefined {
     if (typeof arg === "number")
       return this.fonts.get(arg);
 
     for (const font of this.fonts.values())
-      if (font.name === arg)
+      if (font.name.toLowerCase() === arg.toLowerCase())
         return font;
 
     return undefined;

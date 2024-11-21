@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
 import { Volume } from "memfs";
 import * as path from "path";
 import * as fs from "fs-extra";
@@ -16,7 +15,7 @@ describe("CopyBentleyStaticResourcesPlugin", () => {
   const vol = new Volume();
 
   beforeEach(() => {
-    testConfig = getTestConfig("assets/copy-bentley-static-resources-plugin-test/test.js", [new CopyBentleyStaticResourcesPlugin(["assets"])]); // eslint-disable-line deprecation/deprecation
+    testConfig = getTestConfig("assets/copy-bentley-static-resources-plugin-test/test.js", [new CopyBentleyStaticResourcesPlugin(["assets"])]);
     vol.fromJSON({
       "lib/test/assets/copy-bentley-static-resources-plugin-test/test.js": "",
     });

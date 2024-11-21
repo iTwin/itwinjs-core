@@ -55,6 +55,10 @@ function readPackage(pkg) {
     pkg.dependencies["@itwin/ecschema-metadata"] = "workspace:*";
   }
 
+  else if (pkg.name == "@microsoft/api-extractor") {
+    pkg.dependencies["typescript"] = "~5.6.2";
+  }
+
   return pkg;
 }
 

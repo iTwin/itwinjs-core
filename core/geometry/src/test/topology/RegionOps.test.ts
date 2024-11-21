@@ -1542,4 +1542,35 @@ describe("RegionOps.constructCurveXYOffset", () => {
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "EllipsePreserveEllipticalArcsFalse");
   });
+  it("constructCurveXYOffsetMaxChamferDegree", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const origin = Point3d.create(0, 0, 0);
+    const circleSize: number = 4;
+    const loop = Loop.create(
+      Arc3d.createXY(origin, circleSize, AngleSweep.createStartEndDegrees(0, 180)),
+      LineString3d.create([Point3d.create(-circleSize, 0), Point3d.create(circleSize, 0)]),
+    );
+    let dx = 0;
+    const offsetDistance = -2;
+    const minArcDegree = 180;
+    const maxChamferDegrees: number[] = [89, 90, 91];
+    const preserveEllipticalArc = false;
+    const expectedNumPoints0: number[] = [4, 3, 3];
+    const expectedNumPoints1: number[] = [4, 3, 3];
+    for (let i = 0; i <= 2; i++) {
+      const jointOption = new JointOptions(offsetDistance, minArcDegree, maxChamferDegrees[i], preserveEllipticalArc);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, dx);
+      const curveCollection = RegionOps.constructCurveXYOffset(loop, jointOption)!;
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curveCollection, dx);
+      const lineString0 = curveCollection.getChild(0) as LineString3d;
+      const lineString1 = curveCollection.getChild(2) as LineString3d;
+      ck.testCoordinate(lineString0.numPoints(), expectedNumPoints0[i], "Number of points in offset first child");
+      ck.testCoordinate(lineString1.numPoints(), expectedNumPoints1[i], "Number of points in offset last child");
+      dx += 15;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "PolygonOffset", "constructCurveXYOffsetMaxChamferDegree");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });

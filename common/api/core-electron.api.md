@@ -12,17 +12,15 @@ import { IpcHandler } from '@itwin/core-backend';
 import { NativeAppOpts } from '@itwin/core-frontend';
 import { NativeHostOpts } from '@itwin/core-backend';
 import { PickAsyncMethods } from '@itwin/core-bentley';
-import { PromiseReturnType } from '@itwin/core-bentley';
 import { RpcConfiguration } from '@itwin/core-common';
 import { RpcInterfaceDefinition } from '@itwin/core-common';
+import type { WebPreferences } from 'electron';
 
 // @beta
 export type DialogModuleMethod = AsyncMethodsOf<Electron.Dialog>;
 
 // @beta
 export class ElectronApp {
-    // @deprecated
-    static callDialog<T extends DialogModuleMethod>(methodName: T, ...args: Parameters<Electron.Dialog[T]>): Promise<PromiseReturnType<Electron.Dialog[T]>>;
     static dialogIpc: PickAsyncMethods<Electron.Dialog>;
     // (undocumented)
     static get isValid(): boolean;
@@ -46,8 +44,6 @@ export class ElectronHost {
     static frontendURL: string;
     static getWindowMaximizedSetting(windowName: string): boolean | undefined;
     static getWindowSizeAndPositionSetting(windowName: string): WindowSizeAndPositionProps | undefined;
-    // @deprecated
-    static getWindowSizeSetting(windowName: string): WindowSizeAndPositionProps | undefined;
     // (undocumented)
     static get ipcMain(): Electron.IpcMain;
     // (undocumented)
@@ -80,9 +76,9 @@ export interface ElectronHostOpts extends NativeHostOpts {
 
 // @beta (undocumented)
 export interface ElectronHostWindowOptions extends BrowserWindowConstructorOptions {
-    // (undocumented)
     storeWindowName?: string;
     titleBarStyle?: ("default" | "hidden" | "hiddenInset" | "customButtonsOnHover");
+    webPreferences?: Omit<WebPreferences, "preload" | "experimentalFeatures" | "nodeIntegration" | "contextIsolation" | "sandbox" | "nodeIntegrationInWorker" | "nodeIntegrationInSubFrames">;
 }
 
 // @internal (undocumented)

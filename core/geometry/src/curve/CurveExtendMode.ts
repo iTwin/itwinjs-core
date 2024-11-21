@@ -9,44 +9,47 @@
 import { Geometry } from "../Geometry";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 
-/** Enumeration of condition for extending a curve beyond start or end point.
+/**
+ * Enumeration of condition for extending a curve beyond start or end point.
  * * Not all CurvePrimitives support these modes.
  * @public
  */
 export enum CurveExtendMode {
   /** No extension allowed. */
   None = 0,
-  /** Extend along continuation of the end tangent */
+  /** Extend along continuation of the end tangent. */
   OnTangent = 1,
   /** Extend along continuation of the curve. */
   OnCurve = 2,
 }
-/** Logic for deciding how a curve may be extended for closest point or intersection searches.
+/**
+ * Logic for deciding how a curve may be extended for closest point or intersection searches.
  * @public
  */
 export class CurveExtendOptions {
   /**
-   * Given an VariantCurveExtendParameter, isolate the particular CurveExtendMode in effect at an end.
+   * Given a `VariantCurveExtendParameter`, isolate the particular CurveExtendMode in effect at an end.
    * * Return `CurveExtendMode.None` if `param === false`.
    * * Return `CurveExtendMode.OnCurve` if `param === true`.
    * * Return the param if it is a single CurveExtendMode.
    * * Return dereferenced array at entry `endIndex` if the param is an array of CurveExtendMode.
    */
-  public static resolveVariantCurveExtendParameterToCurveExtendMode(param: VariantCurveExtendParameter, endIndex: 0 | 1): CurveExtendMode {
+  public static resolveVariantCurveExtendParameterToCurveExtendMode(
+    param: VariantCurveExtendParameter, endIndex: 0 | 1,
+  ): CurveExtendMode {
     if (param === false)
       return CurveExtendMode.None;
     if (param === true)
       return CurveExtendMode.OnCurve;
     if (Array.isArray(param))
-      return param[endIndex];
+      return param.length > endIndex ? param[endIndex] : CurveExtendMode.None;
     return param;
   }
   /**
-   *
-   * * if fraction is between 0 and 1 return it unchanged.
-   * * if fraction is less than 0 use the variant param to choose the fraction or 0
-   * * if fraction is greater than 1 use the variant param to choose the fraction or 1
-   *
+   * Correct fraction to be within [0,1].
+   * * If fraction is in [0,1] return it unchanged.
+   * * If fraction is less than 0 use `extendParam` to decide whether to return it unchanged, or to return 0.
+   * * If fraction is greater than 1 use `extendParam` to decide whether to return it unchanged, or to return 1.
    */
   public static correctFraction(extendParam: VariantCurveExtendParameter, fraction: number): number {
     if (fraction < 0) {
@@ -62,12 +65,14 @@ export class CurveExtendOptions {
   }
   /**
    * Adjust a radians value to an angle sweep, allowing the extendParam to affect choice among periodic fractions.
-   * * if radians is within the sweep, convert it to a fraction of the sweep.
-   * * if radians is outside, use the extendParam to choose among:
-   *    * fraction below 0
-   *    * fraction above 1
+   * * If radians is within the sweep, convert it to a fraction of the sweep.
+   * * If radians is outside, use the extendParam to choose among:
+   *    * fraction below 0.
+   *    * fraction above 1.
    */
-  public static resolveRadiansToSweepFraction(extendParam: VariantCurveExtendParameter, radians: number, sweep: AngleSweep): number {
+  public static resolveRadiansToSweepFraction(
+    extendParam: VariantCurveExtendParameter, radians: number, sweep: AngleSweep,
+  ): number {
     let fraction = sweep.radiansToSignedPeriodicFraction(radians);
     if (!sweep.isRadiansInSweep(radians)) {
       const fractionPeriod = sweep.fractionPeriod();
@@ -75,25 +80,27 @@ export class CurveExtendOptions {
       const mode1 = CurveExtendOptions.resolveVariantCurveExtendParameterToCurveExtendMode(extendParam, 1);
       if (mode0 !== CurveExtendMode.None) {
         if (mode1 !== CurveExtendMode.None) {
-          // both extensions possible ... let the sweep resolve to the "closer" end
+          // both extensions possible; let the sweep resolve to the "closer" end
           fraction = sweep.radiansToSignedPeriodicFraction(radians);
         } else {
-          // only extend to negative .....
+          // only extend to negative
           if (fraction > 1.0)
             fraction -= fractionPeriod;
         }
       } else if (mode1 !== CurveExtendMode.None) {
         if (fraction < 0.0)
           fraction += fractionPeriod;
-      } else {    // both clamped !!!!
+      } else { // both clamped
         fraction = Geometry.clamp(fraction, 0, 1);
       }
     }
     return fraction;
   }
 }
-/** Variants of a single parameter.
- * Use this type in a function signature where caller may want simple true, false, or same extend mode for both ends.
+/**
+ * Variant options for extending a curve.
+ * * Useful for specifying either a single boolean/`CurveExtendMode` option applicable to both ends of the curve,
+ * or an array of options, the first entry of which applies to the curve start; the second, to curve end.
  * @public
  */
 export type VariantCurveExtendParameter = boolean | CurveExtendMode | CurveExtendMode[];

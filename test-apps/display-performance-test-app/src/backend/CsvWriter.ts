@@ -33,7 +33,7 @@ export function createNewCsvFile(filePath: string, fileName: string, data: Map<s
       });
       colNames += "\r\n";
       IModelJsFs.writeFileSync(file, colNames);
-    } catch (err) {
+    } catch {
       /* Handle the error */
     }
     return true;
@@ -126,7 +126,7 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
     });
     stringData += "\r\n";
     IModelJsFs.appendFileSync(file, stringData);
-  } catch (err) {
+  } catch {
     /* Handle the error */
   }
 }
@@ -134,7 +134,7 @@ export function addDataToCsvFile(file: string, data: Map<string, number | string
 export function addEndOfTestToCsvFile(data: string, file: string) {
   try {
     IModelJsFs.appendFileSync(file, data);
-  } catch (err) {
+  } catch {
     /* Handle the error */
   }
 }

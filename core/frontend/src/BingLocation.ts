@@ -47,7 +47,7 @@ export class BingLocationProvider {
           northeast: Cartographic.fromDegrees({ longitude: eastLongitude, latitude: northLatitude }),
         },
       };
-    } catch (error) {
+    } catch {
       return undefined;
     }
   }

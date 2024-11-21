@@ -17,8 +17,6 @@ import { Transform } from "../geometry3d/Transform";
 import { XYZProps } from "../geometry3d/XYZProps";
 import { GeometryQuery } from "./GeometryQuery";
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
-
 /**
  * A PointString3d is an array of points.
  * * PointString3D is first class (displayable, possibly persistent) geometry derived from the GeometryQuery base class.
