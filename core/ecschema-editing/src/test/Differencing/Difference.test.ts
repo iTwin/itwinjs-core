@@ -241,6 +241,18 @@ describe("Schema Differences", () => {
     });
   });
 
+  it("should return changed enumeration", () => {
+    expectPartiallyEquals(findEntry({ changeType: "modify", itemName: "ChangedEnumeration" }), {
+      changeType: "modify",
+      schemaType: "Enumeration",
+      itemName: "ChangedEnumeration",
+      difference: {
+        label: "Source ChangedEnumeration",
+        isStrict: false,
+      },
+    });
+  });
+
   it("should return changed enumeration enumerators", () => {
     expectPartiallyEquals(findEntry({ changeType: "modify", itemName: "ChangedEnumeration", path: "EnumeratorTwo" }), {
       changeType: "modify",
