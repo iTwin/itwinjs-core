@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
@@ -13,7 +14,7 @@ import { Plane3dByOriginAndUnitNormal } from "../../geometry3d/Plane3dByOriginAn
 import { Point2d, Vector2d } from "../../geometry3d/Point2dVector2d";
 import { Point3dArrayCarrier } from "../../geometry3d/Point3dArrayCarrier";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
-import { NumberArray, Point3dArray } from "../../geometry3d/PointHelpers";
+import { Point3dArray } from "../../geometry3d/PointHelpers";
 import { Transform } from "../../geometry3d/Transform";
 import { ClusterableArray } from "../../numerics/ClusterableArray";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
@@ -21,7 +22,6 @@ import { Sample } from "../../serialization/GeometrySamples";
 import { Checker } from "../Checker";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { prettyPrint } from "../testFunctions";
-import { Geometry } from "../../Geometry";
 
 /** point whose coordinates are a function of i only. */
 function testPointI(i: number): Point3d {
