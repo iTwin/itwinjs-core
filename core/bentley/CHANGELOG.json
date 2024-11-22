@@ -2,6 +2,33 @@
   "name": "@itwin/core-bentley",
   "entries": [
     {
+      "version": "4.10.2",
+      "tag": "@itwin/core-bentley_v4.10.2",
+      "date": "Thu, 21 Nov 2024 15:22:20 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.1",
+      "tag": "@itwin/core-bentley_v4.10.1",
+      "date": "Thu, 14 Nov 2024 18:11:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.0",
+      "tag": "@itwin/core-bentley_v4.10.0",
+      "date": "Wed, 13 Nov 2024 15:23:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add MaybePromise utility type."
+          },
+          {
+            "comment": "Add Id64.Uint32Set.equals()."
+          }
+        ]
+      }
+    },
+    {
       "version": "4.9.5",
       "tag": "@itwin/core-bentley_v4.9.5",
       "date": "Tue, 22 Oct 2024 20:01:40 GMT",
