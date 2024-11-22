@@ -519,6 +519,46 @@ select temp1.x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by 
 | ------- |
 | 100     |
 
+# Recursive query with simple scalar values
+
+- dataset: AllProperties.bim
+
+```sql
+WITH RECURSIVE cnt (x) AS ( VALUES (100) UNION ALL SELECT x + 1 FROM cnt WHERE x < 210 ) SELECT x FROM cnt LIMIT 5
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type  |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ----- |
+|           | x            | true      | 0     | x        | x    | undefined    | long     | Int64 |
+
+| x   |
+| --- |
+| 100 |
+| 101 |
+| 102 |
+| 103 |
+| 104 |
+
+# Recursive query with interger props union scalar values
+
+- dataset: AllProperties.bim
+
+```sql
+WITH RECURSIVE cte (x) AS ( SELECT e.i FROM aps.TestElement e WHERE e.i = 100 UNION ALL SELECT x + 1 FROM cte WHERE x < 104) SELECT x FROM cte
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
+|           | x            | true      | 0     | x        | x    | undefined    | int      | Int  |
+
+| x   |
+| --- |
+| 100 |
+| 101 |
+| 102 |
+| 103 |
+| 104 |
+
 # Expected table aliasing to fail in CTE subquery due to prop name being wrong
 
 - dataset: AllProperties.bim

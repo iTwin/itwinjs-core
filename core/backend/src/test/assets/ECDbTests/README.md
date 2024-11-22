@@ -55,7 +55,7 @@ SELECT * from meta.ECSchemaDef LIMIT 5
 ```
 
 > Add possible binders:
-> (they can use a param index or parameter name as shown below)
+> (they can use a param index as shown below)
 >
 > - bindBoolean
 > - bindBlob
@@ -64,14 +64,15 @@ SELECT * from meta.ECSchemaDef LIMIT 5
 > - bindIdSet
 > - bindInt
 > - bindStruct
-> - bindLong
+> - bindLong (Only available for Concurrent Query)
 > - bindString
 > - bindNull
 > - bindPoint2d
 > - bindPoint3d
+> - bindDateTime (Only available for ECSqlStatement)
 
 - bindInt 1, 23
-- bindInt param2, 3
+- bindInt 2, 3
 
 > If we expect prepare to fail use:
 >

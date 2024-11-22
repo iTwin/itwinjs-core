@@ -90,7 +90,7 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
           case "string":
             stmt.bindString(id, binder.value);
             break;
-          case "integer":
+          case "int":
             // eslint-disable-next-line radix
             stmt.bindInteger(id, Number.parseInt(compiledValue));
             break;
@@ -99,6 +99,9 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
             break;
           case "id":
             stmt.bindId(id, compiledValue);
+            break;
+          case "datetime":
+            stmt.bindDateTime(id, compiledValue);
             break;
           default:
             assert.fail(`Unsupported binder type ${binder.type}`);
@@ -208,9 +211,13 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
           case "string":
             params.bindString(id, binder.value);
             break;
-          case "integer":
+          case "int":
             // eslint-disable-next-line radix
             params.bindInt(id, Number.parseInt(compiledValue));
+            break;
+          case "long":
+            // eslint-disable-next-line radix
+            params.bindLong(id, Number.parseInt(compiledValue));
             break;
           case "double":
             params.bindDouble(id, Number.parseFloat(compiledValue));
