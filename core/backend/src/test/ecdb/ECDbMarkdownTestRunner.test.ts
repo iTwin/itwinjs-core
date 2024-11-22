@@ -11,6 +11,7 @@ import { buildBinaryData, ECDbMarkdownTestParser, ECDbTestMode, ECDbTestProps, E
 import * as path from "path";
 import * as fs from "fs";
 import { ECDbMarkdownDatasets } from "./ECDbMarkdownDatasets";
+import { Point2d, Point3d } from "@itwin/core-geometry";
 
 describe.only("Markdown based ECDb test runner", async () => {
   before(async () => {
@@ -102,6 +103,14 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
             break;
           case "datetime":
             stmt.bindDateTime(id, compiledValue);
+            break;
+          case "point2d":
+            const parsedVal2d = JSON.parse(compiledValue);
+            stmt.bindPoint2d(id, {x: parsedVal2d["X"], y: parsedVal2d["Y"]});
+            break;
+          case "point3d":
+            const parsedVal3d = JSON.parse(compiledValue);
+            stmt.bindPoint3d(id, {x: parsedVal3d["X"], y: parsedVal3d["Y"], z: parsedVal3d["Z"]});
             break;
           default:
             assert.fail(`Unsupported binder type ${binder.type}`);
@@ -224,6 +233,14 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
             break;
           case "id":
             params.bindId(id, compiledValue);
+            break;
+          case "point2d":
+            const parsedVal2d = JSON.parse(compiledValue);
+            params.bindPoint2d(id, new Point2d(parsedVal2d["X"], parsedVal2d["Y"]));
+            break;
+          case "point3d":
+            const parsedVal3d = JSON.parse(compiledValue);
+            params.bindPoint3d(id, new Point3d(parsedVal3d["X"], parsedVal3d["Y"], parsedVal3d["Z"]));
             break;
           default:
             assert.fail(`Unsupported binder type ${binder.type}`);

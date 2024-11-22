@@ -64,7 +64,7 @@ SELECT e.l FROM aps.TestElement e where e.l > ? and e.l < ? order by e.l
 | 1004 |
 | 1005 |
 
-# Testing double binders for concurrentQuery
+# Testing long binders for concurrentQuery
 
 - dataset: AllProperties.bim
 - mode: concurrentQuery
@@ -122,3 +122,41 @@ SELECT e.dt FROM aps.TestElement e where e.dt > ? limit 2
 | ----------------------- |
 | 2017-01-01T00:00:00.000 |
 | 2017-01-01T00:00:00.000 |
+
+# Testing Point2D binders for ECSqlStatement
+
+- dataset: AllProperties.bim
+- only: true
+
+```sql
+SELECT e.p2d FROM aps.TestElement e where e.p2d = ? limit 1
+```
+
+- bindPoint2d 1, {"X": 1111.11,"Y": 2222.22}
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type    |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- |
+|           | p2d          | false     | 0     | p2d      | p2d  | undefined    | point2d  | Point2d |
+
+| p2d                         |
+| --------------------------- |
+| {"X": 1111.11,"Y": 2222.22} |
+
+# Testing Point3D binders for ECSqlStatement
+
+- dataset: AllProperties.bim
+- only: true
+
+```sql
+SELECT e.p3d FROM aps.TestElement e where e.p3d = ? limit 1
+```
+
+- bindPoint3d 1, {"X": -1,"Y": 2.3,"Z": 3.0001}
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type    |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- |
+|           | p3d          | false     | 0     | p3d      | p3d  | undefined    | point3d  | Point3d |
+
+| p3d                            |
+| ------------------------------ |
+| {"X": -1,"Y": 2.3,"Z": 3.0001} |
