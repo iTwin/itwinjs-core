@@ -51,6 +51,7 @@ export class PolylineOps {
    * * This is a local search, with a single pass over the data.
    * @param source input points
    * @param maxEdgeLength
+   * @see [[GrowableXYZArray.cloneCompressed]]
    */
   public static compressShortEdges(source: Point3d[] | IndexedXYZCollection, maxEdgeLength: number): Point3d[] {
     const dest = GrowableXYZArray.create(source);

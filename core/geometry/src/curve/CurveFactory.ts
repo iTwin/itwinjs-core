@@ -90,6 +90,10 @@ export interface MiteredSweepOptions {
   strokeOptions?: StrokeOptions;
   /** Whether to cap the ruled sweep if outputting a ruled sweep or mesh. Default value is `false`. */
   capped?: boolean;
+  /** If the centerline is not physically closed, the first section's normal is aligned to this vector (typically points toward the swept geometry). */
+  startTangent?: Vector3d;
+  /** If the centerline is not physically closed, the last section's normal is aligned to this vector (typically points away from the swept geometry). */
+  endTangent?: Vector3d;
 }
 
 /**
@@ -426,8 +430,7 @@ export class CurveFactory {
    * * In the "closed path" case, the output plane for the first and last point is the bisector of the start and end planes
    *    from the "open path" case, and the first/last section geometry may be different from `initialSection`.
    * * The centerline path does NOT have to be planar, however twisting effects effects will appear in the various bisector planes.
-   * @param centerline sweep path, e.g., as stroked from a smooth centerline curve. For best results, ensure no
-   * successive duplicate points with e.g., [[GrowableXYZArray.createCompressed]].
+   * @param centerline sweep path, e.g., as stroked from a smooth centerline curve.
    * @param initialSection profile curve to be swept. As noted above, this should be on a plane perpendicular to the
    * first segment of the centerline.
    * @param options options for computation and output.
@@ -439,6 +442,14 @@ export class CurveFactory {
     const sectionData: SectionSequenceWithPlanes = { sections: [], planes: [] };
     const planes = PolylineOps.createBisectorPlanesForDistinctPoints(centerline, options.wrapIfPhysicallyClosed);
     if (planes !== undefined && planes.length > 1) {
+      const firstPlane = planes[0];
+      const lastPlane = planes[planes.length - 1];
+      if (!Geometry.isSamePoint3d(firstPlane.getOriginRef(), lastPlane.getOriginRef())) {
+        if (options.startTangent?.tryNormalizeInPlace())
+          firstPlane.getNormalRef().setFrom(options.startTangent);
+        if (options.endTangent?.tryNormalizeInPlace())
+          lastPlane.getNormalRef().setFrom(options.endTangent);
+      }
       // Projection to target plane, constructing sweep direction from two given planes.
       // If successful, push the target plane and swept section to the output arrays and return the swept section.
       // If unsuccessful, leave the output arrays alone and return the input section.

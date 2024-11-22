@@ -146,7 +146,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]])
    * @param result optional pre-allocated object to populate and return. Can be a reference to `source`, in
    * which case the array is compressed in place and returned.
-   * @see [[cloneCompressed]], [[compressInPlace]]
+   * @see [[cloneCompressed]], [[compressInPlace]], [[PolylineOps.compressShortEdges]]
    */
   public static createCompressed(source: IndexedXYZCollection, tolerance: number = Geometry.smallMetricDistance, result?: GrowableXYZArray): GrowableXYZArray {
     const dupIndices = source.findOrderedDuplicates(tolerance, true);
@@ -172,7 +172,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]])
    * @param result optional pre-allocated object to populate and return. Can be a reference to the instance array, in
    * which case the array is compressed in place and returned.
-   * @see [[createCompressed]], [[compressInPlace]]
+   * @see [[createCompressed]], [[compressInPlace]], [[PolylineOps.compressShortEdges]]
    */
   public cloneCompressed(tolerance: number = Geometry.smallMetricDistance, result?: GrowableXYZArray): GrowableXYZArray {
     return GrowableXYZArray.createCompressed(this, tolerance, result);
@@ -182,7 +182,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * * First and last points are always preserved.
    * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]])
    * @returns the instance array.
-   * @see [[createCompressed]], [[cloneCompressed]]
+   * @see [[createCompressed]], [[cloneCompressed]], [[PolylineOps.compressShortEdges]]
    */
   public compressInPlace(tolerance: number = Geometry.smallMetricDistance): GrowableXYZArray {
     return GrowableXYZArray.createCompressed(this, tolerance, this);
