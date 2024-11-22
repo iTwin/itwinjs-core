@@ -2,6 +2,30 @@
   "name": "@itwin/physical-material-backend",
   "entries": [
     {
+      "version": "4.10.2",
+      "tag": "@itwin/physical-material-backend_v4.10.2",
+      "date": "Thu, 21 Nov 2024 15:22:20 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.1",
+      "tag": "@itwin/physical-material-backend_v4.10.1",
+      "date": "Thu, 14 Nov 2024 18:11:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "4.10.0",
+      "tag": "@itwin/physical-material-backend_v4.10.0",
+      "date": "Wed, 13 Nov 2024 15:23:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for Node 22"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.9.7",
       "tag": "@itwin/physical-material-backend_v4.9.7",
       "date": "Wed, 06 Nov 2024 19:23:04 GMT",

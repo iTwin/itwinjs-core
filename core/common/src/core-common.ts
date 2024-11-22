@@ -142,7 +142,6 @@ export * from "./rpc/IModelReadRpcInterface";
 export * from "./rpc/IModelTileRpcInterface";
 export * from "./rpc/SnapshotIModelRpcInterface";
 export * from "./rpc/TestRpcManager";
-export * from "./rpc/WipRpcInterface";
 export * from "./RpcInterface";
 export * from "./rpc/web/BentleyCloudRpcManager";
 export * from "./rpc/web/BentleyCloudRpcProtocol";
