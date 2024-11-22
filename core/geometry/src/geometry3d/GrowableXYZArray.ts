@@ -139,6 +139,54 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     result._xyzInUse = this.length;
     return result;
   }
+  /**
+   * Clone the input array with each successive duplicate point removed.
+   * * First and last points are always preserved.
+   * @param source the source array
+   * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]])
+   * @param result optional pre-allocated object to populate and return. Can be a reference to `source`, in
+   * which case the array is compressed in place and returned.
+   * @see [[cloneCompressed]], [[compressInPlace]]
+   */
+  public static createCompressed(source: IndexedXYZCollection, tolerance: number = Geometry.smallMetricDistance, result?: GrowableXYZArray): GrowableXYZArray {
+    const dupIndices = source.findOrderedDuplicates(tolerance);
+    const newSize = source.length - dupIndices.length;
+    if (!result)
+      result = new GrowableXYZArray(newSize);
+    if (result !== source) {
+      result.clear();
+      result.resize(newSize, true);
+    }
+    for (let iRead = 0, iWrite = 0, iDup = 0; iRead < source.length; ++iRead) {
+      if (iDup < dupIndices.length && iRead === dupIndices[iDup])
+        ++iDup; // skip the duplicate
+      else
+        result.transferFromGrowableXYZArray(iWrite++, source, iRead);
+    }
+    result.resize(newSize);
+    return result;
+  }
+  /**
+   * Clone the instance array with each successive duplicate point removed.
+   * * First and last points are always preserved.
+   * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]])
+   * @param result optional pre-allocated object to populate and return. Can be a reference to the instance array, in
+   * which case the array is compressed in place and returned.
+   * @see [[createCompressed]], [[compressInPlace]]
+   */
+  public cloneCompressed(tolerance: number = Geometry.smallMetricDistance, result?: GrowableXYZArray): GrowableXYZArray {
+    return GrowableXYZArray.createCompressed(this, tolerance, result);
+  }
+  /**
+   * Compress the input array by removing successive duplicate points.
+   * * First and last points are always preserved.
+   * @param tolerance optional distance tol for compression (default [[Geometry.smallMetricDistance]])
+   * @returns the instance array.
+   * @see [[createCompressed]], [[cloneCompressed]]
+   */
+  public compressInPlace(tolerance: number = Geometry.smallMetricDistance): GrowableXYZArray {
+    return GrowableXYZArray.createCompressed(this, tolerance, this);
+  }
   /** Create an array from various point data formats.
    * Valid inputs are:
    * * Point2d
@@ -296,15 +344,6 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
       this._xyzInUse--;
   }
   /**
-   * Test if index is valid for an xyz (point or vector) within this array
-   * @param index xyz index to test.
-   */
-  public isIndexValid(index: number): boolean {
-    if (index >= this._xyzInUse || index < 0)
-      return false;
-    return true;
-  }
-  /**
    * Clear all xyz data, but leave capacity unchanged.
    */
   public clear() {
@@ -391,13 +430,12 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @param sourceIndex point index in source array
    * @returns true if destIndex and sourceIndex are both valid.
    */
-  public transferFromGrowableXYZArray(destIndex: number, source: GrowableXYZArray, sourceIndex: number): boolean {
+  public transferFromGrowableXYZArray(destIndex: number, source: IndexedXYZCollection, sourceIndex: number): boolean {
     if (this.isIndexValid(destIndex) && source.isIndexValid(sourceIndex)) {
       const i = destIndex * 3;
-      const j = sourceIndex * 3;
-      this._data[i] = source._data[j];
-      this._data[i + 1] = source._data[j + 1];
-      this._data[i + 2] = source._data[j + 2];
+      this._data[i] = source.getXAtUncheckedPointIndex(sourceIndex);
+      this._data[i + 1] = source.getYAtUncheckedPointIndex(sourceIndex);
+      this._data[i + 2] = source.getZAtUncheckedPointIndex(sourceIndex);
       return true;
     }
     return false;
