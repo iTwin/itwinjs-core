@@ -10,6 +10,7 @@
     <ECProperty propertyName="DirectStr" typeName="string"/>
     <ECProperty propertyName="DirectLong" typeName="long"/>
     <ECProperty propertyName="DirectDouble" typeName="double"/>
+    <ECProperty propertyName="NullProp" typeName="string"/>
   </ECEntityClass>
   <ECEntityClass typeName="TestElementAspect" modifier="None">
     <BaseClass>bis:ElementUniqueAspect</BaseClass>

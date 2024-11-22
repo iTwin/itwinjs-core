@@ -22,7 +22,7 @@ async function runConcurrentQuery(imodel: IModelDb, sql: string): Promise<{metad
   const reader = imodel.createQueryReader(sql, undefined, queryOptions.getOptions());
   const rows = await reader.toArray();
   const metadata = await reader.getMetaData();
-  metadata.forEach((value: QueryPropertyMetaData)=> delete (value as any)["extendType"]);
+  metadata.forEach((value: QueryPropertyMetaData)=> delete (value as any).extendType);
   return {metadata, rows };
 }
 
@@ -52,7 +52,11 @@ function arrayToMarkdownTable(data: any[]): string {
     return "";
   }
 
-  const headers = Object.keys(data[0]);
+  const headers: string[] = Array.from(data.reduce((headersSet, row) => {
+    Object.keys(row).forEach(header => headersSet.add(header));
+    return headersSet;
+  }, new Set<string>()));
+
   const columnWidths = headers.map(header =>
     Math.max(header.length, ...data.map(row => String(row[header]).length))
   );
