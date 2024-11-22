@@ -275,14 +275,18 @@ export class CurveFactory {
       if (arcB.sweep.sweepRadians < 0)
         startB.direction.scaleInPlace(-1.0);
       if (endA.isAlmostEqual(startB)) {
-        arcA.sweep.setStartEndRadians(arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians + sweepSign * arcB.sweep.sweepRadians);
+        arcA.sweep.setStartEndRadians(
+          arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians + sweepSign * arcB.sweep.sweepRadians,
+        );
         return true;
       }
-      // Also ok if negated tangent . ..
+      // Also ok if negated tangent
       if (allowReverse) {
         startB.direction.scaleInPlace(-1.0);
         if (endA.isAlmostEqual(startB)) {
-          arcA.sweep.setStartEndRadians(arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians - sweepSign * arcB.sweep.sweepRadians);
+          arcA.sweep.setStartEndRadians(
+            arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians - sweepSign * arcB.sweep.sweepRadians,
+          );
           return true;
         }
       }
@@ -447,7 +451,9 @@ export class CurveFactory {
         targetPlane: Plane3dByOriginAndUnitNormal,
         section: AnyCurve) {
         const sweepVector = Vector3d.createStartEnd(edgePlane0.getOriginRef(), edgePlane1.getOriginRef());
-        const transform = Transform.createFlattenAlongVectorToPlane(sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef());
+        const transform = Transform.createFlattenAlongVectorToPlane(
+          sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef(),
+        );
         if (transform === undefined)
           return section;
         const section1 = section.cloneTransformed(transform);
