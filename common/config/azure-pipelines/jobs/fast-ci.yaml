@@ -73,7 +73,7 @@ jobs:
     steps:
       - checkout: self
         persistCredentials: true
-      - task: NodeTool@0
+      - task: UseNode@1
         inputs:
           versionSpec: "22.x"
 

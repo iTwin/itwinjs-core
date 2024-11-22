@@ -55,7 +55,7 @@ jobs:
     name: Detect If Skip
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       # Check for certain paths having been modified
       - name: Get specific changed files

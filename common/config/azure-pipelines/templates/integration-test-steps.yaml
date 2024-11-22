@@ -5,7 +5,7 @@ parameters:
 steps:
   - template: setup-integration-users.yaml
 
-  - task: NodeTool@0
+  - task: UseNode@1
     displayName: "Use Node ${{ parameters.nodeVersion }}"
     inputs:
       versionSpec: "${{ parameters.nodeVersion }}"

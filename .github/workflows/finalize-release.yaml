@@ -18,7 +18,7 @@ jobs:
     name: Cherry-pick Changelogs
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           token: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
           ref: ${{ github.ref }} # checkouts the branch that triggered the workflow

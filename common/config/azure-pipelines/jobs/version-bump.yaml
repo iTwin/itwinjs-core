@@ -146,7 +146,7 @@ jobs:
     steps:
       - checkout: self
 
-      - task: NodeTool@0
+      - task: UseNode@1
         displayName: Use Node 20.x
         inputs:
           versionSpec: 20.x
@@ -256,7 +256,7 @@ jobs:
     condition: and(eq('${{ parameters.BumpType }}', 'releaseCandidate'), eq(dependencies.Bump.result, 'Succeeded'), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
     steps:
       - checkout: self
-      - task: NodeTool@0
+      - task: UseNode@1
         displayName: "Use Node 20.x"
         inputs:
           versionSpec: 20.x
