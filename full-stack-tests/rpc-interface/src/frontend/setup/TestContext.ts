@@ -7,9 +7,7 @@ import { expect } from "chai";
 import { AccessToken, Logger, LogLevel } from "@itwin/core-bentley";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@itwin/core-common";
 import { NoRenderApp } from "@itwin/core-frontend";
-import {
-  getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
-} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
+import {getServiceAuthTokenFromBackend, TestFrontendAuthorizationClient,} from "@itwin/oidc-signin-tool/lib/cjs/frontend";
 import { FrontendIModelsAccess } from "@itwin/imodels-access-frontend";
 import { IModelsClient } from "@itwin/imodels-client-management";
 import { getRpcInterfaces, Settings } from "../../common/Settings";
@@ -22,6 +20,7 @@ declare const PACKAGE_VERSION: string;
 export class TestContext {
   public adminUserAccessToken!: AccessToken;
   public clientAccessToken?: AccessToken;
+  public serviceAuthToken?: AccessToken;
 
   public iModelWithChangesets?: IModelSession;
   public iModelForWrite?: IModelSession;
@@ -61,15 +60,12 @@ export class TestContext {
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
     if (undefined !== this.settings.oidcClientId) {
-      this.adminUserAccessToken = await getAccessTokenFromBackend({
-        email: this.settings.users[0].email,
-        password: this.settings.users[0].password,
-      } as TestUserCredentials, {
+      this.serviceAuthToken = await getServiceAuthTokenFromBackend({
         clientId: this.settings.oidcClientId,
-        redirectUri: this.settings.oidcRedirect,
+        clientSecret: this.settings.oidcClientSecret,
         scope: this.settings.oidcScopes,
         authority: this.settings.oidcAuthority,
-      } as TestBrowserAuthorizationClientConfiguration);
+      });
     }
 
     if (undefined !== this.settings.clientConfiguration)
