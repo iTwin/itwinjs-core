@@ -126,7 +126,6 @@ SELECT e.dt FROM aps.TestElement e where e.dt > ? limit 2
 # Testing Point2D binders for ECSqlStatement
 
 - dataset: AllProperties.bim
-- only: true
 
 ```sql
 SELECT e.p2d FROM aps.TestElement e where e.p2d = ? limit 1
@@ -145,7 +144,6 @@ SELECT e.p2d FROM aps.TestElement e where e.p2d = ? limit 1
 # Testing Point3D binders for ECSqlStatement
 
 - dataset: AllProperties.bim
-- only: true
 
 ```sql
 SELECT e.p3d FROM aps.TestElement e where e.p3d = ? limit 1
