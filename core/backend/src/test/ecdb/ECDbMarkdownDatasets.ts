@@ -64,6 +64,7 @@ interface TestElementProps extends PhysicalElementProps, IPrimitive, IPrimitiveA
   directStr?: string;
   directLong?: number;
   directDouble?: number;
+  nullProp?: string;
 }
 
 function createElemProps(className: string, _iModelName: IModelDb, modId: Id64String, catId: Id64String, index: number): TestElementProps {
@@ -94,20 +95,30 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
     p2d: index%2 === 0 ? new Point2d(1.034, 2.034) : new Point2d(1111.11, 2222.22),
     p3d: index%2 === 0 ? new Point3d(-1.0, 2.3, 3.0001) : new Point3d(-111.11, -222.22, -333.33),
     b: true,
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     array_b: [true, false, true],
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     array_i: [0, 1, 2],
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     array_d: [0.0, 1.1, 2.2],
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     array_l: [10000, 20000, 30000],
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     array_s: ["s0", "s1", "s2"],
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     array_dt: ["2017-01-01T00:00:00.000", "2010-01-01T11:11:11.000"],
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     array_p2d: [new Point2d(1.034, 2.034) , new Point2d(1111.11, 2222.22)],
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     array_p3d: [new Point3d(-1.0, 2.3, 3.0001) , new Point3d(-111.11, -222.22, -333.33)],
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     array_bin: [new Uint8Array([1, 2, 3]) , new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22])]
   };
 
   elementProps.directStr = `str${index}`;
   elementProps.directLong = 1000 + index;
   elementProps.directDouble = 0.1 + index;
+  elementProps.nullProp = (index % 2 === 0) ? undefined : "NotNull";
   return elementProps;
 }
 
