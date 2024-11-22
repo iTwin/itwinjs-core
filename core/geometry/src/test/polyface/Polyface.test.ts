@@ -1929,8 +1929,8 @@ describe("SphericalMeshData", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("Mirror", () => {
-    const ck = new Checker(true, true);
+  it("Mirror", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
@@ -2039,16 +2039,16 @@ describe("SphericalMeshData", () => {
     ];
     geometry.push(RuledSweep.create(sections, true));
 
-    const eAxes = Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createScale(2, 3, 1))
+    const eAxes = Transform.createOriginAndMatrix(undefined, Matrix3d.createScale(2, 3, 1))
     geometry.push(Sphere.createEllipsoid(eAxes, AngleSweep.createStartEndDegrees(-45, 0), true));
 
     geometry.push(TorusPipe.createAlongArc(Arc3d.createCenterNormalRadius(undefined, Vector3d.unitY(-1), 2), 0.25, true));
 
     const centerlineSweeps: AngleSweep[] = [AngleSweep.createStartEndDegrees(0, 90), AngleSweep.createStartEndDegrees(0, -90)];
     const sectionDataSweeps: AngleSweep[] = [AngleSweep.create360(), AngleSweep.createStartEndDegrees(360, 0)];
-
     for (const centerlineSweep of centerlineSweeps)
       for (const sectionDataSweep of sectionDataSweeps) {
+        // pipes with circular arc rails
         const centerline = Arc3d.createXY(Point3d.create(0, 0), 1.0, centerlineSweep);
         const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5, 0, 0), sectionDataSweep);
         const pipeBuilder = PolyfaceBuilder.create();
@@ -2057,16 +2057,18 @@ describe("SphericalMeshData", () => {
         pipeBuilder.addMiteredPipes(centerline, sectionData, 8, true);
         geometry.push(pipeBuilder.claimPolyface());
       }
-    // for (const centerlineSweep of centerlineSweeps)
-    //   for (const sectionDataSweep of sectionDataSweeps) {
-    //     const centerline = Arc3d.create(Point3d.create(0, 0), Vector3d.create(0.5, 0, 0), Vector3d.create(0, 0, 1), centerlineSweep);
-    //     const sectionData = Arc3d.create(undefined, Vector3d.create(0, 1, 0), Vector3d.create(0.5, 0, 0), sectionDataSweep);
-    //     const pipeBuilder = PolyfaceBuilder.create();
-    //     pipeBuilder.options.angleTol = Angle.createDegrees(5);
-    //     pipeBuilder.options.needNormals = true;
-    //     pipeBuilder.addMiteredPipes(centerline, sectionData, 8, true);
-    //     geometry.push(pipeBuilder.claimPolyface());
-    //   }
+    for (const centerlineSweep of centerlineSweeps)
+      for (const sectionDataSweep of sectionDataSweeps) {
+        // mitered pipes with elliptical arc rails
+        // NOTE: tiny section radii to avoid section clash at high rail curvature
+        const centerline = Arc3d.create(undefined, Vector3d.create(0.5, 0, 0), Vector3d.create(0, 0, 1), centerlineSweep);
+        const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0.2, 0), Vector3d.create(0.1, 0, 0), sectionDataSweep);
+        const pipeBuilder = PolyfaceBuilder.create();
+        pipeBuilder.options.angleTol = Angle.createDegrees(5);
+        pipeBuilder.options.needNormals = true;
+        pipeBuilder.addMiteredPipes(centerline, sectionData, 9, true);
+        geometry.push(pipeBuilder.claimPolyface());
+      }
 
     // verify outward normals for closed meshes/solids, both before and after mirroring
     for (const geom of geometry) {
