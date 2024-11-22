@@ -64,7 +64,7 @@ jobs:
     steps:
       - checkout: self
       - bash: |
-          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+          git config --local user.email imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
         displayName: Setup Git
 
@@ -149,11 +149,11 @@ jobs:
       - task: UseNode@1
         displayName: Use Node 20.x
         inputs:
-          version: 20.x
+          version: 22.x
           checkLatest: true
 
       - bash: |
-          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+          git config --local user.email imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
         displayName: Setup Git
 
@@ -235,7 +235,7 @@ jobs:
       - bash: |
           echo Committing version bump $(getVersion.version)...
 
-          git commit -m "$(getVersion.version)" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
+          git commit -m "$(getVersion.version)" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
         displayName: Commit version bump
 
       - ? ${{ if or(eq(parameters.BumpType, 'minor'), eq(parameters.BumpType, 'patch')) }}
@@ -259,11 +259,11 @@ jobs:
       - task: UseNode@1
         displayName: "Use Node 20.x"
         inputs:
-          version: 20.x
+          version: 22.x
           checkLatest: true
 
       - bash: |
-          git config --local user.email 38288322+imodeljs-admin@users.noreply.github.com
+          git config --local user.email imodeljs-admin@users.noreply.github.com
           git config --local user.name imodeljs-admin
         displayName: "Setup Git"
 
@@ -313,7 +313,7 @@ jobs:
           Write-Host The new version is $newVersion
           Write-Host Committing version bump...
 
-          git commit -m "$newVersion" --author="imodeljs-admin <38288322+imodeljs-admin@users.noreply.github.com>"
+          git commit -m "$newVersion" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
 
           git status
         displayName: Get version and committing
