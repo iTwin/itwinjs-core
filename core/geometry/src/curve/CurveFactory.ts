@@ -349,7 +349,7 @@ export class CurveFactory {
     const vector90 = Vector3d.create();
     const vectorBC = Vector3d.create();
     const sweep = AngleSweep.create360();
-    centerline.vectorIndexIndex(0, 1, vectorBC)!;
+    centerline.vectorIndexIndex(0, 1, vectorBC)!; // initially, the start tangent
     if (sectionData instanceof Arc3d) {
       vector0.setFrom(sectionData.vector0);
       vector90.setFrom(sectionData.vector90);
@@ -366,6 +366,7 @@ export class CurveFactory {
     } else {
       return [];
     }
+    // ASSUME: initial section normal points toward sweep direction for subsequent facet creation
     const initialSection = Arc3d.create(undefined, vector0, vector90, sweep);
     centerline.getPoint3dAtUncheckedPointIndex(0, initialSection.centerRef);
     arcs.push(initialSection);

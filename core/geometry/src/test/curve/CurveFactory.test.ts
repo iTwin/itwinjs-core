@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory, MiteredSweepOutputSelect } from "../../curve/CurveFactory";
@@ -25,6 +26,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
+import { Point4d } from "../../geometry4d/Point4d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
@@ -311,58 +313,53 @@ describe("PipeConnections", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("addMiteredPipesWithCaps", () => {
-    const ck = new Checker(true, true);
+  it("addMiteredPipesWithCaps", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-
-    const sweeps: AngleSweep[] = [
+    let dx = 0;
+    const numFacetAround = 8;
+    const sectionSweeps: AngleSweep[] = [
       AngleSweep.create360(),
       AngleSweep.createStartEndDegrees(360, 0),
       AngleSweep.createStartEndDegrees(0, 90),
       AngleSweep.createStartEndDegrees(180, 90),
     ]
-    let dx = 0
-    const centerline = Arc3d.createXY(Point3d.create(0, 0), 1.0, AngleSweep.createStartEndDegrees(0, 90));
-    // const centerline = Arc3d.create(
-    //   Point3d.create(0, 0),
-    //   Vector3d.create(0.5, 0, 0),
-    //   Vector3d.create(0, 0, 1),
-    //   AngleSweep.createStartEndDegrees(0, 90),
-    // );
-    const numFacetAround = 8;
-    for (let sweep of sweeps) {
-      const builder = PolyfaceBuilder.create();
-      const sectionData = Arc3d.create(
-        Point3d.create(1, 0, 0),
-        Vector3d.create(0, 0, 1),
-        Vector3d.create(0.5, 0, 0),
-        sweep,
-      );
-      // const sectionData = Arc3d.create(
-      //   Point3d.create(1, 0, 0),
-      //   Vector3d.create(0, 1, 0),
-      //   Vector3d.create(0.5, 0, 0),
-      //   sweep,
-      // );
-      builder.options.angleTol = Angle.createDegrees(15);
-      builder.addMiteredPipes(centerline, sectionData, numFacetAround, true);
-      let mesh = builder.claimPolyface();
-      if (sweep.isFullCircle)
-        ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is expected");
-      else
-        ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected");
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx);
-
-      builder.addMiteredPipes(centerline, sectionData, numFacetAround, false);
-      ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(builder.claimPolyface()), "cap is not expected");
-      dx += 3;
+    const centerline = [
+      Arc3d.createXY(Point3d.createZero(), 1.0, sectionSweeps[2]),
+      Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), sectionSweeps[2]),
+      BSplineCurve3dH.createUniformKnots([
+        Point4d.create(-1.5, -1, 0, 1), Point4d.create(-0.25, -0.5, 0, 0.5), Point4d.create(-0.5, 0, 0, 1),
+        Point4d.create(-0.25, 0.5, 0, 0.5), Point4d.create(0.5, 1, 0, 1), Point4d.create(0.75, 0.5, 0, 0.5),
+        Point4d.create(1.5, 1, 1, 1)], 3
+      )!,
+    ];
+    for (const sweep of sectionSweeps) {
+      const sectionData = [
+        Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5), sweep),
+        Arc3d.create(undefined, Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
+        0.2,
+      ];
+      ck.testExactNumber(sectionData.length, centerline.length, "test case arrays have same size");
+      let builder: PolyfaceBuilder;
+      for (const capped of [true, false]) {
+        for (let i = 0; i < sectionData.length; ++i) {
+          builder = PolyfaceBuilder.create();
+          builder.options.angleTol = Angle.createDegrees(15);
+          builder.addMiteredPipes(centerline[i], sectionData[i], numFacetAround, capped);
+          const mesh = builder.claimPolyface();
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx);
+          dx += 3;
+          if (capped) {
+            if (Number.isFinite(sectionData[i]) || sweep.isFullCircle)
+              ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is expected (closed section)");
+            else
+              ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected (open section)");
+          } else {
+            ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected (capped=false)");
+          }
+        }
+      }
     }
-    const builder = PolyfaceBuilder.create();
-    builder.addMiteredPipes(centerline, 0.2, numFacetAround, true);
-    ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(builder.claimPolyface()), "cap is expected");
-    builder.addMiteredPipes(centerline, 0.2, numFacetAround, false);
-    ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(builder.claimPolyface()), "cap is not expected");
-
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "addMiteredPipesWithCaps");
     expect(ck.getNumErrors()).toBe(0);
   });
