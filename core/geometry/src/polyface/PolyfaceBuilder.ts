@@ -2054,7 +2054,8 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * start tangent.
    *    * For Arc3d input, the center is translated to the centerline start point, but otherwise the arc is used as-is
    * for the first section. For best results, the arc should be perpendicular to the centerline start tangent.
-   * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions.
+   * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions, otherwise
+   * for best results, ensure no successive duplicate points with e.g., [[GrowableXYZArray.createCompressed]].
    * @param sectionData circle radius, ellipse semi-axis lengths, or Arc3d.
    * @param numFacetAround how many equal parameter-space chords around each section.
    * @param capped if `true`, add a cap at each end of the pipe; defaults to `false`.
@@ -2065,17 +2066,16 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     numFacetAround: number = 12,
     capped: boolean = false,
   ): void {
-    if (Array.isArray(centerline)) {
-      this.addMiteredPipesFromPoints(new Point3dArrayCarrier(centerline), sectionData, numFacetAround, capped);
-    } else if (centerline instanceof GrowableXYZArray || centerline instanceof IndexedXYZCollection) {
-      this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround, capped);
-    } else if (centerline instanceof LineString3d) {
-      this.addMiteredPipesFromPoints(centerline.packedPoints, sectionData, numFacetAround, capped);
-    } else if (centerline instanceof GeometryQuery) {
+    if (Array.isArray(centerline))
+      centerline = new Point3dArrayCarrier(centerline);
+    else if (centerline instanceof LineString3d)
+      centerline = centerline.packedPoints;
+    else if (centerline instanceof CurvePrimitive) {
       const linestring = LineString3d.create();
       centerline.emitStrokes(linestring, this._options);
-      this.addMiteredPipesFromPoints(linestring.packedPoints, sectionData, numFacetAround, capped);
+      centerline = linestring.packedPoints;
     }
+    this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround, capped);
   }
   /** Return the polyface index array indices corresponding to the given edge, or `undefined` if error. */
   private getEdgeIndices(edge: SortableEdge): { edgeIndexA: number, edgeIndexB: number } | undefined {

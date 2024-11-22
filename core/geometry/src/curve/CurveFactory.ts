@@ -337,7 +337,8 @@ export class CurveFactory {
    * start tangent.
    *    * For Arc3d input, the center is translated to the centerline start point, but otherwise the arc is used as-is
    * for the first section. For best results, the arc should be perpendicular to the centerline start tangent.
-   * @param centerline centerline of pipe.
+   * @param centerline centerline of pipe. For best results, ensure no successive duplicate points with e.g.,
+   * [[GrowableXYZArray.createCompressed]].
    * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d (if not full, function makes it full).
    */
   public static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[] {
@@ -349,19 +350,12 @@ export class CurveFactory {
     const vectorBC = Vector3d.create();
     const sweep = AngleSweep.create360();
     centerline.vectorIndexIndex(0, 1, vectorBC)!;
-    let initialSection: Arc3d;
     if (sectionData instanceof Arc3d) {
-      initialSection = sectionData.clone();
       vector0.setFrom(sectionData.vector0);
       vector90.setFrom(sectionData.vector90);
       sweep.setFrom(sectionData.sweep); // allow e.g., half-pipe
-      let i = 1;
-      while (centerline.almostEqualIndexIndex(0, i))
-        i++;
-      let startTangent = Vector3d.create();
-      centerline.vectorIndexIndex(0, i, startTangent);
-      const dotProduct = sectionData.matrixRef.columnDotXYZ(AxisIndex.Z, startTangent.x, startTangent.y, startTangent.z);
-      if ((dotProduct > 0) !== sectionData.sweep.isCCW)
+      const sectionFacesForward = sectionData.matrixRef.columnDotXYZ(AxisIndex.Z, vectorBC.x, vectorBC.y, vectorBC.z) > 0;
+      if (sectionFacesForward !== sectionData.sweep.isCCW)
         sweep.reverseInPlace();
     } else if (typeof sectionData === "number" || Point3d.isXAndY(sectionData)) {
       const length0 = (typeof sectionData === "number") ? sectionData : sectionData.x;
@@ -372,7 +366,7 @@ export class CurveFactory {
     } else {
       return [];
     }
-    initialSection = Arc3d.create(undefined, vector0, vector90, sweep);
+    const initialSection = Arc3d.create(undefined, vector0, vector90, sweep);
     centerline.getPoint3dAtUncheckedPointIndex(0, initialSection.centerRef);
     arcs.push(initialSection);
     const vectorAB = Vector3d.create();
@@ -407,7 +401,8 @@ export class CurveFactory {
    * * In the "closed path" case, the output plane for the first and last point is the bisector of the start and end planes from the "open path" case,
    *    and the first/last section geometry may be different from `initialSection`.
    * * The centerline path does NOT have to be planar, however twisting effects effects will appear in the various bisector planes.
-   * @param centerline sweep path, e.g., as stroked from a smooth centerline curve
+   * @param centerline sweep path, e.g., as stroked from a smooth centerline curve. For best results, ensure no
+   * successive duplicate points with e.g., [[GrowableXYZArray.createCompressed]].
    * @param initialSection profile curve to be swept. As noted above, this should be on a plane perpendicular to the first segment of the centerline.
    * @param options options for computation and output
    * @return array of sections, starting with `initialSection` projected along the first edge to the first plane.
