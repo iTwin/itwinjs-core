@@ -149,7 +149,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
    * @see [[cloneCompressed]], [[compressInPlace]]
    */
   public static createCompressed(source: IndexedXYZCollection, tolerance: number = Geometry.smallMetricDistance, result?: GrowableXYZArray): GrowableXYZArray {
-    const dupIndices = source.findOrderedDuplicates(tolerance);
+    const dupIndices = source.findOrderedDuplicates(tolerance, true);
     const newSize = source.length - dupIndices.length;
     if (!result)
       result = new GrowableXYZArray(newSize);
