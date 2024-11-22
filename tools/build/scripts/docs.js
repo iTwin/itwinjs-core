@@ -56,7 +56,7 @@ const options = [
 ];
 
 const pluginOptions = [
-  "--plugin", "typedoc-plugin-merge-modules",
+  "--plugin", require.resolve("typedoc-plugin-merge-modules"),
   "--mergeModulesMergeMode", "module",
 ];
 
