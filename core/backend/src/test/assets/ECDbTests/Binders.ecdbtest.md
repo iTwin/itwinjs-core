@@ -123,7 +123,7 @@ SELECT e.dt FROM aps.TestElement e where e.dt > ? limit 2
 | 2017-01-01T00:00:00.000 |
 | 2017-01-01T00:00:00.000 |
 
-# Testing Point2D binders for ECSqlStatement
+# Testing Point2D binders
 
 - dataset: AllProperties.bim
 
@@ -141,7 +141,7 @@ SELECT e.p2d FROM aps.TestElement e where e.p2d = ? limit 1
 | --------------------------- |
 | {"X": 1111.11,"Y": 2222.22} |
 
-# Testing Point3D binders for ECSqlStatement
+# Testing Point3D binders
 
 - dataset: AllProperties.bim
 
@@ -158,3 +158,41 @@ SELECT e.p3d FROM aps.TestElement e where e.p3d = ? limit 1
 | p3d                            |
 | ------------------------------ |
 | {"X": -1,"Y": 2.3,"Z": 3.0001} |
+
+# Testing Blob binders
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT e.bin FROM aps.TestElement e where e.bin = ? limit 1
+```
+
+- bindBlob 1, [11, 21, 31, 34, 53, 21, 14, 14, 55, 22]
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
+|           | bin          | false     | 0     | bin      | bin  | Json         | string   | Blob |
+
+| bin                                         |
+| ------------------------------------------- |
+| BIN(11, 21, 31, 34, 53, 21, 14, 14, 55, 22) |
+
+# Testing Blob binders with abbreviateBlobs
+
+- dataset: AllProperties.bim
+- abbreviateBlobs: true
+- mode: ConcurrentQuery
+
+```sql
+SELECT e.bin FROM aps.TestElement e where e.bin = ? limit 1
+```
+
+- bindBlob 1, [11, 21, 31, 34, 53, 21, 14, 14, 55, 22]
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
+|           | bin          | false     | 0     | bin      | bin  | Json         | string   | Blob |
+
+| bin            |
+| -------------- |
+| "{"bytes":10}" |

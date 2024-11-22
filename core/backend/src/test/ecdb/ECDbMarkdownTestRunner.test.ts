@@ -112,6 +112,18 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
             const parsedVal3d = JSON.parse(compiledValue);
             stmt.bindPoint3d(id, {x: parsedVal3d["X"], y: parsedVal3d["Y"], z: parsedVal3d["Z"]});
             break;
+          case "blob":
+            const numbers: number[] = []
+            const arrayValues: string[] = compiledValue.slice(1,-1).split(",");
+            arrayValues.forEach((value:string)=>
+              {
+                value = value.trim();
+                // eslint-disable-next-line radix
+                numbers.push(parseInt(value));
+              }
+            );
+            stmt.bindBlob(id, Uint8Array.of(...numbers));
+            break;
           default:
             assert.fail(`Unsupported binder type ${binder.type}`);
         } // switch binder.type
@@ -241,6 +253,18 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
           case "point3d":
             const parsedVal3d = JSON.parse(compiledValue);
             params.bindPoint3d(id, new Point3d(parsedVal3d["X"], parsedVal3d["Y"], parsedVal3d["Z"]));
+            break;
+          case "blob":
+            const numbers: number[] = []
+            const arrayValues: string[] = compiledValue.slice(1,-1).split(",");
+            arrayValues.forEach((value:string)=>
+              {
+                value = value.trim();
+                // eslint-disable-next-line radix
+                numbers.push(parseInt(value));
+              }
+            );
+            params.bindBlob(id, Uint8Array.of(...numbers));
             break;
           default:
             assert.fail(`Unsupported binder type ${binder.type}`);
