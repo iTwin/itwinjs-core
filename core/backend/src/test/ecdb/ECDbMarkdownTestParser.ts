@@ -340,20 +340,20 @@ export class ECDbMarkdownTestParser {
   }
 
   private static handleJSONColumnMetadata(json: any, currentTest: ECDbTestProps, markdownFilePath: string) {
-    const extraProps: string[] = [];
+    const extraProps: Set<string> = new Set();
 
     if (json.columns.every(isColumnInfoProps)) {
       currentTest.columnInfo = json.columns;
       for (const column of json.columns) {
         for (const key in column) {
           if (!columnInfoPropsKeys.has(key as keyof ColumnInfoProps)) {
-          extraProps.push(key);
+            extraProps.add(key);
           }
         }
       }
 
-      if (extraProps.length > 0) {
-        logWarning(`Found extra properties in column infos: ${extraProps.join(", ")} in file '${markdownFilePath}' test '${currentTest.title}'.`);
+      if (extraProps.size > 0) {
+        logWarning(`Found extra properties in column infos: ${Array.from(extraProps).join(", ")} in file '${markdownFilePath}' test '${currentTest.title}'.`);
       }
     } else {
       logWarning(`Columns format in file '${markdownFilePath}' test '${currentTest.title}' failed type guard. Skipping.`);

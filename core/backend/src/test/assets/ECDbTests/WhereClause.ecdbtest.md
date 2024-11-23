@@ -8,12 +8,12 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md
 SELECT  ECInstanceId,  ECClassId,  Model.Id, DirectStr FROM aps.TestElement WHERE DirectStr = 'str0'
 ```
 
-| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id  | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectStr    | false     | 3     | directStr | DirectStr    | undefined    | string   |            | String | DirectStr          |
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id  | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectStr    | false     | 3     | directStr | DirectStr    | undefined    | string   | String | DirectStr          |
 
 | ECInstanceId | ECClassId | Id   | DirectStr |
 | ------------ | --------- | ---- | --------- |
@@ -28,12 +28,12 @@ SELECT ECInstanceId, ECClassId, Model.Id, DirectStr FROM aps.TestElement WHERE D
   2
 ```
 
-| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id  | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectStr    | false     | 3     | directStr | DirectStr    | undefined    | string   |            | String | DirectStr          |
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id  | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectStr    | false     | 3     | directStr | DirectStr    | undefined    | string   | String | DirectStr          |
 
 | ECInstanceId | ECClassId | Id   | DirectStr |
 | ------------ | --------- | ---- | --------- |
@@ -49,12 +49,12 @@ SELECT ECInstanceId, ECClassId, Model.Id, DirectStr FROM aps.TestElement WHERE D
 SELECT  ECInstanceId,  ECClassId,  Model.Id, DirectLong FROM aps.TestElement WHERE DirectLong = 1004
 ```
 
-| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | extendType | type  | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ---------- | ----- | ------------------ |
-|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id         | Id    | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | ClassId    | Id    | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | NavId      | Id    | Id                 |
-| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     |            | Int64 | DirectLong         |
+| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | type  | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ----- | ------------------ |
+|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id    | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | Id    | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | Id    | Id                 |
+| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     | Int64 | DirectLong         |
 
 | ECInstanceId | ECClassId | Id   | DirectLong |
 | ------------ | --------- | ---- | ---------- |
@@ -79,12 +79,12 @@ LIMIT
   2
 ```
 
-| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | extendType | type  | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ---------- | ----- | ------------------ |
-|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id         | Id    | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | ClassId    | Id    | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | NavId      | Id    | Id                 |
-| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     |            | Int64 | DirectLong         |
+| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | type  | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ----- | ------------------ |
+|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id    | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | Id    | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | Id    | Id                 |
+| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     | Int64 | DirectLong         |
 
 | ECInstanceId | ECClassId | Id   | DirectLong |
 | ------------ | --------- | ---- | ---------- |
@@ -100,12 +100,12 @@ LIMIT
 SELECT  ECInstanceId,  ECClassId,  Model.Id, DirectLong FROM aps.TestElement WHERE DirectLong > 1008
 ```
 
-| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | extendType | type  | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ---------- | ----- | ------------------ |
-|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id         | Id    | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | ClassId    | Id    | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | NavId      | Id    | Id                 |
-| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     |            | Int64 | DirectLong         |
+| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | type  | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ----- | ------------------ |
+|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id    | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | Id    | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | Id    | Id                 |
+| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     | Int64 | DirectLong         |
 
 | ECInstanceId | ECClassId | Id   | DirectLong |
 | ------------ | --------- | ---- | ---------- |
@@ -120,12 +120,12 @@ SELECT  ECInstanceId,  ECClassId,  Model.Id, DirectLong FROM aps.TestElement WHE
 SELECT  ECInstanceId,  ECClassId,  Model.Id, DirectLong FROM aps.TestElement WHERE DirectLong >= 1008
 ```
 
-| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | extendType | type  | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ---------- | ----- | ------------------ |
-|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id         | Id    | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | ClassId    | Id    | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | NavId      | Id    | Id                 |
-| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     |            | Int64 | DirectLong         |
+| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | type  | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ----- | ------------------ |
+|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id    | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | Id    | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | Id    | Id                 |
+| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     | Int64 | DirectLong         |
 
 | ECInstanceId | ECClassId | Id   | DirectLong |
 | ------------ | --------- | ---- | ---------- |
@@ -148,12 +148,12 @@ WHERE
   DirectLong < 1001
 ```
 
-| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | extendType | type  | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ---------- | ----- | ------------------ |
-|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id         | Id    | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | ClassId    | Id    | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | NavId      | Id    | Id                 |
-| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     |            | Int64 | DirectLong         |
+| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | type  | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ----- | ------------------ |
+|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id    | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | Id    | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | Id    | Id                 |
+| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     | Int64 | DirectLong         |
 
 | ECInstanceId | ECClassId | Id   | DirectLong |
 | ------------ | --------- | ---- | ---------- |
@@ -176,12 +176,12 @@ WHERE
   DirectLong <= 1001
 ```
 
-| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | extendType | type  | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ---------- | ----- | ------------------ |
-|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id         | Id    | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | ClassId    | Id    | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | NavId      | Id    | Id                 |
-| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     |            | Int64 | DirectLong         |
+| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | type  | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ----- | ------------------ |
+|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id    | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | Id    | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | Id    | Id                 |
+| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     | Int64 | DirectLong         |
 
 | ECInstanceId | ECClassId | Id   | DirectLong |
 | ------------ | --------- | ---- | ---------- |
@@ -205,12 +205,12 @@ WHERE
   DirectDouble < 1.1
 ```
 
-| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   |            | Double | DirectDouble       |
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
 | ECInstanceId | ECClassId | Id   | DirectDouble |
 | ------------ | --------- | ---- | ------------ |
@@ -233,12 +233,12 @@ WHERE
 LIMIT 2
 ```
 
-| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   |            | Double | DirectDouble       |
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
 | ECInstanceId | ECClassId | Id   | DirectDouble |
 | ------------ | --------- | ---- | ------------ |
@@ -262,12 +262,12 @@ WHERE
   DirectDouble > 8.1
 ```
 
-| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   |            | Double | DirectDouble       |
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
 | ECInstanceId | ECClassId | Id   | DirectDouble |
 | ------------ | --------- | ---- | ------------ |
@@ -289,12 +289,12 @@ WHERE
   DirectDouble >= 8.1
 ```
 
-| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   |            | Double | DirectDouble       |
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
 | ECInstanceId | ECClassId | Id   | DirectDouble |
 | ------------ | --------- | ---- | ------------ |
@@ -317,12 +317,12 @@ WHERE
   DirectDouble < 1.1
 ```
 
-| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   |            | Double | DirectDouble       |
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
 | ECInstanceId | ECClassId | Id   | DirectDouble |
 | ------------ | --------- | ---- | ------------ |
@@ -344,12 +344,12 @@ WHERE
   DirectDouble <= 1.1
 ```
 
-| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   |            | Double | DirectDouble       |
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
 | ECInstanceId | ECClassId | Id   | DirectDouble |
 | ------------ | --------- | ---- | ------------ |
@@ -377,14 +377,14 @@ WHERE
   DirectDouble > 4.1
 ```
 
-| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectStr    | false     | 3     | directStr    | DirectStr    | undefined    | string   |            | String | DirectStr          |
-| AllProperties:TestElement | DirectLong   | false     | 4     | directLong   | DirectLong   | undefined    | long     |            | Int64  | DirectLong         |
-| AllProperties:TestElement | DirectDouble | false     | 5     | directDouble | DirectDouble | undefined    | double   |            | Double | DirectDouble       |
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectStr    | false     | 3     | directStr    | DirectStr    | undefined    | string   | String | DirectStr          |
+| AllProperties:TestElement | DirectLong   | false     | 4     | directLong   | DirectLong   | undefined    | long     | Int64  | DirectLong         |
+| AllProperties:TestElement | DirectDouble | false     | 5     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
 | ECInstanceId | ECClassId | Id   | DirectStr | DirectLong | DirectDouble |
 | ------------ | --------- | ---- | --------- | ---------- | ------------ |
@@ -413,14 +413,14 @@ WHERE
   )
 ```
 
-| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectStr    | false     | 3     | directStr    | DirectStr    | undefined    | string   |            | String | DirectStr          |
-| AllProperties:TestElement | DirectLong   | false     | 4     | directLong   | DirectLong   | undefined    | long     |            | Int64  | DirectLong         |
-| AllProperties:TestElement | DirectDouble | false     | 5     | directDouble | DirectDouble | undefined    | double   |            | Double | DirectDouble       |
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectStr    | false     | 3     | directStr    | DirectStr    | undefined    | string   | String | DirectStr          |
+| AllProperties:TestElement | DirectLong   | false     | 4     | directLong   | DirectLong   | undefined    | long     | Int64  | DirectLong         |
+| AllProperties:TestElement | DirectDouble | false     | 5     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
 | ECInstanceId | ECClassId | Id   | DirectStr | DirectLong | DirectDouble |
 | ------------ | --------- | ---- | --------- | ---------- | ------------ |
@@ -444,12 +444,12 @@ WHERE
   DirectLong BETWEEN 1004 AND 1006
 ```
 
-| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectLong   | false     | 4     | directLong   | DirectLong   | undefined    | long     |            | Int64  | DirectLong         |
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectLong   | false     | 4     | directLong   | DirectLong   | undefined    | long     | Int64  | DirectLong         |
 
 | ECInstanceId | ECClassId | Id   | DirectLong |
 | ------------ | --------- | ---- | ---------- |
@@ -474,12 +474,12 @@ WHERE
   DirectDouble BETWEEN 1.1 AND 3.1
 ```
 
-| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   |            | Double | DirectDouble       |
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className    | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id     | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectDouble | false     | 3     | directDouble | DirectDouble | undefined    | double   | Double | DirectDouble       |
 
 | ECInstanceId | ECClassId | Id   | DirectDouble |
 | ------------ | --------- | ---- | ------------ |
@@ -504,12 +504,12 @@ WHERE
   DirectStr IN ('str0', 'str4', 'str8')
 ```
 
-| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | extendType | type   | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ---------- | ------ | ------------------ |
-|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id         | Id     | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className | ECClassId    | ClassId      | long     | ClassId    | Id     | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id  | Id           | NavId        | long     | NavId      | Id     | Id                 |
-| AllProperties:TestElement | DirectStr    | false     | 3     | directStr | DirectStr    | undefined    | string   |            | String | DirectStr          |
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className | ECClassId    | ClassId      | long     | Id     | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id  | Id           | NavId        | long     | Id     | Id                 |
+| AllProperties:TestElement | DirectStr    | false     | 3     | directStr | DirectStr    | undefined    | string   | String | DirectStr          |
 
 | ECInstanceId | ECClassId | Id   | DirectStr |
 | ------------ | --------- | ---- | --------- |
@@ -533,12 +533,12 @@ WHERE
   DirectLong IN (1004, 1007, 1009)
 ```
 
-| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | extendType | type  | originPropertyName |
-| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ---------- | ----- | ------------------ |
-|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id         | Id    | ECInstanceId       |
-|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | ClassId    | Id    | ECClassId          |
-|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | NavId      | Id    | Id                 |
-| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     |            | Int64 | DirectLong         |
+| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | type  | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ----- | ------------------ |
+|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id    | ECInstanceId       |
+|                           | ECClassId    | false     | 1     | className  | ECClassId    | ClassId      | long     | Id    | ECClassId          |
+|                           | Model.Id     | false     | 2     | model.id   | Id           | NavId        | long     | Id    | Id                 |
+| AllProperties:TestElement | DirectLong   | false     | 3     | directLong | DirectLong   | undefined    | long     | Int64 | DirectLong         |
 
 | ECInstanceId | ECClassId | Id   | DirectLong |
 | ------------ | --------- | ---- | ---------- |
