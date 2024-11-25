@@ -2,6 +2,18 @@
   "name": "@itwin/core-electron",
   "entries": [
     {
+      "version": "4.10.2",
+      "tag": "@itwin/core-electron_v4.10.2",
+      "date": "Thu, 21 Nov 2024 15:22:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Bumped `username` to `7.0.0`"
+          }
+        ]
+      }
+    },
+    {
       "version": "4.10.1",
       "tag": "@itwin/core-electron_v4.10.1",
       "date": "Thu, 14 Nov 2024 18:11:00 GMT",
