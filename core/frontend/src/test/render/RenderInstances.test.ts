@@ -244,6 +244,11 @@ describe("RenderInstances", () => {
     expect(instances[_featureTable]!.numFeatures).toEqual(4);
 
     let graphic = IModelApp.renderSystem.createGraphicFromTemplate({ template, instances });
+
+    const range = new Range3d();
+    graphic.unionRange(range);
+    expect(range.isNull).toBe(false);
+
     const branch = new GraphicBranch();
     branch.add(graphic);
     graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.createTranslation(vp.iModel.projectExtents.center));
