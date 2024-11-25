@@ -62,9 +62,9 @@ with tmp(x) as (SELECT e.bin FROM aps.TestElement e LIMIT 1) select * from tmp
 with tmp as (SELECT e.p2d FROM aps.TestElement e LIMIT 1) select * from tmp
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type    |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- |
-|           | p2d          | false     | 0     | p2d      | p2d  | undefined    | point2d  | Point2d |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type    | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- | ------------------ |
+| AllProperties:IPrimitive | p2d          | false     | 0     | p2d      | p2d  | undefined    | point2d  | Point2d | p2d                |
 
 | p2d                     |
 | ----------------------- |
@@ -78,9 +78,9 @@ with tmp as (SELECT e.p2d FROM aps.TestElement e LIMIT 1) select * from tmp
 with tmp as (SELECT e.p2d FROM aps.TestElement e LIMIT 1) select p2d.x from tmp
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
-|           | p2d.X        | false     | 0     | X        | X    | undefined    | double   | Double |
+| className                             | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------------------------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| ECDbSystem:PointECSqlSystemProperties | p2d.X        | false     | 0     | p2d.X    | X    | undefined    | double   | Double | X                  |
 
 | X     |
 | ----- |
@@ -94,9 +94,9 @@ with tmp as (SELECT e.p2d FROM aps.TestElement e LIMIT 1) select p2d.x from tmp
 with tmp as (SELECT e.array_p2d FROM aps.TestElement e LIMIT 1) select array_p2d from tmp
 ```
 
-| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
-|           | array_p2d    | false     | 0     | array_p2d | array_p2d | undefined    | point2d  | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_p2d    | false     | 0     | array_p2d | array_p2d | undefined    | point2d  | PrimitiveArray | array_p2d          |
 
 | array_p2d                                             |
 | ----------------------------------------------------- |
@@ -110,9 +110,9 @@ with tmp as (SELECT e.array_p2d FROM aps.TestElement e LIMIT 1) select array_p2d
 with tmp as (SELECT e.p3d FROM aps.TestElement e LIMIT 1) select * from tmp
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type    |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- |
-|           | p3d          | false     | 0     | p3d      | p3d  | undefined    | point3d  | Point3d |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type    | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- | ------------------ |
+| AllProperties:IPrimitive | p3d          | false     | 0     | p3d      | p3d  | undefined    | point3d  | Point3d | p3d                |
 
 | p3d                            |
 | ------------------------------ |
@@ -126,9 +126,9 @@ with tmp as (SELECT e.p3d FROM aps.TestElement e LIMIT 1) select * from tmp
 select p3d from (with tmp as (SELECT e.p3d FROM aps.TestElement e LIMIT 1) select p3d from tmp)
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type    |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- |
-|           | p3d          | false     | 0     | p3d      | p3d  | undefined    | point3d  | Point3d |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type    | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- | ------------------ |
+| AllProperties:IPrimitive | p3d          | false     | 0     | p3d      | p3d  | undefined    | point3d  | Point3d | p3d                |
 
 | p3d                            |
 | ------------------------------ |
@@ -142,9 +142,9 @@ select p3d from (with tmp as (SELECT e.p3d FROM aps.TestElement e LIMIT 1) selec
 with tmp as (SELECT e.array_p3d FROM aps.TestElement e LIMIT 1) select array_p3d from tmp
 ```
 
-| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
-|           | array_p3d    | false     | 0     | array_p3d | array_p3d | undefined    | point3d  | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_p3d    | false     | 0     | array_p3d | array_p3d | undefined    | point3d  | PrimitiveArray | array_p3d          |
 
 | array_p3d                                                                 |
 | ------------------------------------------------------------------------- |

@@ -101,6 +101,13 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
           case "id":
             stmt.bindId(id, compiledValue);
             break;
+          case "idset":
+            const values: string[] = compiledValue.slice(1,-1).split(",");
+            const trimmedValues = values.map((value:string)=>
+                value.trim()
+            );
+            stmt.bindIdSet(id, trimmedValues);
+            break;
           case "datetime":
             stmt.bindDateTime(id, compiledValue);
             break;
@@ -113,16 +120,21 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
             stmt.bindPoint3d(id, {x: parsedVal3d["X"], y: parsedVal3d["Y"], z: parsedVal3d["Z"]});
             break;
           case "blob":
-            const numbers: number[] = []
             const arrayValues: string[] = compiledValue.slice(1,-1).split(",");
-            arrayValues.forEach((value:string)=>
-              {
-                value = value.trim();
-                // eslint-disable-next-line radix
-                numbers.push(parseInt(value));
-              }
+            const numbers = arrayValues.map((value:string)=>
+              // eslint-disable-next-line radix
+              parseInt(value.trim())
             );
             stmt.bindBlob(id, Uint8Array.of(...numbers));
+            break;
+          case "navigation":
+            stmt.bindNavigation(id, JSON.parse(compiledValue));
+            break;
+          case "array":
+            stmt.bindArray(id, JSON.parse(compiledValue));
+            break;
+          case "struct":
+            stmt.bindStruct(id, JSON.parse(compiledValue));
             break;
           default:
             assert.fail(`Unsupported binder type ${binder.type}`);
@@ -246,6 +258,13 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
           case "id":
             params.bindId(id, compiledValue);
             break;
+          case "idset":
+            const values: string[] = compiledValue.slice(1,-1).split(",");
+            const trimmedValues = values.map((value:string)=>
+                value.trim()
+            );
+            params.bindIdSet(id, trimmedValues);
+            break;
           case "point2d":
             const parsedVal2d = JSON.parse(compiledValue);
             params.bindPoint2d(id, new Point2d(parsedVal2d["X"], parsedVal2d["Y"]));
@@ -255,16 +274,15 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
             params.bindPoint3d(id, new Point3d(parsedVal3d["X"], parsedVal3d["Y"], parsedVal3d["Z"]));
             break;
           case "blob":
-            const numbers: number[] = []
             const arrayValues: string[] = compiledValue.slice(1,-1).split(",");
-            arrayValues.forEach((value:string)=>
-              {
-                value = value.trim();
+            const numbers = arrayValues.map((value:string)=>
                 // eslint-disable-next-line radix
-                numbers.push(parseInt(value));
-              }
+                parseInt(value.trim())
             );
             params.bindBlob(id, Uint8Array.of(...numbers));
+            break;
+          case "struct":
+            params.bindStruct(id, JSON.parse(compiledValue));
             break;
           default:
             assert.fail(`Unsupported binder type ${binder.type}`);
@@ -316,6 +334,8 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
             assert.strictEqual(colInfo.accessString, expectedColInfo.accessString, `Expected access string ${expectedColInfo.accessString} but got ${colInfo.accessString} for column index ${i}`);
           if (expectedColInfo.typeName !== undefined)
             assert.strictEqual(colInfo.typeName, expectedColInfo.typeName, `Expected type name ${expectedColInfo.typeName} but got ${colInfo.typeName} for column index ${i}`);
+          if(expectedColInfo.className !== undefined)
+            assert.strictEqual(colInfo.className, expectedColInfo.className, `Expected class name ${expectedColInfo.className} but got ${colInfo.className} for column index ${i}`);
           assert.strictEqual(colInfo.extendedType, expectedColInfo.extendedType, `Expected extended type ${expectedColInfo.extendedType} but got ${colInfo.extendedType} for column index ${i}`);
           assert.strictEqual(colInfo.extendType, expectedColInfo.extendedType === undefined ? "" : expectedColInfo.extendedType, `Expected extend type ${expectedColInfo.extendedType === undefined ? "" : expectedColInfo.extendedType} but got ${colInfo.extendType} for column index ${i}`);  // eslint-disable-line @typescript-eslint/no-deprecated
         }

@@ -12,9 +12,9 @@ SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1;
 | --- |
 | 100 |
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | i            | false     | 0     | i        | i    | undefined    | int      | Int  |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      | Int  | i                  |
 
 # Select Integer array property from TestElement
 
@@ -28,9 +28,9 @@ SELECT e.array_i FROM aps.TestElement e LIMIT 1;
 | --------- |
 | [0, 1, 2] |
 
-| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | -------------- |
-|           | array_i      | false     | 0     | array_i  | array_i | undefined    | int      | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName | name    | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_i      | false     | 0     | array_i  | array_i | undefined    | int      | PrimitiveArray | array_i            |
 
 # Select Long property from TestElement
 
@@ -44,9 +44,9 @@ SELECT e.l FROM aps.TestElement e order by e.l LIMIT 1;
 | ---- |
 | 1000 |
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type  |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ----- |
-|           | l            | false     | 0     | l        | l    | undefined    | long     | Int64 |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type  | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ----- | ------------------ |
+| AllProperties:IPrimitive | l            | false     | 0     | l        | l    | undefined    | long     | Int64 | l                  |
 
 # Select Long array property from TestElement
 
@@ -60,9 +60,9 @@ SELECT e.array_l FROM aps.TestElement e LIMIT 1;
 | --------------------- |
 | [10000, 20000, 30000] |
 
-| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | -------------- |
-|           | array_l      | false     | 0     | array_l  | array_l | undefined    | long     | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName | name    | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_l      | false     | 0     | array_l  | array_l | undefined    | long     | PrimitiveArray | array_l            |
 
 # Select double property from TestElement
 
@@ -76,9 +76,9 @@ SELECT e.d FROM aps.TestElement e order by e.d LIMIT 1;
 | --- |
 | 0.1 |
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
-|           | d            | false     | 0     | d        | d    | undefined    | double   | Double |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:IPrimitive | d            | false     | 0     | d        | d    | undefined    | double   | Double | d                  |
 
 # Select double array property from TestElement
 
@@ -92,9 +92,9 @@ SELECT e.array_d FROM aps.TestElement e LIMIT 1;
 | --------------- |
 | [0.0, 1.1, 2.2] |
 
-| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | -------------- |
-|           | array_d      | false     | 0     | array_d  | array_d | undefined    | double   | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName | name    | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_d      | false     | 0     | array_d  | array_d | undefined    | double   | PrimitiveArray | array_d            |
 
 # Select string property from TestElement
 
@@ -108,9 +108,9 @@ SELECT e.s FROM aps.TestElement e order by e.s LIMIT 1;
 | ---- |
 | str0 |
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
-|           | s            | false     | 0     | s        | s    | undefined    | string   | String |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:IPrimitive | s            | false     | 0     | s        | s    | undefined    | string   | String | s                  |
 
 # Select string array property from TestElement
 
@@ -124,9 +124,9 @@ SELECT e.array_s FROM aps.TestElement e LIMIT 1;
 | ------------------ |
 | ["s0", "s1", "s2"] |
 
-| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | -------------- |
-|           | array_s      | false     | 0     | array_s  | array_s | undefined    | string   | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName | name    | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_s      | false     | 0     | array_s  | array_s | undefined    | string   | PrimitiveArray | array_s            |
 
 # Select date time property from TestElement
 
@@ -140,9 +140,9 @@ SELECT e.dt FROM aps.TestElement e order by e.dt LIMIT 1;
 | ----------------------- |
 | 2010-01-01T11:11:11.000 |
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type     |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------- |
-|           | dt           | false     | 0     | dt       | dt   | undefined    | dateTime | DateTime |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type     | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------- | ------------------ |
+| AllProperties:IPrimitive | dt           | false     | 0     | dt       | dt   | undefined    | dateTime | DateTime | dt                 |
 
 # Select date time array property from TestElement
 
@@ -156,9 +156,9 @@ SELECT e.array_dt FROM aps.TestElement e LIMIT 1;
 | ------------------------------------------------------ |
 | ["2017-01-01T00:00:00.000", "2010-01-01T11:11:11.000"] |
 
-| className | accessString | generated | index | jsonName | name     | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | -------- | -------- | ------------ | -------- | -------------- |
-|           | array_dt     | false     | 0     | array_dt | array_dt | undefined    | dateTime | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName | name     | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | -------- | -------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_dt     | false     | 0     | array_dt | array_dt | undefined    | dateTime | PrimitiveArray | array_dt           |
 
 # Select point2d from TestElement
 
@@ -179,9 +179,9 @@ SELECT e.p2d FROM aps.TestElement e LIMIT 1;
 ]
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type    |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- |
-|           | p2d          | false     | 0     | p2d      | p2d  | undefined    | point2d  | Point2d |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type    | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- | ------------------ |
+| AllProperties:IPrimitive | p2d          | false     | 0     | p2d      | p2d  | undefined    | point2d  | Point2d | p2d                |
 
 # Select point2d array from TestElement
 
@@ -208,9 +208,9 @@ SELECT e.array_p2d FROM aps.TestElement e LIMIT 1;
 ]
 ```
 
-| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
-|           | array_p2d    | false     | 0     | array_p2d | array_p2d | undefined    | point2d  | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_p2d    | false     | 0     | array_p2d | array_p2d | undefined    | point2d  | PrimitiveArray | array_p2d          |
 
 # Select point3d from TestElement
 
@@ -220,9 +220,9 @@ SELECT e.array_p2d FROM aps.TestElement e LIMIT 1;
 SELECT e.p3d FROM aps.TestElement e LIMIT 1;
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type    |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- |
-|           | p3d          | false     | 0     | p3d      | p3d  | undefined    | point3d  | Point3d |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type    | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------- | ------------------ |
+| AllProperties:IPrimitive | p3d          | false     | 0     | p3d      | p3d  | undefined    | point3d  | Point3d | p3d                |
 
 | p3d                            |
 | ------------------------------ |
@@ -236,9 +236,9 @@ SELECT e.p3d FROM aps.TestElement e LIMIT 1;
 SELECT e.array_p3d FROM aps.TestElement e LIMIT 1;
 ```
 
-| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
-|           | array_p3d    | false     | 0     | array_p3d | array_p3d | undefined    | point3d  | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_p3d    | false     | 0     | array_p3d | array_p3d | undefined    | point3d  | PrimitiveArray | array_p3d          |
 
 | array_p3d                                                                 |
 | ------------------------------------------------------------------------- |
@@ -252,9 +252,9 @@ SELECT e.array_p3d FROM aps.TestElement e LIMIT 1;
 SELECT e.bin FROM aps.TestElement e LIMIT 1;
 ```
 
-| className | accessString | generated | index | jsonName | name | extendedType | typeName | type |
-| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
-|           | bin          | false     | 0     | bin      | bin  | Json         | string   | Blob |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+| AllProperties:IPrimitive | bin          | false     | 0     | bin      | bin  | Json         | string   | Blob | bin                |
 
 ```json
 [
@@ -272,9 +272,9 @@ SELECT e.bin FROM aps.TestElement e LIMIT 1;
 SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 ```
 
-| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
-|           | array_bin    | false     | 0     | array_bin | array_bin | Json         | string   | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_bin    | false     | 0     | array_bin | array_bin | Json         | string   | PrimitiveArray | array_bin          |
 
 ```json
 [
@@ -294,9 +294,9 @@ SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 ```
 
-| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
-|           | array_bin    | false     | 0     | array_bin | array_bin | Json         | string   | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_bin    | false     | 0     | array_bin | array_bin | Json         | string   | PrimitiveArray | array_bin          |
 
 ```json
 [
@@ -314,9 +314,9 @@ SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 ```
 
-| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
-|           | array_bin    | false     | 0     | array_bin | array_bin | Json         | string   | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_bin    | false     | 0     | array_bin | array_bin | Json         | string   | PrimitiveArray | array_bin          |
 
 | array_bin                                                     |
 | ------------------------------------------------------------- |
@@ -332,9 +332,9 @@ SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 SELECT e.array_bin FROM aps.TestElement e LIMIT 1;
 ```
 
-| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           |
-| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- |
-|           | array_bin    | false     | 0     | array_bin | array_bin | Json         | string   | PrimitiveArray |
+| className                     | accessString | generated | index | jsonName  | name      | extendedType | typeName | type           | originPropertyName |
+| ----------------------------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | -------------- | ------------------ |
+| AllProperties:IPrimitiveArray | array_bin    | false     | 0     | array_bin | array_bin | Json         | string   | PrimitiveArray | array_bin          |
 
 | array_bin                           |
 | ----------------------------------- |
