@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Dropped support for Node 18",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

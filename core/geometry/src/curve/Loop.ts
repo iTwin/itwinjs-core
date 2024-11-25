@@ -31,13 +31,14 @@ export class Loop extends CurveChain {
   public isSameGeometryClass(other: GeometryQuery): boolean {
     return other instanceof Loop;
   }
-  /** Test if `other` is an instance of `Loop` */
   public constructor() {
     super();
   }
   /**
-   * Create a loop from variable length list of CurvePrimitives
-   * @param curves array of individual curve primitives
+   * Create a loop from a variable length list of [[CurvePrimitive]]s.
+   * * A significant gap between the end of one curve and the start of the next, or between chain start and end,
+   * is not bridged and may cause unexpected behavior.
+   * @param curves array of individual curve primitives, assumed to form a closed planar loop.
    */
   public static create(...curves: CurvePrimitive[]): Loop {
     const result = new Loop();
@@ -50,13 +51,18 @@ export class Loop extends CurveChain {
     return result;
   }
   /**
-   * Create a loop from an array of curve primitives
-   * @param curves array of individual curve primitives
+   * Create a loop from an array of [[CurvePrimitive]]s.
+   * * A significant gap between the end of one curve and the start of the next, or between chain start and end,
+   * is not bridged and may cause unexpected behavior.
+   * @param curves array of individual curve primitives, assumed to form a closed planar loop.
    */
   public static createArray(curves: CurvePrimitive[]): Loop {
     return this.create(...curves);
   }
-  /** Create a loop from an array of points */
+  /**
+   * Create a loop from an array of coplanar points.
+   * @param points vertices of polygon, closure point optional.
+  */
   public static createPolygon(points: IndexedXYZCollection | Point3d[]): Loop {
     const linestring = LineString3d.create(points);
     linestring.addClosurePoint();

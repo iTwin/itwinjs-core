@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "5.0.0-dev.0",
+  "version": "5.0.0-dev.13",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -33,7 +33,7 @@
     "cover": "nyc npm -s test",
     "docs": "npm run -s docs:reference && npm run -s docs:changelog",
     "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-frontend",
-    "docs:reference": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-frontend/file.json --tsIndexFile=presentation-frontend.ts --onlyJson",
+    "docs:reference": "betools docs --json=../../generated-docs/presentation/presentation-frontend/file.json --tsIndexFile=presentation-frontend.ts --onlyJson",
     "extract": "betools extract --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "extract-api": "betools extract-api --entry=presentation-frontend",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
@@ -42,17 +42,17 @@
     "prettier:fix": "prettier --write ."
   },
   "dependencies": {
-    "@itwin/unified-selection": "^0.1.0",
+    "@itwin/unified-selection": "^1.1.1",
     "rxjs": "^7.8.1",
     "rxjs-for-await": "^1.0.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^5.0.0-dev.0",
-    "@itwin/core-common": "workspace:^5.0.0-dev.0",
-    "@itwin/core-frontend": "workspace:^5.0.0-dev.0",
-    "@itwin/core-quantity": "workspace:^5.0.0-dev.0",
-    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.0",
-    "@itwin/presentation-common": "workspace:^5.0.0-dev.0"
+    "@itwin/core-bentley": "workspace:^5.0.0-dev.13",
+    "@itwin/core-common": "workspace:^5.0.0-dev.13",
+    "@itwin/core-frontend": "workspace:^5.0.0-dev.13",
+    "@itwin/core-quantity": "workspace:^5.0.0-dev.13",
+    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.13",
+    "@itwin/presentation-common": "workspace:^5.0.0-dev.13"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -76,7 +76,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-jest-snapshot": "^2.0.0",
     "cpx2": "^3.0.0",
-    "cross-env": "^5.1.4",
+    "cross-env": "^7.0.3",
     "deep-equal": "^1",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",
