@@ -88,6 +88,9 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
 
         const compiledValue = replacePropsInString(binder.value, props);
         switch(binder.type.toLowerCase()) { // TODO: replace props variables in binder.value
+          case "null":
+            stmt.bindNull(id);
+            break;
           case "string":
             stmt.bindString(id, binder.value);
             break;
@@ -241,6 +244,9 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
 
         const compiledValue = replacePropsInString(binder.value, props);
         switch(binder.type.toLowerCase()) { // TODO: replace props variables in binder.value
+          case "null":
+            params.bindNull(id);
+            break;
           case "string":
             params.bindString(id, binder.value);
             break;

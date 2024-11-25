@@ -568,6 +568,15 @@ WITH RECURSIVE cte (x) AS ( SELECT e.i FROM aps.TestElement e WHERE e.i = 100 UN
 select a.x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x from tmp) a;
 ```
 
+# Expected table aliasing for inner and outer tables to fail in CTE subquery due to prop name being wrong
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+select a.x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select temp1.x from tmp temp1) a;
+```
+
 # Expected classId prop test to fail with CTE subquery due to prop name being wrong
 
 - dataset: AllProperties.bim

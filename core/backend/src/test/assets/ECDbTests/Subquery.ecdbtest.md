@@ -17,10 +17,10 @@ LIMIT
   3
 ```
 
-| className | accessString    | generated | index | jsonName        | name            | extendedType | typeName | extendType | type | originPropertyName |
-| --------- | --------------- | --------- | ----- | --------------- | --------------- | ------------ | -------- | ---------- | ---- | ------------------ |
-|           | ECInstanceId    | false     | 0     | id              | ECInstanceId    | Id           | long     | Id         | Id   | ECInstanceId       |
-|           | MaxVersionMajor | true      | 1     | maxVersionMajor | MaxVersionMajor | undefined    | int      |            | Int  | undefined          |
+| className | accessString    | generated | index | jsonName        | name            | extendedType | typeName | type | originPropertyName |
+| --------- | --------------- | --------- | ----- | --------------- | --------------- | ------------ | -------- | ---- | ------------------ |
+|           | ECInstanceId    | false     | 0     | id              | ECInstanceId    | Id           | long     | Id   | ECInstanceId       |
+|           | MaxVersionMajor | true      | 1     | maxVersionMajor | MaxVersionMajor | undefined    | int      | Int  | undefined          |
 
 | ECInstanceId | MaxVersionMajor |
 | ------------ | --------------- |
@@ -48,9 +48,9 @@ WHERE
   );
 ```
 
-| className | accessString | generated | index | jsonName | name         | extendedType | typeName | extendType | type | originPropertyName |
-| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---------- | ---- | ------------------ |
-|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id         | Id   | ECInstanceId       |
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
 
 | ECInstanceId |
 | ------------ |
@@ -76,9 +76,9 @@ WHERE
   );
 ```
 
-| className | accessString | generated | index | jsonName | name         | extendedType | typeName | extendType | type | originPropertyName |
-| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---------- | ---- | ------------------ |
-|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id         | Id   | ECInstanceId       |
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
 
 | ECInstanceId |
 | ------------ |
@@ -152,7 +152,6 @@ FROM
 | 0x18         | 1          |
 | 0x19         | 1          |
 
-
 # CTE subquery
 
 - dataset: AllProperties.bim
@@ -193,7 +192,6 @@ FROM
 | 0x1b         |
 | 0x1c         |
 | 0x1d         |
-
 
 # ANY Clause
 
