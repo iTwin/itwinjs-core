@@ -168,6 +168,8 @@ As an alternative, column infos can be formatted as json in a code block like th
 ]
 ```
 
+> Note :- When dealing with binary data always enclose the Uint8Array values within `BIN()`. Follow examples written in `DataTypes.ecdbtest.md`
+
 Check out the Examples.ecdbtest.md or other files in this directory.
 
 ## Test generator
