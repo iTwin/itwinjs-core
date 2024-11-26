@@ -531,7 +531,7 @@ export class BriefcaseManager {
         Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
       } catch (err: any) {
         if (err instanceof Error) {
-          Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${e.message}`);
+          Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${err.message}`);
         }
         db.abandonChanges();
         db[_nativeDb].pullMergeEnd();
