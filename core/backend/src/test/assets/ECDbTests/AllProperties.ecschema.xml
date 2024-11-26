@@ -76,7 +76,7 @@
     </ECCustomAttributes>
     <ECProperty propertyName="i" typeName="int"/>
     <ECProperty propertyName="l" typeName="long"/>
-    <ECProperty propertyName="d" typeName="double"/>  
+    <ECProperty propertyName="d" typeName="double"/>
     <ECProperty propertyName="b" typeName="boolean"/>
     <ECProperty propertyName="dt" typeName="dateTime"/>
     <ECProperty propertyName="s" typeName="string"/>
