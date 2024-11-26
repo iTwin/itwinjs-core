@@ -20,17 +20,20 @@ export class TestContext {
   }
 
   private async initialize() {
+    if (!process.env.IMJS_MES_INTEGRATION_OIDC_CLIENT_ID || !process.env.IMJS_TEST_REGULAR_USER_NAME || !process.env.IMJS_TEST_REGULAR_USER_PASSWORD)
+      throw new Error("Missing required environment variables, could not authenticate.");
+
     const urlPrefix = process.env.IMJS_URL_PREFIX || "";
     const oidcConfig = {
-      clientId: process.env.IMJS_MES_INTEGRATION_OIDC_CLIENT_ID || "",
+      clientId: process.env.IMJS_MES_INTEGRATION_OIDC_CLIENT_ID,
       redirectUri: "http://localhost:3000/signin-callback",
       scope: "itwin-platform",
       authority: `https://${urlPrefix}ims.bentley.com`,
     };
 
     const user = {
-      email: process.env.IMJS_TEST_REGULAR_USER_NAME || "",
-      password: process.env.IMJS_TEST_REGULAR_USER_PASSWORD || "",
+      email: process.env.IMJS_TEST_REGULAR_USER_NAME,
+      password: process.env.IMJS_TEST_REGULAR_USER_PASSWORD,
     };
 
     // Generate access token
