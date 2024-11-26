@@ -48,11 +48,10 @@ See [rush.json](./rush.json) for the complete list of packages and [Versioning.m
 
 The following instructions will quickly set the repo up for you to edit the source code and contribute:
 
-1. Clone the repository locally
+1. Clone the repository locally: `git clone https://github.com/iTwin/itwinjs-core.git`
 2. Install dependencies: `rush install`
-3. Clean: `rush clean`
-4. Build source: `rush build`
-5. Run tests: `rush cover`
+3. Build source: `rush build`
+4. Run tests: `rush cover`
 
 For more information, our [Contributing guide](./CONTRIBUTING.md) contains detailed instructions on typical source code editing workflows, our contribution standards, FAQs, instructions on how to post questions and et cetera.
 

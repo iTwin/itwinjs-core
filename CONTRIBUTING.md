@@ -16,6 +16,7 @@ The goal of this document is to provide a high-level overview of how you can get
     - [Writing Good Bug Reports and Feature Requests](#writing-good-bug-reports-and-feature-requests)
     - [Follow Your Issue](#follow-your-issue)
   - [Contributing Guidelines](#contributing-guidelines)
+    - [Branch Naming Policy](#branch-naming-policy)
     - [Contributor License Agreement (CLA)](#contributor-license-agreement-cla)
     - [Pull Requests](#pull-requests)
     - [Types of Contributions](#types-of-contributions)
@@ -33,15 +34,14 @@ This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that hol
 Each package has its own **node_modules** directory that contains symbolic links to *common* dependencies managed by Rush.
 
 1. Install dependencies: `rush install`
-2. Clean: `rush clean`
-3. Build source: `rush build`
-4. Run tests: `rush cover`
+2. Build source: `rush build`
+3. Run tests: `rush cover`
 
 The above commands iterate and perform their action against each package in the monorepo.
 
 ## Source Code Edit Workflow
 Once you've set up the repo, you can move on to making changes to the source code by following the steps below:
-1. At the root of the repo, run `git checkout -b "<your-branch-name>"`.
+1. Create your own branch by running `git checkout -b "<your-branch-name>"`. See [Branch Naming Policy](#branch-naming-policy)
 2. Make source code changes.
 3. Rebuild the repo by running `rush build`.
 4. Ensure unit tests pass when run locally: `rush cover`.
@@ -136,6 +136,9 @@ You may be asked to clarify things or try different approaches, so please follow
 We'd love to accept your contributions to iTwin.js.
 There are just a few guidelines you need to follow.
 
+### Branch Naming Policy
+
+We recommend putting your github username, followed by a succinct branch name that reflects the changes you want to make. Eg. ` git checkout -b "<gh_username>/cleanup-docs"`
 ### Contributor License Agreement (CLA)
 
 A [Contribution License Agreement with Bentley](https://gist.github.com/imodeljs-admin/9a071844d3a8d420092b5cf360e978ca) must be signed before your contributions will be accepted. Upon opening a pull request, you will be prompted to use [cla-assistant](https://cla-assistant.io/) for a one-time acceptance applicable for all Bentley projects.
@@ -182,7 +185,7 @@ If you get an error similar to the following:
 ```
 This means that the repo has stopped making use of an npm package that was used in the past:
 
-To fix this build error, you should completely remove the node_modules directory that is referenced in the error with `rush purge`, and then rerun `rush install`.
+To fix this build error, you should completely remove the node_modules directory and reinstall your dependencies. `rush update --purge` is a one-line solution for the above.
 
 ### Updating dependencies/devDependencies on packages within the monorepo
 
