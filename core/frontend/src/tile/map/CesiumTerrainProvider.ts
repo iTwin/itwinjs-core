@@ -38,8 +38,7 @@ export function getCesiumOSMBuildingsUrl(): string | undefined {
   if (undefined === key)
     return undefined;
 
-  const osmBuildingAssetId = 96188;
-  return getCesiumAssetUrl(osmBuildingAssetId, key);
+  return getCesiumAssetUrl(+CesiumTerrainAssetId.OSMBuildings, key);
 }
 
 /** @internal */
