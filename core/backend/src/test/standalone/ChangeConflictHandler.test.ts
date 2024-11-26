@@ -23,7 +23,7 @@ import {
   SqliteChangesetReader,
 } from "../../core-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { ChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
+import { ChangesetConflictArgs, MergeChangesetConflictArgs } from "../../internal/ChangesetConflictArgs";
 chai.use(chaiAsPromised);
 import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
 
@@ -176,7 +176,7 @@ describe("Changeset conflict handler", () => {
       s1.restore();
     }
   }
-  async function fakeChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, interceptMethod: (arg: ChangesetConflictArgs) => DbConflictResolution | undefined) {
+  async function fakeChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, interceptMethod: (arg: MergeChangesetConflictArgs) => DbConflictResolution | undefined) {
     const s1 = sinon.stub<ChangesetConflictArgs[], DbConflictResolution>(b as any, "onChangesetConflict" as any);
     s1.callsFake(interceptMethod);
     try {
@@ -434,10 +434,10 @@ describe("Changeset conflict handler", () => {
     await fakeChangesetConflictHandler(
       b2,
       async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
-      (arg: ChangesetConflictArgs) => {
+      (arg: MergeChangesetConflictArgs) => {
 
         // *** SqliteChangeReader API test ***
-        const reader = SqliteChangesetReader.openFile({ fileName: arg.changesetFile!, db: b2 });
+        const reader = SqliteChangesetReader.openFile({ fileName: arg!.changesetFile!, db: b2 });
         expect(reader.step()).is.true;
         expect(reader.tableName).equals("be_Prop");
         expect(reader.getPrimaryKeyColumnNames()).deep.equals(["Namespace", "Name", "Id", "SubId"]);

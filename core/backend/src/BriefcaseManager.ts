@@ -522,12 +522,23 @@ export class BriefcaseManager {
     if (reverse)
       changesets.reverse();
 
+    db[_nativeDb].pullMergeBegin();
     for (const changeset of changesets) {
       const stopwatch = new StopWatch(`[${changeset.id}]`, true);
       Logger.logInfo(loggerCategory, `Starting application of changeset with id ${stopwatch.description}`);
-      await this.applySingleChangeset(db, changeset);
-      Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      try {
+        await this.applySingleChangeset(db, changeset);
+        Logger.logInfo(loggerCategory, `Applied changeset with id ${stopwatch.description} (${stopwatch.elapsedSeconds} seconds)`);
+      } catch (err: any) {
+        if (err instanceof Error) {
+          Logger.logError(loggerCategory, `Error applying changeset with id ${stopwatch.description}: ${e.message}`);
+        }
+        db.abandonChanges();
+        db[_nativeDb].pullMergeEnd();
+        throw err;
+      }
     }
+    db[_nativeDb].pullMergeEnd();
     // notify listeners
     db.notifyChangesetApplied();
   }

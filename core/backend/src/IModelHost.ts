@@ -86,6 +86,9 @@ export interface AzureBlobStorageCredentials {
   baseUrl?: string;
 }
 
+/** @internal */
+export type PullMergeMethod = "Merge" | "Rebase";
+
 /**
  * Options for [[IModelHost.startup]]
  * @public
@@ -195,6 +198,9 @@ export interface IModelHostOptions {
    * Will be changed to default to `false` in 5.0.
    */
   allowSharedChannel?: boolean;
+
+  /** @internal */
+  pullMergeMethod?: PullMergeMethod;
 }
 
 /** Configuration of core-backend.
@@ -206,7 +212,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
   public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
-
+  public static defaultPullMergeMethod: PullMergeMethod = "Merge";
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;
 
@@ -231,6 +237,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public logTileSizeThreshold = IModelHostConfiguration.defaultLogTileSizeThreshold;
   /** @internal */
   public crashReportingConfig?: CrashReportingConfig;
+  /** @internal */
+  public pullMergeMethod: PullMergeMethod = IModelHostConfiguration.defaultPullMergeMethod;
 }
 
 /**
@@ -451,6 +459,15 @@ export class IModelHost {
     GeoCoordConfig.onStartup();
     // allow applications to load their default settings
     this.onWorkspaceStartup.raiseEvent();
+  }
+
+  /** Gets the pull merge method used by the IModelHost.
+   * @internal
+   * @note If a custom pull merge method is not configured, the default pull merge method is used.
+   * @returns The pull merge method.
+   */
+  public static get pullMergeMethod(): PullMergeMethod {
+    return this.configuration?.pullMergeMethod ?? IModelHostConfiguration.defaultPullMergeMethod;
   }
 
   private static _isValid = false;
