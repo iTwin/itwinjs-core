@@ -59,13 +59,14 @@ export class TestContext {
     Logger.initializeToConsole();
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
-    if (undefined !== this.settings.oidcClientId) {
+    if (undefined !== this.settings.clientConfiguration!.clientId) {
       this.serviceAuthToken = await getServiceAuthTokenFromBackend({
-        clientId: this.settings.oidcClientId,
-        clientSecret: this.settings.oidcClientSecret,
-        scope: this.settings.oidcScopes,
+        clientId: this.settings.clientConfiguration!.clientId,
+        clientSecret: this.settings.clientConfiguration!.clientSecret,
+        scope: this.settings.clientConfiguration!.scope,
         authority: this.settings.oidcAuthority,
       });
+      console.log("Service Auth Token:", this.serviceAuthToken);
     }
 
     if (undefined !== this.settings.clientConfiguration)
@@ -77,14 +78,19 @@ export class TestContext {
     await NoRenderApp.startup({
       applicationVersion: PACKAGE_VERSION,
       applicationId: this.settings.gprid,
-      authorizationClient: new TestFrontendAuthorizationClient(this.adminUserAccessToken),
+      authorizationClient: new TestFrontendAuthorizationClient(this.serviceAuthToken!),
       hubAccess: new FrontendIModelsAccess(iModelClient),
     });
 
-    this.iModelWithChangesets = await IModelSession.create(this.adminUserAccessToken, this.settings.iModel);
+    this.iModelWithChangesets = await IModelSession.create(this.serviceAuthToken!, this.settings.iModel);
+    console.log("iModelWithChangesets:", this.iModelWithChangesets);
+
     this.iTwinId = this.iModelWithChangesets.iTwinId;
+    console.log("iTwinId:", this.iTwinId);
+
     if (this.settings.runiModelWriteRpcTests)
-      this.iModelForWrite = await IModelSession.create(this.adminUserAccessToken, this.settings.writeIModel);
+      this.iModelForWrite = await IModelSession.create(this.serviceAuthToken!, this.settings.writeIModel);
+    console.log("iModelForWrite:", this.iModelForWrite);
 
     console.log("TestSetup: Done");
   }
