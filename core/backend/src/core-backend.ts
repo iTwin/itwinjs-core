@@ -34,6 +34,7 @@ export * from "./Entity";
 export * from "./EntityReferences";
 export * from "./ExportGraphics";
 export * from "./ExternalSource";
+export * from "./Font";
 export * from "./GeoCoordConfig";
 export * from "./GeographicCRSServices";
 export * from "./HubMock";
