@@ -30,7 +30,7 @@ describe("Mixin Rule Tests", () => {
     const mixin = new TestMixin(schema, "TestMixin", constraintClass);
     const entityClass = new EntityClass(schema, "TestClass");
     (entityClass as MutableEntityClass).addMixin(mixin);
-    entityClass.baseClass = new DelayedPromiseWithProps(constraintClass.key, async () => constraintClass);
+    await entityClass.setBaseClass(new DelayedPromiseWithProps(constraintClass.key, async () => constraintClass));
 
     const result = Rules.mixinAppliedToClassMustDeriveFromConstraint(entityClass);
     for await (const _diagnostic of result) {
@@ -75,7 +75,7 @@ describe("Mixin Rule Tests", () => {
     const mixin = new TestMixin(schema, "TestMixin", constraintClass);
     const entityClass = new EntityClass(schema, "TestClass");
     (entityClass as MutableEntityClass).addMixin(mixin);
-    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+    await entityClass.setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
 
     const result = Rules.mixinAppliedToClassMustDeriveFromConstraint(entityClass);
 

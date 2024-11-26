@@ -19,7 +19,7 @@ describe("SchemaValidater tests", () => {
   it("validateSchema, rule violation reported correctly", async () => {
     const baseClass = new EntityClass(schema, "TestBase", ECClassModifier.Sealed);
     const entityClass = new EntityClass(schema, "TestClass");
-    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+    await entityClass.setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
     (schema as MutableSchema).addItem(entityClass);
 
     const result = await SchemaValidater.validateSchema(schema);
@@ -32,7 +32,7 @@ describe("SchemaValidater tests", () => {
     const ruleSet = new TestRuleSet();
     const baseClass = new EntityClass(schema, "TestBase", ECClassModifier.Sealed);
     const entityClass = new EntityClass(schema, "TestClass");
-    entityClass.baseClass = new DelayedPromiseWithProps(baseClass.key, async () => baseClass);
+    await entityClass.setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
     (schema as MutableSchema).addItem(entityClass);
 
     const result = await SchemaValidater.validateSchema(schema, ruleSet);

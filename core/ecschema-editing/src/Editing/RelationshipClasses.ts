@@ -115,7 +115,7 @@ export class RelationshipClasses extends ECClasses {
     try {
       await this.validate(relClass!);
     } catch(e: any) {
-      relClass!.baseClass = baseClass;
+      await relClass!.setBaseClass(baseClass);
       throw new SchemaEditingError(ECEditingStatus.SetBaseClass, new ClassId(SchemaItemType.RelationshipClass, itemKey), e);
     }
   }
