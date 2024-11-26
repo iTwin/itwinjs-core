@@ -42,8 +42,6 @@ import { PickableGraphicOptions } from "../common/render/BatchOptions";
 import { createGraphicTemplate, GraphicTemplate, GraphicTemplateBatch, GraphicTemplateBranch, GraphicTemplateNode } from "../render/GraphicTemplate";
 import { RenderGeometry } from "../internal/render/RenderGeometry";
 
-/* eslint-disable no-restricted-syntax */
-
 /** @internal */
 export type GltfDataBuffer = Uint8Array | Uint16Array | Uint32Array | Float32Array;
 
@@ -192,7 +190,7 @@ export class GltfReaderProps {
 
           json = JSON.parse(utf8Json);
           version = 2;
-        } catch (_) {
+        } catch {
           return undefined;
         }
       } else {
@@ -212,7 +210,7 @@ export class GltfReaderProps {
             return undefined;
 
           json = JSON.parse(jsonStr);
-        } catch (_) {
+        } catch {
           return undefined;
         }
       }
@@ -451,7 +449,9 @@ export abstract class GltfReader {
   private readonly _dracoMeshes = new Map<DracoMeshCompression, DracoMesh>();
   private _containsPointCloud = false;
   protected _instanceFeatures: Feature[] = [];
+  protected _meshFeatures: Feature[] = [];
   protected _instanceElementIdToFeatureId: Map<string, number> = new Map<string, number>();
+  protected _meshElementIdToFeatureIndex: Map<string, number> = new Map<string, number>();
   protected _structuralMetadata?: StructuralMetadata;
   protected readonly _idMap?: BatchedTileIdMap;
 
@@ -554,6 +554,13 @@ export abstract class GltfReader {
       featureTable = new FeatureTable(this._instanceFeatures.length, featureTableModelId);
       for(let instanceFeatureId = 0; instanceFeatureId < this._instanceFeatures.length; instanceFeatureId++){
         featureTable.insertWithIndex(this._instanceFeatures[instanceFeatureId], instanceFeatureId);
+      }
+    }
+
+    if(this._meshFeatures.length > 0 && this._idMap){
+      featureTable = new FeatureTable(this._meshFeatures.length, featureTableModelId);
+      for(let meshFeatureId = 0; meshFeatureId < this._meshFeatures.length; meshFeatureId++){
+        featureTable.insertWithIndex(this._meshFeatures[meshFeatureId], meshFeatureId);
       }
     }
 
@@ -971,7 +978,7 @@ export abstract class GltfReader {
       const aligned = 0 === (bufferData.byteOffset + offset) % dataSize;
       const bytes = aligned ? bufferData.subarray(offset, offset + length) : bufferData.slice(offset, offset + length);
       return new GltfBufferView(bytes, accessor.count, type, accessor, byteStride / dataSize);
-    } catch (e) {
+    } catch {
       return undefined;
     }
   }
@@ -1342,9 +1349,12 @@ export abstract class GltfReader {
           max = ext.decodedMax;
         } else {
           // Assume KHR_mesh_quantization...
-          min = posView.accessor.min;
-          max = posView.accessor.max;
-        }
+          min = [0, 0, 0];
+          if (GltfDataType.UnsignedShort === posView.type)
+            max = [0xFFFF, 0xFFFF, 0xFFFF];
+          else
+            max = [0xFF, 0xFF, 0xFF];
+          }
 
         if (undefined === min || undefined === max) {
           return undefined;
@@ -1548,8 +1558,8 @@ export abstract class GltfReader {
         rangeMax = quantized.decodedMax;
       } else {
         // Assume KHR_mesh_quantization...
-        rangeMin = view.accessor.min;
-        rangeMax = view.accessor.max;
+        rangeMin = [0, 0, 0];
+        rangeMax = [0xFFFF, 0xFFFF, 0xFFFF];
       }
 
       if (undefined === rangeMin || undefined === rangeMax) // required by spec...
@@ -1598,8 +1608,78 @@ export abstract class GltfReader {
   protected readBatchTable(_mesh: Mesh, _json: GltfMeshPrimitive) {
   }
 
-  protected readPrimitiveFeatures(_primitive: GltfMeshPrimitive): Feature | number[] | undefined {
-    return undefined;
+  protected readPrimitiveFeatures(primitive: GltfMeshPrimitive): Feature | number[] | undefined {
+    const ext = primitive.extensions?.EXT_mesh_features;
+    if (!ext || !primitive.attributes || !this._structuralMetadata || !this._idMap) {
+      return undefined;
+    }
+
+    let vertexCount = 0;
+    const featureIdBuffers = new Map<number, {buffer: GltfDataBuffer, stride: number}>();
+    for(const featureIdDesc of ext.featureIds){
+      if(featureIdDesc.attribute === undefined){
+        continue;
+      }
+      const bufferView = this.getBufferView(primitive.attributes, `_FEATURE_ID_${featureIdDesc.attribute}`);
+      const bufferData = bufferView?.toBufferData(bufferView.type);
+      const buffer = bufferData?.buffer;
+      if (!bufferView || !buffer) {
+        return undefined;
+      }
+      vertexCount = bufferData.count ?? 0;
+      featureIdBuffers.set(featureIdDesc.attribute, {buffer, stride: bufferView.stride});
+    }
+
+    const itwinFeatureIndices: number[] = [];
+    const vertexPropsMap = new Map<string, string>();
+    for (let vertexId = 0;  vertexId < vertexCount;  vertexId++) {
+      let vertexUniqueId = "";
+      for(const featureIdDesc of ext.featureIds){
+        if (featureIdDesc.attribute === undefined) {
+          continue;
+        }
+        const {buffer, stride} = featureIdBuffers.get(featureIdDesc.attribute)!;
+        const featureId = buffer[vertexId * stride];
+        const propertyTableId = featureIdDesc.propertyTable ?? 0;
+        vertexUniqueId = `${vertexUniqueId}-${featureId}-${propertyTableId}`;
+      }
+
+      let vertexElementId;
+      if(!vertexPropsMap.has(vertexUniqueId)){
+        const vertexProps: any = {};
+
+        for(const featureIdDesc of ext.featureIds){
+          if (featureIdDesc.attribute === undefined) {
+            continue;
+          }
+          const {buffer, stride} = featureIdBuffers.get(featureIdDesc.attribute)!;
+          const featureId = buffer[vertexId * stride];
+
+          const table = this._structuralMetadata.tables[featureIdDesc.propertyTable ?? 0];
+          vertexProps[table.name] = {};
+          for(const entries of table.entries){
+            if(entries.values[featureId] !== undefined){
+              vertexProps[table.name][entries.name] = entries.values[featureId];
+            }
+          }
+        }
+
+        vertexElementId = this._idMap.getBatchId(vertexProps);
+        vertexPropsMap.set(vertexUniqueId, vertexElementId);
+
+        //  If the element id is already assigned to a previous vertex,
+        //  reuse the previous feature id to avoid collision in the feature table
+        if(!this._meshElementIdToFeatureIndex.has(vertexElementId)){
+          this._meshElementIdToFeatureIndex.set(vertexElementId, this._meshFeatures.length);
+          this._meshFeatures.push(new Feature(vertexElementId));
+        }
+      }
+
+      vertexElementId = vertexPropsMap.get(vertexUniqueId) ?? "";
+      itwinFeatureIndices.push(this._meshElementIdToFeatureIndex.get(vertexElementId) ?? 0);
+    }
+
+    return itwinFeatureIndices;
   }
 
   protected readMeshIndices(mesh: GltfMeshData, json: { [k: string]: any }): boolean {
@@ -1853,8 +1933,7 @@ export abstract class GltfReader {
           promises.push(this.resolveImage(image));
 
       await Promise.all(promises);
-    } catch (_) {
-    }
+    } catch { }
   }
 
   private async decodeDracoMesh(ext: DracoMeshCompression, loader: typeof DracoLoader): Promise<void> {
@@ -1878,7 +1957,7 @@ export abstract class GltfReader {
       const resolved = new URL(uri, this._baseUrl);
       resolved.search = this._baseUrl?.search ?? "";
       return resolved.toString();
-    } catch (_) {
+    } catch {
       return undefined;
     }
   }
@@ -1899,7 +1978,7 @@ export abstract class GltfReader {
 
       if (data)
         buffer.resolvedBuffer = new Uint8Array(data);
-    } catch (_) {
+    } catch {
       //
     }
   }
@@ -1928,7 +2007,7 @@ export abstract class GltfReader {
           image.resolvedImage = await imageBitmapFromImageSource(imageSource);
         else
           image.resolvedImage = await imageElementFromImageSource(imageSource);
-      } catch (_) {
+      } catch {
         //
       }
 
@@ -2035,7 +2114,7 @@ export interface ReadGltfGraphicsArgs {
    *  - A JSON object conforming to the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html); or
    *  - A Uint8Array containing the utf8-encoded stringified JSON of an object conforming to the [glTF 2.0 specification](https://www.khronos.org/registry/glTF/specs/2.0/glTF-2.0.html).
    */
-  gltf: Uint8Array | Object;
+  gltf: Uint8Array | object;
   /** The iModel with which the graphics will be associated - typically obtained from the [[Viewport]] into which they will be drawn. */
   iModel: IModelConnection;
   /** Options for making the graphic [pickable]($docs/learning/frontend/ViewDecorations#pickable-view-graphic-decorations).
@@ -2148,6 +2227,7 @@ export class GltfGraphicsReader extends GltfReader {
   private readonly _transform?: Transform;
   private readonly _isLeaf: boolean;
   public readonly binaryData?: Uint8Array; // strictly for tests
+  public meshes?: GltfMeshData; // strictly for tests
 
   public constructor(props: GltfReaderProps, args: ReadGltfGraphicsArgs) {
     super({
@@ -2174,6 +2254,16 @@ export class GltfGraphicsReader extends GltfReader {
       whiteOnWhiteReversal: false,
       renderMode: RenderMode.SmoothShade,
     };
+  }
+
+  public get meshElementIdToFeatureIndex(): Map<string, number> { // strictly for tests
+    return this._meshElementIdToFeatureIndex;
+  }
+
+  protected override readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined {
+    const meshes = super.readMeshPrimitive(primitive, featureTable, pseudoRtcBias);
+    this.meshes = meshes instanceof GltfMeshData ? meshes : undefined;
+    return meshes;
   }
 
   private getGltfStructuralMetadataBuffer(id: GltfId, type: GltfStructuralMetadata.ClassPropertyComponentType){

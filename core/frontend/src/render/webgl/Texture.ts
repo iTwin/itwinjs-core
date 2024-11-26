@@ -651,7 +651,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
           }
         }
       }
-    } catch (_e) { }
+    } catch { }
 
     return this._nextRequest(req);
   }
@@ -675,7 +675,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
           }
         }
       }
-    } catch (_e) { }
+    } catch { }
     this._convertPending = false;
   }
 

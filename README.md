@@ -1,10 +1,22 @@
-﻿# iTwin.js
+﻿<p align="center">
+ <a href="https://www.itwinjs.org/" target="_blank" rel="noopener noreferrer">
+    <img width="180" src="./docs/assets/itwinjs-logo-colorized.svg" alt="iTwin.js Logo">
+  </a>
+</p>
 
-Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](./LICENSE.md) for license terms and full copyright notice.
-
-[iTwin.js](http://www.itwinjs.org) is an open source platform for creating, querying, modifying, and displaying Infrastructure Digital Twins.
-
-If you have questions, or wish to contribute to iTwin.js, see our [Contributing guide](./CONTRIBUTING.md).
+<h1 align="center">
+iTwin.js
+</h1>
+<p align="center">
+    <a href="https://github.com/iTwin/itwinjs-core/releases/latest"><img src="https://img.shields.io/github/v/release/iTwin/itwinjs-core?label=latest" alt="Latest version"></a>
+    <a href="https://nodejs.org/en/about/previous-releases">
+    <img src="https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fgithub.com%2FiTwin%2Fitwinjs-core%2Fraw%2Fmaster%2Frush.json&query=%24.nodeSupportedVersionRange&label=node&color=33a921"
+    alt="Supported Node Versions">
+    </a>
+</a>
+<p align="center">
+An open source library for creating, querying, modifying, and displaying Infrastructure Digital Twins.
+</p>
 
 ## About this Repository
 
@@ -20,6 +32,7 @@ Each package has its own **node_modules** directory that contains symbolic links
 
 - [Git](https://git-scm.com/)
 - [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 20. The Node installation also includes the **npm** package manager.
+- [pnpm](https://pnpm.io/): our required package manager. It is more performant and monorepo friendly than `npm`. We recommend installing `pnpm` using [`corepack enable pnpm`](https://pnpm.io/installation#using-corepack). Note you may have to use an administrator shell to run the command.
 - [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
 - [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
 - [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
@@ -69,6 +82,8 @@ For incremental builds, the `rush build` command can be used to only build packa
 11. Add and commit the changelog JSON files and any API signature updates.
 12. Publish changes on the branch and open a pull request.
 
+> If executing scripts from `package.json` files in any of the subdirectories, we recommend using [`rushx`](https://rushjs.io/pages/commands/rushx/) over `npm`.
+
 If using the command line, steps 8 through 11 above can be completed in one step by running `rushchange.bat` from the imodeljs root directory.
 Only use `rushchange.bat` if none of the changes require a changelog entry.
 > Note: The CI build will break if changes are pushed without running `rush change` and `rush extract-api` (if the API was changed). The fix will be to complete steps 6 through 11.
@@ -92,4 +107,12 @@ Use these instructions to update dependencies and devDependencies on external pa
 ## Other NPM Scripts
 
 1. Build TypeDoc documentation for all packages: `rush docs`
-2. Build TypeDoc documentation for a single package: `cd core\backend` and then `npm run docs`
+2. Build TypeDoc documentation for a single package: `cd core\backend` and then `rushx docs`
+
+## Contribution
+
+If you have questions, or wish to contribute to iTwin.js, see our [Contributing guide](./CONTRIBUTING.md).
+
+## Licensing
+
+Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](./LICENSE.md) for license terms and full copyright notice.

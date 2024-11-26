@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 /** @packageDocumentation
  * @module UiItemsProvider
  */
@@ -62,10 +62,10 @@ export interface AllowedUiItemProviderOverrides {
  * @public
  */
 export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> |
-  MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> |                                 // eslint-disable-line @typescript-eslint/indent
-  MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> |                                                // eslint-disable-line @typescript-eslint/indent
-  MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> |                                             // eslint-disable-line @typescript-eslint/indent
-  MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;                  // eslint-disable-line @typescript-eslint/indent
+  MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> |
+  MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> |
+  MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> |
+  MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;
 
 /** Interface that defines an instance of a UiItemsProvider and its application specified overrides. */
 interface UiItemProviderEntry {

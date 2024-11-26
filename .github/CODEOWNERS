@@ -11,7 +11,7 @@
 
 * @iTwin/itwinjs-core-admins
 
-.github/workflows                                 @aruniverse @calebmshafer @wgoehrig @ColinKerr
+.github/workflows                                 @aruniverse @calebmshafer @wgoehrig @ColinKerr @ben-polinsky
 .github/CODEOWNERS                                @iTwin/itwinjs-core-admins
 
 .gitattributes                                    @iTwin/itwinjs-core-admins
@@ -68,8 +68,8 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /common/**/core-i18n/                             @calebmshafer @wgoehrig
 /common/**/core-markup.*                          @pmconne @bbastings
 /common/**/core-markup/                           @pmconne @bbastings
-/common/**/core-quantity.*                        @calebmshafer @ColinKerr
-/common/**/core-quantity/                         @calebmshafer @ColinKerr
+/common/**/core-quantity.*                        @ColinKerr @hl662 @rschili
+/common/**/core-quantity/                         @ColinKerr @hl662 @rschili
 /common/**/linear-referencing-backend.*           @ColinKerr @diegoalexdiaz
 /common/**/linear-referencing-backend/            @ColinKerr @diegoalexdiaz
 /common/**/linear-referencing-common.*            @ColinKerr @diegoalexdiaz
@@ -109,7 +109,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /core/markup                                      @pmconne @bbastings
 /core/mobile                                      @iTwin/itwinjs-core-admins @iTwin/mobilesdkadmins
 /core/orbitgt                                     @iTwin/itwinjs-core-display
-/core/quantity                                    @calebmshafer @ColinKerr
+/core/quantity                                    @ColinKerr @hl662 @rschili
 /core/webgl-compatibility                         @iTwin/itwinjs-core-display
 
 /docs                                             @iTwin/itwinjs-core
@@ -160,6 +160,7 @@ rush.json                                         @iTwin/itwinjs-core-admins
 
 ## Updates to the package.json should avoid requesting review by everyone
 ## If the version updates or
+/common/changes/**/*.json                         @iTwin/itwinjs-core
 /**/package.json                                  @iTwin/itwinjs-core
 /**/CHANGELOG.json                                @iTwin/itwinjs-core
 /**/CHANGELOG.md                                  @iTwin/itwinjs-core

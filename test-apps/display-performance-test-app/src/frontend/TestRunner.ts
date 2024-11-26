@@ -15,7 +15,7 @@ import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   ModelDisplayTransform,
   ModelDisplayTransformProvider,
-  PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
+  PerformanceMetrics, Pixel, RenderMemory, RenderSystem, ScreenViewport, Target, TileAdmin, ToolAdmin, ViewRect, ViewState,
 } from "@itwin/core-frontend";
 import { System } from "@itwin/core-frontend/lib/cjs/webgl";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
@@ -27,6 +27,7 @@ import {
 } from "./TestConfig";
 import { SavedViewsFetcher } from "./SavedViewsFetcher";
 import { Transform } from "@itwin/core-geometry";
+import { TestSnapshotConnection } from "./TestSnapshotConnection";
 
 /** JSON representation of a set of tests. Each test in the set inherits the test set's configuration. */
 export interface TestSetProps extends TestConfigProps {
@@ -708,7 +709,7 @@ export class TestRunner {
     } else {
       // Load local iModel and its saved views
       const filepath = `${this.curConfig.iModelLocation}${separator}${this.curConfig.iModelName}`;
-      const iModel = await SnapshotConnection.openFile(filepath);
+      const iModel = await TestSnapshotConnection.openFile(filepath);
 
       const esv = await DisplayPerfRpcInterface.getClient().readExternalSavedViews(filepath);
       let externalSavedViews: ViewStateSpec[] = [];

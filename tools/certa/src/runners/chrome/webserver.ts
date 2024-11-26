@@ -2,7 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/* eslint-disable @typescript-eslint/naming-convention */
 import * as detect from "detect-port";
 import * as express from "express";
 import * as http from "http";
@@ -34,7 +33,7 @@ app.use("/@/", (_req, resp) => {
   const fullPath = path.resolve("/", filePath);
   resp.sendFile(canonicalPath.normalize(fullPath), {
     headers: (sourceMap) && {
-      "X-SourceMap": `/@/${sourceMap.url}`, // eslint-disable-line @typescript-eslint/naming-convention
+      "X-SourceMap": `/@/${sourceMap.url}`,
     },
   });
 });

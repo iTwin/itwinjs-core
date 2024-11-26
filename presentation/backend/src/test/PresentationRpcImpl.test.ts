@@ -88,6 +88,8 @@ import { MAX_ALLOWED_KEYS_PAGE_SIZE, MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl 
 import { RulesetManager } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
 
+/* eslint-disable @typescript-eslint/no-deprecated -- PresentationRpcInterface methods are deprecated */
+
 describe("PresentationRpcImpl", () => {
   beforeEach(() => {
     sinon.stub(RpcTrace, "expectCurrentActivity").get(() => {
@@ -553,9 +555,9 @@ describe("PresentationRpcImpl", () => {
 
     describe("getPagedNodes", () => {
       it("calls manager for root nodes", async () => {
-        // eslint-disable-next-line deprecation/deprecation
+
         const getRootNodesResult: HierarchyLevelJSON = {
-          // eslint-disable-next-line deprecation/deprecation
+
           nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
           supportsFiltering: true,
         };
@@ -593,9 +595,9 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("calls manager for child nodes", async () => {
-        // eslint-disable-next-line deprecation/deprecation
+
         const getChildNodesResult: HierarchyLevelJSON = {
-          // eslint-disable-next-line deprecation/deprecation
+
           nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
           supportsFiltering: true,
         };
@@ -774,7 +776,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getFilteredNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
-        // eslint-disable-next-line deprecation/deprecation
+
         expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
       });
     });
@@ -802,7 +804,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
-        // eslint-disable-next-line deprecation/deprecation
+
         expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
       });
     });

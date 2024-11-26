@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/appui-abstract",
+      "comment": "remove previously deprecated EditorPosition.columnSpan",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/appui-abstract"
+}

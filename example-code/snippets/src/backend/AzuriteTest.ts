@@ -15,7 +15,7 @@ import { LocalDirName, LocalFileName } from "@itwin/core-common";
 
 export namespace AzuriteTest {
 
-  export const storageType = "azure" as const;
+  export const storageType = "azure";
   export const httpAddr = "127.0.0.1:10001";
   export const accountName = "devstoreaccount1";
   export const baseUri = `http://${httpAddr}/${accountName}`;
@@ -58,8 +58,7 @@ export namespace AzuriteTest {
       const containerService = BlobContainer.service!;
       try {
         await containerService.delete({ containerId: createProps.containerId!, baseUri, userToken: createProps.userToken });
-      } catch (e) {
-      }
+      } catch { }
 
       return containerService.create(createProps);
     };
@@ -77,7 +76,7 @@ export namespace AzuriteTest {
     export interface TestContainerProps { containerId: string, logId?: string, isPublic?: boolean, writeable?: boolean }
 
     export const makeContainer = async (arg: TestContainerProps): Promise<TestContainer> => {
-      const containerProps = { ...arg, writeable: true, baseUri, storageType };
+      const containerProps = { ...arg, writeable: true, baseUri, storageType } as const;
       const accessToken = await CloudSqlite.requestToken(containerProps);
       return CloudSqlite.createCloudContainer({ ...containerProps, accessToken });
     };
@@ -128,7 +127,7 @@ export namespace AzuriteTest {
       if (arg.userToken !== service.userToken.admin)
         throw new Error("only admins may create containers");
 
-      const address = { containerId: arg.containerId ?? Guid.createValue(), baseUri, provider: storageType };
+      const address = { containerId: arg.containerId ?? Guid.createValue(), baseUri, provider: storageType } as const;
       const azCont = createAzClient(address.containerId);
       const opts: azureBlob.ContainerCreateOptions = {
         metadata: {
@@ -166,6 +165,9 @@ export namespace AzuriteTest {
         iModelId: metadata.imodelid,
         ownerGuid: metadata.ownerguid,
       };
+    },
+    queryContainersMetadata: async (_userToken: AccessToken, _args: BlobContainer.QueryContainerProps): Promise<BlobContainer.MetadataResponse[]> => {
+      throw new Error("Querying containers not supported in this test service");
     },
     queryMetadata: async (container: BlobContainer.AccessContainerProps): Promise<BlobContainer.Metadata> => {
       const metadata = (await createAzClient(container.containerId).getProperties()).metadata!;

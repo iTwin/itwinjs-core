@@ -14,7 +14,7 @@ import { SyncToken } from "./Sync";
 import { System } from "./System";
 
 const enum DataType {// eslint-disable-line no-restricted-syntax
-  Undefined, // eslint-disable-line id-blacklist
+  Undefined, // eslint-disable-line id-denylist
   Mat3,
   Mat4,
   Float,

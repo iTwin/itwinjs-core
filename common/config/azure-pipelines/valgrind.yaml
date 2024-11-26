@@ -26,10 +26,10 @@ jobs:
       - checkout: self
         clean: true
 
-      - task: NodeTool@0
+      - task: UseNode@1
         displayName: "Use Node 20.x"
         inputs:
-          versionSpec: 20.x
+          version: 22.x
           checkLatest: true
 
       - task: npmAuthenticate@0

@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { AccessToken, Guid, Id64, Id64String } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, CodeService, Element, PhysicalModel, StandaloneDb, Subject } from "@itwin/core-backend";
-import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel } from "@itwin/core-common";
+import { Code, CodeScopeSpec, CodeSpec, CodeSpecProperties, IModel, InUseLocksError } from "@itwin/core-common";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -37,6 +37,31 @@ describe("Example Code", () => {
     newExtents.high.z += .001;
     iModel.updateProjectExtents(newExtents);
     // __PUBLISH_EXTRACT_END__
+  });
+
+  it("should check for an InUseLocksError", async () => {
+    if (iModel.isBriefcase) {
+      const briefcaseDb = iModel as any as BriefcaseDb; // just to eliminate all of the distracting if (iModel.isBriefcase) stuff from the code snippets
+      const elementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode2");
+      assert.isTrue(elementId !== undefined);
+      // __PUBLISH_EXTRACT_START__ ITwinError.catchAndHandleITwinError
+      try {
+        await briefcaseDb.locks.acquireLocks({ exclusive: elementId });
+      } catch (err) {
+        if (InUseLocksError.isInUseLocksError(err)) {
+          const inUseLocks = err.inUseLocks;
+          for (const inUseLock of inUseLocks) {
+            const _briefcaseIds = inUseLock.briefcaseIds;
+            const _state = inUseLock.state;
+            const _objectId = inUseLock.objectId;
+            // Create a user friendly error message
+          }
+        } else {
+          throw err;
+        }
+        // __PUBLISH_EXTRACT_END__
+      }
+    }
   });
 
   it("should extract working example code", async () => {
@@ -83,7 +108,7 @@ describe("Example Code", () => {
       const codeSpecDup: CodeSpec = CodeSpec.create(testImodel, "CodeSpec1", CodeScopeSpec.Type.Model);
       testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
       assert.fail();
-    } catch (err) {
+    } catch {
       // We expect this to fail.
     }
 

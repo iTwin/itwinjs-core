@@ -78,20 +78,26 @@ export class RuledSweep extends SolidPrimitive {
   public clone(): RuledSweep {
     return new RuledSweep(this.cloneSweepContours(), this.capped);
   }
-  /** Transform all contours in place. */
+  /**
+   * Transform all contours in place.
+   * * This fails if the transformation is singular.
+   */
   public tryTransformInPlace(transform: Transform): boolean {
     if (transform.matrix.isSingular())
       return false;
     for (const contour of this._contours) {
-      contour.tryTransformInPlace(transform);
+      if (!contour.tryTransformInPlace(transform))
+        return false;
     }
     return true;
   }
-  /** Return a cloned transform. */
-  public cloneTransformed(transform: Transform): RuledSweep {
+  /**
+   * Return a transformed clone.
+   * * This fails if the transformation is singular.
+   */
+  public cloneTransformed(transform: Transform): RuledSweep | undefined {
     const result = this.clone();
-    result.tryTransformInPlace(transform);
-    return result;
+    return result.tryTransformInPlace(transform) ? result : undefined;
   }
   /** Return a coordinate frame (right handed unit vectors)
    * * origin on base contour

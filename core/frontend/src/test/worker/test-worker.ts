@@ -55,7 +55,7 @@ registerWorker<TestWorker>({
     throw new Error("ruh-roh");
   },
   throwString: () => {
-    throw "not an error"; // eslint-disable-line no-throw-literal
+    throw "not an error"; // eslint-disable-line no-throw-literal, @typescript-eslint/only-throw-error
   },
   setTransfer: (wantTransfer: boolean) => {
     doTransfer = wantTransfer;

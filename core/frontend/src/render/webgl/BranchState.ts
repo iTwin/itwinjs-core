@@ -45,6 +45,7 @@ export interface BranchStateOptions {
   readonly realityModelDisplaySettings?: RealityModelDisplaySettings;
   forceViewCoords?: boolean;
   readonly viewAttachmentId?: Id64String;
+  readonly inSectionDrawingAttachment?: boolean;
   groupNodeId?: number;
   /** If true, the view's [DisplayStyleSettings.clipStyle]($common) will be disabled for this branch.
    * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
@@ -76,6 +77,7 @@ export class BranchState {
   public get secondaryClassifiers() { return this._opts.secondaryClassifiers; }
   public get realityModelDisplaySettings() { return this._opts.realityModelDisplaySettings; }
   public get viewAttachmentId() { return this._opts.viewAttachmentId; }
+  public get inSectionDrawingAttachment() { return this._opts.inSectionDrawingAttachment; }
   public get groupNodeId() { return this._opts.groupNodeId; }
   public get disableClipStyle() { return this._opts.disableClipStyle;}
 
@@ -112,6 +114,7 @@ export class BranchState {
       appearanceProvider: branch.appearanceProvider ?? (branch.branch.symbologyOverrides ? undefined : prev.appearanceProvider),
       realityModelDisplaySettings: branch.branch.realityModelDisplaySettings ?? prev.realityModelDisplaySettings,
       viewAttachmentId: branch.viewAttachmentId ?? prev.viewAttachmentId,
+      inSectionDrawingAttachment: branch.inSectionDrawingAttachment ?? prev.inSectionDrawingAttachment,
       groupNodeId: branch.branch.groupNodeId ?? prev.groupNodeId,
       disableClipStyle: branch.disableClipStyle ?? prev.disableClipStyle,
     });
