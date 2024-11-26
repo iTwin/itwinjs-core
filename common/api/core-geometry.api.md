@@ -3670,7 +3670,9 @@ export type Matrix4dProps = Point4dProps[];
 // @public
 export interface MiteredSweepOptions {
     capped?: boolean;
+    endTangent?: Vector3d;
     outputSelect?: MiteredSweepOutputSelect;
+    startTangent?: Vector3d;
     strokeOptions?: StrokeOptions;
     wrapIfPhysicallyClosed?: boolean;
 }
