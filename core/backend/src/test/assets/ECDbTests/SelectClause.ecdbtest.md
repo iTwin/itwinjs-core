@@ -288,3 +288,148 @@ SELECT s, LENGTH(s) AS StringLength,  AVG(d) AS AverageDouble FROM aps.TestEleme
 | s    | StringLength | AverageDouble |
 | ---- | ------------ | ------------- |
 | str0 | 4            | 4.6           |
+
+
+# Compound Select - UNION
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  ECInstanceId,
+  DirectLong
+FROM
+  aps.TestElement
+WHERE
+  DirectLong > 1006
+UNION
+SELECT
+  ECInstanceId,
+  DirectLong
+FROM
+  aps.TestElement
+WHERE
+  DirectLong < 1003
+```
+
+| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | type  | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ----- | ------------------ |
+|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id    | ECInstanceId       |
+| AllProperties:TestElement | DirectLong   | false     | 1     | directLong | DirectLong   | undefined    | long     | Int64 | DirectLong         |
+
+| ECInstanceId | DirectLong |
+| ------------ | ---------- |
+| 0x14         | 1000       |
+| 0x15         | 1001       |
+| 0x16         | 1002       |
+| 0x1b         | 1007       |
+| 0x1c         | 1008       |
+| 0x1d         | 1009       |
+
+# Compound Select - UNION ALL
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  ECInstanceId,
+  DirectLong
+FROM
+  aps.TestElement
+WHERE
+  DirectLong > 1004
+UNION ALL
+SELECT
+  ECInstanceId,
+  DirectLong
+FROM
+  aps.TestElement
+WHERE
+  DirectLong < 1007
+```
+
+| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | type  | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ----- | ------------------ |
+|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id    | ECInstanceId       |
+| AllProperties:TestElement | DirectLong   | false     | 1     | directLong | DirectLong   | undefined    | long     | Int64 | DirectLong         |
+
+| ECInstanceId | DirectLong |
+| ------------ | ---------- |
+| 0x19         | 1005       |
+| 0x1a         | 1006       |
+| 0x1b         | 1007       |
+| 0x1c         | 1008       |
+| 0x1d         | 1009       |
+| 0x14         | 1000       |
+| 0x15         | 1001       |
+| 0x16         | 1002       |
+| 0x17         | 1003       |
+| 0x18         | 1004       |
+| 0x19         | 1005       |
+| 0x1a         | 1006       |
+
+
+# Compound Select - INTERSECT
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  ECInstanceId,
+  DirectLong
+FROM
+  aps.TestElement
+WHERE
+  DirectLong > 1004
+INTERSECT
+SELECT
+  ECInstanceId,
+  DirectLong
+FROM
+  aps.TestElement
+WHERE
+  DirectLong < 1007
+```
+
+| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | type  | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ----- | ------------------ |
+|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id    | ECInstanceId       |
+| AllProperties:TestElement | DirectLong   | false     | 1     | directLong | DirectLong   | undefined    | long     | Int64 | DirectLong         |
+
+| ECInstanceId | DirectLong |
+| ------------ | ---------- |
+| 0x19         | 1005       |
+| 0x1a         | 1006       |
+
+
+#  Compound Select - EXCEPT
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  ECInstanceId,
+  DirectLong
+FROM
+  aps.TestElement
+WHERE
+  DirectLong > 1006
+EXCEPT
+SELECT
+  ECInstanceId,
+  DirectLong
+FROM
+  aps.TestElement
+WHERE
+  DirectLong > 1008
+```
+
+| className                 | accessString | generated | index | jsonName   | name         | extendedType | typeName | type  | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ---------- | ------------ | ------------ | -------- | ----- | ------------------ |
+|                           | ECInstanceId | false     | 0     | id         | ECInstanceId | Id           | long     | Id    | ECInstanceId       |
+| AllProperties:TestElement | DirectLong   | false     | 1     | directLong | DirectLong   | undefined    | long     | Int64 | DirectLong         |
+
+| ECInstanceId | DirectLong |
+| ------------ | ---------- |
+| 0x1b         | 1007       |
+| 0x1c         | 1008       |
