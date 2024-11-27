@@ -108,40 +108,37 @@ function getBatchedClassContentItems(
   batcher: () => Observable<Array<{ from: Id64String; to: Id64String }>>,
   batchesParallelism: number,
 ): Observable<{ descriptor: Descriptor; items: Item[] }> {
-  return of({
-    ruleset: createClassContentRuleset(classFullName),
-    keys: new KeySet(),
-  }).pipe(
-    mergeMap(({ ruleset, keys }) =>
-      defer(async () => {
-        const descriptor = await contentDescriptorGetter({ rulesetOrId: ruleset, keys });
-        if (!descriptor) {
-          throw new PresentationError(PresentationStatus.Error, `Failed to get descriptor for class ${classFullName}`);
-        }
-        return descriptor;
-      }).pipe(
-        // create elements' id batches
-        mergeMap((descriptor) => batcher().pipe(map((batch) => ({ descriptor, batch })))),
-        // request content for each batch, filter by IDs for performance
-        mergeMap(
-          ({ descriptor, batch }) =>
-            defer(async () => {
-              const filteringDescriptor = new Descriptor(descriptor);
-              filteringDescriptor.instanceFilter = {
-                selectClassName: classFullName,
-                expression: createElementIdsECExpressionFilter(batch),
-              };
-              return contentSetGetter({
-                rulesetOrId: ruleset,
-                keys,
-                descriptor: filteringDescriptor,
-              });
-            }).pipe(map((items) => ({ descriptor, items }))),
-          batchesParallelism,
-        ),
+  return defer(() => {
+    const ruleset = createClassContentRuleset(classFullName);
+    const keys = new KeySet();
+    return defer(async () => {
+      const descriptor = await contentDescriptorGetter({ rulesetOrId: ruleset, keys });
+      if (!descriptor) {
+        throw new PresentationError(PresentationStatus.Error, `Failed to get descriptor for class ${classFullName}`);
+      }
+      return descriptor;
+    }).pipe(
+      // create elements' id batches
+      mergeMap((descriptor) => batcher().pipe(map((batch) => ({ descriptor, batch })))),
+      // request content for each batch, filter by IDs for performance
+      mergeMap(
+        ({ descriptor, batch }) =>
+          defer(async () => {
+            const filteringDescriptor = new Descriptor(descriptor);
+            filteringDescriptor.instanceFilter = {
+              selectClassName: classFullName,
+              expression: createElementIdsECExpressionFilter(batch),
+            };
+            return contentSetGetter({
+              rulesetOrId: ruleset,
+              keys,
+              descriptor: filteringDescriptor,
+            });
+          }).pipe(map((items) => ({ descriptor, items }))),
+        batchesParallelism,
       ),
-    ),
-  );
+    );
+  });
 }
 
 function createElementIdsECExpressionFilter(batch: Array<{ from: Id64String; to: Id64String }>): string {
