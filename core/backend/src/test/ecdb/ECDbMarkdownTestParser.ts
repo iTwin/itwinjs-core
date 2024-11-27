@@ -185,48 +185,60 @@ export class ECDbMarkdownTestParser {
     const out: ECDbTestProps[] = [];
 
     for (const fileName of testFiles) {
-      const markdownFilePath = path.join(testAssetsDir, fileName);
-      const baseFileName = fileName.replace(/\.ecdbtest\.md$/i, "");
-      const markdownContent = fs.readFileSync(markdownFilePath, "utf-8");
-      const tokens = marked.lexer(markdownContent);
-
-      let currentTest: ECDbTestProps | undefined;
-
-      for (const token of tokens) {
-        switch (token.type) {
-          case "space":
-          case "html":
-          case "paragraph":
-          case "hr":
-            continue;
-          case "heading":
-              if (currentTest !== undefined) {
-                out.push(currentTest);
-              }
-              currentTest = { title: token.text, mode: ECDbTestMode.Both, fileName: baseFileName,
-                rowFormat: ECDbTestRowFormat.ECSqlNames, abbreviateBlobs: false, convertClassIdsToClassNames: false };
-            break;
-          case "list":
-            this.handleListToken(token as Tokens.List, currentTest, markdownFilePath);
-            break;
-          case "code":
-            this.handleCodeToken(token as Tokens.Code, currentTest, markdownFilePath);
-            break;
-          case "table":
-            this.handleTableToken(token as Tokens.Table, currentTest, markdownFilePath);
-            break;
-          default:
-            logWarning(`Unknown token type ${token.type} found in file ${markdownFilePath}. Skipping.`);
-            break;
-        }
-      }
-
-      if (currentTest !== undefined) {
-        out.push(currentTest);
+      try {
+        const tests = this.parseFile(testAssetsDir, fileName);
+        out.push(...tests);
+      } catch (error) {
+        logWarning(`Failed to parse file ${fileName}. Error: ${error instanceof Error ? error.message : "Unknown error"}`);
       }
     }
     return out;
   }
+
+  private static parseFile(testAssetsDir: string, fileName: string): ECDbTestProps[] {
+    const markdownFilePath = path.join(testAssetsDir, fileName);
+    const baseFileName = fileName.replace(/\.ecdbtest\.md$/i, "");
+    const markdownContent = fs.readFileSync(markdownFilePath, "utf-8");
+    const tokens = marked.lexer(markdownContent);
+
+    const out: ECDbTestProps[] = [];
+    let currentTest: ECDbTestProps | undefined;
+
+    for (const token of tokens) {
+      switch (token.type) {
+        case "space":
+        case "html":
+        case "paragraph":
+        case "hr":
+          continue;
+        case "heading":
+          if (currentTest !== undefined) {
+            out.push(currentTest);
+          }
+          currentTest = { title: token.text, mode: ECDbTestMode.Both, fileName: baseFileName,
+            rowFormat: ECDbTestRowFormat.ECSqlNames, abbreviateBlobs: false, convertClassIdsToClassNames: false };
+          break;
+        case "list":
+          this.handleListToken(token as Tokens.List, currentTest, markdownFilePath);
+          break;
+        case "code":
+          this.handleCodeToken(token as Tokens.Code, currentTest, markdownFilePath);
+          break;
+        case "table":
+          this.handleTableToken(token as Tokens.Table, currentTest, markdownFilePath);
+          break;
+        default:
+          logWarning(`Unknown token type ${token.type} found in file ${markdownFilePath}. Skipping.`);
+          break;
+      }
+    }
+
+    if (currentTest !== undefined) {
+      out.push(currentTest);
+    }
+    return out;
+  }
+
 
   private static handleListToken(token: Tokens.List, currentTest: ECDbTestProps | undefined, markdownFilePath: string) {
     if (currentTest === undefined) {

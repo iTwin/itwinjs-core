@@ -124,11 +124,11 @@ function runECSqlStatementTest(test: ECDbTestProps, datasetFilePath: string) {
             break;
           case "point2d":
             const parsedVal2d = JSON.parse(compiledValue);
-            stmt.bindPoint2d(id, {x: parsedVal2d["X"], y: parsedVal2d["Y"]});
+            stmt.bindPoint2d(id, {x: parsedVal2d.X, y: parsedVal2d.Y});
             break;
           case "point3d":
             const parsedVal3d = JSON.parse(compiledValue);
-            stmt.bindPoint3d(id, {x: parsedVal3d["X"], y: parsedVal3d["Y"], z: parsedVal3d["Z"]});
+            stmt.bindPoint3d(id, {x: parsedVal3d.X, y: parsedVal3d.Y, z: parsedVal3d.Z});
             break;
           case "blob":
             const arrayValues: string[] = compiledValue.slice(1,-1).split(",");
@@ -281,11 +281,11 @@ async function runConcurrentQueryTest(test: ECDbTestProps, datasetFilePath: stri
             break;
           case "point2d":
             const parsedVal2d = JSON.parse(compiledValue);
-            params.bindPoint2d(id, new Point2d(parsedVal2d["X"], parsedVal2d["Y"]));
+            params.bindPoint2d(id, new Point2d(parsedVal2d.X, parsedVal2d.Y));
             break;
           case "point3d":
             const parsedVal3d = JSON.parse(compiledValue);
-            params.bindPoint3d(id, new Point3d(parsedVal3d["X"], parsedVal3d["Y"], parsedVal3d["Z"]));
+            params.bindPoint3d(id, new Point3d(parsedVal3d.X, parsedVal3d.Y, parsedVal3d.Z));
             break;
           case "blob":
             const arrayValues: string[] = compiledValue.slice(1,-1).split(",");
