@@ -90,9 +90,17 @@ export interface MiteredSweepOptions {
   strokeOptions?: StrokeOptions;
   /** Whether to cap the ruled sweep if outputting a ruled sweep or mesh. Default value is `false`. */
   capped?: boolean;
-  /** If the centerline is not physically closed, the first section's normal is aligned to this vector (typically points toward the swept geometry). */
+  /**
+   * If the centerline is not physically closed, the first section's normal is aligned to this vector (typically points
+   * toward the swept geometry). If the centerline is physically closed, the first section's normal is aligned to this
+   * vector if and only if endTangent is provided and is equal to startTangent.
+   */
   startTangent?: Vector3d;
-  /** If the centerline is not physically closed, the last section's normal is aligned to this vector (typically points away from the swept geometry). */
+  /**
+   * If the centerline is not physically closed, the last section's normal is aligned to this vector (typically points
+   * away from the swept geometry). If the centerline is physically closed, the last section's normal is aligned to this
+   * vector if and only if startTangent is provided and is equal to endTangent.
+   */
   endTangent?: Vector3d;
 }
 
@@ -424,12 +432,16 @@ export class CurveFactory {
    * Sweep the initialSection along each segment of the centerLine until it hits the bisector plane at the next vertex.
    * * The caller should place the initialSection on a plane perpendicular to the first edge.
    *   * This plane is commonly (but not necessarily) through the start point itself.
-   *   * If the geometry is not "on a perpendicular plane", the output geometry will still be flattened onto the various planes.
-   * * In the "open path" case (i.e when wrapIfPhysicallyClosed is false or the path does not have matched first and last points)
-   *       the first/last output plane will be at the start/end of the first/last edge and on a perpendicular plane.
-   * * In the "closed path" case, the output plane for the first and last point is the bisector of the start and end planes
-   *    from the "open path" case, and the first/last section geometry may be different from `initialSection`.
-   * * The centerline path does NOT have to be planar, however twisting effects effects will appear in the various bisector planes.
+   *   * If the initialSection is not "on a perpendicular plane", the output geometry will still be flattened onto the
+   *     various planes.
+   * * In the "open path" case (i.e when `wrapIfPhysicallyClosed` is false or the path does not have matched first and
+   *   last points), the first/last output plane will be at the start/end of the first/last edge and on a perpendicular
+   *   plane.
+   * * In the "closed path" case, if start/edn tangents are not provided in the `options`, then the output plane for the
+   *   first and last point is the bisector of the start and end planes from the "open path" case, and the first/last
+   *   section geometry may be different from `initialSection`.
+   * * The centerline path does NOT have to be planar, however twisting effects effects will appear in the various bisector
+   *   planes.
    * @param centerline sweep path, e.g., as stroked from a smooth centerline curve.
    * @param initialSection profile curve to be swept. As noted above, this should be on a plane perpendicular to the
    * first segment of the centerline.
@@ -441,33 +453,49 @@ export class CurveFactory {
   ): SectionSequenceWithPlanes | undefined {
     const sectionData: SectionSequenceWithPlanes = { sections: [], planes: [] };
     const planes = PolylineOps.createBisectorPlanesForDistinctPoints(centerline, options.wrapIfPhysicallyClosed);
+    // apply start/end tangent options
     if (planes !== undefined && planes.length > 1) {
       const firstPlane = planes[0];
       const lastPlane = planes[planes.length - 1];
-      if (!Geometry.isSamePoint3d(firstPlane.getOriginRef(), lastPlane.getOriginRef())) {
-        if (options.startTangent?.tryNormalizeInPlace())
-          firstPlane.getNormalRef().setFrom(options.startTangent);
-        if (options.endTangent?.tryNormalizeInPlace())
-          lastPlane.getNormalRef().setFrom(options.endTangent);
+      const startTang = options.startTangent;
+      const endTang = options.endTangent;
+      if (!firstPlane.getOriginRef().isAlmostEqual(lastPlane.getOriginRef()) ||
+        (startTang && endTang && startTang.isAlmostEqual(endTang, 0.0))) {
+        if (startTang?.tryNormalizeInPlace())
+          firstPlane.getNormalRef().setFrom(startTang);
+        if (endTang?.tryNormalizeInPlace())
+          lastPlane.getNormalRef().setFrom(endTang);
       }
+      // fix orientation of initialSection
+      // const vectorBC = Vector3d.create(); // initially, the start tangent
+      // if (centerline instanceof IndexedXYZCollection)
+      //   centerline.vectorIndexIndex(0, 1, vectorBC);
+      // else
+      //   vectorBC.setStartEnd(centerline[0], centerline[1]);
+      // const sectionFacesForward = initialSection.columnDotXYZ(AxisIndex.Z, vectorBC.x, vectorBC.y, vectorBC.z) > 0;
+      // if (sectionFacesForward !== initialSection.sweep.isCCW)
+      //   sweep.reverseInPlace();
       // Projection to target plane, constructing sweep direction from two given planes.
       // If successful, push the target plane and swept section to the output arrays and return the swept section.
       // If unsuccessful, leave the output arrays alone and return the input section.
-      const doSweepToPlane = function (edgePlane0: Plane3dByOriginAndUnitNormal, edgePlane1: Plane3dByOriginAndUnitNormal,
+      const doSweepToPlane = function (
+        edgePlane0: Plane3dByOriginAndUnitNormal,
+        edgePlane1: Plane3dByOriginAndUnitNormal,
         targetPlane: Plane3dByOriginAndUnitNormal,
-        section: AnyCurve) {
+        section: AnyCurve,
+      ) {
         const sweepVector = Vector3d.createStartEnd(edgePlane0.getOriginRef(), edgePlane1.getOriginRef());
         const transform = Transform.createFlattenAlongVectorToPlane(
           sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef(),
         );
         if (transform === undefined)
           return section;
-        const section1 = section.cloneTransformed(transform);
-        if (section1 === undefined)
+        const transformedSection = section.cloneTransformed(transform);
+        if (transformedSection === undefined)
           return section;
         sectionData.planes.push(targetPlane);
-        sectionData.sections.push(section1);
-        return section1;
+        sectionData.sections.push(transformedSection);
+        return transformedSection;
       };
       let currentSection = doSweepToPlane(planes[0], planes[1], planes[0], initialSection);
       for (let i = 1; i < planes.length; i++) {
