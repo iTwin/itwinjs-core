@@ -9,7 +9,7 @@ import { Id64, Id64String } from "@itwin/core-bentley";
 import { _nativeDb, IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { Code, ColorDef, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, ColorDef, ElementAspectProps, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 
 
@@ -124,6 +124,21 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
   return elementProps;
 }
 
+interface TestElementAspectProps extends ElementAspectProps, IPrimitive, IPrimitiveArray { }
+
+function createElemAspect(className: string, _iModelName: IModelDb, elementId: Id64String, autoHandledProp: any): TestElementAspectProps {
+  // Create props
+  const elementProps: ElementAspectProps = {
+    classFullName: `AllProperties:${className}`,
+    element: { id: elementId },
+  };
+
+  if (autoHandledProp)
+    Object.assign(elementProps, autoHandledProp);
+
+  return elementProps;
+}
+
 export interface AllPropertiesProps {
   physicalModelId: string,
   mySpatialCategoryId: string,
@@ -156,7 +171,10 @@ export class ECDbMarkdownDatasets {
       const elementProps = createElemProps("TestElement", iModel, newModelId, spatialCategoryId, m);
       const testElement = iModel.elements.createElement(elementProps);
       const id = iModel.elements.insertElement(testElement.toJSON());
-      assert.isTrue(Id64.isValidId64(id), "insert worked");
+      assert.isTrue(Id64.isValidId64(id), "element insert failed");
+
+      const aspectId = iModel.elements.insertAspect(createElemAspect("TestElementAspect", iModel, id, undefined));
+      assert.isTrue(Id64.isValidId64(aspectId), "element aspect insert failed");
     }
 
     iModel.saveChanges();
