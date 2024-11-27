@@ -201,10 +201,10 @@ LIMIT
 | AllProperties:IPrimitive | p2d          | false     | 7     | p2d      | p2d  | undefined    | point2d  | Point2d  | p2d                |
 | AllProperties:IPrimitive | p3d          | false     | 8     | p3d      | p3d  | undefined    | point3d  | Point3d  | p3d                |
 
-| i   | l    | d   | b    | dt                      | s    | bin   | p2d             | p3d             |
-| --- | ---- | --- | ---- | ----------------------- | ---- | ----- | --------------- | --------------- |
-| 100 | 1000 | 0.1 | true | 2017-01-01T00:00:00.000 | str0 | 1,2,3 | [object Object] | [object Object] |
-| 102 | 1002 | 2.1 | true | 2017-01-01T00:00:00.000 | str2 | 1,2,3 | [object Object] | [object Object] |
+| i   | l    | d   | b    | dt                      | s    | bin        | p2d                     | p3d                            |
+| --- | ---- | --- | ---- | ----------------------- | ---- | ---------- | ----------------------- | ------------------------------ |
+| 100 | 1000 | 0.1 | true | 2017-01-01T00:00:00.000 | str0 | BIN(1,2,3) | {"X": 1.034,"Y": 2.034} | {"X": -1,"Y": 2.3,"Z": 3.0001} |
+| 102 | 1002 | 2.1 | true | 2017-01-01T00:00:00.000 | str2 | BIN(1,2,3) | {"X": 1.034,"Y": 2.034} | {"X": -1,"Y": 2.3,"Z": 3.0001} |
 
 # Select all properties from TestElement which is Not between 2 Datetime value expression
 
@@ -241,10 +241,10 @@ LIMIT
 | AllProperties:IPrimitive | p2d          | false     | 7     | p2d      | p2d  | undefined    | point2d  | Point2d  | p2d                |
 | AllProperties:IPrimitive | p3d          | false     | 8     | p3d      | p3d  | undefined    | point3d  | Point3d  | p3d                |
 
-| i   | l    | d   | b    | dt                      | s    | bin                           | p2d             | p3d             |
-| --- | ---- | --- | ---- | ----------------------- | ---- | ----------------------------- | --------------- | --------------- |
-| 101 | 1001 | 1.1 | true | 2010-01-01T11:11:11.000 | str1 | 11,21,31,34,53,21,14,14,55,22 | [object Object] | [object Object] |
-| 103 | 1003 | 3.1 | true | 2010-01-01T11:11:11.000 | str3 | 11,21,31,34,53,21,14,14,55,22 | [object Object] | [object Object] |
+| i   | l    | d   | b    | dt                      | s    | bin                                | p2d                         | p3d                                      |
+| --- | ---- | --- | ---- | ----------------------- | ---- | ---------------------------------- | --------------------------- | ---------------------------------------- |
+| 101 | 1001 | 1.1 | true | 2010-01-01T11:11:11.000 | str1 | BIN(11,21,31,34,53,21,14,14,55,22) | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
+| 103 | 1003 | 3.1 | true | 2010-01-01T11:11:11.000 | str3 | BIN(11,21,31,34,53,21,14,14,55,22) | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
 
 # Select all properties from TestElement which is between 2 Datetime value expression
 
@@ -281,10 +281,10 @@ LIMIT
 | AllProperties:IPrimitive | p2d          | false     | 7     | p2d      | p2d  | undefined    | point2d  | Point2d  | p2d                |
 | AllProperties:IPrimitive | p3d          | false     | 8     | p3d      | p3d  | undefined    | point3d  | Point3d  | p3d                |
 
-| i   | l    | d   | b    | dt                      | s    | bin   | p2d             | p3d             |
-| --- | ---- | --- | ---- | ----------------------- | ---- | ----- | --------------- | --------------- |
-| 100 | 1000 | 0.1 | true | 2017-01-01T00:00:00.000 | str0 | 1,2,3 | [object Object] | [object Object] |
-| 102 | 1002 | 2.1 | true | 2017-01-01T00:00:00.000 | str2 | 1,2,3 | [object Object] | [object Object] |
+| i   | l    | d   | b    | dt                      | s    | bin        | p2d                     | p3d                            |
+| --- | ---- | --- | ---- | ----------------------- | ---- | ---------- | ----------------------- | ------------------------------ |
+| 100 | 1000 | 0.1 | true | 2017-01-01T00:00:00.000 | str0 | BIN(1,2,3) | {"X": 1.034,"Y": 2.034} | {"X": -1,"Y": 2.3,"Z": 3.0001} |
+| 102 | 1002 | 2.1 | true | 2017-01-01T00:00:00.000 | str2 | BIN(1,2,3) | {"X": 1.034,"Y": 2.034} | {"X": -1,"Y": 2.3,"Z": 3.0001} |
 
 # Select all properties from TestElement which is Not between 2 Datetime value expression
 
@@ -321,7 +321,7 @@ LIMIT
 | AllProperties:IPrimitive | p2d          | false     | 7     | p2d      | p2d  | undefined    | point2d  | Point2d  | p2d                |
 | AllProperties:IPrimitive | p3d          | false     | 8     | p3d      | p3d  | undefined    | point3d  | Point3d  | p3d                |
 
-| i   | l    | d   | b    | dt                      | s    | bin                           | p2d             | p3d             |
-| --- | ---- | --- | ---- | ----------------------- | ---- | ----------------------------- | --------------- | --------------- |
-| 101 | 1001 | 1.1 | true | 2010-01-01T11:11:11.000 | str1 | 11,21,31,34,53,21,14,14,55,22 | [object Object] | [object Object] |
-| 103 | 1003 | 3.1 | true | 2010-01-01T11:11:11.000 | str3 | 11,21,31,34,53,21,14,14,55,22 | [object Object] | [object Object] |
+| i   | l    | d   | b    | dt                      | s    | bin                                | p2d                         | p3d                                      |
+| --- | ---- | --- | ---- | ----------------------- | ---- | ---------------------------------- | --------------------------- | ---------------------------------------- |
+| 101 | 1001 | 1.1 | true | 2010-01-01T11:11:11.000 | str1 | BIN(11,21,31,34,53,21,14,14,55,22) | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
+| 103 | 1003 | 3.1 | true | 2010-01-01T11:11:11.000 | str3 | BIN(11,21,31,34,53,21,14,14,55,22) | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |

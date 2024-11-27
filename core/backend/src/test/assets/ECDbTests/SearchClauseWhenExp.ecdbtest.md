@@ -176,3 +176,36 @@ FROM
 | -4713-11-24T12:00:00.000 |
 
 `Note:- This test documents the behaviour that if we put different type data in then and else clause the first data type is given priority and the other data is converted to first data type.`
+
+# When-Then chaining
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  CASE
+    WHEN ECInstanceId < 0x18 THEN 'Withing First 4'
+    WHEN ECInstanceId >= 0x18 AND
+    ECInstanceId < 0x1b THEN 'Withing second 4'
+    WHEN ECInstanceId > 0x1b THEN 'Withing last 2'
+  END limiting_ECInstanceId
+FROM
+  aps.TestElement
+```
+
+| className | accessString          | generated | index | jsonName              | name                  | extendedType | typeName | type   |
+| --------- | --------------------- | --------- | ----- | --------------------- | --------------------- | ------------ | -------- | ------ |
+|           | limiting_ECInstanceId | true      | 0     | limiting_ECInstanceId | limiting_ECInstanceId | undefined    | string   | String |
+
+| limiting_ECInstanceId |
+| --------------------- |
+| Withing First 4       |
+| Withing First 4       |
+| Withing First 4       |
+| Withing First 4       |
+| Withing second 4      |
+| Withing second 4      |
+| Withing second 4      |
+| undefined             |
+| Withing last 2        |
+| Withing last 2        |
