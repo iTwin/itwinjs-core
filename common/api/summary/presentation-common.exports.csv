@@ -250,6 +250,9 @@ public;type;LabelRawValueJSON
 deprecated;type;LabelRawValueJSON
 internal;class;LocalizationHelper
 internal;interface;LocalizationHelperProps
+public;interface;MultiElementPropertiesBaseRequestOptions
+public;interface;MultiElementPropertiesByClassRequestOptions
+public;interface;MultiElementPropertiesByIdsRequestOptions
 public;type;MultiElementPropertiesRequestOptions
 public;interface;MultiSchemaClassesSpecification
 public;interface;NamedFieldDescriptor
