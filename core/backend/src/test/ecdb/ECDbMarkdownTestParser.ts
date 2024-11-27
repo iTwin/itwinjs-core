@@ -13,6 +13,7 @@ export interface ECDbTestProps {
 
   // Things from properties:
   only?: boolean;    //  This flag handles the only property to filter tests
+  skip?: boolean;    //  This flag handles the skip property to filter tests
   dataset?: string;
   mode: ECDbTestMode;
   rowFormat: ECDbTestRowFormat;
@@ -252,6 +253,9 @@ export class ECDbMarkdownTestParser {
             continue;
           case "only":
             currentTest.only = value.toLowerCase() === "true";
+            continue;
+          case "skip":
+            currentTest.skip = value.toLowerCase() === "true";
             continue;
           case "mode":
             this.handleMode(value, currentTest, markdownFilePath);
