@@ -29,7 +29,7 @@ The goal of this document is to provide a high-level overview of how you can get
 
 ## Repo Setup
 
-This repository is a [monorepo](https://en.wikipedia.org/wiki/Monorepo) that holds the source code to multiple iTwin.js npm packages. It is built using [Rush](http://rushjs.io/).
+This repository is a [monorepo](https://monorepo.tools/) that holds the source code for multiple [iTwin.js npm packages](https://www.npmjs.com/search?q=%40itwin). It is built using [Rush](http://rushjs.io/).
 
 Each package has its own **node_modules** directory that contains symbolic links to *common* dependencies managed by Rush.
 
@@ -160,7 +160,7 @@ We welcome contributions, large or small, including:
 - Example code snippets
 - Sample data
 
-If you would like to contribute new APIs, create a new [discussions post](https://github.com/iTwin/itwinjs-core/discussions) and explain what these new APIs aim to accomplish. If possible check the [CODEOWNERS](https://github.com/iTwin/itwinjs-core/blob/master/.github/CODEOWNERS) file and tag the owners of the package you plan on introducing the new APIs into.
+If you would like to contribute new APIs, create a new [issue](https://github.com/iTwin/itwinjs-core/issues) and explain what these new APIs aim to accomplish. If possible check the [CODEOWNERS](https://github.com/iTwin/itwinjs-core/blob/master/.github/CODEOWNERS) file and tag the owners of the package you plan on introducing the new APIs into.
 
 Thank you for taking the time to contribute to open source and making great projects like iTwin.js possible!
 
