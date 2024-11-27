@@ -20,6 +20,10 @@ The properties inside that json can be used in binders, statements and code bloc
 
 Optional. Tests marked by this will be filtered so only those tests run. (Translates into it.only())
 
+- skip: true
+
+Optional. Tests marked by this will be skipped. (Translates into it.skip())
+
 - mode: Both
 
 Optional, defaults to Both

@@ -20,6 +20,7 @@ interface IPrimitiveBase {
   b?: boolean;
   dt?: string;
   s?: string;
+  j?: string;
   bin?: Uint8Array;
   p2d?: Point2d;
   p3d?: Point3d;
@@ -90,6 +91,7 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
     l: 1000 + index,
     d: 0.1 + index,
     s: `str${index}`,
+    j: `{"${String.fromCharCode(65 + index)}": ${index}}`,
     dt: index%2 === 0? "2017-01-01T00:00:00.000" : "2010-01-01T11:11:11.000",
     bin: index%2 === 0 ? new Uint8Array([1, 2, 3]) : new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22]),
     p2d: index%2 === 0 ? new Point2d(1.034, 2.034) : new Point2d(1111.11, 2222.22),

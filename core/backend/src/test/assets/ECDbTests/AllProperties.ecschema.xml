@@ -31,6 +31,7 @@
     <ECProperty propertyName="b" typeName="boolean"/>
     <ECProperty propertyName="dt" typeName="dateTime"/>
     <ECProperty propertyName="s" typeName="string"/>
+    <ECProperty propertyName="j" typeName="string"/>
     <ECProperty propertyName="bin" typeName="binary"/>
     <ECProperty propertyName="p2d" typeName="point2d"/>
     <ECProperty propertyName="p3d" typeName="point3d"/>
@@ -60,6 +61,7 @@
     <ECProperty propertyName="b" typeName="boolean"/>
     <ECProperty propertyName="dt" typeName="dateTime"/>
     <ECProperty propertyName="s" typeName="string"/>
+    <ECProperty propertyName="j" typeName="string"/>
     <ECProperty propertyName="bin" typeName="binary"/>
     <ECProperty propertyName="p2d" typeName="point2d"/>
     <ECProperty propertyName="p3d" typeName="point3d"/>
@@ -78,6 +80,7 @@
     <ECProperty propertyName="b" typeName="boolean"/>
     <ECProperty propertyName="dt" typeName="dateTime"/>
     <ECProperty propertyName="s" typeName="string"/>
+    <ECProperty propertyName="j" typeName="string"/>
     <ECProperty propertyName="bin" typeName="binary"/>
     <ECProperty propertyName="p2d" typeName="point2d"/>
     <ECProperty propertyName="p3d" typeName="point3d"/>
@@ -127,6 +130,7 @@
     <ECProperty propertyName="b" typeName="boolean"/>
     <ECProperty propertyName="dt" typeName="dateTime"/>
     <ECProperty propertyName="s" typeName="string"/>
+    <ECProperty propertyName="j" typeName="string"/>
     <ECProperty propertyName="bin" typeName="binary"/>
     <ECProperty propertyName="p2d" typeName="point2d"/>
     <ECProperty propertyName="p3d" typeName="point3d"/>

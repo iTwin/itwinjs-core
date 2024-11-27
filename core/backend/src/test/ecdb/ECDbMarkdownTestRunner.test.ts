@@ -30,7 +30,11 @@ describe.only("Markdown based ECDb test runner", async () => {
 
     if(test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.Statement)
     {
-      if(test.only)
+      if(test.skip)
+        it.skip(`${test.fileName}: ${test.title} (Statement)`, () => {
+          runECSqlStatementTest(test, datasetFilePath);
+        });
+      else if(test.only)
         it.only(`${test.fileName}: ${test.title} (Statement)`, () => {
           runECSqlStatementTest(test, datasetFilePath);
         });
@@ -42,7 +46,11 @@ describe.only("Markdown based ECDb test runner", async () => {
 
     if(test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.ConcurrentQuery)
     {
-      if(test.only)
+      if(test.skip)
+        it.skip(`${test.fileName}: ${test.title} (ConcurrentQuery)`, async () => {
+          await runConcurrentQueryTest(test, datasetFilePath);
+        });
+      else if(test.only)
         it.only(`${test.fileName}: ${test.title} (ConcurrentQuery)`, async () => {
           await runConcurrentQueryTest(test, datasetFilePath);
         });

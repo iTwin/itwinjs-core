@@ -314,3 +314,22 @@ WHERE
 | 0x1b         |
 | 0x1c         |
 | 0x1d         |
+
+# Testing Point2d x coord value using select subquery
+
+- dataset: AllProperties.bim
+- skip: true
+
+```sql
+select p2d.X from (select * from( select p2d from tmp))
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ------ |
+|           | p2d.X        | false     | 0     | X        | X    |              | double   | Double |
+
+| X     |
+| ----- |
+| 1.034 |
+
+`Note:- This query causes a crash on the backend so skipping it for now but documenting the behaviour`
