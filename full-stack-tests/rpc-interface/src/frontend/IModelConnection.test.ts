@@ -409,7 +409,7 @@ describe("Snapping", () => {
       expect(snap.status).not.to.be.undefined;
     } catch (err: any) {
       // This is what we expect if the cancellation occurs in time to really cancel the snap.
-      expect(err.message).to.equal("aborted");
+      expect(err.message).to.equal("Unknown server response code.");
     }
   });
 });

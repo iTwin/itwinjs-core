@@ -4156,9 +4156,15 @@ export class GltfGraphicsReader extends GltfReader {
     // (undocumented)
     readonly binaryData?: Uint8Array;
     // (undocumented)
+    get meshElementIdToFeatureIndex(): Map<string, number>;
+    // (undocumented)
+    meshes?: GltfMeshData;
+    // (undocumented)
     get nodes(): GltfDictionary<GltfNode>;
     // (undocumented)
     read(): Promise<GltfReaderResult>;
+    // (undocumented)
+    protected readMeshPrimitive(primitive: GltfMeshPrimitive, featureTable?: FeatureTable, pseudoRtcBias?: Vector3d): GltfPrimitiveData | undefined;
     // (undocumented)
     readTemplate(): Promise<GltfTemplateResult>;
     // (undocumented)
@@ -4267,7 +4273,11 @@ export abstract class GltfReader {
     // (undocumented)
     protected get _materials(): GltfDictionary<GltfMaterial>;
     // (undocumented)
+    protected _meshElementIdToFeatureIndex: Map<string, number>;
+    // (undocumented)
     protected get _meshes(): GltfDictionary<GltfMesh>;
+    // (undocumented)
+    protected _meshFeatures: Feature[];
     // (undocumented)
     protected get _nodes(): GltfDictionary<GltfNode>;
     abstract read(): Promise<GltfReaderResult>;
@@ -4324,7 +4334,7 @@ export abstract class GltfReader {
         [k: string]: any;
     }, accessorName: string, disjoint: boolean): boolean;
     // (undocumented)
-    protected readPrimitiveFeatures(_primitive: GltfMeshPrimitive): Feature | number[] | undefined;
+    protected readPrimitiveFeatures(primitive: GltfMeshPrimitive): Feature | number[] | undefined;
     // (undocumented)
     protected resolveResources(): Promise<void>;
     // (undocumented)

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/core-backend",
+      "comment": "Fix CloudSqlite.DbAccess.createBlobContainer always overwriting containerType with \"property-store\".",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/core-backend"
+}

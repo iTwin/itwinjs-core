@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-locaters",
-  "version": "5.0.0-dev.5",
+  "version": "5.0.0-dev.14",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/cjs/ecschema-locaters.js",
@@ -18,7 +18,7 @@
     "extract-api": "betools extract-api --entry=ecschema-locaters",
     "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-locaters/file.json --tsIndexFile=./ecschema-locaters.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/ecschema-locaters/file.json --tsIndexFile=./ecschema-locaters.ts --onlyJson",
     "cover": "nyc npm -s test",
     "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs"
   },
@@ -57,7 +57,7 @@
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
+    "@types/node": "~20.9.5",
     "@types/sinon": "^17.0.2",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
@@ -75,7 +75,7 @@
     "@xmldom/xmldom": "~0.8.5"
   },
   "peerDependencies": {
-    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.5"
+    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.14"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc",

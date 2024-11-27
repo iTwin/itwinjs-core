@@ -25,6 +25,8 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   private _tilesetUrl: string | undefined;
   /** For use by all Reality Data. For RD stored on PW Context Share, represents the portion from the root of the Azure Blob Container*/
   private _baseUrl: string = "";
+  /** Need to be passed down to child tile requests when requesting from blob storage, e.g. a Cesium export from the Mesh Export Service*/
+  private _searchParams: string = "";
 
   /** Construct a new reality data source.
    * @param props JSON representation of the reality data source
@@ -69,8 +71,11 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
   // otherwise the full path to root document is given.
   // The base URL contains the base URL from which tile relative path are constructed.
   // The tile's path root will need to be reinserted for child tiles to return a 200
+  // If the original url includes search paramaters, they are stored in _searchParams to be reinserted into child tile requests.
   private setBaseUrl(url: string): void {
     const urlParts = url.split("/");
+    const newUrl = new URL(url);
+    this._searchParams = newUrl.search;
     urlParts.pop();
     if (urlParts.length === 0)
       this._baseUrl = "";
@@ -105,9 +110,16 @@ export class RealityDataSourceTilesetUrlImpl implements RealityDataSource {
     return true;
   }
 
-  /** Returns the tile URL. If the tile path is a full URL, it is returned as is. Otherwise, the base URL is prepended to the tile path. */
+  /** Returns the tile URL.
+   * If the tile path is a relative URL, the base URL is prepended to it.
+   * For both absolute and relative tile path URLs, the search parameters are checked. If the search params are empty, the base URL's search params are appended to the tile path.
+   */
   private getTileUrl(tilePath: string){
-    return this.isValidURL(tilePath) ? tilePath : this._baseUrl + tilePath;
+    if (this.isValidURL(tilePath)) {
+      const url = new URL(tilePath);
+      return url.search === "" ? `${tilePath}${this._searchParams}` : tilePath;
+    }
+    return tilePath.includes("?") ? `${this._baseUrl}${tilePath}` : `${this._baseUrl}${tilePath}${this._searchParams}`;
   }
 
   /**
