@@ -69,15 +69,15 @@ describe("createIdBatches", () => {
     expect(await firstValueFrom(createIdBatches([], 2).pipe(toArray()))).to.be.deep.eq([]);
   });
 
-  it("creates a batch larger than element ids count, when there's one element id", async () => {
+  it("creates a batch from one element id", async () => {
     expect(await firstValueFrom(createIdBatches(["0x3"], 10).pipe(toArray()))).to.be.deep.eq([[{ from: "0x3", to: "0x3" }]]);
   });
 
-  it("creates a batch larger than element ids count, when element ids are in sequence", async () => {
+  it("creates a batch from sequential element ids, when `batchSize` is larger than the number of ids", async () => {
     expect(await firstValueFrom(createIdBatches(["0x1", "0x2", "0x3", "0x4", "0x5"], 10).pipe(toArray()))).to.be.deep.eq([[{ from: "0x1", to: "0x5" }]]);
   });
 
-  it("creates a batch larger than element ids count, when element ids are not in sequence", async () => {
+  it("creates a batch of non-sequential element ids, when `batchSize` is larger than the number of ids", async () => {
     expect(await firstValueFrom(createIdBatches(["0x1", "0x3", "0x5", "0x7", "0x9"], 10).pipe(toArray()))).to.be.deep.eq([
       [
         { from: "0x1", to: "0x1" },
