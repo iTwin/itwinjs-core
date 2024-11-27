@@ -189,19 +189,12 @@ function getElementClassesFromIds(imodel: IModelDb, elementIds: string[]): Obser
     mergeMap((batchIndex) => {
       const idsFrom = batchIndex * elementIdsBatchSize;
       const idsTo = Math.min(idsFrom + elementIdsBatchSize, elementIds.length);
-      let idsFilter = "";
-      for (let i = idsFrom; i < idsTo; i++) {
-        idsFilter += `${elementIds[i]}`;
-        if (i < idsTo - 1) {
-          idsFilter += ",";
-        }
-      }
       return from(
         imodel.createQueryReader(
           `
             SELECT ec_classname(e.ECClassId) className, GROUP_CONCAT(IdToHex(e.ECInstanceId)) ids
             FROM bis.Element e
-            WHERE e.ECInstanceId IN (${idsFilter})
+            WHERE e.ECInstanceId IN (${elementIds.slice(idsFrom, idsTo).join(",")})
             GROUP BY e.ECClassId
           `,
         ),
