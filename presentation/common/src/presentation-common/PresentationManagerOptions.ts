@@ -211,14 +211,7 @@ export interface SingleElementPropertiesRequestOptions<TIModel, TParsedContent =
  * Request type for multiple elements properties requests.
  * @public
  */
-export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
-  /**
-   * Classes of the elements to get properties for. If [[elementClasses]] is `undefined`, all classes
-   * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>" or
-   * "<schema name or alias>:<class_name>".
-   */
-  elementClasses?: string[];
-
+export type MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> = RequestOptions<TIModel> & {
   /**
    * Content parser that creates a result item based on given content descriptor and content item. Defaults
    * to a parser that creates [[ElementProperties]] objects.
@@ -231,7 +224,22 @@ export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = 
    * Defaults to `1000`.
    */
   batchSize?: number;
-}
+} & (
+    | {
+        /**
+         * Classes of the elements to get properties for. If [[elementClasses]] is `undefined`, all classes
+         * are used. Classes should be specified in one of these formats: "<schema name or alias>.<class_name>" or
+         * "<schema name or alias>:<class_name>".
+         */
+        elementClasses?: string[];
+      }
+    | {
+        /**
+         * A list of `bis.Element` IDs to get properties for.
+         */
+        elementIds?: Id64String[];
+      }
+  );
 
 /**
  * Request type for content instance keys' requests.

@@ -1719,11 +1719,14 @@ export interface LocalizationHelperProps {
 }
 
 // @public
-export interface MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> extends RequestOptions<TIModel> {
-    batchSize?: number;
+export type MultiElementPropertiesRequestOptions<TIModel, TParsedContent = ElementProperties> = RequestOptions<TIModel> & {
     contentParser?: (descriptor: Descriptor, item: Item) => TParsedContent;
+    batchSize?: number;
+} & ({
     elementClasses?: string[];
-}
+} | {
+    elementIds?: Id64String[];
+});
 
 // @public
 export interface MultiSchemaClassesSpecification {
