@@ -6,7 +6,7 @@
 import { expect} from "chai";
 import * as fs from "fs";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { CadFontFile, FontFile, TrueTypeFontFile } from "../../Font";
+import { FontFile, ShxFontFile, TrueTypeFontFile } from "../../Font";
 import { FontType } from "@itwin/core-common";
 
 interface FontData {
@@ -14,14 +14,14 @@ interface FontData {
   fileName: string;
 }
 
-describe.only("CadFontFile", () => {
+describe.only("ShxFontFile", () => {
   describe("create", () => {
     it("throws on non-existent filename", () => {
       let fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
       expect(fs.existsSync(fileName)).to.be.true;
       fileName = fileName + "no-existe";
       expect(fs.existsSync(fileName)).to.be.false;
-      expect(() => CadFontFile.create({ fileName, familyName: "Cdm" })).to.throw();
+      expect(() => ShxFontFile.fromFileOrBlob({ source: fileName, familyName: "Cdm" })).to.throw();
     });
   
     it("detects font type", () => {
@@ -33,7 +33,7 @@ describe.only("CadFontFile", () => {
       expect(fs.existsSync(fileName)).to.be.true;
       fileName = fileName + "no-existe";
       expect(fs.existsSync(fileName)).to.be.false;
-      expect(() => CadFontFile.create({ fileName, familyName: "Cdm" })).to.throw();
+      expect(() => ShxFontFile.fromFileOrBlob({ source: fileName, familyName: "Cdm" })).to.throw();
     });
 
     it("throws on non-font data", () => {
@@ -43,7 +43,7 @@ describe.only("CadFontFile", () => {
 
       const blob = fs.readFileSync(fileName);
       expect(blob.length).greaterThan(5);
-      expect(() => CadFontFile.create({ blob, familyName: "brepdata1" })).to.throw();
+      expect(() => ShxFontFile.fromFileOrBlob({ source: blob, familyName: "brepdata1" })).to.throw();
     });
 
   });
