@@ -32,20 +32,3 @@ export namespace FontFile {
     throw new Error("###TODO");
   }
 }
-
-export interface FontFileCollection {
-  /** @internal */
-  readonly [_implementationProhibited]: unknown;
-
-  readonly files: ReadonlyArray<FontFile>;
-}
-
-export namespace FontFileCollection {
-  export function fromBlobs(_blobs: Iterable<FontFileFromBlobArgs>): FontFileCollection {
-    throw new Error("###TODO");
-  }
-
-  export function fromFileNames(_fileNames: Iterable<LocalFileName>): FontFileCollection {
-    throw new Error("###TODO");
-  }
-}
