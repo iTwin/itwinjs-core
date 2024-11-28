@@ -1111,10 +1111,10 @@ export class Vector3d extends XYZ {
     return unitNormal ? unitNormal.crossProduct(this).plusScaled(unitNormal, unitNormal.dotProduct(this), result) : undefined;
   }
   /**
-   * Return a vector computed at fractional position between this vector and vectorB
-   * @param fraction fractional position.  0 is at `this`.  1 is at `vectorB`.
-   *                 True fractions are "between", negatives are "before this", beyond 1 is "beyond vectorB".
-   * @param vectorB second vector
+   * Return a vector computed at fractional position between this vector and vectorB.
+   * @param fraction fractional position. 0 is at `this`. 1 is at `vectorB`. True fractions are "between",
+   * negatives are "before this", beyond 1 is "beyond vectorB".
+   * @param vectorB second vector.
    * @param result optional preallocated result.
    */
   public interpolate(fraction: number, vectorB: XYAndZ, result?: Vector3d): Vector3d {
