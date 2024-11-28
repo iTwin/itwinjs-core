@@ -43,7 +43,7 @@ describe.only("FontFile", () => {
 
       const blob = fs.readFileSync(fileName);
       expect(blob.length).greaterThan(5);
-      expect(() => FontFile.fromBlob({ type: FontType.Shx, blob })).to.throw();
+      expect(() => FontFile.fromBlob(blob)).to.throw();
     });
 
     it("detects font type", () => {
