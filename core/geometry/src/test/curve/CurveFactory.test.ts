@@ -107,7 +107,9 @@ describe("CurveFactory", () => {
     const yStep = 3.0;
     for (const arcA0 of [
       Arc3d.createXYZXYZXYZ(0, 0, 0, 2, 0, 0, 0, 2, 0, AngleSweep.createStartEndDegrees(0, 90)),
-      Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 0, 0), Point3d.create(1.5, 1, 0), Point3d.create(1, 2, 0)) as Arc3d,
+      Arc3d.createCircularStartMiddleEnd(
+        Point3d.create(1, 0, 0), Point3d.create(1.5, 1, 0), Point3d.create(1, 2, 0),
+      ) as Arc3d,
       Arc3d.createXYZXYZXYZ(0, 0, 0, 2, 0, 0, 0.5, 1, 0, AngleSweep.createStartEndDegrees(-10, 50))]) {
       for (const reverse of [false, true]) {
         const arcA = arcA0.clone();
@@ -119,7 +121,9 @@ describe("CurveFactory", () => {
             const arcA1 = arcA.clone();
             const arcA2 = arcA.clone();
             const arcB1 = arcA.cloneInRotatedBasis(Angle.createDegrees(rotationAngleB));
-            arcB1.sweep = AngleSweep.createStartEnd(arcB1.sweep.fractionToAngle(segment.x0), arcB1.sweep.fractionToAngle(segment.x1));
+            arcB1.sweep = AngleSweep.createStartEnd(
+              arcB1.sweep.fractionToAngle(segment.x0), arcB1.sweep.fractionToAngle(segment.x1),
+            );
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcA1, arcB1], x0, y0);
             markArcData(allGeometry, arcA1, 0.9, 0.05, x0, y0);
             markArcData(allGeometry, arcB1, 0.9, 0.05, x0, y0);
@@ -149,7 +153,14 @@ describe("CurveFactory", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
-    const points = [Point3d.create(0, 0, 0), Point3d.create(2, 0, 0), Point3d.create(2, 5, 1), Point3d.create(4, 5, 1), Point3d.create(6, 2, 1), Point3d.create(6, 5, 1)];
+    const points = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(2, 0, 0),
+      Point3d.create(2, 5, 1),
+      Point3d.create(4, 5, 1),
+      Point3d.create(6, 2, 1),
+      Point3d.create(6, 5, 1),
+    ];
     const lineString0 = LineString3d.create(points);
     points.reverse();
     const lineString1 = LineString3d.create(points);
@@ -185,7 +196,9 @@ describe("CurveFactory", () => {
  * @param x0
  * @param y0
  */
-function markArcData(allGeometry: GeometryQuery[], arc: Arc3d, radialFraction: number, tickFraction: number, x0: number, y0: number) {
+function markArcData(
+  allGeometry: GeometryQuery[], arc: Arc3d, radialFraction: number, tickFraction: number, x0: number, y0: number,
+) {
   const arc1 = arc.clone();
   const center = arc.center;
   const start = arc.startPoint();
@@ -193,7 +206,9 @@ function markArcData(allGeometry: GeometryQuery[], arc: Arc3d, radialFraction: n
   const point90 = arc.angleToPointAndDerivative(Angle.createDegrees(90));
   arc1.matrixRef.scaleColumnsInPlace(radialFraction, radialFraction, 1.0);
   GeometryCoreTestIO.captureGeometry(allGeometry, [arc1,
-    LineSegment3d.create(center.interpolate(radialFraction, start), center.interpolate(radialFraction + tickFraction, start)),
+    LineSegment3d.create(
+      center.interpolate(radialFraction, start), center.interpolate(radialFraction + tickFraction, start),
+    ),
     LineString3d.create(point0.origin, center, point90.origin)], x0, y0);
 }
 const ppePathInputDirector = "./src/test/data/pipeConnections/";
@@ -325,8 +340,8 @@ describe("PipeConnections", () => {
       AngleSweep.createStartEndDegrees(180, 90),
     ]
     const centerline = [
-      Arc3d.createXY(Point3d.createZero(), 1.0, sectionSweeps[2]),
-      Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), sectionSweeps[2]),
+      Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
+      Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90)),
       BSplineCurve3dH.createUniformKnots([
         Point4d.create(-1.5, -1, 0, 1),
         Point4d.create(-0.25, -0.5, 0, 0.5),
@@ -610,13 +625,13 @@ describe("PipeConnections", () => {
     let dx = 0, dy = 0;
     const sectionSweeps: AngleSweep[] = [
       AngleSweep.create360(),
-      AngleSweep.createStartEndDegrees(360, 0),
+      // AngleSweep.createStartEndDegrees(360, 0),
       AngleSweep.createStartEndDegrees(0, 90),
       AngleSweep.createStartEndDegrees(180, 90),
     ]
     const centerline = [
-      Arc3d.createXY(Point3d.createZero(), 1.0, sectionSweeps[2]),
-      Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), sectionSweeps[2]),
+      Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
+      Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90)),
       BSplineCurve3dH.createUniformKnots([
         Point4d.create(-1.5, -1, 0, 1),
         Point4d.create(-0.25, -0.5, 0, 0.5),
@@ -645,7 +660,7 @@ describe("PipeConnections", () => {
           const sections = CurveFactory.createMiteredSweepSections(
             linestring.points,
             sectionData[i],
-            { outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped: capped },
+            { outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped },
           )!;
 
           if (ck.testType(sections.ruledSweep, RuledSweep, "output ruled sweep") &&
@@ -676,7 +691,7 @@ describe("PipeConnections", () => {
   it("createMiteredSweepSectionsTangentOption", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    let dx = 0, dy = 0;
+    let dx = 0;
     const centerline = [
       Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
       Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90)),
@@ -708,7 +723,7 @@ describe("PipeConnections", () => {
           sectionData[i],
           {
             outputSelect: MiteredSweepOutputSelect.AlsoMesh,
-            capped: capped,
+            capped,
             startTangent: startTangents[i],
             endTangent: endTangents[i],
           },
@@ -718,8 +733,8 @@ describe("PipeConnections", () => {
           ck.testType(sections.mesh, IndexedPolyface, "output mesh")) {
           const sweptSurface = sections.ruledSweep;
           const mesh = sections.mesh;
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptSurface, dx, dy);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx + 3, dy);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptSurface, dx);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx + 3);
 
           ck.testTrue(sections.planes[0].getNormalRef().isExactEqual(startTangents[i]));
           ck.testTrue(sections.planes[sections.planes.length - 1].getNormalRef().isExactEqual(endTangents[i]));

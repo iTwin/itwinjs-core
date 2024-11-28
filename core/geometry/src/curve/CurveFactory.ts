@@ -466,15 +466,6 @@ export class CurveFactory {
         if (endTang?.tryNormalizeInPlace())
           lastPlane.getNormalRef().setFrom(endTang);
       }
-      // fix orientation of initialSection
-      // const vectorBC = Vector3d.create(); // initially, the start tangent
-      // if (centerline instanceof IndexedXYZCollection)
-      //   centerline.vectorIndexIndex(0, 1, vectorBC);
-      // else
-      //   vectorBC.setStartEnd(centerline[0], centerline[1]);
-      // const sectionFacesForward = initialSection.columnDotXYZ(AxisIndex.Z, vectorBC.x, vectorBC.y, vectorBC.z) > 0;
-      // if (sectionFacesForward !== initialSection.sweep.isCCW)
-      //   sweep.reverseInPlace();
       // Projection to target plane, constructing sweep direction from two given planes.
       // If successful, push the target plane and swept section to the output arrays and return the swept section.
       // If unsuccessful, leave the output arrays alone and return the input section.
