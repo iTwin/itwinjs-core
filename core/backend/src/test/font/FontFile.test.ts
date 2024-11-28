@@ -21,13 +21,20 @@ function getFontData(fontName: string, fontSubDirectory?: string): FontData {
   return { fileName, blob };
 }
   
-describe.only("FontFile", () => {
-  it("wip", () => {
-    expect(IModelTestUtils.resolveFontFile("Karla-Regular.ttf", "Karla").length).greaterThan(5);
-    expect(IModelTestUtils.resolveFontFile("Cdm.shx").length).greaterThan(5);
-  });
+describe.only("CadFontFile", () => {
+  describe("create", () => {
+    it("throws on non-existent filename", () => {
+      let fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
+      expect(fs.existsSync(fileName)).to.be.true;
+      fileName = fileName + "no-existe";
+      expect(fs.existsSync(fileName)).to.be.false;
+      expect(() => CadFontFile.create({ fileName, familyName: "Cdm" })).to.throw();
+    });
+  
+    it("detects font type", () => {
+    
+    });
 
-  describe("fromFileName/Blob", () => {
     it("throws on non-existent filename", () => {
       let fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
       expect(fs.existsSync(fileName)).to.be.true;
@@ -46,11 +53,16 @@ describe.only("FontFile", () => {
       expect(() => CadFontFile.create({ blob, familyName: "brepdata1" })).to.throw();
     });
 
-    it("detects font type", () => {
+  });
+});
+
+describe.only("TrueTypeFontFile", () => {
+  describe("fromFileName", () => {
+    it("throws on non-existent filename", () => {
     
     });
 
-    it("throws if specified font type does not match detected type", () => {
+    it("throws on non-font data", () => {
       
     });
   });
@@ -69,6 +81,10 @@ describe.only("FontFile", () => {
     });
 
     it("is always true for rsc and shx fonts", () => {
+      
+    });
+
+    describe("familyNames", () => {
       
     });
   })
