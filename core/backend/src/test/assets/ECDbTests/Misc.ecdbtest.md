@@ -150,3 +150,68 @@ FROM
 | "13"       |
 | "14"       |
 | FizzBuzz |
+
+
+# SubqueryTestExp with EXISTS
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  ECInstanceId
+FROM
+  aps.TestElement e
+WHERE
+  EXISTS (
+    SELECT
+      1
+    FROM
+      aps.TestElementAspect a
+    WHERE
+      e.ECInstanceId = a.Element.Id
+  )
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+
+| ECInstanceId |
+| ------------ |
+| 0x14         |
+| 0x16         |
+| 0x18         |
+| 0x1a         |
+| 0x1c         |
+
+# SubqueryTestExp with NOT EXISTS
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  ECInstanceId
+FROM
+  aps.TestElement e
+WHERE
+  NOT EXISTS (
+    SELECT
+      1
+    FROM
+      aps.TestElementAspect a
+    WHERE
+      e.ECInstanceId = a.Element.Id
+  )
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+
+| ECInstanceId |
+| ------------ |
+| 0x15         |
+| 0x17         |
+| 0x19         |
+| 0x1b         |
+| 0x1d         |

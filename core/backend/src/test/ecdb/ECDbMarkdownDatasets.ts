@@ -173,8 +173,10 @@ export class ECDbMarkdownDatasets {
       const id = iModel.elements.insertElement(testElement.toJSON());
       assert.isTrue(Id64.isValidId64(id), "element insert failed");
 
-      const aspectId = iModel.elements.insertAspect(createElemAspect("TestElementAspect", iModel, id, undefined));
-      assert.isTrue(Id64.isValidId64(aspectId), "element aspect insert failed");
+      if (m % 2 === 0) {
+        const aspectId = iModel.elements.insertAspect(createElemAspect("TestElementAspect", iModel, id, undefined));
+        assert.isTrue(Id64.isValidId64(aspectId), "element aspect insert failed");
+      }
     }
 
     iModel.saveChanges();

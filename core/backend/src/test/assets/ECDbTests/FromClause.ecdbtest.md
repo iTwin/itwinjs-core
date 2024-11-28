@@ -367,8 +367,3 @@ FROM
 | AllProperties:TestElementAspect |
 | AllProperties:TestElementAspect |
 | AllProperties:TestElementAspect |
-| AllProperties:TestElementAspect |
-| AllProperties:TestElementAspect |
-| AllProperties:TestElementAspect |
-| AllProperties:TestElementAspect |
-| AllProperties:TestElementAspect |
