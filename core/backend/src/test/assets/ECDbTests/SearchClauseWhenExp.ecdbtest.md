@@ -209,3 +209,127 @@ FROM
 | undefined             |
 | Withing last 2        |
 | Withing last 2        |
+
+# Testing ECInstanceIds of Bis.Model against Model.Id from TestElement in When Clause
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  CASE
+    WHEN ECInstanceId = (
+      SELECT
+        Model.Id
+      FROM
+        aps.TestElement
+    ) THEN ec_classname (ECClassId)
+    ELSE 'ClassName not found'
+  END ClassName
+FROM
+  Bis.Model
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ------ |
+|           | ClassName    | true      | 0     | className | ClassName | undefined    | string   | String |
+
+| ClassName             |
+| --------------------- |
+| ClassName not found   |
+| ClassName not found   |
+| BisCore:PhysicalModel |
+| ClassName not found   |
+
+# Testing ECInstanceIds of meta.ECClassDef against ECClassId from TestElement in When Clause
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  CASE
+    WHEN ECInstanceId > (
+      SELECT
+        ECClassId
+      FROM
+        aps.TestElement
+    ) THEN Name
+  END ClassName
+FROM
+  meta.ECClassDef
+WHERE
+  ClassName <> 'undefined'
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ------ |
+|           | ClassName    | true      | 0     | className | ClassName | undefined    | string   | String |
+
+| ClassName                   |
+| --------------------------- |
+| TestElementAspect           |
+| TestElementRefersToElements |
+
+# Complex When clause with nested subqueries
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  CASE
+    WHEN ECInstanceId > (
+      SELECT
+        e.ECClassId
+      FROM
+        aps.TestElement e
+      WHERE
+        e.ECInstanceId IN (
+          SELECT
+            Element.Id
+          FROM
+            aps.TestElementAspect
+        )
+    ) THEN Name
+    ELSE 'ClassName not found'
+  END ClassName
+FROM
+  meta.ECClassDef
+WHERE
+  ClassName <> 'ClassName not found'
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ------ |
+|           | ClassName    | true      | 0     | className | ClassName | undefined    | string   | String |
+
+| ClassName                   |
+| --------------------------- |
+| TestElementAspect           |
+| TestElementRefersToElements |
+
+# Testing internal props of objects in When Clause
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT CASE WHEN p2d.X = 1.034 THEN p2d.X ELSE 0.0 END X_Coord FROM (SELECT * FROM aps.TestElement) limit 4
+```
+
+| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ |
+|           | X_Coord      | true      | 0     | x_Coord  | X_Coord | undefined    | double   | Double |
+
+| X_Coord |
+| ------- |
+| 1.034   |
+| 0       |
+| 1.034   |
+| 0       |
+
+# Testing internal props of objects in When Clause with level 2 subquery
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT CASE WHEN p2d.X = 1.034 THEN p2d.X ELSE 0.0 END X_Coord FROM (SELECT * FROM (SELECT * FROM aps.TestElement)) limit 4
+```
