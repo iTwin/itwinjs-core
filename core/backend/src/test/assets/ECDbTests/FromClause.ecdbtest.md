@@ -280,3 +280,95 @@ FROM
 | 0x16         | 0x152     | 0x11 | 102 | str2      | 1002       | 2.1          |
 | 0x17         | 0x152     | 0x11 | 103 | str3      | 1003       | 3.1          |
 
+
+# FromExp with Distinct
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT DISTINCT(ECClassId) from Bis.Element
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ---- | ------------------ |
+|           | ECClassId    | false     | 0     | className | ECClassId | ClassId      | long     | Id   | ECClassId          |
+
+| ECClassId |
+| --------- |
+| 0x89      |
+| 0x98      |
+| 0xc5      |
+| 0xdd      |
+| 0xf0      |
+| 0x126     |
+| 0x152     |
+
+
+# FromExp with Union
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  ec_classname (ECClassId) AS ClassName
+FROM
+  aps.TestElement
+UNION
+SELECT
+  ec_classname (ECClassId) AS ClassName
+FROM
+  aps.TestElementAspect
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ------ |
+|           | ClassName    | true      | 0     | className | ClassName | undefined    | string   | String |
+
+| ClassName                       |
+| ------------------------------- |
+| AllProperties:TestElement       |
+| AllProperties:TestElementAspect |
+
+
+# FromExp with Union All
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  ec_classname (ECClassId) AS ClassName
+FROM
+  aps.TestElement
+UNION ALL
+SELECT
+  ec_classname (ECClassId) AS ClassName
+FROM
+  aps.TestElementAspect
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ------ |
+|           | ClassName    | true      | 0     | className | ClassName | undefined    | string   | String |
+
+| ClassName                       |
+| ------------------------------- |
+| AllProperties:TestElement       |
+| AllProperties:TestElement       |
+| AllProperties:TestElement       |
+| AllProperties:TestElement       |
+| AllProperties:TestElement       |
+| AllProperties:TestElement       |
+| AllProperties:TestElement       |
+| AllProperties:TestElement       |
+| AllProperties:TestElement       |
+| AllProperties:TestElement       |
+| AllProperties:TestElementAspect |
+| AllProperties:TestElementAspect |
+| AllProperties:TestElementAspect |
+| AllProperties:TestElementAspect |
+| AllProperties:TestElementAspect |
+| AllProperties:TestElementAspect |
+| AllProperties:TestElementAspect |
+| AllProperties:TestElementAspect |
+| AllProperties:TestElementAspect |
+| AllProperties:TestElementAspect |
