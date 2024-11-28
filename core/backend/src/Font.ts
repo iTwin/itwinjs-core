@@ -27,12 +27,6 @@ export type CadFontFileCreateArgs = {
   blob?: never;
 })
 
-export interface CadFontFileFromBlobArgs {
-  familyName: string;
-  type: FontType.Rsc | FontType.Shx;
-  blob: Uint8Array;
-}
-
 export namespace CadFontFile {
   export function create(_args: CadFontFileCreateArgs): CadFontFile {
     throw new Error("###TODO");
