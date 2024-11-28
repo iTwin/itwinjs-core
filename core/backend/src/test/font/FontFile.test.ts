@@ -4,39 +4,54 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect} from "chai";
+import * as fs from "fs";
 import { IModelTestUtils } from "../IModelTestUtils";
+import { FontFile } from "../../Font";
+import { FontType } from "@itwin/core-common";
 
+interface FontData {
+  blob: Uint8Array;
+  fileName: string;
+}
+
+function getFontData(fontName: string, fontSubDirectory?: string): FontData {
+  const fileName = IModelTestUtils.resolveFontFile(fontName, fontSubDirectory);
+  expect(fs.existsSync(fileName)).to.be.true;
+  const blob = fs.readFileSync(fileName);
+  return { fileName, blob };
+}
+  
 describe.only("FontFile", () => {
   it("wip", () => {
     expect(IModelTestUtils.resolveFontFile("Karla-Regular.ttf", "Karla").length).greaterThan(5);
     expect(IModelTestUtils.resolveFontFile("Cdm.shx").length).greaterThan(5);
   });
 
-  describe("fromFileName", () => {
+  describe("fromFileName/Blob", () => {
     it("throws on non-existent filename", () => {
-    
+      let fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
+      expect(fs.existsSync(fileName)).to.be.true;
+      fileName = fileName + "no-existe";
+      expect(fs.existsSync(fileName)).to.be.false;
+      expect(() => FontFile.fromFileName(fileName)).to.throw();
     });
 
-    it("throws if file is not a font format", () => {
-      
-    });
-
-    it("throws if file type does not match font type in file data", () => {
-      
-    });
-  });
-
-  describe("fromBlob", () => {
     it("throws on non-font data", () => {
-      
-    });
+      const fileName = IModelTestUtils.resolveAssetFile("brepdata1.json");
+      expect(fs.existsSync(fileName)).to.be.true;
+      expect(() => FontFile.fromFileName(fileName)).to.throw();
 
-    it("throws if specified font type does not match detected type", () => {
-      
+      const blob = fs.readFileSync(fileName);
+      expect(blob.length).greaterThan(5);
+      expect(() => FontFile.fromBlob({ type: FontType.Shx, blob })).to.throw();
     });
 
     it("detects font type", () => {
     
+    });
+
+    it("throws if specified font type does not match detected type", () => {
+      
     });
   });
   
