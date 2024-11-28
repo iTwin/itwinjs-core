@@ -9,25 +9,49 @@
 import { FontType, LocalFileName } from "@itwin/core-common";
 import { _implementationProhibited } from "./internal/Symbols";
 
-export interface FontFile {
+export interface CadFontFile {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
 
-  readonly type: FontType;
-  readonly isTrueType: () => this is TrueTypeFontFile;
+  readonly type: FontType.Rsc | FontType.Shx;
+  readonly familyName: string;
 }
 
-export interface TrueTypeFontFile extends FontFile {
+export type CadFontFileCreateArgs = {
+  familyName: string;
+} & ({
+  blob: Uint8Array;
+  fileName?: never;
+} | {
+  fileName: LocalFileName;
+  blob?: never;
+})
+
+export interface CadFontFileFromBlobArgs {
+  familyName: string;
+  type: FontType.Rsc | FontType.Shx;
+  blob: Uint8Array;
+}
+
+export namespace CadFontFile {
+  export function create(_args: CadFontFileCreateArgs): CadFontFile {
+    throw new Error("###TODO");
+  }
+}
+
+export interface TrueTypeFontFile {
+  /** @internal */
+  readonly [_implementationProhibited]: unknown;
+
+  readonly type: FontType.TrueType;
   readonly isEmbeddable: boolean;
   readonly familyNames: ReadonlyArray<string>;
 }
 
-export namespace FontFile {
-  export function fromBlob(_blob: Uint8Array): FontFile {
-    throw new Error("###TODO");
-  }
+export type FontFile = CadFontFile | TrueTypeFontFile;
 
-  export function fromFileName(_fileName: LocalFileName): FontFile {
+export namespace TrueTypeFontFile {
+  export function fromFileName(_fileName: LocalFileName): TrueTypeFontFile {
     throw new Error("###TODO");
   }
 }

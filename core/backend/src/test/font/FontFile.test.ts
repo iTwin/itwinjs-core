@@ -6,7 +6,7 @@
 import { expect} from "chai";
 import * as fs from "fs";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { FontFile } from "../../Font";
+import { CadFontFile, FontFile, TrueTypeFontFile } from "../../Font";
 import { FontType } from "@itwin/core-common";
 
 interface FontData {
@@ -33,17 +33,17 @@ describe.only("FontFile", () => {
       expect(fs.existsSync(fileName)).to.be.true;
       fileName = fileName + "no-existe";
       expect(fs.existsSync(fileName)).to.be.false;
-      expect(() => FontFile.fromFileName(fileName)).to.throw();
+      expect(() => CadFontFile.create({ fileName, familyName: "Cdm" })).to.throw();
     });
 
     it("throws on non-font data", () => {
       const fileName = IModelTestUtils.resolveAssetFile("brepdata1.json");
       expect(fs.existsSync(fileName)).to.be.true;
-      expect(() => FontFile.fromFileName(fileName)).to.throw();
+      expect(() => TrueTypeFontFile.fromFileName(fileName)).to.throw();
 
       const blob = fs.readFileSync(fileName);
       expect(blob.length).greaterThan(5);
-      expect(() => FontFile.fromBlob(blob)).to.throw();
+      expect(() => CadFontFile.create({ blob, familyName: "brepdata1" })).to.throw();
     });
 
     it("detects font type", () => {
