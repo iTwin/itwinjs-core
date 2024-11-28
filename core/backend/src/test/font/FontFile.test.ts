@@ -61,49 +61,59 @@ describe.only("TrueTypeFontFile", () => {
   });
   
   describe("isEmbeddable", () => {
+    function expectEmbeddable(expected: boolean, fontName: string): void {
+      const fileName = IModelTestUtils.resolveFontFile(fontName);
+      const fontFile = TrueTypeFontFile.fromFileName(fileName);
+      expect(fontFile.isEmbeddable).to.equal(expected);
+    }
+
     it("prohibits embedding of restricted and preview-and-print faces", () => {
-      
+      expectEmbeddable(false, "Karla-Restricted.ttf");
+      expectEmbeddable(false, "Karla-Preview-And-Print.ttf");
+
+      expectEmbeddable(true, "Karla-Regular.ttf");
+
+      expectEmbeddable(true, "DejaVuSansMono.ttf");
+      expectEmbeddable(true, "Sitka-Banner.ttf");
     });
 
     it("prohibits embedding a file if any face is not embeddable", () => {
+      expectEmbeddable(true, "Sitka.ttc");
       
+      // ###TODO need a file with one face not embeddable
     });
 
     it("uses the least restrictive embedding rights if multiple bits are set", () => {
-      
-    });
-
-    it("is always true for rsc and shx fonts", () => {
-      
+      expectEmbeddable(true, "Karla-MultipleEmbeddingRights.ttf");
     });
 
     describe("familyNames", () => {
       it("reads family names", () => {
-        function expectFamilyNames(expected: string[], fontName: string, subDir?: string): void {
-          const fileName = IModelTestUtils.resolveFontFile(fontName, subDir);
+        function expectFamilyNames(expected: string[], fontName: string): void {
+          const fileName = IModelTestUtils.resolveFontFile(fontName);
           const fontFile = TrueTypeFontFile.fromFileName(fileName);
           expected.sort();
           const actual = fontFile.familyNames.slice().sort();
           expect(actual).to.deep.equal(expected);
         }
 
-        expectFamilyNames(["Karla"], "Karla-MultipleEmbeddingRights.ttf", "Karla");
-        expectFamilyNames(["Karla"], "Karla-Regular.ttf", "Karla");
-        expectFamilyNames(["Karla-Preview-And-Print"], "Karla-Preview-And-Print.ttf", "Karla");
-        expectFamilyNames(["Karla-Restricted"], "Karla-Restricted.ttf", "Karla");
+        expectFamilyNames(["Karla"], "Karla-MultipleEmbeddingRights.ttf");
+        expectFamilyNames(["Karla"], "Karla-Regular.ttf");
+        expectFamilyNames(["Karla-Preview-And-Print"], "Karla-Preview-And-Print.ttf");
+        expectFamilyNames(["Karla-Restricted"], "Karla-Restricted.ttf");
 
-        expectFamilyNames(["DejaVu Sans"], "DejaVuSans.ttf", "DejaVu");
-        expectFamilyNames(["DejaVu Sans"], "DejaVuSans-Bold.ttf", "DejaVu");
-        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono.ttf", "DejaVu");
-        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-Bold.ttf", "DejaVu");
-        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-Oblique.ttf", "DejaVu");
-        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-BoldOblique.ttf", "DejaVu");
-        expectFamilyNames(["DejaVu Serif"], "DejaVuSerif.ttf", "DejaVu");
-        expectFamilyNames(["DejaVu Serif"], "DejaVuSerif-Bold.ttf", "DejaVu");
+        expectFamilyNames(["DejaVu Sans"], "DejaVuSans.ttf");
+        expectFamilyNames(["DejaVu Sans"], "DejaVuSans-Bold.ttf");
+        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono.ttf");
+        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-Bold.ttf");
+        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-Oblique.ttf");
+        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-BoldOblique.ttf");
+        expectFamilyNames(["DejaVu Serif"], "DejaVuSerif.ttf");
+        expectFamilyNames(["DejaVu Serif"], "DejaVuSerif-Bold.ttf");
         
         expectFamilyNames([
           "Sitka Banner", "Sitka Display", "Sitka Heading", "Sitka Small", "Sitka Subheading", "Sitka Text",
-        ], "Sitka.ttc", "Sitka");
+        ], "Sitka.ttc");
       });
     });
   })

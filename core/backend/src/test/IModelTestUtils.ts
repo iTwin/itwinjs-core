@@ -298,7 +298,10 @@ export class IModelTestUtils {
     return assetFile;
   }
 
-  public static resolveFontFile(fontName: string, fontSubDirectory?: string): LocalFileName {
+  public static resolveFontFile(fontName: string): LocalFileName {
+    const subDirs = ["Karla", "DejaVu", "Sitka"];
+    const fontSubDirectory = subDirs.find((x) => fontName.startsWith(x));
+
     fontName = fontSubDirectory ? path.join(fontSubDirectory, fontName) : fontName;
     const assetName = path.join("Fonts", fontName);
     return this.resolveAssetFile(assetName);
