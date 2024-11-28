@@ -8,6 +8,7 @@
 
 import { FontType, LocalFileName } from "@itwin/core-common";
 import { _implementationProhibited } from "./internal/Symbols";
+import { trueTypeFontFileFromFileName } from "./internal/FontImpl";
 
 export interface CadFontFile {
   /** @internal */
@@ -45,7 +46,7 @@ export interface TrueTypeFontFile {
 export type FontFile = CadFontFile | TrueTypeFontFile;
 
 export namespace TrueTypeFontFile {
-  export function fromFileName(_fileName: LocalFileName): TrueTypeFontFile {
-    throw new Error("###TODO");
+  export function fromFileName(fileName: LocalFileName): TrueTypeFontFile {
+    return trueTypeFontFileFromFileName(fileName);
   }
 }

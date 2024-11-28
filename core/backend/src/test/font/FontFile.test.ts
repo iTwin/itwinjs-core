@@ -14,13 +14,6 @@ interface FontData {
   fileName: string;
 }
 
-function getFontData(fontName: string, fontSubDirectory?: string): FontData {
-  const fileName = IModelTestUtils.resolveFontFile(fontName, fontSubDirectory);
-  expect(fs.existsSync(fileName)).to.be.true;
-  const blob = fs.readFileSync(fileName);
-  return { fileName, blob };
-}
-  
 describe.only("CadFontFile", () => {
   describe("create", () => {
     it("throws on non-existent filename", () => {
@@ -85,7 +78,33 @@ describe.only("TrueTypeFontFile", () => {
     });
 
     describe("familyNames", () => {
-      
+      it("reads family names", () => {
+        function expectFamilyNames(expected: string[], fontName: string, subDir?: string): void {
+          const fileName = IModelTestUtils.resolveFontFile(fontName, subDir);
+          const fontFile = TrueTypeFontFile.fromFileName(fileName);
+          expected.sort();
+          const actual = fontFile.familyNames.slice().sort();
+          expect(actual).to.deep.equal(expected);
+        }
+
+        expectFamilyNames(["Karla"], "Karla-MultipleEmbeddingRights.ttf", "Karla");
+        expectFamilyNames(["Karla"], "Karla-Regular.ttf", "Karla");
+        expectFamilyNames(["Karla-Preview-And-Print"], "Karla-Preview-And-Print.ttf", "Karla");
+        expectFamilyNames(["Karla-Restricted"], "Karla-Restricted.ttf", "Karla");
+
+        expectFamilyNames(["DejaVu Sans"], "DejaVuSans.ttf", "DejaVu");
+        expectFamilyNames(["DejaVu Sans"], "DejaVuSans-Bold.ttf", "DejaVu");
+        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono.ttf", "DejaVu");
+        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-Bold.ttf", "DejaVu");
+        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-Oblique.ttf", "DejaVu");
+        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-BoldOblique.ttf", "DejaVu");
+        expectFamilyNames(["DejaVu Serif"], "DejaVuSerif.ttf", "DejaVu");
+        expectFamilyNames(["DejaVu Serif"], "DejaVuSerif-Bold.ttf", "DejaVu");
+        
+        expectFamilyNames([
+          "Sitka Banner", "Sitka Display", "Sitka Heading", "Sitka Small", "Sitka Subheading", "Sitka Text",
+        ], "Sitka.ttc", "Sitka");
+      });
     });
   })
 });

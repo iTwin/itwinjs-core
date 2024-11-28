@@ -4,8 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
-import { FontFile } from "../Font";
+import { FontFile, TrueTypeFontFile } from "../Font";
+import { FontType, LocalFileName } from "@itwin/core-common";
+import { IModelHost } from "../IModelHost";
+import { _implementationProhibited } from "./Symbols";
 
+export function trueTypeFontFileFromFileName(fileName: LocalFileName): TrueTypeFontFile {
+  const metadata = IModelHost.platform.getTrueTypeFontMetadata(fileName);
+  return {
+    [_implementationProhibited]: undefined,
+    type: FontType.TrueType,
+    isEmbeddable: metadata.embeddable,
+    familyNames: metadata.familyNames,
+  };
+}
 
 /*
 ShxFont::ShxType ShxFont::ValidateHeader(CharCP fileHeader) {
