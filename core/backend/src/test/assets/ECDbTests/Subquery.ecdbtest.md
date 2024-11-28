@@ -318,7 +318,7 @@ WHERE
 # Testing Point2d x coord value using select subquery
 
 - dataset: AllProperties.bim
-- skip: true
+- skip: The query for this test causes a crash on the backend so skipping it for now but documenting the behaviour
 
 ```sql
 select p2d.X from (select * from( select p2d from tmp))

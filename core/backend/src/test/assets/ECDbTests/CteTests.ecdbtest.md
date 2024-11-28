@@ -89,7 +89,7 @@ with tmp as (SELECT e.p2d FROM aps.TestElement e LIMIT 1) select p2d.x from tmp
 # Testing Point2d x coord value using CTE subquery
 
 - dataset: AllProperties.bim
-- skip: true
+- skip: The query for this test causes a crash on the backend so skipping it for now but documenting the behaviour
 
 ```sql
 select p2d.X from (with tmp as (SELECT e.p2d FROM aps.TestElement e LIMIT 1) select p2d from tmp)
@@ -102,8 +102,6 @@ select p2d.X from (with tmp as (SELECT e.p2d FROM aps.TestElement e LIMIT 1) sel
 | X     |
 | ----- |
 | 1.034 |
-
-`Note:- This query causes a crash on the backend so skipping it for now but documenting the behaviour`
 
 # Testing Point2d array props using CTE
 

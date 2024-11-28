@@ -20,9 +20,9 @@ The properties inside that json can be used in binders, statements and code bloc
 
 Optional. Tests marked by this will be filtered so only those tests run. (Translates into it.only())
 
-- skip: true
+- skip: SKIP_REASON
 
-Optional. Tests marked by this will be skipped. (Translates into it.skip())
+Optional. Tests marked by this will be skipped. SKIP_REASON is the reason for skipping the particular test.
 
 - mode: Both
 
