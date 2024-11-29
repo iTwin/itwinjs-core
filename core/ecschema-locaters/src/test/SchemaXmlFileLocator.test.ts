@@ -220,9 +220,6 @@ describe("PublishedSchemaXmlFileLocater tests", () => {
       const locater = new PublishedSchemaXmlFileLocater();
       context.addLocater(locater);
 
-      // Default search order
-      assert.equal(locater.searchPaths.length, PublishedSchemaXmlFileLocater.defaultSchemaSearchPaths.size);
-
       const schema = context.getSchemaSync(new SchemaKey(schemaName));
       assert.isDefined(schema, `Failed to locate ${schemaName} schema`);
       assert.equal(schema!.schemaKey.name, schemaName);
@@ -276,15 +273,17 @@ describe("PublishedSchemaXmlFileLocater tests", () => {
     // Empty list with just default released schemas
     const locater = new PublishedSchemaXmlFileLocater();
 
+    const defaultSchemaSearchPathLength = locater.searchPaths.length;
+
     // Default search order
-    assert.equal(locater.searchPaths.length, PublishedSchemaXmlFileLocater.defaultSchemaSearchPaths.size);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength);
 
     // Add 2 new search paths
     locater.addSchemaSearchPaths([jsonFilePath, xmlFilePath]);
-    assert.equal(locater.searchPaths.length, PublishedSchemaXmlFileLocater.defaultSchemaSearchPaths.size + 2);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength + 2);
 
     // Add a duplicate search path : should get ignored
     locater.addSchemaSearchPaths([xmlFilePath, jsonFilePath]);
-    assert.equal(locater.searchPaths.length, PublishedSchemaXmlFileLocater.defaultSchemaSearchPaths.size + 2);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength + 2);
   });
 });

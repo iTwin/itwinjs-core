@@ -13,6 +13,7 @@ import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
 import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
+import { globSync } from "glob";
 
 /**
  * A SchemaLocater implementation for locating XML Schema files
@@ -132,38 +133,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
  * @beta This is a workaround the current lack of a full xml parser.
  */
 export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
-  private _standardSchemaSearchPaths: Set<string>;
-
-  public static defaultSchemaSearchPaths = new Set([
-    // Dgn schemas
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "bis-core-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "generic-schema"),
-    // Domain schemas
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "analytical-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "functional-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "linear-referencing-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "physical-material-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "presentation-rules-schema"),
-    // ECDb schemas
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-file-info-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-map-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-meta-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "ecdb-schema-policies-schema"),
-    // Standard schemas
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "bis-custom-attributes-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "core-custom-attributes-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "formats-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "schema-upgrade-custom-attributes-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "units-schema"),
-    // Misc schemas
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "aec-units-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "architectural-physical-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "construction-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "plant-custom-attributes-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "quantity-takeoffs-aspects-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "spatial-composition-schema"),
-    path.join(__dirname, "..", "..", "node_modules", "@bentley", "structural-physical-schema"),
-  ]);
+  private _standardSchemaSearchPaths = new Set<string>();
 
   /**
    * Constructs a new PublishedSchemaXmlFileLocater
@@ -173,7 +143,7 @@ export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implemen
     super();
 
     if (!knownBackendAssetsDir) {
-      this._standardSchemaSearchPaths = PublishedSchemaXmlFileLocater.defaultSchemaSearchPaths;
+      globSync(path.join(__dirname, "..", "..", "node_modules", "@bentley", "*-schema"), { windowsPathsNoEscape: true }).forEach(match => this._standardSchemaSearchPaths.add(match));
     } else {
       // Pre-defined set of standard schema search paths
       this._standardSchemaSearchPaths = new Set([

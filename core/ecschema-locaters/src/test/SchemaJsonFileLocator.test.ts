@@ -168,54 +168,57 @@ describe("PublishedSchemaJsonFileLocater tests", () => {
   it("PublishedSchemaJsonFileLocater - check schema order with addSchemaSearchPath", () => {
     // Empty list with just default released schemas
     const locater = new PublishedSchemaJsonFileLocater();
+    const defaultSchemaSearchPathLength = locater.searchPaths.length;
 
     // Default search order
-    assert.equal(locater.searchPaths.length, PublishedSchemaJsonFileLocater.defaultSchemaSearchPaths.size);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength);
 
     // Add a new search path
     locater.addSchemaSearchPath(jsonFilePath);
-    assert.equal(locater.searchPaths.length, PublishedSchemaJsonFileLocater.defaultSchemaSearchPaths.size + 1);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength + 1);
 
     // Add another new search path
     locater.addSchemaSearchPath(xmlFilePath);
-    assert.equal(locater.searchPaths.length, PublishedSchemaJsonFileLocater.defaultSchemaSearchPaths.size + 2);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength + 2);
 
     // Add a duplicate search path : should get ignored
     locater.addSchemaSearchPath(xmlFilePath);
     locater.addSchemaSearchPath(standardSchemaPath);
 
-    assert.equal(locater.searchPaths.length, PublishedSchemaJsonFileLocater.defaultSchemaSearchPaths.size + 3);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength + 3);
   });
 
   it("PublishedSchemaJsonFileLocater - check schema order with addSchemaSearchPaths", () => {
     // Empty list with just default released schemas
     const locater = new PublishedSchemaJsonFileLocater();
+    const defaultSchemaSearchPathLength = locater.searchPaths.length;
 
     // Default search order
-    assert.equal(locater.searchPaths.length, PublishedSchemaJsonFileLocater.defaultSchemaSearchPaths.size);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength);
 
     // Add 2 new search paths
     locater.addSchemaSearchPaths([jsonFilePath, xmlFilePath]);
-    assert.equal(locater.searchPaths.length, PublishedSchemaJsonFileLocater.defaultSchemaSearchPaths.size + 2);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength + 2);
 
     // Add a duplicate search path : should get ignored
     locater.addSchemaSearchPaths([xmlFilePath, standardSchemaPath]);
-    assert.equal(locater.searchPaths.length, PublishedSchemaJsonFileLocater.defaultSchemaSearchPaths.size + 3);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength + 3);
   });
 
   it("PublishedSchemaJsonFileLocater - check schema order without specifying path arg", () => {
     // Empty list with just default released schemas
     const locater = new PublishedSchemaJsonFileLocater();
+    const defaultSchemaSearchPathLength = locater.searchPaths.length;
 
     // Default search order
-    assert.equal(locater.searchPaths.length, PublishedSchemaJsonFileLocater.defaultSchemaSearchPaths.size);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength);
 
     // Add 2 new search paths
     locater.addSchemaSearchPaths([jsonFilePath, xmlFilePath]);
-    assert.equal(locater.searchPaths.length, PublishedSchemaJsonFileLocater.defaultSchemaSearchPaths.size + 2);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength + 2);
 
     // Add a duplicate search path : should get ignored
     locater.addSchemaSearchPaths([xmlFilePath, jsonFilePath]);
-    assert.equal(locater.searchPaths.length, PublishedSchemaJsonFileLocater.defaultSchemaSearchPaths.size + 2);
+    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength + 2);
   });
 });

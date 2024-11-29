@@ -13,6 +13,7 @@ import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaInfo, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@itwin/ecschema-metadata";
 import { SchemaStringLocater, StringSchemaKey } from "./SchemaStringLocater";
+import { globSync } from "glob";
 
 /**
  * A SchemaLocator implementation for locating and deserializing EC Schemas from XML strings
@@ -132,7 +133,7 @@ export class SchemaXmlStringLocater extends SchemaStringLocater implements ISche
  * @beta This is a workaround the current lack of a full xml parser.
  */
 export class PublishedSchemaXmlStringLocater extends SchemaXmlStringLocater implements ISchemaLocater {
-  private _standardSchemaSearchPaths: Set<string>;
+  private _standardSchemaSearchPaths = new Set<string>();
   private _schemasToIgnore: Set<string>;
   public static defaultSchemaSearchPaths = new Set([
     // Dgn schemas
@@ -175,7 +176,7 @@ export class PublishedSchemaXmlStringLocater extends SchemaXmlStringLocater impl
     this._schemasToIgnore = new Set<string>();
 
     if (!knownBackendAssetsDir) {
-      this._standardSchemaSearchPaths = PublishedSchemaXmlStringLocater.defaultSchemaSearchPaths
+      globSync(path.join(__dirname, "..", "..", "node_modules", "@bentley", "*-schema"), { windowsPathsNoEscape: true }).forEach(match => this._standardSchemaSearchPaths.add(match));
     } else {
       this._standardSchemaSearchPaths = new Set<string>([
         path.join(knownBackendAssetsDir, "ECSchemas", "Dgn"),
