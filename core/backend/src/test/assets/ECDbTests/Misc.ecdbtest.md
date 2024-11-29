@@ -215,3 +215,20 @@ WHERE
 | 0x19         |
 | 0x1b         |
 | 0x1d         |
+
+# Simple LIMIT and OFFSET test
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT  ECInstanceId FROM  aps.TestElement e LIMIT 5 OFFSET 8
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+
+| ECInstanceId |
+| ------------ |
+| 0x1c         |
+| 0x1d         |
