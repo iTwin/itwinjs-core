@@ -44,10 +44,10 @@ jobs:
       - checkout: self
         clean: true
 
-      - task: NodeTool@0
+      - task: UseNode@1
         displayName: "Use Node 20"
         inputs:
-          versionSpec: 20.x
+          version: 20.x
           checkLatest: true
 
       - script: |
