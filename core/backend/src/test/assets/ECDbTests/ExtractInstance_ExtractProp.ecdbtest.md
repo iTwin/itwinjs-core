@@ -368,6 +368,35 @@ SELECT $ -> bin binary_Prop from aps.TestElement limit 2
 | BIN(1, 2, 3)                                |
 | BIN(11, 21, 31, 34, 53, 21, 14, 14, 55, 22) |
 
+# Testing point2d_X prop
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT $ -> p2d.X p2dX_prop from aps.TestElement limit 2
+```
+
+```json
+{
+  "columns": [
+    {
+      "className": "",
+      "accessString": "p2dX_prop",
+      "generated": true,
+      "index": 0,
+      "jsonName": "p2dX_prop",
+      "name": "p2dX_prop",
+      "extendedType": "json",
+      "typeName": "string"
+    }
+  ]
+}
+```
+
+```json
+[]
+```
+
 # Testing ExtractInstance in where clause
 
 - dataset: AllProperties.bim
