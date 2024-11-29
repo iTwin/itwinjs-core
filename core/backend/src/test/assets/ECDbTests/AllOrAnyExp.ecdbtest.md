@@ -988,3 +988,96 @@ WHERE
 | Total_Count |
 | ----------- |
 | 2           |
+
+
+# AllOrAnyExp with ALL in select
+
+- dataset: AllProperties.bim
+
+```sql
+select ALL(ECClassId) from aps.TestElement
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ---- | ------------------ |
+|           | ECClassId    | false     | 0     | className | ECClassId | ClassId      | long     | Id   | ECClassId          |
+
+| ECClassId |
+| --------- |
+| 0x152     |
+| 0x152     |
+| 0x152     |
+| 0x152     |
+| 0x152     |
+| 0x152     |
+| 0x152     |
+| 0x152     |
+| 0x152     |
+| 0x152     |
+
+
+# AllOrAnyExp with ANY in select
+
+- dataset: AllProperties.bim
+
+```sql
+select ANY(ECClassId) as Test_Val from aps.TestElement
+```
+
+| className | accessString | generated | index | jsonName | name     | extendedType | typeName | type    |
+| --------- | ------------ | --------- | ----- | -------- | -------- | ------------ | -------- | ------- |
+|           | Test_Val     | true      | 0     | test_Val | Test_Val | undefined    | boolean  | Boolean |
+
+| Test_Val |
+| -------- |
+| true     |
+
+
+# AllOrAnyExp with SOME in select
+
+- dataset: AllProperties.bim
+
+```sql
+select SOME(ECClassId) as Test_Val from aps.TestElement
+```
+
+| className | accessString | generated | index | jsonName | name     | extendedType | typeName | type    |
+| --------- | ------------ | --------- | ----- | -------- | -------- | ------------ | -------- | ------- |
+|           | Test_Val     | true      | 0     | test_Val | Test_Val | undefined    | boolean  | Boolean |
+
+| Test_Val |
+| ----------------- |
+| true              |
+
+
+# AllOrAnyExp with conditional ALL
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  ECInstanceId,
+  Name
+FROM
+  meta.ECClassDef
+WHERE
+  ECInstanceId > ANY(
+    SELECT
+      ECClassId
+    FROM
+      aps.TestElement
+    WHERE
+      DirectLong > 1007
+  )
+```
+
+| className           | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                     | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+| ECDbMeta:ECClassDef | Name         | false     | 1     | name     | Name         | undefined    | string   | String | Name               |
+
+| ECInstanceId | Name                        |
+| ------------ | --------------------------- |
+| 0x153        | TestElementAspect           |
+| 0x154        | TestElementRefersToElements |
+
