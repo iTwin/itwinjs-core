@@ -521,7 +521,6 @@ SELECT te.i [id], row_number() OVER (PARTITION BY $) AS [partition] FROM aps.Tes
 # Partition by ExtractPropertyExp
 
 - dataset: AllProperties.bim
-- only: true
 
 ```sql
 SELECT te.i [id], row_number() OVER (PARTITION BY $->b) AS [partition] FROM aps.TestElement te LIMIT 4
