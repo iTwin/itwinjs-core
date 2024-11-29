@@ -52,7 +52,7 @@ SELECT * FROM meta.ECSchemaDef WHERE ECInstanceId NOT BETWEEN 1 and 9
 | ------------ | --------- | ------------- | ----- | ------------ | ------------ | ------------ | ------------------------- | ------------------------- |
 | 0xa          | 0x27      | AllProperties | aps   | 1            | 0            | 0            | 3                         | 2                         |
 
-# ECSQL supports implicit conversion from string to number for ECInstanceId
+# Select all properties from TestElement which is Not between 2 String value expression - implicit conversion from string to number for ECInstanceId
 
 - dataset: AllProperties.bim
 
@@ -80,7 +80,7 @@ SELECT * FROM meta.ECSchemaDef WHERE ECInstanceId BETWEEN '1' and '3'
 | 0x2          | 0x27      | ECDbMap              | ECDb DB Mapping        | Custom attributes that customize ECDb's ECSchema to database mapping.                                                  | ecdbmap | 2            | 0            | 4            | 3                         | 2                         |
 | 0x3          | 0x27      | ECDbFileInfo         | ECDb FileInfo          | ECDb FileInfo                                                                                                          | ecdbf   | 2            | 0            | 1            | 3                         | 2                         |
 
-# ECSQL supports implicit conversion from string to number for ECInstanceId
+# Select all properties from TestElement which is between 2 String value expression - implicit conversion from string to number for ECInstanceId
 
 - dataset: AllProperties.bim
 
@@ -166,7 +166,7 @@ SELECT * FROM meta.ECSchemaDef WHERE Alias NOT BETWEEN 'bis' and 'CoreCA'
 | 0x9          | 0x27      | Generic            | undefined            | This schema contains classes that are completely generic. These classes should only be used when there is not enough context to pick something more specific. | generic | 1            | 0            | 5            | 3                         | 2                         |
 | 0xa          | 0x27      | AllProperties      | undefined            | undefined                                                                                                                                                     | aps     | 1            | 0            | 0            | 3                         | 2                         |
 
-# Select all properties from TestElement which is between 2 Datetime value expression
+# Select all properties from TestElement which is between 2 DATE value expression
 
 - dataset: AllProperties.bim
 
@@ -206,7 +206,7 @@ LIMIT
 | 100 | 1000 | 0.1 | true | 2017-01-01T00:00:00.000 | str0 | BIN(1,2,3) | {"X": 1.034,"Y": 2.034} | {"X": -1,"Y": 2.3,"Z": 3.0001} |
 | 102 | 1002 | 2.1 | true | 2017-01-01T00:00:00.000 | str2 | BIN(1,2,3) | {"X": 1.034,"Y": 2.034} | {"X": -1,"Y": 2.3,"Z": 3.0001} |
 
-# Select all properties from TestElement which is Not between 2 Datetime value expression
+# Select all properties from TestElement which is Not between 2 DATE value expression
 
 - dataset: AllProperties.bim
 
@@ -246,7 +246,7 @@ LIMIT
 | 101 | 1001 | 1.1 | true | 2010-01-01T11:11:11.000 | str1 | BIN(11,21,31,34,53,21,14,14,55,22) | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
 | 103 | 1003 | 3.1 | true | 2010-01-01T11:11:11.000 | str3 | BIN(11,21,31,34,53,21,14,14,55,22) | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
 
-# Select all properties from TestElement which is between 2 Datetime value expression
+# Select all properties from TestElement which is between 2 TIMESTAMP value expression
 
 - dataset: AllProperties.bim
 
@@ -286,7 +286,7 @@ LIMIT
 | 100 | 1000 | 0.1 | true | 2017-01-01T00:00:00.000 | str0 | BIN(1,2,3) | {"X": 1.034,"Y": 2.034} | {"X": -1,"Y": 2.3,"Z": 3.0001} |
 | 102 | 1002 | 2.1 | true | 2017-01-01T00:00:00.000 | str2 | BIN(1,2,3) | {"X": 1.034,"Y": 2.034} | {"X": -1,"Y": 2.3,"Z": 3.0001} |
 
-# Select all properties from TestElement which is Not between 2 Datetime value expression
+# Select all properties from TestElement which is Not between 2 TIMESTAMP value expression
 
 - dataset: AllProperties.bim
 
