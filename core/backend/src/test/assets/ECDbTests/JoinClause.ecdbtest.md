@@ -266,3 +266,15 @@ SELECT te.ECInstanceId, d.Alias FROM aps.TestElement te CROSS JOIN meta.ECSchema
 | 0x14         | aps   |
 | 0x14         | bis   |
 | 0x14         | bisCA |
+
+
+# NATURAL JOIN
+
+- dataset: AllProperties.bim
+- skip: NATURAL JOIN is not yet supported
+
+```sql
+SELECT *
+FROM (SELECT ECInstanceId AS CommonId, FederationGuid FROM bis.Element) AS ElementAlias
+NATURAL JOIN (SELECT ECInstanceId AS CommonId, IsPrivate FROM bis.Model) AS ModelAlias;
+```
