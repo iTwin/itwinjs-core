@@ -8,7 +8,7 @@ Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md
 SELECT
   ECInstanceId,
   Model,
-  LastMod,
+  dt,
   b,
   bin,
   DirectStr,
@@ -26,37 +26,37 @@ LIMIT
 | ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | ---------- | ---------- | ------------------ |
 |                           | ECInstanceId | false     | 0     | id           | ECInstanceId | Id           | long       | Id         | ECInstanceId       |
 | BisCore:Element           | Model        | false     | 1     | model        | Model        | undefined    | navigation | Navigation | Model              |
-| BisCore:Element           | LastMod      | false     | 2     | lastMod      | LastMod      | undefined    | dateTime   | DateTime   | LastMod            |
+| AllProperties:IPrimitive  | dt           | false     | 2     | dt           | dt           | undefined    | dateTime   | DateTime   | dt                 |
 | AllProperties:IPrimitive  | b            | false     | 3     | b            | b            | undefined    | boolean    | Boolean    | b                  |
-| AllProperties:IPrimitive  | bin          | false     | 4     | bin          | bin          | Json         | string     | Blob       | bin                |
-| AllProperties:TestElement | DirectStr    | false     | 5     | directStr    | DirectStr    | undefined    | string     | String     | DirectStr          |
-| AllProperties:TestElement | DirectLong   | false     | 6     | directLong   | DirectLong   | undefined    | long       | Int64      | DirectLong         |
-| AllProperties:TestElement | DirectDouble | false     | 7     | directDouble | DirectDouble | undefined    | double     | Double     | DirectDouble       |
-| AllProperties:IPrimitive  | p2d          | false     | 8     | p2d          | p2d          | undefined    | point2d    | Point2d    | p2d                |
-| AllProperties:IPrimitive  | p3d          | false     | 9     | p3d          | p3d          | undefined    | point3d    | Point3d    | p3d                |
+| AllProperties:IPrimitive  | bin          | false     | 3     | bin          | bin          | Json         | string     | Blob       | bin                |
+| AllProperties:TestElement | DirectStr    | false     | 4     | directStr    | DirectStr    | undefined    | string     | String     | DirectStr          |
+| AllProperties:TestElement | DirectLong   | false     | 5     | directLong   | DirectLong   | undefined    | long       | Int64      | DirectLong         |
+| AllProperties:TestElement | DirectDouble | false     | 6     | directDouble | DirectDouble | undefined    | double     | Double     | DirectDouble       |
+| AllProperties:IPrimitive  | p2d          | false     | 7     | p2d          | p2d          | undefined    | point2d    | Point2d    | p2d                |
+| AllProperties:IPrimitive  | p3d          | false     | 8     | p3d          | p3d          | undefined    | point3d    | Point3d    | p3d                |
 
-| ECInstanceId | Model                              | LastMod                  | b    | bin                           | DirectStr | DirectLong | DirectDouble | p2d                         | p3d                                      |
-| ------------ | ---------------------------------- | ------------------------ | ---- | ----------------------------- | --------- | ---------- | ------------ | --------------------------- | ---------------------------------------- |
-| 0x14         | {"Id": 0x11, "RelECClassId": 0x61} | 2024-11-28T06:27:52.276Z | true | 1,2,3                         | str0      | 1000       | 0.1          | {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
-| 0x15         | {"Id": 0x11, "RelECClassId": 0x61} | 2024-11-28T06:27:52.279Z | true | 11,21,31,34,53,21,14,14,55,22 | str1      | 1001       | 1.1          | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
-| 0x16         | {"Id": 0x11, "RelECClassId": 0x61} | 2024-11-28T06:27:52.280Z | true | 1,2,3                         | str2      | 1002       | 2.1          | {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
-| 0x17         | {"Id": 0x11, "RelECClassId": 0x61} | 2024-11-28T06:27:52.281Z | true | 11,21,31,34,53,21,14,14,55,22 | str3      | 1003       | 3.1          | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
-| 0x18         | {"Id": 0x11, "RelECClassId": 0x61} | 2024-11-28T06:27:52.282Z | true | 1,2,3                         | str4      | 1004       | 4.1          | {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
+| ECInstanceId | Model                                  | dt                      | b    | bin                                | DirectStr | DirectLong | DirectDouble | p2d                         | p3d                                      |
+| ------------ | -------------------------------------- | ----------------------- | ---- | ---------------------------------- | --------- | ---------- | ------------ | --------------------------- | ---------------------------------------- |
+| 0x14         | {"Id": "0x11", "RelECClassId": "0x61"} | 2017-01-01T00:00:00.000 | true | BIN(1,2,3)                         | str0      | 1000       | 0.1          | {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
+| 0x15         | {"Id": "0x11", "RelECClassId": "0x61"} | 2010-01-01T11:11:11.000 | true | BIN(11,21,31,34,53,21,14,14,55,22) | str1      | 1001       | 1.1          | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
+| 0x16         | {"Id": "0x11", "RelECClassId": "0x61"} | 2017-01-01T00:00:00.000 | true | BIN(1,2,3)                         | str2      | 1002       | 2.1          | {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
+| 0x17         | {"Id": "0x11", "RelECClassId": "0x61"} | 2010-01-01T11:11:11.000 | true | BIN(11,21,31,34,53,21,14,14,55,22) | str3      | 1003       | 3.1          | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
+| 0x18         | {"Id": "0x11", "RelECClassId": "0x61"} | 2017-01-01T00:00:00.000 | true | BIN(1,2,3)                         | str4      | 1004       | 4.1          | {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
 
 # DerivedPropertyExp using a computation of two columns
 
 - dataset: AllProperties.bim
 
 ```sql
-SELECT ECInstanceId, DirectLong + DirectDouble from aps.TestElement
+SELECT ECInstanceId, DirectLong + DirectDouble as Computed_Value from aps.TestElement
 ```
 
 | className | accessString                  | generated | index | jsonName                      | name                          | extendedType | typeName | type   | originPropertyName |
 | --------- | ----------------------------- | --------- | ----- | ----------------------------- | ----------------------------- | ------------ | -------- | ------ | ------------------ |
 |           | ECInstanceId                  | false     | 0     | id                            | ECInstanceId                  | Id           | long     | Id     | ECInstanceId       |
-|           | [DirectLong] + [DirectDouble] | true      | 1     | [DirectLong] + [DirectDouble] | [DirectLong] + [DirectDouble] | undefined    | double   | Double | undefined          |
+|           | Computed_Value                | true      | 1     | computed_Value                | Computed_Value                | undefined    | double   | Double | undefined          |
 
-| ECInstanceId | [DirectLong] + [DirectDouble] |
+| ECInstanceId | Computed_Value |
 | ------------ | ----------------------------- |
 | 0x14         | 1000.1                        |
 | 0x15         | 1002.1                        |
@@ -226,16 +226,16 @@ FROM
 
 | spaced_str | separated_str | left_trimmed |
 | ---------- | ------------- | ------------ |
-| str0 str0  | str0,str0     | 0            |
-| str1 str1  | str1,str1     | 1            |
-| str2 str2  | str2,str2     | 2            |
-| str3 str3  | str3,str3     | 3            |
-| str4 str4  | str4,str4     | 4            |
-| str5 str5  | str5,str5     | 5            |
-| str6 str6  | str6,str6     | 6            |
-| str7 str7  | str7,str7     | 7            |
-| str8 str8  | str8,str8     | 8            |
-| str9 str9  | str9,str9     | 9            |
+| str0 str0  | str0,str0     | "0"          |
+| str1 str1  | str1,str1     | "1"          |
+| str2 str2  | str2,str2     | "2"          |
+| str3 str3  | str3,str3     | "3"          |
+| str4 str4  | str4,str4     | "4"          |
+| str5 str5  | str5,str5     | "5"          |
+| str6 str6  | str6,str6     | "6"          |
+| str7 str7  | str7,str7     | "7"          |
+| str8 str8  | str8,str8     | "8"          |
+| str9 str9  | str9,str9     | "9"          |
 
 
 # DerivedPropertyExp with Window function
