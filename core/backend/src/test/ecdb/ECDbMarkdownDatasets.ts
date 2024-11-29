@@ -66,6 +66,8 @@ interface TestElementProps extends PhysicalElementProps, IPrimitive, IPrimitiveA
   directLong?: number;
   directDouble?: number;
   nullProp?: string;
+  enumProp?: number;
+  noCaseString?: string;
 }
 
 function createElemProps(className: string, _iModelName: IModelDb, modId: Id64String, catId: Id64String, index: number): TestElementProps {
@@ -114,13 +116,14 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
     // eslint-disable-next-line @typescript-eslint/naming-convention
     array_p3d: [new Point3d(-1.0, 2.3, 3.0001) , new Point3d(-111.11, -222.22, -333.33)],
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    array_bin: [new Uint8Array([1, 2, 3]) , new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22])]
+    array_bin: [new Uint8Array([1, 2, 3]) , new Uint8Array([11, 21, 31, 34, 53, 21, 14, 14, 55, 22])],
+    directStr: `str${index}`,
+    directLong: 1000 + index,
+    directDouble: 0.1 + index,
+    nullProp: (index % 2 === 0) ? undefined : "NotNull",
+    noCaseString: (index % 2 === 0) ? "abc" : "ABC",
+    enumProp: index % 2 === 0 ? 1 : 2,
   };
-
-  elementProps.directStr = `str${index}`;
-  elementProps.directLong = 1000 + index;
-  elementProps.directDouble = 0.1 + index;
-  elementProps.nullProp = (index % 2 === 0) ? undefined : "NotNull";
   return elementProps;
 }
 

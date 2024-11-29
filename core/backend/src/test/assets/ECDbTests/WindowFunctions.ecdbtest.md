@@ -401,3 +401,140 @@ WINDOW
 | 104 | 100,102,104         |
 | 106 | 100,102,104,106     |
 | 108 | 100,102,104,106,108 |
+
+# Window partition collate nocase
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i [id],
+  te.noCaseString,
+  row_number() OVER (PARTITION BY te.noCaseString COLLATE NOCASE) AS [partition]
+FROM
+  aps.TestElement te
+```
+
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | id           | true      | 0     | id           | id           | undefined    | int      | Int    | i                  |
+| AllProperties:TestElement | NoCaseString | false     | 1     | noCaseString | NoCaseString | undefined    | string   | String | NoCaseString       |
+|                           | partition    | true      | 2     | partition    | partition    | undefined    | long     | Int64  | undefined          |
+
+| id  | NoCaseString | partition |
+| --- | ------------ | --------- |
+| 100 | abc          | 1         |
+| 101 | ABC          | 2         |
+| 102 | abc          | 3         |
+| 103 | ABC          | 4         |
+| 104 | abc          | 5         |
+| 105 | ABC          | 6         |
+| 106 | abc          | 7         |
+| 107 | ABC          | 8         |
+| 108 | abc          | 9         |
+| 109 | ABC          | 10        |
+
+# Window partition collate rtrim
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i [id],
+  te.noCaseString,
+  row_number() OVER (PARTITION BY te.noCaseString COLLATE RTRIM) AS [partition]
+FROM
+  aps.TestElement te
+```
+
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | id           | true      | 0     | id           | id           | undefined    | int      | Int    | i                  |
+| AllProperties:TestElement | NoCaseString | false     | 1     | noCaseString | NoCaseString | undefined    | string   | String | NoCaseString       |
+|                           | partition    | true      | 2     | partition    | partition    | undefined    | long     | Int64  | undefined          |
+
+| id  | NoCaseString | partition |
+| --- | ------------ | --------- |
+| 101 | ABC          | 1         |
+| 103 | ABC          | 2         |
+| 105 | ABC          | 3         |
+| 107 | ABC          | 4         |
+| 109 | ABC          | 5         |
+| 100 | abc          | 1         |
+| 102 | abc          | 2         |
+| 104 | abc          | 3         |
+| 106 | abc          | 4         |
+| 108 | abc          | 5         |
+
+# Window partition collate binary
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i [id],
+  te.noCaseString,
+  row_number() OVER (PARTITION BY te.noCaseString COLLATE BINARY) AS [partition]
+FROM
+  aps.TestElement te
+```
+
+| className                 | accessString | generated | index | jsonName     | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | id           | true      | 0     | id           | id           | undefined    | int      | Int    | i                  |
+| AllProperties:TestElement | NoCaseString | false     | 1     | noCaseString | NoCaseString | undefined    | string   | String | NoCaseString       |
+|                           | partition    | true      | 2     | partition    | partition    | undefined    | long     | Int64  | undefined          |
+
+| id  | NoCaseString | partition |
+| --- | ------------ | --------- |
+| 101 | ABC          | 1         |
+| 103 | ABC          | 2         |
+| 105 | ABC          | 3         |
+| 107 | ABC          | 4         |
+| 109 | ABC          | 5         |s
+| 100 | abc          | 1         |
+| 102 | abc          | 2         |
+| 104 | abc          | 3         |
+| 106 | abc          | 4         |
+| 108 | abc          | 5         |
+
+# Partition by ExtractInstanceExp
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT te.i [id], row_number() OVER (PARTITION BY $) AS [partition] FROM aps.TestElement te LIMIT 4
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type  | originPropertyName |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ----- | ------------------ |
+|           | id           | true      | 0     | id        | id        | undefined    | int      | Int   | i                  |
+|           | partition    | true      | 1     | partition | partition | undefined    | long     | Int64 | undefined          |
+
+| id  | partition |
+| --- | --------- |
+| 100 | 1         |
+| 101 | 1         |
+| 102 | 1         |
+| 103 | 1         |
+
+# Partition by ExtractPropertyExp
+
+- dataset: AllProperties.bim
+- only: true
+
+```sql
+SELECT te.i [id], row_number() OVER (PARTITION BY $->b) AS [partition] FROM aps.TestElement te LIMIT 4
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type  | originPropertyName |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ----- | ------------------ |
+|           | id           | true      | 0     | id        | id        | undefined    | int      | Int   | i                  |
+|           | partition    | true      | 1     | partition | partition | undefined    | long     | Int64 | undefined          |
+
+| id  | partition |
+| --- | --------- |
+| 100 | 1         |
+| 101 | 2         |
+| 102 | 3         |
+| 103 | 4         |
