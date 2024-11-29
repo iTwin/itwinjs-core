@@ -331,3 +331,156 @@ SELECT $ -> dt dateTime_prop from aps.TestElement limit 2
 | ----------------------- |
 | 2017-01-01T00:00:00.000 |
 | 2010-01-01T11:11:11.000 |
+
+# Testing binary prop using alias for ConcurrentQuery
+
+- dataset: AllProperties.bim
+- mode: ConcurrentQuery
+
+```sql
+SELECT $ -> bin binary_Prop from aps.TestElement limit 2
+```
+
+| className | accessString | generated | index | jsonName    | name        | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | ----------- | ----------- | ------------ | -------- | ---- | ------------------ |
+|           | binary_Prop  | true      | 0     | binary_Prop | binary_Prop | json         | string   | Blob | bin                |
+
+| binary_Prop                                 |
+| ------------------------------------------- |
+| BIN(1, 2, 3)                                |
+| BIN(11, 21, 31, 34, 53, 21, 14, 14, 55, 22) |
+
+# Testing binary prop using alias for ECsqlStatement
+
+- dataset: AllProperties.bim
+- mode: Statement
+
+```sql
+SELECT $ -> bin binary_Prop from aps.TestElement limit 2
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- | ------------------ |
+|           | bin          | false     | 0     | bin      | bin  | json         | string   | Blob | bin                |
+
+| bin                                         |
+| ------------------------------------------- |
+| BIN(1, 2, 3)                                |
+| BIN(11, 21, 31, 34, 53, 21, 14, 14, 55, 22) |
+
+# Testing point2d_X prop
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT $ -> p2d.X p2dX_prop from aps.TestElement limit 2
+```
+
+```json
+{
+  "columns": [
+    {
+      "className": "",
+      "accessString": "p2dX_prop",
+      "generated": true,
+      "index": 0,
+      "jsonName": "p2dX_prop",
+      "name": "p2dX_prop",
+      "extendedType": "json",
+      "typeName": "string"
+    }
+  ]
+}
+```
+
+```json
+[]
+```
+
+# Testing ExtractInstance in where clause
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ECInstanceId from aps.TestElement where FLOOR($->d) = 1
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+
+| ECInstanceId |
+| ------------ |
+| 0x15         |
+
+# Testing integer array prop using alias
+
+- dataset: AllProperties.bim
+- skip: The query in the test causes a crash on the backend
+
+```sql
+SELECT $ -> array_i intArray_Prop from aps.TestElement limit 1
+```
+
+# Testing long array prop using alias
+
+- dataset: AllProperties.bim
+- skip: The query in the test causes a crash on the backend
+
+```sql
+SELECT $ -> array_l longArray_Prop from aps.TestElement limit 1
+```
+
+# Testing double array prop using alias
+
+- dataset: AllProperties.bim
+- skip: The query in the test causes a crash on the backend
+
+```sql
+SELECT $ -> array_d doubleArray_Prop from aps.TestElement limit 1
+```
+
+# Testing string array prop using alias
+
+- dataset: AllProperties.bim
+- skip: The query in the test causes a crash on the backend
+
+```sql
+SELECT $ -> array_s StringArray_Prop from aps.TestElement limit 1
+```
+
+# Testing date time array prop using alias
+
+- dataset: AllProperties.bim
+- skip: The query in the test causes a crash on the backend
+
+```sql
+SELECT $ -> array_dt dateTimeArray_Prop from aps.TestElement limit 1
+```
+
+# Testing point 2d array prop using alias
+
+- dataset: AllProperties.bim
+- skip: The query in the test causes a crash on the backend
+
+```sql
+SELECT $ -> array_p2d Point2DArray_Prop from aps.TestElement limit 1
+```
+
+# Testing point 3d array prop using alias
+
+- dataset: AllProperties.bim
+- skip: The query in the test causes a crash on the backend
+
+```sql
+SELECT $ -> array_p3d Point3DArray_Prop from aps.TestElement limit 1
+```
+
+# Testing binary array prop using alias
+
+- dataset: AllProperties.bim
+- skip: The query in the test causes a crash on the backend
+
+```sql
+SELECT $ -> array_bin BinaryArray_Prop from aps.TestElement limit 1
+```
