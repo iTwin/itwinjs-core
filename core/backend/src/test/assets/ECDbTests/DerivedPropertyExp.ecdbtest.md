@@ -35,13 +35,13 @@ LIMIT
 | AllProperties:IPrimitive  | p2d          | false     | 8     | p2d          | p2d          | undefined    | point2d    | Point2d    | p2d                |
 | AllProperties:IPrimitive  | p3d          | false     | 9     | p3d          | p3d          | undefined    | point3d    | Point3d    | p3d                |
 
-| ECInstanceId | Model           | LastMod                  | b    | bin                           | DirectStr | DirectLong | DirectDouble | p2d             | p3d             |
-| ------------ | --------------- | ------------------------ | ---- | ----------------------------- | --------- | ---------- | ------------ | --------------- | --------------- |
-| 0x14         | [object Object] | 2024-11-28T06:27:52.276Z | true | 1,2,3                         | str0      | 1000       | 0.1          | [object Object] | [object Object] |
-| 0x15         | [object Object] | 2024-11-28T06:27:52.279Z | true | 11,21,31,34,53,21,14,14,55,22 | str1      | 1001       | 1.1          | [object Object] | [object Object] |
-| 0x16         | [object Object] | 2024-11-28T06:27:52.280Z | true | 1,2,3                         | str2      | 1002       | 2.1          | [object Object] | [object Object] |
-| 0x17         | [object Object] | 2024-11-28T06:27:52.281Z | true | 11,21,31,34,53,21,14,14,55,22 | str3      | 1003       | 3.1          | [object Object] | [object Object] |
-| 0x18         | [object Object] | 2024-11-28T06:27:52.282Z | true | 1,2,3                         | str4      | 1004       | 4.1          | [object Object] | [object Object] |
+| ECInstanceId | Model                              | LastMod                  | b    | bin                           | DirectStr | DirectLong | DirectDouble | p2d                         | p3d                                      |
+| ------------ | ---------------------------------- | ------------------------ | ---- | ----------------------------- | --------- | ---------- | ------------ | --------------------------- | ---------------------------------------- |
+| 0x14         | {"Id": 0x11, "RelECClassId": 0x61} | 2024-11-28T06:27:52.276Z | true | 1,2,3                         | str0      | 1000       | 0.1          | {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
+| 0x15         | {"Id": 0x11, "RelECClassId": 0x61} | 2024-11-28T06:27:52.279Z | true | 11,21,31,34,53,21,14,14,55,22 | str1      | 1001       | 1.1          | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
+| 0x16         | {"Id": 0x11, "RelECClassId": 0x61} | 2024-11-28T06:27:52.280Z | true | 1,2,3                         | str2      | 1002       | 2.1          | {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
+| 0x17         | {"Id": 0x11, "RelECClassId": 0x61} | 2024-11-28T06:27:52.281Z | true | 11,21,31,34,53,21,14,14,55,22 | str3      | 1003       | 3.1          | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
+| 0x18         | {"Id": 0x11, "RelECClassId": 0x61} | 2024-11-28T06:27:52.282Z | true | 1,2,3                         | str4      | 1004       | 4.1          | {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
 
 # DerivedPropertyExp using a computation of two columns
 
