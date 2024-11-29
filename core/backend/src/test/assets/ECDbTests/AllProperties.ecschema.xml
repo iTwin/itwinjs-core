@@ -11,7 +11,13 @@
     <ECProperty propertyName="DirectLong" typeName="long"/>
     <ECProperty propertyName="DirectDouble" typeName="double"/>
     <ECProperty propertyName="NullProp" typeName="string"/>
+    <ECProperty propertyName="EnumProp" typeName="string"/>
+    <ECProperty propertyName="NoCaseString" typeName="string"/>
   </ECEntityClass>
+  <ECEnumeration typeName="TestEnum" backingTypeName="int" isStrict="true">
+    <ECEnumerator value="1" name="First" />
+    <ECEnumerator value="2" name="Second" />
+  </ECEnumeration>
   <ECEntityClass typeName="TestElementAspect" modifier="None">
     <BaseClass>bis:ElementUniqueAspect</BaseClass>
     <BaseClass>IPrimitiveAspect</BaseClass>

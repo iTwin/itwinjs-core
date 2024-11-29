@@ -367,8 +367,36 @@ FROM
 | AllProperties:TestElementAspect |
 | AllProperties:TestElementAspect |
 | AllProperties:TestElementAspect |
-| AllProperties:TestElementAspect |
-| AllProperties:TestElementAspect |
-| AllProperties:TestElementAspect |
-| AllProperties:TestElementAspect |
-| AllProperties:TestElementAspect |
+
+
+# FromExp with multiple tables
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  e.ECInstanceId AS ElementId,
+  e.ECClassId AS ElementClass,
+  a.ECInstanceID AS AspectId,
+  a.ECClassId AS AspectClass
+FROM
+  aps.TestElement e,
+  aps.TestElementAspect a
+LIMIT
+  5
+```
+
+| className | accessString | generated | index | jsonName     | name         | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | ------------ | ------------ | ------------ | -------- | ---- | ------------------ |
+|           | ElementId    | true      | 0     | elementId    | ElementId    | Id           | long     | Id   | ECInstanceId       |
+|           | ElementClass | true      | 1     | elementClass | ElementClass | ClassId      | long     | Id   | ECClassId          |
+|           | AspectId     | true      | 2     | aspectId     | AspectId     | Id           | long     | Id   | ECInstanceId       |
+|           | AspectClass  | true      | 3     | aspectClass  | AspectClass  | ClassId      | long     | Id   | ECClassId          |
+
+| ElementId | ElementClass | AspectId | AspectClass |
+| --------- | ------------ | -------- | ----------- |
+| 0x14      | 0x152        | 0x21     | 0x153       |
+| 0x14      | 0x152        | 0x22     | 0x153       |
+| 0x14      | 0x152        | 0x23     | 0x153       |
+| 0x14      | 0x152        | 0x24     | 0x153       |
+| 0x14      | 0x152        | 0x25     | 0x153       |
