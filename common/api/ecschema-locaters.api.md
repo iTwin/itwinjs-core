@@ -25,8 +25,6 @@ export class PublishedSchemaJsonFileLocater extends SchemaJsonFileLocater implem
     constructor();
     addSchemaSearchPath(schemaPath: string): void;
     addSchemaSearchPaths(schemaPaths: string[]): void;
-    // (undocumented)
-    static defaultSchemaSearchPaths: Set<string>;
 }
 
 // @beta
@@ -34,8 +32,6 @@ export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implemen
     constructor(knownBackendAssetsDir?: string);
     addSchemaSearchPath(schemaPath: string): void;
     addSchemaSearchPaths(schemaPaths: string[]): void;
-    // (undocumented)
-    static defaultSchemaSearchPaths: Set<string>;
 }
 
 // @beta
