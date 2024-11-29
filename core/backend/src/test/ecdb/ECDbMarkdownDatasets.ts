@@ -142,33 +142,19 @@ function createElemAspect(className: string, _iModelName: IModelDb, elementId: I
   return elementProps;
 }
 
-export interface AllPropertiesProps {
-  physicalModelId: string,
-  mySpatialCategoryId: string,
-  testElementClassId: string,
-}
-
-
 export class ECDbMarkdownDatasets {
   public static async generateFiles(): Promise<void> {
     const fileName = "AllProperties.bim";
 
     await IModelHost.startup();
-    const props: Partial<AllPropertiesProps> = {};
     const filePath = IModelTestUtils.prepareOutputFile("ECDbTests", fileName);
     const iModel = SnapshotDb.createEmpty(filePath, { rootSubject: { name: "AllPropertiesTest" } });
     const testSchemaPath = path.join(KnownTestLocations.assetsDir, "ECDbTests", "AllProperties.ecschema.xml");
     await iModel.importSchemas([testSchemaPath]);
     const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, Code.createEmpty(), true);
-    props.physicalModelId = newModelId;
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(iModel, IModel.dictionaryId, "MySpatialCategory");
     if (undefined === spatialCategoryId)
       spatialCategoryId = SpatialCategory.insert(iModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-
-    props.mySpatialCategoryId = spatialCategoryId;
-    const classId = iModel[_nativeDb].classNameToId("AllProperties.TestElement");
-    if(classId !== undefined)
-      props.testElementClassId = classId;
 
     for (let m = 0; m < 10; ++m) {
       const elementProps = createElemProps("TestElement", iModel, newModelId, spatialCategoryId, m);
@@ -184,8 +170,5 @@ export class ECDbMarkdownDatasets {
 
     iModel.saveChanges();
     iModel.close();
-    //serialize props to a file
-    const propsFilePath = IModelTestUtils.prepareOutputFile("ECDbTests", `${fileName}.props`);
-    fs.writeFileSync(propsFilePath, JSON.stringify(props, null, 2), "utf-8");
   }
 }
