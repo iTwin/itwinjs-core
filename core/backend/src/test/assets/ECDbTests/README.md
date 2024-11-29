@@ -13,8 +13,6 @@ These are the available properties:
 - dataset: AllProperties.bim
 
 Required. The dataset property specifies the bim file to open
-The .bim file can have a .props file alongside holding json, for example here AllProperties.bim.props
-The properties inside that json can be used in binders, statements and code blocks using this syntax: $(propName)
 
 - only: true
 

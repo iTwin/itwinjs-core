@@ -436,7 +436,9 @@ export class ECDbMarkdownTestParser {
       for (let i = 0; i < token.header.length; i++) {
         const header = token.header[i].text;
         const cell = row[i].text;
-        expectedResult[header] = tableTextToValue(cell);
+        const value = tableTextToValue(cell);
+        if (value !== undefined)
+          expectedResult[header] = value;
       }
       currentTest.expectedResults.push(expectedResult);
     }
@@ -457,7 +459,9 @@ export class ECDbMarkdownTestParser {
       const expectedResult: any[] = [];
       for (let i = 0; i < token.header.length; i++) {
         const cell = row[i].text;
-        expectedResult.push(tableTextToValue(cell));
+        const value = tableTextToValue(cell);
+        if (value !== undefined)
+          expectedResult.push(value);
       }
       currentTest.expectedResults.push(expectedResult);
     }

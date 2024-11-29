@@ -106,7 +106,6 @@ SELECT ECInstanceId, NullProp, bin FROM aps.TestElement ORDER BY NullProp desc, 
 | 0x1a         | undefined | BIN(1,2,3)                         |
 | 0x1c         | undefined | BIN(1,2,3)                         |
 
-
 # OrderByExp with multiple columns with different sorting order combo 2
 
 - dataset: AllProperties.bim
@@ -134,7 +133,6 @@ SELECT ECInstanceId, NullProp, bin FROM aps.TestElement ORDER BY NullProp, bin d
 | 0x1b         | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 | 0x1d         | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 
-
 # OrderByExp with aggreagate functions first
 
 - dataset: AllProperties.bim
@@ -153,7 +151,6 @@ SELECT ECInstanceId, NullProp, bin FROM aps.TestElement GROUP BY NullProp ORDER 
 | ------------ | ---------------------------------- | --------- |
 | 0x1c         | BIN(1,2,3)                         | undefined |
 | 0x1d         | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
-
 
 # OrderByExp with aggreagate functions second
 
@@ -183,7 +180,6 @@ ORDER BY
 | 0x1d         | NotNull   | BIN(11,21,31,34,53,21,14,14,55,22) |
 | 0x1c         | undefined | BIN(1,2,3)                         |
 
-
 # OrderByExp with Length function
 
 - dataset: AllProperties.bim
@@ -210,7 +206,6 @@ SELECT DirectStr, NullProp, bin FROM aps.TestElement ORDER BY LENGTH(bin)
 | str5      | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 | str7      | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 | str9      | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
-
 
 # OrderByExp with Case first
 
@@ -253,7 +248,6 @@ ORDER BY
 | 0x17         | 1003       | 3.1          | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 | 0x19         | 1005       | 5.1          | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 
-
 # OrderByExp with Case second
 
 - dataset: AllProperties.bim
@@ -295,7 +289,6 @@ ORDER BY
 | 0x1b         | 1007       | 7.1          | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 | 0x1d         | 1009       | 9.1          | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 
-
 # OrderByExp with Nulls First
 
 - dataset: AllProperties.bim
@@ -322,7 +315,6 @@ SELECT ECInstanceId, NullProp FROM aps.TestElement ORDER BY NullProp NULLS FIRST
 | 0x1b         | NotNull   |
 | 0x1d         | NotNull   |
 
-
 # OrderByExp with Nulls Last
 
 - dataset: AllProperties.bim
@@ -348,7 +340,6 @@ SELECT ECInstanceId, NullProp FROM aps.TestElement ORDER BY NullProp NULLS LAST
 | 0x18         | undefined |
 | 0x1a         | undefined |
 | 0x1c         | undefined |
-
 
 # OrderByExp with subquery in From Clause
 
@@ -388,7 +379,6 @@ ORDER BY
 | 0x1b | NotNull    |
 | 0x1d | NotNull    |
 
-
 # OrderByExp with Coalesce
 
 - dataset: AllProperties.bim
@@ -422,7 +412,6 @@ ORDER BY
 | str4      | undefined | str4          |
 | str6      | undefined | str6          |
 | str8      | undefined | str8          |
-
 
 # OrderByExp with Join
 
