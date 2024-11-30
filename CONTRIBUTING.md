@@ -40,7 +40,10 @@ Each package has its own **node_modules** directory that contains symbolic links
 The above commands iterate and perform their action against each package in the monorepo.
 
 ## Source Code Edit Workflow
-Once you've set up the repo, you can move on to making changes to the source code by following the steps below:
+
+<details>
+  <summary>Once you've set up the repo, you can move on to making changes to the source code by following the steps within: </summary>
+
 1. Create your own branch by running `git checkout -b "<your-branch-name>"`. See [Branch Naming Policy](#branch-naming-policy)
 2. Make source code changes.
 3. Rebuild the repo by running `rush build`.
@@ -67,6 +70,8 @@ Only use `rushchange.bat` if none of the changes require a changelog entry.
 > The CI build will break if changes are pushed without running `rush change` and `rush extract-api` (if the API was changed). The fix will be to complete steps 6 through 11.
 
 Here is a sample [changelog](https://github.com/microsoft/rushstack/blob/master/apps/rush/CHANGELOG.md) to demonstrate the level of detail expected.
+
+</details>
 
 ### Other NPM Scripts
 
