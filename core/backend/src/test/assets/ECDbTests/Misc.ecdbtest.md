@@ -59,8 +59,8 @@ LIMIT
 
 | ECInstanceId | int | long | char |
 | ------------ | --- | ---- | ---- |
-| 0x14         | 20  | 20   | "20"   |
-| 0x15         | 21  | 21   | "21"   |
+| 0x14         | 20  | 20   | "20" |
+| 0x15         | 21  | 21   | "21" |
 
 # Nested CAST
 
@@ -135,22 +135,21 @@ FROM
 
 | result   |
 | -------- |
-| "1"        |
-| "2"        |
+| "1"      |
+| "2"      |
 | Fizz     |
-| "4"        |
+| "4"      |
 | Buzz     |
 | Fizz     |
-| "7"        |
-| "8"        |
+| "7"      |
+| "8"      |
 | Fizz     |
 | Buzz     |
-| "11"       |
+| "11"     |
 | Fizz     |
-| "13"       |
-| "14"       |
+| "13"     |
+| "14"     |
 | FizzBuzz |
-
 
 # SubqueryTestExp with EXISTS
 
@@ -232,3 +231,71 @@ SELECT  ECInstanceId FROM  aps.TestElement e LIMIT 5 OFFSET 8
 | ------------ |
 | 0x1c         |
 | 0x1d         |
+
+# Testing Type enums in the built-in schemas
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT Type FROM meta.ECClassDef WHERE Name='TestElement'
+```
+
+```json
+{
+  "columns": [
+    {
+      "className": "ECDbMeta:ECClassDef",
+      "accessString": "Type",
+      "generated": false,
+      "index": 0,
+      "jsonName": "type",
+      "name": "Type",
+      "typeName": "ECDbMeta.ECClassType",
+      "type": "Int",
+      "originPropertyName": "Type"
+    }
+  ]
+}
+```
+
+```json
+[
+  {
+    "Type": 0
+  }
+]
+```
+
+# Testing Modifier enums in the built-in schemas
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT Modifier FROM meta.ECClassDef WHERE Name='TestElement'
+```
+
+```json
+{
+  "columns": [
+    {
+      "className": "ECDbMeta:ECClassDef",
+      "accessString": "Modifier",
+      "generated": false,
+      "index": 1,
+      "jsonName": "modifier",
+      "name": "Modifier",
+      "typeName": "ECDbMeta.ECClassModifier",
+      "type": "Int",
+      "originPropertyName": "Modifier"
+    }
+  ]
+}
+```
+
+```json
+[
+  {
+    "Modifier": 0
+  }
+]
+```
