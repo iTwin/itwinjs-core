@@ -299,3 +299,231 @@ SELECT Modifier FROM meta.ECClassDef WHERE Name='TestElement'
   }
 ]
 ```
+
+# Simple select with LIKE operator and wildcard at the end
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ECInstanceId, DirectStr FROM aps.TestElement where DirectStr LIKE 'str%' LIMIT 5
+```
+
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+| AllProperties:TestElement | DirectStr    | false     | 0     | directStr | DirectStr    | undefined    | string   | String | DirectStr          |
+
+| ECInstanceId | DirectStr |
+| ------------ | --------- |
+| 0x14         | str0      |
+| 0x15         | str1      |
+| 0x16         | str2      |
+| 0x17         | str3      |
+| 0x18         | str4      |
+
+# Simple select with LIKE operator and wildcard at the beginning
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ECInstanceId, DirectStr FROM aps.TestElement where DirectStr LIKE '%tr5'
+```
+
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+| AllProperties:TestElement | DirectStr    | false     | 0     | directStr | DirectStr    | undefined    | string   | String | DirectStr          |
+
+| ECInstanceId | DirectStr |
+| ------------ | --------- |
+| 0x19         | str5      |
+
+# Simple select with LIKE operator and wildcard in the middle
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ECInstanceId, DirectStr FROM aps.TestElement where DirectStr LIKE 's%5'
+```
+
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+| AllProperties:TestElement | DirectStr    | false     | 0     | directStr | DirectStr    | undefined    | string   | String | DirectStr          |
+
+| ECInstanceId | DirectStr |
+| ------------ | --------- |
+| 0x19         | str5      |
+
+# Simple select with LIKE operator and multiple wildcard
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ECInstanceId, NullProp FROM aps.TestElement where NullProp LIKE 'N%t%u%'
+```
+
+| className                 | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+| AllProperties:TestElement | NullProp     | false     | 1     | nullProp | NullProp     | undefined    | string   | String | NullProp           |
+
+| ECInstanceId | NullProp |
+| ------------ | -------- |
+| 0x15         | NotNull  |
+| 0x17         | NotNull  |
+| 0x19         | NotNull  |
+| 0x1b         | NotNull  |
+| 0x1d         | NotNull  |
+
+# Simple select with LIKE operator underscore wildcard
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ECInstanceId, DirectStr FROM aps.TestElement where DirectStr LIKE 'str_' LIMIT 10 OFFSET 5
+```
+
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+| AllProperties:TestElement | DirectStr    | false     | 1     | directStr | DirectStr    | undefined    | string   | String | DirectStr          |
+
+| ECInstanceId | DirectStr |
+| ------------ | --------- |
+| 0x19         | str5      |
+| 0x1a         | str6      |
+| 0x1b         | str7      |
+| 0x1c         | str8      |
+| 0x1d         | str9      |
+
+# Simple select with LIKE operator and combination of wildcards
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ECInstanceId, DirectStr FROM aps.TestElement where DirectStr LIKE 's_r%'
+```
+
+| className                 | accessString | generated | index | jsonName  | name         | extendedType | typeName | type   | originPropertyName |
+| ------------------------- | ------------ | --------- | ----- | --------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|                           | ECInstanceId | false     | 0     | id        | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+| AllProperties:TestElement | DirectStr    | false     | 1     | directStr | DirectStr    | undefined    | string   | String | DirectStr          |
+
+| ECInstanceId | DirectStr |
+| ------------ | --------- |
+| 0x14         | str0      |
+| 0x15         | str1      |
+| 0x16         | str2      |
+| 0x17         | str3      |
+| 0x18         | str4      |
+| 0x19         | str5      |
+| 0x1a         | str6      |
+| 0x1b         | str7      |
+| 0x1c         | str8      |
+| 0x1d         | str9      |
+
+# Simple select with LIKE operator and new ESCAPE character
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  *
+FROM
+  (
+    SELECT
+      ECInstanceId,
+      CASE
+        WHEN NullProp IS NULL THEN 'Test_1234'
+        ELSE 'TEST'
+      END AS Test_Val
+    FROM
+      aps.TestElement
+  ) e
+WHERE
+  e.Test_Val LIKE 'TEST$_%' ESCAPE '$'
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|           | Test_Val     | true      | 1     | test_Val | Test_Val     | undefined    | string   | String | undefined          |
+
+| ECInstanceId | Test_Val  |
+| ------------ | --------- |
+| 0x14         | Test_1234 |
+| 0x16         | Test_1234 |
+| 0x18         | Test_1234 |
+| 0x1a         | Test_1234 |
+| 0x1c         | Test_1234 |
+
+# Simple select with LIKE operator and existing character underscore as ESCAPE character
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  *
+FROM
+  (
+    SELECT
+      ECInstanceId,
+      CASE
+        WHEN NullProp IS NULL THEN 'Test_1234'
+        ELSE 'TEST%1234'
+      END AS Test_Val
+    FROM
+      aps.TestElement
+  ) e
+WHERE
+  e.Test_Val LIKE 'TEST_%12%' ESCAPE '_'
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|           | Test_Val     | true      | 1     | test_Val | Test_Val     | undefined    | string   | String | undefined          |
+
+| ECInstanceId | Test_Val  |
+| ------------ | --------- |
+| 0x15         | TEST%1234 |
+| 0x17         | TEST%1234 |
+| 0x19         | TEST%1234 |
+| 0x1b         | TEST%1234 |
+| 0x1d         | TEST%1234 |
+
+# Simple select with LIKE operator and existing character '%' as ESCAPE character
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  *
+FROM
+  (
+    SELECT
+      ECInstanceId,
+      CASE
+        WHEN NullProp IS NULL THEN 'Test_1234'
+        ELSE 'TEST1234'
+      END AS Test_Val
+    FROM
+      aps.TestElement
+  ) e
+WHERE
+  e.Test_Val LIKE 'TEST%_123_' ESCAPE '%'
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type   | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ------ | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id     | ECInstanceId       |
+|           | Test_Val     | true      | 1     | test_Val | Test_Val     | undefined    | string   | String | undefined          |
+
+| ECInstanceId | Test_Val  |
+| ------------ | --------- |
+| 0x14         | Test_1234 |
+| 0x16         | Test_1234 |
+| 0x18         | Test_1234 |
+| 0x1a         | Test_1234 |
+| 0x1c         | Test_1234 |
