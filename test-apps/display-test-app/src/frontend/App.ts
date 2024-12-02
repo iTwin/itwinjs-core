@@ -67,6 +67,7 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Ren
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
 import { AddSeequentRealityModel } from "./RealityDataModel";
+import { NewContentBugTool } from "./NewContentBugTool";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -363,6 +364,7 @@ export class DisplayTestApp {
       SVTSelectionTool,
       SyncViewportFrustaTool,
       SyncViewportsTool,
+      NewContentBugTool,
       TerrainDrapeTool,
       TextDecorationTool,
       ToggleAspectRatioSkewDecoratorTool,

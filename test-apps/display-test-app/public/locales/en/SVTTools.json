@@ -157,6 +157,9 @@
     "SyncViewports": {
       "keyin": "dta viewport sync"
     },
+    "NewContentBug": {
+      "keyin": "dta newcontentbug"
+    },
     "SyncFrusta": {
       "keyin": "dta frustum sync"
     },
