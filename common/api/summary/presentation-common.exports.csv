@@ -13,6 +13,7 @@ public;interface;BaseTypeDescription
 public;interface;BooleanRulesetVariable
 public;interface;BooleanRulesetVariableJSON
 deprecated;interface;BooleanRulesetVariableJSON
+internal;const;buildElementProperties
 public;interface;CalculatedPropertiesSpecification
 public;interface;CategoryDescription
 public;namespace;CategoryDescription
@@ -249,7 +250,10 @@ public;type;LabelRawValueJSON
 deprecated;type;LabelRawValueJSON
 internal;class;LocalizationHelper
 internal;interface;LocalizationHelperProps
-public;interface;MultiElementPropertiesRequestOptions
+public;interface;MultiElementPropertiesBaseRequestOptions
+public;interface;MultiElementPropertiesByClassRequestOptions
+public;interface;MultiElementPropertiesByIdsRequestOptions
+public;type;MultiElementPropertiesRequestOptions
 public;interface;MultiSchemaClassesSpecification
 public;interface;NamedFieldDescriptor
 public;interface;NavigationPropertyInfo
@@ -398,6 +402,7 @@ public;type;RulesetVariableJSON
 public;enum;RuleTypes
 public;interface;SameLabelInstanceGroup
 public;enum;SameLabelInstanceGroupApplicationStage
+public;interface;SchemaCategoryIdentifier
 public;interface;SchemasSpecification
 public;interface;SelectClassInfo
 public;namespace;SelectClassInfo

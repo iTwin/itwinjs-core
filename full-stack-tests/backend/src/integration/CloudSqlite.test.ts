@@ -10,7 +10,7 @@ import { join } from "path";
 import * as sinon from "sinon";
 import { _nativeDb, BlobContainer, BriefcaseDb, CloudSqlite, IModelHost, IModelJsFs, KnownLocations, PropertyStore, SnapshotDb, SQLiteDb } from "@itwin/core-backend";
 import { KnownTestLocations } from "@itwin/core-backend/lib/cjs/test";
-import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode } from "@itwin/core-bentley";
+import { assert, BeDuration, DbResult, Guid, GuidString, Logger, LoggingMetaData, LogLevel, OpenMode, StopWatch } from "@itwin/core-bentley";
 import { AzuriteTest } from "./AzuriteTest";
 
 import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after all tests
@@ -18,6 +18,25 @@ import "./StartupShutdown"; // calls startup/shutdown IModelHost before/after al
 // spell:ignore localstore itwindb
 
 useFromChai(chaiAsPromised);
+
+/**
+ * Waits until `check` doesn't throw or a timeout happens. In case the `check` succeeds before the timeout,
+ * it's result is returned. In case of a timeout, the last error, thrown by calling `check`, is re-thrown.
+ */
+async function waitFor<T>(check: () => Promise<T> | T, timeout: number = 5000): Promise<T> {
+  const timer = new StopWatch(undefined, true);
+  let lastError: unknown;
+  do {
+    try {
+      const res = check();
+      return res instanceof Promise ? await res : res;
+    } catch (e) {
+      lastError = e;
+      await BeDuration.wait(2);
+    }
+  } while (timer.current.milliseconds < timeout);
+  throw lastError;
+}
 
 describe("CloudSqlite", () => {
   const azSqlite = AzuriteTest.Sqlite;
@@ -218,6 +237,15 @@ describe("CloudSqlite", () => {
     // Check for a dirty block log message
     let dirtyBlockLogMsg = logInfo.getCalls().some((call) =>call.args[1].includes("is now dirty block"));
     expect(dirtyBlockLogMsg).to.be.true;
+    // resetHistory is sometimes occurring before all of the logs make it to logTrace and logInfo causing our assert.notCalled to fail.
+    // Looking at the analytics for our pipeline, all the failures are due to the below two log messages. Wait for them to show up before we reset history.
+    const assertFoundMessage = (message: string) => {
+      const found = logInfo.getCalls().some((call) => call.args[1].includes(message));
+      if (!found)
+        throw new Error(`Expected ${message} to be found in logInfo calls.`);
+    };
+    await waitFor(() => assertFoundMessage("enters DELETE state"));
+    await waitFor(() => assertFoundMessage("leaves DELETE state"));
     logTrace.resetHistory();
     logInfo.resetHistory();
 
@@ -414,7 +442,6 @@ describe("CloudSqlite", () => {
 
     // when one cache has the lock the other should fail to obtain it
     await CloudSqlite.withWriteLock({ user: user1, container: contain1 }, async () => {
-      // eslint-disable-next-line @typescript-eslint/promise-function-async
       expect(() => cont2.acquireWriteLock(user1)).throws("is currently locked").property("errorNumber", DbResult.BE_SQLITE_BUSY);
     });
 
@@ -444,7 +471,6 @@ describe("CloudSqlite", () => {
     await azSqlite.setSasToken(contain1, "read"); // get a read-only token
     contain1.connect(caches[0]); // connect works with readonly token
     expect(contain1.isConnected);
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => contain1.acquireWriteLock(user1)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
     expect(contain1.hasWriteLock).false;
     expect(contain1.hasLocalChanges).false;
@@ -455,7 +481,6 @@ describe("CloudSqlite", () => {
     anonContainer.connect(caches[0]);
     dbs = anonContainer.queryDatabases();
     expect(dbs.length).equals(2);
-    // eslint-disable-next-line @typescript-eslint/promise-function-async
     expect(() => anonContainer.acquireWriteLock(user1)).throws("not authorized").property("errorNumber", DbResult.BE_SQLITE_AUTH);
 
     // read a database from anonymous container readonly
@@ -585,7 +610,7 @@ describe("CloudSqlite", () => {
   it("Auto refresh container tokens", async () => {
     const contain1 = testContainers[0];
 
-    const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true };
+    const contProps = { baseUri: AzuriteTest.baseUri, containerId: contain1.containerId, storageType: AzuriteTest.storageType, writeable: true } as const;
     // must be valid token so property store can connect
     const accessToken = await CloudSqlite.requestToken(contProps);
 

@@ -6,8 +6,8 @@
  * @module Merging
  */
 
-import type { SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
-import type { SchemaDifferenceConflict } from "../../ecschema-editing";
+import type { AnySchemaDifference, SchemaDifferenceResult } from "../../Differencing/SchemaDifference";
+import type { AnySchemaDifferenceConflict } from "../../Differencing/SchemaConflicts";
 import type { SkipEdit } from "./SchemaEdits";
 
 /**
@@ -18,24 +18,29 @@ import type { SkipEdit } from "./SchemaEdits";
  * @internal
  */
 export function applySkipEdit(result: SchemaDifferenceResult, edit: SkipEdit) {
-  const [itemName, pathName] = edit.key.split(".") as [string, string | undefined];
+  const [schemaName, itemName, pathName] = edit.key.split(".") as [string, string, string | undefined];
+  if (!result.sourceSchemaName.startsWith(schemaName)) {
+    return;
+  }
+
   const foundIndices = pathName !== undefined
     ? findRelatedItemEntries(result, itemName, pathName)
     : findItemEntries(result, itemName);
 
+  const skippedDifferences: AnySchemaDifference[] = [];
   for (const index of foundIndices.reverse()) {
-    result.differences.splice(index, 1);
+    skippedDifferences.push(...result.differences.splice(index, 1));
   }
 
   if (result.conflicts) {
-    removeRelatedConflicts(result.conflicts, itemName, pathName);
+    removeRelatedConflicts(result.conflicts, skippedDifferences);
   }
 }
 
-function removeRelatedConflicts(conflicts: SchemaDifferenceConflict[], itemName: string, path?: string) {
+function removeRelatedConflicts(conflicts: AnySchemaDifferenceConflict[], skippedDifferences: AnySchemaDifference[]) {
   const indices: number[] = [];
   conflicts.forEach((conflict, index) => {
-    if (conflict.itemName === itemName && conflict.path === path) {
+    if (skippedDifferences.includes(conflict.difference)) {
       indices.push(index);
     }
   });

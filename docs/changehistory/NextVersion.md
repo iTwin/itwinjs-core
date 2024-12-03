@@ -6,50 +6,52 @@ publish: false
 
 Table of contents:
 
-- [Quantity](#quantity)
-- [Electron 32 support](#electron-32-support)
-- [Geometry](#geometry)
+- [API deprecations](#api-deprecations)
+  - [@itwin/presentation-common](#itwinpresentation-common)
+- [Breaking Changes](#breaking-changes)
+  - [Opening connection to local snapshot requires IPC](#opening-connection-to-local-snapshot-requires-ipc)
+  - [Updated minimum requirements](#updated-minimum-requirements)
+    - [Node.js](#nodejs)
+    - [Electron](#electron)
+  - [Deprecated API removals](#deprecated-api-removals)
 
-## Quantity
+## API deprecations
 
-- The `minWidth` property on FormatProps now works as documented.
-- The `spacer` property on FormatProps now indicates the space used between composite components, it defaults to a single space, and there is no longer a ':' prepended. If a ':' spacer is desired, `spacer` has to be set accordingly. This is to streamline the behavior with the documentation and native APIs.
-- Added support for bearing and azimuth format types (e.g. bearing `N45°30'10"E`). A new phenomenon "Direction" for these will be added to our units library soon, but they work just as well with the angle phenomenon for now. Persistence values for both bearing and azimuth are to be provided counter-clockwise from an east-base (inspired by PowerPlatform).
-- [Electron 32 support](#electron-32-support)
-- [Geometry](#geometry)
+### @itwin/presentation-common
 
-## Electron 32 support
+- All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.
 
-In addition to [already supported Electron versions](../learning/SupportedPlatforms.md#electron), iTwin.js now supports [Electron 32](https://www.electronjs.org/blog/electron-32-0).
+## Breaking Changes
 
-## Geometry
+### Opening connection to local snapshot requires IPC
 
-### Approximating an elliptical arc with a circular arc chain
+[SnapshotConnection.openFile]($frontend) now requires applications to have set up a valid IPC communication. If you're using this API in an Electron or Mobile application, no additional action is needed as long as you call `ElectronHost.startup` or `MobileHost.startup` respectively. This API shouldn't be used in Web applications, so it has no replacement there.
 
-[Arc3d.constructCircularArcChainApproximation]($core-geometry) returns a [CurveChain]($core-geometry) of circular arcs that approximates the elliptical instance arc. Each arc in the chain starts and ends on the ellipse. The ellipse major/minor axis points and tangents are also interpolated, as well as those at the elliptical arc start/end, and the arcs are arranged to preserve ellipse symmetry. Various settings in the optional [EllipticalArcApproximationOptions]($core-geometry) input object control the approximation accuracy. The default method is [EllipticalArcSampleMethod.AdaptiveSubdivision]($core-geometry), which is controlled by a maximum error distance, `options.maxError`. Other values of `options.sampleMethod` interpolate the ellipse in other ways, controlled by the number of points interpolated in a given quadrant, `options.numSamplesInQuadrant`. For a fixed number of samples, the default method usually yields the most accurate approximation.
+### Updated minimum requirements
 
-Pictured below in order of decreasing error are some example approximations in blue, with ellipses in black, sample sites circled, and maximum error segment in red.
+A new major release of iTwin.js affords us the opportunity to update our requirements to continue to provide modern, secure, and rich libraries. Please visit our [Supported Platforms](../learning/SupportedPlatforms) documentation for a full breakdown.
 
-Approximation using `options.sampleMethod = EllipticalArcSampleMethod.UniformCurvature` and `options.numSamplesInQuadrant = 5`, yielding error 0.18:
+#### Node.js
 
-![Uniform Curvature](./assets/approximate-ellipse-uniform-curvature.jpg "Uniform Curvature")
+Node 18 will reach [end-of-life](https://github.com/nodejs/release?tab=readme-ov-file#release-schedule) soon and will no longer be supported. iTwin.js 5.0 requires a minimum of Node 20.9.0, though we recommend using the latest long-term-support version.
 
-Approximation using `options.sampleMethod = EllipticalArcSampleMethod.UniformParameter` and `options.numSamplesInQuadrant = 5`, yielding error 0.12:
+#### Electron
 
-![Uniform Parameter](./assets/approximate-ellipse-uniform-parameter.jpg "Uniform Parameter")
+iTwin.js now supports only the latest Electron release (Electron 33) and has dropped support for all older Electron releases. This decision was made because Electron releases major updates much more frequently than iTwin.js and it is difficult to support a high number of major versions.
 
-Approximation using `options.sampleMethod = EllipticalArcSampleMethod.NonUniformCurvature`, `options.remapFunction = (x) => x*x`, and `options.numSamplesInQuadrant = 5`, yielding error 0.05:
+### Deprecated API removals
 
-![Quadratic Curvature](./assets/approximate-ellipse-quadratic-curvature.jpg "Quadratic Curvature")
+The following previously-deprecated APIs have been removed:
 
-Approximation using `options.sampleMethod = EllipticalArcSampleMethod.AdaptiveSubdivision` and `options.maxError === 0.05`, yielding error 0.03:
+#### @itwin/appui-abstract
 
-![Adaptive Subdivision](./assets/approximate-ellipse-adaptive-subdivision.jpg "Adaptive Subdivision")
+| Removed                     | Replacement |
+| --------------------------- | ----------- |
+| `EditorPosition.columnSpan` | N/A         |
 
-### Triangulating points
+#### @itwin/core-electron
 
-[PolyfaceBuilder.pointsToTriangulatedPolyface]($core-geometry), which creates a [Polyface]($core-geometry) from an xy-triangulation of input points, now uses the [StrokeOptions]($core-geometry) input setting `options.chordTol` to control the maximum xy-distance for equating points. This method preserves the highest z-coordinate among points equated in this manner. The default for this setting is [Geometry.smallMetricDistance]($core-geometry), however for typical DTM datasets, a larger tolerance can be used (e.g., 1-2mm) to eliminate extraneous "skirt" points that lie underneath the terrain boundary.
-
-Pictured below are triangulations of a DTM dataset with skirt points. At top is the result using default tolerance. Due to the skirt points having xy-distance greater than the default tolerance from actual terrain sites, they are included in the triangulation, resulting in undesirable near-vertical facets. At bottom is the result using `options.chordTol = 0.002`, which is sufficiently large to remove these artifacts:
-
-![Toleranced Triangulations](./assets/triangulate-points-tolerance.jpg "Toleranced Triangulations")
+| Removed                             | Replacement                                               |
+| ----------------------------------- | --------------------------------------------------------- |
+| `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
+| `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |

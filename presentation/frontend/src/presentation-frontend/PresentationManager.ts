@@ -11,15 +11,18 @@ import { IModelApp, IModelConnection, IpcApp } from "@itwin/core-frontend";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
+  buildElementProperties,
   ClientDiagnosticsAttribute,
   Content,
   ContentDescriptorRequestOptions,
+  ContentFlags,
   ContentFormatter,
   ContentInstanceKeysRequestOptions,
   ContentPropertyValueFormatter,
   ContentRequestOptions,
   ContentSourcesRequestOptions,
   ContentUpdateInfo,
+  DefaultContentDisplayTypes,
   Descriptor,
   DescriptorOverrides,
   DisplayLabelRequestOptions,
@@ -59,8 +62,8 @@ import { IpcRequestsHandler } from "./IpcRequestsHandler";
 import { FrontendLocalizationHelper } from "./LocalizationHelper";
 import { RulesetManager, RulesetManagerImpl } from "./RulesetManager";
 import { RulesetVariablesManager, RulesetVariablesManagerImpl } from "./RulesetVariablesManager";
-import { TRANSIENT_ELEMENT_CLASSNAME } from "./selection/SelectionManager";
 import { StreamedResponseGenerator } from "./StreamedResponseGenerator";
+import { TRANSIENT_ELEMENT_CLASSNAME } from "@itwin/unified-selection";
 
 /**
  * Data structure that describes IModel hierarchy change event arguments.
@@ -229,7 +232,7 @@ export class PresentationManager implements IDisposable {
 
   private constructor(props?: PresentationManagerProps) {
     if (props) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       this._explicitActiveUnitSystem = props.activeUnitSystem;
     }
 
@@ -263,7 +266,6 @@ export class PresentationManager implements IDisposable {
     }
   }
 
-  // eslint-disable-next-line @typescript-eslint/naming-convention
   private onUpdate = (_evt: Event, report: UpdateInfo) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     this.handleUpdateAsync(report);
@@ -355,7 +357,7 @@ export class PresentationManager implements IDisposable {
     if (this.activeLocale) {
       defaultOptions.locale = this.activeLocale;
     }
-    defaultOptions.unitSystem = this.activeUnitSystem; // eslint-disable-line deprecation/deprecation
+    defaultOptions.unitSystem = this.activeUnitSystem; // eslint-disable-line @typescript-eslint/no-deprecated
 
     const { imodel, rulesetVariables, ...rpcRequestOptions } = requestOptions;
     return {
@@ -409,7 +411,7 @@ export class PresentationManager implements IDisposable {
         const result = await this._requestsHandler.getPagedNodes({ ...rpcOptions, paging });
         return {
           total: result.total,
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           items: this._localizationHelper.getLocalizedNodes(result.items.map(Node.fromJSON)),
         };
       },
@@ -474,7 +476,7 @@ export class PresentationManager implements IDisposable {
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const rpcOptions = this.toRpcTokenOptions({ ...options });
     const result = await this._requestsHandler.getNodePaths(rpcOptions);
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
@@ -485,7 +487,7 @@ export class PresentationManager implements IDisposable {
     this.startIModelInitialization(requestOptions.imodel);
     const options = await this.addRulesetAndVariablesToOptions(requestOptions);
     const result = await this._requestsHandler.getFilteredNodePaths(this.toRpcTokenOptions(options));
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return result.map(NodePathElement.fromJSON).map((npe) => this._localizationHelper.getLocalizedNodePathElement(npe));
   }
 
@@ -578,7 +580,7 @@ export class PresentationManager implements IDisposable {
 
       let items = contentSet.items.map((x) => Item.fromJSON(x)).filter((x): x is Item => x !== undefined);
       if (contentFormatter) {
-        items = await contentFormatter.formatContentItems(items, descriptor!);
+        items = await contentFormatter.formatContentItems(items, descriptor);
       }
 
       items = this._localizationHelper.getLocalizedContentItems(items);
@@ -618,7 +620,7 @@ export class PresentationManager implements IDisposable {
    * @deprecated in 4.5. Use [[getContentIterator]] instead.
    */
   public async getContent(requestOptions: GetContentRequestOptions & MultipleValuesRequestOptions): Promise<Content | undefined> {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return (await this.getContentAndSize(requestOptions))?.content;
   }
 
@@ -660,7 +662,7 @@ export class PresentationManager implements IDisposable {
         const response = await this._requestsHandler.getPagedDistinctValues({ ...rpcOptions, paging });
         return {
           total: response.total,
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           items: response.items.map((x) => this._localizationHelper.getLocalizedDisplayValueGroup(DisplayValueGroup.fromJSON(x))),
         };
       },
@@ -687,16 +689,26 @@ export class PresentationManager implements IDisposable {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @public
    */
-  public async getElementProperties(
-    requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute,
-  ): Promise<ElementProperties | undefined> {
+  public async getElementProperties<TParsedContent = ElementProperties>(
+    requestOptions: SingleElementPropertiesRequestOptions<IModelConnection, TParsedContent> & ClientDiagnosticsAttribute,
+  ): Promise<TParsedContent | undefined> {
     this.startIModelInitialization(requestOptions.imodel);
-    const results = await this._requestsHandler.getElementProperties(this.toRpcTokenOptions(requestOptions));
-    // istanbul ignore if
-    if (!results) {
+    type TParser = Required<typeof requestOptions>["contentParser"];
+    const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
+    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const iter = await this.getContentIterator({
+      ...optionsNoElementId,
+      descriptor: {
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        contentFlags: ContentFlags.ShowLabels,
+      },
+      rulesetOrId: "ElementProperties",
+      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+    });
+    if (!iter || iter.total === 0) {
       return undefined;
     }
-    return this._localizationHelper.getLocalizedElementProperties(results);
+    return parser(iter.descriptor, (await iter.items.next()).value);
   }
 
   /**

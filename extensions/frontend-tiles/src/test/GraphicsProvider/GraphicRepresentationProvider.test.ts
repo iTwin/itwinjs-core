@@ -7,7 +7,7 @@ import { expect, use } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as sinon from "sinon";
 import { IModelApp } from "@itwin/core-frontend";
-import { obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
+import { createGraphicRepresentationsQueryUrl, obtainGraphicRepresentationUrl, queryGraphicRepresentations, QueryGraphicRepresentationsArgs } from "../../GraphicsProvider/GraphicRepresentationProvider";
 
 use(chaiAsPromised);
 
@@ -24,14 +24,14 @@ interface TestJsonResponse {
   };
 
   /* eslint-disable-next-line @typescript-eslint/naming-convention */
-  _links: {
+  _links?: {
     mesh: {
       href: string;
     };
   };
 }
 
-interface TestJsonResponses{
+interface TestJsonResponses {
   exports: TestJsonResponse[];
 
   /* eslint-disable-next-line @typescript-eslint/naming-convention */
@@ -73,7 +73,7 @@ interface SourceProps {
 }
 
 function makeSource(props: SourceProps): TestJsonResponse {
-  return {
+  const source: TestJsonResponse = {
     id: props.id,
     displayName: props.id,
     status: props.status ?? "Complete",
@@ -81,16 +81,17 @@ function makeSource(props: SourceProps): TestJsonResponse {
       iModelId: "",
       changesetId: props.changesetId ?? "",
       exportType: "srcType",
-      geometryOptions: { },
-      viewDefinitionFilter: { },
-    },
-    /* eslint-disable-next-line @typescript-eslint/naming-convention */
-    _links: {
-      mesh: {
-        href: props.href ?? "mesh.edu",
-      },
+      geometryOptions: {},
+      viewDefinitionFilter: {},
     },
   };
+
+  // Ensure _links is only defined if a url is provided through props.
+  // We need to properly test cases where _links is undefined, because it may be undefined in the mesh export service response.
+  if (props.href) {
+    source._links = { mesh: { href: props.href } };
+  }
+  return source;
 }
 
 interface SourcesProps {
@@ -111,6 +112,7 @@ function makeSources(props: SourcesProps): TestJsonResponses {
 async function makeSourcesResponse(props: SourcesProps): Promise<Response> {
   return makeResponse(async () => Promise.resolve(makeSources(props)));
 }
+
 const testArgs = {
   accessToken: "this-is-a-fake-access-token",
   sessionId: "testSession",
@@ -124,6 +126,8 @@ const testArgs = {
 };
 
 describe("queryGraphicRepresentations", () => {
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
 
   it("returns no results upon error", async () => {
     await mockFetch(
@@ -161,7 +165,7 @@ describe("queryGraphicRepresentations", () => {
 
   it("includes only completed Data Sources unless otherwise specified", async () => {
     await mockFetch(
-      async () => makeSourcesResponse({ exports: [ { id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" } ] }),
+      async () => makeSourcesResponse({ exports: [{ id: "a", status: "Complete" }, { id: "b", status: "Feeling Blessed" }] }),
       async () => {
         await expectSources(["a"], testArgs);
         await expectSources(["a", "b"], { ...testArgs, includeIncomplete: true }),
@@ -175,7 +179,7 @@ describe("obtainGraphicRepresentationUrl", () => {
   before(async () => IModelApp.startup());
   after(async () => IModelApp.shutdown());
 
-  async function fetchSources(resource: RequestInfo | URL): Promise<Response> {
+  async function fetchSources(resource: NodeJS.fetch.RequestInfo | RequestInfo): Promise<Response> {
     expect(typeof resource).to.equal("string");
     const url = resource as string;
 
@@ -234,5 +238,27 @@ describe("obtainGraphicRepresentationUrl", () => {
 
   it("returns undefined if no Data Source matches the source version Id and caller requires an exact version match", async () => {
     await expectUrl(undefined, { versionId: "bbbbbb", exact: true });
+  });
+});
+
+describe("createGraphicRepresentationsQueryUrl", () => {
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
+
+  it("creates the expected url to query the default number of exports", async () => {
+    const url = createGraphicRepresentationsQueryUrl({
+      sourceId: testArgs.dataSource.id,
+      sourceType: testArgs.dataSource.type
+    });
+    expect(url).to.contain("$top=5");
+  });
+
+  it("creates the expected url to query a specific number of exports", async () => {
+    const url = createGraphicRepresentationsQueryUrl({
+      sourceId: testArgs.dataSource.id,
+      sourceType: testArgs.dataSource.type,
+      numExports: 50
+    });
+    expect(url).to.contain("$top=50");
   });
 });

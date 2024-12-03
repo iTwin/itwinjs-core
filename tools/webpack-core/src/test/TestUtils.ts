@@ -5,8 +5,8 @@
 import * as path from "path";
 import * as fs from "fs-extra";
 import { Compiler, Configuration, Stats, StatsCompilation, webpack } from "webpack";
-const MODULE = require("module");
-const { usedDeps } = require("../utils/resolve-recurse/resolve");
+const MODULE = require("module"); // eslint-disable-line @typescript-eslint/no-require-imports
+const { usedDeps } = require("../utils/resolve-recurse/resolve"); // eslint-disable-line @typescript-eslint/no-require-imports
 
 function createTestCompiler(config: Configuration, vol?: any): Compiler {
   const compiler = webpack(config);

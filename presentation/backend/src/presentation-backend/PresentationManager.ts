@@ -6,13 +6,14 @@
  * @module Core
  */
 
-import { forkJoin, from, map, mergeMap, of } from "rxjs";
+import { firstValueFrom } from "rxjs";
 import { eachValueFrom } from "rxjs-for-await";
 import { IModelDb } from "@itwin/core-backend";
-import { Id64String } from "@itwin/core-bentley";
+import { Id64Array, Id64String } from "@itwin/core-bentley";
 import { UnitSystemKey } from "@itwin/core-quantity";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
+  buildElementProperties,
   UnitSystemFormat as CommonUnitSystemFormat,
   ComputeSelectionRequestOptions,
   Content,
@@ -63,7 +64,7 @@ import {
   SingleElementPropertiesRequestOptions,
   WithCancelEvent,
 } from "@itwin/presentation-common";
-import { buildElementProperties, getBatchedClassElementIds, getClassesWithInstances, getElementsCount, parseFullClassName } from "./ElementPropertiesHelper";
+import { getContentItemsObservableFromClassNames, getContentItemsObservableFromElementIds } from "./ElementPropertiesHelper";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
 import { getRulesetIdObject, PresentationManagerDetail } from "./PresentationManagerDetail";
 import { RulesetManager } from "./RulesetManager";
@@ -333,7 +334,7 @@ export interface PresentationManagerProps {
    * Should schemas preloading be enabled. If true, presentation manager listens
    * for `BriefcaseDb.onOpened` event and force pre-loads all ECSchemas.
    *
-   * @deprecated in 3.x. Use [[PresentationPropsBase.enableSchemasPreload]] instead.
+   * @deprecated in 3.x. Use [[PresentationProps.enableSchemasPreload]] instead.
    */
   enableSchemasPreload?: boolean;
 
@@ -350,7 +351,7 @@ export interface PresentationManagerProps {
    *
    * @deprecated in 3.x. The attribute is not used by [[PresentationManager]] anymore
    */
-  mode?: PresentationManagerMode; // eslint-disable-line deprecation/deprecation
+  mode?: PresentationManagerMode; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /**
    * The interval (in milliseconds) used to poll for presentation data changes. If not set, presentation
@@ -432,7 +433,7 @@ export class PresentationManager {
   constructor(props?: PresentationManagerProps) {
     this._props = props ?? {};
     this._detail = new PresentationManagerDetail(this._props);
-    this.activeLocale = this._props.defaultLocale; // eslint-disable-line deprecation/deprecation
+    this.activeLocale = this._props.defaultLocale; // eslint-disable-line @typescript-eslint/no-deprecated
 
     this._localizationHelper = new LocalizationHelper({ getLocalizedString: props?.getLocalizedString ?? getLocalizedStringEN });
   }
@@ -498,7 +499,7 @@ export class PresentationManager {
     requestOptions: WithCancelEvent<Prioritized<Paged<HierarchyRequestOptions<IModelDb, NodeKey, RulesetVariable>>>> & BackendDiagnosticsAttribute,
   ): Promise<Node[]> {
     const serializedNodesJson = await this._detail.getNodes(requestOptions);
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
     const nodes = Node.listFromJSON(nodesJson.nodes);
     return this._localizationHelper.getLocalizedNodes(nodes);
@@ -650,7 +651,6 @@ export class PresentationManager {
     const result = await this._detail.getPagedDistinctValues(requestOptions);
     return {
       ...result,
-      // eslint-disable-next-line deprecation/deprecation
       items: result.items.map((g) => this._localizationHelper.getLocalizedDisplayValueGroup(g)),
     };
   }
@@ -659,9 +659,9 @@ export class PresentationManager {
    * Retrieves property data in a simplified format for a single element specified by ID.
    * @public
    */
-  public async getElementProperties(
-    requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb>>> & BackendDiagnosticsAttribute,
-  ): Promise<ElementProperties | undefined>;
+  public async getElementProperties<TParsedContent = ElementProperties>(
+    requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
+  ): Promise<TParsedContent | undefined>;
   /**
    * Retrieves property data in simplified format for multiple elements specified by class or all element.
    * @return An object that contains element count and AsyncGenerator to iterate over properties of those elements in batches of undefined size.
@@ -672,27 +672,43 @@ export class PresentationManager {
   ): Promise<MultiElementPropertiesResponse<TParsedContent>>;
   public async getElementProperties<TParsedContent = ElementProperties>(
     requestOptions: WithCancelEvent<
-      Prioritized<SingleElementPropertiesRequestOptions<IModelDb> | MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>
+      Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent> | MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>
     > &
       BackendDiagnosticsAttribute,
-  ): Promise<ElementProperties | undefined | MultiElementPropertiesResponse<TParsedContent>> {
+  ): Promise<TParsedContent | undefined | MultiElementPropertiesResponse<TParsedContent>> {
     if (isSingleElementPropertiesRequestOptions(requestOptions)) {
-      const elementProperties = await this._detail.getElementProperties(requestOptions);
-      // istanbul ignore if
-      if (!elementProperties) {
-        return undefined;
-      }
-      return this._localizationHelper.getLocalizedElementProperties(elementProperties);
+      return this.getSingleElementProperties<TParsedContent>(requestOptions);
     }
-
     return this.getMultipleElementProperties<TParsedContent>(requestOptions);
+  }
+
+  private async getSingleElementProperties<TParsedContent>(
+    requestOptions: WithCancelEvent<Prioritized<SingleElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
+  ): Promise<TParsedContent | undefined> {
+    type TParser = Required<typeof requestOptions>["contentParser"];
+    const { elementId, contentParser, ...optionsNoElementId } = requestOptions;
+    const parser: TParser = contentParser ?? (buildElementProperties as TParser);
+    const content = await this.getContent({
+      ...optionsNoElementId,
+      descriptor: {
+        displayType: DefaultContentDisplayTypes.PropertyPane,
+        contentFlags: ContentFlags.ShowLabels,
+      },
+      rulesetOrId: "ElementProperties",
+      keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+    });
+    if (!content || content.contentSet.length === 0) {
+      return undefined;
+    }
+    return parser(content.descriptor, content.contentSet[0]);
   }
 
   private async getMultipleElementProperties<TParsedContent>(
     requestOptions: WithCancelEvent<Prioritized<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>> & BackendDiagnosticsAttribute,
   ): Promise<MultiElementPropertiesResponse<TParsedContent>> {
-    type TParser = Required<MultiElementPropertiesRequestOptions<IModelDb, TParsedContent>>["contentParser"];
-    const { elementClasses, contentParser, batchSize, ...contentOptions } = requestOptions;
+    type TParser = Required<typeof requestOptions>["contentParser"];
+    const { contentParser, batchSize: batchSizeOption, ...contentOptions } = requestOptions;
+
     const parser: TParser = contentParser ?? (buildElementProperties as TParser);
     const workerThreadsCount = this._props.workerThreadsCount ?? 2;
 
@@ -701,89 +717,64 @@ export class PresentationManager {
     // but also may push descriptors out of cache, requiring us to recreate them, thus making performance worse. For those reasons we handle at
     // most `workerThreadsCount / 2` classes in parallel.
     // istanbul ignore next
-    const classParallelism = workerThreadsCount > 1 ? workerThreadsCount / 2 : 1;
+    const classParallelism = workerThreadsCount > 1 ? Math.ceil(workerThreadsCount / 2) : 1;
 
     // We want all worker threads to be constantly busy. However, there's some fairly expensive work being done after the worker thread is done,
     // but before we receive the response. That means the worker thread would be starving if we sent only `workerThreadsCount` requests in parallel.
     // To avoid that, we keep twice as much requests active.
     // istanbul ignore next
-    const batchesParallelism = workerThreadsCount > 0 ? workerThreadsCount * 2 : 2;
+    const batchesParallelism = workerThreadsCount > 0 ? workerThreadsCount : 1;
 
-    const createClassContentRuleset = (fullClassName: string): Ruleset => {
-      const [schemaName, className] = parseFullClassName(fullClassName);
-      return {
-        id: `content/${fullClassName}`,
-        rules: [
-          {
-            ruleType: "Content",
-            specifications: [
-              {
-                specType: "ContentInstancesOfSpecificClasses",
-                classes: {
-                  schemaName,
-                  classNames: [className],
-                  arePolymorphic: false,
-                },
-                handlePropertiesPolymorphically: true,
-              },
-            ],
-          },
-        ],
-      };
-    };
-    const getContentDescriptor = async (ruleset: Ruleset): Promise<Descriptor> => {
-      return (await this.getContentDescriptor({
-        ...contentOptions,
-        rulesetOrId: ruleset,
-        displayType: DefaultContentDisplayTypes.Grid,
-        contentFlags: ContentFlags.ShowLabels,
-        keys: new KeySet(),
-      }))!;
-    };
+    // istanbul ignore next
+    const batchSize = batchSizeOption ?? 100;
 
-    const obs = getClassesWithInstances(requestOptions.imodel, elementClasses ?? /* istanbul ignore next */ ["BisCore.Element"]).pipe(
-      map((classFullName) => ({
-        classFullName,
-        ruleset: createClassContentRuleset(classFullName),
-      })),
-      mergeMap(
-        ({ classFullName, ruleset }) =>
-          // use forkJoin to query descriptor and element ids in parallel
-          forkJoin({
-            classFullName: of(classFullName),
-            ruleset: of(ruleset),
-            descriptor: from(getContentDescriptor(ruleset)),
-            batches: from(getBatchedClassElementIds(requestOptions.imodel, classFullName, batchSize ?? /* istanbul ignore next */ 1000)),
-          }).pipe(
-            // split incoming stream into individual batch requests
-            mergeMap(({ descriptor, batches }) => from(batches.map((batch) => ({ classFullName, descriptor, batch })))),
-            // request content for each batch, filter by IDs for performance
-            mergeMap(({ descriptor, batch }) => {
-              const filteringDescriptor = new Descriptor(descriptor);
-              filteringDescriptor.instanceFilter = {
-                selectClassName: classFullName,
-                expression: `this.ECInstanceId >= ${Number.parseInt(batch.from, 16)} AND this.ECInstanceId <= ${Number.parseInt(batch.to, 16)}`,
-              };
-              return from(
-                this.getContentSet({
-                  ...contentOptions,
-                  keys: new KeySet(),
-                  descriptor: filteringDescriptor,
-                  rulesetOrId: ruleset,
-                }),
-              ).pipe(map((items) => ({ classFullName, descriptor, items })));
-            }, batchesParallelism),
-          ),
-        classParallelism,
-      ),
-      map(({ descriptor, items }) => items.map((item) => parser(descriptor, item))),
-    );
+    const elementsIdentifier = ((): { elementIds: Id64Array } | { elementClasses: string[] } => {
+      if ("elementIds" in contentOptions && contentOptions.elementIds !== undefined) {
+        const elementIds = contentOptions.elementIds;
+        delete contentOptions.elementIds;
+        return { elementIds };
+      }
+      // istanbul ignore else
+      if ("elementClasses" in contentOptions && contentOptions.elementClasses !== undefined) {
+        const elementClasses = contentOptions.elementClasses;
+        delete contentOptions.elementClasses;
+        return { elementClasses };
+      }
+      // istanbul ignore next
+      return { elementClasses: ["BisCore:Element"] };
+    })();
 
+    const descriptorGetter = async (partialProps: Pick<ContentDescriptorRequestOptions<IModelDb, KeySet, RulesetVariable>, "rulesetOrId" | "keys">) =>
+      this.getContentDescriptor({ ...contentOptions, displayType: DefaultContentDisplayTypes.Grid, contentFlags: ContentFlags.ShowLabels, ...partialProps });
+    const contentSetGetter = async (
+      partialProps: Pick<ContentRequestOptions<IModelDb, Descriptor, KeySet, RulesetVariable>, "rulesetOrId" | "keys" | "descriptor">,
+    ) => this.getContentSet({ ...contentOptions, ...partialProps });
+    const { itemBatches, count } =
+      "elementIds" in elementsIdentifier
+        ? getContentItemsObservableFromElementIds(
+            requestOptions.imodel,
+            descriptorGetter,
+            contentSetGetter,
+            elementsIdentifier.elementIds,
+            classParallelism,
+            batchesParallelism,
+            batchSize,
+          )
+        : getContentItemsObservableFromClassNames(
+            requestOptions.imodel,
+            descriptorGetter,
+            contentSetGetter,
+            elementsIdentifier.elementClasses,
+            classParallelism,
+            batchesParallelism,
+            batchSize,
+          );
     return {
-      total: getElementsCount(requestOptions.imodel, elementClasses),
+      total: await firstValueFrom(count),
       async *iterator() {
-        for await (const batch of eachValueFrom(obs)) {
-          yield batch;
+        for await (const itemsBatch of eachValueFrom(itemBatches)) {
+          const { descriptor, items } = itemsBatch;
+          yield items.map((item) => parser(descriptor, item));
         }
       },
     };
@@ -878,7 +869,7 @@ export class PresentationManager {
       expandedNodeKeys: JSON.stringify(options.expandedNodeKeys ?? []),
     };
 
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const reviver = (key: string, value: any) => (key === "" ? HierarchyCompareInfo.fromJSON(value) : value);
     return JSON.parse(await this._detail.request(params), reviver);
   }

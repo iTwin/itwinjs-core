@@ -11,7 +11,7 @@ import { SchemaKeyProps, SchemaProps } from "@itwin/ecschema-metadata";
  * The actual schemas can be downloaded using @see getSchemaJSON to get the schema as JSON props.
  * @internal
  */
-export abstract class ECSchemaRpcInterface extends RpcInterface { // eslint-disable-line deprecation/deprecation
+export abstract class ECSchemaRpcInterface extends RpcInterface {
   /** The version of the RPC Interface. */
   public static version = "2.0.0";
 
@@ -32,7 +32,7 @@ export abstract class ECSchemaRpcInterface extends RpcInterface { // eslint-disa
    * @param tokenProps        The iModelToken props that hold the information which iModel is used.
    * @returns                 An array of SchemaKeyProps.
    */
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
   public async getSchemaKeys(_tokenProps: IModelRpcProps): Promise<SchemaKeyProps[]> {
     return this.forward.apply(this, [arguments]) as Promise<SchemaKeyProps[]>;
   }
@@ -44,7 +44,7 @@ export abstract class ECSchemaRpcInterface extends RpcInterface { // eslint-disa
    * @param schemaName        The name of the schema that shall be returned.
    * @returns                 The SchemaProps.
    */
-  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable) // eslint-disable-line deprecation/deprecation
+  @RpcOperation.allowResponseCaching(RpcResponseCacheControl.Immutable)
   public async getSchemaJSON(_tokenProps: IModelRpcProps, _schemaName: string): Promise<SchemaProps> {
     return this.forward.apply(this, [arguments]) as Promise<SchemaProps>;
   }

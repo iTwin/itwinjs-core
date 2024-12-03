@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { ArcGisExtent, ArcGisFeatureQuery } from "../../ArcGisFeature/ArcGisFeatureQuery";
+import { ArcGisExtent, arcgisFeatureFormats, ArcGisFeatureQuery } from "../../ArcGisFeature/ArcGisFeatureQuery";
 
 describe("ArcGisFeatureQuery", () => {
 
@@ -20,7 +20,7 @@ describe("ArcGisFeatureQuery", () => {
 
   it("should not apply different switches if not needed", async () => {
 
-    const query = new ArcGisFeatureQuery("https://test.com/rest/",0, "JSON", 3857);
+    const query = new ArcGisFeatureQuery("https://test.com/rest/",0, arcgisFeatureFormats.json, 3857);
     const queryUrl = query.toString();
     expect(queryUrl).to.not.contains("resultRecordCount");
     expect(queryUrl).to.not.contains("resultOffset");
@@ -47,7 +47,7 @@ describe("ArcGisFeatureQuery", () => {
         wkid : 102100,
         latestWkid : 3857,
       }};
-    const query = new ArcGisFeatureQuery("https://test.com/rest/",0, "JSON", 3857,
+    const query = new ArcGisFeatureQuery("https://test.com/rest/",0, arcgisFeatureFormats.json, 3857,
       {
         resultRecordCount: 10,
         resultOffset: 11,
@@ -95,7 +95,7 @@ describe("ArcGisFeatureQuery", () => {
         wkid : 102100,
         latestWkid : 3857,
       }};
-    const query = new ArcGisFeatureQuery("https://test.com/rest/",0, "JSON", 3857,
+    const query = new ArcGisFeatureQuery("https://test.com/rest/",0, arcgisFeatureFormats.json, 3857,
       {
         spatialRel: "esriSpatialRelIntersects",
       });

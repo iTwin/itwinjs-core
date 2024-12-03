@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { Arc3d } from "../../curve/Arc3d";
 import { AnyRegion } from "../../curve/CurveTypes";
@@ -64,7 +64,7 @@ describe("MomentData", () => {
       x0 += shift;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "SimpleXYPointLoops");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("OrientedArea", () => {
@@ -116,7 +116,7 @@ describe("MomentData", () => {
       y0 += 10.0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "OrientedArea");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Arcs", () => {
@@ -158,7 +158,7 @@ describe("MomentData", () => {
       x0 += shift;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "Arcs");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ParityAndUnionRegions", () => {
@@ -180,7 +180,7 @@ describe("MomentData", () => {
       y0 += shift;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "ParityAndUnionRegions");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("WireMoments", () => {
@@ -217,7 +217,7 @@ describe("MomentData", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "Moments", "WireMoments");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });

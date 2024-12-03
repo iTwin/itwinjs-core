@@ -10,6 +10,7 @@ import { IModelDb, RpcTrace } from "@itwin/core-backend";
 import { assert, BeEvent, Id64String, IDisposable, Logger } from "@itwin/core-bentley";
 import { IModelRpcProps } from "@itwin/core-common";
 import {
+  buildElementProperties,
   ClientDiagnostics,
   ComputeSelectionRequestOptions,
   ComputeSelectionRpcRequestOptions,
@@ -19,6 +20,7 @@ import {
   ContentRpcRequestOptions,
   ContentSourcesRpcRequestOptions,
   ContentSourcesRpcResult,
+  DefaultContentDisplayTypes,
   DescriptorJSON,
   Diagnostics,
   DisplayLabelRpcRequestOptions,
@@ -64,7 +66,7 @@ import { Presentation } from "./Presentation";
 import { PresentationManager } from "./PresentationManager";
 import { TemporaryStorage } from "./TemporaryStorage";
 
-// eslint-disable-next-line @typescript-eslint/no-var-requires
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const packageJsonVersion = require("../../../package.json").version;
 
 type ContentGetter<TResult = any, TOptions = any> = (requestOptions: TOptions) => TResult;
@@ -241,7 +243,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     let timeout: NodeJS.Timeout;
     const timeoutPromise = new Promise<any>((_resolve, reject) => {
       timeout = setTimeout(() => {
-        reject();
+        reject(new Error());
       }, this._requestTimeout);
     });
 
@@ -276,7 +278,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public override async getPagedNodes(
     token: IModelRpcProps,
     requestOptions: Paged<HierarchyRpcRequestOptions>,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): PresentationRpcResponse<PagedResponse<NodeJSON>> {
     return this.makeRequest(token, "getPagedNodes", requestOptions, async (options) => {
       options = enforceValidPageSize({
@@ -287,7 +289,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
         this.getManager(requestOptions.clientId).getDetail().getNodes(options),
         this.getManager(requestOptions.clientId).getNodesCount(options),
       ]);
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       const nodesJson = JSON.parse(serializedNodesJson) as HierarchyLevelJSON;
       return {
         total: count,
@@ -312,11 +314,11 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public override async getNodePaths(
     token: IModelRpcProps,
     requestOptions: FilterByInstancePathsHierarchyRpcRequestOptions,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.makeRequest(token, "getNodePaths", requestOptions, async (options) => {
       const result = await this.getManager(requestOptions.clientId).getDetail().getNodePaths(options);
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return result.map(NodePathElement.toJSON);
     });
   }
@@ -324,11 +326,11 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
   public override async getFilteredNodePaths(
     token: IModelRpcProps,
     requestOptions: FilterByTextHierarchyRpcRequestOptions,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): PresentationRpcResponse<NodePathElementJSON[]> {
     return this.makeRequest(token, "getFilteredNodePaths", requestOptions, async (options) => {
       const result = await this.getManager(requestOptions.clientId).getDetail().getFilteredNodePaths(options);
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return result.map(NodePathElement.toJSON);
     });
   }
@@ -410,6 +412,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     token: IModelRpcProps,
     requestOptions: Paged<ContentRpcRequestOptions>,
   ): PresentationRpcResponse<PagedResponse<ItemJSON>> {
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     const response = await this.getPagedContent(token, requestOptions);
     if (response.statusCode !== PresentationStatus.Success) {
       return this.errorResponse(response.statusCode, response.errorMessage, response.diagnostics);
@@ -428,14 +431,28 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
     requestOptions: SingleElementPropertiesRpcRequestOptions,
   ): PresentationRpcResponse<ElementProperties | undefined> {
     return this.makeRequest(token, "getElementProperties", { ...requestOptions }, async (options) => {
-      return this.getManager(requestOptions.clientId).getDetail().getElementProperties(options);
+      const manager = this.getManager(requestOptions.clientId);
+      const { elementId, ...optionsNoElementId } = options;
+      const content = await manager.getDetail().getContent({
+        ...optionsNoElementId,
+        descriptor: {
+          displayType: DefaultContentDisplayTypes.PropertyPane,
+          contentFlags: ContentFlags.ShowLabels,
+        },
+        rulesetOrId: "ElementProperties",
+        keys: new KeySet([{ className: "BisCore:Element", id: elementId }]),
+      });
+      if (!content || content.contentSet.length === 0) {
+        return undefined;
+      }
+      return buildElementProperties(content.descriptor, content.contentSet[0]);
     });
   }
 
   public override async getPagedDistinctValues(
     token: IModelRpcProps,
     requestOptions: DistinctValuesRpcRequestOptions,
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
   ): PresentationRpcResponse<PagedResponse<DisplayValueGroupJSON>> {
     return this.makeRequest(token, "getPagedDistinctValues", requestOptions, async (options) => {
       options = enforceValidPageSize({
@@ -445,7 +462,7 @@ export class PresentationRpcImpl extends PresentationRpcInterface implements IDi
       const response = await this.getManager(requestOptions.clientId).getDetail().getPagedDistinctValues(options);
       return {
         ...response,
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         items: response.items.map(DisplayValueGroup.toJSON),
       };
     });
@@ -556,11 +573,11 @@ const getValidPageSize = (size: number | undefined, maxPageSize: number) => {
   return requestedSize === 0 || requestedSize > maxPageSize ? maxPageSize : requestedSize;
 };
 
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 const nodeKeyFromJson = (json: NodeKeyJSON | undefined): NodeKey | undefined => {
   if (!json) {
     return undefined;
   }
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   return NodeKey.fromJSON(json);
 };

@@ -27,7 +27,6 @@ import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import { ItemJSON } from "../presentation-common/content/Item";
 import { ClientDiagnostics } from "../presentation-common/Diagnostics";
 import { InstanceKey } from "../presentation-common/EC";
-import { ElementProperties } from "../presentation-common/ElementProperties";
 import { NodeKey } from "../presentation-common/hierarchy/Key";
 import {
   ComputeSelectionRequestOptions,
@@ -42,7 +41,6 @@ import {
   FilterByTextHierarchyRequestOptions,
   HierarchyLevelDescriptorRequestOptions,
   HierarchyRequestOptions,
-  SingleElementPropertiesRequestOptions,
 } from "../presentation-common/PresentationManagerOptions";
 import {
   ContentDescriptorRpcRequestOptions,
@@ -56,7 +54,6 @@ import {
   FilterByTextHierarchyRpcRequestOptions,
   HierarchyLevelDescriptorRpcRequestOptions,
   HierarchyRpcRequestOptions,
-  SingleElementPropertiesRpcRequestOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { createTestContentDescriptor } from "./_helpers/Content";
@@ -234,7 +231,7 @@ describe("RpcRequestsHandler", () => {
   describe("requests forwarding to PresentationRpcInterface", () => {
     let handler: RpcRequestsHandler;
     let rpcInterfaceMock: moq.IMock<PresentationRpcInterface>;
-    let defaultGetClientForInterfaceImpl: <T extends RpcInterface>(def: RpcInterfaceDefinition<T>) => T; // eslint-disable-line deprecation/deprecation
+    let defaultGetClientForInterfaceImpl: <T extends RpcInterface>(def: RpcInterfaceDefinition<T>) => T;
 
     before(() => {
       rpcInterfaceMock = moq.Mock.ofType<PresentationRpcInterface>();
@@ -262,6 +259,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = faker.random.number();
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getNodesCount(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -282,6 +280,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = faker.random.number();
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getNodesCount(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -300,11 +299,12 @@ describe("RpcRequestsHandler", () => {
         clientId,
         rulesetOrId: handlerOptions.rulesetOrId,
         paging: { start: 1, size: 2 },
-        // eslint-disable-next-line deprecation/deprecation
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         parentKey: NodeKey.fromJSON(handlerOptions.parentKey!),
       };
       const result = { items: [createRandomECInstancesNodeJSON()], total: 1 };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedNodes(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -322,7 +322,7 @@ describe("RpcRequestsHandler", () => {
         const rpcOptions: HierarchyLevelDescriptorRpcRequestOptions = {
           clientId,
           rulesetOrId: handlerOptions.rulesetOrId,
-          // eslint-disable-next-line deprecation/deprecation
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           parentKey: NodeKey.fromJSON(handlerOptions.parentKey!),
         };
         const result = createTestContentDescriptor({ fields: [] }).toJSON();
@@ -332,6 +332,7 @@ describe("RpcRequestsHandler", () => {
       it("when descriptor is sent as serialized JSON string", async () => {
         const { handlerOptions, rpcOptions, result } = createTestData();
         rpcInterfaceMock
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
           .returns(async () => successResponse(JSON.stringify(result)))
           .verifiable();
@@ -342,6 +343,7 @@ describe("RpcRequestsHandler", () => {
       it("when descriptor is sent as JSON", async () => {
         const { handlerOptions, rpcOptions, result } = createTestData();
         rpcInterfaceMock
+          // eslint-disable-next-line @typescript-eslint/no-deprecated
           .setup(async (x) => x.getNodesDescriptor(token, rpcOptions))
           .returns(async () => successResponse(result))
           .verifiable();
@@ -364,6 +366,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = [createRandomNodePathElementJSON()];
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getFilteredNodePaths(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -388,6 +391,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = [createRandomNodePathElementJSON()];
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getNodePaths(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -421,6 +425,7 @@ describe("RpcRequestsHandler", () => {
         },
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getContentSources(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -448,6 +453,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = createTestContentDescriptor({ fields: [] }).toJSON();
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getContentDescriptor(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -472,6 +478,7 @@ describe("RpcRequestsHandler", () => {
         keys,
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getContentSetSize(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -504,6 +511,7 @@ describe("RpcRequestsHandler", () => {
         paging: { start: 1, size: 2 },
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedContent(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -533,6 +541,7 @@ describe("RpcRequestsHandler", () => {
         paging: { start: 1, size: 2 },
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedContentSet(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -575,34 +584,11 @@ describe("RpcRequestsHandler", () => {
         ],
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedDistinctValues(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
       expect(await handler.getPagedDistinctValues(handlerOptions)).to.eq(result);
-      rpcInterfaceMock.verifyAll();
-    });
-
-    it("forwards getElementProperties call", async () => {
-      const elementId = "0x123";
-      const handlerOptions: SingleElementPropertiesRequestOptions<IModelRpcProps> = {
-        imodel: token,
-        elementId,
-      };
-      const rpcOptions: SingleElementPropertiesRpcRequestOptions = {
-        clientId,
-        elementId,
-      };
-      const result: ElementProperties = {
-        class: "test class",
-        id: elementId,
-        label: "test label",
-        items: {},
-      };
-      rpcInterfaceMock
-        .setup(async (x) => x.getElementProperties(token, rpcOptions))
-        .returns(async () => successResponse(result))
-        .verifiable();
-      expect(await handler.getElementProperties(handlerOptions)).to.deep.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 
@@ -633,6 +619,7 @@ describe("RpcRequestsHandler", () => {
         ]).toJSON(),
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getContentInstanceKeys(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -652,6 +639,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = createRandomLabelDefinition();
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getDisplayLabelDefinition(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -674,6 +662,7 @@ describe("RpcRequestsHandler", () => {
         items: [createRandomLabelDefinition(), createRandomLabelDefinition()],
       };
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getPagedDisplayLabelDefinitions(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -690,6 +679,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = [createRandomSelectionScope()];
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.getSelectionScopes(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();
@@ -710,6 +700,7 @@ describe("RpcRequestsHandler", () => {
       };
       const result = new KeySet().toJSON();
       rpcInterfaceMock
+        // eslint-disable-next-line @typescript-eslint/no-deprecated
         .setup(async (x) => x.computeSelection(token, rpcOptions))
         .returns(async () => successResponse(result))
         .verifiable();

@@ -1,9 +1,11 @@
 sep=;
 Release Tag;API Item Type;API Item Name
+alpha;type;AnyClassItemDifference
 beta;type;AnyDiagnostic
 alpha;type;AnyEditingError
 alpha;type;AnyIdentifier
 alpha;type;AnySchemaDifference
+alpha;type;AnySchemaDifferenceConflict
 alpha;type;AnySchemaEdits
 alpha;type;AnySchemaItemDifference
 alpha;type;AnySchemaItemPathDifference
@@ -17,7 +19,6 @@ alpha;enum;ChangeType
 alpha;class;ClassChanges
 beta;class;ClassDiagnostic
 alpha;class;ClassId
-alpha;type;ClassItemDifference
 alpha;interface;ClassPropertyDifference
 alpha;enum;ConflictCode
 alpha;interface;ConstantDifference
@@ -107,6 +108,7 @@ alpha;function;isUnitSystemDifference
 beta;type;ISuppressionRule
 alpha;class;KindOfQuantityChanges
 alpha;interface;KindOfQuantityDifference
+alpha;interface;KindOfQuantityPresentationFormatDifference
 beta;class;LoggingDiagnosticReporter
 alpha;interface;MixinClassDifference
 alpha;interface;PhenomenonDifference
@@ -138,7 +140,6 @@ alpha;class;SchemaConflictsError
 alpha;class;SchemaContextEditor
 beta;class;SchemaDiagnostic
 alpha;interface;SchemaDifference
-alpha;interface;SchemaDifferenceConflict
 alpha;interface;SchemaDifferenceResult
 alpha;class;SchemaEditingError
 alpha;class;SchemaEdits

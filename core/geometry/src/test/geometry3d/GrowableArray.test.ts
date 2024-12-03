@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
@@ -54,7 +55,7 @@ describe("GrowableFloat64Array.HelloWorld", () => {
     ck.testLE(capacityB, arr.capacity(), "adequate ensure capacity");
     ck.testExactNumber(lB, arr.length, "length after expanding capacity");
     ck.checkpoint("GrowableArray.float64");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("FilterToInterval", () => {
     const ck = new Checker();
@@ -65,7 +66,7 @@ describe("GrowableFloat64Array.HelloWorld", () => {
     data.restrictToInterval(9.5, 9.5 + numRemaining);
     ck.testExactNumber(numRemaining, data.length, "restrictToInterval");
     ck.checkpoint("GrowableArray.FilterToInterval");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("move", () => {
@@ -104,7 +105,7 @@ describe("GrowableFloat64Array.HelloWorld", () => {
       ck.testExactNumber(data.atUncheckedIndex(c0 + i), data.atUncheckedIndex(n + i));
 
     ck.checkpoint("GrowableArray.move");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -221,7 +222,7 @@ describe("BlockedArray", () => {
     ck.testUndefined(blocks2.checkedComponent(1, 2));
 
     ck.checkpoint("GrowableArray.annotateClusters");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("HelloWorld", () => {
     // REMARK: GrowableBlockedArray gets significant testing via GrowableXYZArray.
@@ -250,7 +251,7 @@ describe("BlockedArray", () => {
     }
     ck.testExactNumber(numAdd, data0.numBlocks);
     ck.checkpoint("GrowableBlockedArray.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
@@ -311,7 +312,7 @@ describe("GrowablePoint3dArray", () => {
       ck.testUndefined(pointA.distanceSquaredIndexIndex(-1, 0));
     }
     ck.checkpoint("GrowablePoint3dArray.HelloWorld");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Wrap", () => {
@@ -344,7 +345,7 @@ describe("GrowablePoint3dArray", () => {
       ck.testExactNumber(numWrap, numDup, "confirm numWrap duplicates");
     }
     ck.checkpoint("GrowablePoint3dArray.Wrap");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("PolyfaceMoments", () => {
@@ -370,7 +371,7 @@ describe("GrowablePoint3dArray", () => {
         GeometryCoreTestIO.consoleLog("expected IY", IY);
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   /** Basic output testing on appendages, sorting, transforming of a known inverse, and testing recognition of plane proximity within correct tolerance */
   it("BlackBoxTests", () => {
@@ -411,7 +412,7 @@ describe("GrowablePoint3dArray", () => {
     ck.testTrue(arr.isCloseToPlane(closePlane!));
     ck.testFalse(arr.isCloseToPlane(nonClosePlane!));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("IndexedXYZCollection", () => {
@@ -457,7 +458,7 @@ describe("GrowablePoint3dArray", () => {
 
       ck.testPoint3d(Point3dArray.centroid(iPoints), Point3dArray.centroid(gPoints), "centroid");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("resizeAndBoundsChecks", () => {
@@ -525,7 +526,7 @@ describe("GrowablePoint3dArray", () => {
     ck.testFalse(xyzPoints.setAtCheckedPointIndex(100, spacePoint), "huge index for setAt");
     ck.testUndefined(xyzPoints.vectorXYAndZIndex(spacePoint, -5), "negative index for vectorXYAndZIndex");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("transferAndSet", () => {
@@ -589,7 +590,7 @@ describe("GrowablePoint3dArray", () => {
     ck.testFalse(array1.transferFromGrowableXYZArray(-1, array0, 1), "invalid source index transferFromGrowable");
     ck.testFalse(array1.transferFromGrowableXYZArray(100, array0, 1), "invalid source index transferFromGrowable");
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("Compress", () => {
     const ck = new Checker();
@@ -613,7 +614,51 @@ describe("GrowablePoint3dArray", () => {
     const n1 = data.length;
     data.compressAdjacentDuplicates(0.0001);
     ck.testExactNumber(n0, data.length, "compressed array big length", n1);
-    expect(ck.getNumErrors()).equals(0);
+
+    const pt0 = Point3d.create(1,2,3);
+    const pt1 = Point3d.create(4,5,6);
+    const pt0e = pt0.plusXYZ(Geometry.smallMetricDistance / 2);
+    const points: Point3d[] = [];
+    points.push(pt0.clone(), pt0e.clone());
+    points.push(pt1.clone());
+    points.push(pt0.clone(), pt0e.clone(), pt0e.clone());
+    points.push(pt1.clone());
+    points.push(pt0e.clone(), pt0e.clone(), pt0.clone());
+    const carrier = new Point3dArrayCarrier(points);
+    const compressed = GrowableXYZArray.createCompressed(carrier);
+    ck.testExactNumber(5, compressed.length, "compressed expected #duplicates out");
+    ck.testExactNumber(pt0.x, compressed.getXAtUncheckedPointIndex(0), "compress preserved the first (duplicated) point.x");
+    ck.testExactNumber(pt0.y, compressed.getYAtUncheckedPointIndex(0), "compress preserved the first (duplicated) point.y");
+    ck.testExactNumber(pt0.z, compressed.getZAtUncheckedPointIndex(0), "compress preserved the first (duplicated) point.z");
+    ck.testTrue(false === compressed.almostEqualIndexIndex(0, 1, 0.0), "removed duplicates of first point");
+    ck.testTrue(false === compressed.almostEqualIndexIndex(1, 2, 0.0), "preserved unique third point");
+    ck.testTrue(false === compressed.almostEqualIndexIndex(2, 3, 0.0), "removed duplicates of fourth point");
+    ck.testTrue(false === compressed.almostEqualIndexIndex(3, 4, 0.0), "preserved unique seventh point");
+    ck.testExactNumber(pt0.x, compressed.getXAtUncheckedPointIndex(4), "compress preserved the last (duplicated) point.x");
+    ck.testExactNumber(pt0.y, compressed.getYAtUncheckedPointIndex(4), "compress preserved the last (duplicated) point.y");
+    ck.testExactNumber(pt0.z, compressed.getZAtUncheckedPointIndex(4), "compress preserved the last (duplicated) point.z");
+
+    compressed.push(pt0e);
+    compressed.compressInPlace();
+    ck.testExactNumber(5, compressed.length, "compressed expected #duplicates out");
+    ck.testExactNumber(pt0e.x, compressed.getXAtUncheckedPointIndex(4), "compressInPlace preserved the last (duplicated) point.x");
+    ck.testExactNumber(pt0e.y, compressed.getYAtUncheckedPointIndex(4), "compressInPlace preserved the last (duplicated) point.y");
+    ck.testExactNumber(pt0e.z, compressed.getZAtUncheckedPointIndex(4), "compressInPlace preserved the last (duplicated) point.z");
+
+    compressed.push(pt0);
+    const compressed1 = compressed.cloneCompressed(Geometry.smallMetricDistance / 10);
+    ck.testExactNumber(compressed.length, compressed1.length, "cloneCompressed with tighter tolerance does not compress");
+    for (let i = 0; i < compressed.length; ++i) {
+      ck.testExactNumber(compressed.getXAtUncheckedPointIndex(i), compressed1.getXAtUncheckedPointIndex(i), "cloneCompressed with tighter tolerance preserves the i_th point.x");
+      ck.testExactNumber(compressed.getYAtUncheckedPointIndex(i), compressed1.getYAtUncheckedPointIndex(i), "cloneCompressed with tighter tolerance preserves the i_th point.y");
+      ck.testExactNumber(compressed.getZAtUncheckedPointIndex(i), compressed1.getZAtUncheckedPointIndex(i), "cloneCompressed with tighter tolerance preserves the i_th point.z");
+    }
+
+    const iDuplicates = carrier.findOrderedDuplicates();
+    ck.testTrue(iDuplicates[0] !== 0, "findOrderedDuplicates always preserves the first point");
+    ck.testTrue(iDuplicates[iDuplicates.length - 1] === points.length - 1, "findOrderedDuplicates doesn't preserve last duplicate point by default");
+
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Coverage", () => {
@@ -644,7 +689,7 @@ describe("GrowablePoint3dArray", () => {
         ck.testUndefined(GrowableXYZArray.distanceBetweenPointsIn2Arrays(dataA, i, dataB, j));
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("TransformingNormals", () => {
     const ck = new Checker();
@@ -675,7 +720,7 @@ describe("GrowablePoint3dArray", () => {
       ck.testCoordinate(vectorA.magnitude(), 1.0);
       ck.testParallel(vectorA, vectorB);
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("pushFrom", () => {
     const ck = new Checker();
@@ -707,7 +752,7 @@ describe("GrowablePoint3dArray", () => {
     ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA, dataC));
     ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA0, dataB0));
     ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA0, dataC0));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("pushFront", () => {
     const ck = new Checker();
@@ -721,7 +766,7 @@ describe("GrowablePoint3dArray", () => {
     }
     dataA.reverseInPlace();
     ck.testTrue(GrowableXYZArray.isAlmostEqual(dataA, dataB));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });
 
@@ -899,6 +944,6 @@ describe("GrowableArray", () => {
       ck.testPoint3d(a3.back()!, Point3d.createZero(), "Resize > length fills with zero");
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

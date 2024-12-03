@@ -237,7 +237,13 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
 * `win restore` *windowId* - restore (un-dock) the specified or focused window.
 * `win close` *windowId* - close the specified or focused window.
 * `vp clone` *viewportId* - create a new viewport looking at the same view as the specified or currently-selected viewport.
-* `dta gltf` *assetUrl* - load a glTF asset from the specified URL and display it at the center of the project extents in the currently-selected viewport. If no URL is provided, a file picker allows selection of an asset from the local file system; in this case the asset must be fully self-contained (no references to other files).
+* `dta gltf` - load a glTF asset from and display it at the center of the project extents in the currently-selected viewport. If no URL is provided, a file picker allows selection of an asset from the local file system; in this case the asset must be fully self-contained (no references to other files). Optional arguments:
+  * `u=assetUrl` - URL for the asset to load.
+  * `i=numInstances` - the number of instances (at least 1) of the asset to render. If more than one, each will be drawn with a random translation roughly within the project extents.
+  * `f=0|1` - if true, force multiple instances to render without instancing, chiefly for performance comparison purposes.
+  * `s=0|1` - if true, apply a random scale to each instance.
+  * `r=0|1` - if true, apply a random rotation to each instance.
+  * `c=0|1` if true, apply a random color to each instance.
 * `dta text` *command* *args* - an extremely basic text editing system that allows you to build up a TextAnnotation to be displayed as a decoration graphic in the current viewport. Start it using `dta text init <categoryId>`. Then use commands like `dta text fraction "numerator" "denominator"`, `dta text height <height>`, `dta text color <color>`, etc to build up the annotation. Use `dta text clear` to delete the decoration and reset all state to defaults. See TextDecoration.ts for the full set of commands.
 * `dta version compare` - emulate version comparison.
 * `dta save image` - capture the contents of the selected viewport as a PNG image. By default, opens a new window to display the image. Accepts any of the following arguments:
@@ -284,6 +290,11 @@ display-test-app has access to all key-ins defined in the `@itwin/core-frontend`
   * `volume=0|1` - 1 to produce a volume classifier, 0 for a planar classifier.
   * `inside=0|1|2|3|4` - SpatialClassifierInsideDisplay.
   * `outside=0|1|2` - SpatialClassifierOutsideDisplay.
+* `dta clip mask` - Start a tool demonstrating how to use dynamically-created geometry to apply a planar clip mask to the background map or terrain. Left-click to place spheres, then right-click to apply their geometry as a mask. Options:
+  * `radius=number` - radius of each sphere.
+  * `invert=0|1` - if true, invert the mask so only regions of the map intersecting the mask are displayed.
+  * `transparency=number` - transparency of the masked geometry in [0..1].
+  * `priority=number` - the PlanarClipMaskPriority of the sphere geometry.
 * `dta classifyclip selected` *inside* - Color code elements from the current selection set based on their containment with the current view clip. Inside - Green, Outside - Red, Overlap - Blue. Specify optional inside arg to only determine inside or outside, not overlap. Disable clip in the view settings to select elements outside clip, use clip tool panel EDIT button to redisplay clip decoration after processing selection. Use key-in again without a clip or selection set to clear the color override.
 * `dta grid settings` - Change the grid settings for the selected viewport.
   * `spacing=number` Specify x and y grid reference line spacing in meters.

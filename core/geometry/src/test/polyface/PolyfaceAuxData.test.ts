@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { Arc3d } from "../../curve/Arc3d";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
@@ -64,7 +64,7 @@ describe("PolyfaceAuxData", () => {
     const roundTrippedBeam = IModelJson.Reader.parse(json);
 
     ck.testTrue(beam.isAlmostEqual(roundTrippedBeam));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CreateAuxChannelData", () => {
@@ -79,7 +79,7 @@ describe("PolyfaceAuxData", () => {
     ck.testFalse(auxData0.isAlmostEqual(auxData11));
     ck.testFalse(auxData0.isAlmostEqual(auxData12));
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("CreateAuxChannel", () => {
     const ck = new Checker();
@@ -132,7 +132,7 @@ describe("PolyfaceAuxData", () => {
       ck.testUndefined(vectorChannel.scalarRange, "no scalarRange on vector channel");
       ck.testExactNumber(vectorChannel.entriesPerValue, 3, "3 members in vector data");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("CreatePolyfaceAuxData", () => {
@@ -149,7 +149,7 @@ describe("PolyfaceAuxData", () => {
       ck.testFalse(auxDataA.isAlmostEqual(beam1.data.auxData!, 1.0e-9));
     }
     ck.testFalse(beam1.isAlmostEqual(beam2));
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("Compress", () => {
@@ -211,7 +211,7 @@ describe("PolyfaceAuxData", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolyfaceAuxData", "Compress");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   // This test generates a mesh with auxData, inspired by the sandbox https://www.itwinjs.org/sandboxes/iTwinPlatform/Scientific%20Visualization
@@ -323,6 +323,6 @@ describe("PolyfaceAuxData", () => {
         GeometryCoreTestIO.writeBytesToFile(bytes, pathname); // write .fb file
       }
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

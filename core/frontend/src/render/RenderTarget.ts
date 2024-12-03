@@ -168,7 +168,7 @@ export abstract class RenderTarget implements IDisposable, RenderMemory.Consumer
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** `rect` is specified in *CSS* pixels. */
   /** @internal */
-  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean): void;
+  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver, excludeNonLocatable: boolean, excludedElements?: Iterable<Id64String>): void;
   /** @deprecated in 3.x. use readImageBuffer
    * @internal
    */

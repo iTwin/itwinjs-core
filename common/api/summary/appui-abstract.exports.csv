@@ -27,7 +27,9 @@ deprecated;interface;BackstageActionItem
 public;type;BackstageItem
 deprecated;type;BackstageItem
 internal;interface;BackstageItemsChangedArgs
+deprecated;interface;BackstageItemsChangedArgs
 internal;class;BackstageItemsManager
+deprecated;class;BackstageItemsManager
 public;enum;BackstageItemType
 deprecated;enum;BackstageItemType
 public;class;BackstageItemUtilities
@@ -53,6 +55,7 @@ public;type;CommonToolbarItem
 public;class;ConditionalBooleanValue
 public;class;ConditionalStringValue
 public;interface;ContentLayoutProps
+deprecated;interface;ContentLayoutProps
 public;interface;CustomButtonDefinition
 public;interface;CustomFormattedNumberParams
 public;interface;DateFormatter
@@ -106,9 +109,13 @@ public;const;isStageLauncher
 deprecated;const;isStageLauncher
 public;const;isSuppressLabelEditorParams
 public;interface;LayoutFragmentProps
+deprecated;interface;LayoutFragmentProps
 public;interface;LayoutHorizontalSplitProps
+deprecated;interface;LayoutHorizontalSplitProps
 public;interface;LayoutSplitPropsBase
+deprecated;interface;LayoutSplitPropsBase
 public;interface;LayoutVerticalSplitProps
+deprecated;interface;LayoutVerticalSplitProps
 public;interface;LinkElementsInfo
 internal;function;matchesWords
 deprecated;function;matchesWords
@@ -150,6 +157,7 @@ deprecated;enum;StagePanelSection
 public;enum;StageUsage
 deprecated;enum;StageUsage
 public;class;StandardContentLayouts
+deprecated;class;StandardContentLayouts
 public;enum;StandardEditorNames
 public;enum;StandardTypeNames
 public;type;StatusBarItemId

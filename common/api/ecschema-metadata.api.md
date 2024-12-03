@@ -425,6 +425,8 @@ export enum ECObjectsStatus {
     // (undocumented)
     MissingSchemaUrl = 35070,
     // (undocumented)
+    NewerECSpecVersion = 35081,
+    // (undocumented)
     SchemaContextUndefined = 35075,
     // (undocumented)
     Success = 0,
@@ -432,6 +434,14 @@ export enum ECObjectsStatus {
     UnableToLoadSchema = 35080,
     // (undocumented)
     UnableToLocateSchema = 35071
+}
+
+// @internal
+export interface ECSpecVersion {
+    // (undocumented)
+    readVersion: number;
+    // (undocumented)
+    writeVersion: number;
 }
 
 // @internal (undocumented)
@@ -707,6 +717,8 @@ export class InvertedUnit extends SchemaItem {
     get invertsUnit(): LazyLoadedUnit | undefined;
     // (undocumented)
     protected _invertsUnit?: LazyLoadedUnit;
+    // @alpha (undocumented)
+    static isInvertedUnit(object: any): object is InvertedUnit;
     // (undocumented)
     readonly schemaItemType: SchemaItemType.InvertedUnit;
     // @alpha
@@ -978,6 +990,7 @@ export class OverrideFormat {
     get minWidth(): number | undefined;
     readonly name: string;
     readonly parent: Format;
+    static parseFormatString(formatString: string): OverrideFormatProps;
     // (undocumented)
     get precision(): DecimalPrecision | FractionalPrecision;
     // (undocumented)
@@ -1000,6 +1013,16 @@ export class OverrideFormat {
     get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
+}
+
+// @beta (undocumented)
+export interface OverrideFormatProps {
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    precision?: number;
+    // (undocumented)
+    unitAndLabels?: Array<[string, string | undefined]>;
 }
 
 // @beta
@@ -1613,6 +1636,10 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     protected createUnitSystemSync(name: string): UnitSystem;
     // (undocumented)
+    static get currentECSpecMajorVersion(): number;
+    // (undocumented)
+    static get currentECSpecMinorVersion(): number;
+    // (undocumented)
     get customAttributes(): CustomAttributeSet | undefined;
     // @alpha
     protected deleteClass(name: string): Promise<void>;
@@ -1658,6 +1685,10 @@ export class Schema implements CustomAttributeContainerProps {
     // (undocumented)
     get name(): string;
     // (undocumented)
+    get originalECSpecMajorVersion(): number | undefined;
+    // (undocumented)
+    get originalECSpecMinorVersion(): number | undefined;
+    // (undocumented)
     get readVersion(): number;
     // (undocumented)
     readonly references: Schema[];
@@ -1666,6 +1697,8 @@ export class Schema implements CustomAttributeContainerProps {
     get schemaKey(): SchemaKey;
     // (undocumented)
     protected _schemaKey?: SchemaKey;
+    // @alpha
+    protected setAlias(alias: string): void;
     // @alpha
     protected setContext(context: SchemaContext): void;
     // @alpha
@@ -1824,6 +1857,10 @@ export interface SchemaItemProps {
     // (undocumented)
     readonly name?: string;
     // (undocumented)
+    readonly originalECSpecMajorVersion?: number;
+    // (undocumented)
+    readonly originalECSpecMinorVersion?: number;
+    // (undocumented)
     readonly schema?: string;
     // (undocumented)
     readonly schemaItemType?: string;
@@ -1972,6 +2009,10 @@ export interface SchemaProps {
     // (undocumented)
     readonly description?: string;
     // (undocumented)
+    readonly ecSpecMajorVersion?: number;
+    // (undocumented)
+    readonly ecSpecMinorVersion?: number;
+    // (undocumented)
     readonly items?: {
         [name: string]: SchemaItemProps;
     };
@@ -1991,6 +2032,8 @@ export type SchemaPropsGetter = (schemaName: string) => SchemaProps | undefined;
 // @internal
 export class SchemaReadHelper<T = unknown> {
     constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor);
+    // (undocumented)
+    static isECSpecVersionNewer(ecSpecVersion?: ECSpecVersion): boolean;
     readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U>;
     readSchemaInfo<U extends Schema>(schema: U, rawSchema: T): Promise<SchemaInfo>;
     readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U;
@@ -2188,6 +2231,8 @@ export class XmlParser extends AbstractParser<Element> {
     // (undocumented)
     getClassCustomAttributeProviders(xmlElement: Element): Iterable<CAProviderTuple>;
     // (undocumented)
+    get getECSpecVersion(): ECSpecVersion | undefined;
+    // (undocumented)
     getItems(): Iterable<[string, string, Element]>;
     // (undocumented)
     getProperties(xmlElement: Element, itemName: string): Iterable<[string, string, Element]>;
@@ -2239,6 +2284,8 @@ export class XmlParser extends AbstractParser<Element> {
     parseUnit(xmlElement: Element): SchemaItemUnitProps;
     // (undocumented)
     parseUnitSystem(xmlElement: Element): UnitSystemProps;
+    // (undocumented)
+    static parseXmlNamespace(xmlNamespace: string): ECSpecVersion | undefined;
 }
 
 // (No @packageDocumentation comment for this package)

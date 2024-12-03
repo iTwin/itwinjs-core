@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import { AccessToken } from '@itwin/core-bentley';
 import { Angle } from '@itwin/core-geometry';
 import { AngleProps } from '@itwin/core-geometry';
@@ -708,6 +706,8 @@ export enum BisCodeSpec {
     physicalType = "bis:PhysicalType",
     renderMaterial = "bis:RenderMaterial",
     sheet = "bis:Sheet",
+    sheetIndex = "bis:SheetIndex",
+    sheetIndexEntry = "bis:SheetIndexEntry",
     spatialCategory = "bis:SpatialCategory",
     spatialLocationType = "bis:SpatialLocationType",
     subCategory = "bis:SubCategory",
@@ -1635,14 +1635,14 @@ export namespace ConcreteEntityTypes {
     export function toBisCoreRootClassFullName(type: ConcreteEntityTypes): string;
 }
 
-// @public
+// @public @deprecated
 export interface ConflictingLock {
     briefcaseIds: number[];
     objectId: string;
     state: LockState;
 }
 
-// @public
+// @public @deprecated
 export class ConflictingLocksError extends IModelError {
     constructor(message: string, getMetaData?: LoggingMetaData, conflictingLocks?: ConflictingLock[]);
     // (undocumented)
@@ -1703,11 +1703,16 @@ export class ContextRealityModel {
     set displaySettings(settings: RealityModelDisplaySettings);
     // @beta (undocumented)
     protected _displaySettings: RealityModelDisplaySettings;
+    // @beta
+    get invisible(): boolean;
+    set invisible(invisible: boolean);
     matchesNameAndUrl(name: string, url: string): boolean;
     readonly name: string;
     readonly onAppearanceOverridesChanged: BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>;
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(newSettings: RealityModelDisplaySettings, model: ContextRealityModel) => void>;
+    // @beta
+    readonly onInvisibleChanged: BeEvent<(invisible: boolean, model: ContextRealityModel) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>;
     // @alpha (undocumented)
     readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
@@ -1731,6 +1736,8 @@ export interface ContextRealityModelProps {
     description?: string;
     // @beta
     displaySettings?: RealityModelDisplayProps;
+    // @beta
+    invisible?: boolean;
     name?: string;
     // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
@@ -1758,6 +1765,8 @@ export class ContextRealityModels {
     readonly onChanged: BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>;
     // @beta
     readonly onDisplaySettingsChanged: BeEvent<(model: ContextRealityModel, newSettings: RealityModelDisplaySettings) => void>;
+    // @beta
+    readonly onInvisibleChanged: BeEvent<(model: ContextRealityModel, invisible: boolean) => void>;
     readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
     populate(): void;
     replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
@@ -1776,6 +1785,113 @@ export interface ContextRealityModelsContainer {
     // @internal
     container?: never;
     contextRealityModels?: ContextRealityModelProps[];
+}
+
+// @public
+export class Contour {
+    clone(changedProps?: Partial<ContourProperties>): Contour;
+    static compare(lhs: Contour, rhs: Contour): number;
+    static create(props?: Partial<ContourProperties>): Contour;
+    // (undocumented)
+    static readonly defaults: Contour;
+    // (undocumented)
+    equals(other: Contour): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourProps): Contour;
+    readonly majorIntervalCount: number;
+    readonly majorStyle: ContourStyle;
+    readonly minorInterval: number;
+    readonly minorStyle: ContourStyle;
+    readonly showGeometry: boolean;
+    // (undocumented)
+    toJSON(): ContourProps;
+}
+
+// @public
+export class ContourDisplay {
+    clone(changedProps?: Partial<ContourDisplayProperties>): ContourDisplay;
+    static create(props?: Partial<ContourDisplayProperties>): ContourDisplay;
+    readonly displayContours: boolean;
+    equals(other: ContourDisplay): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourDisplayProps): ContourDisplay;
+    readonly groups: ContourGroup[];
+    static readonly maxContourGroups = 5;
+    // (undocumented)
+    toJSON(): ContourDisplayProps;
+    withDisplayContours(displayContours: boolean): ContourDisplay;
+}
+
+// @public
+export type ContourDisplayProperties = NonFunctionPropertiesOf<ContourDisplay>;
+
+// @public
+export interface ContourDisplayProps {
+    displayContours?: boolean;
+    groups?: ContourGroupProps[];
+}
+
+// @public
+export class ContourGroup {
+    clone(changedProps?: Partial<ContourGroupProperties>): ContourGroup;
+    readonly contourDef: Contour;
+    static create(props?: Partial<ContourGroupProperties>): ContourGroup;
+    equals(other: ContourGroup | undefined): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourGroupProps): ContourGroup;
+    get isDefaultGroup(): boolean;
+    readonly name: string;
+    get subCategories(): OrderedId64Iterable;
+    subCategoriesEqual(other: ContourGroup): boolean;
+    // (undocumented)
+    toJSON(): ContourGroupProps;
+}
+
+// @public
+export type ContourGroupProperties = NonFunctionPropertiesOf<ContourGroup>;
+
+// @public
+export interface ContourGroupProps {
+    contourDef?: ContourProps;
+    name?: string;
+    subCategories?: CompressedId64Set;
+}
+
+// @public
+export type ContourProperties = NonFunctionPropertiesOf<Contour>;
+
+// @public
+export interface ContourProps {
+    majorIntervalCount?: number;
+    majorStyle?: ContourStyleProps;
+    minorInterval?: number;
+    minorStyle?: ContourStyleProps;
+    showGeometry?: boolean;
+}
+
+// @public
+export class ContourStyle {
+    clone(changedProps?: Partial<ContourStyleProperties>): ContourStyle;
+    readonly color: RgbColor;
+    static compare(lhs: ContourStyle, rhs: ContourStyle): number;
+    static create(props?: Partial<ContourStyleProperties>): ContourStyle;
+    equals(other: ContourStyle): boolean;
+    // (undocumented)
+    static fromJSON(props?: ContourStyleProps): ContourStyle;
+    readonly pattern: LinePixels;
+    readonly pixelWidth: number;
+    // (undocumented)
+    toJSON(): ContourStyleProps;
+}
+
+// @public
+export type ContourStyleProperties = NonFunctionPropertiesOf<ContourStyle>;
+
+// @public
+export interface ContourStyleProps {
+    color?: RgbColorProps;
+    pattern?: LinePixels;
+    pixelWidth?: number;
 }
 
 // @public
@@ -1810,8 +1926,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2228224,
-    Major = 34,
+    Combined = 2293760,
+    Major = 35,
     Minor = 0
 }
 
@@ -2123,6 +2239,8 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     applyOverrides(overrides: DisplayStyle3dSettingsProps): void;
     clearSunTime(): void;
+    get contours(): ContourDisplay;
+    set contours(contours: ContourDisplay);
     get environment(): Environment;
     set environment(environment: Environment);
     getPlanProjectionSettings(modelId: Id64String): PlanProjectionSettings | undefined;
@@ -2152,6 +2270,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 // @public
 export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
     ao?: AmbientOcclusion.Props;
+    contours?: ContourDisplayProps;
     environment?: EnvironmentProps;
     hline?: HiddenLine.SettingsProps;
     lights?: LightSettingsProps;
@@ -2255,6 +2374,7 @@ export class DisplayStyleSettings {
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onBackgroundMapChanged: BeEvent<(newMap: BackgroundMapSettings) => void>;
     readonly onClipStyleChanged: BeEvent<(newStyle: ClipStyle) => void>;
+    readonly onContoursChanged: BeEvent<(newContours: ContourDisplay) => void>;
     readonly onEnvironmentChanged: BeEvent<(newEnv: Readonly<Environment>) => void>;
     readonly onExcludedElementsChanged: BeEvent<() => void>;
     readonly onHiddenLineSettingsChanged: BeEvent<(newSettings: HiddenLine.Settings) => void>;
@@ -2743,6 +2863,30 @@ export interface ElementGeometryBuilderParamsForPart {
     is2dPart?: boolean;
 }
 
+// @beta
+export interface ElementGeometryCacheOperationRequestProps {
+    id: Id64String;
+    onGeometry?: ElementGeometryFunction;
+    op: number;
+    params?: any;
+}
+
+// @beta
+export interface ElementGeometryCacheRequestProps {
+    id?: Id64String;
+}
+
+// @beta
+export interface ElementGeometryCacheResponseProps {
+    numCurve?: number;
+    numGeom?: number;
+    numOther?: number;
+    numPart?: number;
+    numSolid?: number;
+    numSurface?: number;
+    status: BentleyStatus;
+}
+
 // @public (undocumented)
 export type ElementGeometryChange = ExtantElementGeometryChange | DeletedElementGeometryChange;
 
@@ -3103,10 +3247,14 @@ export class FeatureAppearance {
     static fromRgba(color: ColorDef, viewDependentTransparency?: boolean): FeatureAppearance;
     static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance;
     static fromTransparency(transparencyValue: number, viewDependent?: boolean): FeatureAppearance;
+    getLineRgb(): RgbColor | undefined;
+    getLineTransparency(): number | undefined;
     readonly ignoresMaterial?: true;
     // (undocumented)
     get isFullyTransparent(): boolean;
     readonly linePixels?: LinePixels;
+    readonly lineRgb?: RgbColor | false;
+    readonly lineTransparency?: number | false;
     get matchesDefaults(): boolean;
     readonly nonLocatable?: true;
     // (undocumented)
@@ -3134,6 +3282,8 @@ export interface FeatureAppearanceProps {
     emphasized?: true;
     ignoresMaterial?: true;
     linePixels?: LinePixels;
+    lineRgb?: RgbColorProps | false;
+    lineTransparency?: number | false;
     nonLocatable?: true;
     rgb?: RgbColorProps;
     transparency?: number;
@@ -3538,12 +3688,7 @@ export type GenericInstanceFilterRuleGroupOperator = "and" | "or";
 export type GenericInstanceFilterRuleOperator = "is-equal" | "is-not-equal" | "is-null" | "is-not-null" | "is-true" | "is-false" | "less" | "less-or-equal" | "greater" | "greater-or-equal" | "like";
 
 // @beta
-export interface GenericInstanceFilterRuleValue {
-    // (undocumented)
-    displayValue: string;
-    // (undocumented)
-    rawValue: GenericInstanceFilterRuleValue.Values;
-}
+export type GenericInstanceFilterRuleValue = GenericInstanceFilterRuleNumericValue | GenericInstanceFilterRuleNonNumericValue;
 
 // @beta (undocumented)
 export namespace GenericInstanceFilterRuleValue {
@@ -5131,6 +5276,29 @@ export const Interpolation: {
 // @public (undocumented)
 export type InterpolationFunction = (v: any, k: number) => number;
 
+// @beta
+export interface InUseLock {
+    briefcaseIds: number[];
+    objectId: string;
+    state: LockState;
+}
+
+// @beta
+export interface InUseLocksError extends ITwinError {
+    // (undocumented)
+    errorKey: "in-use-locks";
+    // (undocumented)
+    inUseLocks: InUseLock[];
+    // (undocumented)
+    namespace: "itwinjs-core";
+}
+
+// @beta (undocumented)
+export namespace InUseLocksError {
+    export function isInUseLocksError(error: unknown): error is InUseLocksError;
+    export function throwInUseLocksError(inUseLocks: InUseLock[], message?: string, metadata?: LoggingMetaData): never;
+}
+
 // @internal (undocumented)
 export const ipcAppChannels: {
     readonly functions: "itwinjs-core/ipc-app";
@@ -5155,6 +5323,7 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openCheckpoint: (args: OpenCheckpointArgs) => Promise<IModelConnectionProps>;
+    openSnapshot: (filePath: string, opts?: SnapshotOpenOptions) => Promise<IModelConnectionProps>;
     openStandalone: (filePath: string, openMode: OpenMode, opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
     pullChanges: (key: string, toIndex?: ChangesetIndex, options?: PullChangesOptions) => Promise<ChangesetIndexAndId>;
     pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
@@ -5182,13 +5351,25 @@ export interface IpcAppNotifications {
 export type IpcInvokeReturn = {
     result: any;
     error?: never;
+    iTwinError?: never;
 } | {
     result?: never;
+    iTwinError?: never;
     error: {
         name: string;
         message: string;
         errorNumber: number;
         stack?: string;
+    };
+} | {
+    result?: never;
+    error?: never;
+    iTwinError: {
+        namespace: string;
+        errorKey: string;
+        message: string;
+        stack?: string;
+        [key: string]: any;
     };
 };
 
@@ -5334,6 +5515,21 @@ export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 
 // @internal
 export const iTwinChannel: (channel: string) => string;
+
+// @beta
+export interface ITwinError {
+    errorKey: string;
+    message: string;
+    metadata?: LoggingMetaData;
+    namespace: string;
+    stack?: string;
+}
+
+// @beta (undocumented)
+export namespace ITwinError {
+    export function getMetaData(err: ITwinError): object | undefined;
+    export function isITwinError(error: unknown): error is ITwinError;
+}
 
 // @public
 export interface JsonGeometryStream {
@@ -7197,7 +7393,7 @@ export class QPoint3dBufferBuilder {
 
 // @public
 export class QPoint3dList {
-    [Symbol.iterator](): IterableIterator<QPoint3d>;
+    [Symbol.iterator](): ArrayIterator<QPoint3d>;
     constructor(params?: QParams3d);
     add(pt: Point3d): void;
     clear(): void;
@@ -7317,6 +7513,8 @@ export enum QueryParamType {
 export interface QueryPropertyMetaData {
     accessString?: string;
     className: string;
+    extendedType?: string;
+    // @deprecated
     extendType: string;
     generated: boolean;
     index: number;
@@ -8731,7 +8929,7 @@ export enum RpcRequestStatus {
 // @public @deprecated (undocumented)
 export namespace RpcRequestStatus {
     // (undocumented)
-    export function isTransientError(status: RpcRequestStatus): boolean;
+    export function isTransientError(status: RpcRequestStatus): status is RpcRequestStatus.BadGateway | RpcRequestStatus.ServiceUnavailable | RpcRequestStatus.GatewayTimeout | RpcRequestStatus.RequestTimeout | RpcRequestStatus.TooManyRequests;
 }
 
 // @internal
@@ -8947,6 +9145,19 @@ export interface SheetBorderTemplateProps extends ElementProps {
     width?: number;
 }
 
+// @beta
+export interface SheetIndexEntryProps extends ElementProps {
+    entryPriority: number;
+}
+
+// @beta
+export type SheetIndexFolderProps = SheetIndexEntryProps;
+
+// @beta
+export interface SheetIndexReferenceProps extends SheetIndexEntryProps {
+    sheetIndex?: RelatedElementProps;
+}
+
 // @public
 export interface SheetProps extends ElementProps {
     // (undocumented)
@@ -8959,6 +9170,11 @@ export interface SheetProps extends ElementProps {
     sheetTemplate?: Id64String;
     // (undocumented)
     width?: number;
+}
+
+// @beta
+export interface SheetReferenceProps extends SheetIndexEntryProps {
+    sheet?: RelatedElementProps;
 }
 
 // @beta
@@ -9115,6 +9331,7 @@ export interface SnapRequestProps {
     id: Id64String;
     // (undocumented)
     intersectCandidates?: Id64Array;
+    modelToWorld?: TransformProps;
     // (undocumented)
     snapAperture?: number;
     // (undocumented)
@@ -9157,17 +9374,17 @@ export interface SnapResponseProps {
     status: number;
 }
 
-// @internal
+// @internal @deprecated
 export abstract class SnapshotIModelRpcInterface extends RpcInterface {
-    // (undocumented)
+    // @deprecated (undocumented)
     close(_iModelRpcProps: IModelRpcProps): Promise<boolean>;
     static getClient(): SnapshotIModelRpcInterface;
     static getClientForRouting(token: RpcRoutingToken): SnapshotIModelRpcInterface;
     static readonly interfaceName = "SnapshotIModelRpcInterface";
     static interfaceVersion: string;
-    // (undocumented)
+    // @deprecated (undocumented)
     openFile(_filePath: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
-    // (undocumented)
+    // @deprecated (undocumented)
     openRemote(_key: string, _opts?: SnapshotOpenOptions): Promise<IModelConnectionProps>;
 }
 
@@ -10448,7 +10665,7 @@ export class Tween {
     // (undocumented)
     onStop(callback: TweenCallback): this;
     // (undocumented)
-    onUpdate(callback: UpdateCallback): this;
+    onUpdate(callback: UpdateCallback_2): this;
     // (undocumented)
     pause(time: number): this;
     // (undocumented)
@@ -10481,7 +10698,7 @@ export class Tweens {
     create(from: any, opts?: {
         to: any;
         duration: number;
-        onUpdate: UpdateCallback;
+        onUpdate: UpdateCallback_2;
         onComplete?: TweenCallback;
         delay?: number;
         start?: boolean;
@@ -10580,7 +10797,8 @@ export enum TypeOfChange {
 export type UnitType = "Meter" | "InternationalFoot" | "USSurveyFoot" | "Degree" | "Unsupported";
 
 // @public (undocumented)
-export type UpdateCallback = (obj: any, t: number) => void;
+type UpdateCallback_2 = (obj: any, t: number) => void;
+export { UpdateCallback_2 as UpdateCallback }
 
 // @beta
 export interface UpgradeOptions {
@@ -10846,7 +11064,7 @@ export interface ViewStateProps {
 // @beta
 export namespace ViewStoreRpc {
     const // @internal
-    version: "4.0.0";
+    version = "4.0.0";
     export interface AddViewArgs {
         readonly categorySelectorProps?: CategorySelectorProps;
         readonly displayStyleProps?: DisplayStyleProps;
@@ -11180,23 +11398,6 @@ export class WhiteOnWhiteReversalSettings {
     static fromJSON(props?: WhiteOnWhiteReversalProps): WhiteOnWhiteReversalSettings;
     readonly ignoreBackgroundColor: boolean;
     toJSON(): WhiteOnWhiteReversalProps | undefined;
-}
-
-// @internal
-export abstract class WipRpcInterface extends RpcInterface {
-    // (undocumented)
-    attachChangeCache(_iModelToken: IModelRpcProps): Promise<void>;
-    // (undocumented)
-    getChangedElements(_iModelToken: IModelRpcProps, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined>;
-    static getClient(): WipRpcInterface;
-    static readonly interfaceName = "WipRpcInterface";
-    static interfaceVersion: string;
-    // (undocumented)
-    isChangeCacheAttached(_iModelToken: IModelRpcProps): Promise<boolean>;
-    // (undocumented)
-    isChangesetProcessed(_iModelToken: IModelRpcProps, _changesetId: string): Promise<boolean>;
-    // (undocumented)
-    placeholder(_iModelToken: IModelRpcProps): Promise<string>;
 }
 
 // @public

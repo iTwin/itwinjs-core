@@ -11,7 +11,7 @@ import { BackendIModelsAccess } from "@itwin/imodels-access-backend";
 import { IModelsClient } from "@itwin/imodels-client-authoring";
 import { IModelDb, IModelHost, IModelHostOptions, LocalhostIpcHost, produceTextAnnotationGeometry } from "@itwin/core-backend";
 import {
-  IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface, TextAnnotation, TextAnnotationProps, TextBlockGeometryProps,
+  IModelReadRpcInterface, IModelRpcProps, IModelTileRpcInterface, RpcInterfaceDefinition, RpcManager, TextAnnotation, TextAnnotationProps, TextBlockGeometryProps,
 } from "@itwin/core-common";
 import { MobileHost, MobileHostOpts } from "@itwin/core-mobile/lib/cjs/MobileBackend";
 import { DtaConfiguration, getConfig } from "../common/DtaConfiguration";
@@ -24,8 +24,8 @@ function loadEnv(envFile: string) {
   if (!fs.existsSync(envFile))
     return;
 
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error) {
     throw envResult.error;
@@ -163,7 +163,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
 
     // Electron only
     try {
-      const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-var-requires
+      const { app } = require("electron"); // eslint-disable-line @typescript-eslint/no-require-imports
       if (app !== undefined)
         app.exit();
     } catch {
@@ -191,7 +191,6 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
     DtaRpcInterface,
     IModelReadRpcInterface,
     IModelTileRpcInterface,
-    SnapshotIModelRpcInterface,
   ];
 
   return rpcs;

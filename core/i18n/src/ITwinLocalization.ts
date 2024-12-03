@@ -239,7 +239,7 @@ export class ITwinLocalization implements Localization {
             if (typeof thisError === "string")
               locales = locales.filter((thisLocale) => !thisError.includes(thisLocale));
           }
-        } catch (e) {
+        } catch {
           locales = [];
         }
         // if we removed every locale from the array, it wasn't loaded.

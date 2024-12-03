@@ -10,8 +10,6 @@
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
-
 /**
  * Tolerance blob for various stroking methods.
  *
@@ -36,7 +34,7 @@ import { Angle } from "../geometry3d/Angle";
 export class StrokeOptions {
   /** Distance from stroke to actual geometry */
   public chordTol?: number;
-  /** Turning angle between strokes. */
+  /** Turning angle between strokes. Larger value leads to fewer strokes. */
   public angleTol?: Angle;
   /** Maximum length of a single stroke. */
   public maxEdgeLength?: number;

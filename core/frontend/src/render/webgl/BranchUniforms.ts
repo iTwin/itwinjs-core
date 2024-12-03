@@ -21,6 +21,7 @@ import { RenderCommands } from "./RenderCommands";
 import { desync, sync, SyncToken } from "./Sync";
 import { Target } from "./Target";
 import { ClipStack } from "./ClipStack";
+import { IModelApp } from "../../IModelApp";
 
 function equalXYZs(a: XYZ | undefined, b: XYZ | undefined): boolean {
   if (a === b)
@@ -103,6 +104,9 @@ export class BranchUniforms {
   public pushBranch(branch: Branch): void {
     desync(this);
     this._stack.pushBranch(branch);
+
+    this.setClipStyle(this.top.disableClipStyle);
+
     if (this.top.clipVolume)
       this.clipStack.push(this.top.clipVolume);
 
@@ -126,6 +130,7 @@ export class BranchUniforms {
       this.clipStack.pop();
 
     this._stack.pop();
+    this.setClipStyle(this.top.disableClipStyle);
   }
 
   public pushViewClip(): void {
@@ -236,7 +241,7 @@ export class BranchUniforms {
     if (this._target.wantThematicDisplay) {
       this._m32.initFromTransform(modelMatrix);
       this._v32.initFromMatrix3d(this._target.uniforms.frustum.viewMatrix.matrix);
-    } else if (undefined !== geometry.asSurface?.mesh.constantLodVParams) {
+    } else if (undefined !== geometry.asSurface?.mesh.constantLodVParams || this._target.uniforms.batch.wantContourLines) {
       this._m32.initFromTransform(modelMatrix);
     }
 
@@ -250,5 +255,16 @@ export class BranchUniforms {
     }
 
     return true;
+  }
+
+  // set the clip style based on disableClipStyle
+  private setClipStyle(disableClipStyle: true | undefined) {
+    const vp = IModelApp.viewManager.selectedView;
+    if (vp) {
+      const style = vp.view.displayStyle.settings.clipStyle;
+      this.clipStack.insideColor.alpha = disableClipStyle ? 0 : (style.insideColor ? 1 : 0);
+      this.clipStack.outsideColor.alpha = disableClipStyle ? 0 : (style.outsideColor ? 1 : 0);
+      this.clipStack.intersectionStyle.alpha = disableClipStyle ? 0 : (style.intersectionStyle ? style.intersectionStyle.width : 0);
+    }
   }
 }

@@ -6,11 +6,20 @@
 
 import { BentleyError } from '@itwin/core-bentley';
 
+// @internal
+export function almostEqual(a: number, b: number, tolerance?: number): boolean;
+
+// @internal
+export function almostZero(value: number): boolean;
+
 // @beta
 export interface AlternateUnitLabelsProvider {
     // (undocumented)
     getAlternateUnitLabels: (unit: UnitProps) => string[] | undefined;
 }
+
+// @internal
+export function applyConversion(value: number, props: UnitConversionProps): number;
 
 // @beta
 export class BadUnit implements UnitProps {
@@ -45,12 +54,12 @@ export class BaseFormat {
     // (undocumented)
     protected _azimuthBaseUnit?: UnitProps;
     // (undocumented)
+    get azimuthClockwiseOrDefault(): boolean;
+    // (undocumented)
     get azimuthCounterClockwise(): boolean | undefined;
     set azimuthCounterClockwise(azimuthCounterClockwise: boolean | undefined);
     // (undocumented)
     protected _azimuthCounterClockwise?: boolean;
-    // (undocumented)
-    get azimuthCounterClockwiseOrDefault(): boolean;
     // (undocumented)
     get decimalSeparator(): string;
     set decimalSeparator(decimalSeparator: string);
@@ -82,6 +91,11 @@ export class BaseFormat {
     set precision(precision: DecimalPrecision | FractionalPrecision);
     // (undocumented)
     protected _precision: number;
+    // (undocumented)
+    get ratioType(): RatioType | undefined;
+    set ratioType(ratioType: RatioType | undefined);
+    // (undocumented)
+    protected _ratioType?: RatioType;
     // (undocumented)
     get revolutionUnit(): UnitProps | undefined;
     set revolutionUnit(revolutionUnit: UnitProps | undefined);
@@ -249,6 +263,7 @@ export interface FormatProps {
     readonly minWidth?: number;
     // (undocumented)
     readonly precision?: number;
+    readonly ratioType?: string;
     readonly revolutionUnit?: string;
     // (undocumented)
     readonly roundFactor?: number;
@@ -326,15 +341,16 @@ export function formatTraitsToArray(currentFormatTrait: FormatTraits): string[];
 
 // @beta
 export enum FormatType {
-    Azimuth = 5,
-    Bearing = 4,
-    Decimal = 0,
-    Fractional = 1,
-    Scientific = 2,
-    Station = 3
+    Azimuth = "Azimuth",
+    Bearing = "Bearing",
+    Decimal = "Decimal",
+    Fractional = "Fractional",
+    Ratio = "Ratio",
+    Scientific = "Scientific",
+    Station = "Station"
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export function formatTypeToString(type: FormatType): string;
 
 // @beta
@@ -426,8 +442,12 @@ export class Parser {
     static parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider, altUnitLabelsProvider?: AlternateUnitLabelsProvider): Promise<QuantityProps>;
     static parseQuantitySpecification(quantitySpecification: string, format: Format): ParseToken[];
     static parseQuantityString(inString: string, parserSpec: ParserSpec): QuantityParseResult;
+    // @deprecated
     static parseToQuantityValue(inString: string, format: Format, unitsConversions: UnitConversionSpec[]): QuantityParseResult;
 }
+
+// @beta (undocumented)
+export function parseRatioType(ratioType: string, formatName: string): RatioType;
 
 // @beta
 export class ParserSpec {
@@ -546,6 +566,8 @@ export enum QuantityStatus {
     // (undocumented)
     InvalidJson = 35040,
     // (undocumented)
+    InvertingZero = 35049,
+    // (undocumented)
     MissingRequiredProperty = 35048,
     // (undocumented)
     NoValueOrUnitFoundInString = 35043,
@@ -566,30 +588,43 @@ export enum QuantityStatus {
 }
 
 // @beta
-export enum ScientificType {
-    Normalized = 0,
-    ZeroNormalized = 1
+export enum RatioType {
+    NToOne = "NToOne",
+    OneToN = "OneToN",
+    UseGreatestCommonDivisor = "UseGreatestCommonDivisor",
+    ValueBased = "ValueBased"
 }
 
-// @beta (undocumented)
+// @beta
+export enum ScientificType {
+    Normalized = "Normalized",
+    ZeroNormalized = "ZeroNormalized"
+}
+
+// @beta @deprecated (undocumented)
 export function scientificTypeToString(scientificType: ScientificType): string;
 
 // @beta
 export enum ShowSignOption {
-    NegativeParentheses = 3,
-    NoSign = 0,
-    OnlyNegative = 1,
-    SignAlways = 2
+    NegativeParentheses = "NegativeParentheses",
+    NoSign = "NoSign",
+    OnlyNegative = "OnlyNegative",
+    SignAlways = "SignAlways"
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export function showSignOptionToString(showSign: ShowSignOption): string;
 
 // @beta
+export enum UnitConversionInvert {
+    InvertPostConversion = "InvertPostConversion",
+    InvertPreConversion = "InvertPreConversion"
+}
+
+// @beta
 export interface UnitConversionProps {
-    // (undocumented)
     factor: number;
-    // (undocumented)
+    inversion?: UnitConversionInvert;
     offset: number;
 }
 

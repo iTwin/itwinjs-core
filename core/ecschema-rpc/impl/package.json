@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-rpcinterface-impl",
-  "version": "4.9.0-dev.17",
+  "version": "5.0.0-dev.16",
   "description": "Schema RPC Interface backend implementation",
   "main": "lib/cjs/ecschema-rpc-impl.js",
   "typings": "lib/cjs/ecschema-rpc-impl",
@@ -17,7 +17,7 @@
     "cover": "",
     "docs": "",
     "extract-api": "betools extract-api --entry=ecschema-rpc-impl",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": ""
   },
   "keywords": [
@@ -46,9 +46,9 @@
     "@itwin/core-geometry": "workspace:*",
     "@itwin/ecschema-metadata": "workspace:*",
     "@itwin/ecschema-rpcinterface-common": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
-    "eslint": "^8.56.0",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
+    "eslint": "^9.13.0",
     "rimraf": "^3.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.6.2"
   }
 }

@@ -121,34 +121,34 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /**
    * Return array of fraction parameters.
-   * * These Are only present during certain constructions such as faceting.
+   * * These are only present during certain constructions such as faceting.
    * * When present, these fractions are fractions of some other curve being stroked, and are NOT related to the
    * linestring fraction parameters.
    */
   public get fractions(): GrowableFloat64Array | undefined {
     return this._fractions;
   }
-  /** Return the (optional) array of derivatives. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of derivatives. These are only present during certain constructions such as faceting. */
   public get packedDerivatives(): GrowableXYZArray | undefined {
     return this._derivatives;
   }
-  /** Return the (optional) array of uv params. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of uv parameters. These are only present during certain constructions such as faceting. */
   public get packedUVParams(): GrowableXYArray | undefined {
     return this._uvParams;
   }
-  /** Return the (optional) array of surface normals. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of surface normals. These are only present during certain constructions such as faceting. */
   public get packedSurfaceNormals(): GrowableXYZArray | undefined {
     return this._surfaceNormals;
   }
-  /** Return the (optional) array of normal indices. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of normal indices. These are only present during certain constructions such as faceting. */
   public get normalIndices(): GrowableFloat64Array | undefined {
     return this._normalIndices;
   }
-  /** Return the (optional) array of param indices. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of uv parameter indices. These are only present during certain constructions such as faceting. */
   public get paramIndices(): GrowableFloat64Array | undefined {
     return this._uvIndices;
   }
-  /** Return the (optional) array of point indices. These Are only present during certain constructions such as faceting. */
+  /** Return the (optional) array of point indices. These are only present during certain constructions such as faceting. */
   public get pointIndices(): GrowableFloat64Array | undefined {
     return this._pointIndices;
   }
@@ -724,11 +724,32 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public reverseInPlace(): void {
     if (this._points.length >= 2) {
       this._points.reverseInPlace();
+      if (this._fractions) {
+        this._fractions.reverseInPlace();
+        for (let i = 0; i < this._fractions.length; ++i)
+          this._fractions.reassign(i, 1.0 - this._fractions.atUncheckedIndex(i));
+      }
       if (this._uvParams)
         this._uvParams.reverseInPlace();
+      if (this._derivatives) {
+        this._derivatives.reverseInPlace();
+        this._derivatives.scaleInPlace(-1.0);
+      }
+      if (this._surfaceNormals)
+        this._surfaceNormals.reverseInPlace();
+      if (this._pointIndices)
+        this._pointIndices.reverseInPlace();
+      if (this._uvIndices)
+        this._uvIndices.reverseInPlace();
+      if (this._normalIndices)
+        this._normalIndices.reverseInPlace();
     }
   }
-  /** Apply `transform` to each point of this linestring. */
+  /**
+   * Apply `transform` to each point of this linestring.
+   * * Note that this method always returns true. If transforming the surface normals fails (due to singular matrix or zero
+   * normal), the original normal(s) are left unchanged.
+  */
   public tryTransformInPlace(transform: Transform): boolean {
     this._points.multiplyTransformInPlace(transform);
     if (this._derivatives)
@@ -853,11 +874,13 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   public quickLength(): number { return this.curveLength(); }
   /**
    * Compute and normalize cross product among 3 points on the linestring.
-   * * "any" 3 points are acceptable -- no test for positive overall sense.
-   * * This is appropriate for polygon known to be convex.
-   * * use points spread at index step n/3, hopefully avoiding colinear points.
-   * * If that fails, try points 012
-   * @param result computed normal.
+   * * Essentially 3 random points are used to form the cross product.
+   * * This is appropriate for a polygon known to be convex.
+   * * No test for convexity or collinearity is performed.
+   * * If the polygon is not convex, the returned normal may be reversed.
+   * * If the random points used in the cross product are collinear, undefined is returned.
+   * @param result pre-allocated object to populate and return
+   * @returns unit normal, or undefined if normalization failed
    */
   public quickUnitNormal(result?: Vector3d): Vector3d | undefined {
     let step = Math.floor(this._points.length / 3);

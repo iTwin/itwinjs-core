@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
 import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
@@ -80,7 +80,7 @@ class PolylineCompressionChecker {
   /** Save the collected geometry to given fileName. */
   public close(fileName: string) {
     GeometryCoreTestIO.saveGeometry(this.allGeometry, "PolylineCompression", fileName);
-    expect(this.ck.getNumErrors()).equals(0);
+    expect(this.ck.getNumErrors()).toBe(0);
   }
 }
 describe("GlobalCompression", () => {
@@ -150,7 +150,7 @@ describe("GlobalCompression", () => {
       const pointsE = PolylineOps.compressByChordError(points, 0.1);
       ck.testExactNumber(points.length, pointsE.length, "No Change global chord error case");
     }
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
   it("ColinearThroughStart", () => {
@@ -177,12 +177,12 @@ describe("GlobalCompression", () => {
       for (const f of fractions) {
         points.push(basePoint.plusScaled(vector, f));
       }
-  }
+    }
   }
   // append points at multiple fractional positions along a vector.
   function insertPointsOnVector(points: Point3d[], baseIndex: number, vector: Vector3d, fractions: number[]): Point3d[] {
     const result: Point3d[] = [];
-    for (let i = 0; i < points.length; i++){
+    for (let i = 0; i < points.length; i++) {
       result.push(points[i].clone());
       if (i === baseIndex) {
         appendPointsOnVector(result, vector, fractions);
@@ -218,7 +218,7 @@ describe("GlobalCompression", () => {
       const areaA = PolygonOps.areaXY(pointsWithDanglers); // danglers do not affect area!
       const compressedPoints = PolylineOps.compressDanglers(pointsWithDanglers, true);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, compressedPoints, x0, y0 += dy);
-      ck.testCoordinate(area0, Math.abs (areaA), "area after removing danglers");
+      ck.testCoordinate(area0, Math.abs(areaA), "area after removing danglers");
       ck.testExactNumber(originalPoints.length, compressedPoints.length, "point count after compression");
       const compressedLength = Point3dArray.sumEdgeLengths(compressedPoints);
       ck.testCoordinate(originalLength, compressedLength);
@@ -241,8 +241,8 @@ describe("GlobalCompression", () => {
       const pointsC = insertPointsOnVector(pointsB, baseIndex + 1, vectorY2, [-1, -1.5, -1, 0]);
       compressAndTest(pointsC);
       // Another dangler -- this time with an "on edge" return ---
-      for (const shift of [2,3, 5]){
-        const pointsD = insertPointsOnVector(pointsC, (baseIndex + originalCount - shift) % originalCount, vectorQ, [0,1,0.5,-0.25, -1.0, 0]);
+      for (const shift of [2, 3, 5]) {
+        const pointsD = insertPointsOnVector(pointsC, (baseIndex + originalCount - shift) % originalCount, vectorQ, [0, 1, 0.5, -0.25, -1.0, 0]);
         compressAndTest(pointsD);
       }
       const nC = pointsC.length;
@@ -254,8 +254,8 @@ describe("GlobalCompression", () => {
           compressAndTest(rotatedPoints.slice().reverse());
         }
       }
-   }
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "PolylineCompression", "Danglers");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 });

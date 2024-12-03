@@ -16,9 +16,10 @@ import { IModelApp } from "../../IModelApp";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { UniformHandle } from "./UniformHandle";
-import { OvrFlags, TextureUnit } from "./RenderFlags";
+import { TextureUnit } from "./RenderFlags";
 import { System } from "./System";
 import { TextureOwnership } from "../CreateTextureArgs";
+import { OvrFlags } from "../../common/internal/render/OvrFlags";
 
 /** @internal */
 export type Texture2DData = Uint8Array | Float32Array;
@@ -650,7 +651,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
           }
         }
       }
-    } catch (_e) { }
+    } catch { }
 
     return this._nextRequest(req);
   }
@@ -674,7 +675,7 @@ export class ExternalTextureLoader { /* currently exported for tests only */
           }
         }
       }
-    } catch (_e) { }
+    } catch { }
     this._convertPending = false;
   }
 

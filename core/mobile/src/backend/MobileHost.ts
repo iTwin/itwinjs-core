@@ -147,7 +147,7 @@ export class MobileHost {
     return new Promise<[AccessToken, string]>((resolve, reject) => {
       this.device.authGetAccessToken((tokenString?: AccessToken, expirationDate?: string, error?: string) => {
         if (error) {
-          reject(error);
+          reject(new Error(error));
         } else {
           resolve([tokenString ?? "", expirationDate ?? ""]);
         }
@@ -185,7 +185,6 @@ export class MobileHost {
           resolve();
       }, progressCb);
       if (cancelRequest) {
-        // eslint-disable-next-line @typescript-eslint/unbound-method
         cancelRequest.cancel = () => this.device.cancelDownloadTask(requestId);
       }
     });
@@ -207,7 +206,7 @@ export class MobileHost {
       this.onOrientationChanged.addListener(() => {
         try {
           MobileHost.notifyMobileFrontend("notifyOrientationChanged");
-        } catch (_ex) { } // Ignore: frontend is not currently connected
+        } catch { } // Ignore: frontend is not currently connected
       });
       this.onWillTerminate.addListener(() => {
         MobileHost.notifyMobileFrontend("notifyWillTerminate");

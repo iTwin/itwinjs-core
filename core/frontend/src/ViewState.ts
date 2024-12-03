@@ -93,6 +93,10 @@ export interface ComputeDisplayTransformArgs {
    * @beta
    */
   viewAttachmentId?: Id64String;
+  /** True if the element or model was drawn through a [[SpatialViewState]] attached to a [SectionDrawing]($backend).
+   * @beta
+   */
+  inSectionDrawingAttachment?: boolean;
   /** If supplied, [[ViewState.computeDisplayTransform]] will modify and return this Transform to hold the result instead of allocating a new Transform.
    * @note If [[ViewState.computeDisplayTransform]] returns `undefined`, this Transform will be unmodified.
    */
@@ -195,6 +199,14 @@ const scratchRange2dIntersect = Range2d.createNull();
  * @public
  */
 export type AttachToViewportArgs = Viewport;
+
+/** Arguments to [[ViewState.getAttachmentViewport]].
+ * @internal
+ */
+export interface GetAttachmentViewportArgs {
+  viewAttachmentId?: Id64String;
+  inSectionDrawingAttachment?: boolean;
+}
 
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
@@ -323,8 +335,8 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined { // eslint-disable-line deprecation/deprecation
-    return this.displayStyle.scheduleScriptReference; // eslint-disable-line deprecation/deprecation
+  public get scheduleScriptReference(): RenderSchedule.ScriptReference | undefined {
+    return this.displayStyle.scheduleScriptReference; // eslint-disable-line @typescript-eslint/no-deprecated
   }
 
   /** Get the globe projection mode.
@@ -1274,6 +1286,8 @@ export abstract class ViewState extends ElementState {
    *  - [PlanProjectionSettings.elevation]($common) applied to plan projection models by [DisplayStyle3dSettings.planProjectionSettings]($common);
    *  - A per-model transform supplied by this view's [[modelDisplayTransformProvider]]; and/or
    *  - A transform applied to an element by an [RenderSchedule.ElementTimeline]($common) defined by this view's [[scheduleScript]].
+   *  - A transform from the coordinate space of a [ViewAttachment]($backend)'s view to that of the [[SheetViewState]] in which it is displayed.
+   *  - A transform from the coordinate space of a [[SpatialViewState]] to that of the [[DrawingViewState]] in which it is displayed, where the spatial view is attached via a [SectionDrawing]($backend).
    * @param args A description of how to compute the transform.
    * @returns The computed transform, or `undefined` if no display transform is to be applied.
    * @beta
@@ -1367,7 +1381,7 @@ export abstract class ViewState extends ElementState {
   /** Find the viewport that renders the contents of the view attachment with the specified element Id into this view.
    * @internal
    */
-  public getAttachmentViewport(_id: Id64String): Viewport | undefined {
+  public getAttachmentViewport(_args: GetAttachmentViewportArgs): Viewport | undefined {
     return undefined;
   }
 }

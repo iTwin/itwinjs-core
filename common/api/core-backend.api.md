@@ -4,8 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
 import { AccessToken } from '@itwin/core-bentley';
 import { Angle } from '@itwin/core-geometry';
 import { AuthorizationClient } from '@itwin/core-common';
@@ -18,6 +16,7 @@ import { BaselineShift } from '@itwin/core-common';
 import { BeDuration } from '@itwin/core-bentley';
 import { BeEvent } from '@itwin/core-bentley';
 import { BentleyError } from '@itwin/core-bentley';
+import { BentleyStatus } from '@itwin/core-bentley';
 import { BRepGeometryCreate } from '@itwin/core-common';
 import { BriefcaseId } from '@itwin/core-common';
 import { BriefcaseProps } from '@itwin/core-common';
@@ -71,6 +70,9 @@ import { ElementAlignedBox3d } from '@itwin/core-common';
 import { ElementAspectProps } from '@itwin/core-common';
 import { ElementGeometryBuilderParams } from '@itwin/core-common';
 import { ElementGeometryBuilderParamsForPart } from '@itwin/core-common';
+import { ElementGeometryCacheOperationRequestProps } from '@itwin/core-common';
+import { ElementGeometryCacheRequestProps } from '@itwin/core-common';
+import { ElementGeometryCacheResponseProps } from '@itwin/core-common';
 import { ElementGeometryRequest } from '@itwin/core-common';
 import { ElementGraphicsRequestProps } from '@itwin/core-common';
 import { ElementLoadProps } from '@itwin/core-common';
@@ -181,6 +183,7 @@ import { Range2dProps } from '@itwin/core-geometry';
 import { Range3d } from '@itwin/core-geometry';
 import { Rank } from '@itwin/core-common';
 import { RelatedElement } from '@itwin/core-common';
+import { RelatedElementProps } from '@itwin/core-common';
 import { RelationshipProps } from '@itwin/core-common';
 import { RemoveFunction } from '@itwin/core-common';
 import { RenderMaterialProps } from '@itwin/core-common';
@@ -199,7 +202,10 @@ import { SectionType } from '@itwin/core-common';
 import { ServerStorage } from '@itwin/object-storage-core';
 import { SessionProps } from '@itwin/core-common';
 import { SheetBorderTemplateProps } from '@itwin/core-common';
+import { SheetIndexEntryProps } from '@itwin/core-common';
+import { SheetIndexReferenceProps } from '@itwin/core-common';
 import { SheetProps } from '@itwin/core-common';
+import { SheetReferenceProps } from '@itwin/core-common';
 import { SheetTemplateProps } from '@itwin/core-common';
 import { SnapRequestProps } from '@itwin/core-common';
 import { SnapResponseProps } from '@itwin/core-common';
@@ -412,6 +418,7 @@ export namespace BlobContainer {
     export interface ContainerService {
         create(props: CreateNewContainerProps): Promise<CreatedContainerProps>;
         delete(container: AccessContainerProps): Promise<void>;
+        queryContainersMetadata(userToken: UserToken, args: QueryContainerProps): Promise<MetadataResponse[]>;
         queryMetadata(container: AccessContainerProps): Promise<Metadata>;
         queryScope(container: AccessContainerProps): Promise<Scope>;
         requestToken(props: RequestTokenProps): Promise<TokenProps>;
@@ -434,9 +441,19 @@ export namespace BlobContainer {
         json?: SettingsContainer;
         label: string;
     }
+    export interface MetadataResponse extends Metadata {
+        // (undocumented)
+        containerId: string;
+    }
     export type Provider = "azure" | "google";
+    export interface QueryContainerProps {
+        containerType?: GuidString;
+        iModelId?: GuidString;
+        iTwinId: GuidString;
+        label?: GuidString;
+    }
     export type RequestAccessLevel = "write" | "read" | "admin" | "writeIfPossible";
-    export interface RequestTokenProps extends AccessContainerProps {
+    export interface RequestTokenProps extends Omit<AccessContainerProps, "baseUri"> {
         accessLevel?: RequestAccessLevel;
         durationSeconds?: number;
     }
@@ -446,6 +463,7 @@ export namespace BlobContainer {
         ownerGuid?: GuidString;
     }
     export interface TokenProps {
+        baseUri: string;
         expiration: Date;
         metadata: Metadata;
         provider: Provider;
@@ -489,6 +507,9 @@ export class BriefcaseDb extends IModelDb {
     static open(args: OpenBriefcaseArgs): Promise<BriefcaseDb>;
     pullChanges(arg?: PullChangesArgs): Promise<void>;
     pushChanges(arg: PushChangesArgs): Promise<void>;
+    revertAndPushChanges(arg: RevertChangesArgs): Promise<void>;
+    // @internal (undocumented)
+    get skipSyncSchemasOnPullAndPush(): boolean;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;
@@ -553,6 +574,8 @@ export class BriefcaseManager {
     }): Promise<ChangesetProps[]>;
     static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     static releaseBriefcase(accessToken: AccessToken, briefcase: BriefcaseProps): Promise<void>;
+    // @internal (undocumented)
+    static revertTimelineChanges(db: IModelDb, arg: RevertChangesArgs): Promise<void>;
 }
 
 // @public
@@ -1829,15 +1852,16 @@ export interface ECSqlColumnInfo {
 
 // @public
 export class ECSqlInsertResult {
-    constructor(status: DbResult, id?: string | undefined);
+    constructor(status: DbResult, id?: Id64String | undefined);
     // (undocumented)
-    id?: string | undefined;
+    id?: Id64String | undefined;
     // (undocumented)
     status: DbResult;
 }
 
 // @public
 export interface ECSqlRowArg {
+    classIdsToClassNames?: boolean;
     rowFormat?: QueryRowFormat;
 }
 
@@ -1865,8 +1889,6 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
     bindValues(values: any[] | object): void;
     clearBindings(): void;
     dispose(): void;
-    // @internal (undocumented)
-    formatCurrentRow(currentResp: any, rowFormat?: QueryRowFormat): any[] | object;
     getBinder(parameter: string | number): ECSqlBinder;
     getColumnCount(): number;
     // @internal
@@ -2566,7 +2588,7 @@ export class ExternalSourceOwnsAttachments extends ElementOwnsChildElements {
     static classFullName: string;
 }
 
-// @public
+// @public @deprecated
 export abstract class FileNameResolver {
     resolveFileName(inFileName: string): string;
     resolveKey(fileKey: string): string;
@@ -3076,6 +3098,8 @@ export abstract class IModelDb extends IModel {
     // @beta
     deleteSettingDictionary(name: string): void;
     // @beta
+    elementGeometryCacheOperation(requestProps: ElementGeometryCacheOperationRequestProps): BentleyStatus;
+    // @beta
     elementGeometryRequest(requestProps: ElementGeometryRequest): IModelStatus;
     // (undocumented)
     readonly elements: IModelDb.Elements;
@@ -3180,6 +3204,8 @@ export abstract class IModelDb extends IModel {
     tryGetMetaData(classFullName: string): EntityMetaData | undefined;
     tryPrepareStatement(sql: string): ECSqlStatement | undefined;
     updateEcefLocation(ecef: EcefLocation): void;
+    // @beta
+    updateElementGeometryCache(requestProps: ElementGeometryCacheRequestProps): Promise<ElementGeometryCacheResponseProps>;
     updateIModelProps(): void;
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
     static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
@@ -3393,6 +3419,7 @@ export class IModelHost {
     // @beta
     static get settingsSchemas(): SettingsSchemas;
     static shutdown(this: void): Promise<void>;
+    // @deprecated
     static snapshotFileNameResolver?: FileNameResolver;
     static startup(options?: IModelHostOptions): Promise<void>;
     // @internal
@@ -4681,6 +4708,13 @@ export interface RequestNewBriefcaseArg extends TokenArg, RequestNewBriefcasePro
 }
 
 // @public
+export type RevertChangesArgs = Optional<PushChangesArgs, "description"> & {
+    onProgress?: ProgressFunction;
+    toIndex: ChangesetIndex;
+    skipSchemaChanges?: true;
+};
+
+// @public
 export abstract class RoleElement extends Element_2 {
     // (undocumented)
     static get className(): string;
@@ -4752,6 +4786,8 @@ export namespace SchemaSync {
     withReadonlyAccess: (iModel: IModelDb | {
         readonly fileName: LocalFileName;
     }, operation: (access: CloudAccess) => Promise<void>) => Promise<void>;
+    const // (undocumented)
+    isEnabled: (iModel: IModelDb) => boolean;
     const pull: (iModel: IModelDb) => Promise<void>;
     const // (undocumented)
     initializeForIModel: (arg: {
@@ -4964,10 +5000,134 @@ export class SheetBorderTemplate extends Document_2 {
     width?: number;
 }
 
+// @beta
+export class SheetIndex extends InformationReferenceElement {
+    // (undocumented)
+    static get className(): string;
+    static create(iModelDb: IModelDb, modelId: Id64String, name: string): SheetIndex;
+    static createCode(iModel: IModelDb, scopeSheetIndexModelId: CodeScopeProps, codeValue: string): Code;
+    static insert(iModelDb: IModelDb, modelId: Id64String, name: string): Id64String;
+}
+
+// @beta
+export abstract class SheetIndexEntry extends InformationReferenceElement {
+    protected constructor(props: SheetIndexEntryProps, iModel: IModelDb);
+    // (undocumented)
+    static get className(): string;
+    static createCode(iModelDb: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code;
+    // (undocumented)
+    protected static createParentRelationshipProps(iModelDb: IModelDb, id: Id64String): RelatedElementProps;
+    // (undocumented)
+    protected static createProps(arg: SheetIndexEntryCreateArgs): SheetIndexEntryProps;
+    entryPriority: number;
+    // (undocumented)
+    toJSON(): SheetIndexEntryProps;
+}
+
+// @beta
+export interface SheetIndexEntryCreateArgs {
+    iModelDb: IModelDb;
+    name: string;
+    parentId: Id64String;
+    priority: number;
+    sheetIndexModelId: Id64String;
+}
+
+// @beta
+export class SheetIndexFolder extends SheetIndexEntry {
+    // (undocumented)
+    static get className(): string;
+    static create(arg: SheetIndexEntryCreateArgs): SheetIndexFolder;
+    static insert(arg: SheetIndexEntryCreateArgs): Id64String;
+}
+
+// @beta
+export class SheetIndexFolderOwnsEntries extends ElementOwnsChildElements {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export class SheetIndexModel extends InformationModel {
+    // (undocumented)
+    static get className(): string;
+    static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String;
+}
+
+// @beta
+export class SheetIndexOwnsEntries extends ElementOwnsChildElements {
+    constructor(parentId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
+// @beta
+export class SheetIndexPartition extends InformationPartitionElement {
+    // (undocumented)
+    static get className(): string;
+}
+
+// @beta
+export class SheetIndexReference extends SheetIndexEntry {
+    protected constructor(props: SheetIndexReferenceProps, iModel: IModelDb);
+    // (undocumented)
+    static get className(): string;
+    // @alpha (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    static create(arg: SheetIndexReferenceCreateArgs): SheetIndexReference;
+    // (undocumented)
+    protected static createReferenceRelationshipProps(id: Id64String): RelatedElementProps;
+    static insert(arg: SheetIndexReferenceCreateArgs): Id64String;
+    sheetIndex?: SheetIndexReferenceRefersToSheetIndex;
+    // (undocumented)
+    toJSON(): SheetIndexReferenceProps;
+}
+
+// @beta
+export interface SheetIndexReferenceCreateArgs extends SheetIndexEntryCreateArgs {
+    sheetIndexId?: Id64String;
+}
+
+// @beta
+export class SheetIndexReferenceRefersToSheetIndex extends RelatedElement {
+    constructor(sheetIndexId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
+}
+
 // @public
 export class SheetModel extends GraphicalModel2d {
     // (undocumented)
     static get className(): string;
+}
+
+// @beta
+export class SheetReference extends SheetIndexEntry {
+    protected constructor(props: SheetReferenceProps, iModel: IModelDb);
+    // (undocumented)
+    static get className(): string;
+    // @alpha (undocumented)
+    protected collectReferenceIds(referenceIds: EntityReferenceSet): void;
+    static create(arg: SheetReferenceCreateArgs): SheetReference;
+    // (undocumented)
+    protected static createReferenceRelationshipProps(id: Id64String): RelatedElementProps;
+    static insert(arg: SheetReferenceCreateArgs): Id64String;
+    sheet: SheetReferenceRefersToSheet | undefined;
+    // (undocumented)
+    toJSON(): SheetReferenceProps;
+}
+
+// @beta
+export interface SheetReferenceCreateArgs extends SheetIndexEntryCreateArgs {
+    sheetId?: Id64String;
+}
+
+// @beta
+export class SheetReferenceRefersToSheet extends RelatedElement {
+    constructor(sheetId: Id64String, relClassName?: string);
+    // (undocumented)
+    static classFullName: string;
 }
 
 // @public
@@ -5124,11 +5284,11 @@ export type SqliteChangeOp = "Inserted" | "Updated" | "Deleted";
 // @beta
 export class SqliteChangesetReader implements IDisposable {
     protected constructor(
-    db?: AnyDb | undefined);
+    db: AnyDb);
     get changeIndex(): number;
     close(): void;
     get columnCount(): number;
-    readonly db?: AnyDb | undefined;
+    readonly db: AnyDb;
     get disableSchemaCheck(): boolean;
     dispose(): void;
     getChangeValue(columnIndex: number, stage: SqliteValueStage): SqliteValue_2;
@@ -5153,10 +5313,10 @@ export class SqliteChangesetReader implements IDisposable {
     static openGroup(args: {
         readonly changesetFiles: string[];
     } & SqliteChangesetReaderArgs): SqliteChangesetReader;
-    static openLocalChanges(args: {
-        iModel: IModelJsNative.DgnDb;
+    static openLocalChanges(args: Omit<SqliteChangesetReaderArgs, "db"> & {
+        db: IModelDb;
         includeInMemoryChanges?: true;
-    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
+    }): SqliteChangesetReader;
     get primaryKeyValues(): SqliteValueArray;
     step(): boolean;
     get tableName(): string;
@@ -5169,7 +5329,7 @@ export class SqliteChangesetReader implements IDisposable {
 
 // @beta
 export interface SqliteChangesetReaderArgs {
-    readonly db?: AnyDb;
+    readonly db: AnyDb;
     readonly disableSchemaCheck?: true;
     readonly invert?: true;
 }
@@ -5982,7 +6142,7 @@ export namespace ViewStore {
     const // @internal (undocumented)
     toRowId: (id: RowIdOrString) => RowId;
     const // (undocumented)
-    defaultViewGroupId: 1;
+    defaultViewGroupId = 1;
     // (undocumented)
     export type TimelineRow = TableRow;
     // (undocumented)

@@ -33,6 +33,7 @@ export interface BranchStateOptions {
   readonly edgeSettings: EdgeSettings;
   /** Used chiefly for readPixels() to identify context of picked Ids when graphics from multiple iModels are displayed together. */
   readonly iModel?: IModelConnection;
+  readonly transformFromIModel?: Transform;
   /** Whether the graphics in this branch are 2d or 3d.
    * Sometimes we draw 3d orthographic views in the context of a 2d view (e.g., sheet view attachments).
    * Currently this only affects the logic for discarding surfaces (in 2d, we relay on display priority to enforce draw order between different elements;
@@ -44,7 +45,12 @@ export interface BranchStateOptions {
   readonly realityModelDisplaySettings?: RealityModelDisplaySettings;
   forceViewCoords?: boolean;
   readonly viewAttachmentId?: Id64String;
+  readonly inSectionDrawingAttachment?: boolean;
   groupNodeId?: number;
+  /** If true, the view's [DisplayStyleSettings.clipStyle]($common) will be disabled for this branch.
+   * No [ClipStyle.insideColor]($common), [ClipStyle.outsideColor]($common), or [ClipStyle.intersectionStyle]($common) will be applied.
+   */
+  disableClipStyle?: true;
 }
 
 /**
@@ -64,13 +70,16 @@ export class BranchState {
   public get textureDrape() { return this._opts.textureDrape; }
   public get edgeSettings() { return this._opts.edgeSettings; }
   public get iModel() { return this._opts.iModel; }
+  public get transformFromIModel() { return this._opts.transformFromIModel; }
   public get is3d() { return this._opts.is3d; }
   public get frustumScale() { return this._opts.frustumScale!; }
   public get appearanceProvider() { return this._opts.appearanceProvider; }
   public get secondaryClassifiers() { return this._opts.secondaryClassifiers; }
   public get realityModelDisplaySettings() { return this._opts.realityModelDisplaySettings; }
   public get viewAttachmentId() { return this._opts.viewAttachmentId; }
+  public get inSectionDrawingAttachment() { return this._opts.inSectionDrawingAttachment; }
   public get groupNodeId() { return this._opts.groupNodeId; }
+  public get disableClipStyle() { return this._opts.disableClipStyle;}
 
   public get symbologyOverrides() {
     return this._opts.symbologyOverrides;
@@ -92,6 +101,7 @@ export class BranchState {
       transform: prev.transform.multiplyTransformTransform(branch.localToWorldTransform),
       symbologyOverrides: branch.branch.symbologyOverrides ?? prev.symbologyOverrides,
       iModel: branch.iModel ?? prev.iModel,
+      transformFromIModel: branch.transformFromExternalIModel ?? prev.transformFromIModel,
       planarClassifier: (undefined !== branch.planarClassifier && undefined !== branch.planarClassifier.texture) ? branch.planarClassifier : prev.planarClassifier,
       textureDrape: branch.textureDrape ?? prev.textureDrape,
       clipVolume: branch.clips,
@@ -104,7 +114,9 @@ export class BranchState {
       appearanceProvider: branch.appearanceProvider ?? (branch.branch.symbologyOverrides ? undefined : prev.appearanceProvider),
       realityModelDisplaySettings: branch.branch.realityModelDisplaySettings ?? prev.realityModelDisplaySettings,
       viewAttachmentId: branch.viewAttachmentId ?? prev.viewAttachmentId,
+      inSectionDrawingAttachment: branch.inSectionDrawingAttachment ?? prev.inSectionDrawingAttachment,
       groupNodeId: branch.branch.groupNodeId ?? prev.groupNodeId,
+      disableClipStyle: branch.disableClipStyle ?? prev.disableClipStyle,
     });
   }
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ArcGisExtent, ArcGisFeatureFormat } from "./ArcGisFeatureQuery";
+import { ArcGisExtent, ArcGisFeatureFormat, arcgisFeatureFormats } from "./ArcGisFeatureQuery";
 import { esriPBuffer } from "./esriPBuffer.gen";
 
 /** @internal */
@@ -48,7 +48,7 @@ export class ArcGisFeatureResponse {
       if (tileResponse === undefined || tileResponse.status !== 200  )
         return undefined;
 
-      if (this.format === "PBF") {
+      if (this.format === arcgisFeatureFormats.pbf) {
         const byteArray: Uint8Array = new Uint8Array(await tileResponse.arrayBuffer());
         if (!byteArray || (byteArray.length === 0))
           return undefined;
@@ -65,7 +65,7 @@ export class ArcGisFeatureResponse {
         return {data, exceedTransferLimit: data.exceededTransferLimit};
       }
 
-    } catch(_e) {
+    } catch {
       return undefined;
     }
   }
