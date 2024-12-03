@@ -11,7 +11,7 @@
     <ECProperty propertyName="DirectLong" typeName="long"/>
     <ECProperty propertyName="DirectDouble" typeName="double"/>
     <ECProperty propertyName="NullProp" typeName="string"/>
-    <ECProperty propertyName="EnumProp" typeName="string"/>
+    <ECProperty propertyName="EnumProp" typeName="int"/>
     <ECProperty propertyName="NoCaseString" typeName="string"/>
   </ECEntityClass>
   <ECEnumeration typeName="TestEnum" backingTypeName="int" isStrict="true">
