@@ -59,22 +59,40 @@ export function getCesiumOSMBuildingsUrl(): string | undefined {
   if (undefined === key)
     return undefined;
 
-  return getCesiumAssetUrl(+CesiumTerrainAssetId.OSMBuildings, key);
+  // return getCesiumAssetUrl(+CesiumTerrainAssetId.OSMBuildings, key);
+  const osmBuildingAssetId = 96188;
+  return getCesiumAssetUrl(osmBuildingAssetId, key);
 }
 
 /** @internal */
-export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, requestKey?: string): Promise<{ token?: string, url?: string }> {
-  if (undefined === requestKey) {
-    requestKey = IModelApp.tileAdmin.cesiumIonKey;
+export async function getCesiumAccessTokenAndEndpointUrl(assetId: string, requestKey?: string, iTwinId?: string): Promise<{ token?: string, url?: string }> {
+  let apiUrl: string;
+  let reqOpts = {};
+  if (Object.values(CesiumTerrainAssetId).includes(assetId as CesiumTerrainAssetId) && !!iTwinId) {
+    apiUrl = `https://qa-api.bentley.com/curated-content/cesium/${assetId}/tiles?iTwinId=${iTwinId}`;
+    const accessToken = await IModelApp.authorizationClient?.getAccessToken();
+    reqOpts = {
+      headers: {
+        /* eslint-disable @typescript-eslint/naming-convention */
+        Authorization: accessToken,
+        Accept: "application/vnd.bentley.itwin-platform.v1+json",
+        Prefer: "return=representation",
+        /* eslint-enable */
+      },
+    };
+  } else {
     if (undefined === requestKey) {
-      notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
-      return {};
+      requestKey = IModelApp.tileAdmin.cesiumIonKey;
+      if (undefined === requestKey) {
+        notifyTerrainError(IModelApp.localization.getLocalizedString(`iModelJs:BackgroundMap.MissingCesiumToken`));
+        return {};
+      }
     }
+    apiUrl = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token=${requestKey}`;
   }
 
-  const apiUrl = `https://api.cesium.com/v1/assets/${assetId}/endpoint?access_token=${requestKey}`;
   try {
-    const apiResponse = await request(apiUrl, "json");
+    const apiResponse = await request(apiUrl, "json", reqOpts);
     if (undefined === apiResponse || undefined === apiResponse.url) {
       assert(false);
       return {};
@@ -158,7 +176,7 @@ export async function createCesiumTerrainProvider(opts: TerrainMeshProviderOptio
 
 /** @internal */
 export async function getCesiumTerrainProvider(opts: TerrainMeshProviderOptions): Promise<TerrainMeshProvider | undefined> {
-  const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl(opts.dataSource || CesiumTerrainAssetId.Default);
+  const accessTokenAndEndpointUrl = await getCesiumAccessTokenAndEndpointUrl(opts.dataSource || CesiumTerrainAssetId.Default, undefined, opts.iTwinId);
   if (!accessTokenAndEndpointUrl.token || !accessTokenAndEndpointUrl.url) {
     return undefined;
   }

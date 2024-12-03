@@ -378,10 +378,10 @@ export class DisplayTestApp {
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 
     BingTerrainMeshProvider.register();
-    await registerCesiumCuratedContentProvider({
-      iTwinId: configuration.iTwinId,
-      baseUrl: iTwinPlatformUrl,
-    });
+    // await registerCesiumCuratedContentProvider({
+    //   iTwinId: configuration.iTwinId,
+    //   baseUrl: iTwinPlatformUrl,
+    // });
 
     const realityApiKey = process.env.IMJS_REALITY_DATA_KEY;
     if (realityApiKey)
