@@ -66,7 +66,10 @@ interface TestElementProps extends PhysicalElementProps, IPrimitive, IPrimitiveA
   directLong?: number;
   directDouble?: number;
   nullProp?: string;
-  enumProp?: number;
+  enumIntProp?: number;
+  enumIntPropArr?: number[];
+  enumStringProp?: string;
+  enumStringPropArr?: string[];
   noCaseString?: string;
 }
 
@@ -122,7 +125,10 @@ function createElemProps(className: string, _iModelName: IModelDb, modId: Id64St
     directDouble: 0.1 + index,
     nullProp: (index % 2 === 0) ? undefined : "NotNull",
     noCaseString: (index % 2 === 0) ? "abc" : "ABC",
-    enumProp: index % 2 === 0 ? 1 : 2,
+    enumIntProp: index % 2 === 0 ? 1 : 2,
+    enumStringProp: index % 2 === 0 ? "1" : "2",
+    enumIntPropArr: [1, 2, 3],
+    enumStringPropArr: ["1", "2", "3"]
   };
   return elementProps;
 }
