@@ -179,3 +179,13 @@ Check out the Examples.ecdbtest.md or other files in this directory.
 There is a script which takes a statement as input and generates a test from it.
 Check ECDbMarkdownTestGenerator.ts, it can be called like this:
 `node lib\cjs\test\ecdb\ECDbMarkdownTestGenerator.js AllProperties.bim "SELECT * FROM meta.ECSchemaDef LIMIT 2" -t`
+
+## Generate coverage
+
+For this we use OpenCppCoverage, install the tool from <https://github.com/OpenCppCoverage/OpenCppCoverage>
+Then build the native addon (debug build is preferred).
+Link the native addon into you itwinjs-core directory ( iModelJsNodeAddon\linknativeplatform.bat )
+Build the tests ( npm run build in core/backend )
+This is the command to run from the core/backend working dir to generate coverage:
+
+> OpenCppCoverage --sources (pathToNative)\src\imodel-native\iModelCore\ECDb\* --modules iTwin* --cover_children --export_type html:lib/coverage -- "C:\Program Files\nodejs\npm.cmd" run test
