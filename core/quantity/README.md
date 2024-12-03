@@ -1,6 +1,14 @@
 # @itwin/core-quantity
 
-Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
+- [@itwin/core-quantity](#itwincore-quantity)
+  - [Terms and Concepts](#terms-and-concepts)
+    - [Common Terms](#common-terms)
+    - [Concepts](#concepts)
+      - [Units Provider](#units-provider)
+      - [Unit Conversion](#unit-conversion)
+    - [Examples of Usage](#examples-of-usage)
+      - [Mathematical operation parsing](#mathematical-operation-parsing)
+- [Licensing](#licensing)
 
 The __@itwin/core-quantity__ package contains classes for quantity formatting and parsing.
 
@@ -9,7 +17,7 @@ The __@itwin/core-quantity__ package contains classes for quantity formatting an
 ### Common Terms
 
 - [Unit]($quantity)/[UnitProps]($quantity) - A named unit of measure which can be located by its name or label. The definition of any unit is represented through it's `UnitProps`.
-- [UnitsProvider]($quantity) - A class that locates the UnitProps for a unit given name or label. This class also provides a [UnitConversion]($quantity) to convert from one unit to another.
+- [UnitsProvider]($quantity) - An interface that locates the UnitProps for a unit given name or label. This interface also provides methods for [UnitConversion]($quantity) to allow converting from one unit to another.
 - Unit Family/[Phenomenon]($ecschema-metadata) - A physical quantity that can be measured (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
 - Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel.
 - Format/FormatProp - The display format for the quantity value. For example, an angle may be persisted in radians but formatted and shown to user in degrees.
@@ -23,8 +31,9 @@ See the [iTwin.js](https://www.itwinjs.org/learning/frontend/quantityformatting/
 
 ### Concepts
 
-#### Unit Provider
-To appropriately parse and output formatted values, A units provider is used to define all available units and provides conversion factors between units. (There are a couple implementations of the UnitsProvider across iTwin.js:
+#### Units Provider
+
+To appropriately parse and output formatted values, A units provider is used to define all available units and provides conversion factors between units. There are a couple implementations of the UnitsProvider across iTwin.js:
 
 The [BasicUnitsProvider]($frontend) holds many common units and their conversions between each other.
 
@@ -40,10 +49,13 @@ Unit conversion is performed through [UnitConversionSpec]($quantity). These obje
 
 ### Examples of Usage
 
-
 #### Mathematical operation parsing
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
+
+<details>
+<summary>Example Code</summary>
+
 ```Typescript
 const unitsProvider = new BasicUnitsProvider();
 const formatData = {
@@ -67,3 +79,9 @@ const quantityProps = await Parser.parseIntoQuantity(mathematicalOperation, form
 const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, feetConversionSpecs);
 // parseResult.value 7.5 (value in feet)
 ```
+
+</details>
+
+# Licensing
+
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.

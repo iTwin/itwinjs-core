@@ -181,7 +181,7 @@ The Quantity Package `@itwinjs\core-quantity` defines interfaces and classes use
 Common Terms:
 
 - Unit/[UnitProps]($quantity) - A named unit of measure which can be located by its name or label.
-- [UnitsProvider]($quantity) - A class that locates the UnitProps for a unit given name or label. This class also provides a [UnitConversion]($quantity) to convert from one unit to another.
+- [UnitsProvider]($quantity) - An interface that locates the UnitProps for a unit given name or label. This interface also provides methods for [UnitConversion]($quantity) to allow converting from one unit to another.
 - Unit Family/[Phenomenon]($ecschema-metadata) - A physical quantity that can be measured (e.g., length, temperature, pressure).  Only units in the same phenomenon can be converted between.
 - Persistence Unit - The unit used to store the quantity value in memory or to persist the value in an editable IModel. IModels define the persistence unit through [KindOfQuantity](../../bis/ec/kindofquantity.md) objects.
 - KindOfQuantity = An object that defines a persistence unit and presentation formats.
