@@ -159,4 +159,101 @@ describe("RelationshipConstraint", () => {
       assert.isTrue(testConstraint.customAttributes!.get("TestSchema.TestCAClassB")!.ShowClasses);
     });
   });
+
+  describe.only("toJson", () => {
+    let testConstraint: RelationshipConstraint;
+
+    beforeEach(() => {
+      const schema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
+      const relClass = new RelationshipClass(schema, "TestRelationship");
+      testConstraint = new RelationshipConstraint(relClass, RelationshipEnd.Source);
+    });
+
+    const targetStubJson = {
+      polymorphic: false,
+      multiplicity: "(0..*)",
+      roleLabel: "Test Target roleLabel",
+      constraintClasses: [
+        "TestSchema.TestTargetEntity",
+      ],
+    };
+
+    const oneCustomAttributeJson = {
+      polymorphic: true,
+      multiplicity: "(0..1)",
+      roleLabel: "Test Source roleLabel",
+      constraintClasses: [
+        "TestSchema.TestSourceEntity",
+      ],
+      customAttributes: [
+        {
+          className: "TestSchema.TestCAClassA",
+          ShowClasses: true,
+        },
+      ],
+    };
+
+    it("Serialize One Custom Attribute", async () => {
+      const schema = await Schema.fromJson(createSchemaJson(oneCustomAttributeJson, targetStubJson), new SchemaContext());
+      testConstraint = (await schema.getItem<RelationshipClass>("TestRelationship"))!.source;
+      expect(testConstraint).to.exist;
+      const constraintProps = testConstraint.toJSON();
+      assert.isTrue(constraintProps.customAttributes![0].ShowClasses);
+    });
+
+    const twoCustomAttributesJson = {
+      $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+      name: "ValidSchema",
+      polymorphic: true,
+      multiplicity: "(0..1)",
+      roleLabel: "Test Source roleLabel",
+      constraintClasses: [
+        "TestSchema.TestTargetEntity",
+      ],
+      customAttributes: [
+        {
+          className: "TestSchema.TestCAClassA",
+        },
+        {
+          className: "TestSchema.TestCAClassB",
+        },
+      ],
+    };
+
+    it("Serialize Two Custom Attributes", async () => {
+      const schema = await Schema.fromJson(createSchemaJson(twoCustomAttributesJson, targetStubJson), new SchemaContext());
+      testConstraint = (await schema.getItem<RelationshipClass>("TestRelationship"))!.source;
+      expect(testConstraint).to.exist;
+      const constraintProps = testConstraint.toJSON();
+      expect(constraintProps.customAttributes![0].className).to.equal("TestSchema.TestCAClassA");
+      expect(constraintProps.customAttributes![1].className).to.equal("TestSchema.TestCAClassB");
+    });
+
+    it("Serialize Two Custom Attributes with additional properties", () => {
+      const relConstraintJson = {
+        polymorphic: true,
+        multiplicity: "(0..1)",
+        roleLabel: "test roleLabel",
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
+        customAttributes: [
+          {
+            className: "TestSchema.TestCAClassA",
+            ShowClasses: false,
+          },
+          {
+            className: "TestSchema.TestCAClassB",
+            ShowClasses: true,
+          },
+        ],
+      };
+      const schema = Schema.fromJsonSync(createSchemaJson(relConstraintJson, targetStubJson), new SchemaContext());
+      testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
+      expect(testConstraint).to.exist;
+      const constraintProps = testConstraint.toJSON();
+      expect(constraintProps.customAttributes![0].ShowClasses).to.be.false;
+      expect(constraintProps.customAttributes![1].ShowClasses).to.be.true;
+    });
+  });
 });
