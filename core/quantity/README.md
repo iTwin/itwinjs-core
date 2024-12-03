@@ -7,7 +7,9 @@
       - [Units Provider](#units-provider)
       - [Unit Conversion](#unit-conversion)
     - [Examples of Usage](#examples-of-usage)
-      - [Mathematical operation parsing](#mathematical-operation-parsing)
+      - [Numeric Format](#numeric-format)
+      - [Mathematical Operation Parsing](#mathematical-operation-parsing)
+  - [Contributing](#contributing)
 - [Licensing](#licensing)
 
 The __@itwin/core-quantity__ package contains classes for quantity formatting and parsing.
@@ -49,7 +51,49 @@ Unit conversion is performed through [UnitConversionSpec]($quantity). These obje
 
 ### Examples of Usage
 
-#### Mathematical operation parsing
+#### Numeric Format
+
+  The example below uses a simple numeric format and generates a formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units, the unit passed in is the unit returned with the unit label appended if "showUnitLabel" trait is set.
+<details>
+<summary>Example Code</summary>
+
+```ts
+    const unitsProvider = new BasicUnitsProvider();
+    const formatData = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes", "use1000Separator"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: " ",
+      thousandSeparator: ",",
+      decimalSeparator: ".",
+    };
+
+    // generate a Format from FormatProps to display 4 decimal place value
+    const format = new Format("4d");
+    // load the format props into the format, since unit provider is used to validate units the call must be asynchronous.
+    await format.fromJSON(unitsProvider, formatData);
+
+    // define input/output unit
+    const unitName = "Units.FT";
+    const unitLabel = "ft";
+    const unitFamily = "Units.LENGTH";
+    const inUnit = new BasicUnit(unitName, unitLabel, unitFamily);
+
+    const magnitude = -12.5416666666667;
+
+    // create the formatter spec - the name is not used by the formatter it is only
+    // provided so user can cache formatter spec and then retrieve spec via its name.
+    const spec = await FormatterSpec.create("test", format, unitsProvider, inUnit);
+
+    // apply the formatting held in FormatterSpec
+    const formattedValue = spec.applyFormatting(magnitude);
+
+    // result in formattedValue of "-12.5417 ft"
+```
+
+</details>
+
+#### Mathematical Operation Parsing
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
 
@@ -81,6 +125,12 @@ const parseResult = Parser.parseToQuantityValue(mathematicalOperation, format, f
 ```
 
 </details>
+
+## Contributing
+
+When adding new APIs or updating documentation for this package, review if [QuantityFormatting.md](https://github.com/iTwin/itwinjs-core/blob/master/docs/learning/frontend/QuantityFormatting.md) needs to be updated as well. When adding or editing code examples, it's encouraged to keep the examples consistent between this file and the linked file above.
+
+See the [Contributing.md](https://github.com/iTwin/itwinjs-core/blob/master/CONTRIBUTING.md) for more details.
 
 # Licensing
 

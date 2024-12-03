@@ -200,9 +200,10 @@ Below are a couple examples of formatting values using methods directly from the
 
 #### Numeric Format
 
-  The example below uses a simple numeric format and generates formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units, the unit passed in is the unit returned with the unit label appended if "showUnitLabel" trait is set.
+  The example below uses a simple numeric format and generates a formatted string with 4 decimal place precision. For numeric formats there is no conversion to other units, the unit passed in is the unit returned with the unit label appended if "showUnitLabel" trait is set.
 
 ```ts
+    const unitsProvider = new BasicUnitsProvider();
     const formatData = {
       formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes", "use1000Separator"],
       precision: 4,
@@ -237,7 +238,7 @@ Below are a couple examples of formatting values using methods directly from the
 
 #### Composite Format
 
-The composite format below we will provide a unit in meters and produce a formatted string showing feet and inches to a precision of 1/8th inch.
+For the composite format below, we provide a unit in meters and produce a formatted string showing feet and inches to a precision of 1/8th inch.
 
 ```ts
     const formatData = {
@@ -318,7 +319,7 @@ The composite format below we will provide a unit in meters and produce a format
 
 The [AlternateUnitLabelsProvider]($quantity) interface allows users to specify a set of alternate labels which may be encountered during parsing of strings. By default only the input unit label and the labels of other units in the same Unit Family/Phenomenon, as well as the label of units in a Composite format are used.
 
-### Mathematical operation parsing
+### Mathematical Operation Parsing
 
 The quantity formatter supports parsing mathematical operations. The operation is solved, formatting every values present, according to the specified format. This makes it possible to process several different units at once.
 ```Typescript
