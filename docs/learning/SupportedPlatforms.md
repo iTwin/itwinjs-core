@@ -31,8 +31,8 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 | ---------------- | ------------- | ------------------------------------------------------------------------------------------------------------------ | --------------- |
 | Linux            | all           | GLIBC >= 2.31, GLIBCXX >= 3.4.28                                                                                   |                 |
 | Windows          | all           | [Visual Studio 2017 C Runtime](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads) |                 |
-| macOS            | x64           | >= 10.15                                                                                                           |                 |
-| macOS            | arm64         | >= 11                                                                                                              | >= iTwin.js 3.3 |
+| macOS            | x64           | **Not Supported**                                                                                                  |                 |
+| macOS            | arm64         | >= 14                                                                                                              | >= iTwin.js 3.3 |
 
 ## Supported Browsers
 
@@ -56,5 +56,5 @@ To enable the development of desktop applications, iTwin.js supports the latest 
 
 The following minimum versions of mobile operating systems are supported:
 
-- iOS 15: Minimum supported [iPhones](https://support.apple.com/guide/iphone/supported-models-iphe3fa5df43/15.0/ios/15.0) and [iPads](https://support.apple.com/guide/ipad/supported-models-ipad213a25b2/15.0/ipados/15.0)
+- iOS 17: Minimum supported [iPhones](https://support.apple.com/guide/iphone/supported-models-iphe3fa5df43/17.0/ios/17.0) and [iPads](https://support.apple.com/guide/ipad/supported-models-ipad213a25b2/17.0/ipados/17.0)
 - Android 9.0 (API Level 28)
