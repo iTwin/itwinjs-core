@@ -31,7 +31,7 @@ The following Node.js versions are officially supported by the iTwin.js backend 
 | ---------------- | ------------- | ------------------------------------------------------------------------------------------------------------------ | --------------- |
 | Linux            | all           | GLIBC >= 2.31, GLIBCXX >= 3.4.28                                                                                   |                 |
 | Windows          | all           | [Visual Studio 2017 C Runtime](https://support.microsoft.com/help/2977003/the-latest-supported-visual-c-downloads) |                 |
-| macOS            | x64           | **Discontinued in iTwin 5**                                                                                                  |                 |
+| macOS            | x64           | **Discontinued in iTwin.js 5.0**                                                                                                  |                 |
 | macOS            | arm64         | >= 14                                                                                                              | >= iTwin.js 3.3 |
 
 ## Supported Browsers
