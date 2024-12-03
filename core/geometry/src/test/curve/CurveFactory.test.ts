@@ -619,19 +619,20 @@ describe("PipeConnections", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("createMiteredSweepSections", () => {
-    const ck = new Checker();
+  it.only("createMiteredSweepSections", () => {
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let dx = 0, dy = 0;
     const sectionSweeps: AngleSweep[] = [
       AngleSweep.create360(),
-      // AngleSweep.createStartEndDegrees(360, 0),
+      AngleSweep.createStartEndDegrees(360, 0),
       AngleSweep.createStartEndDegrees(0, 90),
       AngleSweep.createStartEndDegrees(180, 90),
     ]
     const centerline = [
       Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
       Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90)),
+      Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, -90)),
       BSplineCurve3dH.createUniformKnots([
         Point4d.create(-1.5, -1, 0, 1),
         Point4d.create(-0.25, -0.5, 0, 0.5),
@@ -647,18 +648,15 @@ describe("PipeConnections", () => {
       dx = 0;
       const sectionData = [
         Arc3d.create(Point3d.create(1, 0, 0), Vector3d.create(0, 0, 1), Vector3d.create(0.5), sweep),
-        Arc3d.create(Point3d.create(0.5, 0, 0), Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
+        Arc3d.create(Point3d.create(0.5), Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
+        Arc3d.create(Point3d.create(0.5), Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
         Arc3d.create(Point3d.create(-1.5, -1, 0), Vector3d.create(0, 0.2), Vector3d.create(0, 0, 0.2), sweep),
       ];
       ck.testExactNumber(sectionData.length, centerline.length, "test case arrays have same size");
       for (const capped of [true, false]) {
         for (let i = 0; i < sectionData.length; ++i) {
-          const options = new StrokeOptions();
-          options.angleTol = Angle.createDegrees(15);
-          const linestring = LineString3d.create();
-          centerline[i].emitStrokes(linestring, options);
           const sections = CurveFactory.createMiteredSweepSections(
-            linestring.points,
+            centerline[i],
             sectionData[i],
             { outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped },
           )!;

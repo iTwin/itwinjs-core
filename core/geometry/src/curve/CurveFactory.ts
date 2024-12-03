@@ -7,8 +7,6 @@
  * @module Curve
  */
 
-// import { Geometry, Angle, AngleSweep } from "../Geometry";
-
 import { AxisIndex, AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { AngleSweep } from "../geometry3d/AngleSweep";
@@ -449,10 +447,28 @@ export class CurveFactory {
    * @return array of sections, starting with `initialSection` projected along the first edge to the first plane.
    */
   public static createMiteredSweepSections(
-    centerline: IndexedXYZCollection | Point3d[], initialSection: AnyCurve, options: MiteredSweepOptions,
+    centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive | CurveChain,
+    initialSection: AnyCurve,
+    options: MiteredSweepOptions,
   ): SectionSequenceWithPlanes | undefined {
+    if ((centerline instanceof IndexedXYZCollection || Array.isArray(centerline)) && centerline.length < 2)
+      return undefined;
     const sectionData: SectionSequenceWithPlanes = { sections: [], planes: [] };
-    const planes = PolylineOps.createBisectorPlanesForDistinctPoints(centerline, options.wrapIfPhysicallyClosed);
+    let centerlinePoints: IndexedXYZCollection | Point3d[];
+    if (centerline instanceof CurvePrimitive) {
+      const strokes = LineString3d.create();
+      centerline.emitStrokes(strokes);
+      centerlinePoints = strokes.packedPoints;
+    } else if (centerline instanceof CurveChain) {
+      const strokes = centerline.getPackedStrokes();
+      if (strokes)
+        centerlinePoints = Array.from(strokes.points);
+      else
+        return undefined;
+    } else {
+      centerlinePoints = centerline;
+    }
+    const planes = PolylineOps.createBisectorPlanesForDistinctPoints(centerlinePoints, options.wrapIfPhysicallyClosed);
     // apply start/end tangent options
     if (planes !== undefined && planes.length > 1) {
       const firstPlane = planes[0];
@@ -489,9 +505,8 @@ export class CurveFactory {
         return transformedSection;
       };
       let currentSection = doSweepToPlane(planes[0], planes[1], planes[0], initialSection);
-      for (let i = 1; i < planes.length; i++) {
+      for (let i = 1; i < planes.length; i++)
         currentSection = doSweepToPlane(planes[i - 1], planes[i], planes[i], currentSection);
-      }
       if (options.outputSelect) {
         const ruledSweep = RuledSweep.create(sectionData.sections, options.capped ?? false);
         if (ruledSweep) {

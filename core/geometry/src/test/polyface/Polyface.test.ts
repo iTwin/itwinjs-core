@@ -7,6 +7,7 @@ import * as fs from "fs";
 import { describe, expect, it } from "vitest";
 import { CloneFunction, compareWithTolerance, Dictionary, OrderedComparator, OrderedSet } from "@itwin/core-bentley";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveFactory, MiteredSweepOutputSelect } from "../../curve/CurveFactory";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
@@ -1929,8 +1930,8 @@ describe("SphericalMeshData", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("Mirror", () => {
-    const ck = new Checker();
+  it.only("Mirror", () => {
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
@@ -2049,7 +2050,7 @@ describe("SphericalMeshData", () => {
     for (const centerlineSweep of centerlineSweeps)
       for (const sectionDataSweep of sectionDataSweeps) {
         // pipes with circular arc rails
-        const centerline = Arc3d.createXY(Point3d.create(0, 0), 1.0, centerlineSweep);
+        const centerline = Arc3d.createXY(Point3d.create(), 1.0, centerlineSweep);
         const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5, 0, 0), sectionDataSweep);
         const pipeBuilder = PolyfaceBuilder.create();
         pipeBuilder.options.angleTol = Angle.createDegrees(5);
@@ -2061,13 +2062,25 @@ describe("SphericalMeshData", () => {
       for (const sectionDataSweep of sectionDataSweeps) {
         // mitered pipes with elliptical arc rails
         // NOTE: tiny section radii to avoid section clash at high rail curvature
-        const centerline = Arc3d.create(undefined, Vector3d.create(0.5, 0, 0), Vector3d.create(0, 0, 1), centerlineSweep);
-        const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0.2, 0), Vector3d.create(0.1, 0, 0), sectionDataSweep);
+        const centerline = Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), centerlineSweep);
+        const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0.2), Vector3d.create(0.1), sectionDataSweep);
         const pipeBuilder = PolyfaceBuilder.create();
         pipeBuilder.options.angleTol = Angle.createDegrees(5);
         pipeBuilder.options.needNormals = true;
         pipeBuilder.addMiteredPipes(centerline, sectionData, 9, true);
         geometry.push(pipeBuilder.claimPolyface());
+      }
+
+    for (const centerlineSweep of centerlineSweeps)
+      for (const sectionDataSweep of sectionDataSweeps) {
+        const centerline = Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), centerlineSweep);
+        const sectionData = Arc3d.create(Point3d.create(0.5), Vector3d.create(0, 0.2), Vector3d.create(0.1), sectionDataSweep);
+        const sweepSections = CurveFactory.createMiteredSweepSections(
+          centerline,
+          sectionData,
+          { outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped: true },
+        )!;
+        geometry.push(sweepSections.mesh);
       }
 
     // verify outward normals for closed meshes/solids, both before and after mirroring

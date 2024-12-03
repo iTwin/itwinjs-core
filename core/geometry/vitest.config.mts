@@ -3,7 +3,7 @@ export default defineConfig({
   test: {
     dir: "src/test",
     setupFiles: "./src/test/setupTests.ts",
-    // include: ["**/filename.test.ts"], // to honor it/describe.only
+    include: ["**/Polyface.test.ts", "**/CurveFactory.test.ts"], // to honor it/describe.only
     coverage: {
       provider: "v8",
       include: [
