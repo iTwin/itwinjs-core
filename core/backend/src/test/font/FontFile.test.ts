@@ -21,29 +21,17 @@ describe.only("ShxFontFile", () => {
       expect(fs.existsSync(fileName)).to.be.true;
       fileName = fileName + "no-existe";
       expect(fs.existsSync(fileName)).to.be.false;
-      expect(() => ShxFontFile.fromFileOrBlob({ source: fileName, familyName: "Cdm" })).to.throw();
-    });
-  
-    it("detects font type", () => {
-    
-    });
-
-    it("throws on non-existent filename", () => {
-      let fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
-      expect(fs.existsSync(fileName)).to.be.true;
-      fileName = fileName + "no-existe";
-      expect(fs.existsSync(fileName)).to.be.false;
-      expect(() => ShxFontFile.fromFileOrBlob({ source: fileName, familyName: "Cdm" })).to.throw();
+      expect(() => ShxFontFile.fromFileOrBlob({ source: fileName, familyName: "Cdm" })).to.throw("Failed to read font file");
     });
 
     it("throws on non-font data", () => {
       const fileName = IModelTestUtils.resolveAssetFile("brepdata1.json");
       expect(fs.existsSync(fileName)).to.be.true;
-      expect(() => TrueTypeFontFile.fromFileName(fileName)).to.throw();
+      expect(() => ShxFontFile.fromFileOrBlob({ source: fileName, familyName: "brepdata1" })).to.throw("Failed to read font file");
 
       const blob = fs.readFileSync(fileName);
       expect(blob.length).greaterThan(5);
-      expect(() => ShxFontFile.fromFileOrBlob({ source: blob, familyName: "brepdata1" })).to.throw();
+      expect(() => ShxFontFile.fromFileOrBlob({ source: blob, familyName: "brepdata1" })).to.throw("Failed to read font file");
     });
 
   });
@@ -52,11 +40,17 @@ describe.only("ShxFontFile", () => {
 describe.only("TrueTypeFontFile", () => {
   describe("fromFileName", () => {
     it("throws on non-existent filename", () => {
-    
+      let fileName = IModelTestUtils.resolveFontFile("Karla-Regular.ttf");
+      expect(fs.existsSync(fileName)).to.be.true;
+      fileName = fileName + "no-existe";
+      expect(fs.existsSync(fileName)).to.be.false;
+      expect(() => TrueTypeFontFile.fromFileName(fileName)).to.throw("Failed to read font file");
     });
 
     it("throws on non-font data", () => {
-      
+      const fileName = IModelTestUtils.resolveAssetFile("brepdata1.json");
+      expect(fs.existsSync(fileName)).to.be.true;
+      expect(() => TrueTypeFontFile.fromFileName(fileName)).to.throw("Failed to read font file");
     });
   });
   

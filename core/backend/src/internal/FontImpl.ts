@@ -11,6 +11,11 @@ import { _implementationProhibited } from "./Symbols";
 
 export function trueTypeFontFileFromFileName(fileName: LocalFileName): TrueTypeFontFile {
   const metadata = IModelHost.platform.getTrueTypeFontMetadata(fileName);
+  if (!metadata.familyNames) {
+    // The input was almost certainly not a TrueType font file.
+    throw new Error("Failed to read font file");
+  }
+
   return {
     [_implementationProhibited]: undefined,
     type: FontType.TrueType,
