@@ -443,6 +443,44 @@ FROM
 | 0x1c         | 108 |
 | 0x1d         | 109 |
 
+# Nested JOIN in Select
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  nested_join.te_ECInstanceId,
+  nested_join.te_i,
+  nested_join.VersionMajor
+FROM
+  (
+    SELECT
+      te.ECInstanceId AS te_ECInstanceId,
+      te.i AS te_i,
+      d.VersionMajor
+    FROM
+      aps.TestElement te
+      INNER JOIN aps.IPrimitive p ON te.ECInstanceId = p.ECInstanceId
+      LEFT JOIN meta.ECSchemaDef d ON d.VersionMajor + 100 = te.i
+  ) AS nested_join
+LIMIT
+  5;
+```
+
+| className            | accessString    | generated | index | jsonName        | name            | extendedType | typeName | type | originPropertyName |
+| -------------------- | --------------- | --------- | ----- | --------------- | --------------- | ------------ | -------- | ---- | ------------------ |
+|                      | te_ECInstanceId | true      | 0     | te_ECInstanceId | te_ECInstanceId | Id           | long     | Id   | undefined          |
+|                      | te_i            | true      | 1     | te_i            | te_i            | undefined    | int      | Int  | undefined          |
+| ECDbMeta:ECSchemaDef | VersionMajor    | false     | 2     | versionMajor    | VersionMajor    | undefined    | int      | Int  | VersionMajor       |
+
+| te_ECInstanceId | te_i | VersionMajor |
+| --------------- | ---- | ------------ |
+| 0x14            | 100  | undefined    |
+| 0x15            | 101  | 1            |
+| 0x15            | 101  | 1            |
+| 0x15            | 101  | 1            |
+| 0x15            | 101  | 1            |
+
 # Mixed JOIN types in one query
 
 - dataset: AllProperties.bim
