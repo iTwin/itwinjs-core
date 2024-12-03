@@ -413,6 +413,58 @@ SELECT ECInstanceId from aps.TestElement where FLOOR($->d) = 1
 | ------------ |
 | 0x15         |
 
+# Testing ExtractInstance for non-existant required prop in where clause
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ECInstanceId from aps.TestElement where FLOOR($->abc) = 1
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     |
+
+# Testing ExtractInstance for optional prop in where clause
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ECInstanceId from aps.TestElement where FLOOR($->abc?) = 1
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     |
+
+# Testing ExtractInstance for optional prop and required prop using AND op in where clause
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ECInstanceId from aps.TestElement where FLOOR($->d) = 1 and FLOOR($->abc?) = 1
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     |
+
+# Testing ExtractInstance for optional prop and required prop using OR op in where clause
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT ECInstanceId from aps.TestElement where FLOOR($->d) = 1 or FLOOR($->abc?) = 1
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+
+| ECInstanceId |
+| ------------ |
+| 0x15         |
+
 # Testing integer array prop using alias
 
 - dataset: AllProperties.bim

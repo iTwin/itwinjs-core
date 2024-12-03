@@ -527,3 +527,93 @@ WHERE
 | 0x18         | Test_1234 |
 | 0x1a         | Test_1234 |
 | 0x1c         | Test_1234 |
+
+# Trying PRAGMA parse_tree without enabling experimental features
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+pragma parse_tree([select x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x from tmp) a])
+```
+
+# Trying PRAGMA integrity_check without enabling experimental features
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+PRAGMA integrity_check
+```
+
+# Trying PRAGMA parse_tree with enabling experimental features
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA parse_tree (
+  [select x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x from tmp) a]
+) OPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+```json
+{
+  "columns": [
+    {
+      "className": "",
+      "accessString": "val",
+      "generated": true,
+      "index": 0,
+      "jsonName": "val",
+      "name": "val",
+      "typeName": "string",
+      "type": "String",
+      "originPropertyName": "val"
+    }
+  ]
+}
+```
+
+```json
+[
+  {
+    "val": "{\"id\":\"SelectStatementExp\",\"select\":{\"id\":\"SingleSelectStatementExp\",\"selection\":[{\"id\":\"DerivedPropertyExp\",\"exp\":{\"id\":\"PropertyNameExp\",\"path\":\"x\"}}],\"from\":[{\"id\":\"SubqueryRefExp\",\"alias\":\"a\",\"query\":{\"id\":\"SubqueryExp\",\"query\":{\"id\":\"CommonTableExp\",\"recursive\":false,\"blocks\":[{\"id\":\"CommonTableBlockExp\",\"name\":\"tmp\",\"args\":[\"x\"],\"asQuery\":{\"id\":\"SelectStatementExp\",\"select\":{\"id\":\"SingleSelectStatementExp\",\"selection\":[{\"id\":\"DerivedPropertyExp\",\"exp\":{\"id\":\"PropertyNameExp\",\"path\":\"e.i\"}}],\"from\":[{\"id\":\"ClassNameExp\",\"tableSpace\":\"\",\"schemaName\":\"AllProperties\",\"className\":\"TestElement\",\"alias\":\"e\"}],\"orderBy\":[{\"exp\":{\"id\":\"PropertyNameExp\",\"path\":\"e.i\"}}],\"limit\":{\"id\":\"LimitOffsetExp\",\"exp\":{\"id\":\"LiteralValueExp\",\"kind\":\"RAW\",\"value\":\"1\"}}}}}],\"select\":{\"id\":\"SelectStatementExp\",\"select\":{\"id\":\"SingleSelectStatementExp\",\"selection\":[{\"id\":\"DerivedPropertyExp\",\"exp\":{\"id\":\"PropertyNameExp\",\"path\":\"x\"},\"alias\":\"x\"}],\"from\":[{\"id\":\"CommonTableBlockNameExp\",\"name\":\"tmp\"}]}}}}}]}}"
+  }
+]
+```
+
+# Trying PRAGMA parse_tree with enabling experimental features but using ECSQLOPTIONS instead of OPTIONS
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA parse_tree (
+  [select x from (with tmp(x) as (SELECT e.i FROM aps.TestElement e order by e.i LIMIT 1) select x from tmp) a]
+) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+```json
+{
+  "columns": [
+    {
+      "className": "",
+      "accessString": "val",
+      "generated": true,
+      "index": 0,
+      "jsonName": "val",
+      "name": "val",
+      "typeName": "string",
+      "type": "String",
+      "originPropertyName": "val"
+    }
+  ]
+}
+```
+
+```json
+[
+  {
+    "val": "{\"id\":\"SelectStatementExp\",\"select\":{\"id\":\"SingleSelectStatementExp\",\"selection\":[{\"id\":\"DerivedPropertyExp\",\"exp\":{\"id\":\"PropertyNameExp\",\"path\":\"x\"}}],\"from\":[{\"id\":\"SubqueryRefExp\",\"alias\":\"a\",\"query\":{\"id\":\"SubqueryExp\",\"query\":{\"id\":\"CommonTableExp\",\"recursive\":false,\"blocks\":[{\"id\":\"CommonTableBlockExp\",\"name\":\"tmp\",\"args\":[\"x\"],\"asQuery\":{\"id\":\"SelectStatementExp\",\"select\":{\"id\":\"SingleSelectStatementExp\",\"selection\":[{\"id\":\"DerivedPropertyExp\",\"exp\":{\"id\":\"PropertyNameExp\",\"path\":\"e.i\"}}],\"from\":[{\"id\":\"ClassNameExp\",\"tableSpace\":\"\",\"schemaName\":\"AllProperties\",\"className\":\"TestElement\",\"alias\":\"e\"}],\"orderBy\":[{\"exp\":{\"id\":\"PropertyNameExp\",\"path\":\"e.i\"}}],\"limit\":{\"id\":\"LimitOffsetExp\",\"exp\":{\"id\":\"LiteralValueExp\",\"kind\":\"RAW\",\"value\":\"1\"}}}}}],\"select\":{\"id\":\"SelectStatementExp\",\"select\":{\"id\":\"SingleSelectStatementExp\",\"selection\":[{\"id\":\"DerivedPropertyExp\",\"exp\":{\"id\":\"PropertyNameExp\",\"path\":\"x\"},\"alias\":\"x\"}],\"from\":[{\"id\":\"CommonTableBlockNameExp\",\"name\":\"tmp\"}]}}}}}]}}"
+  }
+]
+```
