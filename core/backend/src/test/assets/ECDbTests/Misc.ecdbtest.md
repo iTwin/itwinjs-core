@@ -617,3 +617,119 @@ PRAGMA parse_tree (
   }
 ]
 ```
+
+# Using Scalar values in select clause with + operator
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT (1+2) Added
+```
+
+| className | accessString | generated | index | jsonName | name  | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ------ |
+|           | Added        | true      | 0     | added    | Added | undefined    | double   | Double |
+
+| Added |
+| ----- |
+| 3     |
+
+# Using Scalar values in select clause
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT (1) One
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type  |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ----- |
+|           | One          | true      | 0     | one      | One  | undefined    | long     | Int64 |
+
+| One |
+| --- |
+| 1   |
+
+# Using Scalar values in select clause with \* operator
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT (1*2) Product
+```
+
+| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ |
+|           | Product      | true      | 0     | product  | Product | undefined    | double   | Double |
+
+| Product |
+| ------- |
+| 2       |
+
+# Using Scalar values in select clause with / operator
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT (1*2) Divided
+```
+
+| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ |
+|           | Divided      | true      | 0     | divided  | Divided | undefined    | double   | Double |
+
+| Divided |
+| ------- |
+| 2       |
+
+# NULLCast binary and bool
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i,
+  CAST(NULL AS BINARY) [binary],
+  CAST(NULL AS BOOLEAN) [bool]
+FROM
+  aps.TestElement te
+LIMIT
+  2
+```
+
+| className                | accessString | generated | index | jsonName | name   | extendedType | typeName | type    | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ------- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i      | undefined    | int      | Int     | i                  |
+|                          | binary       | true      | 1     | binary   | binary | Json         | string   | Blob    | undefined          |
+|                          | bool         | true      | 2     | bool     | bool   | undefined    | boolean  | Boolean | undefined          |
+
+| i   | binary    | time      |
+| --- | --------- | --------- |
+| 100 | undefined | undefined |
+| 101 | undefined | undefined |
+
+# NullCast double and time
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i,
+  CAST(NULL AS DOUBLE) [dbl],
+  CAST(NULL AS TIMESTAMP) [time]
+FROM
+  aps.TestElement te
+LIMIT
+  2
+```
+
+| className                | accessString | generated | index | jsonName | name   | extendedType | typeName | type     | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | -------- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i      | undefined    | int      | Int      | i                  |
+|                          | dbl          | true      | 1     | dbl      | dbl    | undefined    | double   | Double   | undefined          |
+|                          | time         | true      | 2     | time     | time   | undefined    | dateTime | DateTime | undefined          |
+
+| i   | dbl       | time      |
+| --- | --------- | --------- |
+| 100 | undefined | undefined |
+| 101 | undefined | undefined |

@@ -112,35 +112,12 @@ SELECT array_i,array_l,array_d,array_b,array_dt,array_s FROM aps.TestElement LIM
 ```json
 [
   {
-    "array_i": [
-      0,
-      1,
-      2
-    ],
-    "array_l": [
-      10000,
-      20000,
-      30000
-    ],
-    "array_d": [
-      0,
-      1.1,
-      2.2
-    ],
-    "array_b": [
-      true,
-      false,
-      true
-    ],
-    "array_dt": [
-      "2017-01-01T00:00:00.000",
-      "2010-01-01T11:11:11.000"
-    ],
-    "array_s": [
-      "s0",
-      "s1",
-      "s2"
-    ]
+    "array_i": [0, 1, 2],
+    "array_l": [10000, 20000, 30000],
+    "array_d": [0, 1.1, 2.2],
+    "array_b": [true, false, true],
+    "array_dt": ["2017-01-01T00:00:00.000", "2010-01-01T11:11:11.000"],
+    "array_s": ["s0", "s1", "s2"]
   }
 ]
 ```
@@ -157,14 +134,13 @@ SELECT NullProp FROM aps.TestElement WHERE NullProp IS NULL
 | ------------------------- | ------------ | --------- | ----- | -------- | -------- | ------------ | -------- | ------ | ------------------ |
 | AllProperties:TestElement | NullProp     | false     | 0     | nullProp | NullProp | undefined    | string   | String | NullProp           |
 
-|  |
-|  |
-|  |
-|  |
-|  |
-|  |
-|  |
-
+| |
+| |
+| |
+| |
+| |
+| |
+| |
 
 # Select Instances of Mixin Classes (should be empty)
 
@@ -190,7 +166,6 @@ SELECT * FROM ONLY aps.IPrimitive
 | AllProperties:IPrimitive | p3d          | false     | 11    | p3d       | p3d          | undefined    | point3d                           |
 | AllProperties:IPrimitive | g            | false     | 12    | g         | g            | undefined    | Bentley.Geometry.Common.IGeometry |
 | AllProperties:IPrimitive | st           | false     | 13    | st        | st           | undefined    | AllProperties.ComplexStruct       |
-
 
 # Test Class Name Query
 
@@ -289,6 +264,49 @@ SELECT s, LENGTH(s) AS StringLength,  AVG(d) AS AverageDouble FROM aps.TestEleme
 | ---- | ------------ | ------------- |
 | str0 | 4            | 4.6           |
 
+# Select with function enclosed in brackets
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT s, (format(s)) AS StringFormatted, (LENGTH(s)) AS StringLength FROM aps.TestElement
+```
+
+| className                | accessString    | generated | index | jsonName        | name            | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | --------------- | --------- | ----- | --------------- | --------------- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:IPrimitive | s               | false     | 0     | s               | s               | undefined    | string   | String | s                  |
+|                          | StringFormatted | true      | 1     | stringFormatted | StringFormatted | undefined    | string   | String | undefined          |
+|                          | StringLength    | true      | 2     | stringLength    | StringLength    | undefined    | long     | Int64  | undefined          |
+
+| s    | StringFormatted | StringLength |
+| ---- | --------------- | ------------ |
+| str0 | str0            | 4            |
+| str1 | str1            | 4            |
+| str2 | str2            | 4            |
+| str3 | str3            | 4            |
+| str4 | str4            | 4            |
+| str5 | str5            | 4            |
+| str6 | str6            | 4            |
+| str7 | str7            | 4            |
+| str8 | str8            | 4            |
+| str9 | str9            | 4            |
+
+# Select with ec_classname enclosed in brackets
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT (ec_classname (ECClassId)) AS ClassName FROM aps.TestElement limit 2
+```
+
+| className | accessString | generated | index | jsonName  | name      | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | --------- | --------- | ------------ | -------- | ------ |
+|           | ClassName    | true      | 0     | className | ClassName | undefined    | string   | String |
+
+| ClassName                 |
+| ------------------------- |
+| AllProperties:TestElement |
+| AllProperties:TestElement |
 
 # Compound Select - UNION
 
@@ -368,7 +386,6 @@ WHERE
 | 0x19         | 1005       |
 | 0x1a         | 1006       |
 
-
 # Compound Select - INTERSECT
 
 - dataset: AllProperties.bim
@@ -401,8 +418,7 @@ WHERE
 | 0x19         | 1005       |
 | 0x1a         | 1006       |
 
-
-#  Compound Select - EXCEPT
+# Compound Select - EXCEPT
 
 - dataset: AllProperties.bim
 
