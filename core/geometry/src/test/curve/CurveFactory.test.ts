@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { describe, expect, it } from "vitest";
 import * as fs from "fs";
+import { describe, expect, it } from "vitest";
 import { BSplineCurve3d } from "../../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../../bspline/BSplineCurve3dH";
 import { Arc3d } from "../../curve/Arc3d";
 import { CurveCollection } from "../../curve/CurveCollection";
 import { CurveFactory, MiteredSweepOutputSelect } from "../../curve/CurveFactory";
@@ -25,6 +26,7 @@ import { Point3d, Vector3d } from "../../geometry3d/Point3dVector3d";
 import { Range1d } from "../../geometry3d/Range";
 import { Segment1d } from "../../geometry3d/Segment1d";
 import { Transform } from "../../geometry3d/Transform";
+import { Point4d } from "../../geometry4d/Point4d";
 import { IndexedPolyface } from "../../polyface/Polyface";
 import { PolyfaceBuilder } from "../../polyface/PolyfaceBuilder";
 import { PolyfaceQuery } from "../../polyface/PolyfaceQuery";
@@ -105,7 +107,9 @@ describe("CurveFactory", () => {
     const yStep = 3.0;
     for (const arcA0 of [
       Arc3d.createXYZXYZXYZ(0, 0, 0, 2, 0, 0, 0, 2, 0, AngleSweep.createStartEndDegrees(0, 90)),
-      Arc3d.createCircularStartMiddleEnd(Point3d.create(1, 0, 0), Point3d.create(1.5, 1, 0), Point3d.create(1, 2, 0)) as Arc3d,
+      Arc3d.createCircularStartMiddleEnd(
+        Point3d.create(1, 0, 0), Point3d.create(1.5, 1, 0), Point3d.create(1, 2, 0),
+      ) as Arc3d,
       Arc3d.createXYZXYZXYZ(0, 0, 0, 2, 0, 0, 0.5, 1, 0, AngleSweep.createStartEndDegrees(-10, 50))]) {
       for (const reverse of [false, true]) {
         const arcA = arcA0.clone();
@@ -117,7 +121,9 @@ describe("CurveFactory", () => {
             const arcA1 = arcA.clone();
             const arcA2 = arcA.clone();
             const arcB1 = arcA.cloneInRotatedBasis(Angle.createDegrees(rotationAngleB));
-            arcB1.sweep = AngleSweep.createStartEnd(arcB1.sweep.fractionToAngle(segment.x0), arcB1.sweep.fractionToAngle(segment.x1));
+            arcB1.sweep = AngleSweep.createStartEnd(
+              arcB1.sweep.fractionToAngle(segment.x0), arcB1.sweep.fractionToAngle(segment.x1),
+            );
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, [arcA1, arcB1], x0, y0);
             markArcData(allGeometry, arcA1, 0.9, 0.05, x0, y0);
             markArcData(allGeometry, arcB1, 0.9, 0.05, x0, y0);
@@ -147,7 +153,14 @@ describe("CurveFactory", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0.0;
-    const points = [Point3d.create(0, 0, 0), Point3d.create(2, 0, 0), Point3d.create(2, 5, 1), Point3d.create(4, 5, 1), Point3d.create(6, 2, 1), Point3d.create(6, 5, 1)];
+    const points = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(2, 0, 0),
+      Point3d.create(2, 5, 1),
+      Point3d.create(4, 5, 1),
+      Point3d.create(6, 2, 1),
+      Point3d.create(6, 5, 1),
+    ];
     const lineString0 = LineString3d.create(points);
     points.reverse();
     const lineString1 = LineString3d.create(points);
@@ -183,7 +196,9 @@ describe("CurveFactory", () => {
  * @param x0
  * @param y0
  */
-function markArcData(allGeometry: GeometryQuery[], arc: Arc3d, radialFraction: number, tickFraction: number, x0: number, y0: number) {
+function markArcData(
+  allGeometry: GeometryQuery[], arc: Arc3d, radialFraction: number, tickFraction: number, x0: number, y0: number,
+) {
   const arc1 = arc.clone();
   const center = arc.center;
   const start = arc.startPoint();
@@ -191,7 +206,9 @@ function markArcData(allGeometry: GeometryQuery[], arc: Arc3d, radialFraction: n
   const point90 = arc.angleToPointAndDerivative(Angle.createDegrees(90));
   arc1.matrixRef.scaleColumnsInPlace(radialFraction, radialFraction, 1.0);
   GeometryCoreTestIO.captureGeometry(allGeometry, [arc1,
-    LineSegment3d.create(center.interpolate(radialFraction, start), center.interpolate(radialFraction + tickFraction, start)),
+    LineSegment3d.create(
+      center.interpolate(radialFraction, start), center.interpolate(radialFraction + tickFraction, start),
+    ),
     LineString3d.create(point0.origin, center, point90.origin)], x0, y0);
 }
 const ppePathInputDirector = "./src/test/data/pipeConnections/";
@@ -250,9 +267,12 @@ describe("PipeConnections", () => {
 
     for (const numPoints of [8, 20, 40]) {
       const path = new Point3dArrayCarrier(
-        Sample.createPointSineWave(undefined, numPoints, 10.0 / numPoints,
+        Sample.createPointSineWave(
+          undefined, numPoints, 10.0 / numPoints,
           5.0, AngleSweep.createStartEndDegrees(0, 520),
-          3.0, AngleSweep.createStartEndDegrees(0, 100)));
+          3.0, AngleSweep.createStartEndDegrees(0, 100),
+        ),
+      );
       allPaths.push(path);
     }
 
@@ -279,14 +299,16 @@ describe("PipeConnections", () => {
         startPoint.setFrom(startRay.origin);
         startTangent.setFrom(startRay.direction);
       }
-      const startFrame = Matrix3d.createRotationAroundVector(startTangent, v0Angle)!.multiplyMatrixMatrix(Matrix3d.createRigidHeadsUp(startTangent, AxisOrder.ZXY));
+      const startFrame = Matrix3d.createRotationAroundVector(startTangent, v0Angle)!.multiplyMatrixMatrix(
+        Matrix3d.createRigidHeadsUp(startTangent, AxisOrder.ZXY),
+      );
       const v0 = startFrame.columnX().scaleToLength(radius)!;
       const v90 = startFrame.columnY().scaleToLength(radius * minorFraction)!;
 
       for (const angleTol of [Angle.createDegrees(22), Angle.createDegrees(15), Angle.createDegrees(5)]) {
-        for (const sectionData of [radius,
-          { x: radius, y: radius * minorFraction },
-          Arc3d.create(startPoint, v0, v90, AngleSweep.create360())]) {
+        for (const sectionData of
+          [radius, { x: radius, y: radius * minorFraction }, Arc3d.create(startPoint, v0, v90, AngleSweep.create360())]
+        ) {
           y0 += 10.0;
           const builder = PolyfaceBuilder.create();
           builder.options.angleTol = angleTol;
@@ -296,12 +318,71 @@ describe("PipeConnections", () => {
         }
         y0 = 0;
         z0 += 10;
-        if (isLinear) break; // no need to re-stroke centerline
+        if (isLinear)
+          break; // no need to re-stroke centerline
       }
       x0 += 10;
       y0 = z0 = 0;
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredPipeSections");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("addMiteredPipesWithCaps", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0, dy = 0;
+    const numFacetAround = 8;
+    const sectionSweeps: AngleSweep[] = [
+      AngleSweep.create360(),
+      AngleSweep.createStartEndDegrees(360, 0),
+      AngleSweep.createStartEndDegrees(0, 90),
+      AngleSweep.createStartEndDegrees(180, 90),
+    ]
+    const centerline = [
+      Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
+      Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90)),
+      BSplineCurve3dH.createUniformKnots([
+        Point4d.create(-1.5, -1, 0, 1),
+        Point4d.create(-0.25, -0.5, 0, 0.5),
+        Point4d.create(-0.5, 0, 0, 1),
+        Point4d.create(-0.25, 0.5, 0, 0.5),
+        Point4d.create(0.5, 1, 0, 1),
+        Point4d.create(0.75, 0.5, 0, 0.5),
+        Point4d.create(1.5, 1, 1, 1),
+      ], 3,
+      )!,
+    ];
+    for (const sweep of sectionSweeps) {
+      dx = 0;
+      const sectionData = [
+        Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5), sweep),
+        Arc3d.create(undefined, Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
+        0.2,
+      ];
+      ck.testExactNumber(sectionData.length, centerline.length, "test case arrays have same size");
+      let builder: PolyfaceBuilder;
+      for (const capped of [true, false]) {
+        for (let i = 0; i < sectionData.length; ++i) {
+          builder = PolyfaceBuilder.create();
+          builder.options.angleTol = Angle.createDegrees(15);
+          builder.addMiteredPipes(centerline[i], sectionData[i], numFacetAround, capped);
+          const mesh = builder.claimPolyface();
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx, dy);
+          dx += 3;
+          if (capped) {
+            if (Number.isFinite(sectionData[i]) || sweep.isFullCircle)
+              ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is expected (closed section)");
+            else
+              ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected (open section)");
+          } else {
+            ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected (capped=false)");
+          }
+        }
+      }
+      dy += 3;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "addMiteredPipesWithCaps");
     expect(ck.getNumErrors()).toBe(0);
   });
 
@@ -374,29 +455,39 @@ describe("PipeConnections", () => {
   it("createMiteredSweep", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+
     const x0 = -1;
-    const y0 = -2;
     const x1 = 2;
+    const y0 = -2;
     const y1 = 3;
     const centerlines: Point3d[][] = [];
     const a = 10;
-    // Just 2 edges with a 90 degree turn
+    // just 2 edges with a 90 degree turn
     centerlines.push([Point3d.create(0, 0, 0), Point3d.create(0, 0, 10), Point3d.create(0, 12, 10)]);
     // closed planar
-    centerlines.push(
-      [Point3d.create(0, 0, 0), Point3d.create(0, 0, a), Point3d.create(0, a, a), Point3d.create(0, a, 0), Point3d.create(0, 0, 0)]);
+    centerlines.push([
+      Point3d.create(0, 0, 0),
+      Point3d.create(0, 0, a),
+      Point3d.create(0, a, a),
+      Point3d.create(0, a, 0),
+      Point3d.create(0, 0, 0),
+    ]);
     // closed non-planar
-    centerlines.push(
-      [Point3d.create(0, 0, 0), Point3d.create(0, 0, a), Point3d.create(0, a, a), Point3d.create(4, a, 0), Point3d.create(0, 0, 0)]);
-
+    centerlines.push([
+      Point3d.create(0, 0, 0),
+      Point3d.create(0, 0, a),
+      Point3d.create(0, a, a),
+      Point3d.create(4, a, 0),
+      Point3d.create(0, 0, 0),
+    ]);
     // with duplicate points.
-    centerlines.push(
-      [Point3d.create(0, 0, 0),
+    centerlines.push([
+      Point3d.create(0, 0, 0),
       Point3d.create(0, 0, a), Point3d.create(0, 0, a),
       Point3d.create(0, a, a),
       Point3d.create(4, a, 0),
-      Point3d.create(0, 0, 0), Point3d.create(0, 0, 0)]);
-
+      Point3d.create(0, 0, 0), Point3d.create(0, 0, 0),
+    ]);
     const numDuplicates: number[] = [];
     for (const centerline of centerlines) {
       let n = 0;
@@ -407,31 +498,30 @@ describe("PipeConnections", () => {
       numDuplicates.push(n);
     }
     const wrapIfClosed = [false, false, true, false];
-    let x0Out = 0;
-    const z0Out = -3.0;   // for input section
+    let x0Out = 0.0;
     const outDelta = 20.0;
-    // sections with various corner conditions . .
+    // sections with various corner conditions
     for (const radiusA of [undefined, 0.0, 3.0]) {
       let y0Out = 0.0;
-      // open, closed, closed(true)
       for (let centerlineIndex = 0; centerlineIndex < centerlines.length; centerlineIndex++) {
         const centerline = centerlines[centerlineIndex];
         const wrap = wrapIfClosed[centerlineIndex];
         const rectangleA = CurveFactory.createRectangleXY(x0, y0, x1, y1, 0, radiusA);
         const sweeps = CurveFactory.createMiteredSweepSections(centerline, rectangleA, { wrapIfPhysicallyClosed: wrap });
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, centerline, x0Out, y0Out);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, rectangleA, x0Out, y0Out, z0Out);
         if (sweeps !== undefined) {
-          if (ck.testDefined(sweeps.sections) && ck.testDefined(sweeps.planes) && ck.testExactNumber(sweeps.planes.length, sweeps.sections.length, "Same number of planes and sections")) {
-
+          if (ck.testDefined(sweeps.sections) && ck.testDefined(sweeps.planes) &&
+            ck.testExactNumber(sweeps.planes.length, sweeps.sections.length, "Same number of planes and sections")) {
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweeps.sections, x0Out, y0Out);
-            ck.testExactNumber(centerline.length - numDuplicates[centerlineIndex], sweeps.sections.length, "confirm section count");
-
+            ck.testExactNumber(
+              centerline.length - numDuplicates[centerlineIndex], sweeps.sections.length, "confirm section count",
+            );
             for (const plane of sweeps.planes) {
               GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, plane.getAnyPointOnPlane(), 0.25, x0Out, y0Out);
-              GeometryCoreTestIO.captureCloneGeometry(allGeometry, [plane.getOriginRef(), plane.getOriginRef().plus(plane.getNormalRef())], x0Out, y0Out);
+              GeometryCoreTestIO.captureCloneGeometry(
+                allGeometry, [plane.getOriginRef(), plane.getOriginRef().plus(plane.getNormalRef())], x0Out, y0Out,
+              );
             }
-
             for (let i = 0; i < sweeps.sections.length; i++)
               ck.testTrue(isGeometryInPlane(sweeps.sections[i], sweeps.planes[i]), "geometry in plane");
           }
@@ -447,7 +537,8 @@ describe("PipeConnections", () => {
   it("createMiteredSweepStadiumExample", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    // Make a filleted rectangle for the ground path . . . the middle of the y=ay edge goes through the origin . .
+
+    // make a filleted rectangle for the ground path; the middle of the y=ay edge goes through the origin
     const ax = 60;
     const ay = 80;
     let x0 = 0;
@@ -456,30 +547,28 @@ describe("PipeConnections", () => {
     const y2 = -400;
     const ySurface = 200;
     const yMesh = 400;
-    // quirky order for making the rectangle with intended edge on y=ay edge axis ... createRectangleXY starts at upper right arc
+    // quirky order for making the rectangle with intended edge on y=ay edge axis; createRectangleXY starts at upper right arc
     const path = CurveFactory.createRectangleXY(-ax, 0, ax, ay, 0, 30);
     const arc = path.children.shift()!;
     path.children.push(arc);
-
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y2);
-    // stoke it ..
-    const options = new StrokeOptions();
-    options.angleTol = Angle.createDegrees(30.0);
-
-    const sweepOrigin = Point3d.create(0, ay, 0);
-    const sweepShiftFraction = 0.25;
     // build stair cross section in YZ plane with positive Y
+    const sweepOrigin = Point3d.create(0, ay, 0);
     const stepSize = 10;
     const numZigZagEdge = 5;
-    const zigZag = Sample.createZigZag(sweepOrigin, [Vector3d.create(0, stepSize, 0), Vector3d.create(0, 0, stepSize)], numZigZagEdge);
+    const zigZag = Sample.createZigZag(
+      sweepOrigin, [Vector3d.create(0, stepSize, 0), Vector3d.create(0, 0, stepSize)], numZigZagEdge,
+    );
     const sectionA = LineString3d.create(zigZag);
     const sectionB = CurveFactory.createFilletsInLineString(zigZag, stepSize / 6.0, false)!;
-
     const ovalSection = CurveFactory.createRectangleXY(-5, -2, 5, 2, 0, 2);
-    // transform to put it on yz plane
-    const yzTransform = Transform.createOriginAndMatrixColumns(sweepOrigin, Vector3d.unitY(), Vector3d.unitZ(), Vector3d.unitX());
-    ovalSection.tryTransformInPlace(yzTransform);
+    const yzTransform = Transform.createOriginAndMatrixColumns(
+      sweepOrigin, Vector3d.unitY(), Vector3d.unitZ(), Vector3d.unitX(),
+    );
+    ovalSection.tryTransformInPlace(yzTransform); // transform to put it on yz plane
 
+    const options = new StrokeOptions();
+    options.angleTol = Angle.createDegrees(30.0);
     const strokedLoop = path.cloneStroked(options);
     if (strokedLoop instanceof Loop && strokedLoop.children[0] instanceof LineString3d) {
       const strokePoints = strokedLoop.children[0].points;
@@ -495,27 +584,33 @@ describe("PipeConnections", () => {
           ck.announceError("expect primitive or collection for section ", section);
           break;
         }
-        const sections = CurveFactory.createMiteredSweepSections(strokePoints, section, { wrapIfPhysicallyClosed: true, outputSelect: MiteredSweepOutputSelect.AlsoMesh })!;
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokePoints, x0, y0, 0);
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y1);
+        const sections = CurveFactory.createMiteredSweepSections(
+          strokePoints,
+          section,
+          { wrapIfPhysicallyClosed: true, outputSelect: MiteredSweepOutputSelect.AlsoMesh },
+        )!;
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokePoints, x0, y1);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, y1);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, strokePoints, x0, y0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, sections.sections, x0, y0);
         if (ck.testType(sections.ruledSweep, RuledSweep, "output ruled sweep") &&
           ck.testType(sections.mesh, IndexedPolyface, "output mesh")) {
           const sweptSurface = sections.ruledSweep;
           const mesh = sections.mesh;
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptSurface, x0, ySurface);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, ySurface);
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, x0, yMesh);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, yMesh - ay * sweepShiftFraction);
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, ySurface - ay * sweepShiftFraction);
-          // How to detect correctness for a complex operation . ..
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, section, x0, yMesh);
+          // How to detect correctness for a complex operation
           // In these examples,
-          //    (a) the length of intermediate sections is larger than that of the original
-          //    (b) the sweep path lengths at various places along the sections are not too different from the centerline length.
-          // Check that the mesh area is fairly close to the product of those two ...
+          // (a) the length of intermediate sections is larger than that of the original
+          // (b) the sweep path lengths at various places along the sections are not too different from the centerline length.
+          // Check that the mesh area is fairly close to the product of those two
           const meshArea = PolyfaceQuery.sumFacetAreas(mesh);
           const referenceArea = sweptGeometryLength * sweepLength;
-          ck.testNumberInRange1d(meshArea, Range1d.createXX(0.9 & referenceArea, 1.3 * referenceArea), "mesh area close to quick estimate");
+          ck.testNumberInRange1d(
+            meshArea, Range1d.createXX(0.9 * referenceArea, 1.3 * referenceArea), "mesh area close to quick estimate",
+          );
         }
       }
     }
@@ -524,6 +619,134 @@ describe("PipeConnections", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
+  it("createMiteredSweepSections", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0, dy = 0;
+    const sectionSweeps: AngleSweep[] = [
+      AngleSweep.create360(),
+      // AngleSweep.createStartEndDegrees(360, 0),
+      AngleSweep.createStartEndDegrees(0, 90),
+      AngleSweep.createStartEndDegrees(180, 90),
+    ]
+    const centerline = [
+      Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
+      Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90)),
+      BSplineCurve3dH.createUniformKnots([
+        Point4d.create(-1.5, -1, 0, 1),
+        Point4d.create(-0.25, -0.5, 0, 0.5),
+        Point4d.create(-0.5, 0, 0, 1),
+        Point4d.create(-0.25, 0.5, 0, 0.5),
+        Point4d.create(0.5, 1, 0, 1),
+        Point4d.create(0.75, 0.5, 0, 0.5),
+        Point4d.create(1.5, 1, 1, 1),
+      ], 3,
+      )!,
+    ];
+    for (const sweep of sectionSweeps) {
+      dx = 0;
+      const sectionData = [
+        Arc3d.create(Point3d.create(1, 0, 0), Vector3d.create(0, 0, 1), Vector3d.create(0.5), sweep),
+        Arc3d.create(Point3d.create(0.5, 0, 0), Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
+        Arc3d.create(Point3d.create(-1.5, -1, 0), Vector3d.create(0, 0.2), Vector3d.create(0, 0, 0.2), sweep),
+      ];
+      ck.testExactNumber(sectionData.length, centerline.length, "test case arrays have same size");
+      for (const capped of [true, false]) {
+        for (let i = 0; i < sectionData.length; ++i) {
+          const options = new StrokeOptions();
+          options.angleTol = Angle.createDegrees(15);
+          const linestring = LineString3d.create();
+          centerline[i].emitStrokes(linestring, options);
+          const sections = CurveFactory.createMiteredSweepSections(
+            linestring.points,
+            sectionData[i],
+            { outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped },
+          )!;
+
+          if (ck.testType(sections.ruledSweep, RuledSweep, "output ruled sweep") &&
+            ck.testType(sections.mesh, IndexedPolyface, "output mesh")) {
+            const sweptSurface = sections.ruledSweep;
+            const mesh = sections.mesh;
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptSurface, dx, dy);
+            GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx + 3, dy);
+
+            dx += 6;
+            if (capped) {
+              if (sweep.isFullCircle)
+                ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is expected (closed section)");
+              else
+                ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected (open section)");
+            } else {
+              ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected (capped=false)");
+            }
+          }
+        }
+      }
+      dy += 3;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredSweepSections");
+    expect(ck.getNumErrors()).toBe(0);
+  });
+
+  it("createMiteredSweepSectionsTangentOption", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0;
+    const centerline = [
+      Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
+      Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90)),
+    ];
+    dx = 0;
+    const sectionData = [
+      Arc3d.create(Point3d.create(1, 0, 0), Vector3d.create(0, 0, 1), Vector3d.create(0.5)),
+      Arc3d.create(Point3d.create(0.5, 0, 0), Vector3d.create(0, 0.2), Vector3d.create(0.1)),
+    ];
+    const startTangents = [
+      Vector3d.create(0, -1, 0),
+      Vector3d.create(0, 0, -2),
+    ]
+    const endTangents = [
+      Vector3d.create(-1, 0, 0),
+      Vector3d.create(-2, 0, 0),
+    ]
+    ck.testExactNumber(sectionData.length, centerline.length, "test case arrays have same size");
+    ck.testExactNumber(sectionData.length, startTangents.length, "test case arrays have same size");
+    ck.testExactNumber(sectionData.length, endTangents.length, "test case arrays have same size");
+    for (const capped of [true, false]) {
+      for (let i = 0; i < sectionData.length; ++i) {
+        const options = new StrokeOptions();
+        options.angleTol = Angle.createDegrees(15);
+        const linestring = LineString3d.create();
+        centerline[i].emitStrokes(linestring, options);
+        const sections = CurveFactory.createMiteredSweepSections(
+          linestring.points,
+          sectionData[i],
+          {
+            outputSelect: MiteredSweepOutputSelect.AlsoMesh,
+            capped,
+            startTangent: startTangents[i],
+            endTangent: endTangents[i],
+          },
+        )!;
+
+        if (ck.testType(sections.ruledSweep, RuledSweep, "output ruled sweep") &&
+          ck.testType(sections.mesh, IndexedPolyface, "output mesh")) {
+          const sweptSurface = sections.ruledSweep;
+          const mesh = sections.mesh;
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, sweptSurface, dx);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx + 3);
+
+          ck.testTrue(sections.planes[0].getNormalRef().isExactEqual(startTangents[i]));
+          ck.testTrue(sections.planes[sections.planes.length - 1].getNormalRef().isExactEqual(endTangents[i]));
+
+          dx += 6;
+        }
+      }
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "CurveFactory", "createMiteredSweepSectionsTangentOption");
+    expect(ck.getNumErrors()).toBe(0);
+  });
 });
 
 function isGeometryInPlane(geometry: GeometryQuery, plane: Plane3dByOriginAndUnitNormal): boolean {
