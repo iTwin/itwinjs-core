@@ -1495,6 +1495,7 @@ export abstract class CurveChain extends CurveCollection {
     protected _curves: CurvePrimitive[];
     cyclicCurvePrimitive(index: number, cyclic?: boolean): CurvePrimitive | undefined;
     endPoint(result?: Point3d): Point3d | undefined;
+    endPointAndDerivative(result?: Ray3d): Ray3d | undefined;
     extendRange(range: Range3d, transform?: Transform): void;
     getChild(i: number): CurvePrimitive | undefined;
     getPackedStrokes(options?: StrokeOptions): GrowableXYZArray | undefined;
@@ -1502,6 +1503,7 @@ export abstract class CurveChain extends CurveCollection {
     reverseChildrenInPlace(): void;
     reverseInPlace(): void;
     startPoint(result?: Point3d): Point3d | undefined;
+    startPointAndDerivative(result?: Ray3d): Ray3d | undefined;
     tryAddChild(child: AnyCurve | undefined): boolean;
 }
 
