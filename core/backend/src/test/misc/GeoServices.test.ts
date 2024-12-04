@@ -14,7 +14,7 @@ import { getAvailableCoordinateReferenceSystems } from "../../GeographicCRSServi
 
 // spell-checker: disable
 
-describe.only("GeoServices", () => {
+describe("GeoServices", () => {
   before(() => {
     GeoCoordConfig.loadDefaultDatabases();
   });
@@ -839,7 +839,7 @@ describe.only("GeoServices", () => {
       assert.equal(crsExtentRange.high.y, expectedExtent.high.y);
     };
 
-    it.only("should get all CRS", async () => {
+    it("should get all CRS", async () => {
       await validateCRSList(11975, validationRange);
     });
 
