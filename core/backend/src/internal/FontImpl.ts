@@ -9,7 +9,7 @@ import { FontType, LocalFileName } from "@itwin/core-common";
 import { IModelHost } from "../IModelHost";
 import { _implementationProhibited } from "./Symbols";
 
-export function trueTypeFontFileFromFileName(fileName: LocalFileName): TrueTypeFontFile {
+export async function trueTypeFontFileFromFileName(fileName: LocalFileName): Promise<TrueTypeFontFile> {
   const metadata = IModelHost.platform.getTrueTypeFontMetadata(fileName);
   if (!metadata.familyNames) {
     // The input was almost certainly not a TrueType font file.

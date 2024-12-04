@@ -3,11 +3,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect} from "chai";
+import * as chai from "chai";
+import * as chaiAsPromised from "chai-as-promised";
 import * as fs from "fs";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { FontFile, ShxFontFile, TrueTypeFontFile } from "../../Font";
 import { FontType } from "@itwin/core-common";
+
+const expect = chai.expect;
+chai.use(chaiAsPromised);
 
 interface FontData {
   blob: Uint8Array;
@@ -16,22 +20,22 @@ interface FontData {
 
 describe.only("ShxFontFile", () => {
   describe("create", () => {
-    it("throws on non-existent filename", () => {
+    it("throws on non-existent filename", async () => {
       let fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
       expect(fs.existsSync(fileName)).to.be.true;
       fileName = fileName + "no-existe";
       expect(fs.existsSync(fileName)).to.be.false;
-      expect(() => ShxFontFile.fromFileOrBlob({ source: fileName, familyName: "Cdm" })).to.throw("Failed to read font file");
+      await expect(ShxFontFile.fromFileName({ fileName, familyName: "Cdm" })).to.eventually.be.rejectedWith("Failed to read font file");
     });
 
-    it("throws on non-font data", () => {
+    it("throws on non-font data", async () => {
       const fileName = IModelTestUtils.resolveAssetFile("brepdata1.json");
       expect(fs.existsSync(fileName)).to.be.true;
-      expect(() => ShxFontFile.fromFileOrBlob({ source: fileName, familyName: "brepdata1" })).to.throw("Failed to read font file");
+      await expect(ShxFontFile.fromFileName({ fileName, familyName: "brepdata1" })).to.eventually.be.rejectedWith("Failed to read font file");
 
       const blob = fs.readFileSync(fileName);
       expect(blob.length).greaterThan(5);
-      expect(() => ShxFontFile.fromFileOrBlob({ source: blob, familyName: "brepdata1" })).to.throw("Failed to read font file");
+      expect(() => ShxFontFile.fromBlob({ blob, familyName: "brepdata1" })).to.throw("Failed to read font file");
     });
 
   });
@@ -39,40 +43,40 @@ describe.only("ShxFontFile", () => {
 
 describe.only("TrueTypeFontFile", () => {
   describe("fromFileName", () => {
-    it("throws on non-existent filename", () => {
+    it("throws on non-existent filename", async () => {
       let fileName = IModelTestUtils.resolveFontFile("Karla-Regular.ttf");
       expect(fs.existsSync(fileName)).to.be.true;
       fileName = fileName + "no-existe";
       expect(fs.existsSync(fileName)).to.be.false;
-      expect(() => TrueTypeFontFile.fromFileName(fileName)).to.throw("Failed to read font file");
+      await expect(TrueTypeFontFile.fromFileName(fileName)).to.eventually.be.rejectedWith("Failed to read font file");
     });
 
-    it("throws on non-font data", () => {
+    it("throws on non-font data", async () => {
       const fileName = IModelTestUtils.resolveAssetFile("brepdata1.json");
       expect(fs.existsSync(fileName)).to.be.true;
-      expect(() => TrueTypeFontFile.fromFileName(fileName)).to.throw("Failed to read font file");
+      await expect(TrueTypeFontFile.fromFileName(fileName)).to.eventually.be.rejectedWith("Failed to read font file");
     });
   });
   
   describe("isEmbeddable", () => {
-    function expectEmbeddable(expected: boolean, fontName: string): void {
+    async function expectEmbeddable(expected: boolean, fontName: string): Promise<void> {
       const fileName = IModelTestUtils.resolveFontFile(fontName);
-      const fontFile = TrueTypeFontFile.fromFileName(fileName);
+      const fontFile = await TrueTypeFontFile.fromFileName(fileName);
       expect(fontFile.isEmbeddable).to.equal(expected);
     }
 
-    it("prohibits embedding of restricted and preview-and-print faces", () => {
-      expectEmbeddable(false, "Karla-Restricted.ttf");
-      expectEmbeddable(false, "Karla-Preview-And-Print.ttf");
+    it("prohibits embedding of restricted and preview-and-print faces", async () => {
+      await expectEmbeddable(false, "Karla-Restricted.ttf");
+      await expectEmbeddable(false, "Karla-Preview-And-Print.ttf");
 
-      expectEmbeddable(true, "Karla-Regular.ttf");
+      await expectEmbeddable(true, "Karla-Regular.ttf");
 
-      expectEmbeddable(true, "DejaVuSansMono.ttf");
-      expectEmbeddable(true, "Sitka-Banner.ttf");
+      await expectEmbeddable(true, "DejaVuSansMono.ttf");
+      await expectEmbeddable(true, "Sitka-Banner.ttf");
     });
 
-    it("prohibits embedding a file if any face is not embeddable", () => {
-      expectEmbeddable(true, "Sitka.ttc");
+    it("prohibits embedding a file if any face is not embeddable", async () => {
+      await expectEmbeddable(true, "Sitka.ttc");
       
       // ###TODO need a file with one face not embeddable
     });
@@ -82,30 +86,30 @@ describe.only("TrueTypeFontFile", () => {
     });
 
     describe("familyNames", () => {
-      it("reads family names", () => {
-        function expectFamilyNames(expected: string[], fontName: string): void {
+      it("reads family names", async () => {
+        async function expectFamilyNames(expected: string[], fontName: string): Promise<void> {
           const fileName = IModelTestUtils.resolveFontFile(fontName);
-          const fontFile = TrueTypeFontFile.fromFileName(fileName);
+          const fontFile = await TrueTypeFontFile.fromFileName(fileName);
           expected.sort();
           const actual = fontFile.familyNames.slice().sort();
           expect(actual).to.deep.equal(expected);
         }
 
-        expectFamilyNames(["Karla"], "Karla-MultipleEmbeddingRights.ttf");
-        expectFamilyNames(["Karla"], "Karla-Regular.ttf");
-        expectFamilyNames(["Karla-Preview-And-Print"], "Karla-Preview-And-Print.ttf");
-        expectFamilyNames(["Karla-Restricted"], "Karla-Restricted.ttf");
+        await expectFamilyNames(["Karla"], "Karla-MultipleEmbeddingRights.ttf");
+        await expectFamilyNames(["Karla"], "Karla-Regular.ttf");
+        await expectFamilyNames(["Karla-Preview-And-Print"], "Karla-Preview-And-Print.ttf");
+        await expectFamilyNames(["Karla-Restricted"], "Karla-Restricted.ttf");
 
-        expectFamilyNames(["DejaVu Sans"], "DejaVuSans.ttf");
-        expectFamilyNames(["DejaVu Sans"], "DejaVuSans-Bold.ttf");
-        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono.ttf");
-        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-Bold.ttf");
-        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-Oblique.ttf");
-        expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-BoldOblique.ttf");
-        expectFamilyNames(["DejaVu Serif"], "DejaVuSerif.ttf");
-        expectFamilyNames(["DejaVu Serif"], "DejaVuSerif-Bold.ttf");
+        await expectFamilyNames(["DejaVu Sans"], "DejaVuSans.ttf");
+        await expectFamilyNames(["DejaVu Sans"], "DejaVuSans-Bold.ttf");
+        await expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono.ttf");
+        await expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-Bold.ttf");
+        await expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-Oblique.ttf");
+        await expectFamilyNames(["DejaVu Sans Mono"], "DejaVuSansMono-BoldOblique.ttf");
+        await expectFamilyNames(["DejaVu Serif"], "DejaVuSerif.ttf");
+        await expectFamilyNames(["DejaVu Serif"], "DejaVuSerif-Bold.ttf");
         
-        expectFamilyNames([
+        await expectFamilyNames([
           "Sitka Banner", "Sitka Display", "Sitka Heading", "Sitka Small", "Sitka Subheading", "Sitka Text",
         ], "Sitka.ttc");
       });

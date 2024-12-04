@@ -19,9 +19,16 @@ export interface ShxFontFile {
 }
 
 export namespace ShxFontFile {
-  export function fromFileOrBlob(_args: {
+  export async function fromFileName(_args: {
     familyName: string;
-    source: Uint8Array | LocalFileName;
+    fileName: LocalFileName;
+  }): Promise<ShxFontFile> {
+    throw new Error("###TODO");
+  }
+
+  export function fromBlob(_args: {
+    familyName: string;
+    blob: Uint8Array;
   }): ShxFontFile {
     throw new Error("###TODO");
   }
@@ -47,7 +54,7 @@ export interface TrueTypeFontFile {
 export type FontFile = ShxFontFile | RscFontFile | TrueTypeFontFile;
 
 export namespace TrueTypeFontFile {
-  export function fromFileName(fileName: LocalFileName): TrueTypeFontFile {
+  export async function fromFileName(fileName: LocalFileName): Promise<TrueTypeFontFile> {
     return trueTypeFontFileFromFileName(fileName);
   }
 }
