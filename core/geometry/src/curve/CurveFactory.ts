@@ -532,9 +532,9 @@ export class CurveFactory {
    * * For best results, the caller should place `initialSection` in a plane perpendicular to the `centerline`
    * start tangent.
    *   * This plane is commonly (but not necessarily) through the centerline start point itself.
-   *   * To compute the sections, `initialSection` is projected along the start tangent onto the first bisector plane
-   * at the centerline start. The result of this projection will be likewise projected onto the second plane, and so
-   * on in sequence.
+   *   * To compute the sections, `initialSection` is projected in the direction of the centerline start tangent onto
+   * the first bisector plane at the centerline start. The result of this projection will be likewise projected onto
+   * the second plane, and so on in sequence.
    * * By default, the first/last bisector plane normals are set to the centerline start/end tangents. The caller can
    * override these with tangents supplied in `options`. If the centerline is physically closed and
    * `options.wrapIfPhysicallyClosed` is true, the first and last plane normals are averaged and equated.
