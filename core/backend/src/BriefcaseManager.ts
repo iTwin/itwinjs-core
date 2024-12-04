@@ -270,6 +270,9 @@ export class BriefcaseManager {
       throw new IModelError(err.errorNumber, `Could not open downloaded briefcase for write access: ${fileName}, err=${err.message}`);
     }
     try {
+      if (IModelHost.pullMergeMethod !== "Merge") {
+        nativeDb.pullMergeSetMethod(IModelHost.pullMergeMethod);
+      }
       nativeDb.enableWalMode(); // local briefcases should use WAL journal mode
       nativeDb.resetBriefcaseId(briefcaseId);
       if (nativeDb.getCurrentChangeset().id !== checkpoint.changeset.id)
@@ -539,6 +542,7 @@ export class BriefcaseManager {
       }
     }
     db[_nativeDb].pullMergeEnd();
+    db.saveChanges("Merge.");
     // notify listeners
     db.notifyChangesetApplied();
   }

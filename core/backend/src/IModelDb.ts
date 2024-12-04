@@ -46,7 +46,7 @@ import { generateElementGraphics } from "./ElementGraphics";
 import { Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { GeoCoordConfig } from "./GeoCoordConfig";
-import { IModelHost } from "./IModelHost";
+import { IModelHost, PullMergeMethod } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
@@ -3104,6 +3104,9 @@ export class BriefcaseDb extends IModelDb {
   }
 
   public override close() {
+    if (this.txns.changeMergeManager.inProgress()) {
+      this.abandonChanges();
+    }
     super.close();
     this.onClosed.raiseEvent();
   }

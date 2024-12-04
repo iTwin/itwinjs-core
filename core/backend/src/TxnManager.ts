@@ -18,6 +18,15 @@ import { Relationship, RelationshipProps } from "./Relationship";
 import { SqliteStatement } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import { RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs";
+import { PullMergeMethod } from "./IModelHost";
+
+/** @internal */
+export interface ChangeMergeManager {
+  setMethod: (method: PullMergeMethod) => void;
+  getMethod: () => PullMergeMethod;
+  resume: () => void;
+  inProgress: () => boolean;
+}
 
 /** A string that identifies a Txn.
  * @public
@@ -313,6 +322,19 @@ export class TxnManager {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
   }
 
+  /**  @internal */
+  public get changeMergeManager(): ChangeMergeManager {
+    return {
+      setMethod: (method: PullMergeMethod) => {
+        this._iModel[_nativeDb].pullMergeSetMethod(method);
+      },
+      getMethod: () => this._iModel[_nativeDb].pullMergeGetMethod(),
+      inProgress: () => this._iModel[_nativeDb].pullMergeInProgress(),
+      resume: () => this._iModel[_nativeDb].pullMergeResume(),
+    }
+  }
+
+
   /** If a -watch file exists for this iModel, update its timestamp so watching processes can be
    * notified that we've modified the briefcase.
    * @internal Used by IModelDb on push/pull.
@@ -408,15 +430,29 @@ export class TxnManager {
     IpcHost.notifyTxns(this._iModel, "notifyAfterUndoRedo", isUndo);
   }
   /** @internal */
-  protected _onRebaseBeginLocalTxn(_txn: TxnArgs) {
+  protected _onRebaseTxnBegin(txn: TxnArgs) {
+    this.onRebaseTxnBegin.raiseEvent(txn);
   }
 
   /** @internal */
-  protected _onRebaseEndLocalTxn(_txn: TxnArgs) {
+  protected _onRebaseLTxnEnd(txn: TxnArgs) {
+    this.onRebaseLTxnEnd.raiseEvent(txn);
   }
 
   /** @internal */
   protected _onRebaseLocalTxnConflict(args: RebaseChangesetConflictArgs): DbConflictResolution {
+    if (this.appCustomConflictHandler) {
+      try {
+        const resolution = this.appCustomConflictHandler(args);
+        if (resolution !== undefined) {
+          return resolution;
+        }
+      } catch (err) {
+        Logger.logError(BackendLoggerCategory.IModelDb, `Custom conflict handler threw an error: ${err}. It should not throw errors. Operation will be aborted.`);
+        return DbConflictResolution.Abort;
+      }
+    }
+
     const category = "DgnCore";
     const interpretConflictCause = (cause: DbConflictCause) => {
       switch (cause) {
@@ -544,6 +580,16 @@ export class TxnManager {
    * @see [[onReplayExternalTxns]] for the event raised before the changes are applied.
    */
   public readonly onReplayedExternalTxns = new BeEvent<() => void>();
+
+  /** @internal */
+  public readonly onRebaseTxnBegin = new BeEvent<(txn: TxnArgs) => void>();
+  /** @internal */
+  public readonly onRebaseLTxnEnd = new BeEvent<(txn: TxnArgs) => void>();
+  /**
+   * if handler is set and it does not return undefiend then default handler will not be called
+   * @internal
+   * */
+  public appCustomConflictHandler?: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
 
   /**
    * Restart the current TxnManager session. This causes all Txns in the current session to no longer be undoable (as if the file was closed
