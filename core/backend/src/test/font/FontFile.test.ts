@@ -20,12 +20,27 @@ interface FontData {
 
 describe.only("ShxFontFile", () => {
   describe("create", () => {
+    it("creates from blob", () => {
+      const fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
+      const blob = fs.readFileSync(fileName);
+      const font = ShxFontFile.fromBlob({ blob, familyName: "Cdm" });
+      expect(font.type).to.equal(FontType.Shx);
+      expect(font.familyName).to.equal("Cdm");
+    });
+
+    it("creates from file name", async () => {
+      const fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
+      const font = await ShxFontFile.fromFileName({ fileName, familyName: "Cdm" });
+      expect(font.type).to.equal(FontType.Shx);
+      expect(font.familyName).to.equal("Cdm");
+    });
+
     it("throws on non-existent filename", async () => {
       let fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
       expect(fs.existsSync(fileName)).to.be.true;
       fileName = fileName + "no-existe";
       expect(fs.existsSync(fileName)).to.be.false;
-      await expect(ShxFontFile.fromFileName({ fileName, familyName: "Cdm" })).to.eventually.be.rejectedWith("Failed to read font file");
+      await expect(ShxFontFile.fromFileName({ fileName, familyName: "Cdm" })).to.eventually.be.rejectedWith("no such file");
     });
 
     it("throws on non-font data", async () => {
@@ -37,7 +52,6 @@ describe.only("ShxFontFile", () => {
       expect(blob.length).greaterThan(5);
       expect(() => ShxFontFile.fromBlob({ blob, familyName: "brepdata1" })).to.throw("Failed to read font file");
     });
-
   });
 });
 

@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
-import { FontFile, TrueTypeFontFile } from "../Font";
+import { FontFile, ShxFontFile, ShxFontFileFromBlobArgs, ShxFontFileFromFileNameArgs, TrueTypeFontFile } from "../Font";
 import { FontType, LocalFileName } from "@itwin/core-common";
 import { IModelHost } from "../IModelHost";
 import { _implementationProhibited } from "./Symbols";
-
+        
 export async function trueTypeFontFileFromFileName(fileName: LocalFileName): Promise<TrueTypeFontFile> {
   const metadata = IModelHost.platform.getTrueTypeFontMetadata(fileName);
   if (!metadata.familyNames) {
@@ -24,32 +24,53 @@ export async function trueTypeFontFileFromFileName(fileName: LocalFileName): Pro
   };
 }
 
-/*
-ShxFont::ShxType ShxFont::ValidateHeader(CharCP fileHeader) {
-    static const CharCP UNIFONT_HEADER = "AutoCAD-86 unifont 1.0";
-    static const CharCP SHAPES1_0_HEADER = "AutoCAD-86 shapes 1.0";
-    static const CharCP SHAPES1_1_HEADER = "AutoCAD-86 shapes 1.1";
+// An SHX file with fewer than 40 bytes isn't valid.
+const minShxSize = 40;
 
-    if (0 == strncmp(fileHeader, UNIFONT_HEADER, strlen(UNIFONT_HEADER)))
-        return ShxFont::ShxType::Unicode;
+const shxHeaders = [
+  "AutoCAD-86 unifont 1.0",
+  "AutoCAD-86 shapes 1.0",
+  "AutoCAD-86 shapes 1.1",
+].map((shxHeader) => Array.from(shxHeader))
+.map((chars) => new Uint8Array(chars.map((ch) => ch.charCodeAt(0))));
 
-    if ((0 == strncmp(fileHeader, SHAPES1_0_HEADER, strlen(SHAPES1_0_HEADER))) || (0 == strncmp(fileHeader, SHAPES1_1_HEADER, strlen(SHAPES1_1_HEADER))))
-        return ShxFont::ShxType::Locale;
-
-    return ShxFont::ShxType::Invalid;
+// See https://github.com/iTwin/imodel-native/blob/91f509c2175dc49ce1efcf5a906c9a9aa193451d/iModelCore/iModelPlatform/DgnCore/ShxFont.cpp#L44
+function validateShx(blob: Uint8Array): void {
+  if (blob.length >= minShxSize) {
+    for (const header of shxHeaders) {
+      if (header.every((char, index) => char === blob[index])) {
+        return;
+      }
+    }
+  }
+  
+  throw new Error("Failed to read font file");
 }
 
-ShxFont::ShxType ShxFont::GetShxType() {
-    static const size_t MAX_HEADER = 40; // an SHX file with less than 40 bytes isn't valid
+export async function shxFontFileFromFileName(args: ShxFontFileFromFileNameArgs): Promise<ShxFontFile> {
+  const read = new Promise<Uint8Array>((resolve, reject) => {
+    try {
+      const stream = fs.createReadStream(args.fileName, { end: minShxSize });
+      stream.on("error", (e) => reject(e));
+      stream.on("data", (chunk: Buffer) => {
+        stream.close();
+        resolve(chunk);
+      });
+    } catch (e) {
+      reject(e);
+    }
+  });
 
-    // Allow this to be used in the middle of other read operations.
-    AutoRestoreFPos restoreFPos(*this);
-    Seek(0);
-
-    char fileHeader[MAX_HEADER];
-    if (MAX_HEADER != Read (fileHeader,MAX_HEADER))
-        return ShxFont::ShxType::Invalid;
-
-    return ValidateHeader(fileHeader);
+  const blob = await read;
+  return shxFontFileFromBlob({ blob, familyName: args.familyName });
 }
-*/
+
+export function shxFontFileFromBlob(args: ShxFontFileFromBlobArgs): ShxFontFile {
+  validateShx(args.blob);
+
+  return {
+    [_implementationProhibited]: undefined,
+    type: FontType.Shx,
+    familyName: args.familyName,
+  };
+}
