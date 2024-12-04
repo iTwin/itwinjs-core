@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { describe, expect, it } from "vitest";
+import { Geometry } from "../../Geometry";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableBlockedArray } from "../../geometry3d/GrowableBlockedArray";
 import { GrowableFloat64Array } from "../../geometry3d/GrowableFloat64Array";
@@ -613,6 +614,50 @@ describe("GrowablePoint3dArray", () => {
     const n1 = data.length;
     data.compressAdjacentDuplicates(0.0001);
     ck.testExactNumber(n0, data.length, "compressed array big length", n1);
+
+    const pt0 = Point3d.create(1,2,3);
+    const pt1 = Point3d.create(4,5,6);
+    const pt0e = pt0.plusXYZ(Geometry.smallMetricDistance / 2);
+    const points: Point3d[] = [];
+    points.push(pt0.clone(), pt0e.clone());
+    points.push(pt1.clone());
+    points.push(pt0.clone(), pt0e.clone(), pt0e.clone());
+    points.push(pt1.clone());
+    points.push(pt0e.clone(), pt0e.clone(), pt0.clone());
+    const carrier = new Point3dArrayCarrier(points);
+    const compressed = GrowableXYZArray.createCompressed(carrier);
+    ck.testExactNumber(5, compressed.length, "compressed expected #duplicates out");
+    ck.testExactNumber(pt0.x, compressed.getXAtUncheckedPointIndex(0), "compress preserved the first (duplicated) point.x");
+    ck.testExactNumber(pt0.y, compressed.getYAtUncheckedPointIndex(0), "compress preserved the first (duplicated) point.y");
+    ck.testExactNumber(pt0.z, compressed.getZAtUncheckedPointIndex(0), "compress preserved the first (duplicated) point.z");
+    ck.testTrue(false === compressed.almostEqualIndexIndex(0, 1, 0.0), "removed duplicates of first point");
+    ck.testTrue(false === compressed.almostEqualIndexIndex(1, 2, 0.0), "preserved unique third point");
+    ck.testTrue(false === compressed.almostEqualIndexIndex(2, 3, 0.0), "removed duplicates of fourth point");
+    ck.testTrue(false === compressed.almostEqualIndexIndex(3, 4, 0.0), "preserved unique seventh point");
+    ck.testExactNumber(pt0.x, compressed.getXAtUncheckedPointIndex(4), "compress preserved the last (duplicated) point.x");
+    ck.testExactNumber(pt0.y, compressed.getYAtUncheckedPointIndex(4), "compress preserved the last (duplicated) point.y");
+    ck.testExactNumber(pt0.z, compressed.getZAtUncheckedPointIndex(4), "compress preserved the last (duplicated) point.z");
+
+    compressed.push(pt0e);
+    compressed.compressInPlace();
+    ck.testExactNumber(5, compressed.length, "compressed expected #duplicates out");
+    ck.testExactNumber(pt0e.x, compressed.getXAtUncheckedPointIndex(4), "compressInPlace preserved the last (duplicated) point.x");
+    ck.testExactNumber(pt0e.y, compressed.getYAtUncheckedPointIndex(4), "compressInPlace preserved the last (duplicated) point.y");
+    ck.testExactNumber(pt0e.z, compressed.getZAtUncheckedPointIndex(4), "compressInPlace preserved the last (duplicated) point.z");
+
+    compressed.push(pt0);
+    const compressed1 = compressed.cloneCompressed(Geometry.smallMetricDistance / 10);
+    ck.testExactNumber(compressed.length, compressed1.length, "cloneCompressed with tighter tolerance does not compress");
+    for (let i = 0; i < compressed.length; ++i) {
+      ck.testExactNumber(compressed.getXAtUncheckedPointIndex(i), compressed1.getXAtUncheckedPointIndex(i), "cloneCompressed with tighter tolerance preserves the i_th point.x");
+      ck.testExactNumber(compressed.getYAtUncheckedPointIndex(i), compressed1.getYAtUncheckedPointIndex(i), "cloneCompressed with tighter tolerance preserves the i_th point.y");
+      ck.testExactNumber(compressed.getZAtUncheckedPointIndex(i), compressed1.getZAtUncheckedPointIndex(i), "cloneCompressed with tighter tolerance preserves the i_th point.z");
+    }
+
+    const iDuplicates = carrier.findOrderedDuplicates();
+    ck.testTrue(iDuplicates[0] !== 0, "findOrderedDuplicates always preserves the first point");
+    ck.testTrue(iDuplicates[iDuplicates.length - 1] === points.length - 1, "findOrderedDuplicates doesn't preserve last duplicate point by default");
+
     expect(ck.getNumErrors()).toBe(0);
   });
 

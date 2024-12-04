@@ -46,13 +46,14 @@ import { StrokeOptions } from "./StrokeOptions";
 // cspell:word CCWXY
 
 /**
- * Interface to carry parallel arrays of planes and sections, and optional geometry assembled from them, as returned by [CurveFactory.createMiteredSweepSections].
+ * Interface to carry parallel arrays of planes and sections, and optional geometry assembled from them,
+ * as returned by [CurveFactory.createMiteredSweepSections].
  * @public
  */
 export interface SectionSequenceWithPlanes {
-  /** the plane of each section */
+  /** The plane of each section. */
   planes: Plane3dByOriginAndUnitNormal[];
-  /** section curve projected onto the corresponding plane */
+  /** Section curve projected onto the corresponding plane. */
   sections: AnyCurve[];
   /**
    * Optional `RuledSweep` generated from the sections.
@@ -89,6 +90,18 @@ export interface MiteredSweepOptions {
   strokeOptions?: StrokeOptions;
   /** Whether to cap the ruled sweep if outputting a ruled sweep or mesh. Default value is `false`. */
   capped?: boolean;
+  /**
+   * If the centerline is not physically closed, the first section's normal is aligned to this vector (typically points
+   * toward the swept geometry). If the centerline is physically closed, the first section's normal is aligned to this
+   * vector if and only if endTangent is provided and is equal to startTangent.
+   */
+  startTangent?: Vector3d;
+  /**
+   * If the centerline is not physically closed, the last section's normal is aligned to this vector (typically points
+   * away from the swept geometry). If the centerline is physically closed, the last section's normal is aligned to this
+   * vector if and only if startTangent is provided and is equal to endTangent.
+   */
+  endTangent?: Vector3d;
 }
 
 /**
@@ -96,8 +109,12 @@ export interface MiteredSweepOptions {
  * @public
  */
 export class CurveFactory {
-  /** (cautiously) construct and save a line segment between fractional positions. */
-  private static addPartialSegment(path: Path, allowBackup: boolean, pointA: Point3d | undefined, pointB: Point3d | undefined, fraction0: number, fraction1: number) {
+  /** (Cautiously) construct and save a line segment between fractional positions. */
+  private static addPartialSegment(
+    path: Path, allowBackup: boolean,
+    pointA: Point3d | undefined, pointB: Point3d | undefined,
+    fraction0: number, fraction1: number,
+  ) {
     if (allowBackup || (fraction1 > fraction0)) {
       if (pointA !== undefined && pointB !== undefined && !Geometry.isAlmostEqualNumber(fraction0, fraction1))
         path.tryAddChild(LineSegment3d.create(pointA.interpolate(fraction0, pointB), pointA.interpolate(fraction1, pointB)));
@@ -125,12 +142,15 @@ export class CurveFactory {
    * @param radius fillet radius or array of radii indexed to correspond to the points.
    * @param allowBackupAlongEdge true to allow edges to be created going "backwards" along edges if needed to create the blend.
    */
-  public static createFilletsInLineString(points: LineString3d | IndexedXYZCollection | Point3d[], radius: number | number[], allowBackupAlongEdge: boolean = true): Path | undefined {
+  public static createFilletsInLineString(
+    points: LineString3d | IndexedXYZCollection | Point3d[],
+    radius: number | number[],
+    allowBackupAlongEdge: boolean = true,
+  ): Path | undefined {
     if (Array.isArray(points))
       return this.createFilletsInLineString(new Point3dArrayCarrier(points), radius, allowBackupAlongEdge);
     if (points instanceof LineString3d)
       return this.createFilletsInLineString(points.packedPoints, radius, allowBackupAlongEdge);
-
     const n = points.length;
     if (n <= 1)
       return undefined;
@@ -140,7 +160,6 @@ export class CurveFactory {
     const blendArray: ArcBlendData[] = [];
     // build one-sided blends at each end . .
     blendArray.push({ fraction10: 0.0, fraction12: 0.0, point: pointA.clone() });
-
     for (let i = 1; i + 1 < n; i++) {
       const pointC = points.getPoint3dAtCheckedPointIndex(i + 1)!;
       let thisRadius = 0;
@@ -149,7 +168,6 @@ export class CurveFactory {
           thisRadius = radius[i];
       } else if (Number.isFinite(radius))
         thisRadius = radius;
-
       if (thisRadius !== 0.0)
         blendArray.push(Arc3d.createFilletArc(pointA, pointB, pointC, thisRadius));
       else
@@ -185,7 +203,11 @@ export class CurveFactory {
       } */
     }
     const path = Path.create();
-    this.addPartialSegment(path, allowBackupAlongEdge, blendArray[0].point, blendArray[1].point, blendArray[0].fraction12, 1.0 - blendArray[1].fraction10);
+    this.addPartialSegment(
+      path, allowBackupAlongEdge,
+      blendArray[0].point, blendArray[1].point,
+      blendArray[0].fraction12, 1.0 - blendArray[1].fraction10,
+    );
     // add each path and successor edge ...
     for (let i = 1; i + 1 < points.length; i++) {
       const b0 = blendArray[i];
@@ -195,12 +217,14 @@ export class CurveFactory {
     }
     return path;
   }
-
-  /** Create a `Loop` with given xy corners and fixed z.
+  /**
+   * Create a `Loop` with given xy corners and fixed z.
    * * The corners always proceed counter clockwise from lower left.
    * * If the radius is too large for the outer rectangle size, it is reduced to half of the the smaller x or y size.
-  */
-  public static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z: number = 0, filletRadius?: number): Loop {
+   */
+  public static createRectangleXY(
+    x0: number, y0: number, x1: number, y1: number, z: number = 0, filletRadius?: number,
+  ): Loop {
     let radius = Geometry.correctSmallMetricDistance(filletRadius);
     const xMin = Math.min(x0, x1);
     const xMax = Math.max(x0, x1);
@@ -208,7 +232,13 @@ export class CurveFactory {
     const yMax = Math.max(y0, y1);
     radius = Math.min(Math.abs(radius), 0.5 * (xMax - xMin), 0.5 * (yMax - yMin));
     if (radius === 0.0)
-      return Loop.createPolygon([Point3d.create(xMin, yMin, z), Point3d.create(xMax, yMin, z), Point3d.create(xMax, yMax, z), Point3d.create(xMin, yMax, z), Point3d.create(xMin, yMin, z)]);
+      return Loop.createPolygon([
+        Point3d.create(xMin, yMin, z),
+        Point3d.create(xMax, yMin, z),
+        Point3d.create(xMax, yMax, z),
+        Point3d.create(xMin, yMax, z),
+        Point3d.create(xMin, yMin, z),
+      ]);
     else {
       const vectorU = Vector3d.create(radius, 0, 0);
       const vectorV = Vector3d.create(0, radius, 0);
@@ -216,7 +246,12 @@ export class CurveFactory {
       const y0A = yMin + radius;
       const x1A = xMax - radius;
       const y1A = yMax - radius;
-      const centers = [Point3d.create(x1A, y1A, z), Point3d.create(x0A, y1A, z), Point3d.create(x0A, y0A, z), Point3d.create(x1A, y0A, z)];
+      const centers = [
+        Point3d.create(x1A, y1A, z),
+        Point3d.create(x0A, y1A, z),
+        Point3d.create(x0A, y0A, z),
+        Point3d.create(x1A, y0A, z),
+      ];
       const loop = Loop.create();
       for (let i = 0; i < 4; i++) {
         const center = centers[i];
@@ -233,14 +268,13 @@ export class CurveFactory {
       return loop;
     }
   }
-
   /**
    * If `arcB` is a continuation of `arcA`, extend `arcA` (in place) to include the range of `arcB`
    * * This only succeeds if the two arcs are part of identical complete arcs and end of `arcA` matches the beginning of `arcB`.
-   * @param arcA first arc, modified in place
-   * @param arcB second arc, unmodified
-   * @param allowReversed whether to consolidate even when second arc is reversed
-   * @returns whether `arcA` was modified
+   * @param arcA first arc, modified in place.
+   * @param arcB second arc, unmodified.
+   * @param allowReversed whether to consolidate even when second arc is reversed.
+   * @returns whether `arcA` was modified.
    */
   public static appendToArcInPlace(arcA: Arc3d, arcB: Arc3d, allowReverse: boolean = false): boolean {
     if (arcA.center.isAlmostEqual(arcB.center)) {
@@ -252,31 +286,36 @@ export class CurveFactory {
       const startB = arcB.angleToPointAndDerivative(arcB.sweep.fractionToAngle(0.0));
       if (arcB.sweep.sweepRadians < 0)
         startB.direction.scaleInPlace(-1.0);
-
       if (endA.isAlmostEqual(startB)) {
-        arcA.sweep.setStartEndRadians(arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians + sweepSign * arcB.sweep.sweepRadians);
+        arcA.sweep.setStartEndRadians(
+          arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians + sweepSign * arcB.sweep.sweepRadians,
+        );
         return true;
       }
-      // Also ok if negated tangent . ..
+      // Also ok if negated tangent
       if (allowReverse) {
         startB.direction.scaleInPlace(-1.0);
         if (endA.isAlmostEqual(startB)) {
-          arcA.sweep.setStartEndRadians(arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians - sweepSign * arcB.sweep.sweepRadians);
+          arcA.sweep.setStartEndRadians(
+            arcA.sweep.startRadians, arcA.sweep.startRadians + arcA.sweep.sweepRadians - sweepSign * arcB.sweep.sweepRadians,
+          );
           return true;
         }
       }
     }
     return false;
   }
-
   /**
    * Return a `Path` containing arcs are on the surface of an ellipsoid and pass through a sequence of points.
-   * * Each arc passes through the two given endpoints and in the plane containing the true surface normal at given `fractionForIntermediateNormal`
+   * * Each arc passes through the two given endpoints and in the plane containing the true surface normal at
+   * given `fractionForIntermediateNormal`
    * @param ellipsoid
    * @param pathPoints
    * @param fractionForIntermediateNormal fractional position for surface normal used to create the section plane.
    */
-  public static assembleArcChainOnEllipsoid(ellipsoid: Ellipsoid, pathPoints: GeodesicPathPoint[], fractionForIntermediateNormal: number = 0.5): Path {
+  public static assembleArcChainOnEllipsoid(
+    ellipsoid: Ellipsoid, pathPoints: GeodesicPathPoint[], fractionForIntermediateNormal: number = 0.5,
+  ): Path {
     const arcPath = Path.create();
     for (let i = 0; i + 1 < pathPoints.length; i++) {
       const arc = ellipsoid.sectionArcWithIntermediateNormal(
@@ -287,7 +326,6 @@ export class CurveFactory {
     }
     return arcPath;
   }
-
   private static appendGeometryQueryArray(candidate: GeometryQuery | GeometryQuery[] | undefined, result: GeometryQuery[]) {
     if (candidate instanceof GeometryQuery)
       result.push(candidate);
@@ -295,15 +333,15 @@ export class CurveFactory {
       for (const p of candidate)
         this.appendGeometryQueryArray(p, result);
     }
-
   }
-
   /**
    * Create solid primitives for pipe segments (e.g. Cone or TorusPipe) around line and arc primitives.
-   * @param centerline centerline geometry/
+   * @param centerline centerline geometry.
    * @param pipeRadius radius of pipe.
    */
-  public static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined {
+  public static createPipeSegments(
+    centerline: CurvePrimitive | CurveChain, pipeRadius: number,
+  ): GeometryQuery | GeometryQuery[] | undefined {
     if (centerline instanceof LineSegment3d) {
       return Cone.createAxisPoints(centerline.startPoint(), centerline.endPoint(), pipeRadius, pipeRadius, false);
     } else if (centerline instanceof Arc3d) {
@@ -322,114 +360,138 @@ export class CurveFactory {
     }
     return undefined;
   }
-
   /**
-   * * Create section arcs for mitered pipe.
-   * * At each end of each pipe, the pipe is cut by the plane that bisects the angle between successive pipe centerlines.
-   * * The arc definitions are constructed so that lines between corresponding fractional positions on the arcs are
-   *     axial lines on the pipes.
-   * * This means that each arc definition axes (aka vector0 and vector90) are _not_ perpendicular to each other.
-   * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis lengths, or a full Arc3d.
-   *    * For semi-axis length input, x corresponds to an ellipse local axis nominally situated parallel to the xy-plane.
-   *    * The center of Arc3d input is translated to the centerline start point to act as initial cross section.
-   * @param centerline centerline of pipe
-   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d
+   * Create section arcs for mitered pipe.
+   * * At the end of each pipe segment, the pipe is mitered by the plane that bisects the angle between successive
+   * centerline segments.
+   * * The section arcs are constructed so that lines between corresponding fractional positions on the arcs are
+   *   axial lines on the pipes.
+   * * This means that the initial arc's vector0 and vector90 lengths and angular separation are _not_ preserved in
+   * the section arcs.
+   * * Circular or elliptical pipe cross sections can be specified by supplying either a radius, a pair of semi-axis
+   * lengths, or an Arc3d:
+   *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
+   * start tangent.
+   *    * For Arc3d input, the center is translated to the centerline start point, but otherwise the arc is used as-is
+   * for the first section. For best results, the arc should be perpendicular to the centerline start tangent.
+   * @param centerline centerline of pipe. For best results, ensure no successive duplicate points with e.g.,
+   * [[GrowableXYZArray.createCompressed]].
+   * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d (if not full, function makes it full).
    */
   public static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[] {
     const arcs: Arc3d[] = [];
     if (centerline.length < 2)
       return [];
-
     const vector0 = Vector3d.create();
     const vector90 = Vector3d.create();
     const vectorBC = Vector3d.create();
-    const currentCenter = Point3d.create();
-    centerline.vectorIndexIndex(0, 1, vectorBC)!;
-    centerline.getPoint3dAtUncheckedPointIndex(0, currentCenter);
-
-    let initialSection: Arc3d;
+    const sweep = AngleSweep.create360();
+    centerline.vectorIndexIndex(0, 1, vectorBC)!; // initially, the start tangent
     if (sectionData instanceof Arc3d) {
-      initialSection = sectionData.clone();
-      initialSection.center.setFrom(currentCenter);
       vector0.setFrom(sectionData.vector0);
       vector90.setFrom(sectionData.vector90);
+      sweep.setFrom(sectionData.sweep); // allow e.g., half-pipe
+      const sectionFacesForward = sectionData.matrixRef.columnDotXYZ(AxisIndex.Z, vectorBC.x, vectorBC.y, vectorBC.z) > 0;
+      if (sectionFacesForward !== sectionData.sweep.isCCW)
+        sweep.reverseInPlace();
     } else if (typeof sectionData === "number" || Point3d.isXAndY(sectionData)) {
       const length0 = (typeof sectionData === "number") ? sectionData : sectionData.x;
       const length90 = (typeof sectionData === "number") ? sectionData : sectionData.y;
       const baseFrame = Matrix3d.createRigidHeadsUp(vectorBC, AxisOrder.ZXY);
       baseFrame.columnX(vector0).scaleInPlace(length0);
       baseFrame.columnY(vector90).scaleInPlace(length90);
-      initialSection = Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360());
     } else {
       return [];
     }
+    // ASSUME: initial section normal points toward sweep direction for subsequent facet creation
+    const initialSection = Arc3d.create(undefined, vector0, vector90, sweep);
+    centerline.getPoint3dAtUncheckedPointIndex(0, initialSection.centerRef);
     arcs.push(initialSection);
-
     const vectorAB = Vector3d.create();
     const bisector = Vector3d.create();
+    const center = Point3d.create();
     for (let i = 1; i < centerline.length; i++) {
       vectorAB.setFromVector3d(vectorBC);
-      centerline.getPoint3dAtUncheckedPointIndex(i, currentCenter);
-      if (i + 1 < centerline.length) {
+      centerline.getPoint3dAtUncheckedPointIndex(i, center);
+      if (i + 1 < centerline.length)
         centerline.vectorIndexIndex(i, i + 1, vectorBC)!;
-      } else {
+      else
         vectorBC.setFromVector3d(vectorAB);
-      }
       if (vectorAB.normalizeInPlace() && vectorBC.normalizeInPlace()) {
         vectorAB.interpolate(0.5, vectorBC, bisector);
-        // On the end ellipse for this pipe section. ..
-        // center comes directly from centerline[i]
-        // vector0 and vector90 are obtained by sweeping the corresponding vectors of the start ellipse to the split plane.
+        // At pipe end, the ellipse center comes directly from centerline[i], and vector0/vector90 are
+        // obtained by sweeping the corresponding vectors of the pipe start ellipse to the bisector plane.
         moveVectorToPlane(vector0, vectorAB, bisector, vector0);
         moveVectorToPlane(vector90, vectorAB, bisector, vector90);
-        arcs.push(Arc3d.create(currentCenter, vector0, vector90, AngleSweep.create360()));
+        arcs.push(Arc3d.create(center, vector0, vector90, sweep));
       }
     }
     return arcs;
   }
-
   /**
    * Sweep the initialSection along each segment of the centerLine until it hits the bisector plane at the next vertex.
    * * The caller should place the initialSection on a plane perpendicular to the first edge.
    *   * This plane is commonly (but not necessarily) through the start point itself.
-   *   * If the geometry is not "on a perpendicular plane", the output geometry will still be flattened onto the various planes.
-   * * In the "open path" case (i.e when wrapIfPhysicallyClosed is false or the path does not have matched first and last points)
-   *       the first/last output plane will be at the start/end of the first/last edge and on a perpendicular plane.
-   * * In the "closed path" case, the output plane for the first and last point is the bisector of the start and end planes from the "open path" case,
-   *    and the first/last section geometry may be different from `initialSection`.
-   * * The centerline path does NOT have to be planar, however twisting effects effects will appear in the various bisector planes.
-   * @param centerline sweep path, e.g., as stroked from a smooth centerline curve
-   * @param initialSection profile curve to be swept. As noted above, this should be on a plane perpendicular to the first segment of the centerline.
-   * @param options options for computation and output
+   *   * If the initialSection is not "on a perpendicular plane", the output geometry will still be flattened onto the
+   *     various planes.
+   * * In the "open path" case (i.e when `wrapIfPhysicallyClosed` is false or the path does not have matched first and
+   *   last points), the first/last output plane will be at the start/end of the first/last edge and on a perpendicular
+   *   plane.
+   * * In the "closed path" case, if start/edn tangents are not provided in the `options`, then the output plane for the
+   *   first and last point is the bisector of the start and end planes from the "open path" case, and the first/last
+   *   section geometry may be different from `initialSection`.
+   * * The centerline path does NOT have to be planar, however twisting effects effects will appear in the various bisector
+   *   planes.
+   * @param centerline sweep path, e.g., as stroked from a smooth centerline curve.
+   * @param initialSection profile curve to be swept. As noted above, this should be on a plane perpendicular to the
+   * first segment of the centerline.
+   * @param options options for computation and output.
    * @return array of sections, starting with `initialSection` projected along the first edge to the first plane.
    */
-  public static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[], initialSection: AnyCurve, options: MiteredSweepOptions): SectionSequenceWithPlanes | undefined {
+  public static createMiteredSweepSections(
+    centerline: IndexedXYZCollection | Point3d[], initialSection: AnyCurve, options: MiteredSweepOptions,
+  ): SectionSequenceWithPlanes | undefined {
     const sectionData: SectionSequenceWithPlanes = { sections: [], planes: [] };
     const planes = PolylineOps.createBisectorPlanesForDistinctPoints(centerline, options.wrapIfPhysicallyClosed);
+    // apply start/end tangent options
     if (planes !== undefined && planes.length > 1) {
+      const firstPlane = planes[0];
+      const lastPlane = planes[planes.length - 1];
+      const startTang = options.startTangent;
+      const endTang = options.endTangent;
+      if (!firstPlane.getOriginRef().isAlmostEqual(lastPlane.getOriginRef()) ||
+        (startTang && endTang && startTang.isAlmostEqual(endTang, 0.0))) {
+        if (startTang?.tryNormalizeInPlace())
+          firstPlane.getNormalRef().setFrom(startTang);
+        if (endTang?.tryNormalizeInPlace())
+          lastPlane.getNormalRef().setFrom(endTang);
+      }
       // Projection to target plane, constructing sweep direction from two given planes.
       // If successful, push the target plane and swept section to the output arrays and return the swept section.
       // If unsuccessful, leave the output arrays alone and return the input section.
-      const doSweepToPlane = function (edgePlane0: Plane3dByOriginAndUnitNormal, edgePlane1: Plane3dByOriginAndUnitNormal,
+      const doSweepToPlane = function (
+        edgePlane0: Plane3dByOriginAndUnitNormal,
+        edgePlane1: Plane3dByOriginAndUnitNormal,
         targetPlane: Plane3dByOriginAndUnitNormal,
-        section: AnyCurve) {
+        section: AnyCurve,
+      ) {
         const sweepVector = Vector3d.createStartEnd(edgePlane0.getOriginRef(), edgePlane1.getOriginRef());
-        const transform = Transform.createFlattenAlongVectorToPlane(sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef());
+        const transform = Transform.createFlattenAlongVectorToPlane(
+          sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef(),
+        );
         if (transform === undefined)
           return section;
-        const section1 = section.cloneTransformed(transform);
-        if (section1 === undefined)
+        const transformedSection = section.cloneTransformed(transform);
+        if (transformedSection === undefined)
           return section;
         sectionData.planes.push(targetPlane);
-        sectionData.sections.push(section1);
-        return section1;
+        sectionData.sections.push(transformedSection);
+        return transformedSection;
       };
-
       let currentSection = doSweepToPlane(planes[0], planes[1], planes[0], initialSection);
       for (let i = 1; i < planes.length; i++) {
         currentSection = doSweepToPlane(planes[i - 1], planes[i], planes[i], currentSection);
       }
-
       if (options.outputSelect) {
         const ruledSweep = RuledSweep.create(sectionData.sections, options.capped ?? false);
         if (ruledSweep) {
@@ -445,7 +507,6 @@ export class CurveFactory {
     }
     return undefined;
   }
-
   /**
    * Create a circular arc from start point, tangent at start, radius, optional plane normal, arc sweep.
    * * The vector from start point to center is in the direction of upVector crossed with tangentA.
@@ -460,15 +521,14 @@ export class CurveFactory {
   ): Arc3d | undefined {
     return Arc3d.createCircularStartTangentRadius(start, tangentAtStart, radius, upVector, sweep);
   }
-
   /**
    * Compute 2 spirals (all in XY) for a symmetric line-to-line transition.
    * * First spiral begins at given start point.
-   * * first tangent aims at shoulder
+   * * first tangent aims at shoulder.
    * * outbound spiral joins line from shoulder to target.
-   * @param spiralType name of spiral type.  THIS MUST BE AN "Integrated" SPIRAL TYPE
+   * @param spiralType name of spiral type. THIS MUST BE AN "Integrated" SPIRAL TYPE.
    * @param startPoint inbound start point.
-   * @param shoulder point target point for (both) spiral-to-line tangencies
+   * @param shoulder point target point for (both) spiral-to-line tangencies.
    * @return array with the computed spirals, or undefined if failure.
    */
   public static createLineSpiralSpiralLine(
@@ -510,14 +570,13 @@ export class CurveFactory {
     }
     return undefined;
   }
-
   /**
    * Compute 2 spirals (all in XY) for a symmetric line-to-line transition.
    * * Spiral length is given.
    * * tangency points float on both lines.
-   * @param spiralType name of spiral type.  THIS MUST BE AN "Integrated" SPIRAL TYPE
+   * @param spiralType name of spiral type.  THIS MUST BE AN "Integrated" SPIRAL TYPE.
    * @param pointA inbound start point.
-   * @param shoulder point target point for (both) spiral-to-line tangencies
+   * @param shoulder point target point for (both) spiral-to-line tangencies.
    * @param spiralLength for each part of the spiral pair.
    * @return array with the computed spirals, or undefined if failure.
    */
@@ -535,8 +594,11 @@ export class CurveFactory {
     const spiralTurnRadians = 0.5 * lineTurnAngle.radians;
     const bisectorRadians = 0.5 * (Math.PI - lineTurnAngle.radians);
     const radiansCB = Math.atan2(-vectorBC.y, -vectorBC.x);
-    const spiralAB0 = IntegratedSpiral3d.createFrom4OutOf5(spiralType, 0, undefined, Angle.zero(), Angle.createRadians(spiralTurnRadians),
-      spiralLength, undefined, Transform.createIdentity());
+    const spiralAB0 = IntegratedSpiral3d.createFrom4OutOf5(
+      spiralType, 0, undefined,
+      Angle.zero(), Angle.createRadians(spiralTurnRadians),
+      spiralLength, undefined, Transform.createIdentity(),
+    );
     if (spiralAB0) {
       const localEndPoint = spiralAB0.fractionToPoint(1);
       const distanceAB = pointA.distance(pointB);
@@ -550,27 +612,32 @@ export class CurveFactory {
         const axesA = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansAB));
         const frameAOrigin = pointA.interpolate(xFractionAB, pointB);
         const frameA = Transform.createRefs(frameAOrigin, axesA);
-        const spiralAB = IntegratedSpiral3d.createFrom4OutOf5(spiralType, 0, undefined, Angle.zero(), Angle.createRadians(spiralTurnRadians),
-          spiralLength, undefined, frameA)!;
+        const spiralAB = IntegratedSpiral3d.createFrom4OutOf5(
+          spiralType, 0, undefined,
+          Angle.zero(), Angle.createRadians(spiralTurnRadians),
+          spiralLength, undefined, frameA,
+        )!;
         const axesB = Matrix3d.createRotationAroundAxisIndex(AxisIndex.Z, Angle.createRadians(radiansCB));
         const frameBOrigin = pointC.interpolate(xFractionCB, pointB);
         const frameB = Transform.createRefs(frameBOrigin, axesB);
-        const spiralBC = IntegratedSpiral3d.createFrom4OutOf5(spiralType, 0, undefined, Angle.zero(), Angle.createRadians(-spiralTurnRadians),
-          spiralLength, undefined, frameB)!;
+        const spiralBC = IntegratedSpiral3d.createFrom4OutOf5(
+          spiralType, 0, undefined,
+          Angle.zero(), Angle.createRadians(-spiralTurnRadians),
+          spiralLength, undefined, frameB,
+        )!;
         return [spiralAB, spiralBC];
       }
     }
     return undefined;
   }
-
   /**
    * Compute 2 spirals and an arc (all in XY) for a symmetric line-to-line transition.
-   * Spiral lengths and arc radius are given.   (e.g. from design speed standards.)
-   * @param spiralType name of spiral type.  THIS MUST BE AN "Integrated" SPIRAL TYPE
+   * Spiral lengths and arc radius are given (e.g., from design speed standards).
+   * @param spiralType name of spiral type. THIS MUST BE AN "Integrated" SPIRAL TYPE.
    * @param pointA inbound start point.
-   * @param pointB shoulder (target)  point for (both) spiral-to-line tangencies
-   * @param lengthA inbound spiral length
-   * @param lengthB outbound spiral length
+   * @param pointB shoulder (target)  point for (both) spiral-to-line tangencies.
+   * @param lengthA inbound spiral length.
+   * @param lengthB outbound spiral length.
    * @return array with the computed spirals, or undefined if failure.
    */
   public static createLineSpiralArcSpiralLine(
@@ -604,10 +671,8 @@ export class CurveFactory {
     // From the end of spiral, step away to arc center (and this is in local coordinates of each spiral)
     const sA = spiralEndA.origin.x - radiusA * spiralEndA.direction.y;
     const tA = spiralEndA.origin.y + radiusA * spiralEndA.direction.x;
-
     const sB = spiralEndB.origin.x - radiusB * spiralEndB.direction.y;
     const tB = spiralEndB.origin.y + radiusB * spiralEndB.direction.x;
-
     // Those local coordinates are rotated to unitAB and unitBC ...
     const vectorA = Vector3d.createAdd2Scaled(unitAB, sA, unitPerpAB, tA);
     const vectorB = Vector3d.createAdd2Scaled(unitCB, sB, unitPerpCB, tB);
@@ -633,12 +698,7 @@ export class CurveFactory {
     }
     return undefined;
   }
-  /**
-   * Return the intersection point of 3 planes.
-   * @param planeA
-   * @param planeB
-   * @param planeC
-   */
+  /** Return the intersection point of 3 planes. */
   public static planePlaneIntersectionRay(
     planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Ray3d | undefined {
     const altitudeA = planeA.altitudeXYZ(0, 0, 0);
@@ -662,12 +722,8 @@ export class CurveFactory {
     }
     return undefined;
   }
-
 }
-
-/**
- * Starting at vectorR, move parallel to vectorV until perpendicular to planeNormal
- */
+/** Starting at vectorR, move parallel to vectorV until perpendicular to planeNormal. */
 function moveVectorToPlane(vectorR: Vector3d, vectorV: Vector3d, planeNormal: Vector3d, result?: Vector3d): Vector3d {
   // find s such that (vectorR + s * vectorV) DOT planeNormal = 0.
   const dotRN = vectorR.dotProduct(planeNormal);
