@@ -31,7 +31,7 @@ export default defineConfig({
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
     },
-    pool: "threads",
+    pool: "forks",
     fileParallelism: false // Had to disable parallel test runs due to Worker related tests timing out and not fetching properly.
   },
   plugins: [
