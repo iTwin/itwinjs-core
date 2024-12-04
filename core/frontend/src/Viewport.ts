@@ -2687,7 +2687,7 @@ export abstract class Viewport implements IDisposable, TileUser {
    * @deprecated in 3.x. Use readImageBuffer.
    */
   public readImage(rect: ViewRect = new ViewRect(1, 1, 0, 0), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     return this.target.readImage(rect, targetSize, flipVertically);
   }
 
@@ -2805,6 +2805,7 @@ export abstract class Viewport implements IDisposable, TileUser {
             modelId,
             elementId: pixel.feature?.elementId,
             viewAttachmentId: pixel.viewAttachmentId,
+            inSectionDrawingAttachment: pixel.inSectionDrawingAttachment,
           });
           transform?.multiplyInversePoint3d(npc, npc);
         }
@@ -3201,7 +3202,6 @@ export class ScreenViewport extends Viewport {
     this.target.updateViewRect();
 
     // SEE: decorationDiv doc comment
-    // eslint-disable-next-line deprecation/deprecation
     this.decorationDiv = this.addNewDiv("overlay-decorators", true, 30);
     this.toolTipDiv = this.addNewDiv("overlay-tooltip", true, 40);
     this.setCursor();
@@ -3422,7 +3422,6 @@ export class ScreenViewport extends Viewport {
   /** Populate a set of decoration graphics to be displayed in this viewport. */
   protected override addDecorations(decorations: Decorations): void {
     // SEE: decorationDiv doc comment
-    // eslint-disable-next-line deprecation/deprecation
     ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
     const context = new DecorateContext(this, decorations, this._decorationCache);
     try {
@@ -3436,7 +3435,6 @@ export class ScreenViewport extends Viewport {
       for (const decorator of IModelApp.viewManager.decorators)
         context.addFromDecorator(decorator);
 
-      // eslint-disable-next-line deprecation/deprecation
       ScreenViewport.removeMarkedChildren(this.decorationDiv);
     } finally {
       this._decorationCache.prohibitRemoval = false;

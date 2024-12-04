@@ -438,7 +438,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   private getPointCurveClosestApproachXYNewton(curveP: CurvePrimitive, pointQ: Point3d): CurveLocationDetail | undefined {
     if (!(curveP instanceof Arc3d) && !(curveP instanceof LineSegment3d)) {
       assert(false, "getPointCurveClosestApproachXYNewton only supports Arc3d and LineSegment");
-      return undefined;
     }
     const seeds = [0.2, 0.4, 0.6, 0.8]; // HEURISTIC: arcs have up to 4 perpendiculars; lines have only 1
     const newtonEvaluator = new CurvePointCloseApproachXYRtoRD(curveP, pointQ);
@@ -646,9 +645,9 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
   public allPerpendicularsArcArcBounded(arc0: Arc3d, arc1: Arc3d, reversed: boolean = false): void {
     const newtonEvaluator = new CurveCurveCloseApproachXYRRtoRRD(arc0, arc1);
     // HEURISTIC: 2 ellipses have up to 8 perpendiculars and up to 4 intersections
-    const seedDelta = 1 / 10;  // denominator 9 fails the unit test
+    const seedDelta = 1 / 10; // denominator 9 fails the unit test
     const seedStart = seedDelta / 2;
-    const newtonSearcher = new Newton2dUnboundedWithDerivative(newtonEvaluator, 100);  // observed convergence to 1.0e-11 in 49 iters
+    const newtonSearcher = new Newton2dUnboundedWithDerivative(newtonEvaluator, 100); // observed convergence to 1.0e-11 in 49 iters
     for (let seedU = seedStart; seedU < 1; seedU += seedDelta) {
       for (let seedV = seedStart; seedV < 1; seedV += seedDelta) {
         newtonSearcher.setUV(seedU, seedV);
@@ -759,7 +758,6 @@ export class CurveCurveCloseApproachXY extends RecurseToCurvesGeometryHandler {
       return;
     if (geomA instanceof CurveChainWithDistanceIndex) {
       assert(false, "call handleCurveChainWithDistanceIndex(geomA) instead");
-      return;
     }
     const index0 = this._results.length;
     const geomB = this._geometryB;  // save

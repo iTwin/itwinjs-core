@@ -359,35 +359,35 @@ export class Matrix3d implements BeJSONFunctions {
     return Geometry.isDistanceWithinTol(max, tol);
   }
   /**
-   * Test if `this` and `other` have almost equal Z column and have X and Y columns differing only by a
-   * rotation of the same angle around that Z.
-   * * **WARNING:** X and Y columns have to be perpendicular to Z column in both `this` and `other`.
-   * @param tol optional tolerance for comparisons by Geometry.isDistanceWithinTol
+   * A matrix equivalence test, returning true if and only if the matrices are almost equal,
+   * or all of the following column comparisons hold:
+   * * z columns are almost equal, and
+   * * x columns differ only by a rotation of angle t around the z column, and
+   * * y columns differ only by a rotation of the same angle t around the z column.
+   * @param other matrix to compare
+   * @param tol optional distance tolerance, for comparisons by Geometry.isDistanceWithinTol
+   * @return whether matrices are almost equal modulo a rotation around their common nonzero z-column.
    */
   public isAlmostEqualAllowZRotation(other: Matrix3d, tol?: number): boolean {
     if (this.isAlmostEqual(other, tol))
       return true;
-    if (this.isAlmostEqualColumn(AxisIndex.Z, other, tol)) {
-      const radians = Angle.radiansBetweenVectorsXYZ(
-        this.coffs[0], this.coffs[3], this.coffs[6],
-        other.coffs[0], other.coffs[3], other.coffs[6],
-      );
-      const angle = Angle.createRadians(radians); // angle between X columns in `this` and `other`
-      const columnX = this.columnX();
-      const columnY = this.columnY();
-      const columnZ = this.columnZ();
-      /**
-       * Here we rotate this.columnX() around this.columnZ() by "angle" and expect to get other.columnX().
-       * Then we rotate this.columnY() around this.columnZ() by the same "angle" and if we get other.columnY(),
-       * that means `this` and `other` have X and Y columns differing only by a rotation around column Z.
-       */
-      let column = Vector3d.createRotateVectorAroundVector(columnX, columnZ, angle)!;
-      if (other.isAlmostEqualColumnXYZ(0, column.x, column.y, column.z, tol)) {
-        column = Vector3d.createRotateVectorAroundVector(columnY, columnZ, angle)!;
-        return other.isAlmostEqualColumnXYZ(1, column.x, column.y, column.z, tol);
-      }
-    }
-    return false;
+    if (!this.isAlmostEqualColumn(AxisIndex.Z, other, tol))
+      return false;
+    const columnX = this.columnX();
+    const columnY = this.columnY();
+    const columnZ = this.columnZ();
+    const toOtherColumnX = columnX.signedAngleTo(other.columnX(), columnZ);
+    let testColumn = Vector3d.createRotateVectorAroundVector(columnX, columnZ, toOtherColumnX);
+    if (!testColumn)
+      return false; // columnZ is zero length
+    if (!other.isAlmostEqualColumnXYZ(0, testColumn.x, testColumn.y, testColumn.z, tol))
+      return false; // columnX rotated around columnZ by angle doesn't end up at other.columnX
+    testColumn = Vector3d.createRotateVectorAroundVector(columnY, columnZ, toOtherColumnX);
+    if (!testColumn)
+      return false;
+    if (!other.isAlmostEqualColumnXYZ(1, testColumn.x, testColumn.y, testColumn.z, tol))
+      return false; // columnY rotated around columnZ by angle doesn't end up at other.columnY
+    return true;
   }
   /** Test for exact (bitwise) equality with other. */
   public isExactEqual(other: Matrix3d): boolean {
@@ -2739,8 +2739,8 @@ export class Matrix3d implements BeJSONFunctions {
     return Math.sqrt(sumLow) <= Geometry.smallAngleRadians * (1.0 + Math.sqrt(sumAll));
   }
   /**
-   * If the matrix is diagonal and all diagonals are almost equal, return the first diagonal (entry 0
-   * which is same as entry 4 and 8). Otherwise return `undefined`.
+   * If the matrix is diagonal with almost equal diagonal entries, return the first diagonal entry.
+   * Otherwise return `undefined`.
    */
   public sameDiagonalScale(): number | undefined {
     const sumAll = this.sumSquares();
@@ -2754,32 +2754,31 @@ export class Matrix3d implements BeJSONFunctions {
     return undefined;
   }
   /**
-   * Test if all rows and columns are unit length and are perpendicular to each other, i.e., the matrix is either
-   * a `pure rotation` (determinant is +1) or is a `mirror` (determinant is -1).
-   * * **Note:** such a matrix is called `orthogonal` and its inverse is its transpose.
+   * Test if all rows and columns are unit length and perpendicular to each other.
+   * * If so, the matrix is either a rotation (determinant is +1) or a mirror (determinant is -1).
+   * * Such a matrix is called "orthogonal" and its inverse is its transpose.
    */
   public testPerpendicularUnitRowsAndColumns(): boolean {
     const product = this.multiplyMatrixMatrixTranspose(this);
     return product.isIdentity;
   }
   /**
-   * Test if the matrix is a `rigid` matrix (or `pure rotation`, i.e., columns and rows are unit length and
-   * pairwise perpendicular and determinant is +1).
-   * @param allowMirror whether to widen the test to return true if the matrix is a `mirror` (determinant is -1).
+   * Test if the matrix is a rigid matrix.
+   * * A rigid matrix is a rotation: its columns and rows are unit length and pairwise perpendicular, and its
+   * determinant is +1.
+   * @param allowMirror whether to widen the test to also return true if the matrix is a mirror (determinant is -1).
   */
   public isRigid(allowMirror: boolean = false): boolean {
     return this.testPerpendicularUnitRowsAndColumns() && (allowMirror || this.determinant() > 0);
   }
   /**
-   * Test if all rows and columns are perpendicular to each other and have equal length.
-   * If so, the length (or its negative) is the `scale` factor from a set of `orthonormal axes` to
-   * the set of axes created by columns of `this` matrix. Otherwise, returns `undefined`.
+   * Test if the instance is the product of a rigid matrix and a signed scale, and return both.
+   * * Specifically, this is a test of whether the instance rows and columns are pairwise perpendicular and have equal
+   * length. If so, the scale factor is this length, or its negative if the instance is a mirror, and dividing the
+   * columns by this scale factor produces a rigid matrix (a rotation).
    * @param result optional pre-allocated object to populate and return
-   * @returns returns `{ rigidAxes, scale }` where `rigidAxes` is a Matrix3d with its columns as the rigid axes
-   * (with the scale factor removed) and `scale` is the scale factor.
-   * * Note that determinant of a rigid matrix is +1.
-   * * The context for this method is to determine if the matrix is the product a `rotation` matrix and a uniform
-   * `scale` matrix (diagonal matrix with all diagonal entries the same nonzero number).
+   * @returns the factorization `{ rigidAxes, scale }` where `rigidAxes` is the instance matrix with `scale` factor
+   * removed, or undefined if the factorization failed.
    */
   public factorRigidWithSignedScale(result?: Matrix3d): { rigidAxes: Matrix3d, scale: number } | undefined {
     const product = this.multiplyMatrixMatrixTranspose(this);
@@ -2789,6 +2788,25 @@ export class Matrix3d implements BeJSONFunctions {
     const scale = this.determinant() > 0 ? Math.sqrt(scaleSquare) : -Math.sqrt(scaleSquare);
     const scaleInverse = 1.0 / scale;
     return { rigidAxes: this.scaleColumns(scaleInverse, scaleInverse, scaleInverse, result), scale };
+  }
+  /**
+   * Compute the factorization M = R*G, where R is rigid (a rotation) and G is whatever is left over (skew, scale,
+   * mirror, etc).
+   * * The rotation is computed from the instance by passing `axisOrder` into [[createRigidFromMatrix3d]].
+   * @param rotation the rigid factor R
+   * @param skew the non-rotation factor G = R^t * M (since R transposed is its inverse)
+   * @param axisOrder optional cross product ordering for computing R
+   * @return whether [[createRigidFromMatrix3d]] succeeded; if not, `rotation` is set to the identity, and `skew` is
+   * set to this instance.
+   */
+  public factorRigidSkew(rotation: Matrix3d, skew: Matrix3d, axisOrder: AxisOrder = AxisOrder.XYZ): boolean {
+    if (Matrix3d.createRigidFromMatrix3d(this, axisOrder, rotation)) {
+      rotation.multiplyMatrixTransposeMatrix(this, skew);
+      return true;
+    }
+    rotation.setIdentity();
+    skew.setFrom(this);
+    return false;
   }
   /** Test if `this` matrix reorders and/or negates the columns of the `identity` matrix. */
   public get isSignedPermutation(): boolean {

@@ -181,11 +181,11 @@ export interface Id64sRulesetVariableJSON extends RulesetVariableBaseJSON {
  */
 
 export type RulesetVariableJSON =
-  | BooleanRulesetVariableJSON // eslint-disable-line deprecation/deprecation
-  | StringRulesetVariableJSON // eslint-disable-line deprecation/deprecation
-  | IntRulesetVariableJSON // eslint-disable-line deprecation/deprecation
-  | IntsRulesetVariableJSON // eslint-disable-line deprecation/deprecation
-  | Id64RulesetVariableJSON // eslint-disable-line deprecation/deprecation
+  | BooleanRulesetVariableJSON // eslint-disable-line @typescript-eslint/no-deprecated
+  | StringRulesetVariableJSON // eslint-disable-line @typescript-eslint/no-deprecated
+  | IntRulesetVariableJSON // eslint-disable-line @typescript-eslint/no-deprecated
+  | IntsRulesetVariableJSON // eslint-disable-line @typescript-eslint/no-deprecated
+  | Id64RulesetVariableJSON // eslint-disable-line @typescript-eslint/no-deprecated
   | Id64sRulesetVariableJSON;
 
 /** @public */

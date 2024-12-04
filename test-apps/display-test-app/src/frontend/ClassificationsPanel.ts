@@ -170,7 +170,7 @@ export class ClassificationsPanel extends ToolBarDropDown {
           available = await new RealityDataAccessClient(realityDataClientOptions).getRealityDatas(accessToken, this._iTwinId, criteria);
         }
       }
-    } catch (_error) {
+    } catch {
       // eslint-disable-next-line no-console
       console.error("Error in query RealitydataList, you need to set IMJS_STANDALONE_SIGNIN=true, and is your IMJS_ITWIN_ID correctly set?");
     }

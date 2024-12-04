@@ -1253,7 +1253,7 @@ describe("PolyfaceClip", () => {
       const regionOptions = StrokeOptions.createForCurves();
       regionOptions.angleTol = Angle.createDegrees(5);
 
-      const facetAndDrapeRegion = (label: String, regionXY: AnyRegion, knownAreaXY?: number, sweepDir?: Vector3d): IndexedPolyface | undefined => {
+      const facetAndDrapeRegion = (label: string, regionXY: AnyRegion, knownAreaXY?: number, sweepDir?: Vector3d): IndexedPolyface | undefined => {
         let regionFacets: IndexedPolyface | undefined;
         let drapeMesh: IndexedPolyface | undefined;
         const contour = SweepContour.createForLinearSweep(regionXY);

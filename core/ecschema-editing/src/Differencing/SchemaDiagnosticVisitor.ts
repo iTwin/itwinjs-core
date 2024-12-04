@@ -193,15 +193,6 @@ export class SchemaDiagnosticVisitor {
     (modifyEntry.difference as any)[propertyName] = sourceValue;
   }
 
-  private visitChangedEnumeration(diagnostic: AnyDiagnostic) {
-    const enumeration = diagnostic.ecDefinition as Enumeration;
-    if (this.schemaItemPathDifferences.find((entry) => entry.changeType === "add" && entry.itemName === enumeration.name)) {
-      return;
-    }
-
-    return this.visitChangedSchemaItem(diagnostic);
-  }
-
   private visitMissingEnumerator(diagnostic: AnyDiagnostic) {
     const enumeration = diagnostic.ecDefinition as Enumeration;
     const [enumerator] = diagnostic.messageArgs as [AnyEnumerator];

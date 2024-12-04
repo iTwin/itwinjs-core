@@ -6,9 +6,10 @@ import { assert, expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { Code, IModel, ModelSelectorProps } from "@itwin/core-common";
 import {
-  DrawingModelState, GeometricModelState, IModelConnection, ModelSelectorState, SheetModelState, SnapshotConnection, SpatialModelState,
+  DrawingModelState, GeometricModelState, IModelConnection, ModelSelectorState, SheetModelState, SpatialModelState,
 } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("ModelState", () => {
   let imodel: IModelConnection;
@@ -16,9 +17,9 @@ describe("ModelState", () => {
   let imodel3: IModelConnection;
   before(async () => {
     await TestUtility.startFrontend(undefined, true);
-    imodel2 = await SnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
-    imodel = await SnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
-    imodel3 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel2 = await TestSnapshotConnection.openFile("mirukuru.ibim"); // relative path resolved by BackendTestAssetResolver
+    imodel = await TestSnapshotConnection.openFile("CompatibilityTestSeed.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel3 = await TestSnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
   after(async () => {
@@ -128,7 +129,7 @@ describe("ModelState", () => {
   });
 
   it("view thumbnails", async () => {
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     let thumbnail = await imodel3.views.getThumbnail("0x34");
     assert.equal(thumbnail.format, "png", "thumbnail format");
     assert.equal(thumbnail.height, 768, "thumbnail height");
@@ -144,7 +145,7 @@ describe("ModelState", () => {
     assert.equal(image[6], 0x1A);
     assert.equal(image[7], 0x0A);
 
-    // eslint-disable-next-line deprecation/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated
     thumbnail = await imodel2.views.getThumbnail("0x24");
     assert.equal(thumbnail.format, "jpeg");
     assert.equal(thumbnail.height, 768);
@@ -154,9 +155,9 @@ describe("ModelState", () => {
     assert.equal(thumbnail.image[18061], 217);
 
     try {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       await imodel2.views.getThumbnail("0x25");
-    } catch (_err) {
+    } catch {
       return;
     } // thumbnail doesn't exist
     assert.fail("getThumbnail should not return");

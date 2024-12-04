@@ -54,7 +54,7 @@ export function createColorInput(props: ColorInputProps): ColorInput {
     try {
       const value = colorInput.value;
       props.handler(value);
-    } catch (_ex) {
+    } catch {
       //
     }
   };

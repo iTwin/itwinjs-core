@@ -45,7 +45,7 @@ export class ServerBasedLocks implements LockControl {
     const dbName = `${iModel[_nativeDb].getTempFileBaseName()}-locks`;
     try {
       this.lockDb.openDb(dbName, OpenMode.ReadWrite);
-    } catch (_e) {
+    } catch {
       this.lockDb.createDb(dbName);
       this.lockDb.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,origin INTEGER)");
       this.lockDb.saveChanges();

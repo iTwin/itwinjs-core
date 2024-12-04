@@ -93,7 +93,7 @@ class MeasureMarker extends Marker {
       ctx.stroke();
     };
 
-    this.drawFunc = markerDrawFunc; // eslint-disable-line @typescript-eslint/unbound-method
+    this.drawFunc = markerDrawFunc;
     this.title = title;
     this.label = label;
     this.labelFont = "16px sans-serif";
@@ -566,7 +566,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
           return true;
         };
 
-        marker.onMouseButton = segMarkerButtonFunc; // eslint-disable-line @typescript-eslint/unbound-method
+        marker.onMouseButton = segMarkerButtonFunc;
         this._acceptedSegments.push({ distance, slope, start, end, delta, adjustedStart, adjustedEnd, adjustedDelta, refAxes, marker });
       }
     }

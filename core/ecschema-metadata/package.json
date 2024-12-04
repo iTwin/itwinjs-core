@@ -1,6 +1,6 @@
 {
   "name": "@itwin/ecschema-metadata",
-  "version": "4.10.0-dev.27",
+  "version": "5.0.0-dev.11",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/cjs/ecschema-metadata.js",
@@ -18,9 +18,9 @@
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/cjs/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-metadata",
-    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "lint": "eslint \"./src/**/*.ts\" 1>&2",
     "test": "mocha",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson",
+    "docs": "betools docs --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson",
     "cover": "nyc npm -s test",
     "start": "npm run -s lint && npm run -s clean && npm run -s build && npm run -s test & npm run -s cover & npm run -s docs"
   },
@@ -40,28 +40,28 @@
     "@itwin/build-tools": "workspace:*",
     "@itwin/core-bentley": "workspace:*",
     "@itwin/core-quantity": "workspace:*",
-    "@itwin/eslint-plugin": "^4.0.2",
+    "@itwin/eslint-plugin": "5.0.0-dev.1",
     "@types/benchmark": "^2.1.0",
     "@types/chai": "4.3.1",
     "@types/chai-as-promised": "^7",
     "@types/mocha": "^10.0.6",
-    "@types/node": "~18.16.20",
+    "@types/node": "~20.9.5",
     "@types/sinon": "^17.0.2",
     "@xmldom/xmldom": "~0.8.5",
     "benchmark": "^2.1.4",
     "chai": "^4.3.10",
     "chai-as-promised": "^7.1.1",
     "cpx2": "^3.0.0",
-    "eslint": "^8.56.0",
+    "eslint": "^9.13.0",
     "mocha": "^10.2.0",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "sinon": "^17.0.2",
-    "typescript": "~5.3.3"
+    "typescript": "~5.6.2"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^4.10.0-dev.27",
-    "@itwin/core-quantity": "workspace:^4.10.0-dev.27"
+    "@itwin/core-bentley": "workspace:^5.0.0-dev.11",
+    "@itwin/core-quantity": "workspace:^5.0.0-dev.11"
   },
   "nyc": {
     "extends": "./node_modules/@itwin/build-tools/.nycrc"

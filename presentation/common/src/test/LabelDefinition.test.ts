@@ -8,7 +8,7 @@ import * as faker from "faker";
 import { LabelCompositeValue, LabelDefinition } from "../presentation-common/LabelDefinition";
 import { createRandomLabelCompositeValue, createRandomLabelDefinition } from "./_helpers/random";
 
-/* eslint-disable deprecation/deprecation */
+/* eslint-disable @typescript-eslint/no-deprecated */
 
 const createRandomCompositeLabelDefinition = (): LabelDefinition => {
   return { displayValue: faker.random.word(), rawValue: createRandomLabelCompositeValue(), typeName: LabelDefinition.COMPOSITE_DEFINITION_TYPENAME };
