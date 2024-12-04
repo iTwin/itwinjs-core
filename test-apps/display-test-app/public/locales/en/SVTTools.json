@@ -194,6 +194,9 @@
     "DtaClassify": {
       "keyin": "dta classify"
     },
+    "DtaClipMask": {
+      "keyin": "dta clip mask"
+    },
     "CreateSectionDrawing": {
       "keyin": "dta create section drawing"
     },

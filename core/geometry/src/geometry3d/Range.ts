@@ -652,7 +652,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
    * @param zFraction plane altitude within the 0..1 z fraction range
    * @param upwardNormal true for CCW as viewed from above
    * @param addClosure true to add closure edge back to the start
-   * @returns
+   * @returns rectangle points
    */
   public rectangleXY(
     zFraction: number = 0.0, upwardNormal: boolean = true, addClosure: boolean = true,
@@ -1211,9 +1211,16 @@ export class Range1d extends RangeBase {
   }
   /** Test if a number is within the range. */
   public containsX(x: number): boolean {
-    return x >= this.low
-      && x <= this.high;
+    return x >= this.low && x <= this.high;
   }
+  /**
+   * Test if a number is in within the open range.
+   * * This method differs from `containsX` by returning false if x equals either range extreme.
+   */
+  public containsXOpen(x: number): boolean {
+    return x > this.low && x < this.high;
+  }
+
   /** Test of other range is within this range */
   public containsRange(other: Range1d): boolean {
     return other.low >= this.low

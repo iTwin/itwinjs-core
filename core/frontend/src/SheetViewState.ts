@@ -29,7 +29,7 @@ import { DecorateContext, SceneContext } from "./ViewContext";
 import { IModelApp } from "./IModelApp";
 import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";
-import { AttachToViewportArgs, ComputeDisplayTransformArgs, ViewState, ViewState2d } from "./ViewState";
+import { AttachToViewportArgs, ComputeDisplayTransformArgs, GetAttachmentViewportArgs, ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./common/ImageUtil";
@@ -300,7 +300,7 @@ class ViewAttachments {
   }
 
   /** For tests. */
-  public get attachments(): Object[] {
+  public get attachments(): object[] {
     return this._attachments;
   }
 
@@ -392,13 +392,11 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** Strictly for testing. @internal */
-  public get attachments(): Object[] | undefined {
+  public get attachments(): object[] | undefined {
     return this._attachments?.attachments;
   }
 
-  /** @internal */
   public override isDrawingView(): this is DrawingViewState { return false; }
-  /** @internal */
   public override isSheetView(): this is SheetViewState { return true; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
@@ -449,12 +447,10 @@ export class SheetViewState extends ViewState2d {
       this._attachments.collectStatistics(stats);
   }
 
-  /** @internal */
   public override get defaultExtentLimits() {
     return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 };
   }
 
-  /** @internal */
   public override getViewedExtents(): AxisAlignedBox3d {
     return this._viewedExtents;
   }
@@ -509,7 +505,6 @@ export class SheetViewState extends ViewState2d {
     return ids;
   }
 
-  /** @internal */
   public override async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const attachmentIds = await this.queryAttachmentIds();
@@ -531,7 +526,6 @@ export class SheetViewState extends ViewState2d {
     this._attachments = dispose(this._attachments);
   }
 
-  /** @internal */
   public override get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded);
   }
@@ -553,7 +547,6 @@ export class SheetViewState extends ViewState2d {
     }
   }
 
-  /** @internal */
   public override computeFitRange(): Range3d {
     const size = this.sheetSize;
     if (0 >= size.x || 0 >= size.y)
@@ -562,15 +555,31 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public override getAttachmentViewport(id: Id64String): Viewport | undefined {
-    return this._attachments?.findById(id)?.viewport;
+  public override getAttachmentViewport(args: GetAttachmentViewportArgs): Viewport | undefined {
+    const attachment = args.viewAttachmentId ? this._attachments?.findById(args.viewAttachmentId) : undefined;
+    if (!attachment) {
+      return undefined;
+    }
+
+    return args.inSectionDrawingAttachment ? attachment.viewport?.view.getAttachmentViewport({ inSectionDrawingAttachment: true }) : attachment.viewport;
   }
 
-  /** @internal */
+  /** @beta */
   public override computeDisplayTransform(args: ComputeDisplayTransformArgs): Transform | undefined {
-    // ###TODO check if the attached view has a display transform...
+    // ###TODO we're currently ignoring model and element Id in args, assuming irrelevant for sheets.
+    // Should probably call super or have super call us.
     const attachment = undefined !== args.viewAttachmentId ? this._attachments?.findById(args.viewAttachmentId) : undefined;
-    return attachment && attachment instanceof OrthographicAttachment ? attachment.toSheet.clone() : undefined;
+    if (!attachment || !(attachment instanceof OrthographicAttachment)) {
+      return undefined;
+    }
+
+    const sheetTransform = attachment.toSheet;
+    const sectionTransform = args.inSectionDrawingAttachment ? attachment.view.computeDisplayTransform(args) : undefined;
+    if (!sectionTransform) {
+      return sheetTransform.clone(args.output);
+    }
+
+    return sheetTransform.multiplyTransformTransform(sectionTransform, args.output);
   }
 }
 

@@ -27,5 +27,4 @@ Strategies that help maintain this type of compatibility include:
 - Deprecate methods rather than removing them
 - Only add new methods
 - Don't add new methods until you are prepared to support them
-- Develop new methods separately (see WipRpcInterface.ts) and only move in when ready for long term support
 - If compatibility must be broken for an important performance or functionality reason, try to batch other breaking changes together to minimize the total impact on your consumers

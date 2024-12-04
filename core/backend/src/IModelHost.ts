@@ -31,7 +31,6 @@ import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
-import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
 import { TileStorage } from "./TileStorage";
 import { SettingsContainer, SettingsPriority } from "./workspace/Settings";
@@ -365,8 +364,10 @@ export class IModelHost {
    */
   public static get settingsSchemas(): SettingsSchemas { return definedInStartup(this._settingsSchemas); }
 
-  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
-  public static snapshotFileNameResolver?: FileNameResolver;
+  /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels.
+   * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
+   */
+  public static snapshotFileNameResolver?: FileNameResolver; // eslint-disable-line @typescript-eslint/no-deprecated
 
   /** Get the current access token for this IModelHost, or a blank string if none is available.
    * @note for web backends, this will *always* return a blank string because the backend itself has no token (but never needs one either.)
@@ -378,7 +379,7 @@ export class IModelHost {
   public static async getAccessToken(): Promise<AccessToken> {
     try {
       return (await IModelHost.authorizationClient?.getAccessToken()) ?? "";
-    } catch (e) {
+    } catch {
       return "";
     }
   }
@@ -475,7 +476,7 @@ export class IModelHost {
 
     this.authorizationClient = options.authorizationClient;
 
-    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-var-requires
+    this.backendVersion = require("../../package.json").version; // eslint-disable-line @typescript-eslint/no-require-imports
     initializeRpcBackend(options.enableOpenTelemetry);
 
     this.loadNative(options);
@@ -487,8 +488,7 @@ export class IModelHost {
     [
       IModelReadRpcImpl,
       IModelTileRpcImpl,
-      SnapshotIModelRpcImpl,
-      WipRpcImpl,
+      SnapshotIModelRpcImpl, // eslint-disable-line @typescript-eslint/no-deprecated
       DevToolsRpcImpl,
     ].forEach((rpc) => rpc.register()); // register all of the RPC implementations
 
@@ -691,6 +691,7 @@ export class KnownLocations {
  * @note Only `tryResolveKey` and/or `tryResolveFileName` need to be overridden as the implementations of `resolveKey` and `resolveFileName` work for most purposes.
  * @see [[IModelHost.snapshotFileNameResolver]]
  * @public
+ * @deprecated in 4.10. When opening a snapshot by file name, ensure to pass already resolved path. Using a key to open a snapshot is now deprecated.
  */
 export abstract class FileNameResolver {
   /** Resolve a file name from the specified key.

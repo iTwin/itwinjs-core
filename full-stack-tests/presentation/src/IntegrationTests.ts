@@ -19,7 +19,6 @@ import {
   RpcConfiguration,
   RpcDefaultConfiguration,
   RpcInterfaceDefinition,
-  SnapshotIModelRpcInterface,
 } from "@itwin/core-common";
 import { IModelApp, IModelAppOptions, NoRenderApp } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
@@ -43,8 +42,8 @@ function loadEnv(envFile: string) {
     return;
   }
 
-  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
-  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-require-imports
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-require-imports
   const envResult = dotenv.config({ path: envFile });
   if (envResult.error) {
     throw envResult.error;
@@ -230,7 +229,7 @@ async function initializePresentation(props: PresentationInitProps) {
   }
 
   // set up rpc interfaces
-  initializeRpcInterfaces([SnapshotIModelRpcInterface, IModelReadRpcInterface, PresentationRpcInterface, ECSchemaRpcInterface]);
+  initializeRpcInterfaces([IModelReadRpcInterface, PresentationRpcInterface, ECSchemaRpcInterface]);
 
   // init backend
   // make sure backend gets assigned an id which puts its resources into a unique directory

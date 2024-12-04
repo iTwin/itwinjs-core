@@ -8,7 +8,7 @@
 
 import { assert, DbResult, GuidString, Id64String, IDisposable } from "@itwin/core-bentley";
 import { LowAndHighXYZ, Range3d, XAndY, XYAndZ, XYZ } from "@itwin/core-geometry";
-import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue } from "@itwin/core-common";
+import { ECJsNames, ECSqlValueType, IModelError, NavigationBindingValue, NavigationValue, PropertyMetaDataMap, QueryRowFormat } from "@itwin/core-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { ECDb } from "./ECDb";
 import { IModelNative } from "./internal/NativePlatform";
@@ -25,6 +25,19 @@ import { IModelNative } from "./internal/NativePlatform";
  */
 export class ECSqlInsertResult {
   public constructor(public status: DbResult, public id?: Id64String) { }
+}
+
+/**
+ * Arguments supplied to [[ECSqlStatement.getRow]].
+ * @public
+ * */
+export interface ECSqlRowArg {
+  /** Determine row format. */
+  rowFormat?: QueryRowFormat;
+  /**
+   * Determine if classIds are converted to class names.
+   */
+  classIdsToClassNames?: boolean;
 }
 
 /** Executes ECSQL statements.
@@ -54,6 +67,7 @@ export class ECSqlInsertResult {
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _sql: string | undefined;
+  private _props = new PropertyMetaDataMap([]);
 
   public get sql() { return this._sql!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
 
@@ -94,6 +108,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public reset(): void {
     assert(undefined !== this._stmt);
     this._stmt.reset();
+    this._props = new PropertyMetaDataMap([]);
   }
 
   /** Get the Native SQL statement
@@ -320,36 +335,50 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * - [ECSQL row format]($docs/learning/ECSQLRowFormat) for details about the format of the returned row.
    * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
    */
-  public getRow(): any {
-    const colCount: number = this.getColumnCount();
-    const row: object = {};
-    const duplicatePropNames = new Map<string, number>();
-    for (let i = 0; i < colCount; i++) {
-      const ecsqlValue = this.getValue(i);
-      if (!ecsqlValue.isNull) {
-        const propName: string = ECSqlStatement.determineResultRowPropertyName(duplicatePropNames, ecsqlValue);
-        const val: any = ecsqlValue.value;
-        Object.defineProperty(row, propName, { enumerable: true, configurable: true, writable: true, value: val });
-      }
+  public getRow(args?: ECSqlRowArg): any {
+    if (!this._stmt)
+      throw new Error("ECSqlStatement is not prepared");
+
+    args = args ?? {};
+    if (args.rowFormat === undefined) {
+      args.rowFormat = QueryRowFormat.UseJsPropertyNames;
     }
-    return row;
+    const resp = this._stmt.toRow({
+      classIdsToClassNames: args.classIdsToClassNames,
+      useJsName: args.rowFormat === QueryRowFormat.UseJsPropertyNames,
+      abbreviateBlobs: false,
+      // In 4.x, people are currently dependent on the behavior of aliased classIds `select classId as aliasedClassId` not being
+      // converted into classNames which is a bug that we must now support.This option preserves this special behavior until
+      // it can be removed in a future version.
+      doNotConvertClassIdsToClassNamesWhenAliased: true,
+    });
+    return this.formatCurrentRow(resp, args.rowFormat);
   }
 
-  private static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, ecsqlValue: ECSqlValue): string {
-    const colInfo: ECSqlColumnInfo = ecsqlValue.columnInfo;
-    let jsName: string = ECJsNames.toJsName(colInfo.getAccessString(), colInfo.isSystemProperty());
+  private formatCurrentRow(currentResp: any, rowFormat: QueryRowFormat = QueryRowFormat.UseJsPropertyNames): any[] | object {
+    if (!this._stmt)
+      throw new Error("ECSqlStatement is not prepared");
 
-    // now check duplicates. If there are, append a numeric suffix to the duplicates
-    let suffix: number | undefined = duplicatePropNames.get(jsName);
-    if (suffix === undefined)
-      duplicatePropNames.set(jsName, 0);
-    else {
-      suffix++;
-      duplicatePropNames.set(jsName, suffix);
-      jsName += `_${suffix}`;
+    if (rowFormat === QueryRowFormat.UseECSqlPropertyIndexes)
+      return currentResp.data;
+
+    if (this._props.length === 0) {
+      const resp = this._stmt.getMetadata();
+      this._props = new PropertyMetaDataMap(resp.meta);
     }
-
-    return jsName;
+    const formattedRow = {};
+    for (const prop of this._props) {
+      const propName = rowFormat === QueryRowFormat.UseJsPropertyNames ? prop.jsonName : prop.name;
+      const val = currentResp.data[prop.index];
+      if (typeof val !== "undefined" && val !== null) {
+        Object.defineProperty(formattedRow, propName, {
+          value: val,
+          enumerable: true,
+          writable: true,
+        });
+      }
+    }
+    return formattedRow;
   }
 
   /** Calls step when called as an iterator.

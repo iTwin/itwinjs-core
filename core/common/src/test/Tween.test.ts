@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, describe, it } from "vitest";
 import { Easing, Tween, Tweens } from "../Tween";
 
 /** adapted from
@@ -1111,7 +1111,7 @@ describe("Tween", () => {
 
     try {
       tweens.update(500);
-    } catch (exception) {
+    } catch {
       success = false;
     } finally {
       assert.ok(success);

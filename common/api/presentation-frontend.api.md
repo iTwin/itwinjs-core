@@ -354,7 +354,7 @@ export class PresentationManager implements IDisposable {
         total: number;
         items: AsyncIterableIterator<DisplayValueGroup>;
     }>;
-    getElementProperties(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection> & ClientDiagnosticsAttribute): Promise<ElementProperties | undefined>;
+    getElementProperties<TParsedContent = ElementProperties>(requestOptions: SingleElementPropertiesRequestOptions<IModelConnection, TParsedContent> & ClientDiagnosticsAttribute): Promise<TParsedContent | undefined>;
     getFilteredNodePaths(requestOptions: FilterByTextHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     getNodePaths(requestOptions: FilterByInstancePathsHierarchyRequestOptions<IModelConnection, RulesetVariable> & ClientDiagnosticsAttribute): Promise<NodePathElement[]>;
     // @deprecated
@@ -589,9 +589,6 @@ export class ToolSelectionSyncHandler implements IDisposable {
     isSuspended?: boolean;
     get pendingAsyncs(): Set<string>;
 }
-
-// @internal (undocumented)
-export const TRANSIENT_ELEMENT_CLASSNAME = "/TRANSIENT";
 
 // (No @packageDocumentation comment for this package)
 

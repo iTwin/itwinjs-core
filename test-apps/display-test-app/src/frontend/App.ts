@@ -11,7 +11,7 @@ import { IModelsClient } from "@itwin/imodels-client-management";
 import { FrontendDevTools } from "@itwin/frontend-devtools";
 import { HyperModeling } from "@itwin/hypermodeling-frontend";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, IModelReadRpcInterface, IModelTileRpcInterface,
 } from "@itwin/core-common";
 import { EditTools } from "@itwin/editor-frontend";
 import {
@@ -31,7 +31,7 @@ import { GenerateElementGraphicsTool, GenerateTileContentTool } from "./TileCont
 import { ViewClipByElementGeometryTool } from "./ViewClipByElementGeometryTool";
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { EditingScopeTool, MoveElementTool, PlaceLineStringTool } from "./EditingTools";
-import { DynamicClassifierTool } from "./DynamicClassifierTool";
+import { DynamicClassifierTool, DynamicClipMaskTool } from "./DynamicClassifierTool";
 import { FenceClassifySelectedTool } from "./Fence";
 import { RecordFpsTool } from "./FpsMonitor";
 import { FrameStatsTool } from "./FrameStatsTool";
@@ -253,7 +253,6 @@ export class DisplayTestApp {
           DtaRpcInterface,
           IModelReadRpcInterface,
           IModelTileRpcInterface,
-          SnapshotIModelRpcInterface,
         ],
         /* eslint-disable @typescript-eslint/naming-convention */
         mapLayerOptions: {
@@ -300,8 +299,8 @@ export class DisplayTestApp {
       }
 
       const rpcParams: BentleyCloudRpcParams = { info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: configuration.customOrchestratorUri || "http://localhost:3001" };
-      if (opts.iModelApp?.rpcInterfaces) // eslint-disable-line deprecation/deprecation
-        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line deprecation/deprecation
+      if (opts.iModelApp?.rpcInterfaces) // eslint-disable-line @typescript-eslint/no-deprecated
+        BentleyCloudRpcManager.initializeClient(rpcParams, opts.iModelApp.rpcInterfaces); // eslint-disable-line @typescript-eslint/no-deprecated
       await LocalhostIpcApp.startup(opts);
     }
 
@@ -346,6 +345,7 @@ export class DisplayTestApp {
       OutputShadersTool,
       PlaceLineStringTool,
       DynamicClassifierTool,
+      DynamicClipMaskTool,
       PullChangesTool,
       PushChangesTool,
       PurgeTileTreesTool,

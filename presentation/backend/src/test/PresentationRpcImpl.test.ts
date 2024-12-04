@@ -53,13 +53,12 @@ import {
   PresentationError,
   PresentationRpcRequestOptions,
   PresentationStatus,
+  PropertyValueFormat,
   RequestOptions,
   RulesetVariable,
   RulesetVariableJSON,
   SelectClassInfo,
   SelectionScopeRequestOptions,
-  SingleElementPropertiesRequestOptions,
-  SingleElementPropertiesRpcRequestOptions,
   VariableValueTypes,
   WithCancelEvent,
 } from "@itwin/presentation-common";
@@ -71,10 +70,13 @@ import {
   createRandomLabelDefinition,
   createRandomNodePathElement,
   createRandomSelectionScope,
+  createTestCategoryDescription,
   createTestContentDescriptor,
+  createTestECClassInfo,
   createTestECInstanceKey,
   createTestNode,
   createTestSelectClassInfo,
+  createTestSimpleContentField,
   ResolvablePromise,
 } from "@itwin/presentation-common/lib/cjs/test";
 import { BackendDiagnosticsAttribute } from "../presentation-backend";
@@ -85,6 +87,8 @@ import { PresentationManagerDetail } from "../presentation-backend/PresentationM
 import { MAX_ALLOWED_KEYS_PAGE_SIZE, MAX_ALLOWED_PAGE_SIZE, PresentationRpcImpl } from "../presentation-backend/PresentationRpcImpl";
 import { RulesetManager } from "../presentation-backend/RulesetManager";
 import { RulesetVariablesManager } from "../presentation-backend/RulesetVariablesManager";
+
+/* eslint-disable @typescript-eslint/no-deprecated -- PresentationRpcInterface methods are deprecated */
 
 describe("PresentationRpcImpl", () => {
   beforeEach(() => {
@@ -551,9 +555,9 @@ describe("PresentationRpcImpl", () => {
 
     describe("getPagedNodes", () => {
       it("calls manager for root nodes", async () => {
-        // eslint-disable-next-line deprecation/deprecation
+
         const getRootNodesResult: HierarchyLevelJSON = {
-          // eslint-disable-next-line deprecation/deprecation
+
           nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
           supportsFiltering: true,
         };
@@ -591,9 +595,9 @@ describe("PresentationRpcImpl", () => {
       });
 
       it("calls manager for child nodes", async () => {
-        // eslint-disable-next-line deprecation/deprecation
+
         const getChildNodesResult: HierarchyLevelJSON = {
-          // eslint-disable-next-line deprecation/deprecation
+
           nodes: [createTestNode(), createTestNode(), createTestNode()].map(Node.toJSON),
           supportsFiltering: true,
         };
@@ -772,7 +776,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getFilteredNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
-        // eslint-disable-next-line deprecation/deprecation
+
         expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
       });
     });
@@ -800,7 +804,7 @@ describe("PresentationRpcImpl", () => {
         presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
         const actualResult = await impl.getNodePaths(testData.imodelToken, rpcOptions);
         presentationManagerMock.verifyAll();
-        // eslint-disable-next-line deprecation/deprecation
+
         expect(actualResult.result).to.deep.equal(result.map(NodePathElement.toJSON));
       });
     });
@@ -1569,9 +1573,24 @@ describe("PresentationRpcImpl", () => {
 
     describe("getElementProperties", () => {
       it("calls manager", async () => {
-        const testElementProperties: ElementProperties = {
+        const elementId = "0x123";
+        const presentationManagerDetailStub = {
+          getContent: sinon.spy(async () => undefined),
+        };
+        presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
+        const actualResult = await impl.getElementProperties(testData.imodelToken, {
+          ...defaultRpcParams,
+          elementId,
+        });
+        presentationManagerMock.verifyAll();
+        expect(actualResult.result).to.be.undefined;
+      });
+
+      it("creates element properties from manager's content", async () => {
+        const elementId = "0x123";
+        const expectedElementProperties: ElementProperties = {
           class: "Test Class",
-          id: "0x123",
+          id: elementId,
           label: "test label",
           items: {
             ["Test Category"]: {
@@ -1585,29 +1604,45 @@ describe("PresentationRpcImpl", () => {
             },
           },
         };
-        const managerOptions: WithCancelEvent<SingleElementPropertiesRequestOptions<IModelDb>> = {
-          imodel: testData.imodelMock.object,
-          elementId: "0x123",
-          cancelEvent: new BeEvent<() => void>(),
-        };
-        const managerResponse = testElementProperties;
-        const rpcOptions: PresentationRpcRequestOptions<SingleElementPropertiesRpcRequestOptions> = {
-          ...defaultRpcParams,
-          elementId: "0x123",
-        };
-        const expectedRpcResponse = testElementProperties;
-
+        const testCategory = createTestCategoryDescription({ name: "TestCategory", label: "Test Category" });
+        const testField = createTestSimpleContentField({
+          name: "TestField",
+          category: testCategory,
+          label: "Test Field",
+          type: {
+            valueFormat: PropertyValueFormat.Primitive,
+            typeName: "string",
+          },
+        });
+        const descriptor = createTestContentDescriptor({
+          categories: [testCategory],
+          fields: [testField],
+        });
+        const contentItem = new Item(
+          [{ className: "TestSchema:TestElement", id: elementId }],
+          "test label",
+          "",
+          createTestECClassInfo({ label: "Test Class" }),
+          {
+            [testField.name]: "test value",
+          },
+          {
+            [testField.name]: "test display value",
+          },
+          [],
+          undefined,
+        );
+        const managerResponse = new Content(descriptor, [contentItem]);
         const presentationManagerDetailStub = {
-          getElementProperties: sinon.spy(async () => managerResponse),
+          getContent: sinon.spy(async () => managerResponse),
         };
         presentationManagerMock.setup((x) => x.getDetail()).returns(() => presentationManagerDetailStub as unknown as PresentationManagerDetail);
-        presentationManagerMock
-          .setup(async (x) => x.getDetail().getElementProperties(managerOptions))
-          .returns(async () => managerResponse)
-          .verifiable();
-        const actualResult = await impl.getElementProperties(testData.imodelToken, rpcOptions);
+        const actualResult = await impl.getElementProperties(testData.imodelToken, {
+          ...defaultRpcParams,
+          elementId,
+        });
         presentationManagerMock.verifyAll();
-        expect(actualResult.result).to.deep.eq(expectedRpcResponse);
+        expect(actualResult.result).to.deep.eq(expectedElementProperties);
       });
     });
 

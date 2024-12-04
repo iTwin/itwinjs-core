@@ -5,9 +5,10 @@
 import { expect } from "chai";
 import { Id64 } from "@itwin/core-bentley";
 import { BackgroundMapSettings, ColorByName, ColorDef, GlobeMode, PlanProjectionSettings, PlanProjectionSettingsProps } from "@itwin/core-common";
-import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel, SnapshotConnection } from "@itwin/core-frontend";
+import { DisplayStyle3dState, GeometricModel3dState, IModelConnection, Pixel } from "@itwin/core-frontend";
 import { TestUtility } from "../TestUtility";
 import { testOnScreenViewport } from "../TestViewport";
+import { TestSnapshotConnection } from "../TestSnapshotConnection";
 
 describe("Plan projections (#integration)", () => {
   let mirukuru: IModelConnection;
@@ -32,7 +33,7 @@ describe("Plan projections (#integration)", () => {
       },
     });
 
-    mirukuru = await SnapshotConnection.openFile("planprojection.bim");
+    mirukuru = await TestSnapshotConnection.openFile("planprojection.bim");
   });
 
   after(async () => {

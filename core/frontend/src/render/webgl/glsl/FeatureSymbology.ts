@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@itwin/core-bentley";
-import { OvrFlags, Pass, RenderOrder, TextureUnit } from "../RenderFlags";
+import { Pass, RenderOrder, TextureUnit } from "../RenderFlags";
 import {
   FragmentShaderBuilder, FragmentShaderComponent, ProgramBuilder, ShaderBuilder, VariablePrecision, VariableType, VertexShaderBuilder,
   VertexShaderComponent,
@@ -19,6 +19,7 @@ import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fra
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
 import { addAlpha, addLineWeight, replaceLineCode, replaceLineWeight } from "./Vertex";
+import { OvrFlags } from "../../../common/internal/render/OvrFlags";
 
 /* eslint-disable no-restricted-syntax */
 
@@ -39,10 +40,10 @@ export const enum FeatureSymbologyOptions {
 /** @internal */
 export function addOvrFlagConstants(builder: ShaderBuilder): void {
   // NB: These are the bit positions of each flag in OvrFlags enum - not the flag values
-  builder.addBitFlagConstant("kOvrBit_Visibility", 0);
+  builder.addBitFlagConstant("kOvrBit_LineRgb", 0);
   builder.addBitFlagConstant("kOvrBit_Rgb", 1);
   builder.addBitFlagConstant("kOvrBit_Alpha", 2);
-  builder.addBitFlagConstant("kOvrBit_IgnoreMaterial", 3);
+  builder.addBitFlagConstant("kOvrBit_LineAlpha", 3);
   builder.addBitFlagConstant("kOvrBit_Flashed", 4);
   builder.addBitFlagConstant("kOvrBit_NonLocatable", 5);
   builder.addBitFlagConstant("kOvrBit_LineCode", 6);
@@ -52,6 +53,9 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
   builder.addBitFlagConstant("kOvrBit_Hilited", 0);
   builder.addBitFlagConstant("kOvrBit_Emphasized", 1);
   builder.addBitFlagConstant("kOvrBit_ViewIndependentTransparency", 2);
+  builder.addBitFlagConstant("kOvrBit_InvisibleDuringPick", 3);
+  builder.addBitFlagConstant("kOvrBit_Visibility", 4);
+  builder.addBitFlagConstant("kOvrBit_IgnoreMaterial", 5);
 }
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
@@ -105,9 +109,9 @@ vec4 getFirstFeatureRgba() {
 `;
 
 const getSecondFeatureRgba = `
-vec4 getSecondFeatureRgba() {
+vec4 getSecondFeatureRgba(bool isLinear) {
   vec2 coord = feature_texCoord;
-  coord.x += g_feature_stepX;
+  coord.x += g_feature_stepX * (isLinear ? 2.0 : 1.0);
   return TEXTURE(u_featureLUT, coord);
 }
 `;
@@ -124,7 +128,7 @@ float computeLineCode() {
 }
 `;
 
-function addFeatureIndex(vert: VertexShaderBuilder): void {
+export function addFeatureIndex(vert: VertexShaderBuilder): void {
   vert.addGlobal("g_featureIndex", VariableType.Vec3);
 
   vert.addFunction(decodeUint24);
@@ -248,7 +252,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
     });
   }
 
-  addLookupTable(vert, "feature", "2.0");
+  addLookupTable(vert, "feature", "3.0");
   vert.addGlobal("feature_texCoord", VariableType.Vec2);
   vert.addFunction(computeFeatureTextureCoords);
   vert.addFunction(getFirstFeatureRgba);
@@ -468,6 +472,7 @@ const checkForEarlySurfaceDiscardWithFeatureID = `
 export function addRenderOrderConstants(builder: ShaderBuilder) {
   builder.addConstant("kRenderOrder_BlankingRegion", VariableType.Float, RenderOrder.BlankingRegion.toFixed(1));
   builder.addConstant("kRenderOrder_Linear", VariableType.Float, RenderOrder.Linear.toFixed(1));
+  builder.addConstant("kRenderOrder_PlanarLinear", VariableType.Float, RenderOrder.PlanarLinear.toFixed(1));
   builder.addConstant("kRenderOrder_Edge", VariableType.Float, RenderOrder.Edge.toFixed(1));
   builder.addConstant("kRenderOrder_PlanarEdge", VariableType.Float, RenderOrder.PlanarEdge.toFixed(1));
   builder.addConstant("kRenderOrder_Silhouette", VariableType.Float, RenderOrder.Silhouette.toFixed(1));
@@ -613,23 +618,29 @@ const computeFeatureOverrides = `
   vec4 value = getFirstFeatureRgba();
 
   float emphFlags = value.y * 256.0;
+  if (nthFeatureBitSet(emphFlags, kOvrBit_InvisibleDuringPick)) {
+    feature_invisible = true;
+    return;
+  }
+    
   v_feature_emphasis = kEmphFlag_Hilite * extractNthBit(emphFlags, kOvrBit_Hilited) + kEmphFlag_Emphasize * extractNthBit(emphFlags, kOvrBit_Emphasized);
 
   float flags = value.x * 256.0;
-  if (0.0 == flags)
+  if (0.0 == flags && 0.0 == emphFlags)
     return; // nothing overridden for this feature
 
   bool nonLocatable = (u_shaderFlags[kShaderBit_IgnoreNonLocatable] ? nthFeatureBitSet(flags, kOvrBit_NonLocatable) : false);
   v_feature_emphasis += kEmphFlag_NonLocatable * float(nthFeatureBitSet(flags, kOvrBit_NonLocatable));
-  bool invisible = nthFeatureBitSet(flags, kOvrBit_Visibility);
+  bool invisible = nthFeatureBitSet(emphFlags, kOvrBit_Visibility);
   feature_invisible = invisible || nonLocatable;
   if (feature_invisible)
     return;
 
-  bool rgbOverridden = nthFeatureBitSet(flags, kOvrBit_Rgb);
-  bool alphaOverridden = nthFeatureBitSet(flags, kOvrBit_Alpha);
+  bool isLinear = u_renderOrder == kRenderOrder_Linear || u_renderOrder == kRenderOrder_PlanarLinear || u_renderOrder == kRenderOrder_PlanarEdge;
+  bool rgbOverridden = isLinear ? nthFeatureBitSet(flags, kOvrBit_LineRgb) : nthFeatureBitSet(flags, kOvrBit_Rgb);
+  bool alphaOverridden = isLinear ? nthFeatureBitSet(flags, kOvrBit_LineAlpha) : nthFeatureBitSet(flags, kOvrBit_Alpha);
   if (alphaOverridden || rgbOverridden) {
-    vec4 rgba = getSecondFeatureRgba();
+    vec4 rgba = getSecondFeatureRgba(isLinear);
     if (rgbOverridden)
       feature_rgb = rgba.rgb;
 
@@ -644,7 +655,7 @@ const computeFeatureOverrides = `
                                   nthFeatureBitSet(flags, kOvrBit_LineCode),
                                   value.z * 256.0);
 
-  feature_ignore_material = nthFeatureBitSet(flags, kOvrBit_IgnoreMaterial);
+  feature_ignore_material = nthFeatureBitSet(emphFlags, kOvrBit_IgnoreMaterial);
   use_material = use_material && !feature_ignore_material;
 
   v_feature_emphasis += kEmphFlag_Flash * extractNthFeatureBit(flags, kOvrBit_Flashed);
@@ -746,6 +757,8 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
 
   addEmphasisFlags(vert);
   vert.addGlobal("use_material", VariableType.Boolean, "true");
+  addRenderOrder(vert);
+  addRenderOrderConstants(vert);
   vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureOverrides);
   vert.set(VertexShaderComponent.ApplyFeatureColor, applyFeatureColor);
 

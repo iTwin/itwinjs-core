@@ -6,10 +6,9 @@ import { expect } from "chai";
 import { ByteStream } from "@itwin/core-bentley";
 import { Range3d } from "@itwin/core-geometry";
 import { RenderTexture } from "@itwin/core-common";
-import { B3dmReader, GltfDataType, IModelApp, MockRender, SnapshotConnection } from "@itwin/core-frontend";
+import { B3dmReader, GltfDataType, IModelApp, MockRender, RealityMeshParams } from "@itwin/core-frontend";
 import { TestUtility } from "../../TestUtility";
-
-/* eslint-disable @typescript-eslint/unbound-method */
+import { TestSnapshotConnection } from "../../TestSnapshotConnection";
 
 const b3dmBytes = new Uint8Array([
   0x62, 0x33, 0x64, 0x6d, 0x01, 0x00, 0x00, 0x00, 0x90, 0x10, 0x00, 0x00, 0x14, 0x00, 0x00, 0x00,
@@ -280,11 +279,11 @@ const b3dmBytes = new Uint8Array([
 ]);
 
 describe("B3dmReader", () => {
-  let imodel: SnapshotConnection;
+  let imodel: TestSnapshotConnection;
 
   before(async () => {
-    await TestUtility.startFrontend(undefined, true);
-    imodel = await SnapshotConnection.openFile("test.bim");
+    await TestUtility.startFrontend(undefined, false);
+    imodel = await TestSnapshotConnection.openFile("test.bim");
   });
 
   after(async () => {
@@ -307,10 +306,10 @@ describe("B3dmReader", () => {
     };
 
     let texturedMeshCreated = false;
-    IModelApp.renderSystem.createTriMesh = (args: any /* MeshArgs */) => {
+    IModelApp.renderSystem.createRealityMeshGeometry = (params: RealityMeshParams) => {
       expect(texturedMeshCreated).to.be.false;
-      texturedMeshCreated = undefined !== args.textureMapping;
-      return new MockRender.Graphic();
+      texturedMeshCreated = undefined !== params.texture;
+      return new MockRender.Geometry("mesh");
     };
 
     const stream = ByteStream.fromUint8Array(b3dmBytes);

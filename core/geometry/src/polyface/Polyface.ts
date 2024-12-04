@@ -7,7 +7,6 @@
  * @module Polyface
  */
 
-/* eslint-disable @typescript-eslint/naming-convention, no-empty */
 // cspell:word internaldocs
 
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -159,20 +158,14 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /**
    * Transform the mesh.
-   * * Apply the transform to points.
-   * * Apply the (inverse transpose of the) matrix part to normals.
-   * * If determinant of the transform matrix is negative, also
-   *   * negate normals
-   *   * reverse index order around each facet.
+   * * If `transform` is a mirror, also reverse the index order around each facet.
+   * * Note that this method always returns true. If transforming the normals fails (due to singular matrix or zero
+   * normal), the original normal(s) are left unchanged.
    */
-  public tryTransformInPlace(transform: Transform) {
-    if (!this.data.tryTransformInPlace(transform))
-      return false;
-    const determinant = transform.matrix.determinant();
-    if (determinant < 0) {
+  public tryTransformInPlace(transform: Transform): boolean {
+    this.data.tryTransformInPlace(transform);
+    if (transform.matrix.determinant() < 0)
       this.reverseIndices();
-      this.reverseNormals();
-    }
     return true;
   }
   /** Reverse indices for a single facet. */
@@ -181,14 +174,13 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
   }
   /** Return a deep clone. */
   public clone(): IndexedPolyface {
-    const result = new IndexedPolyface(this.data.clone(), this._facetStart.slice(), this._facetToFaceData.slice());
-    return result;
+    return new IndexedPolyface(this.data.clone(), this._facetStart.slice(), this._facetToFaceData.slice());
   }
   /**
    * Return a deep clone with transformed points and normals.
    * @see [[IndexedPolyface.tryTransformInPlace]] for details of how transform is done.
    */
-  public cloneTransformed(transform: Transform): IndexedPolyface {
+  public cloneTransformed(transform: Transform): IndexedPolyface { // we know tryTransformInPlace succeeds.
     const result = this.clone();
     result.tryTransformInPlace(transform);
     return result;
@@ -492,7 +484,7 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
    * @param errors optional array appended with error message(s) if invalid indices are encountered
    * @return whether the indices are valid
    */
-  public validateAllIndices(index0: number = 0, errors?: String[]): boolean {
+  public validateAllIndices(index0: number = 0, errors?: string[]): boolean {
     const numPointIndices = this.data.pointIndex.length;
     const messages = errors ?? [];
     if (this.data.normalIndex && this.data.normalIndex.length !== numPointIndices)
@@ -522,14 +514,14 @@ export class IndexedPolyface extends Polyface { // more info can be found at geo
    * * In error cases, all index arrays are trimmed back to the size when previous facet was terminated.
    * * A return value of `undefined` is normal. Otherwise, a string array of error messages is returned.
    */
-  public terminateFacet(validateAllIndices: boolean = true): String[] | undefined {
+  public terminateFacet(validateAllIndices: boolean = true): string[] | undefined {
     const numFacets = this._facetStart.length - 1;
     // number of indices in accepted facets
     const lengthA = this._facetStart[numFacets];
     // number of indices in all facets (accepted facet plus the last facet to be accepted)
     const lengthB = this.data.pointIndex.length;
     if (validateAllIndices) {
-      const messages: String[] = [];
+      const messages: string[] = [];
       if (lengthB < lengthA + 2)
         messages.push("Less than 3 indices in the last facet");
       this.validateAllIndices(lengthA, messages);

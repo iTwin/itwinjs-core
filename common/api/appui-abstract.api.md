@@ -173,13 +173,13 @@ export interface BackstageActionItem extends CommonBackstageItem {
 // @public @deprecated
 export type BackstageItem = BackstageActionItem | BackstageStageLauncher;
 
-// @internal
+// @internal @deprecated
 export interface BackstageItemsChangedArgs {
     // (undocumented)
     readonly items: ReadonlyArray<BackstageItem>;
 }
 
-// @internal
+// @internal @deprecated
 export class BackstageItemsManager {
     constructor(items?: ReadonlyArray<BackstageItem>);
     // (undocumented)
@@ -384,7 +384,7 @@ export class ConditionalStringValue {
     get value(): string;
 }
 
-// @public
+// @public @deprecated
 export interface ContentLayoutProps extends LayoutFragmentProps {
     description?: string;
     id: string;
@@ -558,8 +558,6 @@ export enum DisplayMessageType {
 // @public
 export interface EditorPosition {
     columnIndex: number;
-    // @deprecated
-    columnSpan?: number;
     rowPriority: number;
 }
 
@@ -730,13 +728,13 @@ export const isStageLauncher: (item: BackstageItem) => item is BackstageStageLau
 // @public
 export const isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams;
 
-// @public
+// @public @deprecated
 export interface LayoutFragmentProps {
     horizontalSplit?: LayoutHorizontalSplitProps;
     verticalSplit?: LayoutVerticalSplitProps;
 }
 
-// @public
+// @public @deprecated
 export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
     bottom: LayoutFragmentProps | number;
     minSizeBottom?: number;
@@ -744,14 +742,14 @@ export interface LayoutHorizontalSplitProps extends LayoutSplitPropsBase {
     top: LayoutFragmentProps | number;
 }
 
-// @public
+// @public @deprecated
 export interface LayoutSplitPropsBase {
     id: string;
     lock?: boolean;
     percentage: number;
 }
 
-// @public
+// @public @deprecated
 export interface LayoutVerticalSplitProps extends LayoutSplitPropsBase {
     left: LayoutFragmentProps | number;
     minSizeLeft?: number;
@@ -821,7 +819,7 @@ export interface ParseResults {
     // (undocumented)
     parseError?: string;
     // (undocumented)
-    value?: string | number | boolean | {} | string[] | Date | [] | undefined;
+    value?: string | number | boolean | object | string[] | Date | [] | undefined;
 }
 
 // @public @deprecated
@@ -834,7 +832,7 @@ export interface PointProps {
 
 // @public
 export namespace Primitives {
-    export type Boolean = boolean | string | {} | [];
+    export type Boolean = boolean | string | object | [];
     export interface Composite {
         // (undocumented)
         parts: CompositePart[];
@@ -881,6 +879,7 @@ export namespace Primitives {
 export interface PrimitiveValue extends BasePropertyValue {
     // (undocumented)
     displayValue?: string;
+    roundingError?: number;
     // (undocumented)
     value?: Primitives.Value;
     // (undocumented)
@@ -1165,7 +1164,7 @@ export enum StageUsage {
     ViewOnly = "ViewOnly"
 }
 
-// @public
+// @public @deprecated
 export class StandardContentLayouts {
     // (undocumented)
     static readonly availableLayouts: ContentLayoutProps[];
@@ -1503,10 +1502,7 @@ export interface UiFlags {
 }
 
 // @public @deprecated
-export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> | MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> | // eslint-disable-line @typescript-eslint/indent
-MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> | // eslint-disable-line @typescript-eslint/indent
-MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> | // eslint-disable-line @typescript-eslint/indent
-MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;
+export type UiItemProviderOverrides = MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages"> | MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageIds"> | MarkRequired<AllowedUiItemProviderOverrides, "stageIds"> | MarkRequired<AllowedUiItemProviderOverrides, "stageUsages"> | MarkRequired<AllowedUiItemProviderOverrides, "providerId" | "stageUsages" | "stageIds">;
 
 // @public @deprecated
 export interface UiItemProviderRegisteredEventArgs {
@@ -1544,7 +1540,7 @@ export interface UiItemsProvider {
     provideBackstageItems?: () => BackstageItem[];
     provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];
     provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[];
-    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, // eslint-disable-line deprecation/deprecation
+    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, // eslint-disable-line @typescript-eslint/no-deprecated
     zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>;
 }
 

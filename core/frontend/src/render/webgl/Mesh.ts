@@ -6,13 +6,11 @@
  * @module WebGL
  */
 
-import { assert, dispose } from "@itwin/core-bentley";
+import { dispose } from "@itwin/core-bentley";
 import { Point3d, Range3d } from "@itwin/core-geometry";
-import { InstancedGraphicParams } from "../../common/render/InstancedGraphicParams";
 import { MeshParams } from "../../common/internal/render/MeshParams";
 import { SurfaceType } from "../../common/internal/render/SurfaceParams";
 import { RenderMemory } from "../RenderMemory";
-import { RenderGeometry } from "../RenderSystem";
 import { CachedGeometry } from "./CachedGeometry";
 import { Graphic } from "./Graphic";
 import { InstanceBuffers, PatternBuffers } from "./InstancedGeometry";
@@ -23,9 +21,13 @@ import { EdgeGeometry, PolylineEdgeGeometry, SilhouetteEdgeGeometry } from "./Ed
 import { IndexedEdgeGeometry } from "./IndexedEdgeGeometry";
 import { SurfaceGeometry } from "./SurfaceGeometry";
 import { MeshData } from "./MeshData";
+import { RenderGeometry } from "../../internal/render/RenderGeometry";
 
 /** @internal */
-export class MeshRenderGeometry {
+export class MeshRenderGeometry implements RenderGeometry {
+  public readonly renderGeometryType: "mesh" = "mesh" as const;
+  public readonly isInstanceable: boolean;
+  public noDispose = false;
   public readonly data: MeshData;
   public readonly surface?: SurfaceGeometry;
   public readonly segmentEdges?: EdgeGeometry;
@@ -36,6 +38,7 @@ export class MeshRenderGeometry {
 
   private constructor(data: MeshData, params: MeshParams) {
     this.data = data;
+    this.isInstanceable = data.viewIndependentOrigin === undefined;
     this.range = params.vertices.qparams.computeRange();
     this.surface = SurfaceGeometry.create(data, params.surface.indices);
     const edges = params.edges;
@@ -61,12 +64,25 @@ export class MeshRenderGeometry {
   }
 
   public dispose() {
+    if (this.noDispose) {
+      return;
+    }
+
     dispose(this.data);
     dispose(this.surface);
     dispose(this.segmentEdges);
     dispose(this.silhouetteEdges);
     dispose(this.polylineEdges);
     dispose(this.indexedEdges);
+  }
+
+  public get isDisposed() {
+    return this.data.isDisposed &&
+      (!this.surface || this.surface.isDisposed) &&
+      (!this.segmentEdges || this.segmentEdges.isDisposed) &&
+      (!this.silhouetteEdges || this.silhouetteEdges.isDisposed) &&
+      (!this.polylineEdges || this.polylineEdges.isDisposed) &&
+      (!this.indexedEdges || this.indexedEdges.isDisposed);
   }
 
   public collectStatistics(stats: RenderMemory.Statistics) {
@@ -76,6 +92,10 @@ export class MeshRenderGeometry {
     this.silhouetteEdges?.collectStatistics(stats);
     this.polylineEdges?.collectStatistics(stats);
     this.indexedEdges?.collectStatistics(stats);
+  }
+
+  public computeRange(out?: Range3d): Range3d {
+    return this.range.clone(out);
   }
 }
 
@@ -89,27 +109,14 @@ export class MeshGraphic extends Graphic {
   public get primitives(): readonly Primitive[] { return this._primitives; }
   public get meshRange(): Readonly<Range3d> { return this._meshRange; }
 
-  public static create(geometry: MeshRenderGeometry, instances?: InstancedGraphicParams | PatternBuffers): MeshGraphic | undefined {
-    let buffers;
-    if (instances) {
-      if (instances instanceof PatternBuffers) {
-        buffers = instances;
-      } else {
-        const instancesRange = instances.range ?? InstanceBuffers.computeRange(geometry.range, instances.transforms, instances.transformCenter);
-        buffers = InstanceBuffers.create(instances, instancesRange);
-        if (!buffers)
-          return undefined;
-      }
-    }
-
-    return new MeshGraphic(geometry, buffers);
+  public static create(geometry: MeshRenderGeometry, instances?: InstanceBuffers | PatternBuffers): MeshGraphic | undefined {
+    return new MeshGraphic(geometry, instances);
   }
 
-  private addPrimitive(geometry: RenderGeometry | undefined) {
+  private addPrimitive(geometry: CachedGeometry | undefined) {
     if (!geometry)
       return;
 
-    assert(geometry instanceof CachedGeometry);
     const primitive = Primitive.createShared(geometry, this._instances);
     if (primitive)
       this._primitives.push(primitive);

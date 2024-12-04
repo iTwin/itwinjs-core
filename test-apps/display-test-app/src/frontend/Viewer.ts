@@ -33,7 +33,6 @@ import { Window } from "./Window";
 import { openIModel, OpenIModelProps } from "./openIModel";
 import { HubPicker } from "./HubPicker";
 import { RealityModelSettingsPanel } from "./RealityModelDisplaySettingsWidget";
-import { Calculator, CreateCirclesArgs, GraphicCreator, GraphicCreatorResult } from "./workers/ExampleWorker";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -586,6 +585,15 @@ export class Viewer extends Window {
         return panel;
       },
       tooltip: "Point cloud settings",
+    });
+
+    this.toolBar.addDropDown({
+      iconUnicode: "\ue94b",
+      createDropDown: async (container: HTMLElement) => {
+        const panel = new ContoursPanel(this.viewport, container);
+        return panel;
+      },
+      tooltip: "Contour display",
     });
 
     this.updateTitle();

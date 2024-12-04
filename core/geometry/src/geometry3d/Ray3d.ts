@@ -8,7 +8,7 @@
  */
 import { CurveCurveApproachType, CurveLocationDetail, CurveLocationDetailPair } from "../curve/CurveLocationDetail";
 import { AxisOrder, BeJSONFunctions, Geometry } from "../Geometry";
-import { SmallSystem } from "../numerics/Polynomials";
+import { SmallSystem } from "../numerics/SmallSystem";
 import { Matrix3d } from "./Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 import { Vector2d } from "./Point2dVector2d";
@@ -267,7 +267,7 @@ export class Ray3d implements BeJSONFunctions {
    * Return a transform for rigid axes at ray origin with z in ray direction.
    * * If the direction vector is zero, axes default to identity (from [[Matrix3d.createRigidHeadsUp]])
    */
-  public toRigidZFrame(result?: Transform): Transform | undefined {
+  public toRigidZFrame(result?: Transform): Transform {
     const axes = Ray3d._workMatrix = Matrix3d.createRigidHeadsUp(this.direction, AxisOrder.ZXY, Ray3d._workMatrix);
     return Transform.createOriginAndMatrix(this.origin, axes, result);
   }

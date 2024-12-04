@@ -40,13 +40,14 @@ export interface BaseFieldJSON {
   priority: number;
   renderer?: RendererDescription;
   editor?: EditorDescription;
+  extendedData?:  { [key: string]: unknown };
 }
 
 /**
  * Data structure for a [[PropertiesField]] serialized to JSON.
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
   properties: PropertyJSON<TClassInfoJSON>[];
 }
@@ -71,7 +72,7 @@ export interface StructPropertiesFieldJSON<TClassInfoJSON = ClassInfo> extends P
  * Data structure for a [[NestedContentField]] serialized to JSON.
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
+// eslint-disable-next-line @typescript-eslint/no-deprecated
 export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
   contentClassInfo: TClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
@@ -85,7 +86,6 @@ export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends 
  * JSON representation of a [[Field]]
  * @public
  */
-// eslint-disable-next-line deprecation/deprecation
 export type FieldJSON<TClassInfoJSON = ClassInfoJSON> =
   | BaseFieldJSON
   | PropertiesFieldJSON<TClassInfoJSON>
@@ -144,6 +144,8 @@ export class Field {
   public renderer?: RendererDescription;
   /** Property editor used to edit values of this field */
   public editor?: EditorDescription;
+  /** Extended data associated with this field */
+  public extendedData?:  { [key: string]: unknown };
   /** Parent field */
   private _parent?: NestedContentField;
 
@@ -157,6 +159,7 @@ export class Field {
    * @param priority Priority of the field
    * @param editor Property editor used to edit values of this field
    * @param renderer Property renderer used to render values of this field
+   * @param extendedData Extended data associated with this field
    */
   public constructor(
     category: CategoryDescription,
@@ -167,6 +170,7 @@ export class Field {
     priority: number,
     editor?: EditorDescription,
     renderer?: RendererDescription,
+    extendedData?: { [key: string] : unknown }
   ) {
     this.category = category;
     this.name = name;
@@ -176,6 +180,7 @@ export class Field {
     this.priority = priority;
     this.editor = editor;
     this.renderer = renderer;
+    this.extendedData = extendedData;
   }
 
   /**
@@ -200,7 +205,7 @@ export class Field {
   }
 
   public clone() {
-    const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor, this.renderer);
+    const clone = new Field(this.category, this.name, this.label, this.type, this.isReadonly, this.priority, this.editor, this.renderer, this.extendedData);
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -216,6 +221,7 @@ export class Field {
       priority: this.priority,
       renderer: this.renderer,
       editor: this.editor,
+      extendedData: this.extendedData
     };
   }
 
@@ -233,7 +239,7 @@ export class Field {
       return PropertiesField.fromJSON(json, categories);
     }
     if (isNestedContentField(json)) {
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       return NestedContentField.fromJSON(json, categories);
     }
     const field = Object.create(Field.prototype);
@@ -821,7 +827,7 @@ export class NestedContentField extends Field {
     });
   }
 
-  // eslint-disable-next-line deprecation/deprecation
+  // eslint-disable-next-line @typescript-eslint/no-deprecated
   private static fromCommonJSON(json: NestedContentFieldJSON<ClassInfoJSON | string>, categories: CategoryDescription[]): Partial<NestedContentField> {
     return {
       category: this.getCategoryFromFieldJson(json, categories),

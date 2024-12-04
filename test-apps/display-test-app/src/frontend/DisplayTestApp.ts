@@ -193,6 +193,10 @@ const dtaFrontendMain = async () => {
     return;
   }
 
+  Logger.initializeToConsole();
+  Logger.setLevelDefault(LogLevel.Warning);
+  Logger.setLevel("core-frontend.Render", LogLevel.Error);
+
   // We can call RPC at this point (after startup), so if not mobile, call RPC and get true env from backend,
   // then shutdown frontend, init vars again based on possibly changed configuration, then startup again
   // (All that to workaround the fact that we can't call RPC before we start to get the true env first.)
@@ -220,12 +224,16 @@ const dtaFrontendMain = async () => {
         urlStr = urlStr.replace("{iModel.filename}", getFileName(iModel.key));
         urlStr = urlStr.replace("{iModel.extension}", getFileExt(iModel.key));
         const url = new URL(urlStr);
+        const tilesetUrl = new URL("tileset.json", url);
+        tilesetUrl.search = url.search;
+
+        // Check if a tileset has been published for this iModel.
         try {
-          // See if a tileset has been published for this iModel.
-          const response = await fetch(`${url}tileset.json`);
+          console.log(`Checking for tileset at ${tilesetUrl.toString()}`); // eslint-disable-line no-console
+          const response = await fetch(tilesetUrl);
           await response.json();
           return url;
-        } catch (_) {
+        } catch {
           // No tileset available.
           return undefined;
         }
@@ -279,9 +287,6 @@ const dtaFrontendMain = async () => {
 
     await uiReady; // Now wait for the HTML UI to finish loading.
     await initView(iModel);
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Warning);
-    Logger.setLevel("core-frontend.Render", LogLevel.Error);
 
     if (configuration.startupMacro)
       await IModelApp.tools.parseAndRun(`dta macro ${configuration.startupMacro}`);
@@ -340,7 +345,7 @@ async function initView(iModel: IModelConnection | undefined) {
 
 // Set up the HTML UI elements and wire them to our functions
 async function displayUi() {
-  return new Promise<void>(async (resolve) => { // eslint-disable-line @typescript-eslint/no-misused-promises
+  return new Promise<void>(async (resolve) => {
     showSpinner();
     resolve();
   });

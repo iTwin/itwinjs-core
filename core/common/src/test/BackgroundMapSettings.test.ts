@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { BackgroundMapSettings, GlobeMode, PersistentBackgroundMapProps } from "../BackgroundMapSettings";
 import { BackgroundMapType } from "../BackgroundMapProvider";
 import { TerrainHeightOriginMode } from "../TerrainSettings";
@@ -21,9 +21,9 @@ describe("BackgroundMapSettings", () => {
       const output = settings.toPersistentJSON();
 
       expect(output.groundBias).to.equal(expected.groundBias);
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(output.providerName).to.equal(expected.providerName);
-      // eslint-disable-next-line deprecation/deprecation
+      // eslint-disable-next-line @typescript-eslint/no-deprecated
       expect(output.providerData?.mapType).to.equal(expected.providerData?.mapType);
       expect(output.transparency).to.equal(expected.transparency);
       expect(output.useDepthBuffer).to.equal(expected.useDepthBuffer);

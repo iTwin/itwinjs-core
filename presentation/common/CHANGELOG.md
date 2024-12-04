@@ -1,6 +1,101 @@
 # Change Log - @itwin/presentation-common
 
-This log was last generated on Fri, 16 Aug 2024 18:19:52 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2024 17:59:05 GMT and should not be manually modified.
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+_Version update only_
+
+## 4.10.1
+Thu, 14 Nov 2024 18:11:00 GMT
+
+### Updates
+
+- Fixed enum property values formatting issue, where raw value was used instead of enum's display value.
+
+## 4.10.0
+Wed, 13 Nov 2024 15:23:39 GMT
+
+### Minor changes
+
+- All public methods of `PresentationRpcInterface` have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as `PresentationManager` should be used instead.
+
+### Updates
+
+- Add extended data for calculated properties
+- ContentFormatter does not throw when formatting properties with 'undefined' value
+- KeySet: Always store instance key class name in `Schema:Class` format.
+- Fix failure to deserialize content from JSON for instances with nulls in array property values
+
+## 4.9.7
+Wed, 06 Nov 2024 19:23:04 GMT
+
+### Updates
+
+- ContentFormatter does not throw when formatting properties with 'undefined' value
+
+## 4.9.6
+Tue, 05 Nov 2024 15:22:46 GMT
+
+_Version update only_
+
+## 4.9.5
+Tue, 22 Oct 2024 20:01:40 GMT
+
+_Version update only_
+
+## 4.9.4
+Wed, 09 Oct 2024 20:22:04 GMT
+
+_Version update only_
+
+## 4.9.3
+Thu, 03 Oct 2024 19:15:45 GMT
+
+_Version update only_
+
+## 4.9.2
+Wed, 02 Oct 2024 15:14:43 GMT
+
+_Version update only_
+
+## 4.9.1
+Wed, 25 Sep 2024 20:10:58 GMT
+
+### Updates
+
+- Fix failure to deserialize content from JSON for instances with nulls in array property values
+
+## 4.9.0
+Mon, 23 Sep 2024 13:44:01 GMT
+
+### Updates
+
+- Different value type support for calculated properties
+- Add extended data for calculated properties
+- Make calculated property value optional
+- Support schema-based property category overrides
+
+## 4.8.7
+Fri, 13 Sep 2024 15:11:17 GMT
+
+_Version update only_
+
+## 4.8.6
+Fri, 06 Sep 2024 05:06:49 GMT
+
+_Version update only_
+
+## 4.8.5
+Wed, 28 Aug 2024 17:27:23 GMT
+
+_Version update only_
+
+## 4.8.4
+Thu, 22 Aug 2024 17:37:07 GMT
+
+_Version update only_
 
 ## 4.8.3
 Fri, 16 Aug 2024 18:18:14 GMT

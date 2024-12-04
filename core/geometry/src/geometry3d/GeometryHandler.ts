@@ -97,11 +97,7 @@ export abstract class GeometryHandler {
   }
   /** Handle strongly typed [[CurveChainWithDistanceIndex]] (base class method calls [[handlePath]] or [[handleLoop]]) */
   public handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex): any {
-    if (g.path instanceof Path)
-      return this.handlePath(g.path);
-    if (g.path instanceof Loop)
-      return this.handleLoop(g.path);
-    return this.handleCurveCollection(g.path);
+    return this.handlePath(g.path);
    }
   /** Handle strongly typed  Sphere */
   public abstract handleSphere(g: Sphere): any;

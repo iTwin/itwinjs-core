@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { describe, expect, it } from "vitest";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { Angle } from "../../geometry3d/Angle";
 import { GrowableXYZArray } from "../../geometry3d/GrowableXYZArray";
@@ -66,7 +66,7 @@ describe("XYPointBuckets", () => {
       ck.testUndefined(searcher.indexGrid.getDataAtIndex(xIndexA, 1000));
     }
 
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
   it("MessyGrid", () => {
     const ck = new Checker();
@@ -104,7 +104,7 @@ describe("XYPointBuckets", () => {
     }
 
     GeometryCoreTestIO.saveGeometry(allGeometry, "XYPointBuckets", "MessyGrid");
-    expect(ck.getNumErrors()).equals(0);
+    expect(ck.getNumErrors()).toBe(0);
   });
 
 });
