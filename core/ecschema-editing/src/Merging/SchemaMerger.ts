@@ -25,6 +25,7 @@ export interface SchemaMergeContext {
   readonly targetSchemaKey: SchemaKey;
   readonly sourceSchemaKey: SchemaKey;
   readonly editor: SchemaContextEditor;
+  readonly nameMapping: NameMapping;
 }
 
 /**
@@ -100,6 +101,7 @@ export class SchemaMerger {
       targetSchema: schema,
       targetSchemaKey,
       sourceSchemaKey,
+      nameMapping,
     });
 
     const walker = new SchemaMergingWalker(visitor);
@@ -133,6 +135,6 @@ class MergingSchemaContext extends SchemaContext {
     if(mappedKey !== undefined) {
       schemaItemKey = mappedKey as SchemaItemKey;
     }
-    return super.getSchemaItem<T>(schemaItemKey);
+    return this._internalContext.getSchemaItem<T>(schemaItemKey);
   }
 }

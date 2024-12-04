@@ -426,7 +426,7 @@ export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: S
 
   await schemaComparer.compareSchemas(sourceSchema, targetSchema);
 
-  const visitor = new SchemaDiagnosticVisitor(schemaComparer.nameMappings);
+  const visitor = new SchemaDiagnosticVisitor();
   for (const diagnostic of schemaComparer.diagnostics) {
     visitor.visit(diagnostic);
   }
@@ -438,7 +438,7 @@ export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: S
     ...visitor.customAttributeDifferences,
   ];
 
-  const conflicts = await validateDifferences(differences, targetSchema, sourceSchema);
+  const conflicts = await validateDifferences(differences, targetSchema, sourceSchema, schemaComparer.nameMappings);
 
   return {
     sourceSchemaName: sourceSchema.schemaKey.toString(),
@@ -473,15 +473,15 @@ class DifferenceSchemaComparer extends SchemaComparer {
    *
    */
   public override async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
-    const itemName = this.nameMappings.resolveItemKey(item.key);
-    return lookupSchema.lookupItem<TItem>(itemName);
+    const classKey = this.nameMappings.resolveItemKey(item.key);
+    return lookupSchema.lookupItem<TItem>(classKey.name);
   }
 
   /**
    *
    */
   public override async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {
-    const propertyKey = this.nameMappings.resolvePropertyKey(new PropertyKey(propertyA.name, ecClass.key));
+    const propertyKey = this.nameMappings.resolvePropertyKey(new PropertyKey(propertyA.name, propertyA.class.key));
     return ecClass.getProperty(propertyKey.propertyName) as Promise<AnyProperty | undefined>;
   }
 

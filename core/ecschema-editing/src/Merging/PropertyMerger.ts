@@ -5,7 +5,7 @@
 import type { SchemaMergeContext } from "./SchemaMerger";
 import type { AnyClassItemDifference, ClassPropertyDifference, DifferenceType } from "../Differencing/SchemaDifference";
 import { AnyProperty, AnyPropertyProps, ArrayPropertyProps, CustomAttribute, ECClass, Enumeration, EnumerationPropertyProps, NavigationPropertyProps, parsePrimitiveType, PrimitivePropertyProps, RelationshipClass, SchemaItemKey, SchemaItemType, StructClass, StructPropertyProps } from "@itwin/ecschema-metadata";
-import { getClassEditor, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
+import { getClassEditor, toItemKey, toPropertyKey, updateSchemaItemFullName, updateSchemaItemKey } from "./Utils";
 import { MutableProperty } from "../Editing/Mutable/MutableProperty";
 import { applyCustomAttributes } from "./CustomAttributeMerger";
 
@@ -46,7 +46,7 @@ async function mergeClassProperty(context: SchemaMergeContext, change: { changeT
 }
 
 async function addClassProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, property: PartialEditable<AnyPropertyProps>): Promise<void> {
-  const ecClass = await context.editor.schemaContext.getSchemaItem(itemKey) as ECClass;
+  const ecClass = await context.targetSchema.lookupItem(toItemKey(context, itemKey.name)) as ECClass;
 
   if (property.category !== undefined) {
     property.category = await updateSchemaItemFullName(context, property.category);
@@ -83,10 +83,12 @@ async function createProperty(context: SchemaMergeContext, itemKey: SchemaItemKe
 }
 
 async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaItemKey, propertyProps: AnyPropertyProps): Promise<void> {
-  const ecClass = await context.editor.schemaContext.getSchemaItem(itemKey) as ECClass;
-  const property = await ecClass.getProperty(propertyProps.name) as MutableProperty;
+  const ecClass = await context.targetSchema.lookupItem(toItemKey(context, itemKey.name)) as ECClass;
+  const propertyKey = toPropertyKey(context, itemKey.name, propertyProps.name);
+  const property = await ecClass.getProperty(propertyKey.propertyName) as MutableProperty;
+
   if (property === undefined) {
-    throw new Error(`Couldn't find property ${propertyProps.name} on class ${ecClass.key.name}`);
+    throw new Error(`Couldn't find property ${propertyKey.propertyName} on class ${ecClass.key.name}`);
   }
 
   if (propertyProps.type !== undefined) {
@@ -96,19 +98,19 @@ async function modifyClassProperty(context: SchemaMergeContext, itemKey: SchemaI
   const classEditor = await getClassEditor(context, ecClass);
 
   if (propertyProps.description !== undefined) {
-    await classEditor.properties.setDescription(ecClass.key, propertyProps.name, propertyProps.description);
+    await classEditor.properties.setDescription(ecClass.key, property.name, propertyProps.description);
   }
   if (propertyProps.label !== undefined) {
-    await classEditor.properties.setLabel(ecClass.key, propertyProps.name, propertyProps.label);
+    await classEditor.properties.setLabel(ecClass.key, property.name, propertyProps.label);
   }
   if (propertyProps.isReadOnly !== undefined) {
-    await classEditor.properties.setIsReadOnly(ecClass.key, propertyProps.name, propertyProps.isReadOnly);
+    await classEditor.properties.setIsReadOnly(ecClass.key, property.name, propertyProps.isReadOnly);
   }
   if (propertyProps.priority !== undefined) {
-    await classEditor.properties.setPriority(ecClass.key, propertyProps.name, propertyProps.priority);
+    await classEditor.properties.setPriority(ecClass.key, property.name, propertyProps.priority);
   }
   if (propertyProps.kindOfQuantity !== undefined) {
-    await classEditor.properties.setKindOfQuantity(ecClass.key, propertyProps.name, await updateSchemaItemKey(context, propertyProps.kindOfQuantity));
+    await classEditor.properties.setKindOfQuantity(ecClass.key, property.name, await updateSchemaItemKey(context, propertyProps.kindOfQuantity));
   }
 
   if (property.isArray()) {

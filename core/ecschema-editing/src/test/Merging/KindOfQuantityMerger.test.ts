@@ -5,8 +5,9 @@
 import { KindOfQuantity, Schema, SchemaContext, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
 import { expect } from "chai";
-import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
+import { AnySchemaDifferenceConflict, ConflictCode, SchemaEdits } from "../../ecschema-editing";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -25,6 +26,20 @@ describe("KindOfQuantity merge tests", () => {
       { className: "CoreCustomAttributes.DynamicSchema" },
     ],
   };
+
+  const sourceJson = {
+    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    name: "SourceSchema",
+    version: "1.0.0",
+    alias: "source",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
+  };
+
   const referenceJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
     name: "ReferenceSchema",
@@ -505,5 +520,517 @@ describe("KindOfQuantity merge tests", () => {
     });
 
     await expect(merge).to.be.rejectedWith("Changing the kind of quantity 'TestKoq' persistenceUnit is not supported.");
+  });
+
+  describe("iterative tests", () => {
+    let sourceContext: SchemaContext;
+
+    beforeEach(async () => {
+      sourceContext = await BisTestHelper.getNewContext();
+      await Schema.fromJson(referenceJson, sourceContext);
+    });
+
+    it("should add a re-mapped kindOfQuantity class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          ...sourceJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          testItem: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+        },
+      }, sourceContext);
+  
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          testItem: {
+            schemaItemType: "StructClass",
+          },          
+        },
+      }, targetContext);
+  
+      const result = await getSchemaDifferences(targetSchema, sourceSchema);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("source", "KindOfQuantity");
+        expect(conflict).to.have.a.property("target", "StructClass");
+        return true;
+      });
+  
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      schemaEdits.items.rename(sourceItem, "mergedKOQ");
+  
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.merge(result, schemaEdits);
+  
+      await expect(mergedSchema.getItem("mergedKOQ")).to.be.eventually.fulfilled.then(async (schemaItem) => {
+        expect(schemaItem).to.exist;
+        expect(schemaItem).to.have.property("schemaItemType").equals(SchemaItemType.KindOfQuantity);
+      });
+    });
+
+    it("should merge changes to re-mapped kindOfQuantity class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          ...sourceJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          testItem: {
+            schemaItemType: "KindOfQuantity",
+            label: "Changed Power",
+            description: "Changed Power Quantity",
+            relativeError: 0.1,
+            persistenceUnit: "ReferenceSchema.TU",
+            presentationUnits: [
+              "ReferenceSchema.TestDecimal(8)[ReferenceSchema.TU_PER_TU|tu/tu]",
+            ],
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        references: [
+          ...targetJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          mergedKOQ: {
+            schemaItemType: "KindOfQuantity",
+            label: "Power",
+            description: "Power Quantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+            presentationUnits: [
+              "ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU_PER_TU|tu/tu]",
+            ],
+          },
+          testItem: {
+            schemaItemType: "StructClass",
+          },          
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      schemaEdits.items.rename(sourceItem, "mergedKOQ");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.merge(result, schemaEdits);
+ 
+      await expect(mergedSchema.getItem("mergedKOQ")).to.be.eventually.not.undefined
+        .then((koq: KindOfQuantity) => {
+          expect(koq).to.have.a.property("label").to.equal("Changed Power");
+          expect(koq).to.have.a.property("description").to.equal("Changed Power Quantity");
+          expect(koq).to.have.a.property("relativeError").to.equal(0.1);
+          expect(koq).to.have.a.nested.property("presentationFormats[0].name").to.equal("ReferenceSchema.TestDecimal(4)[ReferenceSchema.TU_PER_TU|tu/tu]");
+          expect(koq).to.have.a.nested.property("presentationFormats[1].name").to.equal("ReferenceSchema.TestDecimal(8)[ReferenceSchema.TU_PER_TU|tu/tu]");
+        });
+    });
+
+    it("should add an entity class with re-mapped property kindOfQuantity", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          ...sourceJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "int",
+              kindOfQuantity: "SourceSchema.testItem",
+            }],
+          },
+          testItem: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        references: [
+          ...targetJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          mergedKOQ: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+          testItem: {
+            schemaItemType: "StructClass",
+          },          
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      schemaEdits.items.rename(sourceItem, "mergedKOQ");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.merge(result, schemaEdits);
+
+      await expect(mergedSchema.getItem("testEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.EntityClass);
+        await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("kindOfQuantity.name").equals("mergedKOQ");
+        });
+      });
+    });
+
+    it("should add a property with re-mapped kindOfQuantity to an existing class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          ...sourceJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          testStruct: {
+            schemaItemType: "StructClass",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              kindOfQuantity: "SourceSchema.testItem",
+            }],
+          },
+          testItem: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        references: [
+          ...targetJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          testStruct: {
+            schemaItemType: "StructClass",            
+          },
+          mergedKOQ: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+          testItem: {
+            schemaItemType: "StructClass",
+          },          
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      schemaEdits.items.rename(sourceItem, "mergedKOQ");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      const merger = new SchemaMerger(targetContext);
+      const mergedSchema = await merger.merge(result, schemaEdits);
+
+      await expect(mergedSchema.getItem("testStruct")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.StructClass);
+        await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
+          expect(property).to.exist;
+          expect(property).has.a.nested.property("kindOfQuantity.name").equals("mergedKOQ");
+        });
+      });
+    });
+
+    it("should return a conflict when property kindOfQuantity persistence is undefined on source", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          ...sourceJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          testStruct: {
+            schemaItemType: "StructClass",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            }],
+          },
+          testItem: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        references: [
+          ...targetJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          testStruct: {
+            schemaItemType: "StructClass",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              kindOfQuantity: "TargetSchema.mergedKOQ",
+            }],
+          },
+          mergedKOQ: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+          testItem: {
+            schemaItemType: "StructClass",
+          },          
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      schemaEdits.items.rename(sourceItem, "mergedKOQ");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyKindOfQuantity);
+        expect(conflict).to.have.a.property("source", null);
+        expect(conflict).to.have.a.property("target", "TargetSchema.mergedKOQ");
+        expect(conflict).to.have.a.property("description", "The kind of quantity cannot be undefined if the property had a kind of quantities before.");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "Property");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "testStruct");
+        expect(conflict).to.have.a.nested.property("difference.path", "testProp");
+        return true;
+      });
+    });
+
+    it("should return a conflict when property kindOfQuantity persistence is undefined on target", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          ...sourceJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          testStruct: {
+            schemaItemType: "StructClass",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              kindOfQuantity: "SourceSchema.testItem",
+            }],
+          },
+          testItem: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        references: [
+          ...targetJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          testStruct: {
+            schemaItemType: "StructClass",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+            }],
+          },
+          mergedKOQ: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+          testItem: {
+            schemaItemType: "StructClass",
+          },          
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      schemaEdits.items.rename(sourceItem, "mergedKOQ");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyKindOfQuantity);
+        expect(conflict).to.have.a.property("source", "SourceSchema.testItem");
+        expect(conflict).to.have.a.property("target", null);
+        expect(conflict).to.have.a.property("description", "The kind of quantity cannot be assiged if the property did not have a kind of quantities before.");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "Property");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "testStruct");
+        expect(conflict).to.have.a.nested.property("difference.path", "testProp");
+        return true;
+      });
+    });
+
+    it("should return a conflict when property kindOfQuantity persistence differs", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          ...sourceJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          testKoq: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.1,
+            persistenceUnit: "ReferenceSchema.KILOTU",
+          },
+          testStruct: {
+            schemaItemType: "StructClass",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              kindOfQuantity: "SourceSchema.testKoq",
+            }],
+          },
+          testItem: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        references: [
+          ...targetJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          testStruct: {
+            schemaItemType: "StructClass",
+            properties: [{
+              name: "testProp",
+              type: "PrimitiveProperty",
+              typeName: "string",
+              kindOfQuantity: "TargetSchema.mergedKOQ",
+            }],
+          },
+          mergedKOQ: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+          testItem: {
+            schemaItemType: "StructClass",
+          },          
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      schemaEdits.items.rename(sourceItem, "mergedKOQ");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyKindOfQuantityUnit);
+        expect(conflict).to.have.a.property("source", "SourceSchema.testKoq");        
+        expect(conflict).to.have.a.property("target", "TargetSchema.mergedKOQ");
+        expect(conflict).to.have.a.property("description", "The property has different kind of quantities with conflicting units.");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "Property");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "testStruct");
+        expect(conflict).to.have.a.nested.property("difference.path", "testProp");
+        return true;
+      });
+    });
+
+    it("should return a conflict when kindOfQuantity persistence unit differs", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        references: [
+          ...sourceJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {          
+          testItem: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.KILOTU",
+          },
+        },
+      }, sourceContext);
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        references: [
+          ...targetJson.references,
+          { name: "ReferenceSchema", version: "1.2.0" },
+        ],
+        items: {
+          mergedKOQ: {
+            schemaItemType: "KindOfQuantity",
+            relativeError: 0.0001,
+            persistenceUnit: "ReferenceSchema.TU",
+          },
+          testItem: {
+            schemaItemType: "StructClass",
+          },          
+        },
+      }, targetContext);
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
+      schemaEdits.items.rename(sourceItem, "mergedKOQ");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPersistenceUnit);
+        expect(conflict).to.have.a.property("source", "ReferenceSchema.KILOTU");        
+        expect(conflict).to.have.a.property("target", "ReferenceSchema.TU");
+        expect(conflict).to.have.a.property("description", "Kind of Quantity has a different persistence unit.");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "KindOfQuantity");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+        return true;
+      });
+    });
   });
 });

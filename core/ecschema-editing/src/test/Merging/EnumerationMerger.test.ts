@@ -2,15 +2,28 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Enumeration, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
+import { EntityClass, Enumeration, Schema, SchemaItemType } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
+import { AnySchemaDifferenceConflict, ConflictCode, SchemaEdits } from "../../ecschema-editing";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
 describe("Enumeration merge tests", () => {
+  const sourceJson = {
+    $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+    name: "SourceSchema",
+    version: "1.0.0",
+    alias: "source",
+    references: [
+      { name: "CoreCustomAttributes", version: "01.00.01" },
+    ],
+    customAttributes: [
+      { className: "CoreCustomAttributes.DynamicSchema" },
+    ],
+  };
 
   const targetJson = {
     $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
@@ -330,5 +343,388 @@ describe("Enumeration merge tests", () => {
     });
 
     await expect(merge).to.be.rejectedWith("Failed to merge enumerator attribute, Enumerator \"EnumeratorOne\" has different values.");
+  });
+
+  describe("iterative tests", () => {
+    it("should add a re-mapped enumeration class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testItem: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: false,
+            enumerators: [
+              {
+                name: "FirstValue",
+                value: 0,
+                label: "first value",
+              },
+            ],
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+  
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },          
+        },
+      }, await BisTestHelper.getNewContext());
+  
+      const result = await getSchemaDifferences(targetSchema, sourceSchema);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("source", "Enumeration");
+        expect(conflict).to.have.a.property("target", "CustomAttributeClass");
+        return true;
+      });
+  
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as Enumeration;      
+      schemaEdits.items.rename(sourceItem, "mergedEnumeration");
+  
+      const merger = new SchemaMerger(targetSchema.context);
+      const mergedSchema = await merger.merge(result, schemaEdits);
+  
+      await expect(mergedSchema.getItem("mergedEnumeration")).to.be.eventually.fulfilled.then(async (ecClass) => {
+        expect(ecClass).to.exist;
+        expect(ecClass).has.property("schemaItemType").equals(SchemaItemType.Enumeration);
+      });
+    });
+
+    it("should merge changes to re-mapped enumeration class", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testItem: {
+            schemaItemType: "Enumeration",
+            label: "Changed Strength",
+            description: "Changed Strength Enumeration",
+            type: "int",
+            isStrict: true,
+            enumerators: [
+              {
+                name: "FirstValue",
+                value: 0,
+                label: "changed first value",
+              },
+              {
+                name: "SecondValue",
+                value: 1,
+                label: "second value",
+              },
+            ],
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          mergedEnumeration: {
+            schemaItemType: "Enumeration",
+            label: "Strength",
+            description: "Strength Enumeration",
+            type: "int",
+            isStrict: false,
+            enumerators: [
+              {
+                name: "FirstValue",
+                value: 0,
+                label: "first value",
+              },              
+            ],
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },          
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as Enumeration;      
+      schemaEdits.items.rename(sourceItem, "mergedEnumeration");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      const merger = new SchemaMerger(targetSchema.context);
+      const mergedSchema = await merger.merge(result, schemaEdits);
+ 
+      await expect(mergedSchema.getItem("mergedEnumeration")).to.be.eventually.not.undefined
+        .then((enumeration: Enumeration) => {
+          expect(enumeration).to.have.a.property("label").to.equal("Changed Strength");
+          expect(enumeration).to.have.a.property("description").to.equal("Changed Strength Enumeration");
+          expect(enumeration).to.have.a.property("isStrict").to.equal(true);
+
+          expect(enumeration).to.have.a.property("enumerators").that.has.lengthOf(2);
+          expect(enumeration).to.have.a.nested.property("enumerators[0].label").to.equal("changed first value");
+          expect(enumeration.enumerators[1]).to.deep.equals({
+            description: undefined,
+            name: "SecondValue",
+            value: 1,
+            label: "second value",
+          });
+        });
+    });
+
+    it("should add re-mapped enumeration property", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testItem: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: false,
+            enumerators: [
+              {
+                name: "FirstValue",
+                value: 0,
+                label: "first value",
+              },
+            ],
+          },
+          testEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "boolProp",
+              type: "PrimitiveProperty",
+              typeName: "SourceSchema.testItem",
+            }],
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          testEntity: {
+            schemaItemType: "EntityClass",
+          },
+          mergedEnumeration: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: false,
+            enumerators: [
+              {
+                name: "FirstValue",
+                value: 0,
+                label: "first value",
+              },
+            ],
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },          
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as Enumeration;      
+      schemaEdits.items.rename(sourceItem, "mergedEnumeration");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      const merger = new SchemaMerger(targetSchema.context);
+      const mergedSchema = await merger.merge(result, schemaEdits);
+ 
+      await expect(mergedSchema.getItem("testEntity")).to.be.eventually.not.undefined
+        .then(async(ecClass: EntityClass) => {
+          await expect(ecClass.getProperty("boolProp")).to.be.eventually.fulfilled.then((property) => {
+            expect(property).to.exist;
+            expect(property).has.a.nested.property("enumeration.name").equals("mergedEnumeration");
+          });
+      });
+    });
+
+    it("should add missing class with re-mapped enumeration property", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testItem: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: false,
+            enumerators: [
+              {
+                name: "FirstValue",
+                value: 0,
+                label: "first value",
+              },
+            ],
+          },
+          testEntity: {
+            schemaItemType: "EntityClass",
+            properties: [{
+              name: "boolProp",
+              type: "PrimitiveProperty",
+              typeName: "SourceSchema.testItem",
+            }],
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {          
+          mergedEnumeration: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: false,
+            enumerators: [
+              {
+                name: "FirstValue",
+                value: 0,
+                label: "first value",
+              },
+            ],
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },          
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as Enumeration;      
+      schemaEdits.items.rename(sourceItem, "mergedEnumeration");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      const merger = new SchemaMerger(targetSchema.context);
+      const mergedSchema = await merger.merge(result, schemaEdits);
+ 
+      await expect(mergedSchema.getItem("testEntity")).to.be.eventually.not.undefined
+        .then(async(ecClass: EntityClass) => {
+          await expect(ecClass.getProperty("boolProp")).to.be.eventually.fulfilled.then((property) => {
+            expect(property).to.exist;
+            expect(property).has.a.nested.property("enumeration.name").equals("mergedEnumeration");
+          });          
+      });
+    });
+
+    it("should return a conflict for re-mapped enumeration with different primitive types", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testItem: {
+            schemaItemType: "Enumeration",
+            type: "string",
+            isStrict: false,
+            enumerators: [
+              {
+                name: "FirstValue",
+                value: "0",
+                label: "first value",
+              },
+            ],
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {          
+          mergedEnumeration: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: false,
+            enumerators: [
+              {
+                name: "FirstValue",
+                value: 0,
+                label: "first value",
+              },
+            ],
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },          
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as Enumeration;      
+      schemaEdits.items.rename(sourceItem, "mergedEnumeration");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingEnumerationType);
+        expect(conflict).to.have.a.property("source", "string");
+        expect(conflict).to.have.a.property("target", "int");
+        expect(conflict).to.have.a.property("description", "Enumeration has a different primitive type.");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "Enumeration");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "testItem"); 
+        return true;
+      });
+    });
+
+    it("should return a conflict for conflicting enumerator value", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testItem: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: false,
+            enumerators: [
+              {
+                name: "FirstValue",
+                value: 100,
+                label: "first value",
+              },
+            ],
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {          
+          mergedEnumeration: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            isStrict: false,
+            enumerators: [
+              {
+                name: "FirstValue",
+                value: 1,
+                label: "first value",
+              },
+            ],
+          },
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            appliesTo: "Any",
+          },          
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const schemaEdits = new SchemaEdits();
+      const sourceItem = await sourceSchema.getItem("testItem") as Enumeration;      
+      schemaEdits.items.rename(sourceItem, "mergedEnumeration");
+
+      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingEnumeratorValue);
+        expect(conflict).to.have.a.property("source", 100);
+        expect(conflict).to.have.a.property("target", 1);
+        expect(conflict).to.have.a.property("description", "Enumerators must have unique values.");
+        expect(conflict).to.have.a.nested.property("difference.schemaType", "Enumerator");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+        expect(conflict).to.have.a.nested.property("difference.path", "FirstValue");
+        return true;
+      });
+    });
   });
 });
