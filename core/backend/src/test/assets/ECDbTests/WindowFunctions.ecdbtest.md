@@ -537,3 +537,158 @@ SELECT te.i [id], row_number() OVER (PARTITION BY $->b) AS [partition] FROM aps.
 | 101 | 2         |
 | 102 | 3         |
 | 103 | 4         |
+
+# Window Frame unbounded following
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i,
+  group_concat(te.i, '.') OVER (
+    ORDER BY
+      te.i ROWS BETWEEN CURRENT ROW AND
+      UNBOUNDED FOLLOWING
+  ) AS [group]
+FROM
+  aps.TestElement te
+LIMIT
+  5
+```
+
+| className                | accessString | generated | index | jsonName | name  | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i     | undefined    | int      | Int    | i                  |
+|                          | group        | true      | 1     | group    | group | undefined    | string   | String | undefined          |
+
+| i   | group                                   |
+| --- | --------------------------------------- |
+| 100 | 100.101.102.103.104.105.106.107.108.109 |
+| 101 | 101.102.103.104.105.106.107.108.109     |
+| 102 | 102.103.104.105.106.107.108.109         |
+| 103 | 103.104.105.106.107.108.109             |
+| 104 | 104.105.106.107.108.109                 |
+
+# Window Frame exclude current row
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i,
+  group_concat(te.i, '.') OVER (
+    ORDER BY
+      te.i ROWS BETWEEN CURRENT ROW AND
+      UNBOUNDED FOLLOWING EXCLUDE CURRENT ROW
+  ) AS [group]
+FROM
+  aps.TestElement te
+LIMIT
+  5
+```
+
+| className                | accessString | generated | index | jsonName | name  | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i     | undefined    | int      | Int    | i                  |
+|                          | group        | true      | 1     | group    | group | undefined    | string   | String | undefined          |
+
+| i   | group                               |
+| --- | ----------------------------------- |
+| 100 | 101.102.103.104.105.106.107.108.109 |
+| 101 | 102.103.104.105.106.107.108.109     |
+| 102 | 103.104.105.106.107.108.109         |
+| 103 | 104.105.106.107.108.109             |
+| 104 | 105.106.107.108.109                 |
+
+# Window frame exclude group
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i,
+  group_concat(te.i, '.') OVER (
+    ORDER BY
+      te.i ROWS BETWEEN CURRENT ROW AND
+      UNBOUNDED FOLLOWING EXCLUDE GROUP
+  ) AS [group]
+FROM
+  aps.TestElement te
+LIMIT
+  5
+```
+
+| className                | accessString | generated | index | jsonName | name  | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i     | undefined    | int      | Int    | i                  |
+|                          | group        | true      | 1     | group    | group | undefined    | string   | String | undefined          |
+
+| i   | group                               |
+| --- | ----------------------------------- |
+| 100 | 101.102.103.104.105.106.107.108.109 |
+| 101 | 102.103.104.105.106.107.108.109     |
+| 102 | 103.104.105.106.107.108.109         |
+| 103 | 104.105.106.107.108.109             |
+| 104 | 105.106.107.108.109                 |
+
+# Window frame exclude ties
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i,
+  group_concat(te.i, '.') OVER (
+    ORDER BY
+      te.i ROWS BETWEEN CURRENT ROW AND
+      UNBOUNDED FOLLOWING EXCLUDE TIES
+  ) AS [group]
+FROM
+  aps.TestElement te
+LIMIT
+  5
+```
+
+| className                | accessString | generated | index | jsonName | name  | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i     | undefined    | int      | Int    | i                  |
+|                          | group        | true      | 1     | group    | group | undefined    | string   | String | undefined          |
+
+| i   | group                               |
+| --- | ----------------------------------- |
+| 100 | 101.102.103.104.105.106.107.108.109 |
+| 101 | 102.103.104.105.106.107.108.109     |
+| 102 | 103.104.105.106.107.108.109         |
+| 103 | 104.105.106.107.108.109             |
+| 104 | 105.106.107.108.109                 |
+
+# Window frame between values
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i,
+  group_concat(te.i, '.') OVER (
+    ORDER BY
+      te.i ROWS BETWEEN 2 + 1 PRECEDING AND
+      1 + 1 FOLLOWING EXCLUDE TIES
+  ) AS [group]
+FROM
+  aps.TestElement te
+LIMIT
+  5
+```
+
+| className                | accessString | generated | index | jsonName | name  | extendedType | typeName | type   | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ------ | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i     | undefined    | int      | Int    | i                  |
+|                          | group        | true      | 1     | group    | group | undefined    | string   | String | undefined          |
+
+| i   | group               |
+| --- | ------------------- |
+| 100 | "101.102"           |
+| 101 | 100.102.103         |
+| 102 | 100.101.103.104     |
+| 103 | 100.101.102.104.105 |
+| 104 | 101.102.103.105.106 |
