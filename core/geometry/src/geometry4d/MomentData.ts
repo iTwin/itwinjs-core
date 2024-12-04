@@ -29,7 +29,7 @@ import { Point4d } from "./Point4d";
  *         * e.g. entry [0,1] is summed product xy
  *       * axis 3 is "w", which is 1 in sums.
  *         * e.g. entry 03 is summed x.
- *    * In this level
+ *    * In this level:
  *        * the `absoluteQuantity` member is undefined.
  *        * the `localToWorldMap` and `radiiOfGyration` are created by have undefined contents.
  *  * Second level: after a call to inertiaProductsToPrincipalAxes, the `localToWorldMap`, `absoluteQuantity` and
@@ -177,7 +177,7 @@ export class MomentData {
    * * Hence x axis is long direction.
    * * Hence planar data generates large moment as Z.
    * @param origin The origin used for the inertia products.
-   * @param inertiaProducts The inertia products; sums or integrals of [xx,xy,xz,xw; yx,yy, yz,yw; zx,zy,zz,zw; wx,wy,wz,w].
+   * @param inertiaProducts The inertia products: sums or integrals of [xx,xy,xz,xw; yx,yy, yz,yw; zx,zy,zz,zw; wx,wy,wz,w].
    */
   public static inertiaProductsToPrincipalAxes(origin: XYZ, inertiaProducts: Matrix4d): MomentData | undefined {
     const moments = new MomentData();
