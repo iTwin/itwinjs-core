@@ -298,10 +298,10 @@ SELECT te.ECInstanceId, d.Alias FROM aps.TestElement te CROSS JOIN meta.ECSchema
 # NATURAL JOIN
 
 - dataset: AllProperties.bim
-- skip: NATURAL JOIN is not yet supported
+- errorDuringPrepare: true
 
 ```sql
-SELECT *
+SELECT 1
 FROM (SELECT ECInstanceId AS CommonId, FederationGuid FROM bis.Element) AS ElementAlias
 NATURAL JOIN (SELECT ECInstanceId AS CommonId, IsPrivate FROM bis.Model) AS ModelAlias;
 ```
@@ -515,3 +515,12 @@ LIMIT
 | 0x14         | 100 | 0x1        | undefined    |
 | 0x15         | 101 | 0x12       | 1            |
 | 0x15         | 101 | 0x1        | 1            |
+
+# Named Properties Join
+
+- dataset: AllProperties.bim
+- errorDuringPrepare: true
+
+```sql
+SELECT 1 FROM bis.Element e JOIN bis.SpatialElement s USING (ECInstanceId);
+```
