@@ -619,8 +619,8 @@ describe("PipeConnections", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("createMiteredSweepSections", () => {
-    const ck = new Checker(true, true);
+  it("createMiteredSweepSections", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0, dy = 0;
     const sectionSweeps: AngleSweep[] = [

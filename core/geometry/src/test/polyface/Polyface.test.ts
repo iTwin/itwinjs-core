@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { describe, expect, it } from "vitest";
 import { CloneFunction, compareWithTolerance, Dictionary, OrderedComparator, OrderedSet } from "@itwin/core-bentley";
 import { Arc3d } from "../../curve/Arc3d";
-import { CurveFactory, MiteredSweepOutputSelect } from "../../curve/CurveFactory";
+import { CurveFactory, MiteredSweepOptions, MiteredSweepOutputSelect } from "../../curve/CurveFactory";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
@@ -1930,8 +1930,8 @@ describe("SphericalMeshData", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it.only("Mirror", () => {
-    const ck = new Checker(true, true);
+  it("Mirror", () => {
+    const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;
@@ -1996,11 +1996,13 @@ describe("SphericalMeshData", () => {
       }
       y0 = 0;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedMesh, x0, y0);
-      ck.testTrue(hasOutwardOrientationAndFacetNormals(closedMesh), `${type} facets and normals point outward`);
+      const outward = hasOutwardOrientationAndFacetNormals(closedMesh);
+      ck.testTrue(outward, `${type} facets and normals point outward`);
       y0 = delta;
       const mirrorMesh = closedMesh.cloneTransformed(t);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mirrorMesh, x0, y0);
-      ck.testTrue(hasOutwardOrientationAndFacetNormals(mirrorMesh), `${type} mirrored facets and normals point outward`);
+      const mirrorOutward = hasOutwardOrientationAndFacetNormals(mirrorMesh);
+      ck.testTrue(mirrorOutward, `${type} mirrored facets and normals point outward`);
     };
     // mirror across plane at origin with normal (1,1,0)
     const mirrorMatrix = Matrix3d.createDirectionalScale(Vector3d.createNormalized(1, 1)!, -1.0);
@@ -2047,16 +2049,19 @@ describe("SphericalMeshData", () => {
 
     const centerlineSweeps: AngleSweep[] = [AngleSweep.createStartEndDegrees(0, 90), AngleSweep.createStartEndDegrees(0, -90)];
     const sectionDataSweeps: AngleSweep[] = [AngleSweep.create360(), AngleSweep.createStartEndDegrees(360, 0)];
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.needNormals = true;
+    strokeOptions.angleTol = Angle.createDegrees(5);
     for (const centerlineSweep of centerlineSweeps)
       for (const sectionDataSweep of sectionDataSweeps) {
         // pipes with circular arc rails
         const centerline = Arc3d.createXY(Point3d.create(), 1.0, centerlineSweep);
         const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5, 0, 0), sectionDataSweep);
-        const pipeBuilder = PolyfaceBuilder.create();
-        pipeBuilder.options.angleTol = Angle.createDegrees(5);
-        pipeBuilder.options.needNormals = true;
+        const pipeBuilder = PolyfaceBuilder.create(strokeOptions);
         pipeBuilder.addMiteredPipes(centerline, sectionData, 8, true);
-        geometry.push(pipeBuilder.claimPolyface());
+        const pipeMesh = pipeBuilder.claimPolyface();
+        if (ck.testFalse(pipeMesh.isEmpty, "addMiteredPipes computed a nonempty mesh"))
+          geometry.push(pipeMesh);
       }
     for (const centerlineSweep of centerlineSweeps)
       for (const sectionDataSweep of sectionDataSweeps) {
@@ -2064,23 +2069,20 @@ describe("SphericalMeshData", () => {
         // NOTE: tiny section radii to avoid section clash at high rail curvature
         const centerline = Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), centerlineSweep);
         const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0.2), Vector3d.create(0.1), sectionDataSweep);
-        const pipeBuilder = PolyfaceBuilder.create();
-        pipeBuilder.options.angleTol = Angle.createDegrees(5);
-        pipeBuilder.options.needNormals = true;
+        const pipeBuilder = PolyfaceBuilder.create(strokeOptions);
         pipeBuilder.addMiteredPipes(centerline, sectionData, 9, true);
-        geometry.push(pipeBuilder.claimPolyface());
+        const pipeMesh = pipeBuilder.claimPolyface();
+        if (ck.testFalse(pipeMesh.isEmpty, "addMiteredPipes computed a nonempty mesh"))
+          geometry.push(pipeMesh);
       }
-
     for (const centerlineSweep of centerlineSweeps)
       for (const sectionDataSweep of sectionDataSweeps) {
         const centerline = Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), centerlineSweep);
         const sectionData = Arc3d.create(Point3d.create(0.5), Vector3d.create(0, 0.2), Vector3d.create(0.1), sectionDataSweep);
-        const sweepSections = CurveFactory.createMiteredSweepSections(
-          centerline,
-          sectionData,
-          { outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped: true },
-        )!;
-        geometry.push(sweepSections.mesh);
+        const miterOptions: MiteredSweepOptions = {outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped: true, strokeOptions};
+        const sweepSections = CurveFactory.createMiteredSweepSections(centerline, sectionData, miterOptions);
+        if (ck.testDefined(sweepSections, "computed miteredSweepSections"))
+          geometry.push(sweepSections.mesh);
       }
 
     // verify outward normals for closed meshes/solids, both before and after mirroring
