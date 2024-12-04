@@ -8,7 +8,7 @@
 
 import { FontType, LocalFileName } from "@itwin/core-common";
 import { _implementationProhibited } from "./internal/Symbols";
-import { shxFontFileFromBlob, shxFontFileFromFileName, trueTypeFontFileFromFileName } from "./internal/FontImpl";
+import { shxFontFileFromBlob, trueTypeFontFileFromFileName } from "./internal/FontImpl";
 
 export interface ShxFontFile {
   /** @internal */
@@ -18,21 +18,12 @@ export interface ShxFontFile {
   readonly familyName: string;
 }
 
-export interface ShxFontFileFromFileNameArgs {
-  fileName: LocalFileName;
-  familyName: string;
-}
-
 export interface ShxFontFileFromBlobArgs {
   blob: Uint8Array;
   familyName: string;
 }
 
 export namespace ShxFontFile {
-  export async function fromFileName(args: ShxFontFileFromFileNameArgs): Promise<ShxFontFile> {
-    return shxFontFileFromFileName(args);
-  }
-
   export function fromBlob(args: ShxFontFileFromBlobArgs): ShxFontFile {
     return shxFontFileFromBlob(args);
   }
@@ -58,7 +49,7 @@ export interface TrueTypeFontFile {
 export type FontFile = ShxFontFile | RscFontFile | TrueTypeFontFile;
 
 export namespace TrueTypeFontFile {
-  export async function fromFileName(fileName: LocalFileName): Promise<TrueTypeFontFile> {
+  export function fromFileName(fileName: LocalFileName): TrueTypeFontFile {
     return trueTypeFontFileFromFileName(fileName);
   }
 }

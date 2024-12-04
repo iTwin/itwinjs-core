@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
-import { FontFile, ShxFontFile, ShxFontFileFromBlobArgs, ShxFontFileFromFileNameArgs, TrueTypeFontFile } from "../Font";
+import { FontFile, ShxFontFile, ShxFontFileFromBlobArgs, TrueTypeFontFile } from "../Font";
 import { FontType, LocalFileName } from "@itwin/core-common";
 import { IModelHost } from "../IModelHost";
 import { _implementationProhibited } from "./Symbols";
         
-export async function trueTypeFontFileFromFileName(fileName: LocalFileName): Promise<TrueTypeFontFile> {
+export function trueTypeFontFileFromFileName(fileName: LocalFileName): TrueTypeFontFile {
   const metadata = IModelHost.platform.getTrueTypeFontMetadata(fileName);
   if (!metadata.familyNames) {
     // The input was almost certainly not a TrueType font file.
@@ -45,24 +45,6 @@ function validateShx(blob: Uint8Array): void {
   }
   
   throw new Error("Failed to read font file");
-}
-
-export async function shxFontFileFromFileName(args: ShxFontFileFromFileNameArgs): Promise<ShxFontFile> {
-  const read = new Promise<Uint8Array>((resolve, reject) => {
-    try {
-      const stream = fs.createReadStream(args.fileName, { end: minShxSize });
-      stream.on("error", (e) => reject(e));
-      stream.on("data", (chunk: Buffer) => {
-        stream.close();
-        resolve(chunk);
-      });
-    } catch (e) {
-      reject(e);
-    }
-  });
-
-  const blob = await read;
-  return shxFontFileFromBlob({ blob, familyName: args.familyName });
 }
 
 export function shxFontFileFromBlob(args: ShxFontFileFromBlobArgs): ShxFontFile {
