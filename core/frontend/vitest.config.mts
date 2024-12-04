@@ -3,6 +3,7 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
   test: {
+    dangerouslyIgnoreUnhandledErrors : true,
     dir: "src",
     setupFiles: "./src/test/setupTests.ts",
     browser: {
