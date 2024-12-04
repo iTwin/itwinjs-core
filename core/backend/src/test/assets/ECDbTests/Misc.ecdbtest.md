@@ -681,3 +681,55 @@ SELECT (1*2) Divided
 | Divided |
 | ------- |
 | 2       |
+
+# NULLCast binary and bool
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i,
+  CAST(NULL AS BINARY) [binary],
+  CAST(NULL AS BOOLEAN) [bool]
+FROM
+  aps.TestElement te
+LIMIT
+  2
+```
+
+| className                | accessString | generated | index | jsonName | name   | extendedType | typeName | type    | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | ------- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i      | undefined    | int      | Int     | i                  |
+|                          | binary       | true      | 1     | binary   | binary | Json         | string   | Blob    | undefined          |
+|                          | bool         | true      | 2     | bool     | bool   | undefined    | boolean  | Boolean | undefined          |
+
+| i   | binary    | time      |
+| --- | --------- | --------- |
+| 100 | undefined | undefined |
+| 101 | undefined | undefined |
+
+# NullCast double and time
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  te.i,
+  CAST(NULL AS DOUBLE) [dbl],
+  CAST(NULL AS TIMESTAMP) [time]
+FROM
+  aps.TestElement te
+LIMIT
+  2
+```
+
+| className                | accessString | generated | index | jsonName | name   | extendedType | typeName | type     | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | -------- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i      | undefined    | int      | Int      | i                  |
+|                          | dbl          | true      | 1     | dbl      | dbl    | undefined    | double   | Double   | undefined          |
+|                          | time         | true      | 2     | time     | time   | undefined    | dateTime | DateTime | undefined          |
+
+| i   | dbl       | time      |
+| --- | --------- | --------- |
+| 100 | undefined | undefined |
+| 101 | undefined | undefined |
