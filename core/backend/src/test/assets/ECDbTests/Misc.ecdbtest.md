@@ -617,3 +617,67 @@ PRAGMA parse_tree (
   }
 ]
 ```
+
+# Using Scalar values in select clause with + operator
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT (1+2) Added
+```
+
+| className | accessString | generated | index | jsonName | name  | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ----- | ------------ | -------- | ------ |
+|           | Added        | true      | 0     | added    | Added | undefined    | double   | Double |
+
+| Added |
+| ----- |
+| 3     |
+
+# Using Scalar values in select clause
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT (1) One
+```
+
+| className | accessString | generated | index | jsonName | name | extendedType | typeName | type  |
+| --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ----- |
+|           | One          | true      | 0     | one      | One  | undefined    | long     | Int64 |
+
+| One |
+| --- |
+| 1   |
+
+# Using Scalar values in select clause with \* operator
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT (1*2) Product
+```
+
+| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ |
+|           | Product      | true      | 0     | product  | Product | undefined    | double   | Double |
+
+| Product |
+| ------- |
+| 2       |
+
+# Using Scalar values in select clause with / operator
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT (1*2) Divided
+```
+
+| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type   |
+| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ |
+|           | Divided      | true      | 0     | divided  | Divided | undefined    | double   | Double |
+
+| Divided |
+| ------- |
+| 2       |
