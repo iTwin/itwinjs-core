@@ -190,7 +190,7 @@ export class AngleSweep implements BeJSONFunctions {
     this._radians0 = Geometry.clampToStartEnd(this._radians0, -limit, limit);
     this._radians1 = Geometry.clampToStartEnd(this._radians1, -limit, limit);
   }
-  /** Ask if the sweep is counterclockwise, i.e. positive sweep */
+  /** Ask if the sweep is counterclockwise, i.e. positive sweep. */
   public get isCCW(): boolean {
     return this._radians1 >= this._radians0;
   }

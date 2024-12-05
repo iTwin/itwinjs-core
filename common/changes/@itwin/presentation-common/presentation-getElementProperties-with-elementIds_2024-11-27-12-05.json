@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/presentation-common",
+      "comment": "Extend `MultiElementPropertiesRequestOptions` to support specifying input element either through `elementClasses` or `elementIds` arrays.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/presentation-common"
+}
