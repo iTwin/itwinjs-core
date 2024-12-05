@@ -172,7 +172,7 @@ class Material extends RenderMaterial {
   }
 
   // eslint-disable-next-line @typescript-eslint/no-deprecated
-  public constructor(params: CreateRenderMaterialArgs, imdl?: Imdl.SurfaceMaterialParams) {
+  public constructor(params: RenderMaterial.Params, imdl?: Imdl.SurfaceMaterialParams) {
     super(params);
 
     this.materialParams = imdl ?? {
