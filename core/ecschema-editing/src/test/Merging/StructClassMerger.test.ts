@@ -266,9 +266,8 @@ describe("StructClass merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as StructClass;
       schemaEdits.items.rename(testItem, "mergedStruct");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
 
       await expect(mergedSchema.getItem("mergedStruct")).to.be.eventually.not.undefined
         .then((ecClass: StructClass) => {
@@ -389,9 +388,8 @@ describe("StructClass merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as StructClass;
       schemaEdits.items.rename(testItem, "mergedStruct");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
  
       await expect(mergedSchema.getItem("TestEntity")).to.be.eventually.not.undefined
         .then(async(ecClass: EntityClass) => {

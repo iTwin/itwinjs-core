@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttributeClass, EntityClass, RelationshipClass, Schema, SchemaContext, SchemaItemType, StructClass } from "@itwin/ecschema-metadata";
 import { SchemaMerger } from "../../Merging/SchemaMerger";
-import { getSchemaDifferences, SchemaOtherTypes } from "../../Differencing/SchemaDifference";
+import { SchemaOtherTypes } from "../../Differencing/SchemaDifference";
 import { BisTestHelper } from "../TestUtils/BisTestHelper";
 import { expect } from "chai";
 import { SchemaEdits } from "../../ecschema-editing";
@@ -1053,9 +1053,8 @@ describe("Custom Attribute merge", () => {
       const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
       schemaEdits.items.rename(testItem, "mergedCustomAttribute");
   
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -1101,9 +1100,8 @@ describe("Custom Attribute merge", () => {
       const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
       schemaEdits.items.rename(testItem, "mergedCustomAttribute");
   
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -1162,10 +1160,9 @@ describe("Custom Attribute merge", () => {
       const schemaEdits = new SchemaEdits();
       const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
       schemaEdits.items.rename(testItem, "mergedCustomAttribute");
-  
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -1220,9 +1217,8 @@ describe("Custom Attribute merge", () => {
       const testClass = await sourceSchema.getItem("testClass") as StructClass;
       schemaEdits.items.rename(testClass, "mergedStruct");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -1273,9 +1269,8 @@ describe("Custom Attribute merge", () => {
       const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
       schemaEdits.items.rename(testItem, "mergedCustomAttribute");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -1326,9 +1321,8 @@ describe("Custom Attribute merge", () => {
       const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
       schemaEdits.items.rename(testItem, "mergedCustomAttribute");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("testEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -1392,9 +1386,8 @@ describe("Custom Attribute merge", () => {
       const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
       schemaEdits.items.rename(testItem, "mergedCustomAttribute");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -1462,9 +1455,8 @@ describe("Custom Attribute merge", () => {
       schemaEdits.items.rename(testItem, "mergedCustomAttribute");
       schemaEdits.properties.rename(testItem, "testProp", "mergedProp");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -1532,9 +1524,8 @@ describe("Custom Attribute merge", () => {
       schemaEdits.items.rename(testItem, "mergedCustomAttribute");
       schemaEdits.properties.rename(testStruct, "testProp", "mergedProp");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("testStruct")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -1607,9 +1598,8 @@ describe("Custom Attribute merge", () => {
       const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
       schemaEdits.items.rename(testItem, "mergedCustomAttribute");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("testRelationship")).to.be.eventually.not.undefined
         .then((ecClass: RelationshipClass) => {
@@ -1715,9 +1705,8 @@ describe("Custom Attribute merge", () => {
       const testRelationship = await sourceSchema.getItem("testRelationship") as RelationshipClass;
       schemaEdits.items.rename(testRelationship, "mergedRelationship");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.not.undefined
         .then((ecClass: RelationshipClass) => {

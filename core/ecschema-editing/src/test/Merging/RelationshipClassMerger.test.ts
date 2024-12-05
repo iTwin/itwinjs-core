@@ -1197,9 +1197,8 @@ describe("Relationship Class merger tests", () => {
       const testEntity = await sourceSchema.getItem("testEntity") as EntityClass;
       schemaEdits.items.rename(testEntity, "mergedEntity");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);  
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("mergedEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -1295,9 +1294,8 @@ describe("Relationship Class merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as RelationshipClass;
       schemaEdits.items.rename(testItem, "mergedRelationship");
   
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.not.undefined
         .then((ecClass: RelationshipClass) => {
@@ -1394,9 +1392,8 @@ describe("Relationship Class merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as RelationshipClass;
       schemaEdits.items.rename(testItem, "mergedRelationship");
   
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
   
       await expect(mergedSchema.getItem("mergedRelationship")).to.be.eventually.not.undefined
         .then((ecClass: RelationshipClass) => {

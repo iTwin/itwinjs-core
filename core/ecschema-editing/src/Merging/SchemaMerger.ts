@@ -54,7 +54,7 @@ export class SchemaMerger {
    * @alpha
    */
   public async mergeSchemas(targetSchema: Schema, sourceSchema: Schema, edits?: SchemaEdits): Promise<Schema> {
-    return this.merge(await getSchemaDifferences(targetSchema, sourceSchema), edits);
+    return this.merge(await getSchemaDifferences(targetSchema, sourceSchema, edits), edits);
   }
 
   /**

@@ -24,7 +24,7 @@ describe("Property merger tests", () => {
     ],
     customAttributes: [
       { className: "CoreCustomAttributes.DynamicSchema" },
-    ],    
+    ],
   };
 
   const targetJson = {
@@ -1553,7 +1553,7 @@ describe("Property merger tests", () => {
       await expect(merge).to.be.rejectedWith("Changing the property 'TestEntity.NavProp' relationship class is not supported.");
     });
   });
-  
+
   describe("iterative tests", () => {
     let sourceSchema: Schema;
 
@@ -1561,10 +1561,10 @@ describe("Property merger tests", () => {
 
       describe("adding re-mapped properties", () => {
 
-        async function mergeSchemas(handler: (mergedSchema: Schema) => Promise<void>) {          
+        async function mergeSchemas(handler: (mergedSchema: Schema) => Promise<void>) {
           const targetSchema = await Schema.fromJson({
             ...targetJson,
-            items: {                                                
+            items: {
               testItem: {
                 schemaItemType: "EntityClass",
                 properties: [{
@@ -1584,18 +1584,18 @@ describe("Property merger tests", () => {
             expect(conflict).to.have.a.property("target", "int");
             return true;
           });
-    
+
           const schemaEdits = new SchemaEdits();
           const testItem = await sourceSchema.getItem("testItem") as EntityClass;
           schemaEdits.properties.rename(testItem, "testProp", "mergedProp");
-    
+
           const merger = new SchemaMerger(targetContext);
           const mergedSchema = await merger.merge(result, schemaEdits);
-                
+
           await handler(mergedSchema);
         };
 
-        it("should add a re-mapped primitive property", async() => {
+        it("should add a re-mapped primitive property", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
             items: {
@@ -1610,7 +1610,7 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("testItem")).to.be.eventually.fulfilled.then(async (ecClass) => {
               expect(ecClass).to.exist;
               await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
@@ -1625,7 +1625,7 @@ describe("Property merger tests", () => {
           });
         });
 
-        it("should add a re-mapped enumeration property", async() => {
+        it("should add a re-mapped enumeration property", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
             items: {
@@ -1652,7 +1652,7 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("testItem")).to.be.eventually.fulfilled.then(async (ecClass) => {
               expect(ecClass).to.exist;
               await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
@@ -1665,10 +1665,10 @@ describe("Property merger tests", () => {
                 expect(property).to.have.a.nested.property("enumeration.name").to.equal("testEnum");
               });
             });
-          });          
+          });
         });
 
-        it("should add a re-mapped struct property", async() => {
+        it("should add a re-mapped struct property", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
             items: {
@@ -1686,7 +1686,7 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("testItem")).to.be.eventually.fulfilled.then(async (ecClass) => {
               expect(ecClass).to.exist;
               await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
@@ -1699,10 +1699,10 @@ describe("Property merger tests", () => {
                 expect(property).to.have.a.nested.property("structClass.name").to.equal("testStruct");
               });
             });
-          });     
+          });
         });
 
-        it("should add a re-mapped navigation property", async() => {
+        it("should add a re-mapped navigation property", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
             items: {
@@ -1729,7 +1729,7 @@ describe("Property merger tests", () => {
                     "SourceSchema.testEntity",
                   ],
                 },
-              }, 
+              },
               testItem: {
                 schemaItemType: "EntityClass",
                 properties: [{
@@ -1742,7 +1742,7 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("testItem")).to.be.eventually.fulfilled.then(async (ecClass) => {
               expect(ecClass).to.exist;
               await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
@@ -1761,7 +1761,7 @@ describe("Property merger tests", () => {
 
       describe("modifying re-mapped properties", () => {
 
-        async function mergeSchemas(propertyName: string, handler: (mergedSchema: Schema) => Promise<void>) {          
+        async function mergeSchemas(propertyName: string, handler: (mergedSchema: Schema) => Promise<void>) {
           const targetSchema = await Schema.fromJson({
             ...targetJson,
             items: {
@@ -1810,41 +1810,40 @@ describe("Property merger tests", () => {
                   name: "testProp",
                   type: "PrimitiveProperty",
                   typeName: "bool",
-                }, 
+                },
                 {
                   name: "intProp",
                   type: "PrimitiveProperty",
                   typeName: "int",
-                },{
+                }, {
                   name: "enumProp",
                   type: "PrimitiveProperty",
                   typeName: "TargetSchema.testEnum",
-                },{
+                }, {
                   name: "structProp",
                   type: "StructProperty",
                   typeName: "TargetSchema.testStruct",
-                },{
+                }, {
                   name: "navigationProp",
                   type: "NavigationProperty",
                   relationshipName: "TargetSchema.testRelationship",
                   direction: "Backward",
                 }],
-              },              
+              },
             },
           }, targetContext);
-          
+
           const schemaEdits = new SchemaEdits();
           const testItem = await sourceSchema.getItem("testItem") as EntityClass;
           schemaEdits.properties.rename(testItem, "testProp", propertyName);
-    
-          const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+
           const merger = new SchemaMerger(targetContext);
-          const mergedSchema = await merger.merge(result, schemaEdits);
-          
+          const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
           await handler(mergedSchema);
         };
 
-        it("should merge changes to a re-mapped primitive property", async() => {
+        it("should merge changes to a re-mapped primitive property", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
             items: {
@@ -1862,20 +1861,20 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas("intProp", async(mergedSchema) => {
+          await mergeSchemas("intProp", async (mergedSchema) => {
             await expect(mergedSchema.getItem("testItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("intProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("label").to.equal("integer");
-                expect(property).to.have.a.property("description").to.equal("integer property");
-                expect(property).to.have.a.property("priority").to.equal(102);
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("intProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("label").to.equal("integer");
+                  expect(property).to.have.a.property("description").to.equal("integer property");
+                  expect(property).to.have.a.property("priority").to.equal(102);
+                });
               });
-            });
           });
         });
 
-        it("should merge changes to a re-mapped enumeration property", async() => {
+        it("should merge changes to a re-mapped enumeration property", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
             items: {
@@ -1905,29 +1904,29 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas("enumProp", async(mergedSchema) => {
+          await mergeSchemas("enumProp", async (mergedSchema) => {
             await expect(mergedSchema.getItem("testItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("enumProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("label").to.equal("enumeration");
-                expect(property).to.have.a.property("description").to.equal("enumeration property");
-                expect(property).to.have.a.property("isReadOnly").to.equal(true);
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("enumProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("label").to.equal("enumeration");
+                  expect(property).to.have.a.property("description").to.equal("enumeration property");
+                  expect(property).to.have.a.property("isReadOnly").to.equal(true);
+                });
               });
-            });
           });
         });
 
-        it("should merge changes to a re-mapped struct property", async() => {
+        it("should merge changes to a re-mapped struct property", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
             items: {
               testCategory: {
                 schemaItemType: "PropertyCategory",
-                priority: 103, 
+                priority: 103,
               },
               testStruct: {
-                schemaItemType: "StructClass",                
+                schemaItemType: "StructClass",
               },
               testItem: {
                 schemaItemType: "EntityClass",
@@ -1943,20 +1942,20 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas("structProp", async(mergedSchema) => {
+          await mergeSchemas("structProp", async (mergedSchema) => {
             await expect(mergedSchema.getItem("testItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("structProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("label").to.equal("struct");
-                expect(property).to.have.a.property("description").to.equal("struct property");
-                expect(property).to.have.a.nested.property("category.name").to.equal("testCategory");
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("structProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("label").to.equal("struct");
+                  expect(property).to.have.a.property("description").to.equal("struct property");
+                  expect(property).to.have.a.nested.property("category.name").to.equal("testCategory");
+                });
               });
-            });
           });
         });
 
-        it("should merge changes to a re-mapped navigation property", async() => {
+        it("should merge changes to a re-mapped navigation property", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
             items: {
@@ -1999,18 +1998,156 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas("navigationProp", async(mergedSchema) => {
+          await mergeSchemas("navigationProp", async (mergedSchema) => {
             await expect(mergedSchema.getItem("testItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("navigationProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("label").to.equal("navigation");
-                expect(property).to.have.a.property("isReadOnly").to.equal(true);
-                expect(property).to.have.a.property("priority").to.equal(105);
-                expect(property).to.have.a.nested.property("relationshipClass.name").to.equal("testRelationship");
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("navigationProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("label").to.equal("navigation");
+                  expect(property).to.have.a.property("isReadOnly").to.equal(true);
+                  expect(property).to.have.a.property("priority").to.equal(105);
+                  expect(property).to.have.a.nested.property("relationshipClass.name").to.equal("testRelationship");
+                });
               });
-            });
           });
+        });
+      });
+
+      it("should return a conflict when merging a re-mapped property with a name existing in the target schema", async () => {
+        sourceSchema = await Schema.fromJson({
+          ...sourceJson,
+          items: {
+            testItem: {
+              schemaItemType: "EntityClass",
+              properties: [{
+                name: "testProp",
+                type: "PrimitiveProperty",
+                typeName: "string",
+              }],
+            },
+          },
+        }, await BisTestHelper.getNewContext());
+
+        const targetSchema = await Schema.fromJson({
+          ...targetJson,
+          items: {
+            testItem: {
+              schemaItemType: "EntityClass",
+              properties: [{
+                name: "mergedProp",
+                type: "PrimitiveProperty",
+                typeName: "double",
+              }, {
+                name: "testProp",
+                type: "PrimitiveProperty",
+                typeName: "int",
+              }],
+            },
+          },
+        }, targetContext);
+
+        let result = await getSchemaDifferences(targetSchema, sourceSchema);
+        expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+        expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+          expect(conflict).to.exist;
+          expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyName);
+          expect(conflict).to.have.a.property("source", "string");
+          expect(conflict).to.have.a.property("target", "int");
+          expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
+          expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+          return true;
+        });
+
+        const schemaEdits = new SchemaEdits();
+        const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+        schemaEdits.properties.rename(testItem, "testProp", "mergedProp");
+
+        result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+        expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+        expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+          expect(conflict).to.exist;
+          expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyName);
+          expect(conflict).to.have.a.property("source", "string");
+          expect(conflict).to.have.a.property("target", "double");
+          expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
+          expect(conflict).to.have.a.nested.property("difference.path", "testProp");
+          expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+          return true;
+        });
+      });
+
+      it("should return a conflict when a re-mapped property kindOfQuantity persistence is undefined on source", async() => {
+        sourceSchema = await Schema.fromJson({          
+          ...sourceJson,
+          items: {
+            testItem: {              
+              schemaItemType: "EntityClass",
+              properties: [{
+                name: "testProp",
+                type: "PrimitiveProperty",                
+                typeName: "string",
+              }],
+            },
+          },
+        }, await BisTestHelper.getNewContext());
+
+        const targetSchema = await Schema.fromJson({
+          ...targetJson,
+          references: [
+            ...sourceJson.references,
+            { name: "Units", version: "01.00.01" },
+          ],
+          items: {
+            testKoq: {
+              schemaItemType: "KindOfQuantity",
+              relativeError: 0.0001,
+              persistenceUnit: "Units.M",
+            },
+            testItem: {
+              schemaItemType: "EntityClass",
+              properties: [{
+                name: "mergedProp",
+                type: "PrimitiveProperty",
+                typeName: "string",
+                kindOfQuantity: "TargetSchema.testKoq",
+              }, {
+                name: "testProp",
+                type: "PrimitiveProperty",
+                typeName: "int",
+              }],
+            },
+          },
+        }, targetContext);
+
+        let result = await getSchemaDifferences(targetSchema, sourceSchema);
+        expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+        expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+          expect(conflict).to.exist;
+          expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyName);
+          expect(conflict).to.have.a.property("source", "string");
+          expect(conflict).to.have.a.property("target", "int");
+          expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
+          expect(conflict).to.have.a.nested.property("difference.path", "testProp");
+          expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");          
+          return true;
+        });
+
+        const schemaEdits = new SchemaEdits();
+        const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+        schemaEdits.properties.rename(testItem, "testProp", "mergedProp");
+
+        result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+        expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+        expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+          expect(conflict).to.exist;
+          expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyKindOfQuantity);
+          expect(conflict).to.have.a.property("source", null);
+          expect(conflict).to.have.a.property("target", "TargetSchema.testKoq");
+          expect(conflict).to.have.a.property("description", "The kind of quantity cannot be undefined if the property had a kind of quantities before.");
+          expect(conflict).to.have.a.nested.property("difference.schemaType", "Property");
+          expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+          expect(conflict).to.have.a.nested.property("difference.path", "testProp");
+          return true;
         });
       });
     });
@@ -2035,15 +2172,14 @@ describe("Property merger tests", () => {
           const schemaEdits = new SchemaEdits();
           const testItem = await sourceSchema.getItem("testItem") as EntityClass;
           schemaEdits.items.rename(testItem, "mergedItem");
-    
-          const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+
           const merger = new SchemaMerger(targetContext);
-          const mergedSchema = await merger.merge(result, schemaEdits);
-          
+          const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
           await handler(mergedSchema);
         };
 
-        it("should add a primitive property to a re-mapped class", async() => {
+        it("should add a primitive property to a re-mapped class", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
             items: {
@@ -2063,25 +2199,25 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Double);
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Double);
+                });
+                await expect(ecClass.getProperty("testArrayProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Integer_Array);
+                });
               });
-              await expect(ecClass.getProperty("testArrayProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Integer_Array);
-              });
-            });
-          });        
+          });
         });
-  
-        it("should add an enumaration property to a re-mapped class", async() => {
+
+        it("should add an enumaration property to a re-mapped class", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
-            items: {        
+            items: {
               testEnum: {
                 schemaItemType: "Enumeration",
                 type: "int",
@@ -2093,7 +2229,7 @@ describe("Property merger tests", () => {
                     label: "first value",
                   },
                 ],
-              },    
+              },
               testItem: {
                 schemaItemType: "EntityClass",
                 properties: [{
@@ -2110,30 +2246,30 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Integer_Enumeration);
-                expect(property).to.have.a.nested.property("enumeration.name").to.equal("testEnum");
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Integer_Enumeration);
+                  expect(property).to.have.a.nested.property("enumeration.name").to.equal("testEnum");
+                });
+                await expect(ecClass.getProperty("testArrayProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Integer_Enumeration_Array);
+                  expect(property).to.have.a.nested.property("enumeration.name").to.equal("testEnum");
+                });
               });
-              await expect(ecClass.getProperty("testArrayProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Integer_Enumeration_Array);
-                expect(property).to.have.a.nested.property("enumeration.name").to.equal("testEnum");
-              });
-            });
-          });       
+          });
         });
-  
-        it("should add a struct property to a re-mapped class", async() => {
+
+        it("should add a struct property to a re-mapped class", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
-            items: {        
+            items: {
               testStruct: {
-                schemaItemType: "StructClass",                
-              },    
+                schemaItemType: "StructClass",
+              },
               testItem: {
                 schemaItemType: "EntityClass",
                 properties: [{
@@ -2150,27 +2286,27 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Struct);
-                expect(property).to.have.a.nested.property("structClass.name").to.equal("testStruct");
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Struct);
+                  expect(property).to.have.a.nested.property("structClass.name").to.equal("testStruct");
+                });
+                await expect(ecClass.getProperty("testArrayProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Struct_Array);
+                  expect(property).to.have.a.nested.property("structClass.name").to.equal("testStruct");
+                });
               });
-              await expect(ecClass.getProperty("testArrayProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Struct_Array);
-                expect(property).to.have.a.nested.property("structClass.name").to.equal("testStruct");
-              });
-            });
           });
         });
-  
-        it("should add a navigation property to a re-mapped class", async() => {
+
+        it("should add a navigation property to a re-mapped class", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
-            items: {        
+            items: {
               testEntity: {
                 schemaItemType: "EntityClass",
               },
@@ -2194,7 +2330,7 @@ describe("Property merger tests", () => {
                     "SourceSchema.testEntity",
                   ],
                 },
-              },   
+              },
               testItem: {
                 schemaItemType: "EntityClass",
                 properties: [{
@@ -2207,22 +2343,22 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Navigation);
-                expect(property).to.have.a.nested.property("relationshipClass.name").to.equal("testRelationship");
-              });              
-            });
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("propertyType").to.equal(PropertyType.Navigation);
+                  expect(property).to.have.a.nested.property("relationshipClass.name").to.equal("testRelationship");
+                });
+              });
           });
         });
       });
 
       describe("modifying properties of a re-mapped class", () => {
 
-        async function mergeSchemas(handler: (mergedSchema: Schema) => Promise<void>) {          
+        async function mergeSchemas(handler: (mergedSchema: Schema) => Promise<void>) {
           const targetSchema = await Schema.fromJson({
             ...targetJson,
             items: {
@@ -2271,15 +2407,15 @@ describe("Property merger tests", () => {
                   name: "doubleProp",
                   type: "PrimitiveArrayProperty",
                   typeName: "double",
-                },{
+                }, {
                   name: "enumProp",
                   type: "PrimitiveProperty",
                   typeName: "TargetSchema.testEnum",
-                },{
+                }, {
                   name: "structProp",
                   type: "StructProperty",
                   typeName: "TargetSchema.testStruct",
-                },{
+                }, {
                   name: "navigationProp",
                   type: "NavigationProperty",
                   relationshipName: "TargetSchema.testRelationship",
@@ -2292,19 +2428,18 @@ describe("Property merger tests", () => {
               },
             },
           }, targetContext);
-          
+
           const schemaEdits = new SchemaEdits();
           const testItem = await sourceSchema.getItem("testItem") as EntityClass;
           schemaEdits.items.rename(testItem, "mergedItem");
-    
-          const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+
           const merger = new SchemaMerger(targetContext);
-          const mergedSchema = await merger.merge(result, schemaEdits);
-          
+          const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
           await handler(mergedSchema);
         };
 
-        it("should merge changes to a primitive property of a re-mapped class", async() => {
+        it("should merge changes to a primitive property of a re-mapped class", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
             items: {
@@ -2322,23 +2457,23 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("doubleProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("label").to.equal("double");
-                expect(property).to.have.a.property("minValue").to.equal(1.0);
-                expect(property).to.have.a.property("maxValue").to.equal(99.9);
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("doubleProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("label").to.equal("double");
+                  expect(property).to.have.a.property("minValue").to.equal(1.0);
+                  expect(property).to.have.a.property("maxValue").to.equal(99.9);
+                });
               });
-            });
-          });        
+          });
         });
-  
-        it("should merge changes to a enumeration property of a re-mapped class", async() => {
+
+        it("should merge changes to a enumeration property of a re-mapped class", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
-            items: {        
+            items: {
               testEnum: {
                 schemaItemType: "Enumeration",
                 type: "int",
@@ -2365,30 +2500,30 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("enumProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("label").to.equal("enumeration");
-                expect(property).to.have.a.property("description").to.equal("enumeration property");
-                expect(property).to.have.a.property("isReadOnly").to.equal(true);
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("enumProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("label").to.equal("enumeration");
+                  expect(property).to.have.a.property("description").to.equal("enumeration property");
+                  expect(property).to.have.a.property("isReadOnly").to.equal(true);
+                });
               });
-            });
-          });       
+          });
         });
-  
-        it("should merge changes to a struct property of a re-mapped class", async() => {
+
+        it("should merge changes to a struct property of a re-mapped class", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
-            items: {        
+            items: {
               testCategory: {
                 schemaItemType: "PropertyCategory",
                 priority: 106,
               },
               testStruct: {
-                schemaItemType: "StructClass",                
-              },    
+                schemaItemType: "StructClass",
+              },
               testItem: {
                 schemaItemType: "EntityClass",
                 properties: [{
@@ -2403,23 +2538,23 @@ describe("Property merger tests", () => {
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("structProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("description").to.equal("struct property");
-                expect(property).to.have.a.property("priority").to.equal(103);
-                expect(property).to.have.a.nested.property("category.name").to.equal("testCategory");
-              });              
-            });
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("structProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("description").to.equal("struct property");
+                  expect(property).to.have.a.property("priority").to.equal(103);
+                  expect(property).to.have.a.nested.property("category.name").to.equal("testCategory");
+                });
+              });
           });
         });
-  
-        it("should merge changes to a navigation property of a re-mapped class", async() => {
+
+        it("should merge changes to a navigation property of a re-mapped class", async () => {
           sourceSchema = await Schema.fromJson({
             ...sourceJson,
-            items: {        
+            items: {
               testEntity: {
                 schemaItemType: "EntityClass",
               },
@@ -2443,7 +2578,7 @@ describe("Property merger tests", () => {
                     "SourceSchema.testEntity",
                   ],
                 },
-              },   
+              },
               testItem: {
                 schemaItemType: "EntityClass",
                 properties: [{
@@ -2451,35 +2586,35 @@ describe("Property merger tests", () => {
                   type: "NavigationProperty",
                   relationshipName: "SourceSchema.testRelationship",
                   direction: "Backward",
-                  isReadOnly: true, 
-                  priority: 156, 
+                  isReadOnly: true,
+                  priority: 156,
                   label: "navigation",
                 }],
               },
             },
           }, await BisTestHelper.getNewContext());
 
-          await mergeSchemas(async(mergedSchema) => {
+          await mergeSchemas(async (mergedSchema) => {
             await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("navigationProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("label").to.equal("navigation");
-                expect(property).to.have.a.property("priority").to.equal(156);
-                expect(property).to.have.a.property("isReadOnly").to.equal(true);
-              });              
-            });
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("navigationProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("label").to.equal("navigation");
+                  expect(property).to.have.a.property("priority").to.equal(156);
+                  expect(property).to.have.a.property("isReadOnly").to.equal(true);
+                });
+              });
           });
         });
       });
 
-      describe ("re-mapped property tests", ()=> {
-        describe ("adding re-mapped properties to a re-mapped class", ()=> {
+      describe("re-mapped property tests", () => {
+        describe("adding re-mapped properties to a re-mapped class", () => {
 
-          async function mergeSchemas(handler: (mergedSchema: Schema) => Promise<void>) {          
+          async function mergeSchemas(handler: (mergedSchema: Schema) => Promise<void>) {
             const targetSchema = await Schema.fromJson({
               ...targetJson,
-              items: {                                                
+              items: {
                 mergedItem: {
                   schemaItemType: "EntityClass",
                   properties: [{
@@ -2495,7 +2630,7 @@ describe("Property merger tests", () => {
             }, targetContext);
 
             const schemaEdits = new SchemaEdits();
-            const testItem = await sourceSchema.getItem("testItem") as EntityClass;            
+            const testItem = await sourceSchema.getItem("testItem") as EntityClass;
             schemaEdits.items.rename(testItem, "mergedItem");
 
             const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
@@ -2506,16 +2641,16 @@ describe("Property merger tests", () => {
               expect(conflict).to.have.a.property("target", "double");
               return true;
             });
-    
+
             schemaEdits.properties.rename(testItem, "testProp", "mergedProp");
-      
+
             const merger = new SchemaMerger(targetContext);
             const mergedSchema = await merger.merge(result, schemaEdits);
-                  
+
             await handler(mergedSchema);
           };
-            
-          it("should add a re-mapped primitive property to a re-mapped class", async() => {
+
+          it("should add a re-mapped primitive property to a re-mapped class", async () => {
             sourceSchema = await Schema.fromJson({
               ...sourceJson,
               items: {
@@ -2530,7 +2665,7 @@ describe("Property merger tests", () => {
               },
             }, await BisTestHelper.getNewContext());
 
-            await mergeSchemas(async(mergedSchema) => {
+            await mergeSchemas(async (mergedSchema) => {
               await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.fulfilled.then(async (ecClass) => {
                 expect(ecClass).to.exist;
                 await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
@@ -2545,7 +2680,7 @@ describe("Property merger tests", () => {
             });
           });
 
-          it("should add a re-mapped enumeration property to a re-mapped class", async() => {
+          it("should add a re-mapped enumeration property to a re-mapped class", async () => {
             sourceSchema = await Schema.fromJson({
               ...sourceJson,
               items: {
@@ -2572,7 +2707,7 @@ describe("Property merger tests", () => {
               },
             }, await BisTestHelper.getNewContext());
 
-            await mergeSchemas(async(mergedSchema) => {
+            await mergeSchemas(async (mergedSchema) => {
               await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.fulfilled.then(async (ecClass) => {
                 expect(ecClass).to.exist;
                 await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
@@ -2588,7 +2723,7 @@ describe("Property merger tests", () => {
             });
           });
 
-          it("should add a re-mapped struct property to a re-mapped class", async() => {
+          it("should add a re-mapped struct property to a re-mapped class", async () => {
             sourceSchema = await Schema.fromJson({
               ...sourceJson,
               items: {
@@ -2606,7 +2741,7 @@ describe("Property merger tests", () => {
               },
             }, await BisTestHelper.getNewContext());
 
-            await mergeSchemas(async(mergedSchema) => {
+            await mergeSchemas(async (mergedSchema) => {
               await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.fulfilled.then(async (ecClass) => {
                 expect(ecClass).to.exist;
                 await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
@@ -2622,7 +2757,7 @@ describe("Property merger tests", () => {
             });
           });
 
-          it("should add a re-mapped navigation property to a re-mapped class",async() => {
+          it("should add a re-mapped navigation property to a re-mapped class", async () => {
             sourceSchema = await Schema.fromJson({
               ...sourceJson,
               items: {
@@ -2662,7 +2797,7 @@ describe("Property merger tests", () => {
               },
             }, await BisTestHelper.getNewContext());
 
-            await mergeSchemas(async(mergedSchema) => {
+            await mergeSchemas(async (mergedSchema) => {
               await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.fulfilled.then(async (ecClass) => {
                 expect(ecClass).to.exist;
                 await expect(ecClass.getProperty("testProp")).to.be.eventually.fulfilled.then((property) => {
@@ -2679,8 +2814,8 @@ describe("Property merger tests", () => {
           });
         });
 
-        describe("modifying re-mapped properties of a re-mapped class", ()=> {
-          it("should merge changes to a re-mapped primitive property of a re-mapped class", async()=> {
+        describe("modifying re-mapped properties of a re-mapped class", () => {
+          it("should merge changes to a re-mapped primitive property of a re-mapped class", async () => {
             sourceSchema = await Schema.fromJson({
               ...sourceJson,
               items: {
@@ -2688,7 +2823,7 @@ describe("Property merger tests", () => {
                   schemaItemType: "EntityClass",
                   properties: [{
                     name: "testProp",
-                    type: "PrimitiveProperty", 
+                    type: "PrimitiveProperty",
                     typeName: "int",
                     label: "integer",
                     description: "integer property",
@@ -2697,9 +2832,9 @@ describe("Property merger tests", () => {
                 },
               },
             }, await BisTestHelper.getNewContext());
-  
+
             const targetSchema = await Schema.fromJson({
-              ...targetJson,              
+              ...targetJson,
               items: {
                 testItem: {
                   schemaItemType: "CustomAttributeClass",
@@ -2720,28 +2855,27 @@ describe("Property merger tests", () => {
                 },
               },
             }, targetContext);
-  
+
             const schemaEdits = new SchemaEdits();
             const testItem = await sourceSchema.getItem("testItem") as EntityClass;
             schemaEdits.items.rename(testItem, "mergedItem");
             schemaEdits.properties.rename(testItem, "testProp", "mergedProp");
-      
-            const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+
             const merger = new SchemaMerger(targetContext);
-            const mergedSchema = await merger.merge(result, schemaEdits);
-       
+            const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
             await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("mergedProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("label").to.equal("integer");
-                expect(property).to.have.a.property("description").to.equal("integer property");
-                expect(property).to.have.a.property("priority").to.equal(102);
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("mergedProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("label").to.equal("integer");
+                  expect(property).to.have.a.property("description").to.equal("integer property");
+                  expect(property).to.have.a.property("priority").to.equal(102);
+                });
               });
-            });
           });
 
-          it("should merge changes to a re-mapped enumeration property of a re-mapped class", async()=> {
+          it("should merge changes to a re-mapped enumeration property of a re-mapped class", async () => {
             sourceSchema = await Schema.fromJson({
               ...sourceJson,
               items: {
@@ -2761,7 +2895,7 @@ describe("Property merger tests", () => {
                   schemaItemType: "EntityClass",
                   properties: [{
                     name: "testProp",
-                    type: "PrimitiveProperty", 
+                    type: "PrimitiveProperty",
                     typeName: "SourceSchema.testEnum",
                     label: "enumeration",
                     description: "enumeration property",
@@ -2770,9 +2904,9 @@ describe("Property merger tests", () => {
                 },
               },
             }, await BisTestHelper.getNewContext());
-  
+
             const targetSchema = await Schema.fromJson({
-              ...targetJson,              
+              ...targetJson,
               items: {
                 testEnum: {
                   schemaItemType: "Enumeration",
@@ -2805,28 +2939,27 @@ describe("Property merger tests", () => {
                 },
               },
             }, targetContext);
-  
+
             const schemaEdits = new SchemaEdits();
             const testItem = await sourceSchema.getItem("testItem") as EntityClass;
             schemaEdits.items.rename(testItem, "mergedItem");
             schemaEdits.properties.rename(testItem, "testProp", "mergedProp");
-      
-            const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+
             const merger = new SchemaMerger(targetContext);
-            const mergedSchema = await merger.merge(result, schemaEdits);
-       
+            const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
             await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("mergedProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("label").to.equal("enumeration");
-                expect(property).to.have.a.property("description").to.equal("enumeration property");
-                expect(property).to.have.a.property("isReadOnly").to.equal(true);
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("mergedProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("label").to.equal("enumeration");
+                  expect(property).to.have.a.property("description").to.equal("enumeration property");
+                  expect(property).to.have.a.property("isReadOnly").to.equal(true);
+                });
               });
-            });
           });
 
-          it("should merge changes to a re-mapped struct property of a re-mapped class", async()=> {
+          it("should merge changes to a re-mapped struct property of a re-mapped class", async () => {
             sourceSchema = await Schema.fromJson({
               ...sourceJson,
               items: {
@@ -2837,7 +2970,7 @@ describe("Property merger tests", () => {
                   schemaItemType: "EntityClass",
                   properties: [{
                     name: "testProp",
-                    type: "StructArrayProperty", 
+                    type: "StructArrayProperty",
                     typeName: "SourceSchema.testStruct",
                     description: "struct property",
                     minOccurs: 2,
@@ -2846,9 +2979,9 @@ describe("Property merger tests", () => {
                 },
               },
             }, await BisTestHelper.getNewContext());
-  
+
             const targetSchema = await Schema.fromJson({
-              ...targetJson,              
+              ...targetJson,
               items: {
                 testStruct: {
                   schemaItemType: "StructClass",
@@ -2872,28 +3005,188 @@ describe("Property merger tests", () => {
                 },
               },
             }, targetContext);
-  
+
             const schemaEdits = new SchemaEdits();
             const testItem = await sourceSchema.getItem("testItem") as EntityClass;
             schemaEdits.items.rename(testItem, "mergedItem");
             schemaEdits.properties.rename(testItem, "testProp", "mergedProp");
-      
-            const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+
             const merger = new SchemaMerger(targetContext);
-            const mergedSchema = await merger.merge(result, schemaEdits);
-       
+            const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
             await expect(mergedSchema.getItem("mergedItem")).to.be.eventually.not.undefined
-            .then(async(ecClass: EntityClass) => {
-              await expect(ecClass.getProperty("mergedProp")).to.be.eventually.fulfilled.then((property) => {
-                expect(property).to.exist;
-                expect(property).to.have.a.property("minOccurs").to.equal(2);
-                expect(property).to.have.a.property("maxOccurs").to.equal(5);
-                expect(property).to.have.a.property("description").to.equal("struct property");
+              .then(async (ecClass: EntityClass) => {
+                await expect(ecClass.getProperty("mergedProp")).to.be.eventually.fulfilled.then((property) => {
+                  expect(property).to.exist;
+                  expect(property).to.have.a.property("minOccurs").to.equal(2);
+                  expect(property).to.have.a.property("maxOccurs").to.equal(5);
+                  expect(property).to.have.a.property("description").to.equal("struct property");
+                });
               });
-            });
           });
         });
       });
-    });  
+
+      it("should not return a conflict when a re-mapped property kindOfQuantity persistence of a re-mapped class doesn't differ", async() => {
+        sourceSchema = await Schema.fromJson({          
+          ...sourceJson,
+          references: [
+            ...sourceJson.references,
+            { name: "Units", version: "01.00.01" },
+          ],          
+          items: {
+            testKoq: {
+              schemaItemType: "KindOfQuantity",
+              relativeError: 0.0001,
+              persistenceUnit: "Units.M",
+            },
+            testItem: {              
+              schemaItemType: "EntityClass",
+              properties: [{
+                name: "testProp",
+                type: "PrimitiveProperty",                
+                typeName: "string",
+                kindOfQuantity: "SourceSchema.testKoq",
+              }],
+            },
+          },
+        }, await BisTestHelper.getNewContext());
+
+        const targetSchema = await Schema.fromJson({
+          ...targetJson,
+          references: [
+            ...sourceJson.references,
+            { name: "Units", version: "01.00.01" },
+          ],
+          items: {
+            testKoq: {
+              schemaItemType: "KindOfQuantity",
+              relativeError: 0.0001,
+              persistenceUnit: "Units.M",
+            },
+            mergedItem: {
+              schemaItemType: "EntityClass",
+              properties: [{
+                name: "mergedProp",
+                type: "PrimitiveProperty",
+                typeName: "string",
+                kindOfQuantity: "TargetSchema.testKoq",
+              }, {
+                name: "testProp",
+                type: "PrimitiveProperty",
+                typeName: "int",
+              }],              
+            },
+            testItem: {
+              schemaItemType: "StructClass",
+            },
+          },
+        }, targetContext);
+
+        let result = await getSchemaDifferences(targetSchema, sourceSchema);
+        expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+        expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+          expect(conflict).to.exist;
+          expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+          expect(conflict).to.have.a.property("source", "EntityClass");
+          expect(conflict).to.have.a.property("target", "StructClass");
+          expect(conflict).to.have.a.property("description", "Target schema already contains a schema item with the name but different type.");
+          expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");          
+          return true;
+        });
+
+        const schemaEdits = new SchemaEdits();
+        const testItem = await sourceSchema.getItem("testItem") as EntityClass;
+        schemaEdits.items.rename(testItem, "mergedItem");
+
+        result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+        expect(result.conflicts).to.have.lengthOf(2, "Unexpected length of conflicts");
+
+        schemaEdits.properties.rename(testItem, "testProp", "mergedProp");
+        result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+        expect(result.differences).to.have.lengthOf(0, "Unexpected length of differences");
+        expect(result.conflicts).to.be.undefined;
+      });
+
+      it("should return a conflict when merging a re-mapped property from a re-mapped class with a name existing in the target schema", async () => {
+        sourceSchema = await Schema.fromJson({
+          ...sourceJson,
+          items: {
+            testItem: {
+              schemaItemType: "EntityClass",
+              properties: [{
+                name: "testProp",
+                type: "PrimitiveProperty",
+                typeName: "string",
+              }],
+            },
+          },
+        }, await BisTestHelper.getNewContext());
+
+        const targetSchema = await Schema.fromJson({
+          ...targetJson,
+          items: {
+            mergedItem: {
+              schemaItemType: "EntityClass",
+              properties: [{
+                name: "mergedProp",
+                type: "PrimitiveProperty",
+                typeName: "double",
+              }, {
+                name: "testProp",
+                type: "PrimitiveProperty",
+                typeName: "int",
+              }],
+            },
+            testItem: {
+              schemaItemType: "StructClass",              
+            },
+          },
+        }, targetContext);
+
+        let result = await getSchemaDifferences(targetSchema, sourceSchema);
+        expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+        expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+          expect(conflict).to.exist;
+          expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+          expect(conflict).to.have.a.property("source", "EntityClass");
+          expect(conflict).to.have.a.property("target", "StructClass");
+          expect(conflict).to.have.a.property("description", "Target schema already contains a schema item with the name but different type.");
+          expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+          return true;
+        });
+
+        const schemaEdits = new SchemaEdits();
+        const testItem = await sourceSchema.getItem("testItem") as EntityClass;
+        schemaEdits.items.rename(testItem, "mergedItem");
+
+        result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+        expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+        expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+          expect(conflict).to.exist;
+          expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyName);
+          expect(conflict).to.have.a.property("source", "string");
+          expect(conflict).to.have.a.property("target", "int");
+          expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
+          expect(conflict).to.have.a.nested.property("difference.path", "testProp");
+          expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+          return true;
+        });
+
+        schemaEdits.properties.rename(testItem, "testProp", "mergedProp");
+        result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+        expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+        expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+          expect(conflict).to.exist;
+          expect(conflict).to.have.a.property("code", ConflictCode.ConflictingPropertyName);
+          expect(conflict).to.have.a.property("source", "string");
+          expect(conflict).to.have.a.property("target", "double");
+          expect(conflict).to.have.a.property("description", "Target class already contains a property with a different type.");
+          expect(conflict).to.have.a.nested.property("difference.path", "testProp");
+          expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+          return true;
+        });
+      });
+    });
   });
 });

@@ -168,9 +168,8 @@ describe("Unit system merger tests", () => {
       const sourceItem = await sourceSchema.getItem("testItem") as UnitSystem;      
       schemaEdits.items.rename(sourceItem, "mergedUnitSystem");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
  
       await expect(mergedSchema.getItem("mergedUnitSystem")).to.be.eventually.not.undefined
         .then((unitSystem: UnitSystem) => {

@@ -10,7 +10,7 @@ import { classModifierToString, ECClass, ECClassModifier, EntityClass, Enumerati
 import { AnyClassItemDifference, AnySchemaDifference, AnySchemaItemDifference, ClassPropertyDifference, ConstantDifference, CustomAttributeClassDifference, CustomAttributeDifference, EntityClassDifference, EntityClassMixinDifference, EnumerationDifference, EnumeratorDifference, FormatDifference, InvertedUnitDifference, KindOfQuantityDifference, KindOfQuantityPresentationFormatDifference, MixinClassDifference, PhenomenonDifference, PropertyCategoryDifference, RelationshipClassDifference, RelationshipConstraintClassDifference, RelationshipConstraintDifference, SchemaDifference, SchemaReferenceDifference, StructClassDifference, UnitDifference, UnitSystemDifference } from "./SchemaDifference";
 import { AnySchemaDifferenceConflict, ConflictCode } from "./SchemaConflicts";
 import { SchemaDifferenceVisitor, SchemaDifferenceWalker } from "./SchemaDifferenceVisitor";
-import { NameMapping } from "../Merging/Edits/NameMapping";
+import { NameMapping, PropertyKey } from "../Merging/Edits/NameMapping";
 
 /**
  * Validates the given array of schema differences and returns a list of conflicts if the
@@ -57,6 +57,12 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
     const itemKey = new SchemaItemKey(name, this._sourceSchema.schemaKey);
     const mappedKey = this._nameMappings.resolveItemKey(itemKey);
     return this._targetSchema.getItem<T>(mappedKey.name);
+  }
+
+  private getTargetProperty(itemName: string, propertyName: string): PropertyKey {
+    const classKey = new SchemaItemKey(itemName, this._sourceSchema.schemaKey);
+    const propertyKey = new PropertyKey(propertyName, classKey);
+    return this._nameMappings.resolvePropertyKey(propertyKey);
   }
 
   /**
@@ -355,7 +361,8 @@ class SchemaDifferenceValidationVisitor implements SchemaDifferenceVisitor {
    */
   public async visitPropertyDifference(entry: ClassPropertyDifference) {
     const targetClass = await this.getTargetSchemaItem(entry.itemName) as ECClass;
-    const targetProperty = await targetClass.getProperty(entry.path);
+    const propertyKey = this.getTargetProperty(entry.itemName, entry.path);
+    const targetProperty = await targetClass.getProperty(propertyKey.propertyName);
 
     const sourceClass = await this._sourceSchema.getItem(entry.itemName) as ECClass;
     const sourceProperty = await sourceClass.getProperty(entry.path) as Property;

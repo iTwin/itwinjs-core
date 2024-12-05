@@ -329,9 +329,8 @@ describe("CustomAttributeClass merger tests", () => {
       const sourceItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
       schemaEdits.items.rename(sourceItem, "mergedCustomAttribute");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
 
       await expect(mergedSchema.getItem("mergedCustomAttribute")).to.be.eventually.not.undefined
         .then((ecClass: CustomAttributeClass) => {
@@ -375,9 +374,8 @@ describe("CustomAttributeClass merger tests", () => {
       const sourceItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
       schemaEdits.items.rename(sourceItem, "mergedCustomAttribute");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
 
       await expect(mergedSchema.getItem("testClass")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -501,6 +499,62 @@ describe("CustomAttributeClass merger tests", () => {
         expect(conflict).to.have.a.property("target", null);
         expect(conflict).to.have.a.property("description", "BaseClass is sealed.");
         expect(conflict).to.have.a.nested.property("difference.schemaType", "CustomAttributeClass");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+        return true;
+      });
+    });
+
+    it("should return a conflict when merging a re-mapped custom attribute class with a different modifier", async() => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testItem: {
+            schemaItemType: "CustomAttributeClass",
+            modifier: "Sealed", 
+            appliesTo: "Any",
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {          
+          mergedItem: {
+            schemaItemType: "CustomAttributeClass",
+            modifier: "Abstract", 
+            appliesTo: "Any",
+          },
+          testItem: {
+            schemaItemType: "PropertyCategory",
+            priority: 102,
+          },
+        },
+      }, targetContext);
+
+      let result = await getSchemaDifferences(targetSchema, sourceSchema);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("source", "CustomAttributeClass");
+        expect(conflict).to.have.a.property("target", "PropertyCategory");
+        expect(conflict).to.have.a.property("description", "Target schema already contains a schema item with the name but different type.");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+        return true;
+      });
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as CustomAttributeClass;
+      schemaEdits.items.rename(testItem, "mergedItem");
+
+      result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingClassModifier);
+        expect(conflict).to.have.a.property("source", "Sealed");
+        expect(conflict).to.have.a.property("target", "Abstract");
+        expect(conflict).to.have.a.property("description", "Class has conflicting modifiers.");
         expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
         return true;
       });

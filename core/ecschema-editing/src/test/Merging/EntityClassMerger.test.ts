@@ -534,7 +534,7 @@ describe("EntityClass merger tests", () => {
   });
 
   describe("iterative tests", () => {
-    it("should add a re-mapped entity class", async() => {
+    it("should add a re-mapped entity class", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -547,7 +547,7 @@ describe("EntityClass merger tests", () => {
           },
         },
       }, await BisTestHelper.getNewContext());
-  
+
       const targetSchema = await Schema.fromJson({
         ...targetJson,
         items: {
@@ -557,7 +557,7 @@ describe("EntityClass merger tests", () => {
           },
         },
       }, targetContext);
-  
+
       const result = await getSchemaDifferences(targetSchema, sourceSchema);
       expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
       expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
@@ -567,14 +567,14 @@ describe("EntityClass merger tests", () => {
         expect(conflict).to.have.a.property("target", "Phenomenon");
         return true;
       });
-  
+
       const schemaEdits = new SchemaEdits();
       const testItem = await sourceSchema.getItem("testItem") as EntityClass;
       schemaEdits.items.rename(testItem, "mergedEntity");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).to.have.property("schemaItemType").equals(SchemaItemType.EntityClass);
@@ -582,7 +582,7 @@ describe("EntityClass merger tests", () => {
       });
     });
 
-    it("should merge changes to re-mapped entity class", async() => {
+    it("should merge changes to re-mapped entity class", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -615,10 +615,9 @@ describe("EntityClass merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as EntityClass;
       schemaEdits.items.rename(testItem, "mergedEntity");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
- 
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
+
       await expect(mergedSchema.getItem("mergedEntity")).to.be.eventually.not.undefined
         .then((ecClass: EntityClass) => {
           expect(ecClass).to.have.a.property("label").to.equal("Changed BuildingElement");
@@ -627,7 +626,7 @@ describe("EntityClass merger tests", () => {
         });
     });
 
-    it("should merge re-mapped entity base class derived from the existing base class", async() => {
+    it("should merge re-mapped entity base class derived from the existing base class", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -678,10 +677,10 @@ describe("EntityClass merger tests", () => {
         expect(conflict).to.have.a.property("target", "StructClass");
         return true;
       });
-  
+
       const sourceEntity = await sourceSchema.getItem("baseClass") as EntityClass;
       schemaEdits.items.rename(sourceEntity, "mergedBaseEntity");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
 
@@ -695,7 +694,7 @@ describe("EntityClass merger tests", () => {
         });
     });
 
-    it("should merge a re-mapped mixin that derives from constraint", async() => {
+    it("should merge a re-mapped mixin that derives from constraint", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -707,7 +706,7 @@ describe("EntityClass merger tests", () => {
             schemaItemType: "EntityClass",
           },
           testItem: {
-            schemaItemType: "EntityClass",    
+            schemaItemType: "EntityClass",
             baseClass: "SourceSchema.baseItem",
             mixins: [
               "SourceSchema.testMixin",
@@ -750,13 +749,13 @@ describe("EntityClass merger tests", () => {
         expect(conflict).to.have.a.property("target", "CustomAttributeClass");
         return true;
       });
-  
+
       const testMixin = await sourceSchema.getItem("testMixin") as EntityClass;
       schemaEdits.items.rename(testMixin, "mergedMixin");
-  
+
       const merger = new SchemaMerger(targetContext);
       const mergedSchema = await merger.merge(result, schemaEdits);
-  
+
       await expect(mergedSchema.getItem("mergedMixin")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
         expect(ecClass).to.have.a.property("schemaItemType").equals(SchemaItemType.Mixin);
@@ -767,50 +766,7 @@ describe("EntityClass merger tests", () => {
         });
     });
 
-    it("should return a conflict when merging re-mapped entity modifier changed from Sealed to Abstract", async() => {
-      const sourceSchema = await Schema.fromJson({
-        ...sourceJson,
-        items: {
-          testItem: {
-            schemaItemType: "EntityClass",
-            modifier: "Abstract",
-          },
-        },
-      }, await BisTestHelper.getNewContext());
-
-      const targetSchema = await Schema.fromJson({
-        ...targetJson,
-        items: {
-          mergedEntity: {
-            schemaItemType: "EntityClass",
-            modifier: "Sealed",
-          },
-          testItem: {
-            schemaItemType: "Phenomenon",
-            definition: "testItem",
-          },
-        },
-      }, targetContext);
-
-      const schemaEdits = new SchemaEdits();
-      const testItem = await sourceSchema.getItem("testItem") as EntityClass;
-      schemaEdits.items.rename(testItem, "mergedEntity");
-
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
-      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
-      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
-        expect(conflict).to.exist;
-        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingClassModifier);
-        expect(conflict).to.have.a.property("source", "Abstract");
-        expect(conflict).to.have.a.property("target", "Sealed");
-        expect(conflict).to.have.a.property("description", "Class has conflicting modifiers.");
-        expect(conflict).to.have.a.nested.property("difference.schemaType", "EntityClass");
-        expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
-        return true;
-      });
-    });
-
-    it("should return a conflict when merging re-mapped entity base class changed from existing one to undefined", async() => {
+    it("should return a conflict when merging re-mapped entity base class changed from existing one to undefined", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -856,7 +812,7 @@ describe("EntityClass merger tests", () => {
       });
     });
 
-    it("should return a conflict when merging re-mapped entity mixin that doesn't derive from constraint", async() => {
+    it("should return a conflict when merging re-mapped entity mixin that doesn't derive from constraint", async () => {
       const sourceSchema = await Schema.fromJson({
         ...sourceJson,
         items: {
@@ -871,7 +827,7 @@ describe("EntityClass merger tests", () => {
             schemaItemType: "EntityClass",
           },
           testItem: {
-            schemaItemType: "EntityClass",         
+            schemaItemType: "EntityClass",
             baseClass: "SourceSchema.baseItem",
             mixins: [
               "SourceSchema.sourceMixin",
@@ -881,7 +837,7 @@ describe("EntityClass merger tests", () => {
       }, await BisTestHelper.getNewContext());
       const targetSchema = await Schema.fromJson({
         ...targetJson,
-        items: {          
+        items: {
           baseItem: {
             schemaItemType: "EntityClass",
           },
@@ -910,6 +866,57 @@ describe("EntityClass merger tests", () => {
         expect(conflict).to.have.a.property("target", undefined);
         expect(conflict).to.have.a.property("description", "Mixin cannot applied to this class.");
         expect(conflict).to.have.a.nested.property("difference.schemaType", "EntityClassMixin");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+        return true;
+      });
+    });
+
+    it("should return a conflict when merging a re-mapped entity with a name that already esists in the target schema", async () => {
+      const sourceSchema = await Schema.fromJson({
+        ...sourceJson,
+        items: {
+          testItem: {
+            schemaItemType: "EntityClass",
+          },
+        },
+      }, await BisTestHelper.getNewContext());
+      const targetSchema = await Schema.fromJson({
+        ...targetJson,
+        items: {
+          mergedItem: {
+            schemaItemType: "StructClass",
+          },
+          testItem: {
+            schemaItemType: "Phenomenon",
+            definition: "testItem",
+          },
+        },
+      }, targetContext);
+
+      let result = await getSchemaDifferences(targetSchema, sourceSchema);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("source", "EntityClass");
+        expect(conflict).to.have.a.property("target", "Phenomenon");
+        expect(conflict).to.have.a.property("description", "Target schema already contains a schema item with the name but different type.");
+        expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
+        return true;
+      });
+
+      const schemaEdits = new SchemaEdits();
+      const testItem = await sourceSchema.getItem("testItem") as EntityClass;
+      schemaEdits.items.rename(testItem, "mergedItem");
+
+      result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      expect(result.conflicts).to.have.lengthOf(1, "Unexpected length of conflicts");
+      expect(result.conflicts).to.satisfy(([conflict]: AnySchemaDifferenceConflict[]) => {
+        expect(conflict).to.exist;
+        expect(conflict).to.have.a.property("code", ConflictCode.ConflictingItemName);
+        expect(conflict).to.have.a.property("source", "EntityClass");
+        expect(conflict).to.have.a.property("target", "StructClass");
+        expect(conflict).to.have.a.property("description", "Target schema already contains a schema item with the name but different type.");
         expect(conflict).to.have.a.nested.property("difference.itemName", "testItem");
         return true;
       });

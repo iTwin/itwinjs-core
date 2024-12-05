@@ -265,10 +265,9 @@ describe("Mixin merger tests", () => {
       const schemaEdits = new SchemaEdits();
       const testItem = await sourceSchema.getItem("testItem") as Mixin;
       schemaEdits.items.rename(testItem, "mergedMixin");
-
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
+      
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
  
       await expect(mergedSchema.getItem("mergedMixin")).to.be.eventually.not.undefined
         .then((mixin: Mixin) => {
@@ -318,9 +317,8 @@ describe("Mixin merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as Mixin;
       schemaEdits.items.rename(testItem, "mergedMixin");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
  
       await expect(mergedSchema.getItem("testMixin")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -369,9 +367,8 @@ describe("Mixin merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as Mixin;
       schemaEdits.items.rename(testItem, "mergedMixin");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
  
       await expect(mergedSchema.getItem("sourceEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;

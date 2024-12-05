@@ -174,9 +174,8 @@ describe("Phenomenon merger tests", () => {
       const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;      
       schemaEdits.items.rename(sourceItem, "mergedPhenomenon");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
  
       await expect(mergedSchema.getItem("mergedPhenomenon")).to.be.eventually.not.undefined
         .then((phenomenon: Phenomenon) => {
@@ -222,9 +221,8 @@ describe("Phenomenon merger tests", () => {
       const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;      
       schemaEdits.items.rename(sourceItem, "mergedPhenomenon");
   
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
 
       await expect(mergedSchema.getItem("testConstant")).to.be.eventually.not.undefined
         .then((constant: Constant) => {
@@ -280,9 +278,8 @@ describe("Phenomenon merger tests", () => {
       const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;      
       schemaEdits.items.rename(sourceItem, "mergedPhenomenon");
   
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
 
       await expect(mergedSchema.getItem("testConstant")).to.be.eventually.not.undefined
         .then((constant: Constant) => {
@@ -320,9 +317,8 @@ describe("Phenomenon merger tests", () => {
       const sourceItem = await sourceSchema.getItem("testItem") as Phenomenon;      
       schemaEdits.items.rename(sourceItem, "mergedPhenomenon");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      await expect(merger.merge(result, schemaEdits)).to.be.rejectedWith("The Phenomenon testItem has an invalid 'definition' attribute.");
+      await expect(merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits)).to.be.rejectedWith("The Phenomenon testItem has an invalid 'definition' attribute.");
     });
   });
 });

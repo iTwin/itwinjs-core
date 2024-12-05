@@ -176,9 +176,8 @@ describe("PropertyCategory merge tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as PropertyCategory;      
       schemaEdits.items.rename(testItem, "mergedCategory");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
  
       await expect(mergedSchema.getItem("mergedCategory")).to.be.eventually.not.undefined
         .then((propertyCategory: PropertyCategory) => {
@@ -238,9 +237,8 @@ describe("PropertyCategory merge tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as PropertyCategory;      
       schemaEdits.items.rename(testItem, "mergedCategory");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
  
       await expect(mergedSchema.getItem("testEntity")).to.be.eventually.not.undefined
         .then(async(ecClass: EntityClass) => {
@@ -294,9 +292,8 @@ describe("PropertyCategory merge tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as PropertyCategory;      
       schemaEdits.items.rename(testItem, "mergedCategory");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
       
       await expect(mergedSchema.getItem("testStruct")).to.be.eventually.not.undefined
         .then(async(ecClass: StructClass) => {

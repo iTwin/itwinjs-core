@@ -626,9 +626,8 @@ describe("KindOfQuantity merge tests", () => {
       const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
       schemaEdits.items.rename(sourceItem, "mergedKOQ");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
  
       await expect(mergedSchema.getItem("mergedKOQ")).to.be.eventually.not.undefined
         .then((koq: KindOfQuantity) => {
@@ -687,9 +686,8 @@ describe("KindOfQuantity merge tests", () => {
       const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
       schemaEdits.items.rename(sourceItem, "mergedKOQ");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
 
       await expect(mergedSchema.getItem("testEntity")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -751,9 +749,8 @@ describe("KindOfQuantity merge tests", () => {
       const sourceItem = await sourceSchema.getItem("testItem") as KindOfQuantity;      
       schemaEdits.items.rename(sourceItem, "mergedKOQ");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetContext);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
 
       await expect(mergedSchema.getItem("testStruct")).to.be.eventually.fulfilled.then(async (ecClass) => {
         expect(ecClass).to.exist;
@@ -988,7 +985,7 @@ describe("KindOfQuantity merge tests", () => {
           ...sourceJson.references,
           { name: "ReferenceSchema", version: "1.2.0" },
         ],
-        items: {          
+        items: {
           testItem: {
             schemaItemType: "KindOfQuantity",
             relativeError: 0.0001,

@@ -369,9 +369,8 @@ describe("Constant merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as Constant;      
       schemaEdits.items.rename(testItem, "mergedConstant");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      const mergedSchema = await merger.merge(result, schemaEdits);
+      const mergedSchema = await merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits);
  
       await expect(mergedSchema.getItem("mergedConstant")).to.be.eventually.not.undefined
         .then((constant: Constant) => {
@@ -491,9 +490,8 @@ describe("Constant merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as Constant;      
       schemaEdits.items.rename(testItem, "mergedConstant");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      await expect(merger.merge(result, schemaEdits)).to.be.rejectedWith("The Constant testItem has an invalid 'definition' attribute.");
+      await expect(merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits)).to.be.rejectedWith("The Constant testItem has an invalid 'definition' attribute.");
     });
 
     it("should throw an error when a re-mapped constant numerator conflict exists", async() => {
@@ -537,9 +535,8 @@ describe("Constant merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as Constant;      
       schemaEdits.items.rename(testItem, "mergedConstant");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      await expect(merger.merge(result, schemaEdits)).to.be.rejectedWith("The Constant testItem has an invalid 'numerator' attribute.");
+      await expect(merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits)).to.be.rejectedWith("The Constant testItem has an invalid 'numerator' attribute.");
     });
 
     it("should throw an error when a re-mapped constant denominator conflict exists", async() => {
@@ -585,9 +582,8 @@ describe("Constant merger tests", () => {
       const testItem = await sourceSchema.getItem("testItem") as Constant;      
       schemaEdits.items.rename(testItem, "mergedConstant");
 
-      const result = await getSchemaDifferences(targetSchema, sourceSchema, schemaEdits);
       const merger = new SchemaMerger(targetSchema.context);
-      await expect(merger.merge(result, schemaEdits)).to.be.rejectedWith("The Constant testItem has an invalid 'denominator' attribute.");
+      await expect(merger.mergeSchemas(targetSchema, sourceSchema, schemaEdits)).to.be.rejectedWith("The Constant testItem has an invalid 'denominator' attribute.");
     });
   });
 });
