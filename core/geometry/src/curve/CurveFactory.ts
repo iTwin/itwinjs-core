@@ -492,13 +492,10 @@ export class CurveFactory {
     } else if (curve.isAnyRegion())
       closedCurve = curve;
     if (closedCurve) {
-      // RuledSweep facet construction assumes the contours are oriented CCW with respect to the rail parameterization
-      // direction so that facet normals point outward. This condition is equivalent to positive contour area. Since
-      // the input curve hasn't been projected onto the contour plane, we orient a clone wrt the plane normal so that
-      // the signed area computation can ignore z.
+      // The alignment condition is equivalent to positive projected curve area computed wrt to the plane normal.
       const toLocal = Matrix3d.createRigidHeadsUp(planeNormal).transpose();
       const projection = closedCurve.cloneTransformed(Transform.createOriginAndMatrix(undefined, toLocal));
-      if (projection) {
+      if (projection) { // now we can ignore z-coords
         const areaXY = RegionOps.computeXYArea(projection as AnyRegion);
         if (areaXY && areaXY < 0)
           curve.reverseInPlace();
@@ -564,6 +561,9 @@ export class CurveFactory {
     if (!planes || planes.length < 2)
       return undefined;
     this.alignFirstAndLastBisectorPlanes(planes[0], planes[planes.length - 1], rail, options);
+
+    // RuledSweep facet construction assumes the contours are oriented CCW with respect to the sweep direction so that
+    // facet normals point outward. We only have to align the first contour; the rest will inherit its orientation.
     this.alignClosedCurveToPlane(initialSection, planes[0].getNormalRef());
 
     const sectionData: SectionSequenceWithPlanes = { sections: [], planes: [] };
