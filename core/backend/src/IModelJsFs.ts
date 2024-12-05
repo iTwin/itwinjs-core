@@ -145,10 +145,10 @@ export class IModelJsFs {
       IModelJsFs.recursiveMkDirSync(parentPath);
     try {
       IModelJsFs.mkdirSync(dirPath);
-    } catch (error) {
+    } catch (err: any) {
       // Ignore the error if the folder has been created since the existence check
-      if (error.code !== 'EEXIST') {
-      throw error;
+      if (err?.code !== 'EEXIST') {
+      throw err;
       }
     }
   }
