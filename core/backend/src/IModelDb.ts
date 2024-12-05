@@ -3104,7 +3104,7 @@ export class BriefcaseDb extends IModelDb {
   }
 
   public override close() {
-    if (this.txns.changeMergeManager.inProgress()) {
+    if (this.isBriefcase && this.isOpen && !this.isReadonly && this.txns.changeMergeManager.inProgress()) {
       this.abandonChanges();
     }
     super.close();

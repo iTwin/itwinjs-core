@@ -172,7 +172,7 @@ describe("Rebase merge method", () => {
 
   after(async () => {
     HubMock.shutdown()
-    await IModelHost.shutdown();
+    //await IModelHost.shutdown();
   });
 
   beforeEach(async () => {

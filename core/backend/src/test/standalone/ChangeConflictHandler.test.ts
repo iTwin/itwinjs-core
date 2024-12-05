@@ -556,8 +556,8 @@ describe("Changeset conflict handler", () => {
         // 5 - StrData
         expect(arg.getValueBinary(5, DbChangeStage.Old)).deep.equals(new Uint8Array([116, 101, 115, 116]));
         expect(arg.getValueBinary(5, DbChangeStage.New)).deep.equals(new Uint8Array([116, 101, 115, 116, 49]));
-        expect(arg.getValueId(5, DbChangeStage.New)).is.equals("0");
-        expect(arg.getValueId(5, DbChangeStage.Old)).is.equals("0");
+        expect(arg.getValueId(5, DbChangeStage.New)).is.equals("0x0");
+        expect(arg.getValueId(5, DbChangeStage.Old)).is.equals("0x0");
         expect(arg.getValueText(5, DbChangeStage.New)).is.equals("test1");
         expect(arg.getValueText(5, DbChangeStage.Old)).is.equals("test");
         expect(arg.getValueType(5, DbChangeStage.New)).is.equals(DbValueType.TextVal);
