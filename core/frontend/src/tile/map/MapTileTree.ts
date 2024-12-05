@@ -730,7 +730,6 @@ class MapTreeSupplier implements TileTreeSupplier {
       wantNormals: id.wantNormals,
       dataSource: id.terrainDataSource,
       produceGeometry: id.produceGeometry,
-      iTwinId: iModel.iTwinId,
     };
 
     if (id.applyTerrain) {

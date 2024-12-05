@@ -546,9 +546,9 @@ export class ViewAttributes {
 
     const enableTerrain = (enable: boolean) => {
       this.updateBackgroundMap({
-        // terrainSettings: {
-        //   providerName: "CuratedCesiumContent",
-        // },
+        terrainSettings: {
+          providerName: "CuratedCesiumContent",
+        },
         applyTerrain: enable,
       });
       terrainSettings.style.display = enable ? "block" : "none";

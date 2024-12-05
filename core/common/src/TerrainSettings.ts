@@ -26,7 +26,7 @@ export enum CesiumTerrainAssetId {
   /** Default [global 3d terrain](https://cesium.com/platform/cesium-ion/content/cesium-world-terrain/). */
   Default = "1",
   /** A [3D Building](https://cesium.com/platform/cesium-ion/content/cesium-osm-buildings/) layer derived from OpenStreetMap covering the entire world. */
-  // OSMBuildings = "96188",
+  OSMBuildings = "96188",
   /** Global 3d terrain that includes [bathymetry](https://cesium.com/platform/cesium-ion/content/cesium-world-bathymetry/) (seafloor) terrain. */
   Bathymetry = "2426648",
 }

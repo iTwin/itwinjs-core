@@ -43,10 +43,6 @@ export interface TerrainMeshProviderOptions {
    * @beta
    */
   produceGeometry?: boolean;
-  /** Optional id of iTwin of which the [[TerrainSettings.dataSource]] belongs to.
-   * @alpha
-   */
-  iTwinId?: string;
 }
 
 /** Arguments supplied to [[TerrainMeshProvider.requestMeshData]].
