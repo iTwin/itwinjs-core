@@ -492,6 +492,10 @@ export class CurveFactory {
     } else if (curve.isAnyRegion())
       closedCurve = curve;
     if (closedCurve) {
+      // RuledSweep facet construction assumes the contours are oriented CCW with respect to the rail parameterization
+      // direction so that facet normals point outward. This condition is equivalent to positive contour area. Since
+      // the input curve hasn't been projected onto the contour plane, we orient a clone wrt the plane normal so that
+      // the signed area computation can ignore z.
       const toLocal = Matrix3d.createRigidHeadsUp(planeNormal).transpose();
       const projection = closedCurve.cloneTransformed(Transform.createOriginAndMatrix(undefined, toLocal));
       if (projection) {
