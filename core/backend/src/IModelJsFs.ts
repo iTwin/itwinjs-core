@@ -143,7 +143,14 @@ export class IModelJsFs {
     const parentPath = path.dirname(dirPath);
     if (parentPath !== dirPath)
       IModelJsFs.recursiveMkDirSync(parentPath);
-    IModelJsFs.mkdirSync(dirPath);
+    try {
+      IModelJsFs.mkdirSync(dirPath);
+    } catch (error) {
+      // Ignore the error if the folder has been created since the existence check
+      if (error.code !== 'EEXIST') {
+      throw error;
+      }
+    }
   }
 
   /** Remove a directory, recursively */
