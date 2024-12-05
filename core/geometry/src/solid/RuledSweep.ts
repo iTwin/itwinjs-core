@@ -58,8 +58,8 @@ export class RuledSweep extends SolidPrimitive {
     return this._contours;
   }
   /**
-   * Return clones of all the sweep contours.
-   * * See also cloneContours, which returns the spatial contours without their local coordinate system definitions).
+   * Return clones of the sweep contours.
+   * * See also [[cloneContours]], which returns the contours without their local coordinate system definitions.
    */
   public cloneSweepContours(): SweepContour[] {
     const result = [];
@@ -69,8 +69,8 @@ export class RuledSweep extends SolidPrimitive {
     return result;
   }
   /**
-   * Return clones of all the contours.
-   * * See also cloneContours, which returns the contours in their local coordinate systems.
+   * Return clones of the sweep contours, each as a [[CurveCollection]].
+   * * See also [[cloneSweepContours]], which returns the contours with their local coordinate system definitions.
    */
   public cloneContours(): CurveCollection[] {
     const result = [];
@@ -119,7 +119,7 @@ export class RuledSweep extends SolidPrimitive {
   public isSameGeometryClass(other: any): boolean {
     return other instanceof RuledSweep;
   }
-  /** Test same contour geometry and capping. */
+  /** Test for near equality of two RuledSweeps. */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof RuledSweep) {
       if (this.capped !== other.capped)
@@ -225,7 +225,7 @@ export class RuledSweep extends SolidPrimitive {
     return undefined;
   }
   /**
-   * Return true if this is a closed volume (if capped flag is true or identical first and last contours).
+   * @return true if this is a closed volume.
    */
   public get isClosedVolume(): boolean {
     const n = this._contours.length;
