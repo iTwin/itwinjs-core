@@ -433,7 +433,7 @@ export class CurveFactory {
     return arcs;
   }
 
-  /** For a smooth curve, stroke and return unnormalized start/end tangents */
+  /** For a smooth curve, stroke and return unnormalized start/end tangents. */
   private static strokeSmoothCurve(
     curve: IndexedXYZCollection | Point3d[] | CurvePrimitive | CurveChain,
     options?: StrokeOptions,
@@ -454,7 +454,7 @@ export class CurveFactory {
       curve = strokes;
     } else if (Array.isArray(curve))
       curve = new Point3dArrayCarrier(curve);
-    return {strokes: curve, startTangent, endTangent};
+    return { strokes: curve, startTangent, endTangent };
   }
 
   /**
@@ -490,7 +490,7 @@ export class CurveFactory {
       if (curve.startPoint().isAlmostEqual(curve.endPoint()))
         closedCurve = Loop.create(curve);
     } else if (curve.isAnyRegion())
-        closedCurve = curve;
+      closedCurve = curve;
     if (closedCurve) {
       const toLocal = Matrix3d.createRigidHeadsUp(planeNormal).transpose();
       const projection = closedCurve.cloneTransformed(Transform.createOriginAndMatrix(undefined, toLocal));
@@ -515,7 +515,9 @@ export class CurveFactory {
     section: AnyCurve,
   ): AnyCurve {
     const sweepVector = Vector3d.createStartEnd(edgePlane0.getOriginRef(), edgePlane1.getOriginRef());
-    const transform = Transform.createFlattenAlongVectorToPlane(sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef());
+    const transform = Transform.createFlattenAlongVectorToPlane(
+      sweepVector, targetPlane.getOriginRef(), targetPlane.getNormalRef(),
+    );
     if (transform === undefined)
       return section;
     const transformedSection = section.cloneTransformed(transform);
@@ -554,13 +556,10 @@ export class CurveFactory {
     const rail = this.strokeSmoothCurve(centerline, options.strokeOptions);
     if (!rail)
       return undefined;
-
     const planes = PolylineOps.createBisectorPlanesForDistinctPoints(rail.strokes);
     if (!planes || planes.length < 2)
       return undefined;
-
     this.alignFirstAndLastBisectorPlanes(planes[0], planes[planes.length - 1], rail, options);
-
     this.alignClosedCurveToPlane(initialSection, planes[0].getNormalRef());
 
     const sectionData: SectionSequenceWithPlanes = { sections: [], planes: [] };

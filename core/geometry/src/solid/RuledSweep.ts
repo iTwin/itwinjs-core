@@ -20,18 +20,18 @@ import { SolidPrimitive } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
 
 /**
- * * type for a function argument taking 2 curves and returning another curve or failing with undefined.
- * * This is used (for instance) by `RuleSweep.mutatePartners`
+ * Type for a function argument taking 2 curves and returning another curve or failing with undefined.
+ * * This is used (for instance) by `RuleSweep.mutatePartners`.
  * @public
  */
 export type CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined;
 /**
  * A ruled sweep (surface) is a collection of 2 or more contours.
- * * All contours must have identical number and type of geometry. (paths, loops, parity regions, lines, arcs, other curves)
+ * * All contours must have identical number and type of geometry. (paths, loops, parity regions, lines, arcs, other curves).
  * @public
  */
 export class RuledSweep extends SolidPrimitive {
-  /** String name for schema properties */
+  /** String name for schema properties. */
   public readonly solidPrimitiveType = "ruledSweep";
 
   private _contours: SweepContour[];
@@ -41,21 +41,25 @@ export class RuledSweep extends SolidPrimitive {
   }
   /**
    * Create a ruled sweep from an array of contours.
-   * * the contours are CAPTURED (not cloned)
+   * * The contours are CAPTURED (not cloned).
    */
   public static create(contours: AnyCurve[], capped: boolean): RuledSweep | undefined {
     const sweepContours = [];
     for (const contour of contours) {
       const sweepable = SweepContour.createForLinearSweep(contour);
-      if (sweepable === undefined) return undefined;
+      if (sweepable === undefined)
+        return undefined;
       sweepContours.push(sweepable);
     }
     return new RuledSweep(sweepContours, capped);
   }
   /** Return a reference to the array of SweepContour. */
-  public sweepContoursRef(): SweepContour[] { return this._contours; }
-  /** Return clones of all the sweep contours
-   * * See also cloneContours, which returns the spatial contours without their local coordinate system definitions)
+  public sweepContoursRef(): SweepContour[] {
+    return this._contours;
+  }
+  /**
+   * Return clones of all the sweep contours.
+   * * See also cloneContours, which returns the spatial contours without their local coordinate system definitions).
    */
   public cloneSweepContours(): SweepContour[] {
     const result = [];
@@ -64,8 +68,9 @@ export class RuledSweep extends SolidPrimitive {
     }
     return result;
   }
-  /** Return clones of all the contours
-   * * See also cloneContours, which returns the contours in their local coordinate systems
+  /**
+   * Return clones of all the contours.
+   * * See also cloneContours, which returns the contours in their local coordinate systems.
    */
   public cloneContours(): CurveCollection[] {
     const result = [];
@@ -74,7 +79,7 @@ export class RuledSweep extends SolidPrimitive {
     }
     return result;
   }
-  /** Return a deep clone */
+  /** Return a deep clone. */
   public clone(): RuledSweep {
     return new RuledSweep(this.cloneSweepContours(), this.capped);
   }
@@ -99,22 +104,28 @@ export class RuledSweep extends SolidPrimitive {
     const result = this.clone();
     return result.tryTransformInPlace(transform) ? result : undefined;
   }
-  /** Return a coordinate frame (right handed unit vectors)
-   * * origin on base contour
+  /**
+   * Return a coordinate frame (right handed unit vectors)
+   * * origin on base contour.
    * * x, y directions from base contour.
-   * * z direction perpendicular
+   * * z direction perpendicular.
    */
   public getConstructiveFrame(): Transform | undefined {
-    if (this._contours.length === 0) return undefined;
+    if (this._contours.length === 0)
+      return undefined;
     return this._contours[0].localToWorld.cloneRigid();
   }
-  /** Test if `other` is an instance of a `RuledSweep` */
-  public isSameGeometryClass(other: any): boolean { return other instanceof RuledSweep; }
-  /** test same contour geometry and capping. */
+  /** Test if `other` is an instance of a `RuledSweep`. */
+  public isSameGeometryClass(other: any): boolean {
+    return other instanceof RuledSweep;
+  }
+  /** Test same contour geometry and capping. */
   public override isAlmostEqual(other: GeometryQuery): boolean {
     if (other instanceof RuledSweep) {
-      if (this.capped !== other.capped) return false;
-      if (this._contours.length !== other._contours.length) return false;
+      if (this.capped !== other.capped)
+        return false;
+      if (this._contours.length !== other._contours.length)
+        return false;
       for (let i = 0; i < this._contours.length; i++) {
         if (!this._contours[i].isAlmostEqual(other._contours[i]))
           return false;
@@ -123,13 +134,13 @@ export class RuledSweep extends SolidPrimitive {
     }
     return false;
   }
-  /** dispatch to strongly typed `handler.handleRuledSweep(this)` */
+  /** Dispatch to strongly typed `handler.handleRuledSweep(this)`. */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleRuledSweep(this);
   }
   /**
-   * Return the section curves at a fraction of the sweep
-   * @param vFraction fractional position along the sweep direction
+   * Return the section curves at a fraction of the sweep.
+   * @param vFraction fractional position along the sweep direction.
    */
   public constantVSection(vFraction: number): CurveCollection | undefined {
     const numSection = this._contours.length;
@@ -145,23 +156,30 @@ export class RuledSweep extends SolidPrimitive {
       section0 = numSection - 2;
     const section1 = section0 + 1;
     const localFraction = Geometry.clampToStartEnd(q - section0, 0, 1);
-    return RuledSweep.mutatePartners(this._contours[section0].curves, this._contours[section1].curves,
+    return RuledSweep.mutatePartners(
+      this._contours[section0].curves,
+      this._contours[section1].curves,
       (primitive0: CurvePrimitive, primitive1: CurvePrimitive): CurvePrimitive | undefined => {
         const newPrimitive = ConstructCurveBetweenCurves.interpolateBetween(primitive0, localFraction, primitive1);
         if (newPrimitive instanceof CurvePrimitive) return newPrimitive;
         return undefined;
-      });
+      },
+    );
   }
-  /** Pass each contour to `extendRange` */
+  /** Pass each contour to `extendRange`. */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
     for (const contour of this._contours)
       contour.curves.extendRange(rangeToExtend, transform);
   }
 
-  /** Construct a CurveCollection with the same structure as collectionA and collectionB, with primitives constructed by the caller-supplied primitiveMutator function.
+  /**
+   * Construct a CurveCollection with the same structure as collectionA and collectionB, with primitives constructed
+   * by the caller-supplied primitiveMutator function.
    * @returns Returns undefined if there is any type mismatch between the two collections.
    */
-  public static mutatePartners(collectionA: CurveCollection, collectionB: CurveCollection, primitiveMutator: CurvePrimitiveMutator): CurveCollection | undefined {
+  public static mutatePartners(
+    collectionA: CurveCollection, collectionB: CurveCollection, primitiveMutator: CurvePrimitiveMutator,
+  ): CurveCollection | undefined {
     if (!collectionA.isSameGeometryClass(collectionB))
       return undefined;
     if (collectionA instanceof CurveChain && collectionB instanceof CurveChain) {
@@ -207,13 +225,10 @@ export class RuledSweep extends SolidPrimitive {
     return undefined;
   }
   /**
-   * Return true if this is a closed volume, as observed by
-   * * cap flag
-   * identical first and last contours.
+   * Return true if this is a closed volume (if capped flag is true or identical first and last contours).
    */
   public get isClosedVolume(): boolean {
     const n = this._contours.length;
     return n > 1 && (this.capped || this._contours[0].isAlmostEqual(this._contours[n - 1]));
   }
-
 }

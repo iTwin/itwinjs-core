@@ -2049,9 +2049,8 @@ describe("SphericalMeshData", () => {
 
     const centerlineSweeps: AngleSweep[] = [AngleSweep.createStartEndDegrees(0, 90), AngleSweep.createStartEndDegrees(0, -90)];
     const sectionDataSweeps: AngleSweep[] = [AngleSweep.create360(), AngleSweep.createStartEndDegrees(360, 0)];
-    const strokeOptions = new StrokeOptions();
+    const strokeOptions = StrokeOptions.createForFacets();
     strokeOptions.needNormals = true;
-    strokeOptions.angleTol = Angle.createDegrees(5);
     for (const centerlineSweep of centerlineSweeps)
       for (const sectionDataSweep of sectionDataSweeps) {
         // pipes with circular arc rails
@@ -2079,7 +2078,7 @@ describe("SphericalMeshData", () => {
       for (const sectionDataSweep of sectionDataSweeps) {
         const centerline = Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), centerlineSweep);
         const sectionData = Arc3d.create(Point3d.create(0.5), Vector3d.create(0, 0.2), Vector3d.create(0.1), sectionDataSweep);
-        const miterOptions: MiteredSweepOptions = {outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped: true, strokeOptions};
+        const miterOptions: MiteredSweepOptions = { outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped: true, strokeOptions };
         const sweepSections = CurveFactory.createMiteredSweepSections(centerline, sectionData, miterOptions);
         if (ck.testDefined(sweepSections, "computed miteredSweepSections"))
           geometry.push(sweepSections.mesh);
