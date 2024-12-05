@@ -6,46 +6,6 @@ import {
   type TerrainProvider,
 } from "@itwin/core-frontend";
 
-type ContentType =
-  | "3DTiles"
-  | "GLTF"
-  | "IMAGERY"
-  | "TERRAIN"
-  | "KML"
-  | "CZML"
-  | "GEOJSON";
-
-type ContentStatus =
-  | "AWAITING_FILES"
-  | "NOT_STARTED"
-  | "IN_PROGRESS"
-  | "COMPLETE"
-  | "ERROR"
-  | "DATA_ERROR";
-
-// https://developer.bentley.com/apis/cesium-curated-content/operations/list-content/#response-ref
-interface CesiumContent {
-  id: number;
-  name: string;
-  description: string;
-  attribution: string;
-  type: ContentType;
-  status: ContentStatus;
-}
-
-interface ContentTileAttribution {
-  html: string;
-  collapsible: boolean;
-}
-
-// https://developer.bentley.com/apis/cesium-curated-content/operations/access-tiles/#response-ref
-interface CesiumContentAccessTileProps {
-  type: ContentType;
-  url: string;
-  accessToken: string; // we prob want to make this a cb
-  attributions: ContentTileAttribution[];
-}
-
 interface ITPReq {
   accessToken: string;
   baseUrl?: string;
@@ -83,7 +43,10 @@ async function getCuratedCesiumContentProps({
     if (!res.ok) {
       return {};
     }
-    const accessTileProps = (await res.json()) as CesiumContentAccessTileProps;
+    const accessTileProps = (await res.json()) as {
+      accessToken: string;
+      url: string;
+    };
     return { token: accessTileProps.accessToken, url: accessTileProps.url };
   } catch (e) {
     // eslint-disable-next-line no-console
@@ -128,8 +91,6 @@ export async function registerCesiumCuratedContentProvider({
   const provider: TerrainProvider = {
     createTerrainMeshProvider: async (options: TerrainMeshProviderOptions) => {
       const accessToken = await IModelApp.authorizationClient?.getAccessToken();
-      // eslint-disable-next-line no-console
-      console.log(options.dataSource);
       if (!accessToken) {
         return undefined;
       }
