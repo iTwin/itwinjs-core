@@ -30,7 +30,7 @@ import { VertexTable } from "../internal/render/VertexTable";
 import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
-import { MeshoptDecoder } from "meshoptimizer";
+import { MeshoptDecoder, MeshoptDecoderLoader } from "../../tile/internal";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -50,6 +50,7 @@ export interface ImdlParserOptions {
   createUntransformedRootNode?: boolean;
   /* see [[ImdlDecodeArgs.modelGroups]]. */
   modelGroups?: Id64Set[];
+  meshoptCompressionNotSupported? : boolean;
 }
 
 /** Arguments provided to [[parseImdlDocument]].
@@ -170,7 +171,7 @@ class Material extends RenderMaterial {
     return { isAtlas: false, material };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-deprecated
+
   public constructor(params: RenderMaterial.Params, imdl?: Imdl.SurfaceMaterialParams) {
     super(params);
 
@@ -189,7 +190,7 @@ class Material extends RenderMaterial {
   }
 
   public static create(args: MaterialParams): Material {
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     const params = new RenderMaterial.Params();
     params.alpha = args.alpha;
     if (args.diffuse) {
@@ -290,6 +291,7 @@ class Parser {
   private readonly _patterns = new Map<string, Imdl.Primitive[]>();
   private readonly _stream: ByteStream;
   private readonly _timeline?: ImdlTimeline;
+  private _meshoptDecoder?: MeshoptDecoder;
 
   public constructor(doc: Document, binaryData: Uint8Array, options: ParseImdlDocumentArgs, featureTableInfo: FeatureTableInfo, stream: ByteStream) {
     this._document = doc;
@@ -300,10 +302,20 @@ class Parser {
     this._timeline = options.timeline;
   }
 
-  public parse(): Imdl.Document | ImdlParseError {
+  public async parse(): Promise<Imdl.Document | ImdlParseError> {
     const featureTable = this.parseFeatureTable();
     if (!featureTable)
       return TileReadStatus.InvalidFeatureTable;
+
+    if(this.hasMeshoptCompression()){
+      if(this._options.meshoptCompressionNotSupported)
+        return TileReadStatus.UnsupportedMeshoptCompression;
+
+      const loader = new MeshoptDecoderLoader();
+      this._meshoptDecoder = await loader.getDecoder();
+      if(!this._meshoptDecoder)
+        return TileReadStatus.UnsupportedMeshoptCompression;
+    }
 
     const rtcCenter = this._document.rtcCenter ? {
       x: this._document.rtcCenter[0] ?? 0,
@@ -322,6 +334,28 @@ class Parser {
       json: this._document,
       patterns: this._patterns,
     };
+  }
+
+  private hasMeshoptCompression(): boolean{
+    let hasMeshoptCompression = false;
+    for (const meshKey of Object.keys(this._document.meshes)) {
+      const mesh = this._document.meshes[meshKey];
+      mesh?.primitives?.forEach((primitive) => {
+        if(primitive.type !== "areaPattern"){
+          const imdlPrimitive = primitive as ImdlMeshPrimitive;
+          const vertexTable = imdlPrimitive.vertices;
+          if (vertexTable.compressedSize && vertexTable.compressedSize > 0) {
+            hasMeshoptCompression = true;
+          }
+
+          const surf = imdlPrimitive.surface;
+          if (surf && surf.compressedIndexCount && surf.compressedIndexCount > 0){
+            hasMeshoptCompression = true;
+          }
+        }
+      });
+    }
+    return hasMeshoptCompression;
   }
 
   private parseFeatureTable(): Imdl.FeatureTable | undefined {
@@ -896,8 +930,13 @@ class Parser {
       return undefined;
 
     if (surf.compressedIndexCount && surf.compressedIndexCount > 0) {
+
+      if(!this._meshoptDecoder){
+        return undefined;
+      }
+
       const decompressedIndices = new Uint8Array(surf.compressedIndexCount * 4);
-      MeshoptDecoder.decodeIndexSequence(decompressedIndices, surf.compressedIndexCount, 4, indices);
+      this._meshoptDecoder.decodeIndexSequence(decompressedIndices, surf.compressedIndexCount, 4, indices);
 
       // reduce from 32 to 24 bits
       indices = new Uint8Array(surf.compressedIndexCount * 3);
@@ -979,6 +1018,10 @@ class Parser {
     let bytes: Uint8Array | undefined;
     if (json.compressedSize && json.compressedSize > 0) {
 
+      if(!this._meshoptDecoder){
+        return undefined;
+      }
+
       const bufferViewJson = this._document.bufferViews[JsonUtils.asString(json.bufferView)];
       if (undefined === bufferViewJson)
         return undefined;
@@ -993,7 +1036,7 @@ class Parser {
         return undefined;
 
       bytes = new Uint8Array(json.width * json.height * 4);
-      MeshoptDecoder.decodeVertexBuffer(bytes, json.count, json.numRgbaPerVertex * 4, compressedBytes);
+      this._meshoptDecoder.decodeVertexBuffer(bytes, json.count, json.numRgbaPerVertex * 4, compressedBytes);
 
       const remainingBytesSize = byteLength - json.compressedSize;
 
@@ -1118,7 +1161,7 @@ class Parser {
     if (!materialJson)
       return undefined;
 
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
+
     const materialParams = new RenderMaterial.Params(key);
     materialParams.diffuseColor = this.colorDefFromMaterialJson(materialJson.diffuseColor);
     if (materialJson.diffuse !== undefined)
@@ -1276,6 +1319,7 @@ export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchMo
 
 /** @internal */
 export async function parseImdlDocument(options: ParseImdlDocumentArgs): Promise<Imdl.Document | ImdlParseError> {
+
   const stream = ByteStream.fromUint8Array(options.data);
   const imdlHeader = new ImdlHeader(stream);
   if (!imdlHeader.isValid)
@@ -1327,10 +1371,8 @@ export async function parseImdlDocument(options: ParseImdlDocumentArgs): Promise
       multiModel: 0 !== (imdlHeader.flags & ImdlFlags.MultiModelFeatureTable),
     };
 
-    await MeshoptDecoder.ready;
-
     const parser = new Parser(imdlDoc, binaryData, options, featureTable, stream);
-    return parser.parse();
+    return await parser.parse();
   } catch {
     return TileReadStatus.InvalidTileData;
   }

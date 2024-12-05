@@ -3,7 +3,6 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
   test: {
-    dangerouslyIgnoreUnhandledErrors : true,
     dir: "src",
     setupFiles: "./src/test/setupTests.ts",
     browser: {
@@ -31,7 +30,7 @@ export default defineConfig({
       ],
       reportsDirectory: "./lib/cjs/test/coverage",
     },
-    pool: "forks",
+    pool: "threads",
     fileParallelism: false // Had to disable parallel test runs due to Worker related tests timing out and not fetching properly.
   },
   plugins: [

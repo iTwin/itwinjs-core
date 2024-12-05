@@ -8,7 +8,6 @@
 
 import { assert, Logger } from "@itwin/core-bentley";
 import { FrontendLoggerCategory } from "../common/FrontendLoggerCategory";
-import type { MeshoptDecoder } from "meshoptimizer";
 import type { ExtMeshoptCompressionFilter, ExtMeshoptCompressionMode } from "../common/gltf/GltfSchema";
 
 /** Arguments supplied to decodeMeshoptBuffer.
@@ -21,17 +20,34 @@ export interface DecodeMeshoptBufferArgs {
   filter?: ExtMeshoptCompressionFilter;
 }
 
+export interface MeshoptDecoder {
+  supported: boolean;
+  ready: Promise<void>;
+
+  decodeVertexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array, filter?: string) => void;
+  decodeIndexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
+  decodeIndexSequence: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
+
+  decodeGltfBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array, mode: string, filter?: string) => void;
+
+  useWorkers: (count: number) => void;
+  decodeGltfBufferAsync: (count: number, size: number, source: Uint8Array, mode: string, filter?: string) => Promise<Uint8Array>;
+};
+
 /** Loads and configures the MeshoptDecoder module on demand. */
-class Loader {
+export class MeshoptDecoderLoader {
   private _status: "uninitialized" | "loading" | "ready" | "failed";
   private _promise?: Promise<void>;
-  private _decoder?: typeof MeshoptDecoder;
+  private _decoder?: MeshoptDecoder;
+  private _numWorkers: number;
 
-  public constructor() {
+  public constructor(numWorkers: number = 0) {
     this._status = "uninitialized";
+    this._numWorkers = numWorkers;
   }
 
-  public async getDecoder(): Promise<typeof MeshoptDecoder | undefined> {
+  public async getDecoder(): Promise<MeshoptDecoder | undefined> {
+
     const status = this._status;
     switch (status) {
       case "failed":
@@ -61,13 +77,19 @@ class Loader {
     try {
       // Import the module on first use.
       const decoder = (await import("meshoptimizer")).MeshoptDecoder;
-      await decoder.ready;
 
-      // Configure it to do the decoding outside of the main thread. No compelling reason to use more than one worker.
-      decoder.useWorkers(1);
-
-      this._status = "ready";
-      this._decoder = decoder;
+      if(!decoder.supported){
+        Logger.logError(FrontendLoggerCategory.Render, "MeshoptDecoder is not supported in this environment.");
+        this._status = "failed";
+      }
+      else {
+        await decoder.ready;
+        if(this._numWorkers > 0){
+          decoder.useWorkers(this._numWorkers);
+        }
+        this._status = "ready";
+        this._decoder = decoder;
+      }
     } catch (err) {
       Logger.logException(FrontendLoggerCategory.Render, err);
       this._status = "failed";
@@ -77,7 +99,7 @@ class Loader {
   }
 }
 
-const loader = new Loader();
+const loader = new MeshoptDecoderLoader(1);
 
 /** @internal */
 export async function decodeMeshoptBuffer(source: Uint8Array, args: DecodeMeshoptBufferArgs): Promise<Uint8Array | undefined> {
