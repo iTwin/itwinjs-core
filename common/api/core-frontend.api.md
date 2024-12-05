@@ -7607,6 +7607,33 @@ export interface MeshArgs {
     vertIndices: number[];
 }
 
+// @internal
+export interface MeshoptDecoder {
+    // (undocumented)
+    decodeGltfBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array, mode: string, filter?: string) => void;
+    // (undocumented)
+    decodeGltfBufferAsync: (count: number, size: number, source: Uint8Array, mode: string, filter?: string) => Promise<Uint8Array>;
+    // (undocumented)
+    decodeIndexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
+    // (undocumented)
+    decodeIndexSequence: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
+    // (undocumented)
+    decodeVertexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array, filter?: string) => void;
+    // (undocumented)
+    ready: Promise<void>;
+    // (undocumented)
+    supported: boolean;
+    // (undocumented)
+    useWorkers: (count: number) => void;
+}
+
+// @internal
+export class MeshoptDecoderLoader {
+    constructor(numWorkers?: number);
+    // (undocumented)
+    getDecoder(): Promise<MeshoptDecoder | undefined>;
+}
+
 // @public
 export enum MessageBoxIconType {
     // (undocumented)

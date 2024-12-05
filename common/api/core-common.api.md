@@ -10450,7 +10450,9 @@ export enum TileReadStatus {
     // (undocumented)
     NewerMajorVersion = 6,
     // (undocumented)
-    Success = 0
+    Success = 0,
+    // (undocumented)
+    UnsupportedMeshoptCompression = 8
 }
 
 // @alpha

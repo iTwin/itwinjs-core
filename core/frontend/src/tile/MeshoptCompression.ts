@@ -20,6 +20,9 @@ export interface DecodeMeshoptBufferArgs {
   filter?: ExtMeshoptCompressionFilter;
 }
 
+/** The meshoptimizer decoder
+ * @internal
+ */
 export interface MeshoptDecoder {
   supported: boolean;
   ready: Promise<void>;
@@ -34,7 +37,9 @@ export interface MeshoptDecoder {
   decodeGltfBufferAsync: (count: number, size: number, source: Uint8Array, mode: string, filter?: string) => Promise<Uint8Array>;
 };
 
-/** Loads and configures the MeshoptDecoder module on demand. */
+/** Loads and configures the MeshoptDecoder module on demand.
+  * @internal
+  */
 export class MeshoptDecoderLoader {
   private _status: "uninitialized" | "loading" | "ready" | "failed";
   private _promise?: Promise<void>;
