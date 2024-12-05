@@ -125,7 +125,7 @@ function dumpLocalChanges(b: BriefcaseDb) {
   }
 }
 
-describe.only("Rebase merge method", () => {
+describe("Rebase merge method", () => {
   const ctx = {
     accessTokens: {
       user1: "",
