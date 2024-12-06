@@ -284,7 +284,7 @@ export function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
   };
 }
 
-let meshoptDecoderLoaded: boolean = false;
+let meshoptDecoderStatus: "uninitialized" | "ready" | "failed" = "uninitialized";
 
 class Parser {
   private readonly _document: Document;
@@ -313,16 +313,17 @@ class Parser {
       if (this._options.meshoptCompressionNotSupported || !MeshoptDecoder.supported)
         return TileReadStatus.UnsupportedMeshoptCompression;
 
-      if (!meshoptDecoderLoaded) {
-        try {
-          await MeshoptDecoder.ready;
-        }
-        catch (err) {
-          Logger.logException(FrontendLoggerCategory.Render, err);
-          return TileReadStatus.UnsupportedMeshoptCompression;
-        }
-        meshoptDecoderLoaded = true;
+      if (meshoptDecoderStatus === "uninitialized") {
+        await MeshoptDecoder.ready.
+          then(() => { meshoptDecoderStatus = "ready"; }).
+          catch(error => {
+            Logger.logException(FrontendLoggerCategory.Render, error);
+            meshoptDecoderStatus = "failed";
+          });
       }
+
+      if (meshoptDecoderStatus === "failed")
+        return TileReadStatus.UnsupportedMeshoptCompression;
     }
 
     const rtcCenter = this._document.rtcCenter ? {
@@ -1319,6 +1320,9 @@ export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchMo
 
 /** @internal */
 export async function parseImdlDocument(options: ParseImdlDocumentArgs): Promise<Imdl.Document | ImdlParseError> {
+
+  if (options.meshoptCompressionNotSupported)
+    return TileReadStatus.UnsupportedMeshoptCompression;
 
   const stream = ByteStream.fromUint8Array(options.data);
   const imdlHeader = new ImdlHeader(stream);

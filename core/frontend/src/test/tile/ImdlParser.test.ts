@@ -437,7 +437,7 @@ describe("ImdlParser", () => {
       0x00, 0x8A, 0x20, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     ]);
 
-    const parser = acquireImdlParser({noWorker:true});
+    const parser = acquireImdlParser({});
     const document = await parser.parse({
       data: tileData,
       batchModelId: "0x123",
@@ -609,12 +609,12 @@ describe("ImdlParser", () => {
       0x00, 0x8A, 0x20, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
     ]);
 
-    const parser = acquireImdlParser({noWorker:true});
+    const parser = acquireImdlParser({});
     const document = await parser.parse({
       data: tileData,
       batchModelId: "0x123",
       is3d: true,
-      maxVertexTableSize: 4096
+      maxVertexTableSize: 4096,
     });
 
     expect(typeof document).toEqual("object");
