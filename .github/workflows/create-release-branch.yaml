@@ -10,6 +10,12 @@ on:
         description: 'The name of the release branch to create'
         required: true
         default: 'TEST/0.0.x' # FIXME temp default while testing. Otherwise it will create protected branches
+  pull_request:
+    types: [opened, synchronize]
+
+# FIXME FOR TESTING PURPOSES ONLY
+env:
+  RELEASE_BRANCH: 'TEST/0.0.x'
 
 jobs:
   create-release-branch:
@@ -34,7 +40,7 @@ jobs:
 
       - name: Create Release Branch
         run: |
-          git checkout -b ${{ github.event.inputs.releaseBranch }}
+          git checkout -b ${{ env.RELEASE_BRANCH }}
         shell: bash {0}
 
       - name: Update 'gather-docs.yaml'
@@ -112,5 +118,5 @@ jobs:
           echo $newVersion
           # FIXME temp commit message while testing. Otherwise I might trigger a new build
           git commit -m "TEST COMMIT" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
-          git push origin ${{ github.event.inputs.releaseBranch }}
+          # git push origin ${{ env.RELEASE_BRANCH }}
         shell: bash {0}
