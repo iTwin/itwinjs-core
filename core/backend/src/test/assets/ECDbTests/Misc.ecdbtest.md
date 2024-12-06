@@ -635,7 +635,6 @@ PRAGMA ecdb_ver
 | ------- | ------- |
 | 4.0.0.5 | 4.0.0.5 |
 
-
 # Trying PRAGMA explain_query simple select
 
 - dataset: AllProperties.bim
@@ -653,10 +652,9 @@ PRAGMA explain_query (
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-| id | parent | notused | detail                                                     |
-| -- | ------ | ------- | ---------------------------------------------------------- |
-| 3  | 0      | 62      | SEARCH main.ec_Class USING INDEX ix_ec_Class_Name (Name=?) |
-
+| id  | parent | notused | detail                                                     |
+| --- | ------ | ------- | ---------------------------------------------------------- |
+| 3   | 0      | 62      | SEARCH main.ec_Class USING INDEX ix_ec_Class_Name (Name=?) |
 
 # Trying PRAGMA explain_query with cte
 
@@ -673,12 +671,11 @@ PRAGMA explain_query (  [WITH    cnt (x,y) AS (      SELECT 100, 200    )  SELEC
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-| id | parent | notused | detail            |
-| -- | ------ | ------- | ----------------- |
-| 2  | 0      | 0       | CO-ROUTINE cnt    |
-| 3  | 2      | 0       | SCAN CONSTANT ROW |
-| 8  | 0      | 16      | SCAN cnt          |
-
+| id  | parent | notused | detail            |
+| --- | ------ | ------- | ----------------- |
+| 2   | 0      | 0       | CO-ROUTINE cnt    |
+| 3   | 2      | 0       | SCAN CONSTANT ROW |
+| 8   | 0      | 16      | SCAN cnt          |
 
 # Trying PRAGMA explain_query with recursive cte
 
@@ -703,15 +700,14 @@ PRAGMA explain_query (
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-| id | parent | notused | detail            |
-| -- | ------ | ------- | ----------------- |
-| 2  | 0      | 0       | CO-ROUTINE cnt    |
-| 5  | 2      | 0       | SETUP             |
-| 6  | 5      | 0       | SCAN CONSTANT ROW |
-| 19 | 2      | 0       | RECURSIVE STEP    |
-| 20 | 19     | 216     | SCAN cnt          |
-| 31 | 0      | 215     | SCAN cnt          |
-
+| id  | parent | notused | detail            |
+| --- | ------ | ------- | ----------------- |
+| 2   | 0      | 0       | CO-ROUTINE cnt    |
+| 5   | 2      | 0       | SETUP             |
+| 6   | 5      | 0       | SCAN CONSTANT ROW |
+| 21  | 2      | 0       | RECURSIVE STEP    |
+| 22  | 21     | 216     | SCAN cnt          |
+| 37  | 0      | 215     | SCAN cnt          |
 
 # Using Scalar values in select clause with + operator
 
@@ -818,11 +814,11 @@ LIMIT
   2
 ```
 
-| className                | accessString | generated | index | jsonName | name   | extendedType | typeName | type     | originPropertyName |
-| ------------------------ | ------------ | --------- | ----- | -------- | ------ | ------------ | -------- | -------- | ------------------ |
-| AllProperties:IPrimitive | i            | false     | 0     | i        | i      | undefined    | int      | Int      | i                  |
-|                          | dbl          | true      | 1     | dbl      | dbl    | undefined    | double   | Double   | undefined          |
-|                          | time         | true      | 2     | time     | time   | undefined    | dateTime | DateTime | undefined          |
+| className                | accessString | generated | index | jsonName | name | extendedType | typeName | type     | originPropertyName |
+| ------------------------ | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | -------- | ------------------ |
+| AllProperties:IPrimitive | i            | false     | 0     | i        | i    | undefined    | int      | Int      | i                  |
+|                          | dbl          | true      | 1     | dbl      | dbl  | undefined    | double   | Double   | undefined          |
+|                          | time         | true      | 2     | time     | time | undefined    | dateTime | DateTime | undefined          |
 
 | i   | dbl       | time      |
 | --- | --------- | --------- |
