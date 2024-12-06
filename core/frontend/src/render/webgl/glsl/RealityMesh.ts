@@ -201,7 +201,7 @@ function baseColorFromTextures(textureCount: number, applyFeatureColor: string) 
   const applyTextureStrings = [];
 
   for (let i = 0; i < textureCount; i++)
-    applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texParams${i}, u_texMatrix${i})) doDiscard = false; `);
+    applyTextureStrings.push(`if (applyTexture(col, s_texture${i}, u_texParams${i}, u_texMatrix${i})) doDiscard = false;`);
 
   return `
   if (!u_texturesPresent) {
@@ -215,9 +215,7 @@ function baseColorFromTextures(textureCount: number, applyFeatureColor: string) 
   ${applyTextureStrings.join("\n  ")}
   if (doDiscard)
     discard;
-
   ${applyFeatureColor}
-
   return col;
 `;
 }
@@ -227,7 +225,7 @@ function baseColorFromTextures(textureCount: number, applyFeatureColor: string) 
 const mixFeatureColor = `
   col.rgb = mix(col.rgb, mix(col.rgb, v_color.rgb, u_overrideColorMix), step(0.0, v_color.r));
   col.a = mix(col.a, v_color.a, step(0.0, v_color.a));
-  `;
+`;
 
 function addThematicToRealityMesh(builder: ProgramBuilder, gradientTextureUnit: TextureUnit) {
   addNormalMatrix(builder.vert);

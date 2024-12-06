@@ -865,7 +865,8 @@ export class RealityTreeReference extends RealityModelTileTree.Reference {
 
   public override addToScene(context: SceneContext): void {
     const tree = this.treeOwner.tileTree as RealityTileTree;
-    if (undefined !== tree && context.viewport.iModel.isGeoLocated && (tree.loader as RealityModelTileLoader).doDrapeBackgroundMap) {
+    const displaySettings = this._getDisplaySettings();
+    if (undefined !== tree && context.viewport.iModel.isGeoLocated && ((tree.loader as RealityModelTileLoader).doDrapeBackgroundMap || displaySettings.mesh.bgMapDrape)) {
       // NB: We save this off strictly so that discloseTileTrees() can find it...better option?
       this._mapDrapeTree = context.viewport.backgroundDrapeMap;
       context.addBackgroundDrapedModel(this, undefined);
