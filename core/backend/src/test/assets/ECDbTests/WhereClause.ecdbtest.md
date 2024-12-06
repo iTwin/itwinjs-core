@@ -1,6 +1,6 @@
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](../../../../LICENSE.md) for license terms and full copyright notice.
 
-# WhereExp equality check with string variable
+# Equality check with string variable
 
 - dataset: AllProperties.bim
 
@@ -19,7 +19,7 @@ SELECT  ECInstanceId,  ECClassId,  Model.Id, DirectStr FROM aps.TestElement WHER
 | ------------ | --------- | ---- | --------- |
 | 0x14         | 0x152     | 0x11 | str0      |
 
-# WhereExp inequality check with string variable
+# Inequality check with string variable
 
 - dataset: AllProperties.bim
 
@@ -41,7 +41,7 @@ SELECT ECInstanceId, ECClassId, Model.Id, DirectStr FROM aps.TestElement WHERE D
 | 0x16         | 0x152     | 0x11 | str2      |
 
 
-# WhereExp equality check with long variable
+# Equality check with long variable
 
 - dataset: AllProperties.bim
 
@@ -61,7 +61,7 @@ SELECT  ECInstanceId,  ECClassId,  Model.Id, DirectLong FROM aps.TestElement WHE
 | 0x18         | 0x152     | 0x11 | 1004       |
 
 
-# WhereExp inequality check with long variable
+# Inequality check with long variable
 
 - dataset: AllProperties.bim
 
@@ -92,7 +92,7 @@ LIMIT
 | 0x15         | 0x152     | 0x11 | 1001       |
 
 
-# WhereExp greater than condition with long variable
+# Greater than condition with long variable
 
 - dataset: AllProperties.bim
 
@@ -112,7 +112,7 @@ SELECT  ECInstanceId,  ECClassId,  Model.Id, DirectLong FROM aps.TestElement WHE
 | 0x1d         | 0x152     | 0x11 | 1009       |
 
 
-# WhereExp greater than equal condition with long variable
+# Greater than equal condition with long variable
 
 - dataset: AllProperties.bim
 
@@ -132,7 +132,7 @@ SELECT  ECInstanceId,  ECClassId,  Model.Id, DirectLong FROM aps.TestElement WHE
 | 0x1c         | 0x152     | 0x11 | 1008       |
 | 0x1d         | 0x152     | 0x11 | 1009       |
 
-# WhereExp less than condition with long variable
+# Less than condition with long variable
 
 - dataset: AllProperties.bim
 
@@ -160,7 +160,7 @@ WHERE
 | 0x14         | 0x152     | 0x11 | 1000       |
 
 
-# WhereExp less than equal condition with long variable
+# Less than equal condition with long variable
 
 - dataset: AllProperties.bim
 
@@ -189,7 +189,7 @@ WHERE
 | 0x15         | 0x152     | 0x11 | 1001       |
 
 
-# WhereExp equality check with double variable
+# Equality check with double variable
 
 - dataset: AllProperties.bim
 
@@ -216,7 +216,7 @@ WHERE
 | ------------ | --------- | ---- | ------------ |
 | 0x14         | 0x152     | 0x11 | 0.1          |
 
-# WhereExp inequality check with double variable
+# Inequality check with double variable
 
 - dataset: AllProperties.bim
 
@@ -246,7 +246,7 @@ LIMIT 2
 | 0x16         | 0x152     | 0x11 | 2.1          |
 
 
-# WhereExp greater than condition with double variable
+# Greater than condition with double variable
 
 - dataset: AllProperties.bim
 
@@ -273,7 +273,7 @@ WHERE
 | ------------ | --------- | ---- | ------------ |
 | 0x1d         | 0x152     | 0x11 | 9.1          |
 
-# WhereExp greater than equal condition with double variable
+# Greater than equal condition with double variable
 
 - dataset: AllProperties.bim
 
@@ -301,7 +301,7 @@ WHERE
 | 0x1c         | 0x152     | 0x11 | 8.1          |
 | 0x1d         | 0x152     | 0x11 | 9.1          |
 
-# WhereExp less than condition with double variable
+# Less than condition with double variable
 
 - dataset: AllProperties.bim
 
@@ -328,7 +328,7 @@ WHERE
 | ------------ | --------- | ---- | ------------ |
 | 0x14         | 0x152     | 0x11 | 0.1          |
 
-# WhereExp less than equal condition with double variable
+# Less than equal condition with double variable
 
 - dataset: AllProperties.bim
 
@@ -357,7 +357,7 @@ WHERE
 | 0x15         | 0x152     | 0x11 | 1.1          |
 
 
-# WhereExp chaining AND conditions
+# Chaining AND conditions
 
 - dataset: AllProperties.bim
 
@@ -391,7 +391,7 @@ WHERE
 | 0x19         | 0x152     | 0x11 | str5      | 1005       | 5.1          |
 
 
-# WhereExp chaining AND and OR conditions
+# Chaining AND and OR conditions
 
 - dataset: AllProperties.bim
 
@@ -428,7 +428,7 @@ WHERE
 | 0x19         | 0x152     | 0x11 | str5      | 1005       | 5.1          |
 
 
-# WhereExp Between condition with long variable
+# Between condition with long variable
 
 - dataset: AllProperties.bim
 
@@ -458,7 +458,7 @@ WHERE
 | 0x1a         | 0x152     | 0x11 | 1006       |
 
 
-# WhereExp Between condition with double variable
+# Between condition with double variable
 
 - dataset: AllProperties.bim
 
@@ -488,7 +488,7 @@ WHERE
 | 0x17         | 0x152     | 0x11 | 3.1          |
 
 
-# WhereExp IN condition with string variable
+# IN condition with string variable
 
 - dataset: AllProperties.bim
 
@@ -517,7 +517,7 @@ WHERE
 | 0x18         | 0x152     | 0x11 | str4      |
 | 0x1c         | 0x152     | 0x11 | str8      |
 
-# WhereExp IN condition with long variable
+# IN condition with long variable
 
 - dataset: AllProperties.bim
 
@@ -547,7 +547,7 @@ WHERE
 | 0x1d         | 0x152     | 0x11 | 1009       |
 
 
-# WhereExp IN condition with Double variable
+# IN condition with Double variable
 
 - dataset: AllProperties.bim
 
@@ -576,7 +576,7 @@ WHERE
 | 0x1c         | 0x152     | 0x11 | 8.1          |
 
 
-# WhereExp pattern matching with %
+# Pattern matching with %
 
 - dataset: AllProperties.bim
 
@@ -607,7 +607,7 @@ LIMIT
 | 0x15         | 0x152     | 0x11 | str1      |
 | 0x16         | 0x152     | 0x11 | str2      |
 
-# WhereExp partial pattern matching with %
+# Partial pattern matching with %
 
 - dataset: AllProperties.bim
 
@@ -634,7 +634,7 @@ WHERE
 | ------------ | --------- | ---- | --------- |
 | 0x19         | 0x152     | 0x11 | str5      |
 
-# WhereExp pattern matching with _
+# Pattern matching with _
 
 - dataset: AllProperties.bim
 
@@ -662,7 +662,7 @@ WHERE
 | 0x14         | 0x152     | 0x11 | str0      |
 
 
-# WhereExp anti-pattern matching with %
+# Anti-pattern matching with %
 
 - dataset: AllProperties.bim
 
@@ -694,7 +694,7 @@ LIMIT
 | 0x17         | 0x152     | 0x11 | str3      |
 
 
-# WhereExp with NOT NULL
+# With NOT NULL
 
 - dataset: AllProperties.bim
 
@@ -726,7 +726,7 @@ WHERE
 | 0x1d         | 0x152     | 0x11 | NotNull  |
 
 
-# WhereExp with NOT condition
+# With NOT condition
 
 - dataset: AllProperties.bim
 
@@ -765,7 +765,7 @@ WHERE
 | 0x1b         | 0x152     | 0x11 | str7      |
 
 
-# WhereExp with subquery
+# With subquery
 
 - dataset: AllProperties.bim
 
@@ -800,7 +800,7 @@ LIMIT
 | 0x14         | 0x152     | 0x11 | 1000       |
 | 0x15         | 0x152     | 0x11 | 1001       |
 
-# WhereExp with EXISTS
+# With EXISTS
 
 - dataset: AllProperties.bim
 
@@ -838,7 +838,7 @@ LIMIT 3
 | 0x15         | 0x152     | 0x11 | 1001       |
 | 0x16         | 0x152     | 0x11 | 1002       |
 
-# WhereExp with NOT EXISTS
+# With NOT EXISTS
 
 - dataset: AllProperties.bim
 
@@ -878,7 +878,7 @@ LIMIT
 | 0x16         | 0x152     | 0x11 | 1002       |
 | 0x17         | 0x152     | 0x11 | 1003       |
 
-# WhereExp with functions
+# With functions
 
 - dataset: AllProperties.bim
 
@@ -906,7 +906,7 @@ WHERE
 | 0x14         | 0x152     | 0x11 | str0      |
 
 
-# WhereExp with aggregate functions
+# With aggregate functions
 
 - dataset: AllProperties.bim
 
@@ -943,7 +943,7 @@ WHERE
 | 0x1d         | 0x152     | 0x11 | 1009       |
 
 
-# WhereExp using IS NULL
+# Using IS NULL
 
 - dataset: AllProperties.bim
 
@@ -974,7 +974,7 @@ WHERE
 | 0x1a         | 0x152     | 0x11 |
 | 0x1c         | 0x152     | 0x11 |
 
-# WhereExp using IS NOT NULL
+# Using IS NOT NULL
 
 - dataset: AllProperties.bim
 
@@ -1006,7 +1006,7 @@ WHERE
 | 0x1d         | 0x152     | 0x11 | NotNull  |
 
 
-# WhereExp using COALESCE - IN
+# Using COALESCE - IN
 
 - dataset: AllProperties.bim
 
@@ -1039,7 +1039,7 @@ WHERE
 | 0x1b         | 0x152     | 0x11 | str7      | NotNull  |
 | 0x1d         | 0x152     | 0x11 | str9      | NotNull  |
 
-# WhereExp using COALESCE NOT IN
+# Using COALESCE NOT IN
 
 - dataset: AllProperties.bim
 
@@ -1073,7 +1073,7 @@ WHERE
 | 0x1c         | 0x152     | 0x11 | str8      |
 
 
-# WhereExp using CASE - NOT NULL
+# Using CASE - NOT NULL
 
 - dataset: AllProperties.bim
 
@@ -1110,7 +1110,7 @@ WHERE
 | 0x1c         | 0x152     | 0x11 | str8      |
 
 
-# WhereExp using CASE - IS NULL
+# Using CASE - IS NULL
 
 - dataset: AllProperties.bim
 

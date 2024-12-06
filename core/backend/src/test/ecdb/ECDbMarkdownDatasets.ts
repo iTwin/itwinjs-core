@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import * as fs from "fs";
 import * as path from "path";
 import { Id64, Id64String } from "@itwin/core-bentley";
 import { _nativeDb, IModelDb, IModelHost, SnapshotDb, SpatialCategory } from "../../core-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelTestUtils } from "../IModelTestUtils";
-import { Code, ColorDef, ElementAspectProps, GeometryStreamProps, IModel, PhysicalElementProps, SubCategoryAppearance } from "@itwin/core-common";
+import { Code, ColorDef, ElementAspectProps, GeometryStreamProps, IModel, PhysicalElementProps, RelatedElementProps, SubCategoryAppearance } from "@itwin/core-common";
 import { Arc3d, IModelJson, Point2d, Point3d } from "@itwin/core-geometry";
 
 
@@ -148,6 +147,23 @@ function createElemAspect(className: string, _iModelName: IModelDb, elementId: I
   return elementProps;
 }
 
+interface TestElementWithNavProps extends TestElementProps {
+  name: string;
+  featureUsesElement: RelatedElementProps;
+}
+
+function createElemWithNavProp(className: string, _iModelName: IModelDb, modId: Id64String, catId: Id64String, index: number, elementId: Id64String): TestElementWithNavProps {
+  const eProps = createElemProps(className, _iModelName, modId, catId, index);
+  return {
+    ...eProps,
+    name: `Feature${elementId.toString()}`,
+    featureUsesElement: {
+      id: elementId,
+      relClassName: "AllProperties:TestFeatureUsesElement",
+    }
+  } as TestElementWithNavProps;
+}
+
 export class ECDbMarkdownDatasets {
   public static async generateFiles(): Promise<void> {
     const fileName = "AllProperties.bim";
@@ -162,17 +178,27 @@ export class ECDbMarkdownDatasets {
     if (undefined === spatialCategoryId)
       spatialCategoryId = SpatialCategory.insert(iModel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
 
-    for (let m = 0; m < 10; ++m) {
-      const elementProps = createElemProps("TestElement", iModel, newModelId, spatialCategoryId, m);
+    let index = 0;
+    const elementIds: Id64String[] = [];
+    for (index = 0; index < 10; ++index) {
+      const elementProps = createElemProps("TestElement", iModel, newModelId, spatialCategoryId, index);
       const testElement = iModel.elements.createElement(elementProps);
-      const id = iModel.elements.insertElement(testElement.toJSON());
-      assert.isTrue(Id64.isValidId64(id), "element insert failed");
+      const elementId = iModel.elements.insertElement(testElement.toJSON());
+      assert.isTrue(Id64.isValidId64(elementId), "element insert failed");
 
-      if (m % 2 === 0) {
-        const aspectId = iModel.elements.insertAspect(createElemAspect("TestElementAspect", iModel, id, undefined));
+      if (index % 2 === 0) {
+        const aspectId = iModel.elements.insertAspect(createElemAspect("TestElementAspect", iModel, elementId, undefined));
         assert.isTrue(Id64.isValidId64(aspectId), "element aspect insert failed");
       }
+      elementIds.push(elementId);
     }
+
+    // Add two instances of feature class instance with a navigation property
+    const elementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, elementIds.pop()!));
+    assert.isTrue(Id64.isValidId64(iModel.elements.insertElement(elementWithNavProp.toJSON())), "element with nav props insert failed");
+
+    const anotherElementWithNavProp = iModel.elements.createElement(createElemWithNavProp("TestFeature", iModel, newModelId, spatialCategoryId, ++index, elementIds.pop()!));
+    assert.isTrue(Id64.isValidId64(iModel.elements.insertElement(anotherElementWithNavProp.toJSON())), "element with nav props insert failed");
 
     iModel.saveChanges();
     iModel.close();

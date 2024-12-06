@@ -1,6 +1,6 @@
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](../../../../LICENSE.md) for license terms and full copyright notice.
 
-# FromExp with a single table
+# With a single table
 
 - dataset: AllProperties.bim
 
@@ -32,7 +32,7 @@ LIMIT
 | ------------ | --------- | ---- | --- | --------- | ---------- | ------------ |
 | 0x14         | 0x152     | 0x11 | 100 | str0      | 1000       | 0.1          |
 
-# FromExp using a table alias
+# Using a table alias
 
 - dataset: AllProperties.bim
 
@@ -65,7 +65,7 @@ LIMIT
 | ------------ | --------- | ---- | --- | --------- | ---------- | ------------ |
 | 0x14         | 0x152     | 0x11 | 100 | str0      | 1000       | 0.1          |
 
-# FromExp with an inner join
+# With an inner join
 
 - dataset: AllProperties.bim
 
@@ -93,7 +93,7 @@ LIMIT
 | ------------ | ---- | --------- | ----------- |
 | 0x14         | 0x11 | str0      | TestElement |
 
-# FromExp with a right join
+# With a right join
 
 - dataset: AllProperties.bim
 
@@ -122,7 +122,7 @@ LIMIT
 | 0x14         | 0x11 | str0      | TestElement |
 
 
-# FromExp with a left join
+# With a left join
 
 - dataset: AllProperties.bim
 
@@ -151,7 +151,7 @@ LIMIT
 | 0x14         | 0x11 | str0      | TestElement |
 
 
-# FromExp with a full join
+# With a full join
 
 - dataset: AllProperties.bim
 
@@ -179,7 +179,7 @@ LIMIT
 | ------------ | ---- | --------- | ----------- |
 | 0x14         | 0x11 | str0      | TestElement |
 
-# FromExp with multiple joins
+# With multiple joins
 
 - dataset: AllProperties.bim
 
@@ -199,7 +199,7 @@ LIMIT
 ```
 
 
-# FromExp with a subquery
+# With a subquery
 
 - dataset: AllProperties.bim
 
@@ -233,7 +233,7 @@ LIMIT
 | 0x18 | 0x152   |
 
 
-# FromExp with joins and subquery
+# With joins and subquery
 
 - dataset: AllProperties.bim
 
@@ -281,7 +281,7 @@ FROM
 | 0x17         | 0x152     | 0x11 | 103 | str3      | 1003       | 3.1          |
 
 
-# FromExp with Distinct
+# With Distinct keyword
 
 - dataset: AllProperties.bim
 
@@ -302,9 +302,10 @@ SELECT DISTINCT(ECClassId) from Bis.Element
 | 0xf0      |
 | 0x126     |
 | 0x152     |
+| 0x155     |
 
 
-# FromExp with Union
+# With Union
 
 - dataset: AllProperties.bim
 
@@ -330,7 +331,7 @@ FROM
 | AllProperties:TestElementAspect |
 
 
-# FromExp with Union All
+# With Union All
 
 - dataset: AllProperties.bim
 
@@ -369,7 +370,7 @@ FROM
 | AllProperties:TestElementAspect |
 
 
-# FromExp with multiple tables
+# With multiple tables
 
 - dataset: AllProperties.bim
 

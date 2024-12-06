@@ -53,7 +53,7 @@ describe.only("Markdown based ECDb test runner", async () => {
 
     if(test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.Statement) {
       if(test.skip)
-        it(`${test.fileName}: ${test.title} (Statement) skipped due to reason ${test.skip}`);
+        it(`${test.fileName}: ${test.title} (Statement) skipped. Reason: ${test.skip}`);
       else if(test.only)
         it.only(`${test.fileName}: ${test.title} (Statement)`, () => {
           runECSqlStatementTest(test, dataset);
@@ -66,7 +66,7 @@ describe.only("Markdown based ECDb test runner", async () => {
 
     if(test.mode === ECDbTestMode.Both || test.mode === ECDbTestMode.ConcurrentQuery) {
       if(test.skip)
-        it(`${test.fileName}: ${test.title} (ConcurrentQuery) skipped due to reason ${test.skip}`);
+        it(`${test.fileName}: ${test.title} (ConcurrentQuery) skipped. Reason: ${test.skip}`);
       else if(test.only)
         it.only(`${test.fileName}: ${test.title} (ConcurrentQuery)`, async () => {
           await runConcurrentQueryTest(test, dataset);

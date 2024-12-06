@@ -1,6 +1,6 @@
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](../../../../LICENSE.md) for license terms and full copyright notice.
 
-# OrderByExp basic test
+# Basic test
 
 - dataset: AllProperties.bim
 
@@ -26,7 +26,7 @@ SELECT ECInstanceId, NullProp FROM aps.TestElement ORDER BY NullProp
 | 0x1b         | NotNull   |
 | 0x1d         | NotNull   |
 
-# OrderByExp basic test desc
+# Basic test desc
 
 - dataset: AllProperties.bim
 
@@ -52,7 +52,7 @@ SELECT ECInstanceId, NullProp FROM aps.TestElement ORDER BY NullProp desc
 | 0x1a         | undefined |
 | 0x1c         | undefined |
 
-# OrderByExp with multiple columns
+# With multiple columns
 
 - dataset: AllProperties.bim
 
@@ -79,7 +79,7 @@ SELECT ECInstanceId, NullProp, bin FROM aps.TestElement ORDER BY NullProp, bin
 | 0x1b         | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 | 0x1d         | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 
-# OrderByExp with multiple columns with different sorting order combo 1
+# With multiple columns with different sorting order combo 1
 
 - dataset: AllProperties.bim
 
@@ -106,7 +106,7 @@ SELECT ECInstanceId, NullProp, bin FROM aps.TestElement ORDER BY NullProp desc, 
 | 0x1a         | undefined | BIN(1,2,3)                         |
 | 0x1c         | undefined | BIN(1,2,3)                         |
 
-# OrderByExp with multiple columns with different sorting order combo 2
+# With multiple columns with different sorting order combo 2
 
 - dataset: AllProperties.bim
 
@@ -133,7 +133,7 @@ SELECT ECInstanceId, NullProp, bin FROM aps.TestElement ORDER BY NullProp, bin d
 | 0x1b         | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 | 0x1d         | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 
-# OrderByExp with aggreagate functions first
+# With aggreagate functions first
 
 - dataset: AllProperties.bim
 
@@ -152,7 +152,7 @@ SELECT ECInstanceId, NullProp, bin FROM aps.TestElement GROUP BY NullProp ORDER 
 | 0x1c         | BIN(1,2,3)                         | undefined |
 | 0x1d         | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 
-# OrderByExp with aggreagate functions second
+# With aggreagate functions second
 
 - dataset: AllProperties.bim
 
@@ -180,7 +180,7 @@ ORDER BY
 | 0x1d         | NotNull   | BIN(11,21,31,34,53,21,14,14,55,22) |
 | 0x1c         | undefined | BIN(1,2,3)                         |
 
-# OrderByExp with Length function
+# With Length function
 
 - dataset: AllProperties.bim
 
@@ -207,7 +207,7 @@ SELECT DirectStr, NullProp, bin FROM aps.TestElement ORDER BY LENGTH(bin)
 | str7      | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 | str9      | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 
-# OrderByExp with Case first
+# With Case first
 
 - dataset: AllProperties.bim
 
@@ -248,7 +248,7 @@ ORDER BY
 | 0x17         | 1003       | 3.1          | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 | 0x19         | 1005       | 5.1          | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 
-# OrderByExp with Case second
+# With Case second
 
 - dataset: AllProperties.bim
 
@@ -289,7 +289,7 @@ ORDER BY
 | 0x1b         | 1007       | 7.1          | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 | 0x1d         | 1009       | 9.1          | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 
-# OrderByExp with Nulls First
+# With Nulls First
 
 - dataset: AllProperties.bim
 
@@ -315,7 +315,7 @@ SELECT ECInstanceId, NullProp FROM aps.TestElement ORDER BY NullProp NULLS FIRST
 | 0x1b         | NotNull   |
 | 0x1d         | NotNull   |
 
-# OrderByExp with Nulls Last
+# With Nulls Last
 
 - dataset: AllProperties.bim
 
@@ -341,7 +341,7 @@ SELECT ECInstanceId, NullProp FROM aps.TestElement ORDER BY NullProp NULLS LAST
 | 0x1a         | undefined |
 | 0x1c         | undefined |
 
-# OrderByExp with subquery in From Clause
+# With subquery in From Clause
 
 - dataset: AllProperties.bim
 
@@ -379,7 +379,7 @@ ORDER BY
 | 0x1b | NotNull    |
 | 0x1d | NotNull    |
 
-# OrderByExp with Coalesce
+# With Coalesce
 
 - dataset: AllProperties.bim
 
@@ -413,7 +413,7 @@ ORDER BY
 | str6      | undefined | str6          |
 | str8      | undefined | str8          |
 
-# OrderByExp with Join
+# With Join
 
 - dataset: AllProperties.bim
 

@@ -1,6 +1,6 @@
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](../../../../LICENSE.md) for license terms and full copyright notice.
 
-# AllOrAnyExp Using ALL with equality
+# Using ALL with equality
 
 - dataset: AllProperties.bim
 
@@ -29,7 +29,7 @@ WHERE
 | 0x11    | BisCore:PhysicalModel |
 
 
-# AllOrAnyExp Using ALL with inequality
+# Using ALL with inequality
 
 - dataset: AllProperties.bim
 
@@ -60,7 +60,7 @@ WHERE
 | 0x1     | BisCore:RepositoryModel |
 
 
-# AllOrAnyExp Using ANY with equality
+# Using ANY with equality
 
 - dataset: AllProperties.bim
 
@@ -89,7 +89,7 @@ WHERE
 | 0x11    | BisCore:PhysicalModel |
 
 
-# AllOrAnyExp Using ANY with inequality
+# Using ANY with inequality
 
 - dataset: AllProperties.bim
 
@@ -121,7 +121,7 @@ WHERE
 
 
 
-# AllOrAnyExp Using ANY Greater Than
+# Using ANY Greater Than
 
 - dataset: AllProperties.bim
 
@@ -149,8 +149,10 @@ WHERE
 | ------------ | --------------------------- |
 | 0x153        | TestElementAspect           |
 | 0x154        | TestElementRefersToElements |
+| 0x155        | TestFeature                 |
+| 0x156        | TestFeatureUsesElement      |
 
-# AllOrAnyExp Using ANY Greater Than Or Equal To
+# Using ANY Greater Than Or Equal To
 
 - dataset: AllProperties.bim
 
@@ -179,8 +181,10 @@ WHERE
 | 0x152        | TestElement                 |
 | 0x153        | TestElementAspect           |
 | 0x154        | TestElementRefersToElements |
+| 0x155        | TestFeature                 |
+| 0x156        | TestFeatureUsesElement      |
 
-# AllOrAnyExp Using ANY Less Than
+# Using ANY Less Than
 
 - dataset: AllProperties.bim
 
@@ -211,7 +215,7 @@ WHERE
 | 0x1     | BisCore:RepositoryModel |
 
 
-# AllOrAnyExp Using ANY Less Than Or Equal To
+# Using ANY Less Than Or Equal To
 
 - dataset: AllProperties.bim
 
@@ -244,7 +248,7 @@ WHERE
 
 
 
-# AllOrAnyExp Using SOME with equality
+# Using SOME with equality
 
 - dataset: AllProperties.bim
 
@@ -273,7 +277,7 @@ WHERE
 | 0x11    | BisCore:PhysicalModel |
 
 
-# AllOrAnyExp Using SOME with inequality
+# Using SOME with inequality
 
 - dataset: AllProperties.bim
 
@@ -304,7 +308,7 @@ WHERE
 | 0x1     | BisCore:RepositoryModel |
 
 
-# AllOrAnyExp Using SOME with Greater Than
+# Using SOME with Greater Than
 
 - dataset: AllProperties.bim
 
@@ -332,9 +336,11 @@ WHERE
 | ------------ | --------------------------- |
 | 0x153        | TestElementAspect           |
 | 0x154        | TestElementRefersToElements |
+| 0x155        | TestFeature                 |
+| 0x156        | TestFeatureUsesElement      |
 
 
-# AllOrAnyExp Using SOME with Greater Than Or Equal To
+# Using SOME with Greater Than Or Equal To
 
 - dataset: AllProperties.bim
 
@@ -363,9 +369,11 @@ WHERE
 | 0x152        | TestElement                 |
 | 0x153        | TestElementAspect           |
 | 0x154        | TestElementRefersToElements |
+| 0x155        | TestFeature                 |
+| 0x156        | TestFeatureUsesElement      |
 
 
-# AllOrAnyExp Using SOME with Less Than
+# Using SOME with Less Than
 
 - dataset: AllProperties.bim
 
@@ -396,7 +404,7 @@ WHERE
 | 0x1     | BisCore:RepositoryModel |
 
 
-# AllOrAnyExp Using SOME with Less Than Or Equal To
+# Using SOME with Less Than Or Equal To
 
 - dataset: AllProperties.bim
 
@@ -429,7 +437,7 @@ WHERE
 
 
 
-# AllOrAnyExp Using ANY with subquery
+# Using ANY with subquery
 
 - dataset: AllProperties.bim
 
@@ -464,9 +472,11 @@ WHERE
 | ------------ | --------------------------- |
 | 0x153        | TestElementAspect           |
 | 0x154        | TestElementRefersToElements |
+| 0x155        | TestFeature                 |
+| 0x156        | TestFeatureUsesElement      |
 
 
-# AllOrAnyExp Using ANY with where clause in subquery
+# Using ANY with where clause in subquery
 
 - dataset: AllProperties.bim
 
@@ -502,9 +512,11 @@ WHERE
 | 0x152        | TestElement                 |
 | 0x153        | TestElementAspect           |
 | 0x154        | TestElementRefersToElements |
+| 0x155        | TestFeature                 |
+| 0x156        | TestFeatureUsesElement      |
 
 
-# AllOrAnyExp Using SOME with where clause in subquery
+# Using SOME with where clause in subquery
 
 - dataset: AllProperties.bim
 
@@ -539,9 +551,11 @@ WHERE
 | ------------ | --------------------------- |
 | 0x153        | TestElementAspect           |
 | 0x154        | TestElementRefersToElements |
+| 0x155        | TestFeature                 |
+| 0x156        | TestFeatureUsesElement      |
 
 
-# AllOrAnyExp Using ANY with group by clause in subquery
+# Using ANY with group by clause in subquery
 
 - dataset: AllProperties.bim
 
@@ -572,9 +586,11 @@ WHERE
 | 0x152        | TestElement                 |
 | 0x153        | TestElementAspect           |
 | 0x154        | TestElementRefersToElements |
+| 0x155        | TestFeature                 |
+| 0x156        | TestFeatureUsesElement      |
 
 
-# AllOrAnyExp Using SOME with group by clause in subquery
+# Using SOME with group by clause in subquery
 
 - dataset: AllProperties.bim
 
@@ -610,7 +626,7 @@ ORDER BY
 | 0x11         | BisCore:PhysicalModel   |
 
 
-# AllOrAnyExp Using ALL with simple CTE in subquery
+# Using ALL with simple CTE in subquery
 
 - dataset: AllProperties.bim
 
@@ -650,7 +666,7 @@ WHERE
 | 0x21         | AllProperties:TestElementAspect | 0x14      |
 
 
-# AllOrAnyExp Using ANY with simple CTE in subquery
+# Using ANY with simple CTE in subquery
 
 - dataset: AllProperties.bim
 
@@ -692,7 +708,7 @@ WHERE
 | 0x25         | AllProperties:TestElementAspect | 0x1c      |
 
 
-# AllOrAnyExp Using ANY GTE with simple CTE in subquery
+# Using ANY GTE with simple CTE in subquery
 
 - dataset: AllProperties.bim
 
@@ -734,7 +750,7 @@ WHERE
 | 0x25         | AllProperties:TestElementAspect | 0x1c      |
 
 
-# AllOrAnyExp Using SOME with simple CTE in subquery
+# Using SOME with simple CTE in subquery
 
 - dataset: AllProperties.bim
 
@@ -776,7 +792,7 @@ WHERE
 | 0x25         | AllProperties:TestElementAspect | 0x1c      |
 
 
-# AllOrAnyExp Using ANY with CTE and alias
+# Using ANY with CTE and alias
 
 - dataset: AllProperties.bim
 
@@ -817,7 +833,7 @@ WHERE
 | 0x24         | AllProperties:TestElementAspect | 0x1a      |
 | 0x25         | AllProperties:TestElementAspect | 0x1c      |
 
-# AllOrAnyExp Using ALL with recursive CTE
+# Using ALL with recursive CTE
 
 - dataset: AllProperties.bim
 
@@ -862,7 +878,7 @@ WHERE
 | 0x18         | 1004       |
 | 0x19         | 1005       |
 
-# AllOrAnyExp Using ALL with recursive CTE
+# Using ALL with recursive CTE
 
 - dataset: AllProperties.bim
 
@@ -905,7 +921,7 @@ WHERE
 | 0x1d         | 1009       |
 
 
-# AllOrAnyExp Using ALL with multiple items
+# Using ALL with multiple items
 
 - dataset: AllProperties.bim
 
@@ -933,7 +949,7 @@ WHERE
 | 338         |
 
 
-# AllOrAnyExp Using ANY with multiple items
+# Using ANY with multiple items
 
 - dataset: AllProperties.bim
 
@@ -958,10 +974,10 @@ WHERE
 
 | Total_Count |
 | ----------- |
-| 243         |
+| 245         |
 
 
-# AllOrAnyExp Using SOME with multiple items
+# Using SOME with multiple items
 
 - dataset: AllProperties.bim
 
@@ -990,7 +1006,7 @@ WHERE
 | 2           |
 
 
-# AllOrAnyExp with ALL in select
+# ALL in select clause
 
 - dataset: AllProperties.bim
 
@@ -1016,7 +1032,7 @@ select ALL(ECClassId) from aps.TestElement
 | 0x152     |
 
 
-# AllOrAnyExp with ANY in select
+# ANY in select clause
 
 - dataset: AllProperties.bim
 
@@ -1033,7 +1049,7 @@ select ANY(ECClassId) as Test_Val from aps.TestElement
 | true     |
 
 
-# AllOrAnyExp with SOME in select
+# SOME in select clause
 
 - dataset: AllProperties.bim
 
@@ -1050,7 +1066,7 @@ select SOME(ECClassId) as Test_Val from aps.TestElement
 | true              |
 
 
-# AllOrAnyExp with conditional ALL
+# With conditional ALL
 
 - dataset: AllProperties.bim
 
@@ -1080,4 +1096,6 @@ WHERE
 | ------------ | --------------------------- |
 | 0x153        | TestElementAspect           |
 | 0x154        | TestElementRefersToElements |
+| 0x155        | TestFeature                 |
+| 0x156        | TestFeatureUsesElement      |
 

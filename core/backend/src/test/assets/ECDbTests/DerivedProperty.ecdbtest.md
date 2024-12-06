@@ -1,6 +1,6 @@
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](../../../../LICENSE.md) for license terms and full copyright notice.
 
-# DerivedPropertyExp Simple select for all types of derived properties
+# Simple select for all types of derived properties
 
 - dataset: AllProperties.bim
 
@@ -43,7 +43,7 @@ LIMIT
 | 0x17         | {"Id": "0x11", "RelECClassId": "0x61"} | 2010-01-01T11:11:11.000 | true | BIN(11,21,31,34,53,21,14,14,55,22) | str3      | 1003       | 3.1          | {"X": 1111.11,"Y": 2222.22} | {"X": -111.11,"Y": -222.22,"Z": -333.33} |
 | 0x18         | {"Id": "0x11", "RelECClassId": "0x61"} | 2017-01-01T00:00:00.000 | true | BIN(1,2,3)                         | str4      | 1004       | 4.1          | {"X": 1.034,"Y": 2.034}     | {"X": -1,"Y": 2.3,"Z": 3.0001}           |
 
-# DerivedPropertyExp using a computation of two columns
+# Using a computation of two columns
 
 - dataset: AllProperties.bim
 
@@ -70,7 +70,7 @@ SELECT ECInstanceId, DirectLong + DirectDouble as Computed_Value from aps.TestEl
 | 0x1d         | 1018.1                        |
 
 
-# DerivedPropertyExp using a computation of three columns
+# Using a computation of three columns
 
 - dataset: AllProperties.bim
 
@@ -96,7 +96,7 @@ SELECT ECInstanceId, i + d + DirectLong + DirectDouble - l as Computed_Column fr
 | 0x1c         | 124.19999999999982 |
 | 0x1d         | 127.19999999999982 |
 
-# DerivedPropertyExp using derived property in a subquery
+# Using derived property in a subquery
 
 - dataset: AllProperties.bim
 
@@ -133,7 +133,7 @@ FROM
 | 0x1d | 1018.1       |
 
 
-# DerivedPropertyExp using UPPER and LOWER functions
+# Using UPPER and LOWER functions
 
 - dataset: AllProperties.bim
 
@@ -166,7 +166,7 @@ ORDER BY
 | STR0      | str0      |
 
 
-# DerivedPropertyExp using Case
+# Using Case
 
 - dataset: AllProperties.bim
 
@@ -205,7 +205,7 @@ FROM
 | 0x1d         | Lower        |
 
 
-# DerivedPropertyExp with string functions
+# With string functions
 
 - dataset: AllProperties.bim
 
@@ -238,7 +238,7 @@ FROM
 | str9 str9  | str9,str9     | "9"          |
 
 
-# DerivedPropertyExp with Window function
+# With Window function
 
 - dataset: AllProperties.bim
 
@@ -274,7 +274,7 @@ FROM
 | 0x1d         | 0x11    | 5      |
 
 
-# DerivedPropertyExp order by with Window function
+# Order by with Window function
 
 - dataset: AllProperties.bim
 
@@ -312,7 +312,7 @@ ORDER BY
 | 0x15         | 0x11    | 1      |
 
 
-# DerivedPropertyExp group by nav prop
+# Group by nav prop
 
 - dataset: AllProperties.bim
 
@@ -329,4 +329,4 @@ SELECT Model.Id AS ModelId, COUNT(*) AS ElementCount FROM Bis.Element GROUP BY M
 | ------- | ------------ |
 | 0x1     | 4            |
 | 0x10    | 2            |
-| 0x11    | 10           |
+| 0x11    | 12           |

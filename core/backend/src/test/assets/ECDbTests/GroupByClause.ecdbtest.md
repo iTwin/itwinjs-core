@@ -1,6 +1,6 @@
 Copyright © Bentley Systems, Incorporated. All rights reserved. See [LICENSE.md](../../../../LICENSE.md) for license terms and full copyright notice.
 
-# GroupExp with Count function
+# With Count function
 
 - dataset: AllProperties.bim
 
@@ -18,7 +18,7 @@ SELECT NullProp, count(*) as Total_Count FROM aps.TestElement GROUP BY NullProp
 | 5           | undefined |
 | 5           | NotNull   |
 
-# GroupExp with Sum function
+# With Sum function
 
 - dataset: AllProperties.bim
 
@@ -36,7 +36,7 @@ SELECT NullProp, SUM(DirectLong) as Total_Sum FROM aps.TestElement GROUP BY Null
 | 5020      | undefined |
 | 5025      | NotNull   |
 
-# GroupExp with Avg function
+# With Avg function
 
 - dataset: AllProperties.bim
 
@@ -54,7 +54,7 @@ SELECT NullProp, Avg(DirectLong) as Average_Val FROM aps.TestElement GROUP BY Nu
 | 1004        | undefined |
 | 1005        | NotNull   |
 
-# GroupExp with Min function
+# With Min function
 
 - dataset: AllProperties.bim
 
@@ -72,7 +72,7 @@ SELECT NullProp, Min(DirectLong) as Minimum_Val FROM aps.TestElement GROUP BY Nu
 | 1000        | undefined |
 | 1001        | NotNull   |
 
-# GroupExp with Max function
+# With Max function
 
 - dataset: AllProperties.bim
 
@@ -90,7 +90,7 @@ SELECT NullProp, Max(DirectLong) as Maximum_Val FROM aps.TestElement GROUP BY Nu
 | 1008        | undefined |
 | 1009        | NotNull   |
 
-# GroupExp with multiple columns
+# With multiple columns
 
 - dataset: AllProperties.bim
 
@@ -109,7 +109,7 @@ SELECT count(*) as Total_Count, bin, NullProp FROM aps.TestElement group by bin,
 | 5           | BIN(1,2,3)                         | undefined |
 | 5           | BIN(11,21,31,34,53,21,14,14,55,22) | NotNull   |
 
-# GroupExp with Having clause
+# With Having clause
 
 - dataset: AllProperties.bim
 
@@ -136,7 +136,7 @@ HAVING
 | ------------ | ---------- | -------- |
 | 0x15         | 1001       | NotNull  |
 
-# GroupExp with Having clause and Sum function
+# With Having clause and Sum function
 
 - dataset: AllProperties.bim
 
@@ -161,7 +161,7 @@ HAVING
 | -------- | --------- |
 | NotNull  | 5025      |
 
-# GroupExp with Having clause and Avg function
+# With Having clause and Avg function
 
 - dataset: AllProperties.bim
 
@@ -187,7 +187,7 @@ HAVING
 | 1004        |
 
 
-# GroupExp with Having clause and multiple aggregate functions gt check
+# With Having clause and multiple aggregate functions gt check
 
 - dataset: AllProperties.bim
 
@@ -215,7 +215,7 @@ HAVING
 | NotNull  | 1009    | 1001    |
 
 
-# GroupExp with Having clause and multiple aggregate functions lt check2
+# With Having clause and multiple aggregate functions lt check2
 
 - dataset: AllProperties.bim
 
@@ -243,7 +243,7 @@ HAVING
 | 1008    | 1000    |
 
 
-# GroupExp with multiple aggregate functions
+# With multiple aggregate functions
 
 - dataset: AllProperties.bim
 
@@ -271,7 +271,7 @@ GROUP BY
 | 5           | 1008    | 1000    | undefined |
 | 5           | 1009    | 1001    | NotNull   |
 
-# GroupExp with Case
+# With Case
 
 - dataset: AllProperties.bim
 
@@ -301,7 +301,7 @@ HAVING
 | -------- | ------- |
 | NotNull  | 5025    |
 
-# GroupExp with Coalesce
+# With Coalesce
 
 - dataset: AllProperties.bim
 
@@ -326,7 +326,7 @@ HAVING
 | -------- | ------- |
 | NotNull  | 5025    |
 
-# GroupExp with Join
+# With Join
 
 - dataset: AllProperties.bim
 
@@ -356,7 +356,7 @@ GROUP BY
 | 0x152     | 0x11 | TestElement | NotNull   |
 
 
-# GroupExp with a subquery
+# With a subquery
 
 - dataset: AllProperties.bim
 
@@ -391,7 +391,7 @@ HAVING
 | NotNull  | BIN(11,21,31,34,53,21,14,14,55,22) | 5           |
 
 
-# GroupExp with DISTINCT
+# With DISTINCT
 
 - dataset: AllProperties.bim
 
@@ -410,7 +410,7 @@ SELECT  bin,  Count(Distinct(bin)) as distinct_count FROM  aps.TestElement GROUP
 | BIN(11,21,31,34,53,21,14,14,55,22) | 1              |
 
 
-# GroupExp with where clause
+# With where clause
 
 - dataset: AllProperties.bim
 
@@ -440,7 +440,7 @@ GROUP BY
 | BIN(11,21,31,34,53,21,14,14,55,22) | 2           | NotNull   |
 
 
-# GroupExp with order by clause
+# With order by clause
 
 - dataset: AllProperties.bim
 
@@ -472,7 +472,7 @@ ORDER BY
 | str6      | BIN(1,2,3)                         | 2           | undefined |
 | str7      | BIN(11,21,31,34,53,21,14,14,55,22) | 2           | NotNull   |
 
-# GroupExp with order by clause desc
+# With order by clause desc
 
 - dataset: AllProperties.bim
 

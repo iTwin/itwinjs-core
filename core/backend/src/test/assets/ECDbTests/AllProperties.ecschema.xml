@@ -17,6 +17,19 @@
     <ECArrayProperty propertyName="EnumStringPropArr" typeName="TestStringEnum"/>
     <ECProperty propertyName="NoCaseString" typeName="string"/>
   </ECEntityClass>
+  <ECEntityClass typeName="TestFeature">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <ECProperty propertyName="Name" typeName="string" />
+    <ECNavigationProperty propertyName="FeatureUsesElement" relationshipName="TestFeatureUsesElement" direction="Backward"/>
+  </ECEntityClass>
+  <ECRelationshipClass typeName="TestFeatureUsesElement" modifier="Sealed" strength="referencing">
+    <Source multiplicity="(0..1)" roleLabel="A" polymorphic="false">
+      <Class class="TestElement"/>
+    </Source>
+    <Target multiplicity="(0..*)" roleLabel="B" polymorphic="false">
+      <Class class="TestFeature"/>
+    </Target>
+  </ECRelationshipClass>
   <ECEnumeration typeName="TestIntEnum" backingTypeName="int" isStrict="true">
     <ECEnumerator value="1" name="One" />
     <ECEnumerator value="2" name="Two" />
