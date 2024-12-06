@@ -58,7 +58,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   /**
    * Sets the base class of the ECClass. Pass undefined to 'remove' the base class.
    */
-  public async setBaseClass(baseClass: LazyLoadedECClass | undefined) {
+  protected async setBaseClass(baseClass: LazyLoadedECClass | undefined) {
     const oldBaseClass = this._baseClass;
     this._baseClass = baseClass;
 
@@ -800,6 +800,7 @@ export abstract class MutableStructClass extends StructClass {
  * @internal
  */
 export abstract class MutableClass extends ECClass {
+  public abstract override setBaseClass(baseClass: LazyLoadedECClass | undefined): Promise<void>;
   public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
   public abstract override setModifier(modifier: ECClassModifier): void;
   public abstract override setName(name: string): void;

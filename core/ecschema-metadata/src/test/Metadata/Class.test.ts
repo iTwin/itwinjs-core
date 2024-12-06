@@ -50,7 +50,7 @@ describe("ECClass", () => {
 
       const entityClass = new EntityClass(schema, "TestClass");
       await (entityClass as ECClass as MutableClass).createPrimitiveProperty("PrimProp");
-      await entityClass.setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
 
       expect(await entityClass.getProperty("BasePrimProp")).to.be.undefined;
       expect(await entityClass.getProperty("BasePrimProp", false)).to.be.undefined;
@@ -65,7 +65,7 @@ describe("ECClass", () => {
 
       const entityClass = (schema as MutableSchema).createEntityClassSync("TestClass");
       (entityClass as ECClass as MutableClass).createPrimitivePropertySync("PrimProp");
-      await entityClass.setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
 
       expect(entityClass.getPropertySync("BasePrimProp")).to.be.undefined;
       expect(entityClass.getPropertySync("BasePrimProp", false)).to.be.undefined;
@@ -88,7 +88,7 @@ describe("ECClass", () => {
       const primProp = await (baseClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
       const entityClass = new EntityClass(schema, "TestClass");
-      await entityClass.setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
+      await (entityClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(baseClass.key, async () => baseClass));
 
       expect(await entityClass.getProperty("TESTPROP", true)).equal(primProp);
       expect(await entityClass.getProperty("testprop", true)).equal(primProp);
@@ -1251,7 +1251,7 @@ describe("ECClass", () => {
 
       const testSchema = new Schema(context, "ChildSchema", "child", 1, 0, 5);
       const childClass = new EntityClass(testSchema, "TestClass");
-      await childClass.setBaseClass(new DelayedPromiseWithProps(testClass.key, async () => testClass));
+      await (childClass as ECClass as MutableClass).setBaseClass(new DelayedPromiseWithProps(testClass.key, async () => testClass));
       (testSchema as MutableSchema).addItem(testClass);
 
       const serialized = await childClass.toXml(newDom);
