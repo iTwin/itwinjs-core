@@ -4,7 +4,7 @@ import { BisTestHelper } from "../../TestUtils/BisTestHelper";
 import { deserializeXml } from "../../TestUtils/DeserializationHelpers";
 import { expect } from "chai";
 
-describe.only("Failing Iterative Tests", () => {
+describe("Failing Iterative Tests", () => {
   let sourceSchema: Schema;
   let targetSchema: Schema;
   let schemaEdits: SchemaEdits;

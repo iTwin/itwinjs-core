@@ -47,7 +47,7 @@ describe("Rename change tests", () => {
       {
         className: "CoreCustomAttributes.DynamicSchema",
       },
-    ],    
+    ],
   };
 
   const referenceJson = {
@@ -382,7 +382,7 @@ describe("Rename change tests", () => {
           expect(property).to.exist;
           expect(property).has.a.nested.property("enumeration.name").equals("MergedEnum");
         });
-      });      
+      });
     });
 
     it("should rename struct name", async () => {

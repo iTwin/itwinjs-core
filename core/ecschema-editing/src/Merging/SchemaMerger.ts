@@ -112,6 +112,12 @@ export class SchemaMerger {
   }
 }
 
+/**
+ * SchemaContext implementation that overrides certain methods to allow to apply name mappings
+ * for certain schema elements during the schema merging process.
+ *
+ * @internal
+ */
 class MergingSchemaContext extends SchemaContext {
   private _internalContext: SchemaContext;
   private _nameMappings: NameMapping;

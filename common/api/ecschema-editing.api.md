@@ -1074,7 +1074,7 @@ export class FormatUnitChanges extends BaseSchemaChanges {
 }
 
 // @alpha
-export function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema): Promise<SchemaDifferenceResult>;
+export function getSchemaDifferences(targetSchema: Schema, sourceSchema: Schema, schemaEdits?: Iterable<AnySchemaEdits>): Promise<SchemaDifferenceResult>;
 
 // @alpha
 export interface IClassIdentifier extends ISchemaTypeIdentifier {
@@ -1244,6 +1244,8 @@ export interface ISchemaChanges {
 
 // @alpha
 export interface ISchemaComparer {
+    // @internal (undocumented)
+    areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean;
     // (undocumented)
     compareClasses(classA: AnyClass, classB: AnyClass): void;
     // (undocumented)
@@ -1282,6 +1284,10 @@ export interface ISchemaComparer {
     compareSchemas(schemaA: Schema, schemaB: Schema): void;
     // (undocumented)
     compareUnits(unitA: Unit, unitB: Unit): void;
+    // @internal (undocumented)
+    resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined>;
+    // @internal (undocumented)
+    resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined>;
 }
 
 // @alpha
@@ -2012,6 +2018,8 @@ export enum SchemaCompareDirection {
 // @alpha
 export class SchemaComparer {
     constructor(...reporters: ISchemaCompareReporter[]);
+    // (undocumented)
+    areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean;
     compareClasses(classA: AnyClass, classB: AnyClass): Promise<void>;
     compareConstants(constantA: Constant, constantB: Constant): Promise<void>;
     compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass): Promise<void>;
@@ -2031,6 +2039,10 @@ export class SchemaComparer {
     compareSchemaProps(schemaA: Schema, schemaB: Schema): Promise<void>;
     compareSchemas(schemaA: Schema, schemaB: Schema): Promise<void>;
     compareUnits(unitA: Unit, unitB: Unit): Promise<void>;
+    // (undocumented)
+    resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined>;
+    // (undocumented)
+    resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined>;
 }
 
 // @alpha
@@ -2135,10 +2147,12 @@ export class SchemaEditingError extends Error {
 }
 
 // @alpha
-export class SchemaEdits {
+export class SchemaEdits implements Iterable<AnySchemaEdits> {
+    // (undocumented)
+    [Symbol.iterator](): Iterator<AnySchemaEdits>;
     constructor(initialize?: ReadonlyArray<AnySchemaEdits>);
     // @internal (undocumented)
-    applyTo(differenceResult: SchemaDifferenceResult): Promise<void>;
+    applyTo(differenceResult: SchemaDifferenceResult, nameMapping: NameMapping): Promise<void>;
     // (undocumented)
     readonly items: ItemEditor;
     // (undocumented)

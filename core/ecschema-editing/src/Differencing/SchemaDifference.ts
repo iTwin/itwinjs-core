@@ -449,7 +449,11 @@ export async function getSchemaDifferences(targetSchema: Schema, sourceSchema: S
 }
 
 /**
+ * Implementation of a SchemaComparer that is used in the schema differencing process.
+ * It extends the SchemaComparer base class with additional functionality to store the
+ * name mappings of renamed schema items and properties.
  *
+ * @internal
  */
 class DifferenceSchemaComparer extends SchemaComparer {
   public readonly nameMappings: NameMapping;
@@ -459,9 +463,6 @@ class DifferenceSchemaComparer extends SchemaComparer {
     return this._changes[0].allDiagnostics;
   }
 
-  /**
-   *
-   */
   constructor() {
     super({ report: (changes) => this._changes.push(changes as SchemaChanges) });
 
@@ -469,17 +470,11 @@ class DifferenceSchemaComparer extends SchemaComparer {
     this.nameMappings = new NameMapping();
   }
 
-  /**
-   *
-   */
   public override async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
     const classKey = this.nameMappings.resolveItemKey(item.key);
     return lookupSchema.lookupItem<TItem>(classKey.name);
   }
 
-  /**
-   *
-   */
   public override async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {
     const propertyKey = this.nameMappings.resolvePropertyKey(new PropertyKey(propertyA.name, propertyA.class.key));
     return ecClass.getProperty(propertyKey.propertyName) as Promise<AnyProperty | undefined>;
@@ -487,8 +482,9 @@ class DifferenceSchemaComparer extends SchemaComparer {
 
   public override areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean {
     if (itemKeyA) {
-      if (SchemaItem.isSchemaItem(itemKeyA))
+      if (SchemaItem.isSchemaItem(itemKeyA)) {
         itemKeyA = itemKeyA.key;
+      }
       itemKeyA = this.nameMappings.resolveItemKey(itemKeyA);
     }
     return super.areEqualByName(itemKeyA, itemKeyB);

@@ -86,19 +86,25 @@ export class SchemaComparer {
   }
 
   /**
-   *
+   * Resolves a schema Item from the given lookup schema.
+   * @internal
    */
   public async resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined> {
     return lookupSchema.lookupItem<TItem>(item.name);
   }
 
   /**
-   *
+   * Resolves a property from a class.
+   * @internal
    */
   public async resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined> {
     return ecClass.getProperty(propertyA.name) as Promise<AnyProperty | undefined>;
   }
 
+  /**
+   * Compares two schema items to determine if they are the same by name.
+   * @internal
+   */
   public areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean {
     const nameA = itemKeyA ? itemKeyA.name.toUpperCase() : undefined;
     const nameB = itemKeyB ? itemKeyB.name.toUpperCase() : undefined;

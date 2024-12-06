@@ -6,7 +6,7 @@ import { expect } from "chai";
 
 describe("Iterative Tests", () => {
 
-  it.only("shall correctly deal with saved edits", async () => {
+  it("shall correctly deal with saved edits", async () => {
 
     async function combineIModelSchemas(handler: (differenceResult: SchemaDifferenceResult) => Promise<void>): Promise<Schema> {
       // Get differences between the two schemas

@@ -8,7 +8,7 @@ import { AnySchemaDifferenceConflict, ConflictCode, getSchemaDifferences, Schema
 import { expect } from "chai";
 import { BisTestHelper } from "../../../TestUtils/BisTestHelper";
 
-describe.only("Property Name conflict iterative resolutions", () => {
+describe("Property Name conflict iterative resolutions", () => {
   it("shall re-apply stored conflict resolutions", async () => {
     const targetSchema = await Schema.fromJson(schemas[0], await BisTestHelper.getNewContext());
 
