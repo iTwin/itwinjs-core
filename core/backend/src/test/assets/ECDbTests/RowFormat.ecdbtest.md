@@ -57,7 +57,7 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
 
 ```json
 [
-  ["0x152", "str6"],
-  ["0x152", "str7"]
+  ["0x153", "str6"],
+  ["0x153", "str7"]
 ]
 ```

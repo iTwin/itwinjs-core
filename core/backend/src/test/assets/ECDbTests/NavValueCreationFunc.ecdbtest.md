@@ -68,7 +68,7 @@ select navigation_value(aps.TestFeature.FeatureUsesElement, 0x1c)
   {
     "FeatureUsesElement": {
       "Id": "0x1c",
-      "RelECClassId": "0x156"
+      "RelECClassId": "0x158"
     }
   }
 ]
@@ -77,7 +77,6 @@ select navigation_value(aps.TestFeature.FeatureUsesElement, 0x1c)
 # With all 3 arguments and decimal ids
 
 - dataset: AllProperties.bim
-
 
 ```sql
 select navigation_value(aps.TestFeature.FeatureUsesElement, 29, 341)
@@ -143,12 +142,11 @@ select navigation_value(aps.TestFeature.FeatureUsesElement, 29)
   {
     "FeatureUsesElement": {
       "Id": "0x1d",
-      "RelECClassId": "0x156"
+      "RelECClassId": "0x158"
     }
   }
 ]
 ```
-
 
 # With binders and hex ids
 
@@ -230,7 +228,6 @@ select navigation_value(aps.TestFeature.FeatureUsesElement, ?, ?)
 ]
 ```
 
-
 # With actual navigation property row values
 
 - dataset: AllProperties.bim
@@ -269,18 +266,17 @@ FROM
   {
     "FeatureUsesElement": {
       "Id": "0x1d",
-      "RelECClassId": "0x156"
+      "RelECClassId": "0x158"
     }
   },
   {
     "FeatureUsesElement": {
       "Id": "0x1c",
-      "RelECClassId": "0x156"
+      "RelECClassId": "0x158"
     }
   }
 ]
 ```
-
 
 # With duplicate navigation properties
 
@@ -396,22 +392,21 @@ FROM
   {
     "FeatureUsesElement": {
       "Id": "0x1d",
-      "RelECClassId": "0x156"
+      "RelECClassId": "0x158"
     },
     "Id": "0x1d",
-    "RelECClassId": "0x156"
+    "RelECClassId": "0x158"
   },
   {
     "FeatureUsesElement": {
       "Id": "0x1c",
-      "RelECClassId": "0x156"
+      "RelECClassId": "0x158"
     },
     "Id": "0x1c",
-    "RelECClassId": "0x156"
+    "RelECClassId": "0x158"
   }
 ]
 ```
-
 
 # With navigation value function in from clause
 
@@ -483,7 +478,6 @@ WHERE
 ]
 ```
 
-
 # With navigation value function with subquery as arguments
 
 - dataset: AllProperties.bim
@@ -498,7 +492,7 @@ SELECT
       FROM
         aps.TestFeature
       WHERE
-        FeatureUsesElement.RelECClassId = 0x156
+        FeatureUsesElement.RelECClassId = 0x158
       LIMIT
         1
       OFFSET
@@ -538,7 +532,7 @@ SELECT
   {
     "FeatureUsesElement": {
       "Id": "0x1c",
-      "RelECClassId": "0x156"
+      "RelECClassId": "0x158"
     }
   }
 ]

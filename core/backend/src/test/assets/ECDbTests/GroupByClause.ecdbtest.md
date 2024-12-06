@@ -186,7 +186,6 @@ HAVING
 | ----------- |
 | 1004        |
 
-
 # With Having clause and multiple aggregate functions gt check
 
 - dataset: AllProperties.bim
@@ -214,7 +213,6 @@ HAVING
 | -------- | ------- | ------- |
 | NotNull  | 1009    | 1001    |
 
-
 # With Having clause and multiple aggregate functions lt check2
 
 - dataset: AllProperties.bim
@@ -241,7 +239,6 @@ HAVING
 | Max_Val | Min_Val |
 | ------- | ------- |
 | 1008    | 1000    |
-
 
 # With multiple aggregate functions
 
@@ -352,9 +349,8 @@ GROUP BY
 
 | ECClassId | Id   | ClassName   | NullProp  |
 | --------- | ---- | ----------- | --------- |
-| 0x152     | 0x11 | TestElement | undefined |
-| 0x152     | 0x11 | TestElement | NotNull   |
-
+| 0x153     | 0x11 | TestElement | undefined |
+| 0x153     | 0x11 | TestElement | NotNull   |
 
 # With a subquery
 
@@ -390,7 +386,6 @@ HAVING
 | -------- | ---------------------------------- | ----------- |
 | NotNull  | BIN(11,21,31,34,53,21,14,14,55,22) | 5           |
 
-
 # With DISTINCT
 
 - dataset: AllProperties.bim
@@ -408,7 +403,6 @@ SELECT  bin,  Count(Distinct(bin)) as distinct_count FROM  aps.TestElement GROUP
 | ---------------------------------- | -------------- |
 | BIN(1,2,3)                         | 1              |
 | BIN(11,21,31,34,53,21,14,14,55,22) | 1              |
-
 
 # With where clause
 
@@ -438,7 +432,6 @@ GROUP BY
 | ---------------------------------- | ----------- | --------- |
 | BIN(1,2,3)                         | 2           | undefined |
 | BIN(11,21,31,34,53,21,14,14,55,22) | 2           | NotNull   |
-
 
 # With order by clause
 

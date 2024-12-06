@@ -30,7 +30,7 @@ LIMIT
 
 | ECInstanceId | ECClassId | Id   | i   | DirectStr | DirectLong | DirectDouble |
 | ------------ | --------- | ---- | --- | --------- | ---------- | ------------ |
-| 0x14         | 0x152     | 0x11 | 100 | str0      | 1000       | 0.1          |
+| 0x14         | 0x153     | 0x11 | 100 | str0      | 1000       | 0.1          |
 
 # Using a table alias
 
@@ -63,7 +63,7 @@ LIMIT
 
 | ECInstanceId | ECClassId | Id   | i   | DirectStr | DirectLong | DirectDouble |
 | ------------ | --------- | ---- | --- | --------- | ---------- | ------------ |
-| 0x14         | 0x152     | 0x11 | 100 | str0      | 1000       | 0.1          |
+| 0x14         | 0x153     | 0x11 | 100 | str0      | 1000       | 0.1          |
 
 # With an inner join
 
@@ -121,7 +121,6 @@ LIMIT
 | ------------ | ---- | --------- | ----------- |
 | 0x14         | 0x11 | str0      | TestElement |
 
-
 # With a left join
 
 - dataset: AllProperties.bim
@@ -149,7 +148,6 @@ LIMIT
 | ECInstanceId | Id   | DirectStr | Name        |
 | ------------ | ---- | --------- | ----------- |
 | 0x14         | 0x11 | str0      | TestElement |
-
 
 # With a full join
 
@@ -198,7 +196,6 @@ LIMIT
   1
 ```
 
-
 # With a subquery
 
 - dataset: AllProperties.bim
@@ -226,12 +223,11 @@ LIMIT
 
 | Id   | ClassId |
 | ---- | ------- |
-| 0x14 | 0x152   |
-| 0x15 | 0x152   |
-| 0x16 | 0x152   |
-| 0x17 | 0x152   |
-| 0x18 | 0x152   |
-
+| 0x14 | 0x153   |
+| 0x15 | 0x153   |
+| 0x16 | 0x153   |
+| 0x17 | 0x153   |
+| 0x18 | 0x153   |
 
 # With joins and subquery
 
@@ -275,11 +271,10 @@ FROM
 
 | ECInstanceId | ECClassId | Id   | i   | DirectStr | DirectLong | DirectDouble |
 | ------------ | --------- | ---- | --- | --------- | ---------- | ------------ |
-| 0x14         | 0x152     | 0x11 | 100 | str0      | 1000       | 0.1          |
-| 0x15         | 0x152     | 0x11 | 101 | str1      | 1001       | 1.1          |
-| 0x16         | 0x152     | 0x11 | 102 | str2      | 1002       | 2.1          |
-| 0x17         | 0x152     | 0x11 | 103 | str3      | 1003       | 3.1          |
-
+| 0x14         | 0x153     | 0x11 | 100 | str0      | 1000       | 0.1          |
+| 0x15         | 0x153     | 0x11 | 101 | str1      | 1001       | 1.1          |
+| 0x16         | 0x153     | 0x11 | 102 | str2      | 1002       | 2.1          |
+| 0x17         | 0x153     | 0x11 | 103 | str3      | 1003       | 3.1          |
 
 # With Distinct keyword
 
@@ -301,9 +296,8 @@ SELECT DISTINCT(ECClassId) from Bis.Element
 | 0xdd      |
 | 0xf0      |
 | 0x126     |
-| 0x152     |
-| 0x155     |
-
+| 0x153     |
+| 0x157     |
 
 # With Union
 
@@ -329,7 +323,6 @@ FROM
 | ------------------------------- |
 | AllProperties:TestElement       |
 | AllProperties:TestElementAspect |
-
 
 # With Union All
 
@@ -369,7 +362,6 @@ FROM
 | AllProperties:TestElementAspect |
 | AllProperties:TestElementAspect |
 
-
 # With multiple tables
 
 - dataset: AllProperties.bim
@@ -396,8 +388,8 @@ LIMIT
 
 | ElementId | ElementClass | AspectId | AspectClass |
 | --------- | ------------ | -------- | ----------- |
-| 0x14      | 0x152        | 0x21     | 0x153       |
-| 0x14      | 0x152        | 0x22     | 0x153       |
-| 0x14      | 0x152        | 0x23     | 0x153       |
-| 0x14      | 0x152        | 0x24     | 0x153       |
-| 0x14      | 0x152        | 0x25     | 0x153       |
+| 0x14      | 0x153        | 0x21     | 0x154       |
+| 0x14      | 0x153        | 0x22     | 0x154       |
+| 0x14      | 0x153        | 0x23     | 0x154       |
+| 0x14      | 0x153        | 0x24     | 0x154       |
+| 0x14      | 0x153        | 0x25     | 0x154       |

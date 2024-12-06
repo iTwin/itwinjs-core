@@ -54,11 +54,11 @@ SELECT e.ECClassId, e.DirectStr FROM aps.TestElement e WHERE e.DirectLong > 1005
 ```json
 [
   {
-    "ECClassId": "0x152",
+    "ECClassId": "0x153",
     "DirectStr": "str6"
   },
   {
-    "ECClassId": "0x152",
+    "ECClassId": "0x153",
     "DirectStr": "str7"
   }
 ]

@@ -340,9 +340,9 @@ with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
 |           | x            | true      | 0     | x        | x    | ClassId      | long     | Id   |
 
-| x                     |
-| --------------------- |
-| 0x152 |
+| x     |
+| ----- |
+| 0x153 |
 
 # Testing classId props with convertClassIdsToClassNames flag using CTE
 
@@ -357,9 +357,9 @@ with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1) select x from
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
 |           | x            | true      | 0     | x        | x    | ClassId      | long     | Id   |
 
-| x                     |
-| --------------------- |
-| 0x152 |
+| x     |
+| ----- |
+| 0x153 |
 
 # Testing classId props with convertClassIdsToClassNames flag using CTE subquery
 
@@ -374,9 +374,9 @@ select x from (with tmp(x) as (SELECT e.ECClassId FROM aps.TestElement e LIMIT 1
 | --------- | ------------ | --------- | ----- | -------- | ---- | ------------ | -------- | ---- |
 |           | x            | true      | 0     | x        | x    | ClassId      | long     | Id   |
 
-| x                     |
-| --------------------- |
-| 0x152 |
+| x     |
+| ----- |
+| 0x153 |
 
 # Testing InstanceId props using CTE
 

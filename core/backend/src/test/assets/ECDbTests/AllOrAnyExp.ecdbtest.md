@@ -28,7 +28,6 @@ WHERE
 | ------- | --------------------- |
 | 0x11    | BisCore:PhysicalModel |
 
-
 # Using ALL with inequality
 
 - dataset: AllProperties.bim
@@ -59,7 +58,6 @@ WHERE
 | 0xe     | BisCore:LinkModel       |
 | 0x1     | BisCore:RepositoryModel |
 
-
 # Using ANY with equality
 
 - dataset: AllProperties.bim
@@ -87,7 +85,6 @@ WHERE
 | ModelId | ClassName             |
 | ------- | --------------------- |
 | 0x11    | BisCore:PhysicalModel |
-
 
 # Using ANY with inequality
 
@@ -119,8 +116,6 @@ WHERE
 | 0xe     | BisCore:LinkModel       |
 | 0x1     | BisCore:RepositoryModel |
 
-
-
 # Using ANY Greater Than
 
 - dataset: AllProperties.bim
@@ -147,10 +142,11 @@ WHERE
 
 | ECInstanceId | Name                        |
 | ------------ | --------------------------- |
-| 0x153        | TestElementAspect           |
-| 0x154        | TestElementRefersToElements |
-| 0x155        | TestFeature                 |
-| 0x156        | TestFeatureUsesElement      |
+| 0x154        | TestElementAspect           |
+| 0x155        | TestElementRefersToElements |
+| 0x156        | TestEntityClass             |
+| 0x157        | TestFeature                 |
+| 0x158        | TestFeatureUsesElement      |
 
 # Using ANY Greater Than Or Equal To
 
@@ -178,11 +174,12 @@ WHERE
 
 | ECInstanceId | Name                        |
 | ------------ | --------------------------- |
-| 0x152        | TestElement                 |
-| 0x153        | TestElementAspect           |
-| 0x154        | TestElementRefersToElements |
-| 0x155        | TestFeature                 |
-| 0x156        | TestFeatureUsesElement      |
+| 0x153        | TestElement                 |
+| 0x154        | TestElementAspect           |
+| 0x155        | TestElementRefersToElements |
+| 0x156        | TestEntityClass             |
+| 0x157        | TestFeature                 |
+| 0x158        | TestFeatureUsesElement      |
 
 # Using ANY Less Than
 
@@ -213,7 +210,6 @@ WHERE
 | 0x10    | BisCore:DictionaryModel |
 | 0xe     | BisCore:LinkModel       |
 | 0x1     | BisCore:RepositoryModel |
-
 
 # Using ANY Less Than Or Equal To
 
@@ -246,8 +242,6 @@ WHERE
 | 0x11    | BisCore:PhysicalModel   |
 | 0x1     | BisCore:RepositoryModel |
 
-
-
 # Using SOME with equality
 
 - dataset: AllProperties.bim
@@ -275,7 +269,6 @@ WHERE
 | ModelId | ClassName             |
 | ------- | --------------------- |
 | 0x11    | BisCore:PhysicalModel |
-
 
 # Using SOME with inequality
 
@@ -307,7 +300,6 @@ WHERE
 | 0xe     | BisCore:LinkModel       |
 | 0x1     | BisCore:RepositoryModel |
 
-
 # Using SOME with Greater Than
 
 - dataset: AllProperties.bim
@@ -334,11 +326,11 @@ WHERE
 
 | ECInstanceId | Name                        |
 | ------------ | --------------------------- |
-| 0x153        | TestElementAspect           |
-| 0x154        | TestElementRefersToElements |
-| 0x155        | TestFeature                 |
-| 0x156        | TestFeatureUsesElement      |
-
+| 0x154        | TestElementAspect           |
+| 0x155        | TestElementRefersToElements |
+| 0x156        | TestEntityClass             |
+| 0x157        | TestFeature                 |
+| 0x158        | TestFeatureUsesElement      |
 
 # Using SOME with Greater Than Or Equal To
 
@@ -366,12 +358,12 @@ WHERE
 
 | ECInstanceId | Name                        |
 | ------------ | --------------------------- |
-| 0x152        | TestElement                 |
-| 0x153        | TestElementAspect           |
-| 0x154        | TestElementRefersToElements |
-| 0x155        | TestFeature                 |
-| 0x156        | TestFeatureUsesElement      |
-
+| 0x153        | TestElement                 |
+| 0x154        | TestElementAspect           |
+| 0x155        | TestElementRefersToElements |
+| 0x156        | TestEntityClass             |
+| 0x157        | TestFeature                 |
+| 0x158        | TestFeatureUsesElement      |
 
 # Using SOME with Less Than
 
@@ -403,7 +395,6 @@ WHERE
 | 0xe     | BisCore:LinkModel       |
 | 0x1     | BisCore:RepositoryModel |
 
-
 # Using SOME with Less Than Or Equal To
 
 - dataset: AllProperties.bim
@@ -434,8 +425,6 @@ WHERE
 | 0xe     | BisCore:LinkModel       |
 | 0x11    | BisCore:PhysicalModel   |
 | 0x1     | BisCore:RepositoryModel |
-
-
 
 # Using ANY with subquery
 
@@ -470,11 +459,11 @@ WHERE
 
 | ECInstanceId | Name                        |
 | ------------ | --------------------------- |
-| 0x153        | TestElementAspect           |
-| 0x154        | TestElementRefersToElements |
-| 0x155        | TestFeature                 |
-| 0x156        | TestFeatureUsesElement      |
-
+| 0x154        | TestElementAspect           |
+| 0x155        | TestElementRefersToElements |
+| 0x156        | TestEntityClass             |
+| 0x157        | TestFeature                 |
+| 0x158        | TestFeatureUsesElement      |
 
 # Using ANY with where clause in subquery
 
@@ -509,12 +498,12 @@ WHERE
 
 | ECInstanceId | Name                        |
 | ------------ | --------------------------- |
-| 0x152        | TestElement                 |
-| 0x153        | TestElementAspect           |
-| 0x154        | TestElementRefersToElements |
-| 0x155        | TestFeature                 |
-| 0x156        | TestFeatureUsesElement      |
-
+| 0x153        | TestElement                 |
+| 0x154        | TestElementAspect           |
+| 0x155        | TestElementRefersToElements |
+| 0x156        | TestEntityClass             |
+| 0x157        | TestFeature                 |
+| 0x158        | TestFeatureUsesElement      |
 
 # Using SOME with where clause in subquery
 
@@ -549,11 +538,11 @@ WHERE
 
 | ECInstanceId | Name                        |
 | ------------ | --------------------------- |
-| 0x153        | TestElementAspect           |
-| 0x154        | TestElementRefersToElements |
-| 0x155        | TestFeature                 |
-| 0x156        | TestFeatureUsesElement      |
-
+| 0x154        | TestElementAspect           |
+| 0x155        | TestElementRefersToElements |
+| 0x156        | TestEntityClass             |
+| 0x157        | TestFeature                 |
+| 0x158        | TestFeatureUsesElement      |
 
 # Using ANY with group by clause in subquery
 
@@ -583,12 +572,12 @@ WHERE
 
 | ECInstanceId | Name                        |
 | ------------ | --------------------------- |
-| 0x152        | TestElement                 |
-| 0x153        | TestElementAspect           |
-| 0x154        | TestElementRefersToElements |
-| 0x155        | TestFeature                 |
-| 0x156        | TestFeatureUsesElement      |
-
+| 0x153        | TestElement                 |
+| 0x154        | TestElementAspect           |
+| 0x155        | TestElementRefersToElements |
+| 0x156        | TestEntityClass             |
+| 0x157        | TestFeature                 |
+| 0x158        | TestFeatureUsesElement      |
 
 # Using SOME with group by clause in subquery
 
@@ -624,7 +613,6 @@ ORDER BY
 | 0xe          | BisCore:LinkModel       |
 | 0x10         | BisCore:DictionaryModel |
 | 0x11         | BisCore:PhysicalModel   |
-
 
 # Using ALL with simple CTE in subquery
 
@@ -664,7 +652,6 @@ WHERE
 | ECInstanceId | ClassName                       | ElementID |
 | ------------ | ------------------------------- | --------- |
 | 0x21         | AllProperties:TestElementAspect | 0x14      |
-
 
 # Using ANY with simple CTE in subquery
 
@@ -707,7 +694,6 @@ WHERE
 | 0x24         | AllProperties:TestElementAspect | 0x1a      |
 | 0x25         | AllProperties:TestElementAspect | 0x1c      |
 
-
 # Using ANY GTE with simple CTE in subquery
 
 - dataset: AllProperties.bim
@@ -749,7 +735,6 @@ WHERE
 | 0x24         | AllProperties:TestElementAspect | 0x1a      |
 | 0x25         | AllProperties:TestElementAspect | 0x1c      |
 
-
 # Using SOME with simple CTE in subquery
 
 - dataset: AllProperties.bim
@@ -790,7 +775,6 @@ WHERE
 | 0x23         | AllProperties:TestElementAspect | 0x18      |
 | 0x24         | AllProperties:TestElementAspect | 0x1a      |
 | 0x25         | AllProperties:TestElementAspect | 0x1c      |
-
 
 # Using ANY with CTE and alias
 
@@ -920,7 +904,6 @@ WHERE
 | 0x1c         | 1008       |
 | 0x1d         | 1009       |
 
-
 # Using ALL with multiple items
 
 - dataset: AllProperties.bim
@@ -946,8 +929,7 @@ WHERE
 
 | Total_Count |
 | ----------- |
-| 338         |
-
+| 339         |
 
 # Using ANY with multiple items
 
@@ -974,13 +956,11 @@ WHERE
 
 | Total_Count |
 | ----------- |
-| 245         |
-
+| 247         |
 
 # Using SOME with multiple items
 
 - dataset: AllProperties.bim
-
 
 ```sql
 SELECT
@@ -1005,7 +985,6 @@ WHERE
 | ----------- |
 | 2           |
 
-
 # ALL in select clause
 
 - dataset: AllProperties.bim
@@ -1020,17 +999,16 @@ select ALL(ECClassId) from aps.TestElement
 
 | ECClassId |
 | --------- |
-| 0x152     |
-| 0x152     |
-| 0x152     |
-| 0x152     |
-| 0x152     |
-| 0x152     |
-| 0x152     |
-| 0x152     |
-| 0x152     |
-| 0x152     |
-
+| 0x153     |
+| 0x153     |
+| 0x153     |
+| 0x153     |
+| 0x153     |
+| 0x153     |
+| 0x153     |
+| 0x153     |
+| 0x153     |
+| 0x153     |
 
 # ANY in select clause
 
@@ -1048,7 +1026,6 @@ select ANY(ECClassId) as Test_Val from aps.TestElement
 | -------- |
 | true     |
 
-
 # SOME in select clause
 
 - dataset: AllProperties.bim
@@ -1062,9 +1039,8 @@ select SOME(ECClassId) as Test_Val from aps.TestElement
 |           | Test_Val     | true      | 0     | test_Val | Test_Val | undefined    | boolean  | Boolean |
 
 | Test_Val |
-| ----------------- |
-| true              |
-
+| -------- |
+| true     |
 
 # With conditional ALL
 
@@ -1094,8 +1070,8 @@ WHERE
 
 | ECInstanceId | Name                        |
 | ------------ | --------------------------- |
-| 0x153        | TestElementAspect           |
-| 0x154        | TestElementRefersToElements |
-| 0x155        | TestFeature                 |
-| 0x156        | TestFeatureUsesElement      |
-
+| 0x154        | TestElementAspect           |
+| 0x155        | TestElementRefersToElements |
+| 0x156        | TestEntityClass             |
+| 0x157        | TestFeature                 |
+| 0x158        | TestFeatureUsesElement      |

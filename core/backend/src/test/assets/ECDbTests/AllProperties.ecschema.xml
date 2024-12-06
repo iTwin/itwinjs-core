@@ -38,6 +38,17 @@
     <ECEnumerator value="1" name="One" />
     <ECEnumerator value="2" name="Two" />
   </ECEnumeration>
+  <ECCustomAttributeClass typeName="TestCAClass" modifier="Sealed" appliesTo="EntityClass">
+    <ECProperty propertyName="TestCAProp" typeName="string" />
+  </ECCustomAttributeClass>
+  <ECEntityClass typeName="TestEntityClass">
+    <BaseClass>bis:PhysicalElement</BaseClass>
+    <ECCustomAttributes>
+      <TestCAClass>
+        <TestCAProp>TestProp</TestCAProp>
+      </TestCAClass>
+    </ECCustomAttributes>
+  </ECEntityClass>
   <ECEntityClass typeName="TestElementAspect" modifier="None">
     <BaseClass>bis:ElementUniqueAspect</BaseClass>
     <BaseClass>IPrimitiveAspect</BaseClass>

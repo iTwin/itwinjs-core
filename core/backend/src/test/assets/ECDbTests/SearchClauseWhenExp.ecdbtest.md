@@ -268,8 +268,9 @@ WHERE
 | --------------------------- |
 | TestElementAspect           |
 | TestElementRefersToElements |
-| TestFeature                    |
-| TestFeatureUsesElement         |
+| TestEntityClass             |
+| TestFeature                 |
+| TestFeatureUsesElement      |
 
 # Complex When clause with nested subqueries
 
@@ -307,8 +308,9 @@ WHERE
 | --------------------------- |
 | TestElementAspect           |
 | TestElementRefersToElements |
-| TestFeature                    |
-| TestFeatureUsesElement         |
+| TestEntityClass             |
+| TestFeature                 |
+| TestFeatureUsesElement      |
 
 # Testing internal props of objects in When Clause
 

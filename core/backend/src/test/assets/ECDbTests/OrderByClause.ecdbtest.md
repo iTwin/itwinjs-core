@@ -439,13 +439,13 @@ ORDER BY
 
 | ElementId | ClassId | Name        | NullProp  |
 | --------- | ------- | ----------- | --------- |
-| 0x15      | 0x152   | TestElement | NotNull   |
-| 0x17      | 0x152   | TestElement | NotNull   |
-| 0x19      | 0x152   | TestElement | NotNull   |
-| 0x1b      | 0x152   | TestElement | NotNull   |
-| 0x1d      | 0x152   | TestElement | NotNull   |
-| 0x14      | 0x152   | TestElement | undefined |
-| 0x16      | 0x152   | TestElement | undefined |
-| 0x18      | 0x152   | TestElement | undefined |
-| 0x1a      | 0x152   | TestElement | undefined |
-| 0x1c      | 0x152   | TestElement | undefined |
+| 0x15      | 0x153   | TestElement | NotNull   |
+| 0x17      | 0x153   | TestElement | NotNull   |
+| 0x19      | 0x153   | TestElement | NotNull   |
+| 0x1b      | 0x153   | TestElement | NotNull   |
+| 0x1d      | 0x153   | TestElement | NotNull   |
+| 0x14      | 0x153   | TestElement | undefined |
+| 0x16      | 0x153   | TestElement | undefined |
+| 0x18      | 0x153   | TestElement | undefined |
+| 0x1a      | 0x153   | TestElement | undefined |
+| 0x1c      | 0x153   | TestElement | undefined |
