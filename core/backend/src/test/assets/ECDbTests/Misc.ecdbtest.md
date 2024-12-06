@@ -215,6 +215,99 @@ WHERE
 | 0x1b         |
 | 0x1d         |
 
+
+
+# SubqueryTestExp with EXISTS and cte subquery
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  ECInstanceId
+FROM
+  aps.TestElement e
+WHERE
+  EXISTS (
+    WITH
+      cte (a, b) AS (
+        SELECT
+          ECInstanceId,
+          ECClassId
+        FROM
+          aps.TestElementAspect
+        LIMIT
+          1
+      )
+    SELECT
+      *
+    FROM
+      cte
+  )
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+
+| ECInstanceId |
+| ------------ |
+| 0x14         |
+| 0x15         |
+| 0x16         |
+| 0x17         |
+| 0x18         |
+| 0x19         |
+| 0x1a         |
+| 0x1b         |
+| 0x1c         |
+| 0x1d         |
+
+# SubqueryTestExp with NOT EXISTS and cte subquery
+
+- dataset: AllProperties.bim
+
+```sql
+SELECT
+  ECInstanceId
+FROM
+  aps.TestElement e
+WHERE
+  NOT EXISTS (
+    WITH
+      cte (a, b) AS (
+        SELECT
+          ECInstanceId,
+          ECClassId
+        FROM
+          aps.TestElementAspect
+        WHERE
+          ECInstanceId = 0x999
+      )
+    SELECT
+      *
+    FROM
+      cte
+  )
+```
+
+| className | accessString | generated | index | jsonName | name         | extendedType | typeName | type | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------------ | ------------ | -------- | ---- | ------------------ |
+|           | ECInstanceId | false     | 0     | id       | ECInstanceId | Id           | long     | Id   | ECInstanceId       |
+
+| ECInstanceId |
+| ------------ |
+| 0x14         |
+| 0x15         |
+| 0x16         |
+| 0x17         |
+| 0x18         |
+| 0x19         |
+| 0x1a         |
+| 0x1b         |
+| 0x1c         |
+| 0x1d         |
+
+
 # Simple LIMIT and OFFSET test
 
 - dataset: AllProperties.bim
@@ -700,14 +793,15 @@ PRAGMA explain_query (
 |           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
 |           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
 
-| id  | parent | notused | detail            |
-| --- | ------ | ------- | ----------------- |
-| 2   | 0      | 0       | CO-ROUTINE cnt    |
-| 5   | 2      | 0       | SETUP             |
-| 6   | 5      | 0       | SCAN CONSTANT ROW |
-| 21  | 2      | 0       | RECURSIVE STEP    |
-| 22  | 21     | 216     | SCAN cnt          |
-| 37  | 0      | 215     | SCAN cnt          |
+| id | parent | notused | detail            |
+| -- | ------ | ------- | ----------------- |
+| 2  | 0      | 0       | CO-ROUTINE cnt    |
+| 5  | 2      | 0       | SETUP             |
+| 6  | 5      | 0       | SCAN CONSTANT ROW |
+| 19 | 2      | 0       | RECURSIVE STEP    |
+| 20 | 19     | 216     | SCAN cnt          |
+| 31 | 0      | 215     | SCAN cnt          |
+
 
 # Using Scalar values in select clause with + operator
 
