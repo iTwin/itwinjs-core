@@ -1,6 +1,6 @@
 {
   "name": "@itwin/presentation-frontend",
-  "version": "5.0.0-dev.7",
+  "version": "5.0.0-dev.18",
   "description": "Frontend of iModel.js Presentation library",
   "main": "lib/cjs/presentation-frontend.js",
   "module": "lib/esm/presentation-frontend.js",
@@ -47,12 +47,12 @@
     "rxjs-for-await": "^1.0.0"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^5.0.0-dev.7",
-    "@itwin/core-common": "workspace:^5.0.0-dev.7",
-    "@itwin/core-frontend": "workspace:^5.0.0-dev.7",
-    "@itwin/core-quantity": "workspace:^5.0.0-dev.7",
-    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.7",
-    "@itwin/presentation-common": "workspace:^5.0.0-dev.7"
+    "@itwin/core-bentley": "workspace:^5.0.0-dev.18",
+    "@itwin/core-common": "workspace:^5.0.0-dev.18",
+    "@itwin/core-frontend": "workspace:^5.0.0-dev.18",
+    "@itwin/core-quantity": "workspace:^5.0.0-dev.18",
+    "@itwin/ecschema-metadata": "workspace:^5.0.0-dev.18",
+    "@itwin/presentation-common": "workspace:^5.0.0-dev.18"
   },
   "devDependencies": {
     "@itwin/build-tools": "workspace:*",
@@ -76,7 +76,7 @@
     "chai-as-promised": "^7.1.1",
     "chai-jest-snapshot": "^2.0.0",
     "cpx2": "^3.0.0",
-    "cross-env": "^5.1.4",
+    "cross-env": "^7.0.3",
     "deep-equal": "^1",
     "eslint": "^9.13.0",
     "eslint-config-prettier": "^9.1.0",

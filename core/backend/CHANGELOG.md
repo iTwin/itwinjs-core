@@ -1,6 +1,14 @@
 # Change Log - @itwin/core-backend
 
-This log was last generated on Thu, 14 Nov 2024 18:13:56 GMT and should not be manually modified.
+This log was last generated on Fri, 22 Nov 2024 17:59:04 GMT and should not be manually modified.
+
+## 4.10.2
+Thu, 21 Nov 2024 15:22:20 GMT
+
+### Updates
+
+- Add test for BE_SQLITE_CONSTRAINT_UNIQUE
+- Fix CloudSqlite.DbAccess.createBlobContainer always overwriting containerType with "property-store".
 
 ## 4.10.1
 Thu, 14 Nov 2024 18:11:00 GMT
