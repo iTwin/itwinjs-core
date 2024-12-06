@@ -4,14 +4,15 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, Id64String } from "@itwin/core-bentley";
-import { Arc3d, ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Vector3d } from "@itwin/core-geometry";
+import { Arc3d, ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Sphere, Transform, Vector3d } from "@itwin/core-geometry";
 import { ColorDef, ModelClipGroup, ModelClipGroups } from "@itwin/core-common";
 import {
   createWorkerProxy,
+  GraphicBranch,
   GraphicType,
   HitDetail,
   IModelApp, IModelConnection, MarginOptions, MarginPercent, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority,
-  PaddingPercent, ScreenViewport, TiledGraphicsProvider, TileTreeReference, Tool, Viewport, ViewState,
+  PaddingPercent, readGltfGraphics, readGltfTemplate, RenderInstancesParamsBuilder, ScreenViewport, TiledGraphicsProvider, TileTreeReference, Tool, Viewport, ViewState,
 } from "@itwin/core-frontend";
 import { parseArgs } from "@itwin/frontend-devtools";
 import { MarkupApp, MarkupData } from "@itwin/core-markup";
@@ -70,20 +71,58 @@ class FeatureProvider implements TiledGraphicsProvider {
 }
 
 export function getCirclesData(center: Point3d) {
+  const scaleFactor = 5;
   const xyzRadius = new Float64Array([
-    center.x, center.y, center.z, 100,
-    center.x + 100, center.y, center.z, 100,
-    center.x + 400, center.y + 400, center.z, 100]);
+    center.x, center.y, center.z, scaleFactor,
+    center.x + 100, center.y, center.z, scaleFactor,
+    // center.x + 400, center.y + 400, center.z, scaleFactor]);
+    center.x + 100, center.y, center.z+50, scaleFactor]);
 
   return {
     xyzRadius,
-    colors: new Uint32Array([ColorDef.red.tbgr, ColorDef.blue.tbgr, ColorDef.green.tbgr]),
+    colors: new Uint32Array([ColorDef.from(255, 0 , 0, 150).tbgr, ColorDef.from(0, 0 , 255, 150).tbgr, ColorDef.from(0, 255, 0, 150).tbgr]),
   };
 }
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function testGraphicCreatorMain(vp: Viewport) {
+
+async function  testGraphicCreatorMain(vp: Viewport) {
+  // vp.viewFlags = vp.viewFlags.copy({ renderMode: RenderMode.SmoothShade });
+  // vp.viewFlags = vp.viewFlags.withRenderMode(RenderMode.SmoothShade);
+
+  const gltfUrl = "https://publisher.orbitgt.com/objects/bollard.gltf";
+  //  const gltfUrl = "https://publisher.orbitgt.com/objects/cone.gltf";
+  // const gltfUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Models/refs/heads/main/2.0/Duck/glTF-Embedded/Duck.gltf";
+  // const gltfUrl = "https://raw.githubusercontent.com/KhronosGroup/glTF-Sample-Assets/refs/heads/main/Models/CesiumMan/glTF/CesiumMan.gltf";
+  const jsonData  = await (await fetch(gltfUrl)).json();
+  const baseUrl = new URL(gltfUrl, window.location.href);
+
+  const getGltf =  async (transform?: Transform) => {
+    return readGltfGraphics({
+      gltf: jsonData,
+      iModel: vp.iModel,
+      baseUrl,
+      transform,
+    });
+  }
+  const gltf = await readGltfGraphics({
+    gltf: jsonData,
+    iModel: vp.iModel,
+    baseUrl
+  });
+//
+
+  const useInstancing = true;
+  const readGltfForEachInstance = true; // only used when 'useInstancing' is false
+  const gltfTemplate =
+      useInstancing
+    ? await readGltfTemplate({
+      gltf: jsonData,
+      iModel: vp.iModel,
+      baseUrl })
+    : undefined;
+
   const modelId = vp.iModel.transientIds.getNext();
+  const instanceBuilder = RenderInstancesParamsBuilder.create({modelId});
 
   const builder = IModelApp.renderSystem.createGraphic({
     type: GraphicType.Scene,
@@ -99,6 +138,8 @@ function testGraphicCreatorMain(vp: Viewport) {
   const colors = circlesData.colors;
 
   const numCircles = circlesData.xyzRadius.length / 4;
+
+  const mainBranch = new GraphicBranch();
   // Add each circle to the builder.
   for (let i = 0; i < numCircles; i++) {
     // Set the next circle's color.
@@ -111,13 +152,66 @@ function testGraphicCreatorMain(vp: Viewport) {
 
     // Add the circle to the builder.
     const offset = i * 4;
-    const center = new Point3d(circles[offset], circles[offset + 1], circles[offset + 2]);
+    const position = new Point3d(circles[offset], circles[offset + 1], circles[offset + 2]);
+    const scaleFactor = circles[offset + 3];
     const radius = circles[offset + 3];
-    const circle = Arc3d.createXY(center, radius);
-
+    const sphere = Sphere.createCenterRadius(position, radius);
+    builder.addSolidPrimitive(sphere);
+    const circle = Arc3d.createXY(position, radius);
     builder.addArc(circle, true, true);
+    mainBranch.add(builder.finish());
+
+    if (gltfTemplate) {
+      const transform = Transform.createTranslation(position);
+      // const transform = Transform.createScaleAboutPoint(center, scaleFactor).multiplyTransformTransform(Transform.createTranslation(center)),
+      // const transform = Transform.createIdentity()
+      instanceBuilder.add({transform, feature: vp.iModel.transientIds.getNext()});
+    } else {
+      if (readGltfForEachInstance) {
+        // No instancing; read gltf from source each time
+        // NO ISSUES
+        const transform = Transform.createScaleAboutPoint(position, scaleFactor).multiplyTransformTransform(Transform.createTranslation(position));
+        const gltfGraphic = await getGltf(transform)
+        if (gltfGraphic !== undefined)
+          mainBranch.add(gltfGraphic)
+      } else {
+      //   // No instancing; re-use gltf graphic
+      //   // NOTHING DISPLAYED
+      //   const gltfBranch = new GraphicBranch();
+      //   gltfBranch.add(gltf)
+      //   const transform = Transform.createScaleAboutPoint(center, scaleFactor).multiplyTransformTransform(Transform.createTranslation(center));
+      //   const gltfGraphic = IModelApp.renderSystem.createGraphicBranch(mainBranch, transform);
+      //   mainBranch.add(gltfGraphic)
+      }
+    }
   }
-  const graphic = builder.finish();
+
+
+  // if (gltf !== undefined) {
+  //   branch.add(gltf);
+  // }
+
+  let graphic: RenderGraphic|undefined;
+  if (gltfTemplate) {
+    const instancesParams = instanceBuilder.finish();
+    const renderInstances = IModelApp.renderSystem.createRenderInstances(instancesParams);
+    const instancesGraphic = IModelApp.renderSystem.createGraphicFromTemplate({ template : gltfTemplate.template, instances: renderInstances });
+    mainBranch.add(instancesGraphic);
+    // graphic = IModelApp.renderSystem.createGraphicBranch(branch);
+    // const center = vp.view.getCenter()
+    // const transform = Transform.createTranslation(new Point3d(center.x, center.y, center.z+20));
+     const transform = Transform.createIdentity();
+    graphic = IModelApp.renderSystem.createGraphicBranch(mainBranch, transform);
+
+  } else {
+    // graphic = IModelApp.renderSystem.createGraphicBranch(branch);
+    // const transform = Transform.createTranslation(vp.view.getCenter());
+    const transform = Transform.createIdentity();
+    graphic = IModelApp.renderSystem.createGraphicBranch(mainBranch, transform);
+  }
+
+
+
 
   const inst = FeatureProvider.getInstance(vp);
   inst.trees.push(TileTreeReference.createFromRenderGraphic({
@@ -128,6 +222,8 @@ function testGraphicCreatorMain(vp: Viewport) {
       return `sourceId: ${hit.sourceId}`;
     },
   }));
+  // vp.invalidateRenderPlan();
+  // vp.invalidateSymbologyOverrides();
 }
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -162,7 +258,7 @@ async function testGraphicCreator(vp: Viewport) {
   const context = await IModelApp.renderSystem.resolveGraphicDescriptionContext(graphicResult.context, vp.iModel);
 
   // Convert the GraphicDescription into a RenderGraphic.
-  const graphic = await IModelApp.renderSystem.createGraphicFromDescription({
+  const graphic =  IModelApp.renderSystem.createGraphicFromDescription({
     description: graphicResult.description,
     context,
   });
@@ -182,7 +278,8 @@ async function testGraphicCreator(vp: Viewport) {
   }));
 }
 
-export async function testCalculator() {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+async function testCalculator() {
   const calculator: CalculatorProxy = createWorkerProxy<Calculator>("./lib/scripts/ExampleWorker.js");
 
   const pi = await calculator.pi();
@@ -434,8 +531,8 @@ export class Viewer extends Window {
       iconUnicode: "\ue9fc",
       click: async () => {
         // await testCalculator();
-        await testGraphicCreator(this.viewport);
-        // testGraphicCreatorMain(this.viewport);
+        // await testGraphicCreator(this.viewport);
+        await testGraphicCreatorMain(this.viewport);
       },
       tooltip: "Test Worker",
     }));
