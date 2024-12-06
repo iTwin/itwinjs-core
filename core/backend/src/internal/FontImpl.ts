@@ -7,9 +7,18 @@ import * as fs from "fs";
 import { FontFile, IModelDbFonts, ShxFontFile, ShxFontFileFromBlobArgs, TrueTypeFontFile } from "../Font";
 import { FontId, FontProps, FontType, LocalFileName } from "@itwin/core-common";
 import { IModelHost } from "../IModelHost";
-import { _implementationProhibited } from "./Symbols";
+import { _implementationProhibited, _nativeDb } from "./Symbols";
 import { IModelDb } from "../IModelDb";
+import type { IModelJsNative } from "@bentley/imodeljs-native";
         
+type EmbeddableFontFile = FontFile & {
+  getEmbedArgs(): IModelJsNative.EmbedFontArg;
+}
+
+function isEmbeddableFontFile(file: FontFile): file is EmbeddableFontFile {
+  return "getEmbedArgs" in file;
+}
+
 export function trueTypeFontFileFromFileName(fileName: LocalFileName): TrueTypeFontFile {
   const metadata = IModelHost.platform.getTrueTypeFontMetadata(fileName);
   if (!metadata.familyNames) {
@@ -17,12 +26,15 @@ export function trueTypeFontFileFromFileName(fileName: LocalFileName): TrueTypeF
     throw new Error("Failed to read font file");
   }
 
-  return {
+  const file: TrueTypeFontFile & EmbeddableFontFile = {
     [_implementationProhibited]: undefined,
     type: FontType.TrueType,
     isEmbeddable: metadata.embeddable,
     familyNames: metadata.familyNames,
+    getEmbedArgs: () => { return { fileName } },
   };
+
+  return file;
 }
 
 // An SHX file with fewer than 40 bytes isn't valid.
@@ -51,11 +63,23 @@ function validateShx(blob: Uint8Array): void {
 export function shxFontFileFromBlob(args: ShxFontFileFromBlobArgs): ShxFontFile {
   validateShx(args.blob);
 
-  return {
+  const file: ShxFontFile & EmbeddableFontFile = {
     [_implementationProhibited]: undefined,
     type: FontType.Shx,
     familyName: args.familyName,
+    getEmbedArgs: () => {
+      return {
+        data: args.blob,
+        face: {
+          faceName: "regular",
+          familyName: args.familyName,
+          type: FontType.Shx,
+        },
+      };
+    },
   };
+
+  return file;
 }
 
 export class IModelDbFontsImpl implements IModelDbFonts {
@@ -91,7 +115,11 @@ export class IModelDbFontsImpl implements IModelDbFonts {
     throw new Error("###TODO");
   }
 
-  public embedFile(_file: FontFile): void {
-    throw new Error("###TODO");
+  public embedFile(file: FontFile): void {
+    if (!isEmbeddableFontFile(file)) {
+      throw new Error("Invalid FontFile");
+    }
+
+    this._iModel[_nativeDb].embedFont(file.getEmbedArgs());
   }
 }
