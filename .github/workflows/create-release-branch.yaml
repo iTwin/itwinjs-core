@@ -9,13 +9,6 @@ on:
       releaseBranch:
         description: 'The name of the release branch to create'
         required: true
-        default: 'TEST/0.0.x' # FIXME temp default while testing. Otherwise it will create protected branches
-  pull_request:
-    types: [opened, synchronize]
-
-# FIXME FOR TESTING PURPOSES ONLY
-env:
-  RELEASE_BRANCH: 'TEST/0.0.x'
 
 jobs:
   create-release-branch:
@@ -40,7 +33,7 @@ jobs:
 
       - name: Create Release Branch
         run: |
-          git checkout -b ${{ env.RELEASE_BRANCH }}
+          git checkout -b ${{ inputs.releaseBranch }}
         shell: bash {0}
 
       - name: Update 'gather-docs.yaml'
@@ -116,6 +109,6 @@ jobs:
           git add .
           newVersion=$(node -pe "require('./common/config/rush/version-policies.json')[0].version.trim()") && echo $newVersion
           # FIXME temp commit message while testing. Otherwise I might trigger a new build
-          git commit -m "TEST COMMIT" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
-          git push origin ${{ env.RELEASE_BRANCH }}
+          git commit -m "$newVersion" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+          git push origin ${{ inputs.releaseBranch }}
         shell: bash {0}
