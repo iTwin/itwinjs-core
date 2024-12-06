@@ -519,8 +519,8 @@ export class PolygonOps {
   }
   /**
    * Return a Ray3d with (assuming the polygon is planar and not self-intersecting):
-   * * `origin` at the centroid of the (3D) polygon
-   * * `direction` is the unit vector perpendicular to the plane
+   * * `origin` at the centroid of the (3D) polygon,
+   * * `direction` is the unit vector perpendicular to the plane,
    * * `a` is the area.
    * @param points
    */
