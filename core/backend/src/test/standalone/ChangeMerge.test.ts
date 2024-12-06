@@ -12,7 +12,7 @@ import {
 import * as chai from "chai";
 import { assert } from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { HubWrappers, KnownTestLocations } from "../";
+import { HubWrappers, KnownTestLocations } from "..";
 import {
   BriefcaseDb,
   ChannelControl,
@@ -125,7 +125,7 @@ function dumpLocalChanges(b: BriefcaseDb) {
   }
 }
 
-describe("Rebase merge method", () => {
+describe.only("Change merge method", () => {
   const ctx = {
     accessTokens: {
       user1: "",
@@ -213,7 +213,7 @@ describe("Rebase merge method", () => {
     await b1.pullChanges();
 
     // Default is merge
-    assert.equal(b1.txns.changeMergeManager.getMethod(), "Merge");
+    assert.equal(b1.txns.changeMergeManager.getMergeMethod(), "Merge");
 
     // Imodel host default is merge
     assert.equal(IModelHost.pullMergeMethod, "Merge");
@@ -224,9 +224,9 @@ describe("Rebase merge method", () => {
     const b1 = await ctx.openB1();
 
     // Change method for a briefcase
-    b1.txns.changeMergeManager.setMethod("Rebase");
+    b1.txns.changeMergeManager.setMergeMethod("Rebase");
 
-    assert.equal(b1.txns.changeMergeManager.getMethod(), "Rebase");
+    assert.equal(b1.txns.changeMergeManager.getMergeMethod(), "Rebase");
 
     // Imodel host default is merge
     assert.equal(IModelHost.pullMergeMethod, "Merge");
@@ -241,7 +241,7 @@ describe("Rebase merge method", () => {
     }
     const b1 = await ctx.openB1();
 
-    assert.equal(b1.txns.changeMergeManager.getMethod(), "Rebase");
+    assert.equal(b1.txns.changeMergeManager.getMergeMethod(), "Rebase");
 
     // Imodel host default is merge
     assert.equal(IModelHost.pullMergeMethod, "Rebase");
@@ -259,7 +259,7 @@ describe("Rebase merge method", () => {
 
     const b1 = await ctx.openB1();
     events.set(b1.briefcaseId, []);
-    b1.txns.changeMergeManager.setMethod("Rebase");
+    b1.txns.changeMergeManager.setMergeMethod("Rebase");
     b1.txns.onRebaseTxnBegin.addListener((args) => {
 
       events.get(b1.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
@@ -270,7 +270,7 @@ describe("Rebase merge method", () => {
 
     const b2 = await ctx.openB2();
     events.set(b2.briefcaseId, []);
-    b2.txns.changeMergeManager.setMethod("Rebase");
+    b2.txns.changeMergeManager.setMergeMethod("Rebase");
     b2.txns.onRebaseTxnBegin.addListener((args) => {
       events.get(b2.briefcaseId)?.push({ args, event: "onRebaseTxnBegin" });
     });
@@ -406,8 +406,8 @@ describe("Rebase merge method", () => {
     assert.isDefined(b2.elements.getElement(e5).federationGuid);
     assert.isDefined(b2.elements.getElement(e6).federationGuid);
 
-    assert.equal(b1.txns.changeMergeManager.getMethod(), `Rebase`);
-    assert.equal(b2.txns.changeMergeManager.getMethod(), `Rebase`);
+    assert.equal(b1.txns.changeMergeManager.getMergeMethod(), `Rebase`);
+    assert.equal(b2.txns.changeMergeManager.getMergeMethod(), `Rebase`);
 
     b1.close();
     b2.close();
@@ -415,10 +415,10 @@ describe("Rebase merge method", () => {
 
   it("rebase with be_props (insert conflict) ", async () => {
     const b1 = await ctx.openB1();
-    b1.txns.changeMergeManager.setMethod("Rebase");
+    b1.txns.changeMergeManager.setMergeMethod("Rebase");
 
     const b2 = await ctx.openB2();
-    b2.txns.changeMergeManager.setMethod("Rebase");
+    b2.txns.changeMergeManager.setMergeMethod("Rebase");
 
     b1.saveFileProperty({ namespace: "test", name: "test" }, "test1");
     b1.saveChanges("test");
@@ -438,19 +438,21 @@ describe("Rebase merge method", () => {
     b2.abandonChanges();
 
     // set handler to resolve conflict
-    b2.txns.appCustomConflictHandler = (args: RebaseChangesetConflictArgs) => {
-      if (args.cause === DbConflictCause.Conflict) {
-        if (args.tableName === "be_Prop") {
-          if (args.opcode === DbOpcode.Insert) {
-            const localChangedVal = args.getValueText(5, DbChangeStage.New);
-            const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
-            b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
-            return DbConflictResolution.Skip; // skip incomming value and continue
+    b2.txns.changeMergeManager.addConflictHandler({
+      id: "my", handler: (args: RebaseChangesetConflictArgs) =>  {
+        if (args.cause === DbConflictCause.Conflict) {
+          if (args.tableName === "be_Prop") {
+            if (args.opcode === DbOpcode.Insert) {
+              const localChangedVal = args.getValueText(5, DbChangeStage.New);
+              const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
+              b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
+              return DbConflictResolution.Skip; // skip incomming value and continue
+            }
           }
         }
+        return undefined;
       }
-      return undefined;
-    };
+    });
 
     // resume rebase see if it resolve the conflict
     b2.txns.changeMergeManager.resume();
@@ -467,10 +469,10 @@ describe("Rebase merge method", () => {
 
   it("rebase with be_props (data conflict) ", async () => {
     const b1 = await ctx.openB1();
-    b1.txns.changeMergeManager.setMethod("Rebase");
+    b1.txns.changeMergeManager.setMergeMethod("Rebase");
 
     const b2 = await ctx.openB2();
-    b2.txns.changeMergeManager.setMethod("Rebase");
+    b2.txns.changeMergeManager.setMergeMethod("Rebase");
 
     b1.saveFileProperty({ namespace: "test", name: "test" }, "test1");
     b1.saveChanges("test");
@@ -485,19 +487,21 @@ describe("Rebase merge method", () => {
     await b1.pushChanges({ description: "test" });
 
     // set handler to resolve conflict
-    b2.txns.appCustomConflictHandler = (args: RebaseChangesetConflictArgs) => {
-      if (args.cause === DbConflictCause.Data) {
-        if (args.tableName === "be_Prop") {
-          if (args.opcode === DbOpcode.Update) {
-            const localChangedVal = args.getValueText(5, DbChangeStage.New);
-            const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
-            b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
-            return DbConflictResolution.Skip; // skip incomming value and continue
+    b2.txns.changeMergeManager.addConflictHandler({
+      id: "my", handler: (args: RebaseChangesetConflictArgs) => {
+        if (args.cause === DbConflictCause.Data) {
+          if (args.tableName === "be_Prop") {
+            if (args.opcode === DbOpcode.Update) {
+              const localChangedVal = args.getValueText(5, DbChangeStage.New);
+              const tipValue = b2.queryFilePropertyString({ namespace: "test", name: "test" });
+              b2.saveFileProperty({ namespace: "test", name: "test" }, `${tipValue} + ${localChangedVal}`);
+              return DbConflictResolution.Skip; // skip incomming value and continue
+            }
           }
         }
+        return undefined;
       }
-      return undefined;
-    }
+    });
 
     await b2.pushChanges({ description: "test" });
     await b2.pullChanges();

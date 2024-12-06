@@ -46,7 +46,7 @@ import { generateElementGraphics } from "./ElementGraphics";
 import { Entity, EntityClassType } from "./Entity";
 import { ExportGraphicsOptions, ExportPartGraphicsOptions } from "./ExportGraphics";
 import { GeoCoordConfig } from "./GeoCoordConfig";
-import { IModelHost, PullMergeMethod } from "./IModelHost";
+import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";

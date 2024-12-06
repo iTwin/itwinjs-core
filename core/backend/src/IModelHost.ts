@@ -212,6 +212,7 @@ export class IModelHostConfiguration implements IModelHostOptions {
   public static defaultLogTileSizeThreshold = 20 * 1000000;
   /** @internal */
   public static defaultMaxTileCacheDbSize = 1024 * 1024 * 1024;
+  /** @internal */
   public static defaultPullMergeMethod: PullMergeMethod = "Merge";
   public appAssetsDir?: LocalDirName;
   public cacheDir?: LocalDirName;

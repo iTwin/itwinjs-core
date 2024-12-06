@@ -435,9 +435,11 @@ describe("Changeset conflict handler", () => {
       b2,
       async () => b2.pushChanges({ accessToken: accessToken1, description: "" }),
       (arg: MergeChangesetConflictArgs) => {
-
+        if (!arg.changesetFile) {
+          throw new Error("changesetFile is not set");
+        }
         // *** SqliteChangeReader API test ***
-        const reader = SqliteChangesetReader.openFile({ fileName: arg!.changesetFile!, db: b2 });
+        const reader = SqliteChangesetReader.openFile({ fileName: arg.changesetFile, db: b2 });
         expect(reader.step()).is.true;
         expect(reader.tableName).equals("be_Prop");
         expect(reader.getPrimaryKeyColumnNames()).deep.equals(["Namespace", "Name", "Id", "SubId"]);

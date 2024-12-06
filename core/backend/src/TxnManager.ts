@@ -8,9 +8,9 @@
 
 import * as touch from "touch";
 import {
-  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, LogLevel, OrderedId64Array,
+  assert, BeEvent, BentleyError, compareStrings, CompressedId64Set, DbChangeStage, DbConflictCause, DbConflictResolution, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, LogLevel, Maybe, OrderedId64Array
 } from "@itwin/core-bentley";
-import { EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
+import { EntityIdAndClassIdIterable, IModelError, ModelGeometryChangesProps, ModelIdAndGeometryGuid, NotifyEntitiesChangedArgs, NotifyEntitiesChangedMetadata } from "@itwin/core-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -19,14 +19,6 @@ import { SqliteStatement } from "./SqliteStatement";
 import { _nativeDb } from "./internal/Symbols";
 import { RebaseChangesetConflictArgs, TxnArgs } from "./internal/ChangesetConflictArgs";
 import { PullMergeMethod } from "./IModelHost";
-
-/** @internal */
-export interface ChangeMergeManager {
-  setMethod: (method: PullMergeMethod) => void;
-  getMethod: () => PullMergeMethod;
-  resume: () => void;
-  inProgress: () => boolean;
-}
 
 /** A string that identifies a Txn.
  * @public
@@ -292,6 +284,77 @@ class ChangedEntitiesProc {
   }
 }
 
+/** @internal */
+interface IConflictHandler {
+  handler: (arg: RebaseChangesetConflictArgs) => Maybe<DbConflictResolution>;
+  next: Maybe<IConflictHandler>;
+  id: string;
+}
+
+/** @internal */
+export class ChangeMergeManager {
+  private _conflictHandlers : Maybe<IConflictHandler>;
+  public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
+  public setMergeMethod(method: PullMergeMethod) {
+    this._iModel[_nativeDb].pullMergeSetMethod(method)
+  }
+  public getMergeMethod() {
+    return this._iModel[_nativeDb].pullMergeGetMethod()
+  }
+  public resume() {
+    this._iModel[_nativeDb].pullMergeResume();
+  }
+  public inProgress() {
+    return this._iModel[_nativeDb].pullMergeInProgress();
+  }
+  public onConflict(args: RebaseChangesetConflictArgs): Maybe<DbConflictResolution> {
+    let curr = this._conflictHandlers;
+    while (curr) {
+      const resolution = curr.handler(args);
+      if (resolution !== undefined) {
+        Logger.logTrace(BackendLoggerCategory.IModelDb, `Conflict handler ${curr.id} resolved conflict`);
+        return resolution;
+      }
+      curr = curr.next;
+    }
+    return undefined
+  }
+  public addConflictHandler(args: { id: string, handler: (args: RebaseChangesetConflictArgs) => Maybe<DbConflictResolution> }) {
+    const idExists = (id: string) => {
+      let curr = this._conflictHandlers;
+      while (curr) {
+        if (curr.id === id)
+          return true;
+        curr = curr.next;
+      }
+      return false;
+    }
+    if (idExists(args.id))
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Conflict handler with id ${args.id} already exists`);
+    this._conflictHandlers = { ...args, next: this._conflictHandlers };
+  }
+  public removeConflictHandler(id: string) {
+    if (!this._conflictHandlers)
+      return;
+
+    if (this._conflictHandlers?.id === id) {
+      this._conflictHandlers = this._conflictHandlers.next;
+      return;
+    }
+
+    let prev = this._conflictHandlers;
+    let curr = this._conflictHandlers?.next;
+    while (curr) {
+      if (curr.id === id) {
+        prev.next = curr.next;
+        return;
+      }
+      prev = curr;
+      curr = curr.next;
+    }
+  }
+}
+
 /** Manages local changes to a [[BriefcaseDb]] or [[StandaloneDb]] via [Txns]($docs/learning/InteractiveEditing.md)
  * @public
  */
@@ -304,8 +367,12 @@ export class TxnManager {
     return this._isDisposed;
   }
 
+  /**  @internal */
+  public readonly changeMergeManager: ChangeMergeManager;
+
   /** @internal */
   constructor(private _iModel: BriefcaseDb | StandaloneDb) {
+    this.changeMergeManager = new ChangeMergeManager(_iModel);
     _iModel.onBeforeClose.addOnce(() => {
       this._isDisposed = true;
     });
@@ -321,19 +388,6 @@ export class TxnManager {
   private _getRelationshipClass(relClassName: string): typeof Relationship {
     return this._iModel.getJsClass<typeof Relationship>(relClassName);
   }
-
-  /**  @internal */
-  public get changeMergeManager(): ChangeMergeManager {
-    return {
-      setMethod: (method: PullMergeMethod) => {
-        this._iModel[_nativeDb].pullMergeSetMethod(method);
-      },
-      getMethod: () => this._iModel[_nativeDb].pullMergeGetMethod(),
-      inProgress: () => this._iModel[_nativeDb].pullMergeInProgress(),
-      resume: () => this._iModel[_nativeDb].pullMergeResume(),
-    }
-  }
-
 
   /** If a -watch file exists for this iModel, update its timestamp so watching processes can be
    * notified that we've modified the briefcase.
@@ -441,16 +495,12 @@ export class TxnManager {
 
   /** @internal */
   protected _onRebaseLocalTxnConflict(args: RebaseChangesetConflictArgs): DbConflictResolution {
-    if (this.appCustomConflictHandler) {
-      try {
-        const resolution = this.appCustomConflictHandler(args);
-        if (resolution !== undefined) {
-          return resolution;
-        }
-      } catch (err) {
-        Logger.logError(BackendLoggerCategory.IModelDb, `Custom conflict handler threw an error: ${err}. It should not throw errors. Operation will be aborted.`);
-        return DbConflictResolution.Abort;
-      }
+    try {
+      const resolution = this.changeMergeManager.onConflict(args);
+      if (resolution !== undefined)
+        return resolution;
+    } catch (err) {
+      Logger.logError(BackendLoggerCategory.IModelDb, BentleyError.getErrorMessage(err));
     }
 
     const category = "DgnCore";
