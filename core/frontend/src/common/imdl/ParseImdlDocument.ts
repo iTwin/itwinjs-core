@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64, Id64Set, Id64String, JsonUtils, Logger, utf8ToString } from "@itwin/core-bentley";
+import { assert, ByteStream, Id64, Id64Set, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
@@ -283,7 +283,7 @@ export function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
   };
 }
 
-let meshoptDecoderStatus: "uninitialized" | "ready" | "failed" = "uninitialized";
+// let meshoptDecoderStatus: "uninitialized" | "ready" | "failed" = "uninitialized";
 
 class Parser {
   private readonly _document: Document;
