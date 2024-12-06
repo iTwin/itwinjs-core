@@ -1,0 +1,121 @@
+# This workflow should only be ran if we intend on creating a new release branch off the current release branch.
+# This should happen if we are going to begin developing a new minor for the previous major release.
+
+name: Create Release Branch
+
+on:
+  workflow_dispatch:
+    inputs:
+      releaseBranch:
+        description: 'The name of the release branch to create'
+        required: true
+        default: 'TEST/0.0.x' # FIXME temp default while testing. Otherwise it will create protected branches
+  pull_request:
+    types: [opened, synchronize]
+
+# FIXME FOR TESTING PURPOSES ONLY
+env:
+  RELEASE_BRANCH: 'TEST/0.0.x'
+
+jobs:
+  create-release-branch:
+    name: Create Release Branch
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.IMJS_ADMIN_GH_TOKEN }}
+          ref: ${{ github.ref }} # checkouts the branch that triggered the workflow
+          fetch-depth: 0
+
+      - name: Set Git Config
+        run: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+
+      - name: Setup node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Create Release Branch
+        run: |
+          git checkout -b ${{ env.RELEASE_BRANCH }}
+        shell: bash {0}
+
+      - name: Update 'gather-docs.yaml'
+        run: |
+          docsYamlPath="common/config/azure-pipelines/templates/gather-docs.yaml"
+          releaseBranch=$(getBranchName.releaseBranchName)
+
+          # delimiter
+          IFS="."
+          read -ra splitArray <<< "$releaseBranch"
+
+          currentMinorVersion=${splitArray[1]}
+          previousMinorVersion=$((currentMinorVersion - 1))
+
+          # check if this release is major or minor version release
+          # if minor version bump, use last recent minor version
+          # if major version bump, `gather-docs.yaml` needs to be edited
+          # manually to be the most recent previous major release
+          # e.g. if this release is `release/5.0.x`, value in `gather-docs.yaml`
+          # should be `release/4.<whatever_last_minor_release_version_was>.x`
+          if [ $((previousMinorVersion)) -lt 0 ]
+          then
+            echo "This is is a major release. Edit \"gather-docs.yaml\" manually."
+          else
+            previousReleaseBranch="${releaseBranch/"$currentMinorVersion.x"/"$previousMinorVersion.x"}"
+            escapedReleaseBranchName="${previousReleaseBranch//\//\\\/}"
+            search="branchName: refs\/heads\/master"
+            replace="branchName: refs\/heads\/"$escapedReleaseBranchName""
+            echo "$search"
+            echo "$replace"
+            # The replacement here is global instead of first match since the logic is that
+            # if something is being pulled from master but needs to be changed to being pulled from release branch instead,
+            # it is likely that any other thing that was being pulled from master probably also needs to be pulled from release branch instead
+            sed -i "s/$search/$replace/g" "$docsYamlPath"
+            git add "$docsYamlPath"
+            git commit -m "Update 'gather-docs.yaml' to previous release branch name"
+          fi
+        shell: bash {0}
+
+      - name: Update to new dev version
+        run: |
+          node common/scripts/install-run-rush version --override-bump minor --version-policy prerelease-monorepo-lockStep --bump
+        shell: bash {0}
+
+      - name: Git Add Changelog deletion
+        run: |
+          git add common
+        shell: bash {0}
+
+      - name: Reset all other changes
+        run: |
+          # Resets all changes, other than the deletion of the changelogs.
+          git checkout -- .
+
+          # Cleans up all untracked files. This could happen if there are new packages that do not have change logs yet.
+          git clean -f -d
+
+          git status
+        shell: bash {0}
+
+      - name: Rush version to new pre-release version
+        run: |
+          node common/scripts/install-run-rush version --override-bump preminor --version-policy prerelease-monorepo-lockStep --bump --override-prerelease-id dev
+        shell: bash {0}
+
+      - name: Clear current NextVersion.md
+        run: |
+          echo "# NextVersion" > common/config/rush/NextVersion.md
+        shell: bash {0}
+
+      - name: git add, commit, and push changes
+        run: |
+          git add .
+          newVersion=$(node -pe "require('./common/config/rush/version-policies.json')[0].version.trim()") && echo $newVersion
+          # FIXME temp commit message while testing. Otherwise I might trigger a new build
+          git commit -m "TEST COMMIT" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
+          git push origin ${{ env.RELEASE_BRANCH }}
+        shell: bash {0}
