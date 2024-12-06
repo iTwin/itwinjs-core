@@ -3,10 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, Guid, Id64String, Logger } from "@itwin/core-bentley";
+import { DbChangeStage, DbConflictCause, DbConflictResolution, DbOpcode, Guid } from "@itwin/core-bentley";
 import {
-  ChangesetProps,
-  ElementAspectProps, IModel,
+  IModel,
   SubCategoryAppearance
 } from "@itwin/core-common";
 import * as chai from "chai";
@@ -18,11 +17,10 @@ import {
   ChannelControl,
   DictionaryModel,
   IModelHost,
-  SpatialCategory,
-  SqliteChangesetReader,
+  SpatialCategory
 } from "../../core-backend";
 import { HubMock } from "../../HubMock";
-import { ChangesetConflictArgs, MergeChangesetConflictArgs, RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
+import { RebaseChangesetConflictArgs, TxnArgs } from "../../internal/ChangesetConflictArgs";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 chai.use(chaiAsPromised);
 import sinon = require("sinon"); // eslint-disable-line @typescript-eslint/no-require-imports
@@ -39,90 +37,12 @@ async function assertThrowsAsync<T>(test: () => Promise<T>, msg?: string) {
   throw new Error(`Failed to throw error with message: "${msg}"`);
 }
 
-async function createNewModelAndCategory(rwIModel: BriefcaseDb, parent?: Id64String) {
-  // Create a new physical model.
-  const [, modelId] = await IModelTestUtils.createAndInsertPhysicalPartitionAndModelAsync(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true, parent);
-
-  // Find or create a SpatialCategory.
-  const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
-  const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
-  const spatialCategoryId = rwIModel.elements.insertElement(category.toJSON());
-  category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
-  return { modelId, spatialCategoryId };
-}
 
 async function updatePhysicalObject(b: BriefcaseDb, el1: string, federationGuid: string) {
   await b.locks.acquireLocks({ exclusive: el1 });
   const props = b.elements.getElement(el1);
   props.federationGuid = federationGuid;
   b.elements.updateElement(props.toJSON());
-}
-
-function insertExternalSourceAspect(b: BriefcaseDb, elementId: Id64String, identifier: string) {
-  return b.elements.insertAspect({
-    classFullName: "BisCore:ExternalSourceAspect",
-    element: {
-      relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-      id: elementId,
-    },
-    kind: "",
-    identifier,
-  } as ElementAspectProps);
-}
-
-async function spyChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>) => void) {
-  const s1 = sinon.spy(b, "onChangesetConflict" as any) as sinon.SinonSpy<ChangesetConflictArgs[], DbConflictResolution>;
-  try {
-    await cb();
-  } finally {
-    test(s1);
-    s1.restore();
-  }
-}
-
-async function stubChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, test: (s: sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>) => void) {
-  const s1 = sinon.stub(b as any, "onChangesetConflict" as any);
-  try {
-    test(s1 as sinon.SinonStub<ChangesetConflictArgs[], DbConflictResolution>);
-    await cb();
-  } finally {
-    s1.restore();
-  }
-}
-
-async function fakeChangesetConflictHandler(b: BriefcaseDb, cb: () => Promise<void>, interceptMethod: (arg: MergeChangesetConflictArgs) => DbConflictResolution | undefined) {
-  const s1 = sinon.stub<ChangesetConflictArgs[], DbConflictResolution>(b as any, "onChangesetConflict" as any);
-  s1.callsFake(interceptMethod);
-  try {
-    await cb();
-  } finally {
-    s1.restore();
-  }
-}
-
-function updateExternalSourceAspect(b: BriefcaseDb, aspectId: Id64String, elementId: Id64String, identifier: string) {
-  b.elements.updateAspect({
-    id: aspectId,
-    classFullName: "BisCore:ExternalSourceAspect",
-    element: {
-      relClassName: "BisCore:ElementOwnsExternalSourceAspects",
-      id: elementId,
-    },
-    kind: "",
-    identifier,
-  } as ElementAspectProps);
-}
-
-function dumpLocalChanges(b: BriefcaseDb) {
-  Logger.logInfo(`changeset`, `Local changes for ${b.getBriefcaseId()}`);
-  const reader = SqliteChangesetReader.openLocalChanges({ db: b });
-  while (reader.step()) {
-    const tablename = reader.tableName;
-    const op = reader.op;
-    const id = reader.getChangeValueId(0, reader.op === "Inserted" ? "New" : "Old");
-    Logger.logInfo(`changeset`, `tablename=${tablename}, op=${op}, id=${id}`);
-  }
 }
 
 describe.only("Change merge method", () => {
@@ -143,26 +63,14 @@ describe.only("Change merge method", () => {
       b.channels.addAllowedChannel(ChannelControl.sharedChannelName);
       return b;
     },
-    openB1: (noLock?: true) => { return ctx.openBriefcase("user1", noLock); },
-    openB2: (noLock?: true) => { return ctx.openBriefcase("user2", noLock); },
-    openB3: (noLock?: true) => { return ctx.openBriefcase("user3", noLock); },
+    openB1: async (noLock?: true) => { return ctx.openBriefcase("user1", noLock); },
+    openB2: async (noLock?: true) => { return ctx.openBriefcase("user2", noLock); },
+    openB3: async (noLock?: true) => { return ctx.openBriefcase("user3", noLock); },
   }
 
   async function insertPhysicalObject(b: BriefcaseDb,) {
     await b.locks.acquireLocks({ shared: ctx.modelId });
     return b.elements.insertElement(IModelTestUtils.createPhysicalObject(b, ctx.modelId, ctx.spatialCategoryId).toJSON());
-  }
-
-  function dumpChangeset(b: BriefcaseDb, cs: ChangesetProps) {
-    const changesetDir = HubMock.findLocalHub(ctx.iModelId).changesetDir;
-    Logger.logInfo(`changeset`, `${cs.index} - ${cs.description}`);
-    const reader = SqliteChangesetReader.openFile({ fileName: `${changesetDir}/changeset-${cs.index}`, db: b });
-    while (reader.step()) {
-      const tablename = reader.tableName;
-      const op = reader.op;
-      const id = reader.getChangeValueId(0, reader.op === "Inserted" ? "New" : "Old");
-      Logger.logInfo(`changeset`, `tablename=${tablename}, op=${op}, id=${id}`);
-    }
   }
 
   before(async () => {
@@ -439,7 +347,7 @@ describe.only("Change merge method", () => {
 
     // set handler to resolve conflict
     b2.txns.changeMergeManager.addConflictHandler({
-      id: "my", handler: (args: RebaseChangesetConflictArgs) =>  {
+      id: "my", handler: (args: RebaseChangesetConflictArgs) => {
         if (args.cause === DbConflictCause.Conflict) {
           if (args.tableName === "be_Prop") {
             if (args.opcode === DbOpcode.Insert) {

@@ -293,7 +293,7 @@ interface IConflictHandler {
 
 /** @internal */
 export class ChangeMergeManager {
-  private _conflictHandlers : Maybe<IConflictHandler>;
+  private _conflictHandlers: Maybe<IConflictHandler>;
   public constructor(private _iModel: BriefcaseDb | StandaloneDb) { }
   public setMergeMethod(method: PullMergeMethod) {
     this._iModel[_nativeDb].pullMergeSetMethod(method)
@@ -501,6 +501,7 @@ export class TxnManager {
         return resolution;
     } catch (err) {
       Logger.logError(BackendLoggerCategory.IModelDb, BentleyError.getErrorMessage(err));
+      return DbConflictResolution.Abort;
     }
 
     const category = "DgnCore";
