@@ -1930,8 +1930,8 @@ describe("SphericalMeshData", () => {
     expect(ck.getNumErrors()).toBe(0);
   });
 
-  it("Mirror", () => {
-    const ck = new Checker();
+  it.only("Mirror", () => {
+    const ck = new Checker(true, true);
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
     let y0 = 0;

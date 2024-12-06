@@ -10,7 +10,7 @@
 import { Arc3d } from "../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
-import { CurveFactory } from "../curve/CurveFactory";
+import { CurveFactory, MiteredSweepOptions, MiteredSweepOutputSelect } from "../curve/CurveFactory";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -2001,49 +2001,6 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       (triangle: BarycentricTriangle) => { this.addTriangleFacet(triangle.points); },
     );
   }
-  /** Doc is same as `addMiteredPipes` doc. */
-  private addMiteredPipesFromPoints(
-    centerline: IndexedXYZCollection,
-    sectionData: number | XAndY | Arc3d,
-    numFacetAround: number = 12,
-    capped: boolean = false,
-  ): void {
-    const sections = CurveFactory.createMiteredPipeSections(centerline, sectionData);
-    const pointA0 = Point3d.create();
-    const pointA1 = Point3d.create();
-    const pointB0 = Point3d.create();
-    const pointB1 = Point3d.create();
-    const wantCaps = capped && (!(sectionData instanceof Arc3d) || sectionData.sweep.isFullCircle);
-    if (numFacetAround < 3)
-      numFacetAround = 3;
-    const df = 1.0 / numFacetAround;
-    if (wantCaps) { // start cap facets
-      const startLineString = LineString3d.create();
-      for (let i = 0; i < numFacetAround; i++)
-        startLineString.addPoint(sections[0].fractionToPoint(i * df));
-      this.addTrianglesInUncheckedConvexPolygon(startLineString, true);
-      this.endFace();
-    }
-    for (let i = 1; i < sections.length; i++) { // side facets
-      const arcA = sections[i - 1];
-      const arcB = sections[i];
-      arcA.fractionToPoint(0.0, pointA0);
-      arcB.fractionToPoint(0.0, pointB0);
-      for (let k = 1; k <= numFacetAround; k++, pointA0.setFromPoint3d(pointA1), pointB0.setFromPoint3d(pointB1)) {
-        const f = k * df;
-        arcA.fractionToPoint(f, pointA1);
-        arcB.fractionToPoint(f, pointB1);
-        this.addQuadFacet([pointA0, pointA1, pointB1, pointB0]); // ASSUME: CCW section traversal wrt rail tangent
-      }
-    }
-    if (wantCaps) { // end cap facets
-      const endLineString = LineString3d.create();
-      for (let i = 0; i < numFacetAround; i++)
-        endLineString.addPoint(sections[sections.length - 1].fractionToPoint(i * df));
-      this.addTrianglesInUncheckedConvexPolygon(endLineString, false);
-      this.endFace();
-    }
-  }
   /**
    * Add quad facets along a mitered pipe that follows a centerline curve.
    * * At the end of each pipe segment, the pipe is mitered by the plane that bisects the angle between successive
@@ -2066,16 +2023,18 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     numFacetAround: number = 12,
     capped: boolean = false,
   ): void {
-    if (Array.isArray(centerline))
-      centerline = new Point3dArrayCarrier(centerline);
-    else if (centerline instanceof LineString3d)
-      centerline = centerline.packedPoints;
-    else if (centerline instanceof CurvePrimitive) {
-      const linestring = LineString3d.create();
-      centerline.emitStrokes(linestring, this._options);
-      centerline = linestring.packedPoints;
-    }
-    this.addMiteredPipesFromPoints(centerline, sectionData, numFacetAround, capped);
+    const arc = CurveFactory.createArcFromSectionData(centerline, sectionData);
+    if (!arc)
+      return;
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.minStrokesPerPrimitive = numFacetAround;
+    const options: MiteredSweepOptions = { strokeOptions, capped, outputSelect: MiteredSweepOutputSelect.AlsoMesh };
+    const sections = CurveFactory.createMiteredSweepSections(centerline, arc, options);
+    let indexedPolyface: IndexedPolyface | undefined;
+    if (sections)
+      indexedPolyface = sections.mesh;
+    if (indexedPolyface)
+      this.addIndexedPolyface(indexedPolyface);
   }
   /** Return the polyface index array indices corresponding to the given edge, or `undefined` if error. */
   private getEdgeIndices(edge: SortableEdge): { edgeIndexA: number, edgeIndexB: number } | undefined {
