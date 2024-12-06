@@ -31,7 +31,6 @@ import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
 import { MeshoptDecoder } from "meshoptimizer";
-import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -309,22 +308,22 @@ class Parser {
     if (!featureTable)
       return TileReadStatus.InvalidFeatureTable;
 
-    if (this.hasMeshoptCompression()) {
-      if (this._options.meshoptCompressionNotSupported || !MeshoptDecoder.supported)
-        return TileReadStatus.UnsupportedMeshoptCompression;
+    // if (this.hasMeshoptCompression()) {
+    //   if (this._options.meshoptCompressionNotSupported || !MeshoptDecoder.supported)
+    //     return TileReadStatus.UnsupportedMeshoptCompression;
 
-      if (meshoptDecoderStatus === "uninitialized") {
-        await MeshoptDecoder.ready.
-          then(() => { meshoptDecoderStatus = "ready"; }).
-          catch(error => {
-            Logger.logException(FrontendLoggerCategory.Render, error);
-            meshoptDecoderStatus = "failed";
-          });
-      }
+    //   if (meshoptDecoderStatus === "uninitialized") {
+    //     await MeshoptDecoder.ready.
+    //       then(() => { meshoptDecoderStatus = "ready"; }).
+    //       catch(error => {
+    //         Logger.logException(FrontendLoggerCategory.Render, error);
+    //         meshoptDecoderStatus = "failed";
+    //       });
+    //   }
 
-      if (meshoptDecoderStatus === "failed")
-        return TileReadStatus.UnsupportedMeshoptCompression;
-    }
+    //   if (meshoptDecoderStatus === "failed")
+    //     return TileReadStatus.UnsupportedMeshoptCompression;
+    // }
 
     const rtcCenter = this._document.rtcCenter ? {
       x: this._document.rtcCenter[0] ?? 0,
@@ -1320,9 +1319,6 @@ export function convertFeatureTable(imdlFeatureTable: Imdl.FeatureTable, batchMo
 
 /** @internal */
 export async function parseImdlDocument(options: ParseImdlDocumentArgs): Promise<Imdl.Document | ImdlParseError> {
-
-  if (options.meshoptCompressionNotSupported)
-    return TileReadStatus.UnsupportedMeshoptCompression;
 
   const stream = ByteStream.fromUint8Array(options.data);
   const imdlHeader = new ImdlHeader(stream);
