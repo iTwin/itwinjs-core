@@ -2009,8 +2009,9 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * lengths, or an Arc3d:
    *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
    * start tangent.
-   *    * For Arc3d input, the center is translated to the centerline start point, but otherwise the arc is used as-is
-   * for the first section. For best results, the arc should be perpendicular to the centerline start tangent.
+   *    * For Arc3d input, the center is translated to the centerline start point and also made perpendicular to the
+   * centerline start tangent.
+   * * This function internally calls `createMiteredSweepSections`.
    * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions, otherwise
    * for best results, ensure no successive duplicate points with e.g., [[GrowableXYZArray.createCompressed]].
    * @param sectionData circle radius, ellipse semi-axis lengths, or Arc3d.

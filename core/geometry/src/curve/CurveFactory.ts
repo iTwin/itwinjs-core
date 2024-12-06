@@ -407,7 +407,6 @@ export class CurveFactory {
   }
   /**
    * Create section arcs for mitered pipe.
-   * * This function internally calls `createMiteredSweepSections`.
    * * At the end of each pipe segment, the pipe is mitered by the plane that bisects the angle between successive
    * centerline segments.
    * * The section arcs are constructed so that lines between corresponding fractional positions on the arcs are
@@ -418,8 +417,9 @@ export class CurveFactory {
    * lengths, or an Arc3d:
    *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
    * start tangent.
-   *    * For Arc3d input, the center is translated to the centerline start point, but otherwise the arc is used as-is
-   * for the first section. For best results, the arc should be perpendicular to the centerline start tangent.
+   *    * For Arc3d input, the center is translated to the centerline start point and also made perpendicular to the
+   * centerline start tangent.
+   * * This function internally calls `createMiteredSweepSections`.
    * @param centerline centerline of pipe. For best results, ensure no successive duplicate points with e.g.,
    * [[GrowableXYZArray.createCompressed]].
    * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d (if not full, function makes it full).
