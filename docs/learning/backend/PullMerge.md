@@ -48,11 +48,11 @@ It is done as follows:
 
 1. Briefcase pulls new changes.
 2. It applies new changes on top of local changes.
-  a. It depends on locks for changes to be non-conflicting.
-  b. This method does not record the effect of applying incoming changes. This locally recorded changeset is an unreliable source of truth without locking.
+   * It depends on locks for changes to be non-conflicting.
+   * This method does not record the effect of applying incoming changes. This locally recorded changeset is an unreliable source of truth without locking.
 3. If a conflict happens, there is not much we can do except for either skipping the incoming change or replacing the local change. There is no room for actually merging.
 4. Conflict resolution is recorded in a rebase buffer, so when pulling more changes, the same resolution will be applied.
-  a. This is also dangerous because let's say we choose REPLACE for a DATA conflict. And then change that row later in the session. When we push changes, the local change to the row will be ignored.
+   * This is also dangerous because let's say we choose REPLACE for a DATA conflict. And then change that row later in the session. When we push changes, the local change to the row will be ignored.
 5. Finally, when all changes are merged, we can push the changes, but without a lock, this could create a changeset that cannot be applied by others.
 
 As we can see from the above, this merge method works fine if you lock individual rows in a table so only one user can change it. This workflow cannot really scale, and without a lock, it is completely useless.
@@ -66,11 +66,11 @@ This is a new method that has been implemented that is way more flexible. It is 
 3. New changes from the master are applied and advance local head to the master. No conflicts are expected as we simply update the local briefcase to the master.
 4. Local changes from oldest to newest are now applied on top of the master. *Note that the current disk file represents the master and the changeset been applied is the local change made by the user.*
 5. This can cause conflicts as we replay local changes on top of the new master tip.
-  a. With rebase, we have flexibility that we can change data beside simple choices of `SKIP`, `REPLACE`, & `ABORT`.
-  b. If the application finds a conflict that requires creating new changes or merging incoming and local changes, then it can do so.
-  c. It also has a 3-way view of what changed. The local changeset been applied has old/new values while the current value in the db represents the master.
-  d. The whole merge activity is recorded in the changeset, and the local changeset is updated after merging. In other words, the local change is recomputed against the master.
-  f. Any tool that made those changes can also react to rebase event and update there change against what is new on master.
+   * With rebase, we have flexibility that we can change data beside simple choices of `SKIP`, `REPLACE`, & `ABORT`.
+   * If the application finds a conflict that requires creating new changes or merging incoming and local changes, then it can do so.
+   * It also has a 3-way view of what changed. The local changeset been applied has old/new values while the current value in the db represents the master.
+   * The whole merge activity is recorded in the changeset, and the local changeset is updated after merging. In other words, the local change is recomputed against the master.
+   * Any tool that made those changes can also react to rebase event and update there change against what is new on master.
 6. If at any point the rebase fails, it can be resumed. The db is unable to push unstable changes until it resolves it locally first.
 7. Finally user can still undo his local changes. Or there undo stack is preserved. They can also push out there changes if needed.
 
