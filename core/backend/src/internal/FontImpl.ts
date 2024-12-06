@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as fs from "fs";
-import { FontFile, ShxFontFile, ShxFontFileFromBlobArgs, TrueTypeFontFile } from "../Font";
-import { FontType, LocalFileName } from "@itwin/core-common";
+import { FontFile, IModelDbFonts, ShxFontFile, ShxFontFileFromBlobArgs, TrueTypeFontFile } from "../Font";
+import { FontId, FontProps, FontType, LocalFileName } from "@itwin/core-common";
 import { IModelHost } from "../IModelHost";
 import { _implementationProhibited } from "./Symbols";
+import { IModelDb } from "../IModelDb";
         
 export function trueTypeFontFileFromFileName(fileName: LocalFileName): TrueTypeFontFile {
   const metadata = IModelHost.platform.getTrueTypeFontMetadata(fileName);
@@ -55,4 +56,42 @@ export function shxFontFileFromBlob(args: ShxFontFileFromBlobArgs): ShxFontFile 
     type: FontType.Shx,
     familyName: args.familyName,
   };
+}
+
+export class IModelDbFontsImpl implements IModelDbFonts {
+  public readonly [_implementationProhibited] = undefined;
+  
+  private readonly _iModel: IModelDb;
+
+  public constructor(iModel: IModelDb) {
+    this._iModel = iModel;
+  }
+
+  public get embeddedFontNames(): Iterable<string> {
+    throw new Error("###TODO");
+  }
+
+  public get embeddedFonts(): Iterable<FontProps> {
+    throw new Error("###TODO");
+  }
+
+  public get allocatedIds(): Iterable<{ name: string, id: FontId}> {
+    throw new Error("###TODO");
+  }
+
+  public findId(_name: string): FontId | undefined {
+    throw new Error("###TODO");
+  }
+
+  public findName(_id: FontId): string | undefined {
+    throw new Error("###TODO");
+  }
+
+  public async acquireId(_name: string): Promise<FontId> {
+    throw new Error("###TODO");
+  }
+
+  public embedFile(_file: FontFile): void {
+    throw new Error("###TODO");
+  }
 }

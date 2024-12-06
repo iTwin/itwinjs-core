@@ -68,6 +68,8 @@ import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
 import { _close, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
+import { IModelDbFonts } from "./Font";
+import { IModelDbFontsImpl } from "./internal/FontImpl";
 
 // spell:ignore fontid fontmap
 
@@ -173,6 +175,7 @@ export abstract class IModelDb extends IModel {
   private readonly _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
+  private _fonts?: IModelDbFonts;
   protected _fontMap?: FontMap;
   private _workspace?: OwnedWorkspace;
 
@@ -228,6 +231,14 @@ export abstract class IModelDb extends IModel {
 
   public get fontMap(): FontMap {
     return this._fontMap ?? (this._fontMap = new FontMap(this[_nativeDb].readFontMap()));
+  }
+
+  public get fonts(): IModelDbFonts {
+    if (!this._fonts) {
+      this._fonts = new IModelDbFontsImpl(this);
+    }
+
+    return this._fonts;
   }
 
   /** @internal */

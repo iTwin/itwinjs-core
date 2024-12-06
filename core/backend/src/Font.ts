@@ -6,7 +6,7 @@
  * @module ElementGeometry
  */
 
-import { FontType, LocalFileName } from "@itwin/core-common";
+import { FontId, FontProps, FontType, LocalFileName } from "@itwin/core-common";
 import { _implementationProhibited } from "./internal/Symbols";
 import { shxFontFileFromBlob, trueTypeFontFileFromFileName } from "./internal/FontImpl";
 
@@ -52,4 +52,20 @@ export namespace TrueTypeFontFile {
   export function fromFileName(fileName: LocalFileName): TrueTypeFontFile {
     return trueTypeFontFileFromFileName(fileName);
   }
+}
+
+export interface IModelDbFonts {
+  /** @internal */
+  [_implementationProhibited]: unknown;
+
+  readonly embeddedFontNames: Iterable<string>;
+  readonly embeddedFonts: Iterable<FontProps>;
+  readonly allocatedIds: Iterable<{ name: string, id: FontId }>;
+
+  findId(name: string): FontId | undefined;
+  findName(id: FontId): string | undefined;
+
+  acquireId(name: string): Promise<FontId>;
+
+  embedFile(file: FontFile): void;
 }
