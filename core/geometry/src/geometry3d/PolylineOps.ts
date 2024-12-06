@@ -229,9 +229,11 @@ export class PolylineOps {
    * * If there are one or fewer distinct input points, the return is undefined.
    * @param centerline points to reside in output planes.
    * @param wrapIfPhysicallyClosed if true and the first and last centerline points are the same, then the first and last
-   * output planes are averaged and equated (cloned).
+   * output planes are averaged and equated (cloned). Default false.
    */
-  public static createBisectorPlanesForDistinctPoints(centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed: boolean = false): Plane3dByOriginAndUnitNormal[] | undefined {
+  public static createBisectorPlanesForDistinctPoints(
+    centerline: IndexedXYZCollection | Point3d[], wrapIfPhysicallyClosed: boolean = false,
+  ): Plane3dByOriginAndUnitNormal[] | undefined {
     const packedPoints = PolylineOps.compressShortEdges(centerline, 2.0 * Geometry.smallMetricDistance);  // double the tolerance to ensure normalized vectors exist.
     if (packedPoints.length < 2)
       return undefined;
