@@ -284,6 +284,8 @@ export function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
   };
 }
 
+let meshoptDecoderLoaded: boolean = false;
+
 class Parser {
   private readonly _document: Document;
   private readonly _binaryData: Uint8Array;
@@ -311,12 +313,15 @@ class Parser {
       if (this._options.meshoptCompressionNotSupported || !MeshoptDecoder.supported)
         return TileReadStatus.UnsupportedMeshoptCompression;
 
-      try {
-        await MeshoptDecoder.ready;
-      }
-      catch (err) {
-        Logger.logException(FrontendLoggerCategory.Render, err);
-        return TileReadStatus.UnsupportedMeshoptCompression;
+      if (!meshoptDecoderLoaded) {
+        try {
+          await MeshoptDecoder.ready;
+        }
+        catch (err) {
+          Logger.logException(FrontendLoggerCategory.Render, err);
+          return TileReadStatus.UnsupportedMeshoptCompression;
+        }
+        meshoptDecoderLoaded = true;
       }
     }
 
