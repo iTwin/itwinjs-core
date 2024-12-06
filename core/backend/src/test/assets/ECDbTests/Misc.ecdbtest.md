@@ -618,6 +618,101 @@ PRAGMA parse_tree (
 ]
 ```
 
+# Trying PRAGMA ecdb_ver
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA ecdb_ver
+```
+
+| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+|           | current      | true      | 0     | current  | current | undefined    | string   | String | current            |
+|           | file         | true      | 1     | file     | file    | undefined    | string   | String | file               |
+
+| current | file    |
+| ------- | ------- |
+| 4.0.0.5 | 4.0.0.5 |
+
+
+# Trying PRAGMA explain_query simple select
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA explain_query (
+  [SELECT * FROM meta.ECClassDef WHERE Name='Element']
+) ECSQLOPTIONS ENABLE_EXPERIMENTAL_FEATURES
+```
+
+| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+|           | id           | true      | 0     | id       | id      | undefined    | long     | Int64  | id                 |
+|           | parent       | true      | 1     | parent   | parent  | undefined    | long     | Int64  | parent             |
+|           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
+|           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
+
+| id | parent | notused | detail                                                     |
+| -- | ------ | ------- | ---------------------------------------------------------- |
+| 3  | 0      | 62      | SEARCH main.ec_Class USING INDEX ix_ec_Class_Name (Name=?) |
+
+
+# Trying PRAGMA explain_query with cte
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA explain_query (  [WITH    cnt (x,y) AS (      SELECT 100, 200    )  SELECT * from cnt])
+```
+
+| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+|           | id           | true      | 0     | id       | id      | undefined    | long     | Int64  | id                 |
+|           | parent       | true      | 1     | parent   | parent  | undefined    | long     | Int64  | parent             |
+|           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
+|           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
+
+| id | parent | notused | detail            |
+| -- | ------ | ------- | ----------------- |
+| 2  | 0      | 0       | CO-ROUTINE cnt    |
+| 3  | 2      | 0       | SCAN CONSTANT ROW |
+| 8  | 0      | 16      | SCAN cnt          |
+
+
+# Trying PRAGMA explain_query with recursive cte
+
+- dataset: AllProperties.bim
+
+```sql
+PRAGMA explain_query (
+  [WITH RECURSIVE
+    cnt (x,y) AS (
+      SELECT 100, 200
+      UNION ALL
+      SELECT x+1, 200 FROM cnt WHERE x<210
+    )
+   SELECT * from cnt]
+)
+```
+
+| className | accessString | generated | index | jsonName | name    | extendedType | typeName | type   | originPropertyName |
+| --------- | ------------ | --------- | ----- | -------- | ------- | ------------ | -------- | ------ | ------------------ |
+|           | id           | true      | 0     | id       | id      | undefined    | long     | Int64  | id                 |
+|           | parent       | true      | 1     | parent   | parent  | undefined    | long     | Int64  | parent             |
+|           | notused      | true      | 2     | notused  | notused | undefined    | long     | Int64  | notused            |
+|           | detail       | true      | 3     | detail   | detail  | undefined    | string   | String | detail             |
+
+| id | parent | notused | detail            |
+| -- | ------ | ------- | ----------------- |
+| 2  | 0      | 0       | CO-ROUTINE cnt    |
+| 5  | 2      | 0       | SETUP             |
+| 6  | 5      | 0       | SCAN CONSTANT ROW |
+| 19 | 2      | 0       | RECURSIVE STEP    |
+| 20 | 19     | 216     | SCAN cnt          |
+| 31 | 0      | 215     | SCAN cnt          |
+
+
 # Using Scalar values in select clause with + operator
 
 - dataset: AllProperties.bim
