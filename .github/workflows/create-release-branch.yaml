@@ -115,8 +115,7 @@ jobs:
         run: |
           git add .
           newVersion=$(node -pe "require('./common/config/rush/version-policies.json')[0].version.trim()") && echo $newVersion
-          echo $newVersion
           # FIXME temp commit message while testing. Otherwise I might trigger a new build
           git commit -m "TEST COMMIT" --author="imodeljs-admin <imodeljs-admin@users.noreply.github.com>"
-          # git push origin ${{ env.RELEASE_BRANCH }}
+          git push origin ${{ env.RELEASE_BRANCH }}
         shell: bash {0}
