@@ -37,10 +37,8 @@ export interface MeshoptDecoder {
   decodeGltfBufferAsync: (count: number, size: number, source: Uint8Array, mode: string, filter?: string) => Promise<Uint8Array>;
 };
 
-/** Loads and configures the MeshoptDecoder module on demand.
-  * @internal
-  */
-export class MeshoptDecoderLoader {
+/**Loads and configures the MeshoptDecoder module on demand. */
+class Loader {
   private _status: "uninitialized" | "loading" | "ready" | "failed";
   private _promise?: Promise<void>;
   private _decoder?: MeshoptDecoder;
@@ -104,11 +102,21 @@ export class MeshoptDecoderLoader {
   }
 }
 
-const loader = new MeshoptDecoderLoader(1);
+let meshoptDecoders = new Map<number, MeshoptDecoder | undefined>();
+
+/** @internal */
+export async function getMeshoptDecoder(numWorkers: number = 0): Promise<MeshoptDecoder | undefined> {
+  if(!meshoptDecoders.has(numWorkers)){
+    const loader = new Loader(numWorkers);
+    const decoder = await loader.getDecoder();
+    meshoptDecoders.set(numWorkers, decoder);
+  }
+  return meshoptDecoders.get(numWorkers);
+}
 
 /** @internal */
 export async function decodeMeshoptBuffer(source: Uint8Array, args: DecodeMeshoptBufferArgs): Promise<Uint8Array | undefined> {
-  const decoder = await loader.getDecoder();
+  const decoder = await getMeshoptDecoder(1);
   if (!decoder) {
     return undefined;
   }

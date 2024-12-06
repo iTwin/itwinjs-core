@@ -4013,6 +4013,9 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 // @public
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
 
+// @internal (undocumented)
+export function getMeshoptDecoder(numWorkers?: number): Promise<MeshoptDecoder | undefined>;
+
 // @public
 export interface GetPixelDataWorldPointArgs {
     out?: Point3d;
@@ -7625,13 +7628,6 @@ export interface MeshoptDecoder {
     supported: boolean;
     // (undocumented)
     useWorkers: (count: number) => void;
-}
-
-// @internal
-export class MeshoptDecoderLoader {
-    constructor(numWorkers?: number);
-    // (undocumented)
-    getDecoder(): Promise<MeshoptDecoder | undefined>;
 }
 
 // @public

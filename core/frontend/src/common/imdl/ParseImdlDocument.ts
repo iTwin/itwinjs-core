@@ -30,7 +30,7 @@ import { VertexTable } from "../internal/render/VertexTable";
 import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
-import { MeshoptDecoder, MeshoptDecoderLoader } from "../../tile/internal";
+import { MeshoptDecoder, getMeshoptDecoder } from "../../tile/internal";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -311,8 +311,7 @@ class Parser {
       if(this._options.meshoptCompressionNotSupported)
         return TileReadStatus.UnsupportedMeshoptCompression;
 
-      const loader = new MeshoptDecoderLoader();
-      this._meshoptDecoder = await loader.getDecoder();
+      this._meshoptDecoder = await getMeshoptDecoder();
       if(!this._meshoptDecoder)
         return TileReadStatus.UnsupportedMeshoptCompression;
     }
