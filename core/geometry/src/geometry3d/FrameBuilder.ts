@@ -186,10 +186,10 @@ export class FrameBuilder {
         this.announcePoint(data.startPoint());
         this.announcePoint(data.endPoint());
       } else if (data instanceof Arc3d) {
-        const ray = data.fractionToPointAndDerivative(0.0);
-        this.announcePoint(ray.origin);
-        this.announceVector(ray.direction);
-        this.announceVector(data.matrixRef.columnZCrossVector(ray.direction));
+        const plane = data.fractionToPointAnd2Derivatives(0.0);
+        this.announcePoint(plane.origin);
+        this.announceVector(plane.vectorU);
+        this.announceVector(plane.vectorV);
       } else if (data instanceof LineString3d) {
         for (const point of data.points) {
           this.announcePoint(point);
