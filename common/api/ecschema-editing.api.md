@@ -2018,7 +2018,7 @@ export enum SchemaCompareDirection {
 // @alpha
 export class SchemaComparer {
     constructor(...reporters: ISchemaCompareReporter[]);
-    // (undocumented)
+    // @internal
     areEqualByName(itemKeyA?: Readonly<SchemaItemKey> | SchemaItem, itemKeyB?: Readonly<SchemaItemKey> | SchemaItem): boolean;
     compareClasses(classA: AnyClass, classB: AnyClass): Promise<void>;
     compareConstants(constantA: Constant, constantB: Constant): Promise<void>;
@@ -2039,9 +2039,9 @@ export class SchemaComparer {
     compareSchemaProps(schemaA: Schema, schemaB: Schema): Promise<void>;
     compareSchemas(schemaA: Schema, schemaB: Schema): Promise<void>;
     compareUnits(unitA: Unit, unitB: Unit): Promise<void>;
-    // (undocumented)
+    // @internal
     resolveItem<TItem extends SchemaItem>(item: SchemaItem, lookupSchema: Schema): Promise<TItem | undefined>;
-    // (undocumented)
+    // @internal
     resolveProperty(propertyA: AnyProperty, ecClass: ECClass): Promise<AnyProperty | undefined>;
 }
 
