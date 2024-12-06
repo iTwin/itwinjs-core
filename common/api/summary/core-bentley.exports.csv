@@ -86,6 +86,7 @@ public;class;LRUCache
 public;class;LRUDictionary
 public;class;LRUMap
 public;type;MarkRequired
+public;type;Maybe
 public;type;MaybePromise
 public;type;Mutable
 public;class;MutableCompressedId64Set
