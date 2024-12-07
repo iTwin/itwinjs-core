@@ -9,7 +9,7 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { ShxFontFile, TrueTypeFontFile } from "../../Font";
 import { FontType } from "@itwin/core-common";
 
-describe.only("ShxFontFile", () => {
+describe("ShxFontFile", () => {
   describe("create", () => {
     it("creates from blob", () => {
       const fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
@@ -30,7 +30,7 @@ describe.only("ShxFontFile", () => {
   });
 });
 
-describe.only("TrueTypeFontFile", () => {
+describe("TrueTypeFontFile", () => {
   describe("fromFileName", () => {
     it("throws on non-existent filename", () => {
       let fileName = IModelTestUtils.resolveFontFile("Karla-Regular.ttf");

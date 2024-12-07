@@ -5,7 +5,7 @@
 
 import * as fs from "fs";
 import { FontFile, IModelDbFonts, ShxFontFile, ShxFontFileFromBlobArgs, TrueTypeFontFile } from "../Font";
-import { FontId, FontProps, FontType, LocalFileName } from "@itwin/core-common";
+import { DbResult, FontId, FontProps, FontType, LocalFileName } from "@itwin/core-common";
 import { IModelHost } from "../IModelHost";
 import { _implementationProhibited, _nativeDb } from "./Symbols";
 import { IModelDb } from "../IModelDb";
@@ -91,8 +91,18 @@ export class IModelDbFontsImpl implements IModelDbFonts {
     this._iModel = iModel;
   }
 
+  // ###TODO rename embeddedFamilyNames or at least be consistent.
   public get embeddedFontNames(): Iterable<string> {
-    throw new Error("###TODO");
+    const names: string[] = [];
+
+    const sql = `select DISTINCT face.value->'$.familyName' from be_Prop, json_each(be_Prop.StrData) as face where namespace="dgn_Font" and name="EmbeddedFaceData"`;
+    this._iModel.withPreparedSqliteStatement(sql, (stmt) => {
+      while (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        names.push(stmt.getValueString(0));
+      }
+    });
+
+    return names;
   }
 
   public get embeddedFonts(): Iterable<FontProps> {
