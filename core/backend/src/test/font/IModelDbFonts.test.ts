@@ -40,6 +40,12 @@ describe.only("IModelDbFonts", () => {
     return result;
   }
 
+  function expectFamilyNames(expected: string[]): void {
+    expected.sort();
+    const actual = Array.from(db.fonts.embeddedFontNames).sort();
+    expect(actual).to.deep.equal(expected);
+  }
+
   describe("embedFile", () => {
     it("embeds SHX fonts", () => {
       expect(queryEmbeddedFonts().length).to.equal(0);
@@ -58,10 +64,45 @@ describe.only("IModelDbFonts", () => {
         faceName: "regular",
         subId: 0,
       });
+
+      expectFamilyNames(["Cdm"]);
     });
 
+    function createTTFont(name: string): TrueTypeFontFile {
+      return TrueTypeFontFile.fromFileName(IModelTestUtils.resolveFontFile(name));
+    }
+
     it("embeds TrueType fonts", () => {
-    
+      expect(queryEmbeddedFonts().length).to.equal(0);
+
+      db.fonts.embedFile(createTTFont("Karla-Regular.ttf"));
+      expect(queryEmbeddedFonts().length).to.equal(1);
+
+      db.fonts.embedFile(createTTFont("Sitka.ttc"));
+      expect(queryEmbeddedFonts().length).to.equal(2);
+
+      db.fonts.embedFile(createTTFont("DejaVuSans.ttf"));
+      expect(queryEmbeddedFonts().length).to.equal(3);
+      db.fonts.embedFile(createTTFont("DejaVuSans-Bold.ttf"));
+      expect(queryEmbeddedFonts().length).to.equal(4);
+      
+      expectFamilyNames([
+        "DejaVu Sans",
+        "Karla",
+        "Sitka Banner", "Sitka Display", "Sitka Heading", "Sitka Small", "Sitka Subheading", "Sitka Text",
+      ]);
+
+      // ###TODO font face props
+    });
+
+    it("throws attempting to embed a font without embedding rights", () => {
+      expect(() => db.fonts.embedFile(createTTFont("Karla-Restricted.ttf"))).to.throw("Font does not permit embedding");
+      expect(() => db.fonts.embedFile(createTTFont("Karla-Preview-And-Print.ttf"))).to.throw("Font does not permit embedding");
+      expect(queryEmbeddedFonts().length).to.equal(0);
+
+      db.fonts.embedFile(createTTFont("Karla-MultipleEmbeddingRights.ttf"));
+      expect(queryEmbeddedFonts().length).to.equal(1);
+      expect(Array.from(db.fonts.embeddedFontNames)).to.deep.equal(["Karla"]);
     });
   });
 });

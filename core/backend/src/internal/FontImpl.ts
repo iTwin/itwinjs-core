@@ -95,7 +95,7 @@ export class IModelDbFontsImpl implements IModelDbFonts {
   public get embeddedFontNames(): Iterable<string> {
     const names: string[] = [];
 
-    const sql = `select DISTINCT face.value->'$.familyName' from be_Prop, json_each(be_Prop.StrData) as face where namespace="dgn_Font" and name="EmbeddedFaceData"`;
+    const sql = `select DISTINCT json_extract(face.value, '$.familyName') from be_Prop, json_each(be_Prop.StrData) as face where namespace="dgn_Font" and name="EmbeddedFaceData"`;
     this._iModel.withPreparedSqliteStatement(sql, (stmt) => {
       while (DbResult.BE_SQLITE_ROW === stmt.step()) {
         names.push(stmt.getValueString(0));
@@ -128,6 +128,10 @@ export class IModelDbFontsImpl implements IModelDbFonts {
   public embedFile(file: FontFile): void {
     if (!isEmbeddableFontFile(file)) {
       throw new Error("Invalid FontFile");
+    }
+
+    if (file.type === FontType.TrueType && !file.isEmbeddable) {
+      throw new Error("Font does not permit embedding");
     }
 
     this._iModel[_nativeDb].embedFont(file.getEmbedArgs());
