@@ -51,6 +51,10 @@ import { Constructor } from '@itwin/core-bentley';
 import { CreateEmptySnapshotIModelProps } from '@itwin/core-common';
 import { CreateEmptyStandaloneIModelProps } from '@itwin/core-common';
 import { CreateSnapshotIModelProps } from '@itwin/core-common';
+import { DbChangeStage } from '@itwin/core-bentley';
+import { DbConflictCause } from '@itwin/core-bentley';
+import { DbConflictResolution } from '@itwin/core-bentley';
+import { DbOpcode } from '@itwin/core-bentley';
 import { DbResult } from '@itwin/core-bentley';
 import { DbValueType } from '@itwin/core-bentley';
 import { DefinitionElementProps } from '@itwin/core-common';
@@ -142,6 +146,7 @@ import { LowAndHighXYZ } from '@itwin/core-geometry';
 import { MarkRequired } from '@itwin/core-bentley';
 import { MassPropertiesRequestProps } from '@itwin/core-common';
 import { MassPropertiesResponseProps } from '@itwin/core-common';
+import { Maybe } from '@itwin/core-bentley';
 import { Metadata } from '@itwin/object-storage-core';
 import { ModelExtentsProps } from '@itwin/core-common';
 import { ModelGeometryChangesProps } from '@itwin/core-common';
@@ -669,6 +674,28 @@ export interface ChangeInstanceKey {
     changeType: "inserted" | "updated" | "deleted";
     classFullName: string;
     id: Id64String;
+}
+
+// @internal (undocumented)
+export class ChangeMergeManager {
+    constructor(_iModel: BriefcaseDb | StandaloneDb);
+    // (undocumented)
+    addConflictHandler(args: {
+        id: string;
+        handler: (args: RebaseChangesetConflictArgs) => Maybe<DbConflictResolution>;
+    }): void;
+    // (undocumented)
+    getMergeMethod(): "Rebase" | "Merge";
+    // (undocumented)
+    inProgress(): boolean;
+    // (undocumented)
+    onConflict(args: RebaseChangesetConflictArgs): Maybe<DbConflictResolution>;
+    // (undocumented)
+    removeConflictHandler(id: string): void;
+    // (undocumented)
+    resume(): void;
+    // (undocumented)
+    setMergeMethod(method: PullMergeMethod): void;
 }
 
 // @beta
@@ -3405,6 +3432,8 @@ export class IModelHost {
     // @beta
     static get profileName(): string;
     // @internal
+    static get pullMergeMethod(): PullMergeMethod;
+    // @internal
     static removeCrashReportProperty(name: string): void;
     // @internal
     static get restrictTileUrlsByClientIp(): boolean;
@@ -3450,6 +3479,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     static defaultLogTileSizeThreshold: number;
     // @internal (undocumented)
     static defaultMaxTileCacheDbSize: number;
+    // @internal (undocumented)
+    static defaultPullMergeMethod: PullMergeMethod;
     // (undocumented)
     static defaultTileRequestTimeout: number;
     // @internal (undocumented)
@@ -3458,6 +3489,8 @@ export class IModelHostConfiguration implements IModelHostOptions {
     logTileLoadTimeThreshold: number;
     // @internal (undocumented)
     logTileSizeThreshold: number;
+    // @internal (undocumented)
+    pullMergeMethod: PullMergeMethod;
     // @beta (undocumented)
     restrictTileUrlsByClientIp?: boolean;
     // @beta (undocumented)
@@ -3490,6 +3523,8 @@ export interface IModelHostOptions {
     maxTileCacheDbSize?: number;
     // @beta
     profileName?: string;
+    // @internal (undocumented)
+    pullMergeMethod?: PullMergeMethod;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
     // @beta
@@ -4543,6 +4578,9 @@ export type PullChangesArgs = ToChangesetArgs & {
     onProgress?: ProgressFunction;
 };
 
+// @internal (undocumented)
+export type PullMergeMethod = "Merge" | "Rebase";
+
 // @public
 export interface PushChangesArgs extends TokenArg {
     description: string;
@@ -5317,6 +5355,9 @@ export class SqliteChangesetReader implements IDisposable {
         db: IModelDb;
         includeInMemoryChanges?: true;
     }): SqliteChangesetReader;
+    static openTxn(args: {
+        txnId: Id64String;
+    } & SqliteChangesetReaderArgs): SqliteChangesetReader;
     get primaryKeyValues(): SqliteValueArray;
     step(): boolean;
     get tableName(): string;
@@ -5791,8 +5832,12 @@ export type TxnIdString = string;
 export class TxnManager {
     // @internal
     constructor(_iModel: BriefcaseDb | StandaloneDb);
+    // @internal
+    appCustomConflictHandler?: (args: RebaseChangesetConflictArgs) => DbConflictResolution | undefined;
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
+    // @internal (undocumented)
+    readonly changeMergeManager: ChangeMergeManager;
     endMultiTxnOperation(): DbResult;
     getCurrentTxnId(): TxnIdString;
     getMultiTxnOperationDepth(): number;
@@ -5845,6 +5890,16 @@ export class TxnManager {
     protected _onGeometryGuidsChanged(changes: ModelIdAndGeometryGuid[]): void;
     readonly onModelGeometryChanged: BeEvent<(changes: ReadonlyArray<ModelIdAndGeometryGuid>) => void>;
     readonly onModelsChanged: BeEvent<(changes: TxnChangedEntities) => void>;
+    // @internal (undocumented)
+    protected _onRebaseLocalTxnConflict(args: RebaseChangesetConflictArgs): DbConflictResolution;
+    // @internal (undocumented)
+    readonly onRebaseLTxnEnd: BeEvent<(txn: TxnArgs) => void>;
+    // @internal (undocumented)
+    protected _onRebaseLTxnEnd(txn: TxnArgs): void;
+    // @internal (undocumented)
+    readonly onRebaseTxnBegin: BeEvent<(txn: TxnArgs) => void>;
+    // @internal (undocumented)
+    protected _onRebaseTxnBegin(txn: TxnArgs): void;
     readonly onReplayedExternalTxns: BeEvent<() => void>;
     // @internal (undocumented)
     protected _onReplayedExternalTxns(): void;
