@@ -248,7 +248,7 @@ export class SchemaDiagnosticVisitor {
       changeType: "add",
       schemaType: SchemaOtherTypes.Property,
       itemName: property.class.name,
-      path: property.name,
+      path:  property.name,
       difference: property.toJSON() as AnyPropertyProps,
     });
   }

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@itwin/ecschema-editing",
+      "comment": "Allows to re-apply stored conflict resolutions",
+      "type": "none"
+    }
+  ],
+  "packageName": "@itwin/ecschema-editing"
+}

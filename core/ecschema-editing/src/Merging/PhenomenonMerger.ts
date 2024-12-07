@@ -40,7 +40,7 @@ export async function modifyPhenomenon(context: SchemaMergeContext, change: Phen
   if(change.difference.definition !== undefined) {
     // It would be better if the validation would be part of phenomenon.setDefinition.
     if (phenomenon.definition !== "" && change.difference.definition.toLowerCase() !== phenomenon.definition.toLowerCase())
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${itemKey.name} has an invalid 'definition' attribute.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${change.itemName} has an invalid 'definition' attribute.`);
 
     await phenomenon.setDefinition(change.difference.definition);
   }
