@@ -92,7 +92,20 @@ describe.only("IModelDbFonts", () => {
         "Sitka Banner", "Sitka Display", "Sitka Heading", "Sitka Small", "Sitka Subheading", "Sitka Text",
       ]);
 
-      // ###TODO font face props
+      function makeFace(familyName: string, faceName: "regular" | "bold" | "italic" | "bolditalic", subId: number): IModelJsNative.FontFaceProps {
+        return { familyName, faceName, subId, type: FontType.TrueType };
+      }
+
+      const compareFaces = (a: IModelJsNative.FontFaceProps, b: IModelJsNative.FontFaceProps) => a.familyName.localeCompare(b.familyName) || a.faceName.localeCompare(b.faceName) || a.type - b.type;
+      const expectedFaces: IModelJsNative.FontFaceProps[] = [
+        makeFace("DejaVu Sans", "bold", 0), makeFace("DejaVu Sans", "regular", 0),
+        makeFace("Karla", "regular", 0),
+        makeFace("Sitka Banner", "regular", 5), makeFace("Sitka Display", "regular", 4), makeFace("Sitka Heading", "regular", 3),
+        makeFace("Sitka Small", "regular", 0), makeFace("Sitka Subheading", "regular", 2), makeFace("Sitka Text", "regular", 1),
+      ].sort(compareFaces);
+
+      const actualFaces = queryEmbeddedFonts().flat().sort(compareFaces);
+      expect(actualFaces).to.deep.equal(expectedFaces);
     });
 
     it("throws attempting to embed a font without embedding rights", () => {
