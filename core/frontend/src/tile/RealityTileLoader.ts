@@ -143,7 +143,23 @@ export abstract class RealityTileLoader {
         reader = I3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, isCanceled, undefined, this.wantDeduplicatedVertices);
         break;
       case TileFormat.Gltf:
-        const props = GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp);
+        /* We can obtain the base url from the tile's tree id.
+        * The id is constructed with parts from the reality data sourcekey like this - provider:format:id:itwinId
+        * The id in this case is the base url of the reality data source. We can split with ":" and parse to get the base url.
+        */
+        const treeId = tile.tree.id;
+        const split = treeId.split(":");
+
+        /* Splitting with ":" will end up splitting up our base url as well as the id.
+        * For storage urls, there is only a colon after https, so the split will have 5 parts and we need to recreate using parts 3 and 4.
+        * For localhost urls, there is also a colon before the port number, so the split will have 6 parts and we recreate using parts 3, 4, and 5.
+        * The split is guaranteed to have at least 4 parts based on the id's construction, so we can always safely access parts 3 and 4.
+        */
+        let baseUrl = `${split[2]}:${split[3]}`;
+        if (split.length === 6)
+          baseUrl = `${baseUrl}:${split[4]};`
+
+        const props = this.isValidURL(baseUrl) ? GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp, new URL(baseUrl)) : GltfReaderProps.create(streamBuffer.nextBytes(streamBuffer.arrayBuffer.byteLength), yAxisUp);
         if (props) {
           reader = new GltfGraphicsReader(props, {
             iModel,
@@ -240,5 +256,14 @@ export abstract class RealityTileLoader {
     }
 
     return minDistance;
+  }
+
+  private isValidURL(url: string){
+    try {
+      new URL(url);
+    } catch {
+      return false;
+    }
+    return true;
   }
 }
