@@ -67,6 +67,7 @@ import { ElectronRendererAuthorization } from "@itwin/electron-authorization/Ren
 import { ITwinLocalization } from "@itwin/core-i18n";
 import { getConfigurationString } from "./DisplayTestApp";
 import { AddSeequentRealityModel } from "./RealityDataModel";
+import { registerCesiumCuratedContentProvider } from "./CuratedCesiumContentProvider";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -233,12 +234,13 @@ export class DisplayTestApp {
 
   public static async startup(configuration: DtaConfiguration, renderSys: RenderSystem.Options, tileAdmin: TileAdmin.Props): Promise<void> {
     let socketUrl = new URL(configuration.customOrchestratorUri || "http://localhost:3001");
+    const iTwinPlatformUrl = `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`
     socketUrl = LocalhostIpcApp.buildUrlForSocket(socketUrl);
     const realityDataClientOptions: RealityDataClientOptions = {
       /** API Version. v1 by default */
       // version?: ApiVersion;
       /** API Url. Used to select environment. Defaults to "https://api.bentley.com/reality-management/reality-data" */
-      baseUrl: `https://${process.env.IMJS_URL_PREFIX ?? ""}api.bentley.com`,
+      baseUrl: iTwinPlatformUrl,
     };
     const opts: ElectronAppOpts | LocalHostIpcAppOpts = {
       iModelApp: {
@@ -376,6 +378,10 @@ export class DisplayTestApp {
     IModelApp.toolAdmin.defaultToolId = SVTSelectionTool.toolId;
 
     BingTerrainMeshProvider.register();
+    await registerCesiumCuratedContentProvider({
+      iTwinId: configuration.iTwinId,
+      baseUrl: iTwinPlatformUrl,
+    });
 
     const realityApiKey = process.env.IMJS_REALITY_DATA_KEY;
     if (realityApiKey)
