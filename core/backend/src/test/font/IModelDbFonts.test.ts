@@ -47,6 +47,10 @@ describe.only("IModelDbFonts", () => {
   }
 
   describe("embedFile", () => {
+    it("throws if file is not writable", () => {
+      
+    });
+  
     it("embeds SHX fonts", () => {
       expect(queryEmbeddedFonts().length).to.equal(0);
       
@@ -116,6 +120,14 @@ describe.only("IModelDbFonts", () => {
       db.fonts.embedFile(createTTFont("Karla-MultipleEmbeddingRights.ttf"));
       expect(queryEmbeddedFonts().length).to.equal(1);
       expect(Array.from(db.fonts.embeddedFontNames)).to.deep.equal(["Karla"]);
+    });
+
+    it("throws if file is already embedded", () => {
+      
+    });
+
+    it("requires schema lock", () => {
+      
     });
   });
 });
