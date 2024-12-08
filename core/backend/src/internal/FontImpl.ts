@@ -93,6 +93,10 @@ export class IModelDbFontsImpl implements IModelDbFonts {
 
   // ###TODO rename embeddedFamilyNames or at least be consistent.
   public get embeddedFontNames(): Iterable<string> {
+    return this.getEmbeddedFontNames();
+  }
+
+  private getEmbeddedFontNames(): string[] {
     const names: string[] = [];
 
     const sql = `select DISTINCT json_extract(face.value, '$.familyName') from be_Prop, json_each(be_Prop.StrData) as face where namespace="dgn_Font" and name="EmbeddedFaceData"`;
@@ -106,19 +110,41 @@ export class IModelDbFontsImpl implements IModelDbFonts {
   }
 
   public get embeddedFonts(): Iterable<FontProps> {
-    throw new Error("###TODO");
+    const fontNames = this.getEmbeddedFontNames();
+    const fonts: FontProps[] = this._iModel[_nativeDb].readFontMap().fonts;
+    return fonts.filter((x) => fontNames.includes(x.name));
   }
 
   public get allocatedIds(): Iterable<{ name: string, id: FontId}> {
-    throw new Error("###TODO");
+    const fonts: FontProps[] = this._iModel[_nativeDb].readFontMap().fonts;
+    return fonts.map((x) => { return { name: x.name, id: x.id } });
   }
 
-  public findId(_name: string): FontId | undefined {
-    throw new Error("###TODO");
+  public findId(name: string): FontId | undefined {
+    let id;
+    this._iModel.withPreparedSqliteStatement("SELECT Id FROM dgn_Font WHERE Name=?", (stmt) => {
+      stmt.bindString(1, name);
+      if (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        id = stmt.getValueInteger(0);
+      }
+    });
+
+    return id;
   }
 
-  public findName(_id: FontId): string | undefined {
-    throw new Error("###TODO");
+  public findName(id: FontId): string | undefined {
+    let name;
+    this._iModel.withPreparedSqliteStatement("SELECT Name FROM dgn_Font WHERE Id=?", (stmt) => {
+      stmt.bindInteger(1, id);
+      if (DbResult.BE_SQLITE_ROW === stmt.step()) {
+        name = stmt.getValueString(0);
+        if (name.length === 0) {
+          name = undefined;
+        }
+      }
+    });
+
+    return name;
   }
 
   public async acquireId(_name: string): Promise<FontId> {
