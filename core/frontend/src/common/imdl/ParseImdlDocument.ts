@@ -941,6 +941,10 @@ class Parser {
 
     if (surf.compressedIndexCount && surf.compressedIndexCount > 0) {
 
+      if (meshoptDecoderStatus !== "ready") {
+        return undefined;
+      }
+
       const decompressedIndices = new Uint8Array(surf.compressedIndexCount * 4);
       MeshoptDecoder.decodeIndexSequence(decompressedIndices, surf.compressedIndexCount, 4, indices);
 
@@ -1023,6 +1027,10 @@ class Parser {
 
     let bytes: Uint8Array | undefined;
     if (json.compressedSize && json.compressedSize > 0) {
+
+      if (meshoptDecoderStatus !== "ready") {
+        return undefined;
+      }
 
       const bufferViewJson = this._document.bufferViews[JsonUtils.asString(json.bufferView)];
       if (undefined === bufferViewJson)
