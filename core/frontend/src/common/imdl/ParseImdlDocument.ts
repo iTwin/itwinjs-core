@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, ByteStream, Id64, Id64Set, Id64String, JsonUtils, utf8ToString } from "@itwin/core-bentley";
+import { assert, ByteStream, Id64, Id64Set, Id64String, JsonUtils, Logger, utf8ToString } from "@itwin/core-bentley";
 import { Point3d, Range2d, Range3d } from "@itwin/core-geometry";
 import {
   BatchType, ColorDef, FeatureTableHeader, FillFlags, GltfV2ChunkTypes, GltfVersions, Gradient, ImdlFlags, ImdlHeader, LinePixels, MultiModelPackedFeatureTable,
@@ -31,6 +31,7 @@ import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
 import { MeshoptDecoder } from "meshoptimizer";
+import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -283,7 +284,7 @@ export function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
   };
 }
 
-// let meshoptDecoderStatus: "uninitialized" | "ready" | "failed" = "uninitialized";
+let meshoptDecoderStatus: "uninitialized" | "ready" | "failed" = "uninitialized";
 
 class Parser {
   private readonly _document: Document;
@@ -308,22 +309,23 @@ class Parser {
     if (!featureTable)
       return TileReadStatus.InvalidFeatureTable;
 
-    // if (this.hasMeshoptCompression()) {
-    //   if (this._options.meshoptCompressionNotSupported || !MeshoptDecoder.supported)
-    //     return TileReadStatus.UnsupportedMeshoptCompression;
+    if (this.hasMeshoptCompression()) {
+      if (this._options.meshoptCompressionNotSupported || !MeshoptDecoder.supported)
+        return TileReadStatus.UnsupportedMeshoptCompression;
 
-    //   if (meshoptDecoderStatus === "uninitialized") {
-    //     await MeshoptDecoder.ready.
-    //       then(() => { meshoptDecoderStatus = "ready"; }).
-    //       catch(error => {
-    //         Logger.logException(FrontendLoggerCategory.Render, error);
-    //         meshoptDecoderStatus = "failed";
-    //       });
-    //   }
+      if (meshoptDecoderStatus === "uninitialized") {
+        try {
+          await MeshoptDecoder.ready;
+          meshoptDecoderStatus = "ready";
+        } catch (err) {
+          Logger.logException(FrontendLoggerCategory.Render, err);
+          meshoptDecoderStatus = "failed";
+        }
+      }
 
-    //   if (meshoptDecoderStatus === "failed")
-    //     return TileReadStatus.UnsupportedMeshoptCompression;
-    // }
+      if (meshoptDecoderStatus === "failed")
+        return TileReadStatus.UnsupportedMeshoptCompression;
+    }
 
     const rtcCenter = this._document.rtcCenter ? {
       x: this._document.rtcCenter[0] ?? 0,
