@@ -114,8 +114,8 @@ describe.only("IModelDbFonts", () => {
     });
 
     it("throws attempting to embed a font without embedding rights", async () => {
-      expect(db.fonts.embedFile(createTTFont("Karla-Restricted.ttf"))).to.eventually.be.rejectedWith("Font does not permit embedding");
-      expect(db.fonts.embedFile(createTTFont("Karla-Preview-And-Print.ttf"))).to.eventually.be.rejectedWith("Font does not permit embedding");
+      await expect(db.fonts.embedFile(createTTFont("Karla-Restricted.ttf"))).to.eventually.be.rejectedWith("Font does not permit embedding");
+      await expect(db.fonts.embedFile(createTTFont("Karla-Preview-And-Print.ttf"))).to.eventually.be.rejectedWith("Font does not permit embedding");
       expect(queryEmbeddedFonts().length).to.equal(0);
 
       await db.fonts.embedFile(createTTFont("Karla-MultipleEmbeddingRights.ttf"));
@@ -124,10 +124,18 @@ describe.only("IModelDbFonts", () => {
     });
 
     it("throws if file is already embedded", async () => {
-      // ###TODO
+      // ###TODO the checking currently happens in FontManager::EmbedFont - if any face is already embedded, it rejects the whole file.
+      // We want instead to reject if the same *file* is embedded - or, make it a no-op.
+      // "same file" would be defined as "same family names and face types" in a canonical ordering - a representation we can also use
+      // to allocate row Ids for be_Prop (see CodeService comment below).
+
+      await db.fonts.embedFile(createTTFont("Sitka.ttc"));
+      await expect(db.fonts.embedFile(createTTFont("Sitka.ttc"))).to.eventually.be.rejectedWith("unable to embed font");
     });
 
     it("requires schema lock", async () => {
+      // ###TODO it should use CodeService (if configured) to allocate row Id for be_Prop without requiring schema lock.
+      // Will need new CodeService method
       const spy = sinon.spy(db, "acquireSchemaLock");
       await db.fonts.embedFile(createTTFont("Karla-Regular.ttf"));
       expect(spy.callCount).to.equal(1);
