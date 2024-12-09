@@ -1,6 +1,6 @@
 {
   "name": "@itwin/core-backend",
-  "version": "5.0.0-dev.18",
+  "version": "5.0.0-dev.19",
   "description": "iTwin.js backend components",
   "main": "lib/cjs/core-backend.js",
   "typings": "lib/cjs/core-backend",
@@ -24,7 +24,7 @@
     "ios:webpack:tests": "TESTS_GLOB=./lib/**/*.test.js webpack --config ../../tools/internal/ios/ios.webpack.config.js",
     "ios:copy:assets": "cpx \"./src/test/assets/**/*\" ../../tools/internal/lib/ios/assets/assets && cpx \"./src/assets/**/*\" ../../tools/internal/lib/ios/assets/assets",
     "ios:build:tests": "npm run -s build && npm run -s ios:webpack:tests && npm run -s ios:copy:assets",
-    "ios:build:core-test-runner": "cd ../../tools/internal/ios/core-test-runner && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme core-test-runner -arch x86_64 -sdk iphonesimulator -configuration Debug",
+    "ios:build:core-test-runner": "cd ../../tools/internal/ios/core-test-runner && xcrun xcodebuild -derivedDataPath ./build/DerivedData build CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY= CODE_SIGNING_REQUIRED=NO PROVISIONING_PROFILE_SPECIFIER= -scheme core-test-runner -arch arm64 -sdk iphonesimulator -configuration Debug",
     "ios:tests:simulator": "node scripts/runUnitTestsIosSimulator.mjs",
     "ios:all": "npm run ios:build:tests && npm run ios:build:core-test-runner && npm run ios:tests:simulator"
   },
@@ -45,9 +45,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@itwin/core-bentley": "workspace:^5.0.0-dev.18",
-    "@itwin/core-common": "workspace:^5.0.0-dev.18",
-    "@itwin/core-geometry": "workspace:^5.0.0-dev.18",
+    "@itwin/core-bentley": "workspace:^5.0.0-dev.19",
+    "@itwin/core-common": "workspace:^5.0.0-dev.19",
+    "@itwin/core-geometry": "workspace:^5.0.0-dev.19",
     "@opentelemetry/api": "^1.0.4"
   },
   "peerDependenciesMeta": {
