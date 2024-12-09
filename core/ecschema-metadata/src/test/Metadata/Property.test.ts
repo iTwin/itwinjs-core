@@ -24,6 +24,7 @@ import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { PropertyType } from "../../PropertyTypes";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -1409,3 +1410,137 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
   });
 });
 
+describe("should get property from baseProperty", () => {
+  function createSchemaJson(schemaItemJson: any): any {
+    return createSchemaJsonWithItems({
+      ELEVATION: {
+        schemaItemType: "KindOfQuantity",
+        name: "TestKindOfQuantity",
+        label: "SomeDisplayLabel",
+        description: "A really long description...",
+        relativeError: 1.0,
+        persistenceUnit: "Formats.IN",
+      },
+      LENGTH: {
+        schemaItemType: "KindOfQuantity",
+        name: "Length",
+        label: "Length",
+        description: "A measurement of length.",
+        relativeError: 0.01,
+        persistenceUnit: "Formats.M",
+        presentationUnits: [
+          "Formats.DefaultReal[Formats.M]",
+        ],
+      },
+      BasebaseClass: {
+        schemaItemType: "EntityClass",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp2",
+            typeName: "string",
+            kindOfQuantity: "TestSchema.LENGTH",
+          },
+        ],
+      },
+      BaseClass: {
+        schemaItemType: "EntityClass",
+        baseClass: "TestSchema.BasebaseClass",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp",
+            typeName: "string",
+            kindOfQuantity: "TestSchema.ELEVATION",
+          }
+        ],
+      },
+      TestClass: {
+        schemaItemType: "EntityClass",
+        baseClass: "TestSchema.BaseClass",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp",
+            typeName: "string",
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp2",
+            typeName: "string",
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp3",
+            typeName: "string",
+          }
+        ],
+      },
+
+      ...schemaItemJson,
+    }, {
+      references: [
+        {
+          name: "Formats",
+          version: "1.0.0",
+          alias: "f",
+        },
+      ],
+    });
+  }
+
+  const context = new SchemaContext();
+  context.addLocater(new TestSchemaLocater());
+  const schema: Schema = Schema.fromJsonSync(createSchemaJson(""), context);
+
+  it.only("should get kind of quantity from base property", async () => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("TestProp", false);
+    expect(testProp).to.exist;
+
+    // with getter
+    const koq = testProp!.kindOfQuantity;
+    expect(koq).to.exist;
+    expect(koq!.name).to.equal("ELEVATION");
+
+    // with getKindOfQuantitySync
+    const koqfromSync = testProp!.getKindOfQuantitySync();
+    expect(koqfromSync).to.exist;
+    expect(koqfromSync!.name).to.equal("ELEVATION");
+  });
+
+  it.only("should get from base property's base property", async () => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("TestProp2", false);
+    expect(testProp).to.exist;
+
+    // with getter
+    const koq = testProp!.kindOfQuantity;
+    expect(koq).to.exist;
+    expect(koq!.name).to.equal("LENGTH");
+
+    // with getKindOfQuantitySync
+    const koqfromSync = testProp!.getKindOfQuantitySync();
+    expect(koqfromSync).to.exist;
+    expect(koqfromSync!.name).to.equal("LENGTH");
+  });
+
+  it.only("should return undefined if property and base property do not have kind of quantity", async () => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("TestProp3", false);
+    expect(testProp).to.exist;
+
+    // with getter
+    const koq = testProp!.kindOfQuantity;
+    expect(koq).to.be.undefined;
+
+    // with getKindOfQuantitySync
+    const koqfromSync = testProp!.getKindOfQuantitySync();
+    expect(koqfromSync).to.be.undefined;
+  });
+
+
+})

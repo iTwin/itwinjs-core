@@ -69,7 +69,16 @@ export abstract class Property implements CustomAttributeContainerProps {
 
   public get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
 
-  public get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined { return this._kindOfQuantity; }
+  public get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined {
+    if (!this._kindOfQuantity) {
+      const baseProperty = this.class.getInheritedPropertySync(this.name);
+      if (undefined !== baseProperty) {
+        return baseProperty.kindOfQuantity;
+      }
+    }
+
+    return this._kindOfQuantity;
+  }
 
   public get propertyType() { return this._type; }
 
@@ -89,8 +98,14 @@ export abstract class Property implements CustomAttributeContainerProps {
   }
 
   public getKindOfQuantitySync(): KindOfQuantity | undefined {
-    if (!this._kindOfQuantity)
+    if (!this._kindOfQuantity){
+      const baseProperty = this.class.getInheritedPropertySync(this.name);
+      if (undefined !== baseProperty){
+        return baseProperty.getKindOfQuantitySync();
+      }
+      
       return undefined;
+    }
 
     return this.class.schema.lookupItemSync(this._kindOfQuantity);
   }
