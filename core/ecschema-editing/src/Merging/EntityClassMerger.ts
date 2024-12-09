@@ -7,7 +7,7 @@ import type { MutableEntityClass } from "../Editing/Mutable/MutableEntityClass";
 import type { SchemaMergeContext } from "./SchemaMerger";
 import { SchemaItemKey } from "@itwin/ecschema-metadata";
 import { modifyClass } from "./ClassMerger";
-import { updateSchemaItemKey } from "./Utils";
+import { toItemKey, updateSchemaItemKey } from "./Utils";
 
 /**
  * Merges a new EntityClass into the target schema.
@@ -45,7 +45,7 @@ export async function modifyEntityClass(context: SchemaMergeContext, change: Ent
 export async function addClassMixins(context: SchemaMergeContext, change: EntityClassMixinDifference): Promise<void> {
   for(const mixinFullName of change.difference) {
     const mixinKey = await updateSchemaItemKey(context, mixinFullName);
-    const entityKey = new SchemaItemKey(change.itemName, context.targetSchemaKey);
+    const entityKey = toItemKey(context, change.itemName);
     await context.editor.entities.addMixin(entityKey, mixinKey);
   }
 }

@@ -304,6 +304,28 @@ export abstract class CurveChain extends CurveCollection {
       return undefined;
   }
   /**
+   * Return the start point and derivative of the first child of the curve chain.
+   * * For queries interior to the chain, use [[CurveChainWithDistanceIndex.fractionToPointAndDerivative]].
+   */
+  public startPointAndDerivative(result?: Ray3d): Ray3d | undefined {
+    const firstChild = this.getChild(0);
+    if (firstChild)
+      return firstChild.fractionToPointAndDerivative(0.0, result);
+    else
+      return undefined;
+  }
+  /**
+   * Return the end point and derivative of the last child of the curve chain.
+   * * For queries interior to the chain, use [[CurveChainWithDistanceIndex.fractionToPointAndDerivative]].
+   */
+  public endPointAndDerivative(result?: Ray3d): Ray3d | undefined {
+    const lastChild = this.getChild(this._curves.length - 1);
+    if (lastChild)
+      return lastChild.fractionToPointAndDerivative(1.0, result);
+    else
+      return undefined;
+  }
+  /**
    * Return the curve primitive at the given `index`, optionally using `modulo` to map `index` to the cyclic indexing.
    * * In particular, `-1` is the final curve.
    * @param index cyclic index
