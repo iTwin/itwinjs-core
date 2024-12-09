@@ -65,7 +65,7 @@ export abstract class Property implements CustomAttributeContainerProps {
 
   public get isReadOnly() { return this._isReadOnly || false; }
 
-  public get priority(): Number {
+  public get priority(): number {
     if (this._priority === undefined) {
       const baseProperty = this.class.getInheritedPropertySync(this.name);
       if (undefined !== baseProperty) {
