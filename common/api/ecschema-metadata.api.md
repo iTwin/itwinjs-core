@@ -1010,7 +1010,7 @@ export class OverrideFormat {
     // (undocumented)
     get type(): FormatType;
     // (undocumented)
-    get units(): [Unit | InvertedUnit, string | undefined][] | undefined;
+    get units(): [InvertedUnit | Unit, string | undefined][] | undefined;
     // (undocumented)
     get uomSeparator(): string;
 }
@@ -1248,7 +1248,7 @@ export abstract class Property implements CustomAttributeContainerProps {
     // (undocumented)
     protected _name: ECName;
     // (undocumented)
-    get priority(): number;
+    get priority(): Number;
     // (undocumented)
     protected _priority?: number;
     // (undocumented)
