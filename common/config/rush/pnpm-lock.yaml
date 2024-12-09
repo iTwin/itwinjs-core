@@ -10,7 +10,7 @@ importers:
 
   ../../core/backend:
     specifiers:
-      '@bentley/imodeljs-native': 5.0.12
+      '@bentley/imodeljs-native': 5.0.15
       '@itwin/build-tools': workspace:*
       '@itwin/cloud-agnostic-core': ^2.2.4
       '@itwin/core-bentley': workspace:*
@@ -60,7 +60,7 @@ importers:
       webpack: ^5.76.0
       ws: ^7.5.10
     dependencies:
-      '@bentley/imodeljs-native': 5.0.12
+      '@bentley/imodeljs-native': 5.0.15
       '@itwin/cloud-agnostic-core': 2.2.4_scz6qrwecfbbxg4vskopkl3a7u
       '@itwin/core-telemetry': link:../telemetry
       '@itwin/object-storage-azure': 2.2.5_scz6qrwecfbbxg4vskopkl3a7u
@@ -1254,7 +1254,7 @@ importers:
       '@itwin/core-frontend': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
-      '@itwin/oidc-signin-tool': 4.4.0
+      '@itwin/oidc-signin-tool': ^4.4.0
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
       '@types/node': ~20.9.5
@@ -1303,7 +1303,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@itwin/imodel-transformer': ^0.4.2
       '@itwin/itwins-client': ^1.2.0
-      '@itwin/oidc-signin-tool': 4.4.0
+      '@itwin/oidc-signin-tool': ^4.4.0
       '@itwin/service-authorization': ^1.0.0
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -1580,7 +1580,7 @@ importers:
       '@itwin/imodels-access-backend': ^5.2.1
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/itwins-client': ^1.2.0
-      '@itwin/oidc-signin-tool': 4.4.0
+      '@itwin/oidc-signin-tool': ^4.4.0
       '@itwin/perf-tools': workspace:*
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -1687,7 +1687,7 @@ importers:
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/itwins-client': ^1.2.0
       '@itwin/object-storage-core': ^2.2.5
-      '@itwin/oidc-signin-tool': 4.4.0
+      '@itwin/oidc-signin-tool': ^4.4.0
       '@itwin/reality-data-client': ^1.2.1
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
@@ -1818,7 +1818,7 @@ importers:
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/itwins-client': ^1.2.0
-      '@itwin/oidc-signin-tool': 4.4.0
+      '@itwin/oidc-signin-tool': ^4.4.0
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
       '@types/chai': 4.3.1
@@ -2098,7 +2098,7 @@ importers:
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
       '@itwin/itwins-client': ^1.2.0
-      '@itwin/oidc-signin-tool': 4.4.0
+      '@itwin/oidc-signin-tool': ^4.4.0
       '@itwin/presentation-backend': workspace:*
       '@itwin/presentation-common': workspace:*
       '@itwin/presentation-frontend': workspace:*
@@ -2461,7 +2461,7 @@ importers:
       '@itwin/imodels-access-frontend': ^5.2.1
       '@itwin/imodels-client-authoring': ^5.8.1
       '@itwin/imodels-client-management': ^5.8.1
-      '@itwin/oidc-signin-tool': 4.4.0
+      '@itwin/oidc-signin-tool': ^4.4.0
       '@itwin/perf-tools': workspace:*
       '@itwin/reality-data-client': ^1.2.1
       '@types/body-parser': ^1.17.0
@@ -3702,8 +3702,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/5.0.12:
-    resolution: {integrity: sha512-CUk3EESeyAr2Jc8iVwFcEPm0WB9O/7FQkeLvMeRJPEBD3lfeqcvL6iZmUJ11WfcItg7iXBQCLEPaUZoyQWiCDw==}
+  /@bentley/imodeljs-native/5.0.15:
+    resolution: {integrity: sha512-2O2tNNimYLCMKjB/stwerPirHgHeJAYuqdYaFCcBbqxEdnpI7XKRJd20DOVYgiTM5Nlj9vwXAZIP5V28uuIAtA==}
     requiresBuild: true
     dev: false
 
