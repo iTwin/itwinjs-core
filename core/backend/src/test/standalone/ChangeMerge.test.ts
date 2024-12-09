@@ -45,7 +45,7 @@ async function updatePhysicalObject(b: BriefcaseDb, el1: string, federationGuid:
   b.elements.updateElement(props.toJSON());
 }
 
-describe.only("Change merge method", () => {
+describe("Change merge method", () => {
   const ctx = {
     accessTokens: {
       user1: "",
