@@ -32,7 +32,7 @@ class SimctlWithOpts extends Simctl {
   async launchAppWithOptions(bundleId, options, args) {
     const { stdout } = await this.exec('launch', {
       args: [...options, this.requireUdid('launch'), bundleId, ...args],
-      architectures: "x86_64",
+      architectures: "arm64",
     });
     return stdout.trim();
   }
