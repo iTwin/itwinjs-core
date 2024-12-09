@@ -5,7 +5,6 @@
 
 const path = require("path");
 const webpack = require("webpack");
-// const plugins = require("@itwin/core-webpack-tools");
 module.exports = (env) => {
   return getConfig(env);
 };
@@ -71,8 +70,6 @@ function getConfig(env) {
       "utf-8-validate": "utf-8-validate",
     },
     plugins: [
-      // new plugins.CopyAppAssetsPlugin("./assets/"),
-      // new plugins.CopyBentleyStaticResourcesPlugin(["assets"]),
       new webpack.DefinePlugin({
         "global.GENTLY": false,
         "process.version": "'v10.9.0'",
