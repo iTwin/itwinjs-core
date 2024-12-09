@@ -67,5 +67,5 @@ export interface IModelDbFonts {
 
   acquireId(name: string): Promise<FontId>;
 
-  embedFile(file: FontFile): void;
+  embedFile(file: FontFile): Promise<void>;
 }

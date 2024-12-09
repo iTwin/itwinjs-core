@@ -151,7 +151,7 @@ export class IModelDbFontsImpl implements IModelDbFonts {
     throw new Error("###TODO");
   }
 
-  public embedFile(file: FontFile): void {
+  public async embedFile(file: FontFile): Promise<void> {
     if (!isEmbeddableFontFile(file)) {
       throw new Error("Invalid FontFile");
     }
@@ -160,6 +160,12 @@ export class IModelDbFontsImpl implements IModelDbFonts {
       throw new Error("Font does not permit embedding");
     }
 
+    // ###TODO: Verify file isn't already embedded (currently happens in FontDb::EmbedFont FontManager.cpp
+
+    // ###TODO: Use CodeService to allocate/look up Id for row in be_Props
+    await this._iModel.acquireSchemaLock();
+    
+    // ###TODO pass row Id in to embedFont
     this._iModel[_nativeDb].embedFont(file.getEmbedArgs());
   }
 }

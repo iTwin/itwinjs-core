@@ -47,17 +47,17 @@ describe.only("IModelDbFonts", () => {
   }
 
   describe("embedFile", () => {
-    it("throws if file is not writable", () => {
+    it("throws if file is not writable", async () => {
       
     });
   
-    it("embeds SHX fonts", () => {
+    it("embeds SHX fonts", async () => {
       expect(queryEmbeddedFonts().length).to.equal(0);
       
       const fileName = IModelTestUtils.resolveFontFile("Cdm.shx");
       const blob = fs.readFileSync(fileName);
       const font = ShxFontFile.fromBlob({ blob, familyName: "Cdm" });
-      db.fonts.embedFile(font);
+      await db.fonts.embedFile(font);
 
       const fonts = queryEmbeddedFonts();
       expect(fonts.length).to.equal(1);
@@ -76,18 +76,18 @@ describe.only("IModelDbFonts", () => {
       return TrueTypeFontFile.fromFileName(IModelTestUtils.resolveFontFile(name));
     }
 
-    it("embeds TrueType fonts", () => {
+    it("embeds TrueType fonts", async () => {
       expect(queryEmbeddedFonts().length).to.equal(0);
 
-      db.fonts.embedFile(createTTFont("Karla-Regular.ttf"));
+      await db.fonts.embedFile(createTTFont("Karla-Regular.ttf"));
       expect(queryEmbeddedFonts().length).to.equal(1);
 
-      db.fonts.embedFile(createTTFont("Sitka.ttc"));
+      await db.fonts.embedFile(createTTFont("Sitka.ttc"));
       expect(queryEmbeddedFonts().length).to.equal(2);
 
-      db.fonts.embedFile(createTTFont("DejaVuSans.ttf"));
+      await db.fonts.embedFile(createTTFont("DejaVuSans.ttf"));
       expect(queryEmbeddedFonts().length).to.equal(3);
-      db.fonts.embedFile(createTTFont("DejaVuSans-Bold.ttf"));
+      await db.fonts.embedFile(createTTFont("DejaVuSans-Bold.ttf"));
       expect(queryEmbeddedFonts().length).to.equal(4);
       
       expectFamilyNames([
@@ -112,21 +112,21 @@ describe.only("IModelDbFonts", () => {
       expect(actualFaces).to.deep.equal(expectedFaces);
     });
 
-    it("throws attempting to embed a font without embedding rights", () => {
-      expect(() => db.fonts.embedFile(createTTFont("Karla-Restricted.ttf"))).to.throw("Font does not permit embedding");
-      expect(() => db.fonts.embedFile(createTTFont("Karla-Preview-And-Print.ttf"))).to.throw("Font does not permit embedding");
+    it("throws attempting to embed a font without embedding rights", async () => {
+      expect(db.fonts.embedFile(createTTFont("Karla-Restricted.ttf"))).to.eventually.be.rejectedWith("Font does not permit embedding");
+      expect(db.fonts.embedFile(createTTFont("Karla-Preview-And-Print.ttf"))).to.eventually.be.rejectedWith("Font does not permit embedding");
       expect(queryEmbeddedFonts().length).to.equal(0);
 
-      db.fonts.embedFile(createTTFont("Karla-MultipleEmbeddingRights.ttf"));
+      await db.fonts.embedFile(createTTFont("Karla-MultipleEmbeddingRights.ttf"));
       expect(queryEmbeddedFonts().length).to.equal(1);
       expect(Array.from(db.fonts.embeddedFontNames)).to.deep.equal(["Karla"]);
     });
 
-    it("throws if file is already embedded", () => {
+    it("throws if file is already embedded", async () => {
       
     });
 
-    it("requires schema lock", () => {
+    it("requires schema lock", async () => {
       
     });
   });
