@@ -375,13 +375,15 @@ describe("PipeConnections", () => {
         Point4d.create(1.5, 1, 1, 1),
       ], 3,
       )!,
+      [Point3d.create(-1, -1, 0), Point3d.create(-1, 1, 0), Point3d.create(1, 1, 0)],
     ];
     for (const sweep of sectionSweeps) {
       dx = 0;
       const sectionData = [
-        Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5), sweep),
+        Arc3d.create(undefined, Vector3d.create(0, 0, 0.3), Vector3d.create(0.5), sweep),
         Arc3d.create(undefined, Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
         0.2,
+        0.1,
       ];
       ck.testExactNumber(sectionData.length, centerline.length, "test case arrays have same size");
       let builder: PolyfaceBuilder;
