@@ -5,6 +5,7 @@
 
 import { expect } from "chai";
 import * as fs from "fs";
+import * as sinon from "sinon";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ShxFontFile, TrueTypeFontFile } from "../../Font";
 import { FontType } from "@itwin/core-common";
@@ -123,11 +124,15 @@ describe.only("IModelDbFonts", () => {
     });
 
     it("throws if file is already embedded", async () => {
-      
+      // ###TODO
     });
 
     it("requires schema lock", async () => {
-      
+      const spy = sinon.spy(db, "acquireSchemaLock");
+      await db.fonts.embedFile(createTTFont("Karla-Regular.ttf"));
+      expect(spy.callCount).to.equal(1);
+      await db.fonts.embedFile(createTTFont("Sitka.ttc"));
+      expect(spy.callCount).to.equal(2);
     });
   });
 });
