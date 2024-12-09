@@ -1418,29 +1418,21 @@ describe("should get property from baseProperty", () => {
       ELEVATION: {
         schemaItemType: "KindOfQuantity",
         name: "TestKindOfQuantity",
-        label: "SomeDisplayLabel",
-        description: "A really long description...",
         relativeError: 1.0,
         persistenceUnit: "Formats.IN",
       },
       LENGTH: {
         schemaItemType: "KindOfQuantity",
         name: "Length",
-        label: "Length",
-        description: "A measurement of length.",
         relativeError: 0.01,
         persistenceUnit: "Formats.M",
-        presentationUnits: [
-          "Formats.DefaultReal[Formats.M]",
-        ],
       },
 
-      // category properties
+      // category properties with priority
       TestCategory: {
         schemaItemType: "PropertyCategory",
         type: "string",
-        typeName: "testCategory",
-        priority: 5,
+        typeName: "testCategory"
       },
 
       BasebaseClass: {
@@ -1452,6 +1444,7 @@ describe("should get property from baseProperty", () => {
             typeName: "string",
             kindOfQuantity: "TestSchema.LENGTH",
             category: "TestSchema.TestCategory",
+            priority: 101,
           },
         ],
       },
@@ -1465,6 +1458,7 @@ describe("should get property from baseProperty", () => {
             typeName: "string",
             kindOfQuantity: "TestSchema.ELEVATION",
             category: "TestSchema.TestCategory",
+            priority: 100,
           }
         ],
       },
@@ -1521,7 +1515,11 @@ describe("should get property from baseProperty", () => {
     expect(cat).to.exist;
     expect(cat!.name).to.equal("TestCategory");
 
-    // with getKindOfQuantitySync
+    const priority = testProp!.priority;
+    expect(priority).to.exist;
+    expect(priority).to.equal(100);
+
+    // with get sync methods
     const koqfromSync = testProp!.getKindOfQuantitySync();
     expect(koqfromSync).to.exist;
     expect(koqfromSync!.name).to.equal("ELEVATION");
@@ -1544,8 +1542,11 @@ describe("should get property from baseProperty", () => {
     const cat = testProp!.category;
     expect(cat).to.exist;
     expect(cat!.name).to.equal("TestCategory");
+    const priority = testProp!.priority;
+    expect(priority).to.exist;
+    expect(priority).to.equal(101);
 
-    // with getKindOfQuantitySync
+    // with get sync methods
     const koqfromSync = testProp!.getKindOfQuantitySync();
     expect(koqfromSync).to.exist;
     expect(koqfromSync!.name).to.equal("LENGTH");
@@ -1566,7 +1567,7 @@ describe("should get property from baseProperty", () => {
     const cat = testProp!.category;
     expect(cat).to.be.undefined;
 
-    // with getKindOfQuantitySync
+    // with get sync methods
     const koqfromSync = testProp!.getKindOfQuantitySync();
     expect(koqfromSync).to.be.undefined;
     const catfromSync = testProp!.getCategorySync();
@@ -1582,10 +1583,12 @@ describe("should get property from baseProperty", () => {
     const serializedJSON = testProp!.toJSON();
     expect(serializedJSON.kindOfQuantity).to.be.undefined;
     expect(serializedJSON.category).to.be.undefined;
+    expect(serializedJSON.priority).to.be.undefined;
 
     const newDom = createEmptyXmlDocument();
     const serializedXML = await testProp!.toXml(newDom);
     expect(serializedXML.getAttribute("kindOfQuantity")).to.equal("");
     expect(serializedXML.getAttribute("category")).to.equal("");
+    expect(serializedXML.getAttribute("priority")).to.equal("");
   });
 })

@@ -65,7 +65,16 @@ export abstract class Property implements CustomAttributeContainerProps {
 
   public get isReadOnly() { return this._isReadOnly || false; }
 
-  public get priority() { return this._priority || 0; }
+  public get priority(): Number {
+    if (this._priority === undefined) {
+      const baseProperty = this.class.getInheritedPropertySync(this.name);
+      if (undefined !== baseProperty) {
+        return baseProperty.priority;
+      }
+    }
+
+    return this._priority || 0;
+  }
 
   public get category(): LazyLoadedPropertyCategory | undefined {
     if (!this._category) {
@@ -168,8 +177,8 @@ export abstract class Property implements CustomAttributeContainerProps {
       itemElement.setAttribute("category", categoryName);
     }
 
-    if (undefined !== this.priority)
-      itemElement.setAttribute("priority", this.priority.toString());
+    if (undefined !== this._priority)
+      itemElement.setAttribute("priority", this._priority.toString());
 
     if (undefined !== this._kindOfQuantity) {
       const kindOfQuantity = await this._kindOfQuantity;
