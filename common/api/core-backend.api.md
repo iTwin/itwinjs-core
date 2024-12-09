@@ -685,7 +685,7 @@ export class ChangeMergeManager {
         handler: (args: RebaseChangesetConflictArgs) => Maybe<DbConflictResolution>;
     }): void;
     // (undocumented)
-    getMergeMethod(): "Rebase" | "Merge";
+    getMergeMethod(): "Merge" | "Rebase";
     // (undocumented)
     inProgress(): boolean;
     // (undocumented)
