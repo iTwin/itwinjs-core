@@ -1413,6 +1413,8 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
 describe("should get property from baseProperty", () => {
   function createSchemaJson(schemaItemJson: any): any {
     return createSchemaJsonWithItems({
+
+      // KOQ properties
       ELEVATION: {
         schemaItemType: "KindOfQuantity",
         name: "TestKindOfQuantity",
@@ -1432,6 +1434,15 @@ describe("should get property from baseProperty", () => {
           "Formats.DefaultReal[Formats.M]",
         ],
       },
+
+      // category properties
+      TestCategory: {
+        schemaItemType: "PropertyCategory",
+        type: "string",
+        typeName: "testCategory",
+        priority: 5,
+      },
+
       BasebaseClass: {
         schemaItemType: "EntityClass",
         properties: [
@@ -1440,6 +1451,7 @@ describe("should get property from baseProperty", () => {
             name: "TestProp2",
             typeName: "string",
             kindOfQuantity: "TestSchema.LENGTH",
+            category: "TestSchema.TestCategory",
           },
         ],
       },
@@ -1452,6 +1464,7 @@ describe("should get property from baseProperty", () => {
             name: "TestProp",
             typeName: "string",
             kindOfQuantity: "TestSchema.ELEVATION",
+            category: "TestSchema.TestCategory",
           }
         ],
       },
@@ -1504,10 +1517,18 @@ describe("should get property from baseProperty", () => {
     expect(koq).to.exist;
     expect(koq!.name).to.equal("ELEVATION");
 
+    const cat = testProp!.category;
+    expect(cat).to.exist;
+    expect(cat!.name).to.equal("TestCategory");
+
     // with getKindOfQuantitySync
     const koqfromSync = testProp!.getKindOfQuantitySync();
     expect(koqfromSync).to.exist;
     expect(koqfromSync!.name).to.equal("ELEVATION");
+
+    const catfromSync = testProp!.getCategorySync();
+    expect(catfromSync).to.exist;
+    expect(catfromSync!.name).to.equal("TestCategory");
   });
 
   it.only("should get from base property's base property", async () => {
@@ -1520,11 +1541,17 @@ describe("should get property from baseProperty", () => {
     const koq = testProp!.kindOfQuantity;
     expect(koq).to.exist;
     expect(koq!.name).to.equal("LENGTH");
+    const cat = testProp!.category;
+    expect(cat).to.exist;
+    expect(cat!.name).to.equal("TestCategory");
 
     // with getKindOfQuantitySync
     const koqfromSync = testProp!.getKindOfQuantitySync();
     expect(koqfromSync).to.exist;
     expect(koqfromSync!.name).to.equal("LENGTH");
+    const catfromSync = testProp!.getCategorySync();
+    expect(catfromSync).to.exist;
+    expect(catfromSync!.name).to.equal("TestCategory");
   });
 
   it.only("should return undefined if property & base property all undefined", async () => {
@@ -1536,10 +1563,14 @@ describe("should get property from baseProperty", () => {
     // with getter
     const koq = testProp!.kindOfQuantity;
     expect(koq).to.be.undefined;
+    const cat = testProp!.category;
+    expect(cat).to.be.undefined;
 
     // with getKindOfQuantitySync
     const koqfromSync = testProp!.getKindOfQuantitySync();
     expect(koqfromSync).to.be.undefined;
+    const catfromSync = testProp!.getCategorySync();
+    expect(catfromSync).to.be.undefined;
   });
 
   it.only("should not serialize with property override", async() => {
@@ -1550,9 +1581,11 @@ describe("should get property from baseProperty", () => {
 
     const serializedJSON = testProp!.toJSON();
     expect(serializedJSON.kindOfQuantity).to.be.undefined;
+    expect(serializedJSON.category).to.be.undefined;
 
     const newDom = createEmptyXmlDocument();
     const serializedXML = await testProp!.toXml(newDom);
     expect(serializedXML.getAttribute("kindOfQuantity")).to.equal("");
+    expect(serializedXML.getAttribute("category")).to.equal("");
   });
 })

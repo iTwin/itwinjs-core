@@ -67,7 +67,16 @@ export abstract class Property implements CustomAttributeContainerProps {
 
   public get priority() { return this._priority || 0; }
 
-  public get category(): LazyLoadedPropertyCategory | undefined { return this._category; }
+  public get category(): LazyLoadedPropertyCategory | undefined {
+    if (!this._category) {
+      const baseProperty = this.class.getInheritedPropertySync(this.name);
+      if (undefined !== baseProperty) {
+        return baseProperty.category;
+      }
+    }
+
+    return this._category;
+  }
 
   public get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined {
     if (!this._kindOfQuantity) {
@@ -91,8 +100,14 @@ export abstract class Property implements CustomAttributeContainerProps {
   public get schema(): Schema { return this._class.schema; }
 
   public getCategorySync(): PropertyCategory | undefined {
-    if (!this._category)
+    if (!this._category){
+      const baseProperty = this.class.getInheritedPropertySync(this.name);
+      if (undefined !== baseProperty){
+        return baseProperty.getCategorySync();
+      }
+
       return undefined;
+    }
 
     return this.class.schema.lookupItemSync(this._category);
   }
@@ -123,8 +138,8 @@ export abstract class Property implements CustomAttributeContainerProps {
       schemaJson.label = this.label;
     if (this._isReadOnly !== undefined)
       schemaJson.isReadOnly = this._isReadOnly;
-    if (this.category !== undefined)
-      schemaJson.category = this.category.fullName; // needs to be fully qualified name
+    if (this._category !== undefined)
+      schemaJson.category = this._category.fullName; // needs to be fully qualified name
     if (this._priority !== undefined)
       schemaJson.priority = this._priority;
     if (this._kindOfQuantity !== undefined)
@@ -147,8 +162,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     if (undefined !== this.isReadOnly)
       itemElement.setAttribute("readOnly", String(this.isReadOnly));
 
-    if (undefined !== this.category) {
-      const category = await this.category;
+    if (undefined !== this._category) {
+      const category = await this._category;
       const categoryName = XmlSerializationUtils.createXmlTypedName(this.schema, category.schema, category.name);
       itemElement.setAttribute("category", categoryName);
     }
