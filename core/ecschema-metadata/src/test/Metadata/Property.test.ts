@@ -1493,7 +1493,7 @@ describe("should get property from baseProperty", () => {
   context.addLocater(new TestSchemaLocater());
   const schema: Schema = Schema.fromJsonSync(createSchemaJson(""), context);
 
-  it.only("should get kind of quantity from base property", async () => {
+  it.only("should get from base property", async () => {
     const testClass = schema.getItemSync("TestClass") as EntityClass;
     expect(testClass).to.exist;
     const testProp = testClass.getPropertySync("TestProp", false);
@@ -1527,7 +1527,7 @@ describe("should get property from baseProperty", () => {
     expect(koqfromSync!.name).to.equal("LENGTH");
   });
 
-  it.only("should return undefined if property and base property do not have kind of quantity", async () => {
+  it.only("should return undefined if property & base property all undefined", async () => {
     const testClass = schema.getItemSync("TestClass") as EntityClass;
     expect(testClass).to.exist;
     const testProp = testClass.getPropertySync("TestProp3", false);
@@ -1542,5 +1542,17 @@ describe("should get property from baseProperty", () => {
     expect(koqfromSync).to.be.undefined;
   });
 
+  it.only("should not serialize with property override", async() => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("TestProp", false);
+    expect(testProp).to.exist;
 
+    const serializedJSON = testProp!.toJSON();
+    expect(serializedJSON.kindOfQuantity).to.be.undefined;
+
+    const newDom = createEmptyXmlDocument();
+    const serializedXML = await testProp!.toXml(newDom);
+    expect(serializedXML.getAttribute("kindOfQuantity")).to.equal("");
+  });
 })

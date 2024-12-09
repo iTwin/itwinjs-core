@@ -103,7 +103,7 @@ export abstract class Property implements CustomAttributeContainerProps {
       if (undefined !== baseProperty){
         return baseProperty.getKindOfQuantitySync();
       }
-      
+
       return undefined;
     }
 
@@ -127,8 +127,8 @@ export abstract class Property implements CustomAttributeContainerProps {
       schemaJson.category = this.category.fullName; // needs to be fully qualified name
     if (this._priority !== undefined)
       schemaJson.priority = this._priority;
-    if (this.kindOfQuantity !== undefined)
-      schemaJson.kindOfQuantity = this.kindOfQuantity.fullName;
+    if (this._kindOfQuantity !== undefined)
+      schemaJson.kindOfQuantity = this._kindOfQuantity.fullName;
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (customAttributes !== undefined)
       schemaJson.customAttributes = customAttributes;
@@ -156,8 +156,8 @@ export abstract class Property implements CustomAttributeContainerProps {
     if (undefined !== this.priority)
       itemElement.setAttribute("priority", this.priority.toString());
 
-    if (undefined !== this.kindOfQuantity) {
-      const kindOfQuantity = await this.kindOfQuantity;
+    if (undefined !== this._kindOfQuantity) {
+      const kindOfQuantity = await this._kindOfQuantity;
       const kindOfQuantityName = XmlSerializationUtils.createXmlTypedName(this.schema, kindOfQuantity.schema, kindOfQuantity.name);
       itemElement.setAttribute("kindOfQuantity", kindOfQuantityName);
     }
