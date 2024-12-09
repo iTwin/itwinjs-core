@@ -4013,9 +4013,6 @@ export function getImageSourceFormatForMimeType(mimeType: string): ImageSourceFo
 // @public
 export function getImageSourceMimeType(format: ImageSourceFormat): string;
 
-// @internal (undocumented)
-export function getMeshoptDecoder(numWorkers?: number): Promise<MeshoptDecoder | undefined>;
-
 // @public
 export interface GetPixelDataWorldPointArgs {
     out?: Point3d;
@@ -7608,26 +7605,6 @@ export interface MeshArgs {
         uvParams: Point2d[];
     };
     vertIndices: number[];
-}
-
-// @internal
-export interface MeshoptDecoder {
-    // (undocumented)
-    decodeGltfBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array, mode: string, filter?: string) => void;
-    // (undocumented)
-    decodeGltfBufferAsync: (count: number, size: number, source: Uint8Array, mode: string, filter?: string) => Promise<Uint8Array>;
-    // (undocumented)
-    decodeIndexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
-    // (undocumented)
-    decodeIndexSequence: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
-    // (undocumented)
-    decodeVertexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array, filter?: string) => void;
-    // (undocumented)
-    ready: Promise<void>;
-    // (undocumented)
-    supported: boolean;
-    // (undocumented)
-    useWorkers: (count: number) => void;
 }
 
 // @public
