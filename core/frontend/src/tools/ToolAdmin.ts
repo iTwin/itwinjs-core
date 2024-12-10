@@ -931,9 +931,10 @@ export class ToolAdmin {
           this.adjustSnapPoint();
           ev.point.setFrom(snap.isPointAdjusted ? snap.adjustedPoint : snap.getPoint());
         } else {
-          ev.point.setFrom(IModelApp.tentativePoint.isActive ? IModelApp.tentativePoint.getPoint() : (useLastData ? ev.point : ev.rawPoint));
+          ev.point.setFrom(IModelApp.tentativePoint.isActive ? IModelApp.tentativePoint.getPoint() : ev.rawPoint);
           this.adjustPoint(ev.point, ev.viewport);
         }
+        IModelApp.accuDraw.onMotion(ev);
       }
     }
 
