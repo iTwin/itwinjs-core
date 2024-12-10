@@ -21,6 +21,29 @@ export class FileSchemaKey extends SchemaKey {
 }
 
 // @beta
+export class PublishedSchemaJsonFileLocater extends SchemaJsonFileLocater implements ISchemaLocater {
+    constructor();
+    addSchemaSearchPath(schemaPath: string): void;
+    addSchemaSearchPaths(schemaPaths: string[]): void;
+}
+
+// @beta
+export class PublishedSchemaXmlFileLocater extends SchemaXmlFileLocater implements ISchemaLocater {
+    constructor(knownBackendAssetsDir?: string);
+    addSchemaSearchPath(schemaPath: string): void;
+    addSchemaSearchPaths(schemaPaths: string[]): void;
+}
+
+// @beta
+export class PublishedSchemaXmlStringLocater extends SchemaXmlStringLocater implements ISchemaLocater {
+    constructor(knownBackendAssetsDir?: string);
+    addSchemaString(schemaString: string): void;
+    addSchemaStrings(schemaStrings: string[]): void;
+    // (undocumented)
+    static defaultSchemaSearchPaths: Set<string>;
+}
+
+// @beta
 export abstract class SchemaFileLocater {
     constructor();
     addSchemaSearchPath(schemaPath: string): void;
@@ -39,6 +62,8 @@ export abstract class SchemaFileLocater {
     readUtf8FileToString(filePath: string): Promise<string | undefined>;
     // (undocumented)
     readUtf8FileToStringSync(filePath: string): string | undefined;
+    // (undocumented)
+    protected searchPathPrecedence: Map<string, number>;
     // (undocumented)
     searchPaths: string[];
 }
