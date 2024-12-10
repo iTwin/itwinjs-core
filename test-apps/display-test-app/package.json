@@ -111,7 +111,7 @@
     "rollup-plugin-webpack-stats": "^0.2.0",
     "rollup-plugin-external-globals": "0.11.0",
     "typescript": "~5.6.2",
-    "vite": "^5.4.6",
+    "vite": "^6.0.0",
     "vite-plugin-env-compatible": "^2.0.1",
     "vite-plugin-inspect": "^0.8.4",
     "webpack": "^5.76.0"
