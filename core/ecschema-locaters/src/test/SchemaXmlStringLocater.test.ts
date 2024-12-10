@@ -260,3 +260,4 @@ describe("SchemaXmlStringLocater tests:", () => {
     expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given string`);
   });
 });
+
