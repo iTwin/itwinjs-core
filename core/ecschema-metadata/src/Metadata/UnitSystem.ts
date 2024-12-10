@@ -7,19 +7,13 @@
  */
 
 import { SchemaItemType } from "../ECObjects";
-import { Schema } from "./Schema";
 import { SchemaItem } from "./SchemaItem";
 
 /**
  * @beta
  */
 export class UnitSystem extends SchemaItem {
-  public override readonly schemaItemType!: SchemaItemType.UnitSystem;
-
-  constructor(schema: Schema, name: string) {
-    super(schema, name);
-    this.schemaItemType = SchemaItemType.UnitSystem;
-  }
+  public override readonly schemaItemType = SchemaItemType.UnitSystem;
 }
 
 /**
