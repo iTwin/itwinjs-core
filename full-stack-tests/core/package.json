@@ -96,7 +96,7 @@
     "stream-browserify": "^3.0.0",
     "stream-http": "^3.2.0",
     "typescript": "~5.6.2",
-    "webpack": "^5.76.0",
+    "webpack": "^5.97.1",
     "webpack-cli": "^5.0.1"
   },
   "nyc": {
