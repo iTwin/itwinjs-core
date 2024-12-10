@@ -24,6 +24,7 @@ import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { PropertyType } from "../../PropertyTypes";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { createEmptyXmlDocument } from "../TestUtils/SerializationHelper";
+import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -1409,3 +1410,185 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
   });
 });
 
+describe("should get property from baseProperty", () => {
+  function createSchemaJson(schemaItemJson: any): any {
+    return createSchemaJsonWithItems({
+
+      // KOQ properties
+      ELEVATION: {
+        schemaItemType: "KindOfQuantity",
+        name: "TestKindOfQuantity",
+        relativeError: 1.0,
+        persistenceUnit: "Formats.IN",
+      },
+      LENGTH: {
+        schemaItemType: "KindOfQuantity",
+        name: "Length",
+        relativeError: 0.01,
+        persistenceUnit: "Formats.M",
+      },
+
+      // category properties with priority
+      TestCategory: {
+        schemaItemType: "PropertyCategory",
+        type: "string",
+        typeName: "testCategory"
+      },
+
+      BasebaseClass: {
+        schemaItemType: "EntityClass",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp2",
+            typeName: "string",
+            kindOfQuantity: "TestSchema.LENGTH",
+            category: "TestSchema.TestCategory",
+            priority: 101,
+          },
+        ],
+      },
+      BaseClass: {
+        schemaItemType: "EntityClass",
+        baseClass: "TestSchema.BasebaseClass",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp",
+            typeName: "string",
+            kindOfQuantity: "TestSchema.ELEVATION",
+            category: "TestSchema.TestCategory",
+            priority: 100,
+          }
+        ],
+      },
+      TestClass: {
+        schemaItemType: "EntityClass",
+        baseClass: "TestSchema.BaseClass",
+        properties: [
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp",
+            typeName: "string",
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp2",
+            typeName: "string",
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp3",
+            typeName: "string",
+          }
+        ],
+      },
+
+      ...schemaItemJson,
+    }, {
+      references: [
+        {
+          name: "Formats",
+          version: "1.0.0",
+          alias: "f",
+        },
+      ],
+    });
+  }
+
+  const context = new SchemaContext();
+  context.addLocater(new TestSchemaLocater());
+  const schema: Schema = Schema.fromJsonSync(createSchemaJson(""), context);
+
+  it.only("should get from base property", async () => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("TestProp", false);
+    expect(testProp).to.exist;
+
+    // with getter
+    const koq = testProp!.kindOfQuantity;
+    expect(koq).to.exist;
+    expect(koq!.name).to.equal("ELEVATION");
+
+    const cat = testProp!.category;
+    expect(cat).to.exist;
+    expect(cat!.name).to.equal("TestCategory");
+
+    const priority = testProp!.priority;
+    expect(priority).to.exist;
+    expect(priority).to.equal(100);
+
+    // with get sync methods
+    const koqfromSync = testProp!.getKindOfQuantitySync();
+    expect(koqfromSync).to.exist;
+    expect(koqfromSync!.name).to.equal("ELEVATION");
+
+    const catfromSync = testProp!.getCategorySync();
+    expect(catfromSync).to.exist;
+    expect(catfromSync!.name).to.equal("TestCategory");
+  });
+
+  it.only("should get from base property's base property", async () => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("TestProp2", false);
+    expect(testProp).to.exist;
+
+    // with getter
+    const koq = testProp!.kindOfQuantity;
+    expect(koq).to.exist;
+    expect(koq!.name).to.equal("LENGTH");
+    const cat = testProp!.category;
+    expect(cat).to.exist;
+    expect(cat!.name).to.equal("TestCategory");
+    const priority = testProp!.priority;
+    expect(priority).to.exist;
+    expect(priority).to.equal(101);
+
+    // with get sync methods
+    const koqfromSync = testProp!.getKindOfQuantitySync();
+    expect(koqfromSync).to.exist;
+    expect(koqfromSync!.name).to.equal("LENGTH");
+    const catfromSync = testProp!.getCategorySync();
+    expect(catfromSync).to.exist;
+    expect(catfromSync!.name).to.equal("TestCategory");
+  });
+
+  it.only("should return undefined if property & base property all undefined", async () => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("TestProp3", false);
+    expect(testProp).to.exist;
+
+    // with getter
+    const koq = testProp!.kindOfQuantity;
+    expect(koq).to.be.undefined;
+    const cat = testProp!.category;
+    expect(cat).to.be.undefined;
+
+    // with get sync methods
+    const koqfromSync = testProp!.getKindOfQuantitySync();
+    expect(koqfromSync).to.be.undefined;
+    const catfromSync = testProp!.getCategorySync();
+    expect(catfromSync).to.be.undefined;
+  });
+
+  it.only("should not serialize with property override", async() => {
+    const testClass = schema.getItemSync("TestClass") as EntityClass;
+    expect(testClass).to.exist;
+    const testProp = testClass.getPropertySync("TestProp", false);
+    expect(testProp).to.exist;
+
+    const serializedJSON = testProp!.toJSON();
+    expect(serializedJSON.kindOfQuantity).to.be.undefined;
+    expect(serializedJSON.category).to.be.undefined;
+    expect(serializedJSON.priority).to.be.undefined;
+
+    const newDom = createEmptyXmlDocument();
+    const serializedXML = await testProp!.toXml(newDom);
+    expect(serializedXML.getAttribute("kindOfQuantity")).to.equal("");
+    expect(serializedXML.getAttribute("category")).to.equal("");
+    expect(serializedXML.getAttribute("priority")).to.equal("");
+  });
+})
