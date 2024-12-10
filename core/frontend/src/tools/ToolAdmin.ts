@@ -931,7 +931,7 @@ export class ToolAdmin {
           this.adjustSnapPoint();
           ev.point.setFrom(snap.isPointAdjusted ? snap.adjustedPoint : snap.getPoint());
         } else {
-          ev.point.setFrom(IModelApp.tentativePoint.isActive ? IModelApp.tentativePoint.getPoint() : ev.rawPoint);
+          ev.point.setFrom(IModelApp.tentativePoint.isActive ? IModelApp.tentativePoint.getPoint() : (useLastData ? ev.point : ev.rawPoint));
           this.adjustPoint(ev.point, ev.viewport);
         }
       }
@@ -1336,8 +1336,8 @@ export class ToolAdmin {
     if (!updateDynamics)
       return;
 
-    // Update tool dynamics. Use last data button location which was potentially adjusted by onDataButtonDown and not current event
-    this.updateDynamics(undefined, true, true);
+    // Update tool dynamics for current cursor location to not require a motion event.
+    this.updateDynamics(undefined, undefined, true);
   }
 
   private async onButtonDown(vp: ScreenViewport, pt2d: XAndY, button: BeButton, inputSource: InputSource): Promise<any> {
