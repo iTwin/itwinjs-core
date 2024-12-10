@@ -260,11 +260,12 @@ describe("PipeConnections", () => {
     let arc = CurveFactory.createArcFromSectionData(centerline, sectionData)!;
     ck.testDefined(arc);
     ck.testPoint3d(arc.center, centerline.startPoint());
-    ck.testVector3d(arc.matrixClone().columnZ(), centerline.fractionToPointAndUnitTangent(0).direction);
-    ck.testCoordinate(arc.vector0.magnitude(), sectionData.vector0.magnitude());
-    ck.testCoordinate(arc.vector90.magnitude(), sectionData.vector90.magnitude());
+    ck.testVector3d(arc.vector0, sectionData.vector0);
+    ck.testVector3d(arc.vector90, sectionData.vector90);
 
-    centerline = Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90))
+    centerline = Arc3d.create(
+      undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90),
+    );
     sectionData = 0.2;
     arc = CurveFactory.createArcFromSectionData(centerline, sectionData)!;
     ck.testDefined(arc);
@@ -355,7 +356,7 @@ describe("PipeConnections", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0, dy = 0;
-    const numFacetAround = 8;
+    const numFacetAround = 7;
     const sectionSweeps: AngleSweep[] = [
       AngleSweep.create360(),
       AngleSweep.createStartEndDegrees(360, 0),
@@ -390,7 +391,6 @@ describe("PipeConnections", () => {
       for (const capped of [true, false]) {
         for (let i = 0; i < sectionData.length; ++i) {
           builder = PolyfaceBuilder.create();
-          builder.options.angleTol = Angle.createDegrees(15);
           builder.addMiteredPipes(centerline[i], sectionData[i], numFacetAround, capped);
           const mesh = builder.claimPolyface();
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, mesh, dx, dy);
@@ -403,6 +403,11 @@ describe("PipeConnections", () => {
           } else {
             ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected (capped=false)");
           }
+          // ck.testExactNumber(
+          //   PolyfaceQuery.collectEdgesByDihedralAngle(mesh, Angle.createDegrees(92)).length,
+          //   2 * numFacetAround,
+          //   "number of cap edges is a double of numFacetAround",
+          // );
         }
       }
       dy += 3;

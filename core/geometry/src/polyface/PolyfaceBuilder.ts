@@ -10,7 +10,7 @@
 import { Arc3d } from "../curve/Arc3d";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
 import { CurveChain, CurveCollection } from "../curve/CurveCollection";
-import { CurveFactory, MiteredSweepOptions, MiteredSweepOutputSelect } from "../curve/CurveFactory";
+import { CurveFactory, MiteredSweepOutputSelect } from "../curve/CurveFactory";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { AnyCurve, AnyRegion } from "../curve/CurveTypes";
 import { GeometryQuery } from "../curve/GeometryQuery";
@@ -59,6 +59,8 @@ import { SortableEdge, SortableEdgeCluster } from "./IndexedEdgeMatcher";
 import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceQuery } from "./PolyfaceQuery";
+
+// cspell:words binormal
 
 /**
  * A FacetSector.
@@ -2011,7 +2013,7 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * start tangent.
    *    * For Arc3d input, the center is translated to the centerline start point and also made perpendicular to the
    * centerline start tangent.
-   * * This function internally calls `createMiteredSweepSections`.
+   * * This function internally calls [[CurveFactory.createMiteredSweepSections]].
    * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions, otherwise
    * for best results, ensure no successive duplicate points with e.g., [[GrowableXYZArray.createCompressed]].
    * @param sectionData circle radius, ellipse semi-axis lengths, or Arc3d.
@@ -2027,15 +2029,33 @@ export class PolyfaceBuilder extends NullGeometryHandler {
     const arc = CurveFactory.createArcFromSectionData(centerline, sectionData);
     if (!arc)
       return;
-    const strokeOptions = new StrokeOptions();
-    strokeOptions.minStrokesPerPrimitive = numFacetAround;
-    const options: MiteredSweepOptions = { strokeOptions, capped, outputSelect: MiteredSweepOutputSelect.AlsoMesh };
-    const sections = CurveFactory.createMiteredSweepSections(centerline, arc, options);
-    let indexedPolyface: IndexedPolyface | undefined;
-    if (sections)
-      indexedPolyface = sections.mesh;
-    if (indexedPolyface)
-      this.addIndexedPolyface(indexedPolyface);
+    if (numFacetAround < 3)
+      numFacetAround = 3;
+    const lineString = LineString3d.create();
+    if (arc.sweep.isFullCircle) {
+      const df = 1.0 / numFacetAround;
+      for (let i = 0; i < numFacetAround; i++)
+        lineString.addPoint(arc.fractionToPoint(i * df));
+      lineString.addPoint(arc.fractionToPoint(0));
+    } else {
+      const df = 1.0 / (numFacetAround + 1);
+      for (let i = 0; i < numFacetAround + 1; i++)
+        lineString.addPoint(arc.fractionToPoint(i * df));
+    }
+    const strokeOptions = this._options.clone();
+    const binormal = arc.binormalVector();
+    const ret = CurveFactory.startPointAndTangent(centerline);
+    if (!ret)
+      return;
+    if (binormal.dotProduct(ret.startTangent) < 0.0)
+      binormal.scaleInPlace(-1.0);
+    const sections = CurveFactory.createMiteredSweepSections(
+      centerline,
+      lineString,
+      { strokeOptions, capped, outputSelect: MiteredSweepOutputSelect.AlsoMesh, startTangent: binormal },
+    );
+    if (sections && sections.mesh)
+      this.addIndexedPolyface(sections.mesh);
   }
   /** Return the polyface index array indices corresponding to the given edge, or `undefined` if error. */
   private getEdgeIndices(edge: SortableEdge): { edgeIndexA: number, edgeIndexB: number } | undefined {

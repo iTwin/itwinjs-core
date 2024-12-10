@@ -39,6 +39,8 @@ import { OffsetOptions } from "./OffsetOptions";
 import { Path } from "./Path";
 import { StrokeOptions } from "./StrokeOptions";
 
+// cspell:words binormal
+
 /**
  * Compact vector form of an elliptic arc defined by center, vectors at 0 and 90 degrees, and angular sweep.
  * * @see [Curve Collections]($docs/learning/geometry/CurvePrimitive.md) learning article for further details of the
@@ -255,6 +257,11 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   /** Read property for (clone of) vector90. */
   public get vector90(): Vector3d {
     return this._matrix.columnY();
+  }
+  /** Get the binormal vector of this arc. */
+  public binormalVector(result?: Vector3d): Vector3d {
+    const plane = this.fractionToPointAnd2Derivatives(0.0);
+    return plane.vectorU.crossProduct(plane.vectorV, result);
   }
   /** Read property for (clone of) plane normal, with arbitrary length. */
   public get perpendicularVector(): Vector3d {
