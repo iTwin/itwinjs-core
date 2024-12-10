@@ -58,11 +58,11 @@ export class TestContext {
     Logger.initializeToConsole();
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
-    if (undefined !== this.settings.clientConfiguration!.clientId) {
+    if (this.settings?.clientConfiguration && this.settings.clientConfiguration.clientId) {
       this.serviceAuthToken = await getServiceAuthTokenFromBackend({
-        clientId: this.settings.clientConfiguration!.clientId,
-        clientSecret: this.settings.clientConfiguration!.clientSecret,
-        scope: this.settings.clientConfiguration!.scope,
+        clientId: this.settings.clientConfiguration.clientId,
+        clientSecret: this.settings.clientConfiguration.clientSecret,
+        scope: this.settings.clientConfiguration.scope,
         authority: `https://${
           process.env.IMJS_URL_PREFIX === "dev-"
             ? "qa-"
