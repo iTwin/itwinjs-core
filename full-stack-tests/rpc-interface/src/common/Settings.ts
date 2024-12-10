@@ -57,7 +57,6 @@ export class Settings {
   public oidcScopes!: string;
   public oidcRedirect!: string;
   public oidcAuthority?: string;
-  //public oidcClientSecret!: string;
   public gprid?: string;
   public logLevel?: number;
   public users: TestUserCredentials[] = [];
