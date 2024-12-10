@@ -27,6 +27,7 @@ beta;interface;ChangedECInstance
 internal;class;ChangedElementsDb
 beta;interface;ChangeFormatArgs
 beta;interface;ChangeInstanceKey
+internal;class;ChangeMergeManager
 beta;interface;ChangeMetaData
 public;interface;ChangesetArg
 beta;class;ChangesetECAdaptor
@@ -321,6 +322,7 @@ public;type;ProgressFunction
 public;enum;ProgressStatus
 beta;namespace;PropertyStore
 public;type;PullChangesArgs
+internal;type;PullMergeMethod
 public;interface;PushChangesArgs
 beta;interface;QueryLocalChangesArgs
 beta;interface;QueryWorkspaceResourcesArgs
