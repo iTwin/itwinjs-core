@@ -74,7 +74,7 @@ export function fakeViewState(iModel: IModelConnection, options?: { visibleEdges
       renderMode: options?.renderMode ?? RenderMode.SmoothShade,
       visibleEdges: options?.visibleEdges ?? false,
     }),
-    displayStyle: { },
+    displayStyle: {},
   } as unknown as ViewState;
 }
 
@@ -818,7 +818,7 @@ describe("TileAdmin", () => {
         expect(response).not.to.be.undefined;
         expect(response).instanceof(Uint8Array);
 
-        const document = parseImdlDocument({
+        const document = await parseImdlDocument({
           data: response,
           batchModelId: "0x1c",
           is3d: true,

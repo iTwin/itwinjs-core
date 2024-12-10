@@ -1926,8 +1926,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 2293760,
-    Major = 35,
+    Combined = 2359296,
+    Major = 36,
     Minor = 0
 }
 
@@ -10450,7 +10450,9 @@ export enum TileReadStatus {
     // (undocumented)
     NewerMajorVersion = 6,
     // (undocumented)
-    Success = 0
+    Success = 0,
+    // (undocumented)
+    UnsupportedMeshoptCompression = 8
 }
 
 // @alpha
