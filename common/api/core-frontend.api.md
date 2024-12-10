@@ -2389,6 +2389,9 @@ export function createOrbitGtTileTreeReference(props: OrbitGtTileTree.ReferenceP
 // @internal (undocumented)
 export function createPrimaryTileTreeReference(view: ViewState, model: GeometricModelState): PrimaryTreeReference;
 
+// @internal
+export function createReaderPropsWithBaseUrl(streamBuffer: ByteStream | Uint8Array, yAxisUp: boolean, baseUrl?: string): GltfReaderProps | undefined;
+
 // @internal (undocumented)
 export function createRealityTileTreeReference(props: RealityModelTileTree.ReferenceProps): RealityModelTileTree.Reference;
 
@@ -9555,6 +9558,8 @@ export class RealityTileTree extends TileTree {
     get parentsAndChildrenExclusive(): boolean;
     // @internal (undocumented)
     prune(): void;
+    // @internal (undocumented)
+    readonly rdSourceId?: string;
     // @internal
     reportTileVisibility(_args: TileDrawArgs, _selected: RealityTile[]): void;
     // @internal (undocumented)
@@ -9583,6 +9588,8 @@ export interface RealityTileTreeParams extends TileTreeParams {
     readonly gcsConverterAvailable: boolean;
     // (undocumented)
     readonly loader: RealityTileLoader;
+    // (undocumented)
+    readonly rdSourceId?: string;
     // (undocumented)
     readonly rootTile: RealityTileParams;
     // (undocumented)
