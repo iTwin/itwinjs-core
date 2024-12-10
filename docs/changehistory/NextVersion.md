@@ -14,6 +14,9 @@ Table of contents:
     - [Node.js](#nodejs)
     - [Electron](#electron)
   - [Deprecated API removals](#deprecated-api-removals)
+    - [@itwin/appui-abstract](#itwinappui-abstract)
+    - [@itwin/core-electron](#itwincore-electron)
+  - [Packages dropped](#packages-dropped)
 
 ## API deprecations
 
@@ -55,3 +58,12 @@ The following previously-deprecated APIs have been removed:
 | ----------------------------------- | --------------------------------------------------------- |
 | `ElectronApp.callDialog`            | [ElectronApp.dialogIpc]($electron)                        |
 | `ElectronHost.getWindowSizeSetting` | [ElectronHost.getWindowSizeAndPositionSetting]($electron) |
+
+### Packages dropped
+
+As of iTwin.js 5.0, the following packages have been removed and are no longer available:
+
+| Removed                        | Replacement                                               |
+| ------------------------------ | --------------------------------------------------------- |
+| `@itwin/core-webpack-tools`    | We no longer recommend using [webpack](https://webpack.js.org/) and instead recommend using [Vite](https://vite.dev/). |
+| `@itwin/backend-webpack-tools` | We no longer recommend webpack-ing backends, which was previously recommended to shrink the size of backends. |
