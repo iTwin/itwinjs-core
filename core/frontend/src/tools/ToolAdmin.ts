@@ -922,11 +922,18 @@ export class ToolAdmin {
       else
         this.fillEventFromCursorLocation(ev);
 
-      // NOTE: Do not call adjustPoint when snapped, refer to CurrentInputState.fromButton
-      if (adjustPoint && undefined !== ev.viewport && undefined === TentativeOrAccuSnap.getCurrentSnap(false)) {
-        if (!useLastData)
-          ev.point.setFrom(ev.rawPoint); // Adjust rawPoint as point may already be adjusted from a prior call to fromButton if there hasn't been a motion...
-        this.adjustPoint(ev.point, ev.viewport);
+      if (adjustPoint && undefined !== ev.viewport) {
+        // Use ev.rawPoint for cursor location when not snapped as ev.point gets adjusted in fromButton...
+        const snap = TentativeOrAccuSnap.getCurrentSnap(false);
+        if (undefined !== snap) {
+          // Account for changes to locks, reset and re-adjust snap point...
+          snap.adjustedPoint.setFrom(snap.getPoint());
+          this.adjustSnapPoint();
+          ev.point.setFrom(snap.isPointAdjusted ? snap.adjustedPoint : snap.getPoint());
+        } else {
+          ev.point.setFrom(IModelApp.tentativePoint.isActive ? IModelApp.tentativePoint.getPoint() : ev.rawPoint);
+          this.adjustPoint(ev.point, ev.viewport);
+        }
       }
     }
 
