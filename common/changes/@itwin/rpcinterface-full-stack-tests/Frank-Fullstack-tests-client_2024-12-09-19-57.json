@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/rpcinterface-full-stack-tests",
-      "comment": "update package.json and used service auth in rpc interface full stack test",
+      "comment": "",
       "type": "none"
     }
   ],
