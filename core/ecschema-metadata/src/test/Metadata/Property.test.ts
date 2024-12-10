@@ -1500,7 +1500,7 @@ describe("should get property from baseProperty", () => {
   context.addLocater(new TestSchemaLocater());
   const schema: Schema = Schema.fromJsonSync(createSchemaJson(""), context);
 
-  it.only("should get from base property", async () => {
+  it("should get from base property", async () => {
     const testClass = schema.getItemSync("TestClass") as EntityClass;
     expect(testClass).to.exist;
     const testProp = testClass.getPropertySync("TestProp", false);
@@ -1529,7 +1529,7 @@ describe("should get property from baseProperty", () => {
     expect(catfromSync!.name).to.equal("TestCategory");
   });
 
-  it.only("should get from base property's base property", async () => {
+  it("should get from base property's base property", async () => {
     const testClass = schema.getItemSync("TestClass") as EntityClass;
     expect(testClass).to.exist;
     const testProp = testClass.getPropertySync("TestProp2", false);
@@ -1555,7 +1555,7 @@ describe("should get property from baseProperty", () => {
     expect(catfromSync!.name).to.equal("TestCategory");
   });
 
-  it.only("should return undefined if property & base property all undefined", async () => {
+  it("should return undefined if property & base property all undefined", async () => {
     const testClass = schema.getItemSync("TestClass") as EntityClass;
     expect(testClass).to.exist;
     const testProp = testClass.getPropertySync("TestProp3", false);
@@ -1574,7 +1574,7 @@ describe("should get property from baseProperty", () => {
     expect(catfromSync).to.be.undefined;
   });
 
-  it.only("should not serialize with property override", async() => {
+  it("should not serialize with property override", async() => {
     const testClass = schema.getItemSync("TestClass") as EntityClass;
     expect(testClass).to.exist;
     const testProp = testClass.getPropertySync("TestProp", false);

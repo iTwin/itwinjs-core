@@ -65,7 +65,7 @@ export abstract class Property implements CustomAttributeContainerProps {
 
   public get isReadOnly() { return this._isReadOnly || false; }
 
-  public get priority(): Number {
+  public get priority(): number {
     if (this._priority === undefined) {
       const baseProperty = this.class.getInheritedPropertySync(this.name);
       if (undefined !== baseProperty) {
@@ -77,7 +77,7 @@ export abstract class Property implements CustomAttributeContainerProps {
   }
 
   public get category(): LazyLoadedPropertyCategory | undefined {
-    if (!this._category) {
+    if (this._category === undefined) {
       const baseProperty = this.class.getInheritedPropertySync(this.name);
       if (undefined !== baseProperty) {
         return baseProperty.category;
@@ -88,7 +88,7 @@ export abstract class Property implements CustomAttributeContainerProps {
   }
 
   public get kindOfQuantity(): LazyLoadedKindOfQuantity | undefined {
-    if (!this._kindOfQuantity) {
+    if (this._kindOfQuantity === undefined) {
       const baseProperty = this.class.getInheritedPropertySync(this.name);
       if (undefined !== baseProperty) {
         return baseProperty.kindOfQuantity;
