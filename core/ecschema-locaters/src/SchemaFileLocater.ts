@@ -66,7 +66,6 @@ export class FileSchemaKey extends SchemaKey {
  */
 export abstract class SchemaFileLocater {
   public searchPaths: string[];
-  protected searchPathPrecedence = new Map<string, number>();
 
   constructor() {
     this.searchPaths = [];

@@ -35,7 +35,6 @@ export class StringSchemaKey extends SchemaKey {
  */
 export abstract class SchemaStringLocater {
   public schemaStrings: string[];
-  protected searchPathPrecedence = new Map<string, number>();
 
   constructor() {
     this.schemaStrings = [];

@@ -7,7 +7,7 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import { ECObjectsError, ECObjectsStatus, ECVersion, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { FileSchemaKey } from "../SchemaFileLocater";
-import { PublishedSchemaXmlFileLocater, SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
+import { SchemaXmlFileLocater } from "../SchemaXmlFileLocater";
 
 describe("SchemaXmlFileLocater tests:", () => {
   let locater: SchemaXmlFileLocater;
@@ -209,81 +209,5 @@ describe("SchemaXmlFileLocater tests:", () => {
   it("getSchemaKey, invalid version, throws", () => {
     const schemaXml = `<ECSchema schemaName="SchemaA" version=""> </ECSchema>`;
     expect(() => locater.getSchemaKey(schemaXml)).to.throw(ECObjectsError, `Could not find the ECSchema 'schemaName' or 'version' tag in the given file`);
-  });
-});
-
-describe("PublishedSchemaXmlFileLocater tests", () => {
-
-  it("PublishedSchemaXmlFileLocater - general use", () => {
-    for (const schemaName of ["BisCore", "Analytical", "ECDbMeta", "Formats", "AecUnits", "Functional"]) {
-      const context = new SchemaContext();
-      const locater = new PublishedSchemaXmlFileLocater();
-      context.addLocater(locater);
-
-      const schema = context.getSchemaSync(new SchemaKey(schemaName));
-      assert.isDefined(schema, `Failed to locate ${schemaName} schema`);
-      assert.equal(schema!.schemaKey.name, schemaName);
-    }
-  });
-
-  function testLocaterSearchPaths(actualSchemas: string[], expectedSchemas: string[]) {
-    assert.equal(actualSchemas.length, expectedSchemas.length);
-
-    for (let i = 0; i < actualSchemas.length; i++)
-      assert.equal(actualSchemas[i], expectedSchemas[i]);
-  }
-
-  const standardSchemaPath = path.join(__dirname, "assets", "ECSchemas", "Standard");
-  const jsonFilePath = path.join(__dirname, "assets", "json");
-  const xmlFilePath = path.join(__dirname, "assets", "xml");
-
-  it("PublishedSchemaXmlFileLocater - check schema order with addSchemaSearchPath", () => {
-    // Empty list with just default released schemas
-    const locater = new PublishedSchemaXmlFileLocater(path.join(__dirname, `assets`));
-
-    // Add a new search path
-    locater.addSchemaSearchPath(jsonFilePath);
-    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath]);
-
-    // Add another new search path
-    locater.addSchemaSearchPath(xmlFilePath);
-    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath]);
-
-    // Add a duplicate search path : should get ignored
-    locater.addSchemaSearchPath(xmlFilePath);
-    locater.addSchemaSearchPath(standardSchemaPath);
-
-    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, standardSchemaPath]);
-  });
-
-  it("PublishedSchemaXmlFileLocater - check schema order with addSchemaSearchPaths", () => {
-    // Empty list with just default released schemas
-    const locater = new PublishedSchemaXmlFileLocater(path.join(__dirname, `assets`));
-
-    // Add 2 new search paths
-    locater.addSchemaSearchPaths([jsonFilePath, xmlFilePath]);
-    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath]);
-
-    // Add a duplicate search path : should get ignored
-    locater.addSchemaSearchPaths([xmlFilePath, standardSchemaPath]);
-    testLocaterSearchPaths(locater.searchPaths, [jsonFilePath, xmlFilePath, standardSchemaPath]);
-  });
-
-  it("PublishedSchemaXmlFileLocater - check schema order without specifying path arg", () => {
-    // Empty list with just default released schemas
-    const locater = new PublishedSchemaXmlFileLocater();
-
-    const defaultSchemaSearchPathLength = locater.searchPaths.length;
-
-    // Default search order
-    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength);
-
-    // Add 2 new search paths
-    locater.addSchemaSearchPaths([jsonFilePath, xmlFilePath]);
-    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength + 2);
-
-    // Add a duplicate search path : should get ignored
-    locater.addSchemaSearchPaths([xmlFilePath, jsonFilePath]);
-    assert.equal(locater.searchPaths.length, defaultSchemaSearchPathLength + 2);
   });
 });

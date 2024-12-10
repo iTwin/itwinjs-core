@@ -225,25 +225,18 @@ importers:
   ../../core/ecschema-locaters:
     specifiers:
       '@bentley/aec-units-schema': ^1.0.3
-      '@bentley/analytical-schema': ^1.0.1
       '@bentley/architectural-physical-schema': ^1.0.3
       '@bentley/bis-core-schema': ^1.0.15
       '@bentley/bis-custom-attributes-schema': ^1.0.0
       '@bentley/construction-schema': ^1.0.4
       '@bentley/core-custom-attributes-schema': ^1.0.4
-      '@bentley/ecdb-file-info-schema': ^2.0.1
-      '@bentley/ecdb-map-schema': ^2.0.4
-      '@bentley/ecdb-meta-schema': ^4.0.3
+      '@bentley/ecdb-map-schema': ^2.0.1
       '@bentley/ecdb-schema-policies-schema': ^1.0.1
       '@bentley/formats-schema': ^1.0.0
-      '@bentley/functional-schema': ^1.0.4
-      '@bentley/generic-schema': ^1.0.5
       '@bentley/linear-referencing-schema': ^2.0.3
       '@bentley/physical-material-schema': ^1.0.2
       '@bentley/plant-custom-attributes-schema': ^1.0.1
-      '@bentley/presentation-rules-schema': ^1.0.1
       '@bentley/quantity-takeoffs-aspects-schema': ^1.0.1
-      '@bentley/schema-upgrade-custom-attributes-schema': ^1.0.0
       '@bentley/spatial-composition-schema': ^1.0.1
       '@bentley/structural-physical-schema': ^1.0.1
       '@bentley/units-schema': ^1.0.8
@@ -275,25 +268,18 @@ importers:
       glob: 10.3.12
     devDependencies:
       '@bentley/aec-units-schema': 1.0.3
-      '@bentley/analytical-schema': 1.0.1
       '@bentley/architectural-physical-schema': 1.0.3
       '@bentley/bis-core-schema': 1.0.15
       '@bentley/bis-custom-attributes-schema': 1.0.0
       '@bentley/construction-schema': 1.0.4
       '@bentley/core-custom-attributes-schema': 1.0.4
-      '@bentley/ecdb-file-info-schema': 2.0.1
       '@bentley/ecdb-map-schema': 2.0.4
-      '@bentley/ecdb-meta-schema': 4.0.3
       '@bentley/ecdb-schema-policies-schema': 1.0.1
       '@bentley/formats-schema': 1.0.0
-      '@bentley/functional-schema': 1.0.4
-      '@bentley/generic-schema': 1.0.5
       '@bentley/linear-referencing-schema': 2.0.3
       '@bentley/physical-material-schema': 1.0.2
       '@bentley/plant-custom-attributes-schema': 1.0.1
-      '@bentley/presentation-rules-schema': 1.0.1
       '@bentley/quantity-takeoffs-aspects-schema': 1.0.1
-      '@bentley/schema-upgrade-custom-attributes-schema': 1.0.0
       '@bentley/spatial-composition-schema': 1.0.1
       '@bentley/structural-physical-schema': 1.0.1
       '@bentley/units-schema': 1.0.8
@@ -3631,10 +3617,6 @@ packages:
   /@bentley/aec-units-schema/1.0.3:
     resolution: {integrity: sha512-Rpc+g75LZfDaapej3OBUOx67p5vOi9xF34gAhfWlmdm2cWeMZzjkjzVLR/Fn8NMdvhn/QS8HRAVLlXLSOtm6kg==}
 
-  /@bentley/analytical-schema/1.0.1:
-    resolution: {integrity: sha512-6X9DavJFEYuJW4l8PRXniYvPV4rcR9lwhTUexCFwtWZ2ptzUgEdfMQ6j40Dy3HuHQlTH9oWF1F2t68YLMthcxw==}
-    dev: true
-
   /@bentley/architectural-physical-schema/1.0.3:
     resolution: {integrity: sha512-KwOyb8anB6W/FCywiRX54nRDFy5o9wDb1zUr3CJvtsDhGuOpBvqsHVRkTGLqkW1gyIbZxn6LUmeW4z5ggd9Zvg==}
     dev: true
@@ -3699,16 +3681,8 @@ packages:
     resolution: {integrity: sha512-Ciii3iXwm6DmKQrZdhdyI2hHPXGsSEDsL6bGEP2gRfnG6PcXsxITFc6ta7ZTuXVCkWlKnKoW4YEsh0PANFjwcg==}
     dev: true
 
-  /@bentley/ecdb-file-info-schema/2.0.1:
-    resolution: {integrity: sha512-IxmrUQZk6HyuTa7WNnuKVsS/sX/kFdUJZv2LPvF1TetlBJpbBAiFSZISsKktfKgg3OxM/gtJgSJkPFMvIpVnyA==}
-    dev: true
-
   /@bentley/ecdb-map-schema/2.0.4:
     resolution: {integrity: sha512-thE//FnmJPY8hrG58CawS+evEsriqhl4CZj8O0uySmiuHsEpMpjkVXM640yfjg+3BdQrQ4HpK7+X1dJJjiDsTQ==}
-    dev: true
-
-  /@bentley/ecdb-meta-schema/4.0.3:
-    resolution: {integrity: sha512-Mp2w99jgqXHCzbkW9s41aaJRCSFGPQfMqUducX9MCJLbc46ZqhPXzs6KullBw1PidVoMs33YXLVsYJtJxf5Ucw==}
     dev: true
 
   /@bentley/ecdb-schema-policies-schema/1.0.1:
@@ -3717,14 +3691,6 @@ packages:
 
   /@bentley/formats-schema/1.0.0:
     resolution: {integrity: sha512-uaKHwBnVGQ7UCROAgOg+h+IFYkBEwShi4yD7AIb2DrdG3dw77MrFJfiALKk1MTvDo6TNjPE5wB6JlMYsNRbWhg==}
-    dev: true
-
-  /@bentley/functional-schema/1.0.4:
-    resolution: {integrity: sha512-hQyFrJ6EgWQhvKl1vp7tU9xDEHAJ4bg/pEJ+MLGSjbSX0bL3jHr/rocCSMiZ6Lt7Iye8jTG+6FAajm7w6DUfcQ==}
-    dev: true
-
-  /@bentley/generic-schema/1.0.5:
-    resolution: {integrity: sha512-N2I5PEzjCP9LC+e9hzmIzxPRA1hYVTurZXLnCLIImiAl2zQMnj6WowRJYFPRAs7NjJfZKC1UoiAvZc7A3/YfiQ==}
     dev: true
 
   /@bentley/icons-generic-webfont/1.0.34:
@@ -3751,10 +3717,6 @@ packages:
   /@bentley/plant-custom-attributes-schema/1.0.1:
     resolution: {integrity: sha512-RS45hmfj2Tz7HPTkSfxL9J3VWAyKMFyFNkThr4C/aL2dz3dBx5xmFtI8J+ngQncRNjN21jitDRxVV7bj91qNnQ==}
 
-  /@bentley/presentation-rules-schema/1.0.1:
-    resolution: {integrity: sha512-GpbAWTZNdsTnS+av3urjtm0WIr+xCmp5Sl880HvgYPUylBN91SzrryXyT7FgyIRq8lNyJFxGBo+yO9ZF/zKqnA==}
-    dev: true
-
   /@bentley/process-functional-schema/1.0.1:
     resolution: {integrity: sha512-3vGBu2TcLwH5ZONzLPdAA1BH+usowxneSgldbawya6fLEvuhuqyUmrm3eCqhxo1SM9wolF/BFdclRd5Ktb7W9w==}
     dev: false
@@ -3769,10 +3731,6 @@ packages:
   /@bentley/road-rail-units-schema/1.0.1:
     resolution: {integrity: sha512-7vHunp5SZrxiCErMhibOmbO1DYCx1Fm3pJZ4SYBAJBtEDbmkdI8yrhcNf6PRYHBpTsfbzdWeOWCcG1A4zulY/A==}
     dev: false
-
-  /@bentley/schema-upgrade-custom-attributes-schema/1.0.0:
-    resolution: {integrity: sha512-gqEDFZNovvbT49GbMo9oD8ECraORPS4ZiAh7aYrmzkDajpmzCzZ0eLkaxxKoH3XoNWbULbbeuWHuJaqITZA6XA==}
-    dev: true
 
   /@bentley/spatial-composition-schema/1.0.1:
     resolution: {integrity: sha512-ldAGnxs2zsjzCWG2jFtcZ0IMuNvTUM5e9JV38EsFMWbdIjXmZaX+Tx/t2vDEUgOqfCvo4Fb98YKpdclJcnSDrw==}

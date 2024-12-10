@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@itwin/ecschema-locaters",
-      "comment": "Implemented new schema locaters PublishedSchemaXmlFileLocater, PublishedSchemaXmlStringLocater, PublishedSchemaJsonFileLocater that will locate/load schemas from published schema xml/json files.",
+      "comment": "Implemented new schema locater PublishedSchemaXmlFileLocater that will locate/load schemas from published schema xml files.",
       "type": "none"
     }
   ],

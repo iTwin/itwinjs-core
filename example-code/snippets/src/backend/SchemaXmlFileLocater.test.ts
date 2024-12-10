@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECVersion, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
+import { ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@itwin/ecschema-metadata";
 import { PublishedSchemaXmlFileLocater, SchemaXmlFileLocater } from "@itwin/ecschema-locaters";
 import { KnownLocations } from "@itwin/core-backend";
 import path from "path";
@@ -81,100 +81,34 @@ describe("PublishedSchemaXmlFileLocater - locate standard schemas", () => {
   }
 
   it("PublishedSchemaXmlFileLocater - check search path precedence - sync", () => {
-    let context = new SchemaContext();
+    const context = new SchemaContext();
     const locater = new PublishedSchemaXmlFileLocater(KnownLocations.nativeAssetsDir);
 
     // The locater has been setup to use the default standard schemas released by core-backend package.
     context.addLocater(locater);
 
-    let linearReferencingSchema = context.getSchemaSync(lrSchemaKey);
+    const linearReferencingSchema = context.getSchemaSync(lrSchemaKey);
     testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", false); // should not be loaded
     testLocatedSchema(linearReferencingSchema, "LinearReferencing", "LinearLocationElement", true); // should be loaded
 
-    let unitsSchema = context.getSchemaSync(unitsSchemaKey);
+    const unitsSchema = context.getSchemaSync(unitsSchemaKey);
     testLocatedSchema(unitsSchema, "Units", "DummyUnit", false); // should not be loaded
-    testLocatedSchema(unitsSchema, "Units", "FAHRENHEIT", true); // should be loaded
-
-    // Test case 1: Register single search path at a time
-    context = new SchemaContext();
-    context.addLocater(locater);
-
-    // Now give the locater specific search paths to the dummy "LinearReferencing" and "Units" schemas
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Dgn"));
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Domain"));
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Standard"));
-
-    linearReferencingSchema = context.getSchemaSync(lrSchemaKey);
-    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", true); // should be loaded
-    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "LinearLocationElement", true); // should be loaded
-
-    unitsSchema = context.getSchemaSync(unitsSchemaKey);
-    testLocatedSchema(unitsSchema, "Units", "DummyUnit", true); // should be loaded
-    testLocatedSchema(unitsSchema, "Units", "FAHRENHEIT", true); // should be loaded
-
-    // Test case 2: Register multiple search paths at a time
-    context = new SchemaContext();
-    const newLocater = new PublishedSchemaXmlFileLocater(KnownLocations.nativeAssetsDir);
-    context.addLocater(newLocater);
-
-    // Now give the locater specific search paths to the dummy "LinearReferencing" and "Units" schemas
-    newLocater.addSchemaSearchPaths([path.join(__dirname, "assets", "DummyTestSchemas", "Dgn"), path.join(__dirname, "assets", "DummyTestSchemas", "Domain"), path.join(__dirname, "assets", "DummyTestSchemas", "Standard")]);
-
-    linearReferencingSchema = context.getSchemaSync(lrSchemaKey);
-    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", true);  // should be loaded
-    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "LinearLocationElement", true); // should be loaded
-
-    unitsSchema = context.getSchemaSync(unitsSchemaKey);
-    testLocatedSchema(unitsSchema, "Units", "DummyUnit", true); // should be loaded
     testLocatedSchema(unitsSchema, "Units", "FAHRENHEIT", true); // should be loaded
   });
 
   it("PublishedSchemaXmlFileLocater - check search path precedence - async", async () => {
-    let context = new SchemaContext();
+    const context = new SchemaContext();
     const locater = new PublishedSchemaXmlFileLocater(KnownLocations.nativeAssetsDir);
 
     // The locater has been setup to use the default standard schemas released by core-backend package.
     context.addLocater(locater);
 
-    let linearReferencingSchema = await context.getSchema(lrSchemaKey);
+    const linearReferencingSchema = await context.getSchema(lrSchemaKey);
     testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", false); // should not be loaded
     testLocatedSchema(linearReferencingSchema, "LinearReferencing", "LinearLocationElement", true); // should be loaded
 
-    let unitsSchema = await context.getSchema(unitsSchemaKey);
+    const unitsSchema = await context.getSchema(unitsSchemaKey);
     testLocatedSchema(unitsSchema, "Units", "DummyUnit", false); // should not be loaded
-    testLocatedSchema(unitsSchema, "Units", "FAHRENHEIT", true); // should be loaded
-
-    // Test case 1: Register single search path at a time
-    context = new SchemaContext();
-    context.addLocater(locater);
-
-    // Now give the locater specific search paths to the dummy "LinearReferencing" and "Units" schemas
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Dgn"));
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Domain"));
-    locater.addSchemaSearchPath(path.join(__dirname, "assets", "DummyTestSchemas", "Standard"));
-
-    linearReferencingSchema = await context.getSchema(lrSchemaKey);
-    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", true); // should be loaded
-    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "LinearLocationElement", true); // should be loaded
-
-    unitsSchema = await context.getSchema(unitsSchemaKey);
-    testLocatedSchema(unitsSchema, "Units", "DummyUnit", true); // should be loaded
-    testLocatedSchema(unitsSchema, "Units", "FAHRENHEIT", true); // should be loaded
-
-    // Test case 2: Register multiple search paths at a time
-    context = new SchemaContext();
-    const newLocater = new PublishedSchemaXmlFileLocater(KnownLocations.nativeAssetsDir);
-    context.addLocater(newLocater);
-
-    // Now give the locater specific search paths to the dummy "LinearReferencing" and "Units" schemas
-    newLocater.addSchemaSearchPaths([path.join(__dirname, "assets", "DummyTestSchemas", "Dgn"), path.join(__dirname, "assets", "DummyTestSchemas", "Domain"), path.join(__dirname, "assets", "DummyTestSchemas", "Standard")]);
-
-    linearReferencingSchema = await context.getSchema(lrSchemaKey);
-    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "DummyTestClass", true); // should be loaded
-    testLocatedSchema(linearReferencingSchema, "LinearReferencing", "LinearLocationElement", true); // should be loaded
-
-    unitsSchema = await context.getSchema(unitsSchemaKey);
-    testLocatedSchema(unitsSchema, "Units", "DummyUnit", true); // should be loaded
     testLocatedSchema(unitsSchema, "Units", "FAHRENHEIT", true); // should be loaded
   });
 
@@ -191,5 +125,83 @@ describe("PublishedSchemaXmlFileLocater - locate standard schemas", () => {
       assert.strictEqual(linearReferencingSchema?.schemaKey.version.write, 0);
       assert.isAbove(linearReferencingSchema?.schemaKey.version?.minor ?? -1, 0);
     }
+  });
+});
+
+describe("SchemaXmlFileLocater - Check locater precedence in schema context", () => {
+
+  function createLocaterWithPath(context: SchemaContext, searchPath: string, isFallbackLocater: boolean) {
+    if (isFallbackLocater) {
+      context.addFallbackLocater(new PublishedSchemaXmlFileLocater(searchPath));
+    } else {
+      const locater = new SchemaXmlFileLocater();
+      locater.addSchemaSearchPath(searchPath);
+      context.addLocater(locater);
+    }
+  }
+
+  function assertLocaterPaths(expectedPaths: string[][], actualLocaterPaths: ISchemaLocater[], maxIndexToTest: number, checkFallback: boolean) {
+    assert.equal(expectedPaths.length, actualLocaterPaths.length);
+
+    for (let index = 1; index <= maxIndexToTest; ++index)
+      assert.deepEqual(expectedPaths[index], (actualLocaterPaths[index] as SchemaXmlFileLocater).searchPaths);
+
+    if (checkFallback) {
+      const fallbackLocater = actualLocaterPaths[maxIndexToTest + 1] as PublishedSchemaXmlFileLocater;
+      assert.equal(expectedPaths[maxIndexToTest + 1].length, fallbackLocater.searchPaths.length);
+
+      for (let index = 0; index < expectedPaths[maxIndexToTest + 1].length; ++index)
+        assert.equal(expectedPaths[maxIndexToTest + 1][index].substring(4), fallbackLocater.searchPaths[index]);
+    }
+  }
+
+  it("check locater precedence with a fallback locater added midway", () => {
+    const ecSchemas: string[] = [
+      path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "V3Conversion"),
+      path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Standard"),
+      path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "ECDb"),
+      path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain"),
+      path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Dgn"),
+    ];
+
+    const context: SchemaContext = new SchemaContext();
+
+    createLocaterWithPath(context, "FirstLocaterPath", false);
+    createLocaterWithPath(context, "SecondLocaterPath", false);
+
+    // Locater at index 0 is the currently undefined SchemaCache
+    assertLocaterPaths([[], ["FirstLocaterPath"], ["SecondLocaterPath"]], context.locaters, 2, false);
+
+    // Add a fallback locater for the standard schemas
+    createLocaterWithPath(context, KnownLocations.nativeAssetsDir, true);
+    assertLocaterPaths([[], ["FirstLocaterPath"], ["SecondLocaterPath"], ecSchemas], context.locaters, 2, true);
+
+    createLocaterWithPath(context, "ThirdLocaterPath", false);
+    assertLocaterPaths([[], ["FirstLocaterPath"], ["SecondLocaterPath"], ["ThirdLocaterPath"], ecSchemas], context.locaters, 3, true);
+
+  });
+
+  it("check locater precedence with a fallback locater added at first", () => {
+    const ecSchemas: string[] = [
+      path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "V3Conversion"),
+      path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Standard"),
+      path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "ECDb"),
+      path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Domain"),
+      path.join(KnownLocations.nativeAssetsDir, "ECSchemas", "Dgn"),
+    ];
+
+    const context: SchemaContext = new SchemaContext();
+
+    // Add a fallback locater for the standard schemas
+    createLocaterWithPath(context, KnownLocations.nativeAssetsDir, true);
+    assertLocaterPaths([[], ecSchemas], context.locaters, 0, true);
+
+    // Add a locater
+    createLocaterWithPath(context, "FirstLocaterPath", false);
+    assertLocaterPaths([[], ["FirstLocaterPath"], ecSchemas], context.locaters, 1, true);
+
+    // Add another locater
+    createLocaterWithPath(context, "SecondLocaterPath", false);
+    assertLocaterPaths([[], ["FirstLocaterPath"], ["SecondLocaterPath"], ecSchemas], context.locaters, 2, true);
   });
 });

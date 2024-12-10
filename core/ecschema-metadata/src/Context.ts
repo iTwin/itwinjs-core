@@ -250,16 +250,35 @@ export class SchemaContext implements ISchemaItemLocater {
   private _locaters: ISchemaLocater[];
 
   private _knownSchemas: SchemaCache;
+  private _fallbackLocaterDefined: boolean;
 
   constructor() {
     this._locaters = [];
 
     this._knownSchemas = new SchemaCache();
     this._locaters.push(this._knownSchemas);
+    this._fallbackLocaterDefined = false;
   }
 
+  public get locaters(): ISchemaLocater[] { return this._locaters; }
+
   public addLocater(locater: ISchemaLocater) {
-    this._locaters.push(locater);
+    if (this._locaters.length === 0 || !this._fallbackLocaterDefined)
+      this._locaters.push(locater);
+    else
+      this._locaters.splice(this._locaters.length - 1, 0, locater);
+  }
+
+  public addFallbackLocater(locater: ISchemaLocater) {
+    // Check if a fallback locater has already been added
+    const fallbackLocaterIndex = this._locaters.indexOf(locater);
+
+    // Replace the existing fallback locater with a new one
+    if (fallbackLocaterIndex !== -1)
+      this._locaters.splice(fallbackLocaterIndex, 1, locater);
+    else
+      this._locaters.push(locater);
+    this._fallbackLocaterDefined = true;
   }
 
   /**
