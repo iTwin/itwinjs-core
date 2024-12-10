@@ -147,8 +147,23 @@ export class IModelDbFontsImpl implements IModelDbFonts {
     return name;
   }
 
-  public async acquireId(_name: string): Promise<FontId> {
-    throw new Error("###TODO");
+  public async acquireId(name: string): Promise<FontId> {
+    let id = this.findId(name);
+    if (undefined !== id) {
+      return id;
+    }
+
+    const codes = this._iModel.codeService?.internalCodes;
+    if (codes) {
+      // ###TODO why does reserveFontId want a FontType? Remove that.
+      id = codes.writeLocker.reserveFontId({ fontName: name, fontType: FontType.TrueType });
+    } else {
+      // No CodeService configured. We must obtain the schema lock and use the next available Id.
+      await this._iModel.acquireSchemaLock();
+      id = this._iModel.withSqliteStatement(`SELECT MAX(Id) FROM dgn_Font`, (stmt) => stmt.nextRow() ? stmt.getValueInteger(0) + 1 : 1);
+    }
+
+    this._iModel.withSqliteStatement(`INSERT INTO dgn_Font (Id,Name)`
   }
 
   public async embedFile(file: FontFile): Promise<void> {

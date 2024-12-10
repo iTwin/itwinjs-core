@@ -124,6 +124,7 @@ describe.only("IModelDbFonts", () => {
     });
 
     it("throws if file is already embedded", async () => {
+      // ###TODO this should probably just be a no-op, not produce an exception.
       // ###TODO the checking currently happens in FontManager::EmbedFont - if any face is already embedded, it rejects the whole file.
       // We want instead to reject if the same *file* is embedded - or, make it a no-op.
       // "same file" would be defined as "same family names and face types" in a canonical ordering - a representation we can also use
