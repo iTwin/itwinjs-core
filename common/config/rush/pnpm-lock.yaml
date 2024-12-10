@@ -273,7 +273,7 @@ importers:
       '@bentley/bis-custom-attributes-schema': 1.0.0
       '@bentley/construction-schema': 1.0.4
       '@bentley/core-custom-attributes-schema': 1.0.4
-      '@bentley/ecdb-map-schema': 2.0.4
+      '@bentley/ecdb-map-schema': 2.0.1
       '@bentley/ecdb-schema-policies-schema': 1.0.1
       '@bentley/formats-schema': 1.0.0
       '@bentley/linear-referencing-schema': 2.0.3
@@ -3681,8 +3681,8 @@ packages:
     resolution: {integrity: sha512-Ciii3iXwm6DmKQrZdhdyI2hHPXGsSEDsL6bGEP2gRfnG6PcXsxITFc6ta7ZTuXVCkWlKnKoW4YEsh0PANFjwcg==}
     dev: true
 
-  /@bentley/ecdb-map-schema/2.0.4:
-    resolution: {integrity: sha512-thE//FnmJPY8hrG58CawS+evEsriqhl4CZj8O0uySmiuHsEpMpjkVXM640yfjg+3BdQrQ4HpK7+X1dJJjiDsTQ==}
+  /@bentley/ecdb-map-schema/2.0.1:
+    resolution: {integrity: sha512-0bCFSwZ8y04faGm+QNGnau4ivzupXjbjL0rp4Q9l7JQ5ymzh12iNevaxq9Yv0MvFldJNCgBDWlb7tHvAlo6o5w==}
     dev: true
 
   /@bentley/ecdb-schema-policies-schema/1.0.1:
