@@ -3,10 +3,6 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 export default defineConfig({
   test: {
-    // Ignore unhandled errors to prevent test run from failing due to unhandled promise rejections inside meshoptimizer module.
-    // The error is: RangeError: WebAssembly.instantiate(): Out of memory: wasm memory
-    // It is likely caused by a memory leak in vitest, not cleanup up resources properly between test runs.
-    dangerouslyIgnoreUnhandledErrors: true,
     dir: "src",
     setupFiles: "./src/test/setupTests.ts",
     browser: {

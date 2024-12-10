@@ -30,8 +30,9 @@ import { VertexTable } from "../internal/render/VertexTable";
 import { MaterialParams } from "../render/MaterialParams";
 import { VertexIndices } from "../internal/render/VertexIndices";
 import { indexedEdgeParamsFromCompactEdges } from "./CompactEdges";
-import { MeshoptDecoder } from "meshoptimizer";
 import { FrontendLoggerCategory } from "../FrontendLoggerCategory";
+import { getMeshoptDecoder, MeshoptDecoder } from "../../tile/MeshoptDecoder";
+import { Mesh } from "../internal/render/MeshPrimitives";
 
 /** Timeline used to reassemble iMdl content into animatable nodes.
  * @internal
@@ -284,8 +285,6 @@ export function edgeParamsToImdl(params: EdgeParams): Imdl.EdgeParams {
   };
 }
 
-let meshoptDecoderStatus: "uninitialized" | "ready" | "failed" = "uninitialized";
-
 class Parser {
   private readonly _document: Document;
   private readonly _binaryData: Uint8Array;
@@ -294,6 +293,7 @@ class Parser {
   private readonly _patterns = new Map<string, Imdl.Primitive[]>();
   private readonly _stream: ByteStream;
   private readonly _timeline?: ImdlTimeline;
+  private _meshoptDecoder?: MeshoptDecoder;
 
   public constructor(doc: Document, binaryData: Uint8Array, options: ParseImdlDocumentArgs, featureTableInfo: FeatureTableInfo, stream: ByteStream) {
     this._document = doc;
@@ -310,20 +310,8 @@ class Parser {
       return TileReadStatus.InvalidFeatureTable;
 
     if (this.hasMeshoptCompression()) {
-      if (this._options.meshoptCompressionNotSupported || !MeshoptDecoder.supported)
-        return TileReadStatus.UnsupportedMeshoptCompression;
-
-      if (meshoptDecoderStatus === "uninitialized") {
-        try {
-          await MeshoptDecoder.ready;
-          meshoptDecoderStatus = "ready";
-        } catch (err) {
-          Logger.logException(FrontendLoggerCategory.Render, err);
-          meshoptDecoderStatus = "failed";
-        }
-      }
-
-      if (meshoptDecoderStatus === "failed")
+      this._meshoptDecoder = await getMeshoptDecoder();
+      if (!this._meshoptDecoder)
         return TileReadStatus.UnsupportedMeshoptCompression;
     }
 
@@ -941,12 +929,12 @@ class Parser {
 
     if (surf.compressedIndexCount && surf.compressedIndexCount > 0) {
 
-      if (meshoptDecoderStatus !== "ready") {
+      if (!this._meshoptDecoder) {
         return undefined;
       }
 
       const decompressedIndices = new Uint8Array(surf.compressedIndexCount * 4);
-      MeshoptDecoder.decodeIndexSequence(decompressedIndices, surf.compressedIndexCount, 4, indices);
+      this._meshoptDecoder.decodeIndexSequence(decompressedIndices, surf.compressedIndexCount, 4, indices);
 
       // reduce from 32 to 24 bits
       indices = new Uint8Array(surf.compressedIndexCount * 3);
@@ -1028,7 +1016,7 @@ class Parser {
     let bytes: Uint8Array | undefined;
     if (json.compressedSize && json.compressedSize > 0) {
 
-      if (meshoptDecoderStatus !== "ready") {
+      if (!this._meshoptDecoder) {
         return undefined;
       }
 
@@ -1046,7 +1034,7 @@ class Parser {
         return undefined;
 
       bytes = new Uint8Array(json.width * json.height * 4);
-      MeshoptDecoder.decodeVertexBuffer(bytes, json.count, json.numRgbaPerVertex * 4, compressedBytes);
+      this._meshoptDecoder.decodeVertexBuffer(bytes, json.count, json.numRgbaPerVertex * 4, compressedBytes);
 
       const remainingBytesSize = byteLength - json.compressedSize;
 
