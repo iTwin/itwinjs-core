@@ -923,8 +923,11 @@ export class ToolAdmin {
         this.fillEventFromCursorLocation(ev);
 
       // NOTE: Do not call adjustPoint when snapped, refer to CurrentInputState.fromButton
-      if (adjustPoint && undefined !== ev.viewport && undefined === TentativeOrAccuSnap.getCurrentSnap(false))
+      if (adjustPoint && undefined !== ev.viewport && undefined === TentativeOrAccuSnap.getCurrentSnap(false)) {
+        if (!useLastData)
+          ev.point.setFrom(ev.rawPoint); // Adjust rawPoint as point may already be adjusted from a prior call to fromButton if there hasn't been a motion...
         this.adjustPoint(ev.point, ev.viewport);
+      }
     }
 
     if (undefined === ev.viewport)
