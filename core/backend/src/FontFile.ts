@@ -8,13 +8,14 @@
 
 import { FontFace, FontType, LocalFileName } from "@itwin/core-common";
 import { _implementationProhibited } from "./internal/Symbols";
-import { shxFontFileFromBlob } from "./internal/FontFileImpl"; 
+import { shxFontFileFromBlob, trueTypeFontFileFromFileName } from "./internal/FontFileImpl"; 
 
 export interface FontFile {
   /** @internal */
   readonly [_implementationProhibited]: unknown;
   readonly type: FontType;
   readonly faces: ReadonlyArray<Readonly<FontFace>>;
+  readonly isEmbeddable: boolean;
 }
 
 export interface CreateFontFileFromShxBlobArgs {
@@ -28,8 +29,8 @@ export interface CreateFontFileFromRscBlobArgs {
 }
 
 export namespace FontFile {
-  export function createFromTrueTypeFile(_fileName: LocalFileName): FontFile  {
-    throw new Error("###TODO");
+  export function createFromTrueTypeFileName(fileName: LocalFileName): FontFile  {
+    return trueTypeFontFileFromFileName(fileName);
   }
 
   export function createFromShxFontBlob(args: CreateFontFileFromShxBlobArgs): FontFile {

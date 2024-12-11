@@ -8,10 +8,12 @@ import type { IModelJsNative } from "@bentley/imodeljs-native";
 import { CreateFontFileFromShxBlobArgs, FontFile } from "../FontFile";
 import { _implementationProhibited } from "./Symbols";
 import { compareNumbersOrUndefined } from "@itwin/core-bentley";
+import { IModelHost } from "../IModelHost";
 
 interface TrueTypeFontSource {
   readonly type: FontType.TrueType;
   readonly fileName: LocalFileName;
+  readonly embeddable: boolean;
 }
 
 interface CadFontSource {
@@ -26,6 +28,9 @@ class FontFileImpl implements FontFile {
 
   public readonly faces: ReadonlyArray<Readonly<FontFace>>;
   public get type(): FontType { return this.source.type; }
+  public get isEmbeddable(): boolean {
+    return this.source.type !== FontType.TrueType || this.source.embeddable;
+  }
 
   public readonly source: FontSource;
   public readonly faceProps: IModelJsNative.FontFaceProps[];
@@ -85,4 +90,13 @@ export function shxFontFileFromBlob(args: CreateFontFileFromShxBlobArgs): FontFi
   }]);
 }
 
+export function trueTypeFontFileFromFileName(fileName: LocalFileName): FontFile {
+  const metadata = IModelHost.platform.getTrueTypeFontMetadata(fileName);
+  if (metadata.faces.length === 0) {
+    // The input was almost certainly not a TrueType font file.
+    throw new Error("Failed to read font file");
+  }
+
+  return new FontFileImpl({ type: FontType.TrueType, fileName, embeddable: metadata.embeddable }, metadata.faces);
+}
 
