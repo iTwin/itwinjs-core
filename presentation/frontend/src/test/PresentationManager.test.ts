@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import sinon from "sinon";
 import * as moq from "typemoq";
-import { BeDuration, BeEvent, CompressedId64Set, using } from "@itwin/core-bentley";
+import { BeDuration, BeEvent, CompressedId64Set } from "@itwin/core-bentley";
 import { IModelRpcProps, IpcListener, RemoveFunction } from "@itwin/core-common";
 import { IModelApp, IModelConnection, IpcApp, QuantityFormatter } from "@itwin/core-frontend";
 import { ITwinLocalization } from "@itwin/core-i18n";
@@ -214,7 +214,9 @@ describe("PresentationManager", () => {
     it("starts listening to update events", async () => {
       sinon.stub(IpcApp, "isValid").get(() => true);
       const addListenerSpy = sinon.stub(IpcApp, "addListener").returns(() => {});
-      using(PresentationManager.create(), (_) => {});
+      {
+        using _ = PresentationManager.create();
+      }
       expect(addListenerSpy).to.be.calledOnceWith(
         PresentationIpcEvents.Update,
         sinon.match((arg) => typeof arg === "function"),
