@@ -18,16 +18,22 @@ export enum FontType { TrueType = 1, Rsc = 2, Shx = 3 }
  */
 export type FontId = number;
 
-/** The properties of a Font.
+export interface FontFamilyDescriptor {
+  type: FontType;
+  name: string;
+}
+
+/** ###TODO
  * @public
  */
-export interface FontProps {
-  /** the Id, within an iModel, of this font. */
+export interface FontProps extends FontFamilyDescriptor {
   id: FontId;
-  /** The type of font */
-  type: FontType;
-  /** The name of the font. */
-  name: string;
+}
+
+export interface FontFace {
+  familyName: string;
+  isBold: boolean;
+  isItalic: boolean;
 }
 
 /** The properties of a FontMap
