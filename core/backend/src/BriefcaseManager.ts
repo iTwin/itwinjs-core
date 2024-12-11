@@ -542,7 +542,9 @@ export class BriefcaseManager {
       }
     }
     db[_nativeDb].pullMergeEnd();
-    db.saveChanges("Merge.");
+    if (!db.isReadonly) {
+      db.saveChanges("Merge.");
+    }
     // notify listeners
     db.notifyChangesetApplied();
   }
