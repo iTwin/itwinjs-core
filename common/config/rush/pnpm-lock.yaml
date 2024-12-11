@@ -27,7 +27,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
       '@types/multiparty': ^0.0.31
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/semver': 7.3.10
       '@types/sinon': ^17.0.2
       '@types/touch': ^3.1.2
@@ -87,7 +87,7 @@ importers:
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
       '@types/multiparty': 0.0.31
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/semver': 7.3.10
       '@types/sinon': 17.0.2
       '@types/touch': 3.1.2
@@ -114,7 +114,7 @@ importers:
       '@itwin/build-tools': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@opentelemetry/api': 1.0.4
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@vitest/coverage-v8': ^2.1.0
       eslint: ^9.13.0
       rimraf: ^3.0.2
@@ -124,12 +124,12 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       '@opentelemetry/api': 1.0.4
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@vitest/coverage-v8': 2.1.1_vitest@2.1.0
       eslint: 9.13.0
       rimraf: 3.0.2
       typescript: 5.6.2
-      vitest: 2.1.0_@types+node@20.9.5
+      vitest: 2.1.0_@types+node@20.17.0
 
   ../../core/common:
     specifiers:
@@ -140,7 +140,7 @@ importers:
       '@itwin/object-storage-core': ^2.2.5
       '@types/chai': 4.3.1
       '@types/flatbuffers': ~1.10.0
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@vitest/coverage-v8': ^2.1.0
       eslint: ^9.13.0
       flatbuffers: ~1.12.0
@@ -160,13 +160,13 @@ importers:
       '@itwin/object-storage-core': 2.2.5
       '@types/chai': 4.3.1
       '@types/flatbuffers': 1.10.0
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@vitest/coverage-v8': 2.1.1_vitest@2.1.0
       eslint: 9.13.0
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 5.6.2
-      vitest: 2.1.0_@types+node@20.9.5
+      vitest: 2.1.0_@types+node@20.17.0
 
   ../../core/ecschema-editing:
     specifiers:
@@ -181,7 +181,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/sinon': ^17.0.2
       '@xmldom/xmldom': ~0.8.5
       benchmark: ^2.1.4
@@ -206,7 +206,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/sinon': 17.0.2
       '@xmldom/xmldom': 0.8.5
       benchmark: 2.1.4
@@ -246,7 +246,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/sinon': ^17.0.2
       '@xmldom/xmldom': ~0.8.5
       chai: ^4.3.10
@@ -289,7 +289,7 @@ importers:
       '@types/fs-extra': 4.0.7
       '@types/glob': 5.0.35
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/sinon': 17.0.2
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
@@ -312,7 +312,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/sinon': ^17.0.2
       '@xmldom/xmldom': ~0.8.5
       benchmark: ^2.1.4
@@ -335,7 +335,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/sinon': 17.0.2
       '@xmldom/xmldom': 0.8.5
       benchmark: 2.1.4
@@ -436,7 +436,7 @@ importers:
       '@openid/appauth': ^1.2.6
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       chai: ^4.3.10
       cpx2: ^3.0.0
       electron: ^33.0.0
@@ -464,7 +464,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       chai: 4.3.10
       cpx2: 3.0.0
       electron: 33.0.0
@@ -488,7 +488,7 @@ importers:
       '@types/express': ^4.17.20
       '@types/express-ws': ^3.0.3
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/sinon': ^17.0.2
       '@types/supertest': ^6.0.2
       chai: ^4.3.10
@@ -514,7 +514,7 @@ importers:
       '@types/express': 4.17.20
       '@types/express-ws': 3.0.3
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/sinon': 17.0.2
       '@types/supertest': 6.0.2
       chai: 4.3.10
@@ -655,7 +655,7 @@ importers:
       '@itwin/core-bentley': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@types/flatbuffers': ~1.10.0
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@vitest/coverage-v8': ^2.1.0
       eslint: ^9.13.0
       flatbuffers: ~1.12.0
@@ -669,12 +669,12 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       '@types/flatbuffers': 1.10.0
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@vitest/coverage-v8': 2.1.1_vitest@2.1.0
       eslint: 9.13.0
       rimraf: 3.0.2
       typescript: 5.6.2
-      vitest: 2.1.0_@types+node@20.9.5
+      vitest: 2.1.0_@types+node@20.17.0
 
   ../../core/hypermodeling:
     specifiers:
@@ -736,7 +736,7 @@ importers:
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
       chai: ^4.3.10
@@ -764,7 +764,7 @@ importers:
       '@types/i18next': 8.4.2
       '@types/i18next-browser-languagedetector': 2.0.1
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       babel-loader: 8.2.5_webpack@5.97.1
       babel-plugin-istanbul: 6.1.1
       chai: 4.3.10
@@ -837,7 +837,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/superagent': ^8.1.6
       '@types/ws': ^7.0.0
       chai: ^4.3.10
@@ -866,7 +866,7 @@ importers:
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/superagent': 8.1.6
       '@types/ws': 7.2.0
       chai: 4.3.10
@@ -885,7 +885,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       chai: ^4.3.10
       cpx2: ^3.0.0
       debug: ^2.6.9
@@ -900,7 +900,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       chai: 4.3.10
       cpx2: 3.0.0
       debug: 2.6.9
@@ -1026,7 +1026,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/semver': 7.3.10
       chai: ^4.3.10
       cpx2: ^3.0.0
@@ -1045,7 +1045,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/semver': 7.3.10
       chai: 4.3.10
       cpx2: 3.0.0
@@ -1067,7 +1067,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       chai: ^4.3.10
       cpx2: ^3.0.0
       eslint: ^9.13.0
@@ -1085,7 +1085,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       chai: 4.3.10
       cpx2: 3.0.0
       eslint: 9.13.0
@@ -1134,7 +1134,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       chai: ^4.3.10
       eslint: ^9.13.0
       mocha: ^10.2.0
@@ -1150,7 +1150,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       chai: 4.3.10
       eslint: 9.13.0
       mocha: 10.2.0
@@ -1255,7 +1255,7 @@ importers:
       '@itwin/oidc-signin-tool': ^4.3.7
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       chai: ^4.3.10
       cpx2: ^3.0.0
       electron: ^33.0.0
@@ -1277,7 +1277,7 @@ importers:
       '@itwin/oidc-signin-tool': 4.3.7_67wltvhdskk2oee2c3z2o4tfly
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       chai: 4.3.10
       cpx2: 3.0.0
       eslint: 9.13.0
@@ -1307,7 +1307,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@xmldom/xmldom': ~0.8.5
       azurite: ^3.32.0
       chai: ^4.3.10
@@ -1345,7 +1345,7 @@ importers:
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       chai: 4.3.10
       chai-as-promised: 7.1.1_chai@4.3.10
       cpx2: 3.0.0
@@ -1368,7 +1368,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/sinon': ^17.0.2
       babel-loader: ~8.2.5
       babel-plugin-istanbul: ~6.1.1
@@ -1393,7 +1393,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/sinon': 17.0.2
       babel-loader: 8.2.5_webpack@5.97.1
       babel-plugin-istanbul: 6.1.1
@@ -1691,7 +1691,7 @@ importers:
       '@types/chai-as-promised': ^7
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
       assert: ^2.0.0
@@ -1768,7 +1768,7 @@ importers:
       '@types/chai-as-promised': 7.1.0
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/sinon': 17.0.2
       '@types/sinon-chai': 3.2.0
       assert: 2.0.0
@@ -1822,7 +1822,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       assert: ^2.0.0
       browserify-zlib: ^0.2.0
       chai: ^4.3.10
@@ -1876,7 +1876,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       assert: 2.0.0
       browserify-zlib: 0.2.0
       cpx2: 3.0.0
@@ -1918,7 +1918,7 @@ importers:
       '@types/deep-equal': ^1
       '@types/faker': ^4.1.0
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/rimraf': ^2.0.2
       '@types/sinon': ^17.0.2
       '@types/sinon-chai': ^3.2.0
@@ -1972,7 +1972,7 @@ importers:
       '@types/deep-equal': 1.0.0
       '@types/faker': 4.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/rimraf': 2.0.2
       '@types/sinon': 17.0.2
       '@types/sinon-chai': 3.2.0
@@ -2023,7 +2023,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/express': ^4.17.20
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/semver': 7.3.10
       '@types/spdy': ^3.4.4
       assert: ^2.0.0
@@ -2062,7 +2062,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/express': 4.17.20
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/semver': 7.3.10
       '@types/spdy': 3.4.4
       assert: 2.0.0
@@ -2104,7 +2104,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': ^7
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       assert: ^2.0.0
       browserify-zlib: ^0.2.0
       buffer: ^6.0.3
@@ -2158,7 +2158,7 @@ importers:
       '@types/chai': 4.3.1
       '@types/chai-as-promised': 7.1.0
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       assert: 2.0.0
       browserify-zlib: 0.2.0
       buffer: 6.0.3
@@ -2195,7 +2195,7 @@ importers:
       '@types/faker': ^4.1.0
       '@types/lolex': ^2.1.2
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/object-hash': ^1.3.0
       '@types/semver': 7.3.10
       '@types/sinon': ^17.0.2
@@ -2247,7 +2247,7 @@ importers:
       '@types/faker': 4.1.0
       '@types/lolex': 2.1.2
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/object-hash': 1.3.0
       '@types/semver': 7.3.10
       '@types/sinon': 17.0.2
@@ -2464,7 +2464,7 @@ importers:
       '@itwin/reality-data-client': ^1.2.1
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.17.20
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@typescript-eslint/parser': ~8.11.0
       body-parser: ^1.20.3
       browserslist-to-esbuild: ^1.2.0
@@ -2519,7 +2519,7 @@ importers:
       '@itwin/perf-tools': link:../../tools/perf-tools
       '@types/body-parser': 1.17.0
       '@types/express': 4.17.20
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@typescript-eslint/parser': 8.11.0_aji6oyyaiulsuzmkdveqwiygte
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
@@ -2542,7 +2542,7 @@ importers:
       rollup-plugin-visualizer: 5.9.2
       rollup-plugin-webpack-stats: 0.2.0
       typescript: 5.6.2
-      vite: 5.4.6_@types+node@20.9.5
+      vite: 5.4.6_@types+node@20.17.0
       vite-plugin-env-compatible: 2.0.1
       vite-plugin-inspect: 0.8.4_vite@5.4.6
       webpack: 5.97.1
@@ -2583,7 +2583,7 @@ importers:
       '@types/express': ^4.17.20
       '@types/express-ws': ^3.0.3
       '@types/fs-extra': ^4.0.7
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@typescript-eslint/parser': ~8.11.0
       body-parser: ^1.20.3
       browserslist-to-esbuild: ^1.2.0
@@ -2652,7 +2652,7 @@ importers:
       '@types/express': 4.17.20
       '@types/express-ws': 3.0.3
       '@types/fs-extra': 4.0.7
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@typescript-eslint/parser': 8.11.0_aji6oyyaiulsuzmkdveqwiygte
       browserslist-to-esbuild: 1.2.0
       child_process: 1.0.2
@@ -2677,7 +2677,7 @@ importers:
       rollup-plugin-visualizer: 5.9.2
       rollup-plugin-webpack-stats: 0.2.0
       typescript: 5.6.2
-      vite: 5.4.6_@types+node@20.9.5
+      vite: 5.4.6_@types+node@20.17.0
       vite-plugin-env-compatible: 2.0.1
       vite-plugin-inspect: 0.8.4_vite@5.4.6
       webpack: 5.97.1
@@ -2690,7 +2690,7 @@ importers:
       '@itwin/core-common': workspace:*
       '@itwin/core-geometry': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/yargs': 17.0.19
       eslint: ^9.13.0
       rimraf: ^3.0.2
@@ -2705,7 +2705,7 @@ importers:
     devDependencies:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/yargs': 17.0.19
       eslint: 9.13.0
       rimraf: 3.0.2
@@ -2721,7 +2721,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@types/chai': 4.3.1
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/yargs': 17.0.19
       chai: ^4.3.10
       eslint: ^9.13.0
@@ -2741,7 +2741,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       '@types/chai': 4.3.1
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/yargs': 17.0.19
       eslint: 9.13.0
       mocha: 10.2.0
@@ -2758,7 +2758,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/yargs': 17.0.19
       eslint: ^9.13.0
       fs-extra: ^8.1.0
@@ -2777,7 +2777,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/yargs': 17.0.19
       eslint: 9.13.0
       rimraf: 3.0.2
@@ -2793,7 +2793,7 @@ importers:
       '@itwin/core-orbitgt': workspace:*
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@types/fs-extra': ^4.0.7
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/yargs': 17.0.19
       eslint: ^9.13.0
       rimraf: ^3.0.2
@@ -2810,7 +2810,7 @@ importers:
       '@itwin/build-tools': link:../../tools/build
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       '@types/fs-extra': 4.0.7
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/yargs': 17.0.19
       eslint: 9.13.0
       rimraf: 3.0.2
@@ -2826,7 +2826,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.202
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/yargs': 17.0.19
       eslint: ^9.13.0
       fs-extra: ^8.1.0
@@ -2845,7 +2845,7 @@ importers:
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
       '@types/fs-extra': 4.0.7
       '@types/lodash': 4.14.202
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/yargs': 17.0.19
       eslint: 9.13.0
       rimraf: 3.0.2
@@ -2855,7 +2855,7 @@ importers:
     specifiers:
       '@itwin/eslint-plugin': 5.0.0-dev.1
       '@microsoft/api-extractor': ~7.47.10
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       chalk: ^3.0.0
       cpx2: ^3.0.0
       cross-spawn: ^7.0.5
@@ -2872,7 +2872,7 @@ importers:
       wtfnode: ^0.9.1
       yargs: ^17.4.0
     dependencies:
-      '@microsoft/api-extractor': 7.47.10_@types+node@20.9.5
+      '@microsoft/api-extractor': 7.47.10_@types+node@20.17.0
       chalk: 3.0.0
       cpx2: 3.0.0
       cross-spawn: 7.0.5
@@ -2889,7 +2889,7 @@ importers:
       yargs: 17.4.0
     devDependencies:
       '@itwin/eslint-plugin': 5.0.0-dev.1_aji6oyyaiulsuzmkdveqwiygte
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       eslint: 9.13.0
 
   ../../tools/certa:
@@ -2901,7 +2901,7 @@ importers:
       '@types/express': ^4.17.20
       '@types/lodash': ^4.14.202
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@types/yargs': 17.0.19
       canonical-path: ^1.0.0
       detect-port: ~1.3.0
@@ -2935,7 +2935,7 @@ importers:
       '@types/express': 4.17.20
       '@types/lodash': 4.14.202
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/yargs': 17.0.19
       electron: 33.0.0
       eslint: 9.13.0
@@ -2957,7 +2957,7 @@ importers:
       '@types/chai-string': ^1.4.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^10.0.6
-      '@types/node': ~20.9.5
+      '@types/node': ~20.17.0
       '@xmldom/xmldom': ~0.8.5
       chai: ^4.3.10
       chai-string: ^1.5.0
@@ -2990,7 +2990,7 @@ importers:
       '@types/chai-string': 1.4.1
       '@types/fs-extra': 4.0.7
       '@types/mocha': 10.0.6
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       chai: 4.3.10
       cpx2: 3.0.0
       eslint: 9.13.0
@@ -4479,27 +4479,27 @@ packages:
       '@babel/runtime': 7.25.0
     dev: false
 
-  /@microsoft/api-extractor-model/7.29.8_@types+node@20.9.5:
+  /@microsoft/api-extractor-model/7.29.8_@types+node@20.17.0:
     resolution: {integrity: sha512-t3Z/xcO6TRbMcnKGVMs4uMzv/gd5j0NhMiJIGjD4cJMeFJ1Hf8wnLSx37vxlRlL0GWlGJhnFgxvnaL6JlS+73g==}
     dependencies:
       '@microsoft/tsdoc': 0.15.0
       '@microsoft/tsdoc-config': 0.17.0
-      '@rushstack/node-core-library': 5.9.0_@types+node@20.9.5
+      '@rushstack/node-core-library': 5.9.0_@types+node@20.17.0
     transitivePeerDependencies:
       - '@types/node'
     dev: false
 
-  /@microsoft/api-extractor/7.47.10_@types+node@20.9.5:
+  /@microsoft/api-extractor/7.47.10_@types+node@20.17.0:
     resolution: {integrity: sha512-Fx5J3E8sC5EUeqaC85NXql3hXJc7/QO3NEr/jeBgVJwacRaHdkl3pKDhkkJ6yo/GWbRCv6QnyakU0QuKg8bMig==}
     hasBin: true
     dependencies:
-      '@microsoft/api-extractor-model': 7.29.8_@types+node@20.9.5
+      '@microsoft/api-extractor-model': 7.29.8_@types+node@20.17.0
       '@microsoft/tsdoc': 0.15.0
       '@microsoft/tsdoc-config': 0.17.0
-      '@rushstack/node-core-library': 5.9.0_@types+node@20.9.5
+      '@rushstack/node-core-library': 5.9.0_@types+node@20.17.0
       '@rushstack/rig-package': 0.5.3
-      '@rushstack/terminal': 0.14.2_@types+node@20.9.5
-      '@rushstack/ts-command-line': 4.22.8_@types+node@20.9.5
+      '@rushstack/terminal': 0.14.2_@types+node@20.17.0
+      '@rushstack/ts-command-line': 4.22.8_@types+node@20.17.0
       lodash: 4.17.21
       minimatch: 3.0.8
       resolve: 1.22.8
@@ -4788,7 +4788,7 @@ packages:
   /@rtsao/scc/1.1.0:
     resolution: {integrity: sha512-zt6OdqaDoOnJ1ZYsCYGt9YmWzDXl4vQdKTyJev62gFhRGKdx7mcT54V9KIjg+d2wi9EXsPvAPKe7i7WjfVWB8g==}
 
-  /@rushstack/node-core-library/5.9.0_@types+node@20.9.5:
+  /@rushstack/node-core-library/5.9.0_@types+node@20.17.0:
     resolution: {integrity: sha512-MMsshEWkTbXqxqFxD4gcIUWQOCeBChlGczdZbHfqmNZQFLHB3yWxDFSMHFUdu2/OB9NUk7Awn5qRL+rws4HQNg==}
     peerDependencies:
       '@types/node': '*'
@@ -4796,7 +4796,7 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       ajv: 8.13.0
       ajv-draft-04: 1.0.0_ajv@8.13.0
       ajv-formats: 3.0.1
@@ -4814,7 +4814,7 @@ packages:
       strip-json-comments: 3.1.1
     dev: false
 
-  /@rushstack/terminal/0.14.2_@types+node@20.9.5:
+  /@rushstack/terminal/0.14.2_@types+node@20.17.0:
     resolution: {integrity: sha512-2fC1wqu1VCExKC0/L+0noVcFQEXEnoBOtCIex1TOjBzEDWcw8KzJjjj7aTP6mLxepG0XIyn9OufeFb6SFsa+sg==}
     peerDependencies:
       '@types/node': '*'
@@ -4822,15 +4822,15 @@ packages:
       '@types/node':
         optional: true
     dependencies:
-      '@rushstack/node-core-library': 5.9.0_@types+node@20.9.5
-      '@types/node': 20.9.5
+      '@rushstack/node-core-library': 5.9.0_@types+node@20.17.0
+      '@types/node': 20.17.0
       supports-color: 8.1.1
     dev: false
 
-  /@rushstack/ts-command-line/4.22.8_@types+node@20.9.5:
+  /@rushstack/ts-command-line/4.22.8_@types+node@20.17.0:
     resolution: {integrity: sha512-XbFjOoV7qZHJnSuFUHv0pKaFA4ixyCuki+xMjsMfDwfvQjs5MYG0IK5COal3tRnG7KCDe2l/G+9LrzYE/RJhgg==}
     dependencies:
-      '@rushstack/terminal': 0.14.2_@types+node@20.9.5
+      '@rushstack/terminal': 0.14.2_@types+node@20.17.0
       '@types/argparse': 1.0.38
       argparse: 1.0.10
       string-argv: 0.3.2
@@ -4988,14 +4988,14 @@ packages:
     resolution: {integrity: sha512-a2+YeUjPkztKJu5aIF2yArYFQQp8d51wZ7DavSHjFuY1mqVgidGyzEQ41JIVNy82fXj8yPgy2vJmfIywgESW6w==}
     dependencies:
       '@types/connect': 3.4.38
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
 
   /@types/cacheable-request/6.0.3:
     resolution: {integrity: sha512-IQ3EbTzGxIigb1I3qPZc1rWJnH0BmSKv5QYTalEwweFvyBDLSAe24zP0le/hyi7ecGfZVlIVAg4BZqb8WBwKqw==}
     dependencies:
       '@types/http-cache-semantics': 4.0.4
       '@types/keyv': 3.1.4
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/responselike': 1.0.3
 
   /@types/chai-as-promised/7.1.0:
@@ -5026,7 +5026,7 @@ packages:
   /@types/connect/3.4.38:
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
 
   /@types/cookie/0.6.0:
     resolution: {integrity: sha512-4Kh9a6B2bQciAhf7FSuMRRkUWecJgJu9nPnx3yzpsfXX/c50REIqpHY4C82bXP90qrLtXtkDxTZosYO3UpOwlA==}
@@ -5082,7 +5082,7 @@ packages:
   /@types/express-serve-static-core/4.19.5:
     resolution: {integrity: sha512-y6W03tvrACO72aijJ5uF02FRq5cgDR9lUxddQ8vyF+GvmjJQqbzDcJngEjURc+ZsG31VI3hODNZJ2URj86pzmg==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/qs': 6.9.15
       '@types/range-parser': 1.2.7
       '@types/send': 0.17.4
@@ -5117,13 +5117,13 @@ packages:
   /@types/fs-extra/4.0.7:
     resolution: {integrity: sha512-BN48b/2F3kL0Ual7tjcHjj0Fl+nuYKtHa0G/xT3Q43HuCpN7rQD5vIx6Aqnl9x10oBI5xMJh8Ly+FQpP205JlA==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: true
 
   /@types/fs-extra/8.1.5:
     resolution: {integrity: sha512-0dzKcwO+S8s2kuF5Z9oUWatQJj5Uq/iqphEtE3GQJVRRYm/tD1LglU2UnXi2A8jLq5umkGouOXOR9y0n613ZwQ==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: true
 
   /@types/geojson/7946.0.14:
@@ -5138,13 +5138,13 @@ packages:
     dependencies:
       '@types/events': 3.0.3
       '@types/minimatch': 5.1.2
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
 
   /@types/glob/7.2.0:
     resolution: {integrity: sha512-ZUxbzKl0IfJILTS6t7ip5fQQM/J3TJYubDm3nMbgubNNYS62eXeUpoLUC8/7fJNiFYHTrGPQn7hspDUzIHX3UA==}
     dependencies:
       '@types/minimatch': 5.1.2
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: true
 
   /@types/google-protobuf/3.15.6:
@@ -5186,12 +5186,12 @@ packages:
   /@types/jsonwebtoken/8.5.9:
     resolution: {integrity: sha512-272FMnFGzAVMGtu9tkr29hRL6bZj4Zs1KZNeHLnKqAvp06tAIcarTMwOh8/8bz4FmKRcMxZhZNeUAQsNLoiPhg==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
 
   /@types/keyv/3.1.4:
     resolution: {integrity: sha512-BQ5aZNSCpj7D6K2ksrRCTmKRLEpnPvWDiLPfoGyhZ++8YtiK9d/3DBKPJgry359X/P1PfruyYwvnvwFjuEiEIg==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
 
   /@types/lodash/4.14.202:
     resolution: {integrity: sha512-OvlIYQK9tNneDlS0VN54LLd5uiPCBOp7gS5Z0f1mjoJYBrtStzgmJBxONW3U6OZqdtNzZPmn9BS/7WI7BFFcFQ==}
@@ -5227,13 +5227,13 @@ packages:
   /@types/multiparty/0.0.31:
     resolution: {integrity: sha512-cAFkeGKH55zJiYUjvXznQ3IdShi15VPcaDYxTm9a/lvLhD5dZgSrS+FmQvdS1/vFVIEolFGM1eZCB1avVpiN3w==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: true
 
   /@types/mute-stream/0.0.4:
     resolution: {integrity: sha512-CPM9nzrCPPJHQNA9keH9CVkVI+WR5kMa+7XEs5jcGQ0VoAGnLv242w8lIVgwAEfmE4oufJRaTc9PNLQl0ioAow==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: true
 
   /@types/node/16.18.105:
@@ -5246,10 +5246,10 @@ packages:
       undici-types: 5.26.5
     dev: false
 
-  /@types/node/20.9.5:
-    resolution: {integrity: sha512-Uq2xbNq0chGg+/WQEU0LJTSs/1nKxz6u1iemLcGomkSnKokbW1fbLqc3HOqCf2JP7KjlL4QkS7oZZTrOQHQYgQ==}
+  /@types/node/20.17.0:
+    resolution: {integrity: sha512-a7zRo0f0eLo9K5X9Wp5cAqTUNGzuFLDG2R7C4HY2BhcMAsxgSPuRvAC1ZB6QkuUQXf0YZAgfOX2ZyrBa2n4nHQ==}
     dependencies:
-      undici-types: 5.26.5
+      undici-types: 6.19.8
 
   /@types/node/22.7.4:
     resolution: {integrity: sha512-y+NPi1rFzDs1NdQHHToqeiX2TIS79SWEAw9GYhkkx8bD0ChpfqC+n2j5OXOCpzfojBEBt6DnEnnG9MY0zk1XLg==}
@@ -5260,7 +5260,7 @@ packages:
   /@types/object-hash/1.3.0:
     resolution: {integrity: sha512-il4NIe4jTx4lfhkKaksmmGHw5EsVkO8sHWkpJHM9m59r1dtsVadLSrJqdE8zU74NENDAsR3oLIOlooRAXlPLNA==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: true
 
   /@types/qs/6.9.15:
@@ -5272,20 +5272,20 @@ packages:
   /@types/readable-stream/4.0.15:
     resolution: {integrity: sha512-oAZ3kw+kJFkEqyh7xORZOku1YAKvsFTogRY8kVl4vHpEKiDkfnSA/My8haRE7fvmix5Zyy+1pwzOi7yycGLBJw==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       safe-buffer: 5.1.2
     dev: false
 
   /@types/responselike/1.0.3:
     resolution: {integrity: sha512-H/+L+UkTV33uf49PH5pCAUBVPNj2nDBXTN+qS1dOwyyg24l3CcicicCA7ca+HMvJBZcFgl5r8e+RR6elsb4Lyw==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
 
   /@types/rimraf/2.0.2:
     resolution: {integrity: sha512-Hm/bnWq0TCy7jmjeN5bKYij9vw5GrDFWME4IuxV08278NtU/VdGbzsBohcCUJ7+QMqmUq5hpRKB39HeQWJjztQ==}
     dependencies:
       '@types/glob': 5.0.35
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: false
 
   /@types/semver/7.3.10:
@@ -5296,13 +5296,13 @@ packages:
     resolution: {integrity: sha512-x2EM6TJOybec7c52BX0ZspPodMsQUd5L6PRwOunVyVUhXiBSKf3AezDL8Dgvgt5o0UfKNfuA0eMLr2wLT4AiBA==}
     dependencies:
       '@types/mime': 1.3.5
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
 
   /@types/serve-static/1.15.7:
     resolution: {integrity: sha512-W8Ym+h8nhuRwaKPaDw34QUkwsGi6Rc4yYqvKFo5rm2FUEhCFbzVWrxXUxuKK8TASjWsysJY0nsmNCGhCOIsrOw==}
     dependencies:
       '@types/http-errors': 2.0.4
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@types/send': 0.17.4
 
   /@types/sinon-chai/3.2.0:
@@ -5326,13 +5326,13 @@ packages:
   /@types/source-map-support/0.4.0:
     resolution: {integrity: sha512-9oVAi1Jlr274pbMGPEe0S3IPImV9knVNafa6E4MookD/fjOZAE6EmLkFX5ZjtZ9OXNPi2FCIZzUSMvwAUUKeSg==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: true
 
   /@types/spdy/3.4.4:
     resolution: {integrity: sha512-N9LBlbVRRYq6HgYpPkqQc3a9HJ/iEtVZToW6xlTtJiMhmRJ7jJdV7TaZQJw/Ve/1ePUsQiCTDc4JMuzzag94GA==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: true
 
   /@types/statuses/2.0.5:
@@ -5344,7 +5344,7 @@ packages:
     dependencies:
       '@types/cookiejar': 2.1.5
       '@types/methods': 1.1.4
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: true
 
   /@types/supertest/6.0.2:
@@ -5357,7 +5357,7 @@ packages:
   /@types/touch/3.1.2:
     resolution: {integrity: sha512-6YYYfTc90glAZBvyjpmz6JFLtBRyLWXckmlNgK4R2czsWg63cRCI9Rb3aKJ6LPbw8jpHf7nZdVvMd6gUg4hVsw==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: true
 
   /@types/tough-cookie/4.0.5:
@@ -5383,7 +5383,7 @@ packages:
   /@types/ws/7.2.0:
     resolution: {integrity: sha512-HnqczxiZ828df9FUh9OyY7vSOelpQNaj+SLEnDvU74rYijp61ggV7dhmDlMky0oYXKLdVuIG4KvExk8DEqzJgQ==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: true
 
   /@types/yargs-parser/21.0.3:
@@ -5400,7 +5400,7 @@ packages:
     resolution: {integrity: sha512-oJoftv0LSuaDZE3Le4DbKX+KS9G36NzOeSap90UIK0yMA/NhKJhqlSGtNDORNRaIbQfzjXDrQa0ytJ6mNRGz/Q==}
     requiresBuild: true
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     optional: true
 
   /@typescript-eslint/eslint-plugin/8.11.0_rim7n4kcr5hd64o3wd6nqnbvgi:
@@ -5581,7 +5581,7 @@ packages:
       std-env: 3.7.0
       test-exclude: 7.0.1
       tinyrainbow: 1.2.0
-      vitest: 2.1.0_@types+node@20.9.5
+      vitest: 2.1.0_@types+node@20.17.0
     transitivePeerDependencies:
       - supports-color
     dev: true
@@ -5636,7 +5636,7 @@ packages:
       '@vitest/spy': 2.1.0
       estree-walker: 3.0.3
       magic-string: 0.30.11
-      vite: 5.4.6_@types+node@20.9.5
+      vite: 5.4.6_@types+node@20.17.0
     dev: true
 
   /@vitest/mocker/2.1.1_msw@2.4.9:
@@ -6831,7 +6831,7 @@ packages:
     engines: {node: '>=12.13.0'}
     hasBin: true
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       escape-string-regexp: 4.0.0
       is-wsl: 2.2.0
       lighthouse-logger: 1.4.2
@@ -7488,7 +7488,7 @@ packages:
     requiresBuild: true
     dependencies:
       '@electron/get': 2.0.3
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       extract-zip: 2.0.1
     transitivePeerDependencies:
       - supports-color
@@ -9655,7 +9655,7 @@ packages:
     resolution: {integrity: sha512-7vuh85V5cdDofPyxn58nrPjBktZo0u9x1g8WtjQol+jZDaE+fhN+cIvTj11GndBnMnyfrUOG1sZQxCdjKh+DKg==}
     engines: {node: '>= 10.13.0'}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       merge-stream: 2.0.0
       supports-color: 8.1.1
     dev: true
@@ -13028,10 +13028,10 @@ packages:
 
   /undici-types/5.26.5:
     resolution: {integrity: sha512-JlCMO+ehdEIKqlFxk6IfVoAUVmgz7cU7zD/h9XZ0qzeosSHmUJVOzSQvvYSYWXkFXC+IfLKSIffhv0sVZup6pA==}
+    dev: false
 
   /undici-types/6.19.8:
     resolution: {integrity: sha512-ve2KP6f/JnbPBFyobGHuerC9g1FYGn/F8n1LWTwNxCEzd6IfqTwUQcNXgEtmmQ6DlRrC1hrSrBnCZPokRrDHjw==}
-    dev: true
 
   /unicode-trie/2.0.0:
     resolution: {integrity: sha512-x7bc76x0bm4prf1VLg79uhAzKw8DVboClSN5VxJuQ+LKDOVEW9CdH+VY7SP+vX7xCYQqzzgQpFqz15zeLvAtZQ==}
@@ -13252,7 +13252,7 @@ packages:
       - terser
     dev: true
 
-  /vite-node/2.1.0_@types+node@20.9.5:
+  /vite-node/2.1.0_@types+node@20.17.0:
     resolution: {integrity: sha512-+ybYqBVUjYyIscoLzMWodus2enQDZOpGhcU6HdOVD6n8WZdk12w1GFL3mbnxLs7hPtRtqs1Wo5YF6/Tsr6fmhg==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -13260,7 +13260,7 @@ packages:
       cac: 6.7.14
       debug: 4.3.6
       pathe: 1.1.2
-      vite: 5.4.6_@types+node@20.9.5
+      vite: 5.4.6_@types+node@20.17.0
     transitivePeerDependencies:
       - '@types/node'
       - less
@@ -13299,7 +13299,7 @@ packages:
       perfect-debounce: 1.0.0
       picocolors: 1.0.1
       sirv: 2.0.4
-      vite: 5.4.6_@types+node@20.9.5
+      vite: 5.4.6_@types+node@20.17.0
     transitivePeerDependencies:
       - rollup
       - supports-color
@@ -13355,7 +13355,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vite/5.4.6_@types+node@20.9.5:
+  /vite/5.4.6_@types+node@20.17.0:
     resolution: {integrity: sha512-IeL5f8OO5nylsgzd9tq4qD2QqI0k2CQLGrWD0rCN0EQJZpBK5vJAx0I+GDkMOXxQX/OfFHMuLIx6ddAxGX/k+Q==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -13386,7 +13386,7 @@ packages:
       terser:
         optional: true
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       esbuild: 0.21.5
       postcss: 8.4.47
       rollup: 4.22.4
@@ -13394,7 +13394,7 @@ packages:
       fsevents: 2.3.3
     dev: true
 
-  /vitest/2.1.0_@types+node@20.9.5:
+  /vitest/2.1.0_@types+node@20.17.0:
     resolution: {integrity: sha512-XuuEeyNkqbfr0FtAvd9vFbInSSNY1ykCQTYQ0sj9wPy4hx+1gR7gqVNdW0AX2wrrM1wWlN5fnJDjF9xG6mYRSQ==}
     engines: {node: ^18.0.0 || >=20.0.0}
     hasBin: true
@@ -13419,7 +13419,7 @@ packages:
       jsdom:
         optional: true
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
       '@vitest/expect': 2.1.0
       '@vitest/mocker': 2.1.0_vite@5.4.6
       '@vitest/pretty-format': 2.1.1
@@ -13436,8 +13436,8 @@ packages:
       tinyexec: 0.3.0
       tinypool: 1.0.1
       tinyrainbow: 1.2.0
-      vite: 5.4.6_@types+node@20.9.5
-      vite-node: 2.1.0_@types+node@20.9.5
+      vite: 5.4.6_@types+node@20.17.0
+      vite-node: 2.1.0_@types+node@20.17.0
       why-is-node-running: 2.3.0
     transitivePeerDependencies:
       - less
@@ -13809,7 +13809,7 @@ packages:
   /wkx/0.5.0:
     resolution: {integrity: sha512-Xng/d4Ichh8uN4l0FToV/258EjMGU9MGcA0HV2d9B/ZpZB3lqQm7nkOdZdm5GhKtLLhAE7PiVQwN4eN+2YJJUg==}
     dependencies:
-      '@types/node': 20.9.5
+      '@types/node': 20.17.0
     dev: false
 
   /wms-capabilities/0.4.0:
