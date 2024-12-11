@@ -37,7 +37,7 @@ export interface SelectAddEvent {
    */
   added: Id64Arg;
   /** A collection of geometric element, model and subcategory ids that have been added to selection set. */
-  additions: Partial<SelectableIds>;
+  additions: SelectableIds;
   /** The affected SelectionSet. */
   set: SelectionSet;
 }
@@ -55,7 +55,7 @@ export interface SelectRemoveEvent {
    */
   removed: Id64Arg;
   /** A collection of geometric element, model and subcategory ids that have been removed from selection set. */
-  removals: Partial<SelectableIds>;
+  removals: SelectableIds;
   /** The affected SelectionSet. */
   set: SelectionSet;
 }
@@ -72,14 +72,14 @@ export interface SelectReplaceEvent {
    */
   added: Id64Arg;
   /** A collection of geometric element, model and subcategory ids that have been added to selection set. */
-  additions: Partial<SelectableIds>;
+  additions: SelectableIds;
   /**
    * The element Ids removed from the set.
    * @deprecated in 5.0. Use the [[removals]] attribute instead.
    */
   removed: Id64Arg;
   /** A collection of geometric element, model and subcategory ids that have been removed from selection set. */
-  removals: Partial<SelectableIds>;
+  removals: SelectableIds;
   /** The affected SelectionSet. */
   set: SelectionSet;
 }
@@ -262,7 +262,7 @@ export class HiliteSet {
   }
 
   /** Adds a collection of geometric element, model and subcategory ids to this hilite set. */
-  public add(additions: Partial<SelectableIds>): void {
+  public add(additions: SelectableIds): void {
     this.#change(() => {
       additions.elements && this.elements.addIds(additions.elements);
       additions.models && this.models.addIds(additions.models);
@@ -271,7 +271,7 @@ export class HiliteSet {
   }
 
   /** Removes a collection of geometric element, model and subcategory ids from this hilite set. */
-  public remove(removals: Partial<SelectableIds>): void {
+  public remove(removals: SelectableIds): void {
     this.#change(() => {
       removals.elements && this.elements.deleteIds(removals.elements);
       removals.models && this.models.deleteIds(removals.models);
@@ -280,7 +280,7 @@ export class HiliteSet {
   }
 
   /** Replaces ids currently in the hilite set with the given collection. */
-  public replace(ids: Partial<SelectableIds>): void {
+  public replace(ids: SelectableIds): void {
     this.#change(() => {
       this.clear();
       this.add(ids);
@@ -323,7 +323,7 @@ export class HiliteSet {
  */
 export class SelectionSet {
   #selection: {
-    [P in keyof SelectableIds]: Id64Set;
+    [P in keyof SelectableIds]-?: Id64Set;
   };
 
   /** The IDs of the selected elements.
@@ -350,7 +350,7 @@ export class SelectionSet {
   /** Get the active selection as a collection of geometric element, model and subcategory ids.
    * @note Do not the sets in returned collection directly. Instead, use methods like [[SelectionSet.add]].
    */
-  public get active(): { [P in keyof SelectableIds]: Set<Id64String> } {
+  public get active(): { [P in keyof SelectableIds]-?: Set<Id64String> } {
     return { ...this.#selection };
   }
 
@@ -417,13 +417,13 @@ export class SelectionSet {
    * @param elem The set of Ids to add.
    * @returns true if any elements were added.
    */
-  public add(adds: Id64Arg | Partial<SelectableIds>): boolean {
+  public add(adds: Id64Arg | SelectableIds): boolean {
     return !!this.#add(adds);
   }
 
-  #add(adds: Id64Arg | Partial<SelectableIds>, sendEvent = true): Partial<SelectableIds> | undefined {
+  #add(adds: Id64Arg | SelectableIds, sendEvent = true): SelectableIds | undefined {
     const oldSize = this.size;
-    const additions: { [P in keyof SelectableIds]?: Id64Array } = {};
+    const additions: { [P in keyof SelectableIds]: Id64Array } = {};
     forEachSelectableType({
       ids: adds,
       elements: (elementIds) =>
@@ -465,13 +465,13 @@ export class SelectionSet {
    * @param elem The set of Ids to remove.
    * @returns true if any elements were removed.
    */
-  public remove(removes: Id64Arg | Partial<SelectableIds>): boolean {
+  public remove(removes: Id64Arg | SelectableIds): boolean {
     return !!this.#remove(removes);
   }
 
-  #remove(removes: Id64Arg | Partial<SelectableIds>, sendEvent = true): Partial<SelectableIds> | undefined {
+  #remove(removes: Id64Arg | SelectableIds, sendEvent = true): SelectableIds | undefined {
     const oldSize = this.size;
-    const removals: { [P in keyof SelectableIds]?: Id64Array } = {};
+    const removals: { [P in keyof SelectableIds]: Id64Array } = {};
     forEachSelectableType({
       ids: removes,
       elements: (elementIds) =>
@@ -512,7 +512,7 @@ export class SelectionSet {
    * Add one set of Ids, and remove another set of Ids. Any Ids that are in both sets are removed.
    * @returns True if any Ids were either added or removed.
    */
-  public addAndRemove(adds: Id64Arg | Partial<SelectableIds>, removes: Id64Arg | Partial<SelectableIds>): boolean {
+  public addAndRemove(adds: Id64Arg | SelectableIds, removes: Id64Arg | SelectableIds): boolean {
     const additions = this.#add(adds, false);
     const removals = this.#remove(removes, false);
     const addedElements = additions?.elements ?? [];
@@ -545,9 +545,9 @@ export class SelectionSet {
   }
 
   /** Invert the state of a set of Ids in the `SelectionSet` */
-  public invert(ids: Id64Arg | Partial<SelectableIds>): boolean {
-    const adds: { [P in keyof SelectableIds]?: Id64Set } = {};
-    const removes: { [P in keyof SelectableIds]?: Id64Set } = {};
+  public invert(ids: Id64Arg | SelectableIds): boolean {
+    const adds: { [P in keyof SelectableIds]: Id64Set } = {};
+    const removes: { [P in keyof SelectableIds]: Id64Set } = {};
     forEachSelectableType({
       ids,
       elements: (elementIds) => {
@@ -570,7 +570,7 @@ export class SelectionSet {
   }
 
   /** Change selection set to be the supplied set of Ids. */
-  public replace(ids: Id64Arg | Partial<SelectableIds>): boolean {
+  public replace(ids: Id64Arg | SelectableIds): boolean {
     if (areEqual(this.#selection, ids)) {
       return false;
     }
@@ -583,8 +583,8 @@ export class SelectionSet {
     };
     this.#add(ids, false);
 
-    const additions: { [P in keyof SelectableIds]?: Id64Set } = {};
-    const removals: { [P in keyof SelectableIds]?: Id64Set } = {};
+    const additions: { [P in keyof SelectableIds]: Id64Set } = {};
+    const removals: { [P in keyof SelectableIds]: Id64Set } = {};
     forEachSelectableType({
       ids: this.#selection,
       elements: (elementIds) => {
@@ -637,9 +637,9 @@ export class SelectionSet {
  * @public
  */
 export interface SelectableIds {
-  elements: Id64Arg;
-  models: Id64Arg;
-  subcategories: Id64Arg;
+  elements?: Id64Arg;
+  models?: Id64Arg;
+  subcategories?: Id64Arg;
 }
 
 function forEachSelectableType({
@@ -648,11 +648,11 @@ function forEachSelectableType({
   models,
   subcategories,
 }: {
-  ids: Id64Arg | Partial<SelectableIds>;
+  ids: Id64Arg | SelectableIds;
   elements: (ids: Id64Arg) => void;
   models: (ids: Id64Arg) => void;
   subcategories: (ids: Id64Arg) => void;
-}): Partial<SelectableIds> {
+}): SelectableIds {
   if (typeof ids === "string" || Array.isArray(ids) || ids instanceof Set) {
     elements(ids);
     return { elements: ids };
@@ -663,7 +663,7 @@ function forEachSelectableType({
   return ids;
 }
 
-function areEqual(lhs: { [P in keyof SelectableIds]: Id64Set }, rhs: Id64Arg | Partial<SelectableIds>): boolean {
+function areEqual(lhs: { [P in keyof SelectableIds]-?: Id64Set }, rhs: Id64Arg | SelectableIds): boolean {
   let result = true;
   forEachSelectableType({
     ids: rhs,
