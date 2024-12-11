@@ -666,6 +666,8 @@ beta;enum;RealityDataProvider
 beta;interface;RealityDataSourceKey
 beta;namespace;RealityDataSourceKey
 beta;interface;RealityDataSourceProps
+beta;interface;RealityMeshDisplayProps
+beta;class;RealityMeshDisplaySettings
 beta;interface;RealityModelDisplayProps
 beta;class;RealityModelDisplaySettings
 internal;const;REGISTRY
