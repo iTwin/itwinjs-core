@@ -52,7 +52,9 @@ const readmeOption = (argv.readme === undefined) ? "none" : argv.readme;
 const options = [
   "--hideGenerator",
   "--logLevel",
-  "Error"
+  "Error",
+  "--cascadedModifierTags", // workaround for https://github.com/TypeStrong/typedoc/issues/2802
+  "@experimental"
 ];
 
 const pluginOptions = [
