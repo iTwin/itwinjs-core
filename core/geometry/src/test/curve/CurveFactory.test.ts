@@ -356,7 +356,7 @@ describe("PipeConnections", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let dx = 0, dy = 0;
-    const numFacetAround = 7;
+    const numFacetAround = 8;
     const sectionSweeps: AngleSweep[] = [
       AngleSweep.create360(),
       AngleSweep.createStartEndDegrees(360, 0),
@@ -364,6 +364,7 @@ describe("PipeConnections", () => {
       AngleSweep.createStartEndDegrees(180, 90),
     ]
     const centerline = [
+      Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
       Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
       Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90)),
       BSplineCurve3dH.createUniformKnots([
@@ -376,12 +377,13 @@ describe("PipeConnections", () => {
         Point4d.create(1.5, 1, 1, 1),
       ], 3,
       )!,
-      [Point3d.create(-1, -1, 0), Point3d.create(-1, 1, 0), Point3d.create(1, 1, 0)],
+      [Point3d.create(-1, -1), Point3d.create(-1), Point3d.create(0, 1), Point3d.create(1, 1)],
     ];
     for (const sweep of sectionSweeps) {
       dx = 0;
       const sectionData = [
         Arc3d.create(undefined, Vector3d.create(0, 0, 0.3), Vector3d.create(0.5), sweep),
+        Arc3d.create(undefined, Vector3d.create(0, 0, 0.3), Vector3d.create(0.5, 0.5), sweep),
         Arc3d.create(undefined, Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
         0.2,
         0.1,
@@ -403,11 +405,14 @@ describe("PipeConnections", () => {
           } else {
             ck.testFalse(PolyfaceQuery.isPolyfaceClosedByEdgePairing(mesh), "cap is not expected (capped=false)");
           }
-          // ck.testExactNumber(
-          //   PolyfaceQuery.collectEdgesByDihedralAngle(mesh, Angle.createDegrees(92)).length,
-          //   2 * numFacetAround,
-          //   "number of cap edges is a double of numFacetAround",
-          // );
+          // if (capped && sweep.isFullCircle) {
+          //   const edges = PolyfaceQuery.collectEdgesByDihedralAngle(mesh, Angle.createDegrees(70), true);
+          //   ck.testExactNumber(
+          //     edges.length,
+          //     2 * numFacetAround,
+          //     "number of cap edges is a double of numFacetAround",
+          //   );
+          // }
         }
       }
       dy += 3;
@@ -661,6 +666,7 @@ describe("PipeConnections", () => {
     ]
     const centerline = [
       Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
+      Arc3d.createXY(Point3d.createZero(), 1.0, AngleSweep.createStartEndDegrees(0, 90)),
       Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, 90)),
       Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), AngleSweep.createStartEndDegrees(0, -90)),
       BSplineCurve3dH.createUniformKnots([
@@ -678,6 +684,7 @@ describe("PipeConnections", () => {
       dx = 0;
       const sectionData = [
         Arc3d.create(Point3d.create(1, 0, 0), Vector3d.create(0, 0, 1), Vector3d.create(0.5), sweep),
+        Arc3d.create(Point3d.create(1, 0, 0), Vector3d.create(0, 0, 1), Vector3d.create(0.5, 0.5), sweep),
         Arc3d.create(Point3d.create(0.5), Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
         Arc3d.create(Point3d.create(0.5), Vector3d.create(0, 0.2), Vector3d.create(0.1), sweep),
         Arc3d.create(Point3d.create(-1.5, -1, 0), Vector3d.create(0, 0.2), Vector3d.create(0, 0, 0.2), sweep),
