@@ -67,6 +67,8 @@ import { LockControl } from "./LockControl";
 import { IModelNative } from "./internal/NativePlatform";
 import type { BlobContainer } from "./BlobContainerService";
 import { createNoOpLockControl } from "./internal/NoLocks";
+import { IModelDbFonts } from "./IModelDbFonts";
+import { createIModelDbFonts } from "./internal/IModelDbFontsImpl";
 import { _close, _nativeDb, _releaseAllLocks } from "./internal/Symbols";
 
 // spell:ignore fontid fontmap
@@ -174,6 +176,7 @@ export abstract class IModelDb extends IModel {
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   protected _fontMap?: FontMap;
+  private readonly _fonts: IModelDbFonts = createIModelDbFonts(this);
   private _workspace?: OwnedWorkspace;
 
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
@@ -189,6 +192,11 @@ export abstract class IModelDb extends IModel {
 
   /** The [[LockControl]] that orchestrates [concurrent editing]($docs/learning/backend/ConcurrencyControl.md) of this iModel. */
   public get locks(): LockControl { return this._locks!; } // eslint-disable-line @typescript-eslint/no-non-null-assertion
+
+  /** ###TODO
+   * @beta
+   */
+  public get fonts(): IModelDbFonts { return this._fonts; }
 
   /**
    * Get the [[Workspace]] for this iModel.
