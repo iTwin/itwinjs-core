@@ -258,12 +258,19 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public get vector90(): Vector3d {
     return this._matrix.columnY();
   }
-  /** Get the binormal vector of this arc. */
+  /**
+   * Compute an arc binormal vector with arbitrary length.
+   * * The arc parameterization is counter-clockwise with respect to this vector.
+   * * This vector is parallel to [[perpendicularVector]] and possibly opposite.
+   */
   public binormalVector(result?: Vector3d): Vector3d {
     const plane = this.fractionToPointAnd2Derivatives(0.0);
     return plane.vectorU.crossProduct(plane.vectorV, result);
   }
-  /** Read property for (clone of) plane normal, with arbitrary length. */
+  /**
+   * Read property for (clone of) plane normal, with arbitrary length.
+   * * Does not take arc sweep direction into account. See also [[binormalVector]].
+   */
   public get perpendicularVector(): Vector3d {
     return this._matrix.columnZ();
   }

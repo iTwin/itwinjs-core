@@ -85,7 +85,7 @@ export interface MiteredSweepOptions {
   wrapIfPhysicallyClosed?: boolean;
   /** Whether to output sections only, or sections plus optional geometry constructed from them. Default value is `MiteredSweepOutputSelect.Sections`. */
   outputSelect?: MiteredSweepOutputSelect;
-  /** How to stroke smooth input curves and the ruled sweep (if outputting a mesh). If undefined, default stroke options are used. */
+  /** How to stroke smooth input curves. If undefined, default stroke options are used. */
   strokeOptions?: StrokeOptions;
   /** Whether to cap the ruled sweep if outputting a ruled sweep or mesh. Default value is `false`. */
   capped?: boolean;
@@ -364,43 +364,42 @@ export class CurveFactory {
     }
     return undefined;
   }
-  /** Get start point and start tangent of a curve. */
-  public static startPointAndTangent(
-    curve: IndexedXYZCollection | Point3d[] | CurvePrimitive,
-  ): { startPoint: Point3d, startTangent: Vector3d } | undefined {
-    if (curve instanceof CurvePrimitive) {
-      return { startPoint: curve.startPoint(), startTangent: curve.fractionToPointAndUnitTangent(0).direction };
-    } else {
-      if (curve.length < 2)
-        return undefined;
-      if (Array.isArray(curve))
-        curve = new Point3dArrayCarrier(curve);
-      return { startPoint: curve.getPoint3dAtUncheckedPointIndex(0), startTangent: curve.vectorIndexIndex(0, 1)! };
-    }
+  /** Get start point and tangent for variant curve data. */
+  private static startPointAndTangent(curve: IndexedXYZCollection | Point3d[] | CurvePrimitive): Ray3d | undefined {
+    if (curve instanceof CurvePrimitive)
+      return curve.fractionToPointAndDerivative(0.0);
+    if (curve.length < 2)
+      return undefined;
+    if (Array.isArray(curve))
+      curve = new Point3dArrayCarrier(curve);
+    const ray = Ray3d.createZero();
+    curve.getPoint3dAtUncheckedPointIndex(0, ray.origin);
+    curve.vectorIndexIndex(0, 1, ray.direction);
+    return ray;
   };
-  /** Create an [[Arc3d]] from `sectionData` that has its center at start point of the centerline. */
+  /** Create an [[Arc3d]] from `sectionData` that has its center at the start point of the centerline. */
   public static createArcFromSectionData(
     centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive, sectionData: number | XAndY | Arc3d,
   ): Arc3d | undefined {
-    const ret = CurveFactory.startPointAndTangent(centerline);
-    if (!ret)
+    const ray = CurveFactory.startPointAndTangent(centerline);
+    if (!ray)
       return undefined;
-    const { startPoint, startTangent } = ret;
     let arc: Arc3d;
-    if (sectionData instanceof Arc3d)
-      arc = Arc3d.create(startPoint, sectionData.vector0, sectionData.vector90, sectionData.sweep);
-    else if (typeof sectionData === "number" || Point3d.isXAndY(sectionData)) {
+    if (sectionData instanceof Arc3d) {
+      arc = sectionData.clone();
+      arc.center = ray.origin;
+    } else {
       const vector0 = Vector3d.create();
       const vector90 = Vector3d.create();
       const length0 = (typeof sectionData === "number") ? sectionData : sectionData.x;
       const length90 = (typeof sectionData === "number") ? sectionData : sectionData.y;
-      const baseFrame = Matrix3d.createRigidHeadsUp(startTangent, AxisOrder.ZXY);
+      const baseFrame = Matrix3d.createRigidHeadsUp(ray.direction, AxisOrder.ZXY);
       baseFrame.columnX(vector0).scaleInPlace(length0);
       baseFrame.columnY(vector90).scaleInPlace(length90);
-      arc = Arc3d.create(startPoint, vector0, vector90);
-    } else {
-      return undefined;
+      arc = Arc3d.create(ray.origin, vector0, vector90);
     }
+    if (arc.binormalVector().dotProduct(ray.direction) < 0.0)
+      arc.reverseInPlace();
     return arc;
   }
   /**
@@ -415,18 +414,19 @@ export class CurveFactory {
    * lengths, or an Arc3d:
    *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
    * start tangent.
-   *    * For Arc3d input, the center is translated to the centerline start point.
-   * * This function internally calls `createMiteredSweepSections`.
+   *    * For Arc3d input, the center is translated to the centerline start point. For best results, ensure this arc
+   * is perpendicular to the centerline start tangent.
+   * * This function internally calls [[createMiteredSweepSections]] with default options.
    * @param centerline centerline of pipe. For best results, ensure no successive duplicate points with e.g.,
    * [[GrowableXYZArray.createCompressed]].
    * @param sectionData circle radius, ellipse semi-axis lengths, or full Arc3d (if not full, function makes it full).
-   * @returns array of sections or empty array if section creating fails.
+   * @returns array of sections or empty array if section creation failed.
    */
   public static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[] {
     const arc = CurveFactory.createArcFromSectionData(centerline, sectionData);
     if (!arc)
       return [];
-    const miteredSweeps = CurveFactory.createMiteredSweepSections(centerline, arc, undefined);
+    const miteredSweeps = CurveFactory.createMiteredSweepSections(centerline, arc);
     if (miteredSweeps)
       return miteredSweeps.sections as Arc3d[];
     return [];
@@ -551,7 +551,7 @@ export class CurveFactory {
   public static createMiteredSweepSections(
     centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive | CurveChain,
     initialSection: AnyCurve,
-    options: MiteredSweepOptions | undefined,
+    options?: MiteredSweepOptions,
   ): SectionSequenceWithPlanes | undefined {
     if (!options)
       options = {};

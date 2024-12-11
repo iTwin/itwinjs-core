@@ -60,8 +60,6 @@ import { IndexedPolyfaceSubsetVisitor } from "./IndexedPolyfaceVisitor";
 import { IndexedPolyface, PolyfaceVisitor } from "./Polyface";
 import { PolyfaceQuery } from "./PolyfaceQuery";
 
-// cspell:words binormal
-
 /**
  * A FacetSector.
  * * Initially holds coordinate data for a place where xyz and sectionDerivative are known.
@@ -2011,9 +2009,10 @@ export class PolyfaceBuilder extends NullGeometryHandler {
    * lengths, or an Arc3d:
    *    * For semi-axis length input, x and y correspond to ellipse local axes perpendicular to each other and to the
    * start tangent.
-   *    * For Arc3d input, the center is translated to the centerline start point and also made perpendicular to the
-   * centerline start tangent.
-   * * This function internally calls [[CurveFactory.createMiteredSweepSections]].
+   *    * For Arc3d input, the center is translated to the centerline start point. For best results, ensure this arc
+   * is perpendicular to the centerline start tangent.
+   * * This function internally calls [[CurveFactory.createMiteredSweepSections]], passing in the `startTangent`
+   * option to preserve the rotation of Arc3d-type `sectionData`.
    * @param centerline centerline of pipe. If curved, it will be stroked using the builder's StrokeOptions, otherwise
    * for best results, ensure no successive duplicate points with e.g., [[GrowableXYZArray.createCompressed]].
    * @param sectionData circle radius, ellipse semi-axis lengths, or Arc3d.
@@ -2031,29 +2030,13 @@ export class PolyfaceBuilder extends NullGeometryHandler {
       return;
     if (numFacetAround < 3)
       numFacetAround = 3;
-    const lineString = LineString3d.create();
-    if (arc.sweep.isFullCircle) {
-      const df = 1.0 / numFacetAround;
-      for (let i = 0; i < numFacetAround; i++)
-        lineString.addPoint(arc.fractionToPoint(i * df));
-      lineString.addPoint(arc.fractionToPoint(0));
-    } else {
-      const df = 1.0 / (numFacetAround + 1);
-      for (let i = 0; i < numFacetAround + 1; i++)
-        lineString.addPoint(arc.fractionToPoint(i * df));
-    }
+    const section = LineString3d.create();
+    section.appendFractionalStrokePoints(arc, numFacetAround, 0.0, 1.0, true);
     const strokeOptions = this._options.clone();
-    const binormal = arc.binormalVector();
-    const ret = CurveFactory.startPointAndTangent(centerline);
-    if (!ret)
-      return;
-    if (binormal.dotProduct(ret.startTangent) < 0.0)
-      binormal.scaleInPlace(-1.0);
-    const sections = CurveFactory.createMiteredSweepSections(
-      centerline,
-      lineString,
-      { strokeOptions, capped, outputSelect: MiteredSweepOutputSelect.AlsoMesh, startTangent: binormal },
-    );
+    const outputSelect = MiteredSweepOutputSelect.AlsoMesh;
+    const startTangent = sectionData instanceof Arc3d ? arc.binormalVector() : undefined; // preserve arc orientation
+    const options = {strokeOptions, capped, outputSelect, startTangent};
+    const sections = CurveFactory.createMiteredSweepSections(centerline, section, options);
     if (sections && sections.mesh)
       this.addIndexedPolyface(sections.mesh);
   }
