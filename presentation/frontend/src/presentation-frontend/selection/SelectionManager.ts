@@ -439,7 +439,7 @@ export class ToolSelectionSyncHandler implements IDisposable {
     // wip: may want to allow selecting at different levels?
     const selectionLevel = 0;
 
-    let ids: Partial<SelectableIds>;
+    let ids: SelectableIds;
     switch (ev.type) {
       case SelectionSetEventType.Add:
         ids = ev.additions;
@@ -539,19 +539,19 @@ class ScopedSelectionChanger {
   public async clear(level: number): Promise<void> {
     this.manager.clearSelection(this.name, this.imodel, level);
   }
-  public async add(ids: Partial<SelectableIds>, level: number): Promise<void> {
+  public async add(ids: SelectableIds, level: number): Promise<void> {
     const keys = await this.#computeSelection(ids);
     this.manager.addToSelection(this.name, this.imodel, keys, level);
   }
-  public async remove(ids: Partial<SelectableIds>, level: number): Promise<void> {
+  public async remove(ids: SelectableIds, level: number): Promise<void> {
     const keys = await this.#computeSelection(ids);
     this.manager.removeFromSelection(this.name, this.imodel, keys, level);
   }
-  public async replace(ids: Partial<SelectableIds>, level: number): Promise<void> {
+  public async replace(ids: SelectableIds, level: number): Promise<void> {
     const keys = await this.#computeSelection(ids);
     this.manager.replaceSelection(this.name, this.imodel, keys, level);
   }
-  async #computeSelection(ids: Partial<SelectableIds>) {
+  async #computeSelection(ids: SelectableIds) {
     let keys = new KeySet();
     if (ids.elements) {
       const { persistent, transient } = parseElementIds(ids.elements);
