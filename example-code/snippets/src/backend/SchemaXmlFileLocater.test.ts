@@ -146,7 +146,7 @@ describe("SchemaXmlFileLocater - Check fallback locater precedence in schema con
     context = new SchemaContext();
   });
 
-  function createLocaterWithPath(context: SchemaContext, searchPath: string, isFallbackLocater: boolean) {
+  function createLocaterWithPath(searchPath: string, isFallbackLocater: boolean) {
     if (isFallbackLocater) {
       context.addFallbackLocater(new PublishedSchemaXmlFileLocater(searchPath));
     } else {
@@ -174,17 +174,17 @@ describe("SchemaXmlFileLocater - Check fallback locater precedence in schema con
   it("check locater precedence with a fallback locater added midway", () => {
 
     // Add 2 xml file locaters
-    createLocaterWithPath(context, "FirstLocaterPath", false);
-    createLocaterWithPath(context, "SecondLocaterPath", false);
+    createLocaterWithPath("FirstLocaterPath", false);
+    createLocaterWithPath("SecondLocaterPath", false);
 
     // Locater at index 0 is the currently undefined SchemaCache
     assertLocaterPaths([[], ["FirstLocaterPath"], ["SecondLocaterPath"]], context.locaters, 2, false);
 
     // Add a fallback locater for the standard schemas
-    createLocaterWithPath(context, KnownLocations.nativeAssetsDir, true);
+    createLocaterWithPath(KnownLocations.nativeAssetsDir, true);
     assertLocaterPaths([[], ["FirstLocaterPath"], ["SecondLocaterPath"], ecSchemas], context.locaters, 2, true);
 
-    createLocaterWithPath(context, "ThirdLocaterPath", false);
+    createLocaterWithPath("ThirdLocaterPath", false);
     assertLocaterPaths([[], ["FirstLocaterPath"], ["SecondLocaterPath"], ["ThirdLocaterPath"], ecSchemas], context.locaters, 3, true);
 
   });
@@ -192,15 +192,15 @@ describe("SchemaXmlFileLocater - Check fallback locater precedence in schema con
   it("check locater precedence with a fallback locater added at first", () => {
 
     // Add a fallback locater for the standard schemas
-    createLocaterWithPath(context, KnownLocations.nativeAssetsDir, true);
+    createLocaterWithPath(KnownLocations.nativeAssetsDir, true);
     assertLocaterPaths([[], ecSchemas], context.locaters, 0, true);
 
     // Add a locater
-    createLocaterWithPath(context, "FirstLocaterPath", false);
+    createLocaterWithPath("FirstLocaterPath", false);
     assertLocaterPaths([[], ["FirstLocaterPath"], ecSchemas], context.locaters, 1, true);
 
     // Add another locater
-    createLocaterWithPath(context, "SecondLocaterPath", false);
+    createLocaterWithPath("SecondLocaterPath", false);
     assertLocaterPaths([[], ["FirstLocaterPath"], ["SecondLocaterPath"], ecSchemas], context.locaters, 2, true);
   });
 
@@ -208,19 +208,19 @@ describe("SchemaXmlFileLocater - Check fallback locater precedence in schema con
   it("check locater precedence while trying to add multiple fallback locaters", () => {
 
     // Add 2 xml file locaters
-    createLocaterWithPath(context, "FirstLocaterPath", false);
-    createLocaterWithPath(context, "SecondLocaterPath", false);
+    createLocaterWithPath("FirstLocaterPath", false);
+    createLocaterWithPath("SecondLocaterPath", false);
 
     // Locater at index 0 is the currently undefined SchemaCache
     assertLocaterPaths([[], ["FirstLocaterPath"], ["SecondLocaterPath"]], context.locaters, 2, false);
 
     // Add a fallback locater for the standard schemas
-    createLocaterWithPath(context, KnownLocations.nativeAssetsDir, true);
+    createLocaterWithPath(KnownLocations.nativeAssetsDir, true);
     assertLocaterPaths([[], ["FirstLocaterPath"], ["SecondLocaterPath"], ecSchemas], context.locaters, 2, true);
 
     // Try to add another fallback locater for the standard schemas
     // This locater should be ignored as there is already a fallback locater for the standard schemas
-    createLocaterWithPath(context, KnownLocations.nativeAssetsDir, true);
+    createLocaterWithPath(KnownLocations.nativeAssetsDir, true);
     assertLocaterPaths([[], ["FirstLocaterPath"], ["SecondLocaterPath"], ecSchemas], context.locaters, 2, true);
   });
 });
