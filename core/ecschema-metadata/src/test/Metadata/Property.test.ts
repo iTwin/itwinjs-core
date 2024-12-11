@@ -1411,24 +1411,25 @@ describe("NavigationProperty (Deserialization not fully implemented)", () => {
 });
 
 describe("should get property from baseProperty", () => {
+
   function createSchemaJson(schemaItemJson: any): any {
     return createSchemaJsonWithItems({
 
       // KOQ properties
-      ELEVATION: {
+      MyKindOfQuantity: {
         schemaItemType: "KindOfQuantity",
-        name: "TestKindOfQuantity",
+        name: "myKindOfQuantity",
         relativeError: 1.0,
         persistenceUnit: "Formats.IN",
       },
-      LENGTH: {
+      OverrideKindOfQuantity: {
         schemaItemType: "KindOfQuantity",
-        name: "Length",
+        name: "OverrideKindOfQuantity",
         relativeError: 0.01,
         persistenceUnit: "Formats.M",
       },
 
-      // category properties with priority
+      // category properties
       TestCategory: {
         schemaItemType: "PropertyCategory",
         type: "string",
@@ -1442,7 +1443,7 @@ describe("should get property from baseProperty", () => {
             type: "PrimitiveProperty",
             name: "TestProp2",
             typeName: "string",
-            kindOfQuantity: "TestSchema.LENGTH",
+            kindOfQuantity: "TestSchema.MyKindOfQuantity",
             category: "TestSchema.TestCategory",
             priority: 101,
           },
@@ -1456,9 +1457,15 @@ describe("should get property from baseProperty", () => {
             type: "PrimitiveProperty",
             name: "TestProp",
             typeName: "string",
-            kindOfQuantity: "TestSchema.ELEVATION",
+            kindOfQuantity: "TestSchema.MyKindOfQuantity",
             category: "TestSchema.TestCategory",
             priority: 100,
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp4",
+            typeName: "string",
+            kindOfQuantity: "TestSchema.MyKindOfQuantity",
           }
         ],
       },
@@ -1480,6 +1487,12 @@ describe("should get property from baseProperty", () => {
             type: "PrimitiveProperty",
             name: "TestProp3",
             typeName: "string",
+          },
+          {
+            type: "PrimitiveProperty",
+            name: "TestProp4",
+            typeName: "string",
+            kindOfQuantity: "TestSchema.OverrideKindOfQuantity",
           }
         ],
       },
@@ -1500,16 +1513,20 @@ describe("should get property from baseProperty", () => {
   context.addLocater(new TestSchemaLocater());
   const schema: Schema = Schema.fromJsonSync(createSchemaJson(""), context);
 
-  it("should get from base property", async () => {
-    const testClass = schema.getItemSync("TestClass") as EntityClass;
+  let testClass: EntityClass;
+  beforeEach(() => {
+    testClass = schema.getItemSync("TestClass") as EntityClass;
     expect(testClass).to.exist;
+  });
+
+  it("should get from base property", async () => {
     const testProp = testClass.getPropertySync("TestProp", false);
     expect(testProp).to.exist;
 
     // with getter
     const koq = testProp!.kindOfQuantity;
     expect(koq).to.exist;
-    expect(koq!.name).to.equal("ELEVATION");
+    expect(koq!.name).to.equal("MyKindOfQuantity");
 
     const cat = testProp!.category;
     expect(cat).to.exist;
@@ -1522,7 +1539,7 @@ describe("should get property from baseProperty", () => {
     // with get sync methods
     const koqfromSync = testProp!.getKindOfQuantitySync();
     expect(koqfromSync).to.exist;
-    expect(koqfromSync!.name).to.equal("ELEVATION");
+    expect(koqfromSync!.name).to.equal("MyKindOfQuantity");
 
     const catfromSync = testProp!.getCategorySync();
     expect(catfromSync).to.exist;
@@ -1530,15 +1547,13 @@ describe("should get property from baseProperty", () => {
   });
 
   it("should get from base property's base property", async () => {
-    const testClass = schema.getItemSync("TestClass") as EntityClass;
-    expect(testClass).to.exist;
     const testProp = testClass.getPropertySync("TestProp2", false);
     expect(testProp).to.exist;
 
     // with getter
     const koq = testProp!.kindOfQuantity;
     expect(koq).to.exist;
-    expect(koq!.name).to.equal("LENGTH");
+    expect(koq!.name).to.equal("MyKindOfQuantity");
     const cat = testProp!.category;
     expect(cat).to.exist;
     expect(cat!.name).to.equal("TestCategory");
@@ -1549,15 +1564,14 @@ describe("should get property from baseProperty", () => {
     // with get sync methods
     const koqfromSync = testProp!.getKindOfQuantitySync();
     expect(koqfromSync).to.exist;
-    expect(koqfromSync!.name).to.equal("LENGTH");
+    expect(koqfromSync!.name).to.equal("MyKindOfQuantity");
+
     const catfromSync = testProp!.getCategorySync();
     expect(catfromSync).to.exist;
     expect(catfromSync!.name).to.equal("TestCategory");
   });
 
   it("should return undefined if property & base property all undefined", async () => {
-    const testClass = schema.getItemSync("TestClass") as EntityClass;
-    expect(testClass).to.exist;
     const testProp = testClass.getPropertySync("TestProp3", false);
     expect(testProp).to.exist;
 
@@ -1574,9 +1588,22 @@ describe("should get property from baseProperty", () => {
     expect(catfromSync).to.be.undefined;
   });
 
+  it("should success with property override", async () => {
+    const testProp = testClass.getPropertySync("TestProp4", false);
+    expect(testProp).to.exist;
+
+    // with getter
+    const koq = testProp!.kindOfQuantity;
+    expect(koq).to.exist;
+    expect(koq!.name).to.equal("OverrideKindOfQuantity");
+
+    // with get sync methods
+    const koqfromSync = testProp!.getKindOfQuantitySync();
+    expect(koqfromSync).to.exist;
+    expect(koqfromSync!.name).to.equal("OverrideKindOfQuantity");
+  });
+
   it("should not serialize with property override", async() => {
-    const testClass = schema.getItemSync("TestClass") as EntityClass;
-    expect(testClass).to.exist;
     const testProp = testClass.getPropertySync("TestProp", false);
     expect(testProp).to.exist;
 
