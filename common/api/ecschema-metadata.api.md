@@ -1732,9 +1732,7 @@ export class SchemaCache implements ISchemaLocater {
 // @beta
 export class SchemaContext implements ISchemaItemLocater {
     constructor();
-    // (undocumented)
     addFallbackLocater(locater: ISchemaLocater): void;
-    // (undocumented)
     addLocater(locater: ISchemaLocater): void;
     addSchema(schema: Schema): Promise<void>;
     // @deprecated

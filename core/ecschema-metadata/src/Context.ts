@@ -262,23 +262,34 @@ export class SchemaContext implements ISchemaItemLocater {
 
   public get locaters(): ISchemaLocater[] { return this._locaters; }
 
+  /**
+   * Adds a locater to the context.
+   *
+   * If no locaters are defined or a fallback locater is not defined, the new locater is added at the end of the locaters array.
+   * If a fallback locater is already defined, the new locater is inserted before the fallback locater.
+   *
+   * @param locater - The locater to be added.
+   */
   public addLocater(locater: ISchemaLocater) {
-    if (this._locaters.length === 0 || !this._fallbackLocaterDefined)
-      this._locaters.push(locater);
-    else
-      this._locaters.splice(this._locaters.length - 1, 0, locater);
+    const insertIndex = (this._locaters.length === 0 || !this._fallbackLocaterDefined) ? this._locaters.length : this._locaters.length - 1;
+    this._locaters.splice(insertIndex, 0, locater);
   }
 
+  /**
+   * Adds a fallback locater to the context.
+   *
+   * If a fallback locater is already defined, it replaces the existing one.
+   * Otherwise, it adds the new locater to the end of the locaters array and marks the fallback locater as defined.
+   *
+   * @param locater - The locater to be added as a fallback.
+   */
   public addFallbackLocater(locater: ISchemaLocater) {
-    // Check if a fallback locater has already been added
-    const fallbackLocaterIndex = this._locaters.indexOf(locater);
-
-    // Replace the existing fallback locater with a new one
-    if (fallbackLocaterIndex !== -1)
-      this._locaters.splice(fallbackLocaterIndex, 1, locater);
-    else
+    if (this._fallbackLocaterDefined) {
+      this._locaters[this._locaters.length - 1] = locater;
+    } else {
       this._locaters.push(locater);
-    this._fallbackLocaterDefined = true;
+      this._fallbackLocaterDefined = true;
+    }
   }
 
   /**
