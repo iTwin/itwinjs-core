@@ -7612,8 +7612,6 @@ export interface MeshArgs {
 // @internal (undocumented)
 export interface MeshoptDecoder {
     // (undocumented)
-    decodeGltfBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array, mode: string, filter?: string) => void;
-    // (undocumented)
     decodeIndexBuffer: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
     // (undocumented)
     decodeIndexSequence: (target: Uint8Array, count: number, size: number, source: Uint8Array) => void;
