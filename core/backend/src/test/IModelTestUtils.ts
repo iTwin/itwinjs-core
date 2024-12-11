@@ -298,6 +298,15 @@ export class IModelTestUtils {
     return assetFile;
   }
 
+  public static resolveFontFile(fontName: string): LocalFileName {
+    const subDirs = ["Karla", "DejaVu", "Sitka"];
+    const fontSubDirectory = subDirs.find((x) => fontName.startsWith(x));
+
+    fontName = fontSubDirectory ? path.join(fontSubDirectory, fontName) : fontName;
+    const assetName = path.join("Fonts", fontName);
+    return this.resolveAssetFile(assetName);
+  }
+
   /** Orchestrates the steps necessary to create a new snapshot iModel from a seed file. */
   public static createSnapshotFromSeed(testFileName: string, seedFileName: LocalFileName): SnapshotDb {
     const seedDb: SnapshotDb = SnapshotDb.openFile(seedFileName);
