@@ -245,20 +245,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@itwin/core-webpack-tools",
-      "projectFolder": "tools/webpack-core",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@itwin/backend-webpack-tools",
-      "projectFolder": "tools/backend-webpack",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@itwin/core-markup",
       "projectFolder": "core/markup",
       "reviewCategory": "frontend",

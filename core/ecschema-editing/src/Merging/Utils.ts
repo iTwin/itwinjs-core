@@ -3,8 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ECClasses } from "../Editing/ECClasses";
+import { PropertyKey } from "./Edits/NameMapping";
 import type { SchemaMergeContext } from "./SchemaMerger";
 import { ECClass, ECObjectsError, ECObjectsStatus, SchemaContext, SchemaItem, SchemaItemKey, SchemaItemType } from "@itwin/ecschema-metadata";
+
+/**
+ * Resolves a SchemaItemKey for the given item name.
+ * @internal
+ */
+export function toItemKey(context: SchemaMergeContext, itemName: string): SchemaItemKey {
+  const classKey = context.nameMapping.resolveItemKey(new SchemaItemKey(itemName, context.sourceSchemaKey));
+  return new SchemaItemKey(classKey.name, context.targetSchemaKey);
+}
+
+/**
+ * Resolves a SchemaItemKey for the given class property name.
+ * @internal
+ */
+export function toPropertyKey(context: SchemaMergeContext, itemName: string, propertyName: string): PropertyKey {
+  const classKey = new SchemaItemKey(itemName, context.sourceSchemaKey);
+  return context.nameMapping.resolvePropertyKey(new PropertyKey(propertyName, classKey));
+}
 
 /**
  * Convenience-method around updateSchemaItemKey that returns the full name instead of a SchemaItemKey.
@@ -23,7 +42,8 @@ export async function updateSchemaItemFullName(context: SchemaMergeContext, refe
 export async function updateSchemaItemKey(context: SchemaMergeContext, reference: string) {
   const [schemaName, itemName] = SchemaItem.parseFullName(reference);
   if (context.sourceSchemaKey.compareByName(schemaName)) {
-    return resolveSchemaItemKey(context.editor.schemaContext, new SchemaItemKey(itemName, context.targetSchemaKey));
+    const schemaItemKey = toItemKey(context, itemName);
+    return resolveSchemaItemKey(context.editor.schemaContext, schemaItemKey);
   }
 
   const referencedSchema = await context.targetSchema.getReference(schemaName);
@@ -52,7 +72,7 @@ async function resolveSchemaItemKey(schemaContext: SchemaContext, itemKey: Schem
  * @internal
  */
 export async function locateSchemaItem(context: SchemaMergeContext, itemName: string, schemaType: string) {
-  const schemaItemKey = new SchemaItemKey(itemName, context.targetSchemaKey);
+  const schemaItemKey = toItemKey(context, itemName);
   const schemaItem = await context.editor.schemaContext.getSchemaItem(schemaItemKey);
   if (schemaItem === undefined) {
     throw new ECObjectsError(ECObjectsStatus.ClassNotFound, `${schemaType} ${schemaItemKey.fullName} not found in schema context.`);
