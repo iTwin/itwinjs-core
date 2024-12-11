@@ -229,6 +229,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     announceClipIntervals(clipper: Clipper, announce?: AnnounceNumberNumberCurvePrimitive): boolean;
     appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number;
     areaToChordXY(fraction0: number, fraction1: number): number;
+    binormalVector(result?: Vector3d): Vector3d;
     get center(): Point3d;
     set center(center: XYAndZ);
     get centerRef(): Point3d;
@@ -1636,10 +1637,14 @@ export class CurveFactory {
     static createLineSpiralSpiralLine(spiralType: IntegratedSpiralTypeName, startPoint: Point3d, shoulderPoint: Point3d, targetPoint: Point3d): GeometryQuery[] | undefined;
     static createLineSpiralSpiralLineWithSpiralLength(spiralType: IntegratedSpiralTypeName, pointA: Point3d, pointB: Point3d, pointC: Point3d, spiralLength: number): GeometryQuery[] | undefined;
     static createMiteredPipeSections(centerline: IndexedXYZCollection, sectionData: number | XAndY | Arc3d): Arc3d[];
-    static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive | CurveChain, initialSection: AnyCurve, options: MiteredSweepOptions): SectionSequenceWithPlanes | undefined;
+    static createMiteredSweepSections(centerline: IndexedXYZCollection | Point3d[] | CurvePrimitive | CurveChain, initialSection: AnyCurve, options: MiteredSweepOptions | undefined): SectionSequenceWithPlanes | undefined;
     static createPipeSegments(centerline: CurvePrimitive | CurveChain, pipeRadius: number): GeometryQuery | GeometryQuery[] | undefined;
     static createRectangleXY(x0: number, y0: number, x1: number, y1: number, z?: number, filletRadius?: number): Loop;
     static planePlaneIntersectionRay(planeA: PlaneAltitudeEvaluator, planeB: PlaneAltitudeEvaluator): Ray3d | undefined;
+    static startPointAndTangent(curve: IndexedXYZCollection | Point3d[] | CurvePrimitive): {
+        startPoint: Point3d;
+        startTangent: Vector3d;
+    } | undefined;
 }
 
 // @public
