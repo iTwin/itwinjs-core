@@ -9,7 +9,7 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IModelJsNative, IModelNative, IpcHost } from "@itwin/core-backend";
-import { DbResult, Id64String } from "@itwin/core-bentley";
+import { DbResult, Id64, Id64String } from "@itwin/core-bentley";
 import { SchemaContext } from "@itwin/ecschema-metadata";
 import {
   ArrayTypeDescription,
@@ -2560,25 +2560,25 @@ describe("PresentationManager", () => {
         expect(result).to.deep.eq(expectedResponse);
       });
 
-      function setupIModelForElementIds(imodel: moq.IMock<IModelDb>, ids: string[]) {
+      function setupIModelForBatchedElementIdsQuery(imodel: moq.IMock<IModelDb>, ids: Id64String[]) {
         imodel.setup((x) => x.withPreparedStatement(moq.It.isAnyString(), moq.It.isAny())).returns(() => ids.length);
         imodel
-          .setup((x) => x.createQueryReader(moq.It.is((query) => query.startsWith("SELECT ECInstanceId"))))
+          .setup((x) => x.createQueryReader(moq.It.is((query) => query.startsWith("SELECT IdToHex(ECInstanceId)"))))
           .returns(() => stubECSqlReader(ids.map((id) => ({ id }))));
       }
 
-      it("returns multiple elements properties", async () => {
+      it("returns multiple elements properties by class name", async () => {
         // what the addon receives
         imodelMock
           .setup((x) => x.createQueryReader(moq.It.is((query) => query.includes(`FROM [TestSchema].[TestClass]`))))
-          .returns(() => stubECSqlReader([["TestSchema", "TestClass"]]));
-        setupIModelForElementIds(imodelMock, ["0x123", "0x124"]);
+          .returns(() => stubECSqlReader([{ className: "TestSchema.TestClass" }]));
+        setupIModelForBatchedElementIdsQuery(imodelMock, ["0x123", "0x124"]);
 
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContentSet,
           params: {
             rulesetId: manager.getRulesetId({
-              id: `content/TestSchema.TestClass`,
+              id: `content/class-descriptor/TestSchema.TestClass`,
               rules: [
                 {
                   ruleType: "Content",
@@ -2601,7 +2601,7 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
               instanceFilter: {
                 selectClassName: `TestSchema.TestClass`,
-                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${Number.parseInt("0x124", 16).toString(10)}`,
+                expression: `this.ECInstanceId >= 0x123 AND this.ECInstanceId <= 0x124`,
               },
             },
             keys: new KeySet(),
@@ -2697,18 +2697,17 @@ describe("PresentationManager", () => {
         }
       });
 
-      it("returns localized multiple elements properties", async () => {
-        // what the addon receives
+      it("returns multiple elements properties by element id", async () => {
+        const elementIds = [Id64.fromLocalAndBriefcaseIds(123, 1), Id64.fromLocalAndBriefcaseIds(124, 1), Id64.fromLocalAndBriefcaseIds(333, 1)];
         imodelMock
-          .setup((x) => x.createQueryReader(moq.It.is((query) => query.includes(`FROM [TestSchema].[TestClass]`))))
-          .returns(() => stubECSqlReader([["TestSchema", "TestClass"]]));
-        setupIModelForElementIds(imodelMock, ["0x123", "0x124"]);
+          .setup((x) => x.createQueryReader(moq.It.is((query) => query.includes(`FROM bis.Element`))))
+          .returns(() => stubECSqlReader([{ className: "TestSchema.TestClass", ids: elementIds.join(",") }]));
 
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContentSet,
           params: {
             rulesetId: manager.getRulesetId({
-              id: `content/TestSchema.TestClass`,
+              id: `content/class-descriptor/TestSchema.TestClass`,
               rules: [
                 {
                   ruleType: "Content",
@@ -2731,7 +2730,164 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
               instanceFilter: {
                 selectClassName: `TestSchema.TestClass`,
-                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${Number.parseInt("0x124", 16).toString(10)}`,
+                expression: `this.ECInstanceId >= ${elementIds[0]} AND this.ECInstanceId <= ${elementIds[1]} OR this.ECInstanceId = ${elementIds[2]}`,
+              },
+            },
+            keys: new KeySet(),
+          },
+        };
+
+        // what the addon returns
+        setup(
+          createTestContentDescriptor({
+            displayType: DefaultContentDisplayTypes.Grid,
+            contentFlags: ContentFlags.ShowLabels,
+            fields: [
+              createTestSimpleContentField({
+                name: "test",
+                label: "Test Field",
+                category: createTestCategoryDescription({ label: "Test Category" }),
+              }),
+            ],
+          }).toJSON(),
+        );
+        setup(
+          [
+            createTestContentItem({
+              label: "test label 1",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: elementIds[0] }],
+              values: {
+                test: "test value 1",
+              },
+              displayValues: {
+                test: "test display value 1",
+              },
+            }),
+            createTestContentItem({
+              label: "test label 2",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: elementIds[1] }],
+              values: {
+                test: "test value 2",
+              },
+              displayValues: {
+                test: "test display value 2",
+              },
+            }),
+            createTestContentItem({
+              label: "test label 3",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: elementIds[2] }],
+              values: {
+                test: "test value 3",
+              },
+              displayValues: {
+                test: "test display value 3",
+              },
+            }),
+          ].map((item) => item.toJSON()),
+        );
+
+        // test
+        const options: MultiElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+          elementIds,
+        };
+        const expectedResponse = [
+          {
+            class: "Test Class",
+            id: elementIds[0],
+            label: "test label 1",
+            items: {
+              ["Test Category"]: {
+                type: "category",
+                items: {
+                  ["Test Field"]: {
+                    type: "primitive",
+                    value: "test display value 1",
+                  },
+                },
+              },
+            },
+          },
+          {
+            class: "Test Class",
+            id: elementIds[1],
+            label: "test label 2",
+            items: {
+              ["Test Category"]: {
+                type: "category",
+                items: {
+                  ["Test Field"]: {
+                    type: "primitive",
+                    value: "test display value 2",
+                  },
+                },
+              },
+            },
+          },
+          {
+            class: "Test Class",
+            id: elementIds[2],
+            label: "test label 3",
+            items: {
+              ["Test Category"]: {
+                type: "category",
+                items: {
+                  ["Test Field"]: {
+                    type: "primitive",
+                    value: "test display value 3",
+                  },
+                },
+              },
+            },
+          },
+        ];
+        const { total, iterator } = await manager.getElementProperties(options);
+
+        expect(total).to.be.eq(3);
+        for await (const items of iterator()) {
+          verifyMockRequest(expectedContentParams);
+          expect(items).to.deep.eq(expectedResponse);
+        }
+      });
+
+      it("returns localized multiple elements properties", async () => {
+        // what the addon receives
+        imodelMock
+          .setup((x) => x.createQueryReader(moq.It.is((query) => query.includes(`FROM [TestSchema].[TestClass]`))))
+          .returns(() => stubECSqlReader([{ className: "TestSchema.TestClass" }]));
+        setupIModelForBatchedElementIdsQuery(imodelMock, ["0x123", "0x124"]);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContentSet,
+          params: {
+            rulesetId: manager.getRulesetId({
+              id: `content/class-descriptor/TestSchema.TestClass`,
+              rules: [
+                {
+                  ruleType: "Content",
+                  specifications: [
+                    {
+                      specType: "ContentInstancesOfSpecificClasses",
+                      classes: {
+                        schemaName: "TestSchema",
+                        classNames: ["TestClass"],
+                        arePolymorphic: false,
+                      },
+                      handlePropertiesPolymorphically: true,
+                    },
+                  ],
+                },
+              ],
+            }),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.Grid,
+              contentFlags: ContentFlags.ShowLabels,
+              instanceFilter: {
+                selectClassName: `TestSchema.TestClass`,
+                expression: `this.ECInstanceId >= 0x123 AND this.ECInstanceId <= 0x124`,
               },
             },
             keys: new KeySet(),
@@ -2831,14 +2987,14 @@ describe("PresentationManager", () => {
         // what the addon receives
         imodelMock
           .setup((x) => x.createQueryReader(moq.It.is((query) => query.includes(`FROM [TestSchema].[TestClass]`))))
-          .returns(() => stubECSqlReader([["TestSchema", "TestClass"]]));
-        setupIModelForElementIds(imodelMock, ["0x123", "0x124"]);
+          .returns(() => stubECSqlReader([{ className: "TestSchema.TestClass" }]));
+        setupIModelForBatchedElementIdsQuery(imodelMock, ["0x123", "0x124"]);
 
         const expectedContentParams = {
           requestId: NativePlatformRequestTypes.GetContentSet,
           params: {
             rulesetId: manager.getRulesetId({
-              id: `content/TestSchema.TestClass`,
+              id: `content/class-descriptor/TestSchema.TestClass`,
               rules: [
                 {
                   ruleType: "Content",
@@ -2861,7 +3017,7 @@ describe("PresentationManager", () => {
               contentFlags: ContentFlags.ShowLabels,
               instanceFilter: {
                 selectClassName: `TestSchema.TestClass`,
-                expression: `this.ECInstanceId >= ${Number.parseInt("0x123", 16).toString(10)} AND this.ECInstanceId <= ${Number.parseInt("0x124", 16).toString(10)}`,
+                expression: `this.ECInstanceId >= 0x123 AND this.ECInstanceId <= 0x124`,
               },
             },
             keys: new KeySet(),
@@ -2915,6 +3071,24 @@ describe("PresentationManager", () => {
           verifyMockRequest(expectedContentParams);
           expect(items).to.deep.eq(expectedResponse);
         }
+      });
+
+      it("throws when descriptor is undefined", async () => {
+        const elementIds = [Id64.fromLocalAndBriefcaseIds(123, 1)];
+        imodelMock
+          .setup((x) => x.createQueryReader(moq.It.is((query) => query.includes(`FROM bis.Element`))))
+          .returns(() => stubECSqlReader([{ className: "TestSchema.TestClass", ids: elementIds.join(",") }]));
+
+        // what the addon returns
+        setup(undefined);
+
+        // test
+        const options: MultiElementPropertiesRequestOptions<IModelDb> = {
+          imodel: imodelMock.object,
+          elementIds,
+        };
+        const { iterator } = await manager.getElementProperties(options);
+        await expect(iterator().next()).to.eventually.be.rejectedWith(PresentationError);
       });
     });
 

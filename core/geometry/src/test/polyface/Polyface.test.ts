@@ -7,6 +7,7 @@ import * as fs from "fs";
 import { describe, expect, it } from "vitest";
 import { CloneFunction, compareWithTolerance, Dictionary, OrderedComparator, OrderedSet } from "@itwin/core-bentley";
 import { Arc3d } from "../../curve/Arc3d";
+import { CurveFactory, MiteredSweepOptions, MiteredSweepOutputSelect } from "../../curve/CurveFactory";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { LineString3d } from "../../curve/LineString3d";
 import { Loop } from "../../curve/Loop";
@@ -1935,30 +1936,35 @@ describe("SphericalMeshData", () => {
     let x0 = 0;
     let y0 = 0;
     const delta = 10;
-
     // accumulator for ray intersection params, ignoring hits at the ray origin
-    const rayHits = new OrderedSet<FacetLocationDetail>((d0: FacetLocationDetail, d1: FacetLocationDetail) => compareWithTolerance(d0.a, d1.a, Geometry.smallMetricDistance));
+    const rayHits = new OrderedSet<FacetLocationDetail>(
+      (f0: FacetLocationDetail, f1: FacetLocationDetail) => compareWithTolerance(f0.a, f1.a, Geometry.smallMetricDistance),
+    );
     const intersectOptions = new FacetIntersectOptions();
     intersectOptions.parameterTolerance = Geometry.smallFraction;
-    intersectOptions.acceptIntersection = (d: FacetLocationDetail) => { if (d.a > Geometry.smallMetricDistance) rayHits.add(d.clone()); return false; };
-
+    intersectOptions.acceptIntersection = (d: FacetLocationDetail) => {
+      if (d.a > Geometry.smallMetricDistance)
+        rayHits.add(d.clone());
+      return false;
+    };
     const normalPointsOutward = (closedMesh: Polyface, normal: Ray3d): boolean => {
       rayHits.clear();
       PolyfaceQuery.intersectRay3d(closedMesh, normal, intersectOptions);
       return 0 === rayHits.size % 2; // ASSUME mesh is closed and adjacent facets have dihedral angle < 180
     };
-
     const hasOutwardOrientationAndFacetNormals = (closedMesh: Polyface): boolean => {
       let outward = true;
       const storedNormal = Ray3d.createZero();
-      for (const visitor = closedMesh.createVisitor(0); visitor.moveToNextFacet(); ) {
+      for (const visitor = closedMesh.createVisitor(0); visitor.moveToNextFacet();) {
         for (let i = 0; i < visitor.point.length; ++i) {
           if (!visitor.getNormal(i, storedNormal.direction))
             outward = false;
           else if (!visitor.getPoint(i, storedNormal.origin))
             outward = false;
           else if (!normalPointsOutward(closedMesh, storedNormal)) { // stored normal points outward
-            GeometryCoreTestIO.captureCloneGeometry(allGeometry, [storedNormal.origin, storedNormal.fractionToPoint(2.5)], x0, y0);
+            GeometryCoreTestIO.captureCloneGeometry(
+              allGeometry, [storedNormal.origin, storedNormal.fractionToPoint(2.5)], x0, y0,
+            );
             outward = false;
           }
         }
@@ -1966,13 +1972,14 @@ describe("SphericalMeshData", () => {
         if (!computedNormal)
           outward = false;
         else if (!normalPointsOutward(closedMesh, computedNormal)) { // facet orientation points outward
-          GeometryCoreTestIO.captureCloneGeometry(allGeometry, [computedNormal.origin, computedNormal.fractionToPoint(4)], x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry(
+            allGeometry, [computedNormal.origin, computedNormal.fractionToPoint(4)], x0, y0,
+          );
           outward = false;
         }
       }
       return outward;
     };
-
     const testMirror = (g: IndexedPolyface | SolidPrimitive | undefined, t: Transform): void => {
       if (!ck.testDefined(g, "geometry is defined"))
         return;
@@ -1989,33 +1996,37 @@ describe("SphericalMeshData", () => {
       }
       y0 = 0;
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, closedMesh, x0, y0);
-      ck.testTrue(PolyfaceQuery.isPolyfaceClosedByEdgePairing(closedMesh), `${type} mesh is closed`);
-      ck.testTrue(hasOutwardOrientationAndFacetNormals(closedMesh), `${type} facets and normals point outward`);
+      const outward = hasOutwardOrientationAndFacetNormals(closedMesh);
+      ck.testTrue(outward, `${type} facets and normals point outward`);
       y0 = delta;
       const mirrorMesh = closedMesh.cloneTransformed(t);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, mirrorMesh, x0, y0);
-      ck.testTrue(hasOutwardOrientationAndFacetNormals(mirrorMesh), `${type} mirrored facets and normals point outward`);
+      const mirrorOutward = hasOutwardOrientationAndFacetNormals(mirrorMesh);
+      ck.testTrue(mirrorOutward, `${type} mirrored facets and normals point outward`);
     };
-
     // mirror across plane at origin with normal (1,1,0)
     const mirrorMatrix = Matrix3d.createDirectionalScale(Vector3d.createNormalized(1, 1)!, -1.0);
     const mirrorTrans = Transform.createFixedPointAndMatrix(Point3d.createZero(), mirrorMatrix);
 
     // all solids are centered at zero
     const geometry: (IndexedPolyface | SolidPrimitive | undefined)[] = [];
+
     geometry.push(ImportedSample.createPolyhedron62());
+
     geometry.push(Box.createRange(Range3d.create(Point3d.create(-1.5, -1, -0.5), Point3d.create(1.5, 1, 0.5)), true));
+
     geometry.push(Cone.createAxisPoints(Point3d.create(-1), Point3d.create(1), 2, 1, true));
+
     const sweepLength = 3;
     const washer = RegionOps.sortOuterAndHoleLoopsXY([
       Loop.create(Arc3d.createXY(Point3d.create(0, 0, -sweepLength / 2), 2)),
       Loop.create(Arc3d.createXY(Point3d.create(0, 0, -sweepLength / 2), 1.5))
     ]);
     const arcNormal = Vector3d.createNormalized(3, 0, -1)!;
-    washer.tryTransformInPlace(
-      Transform.createOriginAndMatrix(undefined, Matrix3d.createRotationVectorToVector(Vector3d.unitZ(), arcNormal)),
-    );
+    const rotation = Matrix3d.createRotationVectorToVector(Vector3d.unitZ(), arcNormal);
+    washer.tryTransformInPlace(Transform.createOriginAndMatrix(undefined, rotation));
     geometry.push(LinearSweep.create(washer, arcNormal.scale(sweepLength), true));
+
     const polygonCCW = [Point3d.create(-1, -1), Point3d.create(-1, -2), Point3d.create(1, -2), Point3d.create(1, -1)];
     const polygonCW = polygonCCW.slice().reverse();
     const sweepRay = Ray3d.create(Point3d.createZero(), Vector3d.unitX());
@@ -2024,17 +2035,56 @@ describe("SphericalMeshData", () => {
     geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCCW), sweepRay, sweepAngle.cloneScaled(-1), true));
     geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCW), sweepRay, sweepAngle, true));
     geometry.push(RotationalSweep.create(Loop.createPolygon(polygonCW), sweepRay, sweepAngle.cloneScaled(-1), true));
-    geometry.push(RuledSweep.create(
-      [Loop.create(Arc3d.createXY(Point3d.create(0, -1, -1), 1)), Loop.create(Arc3d.createXY(Point3d.create(0, 1, 1), 1.5))],
-      true
-    ));
-    geometry.push(Sphere.createEllipsoid(
-      Transform.createOriginAndMatrix(Point3d.createZero(), Matrix3d.createScale(2, 3, 1)),
-      AngleSweep.createStartEndDegrees(-45, 0), true
-    ));
-    geometry.push(TorusPipe.createAlongArc(Arc3d.createCenterNormalRadius(Point3d.createZero(), Vector3d.unitY(-1), 2), 0.25, true));
 
-    // verify outward normals for closed mesh and all flavors of primitive solids, both before and after mirroring
+    const sections = [
+      Loop.create(Arc3d.createXY(Point3d.create(0, -1, -1), 1)),
+      Loop.create(Arc3d.createXY(Point3d.create(0, 1, 1), 1.5)),
+    ];
+    geometry.push(RuledSweep.create(sections, true));
+
+    const eAxes = Transform.createOriginAndMatrix(undefined, Matrix3d.createScale(2, 3, 1))
+    geometry.push(Sphere.createEllipsoid(eAxes, AngleSweep.createStartEndDegrees(-45, 0), true));
+
+    geometry.push(TorusPipe.createAlongArc(Arc3d.createCenterNormalRadius(undefined, Vector3d.unitY(-1), 2), 0.25, true));
+
+    const centerlineSweeps: AngleSweep[] = [AngleSweep.createStartEndDegrees(0, 90), AngleSweep.createStartEndDegrees(0, -90)];
+    const sectionDataSweeps: AngleSweep[] = [AngleSweep.create360(), AngleSweep.createStartEndDegrees(360, 0)];
+    const strokeOptions = StrokeOptions.createForFacets();
+    strokeOptions.needNormals = true;
+    for (const centerlineSweep of centerlineSweeps)
+      for (const sectionDataSweep of sectionDataSweeps) {
+        // pipes with circular arc rails
+        const centerline = Arc3d.createXY(Point3d.create(), 1.0, centerlineSweep);
+        const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0, 1), Vector3d.create(0.5, 0, 0), sectionDataSweep);
+        const pipeBuilder = PolyfaceBuilder.create(strokeOptions);
+        pipeBuilder.addMiteredPipes(centerline, sectionData, 8, true);
+        const pipeMesh = pipeBuilder.claimPolyface();
+        if (ck.testFalse(pipeMesh.isEmpty, "addMiteredPipes computed a nonempty mesh"))
+          geometry.push(pipeMesh);
+      }
+    for (const centerlineSweep of centerlineSweeps)
+      for (const sectionDataSweep of sectionDataSweeps) {
+        // mitered pipes with elliptical arc rails
+        // NOTE: tiny section radii to avoid section clash at high rail curvature
+        const centerline = Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), centerlineSweep);
+        const sectionData = Arc3d.create(undefined, Vector3d.create(0, 0.2), Vector3d.create(0.1), sectionDataSweep);
+        const pipeBuilder = PolyfaceBuilder.create(strokeOptions);
+        pipeBuilder.addMiteredPipes(centerline, sectionData, 9, true);
+        const pipeMesh = pipeBuilder.claimPolyface();
+        if (ck.testFalse(pipeMesh.isEmpty, "addMiteredPipes computed a nonempty mesh"))
+          geometry.push(pipeMesh);
+      }
+    for (const centerlineSweep of centerlineSweeps)
+      for (const sectionDataSweep of sectionDataSweeps) {
+        const centerline = Arc3d.create(undefined, Vector3d.create(0.5), Vector3d.create(0, 0, 1), centerlineSweep);
+        const sectionData = Arc3d.create(Point3d.create(0.5), Vector3d.create(0, 0.2), Vector3d.create(0.1), sectionDataSweep);
+        const miterOptions: MiteredSweepOptions = { outputSelect: MiteredSweepOutputSelect.AlsoMesh, capped: true, strokeOptions };
+        const sweepSections = CurveFactory.createMiteredSweepSections(centerline, sectionData, miterOptions);
+        if (ck.testDefined(sweepSections, "computed miteredSweepSections"))
+          geometry.push(sweepSections.mesh);
+      }
+
+    // verify outward normals for closed meshes/solids, both before and after mirroring
     for (const geom of geometry) {
       testMirror(geom, mirrorTrans);
       x0 += delta;

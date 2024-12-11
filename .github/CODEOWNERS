@@ -11,7 +11,7 @@
 
 * @iTwin/itwinjs-core-admins
 
-.github/workflows                                 @aruniverse @calebmshafer @wgoehrig @ColinKerr
+.github/workflows                                 @aruniverse @calebmshafer @wgoehrig @ColinKerr @ben-polinsky
 .github/CODEOWNERS                                @iTwin/itwinjs-core-admins
 
 .gitattributes                                    @iTwin/itwinjs-core-admins
@@ -28,7 +28,6 @@ rush.json                                         @iTwin/itwinjs-core-admins
 
 /common/**/analytical-backend.*                   @ColinKerr @diegoalexdiaz
 /common/**/analytical-backend/                    @ColinKerr @diegoalexdiaz
-/common/**/backend-webpack-tools/                 @aruniverse @calebmshafer @wgoehrig
 /common/**/core-bentley.*                         @iTwin/itwinjs-core-admins
 /common/**/core-bentley/                          @iTwin/itwinjs-core-admins
 /common/**/build-tools/                           @aruniverse @ben-polinsky @calebmshafer @wgoehrig
@@ -87,7 +86,6 @@ rush.json                                         @iTwin/itwinjs-core-admins
 /common/**/appui-*/                               @iTwin/itwinjs-core-ui
 /common/**/webgl-compatibility.*                  @iTwin/itwinjs-core-display
 /common/**/webgl-compatibility/                   @iTwin/itwinjs-core-display
-/common/**/core-webpack-tools/                    @aruniverse @calebmshafer @wgoehrig
 
 /common/config/azure-pipelines                    @aruniverse @calebmshafer @ColinKerr @wgoehrig
 

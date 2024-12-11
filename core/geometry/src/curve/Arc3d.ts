@@ -237,9 +237,16 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   private static _workVectorU = Vector3d.create();
   private static _workVectorV = Vector3d.create();
   private static _workVectorW = Vector3d.create();
-  /** Read property for (clone of) center. */
+  /** Read/write the center. Getter returns clone. */
   public get center(): Point3d {
     return this._center.clone();
+  }
+  public set center(center: XYAndZ) {
+    this._center.setFrom(center);
+  }
+  /** Read property for (reference to) center. */
+  public get centerRef(): Point3d {
+    return this._center;
   }
   /** Read property for (clone of) vector0. */
   public get vector0(): Vector3d {
@@ -261,7 +268,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public get matrixRef(): Matrix3d {
     return this._matrix;
   }
-  /** Sweep of the angle. */
+  /** Read/write the sweep. Getter returns reference. */
   public get sweep(): AngleSweep {
     return this._sweep;
   }
