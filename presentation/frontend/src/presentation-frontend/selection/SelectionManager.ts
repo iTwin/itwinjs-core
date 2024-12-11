@@ -8,7 +8,7 @@
 
 import { defer, EMPTY, mergeMap, Observable, of, Subject, Subscription, takeUntil, tap } from "rxjs";
 import { Id64, Id64Arg, Id64Array, IDisposable, using } from "@itwin/core-bentley";
-import { IModelConnection, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
+import { IModelConnection, SelectableIds, SelectionSetEvent, SelectionSetEventType } from "@itwin/core-frontend";
 import { AsyncTasksTracker, BaseNodeKey, InstanceKey, Key, Keys, KeySet, NodeKey, SelectionScope, SelectionScopeProps } from "@itwin/presentation-common";
 import {
   createStorage,
@@ -439,16 +439,16 @@ export class ToolSelectionSyncHandler implements IDisposable {
     // wip: may want to allow selecting at different levels?
     const selectionLevel = 0;
 
-    let ids: Id64Arg;
+    let ids: Partial<SelectableIds>;
     switch (ev.type) {
       case SelectionSetEventType.Add:
-        ids = ev.added;
+        ids = ev.additions;
         break;
       case SelectionSetEventType.Replace:
-        ids = ev.set.elements;
+        ids = ev.set.active;
         break;
       default:
-        ids = ev.removed;
+        ids = ev.removals;
         break;
     }
 
@@ -463,30 +463,26 @@ export class ToolSelectionSyncHandler implements IDisposable {
       createSelectionScopeProps(this._logicalSelection.scopes.activeScope),
     );
 
-    // we know what to do immediately on `clear` events
-    if (SelectionSetEventType.Clear === ev.type) {
-      await changer.clear(selectionLevel);
-      return;
-    }
-
-    const parsedIds = parseIds(ids);
     await using(this._asyncsTracker.trackAsyncTask(), async (_r) => {
       switch (ev.type) {
         case SelectionSetEventType.Add:
-          await changer.add(parsedIds.transient, parsedIds.persistent, selectionLevel);
+          await changer.add(ids, selectionLevel);
           break;
         case SelectionSetEventType.Replace:
-          await changer.replace(parsedIds.transient, parsedIds.persistent, selectionLevel);
+          await changer.replace(ids, selectionLevel);
           break;
         case SelectionSetEventType.Remove:
-          await changer.remove(parsedIds.transient, parsedIds.persistent, selectionLevel);
+          await changer.remove(ids, selectionLevel);
+          break;
+        case SelectionSetEventType.Clear:
+          await changer.clear(selectionLevel);
           break;
       }
     });
   };
 }
 
-const parseIds = (ids: Id64Arg): { persistent: Id64Arg; transient: Id64Arg } => {
+const parseElementIds = (ids: Id64Arg): { persistent: Id64Arg; transient: Id64Arg } => {
   let allPersistent = true;
   let allTransient = true;
   for (const id of Id64.iterable(ids)) {
@@ -523,13 +519,12 @@ const parseIds = (ids: Id64Arg): { persistent: Id64Arg; transient: Id64Arg } => 
   return { persistent: persistentElementIds, transient: transientElementIds };
 };
 
-function addTransientKeys(transientIds: Id64Arg, keys: KeySet): void {
-  for (const id of Id64.iterable(transientIds)) {
-    keys.add({ className: TRANSIENT_ELEMENT_CLASSNAME, id });
+function addKeys(target: KeySet, className: string, ids: Id64Arg) {
+  for (const id of Id64.iterable(ids)) {
+    target.add({ className, id });
   }
 }
 
-/** @internal */
 class ScopedSelectionChanger {
   public readonly name: string;
   public readonly imodel: IModelConnection;
@@ -544,20 +539,32 @@ class ScopedSelectionChanger {
   public async clear(level: number): Promise<void> {
     this.manager.clearSelection(this.name, this.imodel, level);
   }
-  public async add(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
-    const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    addTransientKeys(transientIds, keys);
+  public async add(ids: Partial<SelectableIds>, level: number): Promise<void> {
+    const keys = await this.#computeSelection(ids);
     this.manager.addToSelection(this.name, this.imodel, keys, level);
   }
-  public async remove(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
-    const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    addTransientKeys(transientIds, keys);
+  public async remove(ids: Partial<SelectableIds>, level: number): Promise<void> {
+    const keys = await this.#computeSelection(ids);
     this.manager.removeFromSelection(this.name, this.imodel, keys, level);
   }
-  public async replace(transientIds: Id64Arg, persistentIds: Id64Arg, level: number): Promise<void> {
-    const keys = await this.manager.scopes.computeSelection(this.imodel, persistentIds, this.scope);
-    addTransientKeys(transientIds, keys);
+  public async replace(ids: Partial<SelectableIds>, level: number): Promise<void> {
+    const keys = await this.#computeSelection(ids);
     this.manager.replaceSelection(this.name, this.imodel, keys, level);
+  }
+  async #computeSelection(ids: Partial<SelectableIds>) {
+    let keys = new KeySet();
+    if (ids.elements) {
+      const { persistent, transient } = parseElementIds(ids.elements);
+      keys = await this.manager.scopes.computeSelection(this.imodel, persistent, this.scope);
+      addKeys(keys, TRANSIENT_ELEMENT_CLASSNAME, transient);
+    }
+    if (ids.models) {
+      addKeys(keys, "BisCore.Model", ids.models);
+    }
+    if (ids.subcategories) {
+      addKeys(keys, "BisCore.SubCategory", ids.subcategories);
+    }
+    return keys;
   }
 }
 
