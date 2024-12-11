@@ -20,6 +20,29 @@ Table of contents:
 
 ## API deprecations
 
+### @itwin/core-bentley
+
+- The [IDisposable]($core-bentley) interface, along with related [isIDisposable]($core-bentley) and [using]($core-bentley) utilities, have been deprecated in favor of [TypeScript's built-in](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-2.html#using-declarations-and-explicit-resource-management) `Disposable` type and `using` declarations (from the upcoming [Explicit Resource Management](https://github.com/tc39/proposal-explicit-resource-management) feature in ECMAScript).
+
+  For example, the following:
+  ```typescript
+    import { using } from "@itwin/core-bentley";
+    export function doSomeWork() {
+      using(new SomethingDisposable(), (temp) => {
+        // do something with temp
+      });
+    }
+  ```
+  should now be rewritten as:
+  ```typescript
+    export function doSomeWork() {
+      using temp = new SomethingDisposable();
+      // do something with temp
+    }
+  ```
+
+  > Note that while public types with deterministic cleanup logic in iTwin.js will continue to implement _both_ `IDisposable` and `Disposable` until the former is fully removed in iTwin.js 7.0 (in accordance with our [API support policy](../learning/api-support-policies)), disposable objects should still only be disposed once - _either_ with [IDisposable.dispose]($core-bentley) _or_ `Symbol.dispose()` but not both!  Where possible, prefer `using` declarations or the [dispose]($core-bentley) helper function over directly calling either method.
+
 ### @itwin/presentation-common
 
 - All public methods of [PresentationRpcInterface]($presentation-common) have been deprecated. Going forward, RPC interfaces should not be called directly. Public wrappers such as [PresentationManager]($presentation-frontend) should be used instead.
